@@ -1,0 +1,6 @@
+<div class="site-tab-panel @(Parent.IsActive(this) ? "active" : "")"
+     role="tabpanel"
+     id="@SiteTabs.GetPanelId(this)"
+     aria-labelledby="@SiteTabs.GetTabId(this)">
+    @ChildContent
+</div>

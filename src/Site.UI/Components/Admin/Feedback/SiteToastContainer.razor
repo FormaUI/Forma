@@ -1,0 +1,15 @@
+<div class="site-toast-container">
+    @foreach (var toast in ToastService.Toasts)
+    {
+        <div class="site-toast site-toast-@toast.Type.ToString().ToLowerInvariant()"
+             @key="toast.Id">
+            <span class="site-toast-message">@toast.Message</span>
+            <button type="button"
+                    class="site-toast-close"
+                    @onclick="async () => await ToastService.RemoveAsync(toast.Id)"
+                    aria-label="Dismiss">
+                &times;
+            </button>
+        </div>
+    }
+</div>

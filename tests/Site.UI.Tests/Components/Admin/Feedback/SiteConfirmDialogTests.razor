@@ -1,0 +1,189 @@
+@inherits BunitContext
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_dialog_element()
+        {
+            // Arrange
+            using var ctx = new SiteConfirmDialogTests();
+
+            // Act
+            var cut = ctx.Render(@<SiteConfirmDialog />);
+
+            // Assert
+            cut.Find("dialog");
+        }
+
+        [Fact]
+        public void Should_not_be_visible_initially()
+        {
+            // Arrange
+            using var ctx = new SiteConfirmDialogTests();
+            ctx.Render(@<SiteConfirmDialog />);
+            var service = ctx.Services.GetRequiredService<IConfirmDialogService>();
+
+            // Assert
+            Assert.Null(service.Current);
+        }
+
+        [Fact]
+        public void Should_show_message_when_service_invoked()
+        {
+            // Arrange
+            using var ctx = new SiteConfirmDialogTests();
+            var cut = ctx.Render(@<SiteConfirmDialog />);
+            var service = ctx.Services.GetRequiredService<IConfirmDialogService>();
+
+            // Act
+            _ = service.ConfirmAsync("Delete this item?", "Confirm", "Cancel", TestContext.Current.CancellationToken);
+            cut.WaitForState(() => cut.FindAll(".site-confirm-message").Count > 0);
+
+            // Assert
+            var message = cut.Find(".site-confirm-message");
+            Assert.Equal("Delete this item?", message.TextContent);
+        }
+
+        [Fact]
+        public void Should_show_default_button_labels()
+        {
+            // Arrange
+            using var ctx = new SiteConfirmDialogTests();
+            var cut = ctx.Render(@<SiteConfirmDialog />);
+            var service = ctx.Services.GetRequiredService<IConfirmDialogService>();
+
+            // Act
+            _ = service.ConfirmAsync("Are you sure?", "Confirm", "Cancel", TestContext.Current.CancellationToken);
+            cut.WaitForState(() => cut.FindAll(".site-btn-danger").Count > 0);
+
+            // Assert
+            var confirmBtn = cut.Find(".site-btn-danger");
+            var cancelBtn = cut.Find(".site-btn-secondary");
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("Confirm", confirmBtn.TextContent.Trim());
+                Assert.Equal("Cancel", cancelBtn.TextContent.Trim());
+            });
+        }
+
+        [Fact]
+        public void Should_show_custom_button_labels()
+        {
+            // Arrange
+            using var ctx = new SiteConfirmDialogTests();
+            var cut = ctx.Render(@<SiteConfirmDialog />);
+            var service = ctx.Services.GetRequiredService<IConfirmDialogService>();
+
+            // Act
+            _ = service.ConfirmAsync("Remove?", "מחק", "חזור", TestContext.Current.CancellationToken);
+            cut.WaitForState(() => cut.FindAll(".site-btn-danger").Count > 0);
+
+            // Assert
+            var confirmBtn = cut.Find(".site-btn-danger");
+            var cancelBtn = cut.Find(".site-btn-secondary");
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("מחק", confirmBtn.TextContent.Trim());
+                Assert.Equal("חזור", cancelBtn.TextContent.Trim());
+            });
+        }
+
+        [Fact]
+        public void Should_not_render_modal_default_footer_actions()
+        {
+            // Arrange
+            using var ctx = new SiteConfirmDialogTests();
+            var cut = ctx.Render(@<SiteConfirmDialog />);
+            var service = ctx.Services.GetRequiredService<IConfirmDialogService>();
+
+            // Act
+            _ = service.ConfirmAsync("Proceed?", "Confirm", "Cancel", TestContext.Current.CancellationToken);
+            cut.WaitForState(() => cut.FindAll(".site-btn-danger").Count > 0);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".site-modal-action"));
+        }
+
+        [Fact]
+        public async Task Should_return_true_when_confirmed()
+        {
+            // Arrange
+            using var ctx = new SiteConfirmDialogTests();
+            var cut = ctx.Render(@<SiteConfirmDialog />);
+            var service = ctx.Services.GetRequiredService<IConfirmDialogService>();
+            var resultTask = service.ConfirmAsync("Proceed?", "Confirm", "Cancel", TestContext.Current.CancellationToken);
+
+            // Act
+            cut.WaitForState(() => cut.FindAll(".site-btn-danger").Count > 0);
+            await cut.Find(".site-btn-danger").ClickAsync(new());
+
+            // Assert
+            var result = await resultTask;
+            Assert.True(result);
+        }
+
+        [Fact]
+        public async Task Should_return_false_when_cancelled()
+        {
+            // Arrange
+            using var ctx = new SiteConfirmDialogTests();
+            var cut = ctx.Render(@<SiteConfirmDialog />);
+            var service = ctx.Services.GetRequiredService<IConfirmDialogService>();
+            var resultTask = service.ConfirmAsync("Proceed?", "Confirm", "Cancel", TestContext.Current.CancellationToken);
+
+            // Act
+            cut.WaitForState(() => cut.FindAll(".site-btn-secondary").Count > 0);
+            await cut.Find(".site-btn-secondary").ClickAsync(new());
+
+            // Assert
+            var result = await resultTask;
+            Assert.False(result);
+        }
+
+        [Fact]
+        public async Task Should_return_false_when_closed_via_modal()
+        {
+            // Arrange
+            using var ctx = new SiteConfirmDialogTests();
+            var cut = ctx.Render(@<SiteConfirmDialog />);
+            var service = ctx.Services.GetRequiredService<IConfirmDialogService>();
+            var resultTask = service.ConfirmAsync("Proceed?", "Confirm", "Cancel", TestContext.Current.CancellationToken);
+
+            // Act
+            cut.WaitForState(() => cut.FindAll(".site-confirm-message").Count > 0);
+            await cut.Find("dialog").TriggerEventAsync("onclose", new EventArgs());
+
+            // Assert
+            var result = await resultTask;
+            Assert.False(result);
+        }
+    }
+
+    public sealed class Service
+    {
+        [Fact]
+        public async Task Should_cancel_previous_request_when_new_one_arrives()
+        {
+            // Arrange
+            using var ctx = new SiteConfirmDialogTests();
+            var cut = ctx.Render(@<SiteConfirmDialog />);
+            var service = ctx.Services.GetRequiredService<IConfirmDialogService>();
+            var firstTask = service.ConfirmAsync("First?", "Confirm", "Cancel", TestContext.Current.CancellationToken);
+
+            // Act
+            var secondTask = service.ConfirmAsync("Second?", "Confirm", "Cancel", TestContext.Current.CancellationToken);
+            var firstResult = await firstTask;
+            cut.WaitForState(() => cut.Find(".site-confirm-message").TextContent == "Second?");
+            await cut.Find(".site-btn-danger").ClickAsync(new());
+            var secondResult = await secondTask;
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.False(firstResult);
+                Assert.True(secondResult);
+            });
+        }
+    }
+}

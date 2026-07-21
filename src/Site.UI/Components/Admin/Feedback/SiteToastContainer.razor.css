@@ -1,0 +1,108 @@
+/*
+    SiteToastContainer — scoped styles
+    Stacked toast notifications, positioned at the top-end corner.
+*/
+
+.site-toast-container {
+    position: fixed;
+    inset-block-start: 20px;
+    inset-inline-end: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+}
+
+/* ── Individual toast ── */
+
+.site-toast {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 280px;
+    max-width: 420px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: #fff;
+    pointer-events: auto;
+    animation: site-toast-in 300ms ease forwards;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.site-toast-message {
+    flex: 1;
+}
+
+/* ── Close button ── */
+
+.site-toast-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    opacity: 0.7;
+    cursor: pointer;
+    font-size: 1.1rem;
+    line-height: 1;
+    border-radius: 4px;
+    transition: opacity 120ms ease;
+    flex-shrink: 0;
+}
+
+.site-toast-close:hover {
+    opacity: 1;
+}
+
+/* ── Type variants ── */
+
+.site-toast-success {
+    background: #16a34a;
+}
+
+.site-toast-error {
+    background: var(--danger, #d63031);
+}
+
+.site-toast-info {
+    background: #2563eb;
+}
+
+.site-toast-warning {
+    background: #d97706;
+}
+
+/* ── Animations ── */
+
+@keyframes site-toast-in {
+    from {
+        opacity: 0;
+        transform: translateX(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes site-toast-in-rtl {
+    from {
+        opacity: 0;
+        transform: translateX(-40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.site-toast:dir(rtl) {
+    animation-name: site-toast-in-rtl;
+}

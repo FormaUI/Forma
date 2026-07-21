@@ -1,0 +1,20 @@
+<SiteModal Opened="_isOpen"
+          OnClose="HandleCancel"
+          Size="ModalSize.Small"
+          CloseOnBackdropClick="false"
+          ShowCancelAction="false"
+          ShowConfirmAction="false">
+    <Body>
+        <p class="site-confirm-message">@_request?.Message</p>
+    </Body>
+    <Footer>
+        <div class="site-confirm-actions">
+            <button type="button" class="site-btn site-btn-secondary" @onclick="HandleCancel">
+                @_request?.CancelText
+            </button>
+            <button type="button" class="site-btn site-btn-danger" @onclick="HandleConfirm">
+                @_request?.ConfirmText
+            </button>
+        </div>
+    </Footer>
+</SiteModal>

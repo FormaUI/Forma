@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>1.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Modal.Description" xml:space="preserve"><value>Modal dialog using native &lt;dialog&gt; element. Provides backdrop, focus trap, Escape key, and scoped CSS animations.</value></data>
+  <data name="Modal.Section.Basic" xml:space="preserve"><value>Basic Modal</value></data>
+  <data name="Modal.Button.OpenBasic" xml:space="preserve"><value>Open Basic Modal</value></data>
+  <data name="Modal.Title.Basic" xml:space="preserve"><value>Basic Modal</value></data>
+  <data name="Modal.Body.Basic" xml:space="preserve"><value>This is a basic modal with a title and child content.</value></data>
+  <data name="Modal.Section.NoHeader" xml:space="preserve"><value>No Header (Title = null)</value></data>
+  <data name="Modal.Button.OpenHeaderless" xml:space="preserve"><value>Open Headerless Modal</value></data>
+  <data name="Modal.Body.NoHeader" xml:space="preserve"><value>This modal has no header - useful for simple alerts or custom layouts.</value></data>
+  <data name="Modal.Section.SizeVariants" xml:space="preserve"><value>Size Variants</value></data>
+  <data name="Modal.Body.SizeUses" xml:space="preserve"><value>This modal uses</value></data>
+  <data name="Modal.Section.CustomFooter" xml:space="preserve"><value>Custom Footer</value></data>
+  <data name="Modal.Button.OpenFooterOnly" xml:space="preserve"><value>Open Footer Only</value></data>
+  <data name="Modal.Button.OpenFooterActions" xml:space="preserve"><value>Open Footer + Actions</value></data>
+  <data name="Modal.Title.FooterOnly" xml:space="preserve"><value>Footer Only</value></data>
+  <data name="Modal.Body.FooterOnly" xml:space="preserve"><value>This example shows footer content only, without default actions.</value></data>
+  <data name="Modal.Footer.LastUpdated" xml:space="preserve"><value>Last updated: just now</value></data>
+  <data name="Modal.Title.FooterActions" xml:space="preserve"><value>Footer + Actions</value></data>
+  <data name="Modal.Body.FooterActions" xml:space="preserve"><value>This example shows both custom footer content and default actions.</value></data>
+  <data name="Modal.Footer.Tip" xml:space="preserve"><value>Tip: you can place any custom content here</value></data>
+  <data name="Modal.Section.NoFooter" xml:space="preserve"><value>No Footer</value></data>
+  <data name="Modal.Button.OpenNoFooter" xml:space="preserve"><value>Open (no footer)</value></data>
+  <data name="Modal.Title.Information" xml:space="preserve"><value>Information</value></data>
+  <data name="Modal.Body.NoFooter" xml:space="preserve"><value>This modal has no footer - close it with Escape, backdrop click, or the X button.</value></data>
+  <data name="Modal.Section.NoBackdrop" xml:space="preserve"><value>Backdrop Click Disabled</value></data>
+  <data name="Modal.Button.OpenNoBackdrop" xml:space="preserve"><value>Open (no backdrop close)</value></data>
+  <data name="Modal.Title.MustUseButton" xml:space="preserve"><value>Must Use X or Button</value></data>
+  <data name="Modal.Body.NoBackdrop" xml:space="preserve"><value>Clicking the backdrop does not close this modal. Use the X button or the button below.</value></data>
+</root>

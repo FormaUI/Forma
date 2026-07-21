@@ -1,0 +1,18 @@
+@namespace Site.UI.Components.Admin.Forms
+@inherits InputBase<string?>
+
+<div class="site-field">
+    <input @attributes="AdditionalAttributes"
+           id="@_inputId"
+           type="@Type"
+           class="site-field-input @CssClass"
+           placeholder=" "
+           value="@CurrentValueAsString"
+           @oninput="@(e => CurrentValueAsString = e.Value?.ToString())"
+           @ref="_inputRef"
+           aria-required="@(Required ? "true" : null)" />
+    <label for="@_inputId" class="site-field-label">
+        @Label@if (Required) {<span class="site-field-required" aria-hidden="true"> *</span>}
+    </label>
+    <ValidationMessage For="@ValueExpression" />
+</div>

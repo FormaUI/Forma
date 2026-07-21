@@ -1,0 +1,152 @@
+@inherits BunitContext
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_toolbar_container()
+        {
+            // Arrange
+            using var ctx = new SiteToolbarTests();
+
+            // Act
+            var cut = ctx.Render(@<SiteToolbar />);
+
+            // Assert
+            cut.Find(".site-toolbar");
+        }
+
+        [Fact]
+        public void Should_not_render_search_input_without_callback()
+        {
+            // Arrange
+            using var ctx = new SiteToolbarTests();
+
+            // Act
+            var cut = ctx.Render(@<SiteToolbar />);
+
+            // Assert
+            Assert.Empty(cut.FindAll("input"));
+        }
+
+        [Fact]
+        public void Should_not_render_actions_without_child_content()
+        {
+            // Arrange
+            using var ctx = new SiteToolbarTests();
+
+            // Act
+            var cut = ctx.Render(@<SiteToolbar />);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".site-toolbar-actions"));
+        }
+
+        [Fact]
+        public void Should_render_search_input_when_callback_provided()
+        {
+            // Arrange
+            using var ctx = new SiteToolbarTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<SiteToolbar OnSearch="@((string _) => Task.CompletedTask)" />);
+
+            // Assert
+            cut.Find("input.site-toolbar-search");
+        }
+
+        [Fact]
+        public void Should_set_placeholder_when_provided()
+        {
+            // Arrange
+            using var ctx = new SiteToolbarTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<SiteToolbar OnSearch="@((string _) => Task.CompletedTask)" SearchPlaceholder="Search..." />);
+
+            // Assert
+            Assert.Equal("Search...", cut.Find("input").GetAttribute("placeholder"));
+        }
+
+        [Fact]
+        public void Should_not_set_placeholder_when_not_provided()
+        {
+            // Arrange
+            using var ctx = new SiteToolbarTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<SiteToolbar OnSearch="@((string _) => Task.CompletedTask)" />);
+
+            // Assert
+            Assert.Null(cut.Find("input").GetAttribute("placeholder"));
+        }
+
+        [Fact]
+        public async Task Should_invoke_callback_with_input_value()
+        {
+            // Arrange
+            using var ctx = new SiteToolbarTests();
+            var received = new List<string>();
+            var cut = ctx.Render(
+                @<SiteToolbar OnSearch="@((string v) => { received.Add(v); return Task.CompletedTask; })" SearchDelay="@TimeSpan.Zero" />);
+
+            // Act
+            await cut.Find("input").TriggerEventAsync("oninput", new ChangeEventArgs { Value = "hello" });
+            await Task.Delay(50, Xunit.TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Single(received);
+                Assert.Equal("hello", received[0]);
+            });
+        }
+
+        [Fact]
+        public void Should_render_child_content()
+        {
+            // Arrange
+            using var ctx = new SiteToolbarTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<SiteToolbar>
+                    <button id="test-btn">Click</button>
+                </SiteToolbar>);
+
+            // Assert
+            cut.Find("#test-btn");
+        }
+
+        [Fact]
+        public void Should_render_both_search_and_child_content()
+        {
+            // Arrange
+            using var ctx = new SiteToolbarTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<SiteToolbar OnSearch="@((string _) => Task.CompletedTask)">
+                    <button>Add</button>
+                </SiteToolbar>);
+
+            // Assert
+            cut.Find("input.site-toolbar-search");
+            cut.Find(".site-toolbar-actions");
+        }
+
+        [Fact]
+        public void Should_reject_negative_search_delay()
+        {
+            // Arrange
+            using var ctx = new SiteToolbarTests();
+
+            // Act & Assert
+            Assert.Throws<ArgumentOutOfRangeException>(() => ctx.Render(
+                @<SiteToolbar SearchDelay="@TimeSpan.FromMilliseconds(-1)" />));
+        }
+    }
+}

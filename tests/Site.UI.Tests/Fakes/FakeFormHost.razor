@@ -1,0 +1,13 @@
+@namespace Site.UI.Tests.Fakes
+
+<CascadingValue Value="EditContext">
+    @ChildContent
+</CascadingValue>
+
+@code {
+    [Parameter, EditorRequired]
+    public EditContext EditContext { get; set; } = default!;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

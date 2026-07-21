@@ -1,0 +1,27 @@
+@namespace Site.UI.Components.Admin.Forms
+@inherits InputBase<bool>
+
+<div class="site-toggle-wrapper">
+    @if (OffLabel is not null)
+    {
+        <span class="site-toggle-label site-toggle-off-label">@OffLabel</span>
+    }
+    <label class="@(Disabled ? "site-toggle disabled" : "site-toggle")">
+        <input @attributes="AdditionalAttributes"
+               id="@_id"
+               type="checkbox"
+               role="switch"
+               class="site-toggle-input @CssClass"
+               checked="@CurrentValue"
+               @onchange="HandleChange"
+               disabled="@Disabled" />
+        <span class="site-toggle-track" aria-hidden="true">
+            <span class="site-toggle-knob"></span>
+        </span>
+    </label>
+    @if (OnLabel is not null)
+    {
+        <span class="site-toggle-label site-toggle-on-label">@OnLabel</span>
+    }
+    <ValidationMessage For="@ValueExpression" />
+</div>

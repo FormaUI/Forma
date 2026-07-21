@@ -1,0 +1,222 @@
+@inherits BunitContext
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_dialog_element()
+        {
+            // Arrange
+            using var ctx = new SiteModalTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<SiteModal Opened="false" OnClose="@(() => { })" />);
+
+            // Assert
+            cut.Find("dialog");
+        }
+
+        [Fact]
+        public void Should_render_title_in_header_when_provided()
+        {
+            // Arrange
+            using var ctx = new SiteModalTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<SiteModal Opened="false" OnClose="@(() => { })" Title="Test Title" />);
+
+            // Assert
+            var header = cut.Find(".site-modal-header h5");
+            Assert.Equal("Test Title", header.TextContent);
+        }
+
+        [Fact]
+        public void Should_not_render_header_when_title_is_null()
+        {
+            // Arrange
+            using var ctx = new SiteModalTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<SiteModal Opened="false" OnClose="@(() => { })" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".site-modal-header"));
+        }
+
+        [Fact]
+        public void Should_render_child_content()
+        {
+            // Arrange
+            using var ctx = new SiteModalTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<SiteModal Opened="false" OnClose="@(() => { })">
+                    <Body><p>Hello Modal</p></Body>
+                </SiteModal>);
+
+            // Assert
+            var body = cut.Find(".site-modal-body");
+            Assert.Contains("Hello Modal", body.InnerHtml, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_render_footer_content_when_provided()
+        {
+            // Arrange
+            using var ctx = new SiteModalTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<SiteModal Opened="false" OnClose="@(() => { })">
+                    <Footer><button>Save</button></Footer>
+                </SiteModal>);
+
+            // Assert
+            var footer = cut.Find(".site-modal-footer");
+            Assert.Contains("Save", footer.InnerHtml, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_not_render_footer_when_not_provided()
+        {
+            // Arrange
+            using var ctx = new SiteModalTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<SiteModal Opened="false" OnClose="@(() => { })" ShowCancelAction="false" ShowConfirmAction="false" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".site-modal-footer"));
+        }
+
+        [Fact]
+        public void Should_render_default_footer_actions_when_enabled()
+        {
+            // Arrange
+            using var ctx = new SiteModalTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<SiteModal Opened="false" OnClose="@(() => { })" />);
+
+            // Assert
+            var footer = cut.Find(".site-modal-footer");
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("Cancel", footer.TextContent, StringComparison.Ordinal);
+                Assert.Contains("Confirm", footer.TextContent, StringComparison.Ordinal);
+            });
+        }
+
+        [Fact]
+        public void Should_render_footer_content_and_default_actions_together_when_enabled()
+        {
+            // Arrange
+            using var ctx = new SiteModalTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<SiteModal Opened="false" OnClose="@(() => { })">
+                    <Footer><span>Custom</span></Footer>
+                </SiteModal>);
+
+            // Assert
+            var footer = cut.Find(".site-modal-footer");
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("Custom", footer.TextContent, StringComparison.Ordinal);
+                Assert.Contains("Cancel", footer.TextContent, StringComparison.Ordinal);
+                Assert.Contains("Confirm", footer.TextContent, StringComparison.Ordinal);
+            });
+        }
+
+        [Fact]
+        public void Should_render_close_only_when_confirm_action_is_hidden()
+        {
+            // Arrange
+            using var ctx = new SiteModalTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<SiteModal Opened="false" OnClose="@(() => { })" ShowConfirmAction="false" />);
+
+            // Assert
+            var footer = cut.Find(".site-modal-footer");
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("Close", footer.TextContent, StringComparison.Ordinal);
+                Assert.DoesNotContain("Confirm", footer.TextContent, StringComparison.Ordinal);
+            });
+        }
+
+        [Fact]
+        public void Should_add_no_header_class_when_title_is_null()
+        {
+            // Arrange
+            using var ctx = new SiteModalTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<SiteModal Opened="false" OnClose="@(() => { })" />);
+
+            // Assert
+            var body = cut.Find(".site-modal-body");
+            Assert.Contains("no-header", body.ClassList);
+        }
+
+        [Theory]
+        [InlineData(ModalSize.Small, "site-modal-small")]
+        [InlineData(ModalSize.Medium, "site-modal-medium")]
+        [InlineData(ModalSize.Large, "site-modal-large")]
+        [InlineData(ModalSize.ExtraLarge, "site-modal-extralarge")]
+        [InlineData(ModalSize.Full, "site-modal-full")]
+        public void Should_apply_size_class(ModalSize size, string expectedClass)
+        {
+            // Arrange
+            using var ctx = new SiteModalTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<SiteModal Opened="false" OnClose="@(() => { })" Size="@size" />);
+
+            // Assert
+            var dialog = cut.Find("dialog");
+            Assert.Contains(expectedClass, dialog.ClassList);
+        }
+
+        [Fact]
+        public void Should_default_to_medium_size()
+        {
+            // Arrange
+            using var ctx = new SiteModalTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<SiteModal Opened="false" OnClose="@(() => { })" />);
+
+            // Assert
+            var dialog = cut.Find("dialog");
+            Assert.Contains("site-modal-medium", dialog.ClassList);
+        }
+
+        [Fact]
+        public void Should_have_close_button_with_aria_label()
+        {
+            // Arrange
+            using var ctx = new SiteModalTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<SiteModal Opened="false" OnClose="@(() => { })" Title="Test" />);
+
+            // Assert
+            var closeBtn = cut.Find(".site-modal-close");
+            Assert.Equal("Close", closeBtn.GetAttribute("aria-label"));
+        }
+    }
+}

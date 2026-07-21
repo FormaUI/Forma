@@ -1,0 +1,24 @@
+@page "/"
+@using System.Globalization
+
+<h1>Site.UI Component Showcase</h1>
+<p class="desc">Visual testing and documentation for reusable admin components.</p>
+
+<h3>Blazor Runtime Environment</h3>
+
+@if (RendererInfo.IsInteractive)
+{
+    <p>Interactive mode: @RendererInfo.Name</p>
+}
+else
+{
+    <p>Static SSR (prerendering)</p>
+}
+
+<h3>Blazor LifeCycle Order</h3>
+
+<LifeCycle @rendermode="InteractiveServer" />
+
+@code {
+    private string Culture => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+}

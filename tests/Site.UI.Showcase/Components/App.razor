@@ -1,0 +1,51 @@
+@using System.Globalization
+
+<!DOCTYPE html>
+<html lang="@Lang" dir="@Dir">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Site.UI Component Showcase</title>
+    <base href="/" />
+    <link rel="stylesheet" href="@Assets["_content/Site.UI/admin.css"]" />
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <link rel="stylesheet" href="@Assets["Site.UI.Showcase.styles.css"]" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <ResourcePreloader />
+    <ImportMap />
+    <HeadOutlet />
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; background: #f9fafb; color: var(--text); }
+        .showcase-layout { display: flex; min-height: 100vh; }
+        .showcase-sidebar { width: 240px; background: #fff; border-left: 1px solid var(--border-color); padding: 20px 0; flex-shrink: 0; }
+        .showcase-sidebar h3 { margin: 0 20px 16px; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+        .showcase-sidebar a { display: block; padding: 8px 20px; color: var(--text); text-decoration: none; font-size: 0.9rem; }
+        .showcase-sidebar a:hover { background: var(--hover-bg); }
+        .showcase-sidebar a.active { background: #eff6ff; color: #2563eb; font-weight: 600; }
+        .culture-switcher { display: flex; gap: 4px; padding: 12px 20px 16px; border-bottom: 1px solid var(--border-color); margin-bottom: 16px; }
+        .culture-switcher a { padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; text-decoration: none; color: var(--text-muted); border: 1px solid transparent; }
+        .culture-switcher a.active { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
+        .culture-switcher a:hover:not(.active) { background: var(--hover-bg); }
+        .showcase-main { flex: 1; padding: 32px 40px; max-width: 900px; }
+        .showcase-main h1 { margin: 0 0 8px; font-size: 1.5rem; }
+        .showcase-main p.desc { color: var(--text-muted); margin: 0 0 32px; }
+        .demo-section { margin-bottom: 40px; }
+        .demo-section h2 { font-size: 1.1rem; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); }
+        .demo-box { background: #fff; border: 1px solid var(--border-color); border-radius: 8px; padding: 24px; }
+        .btn { padding: 8px 16px; border-radius: 6px; border: 1px solid var(--border-color); cursor: pointer; font-size: 0.9rem; transition: background 120ms; }
+        .btn-primary { background: #2563eb; color: #fff; border-color: #2563eb; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-sec { background: #fff; color: var(--text); }
+        .btn-sec:hover { background: var(--hover-bg); }
+    </style>
+</head>
+<body>
+    <Routes />
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+</body>
+</html>
+
+@code {
+    private string Lang => CultureInfo.CurrentUICulture.Name;
+    private string Dir => CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? "rtl" : "ltr";
+}

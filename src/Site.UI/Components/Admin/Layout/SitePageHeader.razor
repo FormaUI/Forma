@@ -1,0 +1,34 @@
+<div class="site-page-header">
+    <div>
+        <h1 class="site-page-title">@Title</h1>
+
+        @if (Breadcrumbs is { Count: > 0 })
+        {
+            <nav aria-label="Breadcrumb">
+                <ol class="site-breadcrumb">
+                    @for (var i = 0; i < Breadcrumbs.Count; i++)
+                    {
+                        var crumb = Breadcrumbs[i];
+                        var isLast = i == Breadcrumbs.Count - 1;
+
+                        @if (crumb.Url is not null)
+                        {
+                            <li class="site-breadcrumb-item"><a href="@crumb.Url">@crumb.Label</a></li>
+                        }
+                        else
+                        {
+                            <li class="site-breadcrumb-item active" aria-current="@(isLast ? "page" : null)"><span>@crumb.Label</span></li>
+                        }
+                    }
+                </ol>
+            </nav>
+        }
+    </div>
+
+    @if (Actions is not null)
+    {
+        <div class="site-page-header-actions">
+            @Actions
+        </div>
+    }
+</div>

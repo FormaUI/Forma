@@ -1,0 +1,214 @@
+@inherits BunitContext
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_label_text()
+        {
+            // Arrange
+            using var ctx = new SiteFloatingLabelFieldTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <SiteFloatingLabelField @bind-Value="model.Text" Label="Full Name" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Contains("Full Name", cut.Find(".site-field-label").TextContent, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_render_input_element()
+        {
+            // Arrange
+            using var ctx = new SiteFloatingLabelFieldTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <SiteFloatingLabelField @bind-Value="model.Text" Label="Test" />
+            </FakeFormHost>);
+
+            // Assert
+            cut.Find(".site-field-input");
+        }
+
+        [Fact]
+        public void Should_default_to_text_type()
+        {
+            // Arrange
+            using var ctx = new SiteFloatingLabelFieldTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <SiteFloatingLabelField @bind-Value="model.Text" Label="Test" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("text", cut.Find(".site-field-input").GetAttribute("type"));
+        }
+
+        [Fact]
+        public void Should_use_specified_type_attribute()
+        {
+            // Arrange
+            using var ctx = new SiteFloatingLabelFieldTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <SiteFloatingLabelField @bind-Value="model.Text" Label="Email" Type="email" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("email", cut.Find(".site-field-input").GetAttribute("type"));
+        }
+
+        [Fact]
+        public void Should_set_placeholder_to_space()
+        {
+            // Arrange
+            using var ctx = new SiteFloatingLabelFieldTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <SiteFloatingLabelField @bind-Value="model.Text" Label="Test" />
+            </FakeFormHost>);
+
+            // Assert — a single space is required so CSS :not(:placeholder-shown) triggers the label float
+            Assert.Equal(" ", cut.Find(".site-field-input").GetAttribute("placeholder"));
+        }
+
+        [Fact]
+        public void Should_link_label_to_input_via_for_attribute()
+        {
+            // Arrange
+            using var ctx = new SiteFloatingLabelFieldTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <SiteFloatingLabelField @bind-Value="model.Text" Label="Test" />
+            </FakeFormHost>);
+
+            // Assert
+            var inputId = cut.Find(".site-field-input").GetAttribute("id");
+            var labelFor = cut.Find(".site-field-label").GetAttribute("for");
+            Assert.Multiple(() =>
+            {
+                Assert.NotNull(inputId);
+                Assert.Equal(inputId, labelFor);
+            });
+        }
+
+        [Fact]
+        public void Should_set_aria_required_when_required()
+        {
+            // Arrange
+            using var ctx = new SiteFloatingLabelFieldTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <SiteFloatingLabelField @bind-Value="model.Text" Label="Test" Required="true" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("true", cut.Find(".site-field-input").GetAttribute("aria-required"));
+        }
+
+        [Fact]
+        public void Should_not_set_aria_required_when_not_required()
+        {
+            // Arrange
+            using var ctx = new SiteFloatingLabelFieldTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <SiteFloatingLabelField @bind-Value="model.Text" Label="Test" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Null(cut.Find(".site-field-input").GetAttribute("aria-required"));
+        }
+
+        [Fact]
+        public void Should_render_required_indicator_when_required()
+        {
+            // Arrange
+            using var ctx = new SiteFloatingLabelFieldTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <SiteFloatingLabelField @bind-Value="model.Text" Label="Test" Required="true" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Single(cut.FindAll(".site-field-required"));
+        }
+
+        [Fact]
+        public void Should_not_render_required_indicator_when_not_required()
+        {
+            // Arrange
+            using var ctx = new SiteFloatingLabelFieldTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <SiteFloatingLabelField @bind-Value="model.Text" Label="Test" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".site-field-required"));
+        }
+
+        [Fact]
+        public void Should_throw_when_label_is_empty()
+        {
+            // Arrange
+            using var ctx = new SiteFloatingLabelFieldTests();
+            var model = new FakeModel();
+
+            // Act & Assert
+            Assert.ThrowsAny<ArgumentException>(() => ctx.Render(
+                @<FakeFormHost EditContext="@(new EditContext(model))">
+                    <SiteFloatingLabelField @bind-Value="model.Text" Label="" />
+                </FakeFormHost>));
+        }
+
+        [Fact]
+        public void Should_throw_when_label_is_whitespace()
+        {
+            // Arrange
+            using var ctx = new SiteFloatingLabelFieldTests();
+            var model = new FakeModel();
+
+            // Act & Assert
+            Assert.ThrowsAny<ArgumentException>(() => ctx.Render(
+                @<FakeFormHost EditContext="@(new EditContext(model))">
+                    <SiteFloatingLabelField @bind-Value="model.Text" Label="   " />
+                </FakeFormHost>));
+        }
+
+        [Fact]
+        public void Should_throw_when_label_is_null()
+        {
+            // Arrange
+            using var ctx = new SiteFloatingLabelFieldTests();
+            var model = new FakeModel();
+
+            // Act & Assert
+            Assert.ThrowsAny<ArgumentException>(() => ctx.Render(
+                @<FakeFormHost EditContext="@(new EditContext(model))">
+                    <SiteFloatingLabelField @bind-Value="model.Text" Label="@((string)null!)" />
+                </FakeFormHost>));
+        }
+    }
+}

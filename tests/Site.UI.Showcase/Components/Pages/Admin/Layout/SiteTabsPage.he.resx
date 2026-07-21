@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>1.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Tabs.Description" xml:space="preserve"><value>מיכל לשוניות לארגון תוכן הדף. משמש בעורכי עמודים, מוצרים והגדרות.</value></data>
+  <data name="Tabs.Section.Basic" xml:space="preserve"><value>לשוניות בסיסיות</value></data>
+  <data name="Tabs.Section.WithIcons" xml:space="preserve"><value>לשוניות עם אייקונים</value></data>
+  <data name="Tabs.Section.Many" xml:space="preserve"><value>הרבה לשוניות</value></data>
+  <data name="Tabs.Tab.General" xml:space="preserve"><value>כללי</value></data>
+  <data name="Tabs.Tab.SEO" xml:space="preserve"><value>קידום אתרים</value></data>
+  <data name="Tabs.Tab.Images" xml:space="preserve"><value>תמונות</value></data>
+  <data name="Tabs.Tab.Settings" xml:space="preserve"><value>הגדרות</value></data>
+  <data name="Tabs.Tab.Users" xml:space="preserve"><value>משתמשים</value></data>
+  <data name="Tabs.Tab.Billing" xml:space="preserve"><value>חיוב</value></data>
+  <data name="Tabs.Tab.Tab1" xml:space="preserve"><value>לשונית 1</value></data>
+  <data name="Tabs.Tab.Tab2" xml:space="preserve"><value>לשונית 2</value></data>
+  <data name="Tabs.Tab.Tab3" xml:space="preserve"><value>לשונית 3</value></data>
+  <data name="Tabs.Tab.Tab4" xml:space="preserve"><value>לשונית 4</value></data>
+  <data name="Tabs.Tab.Tab5" xml:space="preserve"><value>לשונית 5</value></data>
+  <data name="Tabs.Content.General" xml:space="preserve"><value>הגדרות ותצורה כללית.</value></data>
+  <data name="Tabs.Content.SEO" xml:space="preserve"><value>אפשרויות קידום במנועי חיפוש.</value></data>
+  <data name="Tabs.Content.Images" xml:space="preserve"><value>גלריית תמונות והעלאות.</value></data>
+  <data name="Tabs.Content.Settings" xml:space="preserve"><value>הגדרות מערכת.</value></data>
+  <data name="Tabs.Content.Users" xml:space="preserve"><value>ניהול משתמשים.</value></data>
+  <data name="Tabs.Content.Billing" xml:space="preserve"><value>חיוב ותשלומים.</value></data>
+  <data name="Tabs.Content.Tab1" xml:space="preserve"><value>תוכן ללשונית 1.</value></data>
+  <data name="Tabs.Content.Tab2" xml:space="preserve"><value>תוכן ללשונית 2.</value></data>
+  <data name="Tabs.Content.Tab3" xml:space="preserve"><value>תוכן ללשונית 3.</value></data>
+  <data name="Tabs.Content.Tab4" xml:space="preserve"><value>תוכן ללשונית 4.</value></data>
+  <data name="Tabs.Content.Tab5" xml:space="preserve"><value>תוכן ללשונית 5.</value></data>
+</root>

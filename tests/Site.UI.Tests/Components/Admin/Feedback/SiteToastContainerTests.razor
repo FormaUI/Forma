@@ -1,0 +1,181 @@
+@inherits BunitContext
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_container()
+        {
+            // Arrange
+            using var ctx = new SiteToastContainerTests();
+
+            // Act
+            var cut = ctx.Render(@<SiteToastContainer />);
+
+            // Assert
+            cut.Find(".site-toast-container");
+        }
+
+        [Fact]
+        public void Should_be_empty_initially()
+        {
+            // Arrange
+            using var ctx = new SiteToastContainerTests();
+
+            // Act
+            var cut = ctx.Render(@<SiteToastContainer />);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".site-toast"));
+        }
+
+        [Fact]
+        public async Task Should_show_toast_when_service_invoked()
+        {
+            // Arrange
+            using var ctx = new SiteToastContainerTests();
+            var cut = ctx.Render(@<SiteToastContainer />);
+            var service = ctx.Services.GetRequiredService<IToastService>();
+
+            // Act
+            await service.ShowAsync("Saved!", cancellationToken: TestContext.Current.CancellationToken);
+            cut.WaitForState(() => cut.FindAll(".site-toast").Count > 0);
+
+            // Assert
+            var message = cut.Find(".site-toast-message");
+            Assert.Equal("Saved!", message.TextContent);
+        }
+
+        [Fact]
+        public async Task Should_apply_success_class_by_default()
+        {
+            // Arrange
+            using var ctx = new SiteToastContainerTests();
+            var cut = ctx.Render(@<SiteToastContainer />);
+            var service = ctx.Services.GetRequiredService<IToastService>();
+
+            // Act
+            await service.ShowAsync("Done!", cancellationToken: TestContext.Current.CancellationToken);
+            cut.WaitForState(() => cut.FindAll(".site-toast").Count > 0);
+
+            // Assert
+            var toast = cut.Find(".site-toast");
+            Assert.Contains("site-toast-success", toast.ClassList);
+        }
+
+        [Theory]
+        [InlineData(ToastType.Success, "site-toast-success")]
+        [InlineData(ToastType.Error, "site-toast-error")]
+        [InlineData(ToastType.Info, "site-toast-info")]
+        [InlineData(ToastType.Warning, "site-toast-warning")]
+        public async Task Should_apply_correct_type_class(ToastType type, string expectedClass)
+        {
+            // Arrange
+            using var ctx = new SiteToastContainerTests();
+            var cut = ctx.Render(@<SiteToastContainer />);
+            var service = ctx.Services.GetRequiredService<IToastService>();
+
+            // Act
+            await service.ShowAsync("Test", type, cancellationToken: TestContext.Current.CancellationToken);
+            cut.WaitForState(() => cut.FindAll(".site-toast").Count > 0);
+
+            // Assert
+            var toast = cut.Find(".site-toast");
+            Assert.Contains(expectedClass, toast.ClassList);
+        }
+
+        [Fact]
+        public async Task Should_show_multiple_toasts()
+        {
+            // Arrange
+            using var ctx = new SiteToastContainerTests();
+            var cut = ctx.Render(@<SiteToastContainer />);
+            var service = ctx.Services.GetRequiredService<IToastService>();
+
+            // Act
+            await service.ShowAsync("First", ToastType.Success, cancellationToken: TestContext.Current.CancellationToken);
+            await service.ShowAsync("Second", ToastType.Error, cancellationToken: TestContext.Current.CancellationToken);
+            await service.ShowAsync("Third", ToastType.Warning, cancellationToken: TestContext.Current.CancellationToken);
+            cut.WaitForState(() => cut.FindAll(".site-toast").Count == 3);
+
+            // Assert
+            Assert.Equal(3, cut.FindAll(".site-toast").Count);
+        }
+
+        [Fact]
+        public async Task Should_remove_toast_on_close_click()
+        {
+            // Arrange
+            using var ctx = new SiteToastContainerTests();
+            var cut = ctx.Render(@<SiteToastContainer />);
+            var service = ctx.Services.GetRequiredService<IToastService>();
+            await service.ShowAsync("Remove me", cancellationToken: TestContext.Current.CancellationToken);
+            cut.WaitForState(() => cut.FindAll(".site-toast").Count > 0);
+
+            // Act
+            await cut.Find(".site-toast-close").ClickAsync(new());
+            cut.WaitForState(() => cut.FindAll(".site-toast").Count == 0);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".site-toast"));
+        }
+
+        [Fact]
+        public async Task Should_remove_only_clicked_toast()
+        {
+            // Arrange
+            using var ctx = new SiteToastContainerTests();
+            var cut = ctx.Render(@<SiteToastContainer />);
+            var service = ctx.Services.GetRequiredService<IToastService>();
+            await service.ShowAsync("Keep me", ToastType.Success, cancellationToken: TestContext.Current.CancellationToken);
+            await service.ShowAsync("Remove me", ToastType.Error, cancellationToken: TestContext.Current.CancellationToken);
+            cut.WaitForState(() => cut.FindAll(".site-toast").Count == 2);
+
+            // Act
+            var closeButtons = cut.FindAll(".site-toast-close");
+            await closeButtons[1].ClickAsync(new());
+            cut.WaitForState(() => cut.FindAll(".site-toast").Count == 1);
+
+            // Assert
+            Assert.Equal("Keep me", cut.Find(".site-toast-message").TextContent);
+        }
+    }
+
+    public sealed class Service
+    {
+        [Fact]
+        public async Task Should_track_toasts_in_service()
+        {
+            // Arrange
+            using var ctx = new SiteToastContainerTests();
+            ctx.Render(@<SiteToastContainer />);
+            var service = ctx.Services.GetRequiredService<IToastService>();
+            Assert.Empty(service.Toasts);
+
+            // Act & Assert — after first toast
+            await service.ShowAsync("One", cancellationToken: TestContext.Current.CancellationToken);
+            Assert.Single(service.Toasts);
+
+            // Act & Assert — after second toast
+            await service.ShowAsync("Two", cancellationToken: TestContext.Current.CancellationToken);
+            Assert.Equal(2, service.Toasts.Count);
+        }
+
+        [Fact]
+        public async Task Should_remove_by_id()
+        {
+            // Arrange
+            using var ctx = new SiteToastContainerTests();
+            ctx.Render(@<SiteToastContainer />);
+            var service = ctx.Services.GetRequiredService<IToastService>();
+            await service.ShowAsync("Test", cancellationToken: TestContext.Current.CancellationToken);
+            var id = service.Toasts[0].Id;
+
+            // Act
+            await service.RemoveAsync(id, TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Empty(service.Toasts);
+        }
+    }
+}

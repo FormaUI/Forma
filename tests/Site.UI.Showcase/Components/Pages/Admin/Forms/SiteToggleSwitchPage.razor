@@ -1,0 +1,69 @@
+@page "/toggle-switch"
+@attribute [ShowcasePage("SiteToggleSwitch")]
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components.Forms
+@using Site.UI.Components.Admin.Forms
+@inject IStringLocalizer<SiteToggleSwitchPage> L
+
+<h1>SiteToggleSwitch</h1>
+<p class="desc">@L["Toggle.Description"]</p>
+
+<EditForm Model="Model" FormName="toggle-demo" OnValidSubmit="HandleSubmit">
+    <div class="demo-section">
+        <h2>@L["Toggle.Section.Basic"]</h2>
+        <div class="demo-box">
+            <SiteToggleSwitch @bind-Value="Model.Active" />
+            <SiteToggleSwitch @bind-Value="Model.Featured" />
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["Toggle.Section.WithLabels"]</h2>
+        <div class="demo-box">
+            <SiteToggleSwitch @bind-Value="Model.Comments"
+                             OnLabel="@L["Toggle.Label.On"]"
+                             OffLabel="@L["Toggle.Label.Off"]" />
+            <SiteToggleSwitch @bind-Value="Model.Published"
+                             OnLabel="@L["Toggle.Label.Published"]"
+                             OffLabel="@L["Toggle.Label.Unpublished"]" />
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["Toggle.Section.States"]</h2>
+        <div class="demo-box">
+            <SiteToggleSwitch @bind-Value="Model.OnByDefault"
+                             OnLabel="@L["Toggle.Label.On"]"
+                             OffLabel="@L["Toggle.Label.Off"]" />
+            <SiteToggleSwitch @bind-Value="Model.Disabled"
+                             Disabled="true"
+                             OnLabel="@L["Toggle.Label.On"]"
+                             OffLabel="@L["Toggle.Label.Off"]" />
+            <SiteToggleSwitch @bind-Value="Model.DisabledOn"
+                             Disabled="true"
+                             OnLabel="@L["Toggle.Label.On"]"
+                             OffLabel="@L["Toggle.Label.Off"]" />
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private ToggleDemoModel Model { get; set; } = new()
+    {
+        OnByDefault = true,
+        DisabledOn = true
+    };
+
+    private void HandleSubmit() { }
+
+    private sealed class ToggleDemoModel
+    {
+        public bool Active { get; set; }
+        public bool Featured { get; set; }
+        public bool Comments { get; set; }
+        public bool Published { get; set; }
+        public bool OnByDefault { get; set; }
+        public bool Disabled { get; set; }
+        public bool DisabledOn { get; set; }
+    }
+}

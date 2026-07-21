@@ -1,0 +1,116 @@
+@page "/modal"
+@attribute [ShowcasePage("SiteModal")]
+@rendermode InteractiveServer
+@inject IStringLocalizer<SiteModalPage> L
+
+<h1>SiteModal</h1>
+<p class="desc">@L["Modal.Description"]</p>
+
+<div class="demo-section">
+    <h2>@L["Modal.Section.Basic"]</h2>
+    <div class="demo-box">
+        <button class="btn btn-primary" @onclick="() => _showBasic = true">@L["Modal.Button.OpenBasic"]</button>
+        <SiteModal Opened="_showBasic" OnClose="() => _showBasic = false" Title="@L["Modal.Title.Basic"]">
+            <Body>
+                <p>@L["Modal.Body.Basic"]</p>
+            </Body>
+        </SiteModal>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Modal.Section.NoHeader"]</h2>
+    <div class="demo-box">
+        <button class="btn btn-primary" @onclick="() => _showNoHeader = true">@L["Modal.Button.OpenHeaderless"]</button>
+        <SiteModal Opened="_showNoHeader" OnClose="() => _showNoHeader = false" ShowConfirmAction="false">
+            <Body>
+                <p>@L["Modal.Body.NoHeader"]</p>
+            </Body>
+        </SiteModal>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Modal.Section.SizeVariants"]</h2>
+    <div class="demo-box" style="display: flex; gap: 8px; flex-wrap: wrap;">
+        @foreach (var size in _sizes)
+        {
+            var s = size;
+            <button class="btn btn-sec" @onclick="() => _activeSize = s">@s</button>
+        }
+        @if (_activeSize is not null)
+        {
+            <SiteModal Opened="true" OnClose="() => _activeSize = null" Title="@($"Size: {_activeSize}")" Size="@_activeSize.Value"
+                      ShowConfirmAction="false">
+                <Body>
+                    <p>@L["Modal.Body.SizeUses"] <code>Size="@_activeSize"</code>.</p>
+                </Body>
+            </SiteModal>
+        }
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Modal.Section.CustomFooter"]</h2>
+    <div class="demo-box" style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button class="btn btn-sec" @onclick="() => _showFooterOnly = true">@L["Modal.Button.OpenFooterOnly"]</button>
+        <button class="btn btn-primary" @onclick="() => _showFooterWithActions = true">@L["Modal.Button.OpenFooterActions"]</button>
+
+        <SiteModal Opened="_showFooterOnly" OnClose="() => _showFooterOnly = false" Title="@L["Modal.Title.FooterOnly"]"
+                  ShowCancelAction="false" ShowConfirmAction="false">
+            <Body>
+                <p>@L["Modal.Body.FooterOnly"]</p>
+            </Body>
+            <Footer>
+                <span style="color: var(--text-muted);">@L["Modal.Footer.LastUpdated"]</span>
+            </Footer>
+        </SiteModal>
+
+        <SiteModal Opened="_showFooterWithActions" OnClose="() => _showFooterWithActions = false" Title="@L["Modal.Title.FooterActions"]">
+            <Body>
+                <p>@L["Modal.Body.FooterActions"]</p>
+            </Body>
+            <Footer>
+                <span style="color: var(--text-muted);">@L["Modal.Footer.Tip"]</span>
+            </Footer>
+        </SiteModal>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Modal.Section.NoFooter"]</h2>
+    <div class="demo-box">
+        <button class="btn btn-primary" @onclick="() => _showNoFooter = true">@L["Modal.Button.OpenNoFooter"]</button>
+        <SiteModal Opened="_showNoFooter" OnClose="() => _showNoFooter = false" Title="@L["Modal.Title.Information"]">
+            <Body>
+                <p>@L["Modal.Body.NoFooter"]</p>
+            </Body>
+        </SiteModal>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Modal.Section.NoBackdrop"]</h2>
+    <div class="demo-box">
+        <button class="btn btn-primary" @onclick="() => _showNoBackdrop = true">@L["Modal.Button.OpenNoBackdrop"]</button>
+        <SiteModal Opened="_showNoBackdrop" OnClose="() => _showNoBackdrop = false"
+                    Title="@L["Modal.Title.MustUseButton"]" CloseOnBackdropClick="false"
+                    ShowConfirmAction="false">
+            <Body>
+                <p>@L["Modal.Body.NoBackdrop"]</p>
+            </Body>
+        </SiteModal>
+    </div>
+</div>
+
+@code {
+    private bool _showBasic;
+    private bool _showNoHeader;
+    private bool _showNoFooter;
+    private bool _showNoBackdrop;
+    private bool _showFooterOnly;
+    private bool _showFooterWithActions;
+    private ModalSize? _activeSize;
+
+    private static readonly ModalSize[] _sizes = [ModalSize.Small, ModalSize.Medium, ModalSize.Large, ModalSize.ExtraLarge, ModalSize.Full];
+}

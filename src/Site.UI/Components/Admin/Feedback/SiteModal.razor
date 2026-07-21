@@ -1,0 +1,50 @@
+<dialog @ref="_dialogRef"
+        class="site-modal @SizeClass"
+        @onclose="HandleDialogClose">
+    <div class="site-modal-dialog">
+        @if (ShowHeader)
+        {
+            <header class="site-modal-header">
+                <h5>@Title</h5>
+                <button type="button" class="site-modal-close" @onclick="RequestCloseAsync" aria-label="@L["Close"]">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                        <path d="M1 1l12 12M13 1 1 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </header>
+        }
+
+        <div class="site-modal-body @(ShowHeader ? "" : "no-header")">
+            @Body
+        </div>
+
+        @if (ShowFooter)
+        {
+            <footer class="site-modal-footer">
+                @if (Footer is not null)
+                {
+                    <div class="site-modal-footer-extra">
+                        @Footer
+                    </div>
+                }
+                @if (HasDefaultFooterActions)
+                {
+                    <div class="site-modal-footer-actions">
+                        @if (ShowCancelAction)
+                        {
+                            <button type="button" class="site-modal-action site-modal-action-secondary" @onclick="HandleDefaultCancelAsync">
+                                @CancelLabel
+                            </button>
+                        }
+                        @if (ShowConfirmAction)
+                        {
+                            <button type="button" class="site-modal-action site-modal-action-primary" @onclick="HandleDefaultConfirmAsync">
+                                @ConfirmLabel
+                            </button>
+                        }
+                    </div>
+                }
+            </footer>
+        }
+    </div>
+</dialog>

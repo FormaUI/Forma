@@ -1,0 +1,221 @@
+@inherits BunitContext
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_title()
+        {
+            // Arrange
+            using var ctx = new SitePageHeaderTests();
+
+            // Act
+            var cut = ctx.Render(@<SitePageHeader Title="Orders" />);
+
+            // Assert
+            var title = cut.Find(".site-page-title");
+            Assert.Equal("Orders", title.TextContent);
+        }
+
+        [Fact]
+        public void Should_render_title_as_h1()
+        {
+            // Arrange
+            using var ctx = new SitePageHeaderTests();
+
+            // Act
+            var cut = ctx.Render(@<SitePageHeader Title="Dashboard" />);
+
+            // Assert
+            var h1 = cut.Find("h1.site-page-title");
+            Assert.Equal("Dashboard", h1.TextContent);
+        }
+
+        [Fact]
+        public void Should_not_render_breadcrumb_when_null()
+        {
+            // Arrange
+            using var ctx = new SitePageHeaderTests();
+
+            // Act
+            var cut = ctx.Render(@<SitePageHeader Title="Dashboard" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".site-breadcrumb"));
+        }
+
+        [Fact]
+        public void Should_not_render_breadcrumb_when_empty()
+        {
+            // Arrange
+            using var ctx = new SitePageHeaderTests();
+            var crumbs = Array.Empty<BreadcrumbItem>();
+
+            // Act
+            var cut = ctx.Render(@<SitePageHeader Title="Dashboard" Breadcrumbs="@crumbs" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".site-breadcrumb"));
+        }
+
+        [Fact]
+        public void Should_not_render_actions_slot_when_not_provided()
+        {
+            // Arrange
+            using var ctx = new SitePageHeaderTests();
+
+            // Act
+            var cut = ctx.Render(@<SitePageHeader Title="Dashboard" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".site-page-header-actions"));
+        }
+
+        [Fact]
+        public void Should_render_breadcrumb_items()
+        {
+            // Arrange
+            using var ctx = new SitePageHeaderTests();
+            BreadcrumbItem[] crumbs = [new("Home", "/"), new("Store"), new("Orders")];
+
+            // Act
+            var cut = ctx.Render(@<SitePageHeader Title="Orders" Breadcrumbs="@crumbs" />);
+
+            // Assert
+            var items = cut.FindAll(".site-breadcrumb-item");
+            Assert.Equal(3, items.Count);
+        }
+
+        [Fact]
+        public void Should_render_link_for_items_with_url()
+        {
+            // Arrange
+            using var ctx = new SitePageHeaderTests();
+            BreadcrumbItem[] crumbs = [new("Home", "/"), new("Orders")];
+
+            // Act
+            var cut = ctx.Render(@<SitePageHeader Title="Orders" Breadcrumbs="@crumbs" />);
+
+            // Assert
+            var link = cut.Find(".site-breadcrumb-item a");
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("Home", link.TextContent);
+                Assert.Equal("/", link.GetAttribute("href"));
+            });
+        }
+
+        [Fact]
+        public void Should_render_span_for_items_without_url()
+        {
+            // Arrange
+            using var ctx = new SitePageHeaderTests();
+            BreadcrumbItem[] crumbs = [new("Home", "/"), new("Current Page")];
+
+            // Act
+            var cut = ctx.Render(@<SitePageHeader Title="Current Page" Breadcrumbs="@crumbs" />);
+
+            // Assert
+            var activeItem = cut.Find(".site-breadcrumb-item.active span");
+            Assert.Equal("Current Page", activeItem.TextContent);
+        }
+
+        [Fact]
+        public void Should_mark_items_without_url_as_active()
+        {
+            // Arrange
+            using var ctx = new SitePageHeaderTests();
+            BreadcrumbItem[] crumbs = [new("Home", "/"), new("Store"), new("Orders")];
+
+            // Act
+            var cut = ctx.Render(@<SitePageHeader Title="Orders" Breadcrumbs="@crumbs" />);
+
+            // Assert
+            var activeItems = cut.FindAll(".site-breadcrumb-item.active");
+            Assert.Equal(2, activeItems.Count);
+        }
+
+        [Fact]
+        public void Should_set_aria_current_only_on_last_item()
+        {
+            // Arrange
+            using var ctx = new SitePageHeaderTests();
+            BreadcrumbItem[] crumbs = [new("Home", "/"), new("Store"), new("Orders")];
+
+            // Act
+            var cut = ctx.Render(@<SitePageHeader Title="Orders" Breadcrumbs="@crumbs" />);
+
+            // Assert
+            var activeItems = cut.FindAll(".site-breadcrumb-item.active");
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(2, activeItems.Count);
+                Assert.Null(activeItems[0].GetAttribute("aria-current"));
+                Assert.Equal("page", activeItems[1].GetAttribute("aria-current"));
+            });
+        }
+
+        [Fact]
+        public void Should_render_nav_with_aria_label()
+        {
+            // Arrange
+            using var ctx = new SitePageHeaderTests();
+            BreadcrumbItem[] crumbs = [new("Home", "/"), new("Orders")];
+
+            // Act
+            var cut = ctx.Render(@<SitePageHeader Title="Orders" Breadcrumbs="@crumbs" />);
+
+            // Assert
+            var nav = cut.Find("nav");
+            Assert.Equal("Breadcrumb", nav.GetAttribute("aria-label"));
+        }
+
+        [Fact]
+        public void Should_render_actions_content()
+        {
+            // Arrange
+            using var ctx = new SitePageHeaderTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<SitePageHeader Title="Products">
+                    <Actions><button>Add New</button></Actions>
+                </SitePageHeader>);
+
+            // Assert
+            var actions = cut.Find(".site-page-header-actions");
+            Assert.Contains("Add New", actions.InnerHtml, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_render_multiple_action_buttons()
+        {
+            // Arrange
+            using var ctx = new SitePageHeaderTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<SitePageHeader Title="Products">
+                    <Actions><button>Add</button><button>Export</button></Actions>
+                </SitePageHeader>);
+
+            // Assert
+            var buttons = cut.FindAll(".site-page-header-actions button");
+            Assert.Equal(2, buttons.Count);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("   ")]
+        public void Should_reject_invalid_title(string? title)
+        {
+            // Arrange
+            using var ctx = new SitePageHeaderTests();
+
+            // Act & Assert
+            Assert.ThrowsAny<ArgumentException>(() => ctx.Render<SitePageHeader>(p => p
+                .Add(h => h.Title, title!)));
+        }
+    }
+}

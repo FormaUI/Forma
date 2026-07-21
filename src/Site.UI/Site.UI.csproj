@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <RootNamespace>Site.UI</RootNamespace>
+        <AssemblyName>Site.UI</AssemblyName>
+        <PackageId>2Site.Blazor.Components</PackageId>
+        <StaticWebAssetBasePath>_content/Site.UI</StaticWebAssetBasePath>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Site.UI.Abstractions\Site.UI.Abstractions.csproj" />
+    </ItemGroup>
+
+</Project>
