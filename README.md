@@ -103,7 +103,7 @@ Interactive Server render mode to function.
 
 A detailed inventory of each component's behavior lives in
 [`ADMIN_COMPONENTS.md`](ADMIN_COMPONENTS.md). The broader migration effort is
-tracked in [`MIGRATION_PLAN.md`](MIGRATION_PLAN.md).
+tracked in [`MIGRATION_PLAN.md`](https://github.com/2site-net/Coi/blob/main/MIGRATION_PLAN.md).
 
 ## Build, test, and run
 
