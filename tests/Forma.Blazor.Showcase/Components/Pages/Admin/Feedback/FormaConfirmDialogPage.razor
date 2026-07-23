@@ -1,0 +1,91 @@
+@page "/confirm-dialog"
+@attribute [ShowcasePage("FormaConfirmDialog")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Abstractions.Components.Feedback
+@inject IConfirmDialogService ConfirmService
+@inject IStringLocalizer<FormaConfirmDialogPage> L
+
+<h1>FormaConfirmDialog</h1>
+<p class="desc">@L["Confirm.Description"]</p>
+
+<div class="demo-section">
+    <h2>@L["Confirm.Section.Basic"]</h2>
+    <div class="demo-box">
+        <button class="btn btn-primary" @onclick="HandleBasicConfirm">@L["Confirm.Button.DeleteItem"]</button>
+        @if (_basicResult is not null)
+        {
+            <p style="margin-top: 12px; color: var(--text-muted);">@L["Confirm.ResultLabel"] <strong>@(_basicResult.Value ? L["Confirm.Result.Confirmed"] : L["Confirm.Result.Cancelled"])</strong></p>
+        }
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Confirm.Section.Custom"]</h2>
+    <div class="demo-box">
+        <button class="btn btn-sec" @onclick="HandleCustomConfirm">@L["Confirm.Button.DiscardChanges"]</button>
+        @if (_customResult is not null)
+        {
+            <p style="margin-top: 12px; color: var(--text-muted);">@L["Confirm.ResultLabel"] <strong>@(_customResult.Value ? L["Confirm.Result.Discarded"] : L["Confirm.Result.Kept"])</strong></p>
+        }
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Confirm.Section.Cascade"]</h2>
+    <div class="demo-box">
+        <button class="btn btn-primary" @onclick="HandleCascadeConfirm">@L["Confirm.Button.DeleteAccount"]</button>
+        @if (_cascadeResult is not null)
+        {
+            <p style="margin-top: 12px; color: var(--text-muted);">@L["Confirm.ResultLabel"] <strong>@_cascadeResult</strong></p>
+        }
+    </div>
+</div>
+
+<FormaConfirmDialog />
+
+@code {
+    private bool? _basicResult;
+    private bool? _customResult;
+    private string? _cascadeResult;
+
+    private async Task HandleBasicConfirm()
+    {
+        _basicResult = null;
+        _basicResult = await ConfirmService.ConfirmAsync(
+            L["Confirm.Message.DeleteItem"],
+            L["Confirm.Label.Confirm"],
+            L["Confirm.Label.Cancel"]);
+    }
+
+    private async Task HandleCustomConfirm()
+    {
+        _customResult = null;
+        _customResult = await ConfirmService.ConfirmAsync(
+            L["Confirm.Message.UnsavedChanges"],
+            confirmText: L["Confirm.Label.DiscardChanges"],
+            cancelText: L["Confirm.Label.KeepEditing"]);
+    }
+
+    private async Task HandleCascadeConfirm()
+    {
+        _cascadeResult = null;
+
+        var first = await ConfirmService.ConfirmAsync(
+            L["Confirm.Message.DeleteAccount"],
+            L["Confirm.Label.Confirm"],
+            L["Confirm.Label.Cancel"]);
+        if (!first)
+        {
+            _cascadeResult = L["Confirm.Result.CancelledStep1"];
+            return;
+        }
+
+        var second = await ConfirmService.ConfirmAsync(
+            L["Confirm.Message.Irreversible"],
+            L["Confirm.Label.YesDelete"],
+            L["Confirm.Label.No"]);
+        _cascadeResult = second
+            ? L["Confirm.Result.AccountDeleted"]
+            : L["Confirm.Result.CancelledStep2"];
+    }
+}

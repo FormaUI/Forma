@@ -1,0 +1,212 @@
+@inherits BunitContext
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_toggle_wrapper()
+        {
+            // Arrange
+            using var ctx = new FormaToggleSwitchTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaToggleSwitch @bind-Value="model.Toggle" />
+            </FakeFormHost>);
+
+            // Assert
+            cut.Find(".forma-toggle-wrapper");
+        }
+
+        [Fact]
+        public void Should_render_unchecked_when_value_is_false()
+        {
+            // Arrange
+            using var ctx = new FormaToggleSwitchTests();
+            var model = new FakeModel { Toggle = false };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaToggleSwitch @bind-Value="model.Toggle" />
+            </FakeFormHost>);
+
+            // Assert
+            var input = cut.Find("input[type='checkbox']");
+            Assert.Null(input.GetAttribute("checked"));
+        }
+
+        [Fact]
+        public void Should_render_checked_when_value_is_true()
+        {
+            // Arrange
+            using var ctx = new FormaToggleSwitchTests();
+            var model = new FakeModel { Toggle = true };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaToggleSwitch @bind-Value="model.Toggle" />
+            </FakeFormHost>);
+
+            // Assert
+            var input = cut.Find("input[type='checkbox']");
+            Assert.NotNull(input.GetAttribute("checked"));
+        }
+
+        [Fact]
+        public void Should_set_role_switch_on_input()
+        {
+            // Arrange
+            using var ctx = new FormaToggleSwitchTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaToggleSwitch @bind-Value="model.Toggle" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("switch", cut.Find("input[type='checkbox']").GetAttribute("role"));
+        }
+
+        [Fact]
+        public void Should_render_on_label_when_provided()
+        {
+            // Arrange
+            using var ctx = new FormaToggleSwitchTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaToggleSwitch @bind-Value="model.Toggle" OnLabel="Enabled" />
+            </FakeFormHost>);
+
+            // Assert
+            var label = cut.Find(".forma-toggle-on-label");
+            Assert.Equal("Enabled", label.TextContent);
+        }
+
+        [Fact]
+        public void Should_not_render_on_label_when_not_provided()
+        {
+            // Arrange
+            using var ctx = new FormaToggleSwitchTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaToggleSwitch @bind-Value="model.Toggle" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-toggle-on-label"));
+        }
+
+        [Fact]
+        public void Should_render_off_label_when_provided()
+        {
+            // Arrange
+            using var ctx = new FormaToggleSwitchTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaToggleSwitch @bind-Value="model.Toggle" OffLabel="Disabled" />
+            </FakeFormHost>);
+
+            // Assert
+            var label = cut.Find(".forma-toggle-off-label");
+            Assert.Equal("Disabled", label.TextContent);
+        }
+
+        [Fact]
+        public void Should_not_render_off_label_when_not_provided()
+        {
+            // Arrange
+            using var ctx = new FormaToggleSwitchTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaToggleSwitch @bind-Value="model.Toggle" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-toggle-off-label"));
+        }
+
+        [Fact]
+        public void Should_render_both_labels_when_provided()
+        {
+            // Arrange
+            using var ctx = new FormaToggleSwitchTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaToggleSwitch @bind-Value="model.Toggle" OffLabel="Off" OnLabel="On" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Single(cut.FindAll(".forma-toggle-off-label"));
+                Assert.Single(cut.FindAll(".forma-toggle-on-label"));
+            });
+        }
+
+        [Fact]
+        public void Should_be_disabled_when_disabled_is_set()
+        {
+            // Arrange
+            using var ctx = new FormaToggleSwitchTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaToggleSwitch @bind-Value="model.Toggle" Disabled="true" />
+            </FakeFormHost>);
+
+            // Assert
+            var input = cut.Find("input[type='checkbox']");
+            Assert.Multiple(() =>
+            {
+                Assert.NotNull(input.GetAttribute("disabled"));
+                Assert.Contains("disabled", cut.Find(".forma-toggle").ClassList);
+            });
+        }
+
+        [Fact]
+        public void Should_not_be_disabled_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaToggleSwitchTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaToggleSwitch @bind-Value="model.Toggle" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Null(cut.Find("input[type='checkbox']").GetAttribute("disabled"));
+        }
+
+        [Fact]
+        public async Task Should_update_value_when_toggled()
+        {
+            // Arrange
+            using var ctx = new FormaToggleSwitchTests();
+            var model = new FakeModel { Toggle = false };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaToggleSwitch @bind-Value="model.Toggle" />
+            </FakeFormHost>);
+
+            // Act
+            await cut.Find("input[type='checkbox']").ChangeAsync(new ChangeEventArgs { Value = true });
+
+            // Assert
+            Assert.True(model.Toggle);
+        }
+    }
+}

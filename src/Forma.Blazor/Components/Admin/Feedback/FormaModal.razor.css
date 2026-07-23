@@ -1,0 +1,161 @@
+/*
+    FormaModal — scoped styles
+    Uses the native <dialog> element for backdrop, focus trap, and Escape handling.
+*/
+
+/* ── Dialog reset ── */
+dialog.forma-modal {
+    border: none;
+    border-radius: 8px;
+    padding: 0;
+    max-height: 90vh;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-12px) scale(0.98);
+    transition: opacity 180ms ease, transform 180ms ease,
+                overlay 180ms ease allow-discrete,
+                display 180ms ease allow-discrete;
+}
+
+dialog.forma-modal[open] {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* ── Backdrop ── */
+dialog.forma-modal::backdrop {
+    background-color: rgba(0, 0, 0, 0.45);
+}
+
+@starting-style {
+    dialog.forma-modal[open] {
+        opacity: 0;
+        transform: translateY(-12px) scale(0.98);
+    }
+}
+
+/* ── Size variants ── */
+.forma-modal-small      { width: min(400px, 95vw); }
+.forma-modal-medium     { width: min(600px, 95vw); }
+.forma-modal-large      { width: min(800px, 95vw); }
+.forma-modal-extralarge { width: min(1000px, 95vw); }
+.forma-modal-full {
+    width: 95vw;
+    max-height: 95vh;
+}
+
+/* ── Inner layout ── */
+.forma-modal-dialog {
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+}
+
+.forma-modal-full .forma-modal-dialog {
+    max-height: 95vh;
+}
+
+/* ── Header ── */
+.forma-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.forma-modal-header h5 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+/* ── Close button ── */
+.forma-modal-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background-color 120ms ease, color 120ms ease;
+}
+
+.forma-modal-close:hover {
+    background-color: var(--hover-bg);
+    color: var(--text);
+}
+
+/* ── Body ── */
+.forma-modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1 1 auto;
+}
+
+.forma-modal-body.no-header {
+    padding-top: 24px;
+}
+
+/* ── Footer ── */
+.forma-modal-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 20px;
+    border-top: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.forma-modal-footer-extra {
+    margin-inline-end: auto;
+    min-width: 0;
+}
+
+.forma-modal-footer-extra:only-child {
+    margin-inline-end: 0;
+    margin-inline-start: auto;
+}
+
+.forma-modal-footer-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-inline-start: auto;
+}
+
+.forma-modal-action {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.forma-modal-action-secondary {
+    background: #fff;
+    color: var(--text);
+}
+
+.forma-modal-action-secondary:hover {
+    background: var(--hover-bg);
+}
+
+.forma-modal-action-primary {
+    background: var(--main);
+    color: #fff;
+    border-color: var(--main);
+}
+
+.forma-modal-action-primary:hover {
+    background: var(--main-dark);
+    border-color: var(--main-dark);
+}

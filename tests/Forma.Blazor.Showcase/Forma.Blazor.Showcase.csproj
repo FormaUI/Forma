@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <RootNamespace>Forma.Blazor.Showcase</RootNamespace>
+        <AssemblyName>Forma.Blazor.Showcase</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="10.0.10" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Forma.Blazor\Forma.Blazor.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Blazor.Core\Forma.Blazor.Core.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,65 @@
+@page "/modal-quickgrid"
+@attribute [ShowcasePage("FormaModal + QuickGrid")]
+@rendermode InteractiveServer
+@inject IStringLocalizer<FormaModalQuickGridPage> L
+
+<h1>FormaModal + QuickGrid</h1>
+<p class="desc">@L["Page.Description"]</p>
+
+<div class="demo-section">
+    <h2>@L["Section.Title"]</h2>
+    <div class="demo-box">
+        <QuickGrid Items="_employees">
+            <PropertyColumn Property="@(e => e.Id)" Title="@L["Column.Id"]" />
+            <PropertyColumn Property="@(e => e.Name)" Title="@L["Column.Name"]" />
+            <PropertyColumn Property="@(e => e.Department)" Title="@L["Column.Department"]" />
+            <TemplateColumn Title="@L["Column.Actions"]">
+                <button class="btn btn-sec btn-sm" @onclick="() => OpenModal(context)">@L["Button.Edit"]</button>
+            </TemplateColumn>
+        </QuickGrid>
+
+        <FormaModal Opened="_isOpen" OnClose="Close" Title="@_selected?.Name">
+            <Body>
+                @if (_selected is not null)
+                {
+                    <dl class="detail-list">
+                        <dt>@L["Column.Id"]</dt>
+                        <dd>@_selected.Id</dd>
+                        <dt>@L["Column.Name"]</dt>
+                        <dd>@_selected.Name</dd>
+                        <dt>@L["Column.Department"]</dt>
+                        <dd>@_selected.Department</dd>
+                    </dl>
+                }
+            </Body>
+        </FormaModal>
+    </div>
+</div>
+
+@code {
+    private bool _isOpen;
+    private Employee? _selected;
+
+    private static readonly IQueryable<Employee> _employees = new[]
+    {
+        new Employee(1, "Alice Johnson", "Engineering"),
+        new Employee(2, "Bob Smith", "Marketing"),
+        new Employee(3, "Carol Davis", "Engineering"),
+        new Employee(4, "Dan Wilson", "Sales"),
+        new Employee(5, "Eve Martinez", "Marketing"),
+    }.AsQueryable();
+
+    private void OpenModal(Employee emp)
+    {
+        _selected = emp;
+        _isOpen = true;
+    }
+
+    private void Close()
+    {
+        _isOpen = false;
+        _selected = null;
+    }
+
+    private sealed record Employee(int Id, string Name, string Department);
+}

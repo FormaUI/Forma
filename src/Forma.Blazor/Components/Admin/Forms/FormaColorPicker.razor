@@ -1,0 +1,42 @@
+@namespace Forma.Blazor.Components.Admin.Forms
+@inherits InputBase<string>
+
+<div class="forma-color-picker">
+    @if (Label is not null)
+    {
+        <label for="@_id" class="forma-color-picker-label">@Label</label>
+    }
+    <div class="forma-color-picker-control">
+        <div class="forma-color-swatch-wrapper">
+            <input type="color"
+                   class="forma-color-native"
+                   value="@RgbHex"
+                   @oninput="HandleNativeInput" />
+            <span class="forma-color-swatch" style="background-color: @CurrentValueAsString"></span>
+        </div>
+        <input id="@_id"
+               type="text"
+               class="forma-color-hex-input @CssClass"
+               value="@CurrentValueAsString"
+               @onchange="HandleHexInput"
+               @attributes="AdditionalAttributes"
+               maxlength="@(ShowAlpha ? 9 : 7)"
+               placeholder="@(ShowAlpha ? "#RRGGBBAA" : "#RRGGBB")"
+               spellcheck="false"
+               dir="ltr" />
+    </div>
+    @if (ShowAlpha)
+    {
+        <div class="forma-color-alpha-row">
+            <label for="@(_id)-alpha">Alpha</label>
+            <input id="@(_id)-alpha"
+                   type="range"
+                   class="forma-color-alpha"
+                   min="0" max="100" step="1"
+                   value="@AlphaPercent"
+                   @oninput="HandleAlphaInput" />
+            <span class="forma-color-alpha-value">@AlphaPercent%</span>
+        </div>
+    }
+    <ValidationMessage For="@ValueExpression" />
+</div>

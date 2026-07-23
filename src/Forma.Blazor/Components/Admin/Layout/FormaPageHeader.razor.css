@@ -1,0 +1,54 @@
+.forma-page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-block-end: 24px;
+}
+
+.forma-page-title {
+    font-size: clamp(1.25rem, 1rem + 1.5vw, 2rem);
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.3;
+}
+
+.forma-breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    list-style: none;
+    padding: 0;
+    margin: 4px 0 0;
+    gap: 0;
+}
+
+.forma-breadcrumb-item {
+    color: var(--text-muted, #6c757d);
+    font-size: 0.875rem;
+}
+
+.forma-breadcrumb-item + .forma-breadcrumb-item::before {
+    content: "/";
+    padding-inline: 0.5rem;
+    color: var(--text-muted, #6c757d);
+}
+
+.forma-breadcrumb-item a {
+    color: var(--link-color, #0d6efd);
+    text-decoration: none;
+}
+
+.forma-breadcrumb-item a:hover {
+    text-decoration: underline;
+}
+
+.forma-breadcrumb-item.active span {
+    color: var(--text-muted, #6c757d);
+}
+
+.forma-page-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}

@@ -1,0 +1,103 @@
+/* ============================================================
+   FormaColorPicker — CSS isolation
+   Swatch with overlaid native color input + hex text input.
+   Uses logical CSS properties for RTL/LTR support.
+   ============================================================ */
+
+/* ---------- wrapper ---------- */
+.forma-color-picker {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-block-end: 1rem;
+}
+
+/* ---------- label ---------- */
+.forma-color-picker-label {
+    font-weight: 500;
+    font-size: 0.875rem;
+    color: var(--forma-label-color, #495057);
+}
+
+/* ---------- control row ---------- */
+.forma-color-picker-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* ---------- swatch wrapper (holds visual swatch + invisible native input) ---------- */
+.forma-color-swatch-wrapper {
+    position: relative;
+    width: 2rem;
+    height: 2rem;
+    flex-shrink: 0;
+}
+
+/* ---------- visual swatch ---------- */
+.forma-color-swatch {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 2px solid var(--forma-border-color, #ced4da);
+    border-radius: 0.375rem;
+    pointer-events: none;
+    transition: border-color 0.15s ease;
+}
+
+.forma-color-swatch-wrapper:hover .forma-color-swatch {
+    border-color: var(--forma-primary, #0d6efd);
+}
+
+/* ---------- native color input (overlaid on swatch, invisible) ---------- */
+.forma-color-native {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+}
+
+.forma-color-native:focus-visible + .forma-color-swatch {
+    outline: 2px solid var(--forma-primary, #0d6efd);
+    outline-offset: 2px;
+}
+
+/* ---------- hex text input ---------- */
+.forma-color-hex-input {
+    width: 7rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--forma-border-color, #ced4da);
+    border-radius: 0.375rem;
+    font-family: monospace;
+    font-size: 0.875rem;
+}
+
+.forma-color-hex-input:focus {
+    border-color: var(--forma-primary, #0d6efd);
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* ---------- alpha row ---------- */
+.forma-color-alpha-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-block-start: 0.5rem;
+    font-size: 0.8125rem;
+}
+
+.forma-color-alpha {
+    flex: 1;
+}
+
+.forma-color-alpha-value {
+    min-width: 3ch;
+    text-align: end;
+    font-family: monospace;
+    font-size: 0.8125rem;
+}

@@ -1,0 +1,50 @@
+<dialog @ref="_dialogRef"
+        class="forma-modal @SizeClass"
+        @onclose="HandleDialogClose">
+    <div class="forma-modal-dialog">
+        @if (ShowHeader)
+        {
+            <header class="forma-modal-header">
+                <h5>@Title</h5>
+                <button type="button" class="forma-modal-close" @onclick="RequestCloseAsync" aria-label="@L["Close"]">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                        <path d="M1 1l12 12M13 1 1 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </header>
+        }
+
+        <div class="forma-modal-body @(ShowHeader ? "" : "no-header")">
+            @Body
+        </div>
+
+        @if (ShowFooter)
+        {
+            <footer class="forma-modal-footer">
+                @if (Footer is not null)
+                {
+                    <div class="forma-modal-footer-extra">
+                        @Footer
+                    </div>
+                }
+                @if (HasDefaultFooterActions)
+                {
+                    <div class="forma-modal-footer-actions">
+                        @if (ShowCancelAction)
+                        {
+                            <button type="button" class="forma-modal-action forma-modal-action-secondary" @onclick="HandleDefaultCancelAsync">
+                                @CancelLabel
+                            </button>
+                        }
+                        @if (ShowConfirmAction)
+                        {
+                            <button type="button" class="forma-modal-action forma-modal-action-primary" @onclick="HandleDefaultConfirmAsync">
+                                @ConfirmLabel
+                            </button>
+                        }
+                    </div>
+                }
+            </footer>
+        }
+    </div>
+</dialog>

@@ -1,0 +1,16 @@
+<div class="forma-toolbar">
+    @if (OnSearch.HasDelegate)
+    {
+        <input class="forma-toolbar-search"
+               type="search"
+               placeholder="@SearchPlaceholder"
+               aria-label="@SearchPlaceholder"
+               @oninput="HandleSearchInput" />
+    }
+    @if (ChildContent is not null)
+    {
+        <div class="forma-toolbar-actions">
+            @ChildContent
+        </div>
+    }
+</div>

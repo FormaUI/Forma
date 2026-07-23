@@ -1,0 +1,6 @@
+<div class="forma-tab-panel @(Parent.IsActive(this) ? "active" : "")"
+     role="tabpanel"
+     id="@FormaTabs.GetPanelId(this)"
+     aria-labelledby="@FormaTabs.GetTabId(this)">
+    @ChildContent
+</div>

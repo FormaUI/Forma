@@ -1,0 +1,29 @@
+<CascadingValue Value="this" IsFixed="true">
+    <div class="forma-tabs">
+        <div class="forma-tab-list" role="tablist">
+            @foreach (var tab in _tabs)
+            {
+                var isActive = tab == _activeTab;
+                var tabId = $"tab-{tab.Id}";
+                var panelId = $"panel-{tab.Id}";
+
+                <button class="forma-tab-button @(isActive ? "active" : "")"
+                        role="tab"
+                        id="@tabId"
+                        aria-selected="@isActive.ToString().ToLowerInvariant()"
+                        aria-controls="@panelId"
+                        @onclick="() => SetActiveTab(tab)">
+                    @if (tab.Icon is not null)
+                    {
+                        <span class="@tab.Icon.Value.CssClass" aria-hidden="true"></span>
+                    }
+                    @tab.Title
+                </button>
+            }
+        </div>
+
+        <div class="forma-tab-panels">
+            @ChildContent
+        </div>
+    </div>
+</CascadingValue>

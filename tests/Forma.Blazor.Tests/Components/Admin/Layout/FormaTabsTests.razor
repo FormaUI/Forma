@@ -1,0 +1,295 @@
+@inherits BunitContext
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_tab_list_and_panels()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaTabs>
+                    <FormaTab Title="Tab 1">Content 1</FormaTab>
+                </FormaTabs>);
+
+            // Assert
+            cut.Find(".forma-tab-list");
+            cut.Find(".forma-tab-panels");
+        }
+
+        [Fact]
+        public void Should_render_button_for_each_tab()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaTabs>
+                    <FormaTab Title="Tab 1">Content 1</FormaTab>
+                    <FormaTab Title="Tab 2">Content 2</FormaTab>
+                    <FormaTab Title="Tab 3">Content 3</FormaTab>
+                </FormaTabs>);
+
+            // Assert
+            Assert.Equal(3, cut.FindAll(".forma-tab-button").Count);
+        }
+
+        [Fact]
+        public void Should_render_tab_title_in_button()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaTabs>
+                    <FormaTab Title="General">Content</FormaTab>
+                </FormaTabs>);
+
+            // Assert
+            Assert.Contains("General", cut.Find(".forma-tab-button").TextContent, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_render_icon_span_when_icon_is_set()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaTabs>
+                    <FormaTab Title="Settings" Icon="@FormaIcon.From("icon-settings")">Content</FormaTab>
+                </FormaTabs>);
+
+            // Assert
+            var icon = cut.Find(".forma-tab-button span");
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("icon-settings", (IEnumerable<string>)icon.ClassList);
+                Assert.Equal("true", icon.GetAttribute("aria-hidden"));
+            });
+        }
+
+        [Fact]
+        public void Should_not_render_icon_span_when_icon_is_null()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaTabs>
+                    <FormaTab Title="Tab">Content</FormaTab>
+                </FormaTabs>);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-tab-button span"));
+        }
+
+        [Fact]
+        public void Should_make_first_tab_active_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaTabs>
+                    <FormaTab Title="First">Content 1</FormaTab>
+                    <FormaTab Title="Second">Content 2</FormaTab>
+                </FormaTabs>);
+
+            // Assert
+            var buttons = cut.FindAll(".forma-tab-button");
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("active", (IEnumerable<string>)buttons[0].ClassList);
+                Assert.DoesNotContain("active", (IEnumerable<string>)buttons[1].ClassList);
+            });
+        }
+
+        [Fact]
+        public void Should_set_aria_selected_true_on_active_tab()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaTabs>
+                    <FormaTab Title="First">Content 1</FormaTab>
+                    <FormaTab Title="Second">Content 2</FormaTab>
+                </FormaTabs>);
+
+            // Assert
+            var buttons = cut.FindAll(".forma-tab-button");
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("true", buttons[0].GetAttribute("aria-selected"));
+                Assert.Equal("false", buttons[1].GetAttribute("aria-selected"));
+            });
+        }
+
+        [Fact]
+        public async Task Should_switch_active_tab_on_click()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+            var cut = ctx.Render(
+                @<FormaTabs>
+                    <FormaTab Title="First">Content 1</FormaTab>
+                    <FormaTab Title="Second">Content 2</FormaTab>
+                </FormaTabs>);
+
+            // Act
+            await cut.FindAll(".forma-tab-button")[1].ClickAsync(new());
+
+            // Assert
+            var buttons = cut.FindAll(".forma-tab-button");
+            Assert.Multiple(() =>
+            {
+                Assert.DoesNotContain("active", (IEnumerable<string>)buttons[0].ClassList);
+                Assert.Contains("active", (IEnumerable<string>)buttons[1].ClassList);
+            });
+        }
+
+        [Fact]
+        public void Should_show_active_panel_and_hide_others()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaTabs>
+                    <FormaTab Title="First">Content 1</FormaTab>
+                    <FormaTab Title="Second">Content 2</FormaTab>
+                </FormaTabs>);
+
+            // Assert
+            var panels = cut.FindAll(".forma-tab-panel");
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("active", (IEnumerable<string>)panels[0].ClassList);
+                Assert.DoesNotContain("active", (IEnumerable<string>)panels[1].ClassList);
+            });
+        }
+
+        [Fact]
+        public void Should_set_tablist_role_on_list()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaTabs>
+                    <FormaTab Title="Tab">Content</FormaTab>
+                </FormaTabs>);
+
+            // Assert
+            Assert.Equal("tablist", cut.Find(".forma-tab-list").GetAttribute("role"));
+        }
+
+        [Fact]
+        public void Should_set_tab_role_on_buttons()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaTabs>
+                    <FormaTab Title="Tab">Content</FormaTab>
+                </FormaTabs>);
+
+            // Assert
+            Assert.Equal("tab", cut.Find(".forma-tab-button").GetAttribute("role"));
+        }
+
+        [Fact]
+        public void Should_set_tabpanel_role_on_panels()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaTabs>
+                    <FormaTab Title="Tab">Content</FormaTab>
+                </FormaTabs>);
+
+            // Assert
+            Assert.Equal("tabpanel", cut.Find(".forma-tab-panel").GetAttribute("role"));
+        }
+
+        [Fact]
+        public void Should_link_button_to_panel_via_aria_controls()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaTabs>
+                    <FormaTab Title="Tab">Content</FormaTab>
+                </FormaTabs>);
+
+            // Assert
+            var button = cut.Find(".forma-tab-button");
+            var panel = cut.Find(".forma-tab-panel");
+            Assert.Equal(panel.Id, button.GetAttribute("aria-controls"));
+        }
+
+        [Fact]
+        public void Should_link_panel_to_button_via_aria_labelledby()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaTabs>
+                    <FormaTab Title="Tab">Content</FormaTab>
+                </FormaTabs>);
+
+            // Assert
+            var button = cut.Find(".forma-tab-button");
+            var panel = cut.Find(".forma-tab-panel");
+            Assert.Equal(button.Id, panel.GetAttribute("aria-labelledby"));
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("   ")]
+        public void Should_reject_tab_with_invalid_title(string? title)
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+
+            // Act & Assert
+            Assert.ThrowsAny<ArgumentException>(() => ctx.Render<FormaTabs>(p => p
+                .AddChildContent<FormaTab>(t => t
+                    .Add(x => x.Title, title!)
+                    .AddChildContent("Content"))));
+        }
+
+        [Fact]
+        public void Should_throw_when_tab_used_outside_tabs()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+
+            // Act & Assert
+            Assert.Throws<InvalidOperationException>(() => ctx.Render<FormaTab>(p => p
+                .Add(x => x.Title, "Orphan")
+                .AddChildContent("Content")));
+        }
+    }
+}

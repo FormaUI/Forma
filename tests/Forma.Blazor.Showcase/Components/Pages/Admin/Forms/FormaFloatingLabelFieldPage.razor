@@ -1,0 +1,64 @@
+@page "/floating-label-field"
+@attribute [ShowcasePage("FormaFloatingLabelField")]
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components.Forms
+@using Forma.Blazor.Components.Admin.Forms
+@inject IStringLocalizer<FormaFloatingLabelFieldPage> L
+
+<h1>FormaFloatingLabelField</h1>
+<p class="desc">@L["Field.Description"]</p>
+
+<EditForm Model="Model" FormName="field-demo" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+
+    <div class="demo-section">
+        <h2>@L["Field.Section.Basic"]</h2>
+        <div class="demo-box">
+            <FormaFloatingLabelField Label="@L["Field.Label.FullName"]" @bind-Value="Model.FullName" />
+            <FormaFloatingLabelField Label="@L["Field.Label.Email"]" @bind-Value="Model.Email" Type="email" />
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["Field.Section.Required"]</h2>
+        <div class="demo-box">
+            <FormaFloatingLabelField Label="@L["Field.Label.Username"]" @bind-Value="Model.Username" Required="true" />
+            <FormaFloatingLabelField Label="@L["Field.Label.Phone"]" @bind-Value="Model.Phone" Type="tel" Required="true" />
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["Field.Section.Types"]</h2>
+        <div class="demo-box">
+            <FormaFloatingLabelField Label="@L["Field.Label.Website"]" @bind-Value="Model.Website" Type="url" />
+            <FormaFloatingLabelField Label="@L["Field.Label.Search"]" @bind-Value="Model.Search" Type="search" />
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["Field.Section.PreFilled"]</h2>
+        <div class="demo-box">
+            <FormaFloatingLabelField Label="@L["Field.Label.Company"]" @bind-Value="Model.Company" />
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private FieldDemoModel Model { get; set; } = new()
+    {
+        Company = "Acme Corp"
+    };
+
+    private void HandleSubmit() { }
+
+    private sealed class FieldDemoModel
+    {
+        public string? FullName { get; set; }
+        public string? Email { get; set; }
+        public string? Username { get; set; }
+        public string? Phone { get; set; }
+        public string? Website { get; set; }
+        public string? Search { get; set; }
+        public string? Company { get; set; }
+    }
+}

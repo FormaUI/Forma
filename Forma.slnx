@@ -1,0 +1,14 @@
+<Solution>
+    <!-- Source -->
+    <Project Path="src\Forma.Blazor.Abstractions\Forma.Blazor.Abstractions.csproj" />
+    <Project Path="src\Forma.Blazor.Core\Forma.Blazor.Core.csproj" />
+    <Project Path="src\Forma.Blazor\Forma.Blazor.csproj" />
+
+    <!-- Tests -->
+    <Project Path="tests\Forma.Blazor.Showcase\Forma.Blazor.Showcase.csproj" />
+    <Project Path="tests\Forma.Blazor.Tests\Forma.Blazor.Tests.csproj" />
+
+    <Configurations>
+        <Platform Name="Any CPU" />
+    </Configurations>
+</Solution>
