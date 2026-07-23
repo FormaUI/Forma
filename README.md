@@ -77,7 +77,7 @@ builder.Services.AddRazorComponents()
 app.UseCultureRouting(new CultureRouteOptions
 {
     DefaultCulture = "en",
-    SupportedCultures = ["en", "he"]
+    SupportedCultures = ["en", "he", "es-419"]
 });
 ```
 

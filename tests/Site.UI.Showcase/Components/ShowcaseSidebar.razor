@@ -7,6 +7,7 @@
     <div class="culture-switcher">
         <a href="@CultureLink("he")" data-enhance-nav="false" @onclick="SwitchToHebrew" class="@(IsCurrentCulture("he") ? "active" : "")">עב</a>
         <a href="@CultureLink("en")" data-enhance-nav="false" @onclick="SwitchToEnglish" class="@(IsCurrentCulture("en") ? "active" : "")">En</a>
+        <a href="@CultureLink("es-419")" data-enhance-nav="false" @onclick="SwitchToSpanish" class="@(IsCurrentCulture("es-419") ? "active" : "")">Es</a>
     </div>
     @foreach (var group in PageGroups)
     {
@@ -23,7 +24,25 @@
 
     private static readonly ILookup<string, ShowcasePage> PageGroups = DiscoverPages();
 
-    private string Culture => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+    private static readonly string[] SupportedCultures = ["en", "he", "es-419"];
+
+    // Route token for the active culture: the most specific supported culture the
+    // current UI culture maps to (e.g. es-419 stays "es-419", en-US collapses to "en").
+    private string Culture => ResolveRouteCulture();
+
+    private static string ResolveRouteCulture()
+    {
+        for (var c = CultureInfo.CurrentUICulture; !string.IsNullOrEmpty(c.Name); c = c.Parent)
+        {
+            var match = Array.Find(SupportedCultures, sc => string.Equals(sc, c.Name, StringComparison.OrdinalIgnoreCase));
+            if (match is not null)
+            {
+                return match;
+            }
+        }
+
+        return SupportedCultures[0];
+    }
 
     private static ILookup<string, ShowcasePage> DiscoverPages()
     {
@@ -52,4 +71,5 @@
 
     private void SwitchToHebrew() => Nav.NavigateTo(CultureLink("he"), forceLoad: true);
     private void SwitchToEnglish() => Nav.NavigateTo(CultureLink("en"), forceLoad: true);
+    private void SwitchToSpanish() => Nav.NavigateTo(CultureLink("es-419"), forceLoad: true);
 }

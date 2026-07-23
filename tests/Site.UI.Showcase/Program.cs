@@ -14,7 +14,7 @@ var app = builder.Build();
 app.UseCultureRouting(new CultureRouteOptions
 {
     DefaultCulture = "en",
-    SupportedCultures = ["en", "he"]
+    SupportedCultures = ["en", "he", "es-419"]
 });
 
 app.UseRouting();

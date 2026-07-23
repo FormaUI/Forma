@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>1.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageHeader.Description" xml:space="preserve"><value>Encabezado de página con título, navegación de ruta de navegación y espacio de acción opcional.</value></data>
+  <data name="PageHeader.Section.Basic" xml:space="preserve"><value>Básico con rutas de navegación</value></data>
+  <data name="PageHeader.Section.TitleOnly" xml:space="preserve"><value>Solo título</value></data>
+  <data name="PageHeader.Section.WithActions" xml:space="preserve"><value>Con botones de acción</value></data>
+  <data name="PageHeader.Section.DeepBreadcrumb" xml:space="preserve"><value>Ruta de navegación profunda</value></data>
+  <data name="PageHeader.Demo.Title.Orders" xml:space="preserve"><value>Pedidos</value></data>
+  <data name="PageHeader.Demo.Title.Dashboard" xml:space="preserve"><value>Panel</value></data>
+  <data name="PageHeader.Demo.Title.Products" xml:space="preserve"><value>Productos</value></data>
+  <data name="PageHeader.Demo.Title.EditProduct" xml:space="preserve"><value>Editar producto</value></data>
+  <data name="PageHeader.Demo.Button.AddNew" xml:space="preserve"><value>Agregar nuevo</value></data>
+  <data name="PageHeader.Demo.Button.Export" xml:space="preserve"><value>Exportar</value></data>
+  <data name="PageHeader.Crumb.Home" xml:space="preserve"><value>Inicio</value></data>
+  <data name="PageHeader.Crumb.Store" xml:space="preserve"><value>Tienda</value></data>
+  <data name="PageHeader.Crumb.Orders" xml:space="preserve"><value>Pedidos</value></data>
+  <data name="PageHeader.Crumb.Products" xml:space="preserve"><value>Productos</value></data>
+  <data name="PageHeader.Crumb.EditProduct" xml:space="preserve"><value>Editar producto</value></data>
+</root>
