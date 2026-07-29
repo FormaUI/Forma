@@ -1,0 +1,22 @@
+/* ============================================================
+   FormaStatusBadge — CSS isolation
+   Pill-shaped status label. Static markup, no JavaScript.
+   Colours come from the application: either a status registered in
+   IStatusBadgeCatalog or the Background/Foreground parameters, both of
+   which arrive as custom properties. The values below are only the
+   fallback for a badge with no colours of its own.
+   Logical properties throughout for RTL/LTR parity.
+   ============================================================ */
+
+.forma-status-badge {
+    display: inline-block;
+    padding-block: 0.25em;
+    padding-inline: 0.65em;
+    border-radius: 999px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.45;
+    white-space: nowrap;
+    background-color: var(--forma-status-badge-bg, rgba(98, 105, 118, 0.12));
+    color: var(--forma-status-badge-fg, var(--text, #2c384a));
+}

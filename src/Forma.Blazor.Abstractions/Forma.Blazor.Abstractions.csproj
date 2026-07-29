@@ -8,4 +8,8 @@
         <RootNamespace>Forma.Blazor.Abstractions</RootNamespace>
     </PropertyGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Web.Css\Forma.Web.Css.csproj" />
+    </ItemGroup>
+
 </Project>

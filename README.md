@@ -11,10 +11,15 @@ The library targets **.NET 10** and Interactive Server components.
 | Project | Kind | Purpose |
 | --- | --- | --- |
 | `src/Forma.Blazor` | Razor Class Library | The component library (packaged for NuGet). |
-| `src/Forma.Blazor.Core` | Class library | Service implementations (`ToastService`, `ConfirmDialogService`, `StateNotifier`). |
-| `src/Forma.Blazor.Abstractions` | Class library | Contracts consumed by components and hosts (`IToastService`, `IConfirmDialogService`, `INotifyStateChanged`, message/enum types). |
+| `src/Forma.Blazor.Core` | Class library | Service implementations (`ToastService`, `ConfirmDialogService`, `StatusBadgeCatalog`, `StateNotifier`). |
+| `src/Forma.Blazor.Abstractions` | Class library | Contracts consumed by components and hosts (`IToastService`, `IConfirmDialogService`, `IStatusBadgeCatalog`, `INotifyStateChanged`, message/enum types). |
+| `src/Forma.Web.Css` | Class library | Framework-agnostic CSS value types (`CssColor`). |
 | `tests/Forma.Blazor.Showcase` | Web app | Interactive gallery for every component; doubles as a reference host. |
 | `tests/Forma.Blazor.Tests` | Test project | bUnit + xUnit component tests. |
+
+The reference graph runs one way: `Forma.Web.Css` ← `Forma.Blazor.Abstractions` ←
+`Forma.Blazor` / `Forma.Blazor.Core`. `Forma.Blazor` never references `Forma.Blazor.Core` —
+components depend on the contract, and the host chooses the implementation.
 
 ## Naming & conventions
 
@@ -54,15 +59,36 @@ and JS only. See `tests/Forma.Blazor.Showcase` for a complete working host.
 **1. Register services and Interactive Server components:**
 
 ```csharp
+using Forma.Blazor.Abstractions.Components.Data;
 using Forma.Blazor.Abstractions.Components.Feedback;
+using Forma.Blazor.Core.Components.Data;
 using Forma.Blazor.Core.Components.Feedback;
 using Forma.Blazor.Middlewares;
+using Forma.Web.Css;
 
 builder.Services.AddLocalization();
 builder.Services.AddScoped<IConfirmDialogService, ConfirmDialogService>();
 builder.Services.AddScoped<IToastService, ToastService>();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+```
+
+`FormaStatusBadge` additionally needs a catalog of the statuses **your** application
+defines — the library ships none. Register it with a collection expression:
+
+```csharp
+builder.Services.AddSingleton<IStatusBadgeCatalog>(new StatusBadgeCatalog(
+[
+    new("draft", CssColor.FromRgba(98, 105, 118, 0.12), CssColor.FromHex(0x2c384a)),
+    new("published", CssColor.FromRgba(40, 167, 69, 0.14), CssColor.FromHex(0x1c7430))
+]));
+```
+
+Badges then reference a status by name, and any component can add more at runtime
+through `IStatusBadgeCatalog.Add`:
+
+```razor
+<FormaStatusBadge Text="Published" Status="published" />
 ```
 
 **2. Reference the library stylesheet from your host `App.razor` `<head>`:**
