@@ -1,0 +1,243 @@
+# Forma.Blazor — Copilot Instructions
+
+A reusable Blazor **admin component library**. **.NET 10 · C# latest · Razor Class Library ·
+Interactive Server · JS-free by default.**
+
+## Source of truth
+
+- [ADMIN_COMPONENTS.md](../ADMIN_COMPONENTS.md) — the component inventory (31 components,
+  tiers, old-Coi pattern each one replaces, build order). `✅` on a heading = built.
+- [README.md](../README.md) — solution layout, packaging identities, how hosts consume the library.
+- `.editorconfig` — style is authoritative there; resolve it with `read_editorconfig` before
+  writing C#.
+
+Consumers: **Coi** (`c:\Users\eyal\Development\Projects\Coi`) and **Épica Deportiva**
+(`c:\Users\eyal\Development\Projects\EpicaDeportiva`). Épica's subset of the inventory —
+required / optional, and what's left to build — lives in `EpicaDeportiva/docs/forma-components.md`.
+
+## Solution structure (reference rules)
+
+| Project | Kind | May reference |
+|---------|------|---------------|
+| `src/Forma.Blazor.Abstractions` | Class library | *(nothing)* — contracts, message/enum types |
+| `src/Forma.Blazor.Core` | Class library | Abstractions — service implementations |
+| `src/Forma.Blazor` | Razor Class Library | Abstractions **only** — the packaged components |
+| `tests/Forma.Blazor.Tests` | Test project | Forma.Blazor, Forma.Blazor.Core |
+| `tests/Forma.Blazor.Showcase` | Web app | all of the above — reference host + gallery |
+
+`Forma.Blazor` must **never** reference `Forma.Blazor.Core`. Components depend on the
+*interface* (`IToastService`); the **host** picks the implementation via DI.
+
+Three identities are distinct — never conflate them: assembly/namespace `Forma.Blazor`,
+package id `2Site.Forma.Blazor`, static asset base path `_content/Forma.Blazor` (pinned via
+`StaticWebAssetBasePath`; markup and JS hardcode these URLs — do not change it).
+
+## Naming
+
+- **Component tags** carry the `Forma` prefix: `<FormaModal>`, `<FormaDataGrid>`.
+- **CSS classes** carry the `forma-` prefix: `.forma-toggle-track`.
+- **C# types** (services, enums, records) carry **no** prefix — namespaces disambiguate
+  (`ToastService`, `ModalSize`, `BreadcrumbItem`).
+
+## File layout per component
+
+Components live in `src/Forma.Blazor/Components/Admin/{Category}/`, where `{Category}` is one
+of `Layout`, `Feedback`, `Forms`, `Data`, `Interactive`, `Editors`, `Specialized`.
+
+```
+Components/Admin/Forms/
+├── FormaX.razor          # markup only — @namespace first line
+├── FormaX.razor.cs       # code-behind — all logic lives here, never in @code
+├── FormaX.razor.css      # CSS isolation, banner comment at the top
+├── FormaX.razor.js       # ONLY if there is no HTML/CSS alternative
+├── FormaX.resx           # neutral strings, only if the component renders text
+├── FormaX.he.resx
+└── FormaX.es.resx
+```
+
+Supporting types (`ModalSize`, `BreadcrumbItem`, `FormaIcon`) are plain `.cs` files beside
+the component that owns them.
+
+## Component authoring rules
+
+- `public sealed partial class FormaX : ComponentBase` — **sealed by default**. Only unseal
+  when a child component must reference the parent type (a couple of early components are
+  unsealed; new work seals).
+- **Code-behind only.** `.razor` holds markup; no `@code` blocks in library components.
+  File-scoped namespace, matching the folder path.
+- **Parameters** are single-line: `[Parameter] public string? Label { get; set; }`. Use
+  `[Parameter, EditorRequired]` for mandatory ones. Add
+  `[Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? AdditionalAttributes`
+  when the root element should accept pass-through attributes, and splat with `@attributes`.
+- **XML `<summary>` on every public parameter and public type.** One line, describing *what
+  it is* — no history, no cross-references, no "why it lives here".
+- **Validate in `OnParametersSet`** with the throw-helpers:
+  `ArgumentException.ThrowIfNullOrWhiteSpace(Title)`,
+  `ArgumentOutOfRangeException.ThrowIfLessThan(SearchDelay, TimeSpan.Zero)`,
+  `ArgumentNullException.ThrowIfNull(...)`. A structural misuse (child outside its parent)
+  throws `InvalidOperationException` from `OnInitialized`.
+- **Two-way binding:** form inputs derive from `InputBase<TValue>` so they integrate with
+  `EditForm` — render `@CssClass` on the input, emit `<ValidationMessage For="@ValueExpression" />`,
+  and implement `TryParseValueFromString`. Non-form components use the plain
+  `Value` / `ValueChanged` pair.
+- **Parent/child composition** (`FormaTabs`/`FormaTab`) uses a `CascadingValue` of the parent;
+  the child registers in `OnInitialized` and unregisters in `Dispose`. Registration methods
+  on the parent are `internal`.
+- **Dispose what you own.** Implement `IDisposable` / `IAsyncDisposable` for
+  `CancellationTokenSource`, `Timer`, JS module references, and service subscriptions.
+- **`.ConfigureAwait(false)` on every await** in library code.
+- **Generated element ids** use `$"prefix-{Guid.NewGuid():N}"` so multiple instances coexist.
+
+## JavaScript
+
+JS-free is the rule. Reach for interop **only** when no HTML/CSS/Blazor mechanism exists
+(currently: the native `<dialog>` in `FormaModal`). When you must:
+
+- Ship a colocated `FormaX.razor.js` ES module; import it in `OnAfterRenderAsync(firstRender)`
+  from `./_content/Forma.Blazor/Components/Admin/{Category}/FormaX.razor.js`.
+- Wrap every `JS` call in `try { … } catch (JSException) { }` — the circuit can drop mid-call —
+  and dispose the module in `DisposeAsync`.
+
+## CSS
+
+- CSS isolation (`.razor.css`) per component, opened by a banner comment naming the component
+  and its approach.
+- **Logical properties everywhere** (`margin-block-end`, `inset-inline-start`, `padding-inline`)
+  so RTL works without a second stylesheet. Never `left`/`right`/`margin-left`.
+- Colors, fonts, shadows come from the design tokens in `src/Forma.Blazor/wwwroot/admin.css`
+  via `var(--main)`, `var(--border-color)`, … Component-local knobs use a fallback:
+  `var(--forma-toggle-on-bg, #0d6efd)`. Never hardcode a raw color that a token covers.
+- Accessibility is part of "done": correct ARIA roles/relationships (`role="switch"`,
+  `tablist`/`tab`/`tabpanel`, `aria-selected`, `aria-controls`, `aria-label` on icon-only
+  buttons), visible `:focus-visible` outline, keyboard operability.
+
+## RTL / LTR parity (non-negotiable)
+
+**Every component behaves and looks identical in RTL and LTR — mirrored, not different.** This
+is a correctness requirement, not a polish item. Assume there is no legitimate exception; if
+you think you've found one, stop and raise it rather than shipping a direction-specific hack.
+
+- **Never** write physical CSS: no `left`/`right`, `margin-left`/`padding-right`,
+  `border-left`, `text-align: left/right`, `float`, `transform: translateX(+n)` for offsets, or
+  physical `background-position`. Use the logical equivalents — `inset-inline-start/end`,
+  `margin-inline-start/end`, `padding-inline`, `border-inline-start`, `text-align: start/end`,
+  `inset-inline`.
+- **No `[dir="rtl"]` override blocks** and no direction-conditional CSS. A rule that needs an
+  RTL counterpart is a rule written with the wrong property. The one legitimate use of
+  direction in markup is setting `dir` on a subtree whose *content* has fixed directionality
+  (e.g. a numeric/latin field inside an RTL page).
+- **Directional glyphs.** Chevrons, arrows, and "next/previous" affordances must point
+  *forward in reading order*. Note that browsers already mirror characters with the Unicode
+  `Bidi_Mirrored` property — `❮` U+276E, `❯` U+276F, `‹`, `›`, `<`, `>` — so the *same* source
+  character renders `❮` in LTR and `❯` in RTL automatically. **Do not flip these in code**
+  from `IsRightToLeft`; that double-flips and points them inward. Only glyphs that are *not*
+  bidi-mirrored (most icon fonts and SVGs) need explicit mirroring.
+- **Keyboard semantics mirror too.** `ArrowLeft`/`ArrowRight` in a tablist, slider, or
+  calendar mean *previous/next in reading order*, so their meaning swaps under RTL. Resolve
+  them against `CultureInfo.CurrentCulture.TextInfo.IsRightToLeft`, never against a fixed axis.
+  `ArrowUp`/`ArrowDown`, `Home`/`End`, `Enter`, `Escape` are unaffected.
+- **Popup/menu alignment** anchors to inline-start/inline-end, so a dropdown that hangs off the
+  start edge in LTR hangs off the start edge in RTL — the mirror image, not the same pixel side.
+- Numbers, dates, and currency format through `CultureInfo.CurrentCulture`. A digit run such as
+  `29.7.2026` already renders correctly inside an RTL box, and a `start - end` pair already
+  orders start-first in reading order — verify before adding `<bdi>` or isolate characters.
+- **Verify both — with your eyes, at readable size.** Every showcase page must be checked in
+  `he` (RTL) *and* `en`/`es-419` (LTR). `textContent` and element coordinates show the *source*
+  character and cannot reveal bidi mirroring; screenshot the individual element. In RTL,
+  "first" means rightmost — read right-to-left before concluding something is reversed. Where
+  direction affects logic (arrow keys, popup side), add a bUnit test that sets an RTL
+  `CultureInfo` and asserts the mirrored outcome.
+
+## Localization
+
+- **No hardcoded user-facing strings** in a component. Inject
+  `[Inject] private IStringLocalizer<FormaX> L { get; set; } = default!;` and read `L["Key"]`.
+- Every localized component ships the resx trio: `FormaX.resx` (neutral/en), `FormaX.he.resx`,
+  `FormaX.es.resx` — all three keys in sync.
+- Caller-supplied text (`Title`, `Label`, `ConfirmText`) is the host's job to localize; the
+  library only localizes strings it invents itself.
+- Format dates/numbers against `CultureInfo.CurrentCulture`; respect
+  `TextInfo.IsRightToLeft` when direction matters.
+
+## Services (Abstractions + Core)
+
+Service-driven components (toast, confirm dialog) follow one shape:
+
+- Contract in `Forma.Blazor.Abstractions/Components/{Category}/IXService.cs`, extending
+  `INotifyStateChanged` when components must re-render on change.
+- Implementation in `Forma.Blazor.Core/Components/{Category}/XService.cs` — `sealed`,
+  composes `StateNotifier` for `Func<Task>` subscribers, validates its arguments, and takes an
+  optional trailing `CancellationToken`.
+- The component subscribes in `OnInitialized` and unsubscribes in `Dispose`.
+- Registration is the **host's** job (`AddScoped<IXService, XService>()`), documented in the
+  README — the library ships no `AddForma…` extension.
+
+## Tests (bUnit + xUnit v3)
+
+Mirror the source path: `tests/Forma.Blazor.Tests/Components/Admin/{Category}/FormaXTests.razor`
+plus `.razor.cs`.
+
+- `.razor.cs` is one line: `public sealed partial class FormaXTests;`
+- `.razor` starts `@inherits BunitContext` and holds a nested `public sealed class Component`
+  containing the `[Fact]` methods.
+- Test names read `Should_render_checked_when_value_is_true`; bodies use explicit
+  `// Arrange` / `// Act` / `// Assert` comments.
+- Instantiate the context as `using var ctx = new FormaXTests();` and render with
+  `ctx.Render(@<FormaX … />)`.
+- `InputBase<T>` components render inside `FakeFormHost` with a `FakeModel` and an `EditContext`.
+- Assert on rendered markup (`cut.Find(".forma-x")`, attribute values) and on callback
+  invocations — not on private state.
+- Services get plain xUnit tests under `tests/Forma.Blazor.Tests/Services/{Category}/`.
+- Test only the **public** surface. Shared usings live in `_Imports.cs` / `_Imports.razor`.
+
+## Showcase page
+
+Every component gets a gallery page — it is the visual review surface, not optional:
+`tests/Forma.Blazor.Showcase/Components/Pages/Admin/{Category}/FormaXPage.razor` + its resx trio.
+
+```razor
+@page "/x-component"
+@attribute [ShowcasePage("FormaX")]
+@rendermode InteractiveServer
+@inject IStringLocalizer<FormaXPage> L
+```
+
+Structure it as `<h1>` + `<p class="desc">`, then one `demo-section` (`<h2>` + `demo-box`) per
+scenario: basic, with labels, states (default/disabled/error), edge cases. All page copy comes
+from the localizer so the `he` / `es-419` switchers exercise RTL and translation.
+
+## Build & verify
+
+```powershell
+dotnet build Forma.slnx
+dotnet test
+```
+
+Both must be green before a component is offered for review. Run the Showcase
+(`dotnet run --project tests/Forma.Blazor.Showcase`) to eyeball the component in all three
+cultures.
+
+## Working agreement — one component at a time
+
+Components are built, reviewed, and committed **individually**:
+
+1. Pick the next component from the inventory (Épica's remaining set is listed in
+   `EpicaDeportiva/docs/forma-components.md`).
+2. Derive its design from the components already in the repo — parameters, validation,
+   disposal, CSS, ARIA, localization all follow the patterns above rather than inventing new ones.
+3. Deliver the full set: `.razor` + `.razor.cs` + `.razor.css` (+ resx / `.js` if warranted),
+   bUnit tests, showcase page. Build + tests green, and the component verified in **both
+   directions** (`he` RTL and `en`/`es-419` LTR).
+4. **Present it for review and stop.** Iterate on the same component until the maintainer says
+   it is complete — do not move to the next one.
+5. When the maintainer declares it complete, mark it **in both documents**:
+   - `Forma/ADMIN_COMPONENTS.md` — add `✅` to the component heading and to its entry in the
+     *Suggested Build Order* table.
+   - `EpicaDeportiva/docs/forma-components.md` — flip `☐` → `✅` in the "Built in Forma?"
+     column and update the **Status** line (count + remaining list).
+6. Commits are per-component. **Never run a state-changing `git` command** (`add`, `commit`,
+   `push`, `reset`, …) without explicit permission — present the proposed message and stop.
+   Read-only git is fine.
+
+Keep changes minimal and on-scope. Don't retrofit new conventions onto components that already
+exist unless asked.
