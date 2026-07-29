@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <RootNamespace>Forma.Web.Css</RootNamespace>
+        <AssemblyName>Forma.Web.Css</AssemblyName>
+        <PackageId>2Site.Forma.Web.Css</PackageId>
+    </PropertyGroup>
+
+</Project>
