@@ -15,11 +15,33 @@ Consumers: **Coi** (`c:\Users\eyal\Development\Projects\Coi`) and **Épica Depor
 (`c:\Users\eyal\Development\Projects\EpicaDeportiva`). Épica's subset of the inventory —
 required / optional, and what's left to build — lives in `EpicaDeportiva/docs/forma-components.md`.
 
+## The original — read it before designing anything
+
+Every component in this library is derived from the legacy Coi admin at
+**`c:\Users\eyal\Development\Projects\2Site\Coi\Coi\`**. Study the original before designing a
+replacement; it is where the real state vocabulary, edge cases, and usage live.
+
+| What | Where |
+|------|-------|
+| Admin design system | `App_Themes/Cms/css-3.6.5.css`, `fa-3.6.5.css`, `global-3.6.5.css`, `responsive-3.6.5.css` |
+| Page markup | `admin/*.aspx` (orders, leads, products, pages, users, …) and `admin/pops/*.aspx` |
+| Behaviour / rendering helpers | the matching `*.aspx.cs` |
+| jQuery widgets being replaced | `admin/Client/{toggle,date,cp,modal,Tabs,jcrop,minibar}` |
+
+That folder is **outside the workspace**, so workspace search tools do not reach it — use
+`Select-String` from the terminal.
+
+**Fidelity is pattern-level, not pixel-level.** Take the states, vocabulary, and behaviour from
+Coi; re-implement the visuals JS-free with the design tokens. Coi's toggle is a boxy gradient
+slider, but `FormaToggleSwitch` is a token-driven iOS-style pill — that is the intended level of
+faithfulness.
+
 ## Solution structure (reference rules)
 
 | Project | Kind | May reference |
 |---------|------|---------------|
-| `src/Forma.Blazor.Abstractions` | Class library | *(nothing)* — contracts, message/enum types |
+| `src/Forma.Web.Css` | Class library | *(nothing)* — framework-agnostic CSS value types (`CssColor`) |
+| `src/Forma.Blazor.Abstractions` | Class library | Forma.Web.Css — contracts, message/enum types |
 | `src/Forma.Blazor.Core` | Class library | Abstractions — service implementations |
 | `src/Forma.Blazor` | Razor Class Library | Abstractions **only** — the packaged components |
 | `tests/Forma.Blazor.Tests` | Test project | Forma.Blazor, Forma.Blazor.Core |
@@ -27,6 +49,10 @@ required / optional, and what's left to build — lives in `EpicaDeportiva/docs/
 
 `Forma.Blazor` must **never** reference `Forma.Blazor.Core`. Components depend on the
 *interface* (`IToastService`); the **host** picks the implementation via DI.
+
+Colours and other CSS values are typed, never strings: `CssColor.FromRgba(98, 105, 118, 0.12)`,
+`CssColor.FromHex(0x2c384a)`. `Forma.Web.*` is the family for framework-agnostic web value
+types; keep infrastructure (middleware, DI, hosting) out of it.
 
 Three identities are distinct — never conflate them: assembly/namespace `Forma.Blazor`,
 package id `2Site.Forma.Blazor`, static asset base path `_content/Forma.Blazor` (pinned via
