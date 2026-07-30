@@ -38,6 +38,9 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     /// <summary>Whether the grid pages its rows. Disable for a single scrollable list, typically paired with <see cref="Virtualize"/>.</summary>
     [Parameter] public bool EnablePagination { get; set; } = true;
 
+    /// <summary>Which parts of the page controls are shown.</summary>
+    [Parameter] public FormaPaginationOptions PaginationOptions { get; set; } = new() { EnableButtons = true };
+
     /// <summary>Renders only the rows near the scroll viewport, for a large list with <see cref="EnablePagination"/> disabled. Requires an ancestor that scrolls.</summary>
     [Parameter] public bool Virtualize { get; set; }
 
@@ -115,6 +118,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
         ArgumentNullException.ThrowIfNull(Columns);
         ArgumentNullException.ThrowIfNull(ItemKey);
         ArgumentNullException.ThrowIfNull(QueryParameterNamePrefix);
+        ArgumentNullException.ThrowIfNull(PaginationOptions);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(ItemSize);
         ArgumentOutOfRangeException.ThrowIfNegative(OverscanCount);
 

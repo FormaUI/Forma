@@ -1,3 +1,4 @@
+using Forma.Blazor.Components.Admin.Data;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
 
@@ -6,6 +7,15 @@ namespace Forma.Blazor.Showcase.Components.Pages.Admin.Data;
 public sealed partial class FormaPaginationPage : ComponentBase
 {
     [Inject] private IStringLocalizer<FormaPaginationPage> L { get; set; } = default!;
+
+    private static readonly FormaPaginationOptions ButtonsOnly =
+        new() { EnableButtons = true, EnableInputBox = false };
+
+    private static readonly FormaPaginationOptions ButtonsAndInput =
+        new() { EnableButtons = true };
+
+    private static readonly FormaPaginationOptions InputWithoutGoButton =
+        new() { EnableGoButton = false };
 
     private static readonly IReadOnlyList<GridItem> _gridItems = Enumerable.Range(1, 47)
         .Select(id => new GridItem(id, $"Sample item {id}"))

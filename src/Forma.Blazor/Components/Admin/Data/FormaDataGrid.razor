@@ -47,7 +47,7 @@
                 <FormaPagination TotalItems="@TotalItemCount"
                                  PageSize="PageSize"
                                  CurrentPage="@(_pagination.CurrentPageIndex + 1)"
-                                 EnableButtons="true"
+                                 Options="PaginationOptions"
                                  OnPageChanged="HandlePageChangedAsync" />
             }
 

@@ -31,14 +31,8 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
     /// <summary>Fired when the user selects a different page.</summary>
     [Parameter] public EventCallback<int> OnPageChanged { get; set; }
 
-    /// <summary>Shows the numbered page links flanked by previous and next buttons.</summary>
-    [Parameter] public bool EnableButtons { get; set; }
-
-    /// <summary>Shows the box for typing a page number.</summary>
-    [Parameter] public bool EnableInputBox { get; set; } = true;
-
-    /// <summary>Shows the button that commits the typed page number.</summary>
-    [Parameter] public bool EnableGoButton { get; set; } = true;
+    /// <summary>Which parts of the pager are shown.</summary>
+    [Parameter] public FormaPaginationOptions Options { get; set; } = FormaPaginationOptions.Default;
 
     /// <summary>Additional attributes applied to the navigation element.</summary>
     [Parameter(CaptureUnmatchedValues = true)]
@@ -50,7 +44,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
 
     private int PageCount => Math.Max(1, (int)Math.Ceiling(TotalItems / (double)PageSize));
 
-    private bool ShowsInputBox => PageCount > 1 && EnableInputBox;
+    private bool ShowsInputBox => PageCount > 1 && Options.EnableInputBox;
 
     // The page actually shown. A caller's page can fall outside the range whenever the
     // item count shrinks under it — a filter narrowing, a delete, a hand-edited query
@@ -78,6 +72,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
 
     protected override void OnParametersSet()
     {
+        ArgumentNullException.ThrowIfNull(Options);
         ArgumentOutOfRangeException.ThrowIfNegative(TotalItems);
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(PageSize, 0);
     }

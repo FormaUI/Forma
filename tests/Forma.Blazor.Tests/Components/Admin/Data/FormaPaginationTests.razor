@@ -4,6 +4,18 @@
 @code {
     public sealed class Component
     {
+        private static readonly FormaPaginationOptions ButtonsAndInput =
+            new() { EnableButtons = true, EnableInputBox = true };
+
+        private static readonly FormaPaginationOptions ButtonsOnly =
+            new() { EnableButtons = true, EnableInputBox = false };
+
+        private static readonly FormaPaginationOptions InputWithoutGoButton =
+            new() { EnableButtons = false, EnableInputBox = true, EnableGoButton = false };
+
+        private static readonly FormaPaginationOptions NothingEnabled =
+            new() { EnableButtons = false, EnableInputBox = false };
+
         [Fact]
         public void Should_render_nothing_when_there_is_only_one_page()
         {
@@ -12,7 +24,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaPagination TotalItems="5" PageSize="10" CurrentPage="1" EnableButtons />);
+                @<FormaPagination TotalItems="5" PageSize="10" CurrentPage="1" Options="ButtonsAndInput" />);
 
             // Assert
             Assert.Empty(cut.FindAll("nav"));
@@ -41,7 +53,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" EnableButtons />);
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" Options="ButtonsAndInput" />);
 
             // Assert
             Assert.True(cut.Find(".forma-pagination-prev").HasAttribute("disabled"));
@@ -55,7 +67,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="5" EnableButtons />);
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="5" Options="ButtonsAndInput" />);
 
             // Assert
             Assert.True(cut.Find(".forma-pagination-next").HasAttribute("disabled"));
@@ -69,7 +81,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="3" EnableButtons />);
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="3" Options="ButtonsAndInput" />);
 
             // Assert
             Assert.Multiple(() =>
@@ -87,7 +99,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="3" EnableButtons />);
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="3" Options="ButtonsAndInput" />);
 
             // Assert
             var current = cut.Find(".forma-pagination-current");
@@ -107,7 +119,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" EnableButtons />);
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" Options="ButtonsAndInput" />);
 
             // Assert
             var second = cut.FindAll(".forma-pagination-link")
@@ -123,7 +135,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaPagination TotalItems="70" PageSize="10" CurrentPage="4" EnableButtons />);
+                @<FormaPagination TotalItems="70" PageSize="10" CurrentPage="4" Options="ButtonsAndInput" />);
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-pagination-ellipsis"));
@@ -140,7 +152,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaPagination TotalItems="200" PageSize="10" CurrentPage="1" EnableButtons />);
+                @<FormaPagination TotalItems="200" PageSize="10" CurrentPage="1" Options="ButtonsAndInput" />);
 
             // Assert
             Assert.Equal(["1", "2", "…", "20"], PageLabels(cut.FindAll(".forma-pagination-list > li")));
@@ -154,7 +166,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaPagination TotalItems="200" PageSize="10" CurrentPage="10" EnableButtons />);
+                @<FormaPagination TotalItems="200" PageSize="10" CurrentPage="10" Options="ButtonsAndInput" />);
 
             // Assert
             Assert.Equal(["1", "…", "9", "10", "11", "…", "20"], PageLabels(cut.FindAll(".forma-pagination-list > li")));
@@ -168,7 +180,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaPagination TotalItems="200" PageSize="10" CurrentPage="20" EnableButtons />);
+                @<FormaPagination TotalItems="200" PageSize="10" CurrentPage="20" Options="ButtonsAndInput" />);
 
             // Assert
             Assert.Equal(["1", "…", "19", "20"], PageLabels(cut.FindAll(".forma-pagination-list > li")));
@@ -181,7 +193,7 @@
             using var ctx = new FormaPaginationTests();
             var received = new List<int>();
             var cut = ctx.Render(
-                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" EnableButtons
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" Options="ButtonsAndInput"
                     OnPageChanged="@((int p) => received.Add(p))" />);
 
             // Act
@@ -200,7 +212,7 @@
             using var ctx = new FormaPaginationTests();
             var received = new List<int>();
             var cut = ctx.Render(
-                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" EnableButtons
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" Options="ButtonsAndInput"
                     OnPageChanged="@((int p) => received.Add(p))" />);
 
             // Act
@@ -217,7 +229,7 @@
             using var ctx = new FormaPaginationTests();
             var received = new List<int>();
             var cut = ctx.Render(
-                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="2" EnableButtons
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="2" Options="ButtonsAndInput"
                     OnPageChanged="@((int p) => received.Add(p))" />);
 
             // Act
@@ -276,7 +288,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="0" EnableButtons />);
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="0" Options="ButtonsAndInput" />);
 
             // Assert
             Assert.Multiple(() =>
@@ -294,7 +306,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="99" EnableButtons />);
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="99" Options="ButtonsAndInput" />);
 
             // Assert
             Assert.Multiple(() =>
@@ -311,7 +323,7 @@
             using var ctx = new FormaPaginationTests();
             var received = new List<int>();
             var cut = ctx.Render(
-                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="99" EnableButtons
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="99" Options="ButtonsAndInput"
                     OnPageChanged="@((int p) => received.Add(p))" />);
 
             // Act
@@ -361,7 +373,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" EnableButtons />);
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" Options="ButtonsAndInput" />);
 
             // Assert
             Assert.Multiple(() =>
@@ -379,7 +391,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" EnableButtons EnableInputBox="false" />);
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" Options="ButtonsOnly" />);
 
             // Assert
             Assert.Multiple(() =>
@@ -397,7 +409,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" EnableInputBox="false" />);
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" Options="NothingEnabled" />);
 
             // Assert
             Assert.Empty(cut.FindAll("nav"));
@@ -538,7 +550,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" EnableGoButton="false" />);
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" Options="InputWithoutGoButton" />);
 
             // Assert
             Assert.Multiple(() =>
@@ -555,7 +567,7 @@
             using var ctx = new FormaPaginationTests();
             var received = new List<int>();
             var cut = ctx.Render(
-                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" EnableGoButton="false"
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" Options="InputWithoutGoButton"
                     OnPageChanged="@((int p) => received.Add(p))" />);
 
             // Act
