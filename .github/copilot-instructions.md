@@ -36,6 +36,12 @@ Coi; re-implement the visuals JS-free with the design tokens. Coi's toggle is a 
 slider, but `FormaToggleSwitch` is a token-driven iOS-style pill — that is the intended level of
 faithfulness.
 
+**Coi is the floor, not the ceiling.** It shows what the admin needs to do and the vocabulary it
+does it in — it is not a specification to reproduce. Where Forma can do better, it should: richer
+affordances, better accessibility, sturdier edge-case handling. A capability Coi never had is
+welcome on its own merits, and "Coi didn't have it" is never a reason to leave one out. Judge
+every component on whether it is *good*, not on how closely it tracks the original.
+
 ## Solution structure (reference rules)
 
 | Project | Kind | May reference |
@@ -116,13 +122,27 @@ the component that owns them.
 
 ## JavaScript
 
-JS-free is the rule. Reach for interop **only** when no HTML/CSS/Blazor mechanism exists
-(currently: the native `<dialog>` in `FormaModal`). When you must:
+JS-free is the *default*, not a prohibition. Prefer an HTML/CSS/Blazor mechanism when one
+exists — but where interop genuinely makes the component better (behaviour the platform only
+exposes to script, a rough edge that cannot be smoothed declaratively), use it. Never contort a
+component or ship a worse experience just to stay script-free.
 
-- Ship a colocated `FormaX.razor.js` ES module; import it in `OnAfterRenderAsync(firstRender)`
-  from `./_content/Forma.Blazor/Components/Admin/{Category}/FormaX.razor.js`.
+**How much script a fix costs is not a factor.** Where a declarative mechanism exists, use it;
+where none does and interop improves the experience, write however much JS the job needs. "It
+would take another function" is never a reason to leave a rough edge in the component.
+
+The constraints on interop are what it's made of, not whether it's allowed:
+
+- **No external libraries.** Native, modern browser APIs only — no jQuery, no polyfills, no npm.
+- **Small and colocated.** A `FormaX.razor.js` ES module next to the component, doing one thing.
+  Behaviour stays in C#; JS handles only what the DOM won't do otherwise.
+- **Name parameters for what they are, never for their type** — `input`, `dialog`, `label`, not
+  `inputEl` / `dialogElement` / `el`. The JSDoc `@param {HTMLInputElement}` already states the
+  type; repeating it in the name is noise.
+- Import it in `OnAfterRenderAsync(firstRender)` from
+  `./_content/Forma.Blazor/Components/Admin/{Category}/FormaX.razor.js`.
 - Wrap every `JS` call in `try { … } catch (JSException) { }` — the circuit can drop mid-call —
-  and dispose the module in `DisposeAsync`.
+  and dispose the module in `DisposeAsync`, catching `JSDisconnectedException`.
 
 ## CSS
 
