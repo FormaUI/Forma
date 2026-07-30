@@ -22,7 +22,7 @@
     <h2>@L["Modal.Section.NoHeader"]</h2>
     <div class="demo-box">
         <button class="btn btn-primary" @onclick="() => _showNoHeader = true">@L["Modal.Button.OpenHeaderless"]</button>
-        <FormaModal Opened="_showNoHeader" OnClose="() => _showNoHeader = false" ShowConfirmAction="false">
+        <FormaModal Opened="_showNoHeader" OnClose="() => _showNoHeader = false" Options="HideConfirmAction">
             <Body>
                 <p>@L["Modal.Body.NoHeader"]</p>
             </Body>
@@ -41,7 +41,7 @@
         @if (_activeSize is not null)
         {
             <FormaModal Opened="true" OnClose="() => _activeSize = null" Title="@($"Size: {_activeSize}")" Size="@_activeSize.Value"
-                      ShowConfirmAction="false">
+                      Options="HideConfirmAction">
                 <Body>
                     <p>@L["Modal.Body.SizeUses"] <code>Size="@_activeSize"</code>.</p>
                 </Body>
@@ -57,7 +57,7 @@
         <button class="btn btn-primary" @onclick="() => _showFooterWithActions = true">@L["Modal.Button.OpenFooterActions"]</button>
 
         <FormaModal Opened="_showFooterOnly" OnClose="() => _showFooterOnly = false" Title="@L["Modal.Title.FooterOnly"]"
-                  ShowCancelAction="false" ShowConfirmAction="false">
+                  Options="HideFooterActions">
             <Body>
                 <p>@L["Modal.Body.FooterOnly"]</p>
             </Body>
@@ -94,8 +94,7 @@
     <div class="demo-box">
         <button class="btn btn-primary" @onclick="() => _showNoBackdrop = true">@L["Modal.Button.OpenNoBackdrop"]</button>
         <FormaModal Opened="_showNoBackdrop" OnClose="() => _showNoBackdrop = false"
-                    Title="@L["Modal.Title.MustUseButton"]" CloseOnBackdropClick="false"
-                    ShowConfirmAction="false">
+                    Title="@L["Modal.Title.MustUseButton"]" Options="RequireExplicitClose">
             <Body>
                 <p>@L["Modal.Body.NoBackdrop"]</p>
             </Body>
@@ -104,6 +103,15 @@
 </div>
 
 @code {
+    private static readonly FormaModalOptions HideConfirmAction =
+        new() { ShowConfirmAction = false };
+
+    private static readonly FormaModalOptions HideFooterActions =
+        new() { ShowCancelAction = false, ShowConfirmAction = false };
+
+    private static readonly FormaModalOptions RequireExplicitClose =
+        new() { CloseOnBackdropClick = false, ShowConfirmAction = false };
+
     private bool _showBasic;
     private bool _showNoHeader;
     private bool _showNoFooter;

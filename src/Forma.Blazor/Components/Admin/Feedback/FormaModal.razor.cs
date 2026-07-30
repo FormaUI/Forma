@@ -26,8 +26,8 @@ public sealed partial class FormaModal : IAsyncDisposable
     /// <summary>Size variant controlling the dialog width.</summary>
     [Parameter] public ModalSize Size { get; set; } = ModalSize.Medium;
 
-    /// <summary>Whether clicking the backdrop (outside the dialog) closes the modal.</summary>
-    [Parameter] public bool CloseOnBackdropClick { get; set; } = true;
+    /// <summary>Default close and footer-action behavior.</summary>
+    [Parameter] public FormaModalOptions Options { get; set; } = FormaModalOptions.Default;
 
     /// <summary>Main content of the modal.</summary>
     [Parameter] public RenderFragment? Body { get; set; }
@@ -44,29 +44,20 @@ public sealed partial class FormaModal : IAsyncDisposable
     /// <summary>Optional callback invoked when the default confirm action is clicked.</summary>
     [Parameter] public EventCallback OnConfirm { get; set; }
 
-    /// <summary>Whether to render the default confirm action in the footer.</summary>
-    [Parameter] public bool ShowConfirmAction { get; set; } = true;
-
-    /// <summary>Whether to render the default cancel action in the footer.</summary>
-    [Parameter] public bool ShowCancelAction { get; set; } = true;
-
     /// <summary>Optional callback invoked when the default cancel action is clicked.</summary>
     [Parameter] public EventCallback OnCancel { get; set; }
 
-    /// <summary>Whether the modal should close after the default confirm action.</summary>
-    [Parameter] public bool CloseOnConfirm { get; set; } = true;
-
-    /// <summary>Whether the modal should close after the default cancel action.</summary>
-    [Parameter] public bool CloseOnCancel { get; set; } = true;
-
     private bool ShowHeader => Title is not null;
-    private bool HasDefaultFooterActions => ShowCancelAction || ShowConfirmAction;
+    private bool HasDefaultFooterActions => Options.ShowCancelAction || Options.ShowConfirmAction;
     private bool ShowFooter => Footer is not null || HasDefaultFooterActions;
     [SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase")]
     private string SizeClass => $"forma-modal-{Size.ToString().ToLowerInvariant()}";
     private string ConfirmLabel => ConfirmText ?? L["Confirm"];
     private string CancelLabel =>
-        CancelText ?? (ShowCancelAction && !ShowConfirmAction ? L["Close"] : L["Cancel"]);
+        CancelText ?? (Options.ShowCancelAction && !Options.ShowConfirmAction ? L["Close"] : L["Cancel"]);
+
+    protected override void OnParametersSet()
+        => ArgumentNullException.ThrowIfNull(Options);
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -92,7 +83,7 @@ public sealed partial class FormaModal : IAsyncDisposable
             if (Opened && !_isOpen)
             {
                 _isOpen = true;
-                await _module.InvokeVoidAsync("showModal", _dialogRef, CloseOnBackdropClick).ConfigureAwait(false);
+                await _module.InvokeVoidAsync("showModal", _dialogRef, Options.CloseOnBackdropClick).ConfigureAwait(false);
             }
             else if (!Opened && _isOpen)
             {
@@ -146,7 +137,7 @@ public sealed partial class FormaModal : IAsyncDisposable
         if (OnCancel.HasDelegate)
             await OnCancel.InvokeAsync().ConfigureAwait(false);
 
-        if (CloseOnCancel)
+        if (Options.CloseOnCancel)
             await RequestCloseAsync().ConfigureAwait(false);
     }
 
@@ -155,7 +146,7 @@ public sealed partial class FormaModal : IAsyncDisposable
         if (OnConfirm.HasDelegate)
             await OnConfirm.InvokeAsync().ConfigureAwait(false);
 
-        if (CloseOnConfirm)
+        if (Options.CloseOnConfirm)
             await RequestCloseAsync().ConfigureAwait(false);
     }
 

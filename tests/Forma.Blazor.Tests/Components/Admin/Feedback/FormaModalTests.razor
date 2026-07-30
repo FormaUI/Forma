@@ -3,6 +3,12 @@
 @code {
     public sealed class Component
     {
+        private static readonly FormaModalOptions HideConfirmAction =
+            new() { ShowConfirmAction = false };
+
+        private static readonly FormaModalOptions HideFooterActions =
+            new() { ShowCancelAction = false, ShowConfirmAction = false };
+
         [Fact]
         public void Should_render_dialog_element()
         {
@@ -88,7 +94,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaModal Opened="false" OnClose="@(() => { })" ShowCancelAction="false" ShowConfirmAction="false" />);
+                @<FormaModal Opened="false" OnClose="@(() => { })" Options="HideFooterActions" />);
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-modal-footer"));
@@ -143,7 +149,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaModal Opened="false" OnClose="@(() => { })" ShowConfirmAction="false" />);
+                @<FormaModal Opened="false" OnClose="@(() => { })" Options="HideConfirmAction" />);
 
             // Assert
             var footer = cut.Find(".forma-modal-footer");

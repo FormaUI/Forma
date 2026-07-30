@@ -5,6 +5,9 @@ namespace Forma.Blazor.Components.Admin.Feedback;
 
 public sealed partial class FormaConfirmDialog : IDisposable
 {
+    private static readonly FormaModalOptions ModalOptions =
+        new() { CloseOnBackdropClick = false, ShowCancelAction = false, ShowConfirmAction = false };
+
     private ConfirmDialogRequest? _request;
     private bool _isOpen;
 

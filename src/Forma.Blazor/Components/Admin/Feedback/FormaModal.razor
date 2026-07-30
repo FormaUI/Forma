@@ -30,13 +30,13 @@
                 @if (HasDefaultFooterActions)
                 {
                     <div class="forma-modal-footer-actions">
-                        @if (ShowCancelAction)
+                        @if (Options.ShowCancelAction)
                         {
                             <button type="button" class="forma-modal-action forma-modal-action-secondary" @onclick="HandleDefaultCancelAsync">
                                 @CancelLabel
                             </button>
                         }
-                        @if (ShowConfirmAction)
+                        @if (Options.ShowConfirmAction)
                         {
                             <button type="button" class="forma-modal-action forma-modal-action-primary" @onclick="HandleDefaultConfirmAsync">
                                 @ConfirmLabel
