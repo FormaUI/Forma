@@ -80,9 +80,9 @@ These components form the shell of every admin page. Build first.
 |---|---|
 | **Old pattern** | `asp:GridView` with server-side paging, sortable columns, row click-through, checkbox column for mass select, action icon columns (view/edit/delete), status badges, responsive hide classes |
 | **Used in** | pages, products, orders, leads, comments, users, coupons (all 7 main list pages) |
-| **Parameters** | `IQueryable<TItem> Items`, `RenderFragment Columns`, `bool ShowCheckboxes`, `EventCallback<TItem> OnRowClick`, `PaginationState Pagination` |
+| **Parameters** | `IQueryable<TItem> Items`, `RenderFragment Columns`, `bool ShowCheckboxes`, `int PageSize` (drives an internal `PaginationState`) |
 | **Columns** | `FormaDataGridColumn<TItem>` — `Title`, `Property`, `Sortable`, `CssClass`, `RenderFragment<TItem> ChildContent` (for custom cell rendering) |
-| **Blazor approach** | Extend/wrap `Microsoft.AspNetCore.Components.QuickGrid`. QuickGrid provides sorting, column templates, and its own `PaginationState`/`Paginator` natively. `FormaDataGrid` bridges its `PaginationState` to `FormaPagination` for the page controls, so the grid depends on the paginator — never the reverse. Add: checkbox column, action column, CSS class system, mobile responsive column hiding |
+| **Blazor approach** | Extend/wrap `Microsoft.AspNetCore.Components.QuickGrid`, reusing its native `Sortable` columns, `PropertyColumn`/`TemplateColumn`, and `RowClass` (per-row CSS, available since 10.0.0) rather than reinventing them. `FormaDataGrid` keeps its own `PaginationState` to drive QuickGrid's slicing but renders `FormaPagination` — not QuickGrid's `Paginator` — for the page controls, translating `PaginationState` to `FormaPagination`'s plain parameters; the grid adapts to the paginator, never the reverse. Add: checkbox column (mass-select, pairs with `FormaMassActions`), action-icon column. Row click-through isn't reproduced — QuickGrid's `OnRowClick` requires .NET 11, and the action-icon column already gives an explicit way to open a row. Responsive column hiding is optional, not required parity — Coi itself only wraps the table in a scrolling `.table-responsive` container, it never hides columns |
 
 ### 8. `FormaMassActions`
 
