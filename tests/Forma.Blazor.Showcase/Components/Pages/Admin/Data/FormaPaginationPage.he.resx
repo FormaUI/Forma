@@ -49,6 +49,10 @@
   <data name="Pagination.Section.OutOfRange" xml:space="preserve"><value>עמוד מחוץ לטווח</value></data>
   <data name="Pagination.OutOfRange.Note" xml:space="preserve"><value>עמוד שמעבר לסוף — אחרי שסינון מצמצם את הרשימה, או מכתובת שנערכה ידנית — נוחת על העמוד הקרוב ביותר.</value></data>
   <data name="Pagination.CurrentPage.Label" xml:space="preserve"><value>עמוד נוכחי</value></data>
+  <data name="Pagination.Section.WithGrid" xml:space="preserve"><value>עם רשת נתונים</value></data>
+  <data name="Pagination.WithGrid.Note" xml:space="preserve"><value>הפעלת QuickGrid, כשהעמוד המוצג מתחלף בהתאם לעמוד הנבחר.</value></data>
+  <data name="Pagination.Column.Id" xml:space="preserve"><value>מזהה</value></data>
+  <data name="Pagination.Column.Title" xml:space="preserve"><value>כותרת</value></data>
   <data name="Pagination.Section.PageInput" xml:space="preserve"><value>מעבר לעמוד</value></data>
   <data name="Pagination.PageInput.Note" xml:space="preserve"><value>תיבת קלט אופציונלית להקלדת מספר עמוד — שימושית כשיש יותר מדי עמודים מכדי לדפדף ביניהם. הקישו Enter או לחצו על הכפתור.</value></data>
   <data name="Pagination.Section.InputOnly" xml:space="preserve"><value>תיבת קלט בלבד</value></data>

@@ -7,8 +7,15 @@ public sealed partial class FormaPaginationPage : ComponentBase
 {
     [Inject] private IStringLocalizer<FormaPaginationPage> L { get; set; } = default!;
 
+    private static readonly IReadOnlyList<GridItem> _gridItems = Enumerable.Range(1, 47)
+        .Select(id => new GridItem(id, $"Sample item {id}"))
+        .ToArray();
+
+    private const int GridPageSize = 10;
+
     private int _fewPage = 1;
     private int _manyPage = 10;
+    private int _gridPage = 1;
     private int _jumpPage = 1;
     private int _inputOnlyPage = 1;
     private int _barePage = 1;
@@ -20,6 +27,9 @@ public sealed partial class FormaPaginationPage : ComponentBase
 
     private void HandleManyPageChanged(int page)
         => _manyPage = page;
+
+    private void HandleGridPageChanged(int page)
+        => _gridPage = page;
 
     private void HandleJumpPageChanged(int page)
         => _jumpPage = page;
@@ -35,4 +45,11 @@ public sealed partial class FormaPaginationPage : ComponentBase
 
     private void HandleFormSubmit()
         => _formSubmits++;
+
+    private IQueryable<GridItem> GridPageItems => _gridItems
+        .Skip((_gridPage - 1) * GridPageSize)
+        .Take(GridPageSize)
+        .AsQueryable();
+
+    private sealed record GridItem(int Id, string Title);
 }

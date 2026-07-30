@@ -49,6 +49,10 @@
   <data name="Pagination.Section.OutOfRange" xml:space="preserve"><value>Página fuera del rango</value></data>
   <data name="Pagination.OutOfRange.Note" xml:space="preserve"><value>Una página más allá del final — tras un filtro que reduce la lista, o desde una URL editada a mano — se ajusta a la página más cercana.</value></data>
   <data name="Pagination.CurrentPage.Label" xml:space="preserve"><value>Página actual</value></data>
+  <data name="Pagination.Section.WithGrid" xml:space="preserve"><value>Con una cuadrícula</value></data>
+  <data name="Pagination.WithGrid.Note" xml:space="preserve"><value>Impulsa un QuickGrid, mostrando el fragmento de datos correspondiente a la página seleccionada.</value></data>
+  <data name="Pagination.Column.Id" xml:space="preserve"><value>Id</value></data>
+  <data name="Pagination.Column.Title" xml:space="preserve"><value>Título</value></data>
   <data name="Pagination.Section.PageInput" xml:space="preserve"><value>Ir a una página</value></data>
   <data name="Pagination.PageInput.Note" xml:space="preserve"><value>Un cuadro opcional para escribir un número de página — útil cuando hay demasiadas páginas para recorrerlas a clics. Pulse Enter o el botón para ir.</value></data>
   <data name="Pagination.Section.InputOnly" xml:space="preserve"><value>Solo el cuadro</value></data>

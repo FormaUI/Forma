@@ -27,6 +27,19 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["Pagination.Section.WithGrid"]</h2>
+    <p class="desc">@L["Pagination.WithGrid.Note"]</p>
+    <div class="demo-box">
+        <QuickGrid Items="GridPageItems">
+            <PropertyColumn Property="@(item => item.Id)" Title="@L["Pagination.Column.Id"]" />
+            <PropertyColumn Property="@(item => item.Title)" Title="@L["Pagination.Column.Title"]" />
+        </QuickGrid>
+        <FormaPagination TotalItems="_gridItems.Count" PageSize="GridPageSize" CurrentPage="_gridPage" OnPageChanged="HandleGridPageChanged"
+                         EnableButtons EnableInputBox="false" aria-label="@L["Pagination.Section.WithGrid"]" />
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["Pagination.Section.PageInput"]</h2>
     <p class="desc">@L["Pagination.PageInput.Note"]</p>
     <div class="demo-box">

@@ -48,6 +48,10 @@
   <data name="Pagination.SinglePage.Note" xml:space="preserve"><value>When everything fits on one page, the component renders nothing.</value></data>
   <data name="Pagination.Section.OutOfRange" xml:space="preserve"><value>Page beyond the range</value></data>  <data name="Pagination.OutOfRange.Note" xml:space="preserve"><value>A page past the end — after a filter narrows the list, or from a hand-edited URL — settles on the nearest page.</value></data>
   <data name="Pagination.CurrentPage.Label" xml:space="preserve"><value>Current page</value></data>
+  <data name="Pagination.Section.WithGrid" xml:space="preserve"><value>With a grid</value></data>
+  <data name="Pagination.WithGrid.Note" xml:space="preserve"><value>Driving a QuickGrid, slicing the page of data to match whatever page is selected.</value></data>
+  <data name="Pagination.Column.Id" xml:space="preserve"><value>Id</value></data>
+  <data name="Pagination.Column.Title" xml:space="preserve"><value>Title</value></data>
   <data name="Pagination.Section.PageInput" xml:space="preserve"><value>Jump to a page</value></data>
   <data name="Pagination.PageInput.Note" xml:space="preserve"><value>An optional box for typing a page number — useful when there are far too many pages to click through. Press Enter or the button to go.</value></data>
   <data name="Pagination.Section.InputOnly" xml:space="preserve"><value>Input only</value></data>
