@@ -307,6 +307,164 @@
         }
 
         [Fact]
+        public void Should_hide_the_paginator_but_keep_the_status_when_everything_fits_on_one_page()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(3)" PageSize="10">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                    <Status>3 rows</Status>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll(".forma-data-grid-status").Count == 1);
+
+            // Assert
+            Assert.Empty(cut.FindAll("nav.forma-pagination"));
+        }
+
+        [Fact]
+        public void Should_render_every_row_without_a_paginator_when_pagination_is_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(25)" PageSize="10" EnablePagination="false">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.Markup.Contains("Item 25", StringComparison.Ordinal));
+
+            // Assert
+            Assert.Empty(cut.FindAll("nav.forma-pagination"));
+        }
+
+        [Fact]
+        public void Should_render_rows_when_virtualization_is_enabled_alongside_disabled_pagination()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(25)" PageSize="10" EnablePagination="false" Virtualize="true">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll("tbody tr").Count > 0);
+
+            // Assert
+            Assert.Contains("Item 1", cut.Markup, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_not_require_a_page_size_when_pagination_is_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(3)" EnablePagination="false">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.Markup.Contains("Item 3", StringComparison.Ordinal));
+
+            // Assert
+            Assert.Equal(3, cut.FindAll("tbody tr").Count);
+        }
+
+        [Fact]
+        public void Should_place_the_rows_in_a_scroll_region()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(3)" PageSize="10">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.Markup.Contains("Item 3", StringComparison.Ordinal));
+
+            // Assert
+            Assert.Single(cut.FindAll(".forma-data-grid-scroller table"));
+        }
+
+        [Fact]
+        public void Should_keep_the_footer_outside_the_scroll_region()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(25)" PageSize="10">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                    <Status>25 rows</Status>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll(".forma-data-grid-footer").Count == 1);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-data-grid-scroller .forma-data-grid-footer"));
+        }
+
+        [Fact]
+        public void Should_throw_when_pagination_is_enabled_without_a_page_size()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act & Assert
+            Assert.Throws<ArgumentOutOfRangeException>(() => ctx.Render(
+                @<FormaDataGrid Items="Items(3)">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>));
+        }
+
+        [Fact]
+        public void Should_return_to_the_first_page_when_pagination_is_turned_off()
+        {
+            // Arrange — page forward so a stale index would survive the round trip
+            using var ctx = new FormaDataGridTests();
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(25)" PageSize="10">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll(".forma-pagination-next").Count == 1);
+            cut.Find(".forma-pagination-next").Click();
+            cut.Find(".forma-pagination-next").Click();
+            cut.WaitForState(() => cut.Markup.Contains("Item 25", StringComparison.Ordinal));
+
+            // Act
+            var grid = cut.FindComponent<FormaDataGrid<GridItem>>();
+            grid.Render(parameters => parameters.Add(p => p.EnablePagination, false));
+            grid.Render(parameters => parameters.Add(p => p.EnablePagination, true));
+
+            // Assert
+            cut.WaitForState(() => cut.FindAll("tbody tr").Count == 10);
+            Assert.Contains("Item 1", cut.Markup, StringComparison.Ordinal);
+            Assert.DoesNotContain("Item 25", cut.Markup, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void Should_prefix_the_sort_query_parameter_when_a_prefix_is_given()
         {
             // Arrange

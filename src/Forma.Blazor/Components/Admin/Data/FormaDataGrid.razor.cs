@@ -26,14 +26,26 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     /// <summary>Column definitions, authored with QuickGrid's own column components.</summary>
     [Parameter, EditorRequired] public RenderFragment Columns { get; set; } = default!;
 
-    /// <summary>Number of rows shown per page.</summary>
-    [Parameter, EditorRequired] public int PageSize { get; set; }
+    /// <summary>Number of rows shown per page. Required unless <see cref="EnablePagination"/> is disabled.</summary>
+    [Parameter] public int PageSize { get; set; }
 
     /// <summary>Identifies a row across reloads, so a row survives its item being replaced by an equal copy.</summary>
     [Parameter] public Func<TGridItem, object> ItemKey { get; set; } = item => item;
 
     /// <summary>Prefix for the page and sort URL parameters, so several grids can share one page without colliding.</summary>
     [Parameter] public string QueryParameterNamePrefix { get; set; } = string.Empty;
+
+    /// <summary>Whether the grid pages its rows. Disable for a single scrollable list, typically paired with <see cref="Virtualize"/>.</summary>
+    [Parameter] public bool EnablePagination { get; set; } = true;
+
+    /// <summary>Renders only the rows near the scroll viewport, for a large list with <see cref="EnablePagination"/> disabled. Requires an ancestor that scrolls.</summary>
+    [Parameter] public bool Virtualize { get; set; }
+
+    /// <summary>Expected height of a row in pixels, which <see cref="Virtualize"/> uses to size the scroll range and pick how many rows to fetch.</summary>
+    [Parameter] public float ItemSize { get; set; } = 32;
+
+    /// <summary>How many rows <see cref="Virtualize"/> renders beyond each edge of the viewport, trading initial load time for scroll smoothness.</summary>
+    [Parameter] public int OverscanCount { get; set; } = 3;
 
     /// <summary>Content shown in the grid's footer, beside the page controls.</summary>
     [Parameter] public RenderFragment? Status { get; set; }
@@ -63,15 +75,24 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
 
     // Select-all spans every item in Items, not just the visible page: QuickGrid owns the
     // sort and the page slice, so the rows on screen are not a set this component can name.
-    private int TotalItemCount => _pagination.TotalItemCount ?? 0;
+    // Only the checkbox column reads this while unpaginated, so the count query stays rare.
+    private int TotalItemCount
+        => EnablePagination ? _pagination.TotalItemCount ?? 0 : Items?.Count() ?? 0;
+
+    // Hidden once pagination is off or unnecessary, even while the status text still shows.
+    private bool ShowPaginator
+        => EnablePagination && TotalItemCount > PageSize;
 
     // Skipped entirely when there is nothing to put in it, so the row's gap leaves no
     // dead space under the table.
-    private bool HasFooter => Status is not null || TotalItemCount > PageSize;
+    private bool HasFooter
+        => Status is not null || ShowPaginator;
 
-    private bool AllSelected => TotalItemCount > 0 && _selectedSet.Count >= TotalItemCount;
+    private bool AllSelected
+        => TotalItemCount > 0 && _selectedSet.Count >= TotalItemCount;
 
-    private bool PartiallySelected => _selectedSet.Count > 0 && !AllSelected;
+    private bool PartiallySelected
+        => _selectedSet.Count > 0 && !AllSelected;
 
     // Host class is merged rather than splatted, so supplying one never drops
     // the component's own class.
@@ -94,7 +115,13 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
         ArgumentNullException.ThrowIfNull(Columns);
         ArgumentNullException.ThrowIfNull(ItemKey);
         ArgumentNullException.ThrowIfNull(QueryParameterNamePrefix);
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(PageSize, 0);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(ItemSize);
+        ArgumentOutOfRangeException.ThrowIfNegative(OverscanCount);
+
+        if (EnablePagination)
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(PageSize, 0);
+        }
 
         if (Items is null == ItemsProvider is null)
         {
@@ -110,8 +137,24 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
                 $"{nameof(EnableCheckboxes)} requires {nameof(Items)}; it is not supported with {nameof(ItemsProvider)}.");
         }
 
-        _pagination.ItemsPerPage = PageSize;
+        // An unpaginated grid leaves Pagination unbound, so virtualization sizes its scroll
+        // range from the real row count rather than a page.
+        if (EnablePagination)
+        {
+            _pagination.ItemsPerPage = PageSize;
+        }
+
         _selectedSet = [.. SelectedItems];
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // Showing every row makes whichever page the grid was left on meaningless, so
+        // turning pagination back on starts from the first page rather than resuming.
+        if (!EnablePagination && _pagination.CurrentPageIndex > 0)
+        {
+            await _pagination.SetCurrentPageIndexAsync(0).ConfigureAwait(false);
+        }
     }
 
     /// <summary>Re-queries the data source and re-renders the current page.</summary>

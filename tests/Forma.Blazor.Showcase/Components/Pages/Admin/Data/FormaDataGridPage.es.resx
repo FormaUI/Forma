@@ -81,4 +81,13 @@
   <data name="ManyRows.Note" xml:space="preserve">
     <value>47 filas paginadas de a 10 por página.</value>
   </data>
+  <data name="Section.Virtualized" xml:space="preserve">
+    <value>Virtualizada</value>
+  </data>
+  <data name="Virtualized.Note" xml:space="preserve">
+    <value>La paginación está desactivada y la caja que la rodea tiene una altura fija, así que las filas se desplazan dentro de la grilla mientras el encabezado y el pie quedan fijos. Solo se renderizan las filas cercanas al área visible.</value>
+  </data>
+  <data name="Virtualized.Status" xml:space="preserve">
+    <value>5.000 filas, desplazadas en lugar de paginadas.</value>
+  </data>
 </root>

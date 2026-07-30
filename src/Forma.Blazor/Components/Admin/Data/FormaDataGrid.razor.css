@@ -6,10 +6,42 @@
    the host. Logical properties throughout for RTL/LTR parity.
    ============================================================ */
 
+/* Caps at whatever height an ancestor bounds the grid to. A percentage
+   max-height resolves to none against an auto-height ancestor, so an
+   unbounded page keeps the plain shrink-to-content layout. */
 .forma-data-grid {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    max-block-size: 100%;
+    min-block-size: 0;
+}
+
+/* The rows scroll, the footer does not. min-block-size overrides the flex
+   item's automatic content-based minimum, which would otherwise refuse to
+   shrink and push the footer out of the box. */
+.forma-data-grid-scroller {
+    flex: 1 1 auto;
+    min-block-size: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+}
+
+/* Column titles stay put while the rows move under them, so they need to
+   paint over the rows rather than let them show through. The default cell
+   spacing would leave gaps between the header cells for rows to appear in,
+   and the rule that separates head from body belongs to the first body row,
+   which scrolls away — so the header carries its own. */
+::deep .forma-data-grid-scroller table {
+    border-spacing: 0;
+}
+
+::deep .forma-data-grid-scroller thead th {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 1;
+    background: var(--forma-data-grid-header-bg, #fff);
+    box-shadow: 0 1px 0 var(--border-color, rgba(98, 105, 118, 0.16));
 }
 
 /* Status at the inline start, page controls at the inline end, stacking when narrow. */

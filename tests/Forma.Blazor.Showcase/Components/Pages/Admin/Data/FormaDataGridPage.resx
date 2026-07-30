@@ -81,4 +81,13 @@
   <data name="ManyRows.Note" xml:space="preserve">
     <value>47 rows paginated at 10 per page.</value>
   </data>
+  <data name="Section.Virtualized" xml:space="preserve">
+    <value>Virtualized</value>
+  </data>
+  <data name="Virtualized.Note" xml:space="preserve">
+    <value>Pagination is off and the surrounding box has a fixed height, so the rows scroll inside the grid while the header and footer stay put. Only the rows near the viewport are rendered.</value>
+  </data>
+  <data name="Virtualized.Status" xml:space="preserve">
+    <value>5,000 rows, scrolled rather than paged.</value>
+  </data>
 </root>

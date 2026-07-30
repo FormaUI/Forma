@@ -22,6 +22,10 @@ public sealed partial class FormaDataGridPage : ComponentBase
         .Select(id => new GridItem(id, $"Sample item {id}"))
         .AsQueryable();
 
+    private static readonly IQueryable<GridItem> _hugeItems = Enumerable.Range(1, 5000)
+        .Select(id => new GridItem(id, $"Sample item {id}"))
+        .AsQueryable();
+
     private IReadOnlyList<Employee> _selected = [];
 
     private Employee? _lastClicked;

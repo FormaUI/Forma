@@ -79,3 +79,18 @@
         </FormaDataGrid>
     </div>
 </div>
+
+<div class="demo-section">
+    <h2>@L["Section.Virtualized"]</h2>
+    <p class="desc">@L["Virtualized.Note"]</p>
+    <div class="demo-box demo-box-bounded">
+        <FormaDataGrid Items="_hugeItems" EnablePagination="false" Virtualize="true"
+                       QueryParameterNamePrefix="virtualized">
+            <Columns>
+                <PropertyColumn Property="@(item => item.Id)" />
+                <PropertyColumn Property="@(item => item.Title)" />
+            </Columns>
+            <Status>@L["Virtualized.Status"]</Status>
+        </FormaDataGrid>
+    </div>
+</div>

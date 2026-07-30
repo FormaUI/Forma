@@ -81,4 +81,13 @@
   <data name="ManyRows.Note" xml:space="preserve">
     <value>47 שורות מחולקות ל-10 בכל עמוד.</value>
   </data>
+  <data name="Section.Virtualized" xml:space="preserve">
+    <value>וירטואליזציה</value>
+  </data>
+  <data name="Virtualized.Note" xml:space="preserve">
+    <value>העימוד כבוי ולתיבה שמסביב יש גובה קבוע, ולכן השורות נגללות בתוך הטבלה בעוד הכותרת והכותרת התחתונה נשארות במקומן. רק השורות שקרובות לאזור הנראה מרונדרות.</value>
+  </data>
+  <data name="Virtualized.Status" xml:space="preserve">
+    <value>5,000 שורות, בגלילה במקום בעימוד.</value>
+  </data>
 </root>
