@@ -82,7 +82,7 @@ These components form the shell of every admin page. Build first.
 | **Used in** | pages, products, orders, leads, comments, users, coupons (all 7 main list pages) |
 | **Parameters** | `IQueryable<TItem> Items`, `RenderFragment Columns`, `bool ShowCheckboxes`, `EventCallback<TItem> OnRowClick`, `PaginationState Pagination` |
 | **Columns** | `FormaDataGridColumn<TItem>` — `Title`, `Property`, `Sortable`, `CssClass`, `RenderFragment<TItem> ChildContent` (for custom cell rendering) |
-| **Blazor approach** | Extend/wrap `Microsoft.AspNetCore.Components.QuickGrid`. QuickGrid provides sorting, pagination, column templates natively. Add: checkbox column, action column, CSS class system, mobile responsive column hiding |
+| **Blazor approach** | Extend/wrap `Microsoft.AspNetCore.Components.QuickGrid`. QuickGrid provides sorting, column templates, and its own `PaginationState`/`Paginator` natively. `FormaDataGrid` bridges its `PaginationState` to `FormaPagination` for the page controls, so the grid depends on the paginator — never the reverse. Add: checkbox column, action column, CSS class system, mobile responsive column hiding |
 
 ### 8. `FormaMassActions`
 
@@ -111,14 +111,14 @@ These components form the shell of every admin page. Build first.
 | **Parameters** | `int Used`, `int Max`, `string? Label` |
 | **Blazor approach** | Static SSR. Optionally add a progress bar visual. Change color when approaching limit |
 
-### 11. `FormaPagination`
+### 11. `FormaPagination` ✅
 
 | | |
 |---|---|
 | **Old pattern** | Server-rendered page links: `<a class="page">1</a> <a class="page">2</a>...`, custom paging in code-behind with `PageSize`, `PageIndex`, total count |
 | **Used in** | All list pages, image library |
-| **Parameters** | Works with `PaginationState` from QuickGrid, or standalone: `int TotalItems`, `int PageSize`, `int CurrentPage`, `EventCallback<int> OnPageChanged` |
-| **Blazor approach** | QuickGrid has built-in `Paginator`. For standalone use (e.g., image library), create a simple paginator component |
+| **Parameters** | Standalone, no knowledge of QuickGrid or any other component: `int TotalItems`, `int PageSize`, `int CurrentPage`, `EventCallback<int> OnPageChanged` |
+| **Blazor approach** | A self-contained paginator, usable on its own (e.g. the image library) or composed into `FormaDataGrid`. Dependency direction is one-way: larger components adapt to `FormaPagination`, it never adapts to them |
 
 ---
 
@@ -341,7 +341,7 @@ Components are ordered by dependency and reuse frequency:
 | **Phase 1** | `FormaModal` ✅, `FormaConfirmDialog` ✅, `FormaToast` ✅ | Infrastructure — everything depends on modals and notifications |
 | **Phase 2** | `FormaPageHeader` ✅, `FormaToolbar` ✅, `FormaTabs` ✅ | Layout — the shell of every admin page |
 | **Phase 3** | `FormaFloatingLabelField` ✅, `FormaToggleSwitch` ✅, `FormaPasswordInput`, `FormaCurrencyInput`, `FormaRangeSlider`, `FormaDatePicker`, `FormaCustomSelect` | Form inputs — needed before building any edit forms |
-| **Phase 4** | `FormaDataGrid<TItem>`, `FormaMassActions`, `FormaStatusBadge` ✅, `FormaCapacityIndicator`, `FormaPagination` | Data display — needed for list pages |
+| **Phase 4** | `FormaDataGrid<TItem>`, `FormaMassActions`, `FormaStatusBadge` ✅, `FormaCapacityIndicator`, `FormaPagination` ✅ | Data display — needed for list pages |
 | **Phase 5** | `FormaSortableList<TItem>`, `FormaMultiSelectDropdown`, `FormaCategorySelector`, `FormaDropdownMenu`, `FormaColorPicker` | Interactive widgets — needed for editor pages |
 | **Phase 6** | `FormaImagePicker`, `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components — built when their feature pages are built |
 | **Phase 7** | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor` | Complex editors — built alongside their specific pages |
