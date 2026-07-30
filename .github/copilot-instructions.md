@@ -1,6 +1,6 @@
 # Forma.Blazor — Copilot Instructions
 
-A reusable Blazor **admin component library**. **.NET 10 · C# latest · Razor Class Library ·
+A reusable Blazor **admin component library**. **.NET 11 · C# latest · Razor Class Library ·
 Interactive Server · JS-free by default.**
 
 ## Source of truth
