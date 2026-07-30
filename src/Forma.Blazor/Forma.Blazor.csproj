@@ -16,6 +16,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="11.0.0-preview.6.26359.118" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\Forma.Blazor.Abstractions\Forma.Blazor.Abstractions.csproj" />
     </ItemGroup>
 

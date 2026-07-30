@@ -1,0 +1,47 @@
+/* ============================================================
+   FormaDataGrid — CSS isolation
+   Wraps QuickGrid with a Forma-styled checkbox column and spacing
+   down to the FormaPagination footer. QuickGrid's own chrome (borders,
+   sort indicators) comes from its bundled stylesheet, referenced by
+   the host. Logical properties throughout for RTL/LTR parity.
+   ============================================================ */
+
+.forma-data-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Status at the inline start, page controls at the inline end, stacking when narrow. */
+.forma-data-grid-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.forma-data-grid-status {
+    color: var(--text-muted, #626976);
+    font-size: 0.875rem;
+}
+
+/* Sized in whole pixels, not em: a fractional box lands on a different sub-pixel
+   offset in every row and the borders rasterise unevenly down the column. */
+.forma-data-grid-checkbox {
+    inline-size: 16px;
+    block-size: 16px;
+    accent-color: var(--main, #0d6efd);
+}
+
+/* QuickGrid pads header and body cells by different amounts and wraps header content
+   in a flex box, so the selection column states its own box on both sides of that. */
+::deep .forma-data-grid-select-column {
+    inline-size: 3rem;
+    padding-inline: 0;
+    text-align: center;
+}
+
+::deep .forma-data-grid-select-column .col-header-content {
+    justify-content: center;
+}

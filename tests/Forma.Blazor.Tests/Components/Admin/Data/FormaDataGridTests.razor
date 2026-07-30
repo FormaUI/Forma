@@ -1,0 +1,330 @@
+@inherits BunitContext
+@using AngleSharp.Dom
+
+@code {
+    public sealed class Component
+    {
+        private static IQueryable<GridItem> Items(int count) => Enumerable.Range(1, count)
+            .Select(id => new GridItem(id, $"Item {id}"))
+            .AsQueryable();
+
+        [Fact]
+        public void Should_not_render_checkboxes_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(3)" PageSize="10">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.Markup.Contains("Item 3", StringComparison.Ordinal));
+
+            // Assert
+            Assert.Empty(cut.FindAll("input[type=checkbox]"));
+        }
+
+        [Fact]
+        public void Should_render_one_checkbox_per_row_plus_a_select_all_when_checkboxes_are_enabled()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckboxes="true">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
+
+            // Assert
+            Assert.Equal(3, cut.FindAll("tbody input[type=checkbox]").Count);
+            Assert.Single(cut.FindAll("thead input[type=checkbox]"));
+        }
+
+        [Fact]
+        public void Should_invoke_selected_items_changed_with_the_checked_row()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            IReadOnlyList<GridItem>? changedTo = null;
+
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckboxes="true"
+                                SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
+
+            // Act
+            cut.FindAll("tbody input[type=checkbox]")[0].Change(true);
+
+            // Assert
+            var selected = Assert.Single(changedTo!);
+            Assert.Equal(1, selected.Id);
+        }
+
+        [Fact]
+        public void Should_select_every_item_when_the_select_all_checkbox_is_checked()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            IReadOnlyList<GridItem>? changedTo = null;
+
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(25)" PageSize="10" EnableCheckboxes="true"
+                                SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
+
+            // Act
+            cut.Find("thead input[type=checkbox]").Change(true);
+
+            // Assert — every item, not just the visible page
+            Assert.Equal(25, changedTo!.Count);
+        }
+
+        [Fact]
+        public void Should_clear_the_selection_when_the_select_all_checkbox_is_unchecked()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            IReadOnlyList<GridItem>? changedTo = null;
+
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckboxes="true"
+                                SelectedItems="Items(3).ToArray()"
+                                SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
+
+            // Act
+            cut.Find("thead input[type=checkbox]").Change(false);
+
+            // Assert
+            Assert.Empty(changedTo!);
+        }
+
+        [Fact]
+        public void Should_not_render_pagination_when_all_items_fit_on_one_page()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(3)" PageSize="10">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.Markup.Contains("Item 3", StringComparison.Ordinal));
+
+            // Assert
+            Assert.Empty(cut.FindAll("nav.forma-pagination"));
+        }
+
+        [Fact]
+        public void Should_render_pagination_when_there_are_multiple_pages()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(25)" PageSize="10">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll("nav.forma-pagination").Count == 1);
+
+            // Assert
+            Assert.Single(cut.FindAll("nav.forma-pagination"));
+        }
+
+        [Fact]
+        public void Should_render_rows_from_an_items_provider()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            GridItemsProvider<GridItem> provider = request => ValueTask.FromResult(
+                GridItemsProviderResult.From(
+                    Items(25).Skip(request.StartIndex).Take(request.Count ?? 25).ToArray(),
+                    totalItemCount: 25));
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataGrid ItemsProvider="provider" PageSize="10">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.Markup.Contains("Item 10", StringComparison.Ordinal));
+
+            // Assert
+            Assert.Contains("Item 1", cut.Markup, StringComparison.Ordinal);
+            Assert.DoesNotContain("Item 11", cut.Markup, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_throw_when_neither_items_nor_items_provider_is_supplied()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => ctx.Render(
+                @<FormaDataGrid TGridItem="GridItem" PageSize="10">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>));
+
+            // Assert
+            Assert.Contains("exactly one", ex.Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_throw_when_both_items_and_items_provider_are_supplied()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            GridItemsProvider<GridItem> provider = _ => ValueTask.FromResult(
+                GridItemsProviderResult.From(Array.Empty<GridItem>(), 0));
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => ctx.Render(
+                @<FormaDataGrid Items="Items(3)" ItemsProvider="provider" PageSize="10">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>));
+
+            // Assert
+            Assert.Contains("exactly one", ex.Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_throw_when_checkboxes_are_combined_with_an_items_provider()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            GridItemsProvider<GridItem> provider = _ => ValueTask.FromResult(
+                GridItemsProviderResult.From(Array.Empty<GridItem>(), 0));
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => ctx.Render(
+                @<FormaDataGrid ItemsProvider="provider" PageSize="10" EnableCheckboxes="true">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>));
+
+            // Assert
+            Assert.Contains(nameof(FormaDataGrid<GridItem>.EnableCheckboxes), ex.Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task Should_re_query_the_data_source_when_refresh_is_requested()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var calls = 0;
+            GridItemsProvider<GridItem> provider = _ =>
+            {
+                calls++;
+                return ValueTask.FromResult(GridItemsProviderResult.From(Items(3).ToArray(), 3));
+            };
+
+            var cut = ctx.Render(
+                @<FormaDataGrid ItemsProvider="provider" PageSize="10">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => calls > 0);
+            var before = calls;
+            var grid = cut.FindComponent<FormaDataGrid<GridItem>>().Instance;
+
+            // Act
+            await cut.InvokeAsync(grid.RefreshDataAsync);
+
+            // Assert
+            Assert.True(calls > before);
+        }
+
+        [Fact]
+        public void Should_render_status_content_in_the_grid_footer()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(3)" PageSize="10">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                    <Status>3 rows</Status>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll(".forma-data-grid-status").Count == 1);
+
+            // Assert
+            Assert.Equal("3 rows", cut.Find(".forma-data-grid-status").TextContent);
+        }
+
+        [Fact]
+        public void Should_not_render_a_footer_when_there_is_no_status_and_only_one_page()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(3)" PageSize="10">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.Markup.Contains("Item 3", StringComparison.Ordinal));
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-data-grid-footer"));
+        }
+
+        [Fact]
+        public void Should_prefix_the_sort_query_parameter_when_a_prefix_is_given()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(3)" PageSize="10" QueryParameterNamePrefix="products">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" Sortable="true" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll("thead a").Count == 1);
+
+            // Assert
+            Assert.Contains("products_sort", cut.Find("thead a").GetAttribute("href"), StringComparison.Ordinal);
+        }
+
+        private sealed record GridItem(int Id, string Title);
+    }
+}

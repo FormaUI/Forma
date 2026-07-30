@@ -1,0 +1,81 @@
+@page "/data-grid"
+@attribute [ShowcasePage("FormaDataGrid")]
+@rendermode InteractiveServer
+
+<h1>FormaDataGrid</h1>
+<p class="desc">@L["Page.Description"]</p>
+
+<div class="demo-section">
+    <h2>@L["Section.Basic"]</h2>
+    <div class="demo-box">
+        <FormaDataGrid Items="_employees" PageSize="5" QueryParameterNamePrefix="basic">
+            <Columns>
+                <PropertyColumn Property="@(e => e.Id)" Sortable="true" />
+                <PropertyColumn Property="@(e => e.Name)" Sortable="true" />
+                <PropertyColumn Property="@(e => e.Department)" Sortable="true" />
+            </Columns>
+        </FormaDataGrid>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Section.Checkboxes"]</h2>
+    <div class="demo-box">
+        <FormaDataGrid TGridItem="Employee" Items="_employees" PageSize="5" EnableCheckboxes="true"
+                       QueryParameterNamePrefix="selectable"
+                       SelectedItems="_selected" SelectedItemsChanged="HandleSelectionChanged">
+            <Columns>
+                <PropertyColumn Property="@(e => e.Id)" />
+                <PropertyColumn Property="@(e => e.Name)" />
+                <PropertyColumn Property="@(e => e.Department)" />
+            </Columns>
+            <Status>@L["Checkboxes.Note", _selected.Count]</Status>
+        </FormaDataGrid>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Section.RowClick"]</h2>
+    <div class="demo-box">
+        <FormaDataGrid TGridItem="Employee" Items="_employees" PageSize="5" OnRowClick="HandleRowClick"
+                       QueryParameterNamePrefix="clickable">
+            <Columns>
+                <PropertyColumn Property="@(e => e.Id)" />
+                <PropertyColumn Property="@(e => e.Name)" />
+                <PropertyColumn Property="@(e => e.Department)" />
+            </Columns>
+            <Status>@L["RowClick.Note", _lastClicked?.Name ?? L["RowClick.None"]]</Status>
+        </FormaDataGrid>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Section.CustomColumn"]</h2>
+    <p class="desc">@L["CustomColumn.Note"]</p>
+    <div class="demo-box">
+        <FormaDataGrid TGridItem="Employee" Items="_employees" PageSize="5" RowClass="GetRowClass"
+                       QueryParameterNamePrefix="styled">
+            <Columns>
+                <PropertyColumn Property="@(e => e.Id)" />
+                <PropertyColumn Property="@(e => e.Name)" />
+                <TemplateColumn Title="@L["Column.Status"]">
+                    <FormaStatusBadge Text="@(context.IsActive ? L["Status.Active"] : L["Status.Inactive"])"
+                                      Status="@(context.IsActive ? "active" : "inactive")" />
+                </TemplateColumn>
+            </Columns>
+        </FormaDataGrid>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Section.ManyRows"]</h2>
+    <div class="demo-box">
+        <FormaDataGrid Items="_manyItems" PageSize="10" QueryParameterNamePrefix="many">
+            <Columns>
+                <PropertyColumn Property="@(item => item.Id)" Sortable="true" />
+                <PropertyColumn Property="@(item => item.Title)" Sortable="true" />
+            </Columns>
+            <Status>@L["ManyRows.Note"]</Status>
+        </FormaDataGrid>
+    </div>
+</div>

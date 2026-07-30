@@ -1,0 +1,49 @@
+@namespace Forma.Blazor.Components.Admin.Data
+@attribute [CascadingTypeParameter(nameof(TGridItem))]
+@typeparam TGridItem where TGridItem : notnull
+
+<div @attributes="AdditionalAttributes" class="@CssClass">
+    <QuickGrid @ref="_grid"
+               Items="Items"
+               ItemsProvider="ItemsProvider"
+               ItemKey="ItemKey"
+               QueryParameterNamePrefix="@QueryParameterNamePrefix"
+               Pagination="_pagination"
+               RowClass="RowClass"
+               OnRowClick="OnRowClick">
+        @if (EnableCheckboxes)
+        {
+            <TemplateColumn Class="forma-data-grid-select-column">
+                <HeaderTemplate>
+                    <input type="checkbox"
+                           class="forma-data-grid-checkbox"
+                           @ref="_selectAllElement"
+                           aria-label="@L["SelectAll"]"
+                           checked="@AllSelected"
+                           @onchange="args => ToggleAllAsync((bool)args.Value!)" />
+                </HeaderTemplate>
+                <ChildContent Context="row">
+                    <input type="checkbox"
+                           class="forma-data-grid-checkbox"
+                           aria-label="@L["SelectRow"]"
+                           checked="@IsSelected(row)"
+                           @onchange="args => ToggleSelectionAsync(row, (bool)args.Value!)" />
+                </ChildContent>
+            </TemplateColumn>
+        }
+        @Columns
+    </QuickGrid>
+
+    @if (HasFooter)
+    {
+        <div class="forma-data-grid-footer">
+            <div class="forma-data-grid-status" role="status">@Status</div>
+
+            <FormaPagination TotalItems="@TotalItemCount"
+                             PageSize="PageSize"
+                             CurrentPage="@(_pagination.CurrentPageIndex + 1)"
+                             EnableButtons="true"
+                             OnPageChanged="HandlePageChangedAsync" />
+        </div>
+    }
+</div>
