@@ -8,14 +8,14 @@
  */
 
 /**
- * @param {HTMLInputElement} inputEl
+ * @param {HTMLInputElement} input
  */
-export function initAutofillDetection(inputEl) {
-    inputEl.addEventListener('animationstart', (e) => {
+export function initAutofillDetection(input) {
+    input.addEventListener('animationstart', (e) => {
         if (e.animationName === 'forma-autofill-start') {
-            inputEl.classList.add('has-value');
+            input.classList.add('has-value');
         } else if (e.animationName === 'forma-autofill-cancel') {
-            inputEl.classList.remove('has-value');
+            input.classList.remove('has-value');
         }
     });
 }

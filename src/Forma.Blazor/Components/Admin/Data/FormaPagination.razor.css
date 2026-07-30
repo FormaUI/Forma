@@ -1,0 +1,98 @@
+/* ============================================================
+   FormaPagination — CSS isolation
+   Numbered page navigator. Static markup with click handlers,
+   no JavaScript. Logical properties throughout for RTL/LTR
+   parity — the browser mirrors the layout, not the code.
+   ============================================================ */
+
+.forma-pagination {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.forma-pagination-list {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.forma-pagination-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.25em;
+    padding-block: 0.4em;
+    padding-inline: 0.65em;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--text);
+    font-size: 0.9rem;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+button.forma-pagination-link:hover:not(:disabled) {
+    background: var(--hover-bg);
+}
+
+button.forma-pagination-link:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.forma-pagination-current {
+    background: var(--main);
+    border-color: var(--main);
+    color: #fff;
+    cursor: default;
+}
+
+.forma-pagination-ellipsis {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.25em;
+    color: var(--text-muted);
+}
+
+.forma-pagination-link:focus-visible {
+    outline: 2px solid var(--main);
+    outline-offset: 1px;
+}
+
+/* ── Jump to page ── */
+.forma-pagination-jump {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.forma-pagination-jump-label {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.forma-pagination-jump-input {
+    inline-size: 5.5em;
+    padding-block: 0.4em;
+    padding-inline: 0.5em;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--text);
+    font-size: 0.9rem;
+    line-height: 1.2;
+    text-align: center;
+}
+
+.forma-pagination-jump-input:focus-visible {
+    outline: 2px solid var(--main);
+    outline-offset: 1px;
+}
