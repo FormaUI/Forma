@@ -42,8 +42,6 @@
     @if (HasFooter)
     {
         <div class="forma-data-grid-footer">
-            <div class="forma-data-grid-status" role="status">@Status</div>
-
             @if (ShowPaginator)
             {
                 <FormaPagination TotalItems="@TotalItemCount"
@@ -52,6 +50,8 @@
                                  EnableButtons="true"
                                  OnPageChanged="HandlePageChangedAsync" />
             }
+
+            <div class="forma-data-grid-status" role="status">@Status</div>
         </div>
     }
 </div>
