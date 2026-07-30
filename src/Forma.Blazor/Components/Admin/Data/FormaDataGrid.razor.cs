@@ -39,7 +39,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     [Parameter] public bool EnablePagination { get; set; } = true;
 
     /// <summary>Which parts of the page controls are shown.</summary>
-    [Parameter] public FormaPaginationOptions PaginationOptions { get; set; } = new() { EnableButtons = true };
+    [Parameter] public FormaPaginationOptions PaginationOptions { get; set; } = FormaPaginationOptions.Default;
 
     /// <summary>Renders only the rows near the scroll viewport, for a large list with <see cref="EnablePagination"/> disabled. Requires an ancestor that scrolls.</summary>
     [Parameter] public bool Virtualize { get; set; }

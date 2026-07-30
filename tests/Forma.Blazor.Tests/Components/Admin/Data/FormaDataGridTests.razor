@@ -488,7 +488,7 @@
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
-            var options = new FormaPaginationOptions { EnableButtons = true, EnableInputBox = false };
+            var options = new FormaPaginationOptions { EnableNavigationSteps = true, EnableNavigationInput = false };
 
             // Act
             var cut = ctx.Render(

@@ -11,7 +11,7 @@
     <p class="desc">@L["Pagination.FewPages.Note"]</p>
     <div class="demo-box">
         <FormaPagination TotalItems="65" PageSize="10" CurrentPage="_fewPage" OnPageChanged="HandleFewPageChanged"
-                         Options="ButtonsOnly" aria-label="@L["Pagination.Section.FewPages"]" />
+                         Options="NavigationStepsOnly" aria-label="@L["Pagination.Section.FewPages"]" />
         <p class="demo-output">@L["Pagination.CurrentPage.Label"]: <code>@_fewPage</code></p>
     </div>
 </div>
@@ -21,7 +21,7 @@
     <p class="desc">@L["Pagination.ManyPages.Note"]</p>
     <div class="demo-box">
         <FormaPagination TotalItems="4000" PageSize="20" CurrentPage="_manyPage" OnPageChanged="HandleManyPageChanged"
-                         Options="ButtonsOnly" aria-label="@L["Pagination.Section.ManyPages"]" />
+                         Options="NavigationStepsOnly" aria-label="@L["Pagination.Section.ManyPages"]" />
         <p class="demo-output">@L["Pagination.CurrentPage.Label"]: <code>@_manyPage</code></p>
     </div>
 </div>
@@ -35,7 +35,7 @@
             <PropertyColumn Property="@(item => item.Title)" Title="@L["Pagination.Column.Title"]" />
         </QuickGrid>
         <FormaPagination TotalItems="_gridItems.Count" PageSize="GridPageSize" CurrentPage="_gridPage" OnPageChanged="HandleGridPageChanged"
-                         Options="ButtonsOnly" aria-label="@L["Pagination.Section.WithGrid"]" />
+                         Options="NavigationStepsOnly" aria-label="@L["Pagination.Section.WithGrid"]" />
     </div>
 </div>
 
@@ -44,7 +44,7 @@
     <p class="desc">@L["Pagination.PageInput.Note"]</p>
     <div class="demo-box">
         <FormaPagination TotalItems="4000" PageSize="20" CurrentPage="_jumpPage" OnPageChanged="HandleJumpPageChanged"
-                         Options="ButtonsAndInput" aria-label="@L["Pagination.Section.PageInput"]" />
+                         Options="NavigationBar" aria-label="@L["Pagination.Section.PageInput"]" />
         <p class="demo-output">@L["Pagination.CurrentPage.Label"]: <code>@_jumpPage</code></p>
     </div>
 </div>
@@ -54,7 +54,7 @@
     <p class="desc">@L["Pagination.InputOnly.Note"]</p>
     <div class="demo-box">
         <FormaPagination TotalItems="4000" PageSize="20" CurrentPage="_inputOnlyPage" OnPageChanged="HandleInputOnlyPageChanged"
-                         aria-label="@L["Pagination.Section.InputOnly"]" />
+                         Options="NavigationInput" aria-label="@L["Pagination.Section.InputOnly"]" />
         <p class="demo-output">@L["Pagination.CurrentPage.Label"]: <code>@_inputOnlyPage</code></p>
     </div>
 </div>
@@ -64,7 +64,7 @@
     <p class="desc">@L["Pagination.BareInput.Note"]</p>
     <div class="demo-box">
         <FormaPagination TotalItems="4000" PageSize="20" CurrentPage="_barePage" OnPageChanged="HandleBarePageChanged"
-                         Options="InputWithoutGoButton"
+                         Options="NavigationInputOnly"
                          aria-label="@L["Pagination.Section.BareInput"]" />
         <p class="demo-output">@L["Pagination.CurrentPage.Label"]: <code>@_barePage</code></p>
     </div>
@@ -89,7 +89,7 @@
     <h2>@L["Pagination.Section.SinglePage"]</h2>
     <p class="desc">@L["Pagination.SinglePage.Note"]</p>
     <div class="demo-box">
-        <FormaPagination TotalItems="8" PageSize="10" CurrentPage="1" Options="ButtonsAndInput" />
+        <FormaPagination TotalItems="8" PageSize="10" CurrentPage="1" Options="NavigationBar" />
     </div>
 </div>
 
@@ -98,6 +98,6 @@
     <p class="desc">@L["Pagination.OutOfRange.Note"]</p>
     <div class="demo-box">
         <FormaPagination TotalItems="30" PageSize="10" CurrentPage="99"
-                         Options="ButtonsOnly" aria-label="@L["Pagination.Section.OutOfRange"]" />
+                         Options="NavigationStepsOnly" aria-label="@L["Pagination.Section.OutOfRange"]" />
     </div>
 </div>

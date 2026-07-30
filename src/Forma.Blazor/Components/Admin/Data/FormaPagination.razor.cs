@@ -44,7 +44,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
 
     private int PageCount => Math.Max(1, (int)Math.Ceiling(TotalItems / (double)PageSize));
 
-    private bool ShowsInputBox => PageCount > 1 && Options.EnableInputBox;
+    private bool ShowsInputBox => PageCount > 1 && Options.EnableNavigationInput;
 
     // The page actually shown. A caller's page can fall outside the range whenever the
     // item count shrinks under it — a filter narrowing, a delete, a hand-edited query

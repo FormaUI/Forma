@@ -1,9 +1,9 @@
 @namespace Forma.Blazor.Components.Admin.Data
 
-@if (PageCount > 1 && (Options.EnableButtons || Options.EnableInputBox))
+@if (PageCount > 1 && (Options.EnableNavigationSteps || Options.EnableNavigationInput))
 {
     <nav @attributes="AdditionalAttributes" class="@CssClass" aria-label="@NavLabel">
-        @if (Options.EnableButtons)
+        @if (Options.EnableNavigationSteps)
         {
             <ul class="forma-pagination-list">
                 <li>
@@ -52,7 +52,7 @@
             </ul>
         }
 
-        @if (Options.EnableInputBox)
+        @if (Options.EnableNavigationInput)
         {
             <div class="forma-pagination-jump">
                 <label class="forma-pagination-jump-label" for="@_pageInputId">@L["GoToPage"]</label>

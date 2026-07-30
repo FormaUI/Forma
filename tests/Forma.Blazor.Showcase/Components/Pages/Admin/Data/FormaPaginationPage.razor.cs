@@ -8,13 +8,16 @@ public sealed partial class FormaPaginationPage : ComponentBase
 {
     [Inject] private IStringLocalizer<FormaPaginationPage> L { get; set; } = default!;
 
-    private static readonly FormaPaginationOptions ButtonsOnly =
-        new() { EnableButtons = true, EnableInputBox = false };
+    private static readonly FormaPaginationOptions NavigationStepsOnly =
+        new() { EnableNavigationSteps = true, EnableNavigationInput = false };
 
-    private static readonly FormaPaginationOptions ButtonsAndInput =
-        new() { EnableButtons = true };
+    private static readonly FormaPaginationOptions NavigationBar =
+        new() { EnableNavigationSteps = true };
 
-    private static readonly FormaPaginationOptions InputWithoutGoButton =
+    private static readonly FormaPaginationOptions NavigationInput =
+        new() { EnableNavigationSteps = false };
+
+    private static readonly FormaPaginationOptions NavigationInputOnly =
         new() { EnableGoButton = false };
 
     private static readonly IReadOnlyList<GridItem> _gridItems = Enumerable.Range(1, 47)
