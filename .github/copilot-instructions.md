@@ -101,6 +101,28 @@ the component that owns them.
   `[Parameter, EditorRequired]` for mandatory ones. Add
   `[Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? AdditionalAttributes`
   when the root element should accept pass-through attributes, and splat with `@attributes`.
+- **Group into an `Options` record** (`FormaPaginationOptions`, `FormaModalOptions`) when any
+  of these hold:
+  - Three or more `bool`/config parameters share one concern nameable in a single sentence
+    ("which parts of the pager are shown", "default close and footer-action behavior") and
+    travel together — callers reach for one named combination at a time and multiple call
+    sites reuse the same combination as a preset.
+  - The concern is one a future phase is expected to grow (roadmap-tracked settings, a
+    feature area still being fleshed out) — starting grouped avoids a later breaking
+    rename from a bare parameter to a record.
+  - The component is designed to be forwarded through a composing parent (`FormaDataGrid`
+    passing `PaginationOptions` to `FormaPagination`) — a record is one parameter to thread
+    through, not N.
+
+  Keep parameters standalone when each gates an independent feature area with its own
+  dependents (`FormaDataGrid`'s `EnablePagination`, `EnableCheckboxes`, `Virtualize` +
+  `ItemSize` + `OverscanCount`), or when there's a single flag with no siblings and no
+  planned growth. The record is a `sealed record {Component}Options` beside the component,
+  `init`-only properties matching the prior defaults, and a static `Default` property when a
+  bare `new()` is the common case. Name the component's own parameter `Options`; a composing
+  parent that forwards a child's options through prefixes it with the child's concern
+  instead (`PaginationOptions` on `FormaDataGrid`) so it doesn't collide with the parent's
+  own `Options`, if it has one.
 - **XML `<summary>` on every public parameter and public type.** One line, describing *what
   it is* — no history, no cross-references, no "why it lives here".
 - **Validate in `OnParametersSet`** with the throw-helpers:
