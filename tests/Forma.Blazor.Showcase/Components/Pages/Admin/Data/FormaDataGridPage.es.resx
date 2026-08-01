@@ -108,4 +108,46 @@
   <data name="Virtualized.Status" xml:space="preserve">
     <value>5.000 filas, desplazadas en lugar de paginadas.</value>
   </data>
+  <data name="Section.RowActions" xml:space="preserve">
+    <value>Acciones de fila</value>
+  </data>
+  <data name="RowActions.Note" xml:space="preserve">
+    <value>Una columna de acciones es un TemplateColumn común — la grilla no agrega componentes de botón propios. En un panel real estos navegan a una página de edición o abren un diálogo de confirmación.</value>
+  </data>
+  <data name="Column.Actions" xml:space="preserve">
+    <value>Acciones</value>
+  </data>
+  <data name="Column.Name" xml:space="preserve">
+    <value>Nombre</value>
+  </data>
+  <data name="Column.Department" xml:space="preserve">
+    <value>Departamento</value>
+  </data>
+  <data name="RowActions.View" xml:space="preserve">
+    <value>Ver</value>
+  </data>
+  <data name="RowActions.Edit" xml:space="preserve">
+    <value>Editar</value>
+  </data>
+  <data name="RowActions.Delete" xml:space="preserve">
+    <value>Eliminar</value>
+  </data>
+  <data name="RowActions.Status" xml:space="preserve">
+    <value>Última acción: {0}</value>
+  </data>
+  <data name="RowActions.None" xml:space="preserve">
+    <value>ninguna aún</value>
+  </data>
+  <data name="Section.InlineEditing" xml:space="preserve">
+    <value>Edición en línea dentro de un formulario</value>
+  </data>
+  <data name="InlineEditing.Note" xml:space="preserve">
+    <value>La grilla se anida dentro de un EditForm, así que los editores de una plantilla de columna se suman al EditContext ambiental y validan contra anotaciones de datos. El estado de edición y la copia de trabajo pertenecen a la página: la edición escribe en un borrador separado, de modo que Cancelar lo descarta y Guardar lo copia de vuelta.</value>
+  </data>
+  <data name="InlineEditing.Save" xml:space="preserve">
+    <value>Guardar</value>
+  </data>
+  <data name="InlineEditing.Cancel" xml:space="preserve">
+    <value>Cancelar</value>
+  </data>
 </root>

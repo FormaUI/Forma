@@ -104,6 +104,82 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["Section.RowActions"]</h2>
+    <p class="desc">@L["RowActions.Note"]</p>
+    <div class="demo-box">
+        <FormaDataGrid TGridItem="Employee" Items="_employees" PageSize="5"
+                       QueryParameterNamePrefix="actions">
+            <Columns>
+                <PropertyColumn Property="@(e => e.Id)" />
+                <PropertyColumn Property="@(e => e.Name)" />
+                <TemplateColumn Title="@L["Column.Actions"]">
+                    <div class="demo-row-actions">
+                        <button type="button" @onclick="() => RecordAction(RowAction.View, context)">@L["RowActions.View"]</button>
+                        <button type="button" @onclick="() => RecordAction(RowAction.Edit, context)">@L["RowActions.Edit"]</button>
+                        <button type="button" @onclick="() => RecordAction(RowAction.Delete, context)">@L["RowActions.Delete"]</button>
+                    </div>
+                </TemplateColumn>
+            </Columns>
+            <Status>@L["RowActions.Status", _lastAction ?? L["RowActions.None"]]</Status>
+        </FormaDataGrid>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Section.InlineEditing"]</h2>
+    <p class="desc">@L["InlineEditing.Note"]</p>
+    <div class="demo-box">
+        @* Renaming EditForm's own context frees `context` for the column templates below. *@
+        <EditForm EditContext="_editContext" OnValidSubmit="SaveEdit" Context="form">
+            <DataAnnotationsValidator />
+
+            <FormaDataGrid TGridItem="EditableEmployee" Items="@_editable.AsQueryable()"
+                           EnablePagination="false" QueryParameterNamePrefix="editing">
+                <Columns>
+                    <PropertyColumn Property="@(e => e.Id)" />
+                    <TemplateColumn Title="@L["Column.Name"]">
+                        @if (IsEditing(context))
+                        {
+                            <InputText @bind-Value="_draft.Name" class="demo-inline-input" />
+                            <ValidationMessage For="@(() => _draft.Name)" />
+                        }
+                        else
+                        {
+                            @context.Name
+                        }
+                    </TemplateColumn>
+                    <TemplateColumn Title="@L["Column.Department"]">
+                        @if (IsEditing(context))
+                        {
+                            <InputText @bind-Value="_draft.Department" class="demo-inline-input" />
+                            <ValidationMessage For="@(() => _draft.Department)" />
+                        }
+                        else
+                        {
+                            @context.Department
+                        }
+                    </TemplateColumn>
+                    <TemplateColumn Title="@L["Column.Actions"]">
+                        <div class="demo-row-actions">
+                            @if (IsEditing(context))
+                            {
+                                <button type="submit">@L["InlineEditing.Save"]</button>
+                                <button type="button" @onclick="CancelEdit">@L["InlineEditing.Cancel"]</button>
+                            }
+                            else
+                            {
+                                <button type="button" disabled="@(_editingId is not null)"
+                                        @onclick="() => BeginEdit(context)">@L["RowActions.Edit"]</button>
+                            }
+                        </div>
+                    </TemplateColumn>
+                </Columns>
+            </FormaDataGrid>
+        </EditForm>
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["Section.ManyRows"]</h2>
     <div class="demo-box">
         <FormaDataGrid Items="_manyItems" PageSize="10" QueryParameterNamePrefix="many">

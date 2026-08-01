@@ -10,3 +10,12 @@
     box-sizing: border-box;
     block-size: 320px;
 }
+
+.demo-row-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.demo-inline-input {
+    inline-size: 100%;
+}

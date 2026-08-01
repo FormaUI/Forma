@@ -108,4 +108,46 @@
   <data name="Virtualized.Status" xml:space="preserve">
     <value>5,000 שורות, בגלילה במקום בעימוד.</value>
   </data>
+  <data name="Section.RowActions" xml:space="preserve">
+    <value>פעולות שורה</value>
+  </data>
+  <data name="RowActions.Note" xml:space="preserve">
+    <value>עמודת פעולות היא TemplateColumn רגיל — הטבלה לא מוסיפה רכיבי כפתור משלה. במערכת ניהול אמיתית הם מנווטים לעמוד עריכה או פותחים דיאלוג אישור.</value>
+  </data>
+  <data name="Column.Actions" xml:space="preserve">
+    <value>פעולות</value>
+  </data>
+  <data name="Column.Name" xml:space="preserve">
+    <value>שם</value>
+  </data>
+  <data name="Column.Department" xml:space="preserve">
+    <value>מחלקה</value>
+  </data>
+  <data name="RowActions.View" xml:space="preserve">
+    <value>הצגה</value>
+  </data>
+  <data name="RowActions.Edit" xml:space="preserve">
+    <value>עריכה</value>
+  </data>
+  <data name="RowActions.Delete" xml:space="preserve">
+    <value>מחיקה</value>
+  </data>
+  <data name="RowActions.Status" xml:space="preserve">
+    <value>הפעולה האחרונה: {0}</value>
+  </data>
+  <data name="RowActions.None" xml:space="preserve">
+    <value>אין עדיין</value>
+  </data>
+  <data name="Section.InlineEditing" xml:space="preserve">
+    <value>עריכה בשורה בתוך טופס</value>
+  </data>
+  <data name="InlineEditing.Note" xml:space="preserve">
+    <value>הטבלה מקוננת בתוך EditForm, ולכן עורכים בתבנית עמודה מצטרפים להקשר האימות הסביבתי ומאמתים מול הערות נתונים. מצב העריכה והעותק הזמני שייכים לעמוד: העריכה נכתבת לטיוטה נפרדת, ולכן ביטול משליך אותה ושמירה מעתיקה אותה בחזרה.</value>
+  </data>
+  <data name="InlineEditing.Save" xml:space="preserve">
+    <value>שמירה</value>
+  </data>
+  <data name="InlineEditing.Cancel" xml:space="preserve">
+    <value>ביטול</value>
+  </data>
 </root>
