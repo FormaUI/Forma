@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 using Microsoft.JSInterop;
 
 namespace Forma.Blazor.Interop;
@@ -11,14 +13,31 @@ internal sealed class JsModule(IJSRuntime js, string path) : IAsyncDisposable
     public async ValueTask InvokeVoidAsync(string identifier, params object?[] args)
     {
         var module = await ImportAsync().ConfigureAwait(false);
-        await module.InvokeVoidAsync(identifier, args).ConfigureAwait(false);
+
+        try
+        {
+            await module.InvokeVoidAsync(identifier, args).ConfigureAwait(false);
+        }
+        catch (JSDisconnectedException ex)
+        {
+            ThrowEnriched(ex);
+        }
     }
 
     /// <summary>Imports the module if needed, then invokes an export returning <typeparamref name="TValue"/>.</summary>
     public async ValueTask<TValue> InvokeAsync<TValue>(string identifier, params object?[] args)
     {
         var module = await ImportAsync().ConfigureAwait(false);
-        return await module.InvokeAsync<TValue>(identifier, args).ConfigureAwait(false);
+
+        try
+        {
+            return await module.InvokeAsync<TValue>(identifier, args).ConfigureAwait(false);
+        }
+        catch (JSDisconnectedException ex)
+        {
+            ThrowEnriched(ex);
+            throw; // Unreachable — ThrowEnriched always throws.
+        }
     }
 
     public async ValueTask DisposeAsync()
@@ -48,4 +67,11 @@ internal sealed class JsModule(IJSRuntime js, string path) : IAsyncDisposable
 
     private Task<IJSObjectReference> ImportAsync()
         => _import ??= js.InvokeAsync<IJSObjectReference>("import", path).AsTask();
+
+    // JSDisconnectedException exposes only a message-only constructor, so the original
+    // cannot be chained as an InnerException — the module path is folded into the message instead.
+    [DoesNotReturn]
+    private void ThrowEnriched(JSDisconnectedException ex)
+        => throw new JSDisconnectedException($"{ex.Message} (module: {path})");
 }
+
