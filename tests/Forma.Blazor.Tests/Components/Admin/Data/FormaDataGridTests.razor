@@ -1,5 +1,6 @@
 @inherits BunitContext
 @using AngleSharp.Dom
+@using System.Globalization
 
 @code {
     public sealed class Component
@@ -35,7 +36,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckboxes="true">
+                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -55,7 +56,7 @@
             IReadOnlyList<GridItem>? changedTo = null;
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckboxes="true"
+                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true"
                                 SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
@@ -79,7 +80,7 @@
             IReadOnlyList<GridItem>? changedTo = null;
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(25)" PageSize="10" EnableCheckboxes="true"
+                @<FormaDataGrid Items="Items(25)" PageSize="10" EnableCheckedSelection="true"
                                 SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
@@ -88,7 +89,7 @@
             cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
 
             // Act
-            cut.Find("thead input[type=checkbox]").Change(true);
+            cut.Find("thead input[type=checkbox]").Click();
 
             // Assert — every item, not just the visible page
             Assert.Equal(25, changedTo!.Count);
@@ -102,7 +103,7 @@
             IReadOnlyList<GridItem>? changedTo = null;
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckboxes="true"
+                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true"
                                 SelectedItems="Items(3).ToArray()"
                                 SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
                     <Columns>
@@ -112,7 +113,7 @@
             cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
 
             // Act
-            cut.Find("thead input[type=checkbox]").Change(false);
+            cut.Find("thead input[type=checkbox]").Click();
 
             // Assert
             Assert.Empty(changedTo!);
@@ -219,7 +220,7 @@
         }
 
         [Fact]
-        public void Should_throw_when_checkboxes_are_combined_with_an_items_provider()
+        public void Should_throw_when_checked_selection_is_combined_with_an_items_provider()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
@@ -228,14 +229,14 @@
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(() => ctx.Render(
-                @<FormaDataGrid ItemsProvider="provider" PageSize="10" EnableCheckboxes="true">
+                @<FormaDataGrid ItemsProvider="provider" PageSize="10" EnableCheckedSelection="true">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
                 </FormaDataGrid>));
 
             // Assert
-            Assert.Contains(nameof(FormaDataGrid<GridItem>.EnableCheckboxes), ex.Message, StringComparison.Ordinal);
+            Assert.Contains(nameof(FormaDataGrid<GridItem>.EnableCheckedSelection), ex.Message, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -521,6 +522,429 @@
             // Assert
             Assert.Contains("products_sort", cut.Find("thead a").GetAttribute("href"), StringComparison.Ordinal);
         }
+
+        [Fact]
+        public void Should_render_a_hidden_marker_input_when_only_row_selection_is_enabled()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableRowSelection="true">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
+
+            // Assert
+            Assert.Equal(3, cut.FindAll("tbody .forma-data-grid-row-marker").Count);
+            Assert.Empty(cut.FindAll("thead input[type=checkbox]"));
+        }
+
+        [Fact]
+        public async Task Should_select_only_the_target_row_on_a_plain_row_select()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            IReadOnlyList<GridItem>? changedTo = null;
+
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableRowSelection="true"
+                                SelectedItems="Items(3).ToArray()"
+                                SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll("tbody .forma-data-grid-row-marker").Count == 3);
+            var grid = cut.FindComponent<FormaDataGrid<GridItem>>().Instance;
+            var token = int.Parse(cut.FindAll("tbody .forma-data-grid-row-marker")[1].GetAttribute("data-row-key")!, CultureInfo.InvariantCulture);
+
+            // Act
+            await cut.InvokeAsync(() => grid.HandleRowSelectAsync(token, additive: false));
+
+            // Assert
+            var selected = Assert.Single(changedTo!);
+            Assert.Equal(2, selected.Id);
+        }
+
+        [Fact]
+        public async Task Should_toggle_just_the_target_row_on_an_additive_row_select()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            IReadOnlyList<GridItem>? changedTo = null;
+
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableRowSelection="true"
+                                SelectedItems="Items(1).ToArray()"
+                                SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll("tbody .forma-data-grid-row-marker").Count == 3);
+            var grid = cut.FindComponent<FormaDataGrid<GridItem>>().Instance;
+            var token = int.Parse(cut.FindAll("tbody .forma-data-grid-row-marker")[2].GetAttribute("data-row-key")!, CultureInfo.InvariantCulture);
+
+            // Act
+            await cut.InvokeAsync(() => grid.HandleRowSelectAsync(token, additive: true));
+
+            // Assert
+            Assert.Equal(2, changedTo!.Count);
+            Assert.Contains(changedTo!, item => item.Id == 1);
+            Assert.Contains(changedTo!, item => item.Id == 3);
+        }
+
+        [Fact]
+        public async Task Should_select_a_contiguous_range_on_a_row_range_select()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            IReadOnlyList<GridItem>? changedTo = null;
+
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(5)" PageSize="10" EnableRowSelection="true"
+                                SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll("tbody .forma-data-grid-row-marker").Count == 5);
+            var grid = cut.FindComponent<FormaDataGrid<GridItem>>().Instance;
+            var markers = cut.FindAll("tbody .forma-data-grid-row-marker");
+            var tokens = new[] { 1, 2, 3 }
+                .Select(i => int.Parse(markers[i].GetAttribute("data-row-key")!, CultureInfo.InvariantCulture))
+                .ToArray();
+
+            // Act
+            await cut.InvokeAsync(() => grid.HandleRowRangeSelectAsync(tokens, additive: false));
+
+            // Assert
+            Assert.Equal(3, changedTo!.Count);
+            Assert.Contains(changedTo!, item => item.Id == 2);
+            Assert.Contains(changedTo!, item => item.Id == 3);
+            Assert.Contains(changedTo!, item => item.Id == 4);
+        }
+
+        [Fact]
+        public async Task Should_reject_a_row_select_that_would_exceed_the_maximum()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            IReadOnlyList<GridItem>? changedTo = null;
+            var rejections = new List<SelectionRejected>();
+
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableRowSelection="true"
+                                MaximumSelection="1" SelectedItems="Items(1).ToArray()"
+                                SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)"
+                                OnSelectionRejected="@((SelectionRejected args) => rejections.Add(args))">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll("tbody .forma-data-grid-row-marker").Count == 3);
+            var grid = cut.FindComponent<FormaDataGrid<GridItem>>().Instance;
+            var token = int.Parse(cut.FindAll("tbody .forma-data-grid-row-marker")[1].GetAttribute("data-row-key")!, CultureInfo.InvariantCulture);
+
+            // Act
+            await cut.InvokeAsync(() => grid.HandleRowSelectAsync(token, additive: true));
+
+            // Assert
+            Assert.Null(changedTo);
+            var rejection = Assert.Single(rejections);
+            Assert.Equal(SelectionBoundary.Maximum, rejection.Boundary);
+            Assert.Equal(1, rejection.Limit);
+        }
+
+        [Fact]
+        public void Should_mark_unselected_rows_disabled_once_the_maximum_is_reached()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true"
+                                MaximumSelection="1" SelectedItems="Items(1).ToArray()">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
+
+            // Assert
+            var rows = cut.FindAll("tbody tr");
+            Assert.DoesNotContain("forma-data-grid-row-disabled", rows[0].ClassName);
+            Assert.Contains("forma-data-grid-row-disabled", rows[1].ClassName);
+            Assert.Contains("forma-data-grid-row-disabled", rows[2].ClassName);
+        }
+
+        [Fact]
+        public async Task Should_reject_unchecking_a_row_below_the_minimum()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            IReadOnlyList<GridItem>? changedTo = null;
+
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true"
+                                MinimumSelection="1" SelectedItems="Items(1).ToArray()"
+                                SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
+
+            // Act — unchecking the only selected row would drop below the minimum
+            cut.FindAll("tbody input[type=checkbox]")[0].Change(false);
+
+            // Assert
+            Assert.Null(changedTo);
+        }
+
+        [Fact]
+        public void Should_allow_clearing_the_whole_selection_below_the_minimum_via_the_master_control()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            IReadOnlyList<GridItem>? changedTo = null;
+
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true"
+                                MinimumSelection="1" SelectedItems="Items(1).ToArray()"
+                                SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
+
+            // Act
+            cut.Find("thead input[type=checkbox]").Click();
+
+            // Assert
+            Assert.Empty(changedTo!);
+        }
+
+        [Fact]
+        public void Should_hide_the_master_control_when_the_caption_is_hidden()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true"
+                                CheckedSelectionCaption="CheckedSelectionCaption.Hidden">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
+
+            // Assert
+            Assert.Empty(cut.FindAll("thead input[type=checkbox]"));
+            Assert.Empty(cut.FindAll("thead .forma-data-grid-master-caption"));
+        }
+
+        [Fact]
+        public void Should_render_a_static_caption_without_a_button_when_only_one_text_is_set()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var caption = new CheckedSelectionCaption { SelectAllText = "Select all" };
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true" CheckedSelectionCaption="caption">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
+
+            // Assert
+            Assert.Equal("Select all", cut.Find(".forma-data-grid-master-caption").TextContent);
+            Assert.Empty(cut.FindAll("thead button.forma-data-grid-master-caption"));
+        }
+
+        [Fact]
+        public void Should_toggle_the_interactive_caption_text_with_the_selection()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var caption = new CheckedSelectionCaption { SelectAllText = "Select all", DeselectAllText = "Deselect all" };
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true"
+                                SelectedItems="Items(3).ToArray()" CheckedSelectionCaption="caption">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
+
+            // Assert
+            Assert.Equal("Deselect all", cut.Find("button.forma-data-grid-master-caption").TextContent);
+        }
+
+        [Fact]
+        public void Should_disable_the_master_control_when_selecting_all_would_exceed_the_maximum()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true" MaximumSelection="2">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
+
+            // Assert
+            Assert.True(cut.Find("thead input[type=checkbox]").HasAttribute("disabled"));
+        }
+
+        [Fact]
+        public void Should_report_the_minimum_bound_when_an_uncheck_is_rejected()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var rejections = new List<SelectionRejected>();
+
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true"
+                                MinimumSelection="1" SelectedItems="Items(1).ToArray()"
+                                OnSelectionRejected="@((SelectionRejected args) => rejections.Add(args))">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
+
+            // Act
+            cut.FindAll("tbody input[type=checkbox]")[0].Change(false);
+
+            // Assert
+            var rejection = Assert.Single(rejections);
+            Assert.Equal(SelectionBoundary.Minimum, rejection.Boundary);
+            Assert.Equal(1, rejection.Limit);
+        }
+
+        [Fact]
+        public void Should_not_mark_rows_disabled_for_a_minimum_when_only_row_selection_is_enabled()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableRowSelection="true"
+                                MinimumSelection="2" SelectedItems="Items(1).ToArray()">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll("tbody .forma-data-grid-row-marker").Count == 3);
+
+            // Assert — a plain row click replaces the selection, so the floor never binds here
+            Assert.All(cut.FindAll("tbody tr"), row => Assert.DoesNotContain("forma-data-grid-row-disabled", row.ClassName));
+        }
+
+        [Fact]
+        public void Should_keep_row_tokens_stable_across_re_renders()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableRowSelection="true">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll("tbody .forma-data-grid-row-marker").Count == 3);
+            var grid = cut.FindComponent<FormaDataGrid<GridItem>>();
+            var before = RowTokens(grid);
+
+            // Act
+            grid.Render();
+            grid.Render();
+
+            // Assert
+            Assert.Equal(before, RowTokens(grid));
+        }
+
+        [Fact]
+        public async Task Should_still_resolve_a_row_token_after_re_renders()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            IReadOnlyList<GridItem>? changedTo = null;
+
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableRowSelection="true"
+                                SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll("tbody .forma-data-grid-row-marker").Count == 3);
+            var grid = cut.FindComponent<FormaDataGrid<GridItem>>();
+            var token = RowTokens(grid)[1];
+
+            grid.Render();
+            grid.Render();
+
+            // Act
+            await cut.InvokeAsync(() => grid.Instance.HandleRowSelectAsync(token, additive: false));
+
+            // Assert
+            var selected = Assert.Single(changedTo!);
+            Assert.Equal(2, selected.Id);
+        }
+
+        [Fact]
+        public async Task Should_release_row_tokens_for_rows_that_leave_the_grid()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            IReadOnlyList<GridItem>? changedTo = null;
+
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(4)" PageSize="2" EnableRowSelection="true"
+                                SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll("tbody .forma-data-grid-row-marker").Count == 2);
+            var grid = cut.FindComponent<FormaDataGrid<GridItem>>();
+            var staleToken = RowTokens(grid)[0];
+
+            // Act — paging retires the first page's rows, the next pass drops them
+            var pager = cut.FindComponent<FormaPagination>();
+            await cut.InvokeAsync(() => pager.Instance.OnPageChanged.InvokeAsync(2));
+            grid.WaitForState(() => grid.Markup.Contains("Item 3", StringComparison.Ordinal));
+            grid.Render();
+            await cut.InvokeAsync(() => grid.Instance.HandleRowSelectAsync(staleToken, additive: false));
+
+            // Assert
+            Assert.Null(changedTo);
+        }
+
+        private static IReadOnlyList<int> RowTokens<TComponent>(IRenderedComponent<TComponent> rendered)
+            where TComponent : IComponent
+            => [.. rendered.FindAll("tbody .forma-data-grid-row-marker")
+                .Select(marker => int.Parse(marker.GetAttribute("data-row-key")!, CultureInfo.InvariantCulture))];
 
         private sealed record GridItem(int Id, string Title);
     }

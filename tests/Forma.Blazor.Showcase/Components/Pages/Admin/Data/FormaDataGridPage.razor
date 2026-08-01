@@ -21,7 +21,7 @@
 <div class="demo-section">
     <h2>@L["Section.Checkboxes"]</h2>
     <div class="demo-box">
-        <FormaDataGrid TGridItem="Employee" Items="_employees" PageSize="5" EnableCheckboxes="true"
+        <FormaDataGrid TGridItem="Employee" Items="_employees" PageSize="5" EnableCheckedSelection="true"
                        QueryParameterNamePrefix="selectable"
                        SelectedItems="_selected" SelectedItemsChanged="HandleSelectionChanged">
             <Columns>
@@ -30,6 +30,41 @@
                 <PropertyColumn Property="@(e => e.Department)" />
             </Columns>
             <Status>@L["Checkboxes.Note", _selected.Count]</Status>
+        </FormaDataGrid>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Section.RowSelection"]</h2>
+    <p class="desc">@L["RowSelection.Note"]</p>
+    <div class="demo-box">
+        <FormaDataGrid TGridItem="Employee" Items="_employees" PageSize="5" EnableRowSelection="true"
+                       QueryParameterNamePrefix="row-selectable"
+                       SelectedItems="_rowSelected" SelectedItemsChanged="HandleRowSelectionChanged">
+            <Columns>
+                <PropertyColumn Property="@(e => e.Id)" />
+                <PropertyColumn Property="@(e => e.Name)" />
+                <PropertyColumn Property="@(e => e.Department)" />
+            </Columns>
+            <Status>@L["Checkboxes.Note", _rowSelected.Count]</Status>
+        </FormaDataGrid>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Section.Limits"]</h2>
+    <p class="desc">@L["Limits.Note"]</p>
+    <div class="demo-box">
+        <FormaDataGrid TGridItem="Employee" Items="_employees" PageSize="5" EnableCheckedSelection="true"
+                       QueryParameterNamePrefix="limited" MaximumSelection="3"
+                       CheckedSelectionCaption="_limitsCaption"
+                       SelectedItems="_limitsSelected" SelectedItemsChanged="HandleLimitsSelectionChanged">
+            <Columns>
+                <PropertyColumn Property="@(e => e.Id)" />
+                <PropertyColumn Property="@(e => e.Name)" />
+                <PropertyColumn Property="@(e => e.Department)" />
+            </Columns>
+            <Status>@L["Checkboxes.Note", _limitsSelected.Count]</Status>
         </FormaDataGrid>
     </div>
 </div>
@@ -48,6 +83,7 @@
         </FormaDataGrid>
     </div>
 </div>
+
 
 <div class="demo-section">
     <h2>@L["Section.CustomColumn"]</h2>

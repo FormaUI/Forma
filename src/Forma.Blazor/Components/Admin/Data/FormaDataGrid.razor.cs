@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.QuickGrid;
 using Microsoft.Extensions.Localization;
@@ -9,13 +10,27 @@ namespace Forma.Blazor.Components.Admin.Data;
 public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisposable
     where TGridItem : notnull
 {
+    private const string ModulePath = "./_content/Forma.Blazor/Components/Admin/Data/FormaDataGrid.razor.js";
+
     private readonly PaginationState _pagination = new();
+
+    // Row identity for the selection script, rebuilt each pass so a row that pages or
+    // scrolls out of view is no longer held. The outgoing pass is retired rather than
+    // dropped, so a token read from the DOM just before a re-render still resolves.
+    private Dictionary<object, int> _rowTokensByKey = [];
+    private Dictionary<object, int> _retiredRowTokensByKey = [];
+    private Dictionary<int, TGridItem> _itemsByRowToken = [];
+    private Dictionary<int, TGridItem> _retiredItemsByRowToken = [];
 
     private HashSet<TGridItem> _selectedSet = [];
     private QuickGrid<TGridItem>? _grid;
+    private ElementReference _scrollerElement;
     private ElementReference _selectAllElement;
     private IJSObjectReference? _module;
+    private DotNetObjectReference<FormaDataGrid<TGridItem>>? _selfReference;
     private bool? _indeterminateApplied;
+    private bool _rowSelectionAttached;
+    private int _nextRowToken;
 
     /// <summary>The rows to display. Supply this or <see cref="ItemsProvider"/>, not both.</summary>
     [Parameter] public IQueryable<TGridItem>? Items { get; set; }
@@ -54,7 +69,19 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     [Parameter] public RenderFragment? Status { get; set; }
 
     /// <summary>Adds a leading checkbox column for mass selection.</summary>
-    [Parameter] public bool EnableCheckboxes { get; set; }
+    [Parameter] public bool EnableCheckedSelection { get; set; }
+
+    /// <summary>Allows a row to be selected through direct row interaction (click, arrow keys), independently of <see cref="EnableCheckedSelection"/>.</summary>
+    [Parameter] public bool EnableRowSelection { get; set; }
+
+    /// <summary>The fewest rows that must remain selected once a selection exists. A selected row cannot be individually unchecked below this floor; clearing the whole selection is always allowed.</summary>
+    [Parameter] public int? MinimumSelection { get; set; }
+
+    /// <summary>The most rows that may be selected at once.</summary>
+    [Parameter] public int? MaximumSelection { get; set; }
+
+    /// <summary>Caption shown in place of the header checkbox. A <see langword="null"/> value keeps the plain checkbox.</summary>
+    [Parameter] public CheckedSelectionCaption? CheckedSelectionCaption { get; set; }
 
     /// <summary>The currently selected rows.</summary>
     [Parameter] public IReadOnlyList<TGridItem> SelectedItems { get; set; } = [];
@@ -62,7 +89,10 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     /// <summary>Fired when the set of selected rows changes.</summary>
     [Parameter] public EventCallback<IReadOnlyList<TGridItem>> SelectedItemsChanged { get; set; }
 
-    /// <summary>Fired when a row is clicked.</summary>
+    /// <summary>Fired when a selection attempt is blocked by <see cref="MinimumSelection"/> or <see cref="MaximumSelection"/>.</summary>
+    [Parameter] public EventCallback<SelectionRejected> OnSelectionRejected { get; set; }
+
+    /// <summary>Fired when a row is clicked outside of a selection gesture.</summary>
     [Parameter] public EventCallback<TGridItem> OnRowClick { get; set; }
 
     /// <summary>Assigns a CSS class to a row based on its item.</summary>
@@ -96,6 +126,44 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
 
     private bool PartiallySelected
         => _selectedSet.Count > 0 && !AllSelected;
+
+    /// <summary>Whether <see cref="MaximumSelection"/> has been reached, so no additional row can be selected.</summary>
+    public bool IsMaximumSelectionReached
+        => MaximumSelection is not null && _selectedSet.Count >= MaximumSelection.Value;
+
+    /// <summary>Whether the current selection meets <see cref="MinimumSelection"/>.</summary>
+    public bool IsMinimumSelectionSatisfied
+        => MinimumSelection is null || _selectedSet.Count >= MinimumSelection.Value;
+
+    // Selecting every item can only ever be offered when it would not itself exceed the
+    // maximum — there is no partial "select as many as fit" fallback.
+    private bool CanSelectAll
+        => MaximumSelection is null || TotalItemCount <= MaximumSelection.Value;
+
+    // Deselecting is always available; selecting all is blocked once it would overshoot
+    // the maximum, and there is nothing to clear when the selection is already empty.
+    private bool MasterControlDisabled
+        => _selectedSet.Count == 0 && !CanSelectAll;
+
+    private bool HasMasterCaption
+        => CheckedSelectionCaption is not null;
+
+    private bool MasterCaptionHidden
+        => CheckedSelectionCaption is { SelectAllText: null, DeselectAllText: null };
+
+    private bool MasterCaptionInteractive
+        => CheckedSelectionCaption is { SelectAllText: not null, DeselectAllText: not null };
+
+    private string? MasterCaptionText
+        => CheckedSelectionCaption switch
+        {
+            null => null,
+            { SelectAllText: not null, DeselectAllText: not null }
+                => _selectedSet.Count > 0 ? CheckedSelectionCaption.DeselectAllText : CheckedSelectionCaption.SelectAllText,
+            { SelectAllText: not null } caption => caption.SelectAllText,
+            { DeselectAllText: not null } caption => caption.DeselectAllText,
+            _ => null,
+        };
 
     // Host class is merged rather than splatted, so supplying one never drops
     // the component's own class.
@@ -135,10 +203,34 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
 
         // Select-all names the whole set, which a provider can only produce by fetching
         // every page it has.
-        if (EnableCheckboxes && ItemsProvider is not null)
+        if (EnableCheckedSelection && ItemsProvider is not null)
         {
             throw new InvalidOperationException(
-                $"{nameof(EnableCheckboxes)} requires {nameof(Items)}; it is not supported with {nameof(ItemsProvider)}.");
+                $"{nameof(EnableCheckedSelection)} requires {nameof(Items)}; it is not supported with {nameof(ItemsProvider)}.");
+        }
+
+        // Row selection is keyed by ItemKey against the same materialized set; a provider
+        // offers no random access to look a key back up outside the page it last fetched.
+        if (EnableRowSelection && ItemsProvider is not null)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(EnableRowSelection)} requires {nameof(Items)}; it is not supported with {nameof(ItemsProvider)}.");
+        }
+
+        if (MinimumSelection is < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(MinimumSelection), MinimumSelection, "Minimum selection cannot be negative.");
+        }
+
+        if (MaximumSelection is < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(MaximumSelection), MaximumSelection, "Maximum selection cannot be negative.");
+        }
+
+        if (MinimumSelection is not null && MaximumSelection is not null && MinimumSelection > MaximumSelection)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(MaximumSelection), MaximumSelection, $"{nameof(MaximumSelection)} cannot be less than {nameof(MinimumSelection)}.");
         }
 
         // An unpaginated grid leaves Pagination unbound, so virtualization sizes its scroll
@@ -166,26 +258,30 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
         => _grid?.RefreshDataAsync() ?? Task.CompletedTask;
 
     // "Some but not all selected" is an IDL-only property, so the header checkbox
-    // cannot express it from markup.
+    // cannot express it from markup. Row-click/keyboard selection is likewise delegated
+    // to script, since QuickGrid exposes no row-level attribute or modifier-key hook.
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!EnableCheckboxes)
-        {
-            _indeterminateApplied = null;
-            return;
-        }
-
-        if (_indeterminateApplied == PartiallySelected)
-        {
-            return;
-        }
-
         try
         {
-            _module ??= await JS.InvokeAsync<IJSObjectReference>(
-                "import", "./_content/Forma.Blazor/Components/Admin/Data/FormaDataGrid.razor.js").ConfigureAwait(false);
-            await _module.InvokeVoidAsync("setIndeterminate", _selectAllElement, PartiallySelected).ConfigureAwait(false);
-            _indeterminateApplied = PartiallySelected;
+            if (EnableRowSelection && !_rowSelectionAttached)
+            {
+                _module ??= await JS.InvokeAsync<IJSObjectReference>("import", ModulePath).ConfigureAwait(false);
+                _selfReference ??= DotNetObjectReference.Create(this);
+                await _module.InvokeVoidAsync("attachRowSelection", _scrollerElement, _selfReference).ConfigureAwait(false);
+                _rowSelectionAttached = true;
+            }
+
+            if (!EnableCheckedSelection || HasMasterCaption)
+            {
+                _indeterminateApplied = null;
+            }
+            else if (_indeterminateApplied != PartiallySelected)
+            {
+                _module ??= await JS.InvokeAsync<IJSObjectReference>("import", ModulePath).ConfigureAwait(false);
+                await _module.InvokeVoidAsync("setIndeterminate", _selectAllElement, PartiallySelected).ConfigureAwait(false);
+                _indeterminateApplied = PartiallySelected;
+            }
         }
         catch (JSException)
         {
@@ -205,6 +301,11 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
         {
             try
             {
+                if (_rowSelectionAttached)
+                {
+                    await module.InvokeVoidAsync("detachRowSelection", _scrollerElement).ConfigureAwait(false);
+                }
+
                 await module.DisposeAsync().ConfigureAwait(false);
             }
             catch (JSDisconnectedException)
@@ -212,13 +313,110 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
                 // Circuit disconnected — safe to ignore.
             }
         }
+
+        _selfReference?.Dispose();
     }
 
     private bool IsSelected(TGridItem item)
         => _selectedSet.Contains(item);
 
+    // Selection state is layered on top of whatever class the host already assigns, so a
+    // custom RowClass and the built-in selected/disabled styling never conflict.
+    private string? ComposedRowClass(TGridItem item)
+    {
+        var hostClass = RowClass?.Invoke(item);
+        if (!EnableCheckedSelection && !EnableRowSelection)
+        {
+            return hostClass;
+        }
+
+        List<string> classes = hostClass is null ? [] : [hostClass];
+
+        if (IsSelected(item))
+        {
+            classes.Add("forma-data-grid-row-selected");
+        }
+
+        if (!CanInteractWithRow(item))
+        {
+            classes.Add("forma-data-grid-row-disabled");
+        }
+
+        return classes.Count == 0 ? null : string.Join(' ', classes);
+    }
+
+    // A row already selected can always be cleared; an unselected row can only be added
+    // while doing so would not exceed the maximum.
+    private bool CanSelectRow(TGridItem item)
+        => IsSelected(item) || !IsMaximumSelectionReached;
+
+    // The checkbox column enforces both bounds directly: an unselected row cannot be
+    // checked once the maximum is reached, and a selected row cannot be unchecked once
+    // doing so would drop below the minimum. Row-click and range selection only ever
+    // replace the whole selection, so they are a reset rather than an incremental
+    // removal and are exempt from the minimum.
+    private bool CanToggleRow(TGridItem item)
+        => IsSelected(item)
+            ? MinimumSelection is null || _selectedSet.Count > MinimumSelection.Value
+            : CanSelectRow(item);
+
+    // What the row's own controls can still do, which is what its muted styling and
+    // aria-disabled report: the minimum only binds where there is a checkbox to uncheck.
+    private bool CanInteractWithRow(TGridItem item)
+        => EnableCheckedSelection ? CanToggleRow(item) : CanSelectRow(item);
+
+    // QuickGrid renders the selection column's header once per pass, ahead of the rows,
+    // which is the only point either side can see a pass begin.
+    private void BeginRowTokenPass()
+    {
+        (_retiredRowTokensByKey, _rowTokensByKey) = (_rowTokensByKey, _retiredRowTokensByKey);
+        (_retiredItemsByRowToken, _itemsByRowToken) = (_itemsByRowToken, _retiredItemsByRowToken);
+        _rowTokensByKey.Clear();
+        _itemsByRowToken.Clear();
+    }
+
+    // A row keeps its token for as long as it stays rendered, so the attribute the script
+    // reads does not churn under it.
+    private int GetRowToken(TGridItem item)
+    {
+        var key = ItemKey(item);
+        if (!_rowTokensByKey.TryGetValue(key, out var token)
+            && !_retiredRowTokensByKey.TryGetValue(key, out token))
+        {
+            token = _nextRowToken++;
+        }
+
+        _rowTokensByKey[key] = token;
+        _itemsByRowToken[token] = item;
+        return token;
+    }
+
+    private bool TryGetRowItem(int rowToken, [MaybeNullWhen(false)] out TGridItem item)
+        => _itemsByRowToken.TryGetValue(rowToken, out item)
+            || _retiredItemsByRowToken.TryGetValue(rowToken, out item);
+
+    private Task RejectSelectionAsync(SelectionBoundary boundary)
+        => OnSelectionRejected.HasDelegate
+            ? OnSelectionRejected.InvokeAsync(new SelectionRejected
+            {
+                Boundary = boundary,
+                Limit = (boundary == SelectionBoundary.Minimum ? MinimumSelection : MaximumSelection).GetValueOrDefault(),
+            })
+            : Task.CompletedTask;
+
     private async Task ToggleSelectionAsync(TGridItem item, bool isSelected)
     {
+        if (isSelected == IsSelected(item))
+        {
+            return;
+        }
+
+        if (!CanToggleRow(item))
+        {
+            await RejectSelectionAsync(isSelected ? SelectionBoundary.Maximum : SelectionBoundary.Minimum).ConfigureAwait(false);
+            return;
+        }
+
         var updated = new HashSet<TGridItem>(_selectedSet);
 
         if (isSelected)
@@ -233,10 +431,74 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
         await SelectedItemsChanged.InvokeAsync([.. updated]).ConfigureAwait(false);
     }
 
-    private async Task ToggleAllAsync(bool isSelected)
+    private async Task HandleMasterClickAsync()
     {
-        IReadOnlyList<TGridItem> updated = isSelected ? [.. Items!] : [];
-        await SelectedItemsChanged.InvokeAsync(updated).ConfigureAwait(false);
+        if (_selectedSet.Count > 0)
+        {
+            await SelectedItemsChanged.InvokeAsync([]).ConfigureAwait(false);
+        }
+        else if (CanSelectAll)
+        {
+            await SelectedItemsChanged.InvokeAsync([.. Items!]).ConfigureAwait(false);
+        }
+        else
+        {
+            await RejectSelectionAsync(SelectionBoundary.Maximum).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>Replaces or toggles the selection with a single row, invoked from the row-selection script.</summary>
+    [JSInvokable]
+    public async Task HandleRowSelectAsync(int rowToken, bool additive)
+    {
+        if (!TryGetRowItem(rowToken, out var item))
+        {
+            return;
+        }
+
+        if (additive)
+        {
+            await ToggleSelectionAsync(item, !IsSelected(item)).ConfigureAwait(false);
+            return;
+        }
+
+        if (!CanSelectRow(item))
+        {
+            await RejectSelectionAsync(SelectionBoundary.Maximum).ConfigureAwait(false);
+            return;
+        }
+
+        await SelectedItemsChanged.InvokeAsync([item]).ConfigureAwait(false);
+    }
+
+    /// <summary>Replaces or extends the selection with a contiguous range of rows, invoked from the row-selection script.</summary>
+    [JSInvokable]
+    public async Task HandleRowRangeSelectAsync(int[] rowTokens, bool additive)
+    {
+        ArgumentNullException.ThrowIfNull(rowTokens);
+
+        var range = new List<TGridItem>(rowTokens.Length);
+        foreach (var token in rowTokens)
+        {
+            if (TryGetRowItem(token, out var item))
+            {
+                range.Add(item);
+            }
+        }
+
+        HashSet<TGridItem> updated = additive ? [.. _selectedSet] : [];
+        foreach (var item in range)
+        {
+            updated.Add(item);
+        }
+
+        if (MaximumSelection is not null && updated.Count > MaximumSelection.Value)
+        {
+            await RejectSelectionAsync(SelectionBoundary.Maximum).ConfigureAwait(false);
+            return;
+        }
+
+        await SelectedItemsChanged.InvokeAsync([.. updated]).ConfigureAwait(false);
     }
 
     // FormaPagination is 1-based; QuickGrid's PaginationState is 0-based.

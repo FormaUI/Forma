@@ -51,6 +51,24 @@
   <data name="Checkboxes.Note" xml:space="preserve">
     <value>{0} שורות נבחרו.</value>
   </data>
+  <data name="Section.RowSelection" xml:space="preserve">
+    <value>בחירת שורה</value>
+  </data>
+  <data name="RowSelection.Note" xml:space="preserve">
+    <value>לחיצה על שורה בוחרת רק אותה; Ctrl/Cmd-לחיצה מחליפה שורה בודדת; Shift-לחיצה או Shift עם מקשי חצים בוחרת טווח.</value>
+  </data>
+  <data name="Section.Limits" xml:space="preserve">
+    <value>הגבלות בחירה וכיתוב</value>
+  </data>
+  <data name="Limits.Note" xml:space="preserve">
+    <value>לכל היותר 3 שורות; פקד הראשי הוא כיתוב טקסט במקום תיבת סימון.</value>
+  </data>
+  <data name="Limits.SelectAll" xml:space="preserve">
+    <value>בחר הכל</value>
+  </data>
+  <data name="Limits.DeselectAll" xml:space="preserve">
+    <value>בטל בחירת הכל</value>
+  </data>
   <data name="Section.RowClick" xml:space="preserve">
     <value>לחיצה על שורה</value>
   </data>

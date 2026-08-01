@@ -28,10 +28,29 @@ public sealed partial class FormaDataGridPage : ComponentBase
 
     private IReadOnlyList<Employee> _selected = [];
 
+    private IReadOnlyList<Employee> _rowSelected = [];
+
+    private IReadOnlyList<Employee> _limitsSelected = [];
+
+    private CheckedSelectionCaption _limitsCaption = default!;
+
     private Employee? _lastClicked;
+
+    protected override void OnInitialized()
+        => _limitsCaption = new CheckedSelectionCaption
+        {
+            SelectAllText = L["Limits.SelectAll"],
+            DeselectAllText = L["Limits.DeselectAll"],
+        };
 
     private void HandleSelectionChanged(IReadOnlyList<Employee> selected)
         => _selected = selected;
+
+    private void HandleRowSelectionChanged(IReadOnlyList<Employee> selected)
+        => _rowSelected = selected;
+
+    private void HandleLimitsSelectionChanged(IReadOnlyList<Employee> selected)
+        => _limitsSelected = selected;
 
     private void HandleRowClick(Employee employee)
         => _lastClicked = employee;

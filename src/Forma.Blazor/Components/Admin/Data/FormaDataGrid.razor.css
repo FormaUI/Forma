@@ -79,3 +79,59 @@
 ::deep .forma-data-grid-select-column .col-header-content {
     justify-content: center;
 }
+
+/* Row selection without checkboxes carries the same focusable input for its native
+   keyboard and ARIA semantics, but takes up no visible space in the layout. */
+::deep .forma-data-grid-select-column-marker {
+    inline-size: 0;
+    padding-inline: 0;
+}
+
+/* Collapsed rather than positioned out: an absolutely placed marker resolves against
+   whatever ancestor happens to be positioned, and focusing it would scroll there
+   instead of to its own row. */
+.forma-data-grid-row-marker {
+    inline-size: 0;
+    block-size: 0;
+    margin: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* The marker carries the focus but cannot show it, so the row draws the ring — focus
+   moves independently of selection (ctrl with an arrow key), so the tint is not enough. */
+::deep tr:has(.forma-data-grid-row-marker:focus-visible) {
+    outline: 2px solid var(--main, #0d6efd);
+    outline-offset: -2px;
+}
+
+/* A tinted background reads as "selected" without depending on the checkbox column,
+   so it still shows on a row selected through EnableRowSelection alone. */
+::deep .forma-data-grid-row-selected {
+    background: var(--forma-data-grid-row-selected-bg, rgba(13, 110, 253, 0.08));
+}
+
+/* Muted rather than hidden: a disabled row stays legible so its data is still readable,
+   it just cannot gain the selection it does not already hold. */
+::deep .forma-data-grid-row-disabled {
+    color: var(--text-muted, #626976);
+}
+
+.forma-data-grid-master-caption {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--main, #0d6efd);
+    font: inherit;
+    cursor: pointer;
+}
+
+.forma-data-grid-master-caption:disabled {
+    color: var(--text-muted, #626976);
+    cursor: default;
+}
+
+.forma-data-grid-master-caption-static {
+    color: var(--text-muted, #626976);
+}
+
