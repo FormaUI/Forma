@@ -2,13 +2,16 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
+using Forma.Blazor.Interop;
 
 namespace Forma.Blazor.Components.Admin.Feedback;
 
 public sealed partial class FormaModal : IAsyncDisposable
 {
+    private const string ModulePath = "./_content/Forma.Blazor/Components/Admin/Feedback/FormaModal.razor.js";
+
     private ElementReference _dialogRef;
-    private IJSObjectReference? _module;
+    private JsModule _module = default!;
     private bool _isOpen;
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
@@ -56,28 +59,14 @@ public sealed partial class FormaModal : IAsyncDisposable
     private string CancelLabel =>
         CancelText ?? (Options.ShowCancelAction && !Options.ShowConfirmAction ? L["Close"] : L["Cancel"]);
 
+    protected override void OnInitialized()
+        => _module = new JsModule(JS, ModulePath);
+
     protected override void OnParametersSet()
         => ArgumentNullException.ThrowIfNull(Options);
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
-        {
-            try
-            {
-                _module = await JS.InvokeAsync<IJSObjectReference>(
-                    "import", "./_content/Forma.Blazor/Components/Admin/Feedback/FormaModal.razor.js").ConfigureAwait(false);
-            }
-            catch (JSException)
-            {
-                // Circuit disconnected before module loaded — safe to ignore.
-                return;
-            }
-        }
-
-        if (_module is null)
-            return;
-
         try
         {
             if (Opened && !_isOpen)
@@ -93,7 +82,7 @@ public sealed partial class FormaModal : IAsyncDisposable
         }
         catch (JSException)
         {
-            // Module disposed concurrently (navigation during open dialog) — safe to ignore.
+            // Circuit disconnected before interop completed — safe to ignore.
         }
     }
 
@@ -112,17 +101,14 @@ public sealed partial class FormaModal : IAsyncDisposable
 
     private async Task RequestCloseAsync()
     {
-        if (_module is not null)
+        try
         {
-            try
-            {
-                await _module.InvokeVoidAsync("closeModal", _dialogRef).ConfigureAwait(false);
-            }
-            catch (JSException)
-            {
-                // Module disposed concurrently — safe to ignore.
-            }
+            await _module.InvokeVoidAsync("closeModal", _dialogRef).ConfigureAwait(false);
             return;
+        }
+        catch (JSException)
+        {
+            // Module unavailable or disposed concurrently — fall back to closing state directly.
         }
 
         if (_isOpen)
@@ -151,19 +137,5 @@ public sealed partial class FormaModal : IAsyncDisposable
     }
 
     public async ValueTask DisposeAsync()
-    {
-        var module = _module;
-        _module = null;
-        if (module is not null)
-        {
-            try
-            {
-                await module.DisposeAsync().ConfigureAwait(false);
-            }
-            catch (JSDisconnectedException)
-            {
-                // Circuit disconnected — safe to ignore.
-            }
-        }
-    }
+        => await _module.DisposeAsync().ConfigureAwait(false);
 }

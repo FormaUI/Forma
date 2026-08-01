@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
+using Forma.Blazor.Interop;
 
 namespace Forma.Blazor.Components.Admin.Data;
 
@@ -11,11 +12,12 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
 {
     private const int BoundaryCount = 1;
     private const int SiblingCount = 1;
+    private const string ModulePath = "./_content/Forma.Blazor/Components/Admin/Data/FormaPagination.razor.js";
 
     private readonly string _pageInputId = $"forma-pagination-input-{Guid.NewGuid():N}";
 
     private ElementReference _pageInputElement;
-    private IJSObjectReference? _module;
+    private JsModule _module = default!;
     private bool _submitGuardAttached;
     private string? _pageInput;
 
@@ -70,6 +72,9 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
         }
     }
 
+    protected override void OnInitialized()
+        => _module = new JsModule(JS, ModulePath);
+
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(Options);
@@ -93,8 +98,6 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
 
         try
         {
-            _module ??= await JS.InvokeAsync<IJSObjectReference>(
-                "import", "./_content/Forma.Blazor/Components/Admin/Data/FormaPagination.razor.js").ConfigureAwait(false);
             await _module.InvokeVoidAsync("suppressImplicitSubmit", _pageInputElement).ConfigureAwait(false);
             _submitGuardAttached = true;
         }
@@ -106,22 +109,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
-    {
-        var module = _module;
-        _module = null;
-
-        if (module is not null)
-        {
-            try
-            {
-                await module.DisposeAsync().ConfigureAwait(false);
-            }
-            catch (JSDisconnectedException)
-            {
-                // Circuit disconnected — safe to ignore.
-            }
-        }
-    }
+        => await _module.DisposeAsync().ConfigureAwait(false);
 
     // Windowed page-number layout (boundary pages + a sibling range around the
     // current page, with a null placeholder standing in for a collapsed gap).
@@ -208,7 +196,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
     // tracked value empty while the box holds the number. The box is the fallback.
     private async ValueTask<string?> TakePageEntryAsync()
     {
-        if (!string.IsNullOrEmpty(_pageInput) || _module is null)
+        if (!string.IsNullOrEmpty(_pageInput))
         {
             return _pageInput;
         }

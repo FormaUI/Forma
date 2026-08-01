@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.QuickGrid;
 using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
+using Forma.Blazor.Interop;
 
 namespace Forma.Blazor.Components.Admin.Data;
 
@@ -26,7 +27,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     private QuickGrid<TGridItem>? _grid;
     private ElementReference _scrollerElement;
     private ElementReference _selectAllElement;
-    private IJSObjectReference? _module;
+    private JsModule _module = default!;
     private DotNetObjectReference<FormaDataGrid<TGridItem>>? _selfReference;
     private bool? _indeterminateApplied;
     private bool _rowSelectionAttached;
@@ -179,7 +180,10 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     }
 
     protected override void OnInitialized()
-        => _pagination.TotalItemCountChanged += HandleTotalItemCountChanged;
+    {
+        _pagination.TotalItemCountChanged += HandleTotalItemCountChanged;
+        _module = new JsModule(JS, ModulePath);
+    }
 
     protected override void OnParametersSet()
     {
@@ -266,7 +270,6 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
         {
             if (EnableRowSelection && !_rowSelectionAttached)
             {
-                _module ??= await JS.InvokeAsync<IJSObjectReference>("import", ModulePath).ConfigureAwait(false);
                 _selfReference ??= DotNetObjectReference.Create(this);
                 await _module.InvokeVoidAsync("attachRowSelection", _scrollerElement, _selfReference).ConfigureAwait(false);
                 _rowSelectionAttached = true;
@@ -278,7 +281,6 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
             }
             else if (_indeterminateApplied != PartiallySelected)
             {
-                _module ??= await JS.InvokeAsync<IJSObjectReference>("import", ModulePath).ConfigureAwait(false);
                 await _module.InvokeVoidAsync("setIndeterminate", _selectAllElement, PartiallySelected).ConfigureAwait(false);
                 _indeterminateApplied = PartiallySelected;
             }
@@ -294,26 +296,19 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     {
         _pagination.TotalItemCountChanged -= HandleTotalItemCountChanged;
 
-        var module = _module;
-        _module = null;
-
-        if (module is not null)
+        try
         {
-            try
+            if (_rowSelectionAttached)
             {
-                if (_rowSelectionAttached)
-                {
-                    await module.InvokeVoidAsync("detachRowSelection", _scrollerElement).ConfigureAwait(false);
-                }
-
-                await module.DisposeAsync().ConfigureAwait(false);
-            }
-            catch (JSDisconnectedException)
-            {
-                // Circuit disconnected — safe to ignore.
+                await _module.InvokeVoidAsync("detachRowSelection", _scrollerElement).ConfigureAwait(false);
             }
         }
+        catch (JSDisconnectedException)
+        {
+            // Circuit disconnected — safe to ignore.
+        }
 
+        await _module.DisposeAsync().ConfigureAwait(false);
         _selfReference?.Dispose();
     }
 

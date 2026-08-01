@@ -2,14 +2,17 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
+using Forma.Blazor.Interop;
 
 namespace Forma.Blazor.Components.Admin.Forms;
 
 public sealed partial class FormaFloatingLabelField : InputBase<string?>, IAsyncDisposable
 {
+    private const string ModulePath = "./_content/Forma.Blazor/Components/Admin/Forms/FormaFloatingLabelField.razor.js";
+
     private readonly string _inputId = $"fld-{Guid.NewGuid():N}";
     private ElementReference _inputRef;
-    private IJSObjectReference? _module;
+    private JsModule _module = default!;
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
@@ -21,6 +24,9 @@ public sealed partial class FormaFloatingLabelField : InputBase<string?>, IAsync
 
     /// <summary>The HTML input type. Defaults to "text". Suitable values: text, email, tel, url, search.</summary>
     [Parameter] public string Type { get; set; } = "text";
+
+    protected override void OnInitialized()
+        => _module = new JsModule(JS, ModulePath);
 
     protected override void OnParametersSet()
     {
@@ -41,8 +47,6 @@ public sealed partial class FormaFloatingLabelField : InputBase<string?>, IAsync
 
         try
         {
-            _module = await JS.InvokeAsync<IJSObjectReference>(
-                "import", "./_content/Forma.Blazor/Components/Admin/Forms/FormaFloatingLabelField.razor.js").ConfigureAwait(false);
             await _module.InvokeVoidAsync("initAutofillDetection", _inputRef).ConfigureAwait(false);
         }
         catch (JSException)
@@ -52,19 +56,5 @@ public sealed partial class FormaFloatingLabelField : InputBase<string?>, IAsync
     }
 
     public async ValueTask DisposeAsync()
-    {
-        var module = _module;
-        _module = null;
-        if (module is not null)
-        {
-            try
-            {
-                await module.DisposeAsync().ConfigureAwait(false);
-            }
-            catch (JSDisconnectedException)
-            {
-                // Circuit disconnected — safe to ignore.
-            }
-        }
-    }
+        => await _module.DisposeAsync().ConfigureAwait(false);
 }
