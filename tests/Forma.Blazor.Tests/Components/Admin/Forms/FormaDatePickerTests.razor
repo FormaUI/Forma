@@ -64,6 +64,18 @@
         }
 
         [Fact]
+        public void Should_render_the_popup_as_a_popover_so_a_scrolling_ancestor_cannot_clip_it()
+        {
+            using var ctx = new FormaDatePickerTests();
+            var cut = ctx.Render(@<FormaDatePicker />);
+
+            cut.Find(".forma-date-picker-trigger").Click();
+
+            // Manual, because the backdrop owns dismissal rather than light-dismiss.
+            Assert.Equal("manual", cut.Find(".forma-date-picker-popup").GetAttribute("popover"));
+        }
+
+        [Fact]
         public void Should_close_popup_on_backdrop_click()
         {
             using var ctx = new FormaDatePickerTests();

@@ -69,6 +69,17 @@
     </div>
 </div>
 
+<div class="demo-section">
+    <h2>@L["Date.Section.Scrollable"]</h2>
+    <p class="desc">@L["Date.Section.Scrollable.Desc"]</p>
+    <div class="demo-box demo-scroll-box">
+        <p>@L["Date.Scrollable.Filler"]</p>
+        <FormaDatePicker @bind-Value="_scrollableDate"
+                       Label="@L["Date.Label.Scrollable"]" />
+        <p>@L["Date.Scrollable.Filler"]</p>
+    </div>
+</div>
+
 @code {
     private DateOnly? _singleDate;
     private DateOnly? _labelDate;
@@ -80,4 +91,5 @@
     private DateOnly? _preFilled = DateOnly.FromDateTime(DateTime.Today);
     private DateOnly? _hebrewStart;
     private DateOnly? _hebrewEnd;
+    private DateOnly? _scrollableDate;
 }

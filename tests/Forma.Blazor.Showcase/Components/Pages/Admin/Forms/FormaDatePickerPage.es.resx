@@ -47,4 +47,8 @@
   <data name="Date.Section.Hebrew" xml:space="preserve"><value>Calendario hebreo</value></data>
   <data name="Date.Section.Hebrew.Desc" xml:space="preserve"><value>El componente se adapta al sistema de calendario de la configuración regional indicada. Esta demostración usa he-IL con UseNonGregorianMonths para representar el calendario hebreo (lunisolar) con sus nombres de meses.</value></data>
   <data name="Date.Label.Hebrew" xml:space="preserve"><value>Intervalo de fechas hebreo</value></data>
+  <data name="Date.Section.Scrollable" xml:space="preserve"><value>Dentro de un contenedor con desplazamiento</value></data>
+  <data name="Date.Section.Scrollable.Desc" xml:space="preserve"><value>La caja de abajo se desplaza y recortaría un popup común. El calendario se abre en la capa superior, así que se mantiene entero y sigue al campo mientras la caja se desplaza.</value></data>
+  <data name="Date.Label.Scrollable" xml:space="preserve"><value>Fecha en una caja con desplazamiento</value></data>
+  <data name="Date.Scrollable.Filler" xml:space="preserve"><value>Desplaza esta caja para mover el campo.</value></data>
 </root>

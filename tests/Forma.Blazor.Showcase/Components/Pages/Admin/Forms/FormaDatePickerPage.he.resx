@@ -47,4 +47,8 @@
   <data name="Date.Section.Hebrew" xml:space="preserve"><value>לוח שנה עברי</value></data>
   <data name="Date.Section.Hebrew.Desc" xml:space="preserve"><value>הרכיב מתאים למערכת הלוח שנה של התרבות. דוגמה זו משתמשת בתרבות he-IL עם UseNonGregorianMonths להצגת הלוח העברי עם שמות חודשים.</value></data>
   <data name="Date.Label.Hebrew" xml:space="preserve"><value>טווח תאריכים עברי</value></data>
+  <data name="Date.Section.Scrollable" xml:space="preserve"><value>בתוך מיכל גלילה</value></data>
+  <data name="Date.Section.Scrollable.Desc" xml:space="preserve"><value>התיבה שלמטה נגללת והיתה חותכת חלון רגיל. הלוח נפתח בשכבה העליונה במקום זאת, ולכן הוא נשאר שלם ועוקב אחר השדה בעת גלילה.</value></data>
+  <data name="Date.Label.Scrollable" xml:space="preserve"><value>תאריך בתיבת גלילה</value></data>
+  <data name="Date.Scrollable.Filler" xml:space="preserve"><value>גלול את התיבה כדי להזיז את השדה.</value></data>
 </root>

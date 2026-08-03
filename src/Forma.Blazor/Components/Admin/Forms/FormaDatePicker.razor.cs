@@ -1,11 +1,14 @@
 using System.Globalization;
+using Forma.Blazor.Interop;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
+using Microsoft.JSInterop;
 
 namespace Forma.Blazor.Components.Admin.Forms;
 
-public sealed partial class FormaDatePicker : ComponentBase
+public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
 {
+    private const string ModulePath = "./_content/Forma.Blazor/Components/Admin/Forms/FormaDatePicker.razor.js";
     // ── Single-date mode ─────────────────────────────
     [Parameter] public DateOnly? Value { get; set; }
     [Parameter] public EventCallback<DateOnly?> ValueChanged { get; set; }
@@ -28,7 +31,13 @@ public sealed partial class FormaDatePicker : ComponentBase
 
     [Inject] private IStringLocalizer<FormaDatePicker> L { get; set; } = default!;
 
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+
     private bool _isOpen;
+    private ElementReference _anchorElement;
+    private ElementReference _popupElement;
+    private JsModule _module = default!;
+    private bool _placementAttached;
     private DateOnly _leftMonth;
     private DateOnly _rightMonth;
     private DateOnly? _rangeStart;
@@ -110,6 +119,59 @@ public sealed partial class FormaDatePicker : ComponentBase
         GetPanelMonth(panelIndex) < (IsRangeMode && panelIndex == 0 ? AddCalendarMonths(MaxMonth, -1) : MaxMonth);
 
     // ── Lifecycle ────────────────────────────────────
+
+    protected override void OnInitialized()
+        => _module = new JsModule(JS, ModulePath);
+
+    // The popup only exists in the DOM while open, so placement is attached and released
+    // against the trigger, which outlives it.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_isOpen == _placementAttached)
+        {
+            return;
+        }
+
+        try
+        {
+            if (_isOpen)
+            {
+                await _module.InvokeVoidAsync("open", _popupElement, _anchorElement).ConfigureAwait(false);
+            }
+            else
+            {
+                await _module.InvokeVoidAsync("close", _anchorElement).ConfigureAwait(false);
+            }
+
+            _placementAttached = _isOpen;
+        }
+        catch (JSException)
+        {
+            // Circuit disconnected before the module loaded — safe to ignore.
+        }
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_placementAttached)
+            {
+                await _module.InvokeVoidAsync("close", _anchorElement).ConfigureAwait(false);
+            }
+        }
+        catch (JSDisconnectedException)
+        {
+            // Circuit disconnected — safe to ignore.
+        }
+        catch (JSException)
+        {
+            // Module never loaded — nothing to release.
+        }
+
+        await _module.DisposeAsync().ConfigureAwait(false);
+    }
 
     protected override void OnParametersSet()
     {

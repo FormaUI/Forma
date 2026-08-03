@@ -164,6 +164,7 @@ These components form the shell of every admin page. Build first.
 | **Old pattern** | EasePick CDN library with Hebrew locale, year dropdown, reset button, min-date lock |
 | **Used in** | coupons (start/end dates) |
 | **Parameters** | `@bind-Value` (DateOnly?), `DateOnly? MinDate`, `string? Label` |
+| **Popup placement** | The calendar is a `popover`, so it renders in the **top layer** and no scrolling or clipping ancestor can cut it off — it works inside a grid's scroll region, a modal body, or any `overflow: auto` box. The top layer keeps no layout tie to the trigger, so `FormaDatePicker.razor.js` measures and applies the position: it hangs from the trigger's inline-start edge (mirrored in RTL), flips above when there is no room below, clamps into the viewport, and follows scroll and resize. One positioning path for every browser rather than a CSS/JS split. `popover="manual"` keeps the existing backdrop as the dismissal mechanism, which also sidesteps the iOS 17–18.2 bug where a popover ignores a tap outside it |
 | **Blazor approach** | Use Blazor `InputDate` which renders native `<input type="date">`. Browser provides locale-aware calendar. For reset, add a clear button. For min-date, use `min` HTML attribute |
 
 ### 16. `FormaRangeSlider`

@@ -101,16 +101,34 @@
 }
 
 /* ---------- popup ---------- */
+/* A popover in the top layer, so no scrolling or clipping ancestor can cut the calendar
+   off. The top layer keeps no layout tie to the trigger, so the script sets left/top;
+   the UA's own inset and margin are cleared to let those land. */
 .forma-date-picker-popup {
-    position: absolute;
-    top: 100%;
-    inset-inline-start: 0;
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    padding: 0;
     z-index: 1000;
-    display: flex;
-    margin-top: 4px;
+    overflow: visible;
+    border: none;
     background: #fff;
     border-radius: var(--dp-radius);
     box-shadow: 0 2px 9px rgba(0, 0, 0, 0.2);
+}
+
+/* Held back until the popover opens so it cannot flash at the top-left corner in the
+   frame between being rendered and being positioned. */
+.forma-date-picker-popup:popover-open {
+    display: flex;
+}
+
+/* Without popover support the element is never display:none to begin with, so it needs
+   its layout unconditionally — the script still positions it. */
+@supports not selector(:popover-open) {
+    .forma-date-picker-popup {
+        display: flex;
+    }
 }
 
 /* ---------- calendars container ---------- */

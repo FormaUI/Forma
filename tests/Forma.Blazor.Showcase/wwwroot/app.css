@@ -19,3 +19,11 @@
 .demo-inline-input {
     inline-size: 100%;
 }
+
+/* Reproduces the case a popup has to survive: a bounded box that scrolls and would
+   clip an ordinary absolutely-positioned panel. */
+.demo-scroll-box {
+    box-sizing: border-box;
+    block-size: 180px;
+    overflow: auto;
+}

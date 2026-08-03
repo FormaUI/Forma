@@ -47,4 +47,8 @@
   <data name="Date.Section.Hebrew" xml:space="preserve"><value>Hebrew Calendar</value></data>
   <data name="Date.Section.Hebrew.Desc" xml:space="preserve"><value>The component adapts to the calendar system of the given culture. This demo uses he-IL with UseNonGregorianMonths to render the Hebrew (lunisolar) calendar with its month names.</value></data>
   <data name="Date.Label.Hebrew" xml:space="preserve"><value>Hebrew Date Range</value></data>
+  <data name="Date.Section.Scrollable" xml:space="preserve"><value>Inside a scrolling container</value></data>
+  <data name="Date.Section.Scrollable.Desc" xml:space="preserve"><value>The box below scrolls and would clip an ordinary popup. The calendar opens in the top layer instead, so it stays whole, and it follows the trigger as the box scrolls.</value></data>
+  <data name="Date.Label.Scrollable" xml:space="preserve"><value>Date in a scroll box</value></data>
+  <data name="Date.Scrollable.Filler" xml:space="preserve"><value>Scroll this box to move the field around.</value></data>
 </root>
