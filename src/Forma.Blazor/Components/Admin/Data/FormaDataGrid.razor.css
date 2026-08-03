@@ -117,6 +117,16 @@
     color: var(--text-muted, #626976);
 }
 
+/* An editor fills its cell so the row keeps its column widths while switching to edit. */
+::deep .forma-data-grid-editor {
+    box-sizing: border-box;
+    inline-size: 100%;
+}
+
+::deep .forma-data-grid-editor.invalid {
+    border-color: var(--danger, #dc3545);
+}
+
 .forma-data-grid-master-caption {
     background: none;
     border: none;

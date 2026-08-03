@@ -1,5 +1,6 @@
 @inherits BunitContext
 @using AngleSharp.Dom
+@using System.ComponentModel.DataAnnotations
 @using System.Globalization
 
 @code {
@@ -947,5 +948,367 @@
                 .Select(marker => int.Parse(marker.GetAttribute("data-row-key")!, CultureInfo.InvariantCulture))];
 
         private sealed record GridItem(int Id, string Title);
+    }
+
+    public sealed class InlineEditing
+    {
+        private static List<Employee> Employees() =>
+        [
+            new() { Id = 1, Name = "Alice", Salary = 100 },
+            new() { Id = 2, Name = "Bob", Salary = 200 },
+        ];
+
+        private static Employee Clone(Employee employee)
+            => new() { Id = employee.Id, Name = employee.Name, Salary = employee.Salary };
+
+        [Fact]
+        public void Should_throw_when_inline_editing_is_enabled_without_a_clone()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(() => ctx.Render(
+                @<FormaDataGrid Items="Employees().AsQueryable()" PageSize="10" EnableInlineEditing="true">
+                    <Columns>
+                        <FormaPropertyColumn Property="@(employee => employee.Name)" />
+                    </Columns>
+                </FormaDataGrid>));
+
+            Assert.Contains(nameof(FormaDataGrid<Employee>.CloneForEdit), exception.Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_render_values_rather_than_editors_while_no_row_is_being_edited()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Employees().AsQueryable()" PageSize="10"
+                                EnableInlineEditing="true" CloneForEdit="Clone">
+                    <Columns>
+                        <FormaPropertyColumn Property="@(employee => employee.Name)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.Markup.Contains("Bob", StringComparison.Ordinal));
+
+            // Assert
+            Assert.Empty(cut.FindAll("tbody input"));
+        }
+
+        [Fact]
+        public void Should_render_an_editor_for_the_edited_row_only()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var employees = Employees();
+
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="employees.AsQueryable()" PageSize="10"
+                                EnableInlineEditing="true" CloneForEdit="Clone">
+                    <Columns>
+                        <FormaPropertyColumn Property="@(employee => employee.Name)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.Markup.Contains("Bob", StringComparison.Ordinal));
+            var grid = cut.FindComponent<FormaDataGrid<Employee>>();
+
+            // Act
+            cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
+
+            // Assert
+            var editors = cut.FindAll("tbody input");
+            Assert.Single(editors);
+            Assert.Equal("Alice", editors[0].GetAttribute("value"));
+        }
+
+        [Fact]
+        public void Should_pick_the_editor_from_the_property_type()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var employees = Employees();
+
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="employees.AsQueryable()" PageSize="10"
+                                EnableInlineEditing="true" CloneForEdit="Clone">
+                    <Columns>
+                        <FormaPropertyColumn Property="@(employee => employee.Name)" />
+                        <FormaPropertyColumn Property="@(employee => employee.Salary)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.Markup.Contains("Bob", StringComparison.Ordinal));
+            var grid = cut.FindComponent<FormaDataGrid<Employee>>();
+
+            // Act
+            cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
+
+            // Assert — InputText leaves type implicit, InputNumber sets it explicitly
+            var editors = cut.FindAll("tbody input");
+            Assert.Null(editors[0].GetAttribute("type"));
+            Assert.Equal("number", editors[1].GetAttribute("type"));
+        }
+
+        [Fact]
+        public void Should_not_render_an_editor_for_a_column_marked_not_editable()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var employees = Employees();
+
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="employees.AsQueryable()" PageSize="10"
+                                EnableInlineEditing="true" CloneForEdit="Clone">
+                    <Columns>
+                        <FormaPropertyColumn Property="@(employee => employee.Id)" Editable="false" />
+                        <FormaPropertyColumn Property="@(employee => employee.Name)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.Markup.Contains("Bob", StringComparison.Ordinal));
+            var grid = cut.FindComponent<FormaDataGrid<Employee>>();
+
+            // Act
+            cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
+
+            // Assert
+            Assert.Single(cut.FindAll("tbody input"));
+        }
+
+        [Fact]
+        public async Task Should_report_the_edited_copy_and_leave_the_row_untouched_on_save()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var employees = Employees();
+            Employee? saved = null;
+
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="employees.AsQueryable()" PageSize="10"
+                                EnableInlineEditing="true" CloneForEdit="Clone"
+                                OnRowSave="@((Employee edited) => saved = edited)">
+                    <Columns>
+                        <FormaPropertyColumn Property="@(employee => employee.Name)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.Markup.Contains("Bob", StringComparison.Ordinal));
+            var grid = cut.FindComponent<FormaDataGrid<Employee>>();
+            await cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
+
+            // Act
+            cut.Find("tbody input").Change("Alicia");
+            await cut.InvokeAsync(() => grid.Instance.SaveEditAsync());
+
+            // Assert
+            Assert.Equal("Alicia", saved!.Name);
+            Assert.Equal("Alice", employees[0].Name);
+            Assert.Null(grid.Instance.EditingItem);
+        }
+
+        [Fact]
+        public async Task Should_keep_the_row_open_and_report_nothing_when_validation_fails()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var employees = Employees();
+            var saved = false;
+
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="employees.AsQueryable()" PageSize="10"
+                                EnableInlineEditing="true" CloneForEdit="Clone"
+                                OnRowSave="@((Employee _) => saved = true)">
+                    <Columns>
+                        <FormaPropertyColumn Property="@(employee => employee.Name)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.Markup.Contains("Bob", StringComparison.Ordinal));
+            var grid = cut.FindComponent<FormaDataGrid<Employee>>();
+            await cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
+
+            // Act
+            cut.Find("tbody input").Change(string.Empty);
+            var accepted = await cut.InvokeAsync(() => grid.Instance.SaveEditAsync());
+
+            // Assert
+            Assert.False(accepted);
+            Assert.False(saved);
+            Assert.NotNull(grid.Instance.EditingItem);
+        }
+
+        [Fact]
+        public async Task Should_discard_the_edit_on_cancel()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var employees = Employees();
+
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="employees.AsQueryable()" PageSize="10"
+                                EnableInlineEditing="true" CloneForEdit="Clone">
+                    <Columns>
+                        <FormaPropertyColumn Property="@(employee => employee.Name)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.Markup.Contains("Bob", StringComparison.Ordinal));
+            var grid = cut.FindComponent<FormaDataGrid<Employee>>();
+            await cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
+            cut.Find("tbody input").Change("Discarded");
+
+            // Act
+            await cut.InvokeAsync(() => grid.Instance.CancelEditAsync());
+
+            // Assert
+            Assert.Null(grid.Instance.EditingItem);
+            Assert.Equal("Alice", employees[0].Name);
+            Assert.Empty(cut.FindAll("tbody input"));
+        }
+
+        [Fact]
+        public async Task Should_take_the_edited_row_out_of_selection_while_it_is_open()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var employees = Employees();
+
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="employees.AsQueryable()" PageSize="10"
+                                EnableRowSelection="true"
+                                EnableInlineEditing="true" CloneForEdit="Clone">
+                    <Columns>
+                        <FormaPropertyColumn Property="@(employee => employee.Name)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll("tbody .forma-data-grid-row-marker").Count == 2);
+            var grid = cut.FindComponent<FormaDataGrid<Employee>>();
+
+            // Act
+            await cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
+
+            // Assert — the script only acts on rows carrying a marker
+            Assert.Single(cut.FindAll("tbody .forma-data-grid-row-marker"));
+        }
+
+        [Fact]
+        public void Should_title_a_column_from_its_property_when_no_title_is_given()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Employees().AsQueryable()" PageSize="10"
+                                EnableInlineEditing="true" CloneForEdit="Clone">
+                    <Columns>
+                        <FormaPropertyColumn Property="@(employee => employee.Name)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.Markup.Contains("Bob", StringComparison.Ordinal));
+
+            // Assert
+            Assert.Contains("Name", cut.Find("thead").TextContent, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_format_the_displayed_value()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Employees().AsQueryable()" PageSize="10">
+                    <Columns>
+                        <FormaPropertyColumn Property="@(employee => employee.Salary)" Format="N2" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.Markup.Contains("200", StringComparison.Ordinal));
+
+            // Assert
+            Assert.Contains("100.00", cut.Find("tbody").TextContent, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_throw_when_inline_editing_is_enabled_for_a_value_type()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act & Assert — a struct draft is copied on every read, so edits would vanish
+            var exception = Assert.Throws<InvalidOperationException>(() => ctx.Render(
+                @<FormaDataGrid Items="new[] { new Point(1) }.AsQueryable()" PageSize="10"
+                                EnableInlineEditing="true" CloneForEdit="@(point => point)">
+                    <Columns>
+                        <FormaPropertyColumn Property="@(point => point.X)" />
+                    </Columns>
+                </FormaDataGrid>));
+
+            Assert.Contains("value type", exception.Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_not_render_an_edit_template_for_a_column_marked_not_editable()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var employees = Employees();
+
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="employees.AsQueryable()" PageSize="10"
+                                EnableInlineEditing="true" CloneForEdit="Clone">
+                    <Columns>
+                        <FormaPropertyColumn Property="@(employee => employee.Name)" Editable="false">
+                            <EditTemplate><span class="custom-editor">@context.Name</span></EditTemplate>
+                        </FormaPropertyColumn>
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.Markup.Contains("Bob", StringComparison.Ordinal));
+            var grid = cut.FindComponent<FormaDataGrid<Employee>>();
+
+            // Act
+            cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
+
+            // Assert
+            Assert.Empty(cut.FindAll(".custom-editor"));
+        }
+
+        [Fact]
+        public void Should_render_an_edit_template_in_place_of_the_built_in_editor()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var employees = Employees();
+
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="employees.AsQueryable()" PageSize="10"
+                                EnableInlineEditing="true" CloneForEdit="Clone">
+                    <Columns>
+                        <FormaPropertyColumn Property="@(employee => employee.Name)">
+                            <EditTemplate><span class="custom-editor">@context.Name</span></EditTemplate>
+                        </FormaPropertyColumn>
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.Markup.Contains("Bob", StringComparison.Ordinal));
+            var grid = cut.FindComponent<FormaDataGrid<Employee>>();
+
+            // Act
+            cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
+
+            // Assert
+            Assert.Single(cut.FindAll(".custom-editor"));
+            Assert.Empty(cut.FindAll("tbody input"));
+        }
+
+        private sealed class Employee
+        {
+            public int Id { get; set; }
+
+            [Required]
+            public string Name { get; set; } = string.Empty;
+
+            public decimal Salary { get; set; }
+        }
+
+        private readonly record struct Point(int X);
     }
 }

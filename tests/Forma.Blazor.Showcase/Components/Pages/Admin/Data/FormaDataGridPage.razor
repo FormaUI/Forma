@@ -129,53 +129,32 @@
     <h2>@L["Section.InlineEditing"]</h2>
     <p class="desc">@L["InlineEditing.Note"]</p>
     <div class="demo-box">
-        @* Renaming EditForm's own context frees `context` for the column templates below. *@
-        <EditForm EditContext="_editContext" OnValidSubmit="SaveEdit" Context="form">
-            <DataAnnotationsValidator />
-
-            <FormaDataGrid TGridItem="EditableEmployee" Items="@_editable.AsQueryable()"
-                           EnablePagination="false" QueryParameterNamePrefix="editing">
-                <Columns>
-                    <PropertyColumn Property="@(e => e.Id)" />
-                    <TemplateColumn Title="@L["Column.Name"]">
-                        @if (IsEditing(context))
+        <FormaDataGrid @ref="_editGrid" TGridItem="EditableEmployee" Items="@_editable.AsQueryable()"
+                       EnablePagination="false" QueryParameterNamePrefix="editing"
+                       EnableInlineEditing="true" CloneForEdit="CloneEmployee"
+                       OnRowSave="SaveEmployee">
+            <Columns>
+                <FormaPropertyColumn Property="@(e => e.Id)" Editable="false" />
+                <FormaPropertyColumn Property="@(e => e.Name)" Title="@L["Column.Name"]" />
+                <FormaPropertyColumn Property="@(e => e.Department)" Title="@L["Column.Department"]" />
+                <FormaPropertyColumn Property="@(e => e.StartDate)" Title="@L["Column.StartDate"]" Format="d" />
+                <FormaPropertyColumn Property="@(e => e.Salary)" Title="@L["Column.Salary"]" Format="N0" />
+                <TemplateColumn Title="@L["Column.Actions"]">
+                    <div class="demo-row-actions">
+                        @if (_editGrid?.IsEditing(context) == true)
                         {
-                            <InputText @bind-Value="_draft.Name" class="demo-inline-input" />
-                            <ValidationMessage For="@(() => _draft.Name)" />
+                            <button type="button" @onclick="() => _editGrid!.SaveEditAsync()">@L["InlineEditing.Save"]</button>
+                            <button type="button" @onclick="() => _editGrid!.CancelEditAsync()">@L["InlineEditing.Cancel"]</button>
                         }
                         else
                         {
-                            @context.Name
+                            <button type="button" disabled="@(_editGrid?.EditingItem is not null)"
+                                    @onclick="() => _editGrid!.BeginEdit(context)">@L["RowActions.Edit"]</button>
                         }
-                    </TemplateColumn>
-                    <TemplateColumn Title="@L["Column.Department"]">
-                        @if (IsEditing(context))
-                        {
-                            <InputText @bind-Value="_draft.Department" class="demo-inline-input" />
-                            <ValidationMessage For="@(() => _draft.Department)" />
-                        }
-                        else
-                        {
-                            @context.Department
-                        }
-                    </TemplateColumn>
-                    <TemplateColumn Title="@L["Column.Actions"]">
-                        <div class="demo-row-actions">
-                            @if (IsEditing(context))
-                            {
-                                <button type="submit">@L["InlineEditing.Save"]</button>
-                                <button type="button" @onclick="CancelEdit">@L["InlineEditing.Cancel"]</button>
-                            }
-                            else
-                            {
-                                <button type="button" disabled="@(_editingId is not null)"
-                                        @onclick="() => BeginEdit(context)">@L["RowActions.Edit"]</button>
-                            }
-                        </div>
-                    </TemplateColumn>
-                </Columns>
-            </FormaDataGrid>
-        </EditForm>
+                    </div>
+                </TemplateColumn>
+            </Columns>
+        </FormaDataGrid>
     </div>
 </div>
 

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.QuickGrid;
 using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
@@ -17,6 +18,8 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     // Row identity for the selection script: a token survives while its row stays
     // rendered, and is released once the row pages or scrolls out of view.
     private readonly RowTokenTable<TGridItem> _rowTokens = new();
+
+    private readonly RowEditSession<TGridItem> _editSession = new();
 
     private HashSet<TGridItem> _selectedSet = [];
     private QuickGrid<TGridItem>? _grid;
@@ -69,6 +72,18 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
 
     /// <summary>Allows a row to be selected through direct row interaction (click, arrow keys), independently of <see cref="EnableCheckedSelection"/>.</summary>
     [Parameter] public bool EnableRowSelection { get; set; }
+
+    /// <summary>Allows one row at a time to be edited in place by the columns that offer an editor. Requires <see cref="CloneForEdit"/>.</summary>
+    [Parameter] public bool EnableInlineEditing { get; set; }
+
+    /// <summary>Produces the detached copy an edit writes to, so cancelling discards it rather than restoring the row.</summary>
+    [Parameter] public Func<TGridItem, TGridItem>? CloneForEdit { get; set; }
+
+    /// <summary>Fired with the edited copy once it passes validation. Persisting it is the host's job.</summary>
+    [Parameter] public EventCallback<TGridItem> OnRowSave { get; set; }
+
+    /// <summary>Fired with the untouched row when an edit is abandoned.</summary>
+    [Parameter] public EventCallback<TGridItem> OnRowCancel { get; set; }
 
     /// <summary>The fewest rows that must remain selected once a selection exists. A selected row cannot be individually unchecked below this floor; clearing the whole selection is always allowed.</summary>
     [Parameter] public int? MinimumSelection { get; set; }
@@ -216,6 +231,22 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
                 $"{nameof(EnableRowSelection)} requires {nameof(Items)}; it is not supported with {nameof(ItemsProvider)}.");
         }
 
+        if (EnableInlineEditing && CloneForEdit is null)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(EnableInlineEditing)} requires {nameof(CloneForEdit)}; an edit needs a copy to write to.");
+        }
+
+        // Editors write through to the draft by reference; a value type would be copied on
+        // every read, so the edits would be silently dropped rather than reported.
+        if (EnableInlineEditing && typeof(TGridItem).IsValueType)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(EnableInlineEditing)} requires a reference type, but {typeof(TGridItem)} is a value type.");
+        }
+
+        _editSession.KeyOf = ItemKey;
+
         _bounds = new SelectionBounds(MinimumSelection, MaximumSelection);
         _bounds.Validate();
 
@@ -242,6 +273,65 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     /// <summary>Re-queries the data source and re-renders the current page.</summary>
     public Task RefreshDataAsync()
         => _grid?.RefreshDataAsync() ?? Task.CompletedTask;
+
+    /// <summary>The row currently being edited, or <see langword="null"/> when no edit is in progress.</summary>
+    public TGridItem? EditingItem
+        => _editSession.Item;
+
+    /// <summary>Whether <paramref name="item"/> is the row currently being edited.</summary>
+    public bool IsEditing(TGridItem item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+
+        return _editSession.IsEditing(item);
+    }
+
+    /// <summary>Starts editing <paramref name="item"/>, replacing any edit already in progress.</summary>
+    public void BeginEdit(TGridItem item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+
+        if (!EnableInlineEditing)
+        {
+            throw new InvalidOperationException($"{nameof(BeginEdit)} requires {nameof(EnableInlineEditing)}.");
+        }
+
+        _editSession.Begin(item, CloneForEdit!(item));
+        StateHasChanged();
+    }
+
+    /// <summary>Validates the edit and, if it passes, ends it and reports the edited copy. Returns whether it was accepted.</summary>
+    public async Task<bool> SaveEditAsync()
+    {
+        if (_editSession is not { Draft: { } draft, EditContext: { } editContext })
+        {
+            return false;
+        }
+
+        if (!await editContext.ValidateAsync().ConfigureAwait(false))
+        {
+            return false;
+        }
+
+        _editSession.End();
+        StateHasChanged();
+        await OnRowSave.InvokeAsync(draft).ConfigureAwait(false);
+
+        return true;
+    }
+
+    /// <summary>Abandons the edit, discarding the draft.</summary>
+    public async Task CancelEditAsync()
+    {
+        if (_editSession.Item is not { } item)
+        {
+            return;
+        }
+
+        _editSession.End();
+        StateHasChanged();
+        await OnRowCancel.InvokeAsync(item).ConfigureAwait(false);
+    }
 
     // "Some but not all selected" is an IDL-only property, so the header checkbox
     // cannot express it from markup. Row-click/keyboard selection is likewise delegated

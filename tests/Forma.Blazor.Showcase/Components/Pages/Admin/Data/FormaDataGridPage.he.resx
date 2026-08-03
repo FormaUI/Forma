@@ -123,6 +123,12 @@
   <data name="Column.Department" xml:space="preserve">
     <value>מחלקה</value>
   </data>
+  <data name="Column.StartDate" xml:space="preserve">
+    <value>תאריך תחילה</value>
+  </data>
+  <data name="Column.Salary" xml:space="preserve">
+    <value>שכר</value>
+  </data>
   <data name="RowActions.View" xml:space="preserve">
     <value>הצגה</value>
   </data>
@@ -142,7 +148,7 @@
     <value>עריכה בשורה בתוך טופס</value>
   </data>
   <data name="InlineEditing.Note" xml:space="preserve">
-    <value>הטבלה מקוננת בתוך EditForm, ולכן עורכים בתבנית עמודה מצטרפים להקשר האימות הסביבתי ומאמתים מול הערות נתונים. מצב העריכה והעותק הזמני שייכים לעמוד: העריכה נכתבת לטיוטה נפרדת, ולכן ביטול משליך אותה ושמירה מעתיקה אותה בחזרה.</value>
+    <value>FormaPropertyColumn מציג את המאפיין שלו, ומחליף אותו בעורך הנבחר לפי טיפוס המאפיין כל עוד השורה נערכת — טקסט, מספר ותאריך כאן. הטבלה היא בעלת העריכה: היא מעתיקה את השורה, מאמתת את העותק מול הערות הנתונים שלו, ומדווחת עליו רק כשהוא תקין, ולכן ביטול משליך ושמירה מעדכנת. השורה הנערכת יוצאת מהבחירה כל עוד היא פתוחה.</value>
   </data>
   <data name="InlineEditing.Save" xml:space="preserve">
     <value>שמירה</value>

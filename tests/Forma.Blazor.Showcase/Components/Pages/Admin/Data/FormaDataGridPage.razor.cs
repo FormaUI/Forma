@@ -30,9 +30,9 @@ public sealed partial class FormaDataGridPage : ComponentBase
 
     private readonly List<EditableEmployee> _editable =
     [
-        new() { Id = 1, Name = "Alice Johnson", Department = "Engineering" },
-        new() { Id = 2, Name = "Bob Smith", Department = "Marketing" },
-        new() { Id = 3, Name = "Carol Davis", Department = "Sales" },
+        new() { Id = 1, Name = "Alice Johnson", Department = "Engineering", StartDate = new DateOnly(2019, 4, 2), Salary = 92000 },
+        new() { Id = 2, Name = "Bob Smith", Department = "Marketing", StartDate = new DateOnly(2021, 9, 13), Salary = 74500 },
+        new() { Id = 3, Name = "Carol Davis", Department = "Sales", StartDate = new DateOnly(2020, 1, 27), Salary = 81250 },
     ];
 
     private IReadOnlyList<Employee> _selected = [];
@@ -47,24 +47,14 @@ public sealed partial class FormaDataGridPage : ComponentBase
 
     private string? _lastAction;
 
-    // The row being edited and a detached copy of it: edits land on the copy, so cancelling
-    // discards rather than restores.
-    private int? _editingId;
-
-    private EditableEmployee _draft = new();
-
-    private EditContext _editContext = default!;
+    private FormaDataGrid<EditableEmployee>? _editGrid;
 
     protected override void OnInitialized()
-    {
-        _limitsCaption = new CheckedSelectionCaption
+        => _limitsCaption = new CheckedSelectionCaption
         {
             SelectAllText = L["Limits.SelectAll"],
             DeselectAllText = L["Limits.DeselectAll"],
         };
-
-        _editContext = new EditContext(_draft);
-    }
 
     private void HandleSelectionChanged(IReadOnlyList<Employee> selected)
         => _selected = selected;
@@ -84,36 +74,29 @@ public sealed partial class FormaDataGridPage : ComponentBase
     private void RecordAction(RowAction action, Employee employee)
         => _lastAction = $"{L[$"RowActions.{action}"]} — {employee.Name}";
 
-    private bool IsEditing(EditableEmployee employee)
-        => _editingId == employee.Id;
-
-    private void BeginEdit(EditableEmployee employee)
-    {
-        _draft = new EditableEmployee
+    private static EditableEmployee CloneEmployee(EditableEmployee employee)
+        => new()
         {
             Id = employee.Id,
             Name = employee.Name,
             Department = employee.Department,
+            StartDate = employee.StartDate,
+            Salary = employee.Salary,
         };
 
-        _editContext = new EditContext(_draft);
-        _editingId = employee.Id;
-    }
-
-    private void CancelEdit()
-        => _editingId = null;
-
-    private void SaveEdit()
+    private void SaveEmployee(EditableEmployee edited)
     {
-        var target = _editable.Find(employee => employee.Id == _editingId);
+        var target = _editable.Find(employee => employee.Id == edited.Id);
 
-        if (target is not null)
+        if (target is null)
         {
-            target.Name = _draft.Name;
-            target.Department = _draft.Department;
+            return;
         }
 
-        _editingId = null;
+        target.Name = edited.Name;
+        target.Department = edited.Department;
+        target.StartDate = edited.StartDate;
+        target.Salary = edited.Salary;
     }
 
     private enum RowAction
@@ -136,5 +119,10 @@ public sealed partial class FormaDataGridPage : ComponentBase
 
         [Required, StringLength(40)]
         public string Department { get; set; } = string.Empty;
+
+        public DateOnly StartDate { get; set; }
+
+        [Range(0, 1_000_000)]
+        public decimal Salary { get; set; }
     }
 }

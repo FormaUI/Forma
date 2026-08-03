@@ -123,6 +123,12 @@
   <data name="Column.Department" xml:space="preserve">
     <value>Department</value>
   </data>
+  <data name="Column.StartDate" xml:space="preserve">
+    <value>Start date</value>
+  </data>
+  <data name="Column.Salary" xml:space="preserve">
+    <value>Salary</value>
+  </data>
   <data name="RowActions.View" xml:space="preserve">
     <value>View</value>
   </data>
@@ -142,7 +148,7 @@
     <value>Inline editing inside a form</value>
   </data>
   <data name="InlineEditing.Note" xml:space="preserve">
-    <value>The grid nests inside an EditForm, so editors in a column template join the ambient EditContext and validate against data annotations. Edit state and the working copy belong to the page: editing writes to a detached draft, so Cancel discards it and Save copies it back.</value>
+    <value>FormaPropertyColumn shows its property, then swaps to an editor chosen from the property's type while its row is edited — text, number and date here. The grid owns the edit: it copies the row, validates the copy against its data annotations, and reports it only once valid, so Cancel discards and Save commits. The edited row drops out of selection while it is open.</value>
   </data>
   <data name="InlineEditing.Save" xml:space="preserve">
     <value>Save</value>
