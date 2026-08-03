@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.QuickGrid;
@@ -17,7 +18,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
 
     // Row identity for the selection script: a token survives while its row stays
     // rendered, and is released once the row pages or scrolls out of view.
-    private readonly RowTokenTable<TGridItem> _rowTokens = new();
+    private readonly RowTokenTable _rowTokens = new();
 
     private readonly RowEditSession<TGridItem> _editSession = new();
 
@@ -562,6 +563,44 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
         => AdditionalAttributes is not null && AdditionalAttributes.TryGetValue(name, out var value)
             ? value?.ToString()
             : null;
+
+    /// <summary>Gives the selection script an opaque handle for a row that survives while the row stays rendered.</summary>
+    private sealed class RowTokenTable
+    {
+        private Dictionary<object, int> _tokensByKey = [];
+        private Dictionary<object, int> _retiredTokensByKey = [];
+        private Dictionary<int, TGridItem> _itemsByToken = [];
+        private Dictionary<int, TGridItem> _retiredItemsByToken = [];
+        private int _nextToken;
+
+        /// <summary>Retires the current generation of tokens and starts a fresh pass.</summary>
+        public void BeginPass()
+        {
+            (_retiredTokensByKey, _tokensByKey) = (_tokensByKey, _retiredTokensByKey);
+            (_retiredItemsByToken, _itemsByToken) = (_itemsByToken, _retiredItemsByToken);
+            _tokensByKey.Clear();
+            _itemsByToken.Clear();
+        }
+
+        /// <summary>Returns the token for <paramref name="key"/>, reusing the one from the previous pass if it had one.</summary>
+        public int GetToken(object key, TGridItem item)
+        {
+            if (!_tokensByKey.TryGetValue(key, out var token)
+                && !_retiredTokensByKey.TryGetValue(key, out token))
+            {
+                token = _nextToken++;
+            }
+
+            _tokensByKey[key] = token;
+            _itemsByToken[token] = item;
+            return token;
+        }
+
+        /// <summary>Resolves a token back to its item, checking the retired generation too.</summary>
+        public bool TryGetItem(int token, [MaybeNullWhen(false)] out TGridItem item)
+            => _itemsByToken.TryGetValue(token, out item)
+                || _retiredItemsByToken.TryGetValue(token, out item);
+    }
 }
 
 // Non-generic marker sharing FormaDataGrid's resx across every closed instantiation —

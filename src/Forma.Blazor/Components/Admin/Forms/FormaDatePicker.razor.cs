@@ -8,7 +8,7 @@ namespace Forma.Blazor.Components.Admin.Forms;
 
 public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
 {
-    private const string ModulePath = "./_content/Forma.Blazor/Components/Admin/Forms/FormaDatePicker.razor.js";
+    private const string ModulePath = "./_content/Forma.Blazor/scripts/AnchoredPopup.js";
     // ── Single-date mode ─────────────────────────────
     [Parameter] public DateOnly? Value { get; set; }
     [Parameter] public EventCallback<DateOnly?> ValueChanged { get; set; }
@@ -38,6 +38,7 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
     private ElementReference _popupElement;
     private JsModule _module = default!;
     private bool _placementAttached;
+    private IJSObjectReference? _placement;
     private DateOnly _leftMonth;
     private DateOnly _rightMonth;
     private DateOnly? _rangeStart;
@@ -123,8 +124,8 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
     protected override void OnInitialized()
         => _module = new JsModule(JS, ModulePath);
 
-    // The popup only exists in the DOM while open, so placement is attached and released
-    // against the trigger, which outlives it.
+    // The popup element is rebuilt each time it opens, so each open gets its own placement
+    // instance bound to that element rather than reusing a stale one.
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (_isOpen == _placementAttached)
@@ -136,11 +137,15 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
         {
             if (_isOpen)
             {
-                await _module.InvokeVoidAsync("open", _popupElement, _anchorElement).ConfigureAwait(false);
+                _placement = await _module
+                    .InvokeAsync<IJSObjectReference>("AnchoredPopup.create", _popupElement, _anchorElement)
+                    .ConfigureAwait(false);
+
+                await _placement.InvokeVoidAsync("open").ConfigureAwait(false);
             }
             else
             {
-                await _module.InvokeVoidAsync("close", _anchorElement).ConfigureAwait(false);
+                await ReleasePlacementAsync().ConfigureAwait(false);
             }
 
             _placementAttached = _isOpen;
@@ -156,10 +161,7 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
     {
         try
         {
-            if (_placementAttached)
-            {
-                await _module.InvokeVoidAsync("close", _anchorElement).ConfigureAwait(false);
-            }
+            await ReleasePlacementAsync().ConfigureAwait(false);
         }
         catch (JSDisconnectedException)
         {
@@ -171,6 +173,20 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
         }
 
         await _module.DisposeAsync().ConfigureAwait(false);
+    }
+
+    private async ValueTask ReleasePlacementAsync()
+    {
+        if (_placement is null)
+        {
+            return;
+        }
+
+        var placement = _placement;
+        _placement = null;
+
+        await placement.InvokeVoidAsync("close").ConfigureAwait(false);
+        await placement.DisposeAsync().ConfigureAwait(false);
     }
 
     protected override void OnParametersSet()
