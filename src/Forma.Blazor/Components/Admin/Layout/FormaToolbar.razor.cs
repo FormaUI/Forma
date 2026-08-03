@@ -20,7 +20,7 @@ public sealed partial class FormaToolbar : IDisposable
     {
         if (_cts is not null)
         {
-            await _cts.CancelAsync().ConfigureAwait(false);
+            await _cts.CancelAsync();
             _cts.Dispose();
         }
 
@@ -35,8 +35,7 @@ public sealed partial class FormaToolbar : IDisposable
                           return InvokeAsync(() => OnSearch.InvokeAsync(value));
                       return Task.CompletedTask;
                   }, TaskScheduler.Default)
-                  .Unwrap()
-                  .ConfigureAwait(false);
+                  .Unwrap();
     }
 
     public void Dispose()

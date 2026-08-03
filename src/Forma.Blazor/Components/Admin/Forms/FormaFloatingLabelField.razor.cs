@@ -47,7 +47,7 @@ public sealed partial class FormaFloatingLabelField : InputBase<string?>, IAsync
 
         try
         {
-            await _module.InvokeVoidAsync("initAutofillDetection", _inputRef).ConfigureAwait(false);
+            await _module.InvokeVoidAsync("initAutofillDetection", _inputRef);
         }
         catch (JSException)
         {
@@ -56,5 +56,5 @@ public sealed partial class FormaFloatingLabelField : InputBase<string?>, IAsync
     }
 
     public async ValueTask DisposeAsync()
-        => await _module.DisposeAsync().ConfigureAwait(false);
+        => await _module.DisposeAsync();
 }

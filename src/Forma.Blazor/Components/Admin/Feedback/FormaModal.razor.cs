@@ -72,12 +72,12 @@ public sealed partial class FormaModal : IAsyncDisposable
             if (Opened && !_isOpen)
             {
                 _isOpen = true;
-                await _module.InvokeVoidAsync("showModal", _dialogRef, Options.CloseOnBackdropClick).ConfigureAwait(false);
+                await _module.InvokeVoidAsync("showModal", _dialogRef, Options.CloseOnBackdropClick);
             }
             else if (!Opened && _isOpen)
             {
                 _isOpen = false;
-                await _module.InvokeVoidAsync("closeModal", _dialogRef).ConfigureAwait(false);
+                await _module.InvokeVoidAsync("closeModal", _dialogRef);
             }
         }
         catch (JSException)
@@ -95,7 +95,7 @@ public sealed partial class FormaModal : IAsyncDisposable
         if (_isOpen)
         {
             _isOpen = false;
-            await OnClose.InvokeAsync().ConfigureAwait(false);
+            await OnClose.InvokeAsync();
         }
     }
 
@@ -103,7 +103,7 @@ public sealed partial class FormaModal : IAsyncDisposable
     {
         try
         {
-            await _module.InvokeVoidAsync("closeModal", _dialogRef).ConfigureAwait(false);
+            await _module.InvokeVoidAsync("closeModal", _dialogRef);
             return;
         }
         catch (JSException)
@@ -114,28 +114,28 @@ public sealed partial class FormaModal : IAsyncDisposable
         if (_isOpen)
         {
             _isOpen = false;
-            await OnClose.InvokeAsync().ConfigureAwait(false);
+            await OnClose.InvokeAsync();
         }
     }
 
     private async Task HandleDefaultCancelAsync()
     {
         if (OnCancel.HasDelegate)
-            await OnCancel.InvokeAsync().ConfigureAwait(false);
+            await OnCancel.InvokeAsync();
 
         if (Options.CloseOnCancel)
-            await RequestCloseAsync().ConfigureAwait(false);
+            await RequestCloseAsync();
     }
 
     private async Task HandleDefaultConfirmAsync()
     {
         if (OnConfirm.HasDelegate)
-            await OnConfirm.InvokeAsync().ConfigureAwait(false);
+            await OnConfirm.InvokeAsync();
 
         if (Options.CloseOnConfirm)
-            await RequestCloseAsync().ConfigureAwait(false);
+            await RequestCloseAsync();
     }
 
     public async ValueTask DisposeAsync()
-        => await _module.DisposeAsync().ConfigureAwait(false);
+        => await _module.DisposeAsync();
 }

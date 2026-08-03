@@ -12,11 +12,11 @@ internal sealed class JsModule(IJSRuntime js, string path) : IAsyncDisposable
     /// <summary>Imports the module if needed, then invokes a void-returning export.</summary>
     public async ValueTask InvokeVoidAsync(string identifier, params object?[] args)
     {
-        var module = await ImportAsync().ConfigureAwait(false);
+        var module = await ImportAsync();
 
         try
         {
-            await module.InvokeVoidAsync(identifier, args).ConfigureAwait(false);
+            await module.InvokeVoidAsync(identifier, args);
         }
         catch (JSDisconnectedException ex)
         {
@@ -27,11 +27,11 @@ internal sealed class JsModule(IJSRuntime js, string path) : IAsyncDisposable
     /// <summary>Imports the module if needed, then invokes an export returning <typeparamref name="TValue"/>.</summary>
     public async ValueTask<TValue> InvokeAsync<TValue>(string identifier, params object?[] args)
     {
-        var module = await ImportAsync().ConfigureAwait(false);
+        var module = await ImportAsync();
 
         try
         {
-            return await module.InvokeAsync<TValue>(identifier, args).ConfigureAwait(false);
+            return await module.InvokeAsync<TValue>(identifier, args);
         }
         catch (JSDisconnectedException ex)
         {
@@ -52,8 +52,8 @@ internal sealed class JsModule(IJSRuntime js, string path) : IAsyncDisposable
 
         try
         {
-            var module = await import.ConfigureAwait(false);
-            await module.DisposeAsync().ConfigureAwait(false);
+            var module = await import;
+            await module.DisposeAsync();
         }
         catch (JSDisconnectedException)
         {

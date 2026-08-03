@@ -138,14 +138,13 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
             if (_isOpen)
             {
                 _placement = await _module
-                    .InvokeAsync<IJSObjectReference>("AnchoredPopup.create", _popupElement, _anchorElement)
-                    .ConfigureAwait(false);
+                    .InvokeAsync<IJSObjectReference>("AnchoredPopup.create", _popupElement, _anchorElement);
 
-                await _placement.InvokeVoidAsync("open").ConfigureAwait(false);
+                await _placement.InvokeVoidAsync("open");
             }
             else
             {
-                await ReleasePlacementAsync().ConfigureAwait(false);
+                await ReleasePlacementAsync();
             }
 
             _placementAttached = _isOpen;
@@ -161,7 +160,7 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
     {
         try
         {
-            await ReleasePlacementAsync().ConfigureAwait(false);
+            await ReleasePlacementAsync();
         }
         catch (JSDisconnectedException)
         {
@@ -172,7 +171,7 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
             // Module never loaded — nothing to release.
         }
 
-        await _module.DisposeAsync().ConfigureAwait(false);
+        await _module.DisposeAsync();
     }
 
     private async ValueTask ReleasePlacementAsync()
@@ -185,8 +184,8 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
         var placement = _placement;
         _placement = null;
 
-        await placement.InvokeVoidAsync("close").ConfigureAwait(false);
-        await placement.DisposeAsync().ConfigureAwait(false);
+        await placement.InvokeVoidAsync("close");
+        await placement.DisposeAsync();
     }
 
     protected override void OnParametersSet()
@@ -360,17 +359,17 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
                 _hoverDate = null;
                 StartDate = start;
                 EndDate = end;
-                await StartDateChanged.InvokeAsync(start).ConfigureAwait(false);
-                await EndDateChanged.InvokeAsync(end).ConfigureAwait(false);
-                await OnSelectionComplete.InvokeAsync().ConfigureAwait(false);
+                await StartDateChanged.InvokeAsync(start);
+                await EndDateChanged.InvokeAsync(end);
+                await OnSelectionComplete.InvokeAsync();
                 _isOpen = false;
             }
         }
         else
         {
             Value = date;
-            await ValueChanged.InvokeAsync(date).ConfigureAwait(false);
-            await OnSelectionComplete.InvokeAsync().ConfigureAwait(false);
+            await ValueChanged.InvokeAsync(date);
+            await OnSelectionComplete.InvokeAsync();
             _isOpen = false;
         }
     }
@@ -387,13 +386,13 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
         {
             StartDate = null;
             EndDate = null;
-            await StartDateChanged.InvokeAsync(null).ConfigureAwait(false);
-            await EndDateChanged.InvokeAsync(null).ConfigureAwait(false);
+            await StartDateChanged.InvokeAsync(null);
+            await EndDateChanged.InvokeAsync(null);
         }
         else
         {
             Value = null;
-            await ValueChanged.InvokeAsync(null).ConfigureAwait(false);
+            await ValueChanged.InvokeAsync(null);
         }
         _rangeStart = null;
         _isOpen = false;
@@ -474,9 +473,9 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
                 _leftMonth = MinMonth;
         }
         _rangeStart = null;
-        await StartDateChanged.InvokeAsync(start).ConfigureAwait(false);
-        await EndDateChanged.InvokeAsync(end).ConfigureAwait(false);
-        await OnSelectionComplete.InvokeAsync().ConfigureAwait(false);
+        await StartDateChanged.InvokeAsync(start);
+        await EndDateChanged.InvokeAsync(end);
+        await OnSelectionComplete.InvokeAsync();
         _isOpen = false;
     }
 

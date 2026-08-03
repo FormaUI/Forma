@@ -267,7 +267,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
         // turning pagination back on starts from the first page rather than resuming.
         if (!EnablePagination && _pagination.CurrentPageIndex > 0)
         {
-            await _pagination.SetCurrentPageIndexAsync(0).ConfigureAwait(false);
+            await _pagination.SetCurrentPageIndexAsync(0);
         }
     }
 
@@ -309,14 +309,14 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
             return false;
         }
 
-        if (!await editContext.ValidateAsync().ConfigureAwait(false))
+        if (!await editContext.ValidateAsync())
         {
             return false;
         }
 
         _editSession.End();
         StateHasChanged();
-        await OnRowSave.InvokeAsync(draft).ConfigureAwait(false);
+        await OnRowSave.InvokeAsync(draft);
 
         return true;
     }
@@ -331,7 +331,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
 
         _editSession.End();
         StateHasChanged();
-        await OnRowCancel.InvokeAsync(item).ConfigureAwait(false);
+        await OnRowCancel.InvokeAsync(item);
     }
 
     // "Some but not all selected" is an IDL-only property, so the header checkbox
@@ -344,7 +344,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
             if (EnableRowSelection && !_rowSelectionAttached)
             {
                 _selfReference ??= DotNetObjectReference.Create(this);
-                await _module.InvokeVoidAsync("attachRowSelection", _scrollerElement, _selfReference).ConfigureAwait(false);
+                await _module.InvokeVoidAsync("attachRowSelection", _scrollerElement, _selfReference);
                 _rowSelectionAttached = true;
             }
 
@@ -354,7 +354,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
             }
             else if (_indeterminateApplied != PartiallySelected)
             {
-                await _module.InvokeVoidAsync("setIndeterminate", _selectAllElement, PartiallySelected).ConfigureAwait(false);
+                await _module.InvokeVoidAsync("setIndeterminate", _selectAllElement, PartiallySelected);
                 _indeterminateApplied = PartiallySelected;
             }
         }
@@ -373,7 +373,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
         {
             if (_rowSelectionAttached)
             {
-                await _module.InvokeVoidAsync("detachRowSelection", _scrollerElement).ConfigureAwait(false);
+                await _module.InvokeVoidAsync("detachRowSelection", _scrollerElement);
             }
         }
         catch (JSDisconnectedException)
@@ -381,7 +381,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
             // Circuit disconnected — safe to ignore.
         }
 
-        await _module.DisposeAsync().ConfigureAwait(false);
+        await _module.DisposeAsync();
         _selfReference?.Dispose();
     }
 
@@ -461,7 +461,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
 
         if (!CanToggleRow(item))
         {
-            await RejectSelectionAsync(isSelected ? SelectionBoundary.Maximum : SelectionBoundary.Minimum).ConfigureAwait(false);
+            await RejectSelectionAsync(isSelected ? SelectionBoundary.Maximum : SelectionBoundary.Minimum);
             return;
         }
 
@@ -476,22 +476,22 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
             updated.Remove(item);
         }
 
-        await SelectedItemsChanged.InvokeAsync([.. updated]).ConfigureAwait(false);
+        await SelectedItemsChanged.InvokeAsync([.. updated]);
     }
 
     private async Task HandleMasterClickAsync()
     {
         if (_selectedSet.Count > 0)
         {
-            await SelectedItemsChanged.InvokeAsync([]).ConfigureAwait(false);
+            await SelectedItemsChanged.InvokeAsync([]);
         }
         else if (CanSelectAll)
         {
-            await SelectedItemsChanged.InvokeAsync([.. Items!]).ConfigureAwait(false);
+            await SelectedItemsChanged.InvokeAsync([.. Items!]);
         }
         else
         {
-            await RejectSelectionAsync(SelectionBoundary.Maximum).ConfigureAwait(false);
+            await RejectSelectionAsync(SelectionBoundary.Maximum);
         }
     }
 
@@ -506,17 +506,17 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
 
         if (additive)
         {
-            await ToggleSelectionAsync(item, !IsSelected(item)).ConfigureAwait(false);
+            await ToggleSelectionAsync(item, !IsSelected(item));
             return;
         }
 
         if (!CanSelectRow(item))
         {
-            await RejectSelectionAsync(SelectionBoundary.Maximum).ConfigureAwait(false);
+            await RejectSelectionAsync(SelectionBoundary.Maximum);
             return;
         }
 
-        await SelectedItemsChanged.InvokeAsync([item]).ConfigureAwait(false);
+        await SelectedItemsChanged.InvokeAsync([item]);
     }
 
     /// <summary>Replaces or extends the selection with a contiguous range of rows, invoked from the row-selection script.</summary>
@@ -544,16 +544,16 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
         // master select-all, since a range select is likewise a whole-set replacement.
         if (!_bounds.CanSelectAll(updated.Count))
         {
-            await RejectSelectionAsync(SelectionBoundary.Maximum).ConfigureAwait(false);
+            await RejectSelectionAsync(SelectionBoundary.Maximum);
             return;
         }
 
-        await SelectedItemsChanged.InvokeAsync([.. updated]).ConfigureAwait(false);
+        await SelectedItemsChanged.InvokeAsync([.. updated]);
     }
 
     // FormaPagination is 1-based; QuickGrid's PaginationState is 0-based.
     private async Task HandlePageChangedAsync(int page)
-        => await _pagination.SetCurrentPageIndexAsync(page - 1).ConfigureAwait(false);
+        => await _pagination.SetCurrentPageIndexAsync(page - 1);
 
     // QuickGrid raises this from its data-loading path, off the renderer's sync context.
     private void HandleTotalItemCountChanged(object? sender, int? totalItemCount)

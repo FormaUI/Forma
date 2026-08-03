@@ -98,7 +98,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
 
         try
         {
-            await _module.InvokeVoidAsync("suppressImplicitSubmit", _pageInputElement).ConfigureAwait(false);
+            await _module.InvokeVoidAsync("suppressImplicitSubmit", _pageInputElement);
             _submitGuardAttached = true;
         }
         catch (JSException)
@@ -109,7 +109,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
-        => await _module.DisposeAsync().ConfigureAwait(false);
+        => await _module.DisposeAsync();
 
     // Windowed page-number layout (boundary pages + a sibling range around the
     // current page, with a null placeholder standing in for a collapsed gap).
@@ -162,7 +162,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
             return;
         }
 
-        await OnPageChanged.InvokeAsync(page).ConfigureAwait(false);
+        await OnPageChanged.InvokeAsync(page);
     }
 
     private void OnJumpInput(ChangeEventArgs args)
@@ -172,7 +172,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
     {
         if (args.Key is "Enter")
         {
-            await JumpAsync().ConfigureAwait(false);
+            await JumpAsync();
         }
     }
 
@@ -181,7 +181,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
     // so an unparseable entry clears rather than sticking around.
     private async Task JumpAsync()
     {
-        var entry = await TakePageEntryAsync().ConfigureAwait(false);
+        var entry = await TakePageEntryAsync();
         _pageInput = null;
 
         if (!int.TryParse(entry, NumberStyles.Integer, CultureInfo.CurrentCulture, out var page))
@@ -189,7 +189,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
             return;
         }
 
-        await GoToPageAsync(Math.Clamp(page, 1, PageCount)).ConfigureAwait(false);
+        await GoToPageAsync(Math.Clamp(page, 1, PageCount));
     }
 
     // Typing that lands before the circuit connects raises no input event, leaving the
@@ -203,7 +203,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
 
         try
         {
-            return await _module.InvokeAsync<string>("takePageEntry", _pageInputElement).ConfigureAwait(false);
+            return await _module.InvokeAsync<string>("takePageEntry", _pageInputElement);
         }
         catch (JSException)
         {

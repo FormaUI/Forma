@@ -37,7 +37,7 @@ public sealed partial class FormaToastContainer : IDisposable
                 _ = InvokeAsync(async () =>
                 {
                     DisposeTimer(id);
-                    await ToastService.RemoveAsync(id).ConfigureAwait(false);
+                    await ToastService.RemoveAsync(id);
                 });
             }, null, toast.Duration, Timeout.InfiniteTimeSpan);
 
