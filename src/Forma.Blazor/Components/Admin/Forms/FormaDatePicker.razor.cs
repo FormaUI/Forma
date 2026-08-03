@@ -61,6 +61,12 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
     private DateOnly AddCalendarMonths(DateOnly d, int months) =>
         DateOnly.FromDateTime(_calendar.AddMonths(d.ToDateTime(TimeOnly.MinValue), months));
 
+    // Named from a real date in the month rather than by index: the month-name table is the
+    // 13-month leap-year one, so on a calendar whose common year is shorter (Hebrew drops
+    // Adar II) indexing it directly mislabels every month past the missing slot.
+    private string MonthName(int calYear, int calMonth) =>
+        CalendarMonthStart(calYear, calMonth).ToDateTime(TimeOnly.MinValue).ToString("MMMM", _dtf);
+
     private bool HasValue => IsRangeMode
         ? StartDate is not null || EndDate is not null
         : Value is not null;

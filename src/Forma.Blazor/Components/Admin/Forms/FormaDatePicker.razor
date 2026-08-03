@@ -51,7 +51,7 @@
                                     @for (var m = 1; m <= _calendar.GetMonthsInYear(CalendarYear(month)); m++)
                                     {
                                         var mo = m;
-                                        <option value="@mo" disabled="@IsMonthDisabled(CalendarYear(month), mo, idx)">@_dtf.GetMonthName(mo)</option>
+                                        <option value="@mo" disabled="@IsMonthDisabled(CalendarYear(month), mo, idx)">@MonthName(CalendarYear(month), mo)</option>
                                     }
                                 </select>
                             </div>
