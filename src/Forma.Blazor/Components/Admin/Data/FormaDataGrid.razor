@@ -50,10 +50,15 @@
                                 {
                                     @if (MasterCaptionInteractive)
                                     {
-                                        <button type="button"
-                                                class="forma-data-grid-master-caption"
-                                                disabled="@MasterControlDisabled"
-                                                @onclick="HandleMasterClickAsync">@MasterCaptionText</button>
+                                        <span class="forma-data-grid-master-caption-slot">
+                                            <button type="button"
+                                                    class="forma-data-grid-master-caption"
+                                                    disabled="@MasterControlDisabled"
+                                                    @onclick="HandleMasterClickAsync">@MasterCaptionText</button>
+                                            @* Holds the column at the width of the longer caption, so swapping
+                                               between them does not resize every column beside it. *@
+                                            <span class="forma-data-grid-master-caption-ghost" aria-hidden="true">@MasterCaptionAlternateText</span>
+                                        </span>
                                     }
                                     else
                                     {

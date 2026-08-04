@@ -796,6 +796,29 @@
         }
 
         [Fact]
+        public void Should_render_the_alternate_caption_hidden_beside_the_interactive_one()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var caption = new CheckedSelectionCaption { SelectAllText = "Select all", DeselectAllText = "Deselect all" };
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true"
+                                CheckedSelectionCaption="caption">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
+            var ghost = cut.Find(".forma-data-grid-master-caption-ghost");
+
+            // Assert
+            Assert.Equal("Deselect all", ghost.TextContent);
+            Assert.Equal("true", ghost.GetAttribute("aria-hidden"));
+        }
+
+        [Fact]
         public void Should_disable_the_master_control_when_selecting_all_would_exceed_the_maximum()
         {
             // Arrange

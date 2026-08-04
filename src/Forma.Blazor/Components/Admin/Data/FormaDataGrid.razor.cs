@@ -179,6 +179,12 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
             _ => null,
         };
 
+    // The caption the control would show in its other state.
+    private string? MasterCaptionAlternateText
+        => MasterCaptionInteractive
+            ? _selectedSet.Count > 0 ? CheckedSelectionCaption!.SelectAllText : CheckedSelectionCaption!.DeselectAllText
+            : null;
+
     // Host class is merged rather than splatted, so supplying one never drops
     // the component's own class.
     private string CssClass

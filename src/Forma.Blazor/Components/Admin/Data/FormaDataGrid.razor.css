@@ -31,9 +31,14 @@
    paint over the rows rather than let them show through. The default cell
    spacing would leave gaps between the header cells for rows to appear in,
    and the rule that separates head from body belongs to the first body row,
-   which scrolls away — so the header carries its own. */
+   which scrolls away — so the header carries its own.
+
+   A table sizes to its content by default, so a grid of short columns sat in
+   one corner of its box with the rest blank; filling the box puts the columns
+   under the width the host gave the grid. */
 ::deep .forma-data-grid-scroller table {
     border-spacing: 0;
+    inline-size: 100%;
 }
 
 /* QuickGrid's own cell padding is a hairline, too tight for content like a
@@ -49,6 +54,20 @@
 ::deep .forma-data-grid-scroller .quickgrid > tbody > tr > td:not(.forma-data-grid-select-column) {
     padding-block: 0.6rem;
     padding-inline: 0.75rem;
+}
+
+/* QuickGrid indents a column title inside its cell, so every heading sat inboard of
+   the values beneath it. The gap it keeps at the far edge of the heading is a physical
+   padding-right, which under RTL lands on the leading side and pushes the title further
+   still — restated here as the logical edge it was meant to be. */
+::deep .forma-data-grid-scroller .quickgrid .col-header-content {
+    padding-right: 0;
+    padding-inline-end: var(--col-gap);
+}
+
+::deep .forma-data-grid-scroller .quickgrid .col-title {
+    padding-block: 0.1rem;
+    padding-inline: 0;
 }
 
 ::deep .forma-data-grid-scroller thead th {
@@ -76,23 +95,35 @@
 }
 
 /* Sized in whole pixels, not em: a fractional box lands on a different sub-pixel
-   offset in every row and the borders rasterise unevenly down the column. */
+   offset in every row and the borders rasterise unevenly down the column. The margin
+   a checkbox carries by default is physical and uneven, so it would sit off the column
+   gutter in one direction and off it by a different amount in the other. */
 .forma-data-grid-checkbox {
     inline-size: 16px;
     block-size: 16px;
+    margin: 0;
     accent-color: var(--main, #0d6efd);
 }
 
-/* QuickGrid pads header and body cells by different amounts and wraps header content
-   in a flex box, so the selection column states its own box on both sides of that. */
+/* The selection column keeps the same gutter and leading edge as every other column, so
+   its box starts on the line the values beside it start on. */
 ::deep .forma-data-grid-select-column {
     inline-size: 3rem;
-    padding-inline: 0;
-    text-align: center;
+    padding-inline: 0.75rem;
+    text-align: start;
 }
 
-::deep .forma-data-grid-select-column .col-header-content {
-    justify-content: center;
+/* Matched against QuickGrid's own body-cell shape, which is specific enough to keep its
+   asymmetric padding otherwise and leave the box off that line. */
+::deep .forma-data-grid-scroller .quickgrid > tbody > tr > td.forma-data-grid-select-column {
+    padding-inline: 0.75rem;
+    text-align: start;
+}
+
+/* The column gap the other headings keep at their trailing edge would push this one's
+   box off the gutter the rows place theirs on. */
+::deep .forma-data-grid-scroller .quickgrid th.forma-data-grid-select-column .col-header-content {
+    padding-inline: 0;
 }
 
 /* Row selection without checkboxes carries the same focusable input for its native
@@ -142,12 +173,32 @@
     border-color: var(--danger, #dc3545);
 }
 
+/* Both captions share one grid cell, so the column takes the width of the wider and
+   keeps it while the control swaps between them. */
+.forma-data-grid-master-caption-slot {
+    display: grid;
+}
+
+.forma-data-grid-master-caption-slot > * {
+    grid-area: 1 / 1;
+}
+
+.forma-data-grid-master-caption-ghost {
+    visibility: hidden;
+    white-space: nowrap;
+}
+
+/* A caption stands in for the checkbox, so the column has to widen to the words rather
+   than hold the width a box needs and break them across lines. A button centres its own
+   text, which would set the caption in from the gutter the boxes below it sit on. */
 .forma-data-grid-master-caption {
     background: none;
     border: none;
     padding: 0;
     color: var(--main, #0d6efd);
     font: inherit;
+    text-align: start;
+    white-space: nowrap;
     cursor: pointer;
 }
 
