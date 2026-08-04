@@ -406,7 +406,7 @@ dotnet_diagnostic.IDE0005.severity = none               # Remove unnecessary imp
 dotnet_diagnostic.IDE0007.severity = none               # Use implicit type - disabled since we prefer var everywhere
 dotnet_diagnostic.IDE0008.severity = none               # Use explicit type - disabled since we prefer var everywhere
 dotnet_diagnostic.IDE0009.severity = error              # Add this or Me qualification
-dotnet_diagnostic.IDE0010.severity = warning            # Add missing cases to switch statement
+dotnet_diagnostic.IDE0010.severity = none               # Add missing cases to switch statement - the fixer ignores default arms and emits NotImplementedException
 dotnet_diagnostic.IDE0011.severity = error              # Add braces
 dotnet_diagnostic.IDE0016.severity = warning            # Use throw expression
 dotnet_diagnostic.IDE0017.severity = warning            # Use object initializers
@@ -461,7 +461,7 @@ dotnet_diagnostic.IDE0065.severity = warning            # using directive placem
 dotnet_diagnostic.IDE0066.severity = error              # Use switch expression
 dotnet_diagnostic.IDE0070.severity = warning            # Use System.HashCode.Combine
 dotnet_diagnostic.IDE0071.severity = warning            # Simplify interpolation
-dotnet_diagnostic.IDE0072.severity = warning            # Add missing cases to switch expression
+dotnet_diagnostic.IDE0072.severity = none               # Add missing cases to switch expression - the fixer ignores discard arms and emits NotImplementedException
 dotnet_diagnostic.IDE0073.severity = error              # Require file header
 dotnet_diagnostic.IDE0074.severity = warning            # Use compound assignment
 dotnet_diagnostic.IDE0075.severity = warning            # Simplify conditional expression
@@ -503,5 +503,14 @@ dotnet_diagnostic.IDE0300.severity = error              # Use collection express
 dotnet_diagnostic.IDE0301.severity = error              # Use collection expression for empty
 dotnet_diagnostic.IDE0302.severity = error              # Use collection expression for stackalloc
 dotnet_diagnostic.IDE0305.severity = warning            # Use collection expression for fluent
+
+# ------------------------------------------------------------
+# Test sources
+# ------------------------------------------------------------
+[tests/**/*.{cs,razor}]
+
+# Arrange builds the subject and Act mutates it, so folding the two together is not an improvement
+dotnet_diagnostic.IDE0017.severity = none               # Use object initializers
+dotnet_diagnostic.IDE0028.severity = none               # Use collection initializers
 
 # End of .editorconfig
