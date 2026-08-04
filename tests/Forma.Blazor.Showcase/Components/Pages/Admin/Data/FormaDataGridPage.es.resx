@@ -144,6 +144,15 @@
   <data name="RowActions.None" xml:space="preserve">
     <value>ninguna aún</value>
   </data>
+  <data name="Section.ModalDetails" xml:space="preserve">
+    <value>Detalles en modal</value>
+  </data>
+  <data name="ModalDetails.Note" xml:space="preserve">
+    <value>Una única instancia de FormaModal es compartida por todas las filas; la columna de acciones le indica qué fila mostrar.</value>
+  </data>
+  <data name="Column.Id" xml:space="preserve">
+    <value>ID</value>
+  </data>
   <data name="Section.InlineEditing" xml:space="preserve">
     <value>Edición en línea dentro de un formulario</value>
   </data>

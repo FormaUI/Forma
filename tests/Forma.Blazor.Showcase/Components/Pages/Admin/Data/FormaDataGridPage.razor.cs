@@ -49,6 +49,10 @@ public sealed partial class FormaDataGridPage : ComponentBase
 
     private string? _lastAction;
 
+    private bool _detailsOpen;
+
+    private Employee? _detailsEmployee;
+
     private FormaDataGrid<EditableEmployee>? _editGrid;
 
     protected override void OnInitialized()
@@ -75,6 +79,18 @@ public sealed partial class FormaDataGridPage : ComponentBase
 
     private void RecordAction(RowAction action, Employee employee)
         => _lastAction = $"{L[$"RowActions.{action}"]} — {employee.Name}";
+
+    private void OpenDetails(Employee employee)
+    {
+        _detailsEmployee = employee;
+        _detailsOpen = true;
+    }
+
+    private void CloseDetails()
+    {
+        _detailsOpen = false;
+        _detailsEmployee = null;
+    }
 
     private static EditableEmployee CloneEmployee(EditableEmployee employee)
         => new()

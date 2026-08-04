@@ -144,6 +144,15 @@
   <data name="RowActions.None" xml:space="preserve">
     <value>none yet</value>
   </data>
+  <data name="Section.ModalDetails" xml:space="preserve">
+    <value>Modal details</value>
+  </data>
+  <data name="ModalDetails.Note" xml:space="preserve">
+    <value>A single FormaModal instance is shared by every row; the action column tells it which row to show.</value>
+  </data>
+  <data name="Column.Id" xml:space="preserve">
+    <value>ID</value>
+  </data>
   <data name="Section.InlineEditing" xml:space="preserve">
     <value>Inline editing inside a form</value>
   </data>

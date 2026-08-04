@@ -129,8 +129,41 @@
     </div>
 </div>
 
-<div class="demo-section">
-    <h2>@L["Section.InlineEditing"]</h2>
+<div class="demo-section">    <h2>@L["Section.ModalDetails"]</h2>
+    <p class="desc">@L["ModalDetails.Note"]</p>
+    <div class="demo-box">
+        <FormaDataGrid TGridItem="Employee" Items="_employees" PageSize="5"
+                       QueryParameterNamePrefix="modal">
+            <Columns>
+                <PropertyColumn Property="@(e => e.Id)" />
+                <PropertyColumn Property="@(e => e.Name)" />
+                <PropertyColumn Property="@(e => e.Department)" />
+                <TemplateColumn Title="@L["Column.Actions"]">
+                    <FormaButton Variant="ButtonVariant.Tertiary"
+                                 OnClick="() => OpenDetails(context)">@L["RowActions.View"]</FormaButton>
+                </TemplateColumn>
+            </Columns>
+        </FormaDataGrid>
+
+        <FormaModal Opened="_detailsOpen" OnClose="CloseDetails" Title="@_detailsEmployee?.Name">
+            <Body>
+                @if (_detailsEmployee is { } employee)
+                {
+                    <dl class="detail-list">
+                        <dt>@L["Column.Id"]</dt>
+                        <dd>@employee.Id</dd>
+                        <dt>@L["Column.Name"]</dt>
+                        <dd>@employee.Name</dd>
+                        <dt>@L["Column.Department"]</dt>
+                        <dd>@employee.Department</dd>
+                    </dl>
+                }
+            </Body>
+        </FormaModal>
+    </div>
+</div>
+
+<div class="demo-section">    <h2>@L["Section.InlineEditing"]</h2>
     <p class="desc">@L["InlineEditing.Note"]</p>
     <div class="demo-box">
         <FormaDataGrid @ref="_editGrid" TGridItem="EditableEmployee" Items="@_editable.AsQueryable()"

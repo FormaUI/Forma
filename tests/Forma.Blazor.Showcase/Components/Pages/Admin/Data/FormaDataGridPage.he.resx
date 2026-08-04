@@ -144,6 +144,15 @@
   <data name="RowActions.None" xml:space="preserve">
     <value>אין עדיין</value>
   </data>
+  <data name="Section.ModalDetails" xml:space="preserve">
+    <value>פרטים במודאל</value>
+  </data>
+  <data name="ModalDetails.Note" xml:space="preserve">
+    <value>מופע FormaModal יחיד משותף לכל השורות; עמודת הפעולות מודיעה לו איזו שורה להציג.</value>
+  </data>
+  <data name="Column.Id" xml:space="preserve">
+    <value>מזהה</value>
+  </data>
   <data name="Section.InlineEditing" xml:space="preserve">
     <value>עריכה בשורה בתוך טופס</value>
   </data>
