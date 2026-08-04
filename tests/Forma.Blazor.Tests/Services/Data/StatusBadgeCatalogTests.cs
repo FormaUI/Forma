@@ -55,14 +55,14 @@ public sealed class StatusBadgeCatalogTests
     public void Should_return_registered_colours()
     {
         // Arrange
-        var catalog = new StatusBadgeCatalog
-        {
-            // Act
-            new("published", Background, Foreground)
-        };
+        var catalog = new StatusBadgeCatalog();
+
+        // Act
+        catalog.Add(new("published", Background, Foreground));
+
+        var style = catalog.Find("published");
 
         // Assert
-        var style = catalog.Find("published");
         Assert.Multiple(() =>
         {
             Assert.NotNull(style);
