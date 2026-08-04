@@ -1,0 +1,145 @@
+/* ============================================================
+   FormaButton — CSS isolation
+   Variant/size vocabulary carried over from the Coi admin
+   (btn, btn-primary, btn-sec, btn-thrd, btn-mini, btn-load),
+   rebuilt on the design tokens with logical properties only.
+   ============================================================ */
+
+/* ---------- base ---------- */
+.forma-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding-block: 0.45rem;
+    padding-inline: 1rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1.4;
+    border: 1px solid transparent;
+    border-radius: var(--forma-btn-radius, 6px);
+    cursor: pointer;
+    transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.forma-btn:focus-visible {
+    outline: 2px solid var(--main);
+    outline-offset: 2px;
+}
+
+.forma-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ---------- variants ---------- */
+.forma-btn-primary {
+    background-color: var(--main);
+    border-color: var(--main);
+    color: #fff;
+}
+
+.forma-btn-primary:hover:not(:disabled) {
+    background-color: var(--main-dark);
+    border-color: var(--main-dark);
+}
+
+.forma-btn-secondary {
+    background-color: color-mix(in srgb, var(--main) 4%, transparent);
+    border-color: var(--main);
+    color: var(--text);
+}
+
+.forma-btn-secondary:hover:not(:disabled) {
+    background-color: color-mix(in srgb, var(--main) 14%, transparent);
+    border-color: var(--main-dark);
+}
+
+.forma-btn-tertiary {
+    padding-block: 0.15rem;
+    padding-inline: 0.6rem;
+    font-size: 0.8rem;
+    font-weight: 400;
+    background-color: #fff;
+    border-color: var(--light-border);
+    color: var(--text);
+}
+
+.forma-btn-tertiary:hover:not(:disabled) {
+    background-color: var(--hover-bg);
+    border-color: var(--dark-border);
+}
+
+.forma-btn-danger {
+    background-color: var(--danger);
+    border-color: var(--danger);
+    color: #fff;
+}
+
+.forma-btn-danger:hover:not(:disabled) {
+    background-color: color-mix(in srgb, var(--danger) 85%, #000);
+    border-color: color-mix(in srgb, var(--danger) 85%, #000);
+}
+
+.forma-btn-ghost {
+    background-color: transparent;
+    border-color: transparent;
+    color: var(--text-muted);
+}
+
+.forma-btn-ghost:hover:not(:disabled) {
+    background-color: var(--hover-bg);
+    color: var(--text);
+}
+
+/* ---------- size ---------- */
+.forma-btn-mini {
+    padding-block: 0.2rem 0.3rem;
+    padding-inline: 0.7rem;
+    font-size: 0.8rem;
+}
+
+/* ---------- busy ---------- */
+.forma-btn-busy {
+    cursor: wait;
+    overflow: hidden;
+}
+
+.forma-btn-busy::after {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inline-size: 200%;
+    background-image: repeating-linear-gradient(
+        60deg,
+        transparent,
+        transparent 0.75rem,
+        var(--forma-btn-busy-stripe, rgba(255, 255, 255, 0.28)) 0.75rem,
+        var(--forma-btn-busy-stripe, rgba(255, 255, 255, 0.28)) 1.5rem
+    );
+    animation: forma-btn-busy-stripes 1s linear infinite;
+}
+
+.forma-btn-secondary.forma-btn-busy::after,
+.forma-btn-tertiary.forma-btn-busy::after,
+.forma-btn-ghost.forma-btn-busy::after {
+    --forma-btn-busy-stripe: rgba(98, 105, 118, 0.18);
+}
+
+@keyframes forma-btn-busy-stripes {
+    from {
+        inset-inline-start: -1.5rem;
+    }
+
+    to {
+        inset-inline-start: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .forma-btn-busy::after {
+        animation: none;
+    }
+}

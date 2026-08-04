@@ -1,0 +1,186 @@
+@inherits BunitContext
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_a_button_element_with_the_child_content()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaButton>Save</FormaButton>);
+
+            // Assert
+            var button = cut.Find(".forma-btn");
+            Assert.Equal("BUTTON", button.TagName);
+            Assert.Equal("Save", button.TextContent);
+        }
+
+        [Fact]
+        public void Should_render_the_secondary_variant_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaButton>Save</FormaButton>);
+
+            // Assert
+            Assert.Contains("forma-btn-secondary", cut.Find(".forma-btn").ClassName);
+        }
+
+        [Theory]
+        [InlineData(ButtonVariant.Primary, "forma-btn-primary")]
+        [InlineData(ButtonVariant.Secondary, "forma-btn-secondary")]
+        [InlineData(ButtonVariant.Tertiary, "forma-btn-tertiary")]
+        [InlineData(ButtonVariant.Danger, "forma-btn-danger")]
+        [InlineData(ButtonVariant.Ghost, "forma-btn-ghost")]
+        public void Should_render_the_class_of_the_requested_variant(ButtonVariant variant, string expected)
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaButton Variant="variant">Save</FormaButton>);
+
+            // Assert
+            Assert.Contains(expected, cut.Find(".forma-btn").ClassName);
+        }
+
+        [Fact]
+        public void Should_render_the_mini_size_only_when_asked()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+
+            // Act
+            var normal = ctx.Render(@<FormaButton>Save</FormaButton>);
+            var mini = ctx.Render(@<FormaButton Size="ButtonSize.Mini">Save</FormaButton>);
+
+            // Assert
+            Assert.DoesNotContain("forma-btn-mini", normal.Find(".forma-btn").ClassName);
+            Assert.Contains("forma-btn-mini", mini.Find(".forma-btn").ClassName);
+        }
+
+        [Theory]
+        [InlineData(ButtonType.Button, "button")]
+        [InlineData(ButtonType.Submit, "submit")]
+        [InlineData(ButtonType.Reset, "reset")]
+        public void Should_render_the_requested_type_attribute(ButtonType type, string expected)
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaButton Type="type">Save</FormaButton>);
+
+            // Assert
+            Assert.Equal(expected, cut.Find(".forma-btn").GetAttribute("type"));
+        }
+
+        [Fact]
+        public void Should_invoke_the_click_callback()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+            var clicks = 0;
+
+            // Act
+            var cut = ctx.Render(@<FormaButton OnClick="() => clicks++">Save</FormaButton>);
+            cut.Find(".forma-btn").Click();
+
+            // Assert
+            Assert.Equal(1, clicks);
+        }
+
+        [Fact]
+        public void Should_disable_the_button_when_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaButton Disabled="true">Save</FormaButton>);
+
+            // Assert
+            Assert.True(cut.Find(".forma-btn").HasAttribute("disabled"));
+        }
+
+        [Fact]
+        public void Should_announce_busy_without_leaving_the_tab_order()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaButton Busy="true">Save</FormaButton>);
+
+            // Assert
+            var button = cut.Find(".forma-btn");
+            Assert.Contains("forma-btn-busy", button.ClassName);
+            Assert.Equal("true", button.GetAttribute("aria-busy"));
+            Assert.Equal("true", button.GetAttribute("aria-disabled"));
+            Assert.False(button.HasAttribute("disabled"));
+        }
+
+        [Fact]
+        public void Should_not_invoke_the_click_callback_when_busy()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+            var clicks = 0;
+
+            // Act
+            var cut = ctx.Render(@<FormaButton Busy="true" OnClick="() => clicks++">Save</FormaButton>);
+            cut.Find(".forma-btn").Click();
+
+            // Assert
+            Assert.Equal(0, clicks);
+        }
+
+        [Fact]
+        public void Should_omit_aria_busy_when_not_busy()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaButton>Save</FormaButton>);
+
+            // Assert
+            var button = cut.Find(".forma-btn");
+            Assert.False(button.HasAttribute("aria-busy"));
+            Assert.False(button.HasAttribute("aria-disabled"));
+        }
+
+        [Fact]
+        public void Should_keep_its_own_classes_when_the_host_supplies_one()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaButton class="row-action">Save</FormaButton>);
+
+            // Assert
+            var className = cut.Find(".forma-btn").ClassName;
+            Assert.Contains("forma-btn-secondary", className);
+            Assert.Contains("row-action", className);
+        }
+
+        [Fact]
+        public void Should_pass_unmatched_attributes_through()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaButton aria-label="Delete row" />);
+
+            // Assert
+            Assert.Equal("Delete row", cut.Find(".forma-btn").GetAttribute("aria-label"));
+        }
+    }
+}
