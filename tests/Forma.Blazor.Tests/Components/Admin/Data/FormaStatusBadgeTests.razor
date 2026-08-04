@@ -55,9 +55,9 @@
 
             // Act
             var cut = ctx.Render(@<FormaStatusBadge Text="Published" Status="published" />);
+            var style = cut.Find(".forma-status-badge").GetAttribute("style");
 
             // Assert
-            var style = cut.Find(".forma-status-badge").GetAttribute("style");
             Assert.Multiple(() =>
             {
                 Assert.Contains("--forma-status-badge-bg: #e6f5ea;", style, StringComparison.Ordinal);
@@ -103,9 +103,9 @@
             var cut = ctx.Render(@<FormaStatusBadge Text="Shipped"
                                                     Background="CssColor.FromRgba(111, 66, 193, 0.14)"
                                                     Foreground="CssColor.FromHex(0x59359a)" />);
+            var style = cut.Find(".forma-status-badge").GetAttribute("style");
 
             // Assert
-            var style = cut.Find(".forma-status-badge").GetAttribute("style");
             Assert.Multiple(() =>
             {
                 Assert.Contains("--forma-status-badge-bg: rgba(111, 66, 193, 0.14);", style, StringComparison.Ordinal);
@@ -124,9 +124,9 @@
             // Act
             var cut = ctx.Render(@<FormaStatusBadge Text="Published" Status="published"
                                                     Background="CssColor.FromHex(0x000000)" />);
+            var style = cut.Find(".forma-status-badge").GetAttribute("style");
 
             // Assert
-            var style = cut.Find(".forma-status-badge").GetAttribute("style");
             Assert.Multiple(() =>
             {
                 Assert.Contains("--forma-status-badge-bg: #000000;", style, StringComparison.Ordinal);
@@ -142,9 +142,9 @@
 
             // Act
             var cut = ctx.Render(@<FormaStatusBadge Text="Refunded" class="coi-order-status" />);
+            var span = cut.Find("span");
 
             // Assert
-            var span = cut.Find("span");
             Assert.Multiple(() =>
             {
                 Assert.Contains("forma-status-badge", span.ClassList);
@@ -162,9 +162,9 @@
             var cut = ctx.Render(@<FormaStatusBadge Text="Live"
                                                     Background="CssColor.FromHex(0xffeeee)"
                                                     style="text-transform: uppercase" />);
+            var style = cut.Find(".forma-status-badge").GetAttribute("style");
 
             // Assert
-            var style = cut.Find(".forma-status-badge").GetAttribute("style");
             Assert.Multiple(() =>
             {
                 Assert.Contains("--forma-status-badge-bg: #ffeeee;", style, StringComparison.Ordinal);

@@ -39,9 +39,9 @@
             // Act
             var cut = ctx.Render(
                 @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" />);
+            var nav = cut.Find("nav.forma-pagination");
 
             // Assert
-            var nav = cut.Find("nav.forma-pagination");
             Assert.Equal("Pagination", nav.GetAttribute("aria-label"));
         }
 
@@ -100,9 +100,9 @@
             // Act
             var cut = ctx.Render(
                 @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="3" Options="NavigationBar" />);
+            var current = cut.Find(".forma-pagination-current");
 
             // Assert
-            var current = cut.Find(".forma-pagination-current");
             Assert.Multiple(() =>
             {
                 Assert.Equal("page", current.GetAttribute("aria-current"));
@@ -120,10 +120,10 @@
             // Act
             var cut = ctx.Render(
                 @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" Options="NavigationBar" />);
-
-            // Assert
             var second = cut.FindAll(".forma-pagination-link")
                 .Single(e => e.TextContent.Trim() == "2");
+
+            // Assert
             Assert.Equal("Page 2", second.GetAttribute("aria-label"));
         }
 
@@ -248,9 +248,9 @@
             // Act
             var cut = ctx.Render(
                 @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" class="coi-pager" />);
+            var nav = cut.Find("nav");
 
             // Assert
-            var nav = cut.Find("nav");
             Assert.Multiple(() =>
             {
                 Assert.Contains("forma-pagination", nav.ClassList);
@@ -424,9 +424,9 @@
             // Act
             var cut = ctx.Render(
                 @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" />);
+            var input = cut.Find(".forma-pagination-jump-input");
 
             // Assert
-            var input = cut.Find(".forma-pagination-jump-input");
             Assert.Multiple(() =>
             {
                 Assert.Equal("number", input.GetAttribute("type"));
@@ -444,10 +444,10 @@
             // Act
             var cut = ctx.Render(
                 @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" />);
-
-            // Assert
             var input = cut.Find(".forma-pagination-jump-input");
             var label = cut.Find(".forma-pagination-jump-label");
+
+            // Assert
             Assert.Equal(input.GetAttribute("id"), label.GetAttribute("for"));
         }
 

@@ -30,9 +30,9 @@
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaToggleSwitch @bind-Value="model.Toggle" />
             </FakeFormHost>);
+            var input = cut.Find("input[type='checkbox']");
 
             // Assert
-            var input = cut.Find("input[type='checkbox']");
             Assert.Null(input.GetAttribute("checked"));
         }
 
@@ -47,9 +47,9 @@
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaToggleSwitch @bind-Value="model.Toggle" />
             </FakeFormHost>);
+            var input = cut.Find("input[type='checkbox']");
 
             // Assert
-            var input = cut.Find("input[type='checkbox']");
             Assert.NotNull(input.GetAttribute("checked"));
         }
 
@@ -80,9 +80,9 @@
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaToggleSwitch @bind-Value="model.Toggle" OnLabel="Enabled" />
             </FakeFormHost>);
+            var label = cut.Find(".forma-toggle-on-label");
 
             // Assert
-            var label = cut.Find(".forma-toggle-on-label");
             Assert.Equal("Enabled", label.TextContent);
         }
 
@@ -113,9 +113,9 @@
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaToggleSwitch @bind-Value="model.Toggle" OffLabel="Disabled" />
             </FakeFormHost>);
+            var label = cut.Find(".forma-toggle-off-label");
 
             // Assert
-            var label = cut.Find(".forma-toggle-off-label");
             Assert.Equal("Disabled", label.TextContent);
         }
 
@@ -166,9 +166,9 @@
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaToggleSwitch @bind-Value="model.Toggle" Disabled="true" />
             </FakeFormHost>);
+            var input = cut.Find("input[type='checkbox']");
 
             // Assert
-            var input = cut.Find("input[type='checkbox']");
             Assert.Multiple(() =>
             {
                 Assert.NotNull(input.GetAttribute("disabled"));

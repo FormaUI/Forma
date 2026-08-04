@@ -94,10 +94,10 @@
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaFloatingLabelField @bind-Value="model.Text" Label="Test" />
             </FakeFormHost>);
-
-            // Assert
             var inputId = cut.Find(".forma-field-input").GetAttribute("id");
             var labelFor = cut.Find(".forma-field-label").GetAttribute("for");
+
+            // Assert
             Assert.Multiple(() =>
             {
                 Assert.NotNull(inputId);

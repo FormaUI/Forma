@@ -32,9 +32,9 @@
             // Act
             var cut = ctx.Render(
                 @<FormaModal Opened="false" OnClose="@(() => { })" Title="Test Title" />);
+            var header = cut.Find(".forma-modal-header h5");
 
             // Assert
-            var header = cut.Find(".forma-modal-header h5");
             Assert.Equal("Test Title", header.TextContent);
         }
 
@@ -63,9 +63,9 @@
                 @<FormaModal Opened="false" OnClose="@(() => { })">
                     <Body><p>Hello Modal</p></Body>
                 </FormaModal>);
+            var body = cut.Find(".forma-modal-body");
 
             // Assert
-            var body = cut.Find(".forma-modal-body");
             Assert.Contains("Hello Modal", body.InnerHtml, StringComparison.Ordinal);
         }
 
@@ -80,9 +80,9 @@
                 @<FormaModal Opened="false" OnClose="@(() => { })">
                     <Footer><button>Save</button></Footer>
                 </FormaModal>);
+            var footer = cut.Find(".forma-modal-footer");
 
             // Assert
-            var footer = cut.Find(".forma-modal-footer");
             Assert.Contains("Save", footer.InnerHtml, StringComparison.Ordinal);
         }
 
@@ -109,9 +109,9 @@
             // Act
             var cut = ctx.Render(
                 @<FormaModal Opened="false" OnClose="@(() => { })" />);
+            var footer = cut.Find(".forma-modal-footer");
 
             // Assert
-            var footer = cut.Find(".forma-modal-footer");
             Assert.Multiple(() =>
             {
                 Assert.Contains("Cancel", footer.TextContent, StringComparison.Ordinal);
@@ -130,9 +130,9 @@
                 @<FormaModal Opened="false" OnClose="@(() => { })">
                     <Footer><span>Custom</span></Footer>
                 </FormaModal>);
+            var footer = cut.Find(".forma-modal-footer");
 
             // Assert
-            var footer = cut.Find(".forma-modal-footer");
             Assert.Multiple(() =>
             {
                 Assert.Contains("Custom", footer.TextContent, StringComparison.Ordinal);
@@ -150,9 +150,9 @@
             // Act
             var cut = ctx.Render(
                 @<FormaModal Opened="false" OnClose="@(() => { })" Options="HideConfirmAction" />);
+            var footer = cut.Find(".forma-modal-footer");
 
             // Assert
-            var footer = cut.Find(".forma-modal-footer");
             Assert.Multiple(() =>
             {
                 Assert.Contains("Close", footer.TextContent, StringComparison.Ordinal);
@@ -169,9 +169,9 @@
             // Act
             var cut = ctx.Render(
                 @<FormaModal Opened="false" OnClose="@(() => { })" />);
+            var body = cut.Find(".forma-modal-body");
 
             // Assert
-            var body = cut.Find(".forma-modal-body");
             Assert.Contains("no-header", body.ClassList);
         }
 
@@ -189,9 +189,9 @@
             // Act
             var cut = ctx.Render(
                 @<FormaModal Opened="false" OnClose="@(() => { })" Size="@size" />);
+            var dialog = cut.Find("dialog");
 
             // Assert
-            var dialog = cut.Find("dialog");
             Assert.Contains(expectedClass, dialog.ClassList);
         }
 
@@ -204,9 +204,9 @@
             // Act
             var cut = ctx.Render(
                 @<FormaModal Opened="false" OnClose="@(() => { })" />);
+            var dialog = cut.Find("dialog");
 
             // Assert
-            var dialog = cut.Find("dialog");
             Assert.Contains("forma-modal-medium", dialog.ClassList);
         }
 
@@ -219,9 +219,9 @@
             // Act
             var cut = ctx.Render(
                 @<FormaModal Opened="false" OnClose="@(() => { })" Title="Test" />);
+            var closeBtn = cut.Find(".forma-modal-close");
 
             // Assert
-            var closeBtn = cut.Find(".forma-modal-close");
             Assert.Equal("Close", closeBtn.GetAttribute("aria-label"));
         }
     }

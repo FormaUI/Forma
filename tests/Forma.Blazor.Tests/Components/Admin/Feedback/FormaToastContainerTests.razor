@@ -40,9 +40,9 @@
             // Act
             await service.ShowAsync("Saved!", cancellationToken: TestContext.Current.CancellationToken);
             cut.WaitForState(() => cut.FindAll(".forma-toast").Count > 0);
+            var message = cut.Find(".forma-toast-message");
 
             // Assert
-            var message = cut.Find(".forma-toast-message");
             Assert.Equal("Saved!", message.TextContent);
         }
 
@@ -57,9 +57,9 @@
             // Act
             await service.ShowAsync("Done!", cancellationToken: TestContext.Current.CancellationToken);
             cut.WaitForState(() => cut.FindAll(".forma-toast").Count > 0);
+            var toast = cut.Find(".forma-toast");
 
             // Assert
-            var toast = cut.Find(".forma-toast");
             Assert.Contains("forma-toast-success", toast.ClassList);
         }
 
@@ -78,9 +78,9 @@
             // Act
             await service.ShowAsync("Test", type, cancellationToken: TestContext.Current.CancellationToken);
             cut.WaitForState(() => cut.FindAll(".forma-toast").Count > 0);
+            var toast = cut.Find(".forma-toast");
 
             // Assert
-            var toast = cut.Find(".forma-toast");
             Assert.Contains(expectedClass, toast.ClassList);
         }
 

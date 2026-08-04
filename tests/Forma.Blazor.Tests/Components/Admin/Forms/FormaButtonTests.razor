@@ -11,9 +11,9 @@
 
             // Act
             var cut = ctx.Render(@<FormaButton>Save</FormaButton>);
+            var button = cut.Find(".forma-btn");
 
             // Assert
-            var button = cut.Find(".forma-btn");
             Assert.Equal("BUTTON", button.TagName);
             Assert.Equal("Save", button.TextContent);
         }
@@ -116,9 +116,9 @@
 
             // Act
             var cut = ctx.Render(@<FormaButton Busy="true">Save</FormaButton>);
+            var button = cut.Find(".forma-btn");
 
             // Assert
-            var button = cut.Find(".forma-btn");
             Assert.Contains("forma-btn-busy", button.ClassName);
             Assert.Equal("true", button.GetAttribute("aria-busy"));
             Assert.Equal("true", button.GetAttribute("aria-disabled"));
@@ -148,9 +148,9 @@
 
             // Act
             var cut = ctx.Render(@<FormaButton>Save</FormaButton>);
+            var button = cut.Find(".forma-btn");
 
             // Assert
-            var button = cut.Find(".forma-btn");
             Assert.False(button.HasAttribute("aria-busy"));
             Assert.False(button.HasAttribute("aria-disabled"));
         }
@@ -163,9 +163,9 @@
 
             // Act
             var cut = ctx.Render(@<FormaButton class="row-action">Save</FormaButton>);
+            var className = cut.Find(".forma-btn").ClassName;
 
             // Assert
-            var className = cut.Find(".forma-btn").ClassName;
             Assert.Contains("forma-btn-secondary", className);
             Assert.Contains("row-action", className);
         }

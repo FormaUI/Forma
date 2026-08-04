@@ -65,9 +65,9 @@
                 @<FormaTabs>
                     <FormaTab Title="Settings" Icon="@FormaIcon.From("icon-settings")">Content</FormaTab>
                 </FormaTabs>);
+            var icon = cut.Find(".forma-tab-button span");
 
             // Assert
-            var icon = cut.Find(".forma-tab-button span");
             Assert.Multiple(() =>
             {
                 Assert.Contains("icon-settings", (IEnumerable<string>)icon.ClassList);
@@ -103,9 +103,9 @@
                     <FormaTab Title="First">Content 1</FormaTab>
                     <FormaTab Title="Second">Content 2</FormaTab>
                 </FormaTabs>);
+            var buttons = cut.FindAll(".forma-tab-button");
 
             // Assert
-            var buttons = cut.FindAll(".forma-tab-button");
             Assert.Multiple(() =>
             {
                 Assert.Contains("active", (IEnumerable<string>)buttons[0].ClassList);
@@ -125,9 +125,9 @@
                     <FormaTab Title="First">Content 1</FormaTab>
                     <FormaTab Title="Second">Content 2</FormaTab>
                 </FormaTabs>);
+            var buttons = cut.FindAll(".forma-tab-button");
 
             // Assert
-            var buttons = cut.FindAll(".forma-tab-button");
             Assert.Multiple(() =>
             {
                 Assert.Equal("true", buttons[0].GetAttribute("aria-selected"));
@@ -148,9 +148,9 @@
 
             // Act
             await cut.FindAll(".forma-tab-button")[1].ClickAsync(new());
+            var buttons = cut.FindAll(".forma-tab-button");
 
             // Assert
-            var buttons = cut.FindAll(".forma-tab-button");
             Assert.Multiple(() =>
             {
                 Assert.DoesNotContain("active", (IEnumerable<string>)buttons[0].ClassList);
@@ -170,9 +170,9 @@
                     <FormaTab Title="First">Content 1</FormaTab>
                     <FormaTab Title="Second">Content 2</FormaTab>
                 </FormaTabs>);
+            var panels = cut.FindAll(".forma-tab-panel");
 
             // Assert
-            var panels = cut.FindAll(".forma-tab-panel");
             Assert.Multiple(() =>
             {
                 Assert.Contains("active", (IEnumerable<string>)panels[0].ClassList);
@@ -239,10 +239,10 @@
                 @<FormaTabs>
                     <FormaTab Title="Tab">Content</FormaTab>
                 </FormaTabs>);
-
-            // Assert
             var button = cut.Find(".forma-tab-button");
             var panel = cut.Find(".forma-tab-panel");
+
+            // Assert
             Assert.Equal(panel.Id, button.GetAttribute("aria-controls"));
         }
 
@@ -257,10 +257,10 @@
                 @<FormaTabs>
                     <FormaTab Title="Tab">Content</FormaTab>
                 </FormaTabs>);
-
-            // Assert
             var button = cut.Find(".forma-tab-button");
             var panel = cut.Find(".forma-tab-panel");
+
+            // Assert
             Assert.Equal(button.Id, panel.GetAttribute("aria-labelledby"));
         }
 

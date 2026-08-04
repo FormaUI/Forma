@@ -39,9 +39,9 @@
             // Act
             _ = service.ConfirmAsync("Delete this item?", "Confirm", "Cancel", TestContext.Current.CancellationToken);
             cut.WaitForState(() => cut.FindAll(".forma-confirm-message").Count > 0);
+            var message = cut.Find(".forma-confirm-message");
 
             // Assert
-            var message = cut.Find(".forma-confirm-message");
             Assert.Equal("Delete this item?", message.TextContent);
         }
 
@@ -56,10 +56,10 @@
             // Act
             _ = service.ConfirmAsync("Are you sure?", "Confirm", "Cancel", TestContext.Current.CancellationToken);
             cut.WaitForState(() => cut.FindAll(".forma-btn-danger").Count > 0);
-
-            // Assert
             var confirmBtn = cut.Find(".forma-btn-danger");
             var cancelBtn = cut.Find(".forma-btn-secondary");
+
+            // Assert
             Assert.Multiple(() =>
             {
                 Assert.Equal("Confirm", confirmBtn.TextContent.Trim());
@@ -78,10 +78,10 @@
             // Act
             _ = service.ConfirmAsync("Remove?", "מחק", "חזור", TestContext.Current.CancellationToken);
             cut.WaitForState(() => cut.FindAll(".forma-btn-danger").Count > 0);
-
-            // Assert
             var confirmBtn = cut.Find(".forma-btn-danger");
             var cancelBtn = cut.Find(".forma-btn-secondary");
+
+            // Assert
             Assert.Multiple(() =>
             {
                 Assert.Equal("מחק", confirmBtn.TextContent.Trim());
@@ -117,9 +117,9 @@
             // Act
             cut.WaitForState(() => cut.FindAll(".forma-btn-danger").Count > 0);
             await cut.Find(".forma-btn-danger").ClickAsync(new());
+            var result = await resultTask;
 
             // Assert
-            var result = await resultTask;
             Assert.True(result);
         }
 
@@ -135,9 +135,9 @@
             // Act
             cut.WaitForState(() => cut.FindAll(".forma-btn-secondary").Count > 0);
             await cut.Find(".forma-btn-secondary").ClickAsync(new());
+            var result = await resultTask;
 
             // Assert
-            var result = await resultTask;
             Assert.False(result);
         }
 
@@ -153,9 +153,9 @@
             // Act
             cut.WaitForState(() => cut.FindAll(".forma-confirm-message").Count > 0);
             await cut.Find("dialog").TriggerEventAsync("onclose", new EventArgs());
+            var result = await resultTask;
 
             // Assert
-            var result = await resultTask;
             Assert.False(result);
         }
     }

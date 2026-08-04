@@ -14,9 +14,9 @@
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaColorPicker @bind-Value="model.Color" />
             </FakeFormHost>);
+            var swatch = cut.Find(".forma-color-swatch");
 
             // Assert
-            var swatch = cut.Find(".forma-color-swatch");
             Assert.Contains("background-color: #FF5533", swatch.GetAttribute("style"));
         }
 
@@ -47,9 +47,9 @@
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaColorPicker @bind-Value="model.Color" Label="Background" />
             </FakeFormHost>);
+            var label = cut.Find(".forma-color-picker-label");
 
             // Assert
-            var label = cut.Find(".forma-color-picker-label");
             Assert.Equal("Background", label.TextContent);
         }
 
@@ -80,9 +80,9 @@
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaColorPicker @bind-Value="model.Color" />
             </FakeFormHost>);
+            var native = cut.Find("input[type='color']");
 
             // Assert
-            var native = cut.Find("input[type='color']");
             Assert.Equal("#FF5533", native.GetAttribute("value"));
         }
 

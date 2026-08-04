@@ -459,9 +459,9 @@
             var grid = cut.FindComponent<FormaDataGrid<GridItem>>();
             grid.Render(parameters => parameters.Add(p => p.EnablePagination, false));
             grid.Render(parameters => parameters.Add(p => p.EnablePagination, true));
+            cut.WaitForState(() => cut.FindAll("tbody tr").Count == 10);
 
             // Assert
-            cut.WaitForState(() => cut.FindAll("tbody tr").Count == 10);
             Assert.Contains("Item 1", cut.Markup, StringComparison.Ordinal);
             Assert.DoesNotContain("Item 25", cut.Markup, StringComparison.Ordinal);
         }
@@ -676,9 +676,9 @@
                     </Columns>
                 </FormaDataGrid>);
             cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
+            var rows = cut.FindAll("tbody tr");
 
             // Assert
-            var rows = cut.FindAll("tbody tr");
             Assert.DoesNotContain("forma-data-grid-row-disabled", rows[0].ClassName);
             Assert.Contains("forma-data-grid-row-disabled", rows[1].ClassName);
             Assert.Contains("forma-data-grid-row-disabled", rows[2].ClassName);
@@ -1017,9 +1017,9 @@
 
             // Act
             cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
+            var editors = cut.FindAll("tbody input");
 
             // Assert
-            var editors = cut.FindAll("tbody input");
             Assert.Single(editors);
             Assert.Equal("Alice", editors[0].GetAttribute("value"));
         }
@@ -1044,9 +1044,9 @@
 
             // Act
             cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
+            var editors = cut.FindAll("tbody input");
 
             // Assert — InputText leaves type implicit, InputNumber sets it explicitly
-            var editors = cut.FindAll("tbody input");
             Assert.Null(editors[0].GetAttribute("type"));
             Assert.Equal("number", editors[1].GetAttribute("type"));
         }
