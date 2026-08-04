@@ -74,7 +74,7 @@ These components form the shell of every admin page. Build first.
 
 ## Tier 2 — Data Display
 
-### 7. `FormaDataGrid<TItem>`
+### 7. `FormaDataGrid<TItem>` ✅
 
 | | |
 |---|---|
@@ -357,7 +357,7 @@ Components are ordered by dependency and reuse frequency:
 | **Phase 1** | `FormaModal` ✅, `FormaConfirmDialog` ✅, `FormaToast` ✅ | Infrastructure — everything depends on modals and notifications |
 | **Phase 2** | `FormaPageHeader` ✅, `FormaToolbar` ✅, `FormaTabs` ✅ | Layout — the shell of every admin page |
 | **Phase 3** | `FormaFloatingLabelField` ✅, `FormaToggleSwitch` ✅, `FormaPasswordInput`, `FormaCurrencyInput`, `FormaRangeSlider`, `FormaDatePicker`, `FormaCustomSelect` | Form inputs — needed before building any edit forms |
-| **Phase 4** | `FormaDataGrid<TItem>`, `FormaMassActions`, `FormaStatusBadge` ✅, `FormaCapacityIndicator`, `FormaPagination` ✅ | Data display — needed for list pages |
+| **Phase 4** | `FormaDataGrid<TItem>` ✅, `FormaMassActions`, `FormaStatusBadge` ✅, `FormaCapacityIndicator`, `FormaPagination` ✅ | Data display — needed for list pages |
 | **Phase 5** | `FormaSortableList<TItem>`, `FormaMultiSelectDropdown`, `FormaCategorySelector`, `FormaDropdownMenu`, `FormaColorPicker` | Interactive widgets — needed for editor pages |
 | **Phase 6** | `FormaImagePicker`, `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components — built when their feature pages are built |
 | **Phase 7** | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor` | Complex editors — built alongside their specific pages |
