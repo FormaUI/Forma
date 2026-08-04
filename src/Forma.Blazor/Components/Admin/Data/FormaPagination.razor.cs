@@ -96,15 +96,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
             return;
         }
 
-        try
-        {
-            await _module.InvokeVoidAsync("suppressImplicitSubmit", _pageInputElement);
-            _submitGuardAttached = true;
-        }
-        catch (JSException)
-        {
-            // Circuit disconnected before the module loaded — safe to ignore.
-        }
+        _submitGuardAttached = await _module.TryInvokeVoidAsync("suppressImplicitSubmit", _pageInputElement);
     }
 
     /// <inheritdoc />
@@ -201,15 +193,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
             return _pageInput;
         }
 
-        try
-        {
-            return await _module.InvokeAsync<string>("takePageEntry", _pageInputElement);
-        }
-        catch (JSException)
-        {
-            // Circuit disconnected — nothing to read.
-            return null;
-        }
+        return await _module.TryInvokeAsync<string>("takePageEntry", _pageInputElement);
     }
 
     private string? HostAttribute(string name)

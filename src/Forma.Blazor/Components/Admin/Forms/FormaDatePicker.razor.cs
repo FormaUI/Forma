@@ -155,9 +155,13 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
 
             _placementAttached = _isOpen;
         }
+        catch (JSDisconnectedException)
+        {
+            // Circuit disconnected — safe to ignore.
+        }
         catch (JSException)
         {
-            // Circuit disconnected before the module loaded — safe to ignore.
+            // Interop failed — safe to ignore.
         }
     }
 

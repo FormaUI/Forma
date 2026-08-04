@@ -45,14 +45,7 @@ public sealed partial class FormaFloatingLabelField : InputBase<string?>, IAsync
         if (!firstRender)
             return;
 
-        try
-        {
-            await _module.InvokeVoidAsync("initAutofillDetection", _inputRef);
-        }
-        catch (JSException)
-        {
-            // Circuit disconnected before interop completed — safe to ignore.
-        }
+        await _module.TryInvokeVoidAsync("initAutofillDetection", _inputRef);
     }
 
     public async ValueTask DisposeAsync()

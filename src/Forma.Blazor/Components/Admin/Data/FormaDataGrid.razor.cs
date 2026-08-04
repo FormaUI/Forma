@@ -339,30 +339,23 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     // to script, since QuickGrid exposes no row-level attribute or modifier-key hook.
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        try
+        if (EnableRowSelection && !_rowSelectionAttached)
         {
-            if (EnableRowSelection && !_rowSelectionAttached)
-            {
-                // Set before the await so a render arriving mid-call cannot re-enter and
-                // attach a second listener to the same scroller.
-                _rowSelectionAttached = true;
-                _selfReference ??= DotNetObjectReference.Create(this);
-                await _module.InvokeVoidAsync("attachRowSelection", _scrollerElement, _selfReference);
-            }
-
-            if (!EnableCheckedSelection || HasMasterCaption)
-            {
-                _indeterminateApplied = null;
-            }
-            else if (_indeterminateApplied != PartiallySelected)
-            {
-                await _module.InvokeVoidAsync("setIndeterminate", _selectAllElement, PartiallySelected);
-                _indeterminateApplied = PartiallySelected;
-            }
+            // Claimed before the await so a render arriving mid-call cannot re-enter and
+            // attach a second listener to the same scroller.
+            _rowSelectionAttached = true;
+            _selfReference ??= DotNetObjectReference.Create(this);
+            _rowSelectionAttached = await _module.TryInvokeVoidAsync("attachRowSelection", _scrollerElement, _selfReference);
         }
-        catch (JSException)
+
+        if (!EnableCheckedSelection || HasMasterCaption)
         {
-            // Circuit disconnected before the module loaded — safe to ignore.
+            _indeterminateApplied = null;
+        }
+        else if (_indeterminateApplied != PartiallySelected
+            && await _module.TryInvokeVoidAsync("setIndeterminate", _selectAllElement, PartiallySelected))
+        {
+            _indeterminateApplied = PartiallySelected;
         }
     }
 
@@ -371,16 +364,9 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     {
         _pagination.TotalItemCountChanged -= HandleTotalItemCountChanged;
 
-        try
+        if (_rowSelectionAttached)
         {
-            if (_rowSelectionAttached)
-            {
-                await _module.InvokeVoidAsync("detachRowSelection", _scrollerElement);
-            }
-        }
-        catch (JSDisconnectedException)
-        {
-            // Circuit disconnected — safe to ignore.
+            await _module.TryInvokeVoidAsync("detachRowSelection", _scrollerElement);
         }
 
         await _module.DisposeAsync();

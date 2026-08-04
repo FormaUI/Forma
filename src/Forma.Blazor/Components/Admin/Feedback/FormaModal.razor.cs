@@ -67,22 +67,15 @@ public sealed partial class FormaModal : IAsyncDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        try
+        if (Opened && !_isOpen)
         {
-            if (Opened && !_isOpen)
-            {
-                _isOpen = true;
-                await _module.InvokeVoidAsync("showModal", _dialogRef, Options.CloseOnBackdropClick);
-            }
-            else if (!Opened && _isOpen)
-            {
-                _isOpen = false;
-                await _module.InvokeVoidAsync("closeModal", _dialogRef);
-            }
+            _isOpen = true;
+            await _module.TryInvokeVoidAsync("showModal", _dialogRef, Options.CloseOnBackdropClick);
         }
-        catch (JSException)
+        else if (!Opened && _isOpen)
         {
-            // Circuit disconnected before interop completed — safe to ignore.
+            _isOpen = false;
+            await _module.TryInvokeVoidAsync("closeModal", _dialogRef);
         }
     }
 
@@ -101,16 +94,13 @@ public sealed partial class FormaModal : IAsyncDisposable
 
     private async Task RequestCloseAsync()
     {
-        try
+        if (await _module.TryInvokeVoidAsync("closeModal", _dialogRef))
         {
-            await _module.InvokeVoidAsync("closeModal", _dialogRef);
             return;
         }
-        catch (JSException)
-        {
-            // Module unavailable or disposed concurrently — fall back to closing state directly.
-        }
 
+        // The dialog's own close event cannot fire when the call never ran, so the state
+        // is closed here instead.
         if (_isOpen)
         {
             _isOpen = false;
