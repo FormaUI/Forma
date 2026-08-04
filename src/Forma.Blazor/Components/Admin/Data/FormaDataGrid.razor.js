@@ -65,6 +65,24 @@ export function attachRowSelection(scroller, dotNetRef) {
         marker.focus();
     }
 
+    // Shift-click extends a native text selection on mousedown, before the click handler
+    // below runs; its guards are mirrored so only a row-selecting click loses its default.
+    function handleMouseDown(event) {
+        if (event.button !== 0 || !event.shiftKey || event.altKey) {
+            return;
+        }
+
+        if (event.target.closest(INTERACTIVE)) {
+            return;
+        }
+
+        if (!event.target.closest('tr')?.querySelector('[data-row-key]')) {
+            return;
+        }
+
+        event.preventDefault();
+    }
+
     function handleClick(event) {
         if (event.altKey) {
             return;
@@ -149,10 +167,12 @@ export function attachRowSelection(scroller, dotNetRef) {
         void dotNetRef.invokeMethodAsync('HandleRowSelectAsync', tokenOf(next), false);
     }
 
+    scroller.addEventListener('mousedown', handleMouseDown, true);
     scroller.addEventListener('click', handleClick, true);
     scroller.addEventListener('keydown', handleKeydown, true);
 
     scroller.formaDetachRowSelection = () => {
+        scroller.removeEventListener('mousedown', handleMouseDown, true);
         scroller.removeEventListener('click', handleClick, true);
         scroller.removeEventListener('keydown', handleKeydown, true);
         delete scroller.formaDetachRowSelection;

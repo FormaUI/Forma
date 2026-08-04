@@ -343,9 +343,11 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
         {
             if (EnableRowSelection && !_rowSelectionAttached)
             {
+                // Set before the await so a render arriving mid-call cannot re-enter and
+                // attach a second listener to the same scroller.
+                _rowSelectionAttached = true;
                 _selfReference ??= DotNetObjectReference.Create(this);
                 await _module.InvokeVoidAsync("attachRowSelection", _scrollerElement, _selfReference);
-                _rowSelectionAttached = true;
             }
 
             if (!EnableCheckedSelection || HasMasterCaption)
