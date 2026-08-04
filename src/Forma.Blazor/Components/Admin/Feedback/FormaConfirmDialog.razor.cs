@@ -14,10 +14,7 @@ public sealed partial class FormaConfirmDialog : IDisposable
 
     [Inject] private IConfirmDialogService ConfirmService { get; set; } = default!;
 
-    protected override void OnInitialized()
-    {
-        ConfirmService.Subscribe(HandleShowRequestedAsync);
-    }
+    protected override void OnInitialized() => ConfirmService.Subscribe(HandleShowRequestedAsync);
 
     private Task HandleShowRequestedAsync()
     {
@@ -47,8 +44,5 @@ public sealed partial class FormaConfirmDialog : IDisposable
         _request = null;
     }
 
-    public void Dispose()
-    {
-        ConfirmService.Unsubscribe(HandleShowRequestedAsync);
-    }
+    public void Dispose() => ConfirmService.Unsubscribe(HandleShowRequestedAsync);
 }

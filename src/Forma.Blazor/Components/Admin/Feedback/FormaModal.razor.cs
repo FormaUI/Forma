@@ -113,19 +113,27 @@ public sealed partial class FormaModal : IAsyncDisposable
     private async Task HandleDefaultCancelAsync()
     {
         if (OnCancel.HasDelegate)
+        {
             await OnCancel.InvokeAsync();
+        }
 
         if (Options.CloseOnCancel)
+        {
             await RequestCloseAsync();
+        }
     }
 
     private async Task HandleDefaultConfirmAsync()
     {
         if (OnConfirm.HasDelegate)
+        {
             await OnConfirm.InvokeAsync();
+        }
 
         if (Options.CloseOnConfirm)
+        {
             await RequestCloseAsync();
+        }
     }
 
     public async ValueTask DisposeAsync()

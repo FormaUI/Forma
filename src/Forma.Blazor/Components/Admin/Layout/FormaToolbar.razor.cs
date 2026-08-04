@@ -11,10 +11,7 @@ public sealed partial class FormaToolbar : IDisposable
     [Parameter] public string? SearchPlaceholder { get; set; }
     [Parameter] public TimeSpan SearchDelay { get; set; } = TimeSpan.FromMilliseconds(300);
 
-    protected override void OnParametersSet()
-    {
-        ArgumentOutOfRangeException.ThrowIfLessThan(SearchDelay, TimeSpan.Zero);
-    }
+    protected override void OnParametersSet() => ArgumentOutOfRangeException.ThrowIfLessThan(SearchDelay, TimeSpan.Zero);
 
     private async Task HandleSearchInput(ChangeEventArgs e)
     {
@@ -32,7 +29,10 @@ public sealed partial class FormaToolbar : IDisposable
                   .ContinueWith(t =>
                   {
                       if (t.IsCompletedSuccessfully)
+                      {
                           return InvokeAsync(() => OnSearch.InvokeAsync(value));
+                      }
+
                       return Task.CompletedTask;
                   }, TaskScheduler.Default)
                   .Unwrap();

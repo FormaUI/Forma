@@ -8,8 +8,5 @@ public partial class FormaPageHeader
     [Parameter] public IReadOnlyList<BreadcrumbItem>? Breadcrumbs { get; set; }
     [Parameter] public RenderFragment? Actions { get; set; }
 
-    protected override void OnParametersSet()
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(Title);
-    }
+    protected override void OnParametersSet() => ArgumentException.ThrowIfNullOrWhiteSpace(Title);
 }

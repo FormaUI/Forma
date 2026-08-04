@@ -80,7 +80,10 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
             if (IsRangeMode)
             {
                 if (StartDate is not null && EndDate is not null)
+                {
                     return $"{FormatDate(StartDate.Value)} - {FormatDate(EndDate.Value)}";
+                }
+
                 return string.Empty;
             }
             return Value is not null ? FormatDate(Value.Value) : string.Empty;
@@ -101,7 +104,10 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
         get
         {
             if (MinDate.HasValue)
+            {
                 return CalendarMonthStart(CalendarYear(MinDate.Value), CalendarMonth(MinDate.Value));
+            }
+
             var fallback = new DateOnly(MinYear, 1, 1);
             return CalendarMonthStart(CalendarYear(fallback), CalendarMonth(fallback));
         }
@@ -112,7 +118,10 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
         get
         {
             if (MaxDate.HasValue)
+            {
                 return CalendarMonthStart(CalendarYear(MaxDate.Value), CalendarMonth(MaxDate.Value));
+            }
+
             var fallback = new DateOnly(MaxYear, 12, 1);
             return CalendarMonthStart(CalendarYear(fallback), CalendarMonth(fallback));
         }
@@ -219,13 +228,19 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
         }
 
         if (MinDate.HasValue && MaxDate.HasValue && MinDate.Value > MaxDate.Value)
+        {
             throw new ArgumentException($"{nameof(MinDate)} ({MinDate}) must not be greater than {nameof(MaxDate)} ({MaxDate}).");
+        }
 
         if (IsRangeMode && StartDate.HasValue && EndDate.HasValue && StartDate.Value > EndDate.Value)
+        {
             throw new ArgumentException($"{nameof(StartDate)} ({StartDate}) must not be greater than {nameof(EndDate)} ({EndDate}).");
+        }
 
         if (_leftMonth == default)
+        {
             ResetDisplayMonth();
+        }
     }
 
     // ── Helpers ──────────────────────────────────────
@@ -247,7 +262,9 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
             {
                 _leftMonth = AddCalendarMonths(_rightMonth, -1);
                 if (_leftMonth < MinMonth)
+                {
                     _leftMonth = MinMonth;
+                }
             }
         }
         else
@@ -259,8 +276,16 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
 
     private DateOnly ClampMonth(DateOnly month)
     {
-        if (month < MinMonth) return MinMonth;
-        if (month > MaxMonth) return MaxMonth;
+        if (month < MinMonth)
+        {
+            return MinMonth;
+        }
+
+        if (month > MaxMonth)
+        {
+            return MaxMonth;
+        }
+
         return month;
     }
 
@@ -284,13 +309,17 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
     private void PanelPrev(int panelIndex)
     {
         if (CanPanelGoPrev(panelIndex))
+        {
             SetPanelMonth(panelIndex, AddCalendarMonths(GetPanelMonth(panelIndex), -1));
+        }
     }
 
     private void PanelNext(int panelIndex)
     {
         if (CanPanelGoNext(panelIndex))
+        {
             SetPanelMonth(panelIndex, AddCalendarMonths(GetPanelMonth(panelIndex), 1));
+        }
     }
 
     private void OnMonthDropdownChange(int panelIndex, ChangeEventArgs e)
@@ -312,7 +341,11 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
             var midYear = new DateOnly(gregorianYear, 6, 1);
             var targetCalYear = CalendarYear(midYear);
             var maxMonth = _calendar.GetMonthsInYear(targetCalYear);
-            if (calMonth > maxMonth) calMonth = maxMonth;
+            if (calMonth > maxMonth)
+            {
+                calMonth = maxMonth;
+            }
+
             SetPanelMonth(panelIndex, CalendarMonthStart(targetCalYear, calMonth));
         }
     }
@@ -353,7 +386,9 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
     private async Task SelectDay(DateOnly date)
     {
         if (IsDayDisabled(date))
+        {
             return;
+        }
 
         if (IsRangeMode)
         {
@@ -389,7 +424,9 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
     private void HoverDay(DateOnly date)
     {
         if (_rangeStart is not null)
+        {
             _hoverDate = date;
+        }
     }
 
     private async Task HandleClear()
@@ -421,7 +458,10 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
         var today = DateOnly.FromDateTime(DateTime.Today);
         var css = string.Empty;
 
-        if (date == today) css += " today";
+        if (date == today)
+        {
+            css += " today";
+        }
 
         if (IsRangeMode)
         {
@@ -432,21 +472,42 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
                 var lo = rs <= hover ? rs : hover;
                 var hi = rs <= hover ? hover : rs;
 
-                if (date == lo) css += " selected start";
-                else if (date == hi) css += " selected end";
-                else if (date > lo && date < hi) css += " in-range";
+                if (date == lo)
+                {
+                    css += " selected start";
+                }
+                else if (date == hi)
+                {
+                    css += " selected end";
+                }
+                else if (date > lo && date < hi)
+                {
+                    css += " in-range";
+                }
             }
             else
             {
-                if (StartDate.HasValue && date == StartDate.Value) css += " selected start";
-                else if (EndDate.HasValue && date == EndDate.Value) css += " selected end";
+                if (StartDate.HasValue && date == StartDate.Value)
+                {
+                    css += " selected start";
+                }
+                else if (EndDate.HasValue && date == EndDate.Value)
+                {
+                    css += " selected end";
+                }
                 else if (StartDate.HasValue && EndDate.HasValue &&
-                         date > StartDate.Value && date < EndDate.Value) css += " in-range";
+                         date > StartDate.Value && date < EndDate.Value)
+                {
+                    css += " in-range";
+                }
             }
         }
         else
         {
-            if (Value.HasValue && date == Value.Value) css += " selected";
+            if (Value.HasValue && date == Value.Value)
+            {
+                css += " selected";
+            }
         }
 
         return css;
@@ -458,8 +519,16 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
         var dow = ((int)monthStart.DayOfWeek - (int)firstDayOfWeek + 7) % 7;
 
         var days = new List<DateOnly?>(dow + count);
-        for (var i = 0; i < dow; i++) days.Add(null);
-        for (var d = 0; d < count; d++) days.Add(monthStart.AddDays(d));
+        for (var i = 0; i < dow; i++)
+        {
+            days.Add(null);
+        }
+
+        for (var d = 0; d < count; d++)
+        {
+            days.Add(monthStart.AddDays(d));
+        }
+
         return days;
     }
 
@@ -470,9 +539,20 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
         var today = DateOnly.FromDateTime(DateTime.Today);
         var (start, end) = ComputePresetRange(preset, today);
 
-        if (MinDate.HasValue && start < MinDate.Value) start = MinDate.Value;
-        if (MaxDate.HasValue && end > MaxDate.Value) end = MaxDate.Value;
-        if (start > end) return;
+        if (MinDate.HasValue && start < MinDate.Value)
+        {
+            start = MinDate.Value;
+        }
+
+        if (MaxDate.HasValue && end > MaxDate.Value)
+        {
+            end = MaxDate.Value;
+        }
+
+        if (start > end)
+        {
+            return;
+        }
 
         StartDate = start;
         EndDate = end;
@@ -482,7 +562,9 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
         {
             _leftMonth = AddCalendarMonths(_rightMonth, -1);
             if (_leftMonth < MinMonth)
+            {
                 _leftMonth = MinMonth;
+            }
         }
         _rangeStart = null;
         await StartDateChanged.InvokeAsync(start);
@@ -507,8 +589,16 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
     {
         var today = DateOnly.FromDateTime(DateTime.Today);
         var (start, end) = ComputePresetRange(preset, today);
-        if (MinDate.HasValue && start < MinDate.Value) start = MinDate.Value;
-        if (MaxDate.HasValue && end > MaxDate.Value) end = MaxDate.Value;
+        if (MinDate.HasValue && start < MinDate.Value)
+        {
+            start = MinDate.Value;
+        }
+
+        if (MaxDate.HasValue && end > MaxDate.Value)
+        {
+            end = MaxDate.Value;
+        }
+
         return start > end;
     }
 
@@ -517,9 +607,21 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
         for (var m = 1; m <= 12; m++)
         {
             var candidate = new DateOnly(gregorianYear, m, 1);
-            if (candidate < MinMonth || candidate > MaxMonth) continue;
-            if (IsRangeMode && panelIndex == 0 && candidate > AddCalendarMonths(MaxMonth, -1)) continue;
-            if (IsRangeMode && panelIndex == 1 && candidate < AddCalendarMonths(MinMonth, 1)) continue;
+            if (candidate < MinMonth || candidate > MaxMonth)
+            {
+                continue;
+            }
+
+            if (IsRangeMode && panelIndex == 0 && candidate > AddCalendarMonths(MaxMonth, -1))
+            {
+                continue;
+            }
+
+            if (IsRangeMode && panelIndex == 1 && candidate < AddCalendarMonths(MinMonth, 1))
+            {
+                continue;
+            }
+
             return false;
         }
         return true;
@@ -527,11 +629,27 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
 
     private bool IsMonthDisabled(int calYear, int calMonth, int panelIndex)
     {
-        if (calMonth > _calendar.GetMonthsInYear(calYear)) return true;
+        if (calMonth > _calendar.GetMonthsInYear(calYear))
+        {
+            return true;
+        }
+
         var candidate = CalendarMonthStart(calYear, calMonth);
-        if (candidate < MinMonth || candidate > MaxMonth) return true;
-        if (IsRangeMode && panelIndex == 0 && candidate > AddCalendarMonths(MaxMonth, -1)) return true;
-        if (IsRangeMode && panelIndex == 1 && candidate < AddCalendarMonths(MinMonth, 1)) return true;
+        if (candidate < MinMonth || candidate > MaxMonth)
+        {
+            return true;
+        }
+
+        if (IsRangeMode && panelIndex == 0 && candidate > AddCalendarMonths(MaxMonth, -1))
+        {
+            return true;
+        }
+
+        if (IsRangeMode && panelIndex == 1 && candidate < AddCalendarMonths(MinMonth, 1))
+        {
+            return true;
+        }
+
         return false;
     }
 

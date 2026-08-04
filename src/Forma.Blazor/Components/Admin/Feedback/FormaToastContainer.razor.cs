@@ -10,10 +10,7 @@ public sealed partial class FormaToastContainer : IDisposable
 
     [Inject] private IToastService ToastService { get; set; } = default!;
 
-    protected override void OnInitialized()
-    {
-        ToastService.Subscribe(HandleChangeAsync);
-    }
+    protected override void OnInitialized() => ToastService.Subscribe(HandleChangeAsync);
 
     private Task HandleChangeAsync()
     {
@@ -30,7 +27,9 @@ public sealed partial class FormaToastContainer : IDisposable
         foreach (var toast in ToastService.Toasts)
         {
             if (_timers.ContainsKey(toast.Id))
+            {
                 continue;
+            }
 
             var id = toast.Id;
             var timer = new Timer(_ =>
@@ -52,13 +51,17 @@ public sealed partial class FormaToastContainer : IDisposable
         var staleIds = _timers.Keys.Where(id => !activeIds.Contains(id)).ToList();
 
         foreach (var id in staleIds)
+        {
             DisposeTimer(id);
+        }
     }
 
     private void DisposeTimer(string id)
     {
         if (_timers.Remove(id, out var timer))
+        {
             timer.Dispose();
+        }
     }
 
     public void Dispose()
@@ -66,7 +69,9 @@ public sealed partial class FormaToastContainer : IDisposable
         ToastService.Unsubscribe(HandleChangeAsync);
 
         foreach (var timer in _timers.Values)
+        {
             timer.Dispose();
+        }
 
         _timers.Clear();
     }

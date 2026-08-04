@@ -14,7 +14,10 @@ public partial class FormaTabs
         ArgumentNullException.ThrowIfNull(tab);
         _tabs.Add(tab);
         if (_tabs.Count == 1)
+        {
             _activeTab = tab;
+        }
+
         StateHasChanged();
     }
 
@@ -22,7 +25,10 @@ public partial class FormaTabs
     {
         _tabs.Remove(tab);
         if (_activeTab == tab)
+        {
             _activeTab = _tabs.FirstOrDefault();
+        }
+
         StateHasChanged();
     }
 

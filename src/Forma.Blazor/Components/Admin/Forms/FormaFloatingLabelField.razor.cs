@@ -30,10 +30,7 @@ public sealed partial class FormaFloatingLabelField : InputBase<string?>, IAsync
     protected override void OnInitialized()
         => _module = new JsModule(JS, ModulePath);
 
-    protected override void OnParametersSet()
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(Label);
-    }
+    protected override void OnParametersSet() => ArgumentException.ThrowIfNullOrWhiteSpace(Label);
 
     protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
     {
@@ -45,7 +42,9 @@ public sealed partial class FormaFloatingLabelField : InputBase<string?>, IAsync
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
+        {
             return;
+        }
 
         await _module.TryInvokeVoidAsync("initAutofillDetection", _inputRef);
     }

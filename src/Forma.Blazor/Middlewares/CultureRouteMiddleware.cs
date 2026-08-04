@@ -77,7 +77,9 @@ public sealed class CultureRouteMiddleware
     private string? TryGetPathCulture(string[] segments)
     {
         if (segments.Length == 0)
+        {
             return null;
+        }
 
         return _supportedCultures.Contains(segments[0]) ? segments[0] : null;
     }
@@ -85,7 +87,9 @@ public sealed class CultureRouteMiddleware
     private string? TryGetCookieCulture(HttpContext context)
     {
         if (!context.Request.Cookies.TryGetValue(CultureCookieName, out var culture))
+        {
             return null;
+        }
 
         return !string.IsNullOrWhiteSpace(culture) && _supportedCultures.Contains(culture)
             ? culture

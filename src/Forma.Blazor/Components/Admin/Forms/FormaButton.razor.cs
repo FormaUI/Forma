@@ -42,6 +42,7 @@ public sealed partial class FormaButton : ComponentBase
     {
         ButtonType.Submit => "submit",
         ButtonType.Reset => "reset",
+        ButtonType.Button => throw new NotImplementedException(),
         _ => "button"
     };
 
@@ -51,6 +52,7 @@ public sealed partial class FormaButton : ComponentBase
         ButtonVariant.Tertiary => "forma-btn-tertiary",
         ButtonVariant.Danger => "forma-btn-danger",
         ButtonVariant.Ghost => "forma-btn-ghost",
+        ButtonVariant.Secondary => throw new NotImplementedException(),
         _ => "forma-btn-secondary"
     };
 

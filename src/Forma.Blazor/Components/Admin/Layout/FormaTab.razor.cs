@@ -15,15 +15,14 @@ public sealed partial class FormaTab : IDisposable
     protected override void OnInitialized()
     {
         if (Parent is null)
+        {
             throw new InvalidOperationException($"{nameof(FormaTab)} must be placed inside a {nameof(FormaTabs)} component.");
+        }
 
         Parent.RegisterTab(this);
     }
 
-    protected override void OnParametersSet()
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(Title);
-    }
+    protected override void OnParametersSet() => ArgumentException.ThrowIfNullOrWhiteSpace(Title);
 
     public void Dispose() => Parent.UnregisterTab(this);
 }
