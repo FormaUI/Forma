@@ -1,8 +1,9 @@
+namespace Forma.Blazor.Components.Admin.Data;
+
 using Forma.Blazor.Abstractions.Components.Data;
 using Forma.Web.Css;
-using Microsoft.AspNetCore.Components;
 
-namespace Forma.Blazor.Components.Admin.Data;
+using Microsoft.AspNetCore.Components;
 
 /// <summary>A pill-shaped label showing the status of a record.</summary>
 public sealed partial class FormaStatusBadge : ComponentBase

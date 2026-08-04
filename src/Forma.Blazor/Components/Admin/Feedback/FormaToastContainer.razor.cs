@@ -1,7 +1,8 @@
-using Forma.Blazor.Abstractions.Components.Feedback;
-using Microsoft.AspNetCore.Components;
-
 namespace Forma.Blazor.Components.Admin.Feedback;
+
+using Forma.Blazor.Abstractions.Components.Feedback;
+
+using Microsoft.AspNetCore.Components;
 
 public sealed partial class FormaToastContainer : IDisposable
 {

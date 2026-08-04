@@ -1,12 +1,14 @@
+namespace Forma.Blazor.Components.Admin.Data;
+
 using System.Diagnostics.CodeAnalysis;
+
+using Forma.Blazor.Interop;
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.QuickGrid;
 using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
-using Forma.Blazor.Interop;
-
-namespace Forma.Blazor.Components.Admin.Data;
 
 /// <summary>A paged, sortable table over a queryable set of items, built on QuickGrid.</summary>
 public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisposable

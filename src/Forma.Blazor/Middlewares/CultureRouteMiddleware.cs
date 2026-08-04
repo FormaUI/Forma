@@ -1,9 +1,10 @@
+namespace Forma.Blazor.Middlewares;
+
 using System.Globalization;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
-
-namespace Forma.Blazor.Middlewares;
 
 /// <summary>
 /// Extracts the culture from the first URL path segment, sets <see cref="CultureInfo.CurrentCulture"/>

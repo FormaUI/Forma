@@ -1,10 +1,12 @@
+namespace Forma.Blazor.Showcase.Components.Pages.Admin.Data;
+
 using System.ComponentModel.DataAnnotations;
+
 using Forma.Blazor.Components.Admin.Data;
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Localization;
-
-namespace Forma.Blazor.Showcase.Components.Pages.Admin.Data;
 
 public sealed partial class FormaDataGridPage : ComponentBase
 {

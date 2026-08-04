@@ -1,9 +1,10 @@
+namespace Forma.Blazor.Showcase.Components.Pages.Admin.Data;
+
 using Forma.Blazor.Abstractions.Components.Data;
 using Forma.Web.Css;
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
-
-namespace Forma.Blazor.Showcase.Components.Pages.Admin.Data;
 
 public sealed partial class FormaStatusBadgePage : ComponentBase
 {

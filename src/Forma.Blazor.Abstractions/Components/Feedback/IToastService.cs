@@ -1,6 +1,6 @@
-using Forma.Blazor.Abstractions.Foundation;
-
 namespace Forma.Blazor.Abstractions.Components.Feedback;
+
+using Forma.Blazor.Abstractions.Foundation;
 
 /// <summary>Manages the transient toast notifications shown to the user.</summary>
 public interface IToastService : INotifyStateChanged

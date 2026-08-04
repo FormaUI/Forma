@@ -1,6 +1,6 @@
-using Forma.Web.Css;
-
 namespace Forma.Blazor.Abstractions.Components.Data;
+
+using Forma.Web.Css;
 
 /// <summary>A named status badge and the colours it renders with.</summary>
 public sealed record StatusBadgeStyle

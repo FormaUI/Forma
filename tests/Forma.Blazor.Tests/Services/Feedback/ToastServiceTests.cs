@@ -1,8 +1,9 @@
+namespace Forma.Blazor.Tests.Services.Feedback;
+
 using Forma.Blazor.Abstractions.Components.Feedback;
 using Forma.Blazor.Core.Components.Feedback;
-using Xunit;
 
-namespace Forma.Blazor.Tests.Services.Feedback;
+using Xunit;
 
 public sealed class ToastServiceTests
 {

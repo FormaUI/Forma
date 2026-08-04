@@ -1,6 +1,6 @@
-using Forma.Blazor.Abstractions.Foundation;
-
 namespace Forma.Blazor.Core.Foundation;
+
+using Forma.Blazor.Abstractions.Foundation;
 
 /// <summary>Maintains a list of async callbacks and invokes them when notified.</summary>
 public sealed class StateNotifier : INotifyStateChanged

@@ -1,10 +1,12 @@
+namespace Forma.Blazor.Components.Admin.Forms;
+
 using System.Globalization;
+
 using Forma.Blazor.Interop;
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
-
-namespace Forma.Blazor.Components.Admin.Forms;
 
 public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
 {

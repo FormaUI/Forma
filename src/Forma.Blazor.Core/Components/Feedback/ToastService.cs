@@ -1,7 +1,7 @@
+namespace Forma.Blazor.Core.Components.Feedback;
+
 using Forma.Blazor.Abstractions.Components.Feedback;
 using Forma.Blazor.Core.Foundation;
-
-namespace Forma.Blazor.Core.Components.Feedback;
 
 /// <summary>In-memory <see cref="IToastService"/> that tracks active toasts and notifies subscribers on change.</summary>
 public sealed class ToastService : IToastService

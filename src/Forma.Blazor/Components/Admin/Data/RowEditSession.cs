@@ -1,6 +1,6 @@
-using Microsoft.AspNetCore.Components.Forms;
-
 namespace Forma.Blazor.Components.Admin.Data;
+
+using Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>The row a grid is currently editing, together with the detached copy its editors write to.</summary>
 internal sealed class RowEditSession<TGridItem>

@@ -1,9 +1,10 @@
+namespace Forma.Blazor.Components.Admin.Forms;
+
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-
-namespace Forma.Blazor.Components.Admin.Forms;
 
 public sealed partial class FormaColorPicker : InputBase<string>
 {

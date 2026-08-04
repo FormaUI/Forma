@@ -1,14 +1,15 @@
+namespace Forma.Blazor.Components.Admin.Data;
+
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.QuickGrid;
 using Microsoft.AspNetCore.Components.Rendering;
-
-namespace Forma.Blazor.Components.Admin.Data;
 
 /// <summary>A grid column bound to a property, which swaps to an editor while its row is being edited.</summary>
 public sealed class FormaPropertyColumn<TGridItem, TProp> : ColumnBase<TGridItem>

@@ -1,11 +1,13 @@
+namespace Forma.Blazor.Components.Admin.Data;
+
 using System.Globalization;
+
+using Forma.Blazor.Interop;
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
-using Forma.Blazor.Interop;
-
-namespace Forma.Blazor.Components.Admin.Data;
 
 /// <summary>A page-number navigator for splitting a list of items across multiple pages.</summary>
 public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable

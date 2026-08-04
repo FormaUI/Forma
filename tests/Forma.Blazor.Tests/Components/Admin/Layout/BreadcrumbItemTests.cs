@@ -1,7 +1,8 @@
-using Forma.Blazor.Components.Admin.Layout;
-using Xunit;
-
 namespace Forma.Blazor.Tests.Components.Admin.Layout;
+
+using Forma.Blazor.Components.Admin.Layout;
+
+using Xunit;
 
 public sealed class BreadcrumbItemTests
 {

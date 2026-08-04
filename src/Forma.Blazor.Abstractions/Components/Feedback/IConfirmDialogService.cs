@@ -1,6 +1,6 @@
-using Forma.Blazor.Abstractions.Foundation;
-
 namespace Forma.Blazor.Abstractions.Components.Feedback;
+
+using Forma.Blazor.Abstractions.Foundation;
 
 /// <summary>Coordinates a single active confirmation dialog and its awaited result.</summary>
 public interface IConfirmDialogService : INotifyStateChanged

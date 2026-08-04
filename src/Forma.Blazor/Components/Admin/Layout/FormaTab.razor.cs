@@ -1,6 +1,6 @@
-using Microsoft.AspNetCore.Components;
-
 namespace Forma.Blazor.Components.Admin.Layout;
+
+using Microsoft.AspNetCore.Components;
 
 public sealed partial class FormaTab : IDisposable
 {

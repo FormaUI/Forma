@@ -1,10 +1,12 @@
+namespace Forma.Blazor.Components.Admin.Feedback;
+
 using System.Diagnostics.CodeAnalysis;
+
+using Forma.Blazor.Interop;
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
-using Forma.Blazor.Interop;
-
-namespace Forma.Blazor.Components.Admin.Feedback;
 
 public sealed partial class FormaModal : IAsyncDisposable
 {

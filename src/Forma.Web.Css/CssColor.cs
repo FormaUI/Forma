@@ -1,6 +1,6 @@
-using System.Globalization;
-
 namespace Forma.Web.Css;
+
+using System.Globalization;
 
 /// <summary>An immutable RGBA colour that renders as a CSS colour value.</summary>
 public readonly record struct CssColor

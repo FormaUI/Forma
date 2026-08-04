@@ -1,8 +1,9 @@
+namespace Forma.Blazor.Showcase.Components.Pages.Admin.Data;
+
 using Forma.Blazor.Components.Admin.Data;
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
-
-namespace Forma.Blazor.Showcase.Components.Pages.Admin.Data;
 
 public sealed partial class FormaPaginationPage : ComponentBase
 {

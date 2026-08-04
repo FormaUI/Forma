@@ -1,8 +1,9 @@
+namespace Forma.Blazor.Core.Components.Data;
+
 using System.Collections;
 using System.Collections.Concurrent;
-using Forma.Blazor.Abstractions.Components.Data;
 
-namespace Forma.Blazor.Core.Components.Data;
+using Forma.Blazor.Abstractions.Components.Data;
 
 /// <summary>
 /// In-memory <see cref="IStatusBadgeCatalog"/> holding the statuses an application defines.

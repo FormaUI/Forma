@@ -1,7 +1,7 @@
+namespace Forma.Blazor.Components.Admin.Forms;
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-
-namespace Forma.Blazor.Components.Admin.Forms;
 
 /// <summary>A button carrying the admin design system's styling, sizing and busy state.</summary>
 public sealed partial class FormaButton : ComponentBase

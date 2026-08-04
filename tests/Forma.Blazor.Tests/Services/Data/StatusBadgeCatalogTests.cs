@@ -1,8 +1,8 @@
+namespace Forma.Blazor.Tests.Services.Data;
+
 using Forma.Blazor.Abstractions.Components.Data;
 using Forma.Blazor.Core.Components.Data;
 using Forma.Web.Css;
-
-namespace Forma.Blazor.Tests.Services.Data;
 
 public sealed class StatusBadgeCatalogTests
 {

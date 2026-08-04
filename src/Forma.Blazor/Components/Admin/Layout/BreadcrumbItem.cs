@@ -1,6 +1,6 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace Forma.Blazor.Components.Admin.Layout;
+
+using System.Diagnostics.CodeAnalysis;
 
 [SuppressMessage("Design", "CA1054:URI parameters should not be strings")]
 [SuppressMessage("Design", "CA1056:URI properties should not be strings")]

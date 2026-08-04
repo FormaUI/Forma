@@ -1,6 +1,6 @@
-using Microsoft.AspNetCore.Builder;
-
 namespace Forma.Blazor.Middlewares;
+
+using Microsoft.AspNetCore.Builder;
 
 public static class CultureRouteExtensions
 {

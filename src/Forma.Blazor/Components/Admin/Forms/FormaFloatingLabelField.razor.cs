@@ -1,10 +1,12 @@
+namespace Forma.Blazor.Components.Admin.Forms;
+
 using System.Diagnostics.CodeAnalysis;
+
+using Forma.Blazor.Interop;
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
-using Forma.Blazor.Interop;
-
-namespace Forma.Blazor.Components.Admin.Forms;
 
 public sealed partial class FormaFloatingLabelField : InputBase<string?>, IAsyncDisposable
 {

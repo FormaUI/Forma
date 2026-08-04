@@ -1,7 +1,8 @@
-using Forma.Blazor.Components.Admin;
-using Xunit;
-
 namespace Forma.Blazor.Tests.Components.Admin;
+
+using Forma.Blazor.Components.Admin;
+
+using Xunit;
 
 public sealed class FormaIconTests
 {
