@@ -186,3 +186,44 @@ export function detachRowSelection(scroller) {
     scroller.formaDetachRowSelection?.();
 }
 
+/**
+ * FormaDataGrid — page height reservation
+ *
+ * A page holding fewer rows than the page size leaves the grid shorter than a full one,
+ * so the page controls jump up under the pointer between clicks. How tall a row stands
+ * follows from whatever the host puts in its cells, which is only known once laid out,
+ * so the height to hold is measured here rather than computed from a declared row size.
+ *
+ * Fractional box heights throughout: a row rounded to the whole pixel carries that error
+ * once per row of the page, which is enough to shift the footer on its own.
+ *
+ * @param {HTMLElement} scroller
+ * @param {number} pageSize
+ */
+export function reservePageHeight(scroller, pageSize) {
+    const table = scroller.querySelector('table');
+    const body = table?.tBodies[0];
+    if (!body) {
+        return;
+    }
+
+    // QuickGrid already pads a short page out to the page size, but with empty rows that
+    // carry none of the content a row draws its height from, so they are no sample.
+    const filled = [...body.rows].filter(row => row.textContent.trim() !== '');
+    if (!filled.length) {
+        return;
+    }
+
+    // A full page states the height outright, and is worth keeping: rows of unequal
+    // height make any projection from a short page an approximation of it.
+    if (filled.length >= pageSize) {
+        scroller.formaReservedHeight = table.getBoundingClientRect().height;
+    } else if (scroller.formaReservedHeight === undefined) {
+        const header = table.tHead?.getBoundingClientRect().height ?? 0;
+        const tallest = Math.max(...filled.map(row => row.getBoundingClientRect().height));
+        scroller.formaReservedHeight = header + tallest * pageSize;
+    }
+
+    scroller.style.minBlockSize = `${scroller.formaReservedHeight}px`;
+}
+

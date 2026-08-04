@@ -359,6 +359,13 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
         {
             _indeterminateApplied = PartiallySelected;
         }
+
+        // Virtualization sizes its own scroll range, and an unpaginated grid has no short
+        // page to hold a height for.
+        if (EnablePagination && !Virtualize)
+        {
+            await _module.TryInvokeVoidAsync("reservePageHeight", _scrollerElement, PageSize);
+        }
     }
 
     /// <inheritdoc />
