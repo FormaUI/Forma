@@ -1,6 +1,7 @@
 @page "/data-grid"
 @attribute [ShowcasePage("FormaDataGrid")]
 @rendermode InteractiveServer
+@using Forma.Blazor.Components.Admin.Forms
 
 <h1>FormaDataGrid</h1>
 <p class="desc">@L["Page.Description"]</p>
@@ -114,9 +115,12 @@
                 <PropertyColumn Property="@(e => e.Name)" />
                 <TemplateColumn Title="@L["Column.Actions"]">
                     <div class="demo-row-actions">
-                        <button type="button" @onclick="() => RecordAction(RowAction.View, context)">@L["RowActions.View"]</button>
-                        <button type="button" @onclick="() => RecordAction(RowAction.Edit, context)">@L["RowActions.Edit"]</button>
-                        <button type="button" @onclick="() => RecordAction(RowAction.Delete, context)">@L["RowActions.Delete"]</button>
+                        <FormaButton Variant="ButtonVariant.Tertiary"
+                                     OnClick="() => RecordAction(RowAction.View, context)">@L["RowActions.View"]</FormaButton>
+                        <FormaButton Variant="ButtonVariant.Tertiary"
+                                     OnClick="() => RecordAction(RowAction.Edit, context)">@L["RowActions.Edit"]</FormaButton>
+                        <FormaButton Variant="ButtonVariant.Tertiary"
+                                     OnClick="() => RecordAction(RowAction.Delete, context)">@L["RowActions.Delete"]</FormaButton>
                     </div>
                 </TemplateColumn>
             </Columns>
@@ -143,13 +147,15 @@
                     <div class="demo-row-actions">
                         @if (_editGrid?.IsEditing(context) == true)
                         {
-                            <button type="button" @onclick="() => _editGrid!.SaveEditAsync()">@L["InlineEditing.Save"]</button>
-                            <button type="button" @onclick="() => _editGrid!.CancelEditAsync()">@L["InlineEditing.Cancel"]</button>
+                            <FormaButton Variant="ButtonVariant.Tertiary"
+                                         OnClick="() => _editGrid!.SaveEditAsync()">@L["InlineEditing.Save"]</FormaButton>
+                            <FormaButton Variant="ButtonVariant.Tertiary"
+                                         OnClick="() => _editGrid!.CancelEditAsync()">@L["InlineEditing.Cancel"]</FormaButton>
                         }
                         else
                         {
-                            <button type="button" disabled="@(_editGrid?.EditingItem is not null)"
-                                    @onclick="() => _editGrid!.BeginEdit(context)">@L["RowActions.Edit"]</button>
+                            <FormaButton Variant="ButtonVariant.Tertiary" Disabled="@(_editGrid?.EditingItem is not null)"
+                                         OnClick="() => _editGrid!.BeginEdit(context)">@L["RowActions.Edit"]</FormaButton>
                         }
                     </div>
                 </TemplateColumn>

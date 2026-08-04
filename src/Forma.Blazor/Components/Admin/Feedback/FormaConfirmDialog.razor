@@ -7,12 +7,12 @@
     </Body>
     <Footer>
         <div class="forma-confirm-actions">
-            <button type="button" class="forma-btn forma-btn-secondary" @onclick="HandleCancel">
+            <FormaButton Variant="ButtonVariant.Secondary" OnClick="HandleCancel">
                 @_request?.CancelText
-            </button>
-            <button type="button" class="forma-btn forma-btn-danger" @onclick="HandleConfirm">
+            </FormaButton>
+            <FormaButton Variant="ButtonVariant.Danger" OnClick="HandleConfirm">
                 @_request?.ConfirmText
-            </button>
+            </FormaButton>
         </div>
     </Footer>
 </FormaModal>

@@ -15,39 +15,3 @@
     gap: 8px;
     margin-inline-start: auto;
 }
-
-/* ── Shared button base ── */
-.forma-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px 18px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    border-radius: 6px;
-    border: 1px solid transparent;
-    cursor: pointer;
-    transition: background-color 120ms ease, border-color 120ms ease;
-    line-height: 1.4;
-}
-
-.forma-btn-secondary {
-    background: #fff;
-    color: var(--text);
-    border-color: var(--border-color);
-}
-
-.forma-btn-secondary:hover {
-    background: var(--hover-bg);
-}
-
-.forma-btn-danger {
-    background: var(--danger);
-    color: #fff;
-    border-color: var(--danger);
-}
-
-.forma-btn-danger:hover {
-    background: #c22929;
-    border-color: #c22929;
-}

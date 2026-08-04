@@ -21,7 +21,10 @@
     list-style: none;
 }
 
-.forma-pagination-link {
+/* The repeated class raises specificity above FormaButton's own variant rules, so
+   the compact numbered pill keeps a visible border instead of a ghost's blank one.
+   Shared by the FormaButton page links and the static current-page span. */
+::deep .forma-pagination-link.forma-pagination-link {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -33,21 +36,17 @@
     background: #fff;
     color: var(--text);
     font-size: 0.9rem;
+    font-weight: inherit;
     line-height: 1.2;
-    cursor: pointer;
-    transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
 }
 
-button.forma-pagination-link:hover:not(:disabled) {
+::deep button.forma-pagination-link:hover:not(:disabled) {
     background: var(--hover-bg);
 }
 
-button.forma-pagination-link:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.forma-pagination-current {
+/* Doubled to match the shared pill rule above, which it has to outrank to mark
+   the page the reader is on. */
+::deep .forma-pagination-current.forma-pagination-current {
     background: var(--main);
     border-color: var(--main);
     color: #fff;
@@ -60,11 +59,6 @@ button.forma-pagination-link:disabled {
     justify-content: center;
     min-width: 2.25em;
     color: var(--text-muted);
-}
-
-.forma-pagination-link:focus-visible {
-    outline: 2px solid var(--main);
-    outline-offset: 1px;
 }
 
 /* ── Jump to page ── */

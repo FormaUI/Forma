@@ -32,15 +32,15 @@
                     <div class="forma-modal-footer-actions">
                         @if (Options.ShowCancelAction)
                         {
-                            <button type="button" class="forma-modal-action forma-modal-action-secondary" @onclick="HandleDefaultCancelAsync">
+                            <FormaButton Variant="ButtonVariant.Secondary" OnClick="HandleDefaultCancelAsync">
                                 @CancelLabel
-                            </button>
+                            </FormaButton>
                         }
                         @if (Options.ShowConfirmAction)
                         {
-                            <button type="button" class="forma-modal-action forma-modal-action-primary" @onclick="HandleDefaultConfirmAsync">
+                            <FormaButton Variant="ButtonVariant.Primary" OnClick="HandleDefaultConfirmAsync">
                                 @ConfirmLabel
-                            </button>
+                            </FormaButton>
                         }
                     </div>
                 }

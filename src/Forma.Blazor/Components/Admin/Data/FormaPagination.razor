@@ -7,13 +7,14 @@
         {
             <ul class="forma-pagination-list">
                 <li>
-                    <button type="button"
-                            class="forma-pagination-link forma-pagination-prev"
-                            disabled="@(ActivePage <= 1)"
-                            aria-label="@L["Previous"]"
-                            @onclick="() => GoToPageAsync(ActivePage - 1)">
+                    <FormaButton Variant="ButtonVariant.Ghost"
+                                 Size="ButtonSize.Mini"
+                                 class="forma-pagination-link forma-pagination-prev"
+                                 Disabled="ActivePage <= 1"
+                                 aria-label="@L["Previous"]"
+                                 OnClick="() => GoToPageAsync(ActivePage - 1)">
                         @L["Previous"]
-                    </button>
+                    </FormaButton>
                 </li>
                 @foreach (var pageNumber in PageNumbers)
                 {
@@ -31,23 +32,25 @@
                         }
                         else
                         {
-                            <button type="button"
-                                    class="forma-pagination-link"
-                                    aria-label="@L["PageNumber", pageNumber]"
-                                    @onclick="() => GoToPageAsync(pageNumber.Value)">
+                            <FormaButton Variant="ButtonVariant.Ghost"
+                                         Size="ButtonSize.Mini"
+                                         class="forma-pagination-link"
+                                         aria-label="@L["PageNumber", pageNumber]"
+                                         OnClick="() => GoToPageAsync(pageNumber.Value)">
                                 @pageNumber
-                            </button>
+                            </FormaButton>
                         }
                     </li>
                 }
                 <li>
-                    <button type="button"
-                            class="forma-pagination-link forma-pagination-next"
-                            disabled="@(ActivePage >= PageCount)"
-                            aria-label="@L["Next"]"
-                            @onclick="() => GoToPageAsync(ActivePage + 1)">
+                    <FormaButton Variant="ButtonVariant.Ghost"
+                                 Size="ButtonSize.Mini"
+                                 class="forma-pagination-link forma-pagination-next"
+                                 Disabled="ActivePage >= PageCount"
+                                 aria-label="@L["Next"]"
+                                 OnClick="() => GoToPageAsync(ActivePage + 1)">
                         @L["Next"]
-                    </button>
+                    </FormaButton>
                 </li>
             </ul>
         }
@@ -68,11 +71,12 @@
                        @onkeydown="OnJumpKeyDownAsync" />
                 @if (Options.EnableGoButton)
                 {
-                    <button type="button"
-                            class="forma-pagination-link forma-pagination-jump-go"
-                            @onclick="JumpAsync">
+                    <FormaButton Variant="ButtonVariant.Ghost"
+                                 Size="ButtonSize.Mini"
+                                 class="forma-pagination-link forma-pagination-jump-go"
+                                 OnClick="JumpAsync">
                         @L["Go"]
-                    </button>
+                    </FormaButton>
                 }
             </div>
         }

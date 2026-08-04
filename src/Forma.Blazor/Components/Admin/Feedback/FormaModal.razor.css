@@ -130,32 +130,3 @@ dialog.forma-modal::backdrop {
     gap: 8px;
     margin-inline-start: auto;
 }
-
-.forma-modal-action {
-    padding: 8px 16px;
-    border-radius: 6px;
-    border: 1px solid var(--border-color);
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
-}
-
-.forma-modal-action-secondary {
-    background: #fff;
-    color: var(--text);
-}
-
-.forma-modal-action-secondary:hover {
-    background: var(--hover-bg);
-}
-
-.forma-modal-action-primary {
-    background: var(--main);
-    color: #fff;
-    border-color: var(--main);
-}
-
-.forma-modal-action-primary:hover {
-    background: var(--main-dark);
-    border-color: var(--main-dark);
-}
