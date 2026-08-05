@@ -21,3 +21,17 @@
     opacity: 0.6;
     cursor: not-allowed;
 }
+
+/* A checkbox left in normal inline flow sits on the text baseline rather than on the
+   text's centre line, so the pair is centred against each other in a flex box instead. */
+.forma-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.forma-checkbox-label:has(.forma-checkbox:disabled) {
+    color: var(--text-muted);
+    cursor: not-allowed;
+}

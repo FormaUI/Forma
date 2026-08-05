@@ -10,28 +10,16 @@
 <div class="demo-section">
     <h2>@L["Checkbox.Section.Basic"]</h2>
     <div class="demo-box demo-row">
-        <label class="demo-checkbox-label">
-            <FormaCheckbox Checked="_basic" CheckedChanged="v => _basic = v" />
-            @L["Checkbox.Label.Subscribe"]
-        </label>
-        <label class="demo-checkbox-label">
-            <FormaCheckbox Checked="_prechecked" CheckedChanged="v => _prechecked = v" />
-            @L["Checkbox.Label.Featured"]
-        </label>
+        <FormaCheckbox Checked="_basic" CheckedChanged="v => _basic = v">@L["Checkbox.Label.Subscribe"]</FormaCheckbox>
+        <FormaCheckbox Checked="_prechecked" CheckedChanged="v => _prechecked = v">@L["Checkbox.Label.Featured"]</FormaCheckbox>
     </div>
 </div>
 
 <div class="demo-section">
     <h2>@L["Checkbox.Section.Disabled"]</h2>
     <div class="demo-box demo-row">
-        <label class="demo-checkbox-label">
-            <FormaCheckbox Checked="false" Disabled="true" />
-            @L["Checkbox.Label.Off"]
-        </label>
-        <label class="demo-checkbox-label">
-            <FormaCheckbox Checked="true" Disabled="true" />
-            @L["Checkbox.Label.On"]
-        </label>
+        <FormaCheckbox Checked="false" Disabled="true">@L["Checkbox.Label.Off"]</FormaCheckbox>
+        <FormaCheckbox Checked="true" Disabled="true">@L["Checkbox.Label.On"]</FormaCheckbox>
     </div>
 </div>
 
@@ -39,18 +27,12 @@
     <h2>@L["Checkbox.Section.Indeterminate"]</h2>
     <p class="desc">@L["Checkbox.Indeterminate.Note"]</p>
     <div class="demo-box">
-        <label class="demo-checkbox-label">
-            <FormaCheckbox Checked="@AllChildrenChecked" Indeterminate="@SomeChildrenChecked" PreventDefault="true" OnClick="ToggleAllChildren" />
-            @L["Checkbox.Label.SelectAll"]
-        </label>
+        <FormaCheckbox Checked="@AllChildrenChecked" Indeterminate="@SomeChildrenChecked" PreventDefault="true" OnClick="ToggleAllChildren">@L["Checkbox.Label.SelectAll"]</FormaCheckbox>
         <div class="demo-row demo-checkbox-children">
             @for (var i = 0; i < _children.Length; i++)
             {
                 var index = i;
-                <label class="demo-checkbox-label">
-                    <FormaCheckbox Checked="_children[index]" CheckedChanged="v => _children[index] = v" />
-                    @L["Checkbox.Label.Item", index + 1]
-                </label>
+                <FormaCheckbox Checked="_children[index]" CheckedChanged="v => _children[index] = v">@L["Checkbox.Label.Item", index + 1]</FormaCheckbox>
             }
         </div>
     </div>

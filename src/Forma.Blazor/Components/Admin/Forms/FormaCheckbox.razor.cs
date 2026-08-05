@@ -29,6 +29,9 @@ public sealed partial class FormaCheckbox : ComponentBase, IAsyncDisposable
     /// <summary>Suppresses the native toggle, leaving the checked state entirely to the caller.</summary>
     [Parameter] public bool PreventDefault { get; set; }
 
+    /// <summary>Label rendered next to the checkbox. Wraps both in a label element, so clicking the text toggles the checkbox too.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
     /// <summary>Additional attributes applied to the input element.</summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }

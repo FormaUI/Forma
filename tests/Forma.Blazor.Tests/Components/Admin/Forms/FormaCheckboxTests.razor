@@ -161,5 +161,66 @@
             // Assert
             Assert.Empty(ctx.JSInterop.Invocations["setIndeterminate"]);
         }
+
+        [Fact]
+        public void Should_wrap_the_input_in_a_label_when_child_content_is_provided()
+        {
+            // Arrange
+            using var ctx = new FormaCheckboxTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCheckbox>Subscribe to updates</FormaCheckbox>);
+            var label = cut.Find(".forma-checkbox-label");
+
+            // Assert
+            Assert.Equal("LABEL", label.TagName);
+            Assert.Contains("Subscribe to updates", label.TextContent);
+            Assert.NotNull(label.QuerySelector(".forma-checkbox"));
+        }
+
+        [Fact]
+        public void Should_not_wrap_the_input_in_a_label_when_there_is_no_child_content()
+        {
+            // Arrange
+            using var ctx = new FormaCheckboxTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCheckbox />);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-checkbox-label"));
+            Assert.Equal("INPUT", cut.Find(".forma-checkbox").TagName);
+        }
+
+        [Fact]
+        public void Should_keep_splatted_attributes_on_the_input_when_labelled()
+        {
+            // Arrange
+            using var ctx = new FormaCheckboxTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCheckbox class="host-supplied" data-row-key="7">Featured</FormaCheckbox>);
+            var input = cut.Find(".forma-checkbox");
+
+            // Assert
+            Assert.Equal("7", input.GetAttribute("data-row-key"));
+            Assert.Contains("host-supplied", input.ClassName);
+            Assert.False(cut.Find(".forma-checkbox-label").HasAttribute("data-row-key"));
+        }
+
+        [Fact]
+        public void Should_raise_checked_changed_when_labelled()
+        {
+            // Arrange
+            using var ctx = new FormaCheckboxTests();
+            bool? raised = null;
+            var cut = ctx.Render(@<FormaCheckbox Checked="false" CheckedChanged="v => raised = v">Featured</FormaCheckbox>);
+
+            // Act
+            cut.Find(".forma-checkbox").Change(true);
+
+            // Assert
+            Assert.True(raised);
+        }
     }
 }
