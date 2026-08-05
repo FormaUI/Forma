@@ -97,6 +97,15 @@ the component that owns them.
   unsealed; new work seals).
 - **Code-behind only.** `.razor` holds markup; no `@code` blocks in library components.
   File-scoped namespace, matching the folder path.
+- **Members are ordered by role, not alphabetically:** constants → `[Parameter]`s →
+  `[Inject]`s → private fields → computed properties → lifecycle overrides
+  (`OnInitialized`/`OnParametersSet`/`OnAfterRenderAsync`) → event handlers and private
+  helpers → `InputBase` overrides and `Dispose`/`DisposeAsync` last. Parameters stay grouped
+  by the feature they belong to so related ones read together.
+- **An expression-body arrow starts its own line**, never trailing the signature:
+  `private void Close()` then `=> _isOpen = false;` on the next line, indented one level.
+- **Async methods carry the `Async` suffix**, event handlers included
+  (`HandleAddNewAsync`, `OnJumpKeyDownAsync`).
 - **Parameters** are single-line: `[Parameter] public string? Label { get; set; }`. Use
   `[Parameter, EditorRequired]` for mandatory ones. Add
   `[Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? AdditionalAttributes`
@@ -139,7 +148,10 @@ the component that owns them.
   on the parent are `internal`.
 - **Dispose what you own.** Implement `IDisposable` / `IAsyncDisposable` for
   `CancellationTokenSource`, `Timer`, JS module references, and service subscriptions.
-- **`.ConfigureAwait(false)` on every await** in library code.
+- **Never `.ConfigureAwait(false)` in a component.** `Forma.Blazor` disables CA2007 in its own
+  `.editorconfig`: leaving the synchronization context means any state touched after the await
+  has to be marshalled back through `ComponentBase.InvokeAsync`. Service code in
+  `Forma.Blazor.Core` is off the renderer and does use `.ConfigureAwait(false)` on every await.
 - **Generated element ids** use `$"prefix-{Guid.NewGuid():N}"` so multiple instances coexist.
 
 ## JavaScript
