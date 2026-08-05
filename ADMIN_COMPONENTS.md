@@ -194,7 +194,7 @@ These components form the shell of every admin page. Build first.
 | **Parameters** | `@bind-Value` (decimal), `string Symbol = "₪"`, `string? Label` |
 | **Blazor approach** | `InputNumber` inside a flex container with the currency symbol as an adjacent `<span>`. CSS for visual grouping |
 
-### 19. `FormaMultiSelectDropdown`
+### 19. `FormaMultiSelectDropdown` ✅
 
 | | |
 |---|---|
@@ -367,7 +367,7 @@ Components are ordered by dependency and reuse frequency:
 | **Phase 2** | `FormaPageHeader` ✅, `FormaToolbar` ✅, `FormaTabs` ✅ | Layout — the shell of every admin page |
 | **Phase 3** | `FormaFloatingLabelField` ✅, `FormaToggleSwitch` ✅, `FormaPasswordInput`, `FormaCurrencyInput`, `FormaRangeSlider`, `FormaDatePicker`, `FormaCustomSelect` | Form inputs — needed before building any edit forms |
 | **Phase 4** | `FormaDataGrid<TItem>` ✅, `FormaMassActions`, `FormaStatusBadge` ✅, `FormaCapacityIndicator`, `FormaPagination` ✅ | Data display — needed for list pages |
-| **Phase 5** | `FormaSortableList<TItem>`, `FormaMultiSelectDropdown`, `FormaCategorySelector`, `FormaDropdownMenu`, `FormaColorPicker` | Interactive widgets — needed for editor pages |
+| **Phase 5** | `FormaSortableList<TItem>`, `FormaMultiSelectDropdown` ✅, `FormaCategorySelector`, `FormaDropdownMenu`, `FormaColorPicker` | Interactive widgets — needed for editor pages |
 | **Phase 6** | `FormaImagePicker`, `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components — built when their feature pages are built |
 | **Phase 7** | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor` | Complex editors — built alongside their specific pages |
 | **Phase 8** | `FormaButton` ✅ | Shared button primitive — built after the fact and retrofitted onto `FormaDataGrid`, `FormaModal`, `FormaConfirmDialog`, `FormaPagination`, `FormaDatePicker` as the single source of truth for buttons |
