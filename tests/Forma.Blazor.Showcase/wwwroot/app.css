@@ -28,6 +28,21 @@
     font-size: 0.85rem;
 }
 
+/* A checkbox left in normal inline flow sits on the text baseline rather than on the
+   text's centre line, so the pair is centred against each other in a flex box instead. */
+.demo-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+/* Indents the children under the select-all that governs them. */
+.demo-checkbox-children {
+    margin-block-start: 0.5rem;
+    margin-inline-start: 1.5rem;
+}
+
 .demo-inline-input {
     inline-size: 100%;
 }

@@ -1,0 +1,11 @@
+@namespace Forma.Blazor.Components.Admin.Forms
+
+<input @attributes="AdditionalAttributes"
+       @ref="_element"
+       type="checkbox"
+       class="@CssClass"
+       checked="@Checked"
+       disabled="@Disabled"
+       @onchange="HandleChangeAsync"
+       @onclick="HandleClickAsync"
+       @onclick:preventDefault="@PreventDefault" />

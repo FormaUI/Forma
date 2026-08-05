@@ -64,10 +64,8 @@
                 @foreach (var option in filtered)
                 {
                     <label class="forma-multi-select-option">
-                        <input type="checkbox"
-                               class="forma-multi-select-checkbox"
-                               checked="@IsSelected(option)"
-                               @onchange="() => ToggleOption(option)" />
+                        <FormaCheckbox Checked="@IsSelected(option)"
+                                       CheckedChanged="_ => ToggleOption(option)" />
                         <span>@option.Label</span>
                     </label>
                 }

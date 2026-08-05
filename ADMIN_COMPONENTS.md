@@ -330,6 +330,15 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Parameters** | `ButtonVariant Variant` (Secondary/Primary/Tertiary/Danger/Ghost, default Secondary), `ButtonSize Size` (Normal/Mini, default Normal), `ButtonType Type` (Button/Submit/Reset, default Button), `bool Busy`, `bool Disabled`, `EventCallback<MouseEventArgs> OnClick`, `RenderFragment? ChildContent` |
 | **Blazor approach** | Plain `<button>` with a computed CSS class per variant/size. `Busy` announces itself via `aria-busy`/`aria-disabled` and blocks the click handler instead of using the native `disabled` attribute, so a busy button stays focusable and keeps its place in the tab order. Sealed component with code-behind in `.razor.cs` |
 
+### 33. `FormaCheckbox`
+
+| | |
+|---|---|
+| **Old pattern** | Plain `<input type="checkbox">` styled by `fa-3.6.5.css` — no shared component, each admin page restated its own markup |
+| **Used in** | Single source of truth for checkboxes across the library — the retrofit target for `FormaDataGrid`'s header/row selection checkboxes and `FormaMultiSelectDropdown`'s option checkboxes |
+| **Parameters** | `bool Checked`, `EventCallback<bool> CheckedChanged`, `bool Indeterminate`, `bool Disabled`, `bool PreventDefault`, `EventCallback<MouseEventArgs> OnClick` |
+| **Blazor approach** | Plain `<input type="checkbox">`, not `InputBase<bool>` — callers that need form integration wrap it themselves. `Indeterminate` is IDL-only with no content attribute, so it is applied through a small JS interop module, and only when a checkbox actually becomes indeterminate. `PreventDefault` suppresses the native toggle so a caller that computes its own next state — `FormaDataGrid`'s tri-state select-all, which can reject a click outright — owns the checked state entirely; `OnClick` stays a plain notification that changes no behaviour on its own. Sealed component with code-behind in `.razor.cs` |
+
 ---
 
 ## Components NOT Needed (handled by built-ins or native HTML)
@@ -362,6 +371,7 @@ Components are ordered by dependency and reuse frequency:
 | **Phase 6** | `FormaImagePicker`, `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components — built when their feature pages are built |
 | **Phase 7** | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor` | Complex editors — built alongside their specific pages |
 | **Phase 8** | `FormaButton` ✅ | Shared button primitive — built after the fact and retrofitted onto `FormaDataGrid`, `FormaModal`, `FormaConfirmDialog`, `FormaPagination`, `FormaDatePicker` as the single source of truth for buttons |
+| **Phase 9** | `FormaCheckbox` | Shared checkbox primitive — built after the fact and retrofitted onto `FormaDataGrid` and `FormaMultiSelectDropdown` as the single source of truth for checkboxes |
 
 ---
 

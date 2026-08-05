@@ -1,0 +1,165 @@
+@inherits BunitContext
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_a_checkbox_input()
+        {
+            // Arrange
+            using var ctx = new FormaCheckboxTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCheckbox />);
+            var input = cut.Find(".forma-checkbox");
+
+            // Assert
+            Assert.Equal("INPUT", input.TagName);
+            Assert.Equal("checkbox", input.GetAttribute("type"));
+        }
+
+        [Fact]
+        public void Should_reflect_the_checked_parameter()
+        {
+            // Arrange
+            using var ctx = new FormaCheckboxTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCheckbox Checked="true" />);
+
+            // Assert
+            Assert.True(cut.Find(".forma-checkbox").HasAttribute("checked"));
+        }
+
+        [Fact]
+        public void Should_disable_the_input_when_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaCheckboxTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCheckbox Disabled="true" />);
+
+            // Assert
+            Assert.True(cut.Find(".forma-checkbox").HasAttribute("disabled"));
+        }
+
+        [Fact]
+        public void Should_merge_a_host_supplied_class_with_its_own()
+        {
+            // Arrange
+            using var ctx = new FormaCheckboxTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCheckbox class="host-supplied" />);
+
+            // Assert
+            Assert.Contains("forma-checkbox", cut.Find("input").ClassName);
+            Assert.Contains("host-supplied", cut.Find("input").ClassName);
+        }
+
+        [Fact]
+        public void Should_splat_additional_attributes_onto_the_input()
+        {
+            // Arrange
+            using var ctx = new FormaCheckboxTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCheckbox data-row-key="7" aria-label="Select row" />);
+            var input = cut.Find(".forma-checkbox");
+
+            // Assert
+            Assert.Equal("7", input.GetAttribute("data-row-key"));
+            Assert.Equal("Select row", input.GetAttribute("aria-label"));
+        }
+
+        [Fact]
+        public void Should_raise_checked_changed_with_the_new_value_on_a_normal_toggle()
+        {
+            // Arrange
+            using var ctx = new FormaCheckboxTests();
+            bool? raised = null;
+            var cut = ctx.Render(@<FormaCheckbox Checked="false" CheckedChanged="v => raised = v" />);
+
+            // Act
+            cut.Find(".forma-checkbox").Change(true);
+
+            // Assert
+            Assert.True(raised);
+        }
+
+        [Fact]
+        public void Should_invoke_on_click_without_suppressing_the_toggle()
+        {
+            // Arrange
+            using var ctx = new FormaCheckboxTests();
+            var clicks = 0;
+            bool? raised = null;
+            var cut = ctx.Render(@<FormaCheckbox Checked="false"
+                                                  CheckedChanged="v => raised = v"
+                                                  OnClick="() => clicks++" />);
+
+            // Act
+            cut.Find(".forma-checkbox").Click();
+            cut.Find(".forma-checkbox").Change(true);
+
+            // Assert
+            Assert.Equal(1, clicks);
+            Assert.True(raised);
+        }
+
+        [Fact]
+        public void Should_report_the_click_as_prevented_when_prevent_default_is_set()
+        {
+            // Arrange
+            using var ctx = new FormaCheckboxTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCheckbox PreventDefault="true" />);
+
+            // Assert
+            Assert.True(cut.Find(".forma-checkbox").HasAttribute("blazor:onclick:preventdefault"));
+        }
+
+        [Fact]
+        public void Should_leave_the_click_unprevented_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaCheckboxTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCheckbox OnClick="() => { }" />);
+
+            // Assert
+            Assert.False(cut.Find(".forma-checkbox").HasAttribute("blazor:onclick:preventdefault"));
+        }
+
+        [Fact]
+        public void Should_apply_the_indeterminate_state_through_script()
+        {
+            // Arrange
+            using var ctx = new FormaCheckboxTests();
+            var invocation = ctx.JSInterop.SetupVoid("setIndeterminate", _ => true);
+
+            // Act
+            ctx.Render(@<FormaCheckbox Indeterminate="true" />);
+
+            // Assert
+            invocation.VerifyInvoke("setIndeterminate");
+            Assert.NotEmpty(ctx.JSInterop.Invocations["setIndeterminate"]);
+        }
+
+        [Fact]
+        public void Should_not_call_into_script_when_it_is_never_indeterminate()
+        {
+            // Arrange
+            using var ctx = new FormaCheckboxTests();
+
+            // Act
+            ctx.Render(@<FormaCheckbox Checked="true" />);
+
+            // Assert
+            Assert.Empty(ctx.JSInterop.Invocations["setIndeterminate"]);
+        }
+    }
+}

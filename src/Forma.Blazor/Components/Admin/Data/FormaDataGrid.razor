@@ -37,14 +37,12 @@
                             {
                                 @if (!HasMasterCaption)
                                 {
-                                    <input type="checkbox"
-                                           class="forma-data-grid-checkbox"
-                                           @ref="_selectAllElement"
-                                           aria-label="@L["SelectAll"]"
-                                           checked="@AllSelected"
-                                           disabled="@MasterControlDisabled"
-                                           @onclick="HandleMasterClickAsync"
-                                           @onclick:preventDefault="true" />
+                                    <FormaCheckbox aria-label="@L["SelectAll"]"
+                                                   Checked="@AllSelected"
+                                                   Indeterminate="@PartiallySelected"
+                                                   Disabled="@MasterControlDisabled"
+                                                   PreventDefault="true"
+                                                   OnClick="HandleMasterClickAsync" />
                                 }
                                 else if (!MasterCaptionHidden)
                                 {
@@ -72,13 +70,12 @@
                                gesture: the script only ever acts on rows that carry one. *@
                             @if (!_editSession.IsEditing(row))
                             {
-                                <input type="checkbox"
-                                       class="@(EnableCheckedSelection ? "forma-data-grid-checkbox" : "forma-data-grid-checkbox forma-data-grid-row-marker")"
-                                       data-row-key="@GetRowToken(row)"
-                                       aria-label="@L["SelectRow"]"
-                                       aria-disabled="@(!CanInteractWithRow(row) ? "true" : null)"
-                                       checked="@IsSelected(row)"
-                                       @onchange="args => ToggleSelectionAsync(row, (bool)args.Value!)" />
+                                <FormaCheckbox class="@(EnableCheckedSelection ? null : "forma-data-grid-row-marker")"
+                                               data-row-key="@GetRowToken(row)"
+                                               aria-label="@L["SelectRow"]"
+                                               aria-disabled="@(!CanInteractWithRow(row) ? "true" : null)"
+                                               Checked="@IsSelected(row)"
+                                               CheckedChanged="isSelected => ToggleSelectionAsync(row, isSelected)" />
                             }
                         </ChildContent>
                     </TemplateColumn>

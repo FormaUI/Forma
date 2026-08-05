@@ -1,0 +1,75 @@
+@page "/checkbox"
+@attribute [ShowcasePage("FormaCheckbox")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Admin.Forms
+@inject IStringLocalizer<FormaCheckboxPage> L
+
+<h1>FormaCheckbox</h1>
+<p class="desc">@L["Checkbox.Description"]</p>
+
+<div class="demo-section">
+    <h2>@L["Checkbox.Section.Basic"]</h2>
+    <div class="demo-box demo-row">
+        <label class="demo-checkbox-label">
+            <FormaCheckbox Checked="_basic" CheckedChanged="v => _basic = v" />
+            @L["Checkbox.Label.Subscribe"]
+        </label>
+        <label class="demo-checkbox-label">
+            <FormaCheckbox Checked="_prechecked" CheckedChanged="v => _prechecked = v" />
+            @L["Checkbox.Label.Featured"]
+        </label>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Checkbox.Section.Disabled"]</h2>
+    <div class="demo-box demo-row">
+        <label class="demo-checkbox-label">
+            <FormaCheckbox Checked="false" Disabled="true" />
+            @L["Checkbox.Label.Off"]
+        </label>
+        <label class="demo-checkbox-label">
+            <FormaCheckbox Checked="true" Disabled="true" />
+            @L["Checkbox.Label.On"]
+        </label>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Checkbox.Section.Indeterminate"]</h2>
+    <p class="desc">@L["Checkbox.Indeterminate.Note"]</p>
+    <div class="demo-box">
+        <label class="demo-checkbox-label">
+            <FormaCheckbox Checked="@AllChildrenChecked" Indeterminate="@SomeChildrenChecked" PreventDefault="true" OnClick="ToggleAllChildren" />
+            @L["Checkbox.Label.SelectAll"]
+        </label>
+        <div class="demo-row demo-checkbox-children">
+            @for (var i = 0; i < _children.Length; i++)
+            {
+                var index = i;
+                <label class="demo-checkbox-label">
+                    <FormaCheckbox Checked="_children[index]" CheckedChanged="v => _children[index] = v" />
+                    @L["Checkbox.Label.Item", index + 1]
+                </label>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool _basic;
+    private bool _prechecked = true;
+    private readonly bool[] _children = new bool[3];
+
+    private bool AllChildrenChecked
+        => Array.TrueForAll(_children, value => value);
+
+    private bool SomeChildrenChecked
+        => Array.Exists(_children, value => value) && !AllChildrenChecked;
+
+    private void ToggleAllChildren()
+    {
+        var next = !AllChildrenChecked;
+        Array.Fill(_children, next);
+    }
+}

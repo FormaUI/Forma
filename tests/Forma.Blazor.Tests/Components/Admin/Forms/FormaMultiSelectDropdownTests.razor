@@ -104,7 +104,7 @@
             cut.Find(".forma-multi-select-trigger").Click();
 
             // Act
-            cut.Find(".forma-multi-select-checkbox").Change(true);
+            cut.Find(".forma-multi-select-option .forma-checkbox").Change(true);
 
             // Assert
             Assert.Equal([1], model.Categories);

@@ -27,10 +27,8 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     private HashSet<TGridItem> _selectedSet = [];
     private QuickGrid<TGridItem>? _grid;
     private ElementReference _scrollerElement;
-    private ElementReference _selectAllElement;
     private JsModule _module = default!;
     private DotNetObjectReference<FormaDataGrid<TGridItem>>? _selfReference;
-    private bool? _indeterminateApplied;
     private bool _rowSelectionAttached;
     private SelectionBounds _bounds;
 
@@ -342,9 +340,9 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
         await OnRowCancel.InvokeAsync(item);
     }
 
-    // "Some but not all selected" is an IDL-only property, so the header checkbox
-    // cannot express it from markup. Row-click/keyboard selection is likewise delegated
-    // to script, since QuickGrid exposes no row-level attribute or modifier-key hook.
+    // Row-click/keyboard selection is delegated to script, since QuickGrid exposes no
+    // row-level attribute or modifier-key hook. The header/row checkboxes' own
+    // indeterminate state is handled internally by FormaCheckbox.
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (EnableRowSelection && !_rowSelectionAttached)
@@ -356,16 +354,6 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
             _rowSelectionAttached = await _module.TryInvokeVoidAsync("attachRowSelection", _scrollerElement, _selfReference);
         }
 
-        if (!EnableCheckedSelection || HasMasterCaption)
-        {
-            _indeterminateApplied = null;
-        }
-        else if (_indeterminateApplied != PartiallySelected
-            && await _module.TryInvokeVoidAsync("setIndeterminate", _selectAllElement, PartiallySelected))
-        {
-            _indeterminateApplied = PartiallySelected;
-        }
-
         // Virtualization sizes its own scroll range, and an unpaginated grid has no short
         // page to hold a height for.
         if (EnablePagination && !Virtualize)
@@ -373,6 +361,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
             await _module.TryInvokeVoidAsync("reservePageHeight", _scrollerElement, PageSize);
         }
     }
+
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
