@@ -27,6 +27,9 @@ public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisp
     /// <summary>Blocks reordering, showing the items in a fixed order.</summary>
     [Parameter] public bool Disabled { get; set; }
 
+    /// <summary>Where on a row a drag may start.</summary>
+    [Parameter] public SortableDragFrom DragFrom { get; set; }
+
     /// <summary>Additional attributes applied to the list element.</summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
@@ -39,6 +42,7 @@ public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisp
     private JsModule _module = default!;
     private DotNetObjectReference<FormaSortableList<TItem>>? _selfReference;
     private bool _attached;
+    private SortableDragFrom _attachedDragFrom;
     private string? _announcement;
     private bool _announcementAlternate;
 
@@ -56,17 +60,33 @@ public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisp
     // for the script to listen for; skipped rather than attached and left idle.
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (Disabled || _attached)
+        if (Disabled || (_attached && _attachedDragFrom == DragFrom))
         {
             return;
+        }
+
+        // Where a drag may start is decided when the listeners are bound, so a change of
+        // mind has to rebind rather than leave the script answering for the old one.
+        if (_attached)
+        {
+            await _module.TryInvokeVoidAsync("detachSortable", _element);
         }
 
         // Claimed before the await so a render arriving mid-call cannot re-enter and
         // attach a second listener to the same list.
         _attached = true;
+        _attachedDragFrom = DragFrom;
         _selfReference ??= DotNetObjectReference.Create(this);
-        _attached = await _module.TryInvokeVoidAsync("attachSortable", _element, _selfReference);
+        _attached = await _module.TryInvokeVoidAsync(
+            "attachSortable", _element, _selfReference, DragFrom == SortableDragFrom.Item);
     }
+
+    // The row-drag affordances are withheld while disabled, so a row that cannot be dragged
+    // does not offer a grab cursor or refuse to let its text be selected.
+    private string ListCssClass
+        => DragFrom == SortableDragFrom.Item && !Disabled
+            ? "forma-sortable-list forma-sortable-list-row-drag"
+            : "forma-sortable-list";
 
     private string HandleLabel(int index)
         => L["DragToReorder", index + 1, Items.Count];

@@ -19,11 +19,18 @@ const LIST_DRAGGING = 'forma-sortable-list-active';
 const BEFORE = 'forma-sortable-list-drop-before';
 const AFTER = 'forma-sortable-list-drop-after';
 
+/** Controls that own their own press, so a row never takes it for a drag. */
+const INTERACTIVE = 'a[href], button, input, select, textarea, label, [role="button"], [role="link"], [contenteditable="true"]';
+
+/** How long a touch rests on a row before it lifts, leaving shorter swipes to scroll. */
+const TOUCH_HOLD = 400;
+
 /**
  * @param {HTMLElement} list
  * @param {DotNet.DotNetObject} dotNetRef
+ * @param {boolean} dragFromItem
  */
-export function attachSortable(list, dotNetRef) {
+export function attachSortable(list, dotNetRef, dragFromItem) {
     let sourceIndex = -1;
 
     function items() {
@@ -74,9 +81,23 @@ export function attachSortable(list, dotNetRef) {
     }
 
     const gesture = DragGesture.create(list, {
+        // Only whole-row dragging needs the hold: a handle carries touch-action: none, so it
+        // never competes with a scroll in the first place.
+        holdDelay: dragFromItem ? TOUCH_HOLD : 0,
+
         findSubject(event) {
             const handle = event.target.closest(HANDLE);
-            return handle && !handle.disabled ? ownItemOf(handle) : null;
+            if (handle) {
+                return handle.disabled ? null : ownItemOf(handle);
+            }
+
+            if (!dragFromItem || event.target.closest(INTERACTIVE)) {
+                return null;
+            }
+
+            // The row's own handle reports whether the list is currently disabled.
+            const item = ownItemOf(event.target);
+            return item && !item.querySelector(HANDLE)?.disabled ? item : null;
         },
 
         onStart({ subject }) {

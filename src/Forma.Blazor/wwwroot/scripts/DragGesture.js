@@ -29,6 +29,7 @@ export class DragGesture {
     #onCancel;
     #threshold;
     #autoScroll;
+    #holdDelay;
 
     #subject = null;
     #pointerId = null;
@@ -36,6 +37,7 @@ export class DragGesture {
     #lastX = 0;
     #lastY = 0;
     #isDragging = false;
+    #holdTimer = null;
     #scroller = null;
     #scrollStep = 0;
     #scrollFrame = null;
@@ -50,7 +52,8 @@ export class DragGesture {
      *   onDrop?: (context: object) => void,
      *   onCancel?: (context: object) => void,
      *   threshold?: number,
-     *   autoScroll?: boolean
+     *   autoScroll?: boolean,
+     *   holdDelay?: number
      * }} options
      */
     constructor(container, options) {
@@ -62,6 +65,7 @@ export class DragGesture {
         this.#onCancel = options.onCancel;
         this.#threshold = options.threshold ?? DragGesture.#DEFAULT_THRESHOLD;
         this.#autoScroll = options.autoScroll ?? true;
+        this.#holdDelay = options.holdDelay ?? 0;
     }
 
     /**
@@ -113,6 +117,11 @@ export class DragGesture {
     }
 
     #release() {
+        if (this.#holdTimer !== null) {
+            clearTimeout(this.#holdTimer);
+            this.#holdTimer = null;
+        }
+
         this.#stopAutoScroll();
 
         if (this.#pointerId !== null && this.#element.hasPointerCapture(this.#pointerId)) {
@@ -142,13 +151,44 @@ export class DragGesture {
         this.#isDragging = false;
         this.#scroller = this.#autoScroll ? DragGesture.#findScroller(this.#element) : null;
 
+        // A touch that could equally have been a scroll has to rest before it lifts,
+        // otherwise every swipe across the container would drag instead of scrolling.
+        // Capture waits too, so an abandoned press still reaches the browser as a scroll.
+        if (this.#holdDelay > 0 && event.pointerType === 'touch') {
+            this.#holdTimer = setTimeout(() => this.#beginHeldDrag(), this.#holdDelay);
+            return;
+        }
+
         // Captured on the container rather than whatever was pressed, so the gesture
         // survives both the pointer leaving that element and the element itself going away.
         this.#element.setPointerCapture(event.pointerId);
     }
 
+    // A held touch lifts straight into a drag: the rest has already made the intent clear,
+    // so it does not also have to travel the threshold.
+    #beginHeldDrag() {
+        this.#holdTimer = null;
+        if (!this.#subject) {
+            return;
+        }
+
+        this.#element.setPointerCapture(this.#pointerId);
+        this.#isDragging = true;
+        this.#onStart?.(this.#context());
+    }
+
     #handlePointerMove(event) {
         if (!this.#subject || event.pointerId !== this.#pointerId) {
+            return;
+        }
+
+        // Moving before the hold elapses means the press was a swipe, so it is abandoned
+        // and the browser is left to scroll with it.
+        if (this.#holdTimer !== null) {
+            if (Math.abs(event.clientY - this.#startY) >= this.#threshold) {
+                this.#release();
+            }
+
             return;
         }
 

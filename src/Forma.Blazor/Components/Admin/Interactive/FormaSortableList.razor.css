@@ -34,6 +34,15 @@
     cursor: grabbing;
 }
 
+/* Dragging from the row makes the row itself the affordance, so it carries the cursor the
+   handle otherwise would, and its text stops being selectable — a press that is about to
+   drag must not start a selection instead. touch-action stays default here: the row has to
+   keep scrolling by swipe, which is what the press-and-hold in the script buys back. */
+.forma-sortable-list-row-drag .forma-sortable-list-item {
+    cursor: grab;
+    user-select: none;
+}
+
 .forma-sortable-list-content {
     flex: 1 1 auto;
     min-inline-size: 0;

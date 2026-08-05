@@ -63,4 +63,19 @@
   <data name="Sortable.Section.Scrolling.Desc" xml:space="preserve">
     <value>Holding a drag near the top or bottom edge scrolls the panel, and releasing in the empty space below the last row sends the item to the end.</value>
   </data>
+  <data name="Sortable.Section.RowDrag" xml:space="preserve">
+    <value>Dragging From the Whole Row</value>
+  </data>
+  <data name="Sortable.Section.RowDrag.Desc" xml:space="preserve">
+    <value>The whole row starts a drag, not just the handle. Controls inside a row keep their own press, and on touch the row is held briefly before it lifts so a swipe still scrolls.</value>
+  </data>
+  <data name="Sortable.Edit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="Sortable.RowDrag.Hint" xml:space="preserve">
+    <value>Drag a row anywhere to reorder, or press Edit — it still clicks.</value>
+  </data>
+  <data name="Sortable.RowDrag.Clicked" xml:space="preserve">
+    <value>Edit was clicked on {0}, so the row did not take the press.</value>
+  </data>
 </root>

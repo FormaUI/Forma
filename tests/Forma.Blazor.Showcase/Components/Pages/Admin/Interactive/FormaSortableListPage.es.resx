@@ -63,4 +63,19 @@
   <data name="Sortable.Section.Scrolling.Desc" xml:space="preserve">
     <value>Mantener un arrastre cerca del borde superior o inferior desplaza el panel, y soltar en el espacio vacío bajo la última fila envía el elemento al final.</value>
   </data>
+  <data name="Sortable.Section.RowDrag" xml:space="preserve">
+    <value>Arrastrar desde toda la fila</value>
+  </data>
+  <data name="Sortable.Section.RowDrag.Desc" xml:space="preserve">
+    <value>Toda la fila inicia un arrastre, no sólo el asa. Los controles dentro de una fila conservan su propia pulsación, y en pantallas táctiles la fila se mantiene pulsada un momento antes de levantarse, así que un deslizamiento sigue desplazando.</value>
+  </data>
+  <data name="Sortable.Edit" xml:space="preserve">
+    <value>Editar</value>
+  </data>
+  <data name="Sortable.RowDrag.Hint" xml:space="preserve">
+    <value>Arrastra una fila desde cualquier punto para reordenar, o pulsa Editar: sigue siendo clicable.</value>
+  </data>
+  <data name="Sortable.RowDrag.Clicked" xml:space="preserve">
+    <value>Se pulsó Editar en {0}, así que la fila no tomó la pulsación.</value>
+  </data>
 </root>

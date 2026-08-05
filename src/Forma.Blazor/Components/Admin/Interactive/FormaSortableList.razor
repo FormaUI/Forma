@@ -4,7 +4,7 @@
 <div class="forma-sortable-list-container">
     @* Safari drops list semantics from a list whose markers are removed, so the role is
        restated rather than left to the ul alone. *@
-    <ul class="forma-sortable-list" role="list" @attributes="AdditionalAttributes" @ref="_element">
+    <ul class="@ListCssClass" role="list" @attributes="AdditionalAttributes" @ref="_element">
         @for (var i = 0; i < Items.Count; i++)
         {
             var item = Items[i];

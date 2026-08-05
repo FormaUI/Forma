@@ -63,4 +63,19 @@
   <data name="Sortable.Section.Scrolling.Desc" xml:space="preserve">
     <value>החזקת גרירה סמוך לקצה העליון או התחתון גוללת את החלונית, ושחרור בשטח הריק מתחת לשורה האחרונה שולח את הפריט לסוף.</value>
   </data>
+  <data name="Sortable.Section.RowDrag" xml:space="preserve">
+    <value>גרירה מכל השורה</value>
+  </data>
+  <data name="Sortable.Section.RowDrag.Desc" xml:space="preserve">
+    <value>כל השורה מתחילה גרירה, לא רק הידית. פקדים בתוך שורה שומרים על הלחיצה שלהם, ובמגע יש להחזיק את השורה רגע לפני שהיא נרימת, כך שהחלקה עדיין גוללת.</value>
+  </data>
+  <data name="Sortable.Edit" xml:space="preserve">
+    <value>ערוך</value>
+  </data>
+  <data name="Sortable.RowDrag.Hint" xml:space="preserve">
+    <value>גרור שורה מכל מקום כדי לסדר מחדש, או לחץ על ערוך — הוא עדיין נלחץ.</value>
+  </data>
+  <data name="Sortable.RowDrag.Clicked" xml:space="preserve">
+    <value>ערוך נלחץ על {0}, כך שהשורה לא לקחה את הלחיצה.</value>
+  </data>
 </root>
