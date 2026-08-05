@@ -1,0 +1,155 @@
+@inherits BunitContext
+@using Bunit.Rendering
+@using System.IO
+
+@*  FormaDataGrid styles QuickGrid's internals through ::deep, so its CSS hangs off class
+    names, a cell structure and a custom property the QuickGrid package owns and can change
+    in any release. An unmatched CSS selector raises no error and an undefined var() resolves
+    to nothing, so both kinds of break are silent. These assert each hook is still there —
+    a package bump that renames one fails here instead of quietly dropping the styling it
+    carried. Each fact names the rule in FormaDataGrid.razor.css that depends on it. *@
+
+@code {
+    public sealed class Component
+    {
+        private static IQueryable<ContractItem> Items(int count) => Enumerable.Range(1, count)
+            .Select(id => new ContractItem(id, $"Item {id}"))
+            .AsQueryable();
+
+        private static IRenderedComponent<ContainerFragment> RenderGrid(BunitContext ctx)
+        {
+            var cut = ctx.Render(
+                @<FormaDataGrid Items="Items(3)" PageSize="10">
+                    <Columns>
+                        <PropertyColumn Property="@(item => item.Title)" />
+                    </Columns>
+                </FormaDataGrid>);
+            cut.WaitForState(() => cut.Markup.Contains("Item 3", StringComparison.Ordinal));
+
+            return cut;
+        }
+
+        // Depended on by every `.forma-data-grid-scroller .quickgrid …` rule.
+        [Fact]
+        public void Should_render_the_quickgrid_class_on_the_table()
+        {
+            // Arrange
+            using var ctx = new QuickGridContractTests();
+
+            // Act
+            var cut = RenderGrid(ctx);
+
+            // Assert
+            Assert.Single(cut.FindAll(".forma-data-grid-scroller table.quickgrid"));
+        }
+
+        // Depended on by the body-cell padding rules, which mirror this direct-child shape
+        // to outrank the padding QuickGrid sets on it.
+        [Fact]
+        public void Should_keep_body_cells_as_direct_children_of_a_row_in_tbody()
+        {
+            // Arrange
+            using var ctx = new QuickGridContractTests();
+
+            // Act
+            var cut = RenderGrid(ctx);
+
+            // Assert
+            Assert.NotEmpty(cut.FindAll(".quickgrid > tbody > tr > td"));
+        }
+
+        // Depended on by the rule restating QuickGrid's physical padding-right as logical.
+        [Fact]
+        public void Should_render_the_column_header_content_wrapper_in_each_header_cell()
+        {
+            // Arrange
+            using var ctx = new QuickGridContractTests();
+
+            // Act
+            var cut = RenderGrid(ctx);
+
+            // Assert
+            Assert.NotEmpty(cut.FindAll(".quickgrid thead th .col-header-content"));
+        }
+
+        // Depended on by the rule flattening the title's own padding.
+        [Fact]
+        public void Should_render_the_column_title_inside_the_header_content()
+        {
+            // Arrange
+            using var ctx = new QuickGridContractTests();
+
+            // Act
+            var cut = RenderGrid(ctx);
+
+            // Assert
+            Assert.NotEmpty(cut.FindAll(".quickgrid .col-header-content .col-title"));
+        }
+
+        // Depended on by the sticky-header rule.
+        [Fact]
+        public void Should_render_header_cells_in_a_thead()
+        {
+            // Arrange
+            using var ctx = new QuickGridContractTests();
+
+            // Act
+            var cut = RenderGrid(ctx);
+
+            // Assert
+            Assert.NotEmpty(cut.FindAll(".forma-data-grid-scroller thead th"));
+        }
+
+        // The theme the stylesheet scopes its variables and default rules to.
+        [Fact]
+        public void Should_render_the_default_theme_the_stylesheet_scopes_its_rules_to()
+        {
+            // Arrange
+            using var ctx = new QuickGridContractTests();
+
+            // Act
+            var cut = RenderGrid(ctx);
+
+            // Assert
+            Assert.Equal("default", cut.Find("table.quickgrid").GetAttribute("theme"));
+        }
+
+        private sealed record ContractItem(int Id, string Title);
+    }
+
+    // The stylesheet is copied into the test output by the CopyQuickGridStylesheet target,
+    // since a custom property the package fails to declare leaves no trace in the markup.
+    public sealed class Stylesheet
+    {
+        private static string Read()
+        {
+            var path = Path.Combine(AppContext.BaseDirectory, "QuickGrid.bundle.scp.css");
+            Assert.True(File.Exists(path), $"QuickGrid stylesheet was not copied to '{path}'.");
+
+            return File.ReadAllText(path);
+        }
+
+        // Depended on by the header-content rule, which reuses the gap for its logical edge.
+        [Fact]
+        public void Should_declare_the_col_gap_variable()
+        {
+            // Arrange
+            var stylesheet = Read();
+
+            // Assert
+            Assert.Contains("--col-gap:", stylesheet, StringComparison.Ordinal);
+        }
+
+        // The header-content rule zeroes this physical padding to replace it with a logical
+        // one, so a switch to a logical property here would leave both of them applied.
+        [Fact]
+        public void Should_pad_the_header_content_with_a_physical_padding_right()
+        {
+            // Arrange
+            var stylesheet = Read();
+
+            // Assert
+            Assert.Contains("padding-right: var(--col-gap)", stylesheet, StringComparison.Ordinal);
+        }
+    }
+}
