@@ -190,6 +190,7 @@
     text-align: start;
     white-space: nowrap;
     cursor: pointer;
+    touch-action: manipulation;
 }
 
 .forma-data-grid-master-caption:disabled {
@@ -200,4 +201,11 @@
 .forma-data-grid-master-caption-static {
     color: var(--text-muted, #626976);
 }
+
+@media (pointer: coarse) {
+    .forma-data-grid-master-caption {
+        min-block-size: 2.75rem;
+    }
+}
+
 

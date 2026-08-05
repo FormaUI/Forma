@@ -40,8 +40,10 @@
     line-height: 1.2;
 }
 
-::deep button.forma-pagination-link:hover:not(:disabled) {
-    background: var(--hover-bg);
+@media (hover: hover) {
+    ::deep button.forma-pagination-link:hover:not(:disabled) {
+        background: var(--hover-bg);
+    }
 }
 
 /* Doubled to match the shared pill rule above, which it has to outrank to mark
@@ -85,9 +87,20 @@
     font-size: 0.9rem;
     line-height: 1.2;
     text-align: center;
+    touch-action: manipulation;
 }
 
 .forma-pagination-jump-input:focus-visible {
     outline: 2px solid var(--main);
     outline-offset: 1px;
+}
+
+@media (pointer: coarse) {
+    ::deep .forma-pagination-link {
+        min-inline-size: 2.75rem;
+    }
+
+    .forma-pagination-jump-input {
+        min-block-size: 2.75rem;
+    }
 }

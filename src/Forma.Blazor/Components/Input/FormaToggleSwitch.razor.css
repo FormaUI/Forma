@@ -18,6 +18,7 @@
     align-items: center;
     cursor: pointer;
     margin: 0;
+    touch-action: manipulation;
 }
 
 .forma-toggle.disabled {
@@ -93,4 +94,11 @@
     font-size: 0.875rem;
     color: var(--forma-toggle-label-color, #6c757d);
     user-select: none;
+}
+
+/* Padding rather than a taller track, so the knob geometry is untouched. */
+@media (pointer: coarse) {
+    .forma-toggle {
+        padding-block: 0.625rem;
+    }
 }

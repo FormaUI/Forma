@@ -88,8 +88,10 @@
     touch-action: none;
 }
 
-.forma-sortable-list-handle:hover:not(:disabled) {
-    background: var(--hover-bg, rgba(98, 105, 118, 0.06));
+@media (hover: hover) {
+    .forma-sortable-list-handle:hover:not(:disabled) {
+        background: var(--hover-bg, rgba(98, 105, 118, 0.06));
+    }
 }
 
 .forma-sortable-list-handle:active:not(:disabled) {
@@ -115,4 +117,11 @@
     overflow: hidden;
     clip: rect(0 0 0 0);
     white-space: nowrap;
+}
+
+@media (pointer: coarse) {
+    .forma-sortable-list-handle {
+        inline-size: 2.75rem;
+        block-size: 2.75rem;
+    }
 }

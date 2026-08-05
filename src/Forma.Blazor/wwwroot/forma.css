@@ -92,11 +92,17 @@ body {
 a {
     color: var(--main-dark);
     text-decoration: none;
-    outline: none;
 }
 
-a:hover {
-    color: var(--main-light);
+a:focus-visible {
+    outline: 2px solid var(--focus-color, #86b7fe);
+    outline-offset: 2px;
+}
+
+@media (hover: hover) {
+    a:hover {
+        color: var(--main-light);
+    }
 }
 
 /* ── Shared close button ── */
@@ -114,9 +120,11 @@ a:hover {
     transition: background-color 120ms ease, color 120ms ease;
 }
 
-.forma-close-btn:hover {
-    background-color: var(--hover-bg);
-    color: var(--text);
+@media (hover: hover) {
+    .forma-close-btn:hover {
+        background-color: var(--hover-bg);
+        color: var(--text);
+    }
 }
 
 /* ── Card pattern ── */

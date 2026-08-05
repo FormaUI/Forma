@@ -51,10 +51,13 @@
     line-height: 1;
     cursor: pointer;
     border-radius: 50%;
+    touch-action: manipulation;
 }
 
-.forma-multi-select-tag-remove:hover:not(:disabled) {
-    background: var(--forma-multi-select-tag-remove-hover-bg, rgba(0, 0, 0, 0.1));
+@media (hover: hover) {
+    .forma-multi-select-tag-remove:hover:not(:disabled) {
+        background: var(--forma-multi-select-tag-remove-hover-bg, rgba(0, 0, 0, 0.1));
+    }
 }
 
 .forma-multi-select-tag-remove:focus-visible {
@@ -86,10 +89,13 @@
     font: inherit;
     text-align: start;
     cursor: pointer;
+    touch-action: manipulation;
 }
 
-.forma-multi-select-trigger:hover:not(:disabled) {
-    border-color: var(--main, #0d6efd);
+@media (hover: hover) {
+    .forma-multi-select-trigger:hover:not(:disabled) {
+        border-color: var(--main, #0d6efd);
+    }
 }
 
 .forma-multi-select-trigger:disabled {
@@ -190,8 +196,10 @@
     border-radius: 4px;
 }
 
-.forma-multi-select-options ::deep .forma-checkbox-label:hover {
-    background: var(--hover-bg, rgba(98, 105, 118, 0.06));
+@media (hover: hover) {
+    .forma-multi-select-options ::deep .forma-checkbox-label:hover {
+        background: var(--hover-bg, rgba(98, 105, 118, 0.06));
+    }
 }
 
 .forma-multi-select-options ::deep .forma-checkbox-label:has(:focus-visible) {
@@ -218,13 +226,33 @@
     font-size: 0.85rem;
     text-align: start;
     cursor: pointer;
+    touch-action: manipulation;
 }
 
-.forma-multi-select-add:hover {
-    background: var(--hover-bg, rgba(98, 105, 118, 0.06));
+@media (hover: hover) {
+    .forma-multi-select-add:hover {
+        background: var(--hover-bg, rgba(98, 105, 118, 0.06));
+    }
 }
 
 .forma-multi-select-add:focus-visible {
     outline: 2px solid var(--focus-color, #86b7fe);
     outline-offset: 2px;
+}
+
+@media (pointer: coarse) {
+    .forma-multi-select-trigger,
+    .forma-multi-select-search,
+    .forma-multi-select-add {
+        min-block-size: 2.75rem;
+    }
+
+    .forma-multi-select-tag-remove {
+        inline-size: 1.5rem;
+        block-size: 1.5rem;
+    }
+
+    .forma-multi-select-options ::deep .forma-checkbox-label {
+        min-block-size: 2.75rem;
+    }
 }

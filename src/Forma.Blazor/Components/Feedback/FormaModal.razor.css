@@ -86,11 +86,14 @@ dialog.forma-modal::backdrop {
     color: var(--text-muted);
     cursor: pointer;
     transition: background-color 120ms ease, color 120ms ease;
+    touch-action: manipulation;
 }
 
-.forma-modal-close:hover {
-    background-color: var(--hover-bg);
-    color: var(--text);
+@media (hover: hover) {
+    .forma-modal-close:hover {
+        background-color: var(--hover-bg);
+        color: var(--text);
+    }
 }
 
 /* ── Body ── */
@@ -129,4 +132,11 @@ dialog.forma-modal::backdrop {
     align-items: center;
     gap: 8px;
     margin-inline-start: auto;
+}
+
+@media (pointer: coarse) {
+    .forma-modal-close {
+        inline-size: 2.75rem;
+        block-size: 2.75rem;
+    }
 }

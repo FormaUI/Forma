@@ -36,10 +36,20 @@
 .forma-breadcrumb-item a {
     color: var(--link-color, #0d6efd);
     text-decoration: none;
+    touch-action: manipulation;
 }
 
-.forma-breadcrumb-item a:hover {
-    text-decoration: underline;
+@media (pointer: coarse) {
+    .forma-breadcrumb-item a {
+        display: inline-block;
+        padding-block: 0.5rem;
+    }
+}
+
+@media (hover: hover) {
+    .forma-breadcrumb-item a:hover {
+        text-decoration: underline;
+    }
 }
 
 .forma-breadcrumb-item.active span {

@@ -14,6 +14,7 @@
     font-size: 0.875rem;
     background-color: var(--input-bg, #fff);
     color: var(--text-color, #212529);
+    touch-action: manipulation;
 }
 
 .forma-toolbar-search:focus-visible {
@@ -29,4 +30,10 @@
     gap: 8px;
     flex-shrink: 0;
     margin-inline-start: auto;
+}
+
+@media (pointer: coarse) {
+    .forma-toolbar-search {
+        min-block-size: 2.75rem;
+    }
 }

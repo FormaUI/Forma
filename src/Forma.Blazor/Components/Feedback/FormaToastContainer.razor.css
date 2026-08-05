@@ -61,10 +61,13 @@
     border-radius: 4px;
     transition: opacity 120ms ease;
     flex-shrink: 0;
+    touch-action: manipulation;
 }
 
-.forma-toast-close:hover {
-    opacity: 1;
+@media (hover: hover) {
+    .forma-toast-close:hover {
+        opacity: 1;
+    }
 }
 
 /* ── Type variants ── */
@@ -111,4 +114,11 @@
 
 .forma-toast:dir(rtl) {
     animation-name: forma-toast-in-rtl;
+}
+
+@media (pointer: coarse) {
+    .forma-toast-close {
+        inline-size: 2.75rem;
+        block-size: 2.75rem;
+    }
 }

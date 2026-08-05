@@ -8,8 +8,10 @@
 .forma-checkbox {
     inline-size: 16px;
     block-size: 16px;
+    flex-shrink: 0;
     margin: 0;
     accent-color: var(--main, #0d6efd);
+    touch-action: manipulation;
 }
 
 .forma-checkbox:focus-visible {
@@ -34,4 +36,11 @@
 .forma-checkbox-label:has(.forma-checkbox:disabled) {
     color: var(--text-muted);
     cursor: not-allowed;
+}
+
+@media (pointer: coarse) {
+    .forma-checkbox {
+        inline-size: 1.5rem;
+        block-size: 1.5rem;
+    }
 }

@@ -260,6 +260,90 @@ that states the condition, the text *is* the second channel and a glyph is optio
 - Squint at it, or desaturate the screenshot: if two states become identical, the second
   channel is missing.
 
+## Touch and pointer (non-negotiable)
+
+**Every component is fully usable with a finger.** The admin runs on tablets, so touch is a
+first-class input, not a degraded fallback. Like RTL parity, assume there is no legitimate
+exception.
+
+### Target size
+
+- **24×24 CSS px is the floor.** WCAG 2.5.8 allows an exception where spacing separates the
+  targets, and another for links inline in a run of text; treat both as a last resort rather
+  than a licence. A 16px checkbox or a 16px "remove tag" button fails outright.
+- **44×44 on coarse pointers.** Do not inflate desktop density to get there — put the larger
+  size behind `@media (pointer: coarse)`, which is what that query exists for:
+
+  ```css
+  @media (pointer: coarse) {
+      .forma-x { min-block-size: 2.75rem; }
+  }
+  ```
+- Grow the *hit area*, not necessarily the artwork. Padding on the wrapping label beats
+  resizing a switch's track and having to redo the knob geometry.
+- Measure the rendered box rather than adding up padding by hand — a flex child can be
+  squeezed below its declared size, so check `getBoundingClientRect` and add `flex-shrink: 0`
+  where it matters.
+
+### Tapping
+
+- **`touch-action: manipulation` on anything tappable**, which drops the ~300ms double-tap
+  delay. It belongs in the element's own base rule, not a second rule restating the selector.
+- `touch-action: none` is only for a surface that owns a drag gesture, never for a plain
+  button.
+
+### Hover does not exist on touch
+
+- **Every `:hover` rule lives inside `@media (hover: hover)`.** Unguarded, the style latches
+  after a tap and stays until the user taps elsewhere.
+- Nothing may be *revealed* only on hover — no `display`, `visibility`, `opacity: 0 → 1` or
+  `pointer-events` that a finger can never trigger. Row actions are always present, or behind
+  a tap.
+- Hover **previews** (a range preview that follows the cursor) are a pointer-only enhancement.
+  That is fine, provided the feature still completes by tapping.
+
+### Gestures
+
+- Use **Pointer Events**, never `mouse*`. Touch emits compatibility mouse events only *after*
+  the gesture ends, never during it, so nothing continuous — hover tracking, a drag — can hang
+  off `@onmouseenter`/`@onmousedown`. A modifier-key path (shift-click to range-select) needs a
+  touch-reachable equivalent.
+- **Pointer capture does not stop the compositor.** A touch that begins on a scrollable area
+  is claimed for scrolling and your gesture gets `pointercancel` mid-drag. The only thing that
+  keeps it alive is a **non-passive `touchmove` with `preventDefault()`**, and it must be
+  guarded so it applies *only while a drag is actually under way* — otherwise ordinary swipes
+  stop scrolling:
+
+  ```js
+  element.addEventListener('touchmove', event => {
+      if (isDragging) { event.preventDefault(); }
+  }, { signal, passive: false });
+  ```
+- **Press-and-hold before a drag lifts on touch**, so a swipe over the same surface still
+  scrolls the page. Gate the hold on `event.pointerType === 'touch'`; a mouse should drag
+  immediately.
+
+### Small viewports
+
+- A popup must clamp to the viewport and stack rather than overflow — a dual-panel calendar is
+  wider than a phone. `max-inline-size: calc(100vw - 1rem)` plus `flex-wrap: wrap` beats a
+  horizontal scrollbar.
+
+### Verifying
+
+- bUnit cannot produce a pointer event, so touch behaviour is verified in a browser.
+- Emulate a coarse pointer, then assert **measured** sizes — walk every
+  `button, input, select, textarea` and fail anything under 24×24.
+- Drive gestures with CDP `Input.dispatchTouchEvent`, which goes through the browser's real
+  input pipeline and therefore honours `touch-action` and the scroll/drag arbitration. The
+  browser tool's `drag_element` uses the HTML5 drag API and emits **no pointer events at all**,
+  so it proves nothing here.
+- **Scroll the target into view before computing coordinates.** Below-the-fold coordinates
+  silently hit nothing, and the symptom — an event log that stays empty — reads exactly like a
+  broken component.
+- Assert the drag *survives* the move, not just that it started: check the dragging class
+  mid-gesture, and check that a quick swipe leaves the order untouched.
+
 ## RTL / LTR parity (non-negotiable)
 
 **Every component behaves and looks identical in RTL and LTR — mirrored, not different.** This
@@ -376,8 +460,9 @@ Components are built, reviewed, and committed **individually**:
    disposal, CSS, ARIA, localization all follow the patterns above rather than inventing new ones.
 3. Deliver the full set: `.razor` + `.razor.cs` + `.razor.css` (+ resx / `.js` if warranted),
    bUnit tests, showcase page. Build + tests green, the component verified in **both
-   directions** (`he` RTL and `en`/`es-419` LTR), and every state checked against the
-   accessibility rules — named, focusable, and readable with the colour removed.
+   directions** (`he` RTL and `en`/`es-419` LTR), every state checked against the
+   accessibility rules — named, focusable, and readable with the colour removed — and every
+   target checked with a finger: 24×24 minimum, hover never load-bearing.
 4. **Present it for review and stop.** Iterate on the same component until the maintainer says
    it is complete — do not move to the next one.
 5. When the maintainer declares it complete, mark it **in both documents**:

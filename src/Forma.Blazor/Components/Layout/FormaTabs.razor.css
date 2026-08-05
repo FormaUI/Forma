@@ -24,11 +24,14 @@
     align-items: center;
     gap: 6px;
     transition: color 0.15s, border-color 0.15s;
+    touch-action: manipulation;
 }
 
-.forma-tab-button:hover {
-    color: var(--text-color, #212529);
-    border-block-end-color: var(--border-color, #dee2e6);
+@media (hover: hover) {
+    .forma-tab-button:hover {
+        color: var(--text-color, #212529);
+        border-block-end-color: var(--border-color, #dee2e6);
+    }
 }
 
 .forma-tab-button:focus-visible {
@@ -49,4 +52,10 @@
 
 ::deep .forma-tab-panel.active {
     display: block;
+}
+
+@media (pointer: coarse) {
+    .forma-tab-button {
+        min-block-size: 2.75rem;
+    }
 }

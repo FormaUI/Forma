@@ -45,8 +45,10 @@
     transition: border-color 0.15s ease;
 }
 
-.forma-color-swatch-wrapper:hover .forma-color-swatch {
-    border-color: var(--forma-primary, #0d6efd);
+@media (hover: hover) {
+    .forma-color-swatch-wrapper:hover .forma-color-swatch {
+        border-color: var(--forma-primary, #0d6efd);
+    }
 }
 
 /* ---------- native color input (overlaid on swatch, invisible) ---------- */
@@ -59,6 +61,7 @@
     cursor: pointer;
     border: none;
     padding: 0;
+    touch-action: manipulation;
 }
 
 .forma-color-native:focus-visible + .forma-color-swatch {
@@ -74,6 +77,7 @@
     border-radius: 0.375rem;
     font-family: monospace;
     font-size: 0.875rem;
+    touch-action: manipulation;
 }
 
 .forma-color-hex-input:focus {
@@ -93,6 +97,7 @@
 
 .forma-color-alpha {
     flex: 1;
+    touch-action: manipulation;
 }
 
 .forma-color-alpha-value {
@@ -100,4 +105,19 @@
     text-align: end;
     font-family: monospace;
     font-size: 0.8125rem;
+}
+
+@media (pointer: coarse) {
+    .forma-color-swatch-wrapper {
+        inline-size: 2.75rem;
+        block-size: 2.75rem;
+    }
+
+    .forma-color-hex-input {
+        min-block-size: 2.75rem;
+    }
+
+    .forma-color-alpha {
+        block-size: 2.75rem;
+    }
 }
