@@ -20,3 +20,7 @@
     background-color: var(--forma-status-badge-bg, rgba(98, 105, 118, 0.12));
     color: var(--forma-status-badge-fg, var(--text, #2c384a));
 }
+
+.forma-status-badge-marker {
+    margin-inline-end: 0.35em;
+}

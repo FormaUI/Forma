@@ -1,8 +1,9 @@
-<div class="forma-toast-container">
+<div class="forma-toast-container" role="status" aria-live="polite" aria-atomic="false">
     @foreach (var toast in ToastService.Toasts)
     {
         <div class="forma-toast forma-toast-@toast.Type.ToString().ToLowerInvariant()"
              @key="toast.Id">
+            <span class="forma-toast-marker" aria-hidden="true">@MarkerFor(toast.Type)</span>
             <span class="forma-toast-message">@toast.Message</span>
             <button type="button"
                     class="forma-toast-close"

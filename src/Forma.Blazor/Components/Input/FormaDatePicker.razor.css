@@ -234,6 +234,12 @@
     background: #e6e6e6;
 }
 
+.forma-date-picker-day:focus-visible,
+.forma-date-picker-select:focus-visible {
+    outline: 2px solid var(--focus-color, #86b7fe);
+    outline-offset: 1px;
+}
+
 .forma-date-picker-day:disabled {
     opacity: 0.35;
     cursor: default;
@@ -253,12 +259,15 @@
     background: var(--dp-primary);
     color: var(--dp-primary-fg);
     border-radius: 4px;
+    font-weight: 700;
 }
 
-/* range */
+/* range — underlined so the span reads without relying on the fill colour */
 .forma-date-picker-day.in-range {
     background: var(--dp-range-bg);
     border-radius: 0;
+    text-decoration: underline;
+    text-underline-offset: 2px;
 }
 
 .forma-date-picker-day.start {

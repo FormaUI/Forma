@@ -38,6 +38,8 @@
   <data name="StatusBadge.OtherVocabulary.Note" xml:space="preserve"><value>El mismo componente con un conjunto de estados distinto, registrado por la propia página.</value></data>
   <data name="StatusBadge.Section.Explicit" xml:space="preserve"><value>Colores sin estado</value></data>
   <data name="StatusBadge.Explicit.Note" xml:space="preserve"><value>Las etiquetas puntuales pueden pasar los colores directamente en lugar de registrar un estado.</value></data>
+  <data name="StatusBadge.Section.Marker" xml:space="preserve"><value>Con marcador</value></data>
+  <data name="StatusBadge.Marker.Note" xml:space="preserve"><value>Un glifo antes del texto, para que el estado se lea aunque el color no.</value></data>
   <data name="StatusBadge.Section.Unstyled" xml:space="preserve"><value>Valor por defecto</value></data>
   <data name="StatusBadge.Unstyled.Note" xml:space="preserve"><value>Un estado no registrado, o la ausencia de estado, usa el valor neutral por defecto.</value></data>
   <data name="StatusBadge.Unstyled.Unknown" xml:space="preserve"><value>Estado desconocido</value></data>

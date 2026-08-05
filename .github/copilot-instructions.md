@@ -187,9 +187,78 @@ The constraints on interop are what it's made of, not whether it's allowed:
 - Colors, fonts, shadows come from the design tokens in `src/Forma.Blazor/wwwroot/forma.css`
   via `var(--main)`, `var(--border-color)`, … Component-local knobs use a fallback:
   `var(--forma-toggle-on-bg, #0d6efd)`. Never hardcode a raw color that a token covers.
-- Accessibility is part of "done": correct ARIA roles/relationships (`role="switch"`,
-  `tablist`/`tab`/`tabpanel`, `aria-selected`, `aria-controls`, `aria-label` on icon-only
-  buttons), visible `:focus-visible` outline, keyboard operability.
+- Accessibility is part of "done" — see the section below.
+
+## Accessibility (non-negotiable)
+
+**A component is not finished until it works for someone who cannot see colour, cannot use a
+mouse, and cannot see the screen at all.** Like RTL parity, this is a correctness requirement,
+not polish. Assume there is no legitimate exception; if you think you've found one, raise it
+rather than shipping without.
+
+### Colour is never the only signal
+
+Every state a component can be in — on/off, selected, current, valid/invalid, severity,
+disabled, sorted, dragging — must be distinguishable **with the colour removed**. Pair the
+colour with a second channel:
+
+- a **glyph** (`FormaToggleSwitch` puts ✓/✕ on the track, `FormaToastContainer` gives each
+  severity ✓/✕/⚠/ℹ),
+- **weight** or an **underline** (`FormaPagination`'s current page, `FormaDatePicker`'s
+  in-range days),
+- **position** or **shape** (a knob that slides, a drop indicator that moves, a checkbox that
+  switches from tick to dash).
+
+Opacity alone does not count — it changes lightness but keeps the same form, so it is weak for
+anything more important than a disabled affordance. Where the component already renders text
+that states the condition, the text *is* the second channel and a glyph is optional polish.
+
+### Contrast
+
+- Text: **4.5:1** against its background (3:1 for large text).
+- Non-text indicators — glyphs, focus rings, state marks, borders that carry meaning:
+  **3:1** (WCAG 1.4.11). White on a mid-grey track is roughly 2:1 and fails; darken the glyph
+  instead. Expose both sides as tokens (`--forma-toggle-off-mark`, `--forma-toggle-on-mark`) so
+  a host can retune without forking the CSS.
+
+### ARIA
+
+- **Every interactive element has an accessible name.** An icon-only or glyph-only button
+  (`❮`, `×`, `⠿`) has none until you add `aria-label` — and that label is user-facing text, so
+  it comes from the localizer, never a literal.
+- **Name things usefully, not minimally.** A calendar day button named `"15"` is technically
+  named and practically useless; name it with the full date.
+- Use the roles a pattern requires (`switch`, `tablist`/`tab`/`tabpanel`, `dialog`, `list`) and
+  the state that goes with them (`aria-selected`, `aria-expanded`, `aria-controls`,
+  `aria-current`, `aria-pressed`, `aria-disabled`). Prefer a native element whose semantics are
+  already correct over a div plus a role.
+- **Anything that appears without the user asking for it needs a live region** — toasts,
+  validation summaries, reorder announcements. The region must exist in the DOM *before* the
+  content is inserted, or nothing is announced. `role="status"` / `aria-live="polite"` for
+  ordinary updates; reserve `assertive` for genuine interruptions, and never nest an `alert`
+  inside a polite region or it speaks twice.
+- **Decorative content is hidden**: `aria-hidden="true"` on glyphs, swatches and state marks
+  whose meaning is already carried by a label or the element's own state. A mark inside an
+  already-hidden subtree needs nothing extra.
+- **Don't let `aria-label` shadow a real `<label>`.** If the element has an associated label,
+  `aria-label` silently overrides it — set it only when no label exists.
+
+### Focus and keyboard
+
+- Every focusable element has a visible `:focus-visible` ring. `outline: none`, `outline: 0`
+  and `outline: 2px solid transparent` are only acceptable when something equally visible
+  replaces them — and a `box-shadow` alone disappears in forced-colours mode, so prefer a real
+  outline.
+- Everything reachable and operable by keyboard, in a sensible order.
+
+### Verifying
+
+- bUnit asserts the **attributes**: roles, `aria-*`, that a mark renders and is hidden. Add
+  those tests alongside the behavioural ones.
+- bUnit cannot see CSS, so a state conveyed by a stylesheet has to be checked in the browser —
+  read the computed style, and screenshot the element in `he` *and* `en`/`es-419`.
+- Squint at it, or desaturate the screenshot: if two states become identical, the second
+  channel is missing.
 
 ## RTL / LTR parity (non-negotiable)
 
@@ -306,8 +375,9 @@ Components are built, reviewed, and committed **individually**:
 2. Derive its design from the components already in the repo — parameters, validation,
    disposal, CSS, ARIA, localization all follow the patterns above rather than inventing new ones.
 3. Deliver the full set: `.razor` + `.razor.cs` + `.razor.css` (+ resx / `.js` if warranted),
-   bUnit tests, showcase page. Build + tests green, and the component verified in **both
-   directions** (`he` RTL and `en`/`es-419` LTR).
+   bUnit tests, showcase page. Build + tests green, the component verified in **both
+   directions** (`he` RTL and `en`/`es-419` LTR), and every state checked against the
+   accessibility rules — named, focusable, and readable with the colour removed.
 4. **Present it for review and stop.** Iterate on the same component until the maintainer says
    it is complete — do not move to the next one.
 5. When the maintainer declares it complete, mark it **in both documents**:

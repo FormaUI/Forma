@@ -12,6 +12,15 @@ public sealed partial class FormaToastContainer : IDisposable
 
     protected override void OnInitialized() => ToastService.Subscribe(HandleChangeAsync);
 
+    private static string MarkerFor(ToastType type)
+        => type switch
+        {
+            ToastType.Success => "\u2713",
+            ToastType.Error => "\u2715",
+            ToastType.Warning => "\u26A0",
+            _ => "\u2139"
+        };
+
     private Task HandleChangeAsync()
     {
         return InvokeAsync(() =>

@@ -20,6 +20,37 @@
         }
 
         [Fact]
+        public void Should_mark_the_status_without_relying_on_colour()
+        {
+            // Arrange
+            using var ctx = new FormaStatusBadgeTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaStatusBadge Text="Published" Marker="✓" />);
+            var marker = cut.Find(".forma-status-badge-marker");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("✓", marker.TextContent);
+                Assert.Equal("true", marker.GetAttribute("aria-hidden"));
+            });
+        }
+
+        [Fact]
+        public void Should_omit_the_marker_when_none_is_given()
+        {
+            // Arrange
+            using var ctx = new FormaStatusBadgeTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaStatusBadge Text="Draft" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-status-badge-marker"));
+        }
+
+        [Fact]
         public void Should_render_as_a_span()
         {
             // Arrange

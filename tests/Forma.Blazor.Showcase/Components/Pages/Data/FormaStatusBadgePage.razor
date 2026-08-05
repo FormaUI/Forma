@@ -41,6 +41,16 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["StatusBadge.Section.Marker"]</h2>
+    <p class="desc">@L["StatusBadge.Marker.Note"]</p>
+    <div class="demo-box" style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <FormaStatusBadge Text="@L["StatusBadge.Publish.Published"]" Status="published" Marker="✓" />
+        <FormaStatusBadge Text="@L["StatusBadge.Moderation.Pending"]" Status="pending" Marker="⋯" />
+        <FormaStatusBadge Text="@L["StatusBadge.Moderation.Rejected"]" Status="rejected" Marker="✕" />
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["StatusBadge.Section.Unstyled"]</h2>
     <p class="desc">@L["StatusBadge.Unstyled.Note"]</p>
     <div class="demo-box" style="display: flex; gap: 8px; flex-wrap: wrap;">

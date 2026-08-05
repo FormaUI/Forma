@@ -38,6 +38,8 @@
   <data name="StatusBadge.OtherVocabulary.Note" xml:space="preserve"><value>אותו רכיב עם קבוצת מצבים שונה לחלוטין, שנרשמה על ידי הדף עצמו.</value></data>
   <data name="StatusBadge.Section.Explicit" xml:space="preserve"><value>צבעים ללא מצב</value></data>
   <data name="StatusBadge.Explicit.Note" xml:space="preserve"><value>תגים חד-פעמיים יכולים להעביר צבעים ישירות במקום לרשום מצב.</value></data>
+  <data name="StatusBadge.Section.Marker" xml:space="preserve"><value>עם סמן</value></data>
+  <data name="StatusBadge.Marker.Note" xml:space="preserve"><value>סמן לפני הטקסט, כך שהסטטוס קריא גם כשהצבע אינו.</value></data>
   <data name="StatusBadge.Section.Unstyled" xml:space="preserve"><value>ברירת מחדל</value></data>
   <data name="StatusBadge.Unstyled.Note" xml:space="preserve"><value>מצב שאינו רשום, או היעדר מצב, נופל לברירת המחדל הניטרלית.</value></data>
   <data name="StatusBadge.Unstyled.Unknown" xml:space="preserve"><value>מצב לא מוכר</value></data>

@@ -16,8 +16,9 @@
     color: var(--text-color, #212529);
 }
 
-.forma-toolbar-search:focus {
-    outline: 2px solid transparent;
+.forma-toolbar-search:focus-visible {
+    outline: 2px solid var(--focus-color, #86b7fe);
+    outline-offset: 1px;
     border-color: var(--focus-color, #86b7fe);
     box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
 }

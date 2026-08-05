@@ -70,6 +70,54 @@
         }
 
         [Fact]
+        public void Should_mark_the_on_state_without_relying_on_colour()
+        {
+            // Arrange
+            using var ctx = new FormaToggleSwitchTests();
+            var model = new FakeModel { Toggle = true };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaToggleSwitch @bind-Value="model.Toggle" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("\u2713", cut.Find(".forma-toggle-mark").TextContent);
+        }
+
+        [Fact]
+        public void Should_mark_the_off_state_without_relying_on_colour()
+        {
+            // Arrange
+            using var ctx = new FormaToggleSwitchTests();
+            var model = new FakeModel { Toggle = false };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaToggleSwitch @bind-Value="model.Toggle" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("\u2715", cut.Find(".forma-toggle-mark").TextContent);
+        }
+
+        [Fact]
+        public void Should_keep_the_state_mark_out_of_the_accessibility_tree()
+        {
+            // Arrange
+            using var ctx = new FormaToggleSwitchTests();
+            var model = new FakeModel { Toggle = true };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaToggleSwitch @bind-Value="model.Toggle" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("true", cut.Find(".forma-toggle-track").GetAttribute("aria-hidden"));
+        }
+
+        [Fact]
         public void Should_render_on_label_when_provided()
         {
             // Arrange

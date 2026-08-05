@@ -16,6 +16,7 @@
                @onchange="HandleChange"
                disabled="@Disabled" />
         <span class="forma-toggle-track" aria-hidden="true">
+            <span class="forma-toggle-mark">@(CurrentValue ? CheckMark : CrossMark)</span>
             <span class="forma-toggle-knob"></span>
         </span>
     </label>

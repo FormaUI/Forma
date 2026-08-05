@@ -36,6 +36,7 @@
                         <div class="forma-date-picker-month-header">
                             <FormaButton Variant="ButtonVariant.Ghost"
                                          class="forma-date-picker-nav"
+                                         aria-label="@L["PreviousMonth"]"
                                          Disabled="!CanPanelGoPrev(idx)"
                                          OnClick="() => PanelPrev(idx)">
                                 &#10094;
@@ -62,6 +63,7 @@
                             </div>
                             <FormaButton Variant="ButtonVariant.Ghost"
                                          class="forma-date-picker-nav"
+                                         aria-label="@L["NextMonth"]"
                                          Disabled="!CanPanelGoNext(idx)"
                                          OnClick="() => PanelNext(idx)">
                                 &#10095;
@@ -84,9 +86,13 @@
                                 else
                                 {
                                     var d = day.Value;
+                                    var dayClasses = GetDayClasses(d);
                                     <button type="button"
-                                            class="forma-date-picker-day@(GetDayClasses(d))"
+                                            class="forma-date-picker-day@(dayClasses)"
                                             disabled="@IsDayDisabled(d)"
+                                            aria-label="@DayLabel(d)"
+                                            aria-current="@(MarksToday(dayClasses) ? "date" : null)"
+                                            aria-pressed="@(MarksSelected(dayClasses) ? "true" : null)"
                                             @onclick="() => SelectDay(d)"
                                             @onmouseenter="() => HoverDay(d)">
                                         @_calendar.GetDayOfMonth(d.ToDateTime(TimeOnly.MinValue))

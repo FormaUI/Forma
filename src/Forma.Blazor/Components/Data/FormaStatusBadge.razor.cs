@@ -20,11 +20,20 @@ public sealed partial class FormaStatusBadge : ComponentBase
     /// <summary>Text colour override.</summary>
     [Parameter] public CssColor? Foreground { get; set; }
 
+    /// <summary>Glyph shown before the text, so the status reads without colour.</summary>
+    [Parameter] public string? Marker { get; set; }
+
     /// <summary>Additional attributes applied to the badge element.</summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
     [Inject] private IStatusBadgeCatalog Catalog { get; set; } = default!;
+
+    private StatusBadgeStyle? Registered
+        => string.IsNullOrWhiteSpace(Status) ? null : Catalog.Find(Status);
+
+    private string? ResolvedMarker
+        => string.IsNullOrWhiteSpace(Marker) ? Registered?.Marker : Marker;
 
     // Host class and style are merged rather than splatted, so supplying either
     // never drops the badge's own styling.
@@ -71,7 +80,7 @@ public sealed partial class FormaStatusBadge : ComponentBase
 
     private (string? Background, string? Foreground) ResolveColours()
     {
-        var registered = string.IsNullOrWhiteSpace(Status) ? null : Catalog.Find(Status);
+        var registered = Registered;
         var background = Background ?? registered?.Background;
         var foreground = Foreground ?? registered?.Foreground;
 

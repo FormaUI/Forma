@@ -453,6 +453,15 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
         (MinDate.HasValue && date < MinDate.Value) ||
         (MaxDate.HasValue && date > MaxDate.Value);
 
+    private static bool MarksToday(string dayClasses)
+        => dayClasses.Contains("today", StringComparison.Ordinal);
+
+    private static bool MarksSelected(string dayClasses)
+        => dayClasses.Contains("selected", StringComparison.Ordinal);
+
+    private string DayLabel(DateOnly date)
+        => date.ToDateTime(TimeOnly.MinValue).ToString("D", _dtf);
+
     private string GetDayClasses(DateOnly date)
     {
         var today = DateOnly.FromDateTime(DateTime.Today);

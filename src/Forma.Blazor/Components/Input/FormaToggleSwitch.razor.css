@@ -54,6 +54,23 @@
     outline-offset: 2px;
 }
 
+/* ---------- state mark ---------- */
+.forma-toggle-mark {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-end: 0.4375rem;
+    transform: translateY(-50%);
+    font-size: 0.75rem;
+    line-height: 1;
+    color: var(--forma-toggle-off-mark, rgba(0, 0, 0, 0.6));
+}
+
+.forma-toggle-input:checked + .forma-toggle-track .forma-toggle-mark {
+    inset-inline-end: auto;
+    inset-inline-start: 0.4375rem;
+    color: var(--forma-toggle-on-mark, #fff);
+}
+
 /* ---------- knob ---------- */
 .forma-toggle-knob {
     position: absolute;

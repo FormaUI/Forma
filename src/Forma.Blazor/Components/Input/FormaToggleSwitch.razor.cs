@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Components.Forms;
 
 public sealed partial class FormaToggleSwitch : InputBase<bool>
 {
+    // State marks carry on/off without relying on the track colour alone.
+    private const string CheckMark = "\u2713";
+    private const string CrossMark = "\u2715";
     private readonly string _id = $"toggle-{Guid.NewGuid():N}";
 
     /// <summary>Label shown when the toggle is in the off state.</summary>

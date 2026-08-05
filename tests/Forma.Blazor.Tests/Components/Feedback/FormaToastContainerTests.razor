@@ -17,6 +17,45 @@
         }
 
         [Fact]
+        public void Should_announce_toasts_through_a_live_region()
+        {
+            // Arrange
+            using var ctx = new FormaToastContainerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaToastContainer />);
+            var container = cut.Find(".forma-toast-container");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("status", container.GetAttribute("role"));
+                Assert.Equal("polite", container.GetAttribute("aria-live"));
+            });
+        }
+
+        [Fact]
+        public async Task Should_mark_severity_without_relying_on_colour()
+        {
+            // Arrange
+            using var ctx = new FormaToastContainerTests();
+            var cut = ctx.Render(@<FormaToastContainer />);
+            var service = ctx.Services.GetRequiredService<IToastService>();
+
+            // Act
+            await service.ShowAsync("Broke!", ToastType.Error, cancellationToken: TestContext.Current.CancellationToken);
+            cut.WaitForState(() => cut.FindAll(".forma-toast").Count > 0);
+            var marker = cut.Find(".forma-toast-marker");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("\u2715", marker.TextContent);
+                Assert.Equal("true", marker.GetAttribute("aria-hidden"));
+            });
+        }
+
+        [Fact]
         public void Should_be_empty_initially()
         {
             // Arrange

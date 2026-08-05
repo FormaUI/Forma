@@ -66,4 +66,10 @@
   <data name="SelectRange" xml:space="preserve">
     <value>בחר טווח</value>
   </data>
+  <data name="PreviousMonth" xml:space="preserve">
+    <value>החודש הקודם</value>
+  </data>
+  <data name="NextMonth" xml:space="preserve">
+    <value>החודש הבא</value>
+  </data>
 </root>
