@@ -23,7 +23,7 @@
     padding-inline: 0.5rem;
     border: 1px solid var(--border-color, rgba(98, 105, 118, 0.16));
     border-radius: 6px;
-    background: var(--forma-sortable-list-bg, #fff);
+    background: var(--forma-sortable-list-bg-color, #fff);
 }
 
 .forma-sortable-list-item.forma-sortable-list-dragging {
@@ -56,7 +56,7 @@
     position: absolute;
     inset-inline: 0;
     block-size: 2px;
-    background: var(--main, #0d6efd);
+    background: var(--main-color, #0d6efd);
     border-radius: 1px;
 }
 
@@ -79,7 +79,7 @@
     border: none;
     border-radius: 4px;
     background: transparent;
-    color: var(--text-muted, #626976);
+    color: var(--text-muted-color, #626976);
     font-size: 1rem;
     line-height: 1;
     cursor: grab;
@@ -90,7 +90,7 @@
 
 @media (hover: hover) {
     .forma-sortable-list-handle:hover:not(:disabled) {
-        background: var(--hover-bg, rgba(98, 105, 118, 0.06));
+        background: var(--hover-bg-color, rgba(98, 105, 118, 0.06));
     }
 }
 

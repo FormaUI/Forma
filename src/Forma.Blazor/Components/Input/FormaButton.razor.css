@@ -25,7 +25,7 @@
 }
 
 .forma-btn:focus-visible {
-    outline: 2px solid var(--main);
+    outline: 2px solid var(--main-color);
     outline-offset: 2px;
 }
 
@@ -36,28 +36,28 @@
 
 /* ---------- variants ---------- */
 .forma-btn-primary {
-    background-color: var(--main);
-    border-color: var(--main);
+    background-color: var(--main-color);
+    border-color: var(--main-color);
     color: #fff;
 }
 
 @media (hover: hover) {
     .forma-btn-primary:hover:not(:disabled) {
-        background-color: var(--main-dark);
-        border-color: var(--main-dark);
+        background-color: var(--main-dark-color);
+        border-color: var(--main-dark-color);
     }
 }
 
 .forma-btn-secondary {
-    background-color: color-mix(in srgb, var(--main) 4%, transparent);
-    border-color: var(--main);
-    color: var(--text);
+    background-color: color-mix(in srgb, var(--main-color) 4%, transparent);
+    border-color: var(--main-color);
+    color: var(--text-color);
 }
 
 @media (hover: hover) {
     .forma-btn-secondary:hover:not(:disabled) {
-        background-color: color-mix(in srgb, var(--main) 14%, transparent);
-        border-color: var(--main-dark);
+        background-color: color-mix(in srgb, var(--main-color) 14%, transparent);
+        border-color: var(--main-dark-color);
     }
 }
 
@@ -67,40 +67,40 @@
     font-size: 0.8rem;
     font-weight: 400;
     background-color: #fff;
-    border-color: var(--light-border);
-    color: var(--text);
+    border-color: var(--light-border-color);
+    color: var(--text-color);
 }
 
 @media (hover: hover) {
     .forma-btn-tertiary:hover:not(:disabled) {
-        background-color: var(--hover-bg);
-        border-color: var(--dark-border);
+        background-color: var(--hover-bg-color);
+        border-color: var(--dark-border-color);
     }
 }
 
 .forma-btn-danger {
-    background-color: var(--danger);
-    border-color: var(--danger);
+    background-color: var(--danger-color);
+    border-color: var(--danger-color);
     color: #fff;
 }
 
 @media (hover: hover) {
     .forma-btn-danger:hover:not(:disabled) {
-        background-color: color-mix(in srgb, var(--danger) 85%, #000);
-        border-color: color-mix(in srgb, var(--danger) 85%, #000);
+        background-color: color-mix(in srgb, var(--danger-color) 85%, #000);
+        border-color: color-mix(in srgb, var(--danger-color) 85%, #000);
     }
 }
 
 .forma-btn-ghost {
     background-color: transparent;
     border-color: transparent;
-    color: var(--text-muted);
+    color: var(--text-muted-color);
 }
 
 @media (hover: hover) {
     .forma-btn-ghost:hover:not(:disabled) {
-        background-color: var(--hover-bg);
-        color: var(--text);
+        background-color: var(--hover-bg-color);
+        color: var(--text-color);
     }
 }
 
@@ -126,8 +126,8 @@
         60deg,
         transparent,
         transparent 0.75rem,
-        var(--forma-btn-busy-stripe, rgba(255, 255, 255, 0.28)) 0.75rem,
-        var(--forma-btn-busy-stripe, rgba(255, 255, 255, 0.28)) 1.5rem
+        var(--forma-btn-busy-stripe-color, rgba(255, 255, 255, 0.28)) 0.75rem,
+        var(--forma-btn-busy-stripe-color, rgba(255, 255, 255, 0.28)) 1.5rem
     );
     animation: forma-btn-busy-stripes 1s linear infinite;
 }
@@ -135,7 +135,7 @@
 .forma-btn-secondary.forma-btn-busy::after,
 .forma-btn-tertiary.forma-btn-busy::after,
 .forma-btn-ghost.forma-btn-busy::after {
-    --forma-btn-busy-stripe: rgba(98, 105, 118, 0.18);
+    --forma-btn-busy-stripe-color: rgba(98, 105, 118, 0.18);
 }
 
 @keyframes forma-btn-busy-stripes {

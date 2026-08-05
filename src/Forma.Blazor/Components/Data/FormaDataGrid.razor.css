@@ -74,7 +74,7 @@
     position: sticky;
     inset-block-start: 0;
     z-index: 1;
-    background: var(--forma-data-grid-header-bg, #fff);
+    background: var(--forma-data-grid-header-bg-color, #fff);
     box-shadow: 0 1px 0 var(--border-color, rgba(98, 105, 118, 0.16));
 }
 
@@ -90,7 +90,7 @@
    end on the pages where there are no page controls to push it there. */
 .forma-data-grid-status {
     margin-inline-start: auto;
-    color: var(--text-muted, #626976);
+    color: var(--text-muted-color, #626976);
     font-size: 0.875rem;
 }
 
@@ -137,20 +137,20 @@
 /* The marker carries the focus but cannot show it, so the row draws the ring — focus
    moves independently of selection (ctrl with an arrow key), so the tint is not enough. */
 ::deep tr:has(.forma-data-grid-row-marker:focus-visible) {
-    outline: 2px solid var(--main, #0d6efd);
+    outline: 2px solid var(--main-color, #0d6efd);
     outline-offset: -2px;
 }
 
 /* A tinted background reads as "selected" without depending on the checkbox column,
    so it still shows on a row selected through EnableRowSelection alone. */
 ::deep .forma-data-grid-row-selected {
-    background: var(--forma-data-grid-row-selected-bg, rgba(13, 110, 253, 0.08));
+    background: var(--forma-data-grid-row-selected-bg-color, color-mix(in srgb, var(--main-color, #0d6efd) 8%, transparent));
 }
 
 /* Muted rather than hidden: a disabled row stays legible so its data is still readable,
    it just cannot gain the selection it does not already hold. */
 ::deep .forma-data-grid-row-disabled {
-    color: var(--text-muted, #626976);
+    color: var(--text-muted-color, #626976);
 }
 
 /* An editor fills its cell so the row keeps its column widths while switching to edit. */
@@ -160,7 +160,7 @@
 }
 
 ::deep .forma-data-grid-editor.invalid {
-    border-color: var(--danger, #dc3545);
+    border-color: var(--danger-color, #dc3545);
 }
 
 /* Both captions share one grid cell, so the column takes the width of the wider and
@@ -185,7 +185,7 @@
     background: none;
     border: none;
     padding: 0;
-    color: var(--main, #0d6efd);
+    color: var(--main-color, #0d6efd);
     font: inherit;
     text-align: start;
     white-space: nowrap;
@@ -194,12 +194,12 @@
 }
 
 .forma-data-grid-master-caption:disabled {
-    color: var(--text-muted, #626976);
+    color: var(--text-muted-color, #626976);
     cursor: default;
 }
 
 .forma-data-grid-master-caption-static {
-    color: var(--text-muted, #626976);
+    color: var(--text-muted-color, #626976);
 }
 
 @media (pointer: coarse) {

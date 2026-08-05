@@ -23,14 +23,14 @@
 }
 
 .forma-breadcrumb-item {
-    color: var(--text-muted, #6c757d);
+    color: var(--text-muted-color, #6c757d);
     font-size: 0.875rem;
 }
 
 .forma-breadcrumb-item + .forma-breadcrumb-item::before {
     content: "/";
     padding-inline: 0.5rem;
-    color: var(--text-muted, #6c757d);
+    color: var(--text-muted-color, #6c757d);
 }
 
 .forma-breadcrumb-item a {
@@ -53,7 +53,7 @@
 }
 
 .forma-breadcrumb-item.active span {
-    color: var(--text-muted, #6c757d);
+    color: var(--text-muted-color, #6c757d);
 }
 
 .forma-page-header-actions {

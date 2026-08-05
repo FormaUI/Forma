@@ -30,8 +30,8 @@
     font-size: 1rem;
     line-height: 1.5;
     color: var(--forma-input-color, #212529);
-    background-color: var(--forma-input-bg, #fff);
-    border: 1px solid var(--forma-input-border, #ced4da);
+    background-color: var(--forma-input-bg-color, #fff);
+    border: 1px solid var(--forma-input-border-color, #ced4da);
     border-radius: 4px;
     outline: none;
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
@@ -39,8 +39,8 @@
 }
 
 .forma-input-field:focus {
-    border-color: var(--forma-input-focus-border, #86b7fe);
-    box-shadow: 0 0 0 0.2rem var(--forma-input-focus-shadow, rgba(13, 110, 253, 0.25));
+    border-color: var(--forma-input-focus-border-color, var(--focus-color, #86b7fe));
+    box-shadow: 0 0 0 0.2rem var(--forma-input-focus-shadow-color, color-mix(in srgb, var(--focus-color, #86b7fe) 25%, transparent));
 }
 
 /* Autofill detection — triggers animationstart event */

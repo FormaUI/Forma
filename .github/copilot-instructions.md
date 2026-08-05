@@ -185,8 +185,15 @@ The constraints on interop are what it's made of, not whether it's allowed:
 - **Logical properties everywhere** (`margin-block-end`, `inset-inline-start`, `padding-inline`)
   so RTL works without a second stylesheet. Never `left`/`right`/`margin-left`.
 - Colors, fonts, shadows come from the design tokens in `src/Forma.Blazor/wwwroot/forma.css`
-  via `var(--main)`, `var(--border-color)`, … Component-local knobs use a fallback:
-  `var(--forma-toggle-on-bg, #0d6efd)`. Never hardcode a raw color that a token covers.
+  via `var(--main-color)`, `var(--border-color)`, … **Every custom property holding a colour
+  ends in `-color`** — `--main-color`, `--text-muted-color`, `--forma-toggle-on-bg-color` — so
+  a name tells you what kind of value it carries. Component-local knobs fall back to a *token*,
+  never a hardcoded hex: `var(--forma-toggle-on-bg-color, var(--main-color))`, not
+  `var(--forma-toggle-on-bg-color, #0d6efd)` — the latter is an island a theme override can't
+  reach. Never invent a new synonym for an existing token (`--forma-primary`, `--primary`, or
+  a local `--dp-primary-color` holding its own literal) — reach for `--main-color` or
+  `--focus-color`. `--main-dark-color`, `--main-light-color` and `--focus-color` are
+  `color-mix`ed from `--main-color`, so a host retheming the admin overrides one token.
 - Accessibility is part of "done" — see the section below.
 
 ## Accessibility (non-negotiable)

@@ -2,6 +2,14 @@
     forma.css — Global design tokens for the Forma component library.
     Extracted from the original Coi CMS design system (css-3.6.5.css).
     Consumed by all components via CSS custom properties.
+
+    Retheming a host app (a different --main-color per consuming site) means overriding
+    the tokens below in a stylesheet loaded after this one — nothing else. --main-dark-color,
+    --main-light-color and --focus-color derive from --main-color by default, so overriding
+    --main-color alone reshades hover/focus states too; override any of the three individually
+    for finer control. A component's own local knob (--forma-toggle-on-bg-color and similar)
+    must fall back to one of these tokens, never to a hardcoded hex, or it becomes an island
+    the theme can't reach. Every custom property that carries a colour ends in -color.
 */
 
 /* ── Design Tokens ── */
@@ -10,33 +18,37 @@
     --font-family: 'Open Sans Hebrew', Arial, sans-serif;
 
     /* Text colors */
-    --text: rgba(44, 56, 74, 0.95);
-    --text-muted: #889097;
-    --gray: rgba(44, 56, 74, 0.45);
+    --text-color: rgba(44, 56, 74, 0.95);
+    --text-muted-color: #889097;
+    --gray-color: rgba(44, 56, 74, 0.45);
 
     /* Brand / accent */
-    --main: #1370df;
-    --main-dark: #065bc0;
-    --main-light: #4ea0ff;
+    --main-color: #1370df;
+    --main-dark-color: color-mix(in srgb, var(--main-color) 82%, black);
+    --main-light-color: color-mix(in srgb, var(--main-color) 60%, white);
 
-    /* Links */
-    --link-color: #39f;
-    --link-hover: #297acc;
+    /* Focus ring — every component's own focus-color knob falls back here */
+    --focus-color: color-mix(in srgb, var(--main-color) 55%, white);
+
+    /* Links — same treatment the base `a` rule uses, so a breadcrumb and a body
+       link stay one colour and both follow a retheme */
+    --link-color: var(--main-dark-color);
+    --link-hover-color: var(--main-light-color);
 
     /* Borders */
     --border-color: rgba(98, 105, 118, 0.16);
-    --light-border: #d9dbde;
-    --dark-border: rgba(98, 105, 118, 0.31);
+    --light-border-color: #d9dbde;
+    --dark-border-color: rgba(98, 105, 118, 0.31);
 
     /* Surfaces */
-    --modal-bg: #fafbfc;
-    --hover-bg: rgba(98, 105, 118, 0.06);
+    --modal-bg-color: #fafbfc;
+    --hover-bg-color: rgba(98, 105, 118, 0.06);
 
     /* Status colors */
-    --success: #28a745;
-    --danger: #d63939;
-    --warning: #ffc107;
-    --info: #307fdd;
+    --success-color: #28a745;
+    --danger-color: #d63939;
+    --warning-color: #ffc107;
+    --info-color: #307fdd;
 
     /* Shadows */
     --shadow-sm: rgba(30, 41, 59, 0.04) 0 2px 4px 0;
@@ -86,11 +98,11 @@ body {
     font-size: 0.98rem;
     font-weight: 400;
     line-height: 1.5;
-    color: var(--text);
+    color: var(--text-color);
 }
 
 a {
-    color: var(--main-dark);
+    color: var(--main-dark-color);
     text-decoration: none;
 }
 
@@ -101,7 +113,7 @@ a:focus-visible {
 
 @media (hover: hover) {
     a:hover {
-        color: var(--main-light);
+        color: var(--main-light-color);
     }
 }
 
@@ -115,15 +127,15 @@ a:focus-visible {
     border: none;
     border-radius: 6px;
     background: transparent;
-    color: var(--text-muted);
+    color: var(--text-muted-color);
     cursor: pointer;
     transition: background-color 120ms ease, color 120ms ease;
 }
 
 @media (hover: hover) {
     .forma-close-btn:hover {
-        background-color: var(--hover-bg);
-        color: var(--text);
+        background-color: var(--hover-bg-color);
+        color: var(--text-color);
     }
 }
 

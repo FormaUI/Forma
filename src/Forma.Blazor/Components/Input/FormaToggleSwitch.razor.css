@@ -41,17 +41,17 @@
     display: inline-block;
     width: 3rem;
     height: 1.5rem;
-    background-color: var(--forma-toggle-off-bg, #adb5bd);
+    background-color: var(--forma-toggle-off-bg-color, #adb5bd);
     border-radius: 1.5rem;
     transition: background-color 0.2s ease;
 }
 
 .forma-toggle-input:checked + .forma-toggle-track {
-    background-color: var(--forma-toggle-on-bg, #0d6efd);
+    background-color: var(--forma-toggle-on-bg-color, var(--main-color, #0d6efd));
 }
 
 .forma-toggle-input:focus-visible + .forma-toggle-track {
-    outline: 2px solid var(--forma-focus-color, #86b7fe);
+    outline: 2px solid var(--focus-color, #86b7fe);
     outline-offset: 2px;
 }
 
@@ -63,13 +63,13 @@
     transform: translateY(-50%);
     font-size: 0.75rem;
     line-height: 1;
-    color: var(--forma-toggle-off-mark, rgba(0, 0, 0, 0.6));
+    color: var(--forma-toggle-off-mark-color, rgba(0, 0, 0, 0.6));
 }
 
 .forma-toggle-input:checked + .forma-toggle-track .forma-toggle-mark {
     inset-inline-end: auto;
     inset-inline-start: 0.4375rem;
-    color: var(--forma-toggle-on-mark, #fff);
+    color: var(--forma-toggle-on-mark-color, #fff);
 }
 
 /* ---------- knob ---------- */

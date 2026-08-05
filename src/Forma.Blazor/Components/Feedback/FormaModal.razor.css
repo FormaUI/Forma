@@ -83,7 +83,7 @@ dialog.forma-modal::backdrop {
     border: none;
     border-radius: 6px;
     background: transparent;
-    color: var(--text-muted);
+    color: var(--text-muted-color);
     cursor: pointer;
     transition: background-color 120ms ease, color 120ms ease;
     touch-action: manipulation;
@@ -91,8 +91,8 @@ dialog.forma-modal::backdrop {
 
 @media (hover: hover) {
     .forma-modal-close:hover {
-        background-color: var(--hover-bg);
-        color: var(--text);
+        background-color: var(--hover-bg-color);
+        color: var(--text-color);
     }
 }
 

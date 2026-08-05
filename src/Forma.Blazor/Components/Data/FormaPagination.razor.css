@@ -34,7 +34,7 @@
     border: 1px solid var(--border-color);
     border-radius: 6px;
     background: #fff;
-    color: var(--text);
+    color: var(--text-color);
     font-size: 0.9rem;
     font-weight: inherit;
     line-height: 1.2;
@@ -42,15 +42,15 @@
 
 @media (hover: hover) {
     ::deep button.forma-pagination-link:hover:not(:disabled) {
-        background: var(--hover-bg);
+        background: var(--hover-bg-color);
     }
 }
 
 /* Doubled to match the shared pill rule above, which it has to outrank to mark
    the page the reader is on. */
 ::deep .forma-pagination-current.forma-pagination-current {
-    background: var(--main);
-    border-color: var(--main);
+    background: var(--main-color);
+    border-color: var(--main-color);
     color: #fff;
     cursor: default;
     font-weight: 700;
@@ -61,7 +61,7 @@
     align-items: center;
     justify-content: center;
     min-width: 2.25em;
-    color: var(--text-muted);
+    color: var(--text-muted-color);
 }
 
 /* ── Jump to page ── */
@@ -72,7 +72,7 @@
 }
 
 .forma-pagination-jump-label {
-    color: var(--text-muted);
+    color: var(--text-muted-color);
     font-size: 0.9rem;
 }
 
@@ -83,7 +83,7 @@
     border: 1px solid var(--border-color);
     border-radius: 6px;
     background: #fff;
-    color: var(--text);
+    color: var(--text-color);
     font-size: 0.9rem;
     line-height: 1.2;
     text-align: center;
@@ -91,7 +91,7 @@
 }
 
 .forma-pagination-jump-input:focus-visible {
-    outline: 2px solid var(--main);
+    outline: 2px solid var(--main-color);
     outline-offset: 1px;
 }
 
