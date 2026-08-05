@@ -1,0 +1,309 @@
+@inherits BunitContext
+
+@code {
+    public sealed class Component
+    {
+        private static List<SortableItem> Items(int count) => Enumerable.Range(1, count)
+            .Select(id => new SortableItem(id, $"Item {id}"))
+            .ToList();
+
+        [Fact]
+        public void Should_render_one_item_per_entry_with_its_template()
+        {
+            // Arrange
+            using var ctx = new FormaSortableListTests();
+            var items = Items(3);
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaSortableList Items="items" ItemKey="@(i => i.Id)">
+                    <ItemTemplate Context="item">@item.Title</ItemTemplate>
+                </FormaSortableList>);
+
+            // Assert
+            Assert.Equal(3, cut.FindAll(".forma-sortable-list-item").Count);
+            Assert.Contains("Item 2", cut.Markup, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_label_each_handle_with_its_position()
+        {
+            // Arrange
+            using var ctx = new FormaSortableListTests();
+            var items = Items(3);
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaSortableList Items="items" ItemKey="@(i => i.Id)">
+                    <ItemTemplate Context="item">@item.Title</ItemTemplate>
+                </FormaSortableList>);
+            var handles = cut.FindAll(".forma-sortable-list-handle");
+
+            // Assert
+            Assert.Equal("Reorder item 1 of 3. Drag, or use arrow keys to move.", handles[0].GetAttribute("aria-label"));
+            Assert.Equal("Reorder item 3 of 3. Drag, or use arrow keys to move.", handles[2].GetAttribute("aria-label"));
+        }
+
+        [Fact]
+        public void Should_leave_handles_enabled_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaSortableListTests();
+            var items = Items(2);
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaSortableList Items="items" ItemKey="@(i => i.Id)">
+                    <ItemTemplate Context="item">@item.Title</ItemTemplate>
+                </FormaSortableList>);
+
+            // Assert
+            Assert.False(cut.Find(".forma-sortable-list-handle").HasAttribute("disabled"));
+        }
+
+        [Fact]
+        public void Should_disable_every_handle_when_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaSortableListTests();
+            var items = Items(2);
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaSortableList Items="items" ItemKey="@(i => i.Id)" Disabled="true">
+                    <ItemTemplate Context="item">@item.Title</ItemTemplate>
+                </FormaSortableList>);
+
+            // Assert
+            Assert.All(cut.FindAll(".forma-sortable-list-handle"), handle => Assert.True(handle.HasAttribute("disabled")));
+        }
+
+        [Fact]
+        public void Should_keep_the_list_role_that_removing_the_markers_would_otherwise_drop()
+        {
+            // Arrange
+            using var ctx = new FormaSortableListTests();
+            var items = Items(2);
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaSortableList Items="items" ItemKey="@(i => i.Id)">
+                    <ItemTemplate Context="item">@item.Title</ItemTemplate>
+                </FormaSortableList>);
+
+            // Assert
+            Assert.Equal("list", cut.Find(".forma-sortable-list").GetAttribute("role"));
+        }
+
+        [Fact]
+        public async Task Should_move_the_source_item_before_an_earlier_target()
+        {
+            // Arrange
+            using var ctx = new FormaSortableListTests();
+            var items = Items(4);
+            IReadOnlyList<SortableItem>? changedTo = null;
+            var cut = ctx.Render(
+                @<FormaSortableList Items="items" ItemKey="@(i => i.Id)"
+                                     ItemsChanged="@((IReadOnlyList<SortableItem> reordered) => changedTo = reordered)">
+                    <ItemTemplate Context="item">@item.Title</ItemTemplate>
+                </FormaSortableList>);
+            var list = cut.FindComponent<FormaSortableList<SortableItem>>().Instance;
+
+            // Act — item 3 (index 2) dragged to land before item 2 (index 1)
+            await cut.InvokeAsync(() => list.HandleReorderAsync(sourceIndex: 2, targetIndex: 1, insertAfter: false));
+
+            // Assert
+            Assert.Equal([1, 3, 2, 4], changedTo!.Select(i => i.Id));
+        }
+
+        [Fact]
+        public async Task Should_move_the_source_item_after_a_later_target()
+        {
+            // Arrange
+            using var ctx = new FormaSortableListTests();
+            var items = Items(4);
+            IReadOnlyList<SortableItem>? changedTo = null;
+            var cut = ctx.Render(
+                @<FormaSortableList Items="items" ItemKey="@(i => i.Id)"
+                                     ItemsChanged="@((IReadOnlyList<SortableItem> reordered) => changedTo = reordered)">
+                    <ItemTemplate Context="item">@item.Title</ItemTemplate>
+                </FormaSortableList>);
+            var list = cut.FindComponent<FormaSortableList<SortableItem>>().Instance;
+
+            // Act — item 2 (index 1) dragged to land after item 3 (index 2)
+            await cut.InvokeAsync(() => list.HandleReorderAsync(sourceIndex: 1, targetIndex: 2, insertAfter: true));
+
+            // Assert
+            Assert.Equal([1, 3, 2, 4], changedTo!.Select(i => i.Id));
+        }
+
+        [Fact]
+        public async Task Should_move_the_source_item_to_the_end_on_end()
+        {
+            // Arrange
+            using var ctx = new FormaSortableListTests();
+            var items = Items(4);
+            IReadOnlyList<SortableItem>? changedTo = null;
+            var cut = ctx.Render(
+                @<FormaSortableList Items="items" ItemKey="@(i => i.Id)"
+                                     ItemsChanged="@((IReadOnlyList<SortableItem> reordered) => changedTo = reordered)">
+                    <ItemTemplate Context="item">@item.Title</ItemTemplate>
+                </FormaSortableList>);
+            var list = cut.FindComponent<FormaSortableList<SortableItem>>().Instance;
+
+            // Act — item 1 (index 0) moved to the end via Home/End-style targeting
+            await cut.InvokeAsync(() => list.HandleReorderAsync(sourceIndex: 0, targetIndex: 3, insertAfter: true));
+
+            // Assert
+            Assert.Equal([2, 3, 4, 1], changedTo!.Select(i => i.Id));
+        }
+
+        [Fact]
+        public async Task Should_ignore_a_reorder_to_its_own_index()
+        {
+            // Arrange
+            using var ctx = new FormaSortableListTests();
+            var items = Items(3);
+            var raised = false;
+            var cut = ctx.Render(
+                @<FormaSortableList Items="items" ItemKey="@(i => i.Id)"
+                                     ItemsChanged="@((IReadOnlyList<SortableItem> _) => raised = true)">
+                    <ItemTemplate Context="item">@item.Title</ItemTemplate>
+                </FormaSortableList>);
+            var list = cut.FindComponent<FormaSortableList<SortableItem>>().Instance;
+
+            // Act
+            await cut.InvokeAsync(() => list.HandleReorderAsync(sourceIndex: 1, targetIndex: 1, insertAfter: false));
+
+            // Assert
+            Assert.False(raised);
+        }
+
+        [Fact]
+        public async Task Should_ignore_a_reorder_when_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaSortableListTests();
+            var items = Items(3);
+            var raised = false;
+            var cut = ctx.Render(
+                @<FormaSortableList Items="items" ItemKey="@(i => i.Id)" Disabled="true"
+                                     ItemsChanged="@((IReadOnlyList<SortableItem> _) => raised = true)">
+                    <ItemTemplate Context="item">@item.Title</ItemTemplate>
+                </FormaSortableList>);
+            var list = cut.FindComponent<FormaSortableList<SortableItem>>().Instance;
+
+            // Act
+            await cut.InvokeAsync(() => list.HandleReorderAsync(sourceIndex: 0, targetIndex: 2, insertAfter: true));
+
+            // Assert
+            Assert.False(raised);
+        }
+
+        [Fact]
+        public async Task Should_ignore_an_out_of_range_index()
+        {
+            // Arrange
+            using var ctx = new FormaSortableListTests();
+            var items = Items(3);
+            var raised = false;
+            var cut = ctx.Render(
+                @<FormaSortableList Items="items" ItemKey="@(i => i.Id)"
+                                     ItemsChanged="@((IReadOnlyList<SortableItem> _) => raised = true)">
+                    <ItemTemplate Context="item">@item.Title</ItemTemplate>
+                </FormaSortableList>);
+            var list = cut.FindComponent<FormaSortableList<SortableItem>>().Instance;
+
+            // Act
+            await cut.InvokeAsync(() => list.HandleReorderAsync(sourceIndex: 0, targetIndex: 3, insertAfter: true));
+
+            // Assert
+            Assert.False(raised);
+        }
+
+        [Fact]
+        public async Task Should_announce_the_new_position_after_a_reorder()
+        {
+            // Arrange
+            using var ctx = new FormaSortableListTests();
+            var items = Items(3);
+            var cut = ctx.Render(
+                @<FormaSortableList Items="items" ItemKey="@(i => i.Id)">
+                    <ItemTemplate Context="item">@item.Title</ItemTemplate>
+                </FormaSortableList>);
+            var list = cut.FindComponent<FormaSortableList<SortableItem>>().Instance;
+
+            // Act — item 1 (index 0) moved after item 2 (index 1)
+            await cut.InvokeAsync(() => list.HandleReorderAsync(sourceIndex: 0, targetIndex: 1, insertAfter: true));
+
+            // Assert
+            Assert.Equal(
+                "Moved to position 2 of 3.",
+                cut.Find(".forma-sortable-list-announcement").TextContent.Trim('\u200B'));
+        }
+
+        [Fact]
+        public async Task Should_vary_a_repeated_announcement_so_it_is_read_again()
+        {
+            // Arrange
+            using var ctx = new FormaSortableListTests();
+            var items = Items(3);
+            var cut = ctx.Render(
+                @<FormaSortableList Items="items" ItemKey="@(i => i.Id)">
+                    <ItemTemplate Context="item">@item.Title</ItemTemplate>
+                </FormaSortableList>);
+            var list = cut.FindComponent<FormaSortableList<SortableItem>>().Instance;
+
+            // Act — two different items land on the same position, so the wording repeats
+            await cut.InvokeAsync(() => list.HandleReorderAsync(sourceIndex: 0, targetIndex: 1, insertAfter: true));
+            var first = cut.Find(".forma-sortable-list-announcement").TextContent;
+            await cut.InvokeAsync(() => list.HandleReorderAsync(sourceIndex: 2, targetIndex: 1, insertAfter: false));
+            var second = cut.Find(".forma-sortable-list-announcement").TextContent;
+
+            // Assert
+            Assert.Equal(first.Trim('\u200B'), second.Trim('\u200B'));
+            Assert.NotEqual(first, second);
+        }
+
+        [Fact]
+        public void Should_throw_when_items_is_null()
+        {
+            // Arrange
+            using var ctx = new FormaSortableListTests();
+
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => ctx.Render(
+                @<FormaSortableList Items="@((IReadOnlyList<SortableItem>)null!)">
+                    <ItemTemplate Context="item">@item.Title</ItemTemplate>
+                </FormaSortableList>));
+        }
+
+        [Fact]
+        public void Should_throw_when_the_item_template_is_null()
+        {
+            // Arrange
+            using var ctx = new FormaSortableListTests();
+            var items = Items(2);
+
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => ctx.Render(
+                @<FormaSortableList Items="items" ItemTemplate="@(null!)" />));
+        }
+
+        [Fact]
+        public void Should_throw_when_the_item_key_is_null()
+        {
+            // Arrange
+            using var ctx = new FormaSortableListTests();
+            var items = Items(2);
+
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => ctx.Render(
+                @<FormaSortableList Items="items" ItemKey="@(null!)">
+                    <ItemTemplate Context="item">@item.Title</ItemTemplate>
+                </FormaSortableList>));
+        }
+
+        private sealed record SortableItem(int Id, string Title);
+    }
+}

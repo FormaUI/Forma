@@ -1,0 +1,109 @@
+/* ============================================================
+   FormaSortableList — CSS isolation
+   A reorderable list: a drag handle per item, a full-width drop
+   position indicator, and a visually hidden live region for the
+   keyboard path — all styled from the shared design tokens.
+   ============================================================ */
+
+.forma-sortable-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.forma-sortable-list-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-block: 0.5rem;
+    padding-inline: 0.5rem;
+    border: 1px solid var(--border-color, rgba(98, 105, 118, 0.16));
+    border-radius: 6px;
+    background: var(--forma-sortable-list-bg, #fff);
+}
+
+.forma-sortable-list-item.forma-sortable-list-dragging {
+    opacity: 0.5;
+}
+
+.forma-sortable-list.forma-sortable-list-active {
+    cursor: grabbing;
+}
+
+.forma-sortable-list-content {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+}
+
+/* A full-width bar rather than an outline, so the target position reads as clearly
+   between two rows as it does when hovering directly over one. */
+.forma-sortable-list-item.forma-sortable-list-drop-before::before,
+.forma-sortable-list-item.forma-sortable-list-drop-after::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    block-size: 2px;
+    background: var(--main, #0d6efd);
+    border-radius: 1px;
+}
+
+.forma-sortable-list-item.forma-sortable-list-drop-before::before {
+    inset-block-start: -3px;
+}
+
+.forma-sortable-list-item.forma-sortable-list-drop-after::after {
+    inset-block-end: -3px;
+}
+
+.forma-sortable-list-handle {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 1.75rem;
+    block-size: 1.75rem;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-muted, #626976);
+    font-size: 1rem;
+    line-height: 1;
+    cursor: grab;
+    /* The drag is driven by pointer events, which a touch would otherwise never deliver
+       because the browser claims the gesture for scrolling first. */
+    touch-action: none;
+}
+
+.forma-sortable-list-handle:hover:not(:disabled) {
+    background: var(--hover-bg, rgba(98, 105, 118, 0.06));
+}
+
+.forma-sortable-list-handle:active:not(:disabled) {
+    cursor: grabbing;
+}
+
+.forma-sortable-list-handle:focus-visible {
+    outline: 2px solid var(--focus-color, #86b7fe);
+    outline-offset: 2px;
+}
+
+.forma-sortable-list-handle:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Announces a keyboard move to a screen reader without a visible element, since the
+   handle's own label already states the position sighted users read off the row order. */
+.forma-sortable-list-announcement {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}

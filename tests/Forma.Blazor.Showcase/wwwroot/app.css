@@ -28,6 +28,14 @@
     font-size: 0.85rem;
 }
 
+.demo-sortable-tag {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
 /* Indents the children under the select-all that governs them. */
 .demo-checkbox-children {
     margin-block-start: 0.5rem;
