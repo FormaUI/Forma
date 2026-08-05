@@ -182,21 +182,19 @@
     overflow-y: auto;
 }
 
-.forma-multi-select-option {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+/* The option row is the label FormaCheckbox renders around itself, which supplies the
+   flex pairing and cursor; only the row's padding and hover affordances are added here. */
+.forma-multi-select-options ::deep .forma-checkbox-label {
     padding-block: 0.375rem;
     padding-inline: 0.375rem;
     border-radius: 4px;
-    cursor: pointer;
 }
 
-.forma-multi-select-option:hover {
+.forma-multi-select-options ::deep .forma-checkbox-label:hover {
     background: var(--hover-bg, rgba(98, 105, 118, 0.06));
 }
 
-.forma-multi-select-option:has(:focus-visible) {
+.forma-multi-select-options ::deep .forma-checkbox-label:has(:focus-visible) {
     outline: 2px solid var(--focus-color, #86b7fe);
     outline-offset: -2px;
 }

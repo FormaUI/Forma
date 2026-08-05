@@ -89,7 +89,7 @@
             cut.Find(".forma-multi-select-trigger").Click();
 
             // Assert
-            Assert.Equal(3, cut.FindAll(".forma-multi-select-option").Count);
+            Assert.Equal(3, cut.FindAll(".forma-multi-select-options .forma-checkbox-label").Count);
         }
 
         [Fact]
@@ -104,7 +104,7 @@
             cut.Find(".forma-multi-select-trigger").Click();
 
             // Act
-            cut.Find(".forma-multi-select-option .forma-checkbox").Change(true);
+            cut.Find(".forma-multi-select-options .forma-checkbox").Change(true);
 
             // Assert
             Assert.Equal([1], model.Categories);
@@ -142,7 +142,7 @@
             cut.Find(".forma-multi-select-search").Input("run");
 
             // Assert
-            var remaining = cut.FindAll(".forma-multi-select-option");
+            var remaining = cut.FindAll(".forma-multi-select-options .forma-checkbox-label");
             Assert.Single(remaining);
             Assert.Contains("Running", remaining[0].TextContent, StringComparison.Ordinal);
         }
