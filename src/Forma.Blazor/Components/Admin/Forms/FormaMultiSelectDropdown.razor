@@ -1,0 +1,88 @@
+@typeparam TValue
+@namespace Forma.Blazor.Components.Admin.Forms
+@inherits InputBase<List<TValue>>
+
+<div class="forma-multi-select" @onkeydown="HandleKeyDownAsync" @attributes="AdditionalAttributes">
+    @if (Label is not null)
+    {
+        <span id="@_labelId" class="forma-multi-select-label">@Label</span>
+    }
+    @if (SelectedValues.Count > 0)
+    {
+        <div class="forma-multi-select-tags">
+            @foreach (var value in SelectedValues)
+            {
+                var text = FindOption(value)?.Label ?? value.ToString() ?? string.Empty;
+                <span class="forma-multi-select-tag">
+                    @text
+                    <button type="button"
+                            class="forma-multi-select-tag-remove"
+                            disabled="@Disabled"
+                            @onclick="() => RemoveValue(value)"
+                            aria-label="@L["RemoveTag", text]">
+                        &times;
+                    </button>
+                </span>
+            }
+        </div>
+    }
+    <div class="forma-multi-select-trigger-wrap" @ref="_anchorElement">
+        <button type="button"
+                class="forma-multi-select-trigger @CssClass"
+                disabled="@Disabled"
+                aria-haspopup="dialog"
+                aria-expanded="@(_isOpen ? "true" : "false")"
+                aria-controls="@(_isOpen ? _popupId : null)"
+                aria-labelledby="@LabelledBy"
+                @ref="_triggerElement"
+                @onclick="Toggle">
+            <span id="@_triggerTextId"
+                  class="forma-multi-select-trigger-text@(SelectedValues.Count == 0 ? " placeholder" : "")">@TriggerText</span>
+            <span class="forma-multi-select-arrow" aria-hidden="true">&#9662;</span>
+        </button>
+    </div>
+    @if (_isOpen)
+    {
+        <div class="forma-multi-select-backdrop" @onclick="Close"></div>
+        @* Manual rather than auto: the backdrop above owns dismissal, which also sidesteps
+           the iOS 17–18.2 bug where a popover ignores a tap outside it. *@
+        <div class="forma-multi-select-popup"
+             id="@_popupId"
+             role="dialog"
+             aria-label="@(Label ?? L["SelectOptions"])"
+             popover="manual"
+             @ref="_popupElement">
+            <input type="text"
+                   class="forma-multi-select-search"
+                   @ref="_searchElement"
+                   @bind="_searchText"
+                   @bind:event="oninput"
+                   placeholder="@L["Search"]"
+                   aria-label="@L["Search"]" />
+            @{ var filtered = FilteredOptions; }
+            <div class="forma-multi-select-options">
+                @foreach (var option in filtered)
+                {
+                    <label class="forma-multi-select-option">
+                        <input type="checkbox"
+                               class="forma-multi-select-checkbox"
+                               checked="@IsSelected(option)"
+                               @onchange="() => ToggleOption(option)" />
+                        <span>@option.Label</span>
+                    </label>
+                }
+                @if (filtered.Count == 0)
+                {
+                    <div class="forma-multi-select-empty">@(Options.Count == 0 ? L["NoOptionsAvailable"] : L["NoResults"])</div>
+                }
+            </div>
+            @if (CanAddSearchText)
+            {
+                <button type="button" class="forma-multi-select-add" @onclick="HandleAddNewAsync">
+                    + @L["AddNew"]
+                </button>
+            }
+        </div>
+    }
+    <ValidationMessage For="@ValueExpression" />
+</div>

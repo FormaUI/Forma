@@ -6,4 +6,5 @@ public sealed class FakeModel
     public bool Toggle { get; set; }
     public string Color { get; set; } = "#000000";
     public DateOnly? Date { get; set; }
+    public List<int> Categories { get; set; } = [];
 }
