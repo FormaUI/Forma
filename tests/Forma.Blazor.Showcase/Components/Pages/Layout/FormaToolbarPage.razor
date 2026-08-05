@@ -1,0 +1,53 @@
+@page "/toolbar"
+@attribute [ShowcasePage("FormaToolbar")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Layout
+@inject IStringLocalizer<FormaToolbarPage> L
+
+<h1>FormaToolbar</h1>
+<p class="desc">@L["Toolbar.Description"]</p>
+
+<div class="demo-section">
+    <h2>@L["Toolbar.Section.SearchOnly"]</h2>
+    <div class="demo-box">
+        <FormaToolbar OnSearch="HandleSearch1" SearchPlaceholder="@L["Toolbar.Search.Placeholder"]" />
+        <p class="demo-output">@L["Toolbar.Search.Label"]: <code>@_lastSearch1</code></p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Toolbar.Section.ActionsOnly"]</h2>
+    <div class="demo-box">
+        <FormaToolbar>
+            <button class="btn btn-primary">@L["Toolbar.Button.AddNew"]</button>
+            <button class="btn btn-sec">@L["Toolbar.Button.Export"]</button>
+        </FormaToolbar>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Toolbar.Section.Full"]</h2>
+    <div class="demo-box">
+        <FormaToolbar OnSearch="HandleSearch3" SearchPlaceholder="@L["Toolbar.Search.Placeholder"]">
+            <button class="btn btn-primary">@L["Toolbar.Button.AddNew"]</button>
+        </FormaToolbar>
+        <p class="demo-output">@L["Toolbar.Search.Label"]: <code>@_lastSearch3</code></p>
+    </div>
+</div>
+
+@code {
+    private string _lastSearch1 = "";
+    private string _lastSearch3 = "";
+
+    private Task HandleSearch1(string value)
+    {
+        _lastSearch1 = value;
+        return Task.CompletedTask;
+    }
+
+    private Task HandleSearch3(string value)
+    {
+        _lastSearch3 = value;
+        return Task.CompletedTask;
+    }
+}

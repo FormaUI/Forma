@@ -1,0 +1,57 @@
+@page "/checkbox"
+@attribute [ShowcasePage("FormaCheckbox")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Input
+@inject IStringLocalizer<FormaCheckboxPage> L
+
+<h1>FormaCheckbox</h1>
+<p class="desc">@L["Checkbox.Description"]</p>
+
+<div class="demo-section">
+    <h2>@L["Checkbox.Section.Basic"]</h2>
+    <div class="demo-box demo-row">
+        <FormaCheckbox Checked="_basic" CheckedChanged="v => _basic = v">@L["Checkbox.Label.Subscribe"]</FormaCheckbox>
+        <FormaCheckbox Checked="_prechecked" CheckedChanged="v => _prechecked = v">@L["Checkbox.Label.Featured"]</FormaCheckbox>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Checkbox.Section.Disabled"]</h2>
+    <div class="demo-box demo-row">
+        <FormaCheckbox Checked="false" Disabled="true">@L["Checkbox.Label.Off"]</FormaCheckbox>
+        <FormaCheckbox Checked="true" Disabled="true">@L["Checkbox.Label.On"]</FormaCheckbox>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Checkbox.Section.Indeterminate"]</h2>
+    <p class="desc">@L["Checkbox.Indeterminate.Note"]</p>
+    <div class="demo-box">
+        <FormaCheckbox Checked="@AllChildrenChecked" Indeterminate="@SomeChildrenChecked" PreventDefault="true" OnClick="ToggleAllChildren">@L["Checkbox.Label.SelectAll"]</FormaCheckbox>
+        <div class="demo-row demo-checkbox-children">
+            @for (var i = 0; i < _children.Length; i++)
+            {
+                var index = i;
+                <FormaCheckbox Checked="_children[index]" CheckedChanged="v => _children[index] = v">@L["Checkbox.Label.Item", index + 1]</FormaCheckbox>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool _basic;
+    private bool _prechecked = true;
+    private readonly bool[] _children = new bool[3];
+
+    private bool AllChildrenChecked
+        => Array.TrueForAll(_children, value => value);
+
+    private bool SomeChildrenChecked
+        => Array.Exists(_children, value => value) && !AllChildrenChecked;
+
+    private void ToggleAllChildren()
+    {
+        var next = !AllChildrenChecked;
+        Array.Fill(_children, next);
+    }
+}

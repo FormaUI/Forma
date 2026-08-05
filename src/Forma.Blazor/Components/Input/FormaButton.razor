@@ -1,0 +1,12 @@
+@namespace Forma.Blazor.Components.Input
+
+<button @attributes="AdditionalAttributes"
+        class="@CssClass"
+        type="@TypeAttribute"
+        disabled="@Disabled"
+        aria-disabled="@AriaDisabled"
+        aria-busy="@AriaBusy"
+        @onclick="HandleClickAsync"
+        @onclick:preventDefault="Busy">
+    @ChildContent
+</button>

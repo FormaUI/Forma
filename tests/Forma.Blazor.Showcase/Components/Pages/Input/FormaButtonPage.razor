@@ -1,0 +1,112 @@
+@page "/button"
+@attribute [ShowcasePage("FormaButton")]
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components.Forms
+@using Forma.Blazor.Components.Input
+@inject IStringLocalizer<FormaButtonPage> L
+
+<h1>FormaButton</h1>
+<p class="desc">@L["Button.Description"]</p>
+
+<div class="demo-section">
+    <h2>@L["Button.Section.Variants"]</h2>
+    <div class="demo-box demo-row">
+        <FormaButton Variant="ButtonVariant.Primary">@L["Button.Label.Primary"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Secondary">@L["Button.Label.Secondary"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Tertiary">@L["Button.Label.Tertiary"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Danger">@L["Button.Label.Danger"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Ghost">@L["Button.Label.Ghost"]</FormaButton>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Button.Section.Sizes"]</h2>
+    <div class="demo-box demo-row">
+        <FormaButton Variant="ButtonVariant.Primary">@L["Button.Label.Normal"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Primary" Size="ButtonSize.Mini">@L["Button.Label.Mini"]</FormaButton>
+        <FormaButton>@L["Button.Label.Normal"]</FormaButton>
+        <FormaButton Size="ButtonSize.Mini">@L["Button.Label.Mini"]</FormaButton>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Button.Section.RowActions"]</h2>
+    <p class="desc">@L["Button.RowActions.Note"]</p>
+    <div class="demo-box demo-row">
+        <FormaButton Variant="ButtonVariant.Tertiary"
+                     OnClick="@(() => Record(L["Button.Label.View"]))">@L["Button.Label.View"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Tertiary"
+                     OnClick="@(() => Record(L["Button.Label.Edit"]))">@L["Button.Label.Edit"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Tertiary"
+                     OnClick="@(() => Record(L["Button.Label.Delete"]))">@L["Button.Label.Delete"]</FormaButton>
+        <span class="demo-note">@L["Button.LastAction", _lastAction ?? L["Button.NoAction"]]</span>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Button.Section.Disabled"]</h2>
+    <div class="demo-box demo-row">
+        <FormaButton Variant="ButtonVariant.Primary" Disabled="true">@L["Button.Label.Primary"]</FormaButton>
+        <FormaButton Disabled="true">@L["Button.Label.Secondary"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Tertiary" Disabled="true">@L["Button.Label.Tertiary"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Danger" Disabled="true">@L["Button.Label.Danger"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Ghost" Disabled="true">@L["Button.Label.Ghost"]</FormaButton>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Button.Section.Busy"]</h2>
+    <p class="desc">@L["Button.Busy.Note"]</p>
+    <div class="demo-box demo-row">
+        <FormaButton Variant="ButtonVariant.Primary" Busy="true">@L["Button.Label.Saving"]</FormaButton>
+        <FormaButton Busy="true">@L["Button.Label.Saving"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Tertiary" Busy="true">@L["Button.Label.Saving"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Danger" Busy="true">@L["Button.Label.Saving"]</FormaButton>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Button.Section.InForm"]</h2>
+    <p class="desc">@L["Button.InForm.Note"]</p>
+    <div class="demo-box">
+        <EditForm Model="Model" FormName="button-demo" OnValidSubmit="HandleSubmitAsync">
+            <FormaInput @bind-Value="Model.Name" Label="@L["Button.Field.Name"]" />
+            <div class="demo-row">
+                <FormaButton Type="ButtonType.Submit" Variant="ButtonVariant.Primary" Busy="_saving">
+                    @(_saving ? L["Button.Label.Saving"] : L["Button.Label.Save"])
+                </FormaButton>
+                <FormaButton Type="ButtonType.Reset">@L["Button.Label.Reset"]</FormaButton>
+                <span class="demo-note">@(_saved ? L["Button.Saved"] : L["Button.NotSaved"])</span>
+            </div>
+        </EditForm>
+        <p class="demo-note">
+            @L["Button.Bound", string.IsNullOrEmpty(Model.Name) ? L["Button.Empty"].Value : Model.Name]
+        </p>
+    </div>
+</div>
+
+@code {
+    private ButtonDemoModel Model { get; set; } = new();
+
+    private string? _lastAction;
+    private bool _saving;
+    private bool _saved;
+
+    private void Record(string action) => _lastAction = action;
+
+    private async Task HandleSubmitAsync()
+    {
+        _saving = true;
+        _saved = false;
+
+        await Task.Delay(1200);
+
+        _saving = false;
+        _saved = true;
+    }
+
+    private sealed class ButtonDemoModel
+    {
+        public string? Name { get; set; }
+    }
+}

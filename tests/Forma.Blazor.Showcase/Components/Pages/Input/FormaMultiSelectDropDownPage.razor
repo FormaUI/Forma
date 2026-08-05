@@ -1,0 +1,117 @@
+@page "/multi-select-dropdown"
+@attribute [ShowcasePage("FormaMultiSelectDropDown")]
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components.Forms
+@using Forma.Blazor.Components.Input
+@inject IStringLocalizer<FormaMultiSelectDropDownPage> L
+
+<h1>FormaMultiSelectDropDown</h1>
+<p class="desc">@L["Multi.Description"]</p>
+
+<EditForm Model="Model" FormName="multi-select-demo" OnValidSubmit="HandleSubmit">
+    <div class="demo-section">
+        <h2>@L["Multi.Section.Basic"]</h2>
+        <div class="demo-box">
+            <FormaMultiSelectDropDown TValue="int" @bind-Value="Model.Categories" Options="CategoryOptions" />
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["Multi.Section.WithLabel"]</h2>
+        <div class="demo-box">
+            <FormaMultiSelectDropDown TValue="int" @bind-Value="Model.Tags"
+                                      Options="TagOptions"
+                                      Label="@L["Multi.Label.Tags"]"
+                                      Placeholder="@L["Multi.Placeholder.Tags"]" />
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["Multi.Section.PreSelected"]</h2>
+        <div class="demo-box">
+            <FormaMultiSelectDropDown TValue="int" @bind-Value="Model.PreSelectedCategories"
+                                      Options="CategoryOptions"
+                                      Label="@L["Multi.Label.Categories"]" />
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["Multi.Section.AllowAdd"]</h2>
+        <p class="desc">@L["Multi.Section.AllowAdd.Desc"]</p>
+        <div class="demo-box">
+            <FormaMultiSelectDropDown TValue="int" @bind-Value="Model.CustomTags"
+                                      Options="_customTagOptions"
+                                      Label="@L["Multi.Label.CustomTags"]"
+                                      AllowAdd="true"
+                                      OnAddNew="HandleAddNewTag" />
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["Multi.Section.Disabled"]</h2>
+        <div class="demo-box">
+            <FormaMultiSelectDropDown TValue="int" @bind-Value="Model.DisabledCategories"
+                                      Options="CategoryOptions"
+                                      Label="@L["Multi.Label.Categories"]"
+                                      Disabled="true" />
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private static readonly IReadOnlyList<SelectOption<int>> CategoryOptions =
+    [
+        new(1, "Road"),
+        new(2, "Mountain"),
+        new(3, "Track"),
+        new(4, "Gravel"),
+        new(5, "BMX"),
+        new(6, "Cyclocross"),
+    ];
+
+    private static readonly IReadOnlyList<SelectOption<int>> TagOptions =
+    [
+        new(1, "Breaking News"),
+        new(2, "Interview"),
+        new(3, "Race Report"),
+        new(4, "Opinion"),
+        new(5, "Tech"),
+        new(6, "Training"),
+        new(7, "Transfer"),
+    ];
+
+    private List<SelectOption<int>> _customTagOptions =
+    [
+        new(1, "Sponsored"),
+        new(2, "Editor's Pick"),
+    ];
+
+    private MultiSelectDemoModel Model { get; set; } = new()
+    {
+        PreSelectedCategories = [1, 3],
+        DisabledCategories = [2],
+    };
+
+    private void HandleSubmit() { }
+
+    private void HandleAddNewTag(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return;
+        }
+
+        var nextValue = _customTagOptions.Count == 0 ? 1 : _customTagOptions.Max(o => o.Value) + 1;
+        _customTagOptions = [.. _customTagOptions, new SelectOption<int>(nextValue, text)];
+        Model.CustomTags = [.. Model.CustomTags, nextValue];
+    }
+
+    private sealed class MultiSelectDemoModel
+    {
+        public List<int> Categories { get; set; } = [];
+        public List<int> Tags { get; set; } = [];
+        public List<int> PreSelectedCategories { get; set; } = [];
+        public List<int> CustomTags { get; set; } = [];
+        public List<int> DisabledCategories { get; set; } = [];
+    }
+}

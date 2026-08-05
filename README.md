@@ -94,7 +94,7 @@ through `IStatusBadgeCatalog.Add`:
 **2. Reference the library stylesheet from your host `App.razor` `<head>`:**
 
 ```razor
-<link rel="stylesheet" href="@Assets["_content/Forma.Blazor/admin.css"]" />
+<link rel="stylesheet" href="@Assets["_content/Forma.Blazor/forma.css"]" />
 ```
 
 **3. (Optional) Enable culture-in-path routing:**
@@ -115,7 +115,7 @@ app.MapRazorComponents<App>()
     .AddAdditionalAssemblies(typeof(Forma.Blazor._Imports).Assembly);
 ```
 
-Components that use JS interop (`FormaModal`, `FormaFloatingLabelField`) require the
+Components that use JS interop (`FormaModal`, `FormaInput`) require the
 Interactive Server render mode to function.
 
 ## Components
@@ -123,12 +123,15 @@ Interactive Server render mode to function.
 - **Feedback** — `FormaModal`, `FormaConfirmDialog`, `FormaToastContainer`
   (backed by `IConfirmDialogService` / `IToastService`).
 - **Forms** — `FormaDatePicker` (single + range, non-Gregorian aware),
-  `FormaColorPicker`, `FormaFloatingLabelField`, `FormaToggleSwitch`.
+  `FormaColorPicker`, `FormaInput`, `FormaToggleSwitch`,
+  `FormaMultiSelectDropDown`, `FormaButton`, `FormaCheckbox`.
+- **Data** — `FormaDataGrid`, `FormaPagination`, `FormaStatusBadge`.
+- **Interactive** — `FormaSortableList`.
 - **Layout** — `FormaPageHeader`, `FormaTabs` (`FormaTab`), `FormaToolbar`.
 - **Icons** — `FormaIcon`.
 
 A detailed inventory of each component's behavior lives in
-[`ADMIN_COMPONENTS.md`](ADMIN_COMPONENTS.md). The broader migration effort is
+[`COMPONENTS.md`](COMPONENTS.md). The broader migration effort is
 tracked in [`MIGRATION_PLAN.md`](https://github.com/2site-net/Coi/blob/main/MIGRATION_PLAN.md).
 
 ## Build, test, and run

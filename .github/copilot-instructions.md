@@ -5,7 +5,7 @@ Interactive Server · JS-free by default.**
 
 ## Source of truth
 
-- [ADMIN_COMPONENTS.md](../ADMIN_COMPONENTS.md) — the component inventory (31 components,
+- [COMPONENTS.md](../COMPONENTS.md) — the component inventory (31 components,
   tiers, old-Coi pattern each one replaces, build order). `✅` on a heading = built.
 - [README.md](../README.md) — solution layout, packaging identities, how hosts consume the library.
 - `.editorconfig` — style is authoritative there; resolve it with `read_editorconfig` before
@@ -73,11 +73,11 @@ package id `2Site.Forma.Blazor`, static asset base path `_content/Forma.Blazor` 
 
 ## File layout per component
 
-Components live in `src/Forma.Blazor/Components/Admin/{Category}/`, where `{Category}` is one
-of `Layout`, `Feedback`, `Forms`, `Data`, `Interactive`, `Editors`, `Specialized`.
+Components live in `src/Forma.Blazor/Components/{Category}/`, where `{Category}` is one
+of `Layout`, `Feedback`, `Input`, `Data`, `Interactive`, `Editors`, `Specialized`.
 
 ```
-Components/Admin/Forms/
+Components/Input/
 ├── FormaX.razor          # markup only — @namespace first line
 ├── FormaX.razor.cs       # code-behind — all logic lives here, never in @code
 ├── FormaX.razor.css      # CSS isolation, banner comment at the top
@@ -174,7 +174,7 @@ The constraints on interop are what it's made of, not whether it's allowed:
   `inputEl` / `dialogElement` / `el`. The JSDoc `@param {HTMLInputElement}` already states the
   type; repeating it in the name is noise.
 - Import it in `OnAfterRenderAsync(firstRender)` from
-  `./_content/Forma.Blazor/Components/Admin/{Category}/FormaX.razor.js`.
+  `./_content/Forma.Blazor/Components/{Category}/FormaX.razor.js`.
 - Wrap every `JS` call in `try { … } catch (JSException) { }` — the circuit can drop mid-call —
   and dispose the module in `DisposeAsync`, catching `JSDisconnectedException`.
 
@@ -184,7 +184,7 @@ The constraints on interop are what it's made of, not whether it's allowed:
   and its approach.
 - **Logical properties everywhere** (`margin-block-end`, `inset-inline-start`, `padding-inline`)
   so RTL works without a second stylesheet. Never `left`/`right`/`margin-left`.
-- Colors, fonts, shadows come from the design tokens in `src/Forma.Blazor/wwwroot/admin.css`
+- Colors, fonts, shadows come from the design tokens in `src/Forma.Blazor/wwwroot/forma.css`
   via `var(--main)`, `var(--border-color)`, … Component-local knobs use a fallback:
   `var(--forma-toggle-on-bg, #0d6efd)`. Never hardcode a raw color that a token covers.
 - Accessibility is part of "done": correct ARIA roles/relationships (`role="switch"`,
@@ -254,7 +254,7 @@ Service-driven components (toast, confirm dialog) follow one shape:
 
 ## Tests (bUnit + xUnit v3)
 
-Mirror the source path: `tests/Forma.Blazor.Tests/Components/Admin/{Category}/FormaXTests.razor`
+Mirror the source path: `tests/Forma.Blazor.Tests/Components/{Category}/FormaXTests.razor`
 plus `.razor.cs`.
 
 - `.razor.cs` is one line: `public sealed partial class FormaXTests;`
@@ -273,7 +273,7 @@ plus `.razor.cs`.
 ## Showcase page
 
 Every component gets a gallery page — it is the visual review surface, not optional:
-`tests/Forma.Blazor.Showcase/Components/Pages/Admin/{Category}/FormaXPage.razor` + its resx trio.
+`tests/Forma.Blazor.Showcase/Components/Pages/{Category}/FormaXPage.razor` + its resx trio.
 
 ```razor
 @page "/x-component"
@@ -311,7 +311,7 @@ Components are built, reviewed, and committed **individually**:
 4. **Present it for review and stop.** Iterate on the same component until the maintainer says
    it is complete — do not move to the next one.
 5. When the maintainer declares it complete, mark it **in both documents**:
-   - `Forma/ADMIN_COMPONENTS.md` — add `✅` to the component heading and to its entry in the
+   - `Forma/COMPONENTS.md` — add `✅` to the component heading and to its entry in the
      *Suggested Build Order* table.
    - `EpicaDeportiva/docs/forma-components.md` — flip `☐` → `✅` in the "Built in Forma?"
      column and update the **Status** line (count + remaining list).

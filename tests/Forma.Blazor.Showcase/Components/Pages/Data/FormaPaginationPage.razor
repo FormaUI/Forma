@@ -1,0 +1,103 @@
+@page "/pagination"
+@attribute [ShowcasePage("FormaPagination")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Data
+
+<h1>FormaPagination</h1>
+<p class="desc">@L["Pagination.Description"]</p>
+
+<div class="demo-section">
+    <h2>@L["Pagination.Section.FewPages"]</h2>
+    <p class="desc">@L["Pagination.FewPages.Note"]</p>
+    <div class="demo-box">
+        <FormaPagination TotalItems="65" PageSize="10" CurrentPage="_fewPage" OnPageChanged="HandleFewPageChanged"
+                         Options="NavigationStepsOnly" aria-label="@L["Pagination.Section.FewPages"]" />
+        <p class="demo-output">@L["Pagination.CurrentPage.Label"]: <code>@_fewPage</code></p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Pagination.Section.ManyPages"]</h2>
+    <p class="desc">@L["Pagination.ManyPages.Note"]</p>
+    <div class="demo-box">
+        <FormaPagination TotalItems="4000" PageSize="20" CurrentPage="_manyPage" OnPageChanged="HandleManyPageChanged"
+                         Options="NavigationStepsOnly" aria-label="@L["Pagination.Section.ManyPages"]" />
+        <p class="demo-output">@L["Pagination.CurrentPage.Label"]: <code>@_manyPage</code></p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Pagination.Section.WithGrid"]</h2>
+    <p class="desc">@L["Pagination.WithGrid.Note"]</p>
+    <div class="demo-box">
+        <QuickGrid Items="GridPageItems">
+            <PropertyColumn Property="@(item => item.Id)" Title="@L["Pagination.Column.Id"]" />
+            <PropertyColumn Property="@(item => item.Title)" Title="@L["Pagination.Column.Title"]" />
+        </QuickGrid>
+        <FormaPagination TotalItems="_gridItems.Count" PageSize="GridPageSize" CurrentPage="_gridPage" OnPageChanged="HandleGridPageChanged"
+                         Options="NavigationStepsOnly" aria-label="@L["Pagination.Section.WithGrid"]" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Pagination.Section.PageInput"]</h2>
+    <p class="desc">@L["Pagination.PageInput.Note"]</p>
+    <div class="demo-box">
+        <FormaPagination TotalItems="4000" PageSize="20" CurrentPage="_jumpPage" OnPageChanged="HandleJumpPageChanged"
+                         Options="NavigationBar" aria-label="@L["Pagination.Section.PageInput"]" />
+        <p class="demo-output">@L["Pagination.CurrentPage.Label"]: <code>@_jumpPage</code></p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Pagination.Section.InputOnly"]</h2>
+    <p class="desc">@L["Pagination.InputOnly.Note"]</p>
+    <div class="demo-box">
+        <FormaPagination TotalItems="4000" PageSize="20" CurrentPage="_inputOnlyPage" OnPageChanged="HandleInputOnlyPageChanged"
+                         Options="NavigationInput" aria-label="@L["Pagination.Section.InputOnly"]" />
+        <p class="demo-output">@L["Pagination.CurrentPage.Label"]: <code>@_inputOnlyPage</code></p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Pagination.Section.BareInput"]</h2>
+    <p class="desc">@L["Pagination.BareInput.Note"]</p>
+    <div class="demo-box">
+        <FormaPagination TotalItems="4000" PageSize="20" CurrentPage="_barePage" OnPageChanged="HandleBarePageChanged"
+                         Options="NavigationInputOnly"
+                         aria-label="@L["Pagination.Section.BareInput"]" />
+        <p class="demo-output">@L["Pagination.CurrentPage.Label"]: <code>@_barePage</code></p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Pagination.Section.InsideForm"]</h2>
+    <p class="desc">@L["Pagination.InsideForm.Note"]</p>
+    <div class="demo-box">
+        <form @onsubmit="HandleFormSubmit" @onsubmit:preventDefault>
+            <FormaPagination TotalItems="4000" PageSize="20" CurrentPage="_formPage" OnPageChanged="HandleFormPageChanged"
+                             aria-label="@L["Pagination.Section.InsideForm"]" />
+        </form>
+        <p class="demo-output">
+            @L["Pagination.CurrentPage.Label"]: <code>@_formPage</code> &middot;
+            @L["Pagination.InsideForm.Submits"]: <code>@_formSubmits</code>
+        </p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Pagination.Section.SinglePage"]</h2>
+    <p class="desc">@L["Pagination.SinglePage.Note"]</p>
+    <div class="demo-box">
+        <FormaPagination TotalItems="8" PageSize="10" CurrentPage="1" Options="NavigationBar" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Pagination.Section.OutOfRange"]</h2>
+    <p class="desc">@L["Pagination.OutOfRange.Note"]</p>
+    <div class="demo-box">
+        <FormaPagination TotalItems="30" PageSize="10" CurrentPage="99"
+                         Options="NavigationStepsOnly" aria-label="@L["Pagination.Section.OutOfRange"]" />
+    </div>
+</div>

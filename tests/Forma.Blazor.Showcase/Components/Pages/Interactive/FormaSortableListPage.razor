@@ -1,0 +1,112 @@
+@page "/sortable-list"
+@attribute [ShowcasePage("FormaSortableList")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Input
+@using Forma.Blazor.Components.Interactive
+@inject IStringLocalizer<FormaSortableListPage> L
+
+<h1>FormaSortableList</h1>
+<p class="desc">@L["Sortable.Description"]</p>
+
+<div class="demo-section">
+    <h2>@L["Sortable.Section.Basic"]</h2>
+    <div class="demo-box">
+        <FormaSortableList Items="_photos" ItemKey="@(photo => photo.Id)"
+                            ItemsChanged="@((IReadOnlyList<PhotoItem> reordered) => _photos = [.. reordered])">
+            <ItemTemplate Context="photo">@photo.Name</ItemTemplate>
+        </FormaSortableList>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Sortable.Section.Interactive"]</h2>
+    <p class="desc">@L["Sortable.Section.Interactive.Desc"]</p>
+    <div class="demo-box">
+        <FormaSortableList Items="_tags" ItemKey="@(tag => tag.Id)"
+                            ItemsChanged="@((IReadOnlyList<TagItem> reordered) => _tags = [.. reordered])">
+            <ItemTemplate Context="tag">
+                <div class="demo-sortable-tag">
+                    <span>@tag.Name</span>
+                    <FormaButton Variant="ButtonVariant.Danger" Size="ButtonSize.Mini" OnClick="@(() => RemoveTag(tag))">@L["Sortable.Remove"]</FormaButton>
+                </div>
+            </ItemTemplate>
+        </FormaSortableList>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Sortable.Section.Scrolling"]</h2>
+    <p class="desc">@L["Sortable.Section.Scrolling.Desc"]</p>
+    <div class="demo-box demo-scroll-box">
+        <FormaSortableList Items="_stages" ItemKey="@(stage => stage.Id)"
+                            ItemsChanged="@((IReadOnlyList<StageItem> reordered) => _stages = [.. reordered])">
+            <ItemTemplate Context="stage">@stage.Name</ItemTemplate>
+        </FormaSortableList>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Sortable.Section.RowDrag"]</h2>
+    <p class="desc">@L["Sortable.Section.RowDrag.Desc"]</p>
+    <div class="demo-box">
+        <FormaSortableList Items="_links" ItemKey="@(link => link.Id)" DragFrom="SortableDragFrom.Item"
+                            ItemsChanged="@((IReadOnlyList<LinkItem> reordered) => _links = [.. reordered])">
+            <ItemTemplate Context="link">
+                <div class="demo-sortable-tag">
+                    <span>@link.Name</span>
+                    <FormaButton Size="ButtonSize.Mini" OnClick="@(() => _lastClicked = link.Name)">@L["Sortable.Edit"]</FormaButton>
+                </div>
+            </ItemTemplate>
+        </FormaSortableList>
+        <p class="demo-note">@(_lastClicked is null ? L["Sortable.RowDrag.Hint"] : L["Sortable.RowDrag.Clicked", _lastClicked])</p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Sortable.Section.Disabled"]</h2>
+    <div class="demo-box">
+        <FormaSortableList Items="_photos" ItemKey="@(photo => photo.Id)" Disabled="true">
+            <ItemTemplate Context="photo">@photo.Name</ItemTemplate>
+        </FormaSortableList>
+    </div>
+</div>
+
+@code {
+    private List<PhotoItem> _photos =
+    [
+        new(1, "cover.jpg"),
+        new(2, "start-line.jpg"),
+        new(3, "podium.jpg"),
+        new(4, "peloton.jpg"),
+    ];
+
+    private List<TagItem> _tags =
+    [
+        new(1, "Road"),
+        new(2, "Mountain"),
+        new(3, "Gravel"),
+    ];
+
+    private List<LinkItem> _links =
+    [
+        new(1, "Home"),
+        new(2, "Races"),
+        new(3, "Videos"),
+        new(4, "Contact"),
+    ];
+
+    private List<StageItem> _stages = [.. Enumerable.Range(1, 12).Select(n => new StageItem(n, $"Stage {n}"))];
+
+    private string? _lastClicked;
+
+    private void RemoveTag(TagItem tag)
+        => _tags = [.. _tags.Where(t => t.Id != tag.Id)];
+
+    private sealed record PhotoItem(int Id, string Name);
+
+    private sealed record TagItem(int Id, string Name);
+
+    private sealed record LinkItem(int Id, string Name);
+
+    private sealed record StageItem(int Id, string Name);
+}
