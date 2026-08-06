@@ -28,6 +28,7 @@
     line-height: 1.4;
     color: #fff;
     pointer-events: auto;
+    position: relative;
     animation: forma-toast-in 300ms ease forwards;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
@@ -90,30 +91,18 @@
 
 /* ── Animations ── */
 
+/* Offsetting a relatively positioned toast rather than translating it keeps one
+   keyframe for both directions: inset-inline-start resolves to whichever physical
+   edge faces the container's inline-end corner. */
 @keyframes forma-toast-in {
     from {
         opacity: 0;
-        transform: translateX(40px);
+        inset-inline-start: 40px;
     }
     to {
         opacity: 1;
-        transform: translateX(0);
+        inset-inline-start: 0;
     }
-}
-
-@keyframes forma-toast-in-rtl {
-    from {
-        opacity: 0;
-        transform: translateX(-40px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-.forma-toast:dir(rtl) {
-    animation-name: forma-toast-in-rtl;
 }
 
 @media (pointer: coarse) {

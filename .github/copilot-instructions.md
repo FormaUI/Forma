@@ -184,16 +184,27 @@ The constraints on interop are what it's made of, not whether it's allowed:
   and its approach.
 - **Logical properties everywhere** (`margin-block-end`, `inset-inline-start`, `padding-inline`)
   so RTL works without a second stylesheet. Never `left`/`right`/`margin-left`.
-- Colors, fonts, shadows come from the design tokens in `src/Forma.Blazor/wwwroot/forma.css`
-  via `var(--main-color)`, `var(--border-color)`, … **Every custom property holding a colour
-  ends in `-color`** — `--main-color`, `--text-muted-color`, `--forma-toggle-on-bg-color` — so
+- Colors, fonts, shadows come from the design tokens in
+  `src/Forma.Blazor/wwwroot/forma-tokens.css` via `var(--main-color)`, `var(--border-color)`,
+  … **Every custom property holding a colour ends in `-color`** — `--main-color`, `--text-muted-color`, `--forma-toggle-on-bg-color` — so
   a name tells you what kind of value it carries. Component-local knobs fall back to a *token*,
   never a hardcoded hex: `var(--forma-toggle-on-bg-color, var(--main-color))`, not
   `var(--forma-toggle-on-bg-color, #0d6efd)` — the latter is an island a theme override can't
   reach. Never invent a new synonym for an existing token (`--forma-primary`, `--primary`, or
   a local `--dp-primary-color` holding its own literal) — reach for `--main-color` or
   `--focus-color`. `--main-dark-color`, `--main-light-color` and `--focus-color` are
-  `color-mix`ed from `--main-color`, so a host retheming the admin overrides one token.
+  `color-mix`ed from `--main-color`, so a host retheming Forma overrides one token.
+- **Three global stylesheets, and a component adds to none of them.** `forma-tokens.css` is
+  values only; `forma-reset.css` is cross-browser normalization with no colours or type
+  choices in it; `forma-base.css` is the element-level look a host opts into. A host links
+  the layers it wants, in that order — tokens are the one everything else reads. A rule that
+  belongs to a component belongs in that component's `.razor.css`.
+- **Never set `font-family` on a control.** The reset gives every `button`, `input`, `select`
+  and `textarea` `font: inherit`, which is what keeps an input in the same typeface as the
+  label beside it — those elements take the OS UI font otherwise. Set `font-size` when a
+  component needs one, and reach for `var(--font-family-mono)` rather than bare `monospace`.
+- **Animate only what is decoration.** The reset flattens every animation and transition
+  under `prefers-reduced-motion: reduce`, so nothing may convey state through motion alone.
 - Accessibility is part of "done" — see the section below.
 
 ## Accessibility (non-negotiable)

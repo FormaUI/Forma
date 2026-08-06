@@ -1,0 +1,75 @@
+/*
+    forma-base.css — Element-level defaults for a host that wants Forma's own look.
+
+    The opinionated layer: it restyles body text and links, so a host with its own design
+    system should link forma-tokens.css (and optionally forma-reset.css) and skip this.
+    Load order is tokens, reset, base.
+*/
+
+/* ── Typography defaults ── */
+html,
+body {
+    font-family: var(--font-family);
+}
+
+body {
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--text-color);
+}
+
+a {
+    color: var(--main-dark-color);
+    text-decoration: none;
+}
+
+a:focus-visible {
+    outline: 2px solid var(--focus-color, #86b7fe);
+    outline-offset: 2px;
+}
+
+@media (hover: hover) {
+    a:hover {
+        color: var(--main-light-color);
+    }
+}
+
+/* ── Shared close button ── */
+.forma-close-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-muted-color);
+    cursor: pointer;
+    transition: background-color 120ms ease, color 120ms ease;
+}
+
+@media (hover: hover) {
+    .forma-close-btn:hover {
+        background-color: var(--hover-bg-color);
+        color: var(--text-color);
+    }
+}
+
+/* ── Card pattern ── */
+.forma-card {
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    box-shadow: var(--shadow-sm);
+}
+
+.forma-card-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.forma-card-body {
+    padding: 1rem 1.25rem;
+}

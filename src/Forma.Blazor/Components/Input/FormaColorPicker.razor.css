@@ -75,7 +75,7 @@
     padding: 0.25rem 0.5rem;
     border: 1px solid var(--forma-color-picker-border-color, #ced4da);
     border-radius: 0.375rem;
-    font-family: monospace;
+    font-family: var(--font-family-mono, monospace);
     font-size: 0.875rem;
     touch-action: manipulation;
 }
@@ -103,7 +103,7 @@
 .forma-color-alpha-value {
     min-width: 3ch;
     text-align: end;
-    font-family: monospace;
+    font-family: var(--font-family-mono, monospace);
     font-size: 0.8125rem;
 }
 

@@ -1,0 +1,59 @@
+/*
+    forma-tokens.css — The design tokens every Forma component reads.
+
+    Values only, no selectors: safe to link into a page that Forma does not otherwise style.
+
+    Retheming a host (a different --main-color per consuming site) means overriding the tokens
+    below in a stylesheet loaded after this one — nothing else. --main-dark-color,
+    --main-light-color and --focus-color derive from --main-color, so overriding --main-color
+    alone reshades hover and focus states too; override any of them individually for finer
+    control. A component's own local knob (--forma-toggle-on-bg-color and similar) must fall
+    back to one of these tokens, never to a hardcoded hex, or it becomes an island the theme
+    can't reach. Every custom property that carries a colour ends in -color.
+*/
+
+:root {
+    /* Typography — the UI font of whatever device the component is rendered on.
+       Covers Latin and Hebrew everywhere without shipping a webfont. */
+    --font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+        'Noto Sans Hebrew', sans-serif;
+    --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+
+    /* Text colors */
+    --text-color: rgba(44, 56, 74, 0.95);
+    --text-muted-color: #889097;
+    --gray-color: rgba(44, 56, 74, 0.45);
+
+    /* Brand / accent */
+    --main-color: #1370df;
+    --main-dark-color: color-mix(in srgb, var(--main-color) 82%, black);
+    --main-light-color: color-mix(in srgb, var(--main-color) 60%, white);
+
+    /* Focus ring — every component's own focus-color knob falls back here */
+    --focus-color: color-mix(in srgb, var(--main-color) 55%, white);
+
+    /* Links — same treatment the base `a` rule uses, so a breadcrumb and a body
+       link stay one colour and both follow a retheme */
+    --link-color: var(--main-dark-color);
+    --link-hover-color: var(--main-light-color);
+
+    /* Borders */
+    --border-color: rgba(98, 105, 118, 0.16);
+    --light-border-color: #d9dbde;
+    --dark-border-color: rgba(98, 105, 118, 0.31);
+
+    /* Surfaces */
+    --modal-bg-color: #fafbfc;
+    --hover-bg-color: rgba(98, 105, 118, 0.06);
+
+    /* Status colors */
+    --success-color: #28a745;
+    --danger-color: #d63939;
+    --warning-color: #ffc107;
+    --info-color: #307fdd;
+
+    /* Shadows */
+    --shadow-sm: rgba(30, 41, 59, 0.04) 0 2px 4px 0;
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.18);
+}
