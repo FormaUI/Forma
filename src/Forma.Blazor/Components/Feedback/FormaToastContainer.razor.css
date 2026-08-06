@@ -45,30 +45,12 @@
 
 /* ── Close button ── */
 
-.forma-toast-close {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    border: none;
-    background: transparent;
-    color: inherit;
-    opacity: 0.7;
-    cursor: pointer;
-    font-size: 1.1rem;
-    line-height: 1;
-    border-radius: 4px;
-    transition: opacity 120ms ease;
-    flex-shrink: 0;
-    touch-action: manipulation;
-}
-
-@media (hover: hover) {
-    .forma-toast-close:hover {
-        opacity: 1;
-    }
+/* Custom properties cascade into the nested button's own scope, which plain
+   selectors cannot reach. */
+.forma-toast {
+    --forma-btn-ghost-color: rgba(255, 255, 255, 0.75);
+    --forma-btn-ghost-hover-color: #fff;
+    --forma-btn-ghost-hover-bg-color: rgba(255, 255, 255, 0.18);
 }
 
 /* ── Type variants ── */
@@ -100,12 +82,5 @@
     to {
         opacity: 1;
         inset-inline-start: 0;
-    }
-}
-
-@media (pointer: coarse) {
-    .forma-toast-close {
-        inline-size: 2.75rem;
-        block-size: 2.75rem;
     }
 }

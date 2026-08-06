@@ -6,11 +6,7 @@
         {
             <header class="forma-modal-header">
                 <h5>@Title</h5>
-                <button type="button" class="forma-modal-close" @onclick="RequestCloseAsync" aria-label="@L["Close"]">
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                        <path d="M1 1l12 12M13 1 1 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                </button>
+                <FormaCloseButton Label="@L["Close"]" OnClick="RequestCloseAsync" />
             </header>
         }
 

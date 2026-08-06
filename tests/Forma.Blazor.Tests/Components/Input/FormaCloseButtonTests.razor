@@ -1,0 +1,127 @@
+@inherits BunitContext
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_a_ghost_icon_button()
+        {
+            // Arrange
+            using var ctx = new FormaCloseButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCloseButton Label="Close" />);
+
+            // Assert
+            var button = cut.Find("button");
+            Assert.Contains("forma-btn-ghost", button.ClassList);
+            Assert.Contains("forma-btn-icon", button.ClassList);
+        }
+
+        [Fact]
+        public void Should_use_the_label_as_the_accessible_name()
+        {
+            // Arrange
+            using var ctx = new FormaCloseButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCloseButton Label="Dismiss notification" />);
+
+            // Assert
+            Assert.Equal("Dismiss notification", cut.Find("button").GetAttribute("aria-label"));
+        }
+
+        [Fact]
+        public void Should_hide_the_glyph_from_assistive_technology()
+        {
+            // Arrange
+            using var ctx = new FormaCloseButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCloseButton Label="Close" />);
+
+            // Assert
+            Assert.Equal("true", cut.Find("svg").GetAttribute("aria-hidden"));
+        }
+
+        [Fact]
+        public void Should_render_a_button_type_so_it_never_submits_a_form()
+        {
+            // Arrange
+            using var ctx = new FormaCloseButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCloseButton Label="Close" />);
+
+            // Assert
+            Assert.Equal("button", cut.Find("button").GetAttribute("type"));
+        }
+
+        [Fact]
+        public void Should_apply_the_mini_size()
+        {
+            // Arrange
+            using var ctx = new FormaCloseButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCloseButton Label="Close" Size="ButtonSize.Mini" />);
+
+            // Assert
+            Assert.Contains("forma-btn-mini", cut.Find("button").ClassList);
+        }
+
+        [Fact]
+        public void Should_invoke_on_click()
+        {
+            // Arrange
+            using var ctx = new FormaCloseButtonTests();
+            var clicked = false;
+            var cut = ctx.Render(@<FormaCloseButton Label="Close" OnClick="() => clicked = true" />);
+
+            // Act
+            cut.Find("button").Click();
+
+            // Assert
+            Assert.True(clicked);
+        }
+
+        [Fact]
+        public void Should_not_invoke_on_click_when_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaCloseButtonTests();
+            var clicked = false;
+            var cut = ctx.Render(@<FormaCloseButton Label="Close" Disabled="true" OnClick="() => clicked = true" />);
+
+            // Assert
+            Assert.True(cut.Find("button").HasAttribute("disabled"));
+            Assert.False(clicked);
+        }
+
+        [Fact]
+        public void Should_reject_a_blank_label()
+        {
+            // Arrange
+            using var ctx = new FormaCloseButtonTests();
+
+            // Act
+            var act = () => ctx.Render(@<FormaCloseButton Label="  " />);
+
+            // Assert
+            Assert.Throws<ArgumentException>(act);
+        }
+
+        [Fact]
+        public void Should_pass_through_additional_attributes()
+        {
+            // Arrange
+            using var ctx = new FormaCloseButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCloseButton Label="Close" data-testid="modal-close" />);
+
+            // Assert
+            Assert.Equal("modal-close", cut.Find("button").GetAttribute("data-testid"));
+        }
+    }
+}

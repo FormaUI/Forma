@@ -93,13 +93,13 @@
 .forma-btn-ghost {
     background-color: transparent;
     border-color: transparent;
-    color: var(--text-muted-color);
+    color: var(--forma-btn-ghost-color, var(--text-muted-color));
 }
 
 @media (hover: hover) {
     .forma-btn-ghost:hover:not(:disabled) {
-        background-color: var(--hover-bg-color);
-        color: var(--text-color);
+        background-color: var(--forma-btn-ghost-hover-bg-color, var(--hover-bg-color));
+        color: var(--forma-btn-ghost-hover-color, var(--text-color));
     }
 }
 
@@ -108,6 +108,19 @@
     padding-block: 0.2rem 0.3rem;
     padding-inline: 0.7rem;
     font-size: 0.8rem;
+}
+
+/* ---------- icon only ---------- */
+.forma-btn-icon {
+    padding: 0;
+    inline-size: 30px;
+    block-size: 30px;
+    flex-shrink: 0;
+}
+
+.forma-btn-icon.forma-btn-mini {
+    inline-size: 24px;
+    block-size: 24px;
 }
 
 /* ---------- busy ---------- */
@@ -164,5 +177,11 @@
 
     .forma-btn-mini {
         min-block-size: 2.25rem;
+    }
+
+    .forma-btn-icon,
+    .forma-btn-icon.forma-btn-mini {
+        inline-size: 2.75rem;
+        block-size: 2.75rem;
     }
 }

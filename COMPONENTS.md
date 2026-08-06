@@ -369,6 +369,16 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Parameters** | `@bind-Value`, `EditorMode Mode` (Html/Markdown), `EditorToolbar Toolbar` (Full/Basic/Mini, mirroring Coi's presets), `bool AllowSourceView`, `EventCallback OnMediaRequested` |
 | **Blazor approach** | The one component where an **external JS editor engine is the right call** — the JS rules exist to keep components small and dependency-free, and a rich text engine is precisely the case they yield to. Everything around the engine stays Forma's: the format/font/size pickers are `FormaSelect`, the toolbar overflow is `FormaDropDownMenu`, colour is `FormaColorPicker`, image insertion delegates to `FormaImagePicker` (never a second file browser), and direct uploads go through `FormaUploader`. Toolbar presets mirror Coi's three, including the sub-600px collapse. **Markdown is a first-class mode**, not an export: `Mode` switches the engine's document model and `AllowSourceView` toggles between the rendered surface and raw HTML/Markdown. Bidi controls and RTL contents direction are required, not optional |
 
+### 37. `FormaCloseButton` ✅
+
+| | |
+|---|---|
+| **Old pattern** | The `×` dismiss control repeated across `admin/pops/*.aspx` modal headers and notification strips |
+| **Used in** | Single source of truth for dismiss controls — `FormaModal`'s header, `FormaToastContainer`'s toasts, `FormaContextToolbar`'s clear-selection control |
+| **Parameters** | `string Label` (required — the accessible name, which differs per use: close, dismiss, clear selection), `EventCallback<MouseEventArgs> OnClick`, `bool Disabled` |
+| **Blazor approach** | A thin wrapper over `<FormaButton Variant="Ghost" IconOnly>` supplying the one X glyph, so it owns no colours of its own and inherits the ghost variant's treatment and the icon-only square sizing. `Label` is required rather than defaulted because a wrong accessible name is worse than an obvious compile error, and the three call sites genuinely differ. Ships no `.razor.css` — every visual decision belongs to `FormaButton` |
+| **Notes** | Before this existed the three call sites had each reimplemented `.forma-btn-ghost` verbatim and drifted: two drew a 14×14 SVG while the toast used the `&times;` entity, and the focus ring was `--focus-color` against `FormaButton`'s `--main-color`. Retinting for a saturated surface (the toast) goes through `--forma-btn-ghost-*-color` knobs rather than a fork |
+
 ---
 
 ## Components NOT Needed (handled by built-ins or native HTML)
@@ -402,6 +412,7 @@ Components are ordered by dependency and reuse frequency:
 | **Phase 7** | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor`, `FormaEditor` | Complex editors — built alongside their specific pages |
 | **Phase 8** | `FormaButton` ✅ | Shared button primitive — built after the fact and retrofitted onto `FormaDataGrid`, `FormaModal`, `FormaConfirmDialog`, `FormaPagination`, `FormaDatePicker` as the single source of truth for buttons |
 | **Phase 9** | `FormaCheckbox` ✅ | Shared checkbox primitive — built after the fact and retrofitted onto `FormaDataGrid` and `FormaMultiSelectDropDown` as the single source of truth for checkboxes |
+| **Phase 10** | `FormaCloseButton` ✅ | Shared dismiss primitive — built after the fact and retrofitted onto `FormaModal`, `FormaToastContainer` and `FormaContextToolbar` as the single source of truth for the `×` control |
 
 ---
 
@@ -432,6 +443,7 @@ Forma.Blazor/Components/
 │   └── FormaPagination.razor
 ├── Input/
 │   ├── FormaButton.razor
+│   ├── FormaCloseButton.razor
 │   ├── FormaCheckbox.razor
 │   ├── FormaInput.razor
 │   ├── FormaToggleSwitch.razor

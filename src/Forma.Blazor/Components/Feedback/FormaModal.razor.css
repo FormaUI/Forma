@@ -73,29 +73,6 @@ dialog.forma-modal::backdrop {
     line-height: 1.4;
 }
 
-/* ── Close button ── */
-.forma-modal-close {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-    border: none;
-    border-radius: 6px;
-    background: transparent;
-    color: var(--text-muted-color);
-    cursor: pointer;
-    transition: background-color 120ms ease, color 120ms ease;
-    touch-action: manipulation;
-}
-
-@media (hover: hover) {
-    .forma-modal-close:hover {
-        background-color: var(--hover-bg-color);
-        color: var(--text-color);
-    }
-}
-
 /* ── Body ── */
 .forma-modal-body {
     padding: 20px;
@@ -132,11 +109,4 @@ dialog.forma-modal::backdrop {
     align-items: center;
     gap: 8px;
     margin-inline-start: auto;
-}
-
-@media (pointer: coarse) {
-    .forma-modal-close {
-        inline-size: 2.75rem;
-        block-size: 2.75rem;
-    }
 }

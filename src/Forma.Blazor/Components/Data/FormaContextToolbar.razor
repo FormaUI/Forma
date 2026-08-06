@@ -17,14 +17,7 @@
                     }
                     @if (OnClear.HasDelegate)
                     {
-                        <button type="button"
-                                class="forma-context-toolbar-clear"
-                                aria-label="@L["ClearSelection"]"
-                                @onclick="() => OnClear.InvokeAsync()">
-                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                                <path d="M1 1l12 12M13 1 1 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                            </svg>
-                        </button>
+                        <FormaCloseButton Label="@L["ClearSelection"]" OnClick="() => OnClear.InvokeAsync()" />
                     }
                 </div>
             }

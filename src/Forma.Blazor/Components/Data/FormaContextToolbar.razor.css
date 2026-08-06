@@ -53,39 +53,3 @@
     gap: 8px;
     flex-wrap: wrap;
 }
-
-.forma-context-toolbar-clear {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    inline-size: 30px;
-    block-size: 30px;
-    flex-shrink: 0;
-    padding: 0;
-    border: none;
-    border-radius: 6px;
-    background: transparent;
-    color: var(--text-muted-color);
-    cursor: pointer;
-    touch-action: manipulation;
-    transition: background-color 120ms ease, color 120ms ease;
-}
-
-@media (hover: hover) {
-    .forma-context-toolbar-clear:hover {
-        background-color: var(--hover-bg-color);
-        color: var(--text-color);
-    }
-}
-
-.forma-context-toolbar-clear:focus-visible {
-    outline: 2px solid var(--focus-color, #86b7fe);
-    outline-offset: 2px;
-}
-
-@media (pointer: coarse) {
-    .forma-context-toolbar-clear {
-        inline-size: 2.75rem;
-        block-size: 2.75rem;
-    }
-}

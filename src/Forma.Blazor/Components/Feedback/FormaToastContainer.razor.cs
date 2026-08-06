@@ -3,12 +3,15 @@ namespace Forma.Blazor.Components.Feedback;
 using Forma.Blazor.Abstractions.Components.Feedback;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Localization;
 
 public sealed partial class FormaToastContainer : IDisposable
 {
     private readonly Dictionary<string, Timer> _timers = [];
 
     [Inject] private IToastService ToastService { get; set; } = default!;
+
+    [Inject] private IStringLocalizer<FormaToastContainer> L { get; set; } = default!;
 
     protected override void OnInitialized() => ToastService.Subscribe(HandleChangeAsync);
 

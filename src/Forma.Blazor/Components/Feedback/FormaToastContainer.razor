@@ -5,12 +5,9 @@
              @key="toast.Id">
             <span class="forma-toast-marker" aria-hidden="true">@MarkerFor(toast.Type)</span>
             <span class="forma-toast-message">@toast.Message</span>
-            <button type="button"
-                    class="forma-toast-close"
-                    @onclick="async () => await ToastService.RemoveAsync(toast.Id)"
-                    aria-label="Dismiss">
-                &times;
-            </button>
+            <FormaCloseButton Size="ButtonSize.Mini"
+                              Label="@L["Dismiss"]"
+                              OnClick="async () => await ToastService.RemoveAsync(toast.Id)" />
         </div>
     }
 </div>

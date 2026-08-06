@@ -64,6 +64,21 @@
             Assert.Contains("forma-btn-mini", mini.Find(".forma-btn").ClassName);
         }
 
+        [Fact]
+        public void Should_render_the_icon_size_only_when_asked()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+
+            // Act
+            var text = ctx.Render(@<FormaButton>Save</FormaButton>);
+            var icon = ctx.Render(@<FormaButton IconOnly="true">X</FormaButton>);
+
+            // Assert
+            Assert.DoesNotContain("forma-btn-icon", text.Find(".forma-btn").ClassName);
+            Assert.Contains("forma-btn-icon", icon.Find(".forma-btn").ClassName);
+        }
+
         [Theory]
         [InlineData(ButtonType.Button, "button")]
         [InlineData(ButtonType.Submit, "submit")]

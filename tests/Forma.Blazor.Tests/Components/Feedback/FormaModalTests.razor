@@ -219,7 +219,7 @@
             // Act
             var cut = ctx.Render(
                 @<FormaModal Opened="false" OnClose="@(() => { })" Title="Test" />);
-            var closeBtn = cut.Find(".forma-modal-close");
+            var closeBtn = cut.Find(".forma-modal-header button");
 
             // Assert
             Assert.Equal("Close", closeBtn.GetAttribute("aria-label"));

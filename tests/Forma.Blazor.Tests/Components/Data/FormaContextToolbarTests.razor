@@ -161,7 +161,7 @@
             var cut = ctx.Render(@<FormaContextToolbar Count="1" />);
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-context-toolbar-clear"));
+            Assert.Empty(cut.FindAll("[aria-label='Clear selection']"));
         }
 
         [Fact]
@@ -174,7 +174,7 @@
             var cut = ctx.Render(@<FormaContextToolbar Count="1" OnClear="() => {}" />);
 
             // Assert
-            cut.Find(".forma-context-toolbar-clear");
+            cut.Find("[aria-label='Clear selection']");
         }
 
         [Fact]
@@ -186,7 +186,7 @@
             var cut = ctx.Render(@<FormaContextToolbar Count="1" OnClear="() => cleared = true" />);
 
             // Act
-            cut.Find(".forma-context-toolbar-clear").Click();
+            cut.Find("[aria-label='Clear selection']").Click();
 
             // Assert
             Assert.True(cleared);

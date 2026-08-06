@@ -9,8 +9,11 @@ public sealed partial class FormaButton : ComponentBase
     /// <summary>Visual weight the button is drawn with.</summary>
     [Parameter] public ButtonVariant Variant { get; set; } = ButtonVariant.Secondary;
 
-    /// <summary>Padding and text size the button is drawn at.</summary>
+    /// <summary>Padding and text size the button is drawn at, or the square size when icon-only.</summary>
     [Parameter] public ButtonSize Size { get; set; } = ButtonSize.Normal;
+
+    /// <summary>Draws the button square around a single glyph instead of padding it for text.</summary>
+    [Parameter] public bool IconOnly { get; set; }
 
     /// <summary>Behaviour the button has inside a form.</summary>
     [Parameter] public ButtonType Type { get; set; } = ButtonType.Button;
@@ -60,11 +63,16 @@ public sealed partial class FormaButton : ComponentBase
     {
         get
         {
-            var classes = new List<string>(5) { "forma-btn", VariantClass };
+            var classes = new List<string>(6) { "forma-btn", VariantClass };
 
             if (Size is ButtonSize.Mini)
             {
                 classes.Add("forma-btn-mini");
+            }
+
+            if (IconOnly)
+            {
+                classes.Add("forma-btn-icon");
             }
 
             if (Busy)
