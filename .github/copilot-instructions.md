@@ -1,473 +1,332 @@
 # Forma.Blazor — Copilot Instructions
 
-A reusable Blazor **component library**. **.NET 11 · C# latest · Razor Class Library ·
-Interactive Server · JS-free by default.**
+A reusable Blazor **component library**. **.NET 11 · C# latest · Razor Class Library · Interactive Server · JS-free by default.**
 
 ## Source of truth
 
-- [COMPONENTS.md](../COMPONENTS.md) — the component inventory (31 components,
-  tiers, old-Coi pattern each one replaces, build order). `✅` on a heading = built.
-- [README.md](../README.md) — solution layout, packaging identities, how hosts consume the library.
-- `.editorconfig` — style is authoritative there; resolve it with `read_editorconfig` before
-  writing C#.
+- Do use [COMPONENTS.md](../COMPONENTS.md) for the 36-component inventory, tiers, replaced Coi patterns, build order, and completion status (`✅`).
+- Do use [README.md](../README.md) for solution layout, packaging identities, and host consumption.
+- Do resolve C# style from `.editorconfig` with `read_editorconfig` before writing C#.
+- Do use `EpicaDeportiva/docs/forma-components.md` for Épica Deportiva's required and optional subset and remaining work.
+- Do treat **Coi** (`c:\Users\eyal\Development\Projects\Coi`) and **Épica Deportiva** (`c:\Users\eyal\Development\Projects\EpicaDeportiva`) as the current consumers.
+- Don't invent scope, status, packaging, or style rules when an authoritative file defines them.
 
-Consumers: **Coi** (`c:\Users\eyal\Development\Projects\Coi`) and **Épica Deportiva**
-(`c:\Users\eyal\Development\Projects\EpicaDeportiva`). Épica's subset of the inventory —
-required / optional, and what's left to build — lives in `EpicaDeportiva/docs/forma-components.md`.
+## Study the original before designing
 
-## The original — read it before designing anything
-
-Every component in this library is derived from the legacy Coi admin at
-**`c:\Users\eyal\Development\Projects\2Site\Coi\Coi\`**. Study the original before designing a
-replacement; it is where the real state vocabulary, edge cases, and usage live.
+Every component derives from the legacy Coi admin at `c:\Users\eyal\Development\Projects\2Site\Coi\Coi\`.
 
 | What | Where |
 |------|-------|
 | Admin design system | `App_Themes/Cms/css-3.6.5.css`, `fa-3.6.5.css`, `global-3.6.5.css`, `responsive-3.6.5.css` |
-| Page markup | `admin/*.aspx` (orders, leads, products, pages, users, …) and `admin/pops/*.aspx` |
-| Behaviour / rendering helpers | the matching `*.aspx.cs` |
-| jQuery widgets being replaced | `admin/Client/{toggle,date,cp,modal,Tabs,jcrop,minibar}` |
+| Page markup | `admin/*.aspx` and `admin/pops/*.aspx` |
+| Behaviour and rendering helpers | Matching `*.aspx.cs` files |
+| Replaced jQuery widgets | `admin/Client/{toggle,date,cp,modal,Tabs,jcrop,minibar}` |
 
-That folder is **outside the workspace**, so workspace search tools do not reach it — use
-`Select-String` from the terminal.
+- Do study the matching legacy markup, code-behind, styles, and widgets before designing a replacement.
+- Do use `Select-String` from the terminal because the legacy folder is outside the workspace.
+- Do preserve Coi's real states, vocabulary, edge cases, and required behaviour.
+- Do reimplement visuals with Forma's design tokens and improve accessibility, affordances, and edge-case handling where useful.
+- Do judge a component by whether it is good, not by whether it is pixel-identical to Coi.
+- Don't treat Coi as a complete specification or an upper limit.
+- Don't reproduce outdated visuals merely because Coi used them.
+- Don't omit a worthwhile capability because Coi did not have it.
 
-**Fidelity is pattern-level, not pixel-level.** Take the states, vocabulary, and behaviour from
-Coi; re-implement the visuals JS-free with the design tokens. Coi's toggle is a boxy gradient
-slider, but `FormaToggleSwitch` is a token-driven iOS-style pill — that is the intended level of
-faithfulness.
+Coi's boxy gradient toggle becoming a token-driven iOS-style `FormaToggleSwitch` is the intended level of fidelity.
 
-**Coi is the floor, not the ceiling.** It shows what the admin needs to do and the vocabulary it
-does it in — it is not a specification to reproduce. Where Forma can do better, it should: richer
-affordances, better accessibility, sturdier edge-case handling. A capability Coi never had is
-welcome on its own merits, and "Coi didn't have it" is never a reason to leave one out. Judge
-every component on whether it is *good*, not on how closely it tracks the original.
-
-## Solution structure (reference rules)
+## Solution structure
 
 | Project | Kind | May reference |
 |---------|------|---------------|
-| `src/Forma.Web.Css` | Class library | *(nothing)* — framework-agnostic CSS value types (`CssColor`) |
-| `src/Forma.Blazor.Abstractions` | Class library | Forma.Web.Css — contracts, message/enum types |
-| `src/Forma.Blazor.Core` | Class library | Abstractions — service implementations |
-| `src/Forma.Blazor` | Razor Class Library | Abstractions **only** — the packaged components |
-| `tests/Forma.Blazor.Tests` | Test project | Forma.Blazor, Forma.Blazor.Core |
-| `tests/Forma.Blazor.Showcase` | Web app | all of the above — reference host + gallery |
+| `src/Forma.Web.Css` | Class library | Nothing — framework-agnostic CSS value types |
+| `src/Forma.Blazor.Abstractions` | Class library | `Forma.Web.Css` — contracts, messages, enums |
+| `src/Forma.Blazor.Core` | Class library | `Forma.Blazor.Abstractions` — implementations |
+| `src/Forma.Blazor` | Razor Class Library | `Forma.Blazor.Abstractions` only — packaged components |
+| `tests/Forma.Web.Css.Tests` | Test project | `Forma.Web.Css` |
+| `tests/Forma.Blazor.Tests` | Test project | `Forma.Blazor`, `Forma.Blazor.Core` |
+| `tests/Forma.Blazor.Showcase` | Web app | `Forma.Blazor`, `Forma.Blazor.Core` — reference host and gallery |
 
-`Forma.Blazor` must **never** reference `Forma.Blazor.Core`. Components depend on the
-*interface* (`IToastService`); the **host** picks the implementation via DI.
-
-Colours and other CSS values are typed, never strings: `CssColor.FromRgba(98, 105, 118, 0.12)`,
-`CssColor.FromHex(0x2c384a)`. `Forma.Web.*` is the family for framework-agnostic web value
-types; keep infrastructure (middleware, DI, hosting) out of it.
-
-Three identities are distinct — never conflate them: assembly/namespace `Forma.Blazor`,
-package id `2Site.Forma.Blazor`, static asset base path `_content/Forma.Blazor` (pinned via
-`StaticWebAssetBasePath`; markup and JS hardcode these URLs — do not change it).
+- Do make components depend on abstractions such as `IToastService`; let the host choose implementations through DI.
+- Do represent colours and other CSS values with typed values such as `CssColor.FromRgba(...)` and `CssColor.FromHex(...)`.
+- Do reserve `Forma.Web.*` for framework-agnostic web value types.
+- Do keep these identities distinct: assembly/namespace `Forma.Blazor`, package ID `2Site.Forma.Blazor`, static asset base path `_content/Forma.Blazor`.
+- Don't reference `Forma.Blazor.Core` from `Forma.Blazor`.
+- Don't put middleware, DI, hosting, or other infrastructure in `Forma.Web.*`.
+- Don't represent typed CSS values as arbitrary strings.
+- Don't rename or conflate the three public identities; `_content/Forma.Blazor` is pinned and hardcoded by markup and JS.
 
 ## Naming
 
-- **Component tags** carry the `Forma` prefix: `<FormaModal>`, `<FormaDataGrid>`.
-- **CSS classes** carry the `forma-` prefix: `.forma-toggle-track`.
-- **C# types** (services, enums, records) carry **no** prefix — namespaces disambiguate
-  (`ToastService`, `ModalSize`, `BreadcrumbItem`).
+- Do prefix component tags with `Forma`: `<FormaModal>`, `<FormaDataGrid>`.
+- Do prefix CSS classes with `forma-`: `.forma-toggle-track`.
+- Do leave C# services, enums, and records unprefixed because namespaces disambiguate them: `ToastService`, `ModalSize`, `BreadcrumbItem`.
+- Don't apply one naming convention indiscriminately across Razor tags, CSS classes, and C# types.
 
 ## Comments and documentation
 
-**State what a thing is or does. Nothing else.** This governs every piece of prose written
-into the repo — XML docs, CSS banner comments, inline comments, README and instruction files
-alike. The codebase is not a history book.
+These rules govern prose that *describes a thing*. They do not apply to this file, or to documents whose purpose is to teach judgment or record decisions.
 
-- **No history.** Not what the code used to be, what it was ported from, which library it
-  replaced, or what an earlier attempt got wrong.
-- **No argument for a decision.** Why an approach was chosen over the alternative is noise to
-  someone who just needs to use the thing. Keep the behaviour, drop the justification —
-  including justifications for where something lives or why it isn't somewhere else.
-- **No position in a plan.** Not the phase, the roadmap item, or what gates what.
-- **No cross-references.** Who calls it, where else it is used, what it mirrors.
-- **Don't restate the code.** A comment reading `the UI font of the device` above a
-  `system-ui, -apple-system, …` value adds nothing.
+- Do state only what a thing is or does in XML docs, CSS banners, inline comments, and README files.
+- Do comment only when the code cannot express an important constraint, such as a necessary `!important`, a non-obvious `-webkit-` property, or an off-by-one invariant.
+- Do keep comments to one line whenever possible.
+- Do add a one-line XML `<summary>` describing what every public parameter and public type is.
+- Do keep historical origin and usage mapping in the intentional *Old pattern* and *Used in* rows of `COMPONENTS.md`.
+- Don't document history, rejected alternatives, decision arguments, roadmap position, call sites, mirrors, or other cross-references.
+- Don't restate obvious code or pad files with unnecessary prose.
 
-Write the comment when the code genuinely cannot show it: an `!important` that exists to
-outrank another stylesheet, a `-webkit-` property whose name doesn't say what it prevents, an
-off-by-one invariant. One line is nearly always enough; prefer no comment over a padded one.
+## Component file layout
 
-The deliberate exception is `COMPONENTS.md`, whose *Old pattern* and *Used in* rows exist to
-record where each component came from — that is what the inventory is for.
+Components live in `src/Forma.Blazor/Components/{Category}/`, where `{Category}` is `Layout`, `Feedback`, `Input`, `Data`, `Interactive`, `Editors`, or `Specialized`.
 
-## File layout per component
-
-Components live in `src/Forma.Blazor/Components/{Category}/`, where `{Category}` is one
-of `Layout`, `Feedback`, `Input`, `Data`, `Interactive`, `Editors`, `Specialized`.
-
-```
+```text
 Components/Input/
-├── FormaX.razor          # markup only — @namespace first line
-├── FormaX.razor.cs       # code-behind — all logic lives here, never in @code
-├── FormaX.razor.css      # CSS isolation, banner comment at the top
-├── FormaX.razor.js       # ONLY if there is no HTML/CSS alternative
-├── FormaX.resx           # neutral strings, only if the component renders text
+├── FormaX.razor          # markup only; @namespace first
+├── FormaX.razor.cs       # all component logic
+├── FormaX.razor.css      # isolated CSS with banner
+├── FormaX.razor.js       # only when interop is warranted
+├── FormaX.resx           # neutral strings, when needed
 ├── FormaX.he.resx
 └── FormaX.es.resx
 ```
 
-Supporting types (`ModalSize`, `BreadcrumbItem`, `FormaIcon`) are plain `.cs` files beside
-the component that owns them.
+- Do keep markup in `.razor`, logic in `.razor.cs`, and component styling in `.razor.css`.
+- Do place supporting types such as `ModalSize`, `BreadcrumbItem`, and `FormaIcon` beside the component that owns them.
+- Do add a colocated `.razor.js` only when HTML, CSS, and Blazor cannot provide the required behaviour.
+- Do add the resx trio only when the component invents user-facing text.
+- Don't use `@code` blocks in library components.
+- Don't put component-specific styles in global stylesheets or scatter supporting types into unrelated shared folders.
 
-## Component authoring rules
+## Component authoring
 
-- `public sealed partial class FormaX : ComponentBase` — **sealed by default**. Only unseal
-  when a child component must reference the parent type (a couple of early components are
-  unsealed; new work seals).
-- **Code-behind only.** `.razor` holds markup; no `@code` blocks in library components.
-  File-scoped namespace, matching the folder path.
-- **Members are ordered by role, not alphabetically:** constants → `[Parameter]`s →
-  `[Inject]`s → private fields → computed properties → lifecycle overrides
-  (`OnInitialized`/`OnParametersSet`/`OnAfterRenderAsync`) → event handlers and private
-  helpers → `InputBase` overrides and `Dispose`/`DisposeAsync` last. Parameters stay grouped
-  by the feature they belong to so related ones read together.
-- **An expression-body arrow starts its own line**, never trailing the signature:
-  `private void Close()` then `=> _isOpen = false;` on the next line, indented one level.
-- **Async methods carry the `Async` suffix**, event handlers included
-  (`HandleAddNewAsync`, `OnJumpKeyDownAsync`).
-- **Parameters** are single-line: `[Parameter] public string? Label { get; set; }`. Use
-  `[Parameter, EditorRequired]` for mandatory ones. Add
-  `[Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? AdditionalAttributes`
-  when the root element should accept pass-through attributes, and splat with `@attributes`.
-- **Group into an `Options` record** (`FormaPaginationOptions`, `FormaModalOptions`) when any
-  of these hold:
-  - Three or more `bool`/config parameters share one concern nameable in a single sentence
-    ("which parts of the pager are shown", "default close and footer-action behavior") and
-    travel together — callers reach for one named combination at a time and multiple call
-    sites reuse the same combination as a preset.
-  - The concern is one a future phase is expected to grow (roadmap-tracked settings, a
-    feature area still being fleshed out) — starting grouped avoids a later breaking
-    rename from a bare parameter to a record.
-  - The component is designed to be forwarded through a composing parent (`FormaDataGrid`
-    passing `PaginationOptions` to `FormaPagination`) — a record is one parameter to thread
-    through, not N.
+- Do declare components `public sealed partial class FormaX : ComponentBase` by default; unseal only when a child must reference the parent type.
+- Do use a file-scoped namespace matching the folder path.
+- Do order members by role: constants → `[Parameter]`s → `[Inject]`s → fields → computed properties → lifecycle methods → handlers/helpers → `InputBase` overrides → disposal.
+- Do keep related parameters together rather than sorting members alphabetically.
+- Do put an expression-bodied arrow on the next indented line:
 
-  Keep parameters standalone when each gates an independent feature area with its own
-  dependents (`FormaDataGrid`'s `EnablePagination`, `EnableCheckboxes`, `Virtualize` +
-  `ItemSize` + `OverscanCount`), or when there's a single flag with no siblings and no
-  planned growth. The record is a `sealed record {Component}Options` beside the component,
-  `init`-only properties matching the prior defaults, and a static `Default` property when a
-  bare `new()` is the common case. Name the component's own parameter `Options`; a composing
-  parent that forwards a child's options through prefixes it with the child's concern
-  instead (`PaginationOptions` on `FormaDataGrid`) so it doesn't collide with the parent's
-  own `Options`, if it has one.
-- **XML `<summary>` on every public parameter and public type.** One line, describing *what
-  it is*.
-- **Validate in `OnParametersSet`** with the throw-helpers:
-  `ArgumentException.ThrowIfNullOrWhiteSpace(Title)`,
-  `ArgumentOutOfRangeException.ThrowIfLessThan(SearchDelay, TimeSpan.Zero)`,
-  `ArgumentNullException.ThrowIfNull(...)`. A structural misuse (child outside its parent)
-  throws `InvalidOperationException` from `OnInitialized`.
-- **Two-way binding:** form inputs derive from `InputBase<TValue>` so they integrate with
-  `EditForm` — render `@CssClass` on the input, emit `<ValidationMessage For="@ValueExpression" />`,
-  and implement `TryParseValueFromString`. Non-form components use the plain
-  `Value` / `ValueChanged` pair.
-- **Parent/child composition** (`FormaTabs`/`FormaTab`) uses a `CascadingValue` of the parent;
-  the child registers in `OnInitialized` and unregisters in `Dispose`. Registration methods
-  on the parent are `internal`.
-- **Dispose what you own.** Implement `IDisposable` / `IAsyncDisposable` for
-  `CancellationTokenSource`, `Timer`, JS module references, and service subscriptions.
-- **Never `.ConfigureAwait(false)` in a component.** `Forma.Blazor` disables CA2007 in its own
-  `.editorconfig`: leaving the synchronization context means any state touched after the await
-  has to be marshalled back through `ComponentBase.InvokeAsync`. Service code in
-  `Forma.Blazor.Core` is off the renderer and does use `.ConfigureAwait(false)` on every await.
-- **Generated element ids** use `$"prefix-{Guid.NewGuid():N}"` so multiple instances coexist.
+  ```csharp
+  private void Close()
+      => _isOpen = false;
+  ```
+
+- Do suffix asynchronous methods and event handlers with `Async`, such as `HandleAddNewAsync` and `OnJumpKeyDownAsync`.
+- Do keep parameter declarations on one line and use `[Parameter, EditorRequired]` for mandatory parameters.
+- Do add `AdditionalAttributes` with `CaptureUnmatchedValues = true` and `@attributes` when the root element should accept pass-through attributes.
+- Do generate element IDs as `$"prefix-{Guid.NewGuid():N}"` so multiple instances can coexist.
+- Don't place component logic in markup.
+- Don't use `.ConfigureAwait(false)` in `Forma.Blazor` components; leaving the synchronization context means state touched after an await has to be marshalled back through `InvokeAsync`. `src/Forma.Blazor/.editorconfig` sets `CA2007` to `none`, so nothing will flag it for you.
+- Don't omit `.ConfigureAwait(false)` from awaited service code in `Forma.Blazor.Core`, which runs off the renderer and where the root `.editorconfig` sets `CA2007` to `error`.
+
+## Options records
+
+- Do group configuration into a `sealed record {Component}Options` when three or more related flags travel together, callers reuse named presets, the concern is expected to grow, or a composing parent forwards the settings.
+- Do use `init`-only properties with the same defaults as the parameters they replace.
+- Do add a static `Default` property when a bare `new()` is the common case.
+- Do name the component's own options parameter `Options`.
+- Do prefix forwarded child options by concern, such as `PaginationOptions` on `FormaDataGrid`.
+- Do keep parameters standalone when each controls an independent feature area or when a lone flag has no siblings or planned growth.
+- Don't create an options record merely to collect unrelated settings.
+- Don't force independent settings such as `EnablePagination`, `EnableCheckboxes`, and `Virtualize` into one record.
+
+## Validation and binding
+
+- Do validate parameters in `OnParametersSet` with throw helpers such as `ArgumentException.ThrowIfNullOrWhiteSpace`, `ArgumentOutOfRangeException.ThrowIfLessThan`, and `ArgumentNullException.ThrowIfNull`.
+- Do throw `InvalidOperationException` from `OnInitialized` for structural misuse such as a child outside its required parent.
+- Do derive form inputs from `InputBase<TValue>`, render `@CssClass`, emit `<ValidationMessage For="@ValueExpression" />`, and implement `TryParseValueFromString`.
+- Do use a plain `Value` / `ValueChanged` pair for non-form components.
+- Don't postpone validation until an event handler when lifecycle validation can fail earlier and more clearly.
+
+## Parent/child composition and disposal
+
+- Do compose parent/child pairs such as `FormaTabs` and `FormaTab` through a `CascadingValue` of the parent.
+- Do register the child in `OnInitialized`, unregister it in `Dispose`, and keep parent registration methods `internal`.
+- Do implement `IDisposable` or `IAsyncDisposable` for owned `CancellationTokenSource`, `Timer`, JS module references, and service subscriptions.
+- Don't dispose dependencies the component does not own.
+- Don't leave registrations, subscriptions, timers, or JS references alive after the component is disposed.
 
 ## JavaScript
 
-JS-free is the *default*, not a prohibition. Prefer an HTML/CSS/Blazor mechanism when one
-exists — but where interop genuinely makes the component better (behaviour the platform only
-exposes to script, a rough edge that cannot be smoothed declaratively), use it. Never contort a
-component or ship a worse experience just to stay script-free.
+JS-free is the default, not a prohibition.
 
-**How much script a fix costs is not a factor.** Where a declarative mechanism exists, use it;
-where none does and interop improves the experience, write however much JS the job needs. "It
-would take another function" is never a reason to leave a rough edge in the component.
-
-The constraints on interop are what it's made of, not whether it's allowed:
-
-- **No external libraries.** Native, modern browser APIs only — no jQuery, no polyfills, no npm.
-- **Small and colocated.** A `FormaX.razor.js` ES module next to the component, doing one thing.
-  Behaviour stays in C#; JS handles only what the DOM won't do otherwise.
-- **Name parameters for what they are, never for their type** — `input`, `dialog`, `label`, not
-  `inputEl` / `dialogElement` / `el`. The JSDoc `@param {HTMLInputElement}` already states the
-  type; repeating it in the name is noise.
-- Import it in `OnAfterRenderAsync(firstRender)` from
-  `./_content/Forma.Blazor/Components/{Category}/FormaX.razor.js`.
-- Wrap every `JS` call in `try { … } catch (JSException) { }` — the circuit can drop mid-call —
-  and dispose the module in `DisposeAsync`, catching `JSDisconnectedException`.
+- Do prefer HTML, CSS, or Blazor when they provide the behaviour cleanly.
+- Do use interop when the platform exposes the needed behaviour only to script or when declarative techniques leave a real usability problem.
+- Do use only native modern browser APIs; keep each module small, colocated as `FormaX.razor.js`, and focused on one DOM responsibility.
+- Do keep behaviour in C# and use JS only for what the DOM cannot otherwise provide.
+- Do name JS parameters by role (`input`, `dialog`, `label`), not type (`inputEl`, `dialogElement`, `el`).
+- Do import the module on first render from `./_content/Forma.Blazor/Components/{Category}/FormaX.razor.js`.
+- Do catch `JSException` around every JS call because the circuit can drop mid-call.
+- Do dispose the module in `DisposeAsync` and catch `JSDisconnectedException`.
+- Don't use jQuery, npm packages, polyfills, or other external JS libraries.
+- Don't contort a component or ship a worse experience merely to remain script-free.
+- Don't treat the amount of JS required as a reason to leave a rough edge unresolved.
 
 ## CSS
 
-- CSS isolation (`.razor.css`) per component, opened by a banner comment naming the component
-  and its approach.
-- **Logical properties everywhere** (`margin-block-end`, `inset-inline-start`, `padding-inline`)
-  so RTL works without a second stylesheet. Never `left`/`right`/`margin-left`.
-- Colors, fonts, shadows come from the design tokens in
-  `src/Forma.Blazor/wwwroot/forma-tokens.css` via `var(--main-color)`, `var(--border-color)`,
-  … **Every custom property holding a colour ends in `-color`** — `--main-color`, `--text-muted-color`, `--forma-toggle-on-bg-color` — so
-  a name tells you what kind of value it carries. Component-local knobs fall back to a *token*,
-  never a hardcoded hex: `var(--forma-toggle-on-bg-color, var(--main-color))`, not
-  `var(--forma-toggle-on-bg-color, #0d6efd)` — the latter is an island a theme override can't
-  reach. Never invent a new synonym for an existing token (`--forma-primary`, `--primary`, or
-  a local `--dp-primary-color` holding its own literal) — reach for `--main-color` or
-  `--focus-color`. `--main-dark-color`, `--main-light-color` and `--focus-color` are
-  `color-mix`ed from `--main-color`, so a host retheming Forma overrides one token.
-- **Three global stylesheets, and a component adds to none of them.** `forma-tokens.css` is
-  values only; `forma-reset.css` is cross-browser normalization with no colours or type
-  choices in it; `forma-base.css` is the element-level look a host opts into. A host links
-  the layers it wants, in that order — tokens are the one everything else reads. A rule that
-  belongs to a component belongs in that component's `.razor.css`.
-- **Never set `font-family` on a control.** The reset gives every `button`, `input`, `select`
-  and `textarea` `font: inherit`, which is what keeps an input in the same typeface as the
-  label beside it — those elements take the OS UI font otherwise. Set `font-size` when a
-  component needs one, and reach for `var(--font-family-mono)` rather than bare `monospace`.
-- **Animate only what is decoration.** The reset flattens every animation and transition
-  under `prefers-reduced-motion: reduce`, so nothing may convey state through motion alone.
-- Accessibility is part of "done" — see the section below.
+- Do use CSS isolation and begin each `.razor.css` file with a banner naming the component and its approach.
+- Do use logical properties such as `margin-block-end`, `inset-inline-start`, `padding-inline`, and `text-align: start` so RTL works without a second stylesheet.
+- Do read colours, fonts, and shadows from `src/Forma.Blazor/wwwroot/forma-tokens.css`.
+- Do end every custom property containing a colour with `-color`.
+- Do make component-local colour knobs fall back to a token: `var(--forma-toggle-on-bg-color, var(--main-color))`.
+- Do reuse existing tokens such as `--main-color` and `--focus-color`; `--main-dark-color`, `--main-light-color`, and `--focus-color` derive from `--main-color`.
+- Do keep `forma-tokens.css` value-only, `forma-reset.css` limited to cross-browser normalization, and `forma-base.css` limited to the opt-in element-level look.
+- Do keep component rules in the component's isolated stylesheet.
+- Do rely on the reset's `font: inherit` for controls, set only the needed `font-size`, and use `var(--font-family-mono)` instead of bare `monospace`.
+- Do animate decoration only; every state must remain understandable without motion.
+- Don't use physical direction properties such as `left`, `right`, `margin-left`, or `padding-right`.
+- Don't hardcode a colour as a component-local token fallback or invent aliases for existing tokens; a literal fallback is an island a theme override cannot reach.
+- Don't add component rules to any global stylesheet.
+- Don't set `font-family` on controls.
+- Don't use motion as the only channel communicating state.
 
-## Accessibility (non-negotiable)
+## Accessibility
 
-**A component is not finished until it works for someone who cannot see colour, cannot use a
-mouse, and cannot see the screen at all.** Like RTL parity, this is a correctness requirement,
-not polish. Assume there is no legitimate exception; if you think you've found one, raise it
-rather than shipping without.
+A component is not finished until it works without colour, without a mouse, and without sight. Assume no legitimate exception exists; if you believe you have found one, raise it rather than shipping without.
 
-### Colour is never the only signal
+### State and contrast
 
-Every state a component can be in — on/off, selected, current, valid/invalid, severity,
-disabled, sorted, dragging — must be distinguishable **with the colour removed**. Pair the
-colour with a second channel:
+- Do pair colour with a second channel for every state: a glyph, text, weight, underline, position, shape, or another persistent visual difference.
+- Do treat existing text that states the condition as a valid second channel.
+- Do meet 4.5:1 text contrast, 3:1 for large text, and 3:1 for meaningful non-text indicators.
+- Do expose both sides of a state indicator as tokens so a host can retune contrast without forking CSS.
+- Don't rely on colour or opacity alone to communicate on/off, selected, current, validity, severity, disabled, sorted, or dragging states.
 
-- a **glyph** (`FormaToggleSwitch` puts ✓/✕ on the track, `FormaToastContainer` gives each
-  severity ✓/✕/⚠/ℹ),
-- **weight** or an **underline** (`FormaPagination`'s current page, `FormaDatePicker`'s
-  in-range days),
-- **position** or **shape** (a knob that slides, a drop indicator that moves, a checkbox that
-  switches from tick to dash).
-
-Opacity alone does not count — it changes lightness but keeps the same form, so it is weak for
-anything more important than a disabled affordance. Where the component already renders text
-that states the condition, the text *is* the second channel and a glyph is optional polish.
-
-### Contrast
-
-- Text: **4.5:1** against its background (3:1 for large text).
-- Non-text indicators — glyphs, focus rings, state marks, borders that carry meaning:
-  **3:1** (WCAG 1.4.11). White on a mid-grey track is roughly 2:1 and fails; darken the glyph
-  instead. Expose both sides as tokens (`--forma-toggle-off-mark`, `--forma-toggle-on-mark`) so
-  a host can retune without forking the CSS.
+Opacity changes lightness while preserving shape, so it is too weak for anything more important than a disabled affordance. White on a mid-grey track measures roughly 2:1 and fails; darken the glyph instead of lightening the track.
 
 ### ARIA
 
-- **Every interactive element has an accessible name.** An icon-only or glyph-only button
-  (`❮`, `×`, `⠿`) has none until you add `aria-label` — and that label is user-facing text, so
-  it comes from the localizer, never a literal.
-- **Name things usefully, not minimally.** A calendar day button named `"15"` is technically
-  named and practically useless; name it with the full date.
-- Use the roles a pattern requires (`switch`, `tablist`/`tab`/`tabpanel`, `dialog`, `list`) and
-  the state that goes with them (`aria-selected`, `aria-expanded`, `aria-controls`,
-  `aria-current`, `aria-pressed`, `aria-disabled`). Prefer a native element whose semantics are
-  already correct over a div plus a role.
-- **Anything that appears without the user asking for it needs a live region** — toasts,
-  validation summaries, reorder announcements. The region must exist in the DOM *before* the
-  content is inserted, or nothing is announced. `role="status"` / `aria-live="polite"` for
-  ordinary updates; reserve `assertive` for genuine interruptions, and never nest an `alert`
-  inside a polite region or it speaks twice.
-- **Decorative content is hidden**: `aria-hidden="true"` on glyphs, swatches and state marks
-  whose meaning is already carried by a label or the element's own state. A mark inside an
-  already-hidden subtree needs nothing extra.
-- **Don't let `aria-label` shadow a real `<label>`.** If the element has an associated label,
-  `aria-label` silently overrides it — set it only when no label exists.
+- Do give every interactive element a useful accessible name.
+- Do localize labels for icon-only and glyph-only controls; a day button should announce the full date, not only `15`.
+- Do prefer native semantic elements and add the roles and states required by the pattern, including `aria-selected`, `aria-expanded`, `aria-controls`, `aria-current`, `aria-pressed`, and `aria-disabled`.
+- Do place live regions in the DOM before inserting unsolicited updates such as toasts, validation summaries, and reorder announcements.
+- Do use `role="status"` or `aria-live="polite"` for ordinary updates and reserve assertive announcements for genuine interruptions.
+- Do hide decorative glyphs, swatches, and redundant state marks with `aria-hidden="true"`.
+- Don't nest an alert inside a polite live region and cause duplicate announcements.
+- Don't set `aria-label` when a real associated `<label>` already names the element; it overrides that label.
 
 ### Focus and keyboard
 
-- Every focusable element has a visible `:focus-visible` ring. `outline: none`, `outline: 0`
-  and `outline: 2px solid transparent` are only acceptable when something equally visible
-  replaces them — and a `box-shadow` alone disappears in forced-colours mode, so prefer a real
-  outline.
-- Everything reachable and operable by keyboard, in a sensible order.
+- Do give every focusable element a visible `:focus-visible` indicator, preferably a real outline that survives forced-colours mode.
+- Do make every operation keyboard reachable in a sensible order.
+- Don't remove the outline unless an equally visible replacement exists.
+- Don't rely on `box-shadow` alone for focus indication.
 
-### Verifying
+### Verification
 
-- bUnit asserts the **attributes**: roles, `aria-*`, that a mark renders and is hidden. Add
-  those tests alongside the behavioural ones.
-- bUnit cannot see CSS, so a state conveyed by a stylesheet has to be checked in the browser —
-  read the computed style, and screenshot the element in `he` *and* `en`/`es-419`.
-- Squint at it, or desaturate the screenshot: if two states become identical, the second
-  channel is missing.
+- Do assert roles, `aria-*`, rendered state marks, and decorative hiding in bUnit alongside behavioural tests.
+- Do verify stylesheet-dependent states in a browser because bUnit cannot see CSS.
+- Do inspect computed styles and screenshots in `he` and `en` or `es-419`.
+- Do desaturate or squint at the component; if two states become identical, add a second channel.
+- Don't consider accessibility complete based only on markup tests.
 
-## Touch and pointer (non-negotiable)
+## Touch and pointer
 
-**Every component is fully usable with a finger.** These components run on tablets and
-phones, so touch is a first-class input, not a degraded fallback. Like RTL parity, assume
-there is no legitimate exception.
+Every component must remain fully usable with a finger. Assume no legitimate exception exists; if you believe you have found one, raise it rather than shipping without.
 
-### Target size
+### Target size and tapping
 
-- **24×24 CSS px is the floor.** WCAG 2.5.8 allows an exception where spacing separates the
-  targets, and another for links inline in a run of text; treat both as a last resort rather
-  than a licence. A 16px checkbox or a 16px "remove tag" button fails outright.
-- **44×44 on coarse pointers.** Do not inflate desktop density to get there — put the larger
-  size behind `@media (pointer: coarse)`, which is what that query exists for:
+- Do make every target at least 24×24 CSS px.
+- Do use 44×44 targets under `@media (pointer: coarse)` without inflating desktop density:
 
   ```css
   @media (pointer: coarse) {
       .forma-x { min-block-size: 2.75rem; }
   }
   ```
-- Grow the *hit area*, not necessarily the artwork. Padding on the wrapping label beats
-  resizing a switch's track and having to redo the knob geometry.
-- Measure the rendered box rather than adding up padding by hand — a flex child can be
-  squeezed below its declared size, so check `getBoundingClientRect` and add `flex-shrink: 0`
-  where it matters.
 
-### Tapping
+- Do enlarge the hit area with padding or a wrapper rather than always enlarging the artwork.
+- Do measure rendered boxes with `getBoundingClientRect` and use `flex-shrink: 0` where layout could squeeze them.
+- Do set `touch-action: manipulation` in the base rule of tappable controls.
+- Don't treat WCAG spacing or inline-link exceptions as the default.
+- Don't use `touch-action: none` except on a surface that owns a drag gesture.
 
-- **`touch-action: manipulation` on anything tappable**, which drops the ~300ms double-tap
-  delay. It belongs in the element's own base rule, not a second rule restating the selector.
-- `touch-action: none` is only for a surface that owns a drag gesture, never for a plain
-  button.
+### Hover
 
-### Hover does not exist on touch
-
-- **Every `:hover` rule lives inside `@media (hover: hover)`.** Unguarded, the style latches
-  after a tap and stays until the user taps elsewhere.
-- Nothing may be *revealed* only on hover — no `display`, `visibility`, `opacity: 0 → 1` or
-  `pointer-events` that a finger can never trigger. Row actions are always present, or behind
-  a tap.
-- Hover **previews** (a range preview that follows the cursor) are a pointer-only enhancement.
-  That is fine, provided the feature still completes by tapping.
+- Do place every `:hover` rule inside `@media (hover: hover)`.
+- Do keep pointer-only previews optional while ensuring the task can still be completed by tapping.
+- Don't reveal required controls or information only through hover.
+- Don't let hover control `display`, `visibility`, opacity, or pointer events for something a touch user must reach.
 
 ### Gestures
 
-- Use **Pointer Events**, never `mouse*`. Touch emits compatibility mouse events only *after*
-  the gesture ends, never during it, so nothing continuous — hover tracking, a drag — can hang
-  off `@onmouseenter`/`@onmousedown`. A modifier-key path (shift-click to range-select) needs a
-  touch-reachable equivalent.
-- **Pointer capture does not stop the compositor.** A touch that begins on a scrollable area
-  is claimed for scrolling and your gesture gets `pointercancel` mid-drag. The only thing that
-  keeps it alive is a **non-passive `touchmove` with `preventDefault()`**, and it must be
-  guarded so it applies *only while a drag is actually under way* — otherwise ordinary swipes
-  stop scrolling:
+- Do use Pointer Events rather than mouse events for continuous gestures.
+- Do provide a touch-reachable equivalent for modifier-key interactions such as shift-click range selection.
+- Do require press-and-hold before touch dragging so ordinary swipes can still scroll; let mouse dragging begin immediately.
+- Do keep a drag alive across scroll arbitration with a guarded non-passive `touchmove`, because pointer capture does not stop the compositor claiming the touch and cancelling the pointer:
 
   ```js
   element.addEventListener('touchmove', event => {
       if (isDragging) { event.preventDefault(); }
   }, { signal, passive: false });
   ```
-- **Press-and-hold before a drag lifts on touch**, so a swipe over the same surface still
-  scrolls the page. Gate the hold on `event.pointerType === 'touch'`; a mouse should drag
-  immediately.
 
-### Small viewports
+- Don't leave that listener unguarded; an unconditional `preventDefault()` stops ordinary swipes from scrolling.
+- Don't assume pointer capture alone prevents `pointercancel` during touch scrolling.
 
-- A popup must clamp to the viewport and stack rather than overflow — a dual-panel calendar is
-  wider than a phone. `max-inline-size: calc(100vw - 1rem)` plus `flex-wrap: wrap` beats a
-  horizontal scrollbar.
+### Small viewports and verification
 
-### Verifying
+- Do clamp popups to the viewport and let wide layouts wrap or stack, for example with `max-inline-size: calc(100vw - 1rem)` and `flex-wrap: wrap`.
+- Do verify touch in a real browser with a coarse pointer because bUnit cannot produce meaningful pointer behaviour.
+- Do measure every `button`, `input`, `select`, and `textarea` and fail targets below 24×24.
+- Do drive gestures with CDP `Input.dispatchTouchEvent`, scroll targets into view before computing coordinates, and assert that a drag survives movement.
+- Do verify that a quick swipe leaves order unchanged.
+- Don't use the browser tool's HTML5 `drag_element` as proof of Pointer Events behaviour; it emits no pointer events.
+- Don't infer a broken gesture from an empty event log before checking whether the coordinates actually hit the target.
 
-- bUnit cannot produce a pointer event, so touch behaviour is verified in a browser.
-- Emulate a coarse pointer, then assert **measured** sizes — walk every
-  `button, input, select, textarea` and fail anything under 24×24.
-- Drive gestures with CDP `Input.dispatchTouchEvent`, which goes through the browser's real
-  input pipeline and therefore honours `touch-action` and the scroll/drag arbitration. The
-  browser tool's `drag_element` uses the HTML5 drag API and emits **no pointer events at all**,
-  so it proves nothing here.
-- **Scroll the target into view before computing coordinates.** Below-the-fold coordinates
-  silently hit nothing, and the symptom — an event log that stays empty — reads exactly like a
-  broken component.
-- Assert the drag *survives* the move, not just that it started: check the dragging class
-  mid-gesture, and check that a quick swipe leaves the order untouched.
+## RTL / LTR parity
 
-## RTL / LTR parity (non-negotiable)
+Every component must behave and look the same in both directions—mirrored, not different. Assume no legitimate exception exists; if you believe you have found one, raise it rather than shipping a direction-specific hack.
 
-**Every component behaves and looks identical in RTL and LTR — mirrored, not different.** This
-is a correctness requirement, not a polish item. Assume there is no legitimate exception; if
-you think you've found one, stop and raise it rather than shipping a direction-specific hack.
-
-- **Never** write physical CSS: no `left`/`right`, `margin-left`/`padding-right`,
-  `border-left`, `text-align: left/right`, `float`, `transform: translateX(+n)` for offsets, or
-  physical `background-position`. Use the logical equivalents — `inset-inline-start/end`,
-  `margin-inline-start/end`, `padding-inline`, `border-inline-start`, `text-align: start/end`,
-  `inset-inline`.
-- **No `[dir="rtl"]` override blocks** and no direction-conditional CSS. A rule that needs an
-  RTL counterpart is a rule written with the wrong property. The one legitimate use of
-  direction in markup is setting `dir` on a subtree whose *content* has fixed directionality
-  (e.g. a numeric/latin field inside an RTL page).
-- **Directional glyphs.** Chevrons, arrows, and "next/previous" affordances must point
-  *forward in reading order*. Note that browsers already mirror characters with the Unicode
-  `Bidi_Mirrored` property — `❮` U+276E, `❯` U+276F, `‹`, `›`, `<`, `>` — so the *same* source
-  character renders `❮` in LTR and `❯` in RTL automatically. **Do not flip these in code**
-  from `IsRightToLeft`; that double-flips and points them inward. Only glyphs that are *not*
-  bidi-mirrored (most icon fonts and SVGs) need explicit mirroring.
-- **Keyboard semantics mirror too.** `ArrowLeft`/`ArrowRight` in a tablist, slider, or
-  calendar mean *previous/next in reading order*, so their meaning swaps under RTL. Resolve
-  them against `CultureInfo.CurrentCulture.TextInfo.IsRightToLeft`, never against a fixed axis.
-  `ArrowUp`/`ArrowDown`, `Home`/`End`, `Enter`, `Escape` are unaffected.
-- **Popup/menu alignment** anchors to inline-start/inline-end, so a dropdown that hangs off the
-  start edge in LTR hangs off the start edge in RTL — the mirror image, not the same pixel side.
-- Numbers, dates, and currency format through `CultureInfo.CurrentCulture`. A digit run such as
-  `29.7.2026` already renders correctly inside an RTL box, and a `start - end` pair already
-  orders start-first in reading order — verify before adding `<bdi>` or isolate characters.
-- **Verify both — with your eyes, at readable size.** Every showcase page must be checked in
-  `he` (RTL) *and* `en`/`es-419` (LTR). `textContent` and element coordinates show the *source*
-  character and cannot reveal bidi mirroring; screenshot the individual element. In RTL,
-  "first" means rightmost — read right-to-left before concluding something is reversed. Where
-  direction affects logic (arrow keys, popup side), add a bUnit test that sets an RTL
-  `CultureInfo` and asserts the mirrored outcome.
+- Do use logical CSS properties for offsets, spacing, borders, alignment, and positioning.
+- Do reach for a logical property that mirrors on its own when a transform would otherwise need a second keyframe; offsetting a relatively positioned element through `inset-inline-start` serves both directions with one animation.
+- Do check which edge a logical property resolves to before using it; a divider between a sidebar and its content is `inline-end` in both directions, not `inline-start`.
+- Do use `dir` only on content with fixed directionality, such as a Latin or numeric field inside an RTL page.
+- Do let Unicode bidi-mirrored characters such as `❮`, `❯`, `‹`, `›`, `<`, and `>` mirror naturally.
+- Do explicitly mirror only glyphs that are not bidi-mirrored, such as most icon-font and SVG arrows.
+- Do interpret horizontal arrow keys as previous/next in reading order and resolve them through `CultureInfo.CurrentCulture.TextInfo.IsRightToLeft`.
+- Do anchor popups and menus to inline-start or inline-end.
+- Do format numbers, dates, and currency through `CultureInfo.CurrentCulture` and verify native bidi behaviour before adding `<bdi>` or isolates.
+- Do visually inspect every showcase page in `he` and `en` or `es-419`, and add bUnit tests wherever direction affects logic.
+- Don't write physical CSS or `[dir="rtl"]` override blocks.
+- Don't flip bidi-mirrored characters in code; that double-flips them.
+- Don't swap unaffected keys such as `ArrowUp`, `ArrowDown`, `Home`, `End`, `Enter`, or `Escape`.
+- Don't rely on `textContent` or coordinates to verify glyph mirroring; screenshot the actual element.
 
 ## Localization
 
-- **No hardcoded user-facing strings** in a component. Inject
-  `[Inject] private IStringLocalizer<FormaX> L { get; set; } = default!;` and read `L["Key"]`.
-- Every localized component ships the resx trio: `FormaX.resx` (neutral/en), `FormaX.he.resx`,
-  `FormaX.es.resx` — all three keys in sync.
-- Caller-supplied text (`Title`, `Label`, `ConfirmText`) is the host's job to localize; the
-  library only localizes strings it invents itself.
-- Format dates/numbers against `CultureInfo.CurrentCulture`; respect
-  `TextInfo.IsRightToLeft` when direction matters.
+- Do inject `[Inject] private IStringLocalizer<FormaX> L { get; set; } = default!;` and read library-owned strings through `L["Key"]`.
+- Do ship `FormaX.resx`, `FormaX.he.resx`, and `FormaX.es.resx` with matching keys for every localized component.
+- Do leave caller-supplied text such as `Title`, `Label`, and `ConfirmText` for the host to localize.
+- Do format dates and numbers with `CultureInfo.CurrentCulture` and use `TextInfo.IsRightToLeft` when direction changes behaviour.
+- Don't hardcode user-facing component strings.
+- Don't localize text supplied by the caller a second time inside the library.
 
-## Services (Abstractions + Core)
+## Services
 
-Service-driven components (toast, confirm dialog) follow one shape:
-
-- Contract in `Forma.Blazor.Abstractions/Components/{Category}/IXService.cs`, extending
-  `INotifyStateChanged` when components must re-render on change.
-- Implementation in `Forma.Blazor.Core/Components/{Category}/XService.cs` — `sealed`,
-  composes `StateNotifier` for `Func<Task>` subscribers, validates its arguments, and takes an
-  optional trailing `CancellationToken`.
-- The component subscribes in `OnInitialized` and unsubscribes in `Dispose`.
-- Registration is the **host's** job (`AddScoped<IXService, XService>()`), documented in the
-  README — the library ships no `AddForma…` extension.
+- Do place contracts in `Forma.Blazor.Abstractions/Components/{Category}/IXService.cs`.
+- Do extend `INotifyStateChanged` when a component must rerender after service state changes.
+- Do place sealed implementations in `Forma.Blazor.Core/Components/{Category}/XService.cs`.
+- Do compose `StateNotifier` for `Func<Task>` subscribers, validate arguments, and put an optional `CancellationToken` last.
+- Do subscribe from the component in `OnInitialized` and unsubscribe in `Dispose`.
+- Do let the host register services explicitly, such as `AddScoped<IXService, XService>()`.
+- Don't ship an `AddForma...` registration extension from the library.
+- Don't make the packaged component project depend on service implementations.
 
 ## Tests (bUnit + xUnit v3)
 
-Mirror the source path: `tests/Forma.Blazor.Tests/Components/{Category}/FormaXTests.razor`
-plus `.razor.cs`.
+Mirror source paths under `tests/Forma.Blazor.Tests/Components/{Category}/` with `FormaXTests.razor` and `FormaXTests.razor.cs`.
 
-- `.razor.cs` is one line: `public sealed partial class FormaXTests;`
-- `.razor` starts `@inherits BunitContext` and holds a nested `public sealed class Component`
-  containing the `[Fact]` methods.
-- Test names read `Should_render_checked_when_value_is_true`; bodies use explicit
-  `// Arrange` / `// Act` / `// Assert` comments.
-- Instantiate the context as `using var ctx = new FormaXTests();` and render with
-  `ctx.Render(@<FormaX … />)`.
-- `InputBase<T>` components render inside `FakeFormHost` with a `FakeModel` and an `EditContext`.
-- Assert on rendered markup (`cut.Find(".forma-x")`, attribute values) and on callback
-  invocations — not on private state.
-- Services get plain xUnit tests under `tests/Forma.Blazor.Tests/Services/{Category}/`.
-- Test only the **public** surface. Shared usings live in `_Imports.cs` / `_Imports.razor`.
+- Do keep `.razor.cs` to `public sealed partial class FormaXTests;`.
+- Do start `.razor` with `@inherits BunitContext` and place `[Fact]` methods in a nested `public sealed class Component`.
+- Do name tests like `Should_render_checked_when_value_is_true` and use explicit `// Arrange`, `// Act`, and `// Assert` comments.
+- Do create the context with `using var ctx = new FormaXTests();` and render with `ctx.Render(@<FormaX ... />)`.
+- Do render `InputBase<T>` components inside `FakeFormHost` with a `FakeModel` and `EditContext`.
+- Do assert rendered markup, attributes, and callback invocations rather than private state.
+- Do place plain service tests under `tests/Forma.Blazor.Tests/Services/{Category}/`.
+- Do test only the public surface and keep shared usings in `_Imports.cs` or `_Imports.razor`.
+- Don't couple tests to implementation details or private fields.
 
-## Showcase page
+## Showcase
 
-Every component gets a gallery page — it is the visual review surface, not optional:
-`tests/Forma.Blazor.Showcase/Components/Pages/{Category}/FormaXPage.razor` + its resx trio.
+Every component requires `tests/Forma.Blazor.Showcase/Components/Pages/{Category}/FormaXPage.razor` and its resx trio.
 
 ```razor
 @page "/x-component"
@@ -476,44 +335,36 @@ Every component gets a gallery page — it is the visual review surface, not opt
 @inject IStringLocalizer<FormaXPage> L
 ```
 
-Structure it as `<h1>` + `<p class="desc">`, then one `demo-section` (`<h2>` + `demo-box`) per
-scenario: basic, with labels, states (default/disabled/error), edge cases. All page copy comes
-from the localizer so the `he` / `es-419` switchers exercise RTL and translation.
+- Do structure the page as `<h1>` plus `<p class="desc">`, followed by one `demo-section` containing `<h2>` and `demo-box` per scenario.
+- Do cover basic usage, labels, default/disabled/error states, and edge cases.
+- Do localize all page copy so the `he` and `es-419` switchers exercise RTL and translation.
+- Don't treat the gallery page as optional or as documentation that can be added later.
 
-## Build & verify
+## Build and verification
 
 ```powershell
 dotnet build Forma.slnx
 dotnet test
+dotnet run --project tests/Forma.Blazor.Showcase
 ```
 
-Both must be green before a component is offered for review. Run the Showcase
-(`dotnet run --project tests/Forma.Blazor.Showcase`) to eyeball the component in all three
-cultures.
+- Do require build and tests to pass before offering a component for review.
+- Do inspect the component in all three cultures through the Showcase.
+- Don't pipe the Showcase command's output into `Select-String`, `Select-Object`, or another filter; closing the pipeline terminates the server.
+- Don't present a component as complete while build, tests, accessibility, touch, or direction checks remain unresolved.
 
-## Working agreement — one component at a time
+## Working agreement
 
-Components are built, reviewed, and committed **individually**:
-
-1. Pick the next component from the inventory (Épica's remaining set is listed in
-   `EpicaDeportiva/docs/forma-components.md`).
-2. Derive its design from the components already in the repo — parameters, validation,
-   disposal, CSS, ARIA, localization all follow the patterns above rather than inventing new ones.
-3. Deliver the full set: `.razor` + `.razor.cs` + `.razor.css` (+ resx / `.js` if warranted),
-   bUnit tests, showcase page. Build + tests green, the component verified in **both
-   directions** (`he` RTL and `en`/`es-419` LTR), every state checked against the
-   accessibility rules — named, focusable, and readable with the colour removed — and every
-   target checked with a finger: 24×24 minimum, hover never load-bearing.
-4. **Present it for review and stop.** Iterate on the same component until the maintainer says
-   it is complete — do not move to the next one.
-5. When the maintainer declares it complete, mark it **in both documents**:
-   - `Forma/COMPONENTS.md` — add `✅` to the component heading and to its entry in the
-     *Suggested Build Order* table.
-   - `EpicaDeportiva/docs/forma-components.md` — flip `☐` → `✅` in the "Built in Forma?"
-     column and update the **Status** line (count + remaining list).
-6. Commits are per-component. **Never run a state-changing `git` command** (`add`, `commit`,
-   `push`, `reset`, …) without explicit permission — present the proposed message and stop.
-   Read-only git is fine.
-
-Keep changes minimal and on-scope. Don't retrofit new conventions onto components that already
-exist unless asked.
+- Do build, review, and commit one component at a time.
+- Do pick the next component from the inventory and Épica's remaining set.
+- Do derive parameters, validation, disposal, CSS, ARIA, localization, and tests from established repository patterns.
+- Do deliver the complete component set: `.razor`, `.razor.cs`, `.razor.css`, warranted resx or JS files, bUnit tests, and Showcase page.
+- Do verify both directions, colour-independent states, accessible names and focus, and 24×24 touch targets before review.
+- Do present the component for review and stop; iterate on that same component until the maintainer declares it complete.
+- Do mark completion in both documents after approval: add `✅` to the component heading and build-order entry in `Forma/COMPONENTS.md`, then change `☐` to `✅` and update status in `EpicaDeportiva/docs/forma-components.md`.
+- Do propose a per-component commit message and wait for explicit permission before changing Git state.
+- Do keep changes minimal and on-scope.
+- Don't move to the next component before the current one is approved.
+- Don't mark a component complete on your own judgement.
+- Don't run state-changing Git commands such as `add`, `commit`, `push`, or `reset` without explicit permission; read-only Git is allowed.
+- Don't retrofit new conventions onto existing components unless asked.
