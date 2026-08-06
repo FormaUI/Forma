@@ -1,0 +1,171 @@
+@inherits BunitContext
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_the_input_before_the_label()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaField Label="Name" FieldId="fld-1">
+                    <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
+                </FormaField>);
+
+            // Assert
+            var children = cut.Find(".forma-field").Children;
+            Assert.Equal("INPUT", children[0].TagName);
+            Assert.Equal("LABEL", children[1].TagName);
+        }
+
+        [Fact]
+        public void Should_point_the_label_at_the_input()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaField Label="Name" FieldId="fld-7">
+                    <ChildContent><input class="forma-field-input" id="fld-7" /></ChildContent>
+                </FormaField>);
+
+            // Assert
+            Assert.Equal("fld-7", cut.Find(".forma-field-label").GetAttribute("for"));
+        }
+
+        [Fact]
+        public void Should_render_the_label_text()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaField Label="Full Name" FieldId="fld-1">
+                    <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
+                </FormaField>);
+
+            // Assert
+            Assert.Contains("Full Name", cut.Find(".forma-field-label").TextContent, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_not_render_a_required_marker_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaField Label="Name" FieldId="fld-1">
+                    <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
+                </FormaField>);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-field-required"));
+        }
+
+        [Fact]
+        public void Should_hide_the_required_marker_from_assistive_technology()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaField Label="Name" FieldId="fld-1" Required="true">
+                    <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
+                </FormaField>);
+
+            // Assert
+            Assert.Equal("true", cut.Find(".forma-field-required").GetAttribute("aria-hidden"));
+        }
+
+        [Fact]
+        public void Should_add_the_multiline_class_when_asked()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaField Label="Notes" FieldId="fld-1" Multiline="true">
+                    <ChildContent><textarea class="forma-field-input" id="fld-1"></textarea></ChildContent>
+                </FormaField>);
+
+            // Assert
+            Assert.Contains("forma-field-multiline", cut.Find(".forma-field").ClassList);
+        }
+
+        [Fact]
+        public void Should_not_add_the_multiline_class_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaField Label="Name" FieldId="fld-1">
+                    <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
+                </FormaField>);
+
+            // Assert
+            Assert.DoesNotContain("forma-field-multiline", cut.Find(".forma-field").ClassList);
+        }
+
+        [Fact]
+        public void Should_render_validation_content_after_the_label()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaField Label="Name" FieldId="fld-1">
+                    <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
+                    <Validation><span class="stub-validation">Required</span></Validation>
+                </FormaField>);
+
+            // Assert
+            var children = cut.Find(".forma-field").Children;
+            Assert.Equal("LABEL", children[1].TagName);
+            Assert.Contains("stub-validation", children[2].ClassList);
+        }
+
+        [Fact]
+        public void Should_reject_a_blank_label()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+
+            // Act
+            var act = () => ctx.Render(
+                @<FormaField Label=" " FieldId="fld-1">
+                    <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
+                </FormaField>);
+
+            // Assert
+            Assert.Throws<ArgumentException>(act);
+        }
+
+        [Fact]
+        public void Should_reject_a_blank_field_id()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+
+            // Act
+            var act = () => ctx.Render(
+                @<FormaField Label="Name" FieldId="">
+                    <ChildContent><input class="forma-field-input" /></ChildContent>
+                </FormaField>);
+
+            // Assert
+            Assert.Throws<ArgumentException>(act);
+        }
+    }
+}

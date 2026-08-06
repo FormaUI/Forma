@@ -16,7 +16,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Contains("Full Name", cut.Find(".forma-input-label").TextContent, StringComparison.Ordinal);
+            Assert.Contains("Full Name", cut.Find(".forma-field-label").TextContent, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -32,7 +32,7 @@
             </FakeFormHost>);
 
             // Assert
-            cut.Find(".forma-input-field");
+            cut.Find(".forma-field-input");
         }
 
         [Fact]
@@ -48,7 +48,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Equal("text", cut.Find(".forma-input-field").GetAttribute("type"));
+            Assert.Equal("text", cut.Find(".forma-field-input").GetAttribute("type"));
         }
 
         [Fact]
@@ -64,7 +64,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Equal("email", cut.Find(".forma-input-field").GetAttribute("type"));
+            Assert.Equal("email", cut.Find(".forma-field-input").GetAttribute("type"));
         }
 
         [Fact]
@@ -80,7 +80,7 @@
             </FakeFormHost>);
 
             // Assert — a single space is required so CSS :not(:placeholder-shown) triggers the label float
-            Assert.Equal(" ", cut.Find(".forma-input-field").GetAttribute("placeholder"));
+            Assert.Equal(" ", cut.Find(".forma-field-input").GetAttribute("placeholder"));
         }
 
         [Fact]
@@ -94,8 +94,8 @@
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaInput @bind-Value="model.Text" Label="Test" />
             </FakeFormHost>);
-            var inputId = cut.Find(".forma-input-field").GetAttribute("id");
-            var labelFor = cut.Find(".forma-input-label").GetAttribute("for");
+            var inputId = cut.Find(".forma-field-input").GetAttribute("id");
+            var labelFor = cut.Find(".forma-field-label").GetAttribute("for");
 
             // Assert
             Assert.Multiple(() =>
@@ -118,7 +118,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Equal("true", cut.Find(".forma-input-field").GetAttribute("aria-required"));
+            Assert.Equal("true", cut.Find(".forma-field-input").GetAttribute("aria-required"));
         }
 
         [Fact]
@@ -134,7 +134,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Null(cut.Find(".forma-input-field").GetAttribute("aria-required"));
+            Assert.Null(cut.Find(".forma-field-input").GetAttribute("aria-required"));
         }
 
         [Fact]
@@ -150,7 +150,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Single(cut.FindAll(".forma-input-required"));
+            Assert.Single(cut.FindAll(".forma-field-required"));
         }
 
         [Fact]
@@ -166,7 +166,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-input-required"));
+            Assert.Empty(cut.FindAll(".forma-field-required"));
         }
 
         [Fact]

@@ -103,7 +103,7 @@ Three layers, so a host takes only what it wants:
 | Stylesheet | Contents | Take it when |
 |------------|----------|--------------|
 | `forma-tokens.css` | Custom properties only, no selectors | Always — components read these |
-| `forma-reset.css` | Box sizing, form-control font inheritance, reduced motion | Unless your app already normalizes |
+| `forma-reset.css` | Box sizing, form-element font inheritance, reduced motion | Unless your app already normalizes |
 | `forma-base.css` | Body typography and link colours | You want Forma's look; skip it if you have your own |
 
 They are listed separately so each is fingerprinted, cached immutably, and downloaded in

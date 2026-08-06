@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>1.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="TextArea.Description" xml:space="preserve"><value>Un campo de varias líneas con la misma envoltura que FormaInput: la etiqueta flotante, el anillo de foco y el estilo de validación provienen del FormaField compartido.</value></data>
+  <data name="TextArea.Section.Basic" xml:space="preserve"><value>Uso básico</value></data>
+  <data name="TextArea.Section.Rows" xml:space="preserve"><value>Campo más alto</value></data>
+  <data name="TextArea.Section.Required" xml:space="preserve"><value>Obligatorio y con límite de longitud</value></data>
+  <data name="TextArea.Section.Disabled" xml:space="preserve"><value>Deshabilitado</value></data>
+  <data name="TextArea.Section.SideBySide" xml:space="preserve"><value>Junto a un FormaInput</value></data>
+  <data name="TextArea.Required.Note" xml:space="preserve"><value>Envía con el campo vacío para ver el borde y el mensaje de validación.</value></data>
+  <data name="TextArea.SideBySide.Note" xml:space="preserve"><value>Ambos componentes comparten una hoja de estilos, así que sus bordes, etiquetas y anillos de foco no pueden separarse.</value></data>
+  <data name="TextArea.Label.Notes" xml:space="preserve"><value>Notas</value></data>
+  <data name="TextArea.Label.Summary" xml:space="preserve"><value>Resumen</value></data>
+  <data name="TextArea.Label.Excerpt" xml:space="preserve"><value>Extracto</value></data>
+  <data name="TextArea.Label.Title" xml:space="preserve"><value>Título</value></data>
+  <data name="TextArea.Label.Body" xml:space="preserve"><value>Contenido</value></data>
+  <data name="TextArea.Value.Label" xml:space="preserve"><value>Valor</value></data>
+  <data name="TextArea.Label.Locked" xml:space="preserve"><value>Nota bloqueada</value></data>
+  <data name="TextArea.Disabled.Note" xml:space="preserve"><value>Un campo deshabilitado se atenúa, rechaza el cursor de texto y muestra el cursor de no permitido.</value></data>
+  <data name="TextArea.Validation.Excerpt" xml:space="preserve"><value>El extracto es obligatorio.</value></data>
+  <data name="TextArea.Button.Validate" xml:space="preserve"><value>Validar</value></data>
+</root>

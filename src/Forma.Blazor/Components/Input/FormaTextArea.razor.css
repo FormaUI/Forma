@@ -1,0 +1,9 @@
+/* ============================================================
+   FormaTextArea — CSS isolation
+   Only the multi-line deltas; the field chrome lives in FormaField.
+   ============================================================ */
+
+.forma-textarea {
+    resize: vertical;
+    min-block-size: calc(1.5em + 2.75rem);
+}

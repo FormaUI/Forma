@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>1.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="TextArea.Description" xml:space="preserve"><value>שדה רב-שורתי בעל אותה מעטפת כמו FormaInput: התווית הצפה, טבעת המיקוד ועיצוב האימות מגיעים כולם מ-FormaField המשותף.</value></data>
+  <data name="TextArea.Section.Basic" xml:space="preserve"><value>שימוש בסיסי</value></data>
+  <data name="TextArea.Section.Rows" xml:space="preserve"><value>שדה גבוה יותר</value></data>
+  <data name="TextArea.Section.Required" xml:space="preserve"><value>חובה ומוגבל באורך</value></data>
+  <data name="TextArea.Section.Disabled" xml:space="preserve"><value>מושבת</value></data>
+  <data name="TextArea.Section.SideBySide" xml:space="preserve"><value>לצד FormaInput</value></data>
+  <data name="TextArea.Required.Note" xml:space="preserve"><value>שלח עם השדה ריק כדי לראות את מסגרת האימות ואת ההודעה.</value></data>
+  <data name="TextArea.SideBySide.Note" xml:space="preserve"><value>שני הרכיבים חולקים גיליון סגנונות אחד, כך שהמסגרות, התוויות וטבעות המיקוד שלהם אינם יכולים להיפרד.</value></data>
+  <data name="TextArea.Label.Notes" xml:space="preserve"><value>הערות</value></data>
+  <data name="TextArea.Label.Summary" xml:space="preserve"><value>תקציר</value></data>
+  <data name="TextArea.Label.Excerpt" xml:space="preserve"><value>קטע פתיחה</value></data>
+  <data name="TextArea.Label.Title" xml:space="preserve"><value>כותרת</value></data>
+  <data name="TextArea.Label.Body" xml:space="preserve"><value>תוכן</value></data>
+  <data name="TextArea.Value.Label" xml:space="preserve"><value>ערך</value></data>
+  <data name="TextArea.Label.Locked" xml:space="preserve"><value>הערה נעולה</value></data>
+  <data name="TextArea.Disabled.Note" xml:space="preserve"><value>שדה מושבת מועם, אינו מקבל סמן כתיבה ומציג סמן עכבר של פעולה אסורה.</value></data>
+  <data name="TextArea.Validation.Excerpt" xml:space="preserve"><value>נדרש תקציר.</value></data>
+  <data name="TextArea.Button.Validate" xml:space="preserve"><value>אמת</value></data>
+</root>

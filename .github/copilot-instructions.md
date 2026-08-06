@@ -59,6 +59,7 @@ Coi's boxy gradient toggle becoming a token-driven iOS-style `FormaToggleSwitch`
 - Do prefix component tags with `Forma`: `<FormaModal>`, `<FormaDataGrid>`.
 - Do prefix CSS classes with `forma-`: `.forma-toggle-track`.
 - Do leave C# services, enums, and records unprefixed because namespaces disambiguate them: `ToastService`, `ModalSize`, `BreadcrumbItem`.
+- Do call a thing Forma ships a **component**, and raw HTML an **element** — one word per concept. "Control" is Web Forms vocabulary inherited from Coi; keep it only in `aria-controls` and in descriptions of Coi's own markup.
 - Don't apply one naming convention indiscriminately across Razor tags, CSS classes, and C# types.
 
 ## Comments and documentation
@@ -155,7 +156,7 @@ JS-free is the default, not a prohibition.
 - Do import the module on first render from `./_content/Forma.Blazor/Components/{Category}/FormaX.razor.js`.
 - Do catch `JSException` around every JS call because the circuit can drop mid-call.
 - Do dispose the module in `DisposeAsync` and catch `JSDisconnectedException`.
-- Don't use jQuery, npm packages, polyfills, or other external JS libraries.
+- Don't use jQuery, npm packages, polyfills, or other external JS libraries. The sole exception is `FormaRichTextEditor`'s Markdown renderer (#36) — a parser is a solved problem, and it renders only; it never owns an editing surface, a selection, an undo stack or a toolbar. Adding a second exception is a decision for the maintainer, not a precedent already set.
 - Don't contort a component or ship a worse experience merely to remain script-free.
 - Don't treat the amount of JS required as a reason to leave a rough edge unresolved.
 
@@ -169,12 +170,12 @@ JS-free is the default, not a prohibition.
 - Do reuse existing tokens such as `--main-color` and `--focus-color`; `--main-dark-color`, `--main-light-color`, and `--focus-color` derive from `--main-color`.
 - Do keep `forma-tokens.css` value-only, `forma-reset.css` limited to cross-browser normalization, and `forma-base.css` limited to the opt-in element-level look.
 - Do keep component rules in the component's isolated stylesheet.
-- Do rely on the reset's `font: inherit` for controls, set only the needed `font-size`, and use `var(--font-family-mono)` instead of bare `monospace`.
+- Do rely on the reset's `font: inherit` for form elements, set only the needed `font-size`, and use `var(--font-family-mono)` instead of bare `monospace`.
 - Do animate decoration only; every state must remain understandable without motion.
 - Don't use physical direction properties such as `left`, `right`, `margin-left`, or `padding-right`.
 - Don't hardcode a colour as a component-local token fallback or invent aliases for existing tokens; a literal fallback is an island a theme override cannot reach.
 - Don't add component rules to any global stylesheet.
-- Don't set `font-family` on controls.
+- Don't set `font-family` on form elements.
 - Don't use motion as the only channel communicating state.
 
 ## Accessibility

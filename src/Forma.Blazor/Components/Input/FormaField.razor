@@ -1,0 +1,9 @@
+@namespace Forma.Blazor.Components.Input
+
+<div @attributes="AdditionalAttributes" class="@CssClass">
+    @ChildContent
+    <label for="@FieldId" class="forma-field-label">
+        @Label@if (Required) {<span class="forma-field-required" aria-hidden="true"> *</span>}
+    </label>
+    @Validation
+</div>

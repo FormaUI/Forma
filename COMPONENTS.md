@@ -100,6 +100,25 @@ These components form the shell of a page. Build first.
 | **Blazor approach** | Pairs with `FormaDataGrid`'s checked selection, taking only the count so it stays non-generic. Collapses through `grid-template-rows: 0fr → 1fr` rather than an absolutely positioned cross-fade, so no wrapper positioning is imposed on the caller. `inert` sits on the controls alone, leaving the caption's live region in the accessibility tree so the first count change is announced |
 | **Notes** | The conditional sibling of `FormaToolbar`. Neither sets `role="toolbar"` — an ARIA toolbar owes arrow-key roving focus between its controls, which neither implements, so both stay plain button groups |
 
+### 38. `FormaField` ✅
+
+| | |
+|---|---|
+| **Old pattern** | `<label class="lblForm">` over a `.form-control`, floating on focus or value, with `<span class="mand">` for required and the error text below |
+| **Used in** | Chrome for every labelled form component — `FormaInput`, `FormaTextArea`, and the retrofit target for `FormaPasswordInput`, `FormaCurrencyInput` and `FormaSelect` |
+| **Parameters** | `string Label`, `string FieldId`, `bool Required`, `bool Multiline`, `RenderFragment ChildContent` (the input element), `RenderFragment? Validation` |
+| **Blazor approach** | Renders the wrapper, label and validation slot, and styles the input element through `::deep .forma-field-input` — the one mechanism that reaches markup a *consuming* component rendered, since CSS isolation otherwise scopes each component's sheet to its own output. Non-generic: the consumer passes its own `<ValidationMessage For="...">` into `Validation` rather than the chrome taking a typed expression. `Multiline` anchors the label to the top, because an input element taller than one line has no vertical centre to sit against |
+| **Notes** | Exists so the floating label, border, focus ring and validation styling live in one file. Without it each labelled form component reimplements ~110 lines and they drift apart |
+
+### 39. `FormaTextArea` ✅
+
+| | |
+|---|---|
+| **Old pattern** | `<asp:TextBox TextMode="MultiLine">` — the same `.form-control` class as a single-line field, plus `textarea { resize: vertical }` and a label offset (`.row textarea ~ label.lblForm { top: 13px }`) |
+| **Used in** | SEO head, meta description, store details — and in Épica, article excerpts and summaries |
+| **Parameters** | `@bind-Value`, `string Label`, `bool Required`, `int Rows` (default 3), `int? MaxLength` |
+| **Blazor approach** | `InputBase<string?>` rendering a `<textarea>` into `FormaField` with `Multiline`. Owns only the multi-line deltas — `resize: vertical` and a minimum height — so it cannot drift from `FormaInput`. No JS: autofill does not apply to a textarea |
+
 ### 9. `FormaStatusBadge` ✅
 
 | | |
@@ -139,7 +158,7 @@ These components form the shell of a page. Build first.
 | **Old pattern** | `<asp:TextBox>` + `<label class="lblForm">` positioned over input, animates up on focus/has-value. Validation error shown below. Optional mandatory indicator `<span class="mand">` |
 | **Used in** | category popup, user popup, filters, import, contact module, and all form pages |
 | **Parameters** | `@bind-Value`, `string Label`, `bool Required`, `string? Placeholder`, `string Type = "text"` |
-| **Blazor approach** | Wraps `InputText` (or `InputNumber`/`InputDate` via generic `TValue`). Label animation via CSS `:focus-within` + `:placeholder-shown` pseudo-classes. Integrates with `EditForm` validation via `ValidationMessage`. Multiline is a planned mode of this component (`Rows` → renders `<textarea>`) rather than a separate `FormaTextArea` |
+| **Blazor approach** | `InputBase<string?>` rendering an `<input>` into `FormaField`, which owns the floating label, required marker and validation message. Autofill is detected in a small module that adds `.has-value`, because an autofilled field does not fire `input` and `:placeholder-shown` alone would leave the label sitting over text |
 
 ### 13. `FormaToggleSwitch` ✅
 
@@ -267,7 +286,7 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Old pattern** | Modal with `<textarea>` for admin notes on orders/leads, save button, timestamp display |
 | **Used in** | order detail, lead detail |
 | **Parameters** | `string? Notes`, `EventCallback<string> OnSave` |
-| **Blazor approach** | `FormaModal` containing `InputTextArea` + save button. Simple composition |
+| **Blazor approach** | `FormaModal` containing `FormaTextArea` + save button. Simple composition |
 
 ### 26. `FormaPermissionMatrix`
 
@@ -359,7 +378,7 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Parameters** | `IReadOnlyList<MediaEntry> Entries`, `string? Accept`, `int MaxSelection = 0` (0 = unlimited), `EventCallback<IReadOnlyList<MediaEntry>> OnSelected`, folder navigation callbacks |
 | **Blazor approach** | `FormaModal` (size Full) hosting a folder breadcrumb, a selectable entry grid and `FormaPagination`, with `FormaUploader` in its toolbar. Type-agnostic — it renders whatever preview a `MediaEntry` declares, so images, video and documents all work through one component. The host supplies the entries and performs the storage operations; the picker never touches a filesystem |
 
-### 36. `FormaEditor`
+### 36. `FormaRichTextEditor`
 
 | | |
 |---|---|
@@ -367,7 +386,8 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Used in** | page editor, product description — and in Épica, the News article body |
 | **Toolbar (from Coi's `Website` preset)** | Source · Preview · Templates — Cut/Copy/Paste/PasteText/PasteFromWord · Undo/Redo · SelectAll · RemoveFormat — Smiley · SpecialChar · LineHeight · Maximize — Bold/Italic/Underline/Strike — Numbered & bulleted lists — Justify right/center/left/block · BidiRtl/BidiLtr — Link/Unlink/Anchor — YouTube embed · Image · Table · HorizontalRule — Format · Font · FontSize — TextColor — image library. Subscript/Superscript were explicitly removed |
 | **Parameters** | `@bind-Value`, `EditorMode Mode` (Html/Markdown), `EditorToolbar Toolbar` (Full/Basic/Mini, mirroring Coi's presets), `bool AllowSourceView`, `EventCallback OnMediaRequested` |
-| **Blazor approach** | The one component where an **external JS editor engine is the right call** — the JS rules exist to keep components small and dependency-free, and a rich text engine is precisely the case they yield to. Everything around the engine stays Forma's: the format/font/size pickers are `FormaSelect`, the toolbar overflow is `FormaDropDownMenu`, colour is `FormaColorPicker`, image insertion delegates to `FormaImagePicker` (never a second file browser), and direct uploads go through `FormaUploader`. Toolbar presets mirror Coi's three, including the sub-600px collapse. **Markdown is a first-class mode**, not an export: `Mode` switches the engine's document model and `AllowSourceView` toggles between the rendered surface and raw HTML/Markdown. Bidi controls and RTL contents direction are required, not optional |
+| **Blazor approach** | **Forma's own editor, not a wrapper around someone else's.** The editing surface is `contenteditable` driven from C#, and the chrome is the library's existing components: the format/font/size pickers are `FormaSelect`, the toolbar overflow is `FormaDropDownMenu`, colour is `FormaColorPicker`, image insertion delegates to `FormaImagePicker` (never a second file browser), and direct uploads go through `FormaUploader`. Toolbar presets mirror Coi's three, including the sub-600px collapse. **Markdown is a first-class mode**, not an export: `Mode` switches which document the editor edits, and `AllowSourceView` toggles between the rendered surface and raw HTML/Markdown. Bidi controls and RTL contents direction are required, not optional |
+| **External JS** | One narrow dependency, and only for **rendering** Markdown to HTML — a parser is a solved problem not worth reimplementing. It never owns the editing surface, the selection, the undo stack or the toolbar; those are Forma's. Coi's feature set is the floor for what the editor must do, not a spec for how to do it |
 
 ### 37. `FormaCloseButton` ✅
 
@@ -393,7 +413,7 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Parent frame communication** | Blazor `EventCallback` between components — no iframes needed |
 | **btn-load CSS class** | Blazor disable-during-async pattern + CSS loading indicator |
 | **jQuery `$.ajax`** | `HttpClient` in Blazor, or direct C# calls in Interactive Server mode |
-| **CKEditor** | Now in scope as `FormaEditor` (#36) rather than excluded — it wraps an external editor engine and surrounds it with Forma's own controls |
+| **CKEditor** | Now in scope as `FormaRichTextEditor` (#36) rather than excluded — Forma builds its own editor over `contenteditable` with its own controls, taking Coi's feature set as the floor. The only external JS is a Markdown renderer |
 
 ---
 
@@ -409,10 +429,11 @@ Components are ordered by dependency and reuse frequency:
 | **Phase 4** | `FormaDataGrid<TItem>` ✅, `FormaContextToolbar` ✅, `FormaStatusBadge` ✅, `FormaCapacityIndicator`, `FormaPagination` ✅ | Data display — needed for list pages |
 | **Phase 5** | `FormaSortableList<TItem>` ✅, `FormaMultiSelectDropDown` ✅, `FormaCategorySelector`, `FormaDropDownMenu`, `FormaColorPicker` | Interactive widgets — needed for editor pages |
 | **Phase 6** | `FormaUploader`, `FormaFilePicker`, `FormaImagePicker`, `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components — built when their feature pages are built. The media three build in that order: uploader, then the picker that hosts it, then the image skin over the picker |
-| **Phase 7** | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor`, `FormaEditor` | Complex editors — built alongside their specific pages |
+| **Phase 7** | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor`, `FormaRichTextEditor` | Complex editors — built alongside their specific pages |
 | **Phase 8** | `FormaButton` ✅ | Shared button primitive — built after the fact and retrofitted onto `FormaDataGrid`, `FormaModal`, `FormaConfirmDialog`, `FormaPagination`, `FormaDatePicker` as the single source of truth for buttons |
 | **Phase 9** | `FormaCheckbox` ✅ | Shared checkbox primitive — built after the fact and retrofitted onto `FormaDataGrid` and `FormaMultiSelectDropDown` as the single source of truth for checkboxes |
 | **Phase 10** | `FormaCloseButton` ✅ | Shared dismiss primitive — built after the fact and retrofitted onto `FormaModal`, `FormaToastContainer` and `FormaContextToolbar` as the single source of truth for the `×` control |
+| **Phase 11** | `FormaField` ✅, `FormaTextArea` ✅ | Shared field chrome — extracted from `FormaInput` so the floating label, focus ring and validation styling live once, then `FormaTextArea` built on it. `FormaPasswordInput`, `FormaCurrencyInput` and `FormaSelect` compose it rather than restating it |
 
 ---
 
@@ -445,7 +466,9 @@ Forma.Blazor/Components/
 │   ├── FormaButton.razor
 │   ├── FormaCloseButton.razor
 │   ├── FormaCheckbox.razor
+│   ├── FormaField.razor
 │   ├── FormaInput.razor
+│   ├── FormaTextArea.razor
 │   ├── FormaToggleSwitch.razor
 │   ├── FormaPasswordInput.razor
 │   ├── FormaCurrencyInput.razor
@@ -462,7 +485,7 @@ Forma.Blazor/Components/
 │   ├── FormaFilePicker.razor
 │   └── FormaImagePicker.razor
 ├── Editors/
-│   ├── FormaEditor.razor
+│   ├── FormaRichTextEditor.razor
 │   ├── FormaNotesEditor.razor
 │   ├── FormaPermissionMatrix.razor
 │   ├── FormaProductOptionsEditor.razor

@@ -19,7 +19,7 @@ html {
     -webkit-text-size-adjust: 100%;
 }
 
-/* Form controls take the OS UI font until told otherwise. */
+/* Form elements take the OS UI font until told otherwise. */
 button,
 input,
 optgroup,

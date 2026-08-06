@@ -1,0 +1,89 @@
+@page "/text-area"
+@attribute [ShowcasePage("FormaTextArea")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Input
+@inject IStringLocalizer<FormaTextAreaPage> L
+
+<h1>FormaTextArea</h1>
+<p class="desc">@L["TextArea.Description"]</p>
+
+<EditForm EditContext="_editContext">
+
+    <div class="demo-section">
+        <h2>@L["TextArea.Section.Basic"]</h2>
+        <div class="demo-box">
+            <FormaTextArea @bind-Value="_model.Notes" Label="@L["TextArea.Label.Notes"]" />
+            <p class="demo-output">@L["TextArea.Value.Label"]: <code>@_model.Notes</code></p>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["TextArea.Section.Rows"]</h2>
+        <div class="demo-box">
+            <FormaTextArea @bind-Value="_model.Summary" Label="@L["TextArea.Label.Summary"]" Rows="8" />
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["TextArea.Section.Required"]</h2>
+        <p class="desc">@L["TextArea.Required.Note"]</p>
+        <div class="demo-box">
+            <FormaTextArea @bind-Value="_model.Excerpt" Label="@L["TextArea.Label.Excerpt"]" Required="true" MaxLength="280" />
+            <button type="button" class="btn btn-primary" @onclick="Validate">
+                @L["TextArea.Button.Validate"]
+            </button>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["TextArea.Section.Disabled"]</h2>
+        <p class="desc">@L["TextArea.Disabled.Note"]</p>
+        <div class="demo-box">
+            <FormaTextArea @bind-Value="_model.Locked" Label="@L["TextArea.Label.Locked"]" disabled />
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["TextArea.Section.SideBySide"]</h2>
+        <p class="desc">@L["TextArea.SideBySide.Note"]</p>
+        <div class="demo-box">
+            <FormaInput @bind-Value="_model.Title" Label="@L["TextArea.Label.Title"]" />
+            <FormaTextArea @bind-Value="_model.Body" Label="@L["TextArea.Label.Body"]" />
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private readonly DemoModel _model = new() { Locked = "Signed off by the editor." };
+    private EditContext _editContext = default!;
+    private ValidationMessageStore _messages = default!;
+
+    protected override void OnInitialized()
+    {
+        _editContext = new EditContext(_model);
+        _messages = new ValidationMessageStore(_editContext);
+    }
+
+    private void Validate()
+    {
+        var excerpt = _editContext.Field(nameof(DemoModel.Excerpt));
+        _messages.Clear(excerpt);
+
+        if (string.IsNullOrWhiteSpace(_model.Excerpt))
+        {
+            _messages.Add(excerpt, L["TextArea.Validation.Excerpt"]);
+        }
+
+        _editContext.NotifyValidationStateChanged();
+    }
+
+    private sealed class DemoModel
+    {
+        public string? Notes { get; set; }
+        public string? Summary { get; set; }
+        public string? Excerpt { get; set; }
+        public string? Title { get; set; }
+        public string? Body { get; set; }
+        public string? Locked { get; set; }
+    }
+}

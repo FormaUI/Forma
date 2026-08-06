@@ -1,0 +1,232 @@
+@inherits BunitContext
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_a_textarea_carrying_the_shared_input_class()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" />
+            </FakeFormHost>);
+
+            // Assert
+            var field = cut.Find("textarea");
+            Assert.Contains("forma-field-input", field.ClassList);
+        }
+
+        [Fact]
+        public void Should_render_the_label_text()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Internal notes" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Contains("Internal notes", cut.Find(".forma-field-label").TextContent, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_anchor_the_label_for_a_multiline_field()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Contains("forma-field-multiline", cut.Find(".forma-field").ClassList);
+        }
+
+        [Fact]
+        public void Should_associate_the_label_with_the_textarea()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal(cut.Find("textarea").GetAttribute("id"), cut.Find(".forma-field-label").GetAttribute("for"));
+        }
+
+        [Fact]
+        public void Should_default_to_three_rows()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("3", cut.Find("textarea").GetAttribute("rows"));
+        }
+
+        [Fact]
+        public void Should_apply_the_requested_rows()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" Rows="8" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("8", cut.Find("textarea").GetAttribute("rows"));
+        }
+
+        [Fact]
+        public void Should_not_emit_maxlength_when_unset()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Null(cut.Find("textarea").GetAttribute("maxlength"));
+        }
+
+        [Fact]
+        public void Should_emit_maxlength_when_set()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" MaxLength="280" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("280", cut.Find("textarea").GetAttribute("maxlength"));
+        }
+
+        [Fact]
+        public void Should_splat_unmatched_attributes_onto_the_textarea()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" disabled />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.True(cut.Find("textarea").HasAttribute("disabled"));
+        }
+
+        [Fact]
+        public void Should_carry_a_blank_placeholder_so_the_label_can_float()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal(" ", cut.Find("textarea").GetAttribute("placeholder"));
+        }
+
+        [Fact]
+        public void Should_set_aria_required_when_required()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" Required="true" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("true", cut.Find("textarea").GetAttribute("aria-required"));
+        }
+
+        [Fact]
+        public void Should_write_edits_back_to_the_model()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("textarea").Input("typed text");
+
+            // Assert
+            Assert.Equal("typed text", model.Text);
+        }
+
+        [Fact]
+        public void Should_reject_a_blank_label()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+
+            // Act
+            var act = () => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label=" " />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Throws<ArgumentException>(act);
+        }
+
+        [Fact]
+        public void Should_reject_a_row_count_below_one()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+
+            // Act
+            var act = () => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" Rows="0" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Throws<ArgumentOutOfRangeException>(act);
+        }
+    }
+}

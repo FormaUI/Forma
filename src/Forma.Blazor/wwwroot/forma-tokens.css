@@ -13,6 +13,7 @@
     /* Text colors */
     --text-color: rgba(44, 56, 74, 0.95);
     --text-muted-color: #889097;
+    --text-secondary-color: #6c757d;
     --gray-color: rgba(44, 56, 74, 0.45);
 
     /* Brand / accent */
@@ -33,6 +34,7 @@
     --dark-border-color: rgba(98, 105, 118, 0.31);
 
     /* Surfaces */
+    --input-bg-color: #fff;
     --modal-bg-color: #fafbfc;
     --hover-bg-color: rgba(98, 105, 118, 0.06);
 
