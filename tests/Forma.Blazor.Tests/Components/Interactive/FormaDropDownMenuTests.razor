@@ -194,6 +194,46 @@
         }
 
         [Fact]
+        public void Should_forward_trigger_options_to_the_button()
+        {
+            // Arrange
+            using var ctx = new FormaDropDownMenuTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDropDownMenu TriggerOptions="new() { Variant = ButtonVariant.Danger, Size = ButtonSize.Mini, IconOnly = true }">
+                    <Trigger>&#8942;</Trigger>
+                    <ChildContent><FormaDropDownMenuItem>Print</FormaDropDownMenuItem></ChildContent>
+                </FormaDropDownMenu>);
+
+            // Assert
+            var classes = cut.Find("button").ClassList;
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("forma-btn-danger", classes);
+                Assert.Contains("forma-btn-mini", classes);
+                Assert.Contains("forma-btn-icon", classes);
+            });
+        }
+
+        [Fact]
+        public void Should_draw_the_trigger_as_a_secondary_button_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaDropDownMenuTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDropDownMenu>
+                    <Trigger>Options</Trigger>
+                    <ChildContent><FormaDropDownMenuItem>Print</FormaDropDownMenuItem></ChildContent>
+                </FormaDropDownMenu>);
+
+            // Assert
+            Assert.Contains("forma-btn-secondary", cut.Find("button").ClassList);
+        }
+
+        [Fact]
         public void Should_set_aria_expanded_when_open()
         {
             // Arrange

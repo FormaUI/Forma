@@ -125,6 +125,8 @@ Components/Input/
 - Do name the component's own options parameter `Options`.
 - Do prefix forwarded child options by concern, such as `PaginationOptions` on `FormaDataGrid`.
 - Do keep parameters standalone when each controls an independent feature area or when a lone flag has no siblings or planned growth.
+- Do let a record serve forwarding alone: the component that owns the settings keeps its standalone parameters when its own callers set one at a time, as `FormaButton` does beside `FormaButtonOptions`.
+- Do expose only the settings a composed child may safely vary; `FormaCloseButton` forwards `Size` and pins the rest, because a caller changing them would stop it being a close button.
 - Don't create an options record merely to collect unrelated settings.
 - Don't force independent settings such as `EnablePagination`, `EnableCheckboxes`, and `Virtualize` into one record.
 

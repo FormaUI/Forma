@@ -57,7 +57,7 @@
     <h2>@L["Icon-Only Trigger"]</h2>
     <p class="desc">@L["The trigger's accessible name comes from an aria-label, the same way an icon-only FormaButton is labelled."]</p>
     <div class="demo-box">
-        <FormaDropDownMenu TriggerIconOnly="true" aria-label="@L["Row actions"]">
+        <FormaDropDownMenu TriggerOptions="new() { IconOnly = true }" aria-label="@L["Row actions"]">
             <Trigger>&#8942;</Trigger>
             <ChildContent>
                 <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["View"])">@L["View"]</FormaDropDownMenuItem>

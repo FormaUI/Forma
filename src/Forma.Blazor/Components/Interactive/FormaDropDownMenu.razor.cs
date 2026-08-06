@@ -19,14 +19,8 @@ public sealed partial class FormaDropDownMenu : ComponentBase, IAsyncDisposable
     /// <summary>The menu's items and dividers.</summary>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
 
-    /// <summary>Visual weight the trigger is drawn with.</summary>
-    [Parameter] public ButtonVariant TriggerVariant { get; set; } = ButtonVariant.Secondary;
-
-    /// <summary>Padding and text size the trigger is drawn at.</summary>
-    [Parameter] public ButtonSize TriggerSize { get; set; } = ButtonSize.Normal;
-
-    /// <summary>Draws the trigger square around a single glyph instead of padding it for text.</summary>
-    [Parameter] public bool TriggerIconOnly { get; set; }
+    /// <summary>Appearance of the trigger button.</summary>
+    [Parameter] public FormaButtonOptions TriggerOptions { get; set; } = FormaButtonOptions.Default;
 
     /// <summary>Additional attributes applied to the trigger button, such as aria-label for an icon-only trigger.</summary>
     [Parameter(CaptureUnmatchedValues = true)]
