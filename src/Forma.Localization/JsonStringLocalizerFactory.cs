@@ -1,0 +1,81 @@
+namespace Forma.Localization;
+
+using System.Collections.Concurrent;
+using System.Reflection;
+
+using Microsoft.Extensions.Localization;
+
+/// <summary>Creates localizers that read their strings from JSON files embedded in the assembly owning the type.</summary>
+public sealed class JsonStringLocalizerFactory : IStringLocalizerFactory
+{
+    private readonly ConcurrentDictionary<string, IStringLocalizer> _localizers = new(StringComparer.Ordinal);
+    private readonly JsonResourceCache _cache = new();
+    private readonly string _resourcesPath;
+
+    /// <summary>Creates a factory reading files that sit beside the types they translate.</summary>
+    public JsonStringLocalizerFactory()
+        : this(new JsonLocalizationOptions())
+    {
+    }
+
+    /// <summary>Creates a factory configured by the given options.</summary>
+    public JsonStringLocalizerFactory(JsonLocalizationOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        _resourcesPath = NormalizePath(options.ResourcesPath);
+    }
+
+    /// <summary>Creates a localizer for the strings belonging to a type.</summary>
+    public IStringLocalizer Create(Type resourceSource)
+    {
+        ArgumentNullException.ThrowIfNull(resourceSource);
+
+        // A closed generic carries its arguments in FullName; the open definition names the file.
+        var source = resourceSource.IsConstructedGenericType ? resourceSource.GetGenericTypeDefinition() : resourceSource;
+        var assembly = source.Assembly;
+        var assemblyName = assembly.GetName().Name ?? string.Empty;
+        var typeName = NormalizeTypeName(source.FullName ?? source.Name);
+
+        return GetOrAdd(assembly, Qualify(assemblyName, TrimPrefix(typeName, assemblyName + ".")));
+    }
+
+    /// <summary>Creates a localizer for a base name inside the named assembly.</summary>
+    public IStringLocalizer Create(string baseName, string location)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(baseName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(location);
+
+        var assembly = Assembly.Load(new AssemblyName(location));
+        return GetOrAdd(assembly, Qualify(location, TrimPrefix(baseName, location + ".")));
+    }
+
+    private static string NormalizePath(string path)
+        => path.Replace('\\', '.').Replace('/', '.').Trim('.');
+
+    private static string TrimPrefix(string value, string prefix)
+        => value.StartsWith(prefix, StringComparison.Ordinal) ? value[prefix.Length..] : value;
+
+    // Nested types arrive as Outer+Inner and generics as Name`1; neither shape appears in a file name.
+    private static string NormalizeTypeName(string typeName)
+    {
+        var segments = typeName.Replace('+', '.').Split('.');
+        for (var i = 0; i < segments.Length; i++)
+        {
+            var arity = segments[i].IndexOf('`', StringComparison.Ordinal);
+            if (arity >= 0)
+            {
+                segments[i] = segments[i][..arity];
+            }
+        }
+
+        return string.Join('.', segments);
+    }
+
+    private string Qualify(string assemblyName, string relativeName)
+        => _resourcesPath.Length == 0
+            ? $"{assemblyName}.{relativeName}"
+            : $"{assemblyName}.{_resourcesPath}.{relativeName}";
+
+    private IStringLocalizer GetOrAdd(Assembly assembly, string baseName)
+        => _localizers.GetOrAdd($"{assembly.FullName}|{baseName}", _ => new JsonStringLocalizer(_cache, assembly, baseName));
+}

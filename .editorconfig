@@ -53,20 +53,20 @@ csharp_style_var_elsewhere = true:error
 
 # Expression‑bodied members
 csharp_style_expression_bodied_methods       = when_on_single_line:warning
-csharp_style_expression_bodied_constructors  = false:suggestion
+csharp_style_expression_bodied_constructors  = false
 csharp_style_expression_bodied_properties    = when_on_single_line:warning
 
 # Modern C# pattern preferences
 csharp_prefer_simple_using_statement = true:warning
 csharp_prefer_braces = true:warning
 csharp_style_prefer_method_group_conversion = true:warning
-csharp_style_prefer_top_level_statements = false:silent
-csharp_style_prefer_primary_constructors = true:suggestion
+csharp_style_prefer_top_level_statements = false
+csharp_style_prefer_primary_constructors = true
 csharp_style_prefer_null_check_over_type_check = true:warning
 csharp_style_prefer_local_over_anonymous_function = true:warning
 csharp_style_prefer_index_operator = true:warning
 csharp_style_prefer_range_operator = true:warning
-csharp_style_prefer_utf8_string_literals = true:suggestion
+csharp_style_prefer_utf8_string_literals = true
 
 # Pattern matching preferences
 csharp_style_prefer_switch_expression = true:warning
@@ -74,7 +74,7 @@ csharp_style_prefer_pattern_matching = true:warning
 csharp_style_pattern_matching_over_is_with_cast_check = true:warning
 csharp_style_pattern_matching_over_as_with_null_check = true:warning
 csharp_style_prefer_not_pattern = true:warning
-csharp_style_prefer_extended_property_pattern = true:suggestion
+csharp_style_prefer_extended_property_pattern = true
 
 # ------------------------------------------------------------
 # .NET code style
