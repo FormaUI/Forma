@@ -15,7 +15,7 @@
 
 ## Tier 1 — Core Layout & Infrastructure
 
-These components form the shell of every admin page. Build first.
+These components form the shell of a page. Build first.
 
 ### 1. `FormaPageHeader` ✅
 
@@ -393,7 +393,7 @@ Components are ordered by dependency and reuse frequency:
 | Phase | Components | Rationale |
 |---|---|---|
 | **Phase 1** | `FormaModal` ✅, `FormaConfirmDialog` ✅, `FormaToast` ✅ | Infrastructure — everything depends on modals and notifications |
-| **Phase 2** | `FormaPageHeader` ✅, `FormaToolbar` ✅, `FormaTabs` ✅ | Layout — the shell of every admin page |
+| **Phase 2** | `FormaPageHeader` ✅, `FormaToolbar` ✅, `FormaTabs` ✅ | Layout — the shell of a page |
 | **Phase 3** | `FormaInput` ✅, `FormaToggleSwitch` ✅, `FormaPasswordInput`, `FormaCurrencyInput`, `FormaRangeSlider`, `FormaDatePicker`, `FormaSelect` | Form inputs — needed before building any edit forms |
 | **Phase 4** | `FormaDataGrid<TItem>` ✅, `FormaMassActions`, `FormaStatusBadge` ✅, `FormaCapacityIndicator`, `FormaPagination` ✅ | Data display — needed for list pages |
 | **Phase 5** | `FormaSortableList<TItem>` ✅, `FormaMultiSelectDropDown` ✅, `FormaCategorySelector`, `FormaDropDownMenu`, `FormaColorPicker` | Interactive widgets — needed for editor pages |

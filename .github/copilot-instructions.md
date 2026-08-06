@@ -1,6 +1,6 @@
 # Forma.Blazor — Copilot Instructions
 
-A reusable Blazor **admin component library**. **.NET 11 · C# latest · Razor Class Library ·
+A reusable Blazor **component library**. **.NET 11 · C# latest · Razor Class Library ·
 Interactive Server · JS-free by default.**
 
 ## Source of truth
@@ -71,6 +71,29 @@ package id `2Site.Forma.Blazor`, static asset base path `_content/Forma.Blazor` 
 - **C# types** (services, enums, records) carry **no** prefix — namespaces disambiguate
   (`ToastService`, `ModalSize`, `BreadcrumbItem`).
 
+## Comments and documentation
+
+**State what a thing is or does. Nothing else.** This governs every piece of prose written
+into the repo — XML docs, CSS banner comments, inline comments, README and instruction files
+alike. The codebase is not a history book.
+
+- **No history.** Not what the code used to be, what it was ported from, which library it
+  replaced, or what an earlier attempt got wrong.
+- **No argument for a decision.** Why an approach was chosen over the alternative is noise to
+  someone who just needs to use the thing. Keep the behaviour, drop the justification —
+  including justifications for where something lives or why it isn't somewhere else.
+- **No position in a plan.** Not the phase, the roadmap item, or what gates what.
+- **No cross-references.** Who calls it, where else it is used, what it mirrors.
+- **Don't restate the code.** A comment reading `the UI font of the device` above a
+  `system-ui, -apple-system, …` value adds nothing.
+
+Write the comment when the code genuinely cannot show it: an `!important` that exists to
+outrank another stylesheet, a `-webkit-` property whose name doesn't say what it prevents, an
+off-by-one invariant. One line is nearly always enough; prefer no comment over a padded one.
+
+The deliberate exception is `COMPONENTS.md`, whose *Old pattern* and *Used in* rows exist to
+record where each component came from — that is what the inventory is for.
+
 ## File layout per component
 
 Components live in `src/Forma.Blazor/Components/{Category}/`, where `{Category}` is one
@@ -133,7 +156,7 @@ the component that owns them.
   instead (`PaginationOptions` on `FormaDataGrid`) so it doesn't collide with the parent's
   own `Options`, if it has one.
 - **XML `<summary>` on every public parameter and public type.** One line, describing *what
-  it is* — no history, no cross-references, no "why it lives here".
+  it is*.
 - **Validate in `OnParametersSet`** with the throw-helpers:
   `ArgumentException.ThrowIfNullOrWhiteSpace(Title)`,
   `ArgumentOutOfRangeException.ThrowIfLessThan(SearchDelay, TimeSpan.Zero)`,
@@ -280,9 +303,9 @@ that states the condition, the text *is* the second channel and a glyph is optio
 
 ## Touch and pointer (non-negotiable)
 
-**Every component is fully usable with a finger.** The admin runs on tablets, so touch is a
-first-class input, not a degraded fallback. Like RTL parity, assume there is no legitimate
-exception.
+**Every component is fully usable with a finger.** These components run on tablets and
+phones, so touch is a first-class input, not a degraded fallback. Like RTL parity, assume
+there is no legitimate exception.
 
 ### Target size
 

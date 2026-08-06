@@ -31,7 +31,7 @@
   <resheader name="version"><value>1.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <data name="Button.Description" xml:space="preserve"><value>כפתור הניהול. חמישה סגנונות קובעים את המשקל החזותי שלו, שני גדלים קובעים את הצפיפות, ומצב עסוק מציג אנימציה בזמן שהפעולה מתבצעת. CSS טהור — ללא JavaScript.</value></data>
+  <data name="Button.Description" xml:space="preserve"><value>כפתור Forma. חמישה סגנונות קובעים את המשקל החזותי שלו, שני גדלים קובעים את הצפיפות, ומצב עסוק מציג אנימציה בזמן שהפעולה מתבצעת. CSS טהור — ללא JavaScript.</value></data>
   <data name="Button.Section.Variants" xml:space="preserve"><value>סגנונות</value></data>
   <data name="Button.Section.Sizes" xml:space="preserve"><value>גדלים</value></data>
   <data name="Button.Section.RowActions" xml:space="preserve"><value>פעולות שורה</value></data>

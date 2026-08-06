@@ -31,7 +31,7 @@
   <resheader name="version"><value>1.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <data name="Button.Description" xml:space="preserve"><value>The admin button. Five variants set its visual weight, two sizes set its density, and a busy state animates while work is in flight. Pure CSS — no JavaScript.</value></data>
+  <data name="Button.Description" xml:space="preserve"><value>The Forma button. Five variants set its visual weight, two sizes set its density, and a busy state animates while work is in flight. Pure CSS — no JavaScript.</value></data>
   <data name="Button.Section.Variants" xml:space="preserve"><value>Variants</value></data>
   <data name="Button.Section.Sizes" xml:space="preserve"><value>Sizes</value></data>
   <data name="Button.Section.RowActions" xml:space="preserve"><value>Row actions</value></data>

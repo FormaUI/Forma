@@ -4,7 +4,7 @@
     opacity: 0.5;
 }
 
-/* Stands in for an admin shell that bounds its content area, so a grid inside
+/* Stands in for an app shell that bounds its content area, so a grid inside
    it has a height to fill and its rows scroll instead of the page. */
 .demo-box-bounded {
     box-sizing: border-box;

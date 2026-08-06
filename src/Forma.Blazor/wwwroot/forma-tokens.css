@@ -1,20 +1,11 @@
 /*
     forma-tokens.css — The design tokens every Forma component reads.
 
-    Values only, no selectors: safe to link into a page that Forma does not otherwise style.
-
-    Retheming a host (a different --main-color per consuming site) means overriding the tokens
-    below in a stylesheet loaded after this one — nothing else. --main-dark-color,
-    --main-light-color and --focus-color derive from --main-color, so overriding --main-color
-    alone reshades hover and focus states too; override any of them individually for finer
-    control. A component's own local knob (--forma-toggle-on-bg-color and similar) must fall
-    back to one of these tokens, never to a hardcoded hex, or it becomes an island the theme
-    can't reach. Every custom property that carries a colour ends in -color.
+    Values only, no selectors. Every custom property that carries a colour ends in -color.
 */
 
 :root {
-    /* Typography — the UI font of whatever device the component is rendered on.
-       Covers Latin and Hebrew everywhere without shipping a webfont. */
+    /* Typography */
     --font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
         'Noto Sans Hebrew', sans-serif;
     --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
@@ -29,11 +20,10 @@
     --main-dark-color: color-mix(in srgb, var(--main-color) 82%, black);
     --main-light-color: color-mix(in srgb, var(--main-color) 60%, white);
 
-    /* Focus ring — every component's own focus-color knob falls back here */
+    /* Focus ring */
     --focus-color: color-mix(in srgb, var(--main-color) 55%, white);
 
-    /* Links — same treatment the base `a` rule uses, so a breadcrumb and a body
-       link stay one colour and both follow a retheme */
+    /* Links */
     --link-color: var(--main-dark-color);
     --link-hover-color: var(--main-light-color);
 

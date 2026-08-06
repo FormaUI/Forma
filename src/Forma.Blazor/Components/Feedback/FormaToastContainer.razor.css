@@ -91,9 +91,7 @@
 
 /* ── Animations ── */
 
-/* Offsetting a relatively positioned toast rather than translating it keeps one
-   keyframe for both directions: inset-inline-start resolves to whichever physical
-   edge faces the container's inline-end corner. */
+/* inset-inline-start mirrors, so one keyframe serves both directions. */
 @keyframes forma-toast-in {
     from {
         opacity: 0;

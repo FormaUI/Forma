@@ -3,7 +3,7 @@ namespace Forma.Blazor.Components.Input;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-/// <summary>A button carrying the admin design system's styling, sizing and busy state.</summary>
+/// <summary>A button with a visual variant, a size, and a busy state.</summary>
 public sealed partial class FormaButton : ComponentBase
 {
     /// <summary>Visual weight the button is drawn with.</summary>

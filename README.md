@@ -1,10 +1,9 @@
 # Forma.Blazor
 
-A reusable Blazor **admin component library** (modals, toasts, pickers, tabs, and
-other admin UI building blocks) plus the supporting domain/data/host projects it
-was extracted from.
+A reusable Blazor **component library** — modals, toasts, pickers, tabs, data grids, and
+form inputs.
 
-The library targets **.NET 10** and Interactive Server components.
+The library targets **.NET 11** and Interactive Server components.
 
 ## Solution layout
 
@@ -107,8 +106,8 @@ Three layers, so a host takes only what it wants:
 | `forma-reset.css` | Box sizing, form-control font inheritance, reduced motion | Unless your app already normalizes |
 | `forma-base.css` | Body typography and link colours | You want Forma's look; skip it if you have your own |
 
-They are listed separately rather than behind one aggregate so each is fingerprinted and
-cached immutably, and all three download in parallel.
+They are listed separately so each is fingerprinted, cached immutably, and downloaded in
+parallel.
 
 Retheming is one token: override `--main-color` in a stylesheet loaded after Forma's and the
 hover, focus and link shades follow.

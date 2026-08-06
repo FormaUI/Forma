@@ -1,9 +1,7 @@
 /*
-    forma-base.css — Element-level defaults for a host that wants Forma's own look.
+    forma-base.css — Element-level defaults: body typography and link colours.
 
-    The opinionated layer: it restyles body text and links, so a host with its own design
-    system should link forma-tokens.css (and optionally forma-reset.css) and skip this.
-    Load order is tokens, reset, base.
+    Loads after forma-tokens.css and forma-reset.css.
 */
 
 /* ── Typography defaults ── */

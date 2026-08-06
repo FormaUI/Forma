@@ -1,8 +1,7 @@
 /*
-    forma-reset.css — Cross-browser normalization for a host embedding Forma.
+    forma-reset.css — Cross-browser normalization.
 
-    Structural only: no colours and no type choices, so a host with its own design system
-    can take this without inheriting Forma's look.
+    Structural only: no colours and no type choices.
 */
 
 *,
@@ -15,13 +14,12 @@ body {
     margin: 0;
 }
 
-/* iOS enlarges text when a page rotates into landscape, and components run on tablets. */
+/* Stops iOS inflating text when a page rotates into landscape. */
 html {
     -webkit-text-size-adjust: 100%;
 }
 
-/* Form controls use the OS UI font in every browser until told otherwise, so without
-   this an input renders in a different typeface from the label beside it. */
+/* Form controls take the OS UI font until told otherwise. */
 button,
 input,
 optgroup,
@@ -31,9 +29,7 @@ textarea {
     letter-spacing: inherit;
 }
 
-/* Motion is decoration here — nothing in the library conveys meaning through animation
-   alone, so honouring the preference costs nothing. !important is required to outrank
-   the component stylesheets this has to reach into. */
+/* !important is needed to outrank the component stylesheets. */
 @media (prefers-reduced-motion: reduce) {
     *,
     ::before,

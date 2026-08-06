@@ -1,8 +1,7 @@
 /* ============================================================
    FormaButton — CSS isolation
-   Variant/size vocabulary carried over from the Coi admin
-   (btn, btn-primary, btn-sec, btn-thrd, btn-mini, btn-load),
-   rebuilt on the design tokens with logical properties only.
+   Five variants and two sizes, built on the design tokens
+   with logical properties only.
    ============================================================ */
 
 /* ---------- base ---------- */

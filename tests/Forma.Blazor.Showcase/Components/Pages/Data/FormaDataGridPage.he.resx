@@ -112,7 +112,7 @@
     <value>פעולות שורה</value>
   </data>
   <data name="RowActions.Note" xml:space="preserve">
-    <value>עמודת פעולות היא TemplateColumn רגיל — הטבלה לא מוסיפה רכיבי כפתור משלה. במערכת ניהול אמיתית הם מנווטים לעמוד עריכה או פותחים דיאלוג אישור.</value>
+    <value>עמודת פעולות היא TemplateColumn רגיל — הטבלה לא מוסיפה רכיבי כפתור משלה. באפליקציה אמיתית הם מנווטים לעמוד עריכה או פותחים דיאלוג אישור.</value>
   </data>
   <data name="Column.Actions" xml:space="preserve">
     <value>פעולות</value>

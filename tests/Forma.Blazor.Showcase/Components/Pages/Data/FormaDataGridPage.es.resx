@@ -112,7 +112,7 @@
     <value>Acciones de fila</value>
   </data>
   <data name="RowActions.Note" xml:space="preserve">
-    <value>Una columna de acciones es un TemplateColumn común — la grilla no agrega componentes de botón propios. En un panel real estos navegan a una página de edición o abren un diálogo de confirmación.</value>
+    <value>Una columna de acciones es un TemplateColumn común — la grilla no agrega componentes de botón propios. En una aplicación real estos navegan a una página de edición o abren un diálogo de confirmación.</value>
   </data>
   <data name="Column.Actions" xml:space="preserve">
     <value>Acciones</value>

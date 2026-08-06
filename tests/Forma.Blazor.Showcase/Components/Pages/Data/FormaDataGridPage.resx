@@ -112,7 +112,7 @@
     <value>Row actions</value>
   </data>
   <data name="RowActions.Note" xml:space="preserve">
-    <value>An action column is an ordinary TemplateColumn — the grid adds no button components of its own. In a real admin these navigate to an editor page or raise a confirm dialog.</value>
+    <value>An action column is an ordinary TemplateColumn — the grid adds no button components of its own. In a real app these navigate to an editor page or raise a confirm dialog.</value>
   </data>
   <data name="Column.Actions" xml:space="preserve">
     <value>Actions</value>
