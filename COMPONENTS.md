@@ -264,14 +264,15 @@ These components form the shell of a page. Build first.
 | **Parameters** | `@bind-SelectedIds` (List<int>), `IEnumerable<Category> AvailableCategories` |
 | **Blazor approach** | Two `<ul>` lists side by side. Click item → move between lists (C# list manipulation + re-render). CSS animation via `transition` on list items. No external JS |
 
-### 24. `FormaDropDownMenu`
+### 24. `FormaDropDownMenu` ✅
 
 | | |
 |---|---|
 | **Old pattern** | `Info('divId', '#buttonId', 's')` → shows a `dropdown-menu dropdown-menu-arrow` positioned below a button. Click outside to close |
 | **Used in** | order detail (options: print, notes, invoice), and various action menus |
-| **Parameters** | `RenderFragment Trigger` (the button), `RenderFragment ChildContent` (menu items) |
-| **Blazor approach** | Button + absolutely positioned `<div>`. Toggle visibility on click. Close on `@onfocusout` or click-outside via minimal JS interop. Native `<details>`/`<summary>` is another option |
+| **Parameters** | `RenderFragment Trigger` (the trigger's content), `RenderFragment ChildContent` (menu items), `ButtonVariant TriggerVariant`, `ButtonSize TriggerSize`, `bool TriggerIconOnly`. `FormaDropDownMenuItem` takes `string? Href`, `bool Disabled`, `EventCallback OnClick`; `FormaDropDownMenuDivider` takes none |
+| **Blazor approach** | The component renders its own trigger as a `FormaButton` rather than accepting a whole button from the caller, so it owns `aria-haspopup`, `aria-expanded` and `aria-controls` instead of hoping a supplied fragment carries them; a wrapper span gives the popup something to measure and catches the keydown that a component tag cannot. The panel is a `popover="manual"` in the top layer positioned by the shared `AnchoredPopup.js`, with a backdrop owning dismissal. Items register with the menu through a `CascadingValue`, as `FormaTab` does with `FormaTabs`, so arrow, Home and End navigation works over whatever the caller nested. A colocated `.razor.js` cancels only the four navigation keys, since Blazor fixes `preventDefault` at render time and a blanket one would also block Enter, Space and Tab |
+| **Notes** | An item's activation closes the menu and returns focus to the trigger, which needs an explicit `StateHasChanged` because the state being changed belongs to the parent, not the child whose handler ran. Which item to focus on open is resolved after the render that creates them — indexing the list beforehand reads an empty one |
 
 ---
 
@@ -427,7 +428,7 @@ Components are ordered by dependency and reuse frequency:
 | **Phase 2** | `FormaPageHeader` ✅, `FormaToolbar` ✅, `FormaTabs` ✅ | Layout — the shell of a page |
 | **Phase 3** | `FormaInput` ✅, `FormaToggleSwitch` ✅, `FormaPasswordInput`, `FormaCurrencyInput`, `FormaRangeSlider`, `FormaDatePicker`, `FormaSelect` | Form inputs — needed before building any edit forms |
 | **Phase 4** | `FormaDataGrid<TItem>` ✅, `FormaContextToolbar` ✅, `FormaStatusBadge` ✅, `FormaCapacityIndicator`, `FormaPagination` ✅ | Data display — needed for list pages |
-| **Phase 5** | `FormaSortableList<TItem>` ✅, `FormaMultiSelectDropDown` ✅, `FormaCategorySelector`, `FormaDropDownMenu`, `FormaColorPicker` | Interactive widgets — needed for editor pages |
+| **Phase 5** | `FormaSortableList<TItem>` ✅, `FormaMultiSelectDropDown`  ✅, `FormaCategorySelector`, `FormaDropDownMenu` ✅, `FormaColorPicker` | Interactive widgets — needed for editor pages |
 | **Phase 6** | `FormaUploader`, `FormaFilePicker`, `FormaImagePicker`, `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components — built when their feature pages are built. The media three build in that order: uploader, then the picker that hosts it, then the image skin over the picker |
 | **Phase 7** | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor`, `FormaRichTextEditor` | Complex editors — built alongside their specific pages |
 | **Phase 8** | `FormaButton` ✅ | Shared button primitive — built after the fact and retrofitted onto `FormaDataGrid`, `FormaModal`, `FormaConfirmDialog`, `FormaPagination`, `FormaDatePicker` as the single source of truth for buttons |
@@ -482,6 +483,8 @@ Forma.Blazor/Components/
 │   ├── FormaSortableList.razor
 │   ├── FormaCategorySelector.razor
 │   ├── FormaDropDownMenu.razor
+│   ├── FormaDropDownMenuItem.razor
+│   ├── FormaDropDownMenuDivider.razor
 │   ├── FormaFilePicker.razor
 │   └── FormaImagePicker.razor
 ├── Editors/

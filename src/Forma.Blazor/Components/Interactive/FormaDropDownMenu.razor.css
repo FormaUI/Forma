@@ -1,0 +1,104 @@
+/* ============================================================
+   FormaDropDownMenu — CSS isolation
+   The trigger is a FormaButton; what lives here is the anchored
+   menu popover, reaching its items and dividers with ::deep.
+   ============================================================ */
+
+/* ---------- trigger ---------- */
+/* The trigger is a FormaButton, which owns its look, sizing and focus ring; the wrapper
+   exists only to give the popup something to measure against. */
+.forma-dropdown-menu-anchor {
+    display: inline-flex;
+}
+
+/* ---------- backdrop ---------- */
+.forma-dropdown-menu-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+}
+
+/* ---------- popup ---------- */
+/* A popover in the top layer, so no scrolling or clipping ancestor can cut the menu off.
+   The top layer keeps no layout tie to the trigger, so the script sets left/top; the UA's
+   own inset and margin are cleared to let those land. */
+.forma-dropdown-menu {
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    padding: 0.375rem;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    min-inline-size: 10rem;
+    max-inline-size: 20rem;
+    max-block-size: 20rem;
+    overflow-y: auto;
+    border: none;
+    border-radius: 4px;
+    background: var(--input-bg-color, #fff);
+    box-shadow: var(--shadow-md, 0 4px 16px rgba(0, 0, 0, 0.12));
+}
+
+/* Held back until the popover opens so it cannot flash at the top-left corner in the
+   frame between being rendered and being positioned. */
+.forma-dropdown-menu:popover-open {
+    display: flex;
+}
+
+/* Without popover support the element is never display:none to begin with, so it needs
+   its layout unconditionally — the script still positions it. */
+@supports not selector(:popover-open) {
+    .forma-dropdown-menu {
+        display: flex;
+    }
+}
+
+/* ---------- item ---------- */
+::deep .forma-dropdown-menu-item {
+    display: block;
+    inline-size: 100%;
+    padding-block: 0.5rem;
+    padding-inline: 0.75rem;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-color, #212529);
+    font: inherit;
+    text-align: start;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+@media (pointer: coarse) {
+    ::deep .forma-dropdown-menu-item {
+        min-block-size: 2.75rem;
+    }
+}
+
+@media (hover: hover) {
+    ::deep .forma-dropdown-menu-item:hover:not(:disabled) {
+        background: var(--hover-bg-color, rgba(98, 105, 118, 0.06));
+    }
+}
+
+::deep .forma-dropdown-menu-item:focus-visible {
+    outline: 2px solid var(--focus-color, #86b7fe);
+    outline-offset: -2px;
+}
+
+::deep .forma-dropdown-menu-item:disabled,
+::deep .forma-dropdown-menu-item[aria-disabled="true"] {
+    color: var(--text-muted-color, #889097);
+    cursor: not-allowed;
+}
+
+/* ---------- divider ---------- */
+::deep .forma-dropdown-menu-divider {
+    block-size: 0;
+    margin-block: 0.25rem;
+    border-block-start: 1px solid var(--border-color, rgba(98, 105, 118, 0.16));
+}

@@ -34,6 +34,9 @@ public sealed partial class FormaButton : ComponentBase
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
+    /// <summary>The rendered button element, for a composing component that must anchor to it or focus it.</summary>
+    public ElementReference Element { get; private set; }
+
     // Busy is announced rather than disabled, so the button keeps focus and its place in the tab order.
     private string? AriaDisabled => Busy ? "true" : null;
 
