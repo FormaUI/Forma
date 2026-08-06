@@ -19,7 +19,7 @@
                             class="forma-multi-select-tag-remove"
                             disabled="@Disabled"
                             @onclick="() => RemoveValue(value)"
-                            aria-label="@L["RemoveTag", text]">
+                            aria-label="@L["Remove {0}", text]">
                         &times;
                     </button>
                 </span>
@@ -49,7 +49,7 @@
         <div class="forma-multi-select-popup"
              id="@_popupId"
              role="dialog"
-             aria-label="@(Label ?? L["SelectOptions"])"
+             aria-label="@(Label ?? L["Select options"])"
              popover="manual"
              @ref="_popupElement">
             <input type="text"
@@ -70,13 +70,13 @@
                 }
                 @if (filtered.Count == 0)
                 {
-                    <div class="forma-multi-select-empty">@(Options.Count == 0 ? L["NoOptionsAvailable"] : L["NoResults"])</div>
+                    <div class="forma-multi-select-empty">@(Options.Count == 0 ? L["No options available yet"] : L["No matches"])</div>
                 }
             </div>
             @if (CanAddSearchText)
             {
                 <button type="button" class="forma-multi-select-add" @onclick="HandleAddNewAsync">
-                    + @L["AddNew"]
+                    + @L["Add new"]
                 </button>
             }
         </div>

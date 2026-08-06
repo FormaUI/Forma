@@ -58,8 +58,8 @@ public sealed partial class FormaDataGridPage : ComponentBase
     protected override void OnInitialized()
         => _limitsCaption = new CheckedSelectionCaption
         {
-            SelectAllText = L["Limits.SelectAll"],
-            DeselectAllText = L["Limits.DeselectAll"],
+            SelectAllText = L["Select all"],
+            DeselectAllText = L["Deselect all"],
         };
 
     private void HandleSelectionChanged(IReadOnlyList<Employee> selected)
@@ -78,7 +78,16 @@ public sealed partial class FormaDataGridPage : ComponentBase
         => employee.IsActive ? null : "row-inactive";
 
     private void RecordAction(RowAction action, Employee employee)
-        => _lastAction = $"{L[$"RowActions.{action}"]} — {employee.Name}";
+        => _lastAction = $"{ActionLabel(action)} — {employee.Name}";
+
+    private string ActionLabel(RowAction action)
+        => action switch
+        {
+            RowAction.View => L["View"],
+            RowAction.Edit => L["Edit"],
+            RowAction.Delete => L["Delete"],
+            _ => action.ToString(),
+        };
 
     private void OpenDetails(Employee employee)
     {

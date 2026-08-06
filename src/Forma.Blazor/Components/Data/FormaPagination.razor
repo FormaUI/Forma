@@ -35,7 +35,7 @@
                             <FormaButton Variant="ButtonVariant.Ghost"
                                          Size="ButtonSize.Mini"
                                          class="forma-pagination-link"
-                                         aria-label="@L["PageNumber", pageNumber]"
+                                         aria-label="@L["Page {0}", pageNumber]"
                                          OnClick="() => GoToPageAsync(pageNumber.Value)">
                                 @pageNumber
                             </FormaButton>
@@ -58,7 +58,7 @@
         @if (Options.EnableNavigationInput)
         {
             <div class="forma-pagination-jump">
-                <label class="forma-pagination-jump-label" for="@_pageInputId">@L["GoToPage"]</label>
+                <label class="forma-pagination-jump-label" for="@_pageInputId">@L["Go to page"]</label>
                 <input type="number"
                        @ref="_pageInputElement"
                        id="@_pageInputId"

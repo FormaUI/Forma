@@ -5,33 +5,33 @@
 @inject IStringLocalizer<FormaCloseButtonPage> L
 
 <h1>FormaCloseButton</h1>
-<p class="desc">@L["CloseButton.Description"]</p>
+<p class="desc">@L["The dismiss glyph every panel closes with. A ghost FormaButton drawn square, so the modal, the toast and the context toolbar share one shape, one focus ring and one touch target."]</p>
 
 <div class="demo-section">
-    <h2>@L["CloseButton.Section.Sizes"]</h2>
+    <h2>@L["Sizes"]</h2>
     <div class="demo-box">
         <div class="demo-row">
-            <FormaCloseButton Label="@L["CloseButton.Label.Close"]" OnClick="() => _clicks++" />
-            <FormaCloseButton Label="@L["CloseButton.Label.Close"]" Size="ButtonSize.Mini" OnClick="() => _clicks++" />
+            <FormaCloseButton Label="@L["Close"]" OnClick="() => _clicks++" />
+            <FormaCloseButton Label="@L["Close"]" Size="ButtonSize.Mini" OnClick="() => _clicks++" />
         </div>
-        <p class="demo-output">@L["CloseButton.Clicks"]: <code>@_clicks</code></p>
+        <p class="demo-output">@L["Clicks"]: <code>@_clicks</code></p>
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["CloseButton.Section.Disabled"]</h2>
+    <h2>@L["Disabled"]</h2>
     <div class="demo-box">
-        <FormaCloseButton Label="@L["CloseButton.Label.Close"]" Disabled="true" />
+        <FormaCloseButton Label="@L["Close"]" Disabled="true" />
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["CloseButton.Section.OnColour"]</h2>
-    <p class="desc">@L["CloseButton.OnColour.Note"]</p>
+    <h2>@L["On a coloured surface"]</h2>
+    <p class="desc">@L["A surface sets --forma-btn-ghost-color and its hover pair to retint the glyph; the toast does exactly this."]</p>
     <div class="demo-box">
         <div class="demo-tinted">
-            <span>@L["CloseButton.OnColour.Message"]</span>
-            <FormaCloseButton Label="@L["CloseButton.Label.Dismiss"]" Size="ButtonSize.Mini" />
+            <span>@L["Saved successfully"]</span>
+            <FormaCloseButton Label="@L["Dismiss"]" Size="ButtonSize.Mini" />
         </div>
     </div>
 </div>

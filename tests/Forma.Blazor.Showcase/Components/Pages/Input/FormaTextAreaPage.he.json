@@ -1,0 +1,20 @@
+{
+  "A multi-line field wearing the same chrome as FormaInput: the floating label, focus ring and validation styling all come from the shared FormaField.": "שדה רב-שורתי בעל אותה מעטפת כמו FormaInput: התווית הצפה, טבעת המיקוד ועיצוב האימות מגיעים כולם מ-FormaField המשותף.",
+  "Basic usage": "שימוש בסיסי",
+  "Taller field": "שדה גבוה יותר",
+  "Required and length-limited": "חובה ומוגבל באורך",
+  "Disabled": "מושבת",
+  "Beside a FormaInput": "לצד FormaInput",
+  "Submit with the field empty to see the validation border and message.": "שלח עם השדה ריק כדי לראות את מסגרת האימות ואת ההודעה.",
+  "Both components share one stylesheet, so their borders, labels and focus rings cannot drift apart.": "שני הרכיבים חולקים גיליון סגנונות אחד, כך שהמסגרות, התוויות וטבעות המיקוד שלהם אינם יכולים להיפרד.",
+  "Notes": "הערות",
+  "Summary": "תקציר",
+  "Excerpt": "קטע פתיחה",
+  "Title": "כותרת",
+  "Body": "תוכן",
+  "Value": "ערך",
+  "Locked note": "הערה נעולה",
+  "A disabled field is dimmed, refuses the caret and shows a not-allowed cursor.": "שדה מושבת מועם, אינו מקבל סמן כתיבה ומציג סמן עכבר של פעולה אסורה.",
+  "An excerpt is required.": "נדרש תקציר.",
+  "Validate": "אמת"
+}

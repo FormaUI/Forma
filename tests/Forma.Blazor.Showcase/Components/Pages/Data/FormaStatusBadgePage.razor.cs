@@ -14,11 +14,11 @@ public sealed partial class FormaStatusBadgePage : ComponentBase
 
     private (string Name, string Label)[] OrderStatuses => field ??=
     [
-        ("order-new", L["StatusBadge.Order.New"]),
-        ("order-progress", L["StatusBadge.Order.InProgress"]),
-        ("order-transit", L["StatusBadge.Order.InTransit"]),
-        ("order-done", L["StatusBadge.Order.Completed"]),
-        ("order-cancelled", L["StatusBadge.Order.Cancelled"])
+        ("order-new", L["New order"]),
+        ("order-progress", L["Being handled"]),
+        ("order-transit", L["On the way"]),
+        ("order-done", L["Completed"]),
+        ("order-cancelled", L["Cancelled"])
     ];
 
     // A second application vocabulary, registered from the page to show the catalog API.

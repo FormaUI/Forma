@@ -3,10 +3,11 @@ using Forma.Blazor.Abstractions.Components.Feedback;
 using Forma.Blazor.Core.Components.Data;
 using Forma.Blazor.Core.Components.Feedback;
 using Forma.Blazor.Middlewares;
+using Forma.Localization;
 using Forma.Web.Css;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddLocalization();
+builder.Services.AddJsonLocalization();
 builder.Services.AddScoped<IConfirmDialogService, ConfirmDialogService>();
 builder.Services.AddScoped<IToastService, ToastService>();
 

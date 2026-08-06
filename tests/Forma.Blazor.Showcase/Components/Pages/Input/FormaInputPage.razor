@@ -6,39 +6,39 @@
 @inject IStringLocalizer<FormaInputPage> L
 
 <h1>FormaInput</h1>
-<p class="desc">@L["Field.Description"]</p>
+<p class="desc">@L["Text input with a floating label that animates above the field on focus or when a value is present. Supports validation, required indicator, and autofill detection."]</p>
 
 <EditForm Model="Model" FormName="field-demo" OnValidSubmit="HandleSubmit">
     <DataAnnotationsValidator />
 
     <div class="demo-section">
-        <h2>@L["Field.Section.Basic"]</h2>
+        <h2>@L["Basic Fields"]</h2>
         <div class="demo-box">
-            <FormaInput Label="@L["Field.Label.FullName"]" @bind-Value="Model.FullName" />
-            <FormaInput Label="@L["Field.Label.Email"]" @bind-Value="Model.Email" Type="email" />
+            <FormaInput Label="@L["Full Name"]" @bind-Value="Model.FullName" />
+            <FormaInput Label="@L["Email Address"]" @bind-Value="Model.Email" Type="email" />
         </div>
     </div>
 
     <div class="demo-section">
-        <h2>@L["Field.Section.Required"]</h2>
+        <h2>@L["Required Fields"]</h2>
         <div class="demo-box">
-            <FormaInput Label="@L["Field.Label.Username"]" @bind-Value="Model.Username" Required="true" />
-            <FormaInput Label="@L["Field.Label.Phone"]" @bind-Value="Model.Phone" Type="tel" Required="true" />
+            <FormaInput Label="@L["Username"]" @bind-Value="Model.Username" Required="true" />
+            <FormaInput Label="@L["Phone Number"]" @bind-Value="Model.Phone" Type="tel" Required="true" />
         </div>
     </div>
 
     <div class="demo-section">
-        <h2>@L["Field.Section.Types"]</h2>
+        <h2>@L["Input Types"]</h2>
         <div class="demo-box">
-            <FormaInput Label="@L["Field.Label.Website"]" @bind-Value="Model.Website" Type="url" />
-            <FormaInput Label="@L["Field.Label.Search"]" @bind-Value="Model.Search" Type="search" />
+            <FormaInput Label="@L["Website URL"]" @bind-Value="Model.Website" Type="url" />
+            <FormaInput Label="@L["Search"]" @bind-Value="Model.Search" Type="search" />
         </div>
     </div>
 
     <div class="demo-section">
-        <h2>@L["Field.Section.PreFilled"]</h2>
+        <h2>@L["Pre-filled Value"]</h2>
         <div class="demo-box">
-            <FormaInput Label="@L["Field.Label.Company"]" @bind-Value="Model.Company" />
+            <FormaInput Label="@L["Company Name"]" @bind-Value="Model.Company" />
         </div>
     </div>
 </EditForm>

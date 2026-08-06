@@ -1,0 +1,19 @@
+{
+  "Slide-in toast notifications via a service. Auto-dismiss with configurable duration.": "התראות צפות באמצעות שירות. סגירה אוטומטית עם משך זמן הניתן לקביעה.",
+  "Toast Types": "סוגי התראות",
+  "Success": "הצלחה",
+  "Error": "שגיאה",
+  "Info": "מידע",
+  "Warning": "אזהרה",
+  "Custom Duration": "משך מותאם",
+  "Multiple Toasts": "התראות מרובות",
+  "Show 3 at once": "הצג 3 בבת אחת",
+  "Record saved successfully.": "הרשומה נשמרה בהצלחה.",
+  "Something went wrong.": "משהו השתבש.",
+  "New version available.": "גרסה חדשה זמינה.",
+  "Disk space is running low.": "שטח הדיסק עומד להיגמר.",
+  "Dismisses in {0} second(s).": "נעלם בעוד {0} שניות.",
+  "First toast": "התראה ראשונה",
+  "Second toast": "התראה שנייה",
+  "Third toast": "התראה שלישית"
+}

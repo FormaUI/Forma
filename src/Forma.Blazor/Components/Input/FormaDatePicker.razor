@@ -36,7 +36,7 @@
                         <div class="forma-date-picker-month-header">
                             <FormaButton Variant="ButtonVariant.Ghost"
                                          class="forma-date-picker-nav"
-                                         aria-label="@L["PreviousMonth"]"
+                                         aria-label="@L["Previous month"]"
                                          Disabled="!CanPanelGoPrev(idx)"
                                          OnClick="() => PanelPrev(idx)">
                                 &#10094;
@@ -63,7 +63,7 @@
                             </div>
                             <FormaButton Variant="ButtonVariant.Ghost"
                                          class="forma-date-picker-nav"
-                                         aria-label="@L["NextMonth"]"
+                                         aria-label="@L["Next month"]"
                                          Disabled="!CanPanelGoNext(idx)"
                                          OnClick="() => PanelNext(idx)">
                                 &#10095;
@@ -122,25 +122,25 @@
                                  class="forma-date-picker-preset"
                                  Disabled="IsPresetDisabled(Preset.Last7Days)"
                                  OnClick="() => ApplyPreset(Preset.Last7Days)">
-                        @L["Last7Days"]
+                        @L["Last 7 days"]
                     </FormaButton>
                     <FormaButton Variant="ButtonVariant.Ghost"
                                  class="forma-date-picker-preset"
                                  Disabled="IsPresetDisabled(Preset.Last30Days)"
                                  OnClick="() => ApplyPreset(Preset.Last30Days)">
-                        @L["Last30Days"]
+                        @L["Last 30 days"]
                     </FormaButton>
                     <FormaButton Variant="ButtonVariant.Ghost"
                                  class="forma-date-picker-preset"
                                  Disabled="IsPresetDisabled(Preset.ThisMonth)"
                                  OnClick="() => ApplyPreset(Preset.ThisMonth)">
-                        @L["ThisMonth"]
+                        @L["This month"]
                     </FormaButton>
                     <FormaButton Variant="ButtonVariant.Ghost"
                                  class="forma-date-picker-preset"
                                  Disabled="IsPresetDisabled(Preset.LastMonth)"
                                  OnClick="() => ApplyPreset(Preset.LastMonth)">
-                        @L["LastMonth"]
+                        @L["Last month"]
                     </FormaButton>
                 </div>
             }

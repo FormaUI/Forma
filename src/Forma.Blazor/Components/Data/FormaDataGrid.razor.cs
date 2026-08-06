@@ -595,7 +595,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     }
 }
 
-// Non-generic marker sharing FormaDataGrid's resx across every closed instantiation —
+// Non-generic marker sharing FormaDataGrid's translation files across every closed instantiation —
 // IStringLocalizer<T> keys resources off T's FullName, which for an open generic type
 // includes its type arguments and would never match the embedded resource name.
 internal abstract class FormaDataGrid;

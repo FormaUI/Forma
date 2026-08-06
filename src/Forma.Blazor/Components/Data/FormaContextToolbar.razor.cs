@@ -21,7 +21,7 @@ public sealed partial class FormaContextToolbar : ComponentBase
     [Inject] private IStringLocalizer<FormaContextToolbar> L { get; set; } = default!;
 
     private string CaptionText
-        => Caption ?? L["SelectedCount", Count];
+        => Caption ?? L["{0} selected", Count];
 
     protected override void OnParametersSet()
         => ArgumentOutOfRangeException.ThrowIfNegative(Count);

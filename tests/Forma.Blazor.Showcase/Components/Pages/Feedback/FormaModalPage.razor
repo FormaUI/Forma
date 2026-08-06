@@ -4,34 +4,34 @@
 @inject IStringLocalizer<FormaModalPage> L
 
 <h1>FormaModal</h1>
-<p class="desc">@L["Modal.Description"]</p>
+<p class="desc">@L["Modal dialog using native <dialog> element. Provides backdrop, focus trap, Escape key, and scoped CSS animations."]</p>
 
 <div class="demo-section">
-    <h2>@L["Modal.Section.Basic"]</h2>
+    <h2>@L["Basic Modal"]</h2>
     <div class="demo-box">
-        <button class="btn btn-primary" @onclick="() => _showBasic = true">@L["Modal.Button.OpenBasic"]</button>
-        <FormaModal Opened="_showBasic" OnClose="() => _showBasic = false" Title="@L["Modal.Title.Basic"]">
+        <button class="btn btn-primary" @onclick="() => _showBasic = true">@L["Open Basic Modal"]</button>
+        <FormaModal Opened="_showBasic" OnClose="() => _showBasic = false" Title="@L["Basic Modal"]">
             <Body>
-                <p>@L["Modal.Body.Basic"]</p>
+                <p>@L["This is a basic modal with a title and child content."]</p>
             </Body>
         </FormaModal>
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["Modal.Section.NoHeader"]</h2>
+    <h2>@L["No Header (Title = null)"]</h2>
     <div class="demo-box">
-        <button class="btn btn-primary" @onclick="() => _showNoHeader = true">@L["Modal.Button.OpenHeaderless"]</button>
+        <button class="btn btn-primary" @onclick="() => _showNoHeader = true">@L["Open Headerless Modal"]</button>
         <FormaModal Opened="_showNoHeader" OnClose="() => _showNoHeader = false" Options="HideConfirmAction">
             <Body>
-                <p>@L["Modal.Body.NoHeader"]</p>
+                <p>@L["This modal has no header - useful for simple alerts or custom layouts."]</p>
             </Body>
         </FormaModal>
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["Modal.Section.SizeVariants"]</h2>
+    <h2>@L["Size Variants"]</h2>
     <div class="demo-box" style="display: flex; gap: 8px; flex-wrap: wrap;">
         @foreach (var size in _sizes)
         {
@@ -43,7 +43,7 @@
             <FormaModal Opened="true" OnClose="() => _activeSize = null" Title="@($"Size: {_activeSize}")" Size="@_activeSize.Value"
                       Options="HideConfirmAction">
                 <Body>
-                    <p>@L["Modal.Body.SizeUses"] <code>Size="@_activeSize"</code>.</p>
+                    <p>@L["This modal uses"] <code>Size="@_activeSize"</code>.</p>
                 </Body>
             </FormaModal>
         }
@@ -51,52 +51,52 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Modal.Section.CustomFooter"]</h2>
+    <h2>@L["Custom Footer"]</h2>
     <div class="demo-box" style="display: flex; gap: 8px; flex-wrap: wrap;">
-        <button class="btn btn-sec" @onclick="() => _showFooterOnly = true">@L["Modal.Button.OpenFooterOnly"]</button>
-        <button class="btn btn-primary" @onclick="() => _showFooterWithActions = true">@L["Modal.Button.OpenFooterActions"]</button>
+        <button class="btn btn-sec" @onclick="() => _showFooterOnly = true">@L["Open Footer Only"]</button>
+        <button class="btn btn-primary" @onclick="() => _showFooterWithActions = true">@L["Open Footer + Actions"]</button>
 
-        <FormaModal Opened="_showFooterOnly" OnClose="() => _showFooterOnly = false" Title="@L["Modal.Title.FooterOnly"]"
+        <FormaModal Opened="_showFooterOnly" OnClose="() => _showFooterOnly = false" Title="@L["Footer Only"]"
                   Options="HideFooterActions">
             <Body>
-                <p>@L["Modal.Body.FooterOnly"]</p>
+                <p>@L["This example shows footer content only, without default actions."]</p>
             </Body>
             <Footer>
-                <span style="color: var(--text-muted-color);">@L["Modal.Footer.LastUpdated"]</span>
+                <span style="color: var(--text-muted-color);">@L["Last updated: just now"]</span>
             </Footer>
         </FormaModal>
 
-        <FormaModal Opened="_showFooterWithActions" OnClose="() => _showFooterWithActions = false" Title="@L["Modal.Title.FooterActions"]">
+        <FormaModal Opened="_showFooterWithActions" OnClose="() => _showFooterWithActions = false" Title="@L["Footer + Actions"]">
             <Body>
-                <p>@L["Modal.Body.FooterActions"]</p>
+                <p>@L["This example shows both custom footer content and default actions."]</p>
             </Body>
             <Footer>
-                <span style="color: var(--text-muted-color);">@L["Modal.Footer.Tip"]</span>
+                <span style="color: var(--text-muted-color);">@L["Tip: you can place any custom content here"]</span>
             </Footer>
         </FormaModal>
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["Modal.Section.NoFooter"]</h2>
+    <h2>@L["No Footer"]</h2>
     <div class="demo-box">
-        <button class="btn btn-primary" @onclick="() => _showNoFooter = true">@L["Modal.Button.OpenNoFooter"]</button>
-        <FormaModal Opened="_showNoFooter" OnClose="() => _showNoFooter = false" Title="@L["Modal.Title.Information"]">
+        <button class="btn btn-primary" @onclick="() => _showNoFooter = true">@L["Open (no footer)"]</button>
+        <FormaModal Opened="_showNoFooter" OnClose="() => _showNoFooter = false" Title="@L["Information"]">
             <Body>
-                <p>@L["Modal.Body.NoFooter"]</p>
+                <p>@L["This modal has no footer - close it with Escape, backdrop click, or the X button."]</p>
             </Body>
         </FormaModal>
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["Modal.Section.NoBackdrop"]</h2>
+    <h2>@L["Backdrop Click Disabled"]</h2>
     <div class="demo-box">
-        <button class="btn btn-primary" @onclick="() => _showNoBackdrop = true">@L["Modal.Button.OpenNoBackdrop"]</button>
+        <button class="btn btn-primary" @onclick="() => _showNoBackdrop = true">@L["Open (no backdrop close)"]</button>
         <FormaModal Opened="_showNoBackdrop" OnClose="() => _showNoBackdrop = false"
-                    Title="@L["Modal.Title.MustUseButton"]" Options="RequireExplicitClose">
+                    Title="@L["Must Use X or Button"]" Options="RequireExplicitClose">
             <Body>
-                <p>@L["Modal.Body.NoBackdrop"]</p>
+                <p>@L["Clicking the backdrop does not close this modal. Use the X button or the button below."]</p>
             </Body>
         </FormaModal>
     </div>

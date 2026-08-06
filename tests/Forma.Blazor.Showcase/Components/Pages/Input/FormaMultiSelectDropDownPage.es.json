@@ -1,0 +1,13 @@
+{
+  "A chip-style multi-select with a searchable checkbox-list popup. Selected values render as removable tags; the popup stays anchored to its trigger wherever the page scrolls.": "Un selector múltiple con etiquetas y un menú emergente con casillas de verificación con búsqueda. Los valores seleccionados se muestran como etiquetas que se pueden quitar; el menú se mantiene anclado a su disparador sin importar el desplazamiento de la página.",
+  "Basic": "Básico",
+  "With Label and Placeholder": "Con Etiqueta y Marcador",
+  "Tags": "Etiquetas",
+  "Choose tags": "Elegir etiquetas",
+  "Pre-selected Values": "Valores Preseleccionados",
+  "Categories": "Categorías",
+  "Add New Option": "Agregar Nueva Opción",
+  "Search for a tag that doesn't exist yet, then use \"Add new\" to create and select it.": "Busca una etiqueta que aún no exista y usa \"Agregar nuevo\" para crearla y seleccionarla.",
+  "Custom Tags": "Etiquetas Personalizadas",
+  "Disabled": "Deshabilitado"
+}

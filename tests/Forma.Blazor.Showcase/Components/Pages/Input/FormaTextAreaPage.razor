@@ -5,50 +5,50 @@
 @inject IStringLocalizer<FormaTextAreaPage> L
 
 <h1>FormaTextArea</h1>
-<p class="desc">@L["TextArea.Description"]</p>
+<p class="desc">@L["A multi-line field wearing the same chrome as FormaInput: the floating label, focus ring and validation styling all come from the shared FormaField."]</p>
 
 <EditForm EditContext="_editContext">
 
     <div class="demo-section">
-        <h2>@L["TextArea.Section.Basic"]</h2>
+        <h2>@L["Basic usage"]</h2>
         <div class="demo-box">
-            <FormaTextArea @bind-Value="_model.Notes" Label="@L["TextArea.Label.Notes"]" />
-            <p class="demo-output">@L["TextArea.Value.Label"]: <code>@_model.Notes</code></p>
+            <FormaTextArea @bind-Value="_model.Notes" Label="@L["Notes"]" />
+            <p class="demo-output">@L["Value"]: <code>@_model.Notes</code></p>
         </div>
     </div>
 
     <div class="demo-section">
-        <h2>@L["TextArea.Section.Rows"]</h2>
+        <h2>@L["Taller field"]</h2>
         <div class="demo-box">
-            <FormaTextArea @bind-Value="_model.Summary" Label="@L["TextArea.Label.Summary"]" Rows="8" />
+            <FormaTextArea @bind-Value="_model.Summary" Label="@L["Summary"]" Rows="8" />
         </div>
     </div>
 
     <div class="demo-section">
-        <h2>@L["TextArea.Section.Required"]</h2>
-        <p class="desc">@L["TextArea.Required.Note"]</p>
+        <h2>@L["Required and length-limited"]</h2>
+        <p class="desc">@L["Submit with the field empty to see the validation border and message."]</p>
         <div class="demo-box">
-            <FormaTextArea @bind-Value="_model.Excerpt" Label="@L["TextArea.Label.Excerpt"]" Required="true" MaxLength="280" />
+            <FormaTextArea @bind-Value="_model.Excerpt" Label="@L["Excerpt"]" Required="true" MaxLength="280" />
             <button type="button" class="btn btn-primary" @onclick="Validate">
-                @L["TextArea.Button.Validate"]
+                @L["Validate"]
             </button>
         </div>
     </div>
 
     <div class="demo-section">
-        <h2>@L["TextArea.Section.Disabled"]</h2>
-        <p class="desc">@L["TextArea.Disabled.Note"]</p>
+        <h2>@L["Disabled"]</h2>
+        <p class="desc">@L["A disabled field is dimmed, refuses the caret and shows a not-allowed cursor."]</p>
         <div class="demo-box">
-            <FormaTextArea @bind-Value="_model.Locked" Label="@L["TextArea.Label.Locked"]" disabled />
+            <FormaTextArea @bind-Value="_model.Locked" Label="@L["Locked note"]" disabled />
         </div>
     </div>
 
     <div class="demo-section">
-        <h2>@L["TextArea.Section.SideBySide"]</h2>
-        <p class="desc">@L["TextArea.SideBySide.Note"]</p>
+        <h2>@L["Beside a FormaInput"]</h2>
+        <p class="desc">@L["Both components share one stylesheet, so their borders, labels and focus rings cannot drift apart."]</p>
         <div class="demo-box">
-            <FormaInput @bind-Value="_model.Title" Label="@L["TextArea.Label.Title"]" />
-            <FormaTextArea @bind-Value="_model.Body" Label="@L["TextArea.Label.Body"]" />
+            <FormaInput @bind-Value="_model.Title" Label="@L["Title"]" />
+            <FormaTextArea @bind-Value="_model.Body" Label="@L["Body"]" />
         </div>
     </div>
 </EditForm>
@@ -71,7 +71,7 @@
 
         if (string.IsNullOrWhiteSpace(_model.Excerpt))
         {
-            _messages.Add(excerpt, L["TextArea.Validation.Excerpt"]);
+            _messages.Add(excerpt, L["An excerpt is required."]);
         }
 
         _editContext.NotifyValidationStateChanged();

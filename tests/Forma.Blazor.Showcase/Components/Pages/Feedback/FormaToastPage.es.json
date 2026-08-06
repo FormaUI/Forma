@@ -1,0 +1,19 @@
+{
+  "Slide-in toast notifications via a service. Auto-dismiss with configurable duration.": "Notificaciones toast deslizantes mediante un servicio. Se descartan automáticamente con una duración configurable.",
+  "Toast Types": "Tipos de toast",
+  "Success": "Éxito",
+  "Error": "Error",
+  "Info": "Información",
+  "Warning": "Advertencia",
+  "Custom Duration": "Duración personalizada",
+  "Multiple Toasts": "Múltiples toasts",
+  "Show 3 at once": "Mostrar 3 a la vez",
+  "Record saved successfully.": "Registro guardado correctamente.",
+  "Something went wrong.": "Algo salió mal.",
+  "New version available.": "Nueva versión disponible.",
+  "Disk space is running low.": "El espacio en disco se está agotando.",
+  "Dismisses in {0} second(s).": "Se descarta en {0} segundo(s).",
+  "First toast": "Primer toast",
+  "Second toast": "Segundo toast",
+  "Third toast": "Tercer toast"
+}

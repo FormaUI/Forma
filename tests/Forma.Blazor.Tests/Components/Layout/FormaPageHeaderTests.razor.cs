@@ -4,6 +4,6 @@ public sealed partial class FormaPageHeaderTests
 {
     public FormaPageHeaderTests()
     {
-        Services.AddLocalization();
+        Services.AddJsonLocalization();
     }
 }

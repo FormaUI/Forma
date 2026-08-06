@@ -1,0 +1,14 @@
+{
+  "Text input with a floating label that animates above the field on focus or when a value is present. Supports validation, required indicator, and autofill detection.": "שדה טקסט עם תווית צפה שמונפשת מעל השדה במיקוד או כשיש ערך. תומך בוולידציה, סימון שדה חובה, וזיהוי מילוי אוטומטי.",
+  "Basic Fields": "שדות בסיסיים",
+  "Required Fields": "שדות חובה",
+  "Input Types": "סוגי קלט",
+  "Pre-filled Value": "ערך מוגדר מראש",
+  "Full Name": "שם מלא",
+  "Email Address": "כתובת אימייל",
+  "Username": "שם משתמש",
+  "Phone Number": "מספר טלפון",
+  "Website URL": "כתובת אתר",
+  "Search": "חיפוש",
+  "Company Name": "שם חברה"
+}

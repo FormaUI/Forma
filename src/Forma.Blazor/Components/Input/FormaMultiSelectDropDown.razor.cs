@@ -74,8 +74,8 @@ public sealed partial class FormaMultiSelectDropDown<TValue> : InputBase<List<TV
 
     private string TriggerText
         => SelectedValues.Count == 0
-            ? Placeholder ?? L["SelectOptions"]
-            : L["SelectedCount", SelectedValues.Count];
+            ? Placeholder ?? L["Select options"]
+            : L["{0} selected", SelectedValues.Count];
 
     protected override void OnInitialized()
         => _module = new JsModule(JS, ModulePath);
@@ -215,7 +215,7 @@ public sealed partial class FormaMultiSelectDropDown<TValue> : InputBase<List<TV
     }
 }
 
-// Non-generic marker sharing FormaMultiSelectDropDown's resx across every closed instantiation —
+// Non-generic marker sharing FormaMultiSelectDropDown's translation files across every closed instantiation —
 // IStringLocalizer<T> keys resources off T's FullName, which for an open generic type
 // includes its type arguments and would never match the embedded resource name.
 internal abstract class FormaMultiSelectDropDown;

@@ -1,0 +1,11 @@
+{
+  "The dismiss glyph every panel closes with. A ghost FormaButton drawn square, so the modal, the toast and the context toolbar share one shape, one focus ring and one touch target.": "סמל הסגירה שכל חלונית נסגרת איתו. FormaButton בסגנון ghost המצויר כריבוע, כך שהמודאל, ההודעה הצפה וסרגל ההקשר חולקים צורה אחת, טבעת מיקוד אחת ויעד מגע אחד.",
+  "Sizes": "גדלים",
+  "Disabled": "מושבת",
+  "On a coloured surface": "על רקע צבעוני",
+  "A surface sets --forma-btn-ghost-color and its hover pair to retint the glyph; the toast does exactly this.": "משטח מגדיר את ‎--forma-btn-ghost-color‎ ואת זוג המשתנים של המעבר כדי לצבוע מחדש את הסמל; ההודעה הצפה עושה בדיוק זאת.",
+  "Saved successfully": "נשמר בהצלחה",
+  "Close": "סגור",
+  "Dismiss": "בטל",
+  "Clicks": "לחיצות"
+}

@@ -10,7 +10,7 @@
         <div class="forma-color-swatch-wrapper">
             <input type="color"
                    class="forma-color-native"
-                   aria-label="@L["ChooseColour"]"
+                   aria-label="@L["Choose colour"]"
                    value="@RgbHex"
                    @oninput="HandleNativeInput" />
             <span class="forma-color-swatch" style="background-color: @CurrentValueAsString" aria-hidden="true"></span>
@@ -18,7 +18,7 @@
         <input id="@_id"
                type="text"
                class="forma-color-hex-input @CssClass"
-               aria-label="@(Label is null ? L["HexValue"].Value : null)"
+               aria-label="@(Label is null ? L["Colour hex value"].Value : null)"
                value="@CurrentValueAsString"
                @onchange="HandleHexInput"
                @attributes="AdditionalAttributes"

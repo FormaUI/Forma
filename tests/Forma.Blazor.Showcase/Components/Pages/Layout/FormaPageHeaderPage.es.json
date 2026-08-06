@@ -1,0 +1,15 @@
+{
+  "Page header with title, breadcrumb navigation, and optional action slot.": "Encabezado de página con título, navegación de ruta de navegación y espacio de acción opcional.",
+  "Basic with Breadcrumbs": "Básico con rutas de navegación",
+  "Title Only": "Solo título",
+  "With Action Buttons": "Con botones de acción",
+  "Deep Breadcrumb Trail": "Ruta de navegación profunda",
+  "Orders": "Pedidos",
+  "Dashboard": "Panel",
+  "Products": "Productos",
+  "Edit Product": "Editar producto",
+  "Add New": "Agregar nuevo",
+  "Export": "Exportar",
+  "Home": "Inicio",
+  "Store": "Tienda"
+}

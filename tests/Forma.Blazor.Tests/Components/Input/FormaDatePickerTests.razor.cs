@@ -5,6 +5,6 @@ public sealed partial class FormaDatePickerTests
     public FormaDatePickerTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        Services.AddLocalization();
+        Services.AddJsonLocalization();
     }
 }

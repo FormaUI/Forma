@@ -90,7 +90,7 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
         }
     }
 
-    private string Placeholder => IsRangeMode ? L["SelectRange"] : L["SelectDate"];
+    private string Placeholder => IsRangeMode ? L["Select range"] : L["Select date"];
 
     private int MinYear => MinDate.HasValue
         ? MinDate.Value.Year

@@ -6,11 +6,11 @@
 @inject IStringLocalizer<FormaToggleSwitchPage> L
 
 <h1>FormaToggleSwitch</h1>
-<p class="desc">@L["Toggle.Description"]</p>
+<p class="desc">@L["An iOS-style toggle switch for boolean values. Supports optional on/off labels and a disabled state. Pure CSS — no JavaScript."]</p>
 
 <EditForm Model="Model" FormName="toggle-demo" OnValidSubmit="HandleSubmit">
     <div class="demo-section">
-        <h2>@L["Toggle.Section.Basic"]</h2>
+        <h2>@L["Basic Toggle"]</h2>
         <div class="demo-box">
             <FormaToggleSwitch @bind-Value="Model.Active" />
             <FormaToggleSwitch @bind-Value="Model.Featured" />
@@ -18,31 +18,31 @@
     </div>
 
     <div class="demo-section">
-        <h2>@L["Toggle.Section.WithLabels"]</h2>
+        <h2>@L["With Labels"]</h2>
         <div class="demo-box">
             <FormaToggleSwitch @bind-Value="Model.Comments"
-                             OnLabel="@L["Toggle.Label.On"]"
-                             OffLabel="@L["Toggle.Label.Off"]" />
+                             OnLabel="@L["On"]"
+                             OffLabel="@L["Off"]" />
             <FormaToggleSwitch @bind-Value="Model.Published"
-                             OnLabel="@L["Toggle.Label.Published"]"
-                             OffLabel="@L["Toggle.Label.Unpublished"]" />
+                             OnLabel="@L["Published"]"
+                             OffLabel="@L["Unpublished"]" />
         </div>
     </div>
 
     <div class="demo-section">
-        <h2>@L["Toggle.Section.States"]</h2>
+        <h2>@L["States"]</h2>
         <div class="demo-box">
             <FormaToggleSwitch @bind-Value="Model.OnByDefault"
-                             OnLabel="@L["Toggle.Label.On"]"
-                             OffLabel="@L["Toggle.Label.Off"]" />
+                             OnLabel="@L["On"]"
+                             OffLabel="@L["Off"]" />
             <FormaToggleSwitch @bind-Value="Model.Disabled"
                              Disabled="true"
-                             OnLabel="@L["Toggle.Label.On"]"
-                             OffLabel="@L["Toggle.Label.Off"]" />
+                             OnLabel="@L["On"]"
+                             OffLabel="@L["Off"]" />
             <FormaToggleSwitch @bind-Value="Model.DisabledOn"
                              Disabled="true"
-                             OnLabel="@L["Toggle.Label.On"]"
-                             OffLabel="@L["Toggle.Label.Off"]" />
+                             OnLabel="@L["On"]"
+                             OffLabel="@L["Off"]" />
         </div>
     </div>
 </EditForm>

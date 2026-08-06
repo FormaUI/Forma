@@ -1,0 +1,13 @@
+{
+  "A styled checkbox with a script-driven indeterminate state, and an option to suppress the native toggle so the caller owns the checked state, as a tri-state select-all does.": "תיבת סימון מעוצבת עם מצב חלקי המנוהל על ידי סקריפט, ועם אפשרות לבטל את ההחלפה המובנית כך שהקורא שולט במצב הסימון, כפי שעושה \"בחר הכול\" בשלושה מצבים.",
+  "Basic": "בסיסי",
+  "Disabled": "מושבת",
+  "Indeterminate": "מצב חלקי",
+  "The parent checkbox reflects and controls the state of its children, showing a dash when only some are checked.": "תיבת הסימון הראשית משקפת ושולטת במצב הצאצאים שלה, ומציגה מקף כאשר רק חלקם מסומנים.",
+  "Subscribe to updates": "הרשמה לעדכונים",
+  "Featured": "מומלץ",
+  "Off": "כבוי",
+  "On": "פעיל",
+  "Select all": "בחר הכול",
+  "Item {0}": "פריט {0}"
+}

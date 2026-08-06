@@ -5,34 +5,34 @@
 @inject IStringLocalizer<FormaCheckboxPage> L
 
 <h1>FormaCheckbox</h1>
-<p class="desc">@L["Checkbox.Description"]</p>
+<p class="desc">@L["A styled checkbox with a script-driven indeterminate state, and an option to suppress the native toggle so the caller owns the checked state, as a tri-state select-all does."]</p>
 
 <div class="demo-section">
-    <h2>@L["Checkbox.Section.Basic"]</h2>
+    <h2>@L["Basic"]</h2>
     <div class="demo-box demo-row">
-        <FormaCheckbox Checked="_basic" CheckedChanged="v => _basic = v">@L["Checkbox.Label.Subscribe"]</FormaCheckbox>
-        <FormaCheckbox Checked="_prechecked" CheckedChanged="v => _prechecked = v">@L["Checkbox.Label.Featured"]</FormaCheckbox>
+        <FormaCheckbox Checked="_basic" CheckedChanged="v => _basic = v">@L["Subscribe to updates"]</FormaCheckbox>
+        <FormaCheckbox Checked="_prechecked" CheckedChanged="v => _prechecked = v">@L["Featured"]</FormaCheckbox>
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["Checkbox.Section.Disabled"]</h2>
+    <h2>@L["Disabled"]</h2>
     <div class="demo-box demo-row">
-        <FormaCheckbox Checked="false" Disabled="true">@L["Checkbox.Label.Off"]</FormaCheckbox>
-        <FormaCheckbox Checked="true" Disabled="true">@L["Checkbox.Label.On"]</FormaCheckbox>
+        <FormaCheckbox Checked="false" Disabled="true">@L["Off"]</FormaCheckbox>
+        <FormaCheckbox Checked="true" Disabled="true">@L["On"]</FormaCheckbox>
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["Checkbox.Section.Indeterminate"]</h2>
-    <p class="desc">@L["Checkbox.Indeterminate.Note"]</p>
+    <h2>@L["Indeterminate"]</h2>
+    <p class="desc">@L["The parent checkbox reflects and controls the state of its children, showing a dash when only some are checked."]</p>
     <div class="demo-box">
-        <FormaCheckbox Checked="@AllChildrenChecked" Indeterminate="@SomeChildrenChecked" PreventDefault="true" OnClick="ToggleAllChildren">@L["Checkbox.Label.SelectAll"]</FormaCheckbox>
+        <FormaCheckbox Checked="@AllChildrenChecked" Indeterminate="@SomeChildrenChecked" PreventDefault="true" OnClick="ToggleAllChildren">@L["Select all"]</FormaCheckbox>
         <div class="demo-row demo-checkbox-children">
             @for (var i = 0; i < _children.Length; i++)
             {
                 var index = i;
-                <FormaCheckbox Checked="_children[index]" CheckedChanged="v => _children[index] = v">@L["Checkbox.Label.Item", index + 1]</FormaCheckbox>
+                <FormaCheckbox Checked="_children[index]" CheckedChanged="v => _children[index] = v">@L["Item {0}", index + 1]</FormaCheckbox>
             }
         </div>
     </div>

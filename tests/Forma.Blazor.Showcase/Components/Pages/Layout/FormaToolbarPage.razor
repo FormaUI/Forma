@@ -5,33 +5,33 @@
 @inject IStringLocalizer<FormaToolbarPage> L
 
 <h1>FormaToolbar</h1>
-<p class="desc">@L["Toolbar.Description"]</p>
+<p class="desc">@L["A flex container for search inputs, filters, and action buttons. Used across all list pages."]</p>
 
 <div class="demo-section">
-    <h2>@L["Toolbar.Section.SearchOnly"]</h2>
+    <h2>@L["Search Only"]</h2>
     <div class="demo-box">
-        <FormaToolbar OnSearch="HandleSearch1" SearchPlaceholder="@L["Toolbar.Search.Placeholder"]" />
-        <p class="demo-output">@L["Toolbar.Search.Label"]: <code>@_lastSearch1</code></p>
+        <FormaToolbar OnSearch="HandleSearch1" SearchPlaceholder="@L["Search..."]" />
+        <p class="demo-output">@L["Last search"]: <code>@_lastSearch1</code></p>
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["Toolbar.Section.ActionsOnly"]</h2>
+    <h2>@L["Actions Only"]</h2>
     <div class="demo-box">
         <FormaToolbar>
-            <button class="btn btn-primary">@L["Toolbar.Button.AddNew"]</button>
-            <button class="btn btn-sec">@L["Toolbar.Button.Export"]</button>
+            <button class="btn btn-primary">@L["Add New"]</button>
+            <button class="btn btn-sec">@L["Export"]</button>
         </FormaToolbar>
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["Toolbar.Section.Full"]</h2>
+    <h2>@L["Search with Actions"]</h2>
     <div class="demo-box">
-        <FormaToolbar OnSearch="HandleSearch3" SearchPlaceholder="@L["Toolbar.Search.Placeholder"]">
-            <button class="btn btn-primary">@L["Toolbar.Button.AddNew"]</button>
+        <FormaToolbar OnSearch="HandleSearch3" SearchPlaceholder="@L["Search..."]">
+            <button class="btn btn-primary">@L["Add New"]</button>
         </FormaToolbar>
-        <p class="demo-output">@L["Toolbar.Search.Label"]: <code>@_lastSearch3</code></p>
+        <p class="demo-output">@L["Last search"]: <code>@_lastSearch3</code></p>
     </div>
 </div>
 

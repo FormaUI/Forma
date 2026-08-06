@@ -16,6 +16,11 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\Forma.Blazor\Forma.Blazor.csproj" />
         <ProjectReference Include="..\..\src\Forma.Blazor.Core\Forma.Blazor.Core.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Localization\Forma.Localization.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Components\**\*.json" />
     </ItemGroup>
 
 </Project>

@@ -1,0 +1,13 @@
+{
+  "A chip-style multi-select with a searchable checkbox-list popup. Selected values render as removable tags; the popup stays anchored to its trigger wherever the page scrolls.": "בורר רב-ערכי בסגנון תגיות עם חלונית קופצת הניתנת לחיפוש עם תיבות סימון. הערכים שנבחרו מוצגים כתגיות הניתנות להסרה; החלונית נשארת מעוגנת לכפתור המפעיל אותה בכל מקום שהדף גולל אליו.",
+  "Basic": "בסיסי",
+  "With Label and Placeholder": "עם תווית וטקסט מציין מקום",
+  "Tags": "תגיות",
+  "Choose tags": "בחר תגיות",
+  "Pre-selected Values": "ערכים שנבחרו מראש",
+  "Categories": "קטגוריות",
+  "Add New Option": "הוספת אפשרות חדשה",
+  "Search for a tag that doesn't exist yet, then use \"Add new\" to create and select it.": "חפש תגית שעדיין לא קיימת, ולאחר מכן השתמש ב\"הוסף חדש\" כדי ליצור ולבחור אותה.",
+  "Custom Tags": "תגיות מותאמות אישית",
+  "Disabled": "מושבת"
+}

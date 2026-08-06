@@ -4,40 +4,40 @@
 @inject IStringLocalizer<FormaPageHeaderPage> L
 
 <h1>FormaPageHeader</h1>
-<p class="desc">@L["PageHeader.Description"]</p>
+<p class="desc">@L["Page header with title, breadcrumb navigation, and optional action slot."]</p>
 
 <div class="demo-section">
-    <h2>@L["PageHeader.Section.Basic"]</h2>
+    <h2>@L["Basic with Breadcrumbs"]</h2>
     <div class="demo-box">
-        <FormaPageHeader Title="@L["PageHeader.Demo.Title.Orders"]"
+        <FormaPageHeader Title="@L["Orders"]"
                        Breadcrumbs="BasicBreadcrumbs" />
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["PageHeader.Section.TitleOnly"]</h2>
+    <h2>@L["Title Only"]</h2>
     <div class="demo-box">
-        <FormaPageHeader Title="@L["PageHeader.Demo.Title.Dashboard"]" />
+        <FormaPageHeader Title="@L["Dashboard"]" />
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["PageHeader.Section.WithActions"]</h2>
+    <h2>@L["With Action Buttons"]</h2>
     <div class="demo-box">
-        <FormaPageHeader Title="@L["PageHeader.Demo.Title.Products"]"
+        <FormaPageHeader Title="@L["Products"]"
                        Breadcrumbs="ProductsBreadcrumbs">
             <Actions>
-                <button class="btn btn-primary">@L["PageHeader.Demo.Button.AddNew"]</button>
-                <button class="btn btn-sec">@L["PageHeader.Demo.Button.Export"]</button>
+                <button class="btn btn-primary">@L["Add New"]</button>
+                <button class="btn btn-sec">@L["Export"]</button>
             </Actions>
         </FormaPageHeader>
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["PageHeader.Section.DeepBreadcrumb"]</h2>
+    <h2>@L["Deep Breadcrumb Trail"]</h2>
     <div class="demo-box">
-        <FormaPageHeader Title="@L["PageHeader.Demo.Title.EditProduct"]"
+        <FormaPageHeader Title="@L["Edit Product"]"
                        Breadcrumbs="DeepBreadcrumbs" />
     </div>
 </div>
@@ -45,23 +45,23 @@
 @code {
     private BreadcrumbItem[] BasicBreadcrumbs =>
     [
-        new(L["PageHeader.Crumb.Home"], "/"),
-        new(L["PageHeader.Crumb.Store"]),
-        new(L["PageHeader.Crumb.Orders"])
+        new(L["Home"], "/"),
+        new(L["Store"]),
+        new(L["Orders"])
     ];
 
     private BreadcrumbItem[] ProductsBreadcrumbs =>
     [
-        new(L["PageHeader.Crumb.Home"], "/"),
-        new(L["PageHeader.Crumb.Store"]),
-        new(L["PageHeader.Crumb.Products"])
+        new(L["Home"], "/"),
+        new(L["Store"]),
+        new(L["Products"])
     ];
 
     private BreadcrumbItem[] DeepBreadcrumbs =>
     [
-        new(L["PageHeader.Crumb.Home"], "/"),
-        new(L["PageHeader.Crumb.Store"]),
-        new(L["PageHeader.Crumb.Products"], "/products"),
-        new(L["PageHeader.Crumb.EditProduct"])
+        new(L["Home"], "/"),
+        new(L["Store"]),
+        new(L["Products"], "/products"),
+        new(L["Edit Product"])
     ];
 }

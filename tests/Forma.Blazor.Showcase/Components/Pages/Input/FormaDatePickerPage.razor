@@ -5,78 +5,78 @@
 @inject IStringLocalizer<FormaDatePickerPage> L
 
 <h1>FormaDatePicker</h1>
-<p class="desc">@L["Date.Description"]</p>
+<p class="desc">@L["A custom calendar date picker with dual-month view, date range selection with presets, locale-aware month and day names, and RTL support. Supports single-date and range modes. Replaces the legacy jQuery datepick / Easepick library."]</p>
 
 <div class="demo-section">
-    <h2>@L["Date.Section.Basic"]</h2>
+    <h2>@L["Basic (Single Date)"]</h2>
     <div class="demo-box">
         <FormaDatePicker @bind-Value="_singleDate" />
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["Date.Section.WithLabel"]</h2>
+    <h2>@L["With Label"]</h2>
     <div class="demo-box">
         <FormaDatePicker @bind-Value="_labelDate"
-                       Label="@L["Date.Label.Start"]" />
+                       Label="@L["Start Date"]" />
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["Date.Section.DualView"]</h2>
+    <h2>@L["Dual View (Two Months)"]</h2>
     <div class="demo-box">
         <FormaDatePicker @bind-StartDate="_dualStart"
                        @bind-EndDate="_dualEnd"
-                       Label="@L["Date.Label.DualView"]"
+                       Label="@L["Pick a Date"]"
                        ShowPresets="false" />
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["Date.Section.Range"]</h2>
+    <h2>@L["Date Range with Presets"]</h2>
     <div class="demo-box">
         <FormaDatePicker @bind-StartDate="_rangeStart"
                        @bind-EndDate="_rangeEnd"
-                       Label="@L["Date.Label.Range"]" />
+                       Label="@L["Select Range"]" />
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["Date.Section.WithMin"]</h2>
+    <h2>@L["With Minimum Date"]</h2>
     <div class="demo-box">
         <FormaDatePicker @bind-Value="_futureDate"
-                       Label="@L["Date.Label.Future"]"
+                       Label="@L["Future Date Only"]"
                        MinDate="@DateOnly.FromDateTime(DateTime.Today)" />
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["Date.Section.PreFilled"]</h2>
+    <h2>@L["Pre-filled"]</h2>
     <div class="demo-box">
         <FormaDatePicker @bind-Value="_preFilled"
-                       Label="@L["Date.Label.PreFilled"]" />
+                       Label="@L["Today"]" />
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["Date.Section.Hebrew"]</h2>
-    <p class="desc">@L["Date.Section.Hebrew.Desc"]</p>
+    <h2>@L["Hebrew Calendar"]</h2>
+    <p class="desc">@L["The component adapts to the calendar system of the given culture. This demo uses he-IL with UseNonGregorianMonths to render the Hebrew (lunisolar) calendar with its month names."]</p>
     <div class="demo-box">
         <FormaDatePicker @bind-StartDate="_hebrewStart"
                        @bind-EndDate="_hebrewEnd"
-                       Label="@L["Date.Label.Hebrew"]"
+                       Label="@L["Hebrew Date Range"]"
                        UseNonGregorianMonths="true" />
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["Date.Section.Scrollable"]</h2>
-    <p class="desc">@L["Date.Section.Scrollable.Desc"]</p>
+    <h2>@L["Inside a scrolling container"]</h2>
+    <p class="desc">@L["The box below scrolls and would clip an ordinary popup. The calendar opens in the top layer instead, so it stays whole, and it follows the trigger as the box scrolls."]</p>
     <div class="demo-box demo-scroll-box">
-        <p>@L["Date.Scrollable.Filler"]</p>
+        <p>@L["Scroll this box to move the field around."]</p>
         <FormaDatePicker @bind-Value="_scrollableDate"
-                       Label="@L["Date.Label.Scrollable"]" />
-        <p>@L["Date.Scrollable.Filler"]</p>
+                       Label="@L["Date in a scroll box"]" />
+        <p>@L["Scroll this box to move the field around."]</p>
     </div>
 </div>
 

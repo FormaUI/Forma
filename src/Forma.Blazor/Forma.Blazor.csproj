@@ -23,4 +23,8 @@
         <ProjectReference Include="..\Forma.Blazor.Abstractions\Forma.Blazor.Abstractions.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <EmbeddedResource Include="Components\**\*.json" />
+    </ItemGroup>
+
 </Project>

@@ -6,53 +6,53 @@
 @inject IStringLocalizer<FormaMultiSelectDropDownPage> L
 
 <h1>FormaMultiSelectDropDown</h1>
-<p class="desc">@L["Multi.Description"]</p>
+<p class="desc">@L["A chip-style multi-select with a searchable checkbox-list popup. Selected values render as removable tags; the popup stays anchored to its trigger wherever the page scrolls."]</p>
 
 <EditForm Model="Model" FormName="multi-select-demo" OnValidSubmit="HandleSubmit">
     <div class="demo-section">
-        <h2>@L["Multi.Section.Basic"]</h2>
+        <h2>@L["Basic"]</h2>
         <div class="demo-box">
             <FormaMultiSelectDropDown TValue="int" @bind-Value="Model.Categories" Options="CategoryOptions" />
         </div>
     </div>
 
     <div class="demo-section">
-        <h2>@L["Multi.Section.WithLabel"]</h2>
+        <h2>@L["With Label and Placeholder"]</h2>
         <div class="demo-box">
             <FormaMultiSelectDropDown TValue="int" @bind-Value="Model.Tags"
                                       Options="TagOptions"
-                                      Label="@L["Multi.Label.Tags"]"
-                                      Placeholder="@L["Multi.Placeholder.Tags"]" />
+                                      Label="@L["Tags"]"
+                                      Placeholder="@L["Choose tags"]" />
         </div>
     </div>
 
     <div class="demo-section">
-        <h2>@L["Multi.Section.PreSelected"]</h2>
+        <h2>@L["Pre-selected Values"]</h2>
         <div class="demo-box">
             <FormaMultiSelectDropDown TValue="int" @bind-Value="Model.PreSelectedCategories"
                                       Options="CategoryOptions"
-                                      Label="@L["Multi.Label.Categories"]" />
+                                      Label="@L["Categories"]" />
         </div>
     </div>
 
     <div class="demo-section">
-        <h2>@L["Multi.Section.AllowAdd"]</h2>
-        <p class="desc">@L["Multi.Section.AllowAdd.Desc"]</p>
+        <h2>@L["Add New Option"]</h2>
+        <p class="desc">@L["Search for a tag that doesn't exist yet, then use \"Add new\" to create and select it."]</p>
         <div class="demo-box">
             <FormaMultiSelectDropDown TValue="int" @bind-Value="Model.CustomTags"
                                       Options="_customTagOptions"
-                                      Label="@L["Multi.Label.CustomTags"]"
+                                      Label="@L["Custom Tags"]"
                                       AllowAdd="true"
                                       OnAddNew="HandleAddNewTag" />
         </div>
     </div>
 
     <div class="demo-section">
-        <h2>@L["Multi.Section.Disabled"]</h2>
+        <h2>@L["Disabled"]</h2>
         <div class="demo-box">
             <FormaMultiSelectDropDown TValue="int" @bind-Value="Model.DisabledCategories"
                                       Options="CategoryOptions"
-                                      Label="@L["Multi.Label.Categories"]"
+                                      Label="@L["Categories"]"
                                       Disabled="true" />
         </div>
     </div>

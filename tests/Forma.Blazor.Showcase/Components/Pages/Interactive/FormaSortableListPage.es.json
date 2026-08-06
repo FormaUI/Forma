@@ -1,0 +1,15 @@
+{
+  "A list that reorders by dragging a handle or moving a focused item with the arrow keys.": "Una lista que se reordena arrastrando un asa o moviendo un elemento enfocado con las flechas.",
+  "Basic": "Básico",
+  "Interactive Item Content": "Contenido de elemento interactivo",
+  "The drag handle is separate from the item's own content, so a button inside an item stays clickable.": "El asa de arrastre está separada del contenido propio del elemento, así que un botón dentro de un elemento sigue siendo clicable.",
+  "Remove": "Quitar",
+  "Disabled": "Deshabilitado",
+  "Long List in a Scrolling Panel": "Lista larga en un panel con desplazamiento",
+  "Holding a drag near the top or bottom edge scrolls the panel, and releasing in the empty space below the last row sends the item to the end.": "Mantener un arrastre cerca del borde superior o inferior desplaza el panel, y soltar en el espacio vacío bajo la última fila envía el elemento al final.",
+  "Dragging From the Whole Row": "Arrastrar desde toda la fila",
+  "The whole row starts a drag, not just the handle. Interactive elements inside a row keep their own press, and on touch the row is held briefly before it lifts so a swipe still scrolls.": "Toda la fila inicia un arrastre, no sólo el asa. Los elementos interactivos dentro de una fila conservan su propia pulsación, y en pantallas táctiles la fila se mantiene pulsada un momento antes de levantarse, así que un deslizamiento sigue desplazando.",
+  "Edit": "Editar",
+  "Drag a row anywhere to reorder, or press Edit — it still clicks.": "Arrastra una fila desde cualquier punto para reordenar, o pulsa Editar: sigue siendo clicable.",
+  "Edit was clicked on {0}, so the row did not take the press.": "Se pulsó Editar en {0}, así que la fila no tomó la pulsación."
+}

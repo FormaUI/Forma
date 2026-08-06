@@ -89,7 +89,7 @@ public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisp
             : "forma-sortable-list";
 
     private string HandleLabel(int index)
-        => L["DragToReorder", index + 1, Items.Count];
+        => L["Reorder item {0} of {1}. Drag, or use arrow keys to move.", index + 1, Items.Count];
 
     // sourceIndex and targetIndex are the two items' positions before either moves; removing
     // the source shifts every later index down by one, which only matters when the target
@@ -124,7 +124,7 @@ public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisp
         // same position would announce once; an alternating zero-width space keeps each
         // announcement a distinct string without altering what is read out.
         _announcementAlternate = !_announcementAlternate;
-        _announcement = L["MovedToPosition", newIndex + 1, reordered.Count]
+        _announcement = L["Moved to position {0} of {1}.", newIndex + 1, reordered.Count]
             + (_announcementAlternate ? "\u200B" : string.Empty);
 
         // Announced regardless of whether or when the host feeds the reordered list back,
@@ -147,7 +147,7 @@ public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisp
     }
 }
 
-// Non-generic marker sharing FormaSortableList's resx across every closed instantiation —
+// Non-generic marker sharing FormaSortableList's translation files across every closed instantiation —
 // IStringLocalizer<T> keys resources off T's FullName, which for an open generic type
 // includes its type arguments and would never match the embedded resource name.
 internal abstract class FormaSortableList;

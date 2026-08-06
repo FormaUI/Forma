@@ -1,0 +1,9 @@
+{
+  "A color picker with swatch preview, hex text input, and native browser color selector. Supports optional alpha (opacity) channel. Replaces the legacy tinyColorPicker jQuery plugin.": "Un selector de color con vista previa de muestra, entrada de texto hexadecimal y selector de color nativo del navegador. Admite un canal alfa (opacidad) opcional. Reemplaza el antiguo complemento jQuery tinyColorPicker.",
+  "Basic": "Básico",
+  "With Label": "Con etiqueta",
+  "With Alpha": "Con alfa",
+  "Background": "Fondo",
+  "Accent": "Acento",
+  "Overlay": "Superposición"
+}

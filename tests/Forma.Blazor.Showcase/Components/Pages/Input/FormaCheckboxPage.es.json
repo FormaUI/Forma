@@ -1,0 +1,13 @@
+{
+  "A styled checkbox with a script-driven indeterminate state, and an option to suppress the native toggle so the caller owns the checked state, as a tri-state select-all does.": "Una casilla de verificación con estado indeterminado controlado por script y la opción de suprimir la alternancia nativa para que el llamador controle el estado marcado, como hace un «seleccionar todo» de tres estados.",
+  "Basic": "Básico",
+  "Disabled": "Deshabilitado",
+  "Indeterminate": "Indeterminado",
+  "The parent checkbox reflects and controls the state of its children, showing a dash when only some are checked.": "La casilla principal refleja y controla el estado de sus elementos hijos, mostrando un guion cuando solo algunos están marcados.",
+  "Subscribe to updates": "Suscribirse a novedades",
+  "Featured": "Destacado",
+  "Off": "Apagado",
+  "On": "Encendido",
+  "Select all": "Seleccionar todo",
+  "Item {0}": "Elemento {0}"
+}

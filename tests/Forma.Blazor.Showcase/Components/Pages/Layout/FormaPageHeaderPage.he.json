@@ -1,0 +1,15 @@
+{
+  "Page header with title, breadcrumb navigation, and optional action slot.": "כותרת עמוד עם שם, ניווט פירורי לחם, ומקום לפעולות.",
+  "Basic with Breadcrumbs": "בסיסי עם פירורי לחם",
+  "Title Only": "כותרת בלבד",
+  "With Action Buttons": "עם כפתורי פעולה",
+  "Deep Breadcrumb Trail": "שרשרת ניווט עמוקה",
+  "Orders": "הזמנות",
+  "Dashboard": "לוח בקרה",
+  "Products": "מוצרים",
+  "Edit Product": "עריכת מוצר",
+  "Add New": "הוסף חדש",
+  "Export": "ייצוא",
+  "Home": "ראשי",
+  "Store": "חנות"
+}
