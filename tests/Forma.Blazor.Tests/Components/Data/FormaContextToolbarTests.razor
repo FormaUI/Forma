@@ -4,7 +4,7 @@
     public sealed class Component
     {
         [Fact]
-        public void Should_make_the_controls_inert_when_count_is_zero()
+        public void Should_make_the_buttons_inert_when_count_is_zero()
         {
             // Arrange
             using var ctx = new FormaContextToolbarTests();
@@ -17,7 +17,7 @@
         }
 
         [Fact]
-        public void Should_not_make_the_controls_inert_when_count_is_positive()
+        public void Should_not_make_the_buttons_inert_when_count_is_positive()
         {
             // Arrange
             using var ctx = new FormaContextToolbarTests();
@@ -30,7 +30,7 @@
         }
 
         [Fact]
-        public void Should_keep_the_caption_outside_the_inert_controls()
+        public void Should_keep_the_caption_outside_the_inert_buttons()
         {
             // Arrange
             using var ctx = new FormaContextToolbarTests();

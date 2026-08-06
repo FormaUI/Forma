@@ -8,7 +8,7 @@
  * order needs to be reconstructed on this side.
  */
 
-/** Controls that own their own clicks and keys, so a row never consumes them. */
+/** Elements that own their own clicks and keys, so a row never consumes them. */
 const INTERACTIVE = 'a[href], button, input, select, textarea, label, [role="button"], [role="link"], [contenteditable="true"]';
 
 /** Fields where the arrow, home and end keys move a caret rather than the focused row. */
@@ -73,7 +73,7 @@ export function attachRowSelection(scroller, dotNetRef) {
         }
 
         // The row checkbox, an action icon or a link inside a cell is the click's real
-        // target; consuming it here would leave that control dead.
+        // target; consuming it here would leave that element dead.
         if (event.target.closest(INTERACTIVE)) {
             return;
         }
@@ -174,7 +174,7 @@ export function detachRowSelection(scroller) {
  * FormaDataGrid — page height reservation
  *
  * A page holding fewer rows than the page size leaves the grid shorter than a full one,
- * so the page controls jump up under the pointer between clicks. How tall a row stands
+ * so the page navigation jumps up under the pointer between clicks. How tall a row stands
  * follows from whatever the host puts in its cells, which is only known once laid out,
  * so the height to hold is measured here rather than computed from a declared row size.
  *

@@ -67,7 +67,7 @@
     <value>Dragging From the Whole Row</value>
   </data>
   <data name="Sortable.Section.RowDrag.Desc" xml:space="preserve">
-    <value>The whole row starts a drag, not just the handle. Controls inside a row keep their own press, and on touch the row is held briefly before it lifts so a swipe still scrolls.</value>
+    <value>The whole row starts a drag, not just the handle. Interactive elements inside a row keep their own press, and on touch the row is held briefly before it lifts so a swipe still scrolls.</value>
   </data>
   <data name="Sortable.Edit" xml:space="preserve">
     <value>Edit</value>

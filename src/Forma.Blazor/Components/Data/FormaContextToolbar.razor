@@ -6,7 +6,7 @@
             <span class="forma-context-toolbar-caption" role="status" aria-live="polite">@CaptionText</span>
             @if (ChildContent is not null || OnClear.HasDelegate)
             {
-                @* Only the controls go inert, so the caption's live region stays in the
+                @* Only the buttons go inert, so the caption's live region stays in the
                    accessibility tree and is present before the count first changes. *@
                 <div class="forma-context-toolbar-trailing" inert="@(Count == 0)">
                     @if (ChildContent is not null)

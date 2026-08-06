@@ -53,7 +53,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     /// <summary>Whether the grid pages its rows. Disable for a single scrollable list, typically paired with <see cref="Virtualize"/>.</summary>
     [Parameter] public bool EnablePagination { get; set; } = true;
 
-    /// <summary>Which parts of the page controls are shown.</summary>
+    /// <summary>Which parts of the page navigation are shown.</summary>
     [Parameter] public FormaPaginationOptions PaginationOptions { get; set; } = FormaPaginationOptions.Default;
 
     /// <summary>Renders only the rows near the scroll viewport, for a large list with <see cref="EnablePagination"/> disabled. Requires an ancestor that scrolls.</summary>
@@ -65,7 +65,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     /// <summary>How many rows <see cref="Virtualize"/> renders beyond each edge of the viewport, trading initial load time for scroll smoothness.</summary>
     [Parameter] public int OverscanCount { get; set; } = 3;
 
-    /// <summary>Content shown in the grid's footer, beside the page controls.</summary>
+    /// <summary>Content shown in the grid's footer, beside the page navigation.</summary>
     [Parameter] public RenderFragment? Status { get; set; }
 
     /// <summary>Adds a leading checkbox column for mass selection.</summary>
@@ -177,7 +177,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
             _ => null,
         };
 
-    // The caption the control would show in its other state.
+    // The caption the toggle would show in its other state.
     private string? MasterCaptionAlternateText
         => MasterCaptionInteractive
             ? _selectedSet.Count > 0 ? CheckedSelectionCaption!.SelectAllText : CheckedSelectionCaption!.DeselectAllText
@@ -420,7 +420,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
             ? _bounds.CanRemove(_selectedSet.Count)
             : CanSelectRow(item);
 
-    // What the row's own controls can still do, which is what its muted styling and
+    // What the row's own interactive elements can still do, which is what its muted styling and
     // aria-disabled report: the minimum only binds where there is a checkbox to uncheck.
     private bool CanInteractWithRow(TGridItem item)
         => EnableCheckedSelection ? CanToggleRow(item) : CanSelectRow(item);

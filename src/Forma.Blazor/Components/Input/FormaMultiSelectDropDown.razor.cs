@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
 
-/// <summary>A multi-select control whose chosen values render as removable tags above a searchable checkbox-list popup.</summary>
+/// <summary>A multi-select component whose chosen values render as removable tags above a searchable checkbox-list popup.</summary>
 public sealed partial class FormaMultiSelectDropDown<TValue> : InputBase<List<TValue>>, IAsyncDisposable
     where TValue : notnull
 {
@@ -20,7 +20,7 @@ public sealed partial class FormaMultiSelectDropDown<TValue> : InputBase<List<TV
     /// <summary>The options offered in the dropdown.</summary>
     [Parameter, EditorRequired] public IReadOnlyList<SelectOption<TValue>> Options { get; set; } = default!;
 
-    /// <summary>Optional label displayed above the control.</summary>
+    /// <summary>Optional label displayed above the component.</summary>
     [Parameter] public string? Label { get; set; }
 
     /// <summary>Text shown in the trigger when nothing is selected.</summary>
@@ -56,7 +56,7 @@ public sealed partial class FormaMultiSelectDropDown<TValue> : InputBase<List<TV
     private List<TValue> SelectedValues
         => Value ?? [];
 
-    // Both the caller's label and the trigger's own text, so the control announces
+    // Both the caller's label and the trigger's own text, so the component announces
     // "Categories, 2 selected" rather than losing one to the other.
     private string? LabelledBy
         => Label is null ? null : $"{_labelId} {_triggerTextId}";

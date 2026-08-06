@@ -6,6 +6,6 @@ public enum SortableDragFrom
     /// <summary>Only the drag handle starts a drag.</summary>
     Handle,
 
-    /// <summary>Anywhere on the row starts a drag, apart from controls inside it. On touch the row must be held briefly, so a swipe still scrolls.</summary>
+    /// <summary>Anywhere on the row starts a drag, apart from interactive elements inside it. On touch the row must be held briefly, so a swipe still scrolls.</summary>
     Item,
 }

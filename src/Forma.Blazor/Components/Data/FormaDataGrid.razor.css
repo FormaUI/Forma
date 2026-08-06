@@ -78,7 +78,7 @@
     box-shadow: 0 1px 0 var(--border-color, rgba(98, 105, 118, 0.16));
 }
 
-/* Page controls at the inline start, status at the inline end, stacking when narrow. */
+/* Page navigation at the inline start, status at the inline end, stacking when narrow. */
 .forma-data-grid-footer {
     display: flex;
     flex-wrap: wrap;
@@ -87,7 +87,7 @@
 }
 
 /* An auto margin rather than space-between, so the status still sits at the inline
-   end on the pages where there are no page controls to push it there. */
+   end on the pages where there are no page navigation to push it there. */
 .forma-data-grid-status {
     margin-inline-start: auto;
     color: var(--text-muted-color, #626976);
@@ -164,7 +164,7 @@
 }
 
 /* Both captions share one grid cell, so the column takes the width of the wider and
-   keeps it while the control swaps between them. */
+   keeps it while the checkbox swaps between them. */
 .forma-data-grid-master-caption-slot {
     display: grid;
 }

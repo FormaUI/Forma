@@ -19,7 +19,7 @@ const LIST_DRAGGING = 'forma-sortable-list-active';
 const BEFORE = 'forma-sortable-list-drop-before';
 const AFTER = 'forma-sortable-list-drop-after';
 
-/** Controls that own their own press, so a row never takes it for a drag. */
+/** Elements that own their own press, so a row never takes it for a drag. */
 const INTERACTIVE = 'a[href], button, input, select, textarea, label, [role="button"], [role="link"], [contenteditable="true"]';
 
 /** How long a touch rests on a row before it lifts, leaving shorter swipes to scroll. */

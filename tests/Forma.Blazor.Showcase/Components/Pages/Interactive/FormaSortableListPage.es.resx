@@ -67,7 +67,7 @@
     <value>Arrastrar desde toda la fila</value>
   </data>
   <data name="Sortable.Section.RowDrag.Desc" xml:space="preserve">
-    <value>Toda la fila inicia un arrastre, no sólo el asa. Los controles dentro de una fila conservan su propia pulsación, y en pantallas táctiles la fila se mantiene pulsada un momento antes de levantarse, así que un deslizamiento sigue desplazando.</value>
+    <value>Toda la fila inicia un arrastre, no sólo el asa. Los elementos interactivos dentro de una fila conservan su propia pulsación, y en pantallas táctiles la fila se mantiene pulsada un momento antes de levantarse, así que un deslizamiento sigue desplazando.</value>
   </data>
   <data name="Sortable.Edit" xml:space="preserve">
     <value>Editar</value>

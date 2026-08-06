@@ -16,11 +16,11 @@
 .forma-color-picker-label {
     font-weight: 500;
     font-size: 0.875rem;
-    color: var(--forma-label-color, #495057);
+    color: var(--forma-label-color, var(--text-color));
 }
 
-/* ---------- control row ---------- */
-.forma-color-picker-control {
+/* ---------- input row ---------- */
+.forma-color-picker-row {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;

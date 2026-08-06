@@ -486,7 +486,7 @@
         }
 
         [Fact]
-        public void Should_forward_pagination_options_to_the_page_controls()
+        public void Should_forward_pagination_options_to_the_page_navigation()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
@@ -709,7 +709,7 @@
         }
 
         [Fact]
-        public void Should_allow_clearing_the_whole_selection_below_the_minimum_via_the_master_control()
+        public void Should_allow_clearing_the_whole_selection_below_the_minimum_via_the_master_toggle()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
@@ -733,7 +733,7 @@
         }
 
         [Fact]
-        public void Should_hide_the_master_control_when_the_caption_is_hidden()
+        public void Should_hide_the_master_toggle_when_the_caption_is_hidden()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
@@ -819,7 +819,7 @@
         }
 
         [Fact]
-        public void Should_disable_the_master_control_when_selecting_all_would_exceed_the_maximum()
+        public void Should_disable_the_master_toggle_when_selecting_all_would_exceed_the_maximum()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();

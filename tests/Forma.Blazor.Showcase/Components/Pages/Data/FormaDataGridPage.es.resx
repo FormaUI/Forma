@@ -61,7 +61,7 @@
     <value>Límites de selección y leyendas</value>
   </data>
   <data name="Limits.Note" xml:space="preserve">
-    <value>Como máximo 3 filas; el control maestro es una leyenda de texto en lugar de una casilla.</value>
+    <value>Como máximo 3 filas; el selector maestro es una leyenda de texto en lugar de una casilla.</value>
   </data>
   <data name="Limits.SelectAll" xml:space="preserve">
     <value>Seleccionar todo</value>
