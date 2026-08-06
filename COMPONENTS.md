@@ -197,14 +197,15 @@ These components form the shell of a page. Build first.
 | **Parameters** | `@bind-Value` (int/double), `int Min`, `int Max`, `int Step = 1`, `string? Label`, `string? Unit` ("px", "%", "s") |
 | **Blazor approach** | Wraps `InputNumber` rendered as `type="range"`. Display current value next to the slider. Pure HTML + Blazor binding |
 
-### 17. `FormaPasswordInput`
+### 17. `FormaPasswordInput` ✅
 
 | | |
 |---|---|
 | **Old pattern** | `<asp:TextBox TextMode="Password">` + `<span onclick="TogglePass(this)" class="fas fa-eye-slash">` toggles between password/text |
 | **Used in** | user editor, settings (API keys), admin login |
-| **Parameters** | `@bind-Value`, `string Label`, `bool ShowToggle = true` |
-| **Blazor approach** | `InputText` with dynamic `type` attribute (password/text) toggled by button click in C#. No JS needed |
+| **Parameters** | `@bind-Value`, `string Label`, `bool Required`, `bool ShowToggle = true`, `string AutoComplete = "current-password"`, `bool ShowStrengthMeter`, `Func<string, PasswordStrength>? StrengthEvaluator`, `bool ShowStrengthAdvice`, `Func<string, IEnumerable<string>>? StrengthAdvisor`, `IEnumerable<string?>? ForbiddenTerms` |
+| **Blazor approach** | Composes `FormaField` for the label, border and validation chrome. `InputBase<string?>` with a dynamic `type` toggled by a button click in C#; the value stays `dir="ltr"` regardless of page direction so a revealed password never reorders, with the gutter, alignment and Edge's own injected `::-ms-reveal` handled per direction in CSS. No JS beyond the existing autofill-detection module `FormaInput.razor.js` already uses |
+| **Notes** | The strength meter rates length (discounted for a repeating unit), case mix, digits and symbols into a five-step `PasswordStrength` enum, shown as filled segments plus a translated phrase — never colour alone. `ShowStrengthAdvice` lists the specific criteria a value still lacks, sharing its checks with the rater so the two cannot disagree. `ForbiddenTerms` rejects a password that draws on another field's value (email, phone) as a whole or by any alphanumeric fragment of at least four characters, through a `ValidationMessageStore` rather than a private error, so it participates in the form's own validation summary |
 
 ### 18. `FormaCurrencyInput`
 
@@ -426,7 +427,7 @@ Components are ordered by dependency and reuse frequency:
 |---|---|---|
 | **Phase 1** | `FormaModal` ✅, `FormaConfirmDialog` ✅, `FormaToast` ✅ | Infrastructure — everything depends on modals and notifications |
 | **Phase 2** | `FormaPageHeader` ✅, `FormaToolbar` ✅, `FormaTabs` ✅ | Layout — the shell of a page |
-| **Phase 3** | `FormaInput` ✅, `FormaToggleSwitch` ✅, `FormaPasswordInput`, `FormaCurrencyInput`, `FormaRangeSlider`, `FormaDatePicker`, `FormaSelect` | Form inputs — needed before building any edit forms |
+| **Phase 3** | `FormaInput` ✅, `FormaToggleSwitch` ✅, `FormaPasswordInput` ✅, `FormaCurrencyInput`, `FormaRangeSlider`, `FormaDatePicker`, `FormaSelect` | Form inputs — needed before building any edit forms |
 | **Phase 4** | `FormaDataGrid<TItem>` ✅, `FormaContextToolbar` ✅, `FormaStatusBadge` ✅, `FormaCapacityIndicator`, `FormaPagination` ✅ | Data display — needed for list pages |
 | **Phase 5** | `FormaSortableList<TItem>` ✅, `FormaMultiSelectDropDown`  ✅, `FormaCategorySelector`, `FormaDropDownMenu` ✅, `FormaColorPicker` | Interactive widgets — needed for editor pages |
 | **Phase 6** | `FormaUploader`, `FormaFilePicker`, `FormaImagePicker`, `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components — built when their feature pages are built. The media three build in that order: uploader, then the picker that hosts it, then the image skin over the picker |
@@ -434,7 +435,7 @@ Components are ordered by dependency and reuse frequency:
 | **Phase 8** | `FormaButton` ✅ | Shared button primitive — built after the fact and retrofitted onto `FormaDataGrid`, `FormaModal`, `FormaConfirmDialog`, `FormaPagination`, `FormaDatePicker` as the single source of truth for buttons |
 | **Phase 9** | `FormaCheckbox` ✅ | Shared checkbox primitive — built after the fact and retrofitted onto `FormaDataGrid` and `FormaMultiSelectDropDown` as the single source of truth for checkboxes |
 | **Phase 10** | `FormaCloseButton` ✅ | Shared dismiss primitive — built after the fact and retrofitted onto `FormaModal`, `FormaToastContainer` and `FormaContextToolbar` as the single source of truth for the `×` control |
-| **Phase 11** | `FormaField` ✅, `FormaTextArea` ✅ | Shared field chrome — extracted from `FormaInput` so the floating label, focus ring and validation styling live once, then `FormaTextArea` built on it. `FormaPasswordInput`, `FormaCurrencyInput` and `FormaSelect` compose it rather than restating it |
+| **Phase 11** | `FormaField` ✅, `FormaTextArea` ✅ | Shared field chrome — extracted from `FormaInput` so the floating label, focus ring and validation styling live once, then `FormaTextArea` built on it. `FormaPasswordInput` ✅ composes it; `FormaCurrencyInput` and `FormaSelect` will too rather than restating it |
 
 ---
 
