@@ -1,0 +1,59 @@
+@page "/context-toolbar"
+@attribute [ShowcasePage("FormaContextToolbar")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Data
+@inject IStringLocalizer<FormaContextToolbarPage> L
+
+<h1>FormaContextToolbar</h1>
+<p class="desc">@L["ContextToolbar.Description"]</p>
+
+<div class="demo-section">
+    <h2>@L["ContextToolbar.Section.Basic"]</h2>
+    <div class="demo-box">
+        <button class="btn btn-sec" @onclick="() => _basicCount = _basicCount > 0 ? 0 : 3">
+            @L["ContextToolbar.Button.ToggleSelection"]
+        </button>
+        <FormaContextToolbar Count="_basicCount" OnClear="() => _basicCount = 0">
+            <button class="btn btn-primary">@L["ContextToolbar.Action.Delete"]</button>
+            <button class="btn btn-sec">@L["ContextToolbar.Action.Publish"]</button>
+        </FormaContextToolbar>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["ContextToolbar.Section.NoClear"]</h2>
+    <div class="demo-box">
+        <FormaContextToolbar Count="2">
+            <button class="btn btn-primary">@L["ContextToolbar.Action.Delete"]</button>
+        </FormaContextToolbar>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["ContextToolbar.Section.ManyActions"]</h2>
+    <div class="demo-box">
+        <button class="btn btn-sec" @onclick="() => _wideCount = _wideCount > 0 ? 0 : 4">
+            @L["ContextToolbar.Button.ToggleSelection"]
+        </button>
+        <FormaContextToolbar Count="_wideCount" OnClear="() => _wideCount = 0">
+            <button class="btn btn-primary">@L["ContextToolbar.Action.Delete"]</button>
+            <button class="btn btn-sec">@L["ContextToolbar.Action.Publish"]</button>
+            <button class="btn btn-sec">@L["ContextToolbar.Action.Unpublish"]</button>
+            <button class="btn btn-sec">@L["ContextToolbar.Action.Export"]</button>
+        </FormaContextToolbar>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["ContextToolbar.Section.CustomCaption"]</h2>
+    <div class="demo-box">
+        <FormaContextToolbar Count="7" Caption="@L["ContextToolbar.Caption.Custom"]">
+            <button class="btn btn-primary">@L["ContextToolbar.Action.Publish"]</button>
+        </FormaContextToolbar>
+    </div>
+</div>
+
+@code {
+    private int _basicCount;
+    private int _wideCount = 4;
+}
