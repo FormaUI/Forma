@@ -162,7 +162,7 @@
             cut.Find(".forma-multi-select-search").Input("zzz");
 
             // Assert
-            cut.Find(".forma-multi-select-empty");
+            Assert.Equal("No matches", cut.Find(".forma-multi-select-empty").TextContent);
         }
 
         [Fact]
