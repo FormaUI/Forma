@@ -1,0 +1,12 @@
+{
+  "The reveal glyph, drawn as a ghost FormaButton square. Struck through while what it governs is hidden, plain once it is shown, so the state reads without colour. FormaPasswordInput's toggle is this component.": "סמל החשיפה, המצויר כריבוע ghost של FormaButton. מחוק בקו אלכסוני כל עוד מה שהוא מנהל מוסתר, ונקי לאחר שנחשף, כך שהמצב נקרא גם ללא צבע. המתג של FormaPasswordInput הוא הרכיב הזה.",
+  "Both states": "שני המצבים",
+  "The caller owns the state and the wording, because what is being revealed decides both.": "הקורא מחזיק במצב ובניסוח, משום ששניהם נקבעים לפי מה שנחשף.",
+  "Sizes": "גדלים",
+  "Disabled": "מושבת",
+  "On a coloured surface": "על משטח צבעוני",
+  "A surface sets --forma-btn-ghost-color and its hover pair to retint the glyph, exactly as it would for the dismiss button.": "משטח מגדיר את ‎--forma-btn-ghost-color‎ ואת זוג הריחוף שלו כדי לצבוע מחדש את הסמל, בדיוק כפי שהיה עושה עבור כפתור הסגירה.",
+  "Show value": "הצג ערך",
+  "Hide value": "הסתר ערך",
+  "API key hidden": "מפתח ה-API מוסתר"
+}

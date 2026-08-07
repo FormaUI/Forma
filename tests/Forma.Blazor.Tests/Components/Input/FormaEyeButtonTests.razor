@@ -1,0 +1,140 @@
+@inherits BunitContext
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_a_ghost_icon_button()
+        {
+            // Arrange
+            using var ctx = new FormaEyeButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaEyeButton Label="Show password" />);
+
+            // Assert
+            var button = cut.Find("button");
+            Assert.Contains("forma-btn-ghost", button.ClassList);
+            Assert.Contains("forma-btn-icon", button.ClassList);
+        }
+
+        [Fact]
+        public void Should_name_the_button_for_a_screen_reader()
+        {
+            // Arrange
+            using var ctx = new FormaEyeButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaEyeButton Label="Show password" />);
+
+            // Assert
+            Assert.Equal("Show password", cut.Find("button").GetAttribute("aria-label"));
+        }
+
+        [Fact]
+        public void Should_hide_the_glyph_from_a_screen_reader()
+        {
+            // Arrange
+            using var ctx = new FormaEyeButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaEyeButton Label="Show password" />);
+
+            // Assert
+            Assert.Equal("true", cut.Find("svg").GetAttribute("aria-hidden"));
+        }
+
+        [Fact]
+        public void Should_strike_the_eye_through_while_hidden()
+        {
+            // Arrange
+            using var ctx = new FormaEyeButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaEyeButton Label="Show password" Revealed="false" />);
+
+            // Assert
+            Assert.Equal(2, cut.FindAll("svg path").Count);
+        }
+
+        [Fact]
+        public void Should_leave_the_eye_plain_while_revealed()
+        {
+            // Arrange
+            using var ctx = new FormaEyeButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaEyeButton Label="Hide password" Revealed="true" />);
+
+            // Assert
+            Assert.Single(cut.FindAll("svg path"));
+        }
+
+        [Fact]
+        public void Should_raise_its_click_callback()
+        {
+            // Arrange
+            using var ctx = new FormaEyeButtonTests();
+            var clicks = 0;
+            var cut = ctx.Render(@<FormaEyeButton Label="Show password" OnClick="() => clicks++" />);
+
+            // Act
+            cut.Find("button").Click();
+
+            // Assert
+            Assert.Equal(1, clicks);
+        }
+
+        [Fact]
+        public void Should_render_the_mini_square_when_asked()
+        {
+            // Arrange
+            using var ctx = new FormaEyeButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaEyeButton Label="Show password" Size="ButtonSize.Mini" />);
+
+            // Assert
+            Assert.Contains("forma-btn-mini", cut.Find("button").ClassList);
+        }
+
+        [Fact]
+        public void Should_block_interaction_when_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaEyeButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaEyeButton Label="Show password" Disabled="true" />);
+
+            // Assert
+            Assert.True(cut.Find("button").HasAttribute("disabled"));
+        }
+
+        [Fact]
+        public void Should_splat_unmatched_attributes_onto_the_button()
+        {
+            // Arrange
+            using var ctx = new FormaEyeButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaEyeButton Label="Show password" aria-pressed="true" />);
+
+            // Assert
+            Assert.Equal("true", cut.Find("button").GetAttribute("aria-pressed"));
+        }
+
+        [Fact]
+        public void Should_reject_a_blank_label()
+        {
+            // Arrange
+            using var ctx = new FormaEyeButtonTests();
+
+            // Act
+            var act = () => ctx.Render(@<FormaEyeButton Label=" " />);
+
+            // Assert
+            Assert.Throws<ArgumentException>(act);
+        }
+    }
+}

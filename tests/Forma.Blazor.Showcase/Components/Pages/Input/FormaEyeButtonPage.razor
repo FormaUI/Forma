@@ -1,0 +1,57 @@
+@page "/eye-button"
+@attribute [ShowcasePage("FormaEyeButton")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Input
+@inject IStringLocalizer<FormaEyeButtonPage> L
+
+<h1>FormaEyeButton</h1>
+<p class="desc">@L["The reveal glyph, drawn as a ghost FormaButton square. Struck through while what it governs is hidden, plain once it is shown, so the state reads without colour. FormaPasswordInput's toggle is this component."]</p>
+
+<div class="demo-section">
+    <h2>@L["Both states"]</h2>
+    <p class="desc">@L["The caller owns the state and the wording, because what is being revealed decides both."]</p>
+    <div class="demo-box">
+        <div class="demo-row">
+            <FormaEyeButton Label="@(_revealed ? L["Hide value"] : L["Show value"])"
+                            Revealed="_revealed"
+                            OnClick="() => _revealed = !_revealed" />
+            <code>@(_revealed ? Secret : new string('•', Secret.Length))</code>
+        </div>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Sizes"]</h2>
+    <div class="demo-box">
+        <div class="demo-row">
+            <FormaEyeButton Label="@L["Show value"]" />
+            <FormaEyeButton Label="@L["Show value"]" Size="ButtonSize.Mini" />
+        </div>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Disabled"]</h2>
+    <div class="demo-box">
+        <div class="demo-row">
+            <FormaEyeButton Label="@L["Show value"]" Disabled="true" />
+            <FormaEyeButton Label="@L["Hide value"]" Revealed="true" Disabled="true" />
+        </div>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["On a coloured surface"]</h2>
+    <p class="desc">@L["A surface sets --forma-btn-ghost-color and its hover pair to retint the glyph, exactly as it would for the dismiss button."]</p>
+    <div class="demo-box">
+        <div class="demo-tinted">
+            <span>@L["API key hidden"]</span>
+            <FormaEyeButton Label="@L["Show value"]" Size="ButtonSize.Mini" />
+        </div>
+    </div>
+</div>
+
+@code {
+    private const string Secret = "s3cr3t-key-9f2a";
+    private bool _revealed;
+}
