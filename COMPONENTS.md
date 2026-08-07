@@ -189,14 +189,15 @@ These components form the shell of a page. Build first.
 | **Popup placement** | The calendar is a `popover`, so it renders in the **top layer** and no scrolling or clipping ancestor can cut it off — it works inside a grid's scroll region, a modal body, or any `overflow: auto` box. The top layer keeps no layout tie to the trigger, so the shared `wwwroot/scripts/AnchoredPopup.js` module measures and applies the position: it hangs from the trigger's inline-start edge (mirrored in RTL), flips above when there is no room below, clamps into the viewport, and follows scroll and resize. One positioning path for every browser rather than a CSS/JS split. That module is deliberately component-agnostic — `FormaSelect`, `FormaMultiSelectDropDown` and `FormaDropDownMenu` are the same trigger-plus-anchored-panel shape and should import it rather than re-solve the clipping. `popover="manual"` keeps the existing backdrop as the dismissal mechanism, which also sidesteps the iOS 17–18.2 bug where a popover ignores a tap outside it |
 | **Blazor approach** | Use Blazor `InputDate` which renders native `<input type="date">`. Browser provides locale-aware calendar. For reset, add a clear button. For min-date, use `min` HTML attribute |
 
-### 16. `FormaRangeSlider`
+### 16. `FormaRangeSlider` ✅
 
 | | |
 |---|---|
 | **Old pattern** | `<input type="range">` + hidden field + live value display label |
 | **Used in** | forms (border radius), slider (duration), design/edit (font size, site width) |
-| **Parameters** | `@bind-Value` (int/double), `int Min`, `int Max`, `int Step = 1`, `string? Label`, `string? Unit` ("px", "%", "s") |
-| **Blazor approach** | Wraps `InputNumber` rendered as `type="range"`. Display current value next to the slider. Pure HTML + Blazor binding |
+| **Parameters** | `@bind-Value` (any `INumber<TValue>`), `string Label`, `TValue Min`, `TValue Max`, `TValue Step = TValue.One`, `string? Unit` ("px", "%", "s"), `bool Disabled` |
+| **Blazor approach** | `InputBase<TValue>` rendering a native `<input type="range">`, generic over any `INumber<T>` so an `int` and a `double` slider share one component. The current value is shown beside the label rather than in a second field. Tints the native track and thumb with `accent-color` rather than hand-painting a filled track, so the browser's own RTL mirroring stays correct with no direction-aware calculation of its own to keep in step with it |
+| **Notes** | The displayed value is `aria-hidden`; a screen reader instead hears `aria-valuetext`, set only when `Unit` is given — without one the native `valuenow` already says the number, and setting it anyway would repeat the same words the input already announces on its own. The value's colour deliberately is not the muted caption token: at its font size that measures under 4.5:1, so it stays at full text contrast and is set apart by size alone, the same trade the strength meter in `FormaPasswordInput` makes |
 
 ### 17. `FormaPasswordInput` ✅
 
@@ -557,7 +558,7 @@ Components are ordered by dependency and reuse frequency:
 |---|---|---|
 | **Phase 1** | `FormaModal` ✅, `FormaConfirmDialog` ✅, `FormaToast` ✅ | Infrastructure — everything depends on modals and notifications |
 | **Phase 2** | `FormaPageHeader` ✅, `FormaToolbar` ✅, `FormaTabs` ✅ | Layout — the shell of a page |
-| **Phase 3** | `FormaInput` ✅, `FormaToggleSwitch` ✅, `FormaPasswordInput` ✅, `FormaCurrencyInput`, `FormaRangeSlider`, `FormaDatePicker`, `FormaSelect` | Form inputs — needed before building any edit forms |
+| **Phase 3** | `FormaInput` ✅, `FormaToggleSwitch` ✅, `FormaPasswordInput` ✅, `FormaCurrencyInput`, `FormaRangeSlider` ✅, `FormaDatePicker`, `FormaSelect` | Form inputs — needed before building any edit forms |
 | **Phase 4** | `FormaDataGrid<TItem>` ✅, `FormaContextToolbar` ✅, `FormaStatusBadge` ✅, `FormaCapacityIndicator`, `FormaPagination` ✅ | Data display — needed for list pages |
 | **Phase 5** | `FormaSortableList<TItem>` ✅, `FormaMultiSelectDropDown`  ✅, `FormaCategorySelector`, `FormaDropDownMenu` ✅, `FormaColorPicker` | Interactive widgets — needed for editor pages |
 | **Phase 6** | `FormaUploader`, `FormaFilePicker`, `FormaImagePicker`, `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components — built when their feature pages are built. The media three build in that order: uploader, then the picker that hosts it, then the image skin over the picker |

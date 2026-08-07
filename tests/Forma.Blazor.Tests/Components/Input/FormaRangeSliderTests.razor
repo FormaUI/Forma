@@ -1,0 +1,309 @@
+@inherits BunitContext
+@using System.Globalization
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_a_range_input()
+        {
+            // Arrange
+            using var ctx = new FormaRangeSliderTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaRangeSlider @bind-Value="model.Number" Label="Border radius" Min="0" Max="20" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("range", cut.Find(".forma-range-input").GetAttribute("type"));
+        }
+
+        [Fact]
+        public void Should_render_the_label_text()
+        {
+            // Arrange
+            using var ctx = new FormaRangeSliderTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaRangeSlider @bind-Value="model.Number" Label="Border radius" Min="0" Max="20" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Contains("Border radius", cut.Find(".forma-range-label").TextContent, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_apply_min_max_and_step_to_the_input()
+        {
+            // Arrange
+            using var ctx = new FormaRangeSliderTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaRangeSlider @bind-Value="model.Number" Label="Border radius" Min="0" Max="20" Step="2" />
+            </FakeFormHost>);
+
+            // Assert
+            var input = cut.Find(".forma-range-input");
+            Assert.Equal("0", input.GetAttribute("min"));
+            Assert.Equal("20", input.GetAttribute("max"));
+            Assert.Equal("2", input.GetAttribute("step"));
+        }
+
+        [Fact]
+        public void Should_default_the_step_to_one()
+        {
+            // Arrange
+            using var ctx = new FormaRangeSliderTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaRangeSlider @bind-Value="model.Number" Label="Border radius" Min="0" Max="20" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("1", cut.Find(".forma-range-input").GetAttribute("step"));
+        }
+
+        [Fact]
+        public void Should_display_the_current_value_beside_the_label()
+        {
+            // Arrange
+            using var ctx = new FormaRangeSliderTests();
+            var model = new FakeModel { Number = 8 };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaRangeSlider @bind-Value="model.Number" Label="Border radius" Min="0" Max="20" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("8", cut.Find(".forma-range-value").TextContent);
+        }
+
+        [Fact]
+        public void Should_append_the_unit_to_the_displayed_value()
+        {
+            // Arrange
+            using var ctx = new FormaRangeSliderTests();
+            var model = new FakeModel { Number = 8 };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaRangeSlider @bind-Value="model.Number" Label="Border radius" Min="0" Max="20" Unit="px" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("8px", cut.Find(".forma-range-value").TextContent);
+        }
+
+        [Fact]
+        public void Should_hide_the_displayed_value_from_a_screen_reader()
+        {
+            // Arrange
+            using var ctx = new FormaRangeSliderTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaRangeSlider @bind-Value="model.Number" Label="Border radius" Min="0" Max="20" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("true", cut.Find(".forma-range-value").GetAttribute("aria-hidden"));
+        }
+
+        [Fact]
+        public void Should_carry_the_unit_in_aria_valuetext()
+        {
+            // Arrange
+            using var ctx = new FormaRangeSliderTests();
+            var model = new FakeModel { Number = 8 };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaRangeSlider @bind-Value="model.Number" Label="Border radius" Min="0" Max="20" Unit="px" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("8px", cut.Find(".forma-range-input").GetAttribute("aria-valuetext"));
+        }
+
+        [Fact]
+        public void Should_omit_aria_valuetext_without_a_unit()
+        {
+            // Arrange
+            using var ctx = new FormaRangeSliderTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaRangeSlider @bind-Value="model.Number" Label="Border radius" Min="0" Max="20" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Null(cut.Find(".forma-range-input").GetAttribute("aria-valuetext"));
+        }
+
+        [Fact]
+        public void Should_write_edits_back_to_the_model()
+        {
+            // Arrange
+            using var ctx = new FormaRangeSliderTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaRangeSlider @bind-Value="model.Number" Label="Border radius" Min="0" Max="20" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find(".forma-range-input").Input("12");
+
+            // Assert
+            Assert.Equal(12, model.Number);
+        }
+
+        [Fact]
+        public void Should_disable_the_input_when_asked()
+        {
+            // Arrange
+            using var ctx = new FormaRangeSliderTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaRangeSlider @bind-Value="model.Number" Label="Border radius" Min="0" Max="20" Disabled="true" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.True(cut.Find(".forma-range-input").HasAttribute("disabled"));
+        }
+
+        // The html attributes must stay machine-readable while the shown value follows the
+        // reader's culture, so a comma-decimal culture is where the two would collide.
+        [Fact]
+        public void Should_keep_the_html_bounds_invariant_under_a_comma_decimal_culture()
+        {
+            // Arrange
+            using var ctx = new FormaRangeSliderTests();
+            var original = CultureInfo.CurrentCulture;
+            var model = new FakeModel { Ratio = 0.5 };
+
+            try
+            {
+                CultureInfo.CurrentCulture = new CultureInfo("de-DE");
+
+                // Act
+                var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                    <FormaRangeSlider @bind-Value="model.Ratio" Label="Duration" Min="0.5" Max="5" Step="0.5" Unit="s" />
+                </FakeFormHost>);
+
+                // Assert
+                var input = cut.Find(".forma-range-input");
+                Assert.Equal("0.5", input.GetAttribute("min"));
+                Assert.Equal("5", input.GetAttribute("max"));
+                Assert.Equal("0.5", input.GetAttribute("step"));
+                Assert.Equal("0.5", input.GetAttribute("value"));
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = original;
+            }
+        }
+
+        [Fact]
+        public void Should_show_the_value_in_the_reader_s_culture()
+        {
+            // Arrange
+            using var ctx = new FormaRangeSliderTests();
+            var original = CultureInfo.CurrentCulture;
+            var model = new FakeModel { Ratio = 0.5 };
+
+            try
+            {
+                CultureInfo.CurrentCulture = new CultureInfo("de-DE");
+
+                // Act
+                var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                    <FormaRangeSlider @bind-Value="model.Ratio" Label="Duration" Min="0.5" Max="5" Step="0.5" Unit="s" />
+                </FakeFormHost>);
+
+                // Assert
+                Assert.Equal("0,5s", cut.Find(".forma-range-value").TextContent);
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = original;
+            }
+        }
+
+        [Fact]
+        public void Should_honour_a_disabled_attribute_from_the_caller()
+        {
+            // Arrange
+            using var ctx = new FormaRangeSliderTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaRangeSlider @bind-Value="model.Number" Label="Border radius" Min="0" Max="20" disabled />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.True(cut.Find(".forma-range-input").HasAttribute("disabled"));
+        }
+
+        [Fact]
+        public void Should_reject_a_blank_label()
+        {
+            // Arrange
+            using var ctx = new FormaRangeSliderTests();
+            var model = new FakeModel();
+
+            // Act
+            var act = () => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaRangeSlider @bind-Value="model.Number" Label=" " Min="0" Max="20" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Throws<ArgumentException>(act);
+        }
+
+        [Fact]
+        public void Should_reject_a_minimum_above_the_maximum()
+        {
+            // Arrange
+            using var ctx = new FormaRangeSliderTests();
+            var model = new FakeModel();
+
+            // Act
+            var act = () => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaRangeSlider @bind-Value="model.Number" Label="Border radius" Min="20" Max="0" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Throws<ArgumentOutOfRangeException>(act);
+        }
+
+        [Fact]
+        public void Should_reject_a_step_of_zero()
+        {
+            // Arrange
+            using var ctx = new FormaRangeSliderTests();
+            var model = new FakeModel();
+
+            // Act
+            var act = () => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaRangeSlider @bind-Value="model.Number" Label="Border radius" Min="0" Max="20" Step="0" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Throws<ArgumentOutOfRangeException>(act);
+        }
+    }
+}
