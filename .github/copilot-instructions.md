@@ -76,23 +76,22 @@ These rules govern prose that *describes a thing*. They do not apply to this fil
 
 ## Component file layout
 
-Components live in `src/Forma.Blazor/Components/{Category}/`, where `{Category}` is `Layout`, `Feedback`, `Input`, `Data`, `Interactive`, `Editors`, or `Specialized`.
+Components live in `src/Forma.Blazor/Components/{Category}/`, where `{Category}` is `Layout`, `Feedback`, `Actions`, `Input`, `Data`, `Indicators`, `Interactive`, `Files`, `Media`, or `Editors`.
 
 ```text
-Components/Input/
+Components/{Category}/
 ├── FormaX.razor          # markup only; @namespace first
 ├── FormaX.razor.cs       # all component logic
 ├── FormaX.razor.css      # isolated CSS with banner
 ├── FormaX.razor.js       # only when interop is warranted
-├── FormaX.resx           # neutral strings, when needed
-├── FormaX.he.resx
-└── FormaX.es.resx
+├── FormaX.he.json        # translations, when needed
+└── FormaX.es.json
 ```
 
 - Do keep markup in `.razor`, logic in `.razor.cs`, and component styling in `.razor.css`.
 - Do place supporting types such as `ModalSize`, `BreadcrumbItem`, and `FormaIcon` beside the component that owns them.
 - Do add a colocated `.razor.js` only when HTML, CSS, and Blazor cannot provide the required behaviour.
-- Do add the resx trio only when the component invents user-facing text.
+- Do add the translation pair only when the component invents user-facing text.
 - Don't use `@code` blocks in library components.
 - Don't put component-specific styles in global stylesheets or scatter supporting types into unrelated shared folders.
 
@@ -295,8 +294,9 @@ Every component must behave and look the same in both directions—mirrored, not
 
 ## Localization
 
-- Do inject `[Inject] private IStringLocalizer<FormaX> L { get; set; } = default!;` and read library-owned strings through `L["Key"]`.
-- Do ship `FormaX.resx`, `FormaX.he.resx`, and `FormaX.es.resx` with matching keys for every localized component.
+- Do inject `[Inject] private IStringLocalizer<FormaX> L { get; set; } = default!;` and read library-owned strings through `L["The English sentence"]`.
+- Do ship `FormaX.he.json` and `FormaX.es.json` beside the component, keyed by that English source text; there is no neutral file, because an absent translation falls back to the key itself.
+- Do keep the file's name and folder in step with the type's, since the resource is resolved from the type's full name and the JSON's path must match it.
 - Do leave caller-supplied text such as `Title`, `Label`, and `ConfirmText` for the host to localize.
 - Do format dates and numbers with `CultureInfo.CurrentCulture` and use `TextInfo.IsRightToLeft` when direction changes behaviour.
 - Don't hardcode user-facing component strings.
@@ -329,7 +329,7 @@ Mirror source paths under `tests/Forma.Blazor.Tests/Components/{Category}/` with
 
 ## Showcase
 
-Every component requires `tests/Forma.Blazor.Showcase/Components/Pages/{Category}/FormaXPage.razor` and its resx trio.
+Every component requires `tests/Forma.Blazor.Showcase/Components/Pages/{Category}/FormaXPage.razor` and its translation pair.
 
 ```razor
 @page "/x-component"
@@ -361,7 +361,7 @@ dotnet run --project tests/Forma.Blazor.Showcase
 - Do build, review, and commit one component at a time.
 - Do pick the next component from the inventory and Épica's remaining set.
 - Do derive parameters, validation, disposal, CSS, ARIA, localization, and tests from established repository patterns.
-- Do deliver the complete component set: `.razor`, `.razor.cs`, `.razor.css`, warranted resx or JS files, bUnit tests, and Showcase page.
+- Do deliver the complete component set: `.razor`, `.razor.cs`, `.razor.css`, warranted translation or JS files, bUnit tests, and Showcase page.
 - Do verify both directions, colour-independent states, accessible names and focus, and 24×24 touch targets before review.
 - Do present the component for review and stop; iterate on that same component until the maintainer declares it complete.
 - Do mark completion in both documents after approval: add `✅` to the component heading and build-order entry in `Forma/COMPONENTS.md`, then change `☐` to `✅` and update status in `EpicaDeportiva/docs/forma-components.md`.

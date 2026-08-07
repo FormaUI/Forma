@@ -58,10 +58,10 @@ and JS only. See `tests/Forma.Blazor.Showcase` for a complete working host.
 **1. Register services and Interactive Server components:**
 
 ```csharp
-using Forma.Blazor.Abstractions.Components.Data;
 using Forma.Blazor.Abstractions.Components.Feedback;
-using Forma.Blazor.Core.Components.Data;
+using Forma.Blazor.Abstractions.Components.Indicators;
 using Forma.Blazor.Core.Components.Feedback;
+using Forma.Blazor.Core.Components.Indicators;
 using Forma.Blazor.Middlewares;
 using Forma.Web.Css;
 

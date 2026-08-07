@@ -1,7 +1,7 @@
-using Forma.Blazor.Abstractions.Components.Data;
 using Forma.Blazor.Abstractions.Components.Feedback;
-using Forma.Blazor.Core.Components.Data;
+using Forma.Blazor.Abstractions.Components.Indicators;
 using Forma.Blazor.Core.Components.Feedback;
+using Forma.Blazor.Core.Components.Indicators;
 using Forma.Blazor.Middlewares;
 using Forma.Localization;
 using Forma.Web.Css;

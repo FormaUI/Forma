@@ -380,7 +380,7 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Old pattern** | `OpenImgLibrary()` → `pops/images.aspx` in `ModalFrame`: folder tree, grid of thumbnails, multi-select, upload, move, delete, capacity indicator |
 | **Used in** | the base for every "choose something from the media library" flow |
 | **Parameters** | `IReadOnlyList<MediaEntry> Entries`, `string? Accept`, `int MaxSelection = 0` (0 = unlimited), `EventCallback<IReadOnlyList<MediaEntry>> OnSelected`, folder navigation callbacks |
-| **Blazor approach** | `FormaModal` (size Full) hosting a folder breadcrumb, a selectable entry grid and `FormaPagination`, with `FormaUploader` in its toolbar. Type-agnostic — it renders whatever preview a `MediaEntry` declares, so images, video and documents all work through one component. The host supplies the entries and performs the storage operations; the picker never touches a filesystem |
+| **Blazor approach** | `FormaModal` (size Full) hosting a folder breadcrumb, a selectable entry grid and `FormaPagination`, with `FormaUploader` in its toolbar. Type-agnostic — it previews a selected entry through `FormaFileViewer` (#56), so images, video and documents all work through one component. The host supplies the entries and performs the storage operations; the picker never touches a filesystem |
 
 ### 36. `FormaRichTextEditor`
 
@@ -492,15 +492,15 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Parameters** | `string Label` (required), `ButtonSize Size`, `bool Busy`, `bool Disabled`, `EventCallback<MouseEventArgs> OnClick` |
 | **Blazor approach** | A wrapper over `FormaButton` that forwards `Busy`, so a slow refresh spins and announces `aria-busy` rather than looking dead while it waits. The only one of the set where `Busy` is the point rather than an afterthought |
 
-### 49. `FormaSortButton`
+### 49. `FormaSortMenu`
 
 | | |
 |---|---|
 | **Glyph** | **Two opposed arrows** — `↑↓` |
-| **Old pattern** | Coi sorted by clicking a column header; there was no sort control |
+| **Old pattern** | Coi sorted by clicking a column header, and had no standalone sort control. Header sorting is **not** what this replaces — `FormaDataGrid` already ships it by passing QuickGrid's `Sortable`, `SortBy`, `InitialSortDirection` and `GridSort<T>` straight through |
 | **Used in** | Layouts with no header row to click — `FormaFilePicker`'s tile grid, and any card list |
 | **Parameters** | `RenderFragment ChildContent` (the sort options as menu items), `string Label` (required) |
-| **Blazor approach** | A preset over `FormaDropDownMenu` like `FormaOverflowMenu`, because sorting offers a choice rather than performing one action. A grid that already has sortable column headers should keep using them — this exists for the layouts that have none, not as a second way to do the same thing |
+| **Blazor approach** | A preset over `FormaDropDownMenu` like `FormaOverflowMenu`, because sorting offers a choice rather than performing one action — which is why it is a `Menu` and not a `Button`, and why it sits with the menus rather than in `Actions/`. A grid that already has sortable column headers should keep using them — two controls over one sort state is a synchronisation problem with no upside |
 
 ### 50. `FormaViewButton`
 
@@ -531,6 +531,60 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Used in** | Editor footers and row actions — Épica names publish beside edit, duplicate, delete and view, and `FormaStatusBadge` already renders the draft/scheduled/published state it changes |
 | **Parameters** | `bool Published`, `string Label` (required), `RenderFragment? ChildContent`, `ButtonSize Size`, `bool Busy`, `bool Disabled`, `EventCallback<MouseEventArgs> OnClick` |
 | **Blazor approach** | Stateful like `FormaEyeButton` and usually labelled like `FormaAddButton` — a primary "Publish" in an editor footer is text, the same action in a dense row is the glyph alone. **Scheduling stays out of it:** draft/scheduled/published is three states and a button offers two, so "Schedule…" belongs in a menu beside it rather than turning this control into a date picker |
+
+### 53. `FormaGallery`
+
+| | |
+|---|---|
+| **Old pattern** | The gallery module's sortable thumbnail list, each row carrying an image and its caption |
+| **Used in** | Any set of images edited as a unit — article image sets, race stage photos, sponsor logos, and Épica's Photo Galleries module (P15, whose CMS task is bulk upload plus captioning) |
+| **Parameters** | `@bind-Items` (`List<GalleryItem>`), `EventCallback<GalleryItem> OnCaptionChanged`, `bool AllowCaptions`, `int MaxItems`, `EventCallback OnAddRequested` |
+| **Blazor approach** | A composition, not a new widget: `FormaSortableList` supplies the drag-and-keyboard reordering, `FormaImagePicker` or `FormaUploader` supplies "add", and this adds the one thing neither has — a caption field per tile and a remove control, edited in place rather than through a dialog per image |
+| **Notes** | This is the **editing** surface only — it implements no viewer of its own. Click-to-enlarge opens `FormaFileViewer` (#56) inside a `FormaModal`, so the gallery, the picker and the manager all enlarge an image through the same component. Worth checking against `FormaSortableList` + `FormaImagePicker` before building: the pair already covers ordering and adding, so this earns its place on captioning and bulk add, and on the four-plus surfaces that repeat the pattern — not on the composition alone |
+
+### 54. `FormaFileManager`
+
+| | |
+|---|---|
+| **Old pattern** | `pops/images.aspx` again — the same page as `FormaFilePicker` (#35), but its *management* half: create, rename and delete folders, move files between them, delete in bulk, watch the capacity indicator |
+| **Used in** | The media library as a page in its own right, rather than a dialog opened to answer a question |
+| **Parameters** | `IReadOnlyList<MediaEntry> Entries`, folder navigation callbacks, `EventCallback<MediaEntry> OnRename`, `EventCallback<IReadOnlyList<MediaEntry>> OnDelete`, `EventCallback<FolderMove> OnMove`, `EventCallback OnFolderCreate` |
+| **Blazor approach** | The picker and the manager are the same browsing surface with different endings: one **returns a selection and closes**, the other **mutates and stays**. So the shared half — folder breadcrumb, entry grid, selection, `FormaPagination` and the `FormaUploader` in its toolbar — is extracted once and composed by both, rather than each growing its own copy. The manager adds the destructive actions and owns none of the storage, reporting intent through callbacks exactly as the uploader does |
+| **Notes** | Building this without extracting the shared surface first is how the two drift, which is the same failure that produced `FormaCloseButton`, `FormaEyeButton` and `FormaButton` after the fact rather than before. **To settle when built:** whether #35's "Blazor approach" is rewritten to compose that extracted surface, or the manager is defined as the base and the picker becomes a modal skin over it |
+
+### 55. `FormaVideoPlayer`
+
+| | |
+|---|---|
+| **Old pattern** | CKEditor's **YouTube embed** toolbar button (#36) and the raw `<iframe>` markup it pasted into the body |
+| **Used in** | The most-demanded component on this list — Épica wants it on four separate surfaces: YouTube-by-URL embeds in articles (6.5), the auto-embedded live broadcast player (9.2), the Videos module's listings and featured video (P10), and the home page's featured video block (11.4). `FormaFileViewer` (#56) delegates its video branch here, and `FormaRichTextEditor` inserts it |
+| **Parameters** | `string Url` (required), `string Title` (required — the frame's accessible name), `string? PosterUrl`, `bool Autoplay`, `bool ShowRelated`, `string AspectRatio` |
+| **Blazor approach** | Parse the URL into provider + video id once, covering every form that gets pasted — `watch?v=`, `youtu.be/`, `/embed/`, `/shorts/`, `/live/` — because every call site otherwise re-invents that parsing badly. Size with the `aspect-ratio` property rather than a padding hack. **No YouTube IFrame API:** external JS is barred here and a plain embed needs none, so playback stays the provider's business |
+| **Privacy and weight** | Render a **facade** by default: the poster image plus a play control, swapping in the real `<iframe>` only on activation, and embed from `youtube-nocookie.com`. A third-party frame that loads with every article page is both a tracking surface a public news site has to account for and a large fixed cost on a mobile connection |
+| **Notes** | `Title` is required because an unnamed `<iframe>` is an unlabelled stop in the tab order. **Autoplay is not what Épica's 9.2 asks for** — "auto-embed live player" means the player appears without an editor placing it, not that it starts playing; if `Autoplay` is ever set it must be muted, since browsers block unmuted autoplay and WCAG 1.4.2 requires a control over anything that plays by itself. **To settle when built:** whether a direct-file `<video>` source is in scope or only provider embeds |
+
+### 56. `FormaFileViewer`
+
+| | |
+|---|---|
+| **Old pattern** | The preview pane of `pops/images.aspx` — clicking a library entry to actually look at it |
+| **Used in** | The promise #35 already makes and does not own: *"renders whatever preview a `MediaEntry` declares"*. That belongs here, so the picker, the manager (#54) and the gallery's enlarge (#53) show one preview implementation rather than three |
+| **Parameters** | `MediaEntry Entry` (required), `IReadOnlyList<MediaEntry>? Siblings`, `EventCallback<MediaEntry> OnNavigate`, `bool ShowMetadata`, `RenderFragment<MediaEntry>? UnsupportedTemplate` |
+| **Blazor approach** | Dispatch on the entry's media kind: an image fits to frame with zoom and pan, a video renders `FormaVideoPlayer`, audio and PDF use the native `<audio controls>` and object embedding the browser already provides, and **anything unrecognised falls back to a type glyph, the filename, the size and a download link** rather than a broken image box. With `Siblings` supplied it also steps through the set, resolving the horizontal arrow keys through `IsRightToLeft`; the host modal keeps `Escape` |
+| **Notes** | **Viewing only — crop, rotate and resize are editing** and belong to `FormaImageEditor` (#57), even though Coi's `jcrop` widget sat on this same preview. A viewer that quietly mutates the file is a different component with a different contract, and folding it in here is how this one would stop being safe to open on anything. **To settle when built:** whether zoom and pan warrant a colocated `.razor.js`, since pinch-zoom on a touch surface is the case CSS alone handles worst |
+
+### 57. `FormaImageEditor`
+
+| | |
+|---|---|
+| **Old pattern** | Two surfaces, not one. `jcrop` in `slider.aspx` did a **constrained crop-to-fit**: aspect ratio and minimum size both pinned to the destination slot, the image scaled into a fixed 590×350 box, an initial selection set for the editor, and `tellSelect()` posting `x/y/w/h` plus the target dimensions to `crop.asmx`. Separately, `pops/pixie.aspx` hosted the commercial **Pixie** editor in an `<iframe>`, launched per-entry from the image library |
+| **Used in** | Making an arbitrary upload fit a fixed slot — article covers and OG images, video thumbnails, sponsor logos, gallery tiles. Launched from `FormaFileViewer` (#56), the manager (#54) and the picker (#35), the same way Coi launched it from its library |
+| **Parameters** | `string Source` (required), `double? AspectRatio`, `IReadOnlyList<AspectRatioPreset>? Presets`, `int? MinWidth`, `int? MinHeight`, `int? OutputWidth`, `int? OutputHeight`, `EventCallback<ImageEdit> OnApply`, `EventCallback OnCancel` |
+| **Scope** | **In:** crop with free or locked ratio and named presets, rotate in 90° steps, flip horizontal and vertical, resize to target dimensions, and zoom for precision. **Out:** filters, text, stickers, drawing, shapes, gradients and layers — that is Pixie's tier, it is a canvas compositing app rather than a control, and reaching it by pulling in a library would spend the one external-JS exception this repo has deliberately not spent twice |
+| **Blazor approach** | Follow Coi's actual division of labour, which already matches this library's boundary: **the component describes the edit, the host performs it.** `OnApply` emits an `ImageEdit` — crop rectangle, rotation, flips, target size — and the host renders it with ImageSharp or SkiaSharp, exactly as `FormaUploader` owns no storage and `FormaFilePicker` never touches a filesystem. A colocated `.razor.js` drives the handles and the live preview through Pointer Events and Canvas 2D; that is hand-written interop for behaviour only script can provide, not an external library |
+| **Why not export the canvas** | Returning the finished bitmap from the browser looks simpler and is the wrong trade under Interactive Server: a base64 canvas export of a multi-megabyte photo crosses the SignalR circuit, where the default 32 KB receive limit rejects it outright, and re-encoding through the browser discards EXIF, ICC colour profiles and the original's quality. A rectangle is a few numbers |
+| **The two bugs to design out** | **Coordinate space** — report the rectangle in the image's *natural* pixels, never the displayed CSS pixels, because the editor scales the image to fit its box just as Coi's 590×350 did, and a crop that forgets the scale factor is wrong by exactly that ratio. **EXIF orientation** — a phone photo displays upright through `image-orientation` while its stored pixels are rotated, so coordinates taken from the display do not address the bytes the host will cut |
+| **Notes** | Neither jcrop nor Pixie is reachable without a mouse, and this repo does not ship that: the selection needs arrow-key nudging with a modifier to resize, numeric width/height fields as an exact path, and a live region announcing the rectangle as it changes. The handles are also the hardest touch target in the library — 44×44 under a coarse pointer around a rectangle whose corners may sit at the image edge, needing press-and-hold to start a drag so an ordinary swipe still scrolls. **To settle when built:** whether straightening by an arbitrary angle joins the 90° steps, since it forces canvas resampling and a bounds recalculation that quarter-turns avoid entirely |
 
 ---
 
@@ -569,8 +623,11 @@ Components are ordered by dependency and reuse frequency:
 | **Phase 11** | `FormaField` ✅, `FormaTextArea` ✅ | Shared field chrome — extracted from `FormaInput` so the floating label, focus ring and validation styling live once, then `FormaTextArea` built on it. `FormaPasswordInput` ✅ composes it; `FormaCurrencyInput` and `FormaSelect` will too rather than restating it |
 | **Phase 12** | `FormaEyeButton` ✅ | Shared reveal primitive — built after the fact and retrofitted onto `FormaPasswordInput`, which had hand-rolled the ghost icon button it now uses |
 | **Phase 13** | `FormaDeleteButton`, `FormaUpdateButton`, `FormaEditButton`, `FormaAddButton`, `FormaDuplicateButton`, `FormaRefreshButton`, `FormaShareButton`, `FormaPublishButton` | The rest of the icon-button vocabulary — the same thin wrapper over `FormaButton`, one glyph each, so a row's actions stop being ad-hoc markup per page |
-| **Phase 14** | `FormaOverflowMenu`, `FormaContextMenu`, `FormaSortButton` | Menu presets over `FormaDropDownMenu` — the ellipsis trigger first, then the same panel opened by right-click or by a sort control, once there is a menu worth opening that way |
+| **Phase 14** | `FormaOverflowMenu`, `FormaContextMenu`, `FormaSortMenu` | Menu presets over `FormaDropDownMenu` — the ellipsis trigger first, then the same panel opened by right-click or by a sort control, once there is a menu worth opening that way |
 | **Phase 15** | `FormaViewButton` | Layout toggle — built with `FormaFilePicker`, the only surface that has two layouts to switch between |
+| **Phase 16** | `FormaVideoPlayer`, `FormaFileViewer` | Media rendering — the player first because it stands alone and four Épica surfaces want it, then the viewer that delegates its video branch to it. Both precede the surfaces below, which enlarge and preview through them |
+| **Phase 17** | `FormaGallery`, `FormaFileManager` | Media surfaces — both compose the uploader, picker and viewer rather than re-solving them, so they follow once those exist. The manager's shared browsing half is extracted from `FormaFilePicker` in the same step, not copied |
+| **Phase 18** | `FormaImageEditor` | The heaviest media component and the last — it needs the surfaces above to launch it, and its pointer handles, coordinate mapping and keyboard path are worth building once the rest of the media flow is settled |
 
 ---
 
@@ -583,6 +640,7 @@ Forma.Blazor/Components/
 │   ├── BreadcrumbItem.cs                # record with Label + Url?, constructor-validated
 │   ├── FormaPageHeader.razor / .razor.cs
 │   ├── FormaToolbar.razor / .razor.cs
+│   ├── FormaContextToolbar.razor / .razor.cs
 │   ├── FormaTabs.razor / .razor.cs
 │   └── FormaTab.razor / .razor.cs
 ├── Feedback/
@@ -595,11 +653,15 @@ Forma.Blazor/Components/
 │   └── FormaToastContainer.razor.css
 ├── Data/
 │   ├── FormaDataGrid.razor
-│   ├── FormaContextToolbar.razor
-│   ├── FormaStatusBadge.razor
-│   ├── FormaCapacityIndicator.razor
 │   └── FormaPagination.razor
-├── Input/
+├── Indicators/
+│   ├── FormaStatusBadge.razor
+│   └── FormaCapacityIndicator.razor
+├── Actions/
+│   ├── ButtonSize.cs
+│   ├── ButtonType.cs
+│   ├── ButtonVariant.cs
+│   ├── FormaButtonOptions.cs
 │   ├── FormaButton.razor
 │   ├── FormaCloseButton.razor
 │   ├── FormaEyeButton.razor
@@ -612,6 +674,10 @@ Forma.Blazor/Components/
 │   ├── FormaShareButton.razor
 │   ├── FormaPublishButton.razor
 │   ├── FormaViewButton.razor
+│   └── FormaExportButton.razor
+├── Input/
+│   ├── SelectOption.cs
+│   ├── PasswordStrength.cs
 │   ├── FormaCheckbox.razor
 │   ├── FormaField.razor
 │   ├── FormaInput.razor
@@ -623,7 +689,6 @@ Forma.Blazor/Components/
 │   ├── FormaDatePicker.razor
 │   ├── FormaSelect.razor
 │   ├── FormaColorPicker.razor
-│   ├── FormaUploader.razor
 │   └── FormaMultiSelectDropDown.razor
 ├── Interactive/
 │   ├── FormaSortableList.razor
@@ -633,19 +698,25 @@ Forma.Blazor/Components/
 │   ├── FormaDropDownMenuDivider.razor
 │   ├── FormaOverflowMenu.razor
 │   ├── FormaContextMenu.razor
-│   ├── FormaSortButton.razor
+│   └── FormaSortMenu.razor
+├── Files/
+│   ├── FormaUploader.razor
 │   ├── FormaFilePicker.razor
-│   └── FormaImagePicker.razor
-├── Editors/
-│   ├── FormaRichTextEditor.razor
-│   ├── FormaNotesEditor.razor
-│   ├── FormaPermissionMatrix.razor
-│   ├── FormaProductOptionsEditor.razor
-│   └── FormaFilterEditor.razor
-└── Specialized/
-    ├── FormaExportButton.razor
-    ├── FormaDesignPicker.razor
-    └── FormaFontPicker.razor
+│   ├── FormaFileManager.razor
+│   └── FormaFileViewer.razor          # dispatches to Media/ for the type it recognises
+├── Media/
+│   ├── FormaImagePicker.razor
+│   ├── FormaGallery.razor
+│   ├── FormaImageEditor.razor / .razor.js
+│   ├── FormaVideoPlayer.razor
+│   ├── FormaDesignPicker.razor
+│   └── FormaFontPicker.razor
+└── Editors/
+    ├── FormaRichTextEditor.razor
+    ├── FormaNotesEditor.razor
+    ├── FormaPermissionMatrix.razor
+    ├── FormaProductOptionsEditor.razor
+    └── FormaFilterEditor.razor
 ```
 
 ```
@@ -653,18 +724,23 @@ Forma.Blazor.Abstractions/
 ├── Foundation/
 │   └── INotifyStateChanged.cs
 └── Components/
-    └── Feedback/
-        ├── IToastService.cs
-        ├── IConfirmDialogService.cs
-        ├── ToastMessage.cs
-        ├── ToastType.cs
-        └── ConfirmDialogRequest.cs
+    ├── Feedback/
+    │   ├── IToastService.cs
+    │   ├── IConfirmDialogService.cs
+    │   ├── ToastMessage.cs
+    │   ├── ToastType.cs
+    │   └── ConfirmDialogRequest.cs
+    └── Indicators/
+        ├── IStatusBadgeCatalog.cs
+        └── StatusBadgeStyle.cs
 
 Forma.Blazor.Core/
 ├── Foundation/
 │   └── StateNotifier.cs
 └── Components/
-    └── Feedback/
-        ├── ToastService.cs
-        └── ConfirmDialogService.cs
+    ├── Feedback/
+    │   ├── ToastService.cs
+    │   └── ConfirmDialogService.cs
+    └── Indicators/
+        └── StatusBadgeCatalog.cs
 ```

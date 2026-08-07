@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Components.Interactive;
 
-using Forma.Blazor.Components.Input;
+using Forma.Blazor.Components.Actions;
 using Forma.Blazor.Interop;
 
 using Microsoft.AspNetCore.Components;
