@@ -241,6 +241,56 @@
         }
 
         [Fact]
+        public void Should_render_the_field_label_when_provided()
+        {
+            // Arrange
+            using var ctx = new FormaToggleSwitchTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaToggleSwitch @bind-Value="model.Toggle" Label="Accept comments" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Contains("Accept comments", cut.Find(".forma-field-label").TextContent, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_point_the_field_label_at_the_input()
+        {
+            // Arrange
+            using var ctx = new FormaToggleSwitchTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaToggleSwitch @bind-Value="model.Toggle" Label="Accept comments" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal(
+                cut.Find("input[type='checkbox']").GetAttribute("id"),
+                cut.Find(".forma-field-label").GetAttribute("for"));
+        }
+
+        [Fact]
+        public void Should_not_render_a_field_label_when_none_is_provided()
+        {
+            // Arrange
+            using var ctx = new FormaToggleSwitchTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaToggleSwitch @bind-Value="model.Toggle" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-field-label"));
+        }
+
+        [Fact]
         public async Task Should_update_value_when_toggled()
         {
             // Arrange

@@ -11,8 +11,8 @@ public sealed partial class FormaColorPicker : InputBase<string>
 {
     private readonly string _id = $"color-{Guid.NewGuid():N}";
 
-    /// <summary>Optional label displayed above the color picker.</summary>
-    [Parameter] public string? Label { get; set; }
+    /// <summary>The field's label.</summary>
+    [Parameter, EditorRequired] public string Label { get; set; } = default!;
 
     /// <summary>When true, shows an alpha (opacity) slider and accepts 8-digit hex values.</summary>
     [Parameter] public bool ShowAlpha { get; set; }
@@ -26,6 +26,9 @@ public sealed partial class FormaColorPicker : InputBase<string>
     private int AlphaPercent => CurrentValueAsString?.Length == 9
         ? (int)Math.Round(int.Parse(CurrentValueAsString.AsSpan(7, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture) / 255.0 * 100)
         : 100;
+
+    protected override void OnParametersSet()
+        => ArgumentException.ThrowIfNullOrWhiteSpace(Label);
 
     private void HandleHexInput(ChangeEventArgs e) =>
         CurrentValueAsString = e.Value?.ToString();

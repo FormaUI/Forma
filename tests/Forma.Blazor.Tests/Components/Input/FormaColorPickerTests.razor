@@ -12,7 +12,7 @@
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaColorPicker @bind-Value="model.Color" />
+                <FormaColorPicker @bind-Value="model.Color" Label="Brand colour" />
             </FakeFormHost>);
             var swatch = cut.Find(".forma-color-swatch");
 
@@ -29,7 +29,7 @@
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaColorPicker @bind-Value="model.Color" />
+                <FormaColorPicker @bind-Value="model.Color" Label="Brand colour" />
             </FakeFormHost>);
 
             // Assert
@@ -47,26 +47,23 @@
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaColorPicker @bind-Value="model.Color" Label="Background" />
             </FakeFormHost>);
-            var label = cut.Find(".forma-color-picker-label");
+            var label = cut.Find(".forma-field-label");
 
             // Assert
             Assert.Equal("Background", label.TextContent);
         }
 
         [Fact]
-        public void Should_not_render_label_when_not_provided()
+        public void Should_throw_when_the_label_is_blank()
         {
             // Arrange
             using var ctx = new FormaColorPickerTests();
             var model = new FakeModel { Color = "#000000" };
 
-            // Act
-            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaColorPicker @bind-Value="model.Color" />
-            </FakeFormHost>);
-
-            // Assert
-            Assert.Empty(cut.FindAll(".forma-color-picker-label"));
+            // Act / Assert
+            Assert.Throws<ArgumentException>(() => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaColorPicker @bind-Value="model.Color" Label=" " />
+            </FakeFormHost>));
         }
 
         [Fact]
@@ -78,7 +75,7 @@
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaColorPicker @bind-Value="model.Color" />
+                <FormaColorPicker @bind-Value="model.Color" Label="Brand colour" />
             </FakeFormHost>);
             var native = cut.Find("input[type='color']");
 
@@ -95,7 +92,7 @@
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaColorPicker @bind-Value="model.Color" data-testid="my-picker" />
+                <FormaColorPicker @bind-Value="model.Color" data-testid="my-picker" Label="Brand colour" />
             </FakeFormHost>);
 
             // Assert
@@ -111,7 +108,7 @@
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaColorPicker @bind-Value="model.Color" />
+                <FormaColorPicker @bind-Value="model.Color" Label="Brand colour" />
             </FakeFormHost>);
 
             // Assert
@@ -127,7 +124,7 @@
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaColorPicker @bind-Value="model.Color" ShowAlpha="true" />
+                <FormaColorPicker @bind-Value="model.Color" ShowAlpha="true" Label="Brand colour" />
             </FakeFormHost>);
 
             // Assert
@@ -141,7 +138,7 @@
             using var ctx = new FormaColorPickerTests();
             var model = new FakeModel { Color = "#FF5533" };
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaColorPicker @bind-Value="model.Color" />
+                <FormaColorPicker @bind-Value="model.Color" Label="Brand colour" />
             </FakeFormHost>);
 
             // Act
@@ -158,7 +155,7 @@
             using var ctx = new FormaColorPickerTests();
             var model = new FakeModel { Color = "#FF5533" };
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaColorPicker @bind-Value="model.Color" />
+                <FormaColorPicker @bind-Value="model.Color" Label="Brand colour" />
             </FakeFormHost>);
 
             // Act

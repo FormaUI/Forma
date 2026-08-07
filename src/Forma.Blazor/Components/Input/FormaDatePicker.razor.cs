@@ -22,7 +22,7 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
     [Parameter] public EventCallback<DateOnly?> EndDateChanged { get; set; }
 
     // ── Common ───────────────────────────────────────
-    [Parameter] public string? Label { get; set; }
+    [Parameter, EditorRequired] public string Label { get; set; } = default!;
     [Parameter] public DateOnly? MinDate { get; set; }
     [Parameter] public DateOnly? MaxDate { get; set; }
     [Parameter] public bool ShowPresets { get; set; } = true;
@@ -36,6 +36,7 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
     private bool _isOpen;
+    private readonly string _triggerId = $"dp-trigger-{Guid.NewGuid():N}";
     private ElementReference _anchorElement;
     private ElementReference _popupElement;
     private JsModule _module = default!;
@@ -211,6 +212,8 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
 
     protected override void OnParametersSet()
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(Label);
+
         _calendar = UseNonGregorianMonths
             ? (_culture.OptionalCalendars.FirstOrDefault(c => c is not GregorianCalendar)
                ?? _culture.DateTimeFormat.Calendar)

@@ -1,36 +1,23 @@
 /* ============================================================
-   FormaColorPicker — CSS isolation
-   Swatch with overlaid native color input + hex text input.
+   FormaColorPicker — the swatch and hex input only; the label,
+   box, focus ring and validation chrome belong to FormaField.
    Uses logical CSS properties for RTL/LTR support.
    ============================================================ */
 
 /* ---------- wrapper ---------- */
 .forma-color-picker {
-    display: inline-flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    margin-block-end: 1rem;
-}
-
-/* ---------- label ---------- */
-.forma-color-picker-label {
-    font-weight: 500;
-    font-size: 0.875rem;
-    color: var(--forma-label-color, var(--text-color));
-}
-
-/* ---------- input row ---------- */
-.forma-color-picker-row {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
+    position: relative;
 }
 
 /* ---------- swatch wrapper (holds visual swatch + invisible native input) ---------- */
+/* Sits over the field box beside the hex text, the way FormaPasswordInput places its toggle.
+   Offset from the top rather than the bottom, so the optional alpha row below cannot move it. */
 .forma-color-swatch-wrapper {
-    position: relative;
-    width: 2rem;
-    height: 2rem;
+    position: absolute;
+    inset-block-start: 1.5rem;
+    inset-inline-start: 0.625rem;
+    width: 1.25rem;
+    height: 1.25rem;
     flex-shrink: 0;
 }
 
@@ -70,20 +57,12 @@
 }
 
 /* ---------- hex text input ---------- */
-.forma-color-hex-input {
-    width: 7rem;
-    padding: 0.25rem 0.5rem;
-    border: 1px solid var(--forma-color-picker-border-color, #ced4da);
-    border-radius: 0.375rem;
+/* Inherits its box from .forma-field-input; the descendant selector outweighs that rule's
+   padding-inline shorthand so the inline-start gutter clears the swatch. */
+.forma-color-picker .forma-color-hex-input {
+    padding-inline-start: 2.25rem;
     font-family: var(--font-family-mono, monospace);
-    font-size: 0.875rem;
     touch-action: manipulation;
-}
-
-.forma-color-hex-input:focus {
-    border-color: var(--main-color, #0d6efd);
-    outline: 0;
-    box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--focus-color, #86b7fe) 25%, transparent);
 }
 
 /* ---------- alpha row ---------- */

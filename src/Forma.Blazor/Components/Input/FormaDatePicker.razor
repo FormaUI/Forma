@@ -1,26 +1,29 @@
 @namespace Forma.Blazor.Components.Input
 
-<div class="forma-date-picker" @attributes="AdditionalAttributes">
-    @if (Label is not null)
-    {
-        <label class="forma-date-picker-label">@Label</label>
-    }
-    <div class="forma-date-picker-trigger-wrap" @ref="_anchorElement">
-        <button type="button" class="forma-date-picker-trigger" @onclick="Toggle">
-            <span class="forma-date-picker-arrow">&#9662;</span>
-            <span class="forma-date-picker-value@(HasValue ? "" : " placeholder")">@(HasValue ? DisplayText : Placeholder)</span>
-        </button>
-        @if (HasValue)
-        {
-            <button type="button"
-                    class="forma-date-picker-clear"
-                    @onclick="HandleClear"
-                    @onclick:stopPropagation
-                    aria-label="@L["Clear"]">
-                &times;
-            </button>
-        }
-    </div>
+<FormaField Label="@Label" FieldId="@_triggerId" LabelMode="FieldLabelMode.Pinned">
+    <ChildContent>
+        @* The root keeps the --dp-* custom properties the calendar popup reads. *@
+        <div class="forma-date-picker">
+            <div class="forma-date-picker-trigger-wrap" @ref="_anchorElement">
+                <button @attributes="AdditionalAttributes"
+                        type="button"
+                        id="@_triggerId"
+                        class="forma-field-input forma-date-picker-trigger"
+                        @onclick="Toggle">
+                    <span class="forma-date-picker-arrow">&#9662;</span>
+                    <span class="forma-date-picker-value@(HasValue ? "" : " placeholder")">@(HasValue ? DisplayText : Placeholder)</span>
+                </button>
+                @if (HasValue)
+                {
+                    <button type="button"
+                            class="forma-date-picker-clear"
+                            @onclick="HandleClear"
+                            @onclick:stopPropagation
+                            aria-label="@L["Clear"]">
+                        &times;
+                    </button>
+                }
+            </div>
     @if (_isOpen)
     {
         <div class="forma-date-picker-backdrop" @onclick="Close"></div>
@@ -146,4 +149,6 @@
             }
         </div>
     }
-</div>
+        </div>
+    </ChildContent>
+</FormaField>

@@ -12,6 +12,9 @@ public sealed partial class FormaToggleSwitch : InputBase<bool>
     private const string CrossMark = "\u2715";
     private readonly string _id = $"toggle-{Guid.NewGuid():N}";
 
+    /// <summary>Name shown before the switch. Without one the caller must give the input an accessible name of its own.</summary>
+    [Parameter] public string? Label { get; set; }
+
     /// <summary>Label shown when the toggle is in the off state.</summary>
     [Parameter] public string? OffLabel { get; set; }
 

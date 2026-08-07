@@ -1,44 +1,44 @@
 @namespace Forma.Blazor.Components.Input
 @inherits InputBase<string>
 
-<div class="forma-color-picker">
-    @if (Label is not null)
-    {
-        <label for="@_id" class="forma-color-picker-label">@Label</label>
-    }
-    <div class="forma-color-picker-row">
-        <div class="forma-color-swatch-wrapper">
-            <input type="color"
-                   class="forma-color-native"
-                   aria-label="@L["Choose colour"]"
-                   value="@RgbHex"
-                   @oninput="HandleNativeInput" />
-            <span class="forma-color-swatch" style="background-color: @CurrentValueAsString" aria-hidden="true"></span>
+<FormaField Label="@Label" FieldId="@_id" LabelMode="FieldLabelMode.Pinned">
+    <ChildContent>
+        <div class="forma-color-picker">
+            <input id="@_id"
+                   type="text"
+                   class="forma-field-input forma-color-hex-input @CssClass"
+                   value="@CurrentValueAsString"
+                   @onchange="HandleHexInput"
+                   @attributes="AdditionalAttributes"
+                   maxlength="@(ShowAlpha ? 9 : 7)"
+                   placeholder="@(ShowAlpha ? "#RRGGBBAA" : "#RRGGBB")"
+                   spellcheck="false"
+                   dir="ltr" />
+            @* A wrapper carries the positioning, so the native colour input can sit over the field box. *@
+            <span class="forma-color-swatch-wrapper">
+                <input type="color"
+                       class="forma-color-native"
+                       aria-label="@L["Choose colour"]"
+                       value="@RgbHex"
+                       @oninput="HandleNativeInput" />
+                <span class="forma-color-swatch" style="background-color: @CurrentValueAsString" aria-hidden="true"></span>
+            </span>
+            @if (ShowAlpha)
+            {
+                <div class="forma-color-alpha-row">
+                    <label for="@(_id)-alpha">@L["Alpha"]</label>
+                    <input id="@(_id)-alpha"
+                           type="range"
+                           class="forma-color-alpha"
+                           min="0" max="100" step="1"
+                           value="@AlphaPercent"
+                           @oninput="HandleAlphaInput" />
+                    <span class="forma-color-alpha-value">@AlphaPercent%</span>
+                </div>
+            }
         </div>
-        <input id="@_id"
-               type="text"
-               class="forma-color-hex-input @CssClass"
-               aria-label="@(Label is null ? L["Colour hex value"].Value : null)"
-               value="@CurrentValueAsString"
-               @onchange="HandleHexInput"
-               @attributes="AdditionalAttributes"
-               maxlength="@(ShowAlpha ? 9 : 7)"
-               placeholder="@(ShowAlpha ? "#RRGGBBAA" : "#RRGGBB")"
-               spellcheck="false"
-               dir="ltr" />
-    </div>
-    @if (ShowAlpha)
-    {
-        <div class="forma-color-alpha-row">
-            <label for="@(_id)-alpha">@L["Alpha"]</label>
-            <input id="@(_id)-alpha"
-                   type="range"
-                   class="forma-color-alpha"
-                   min="0" max="100" step="1"
-                   value="@AlphaPercent"
-                   @oninput="HandleAlphaInput" />
-            <span class="forma-color-alpha-value">@AlphaPercent%</span>
-        </div>
-    }
-    <ValidationMessage For="@ValueExpression" />
-</div>
+    </ChildContent>
+    <Validation>
+        <ValidationMessage For="@ValueExpression" />
+    </Validation>
+</FormaField>

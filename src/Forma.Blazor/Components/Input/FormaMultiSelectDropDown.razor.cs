@@ -20,8 +20,11 @@ public sealed partial class FormaMultiSelectDropDown<TValue> : InputBase<List<TV
     /// <summary>The options offered in the dropdown.</summary>
     [Parameter, EditorRequired] public IReadOnlyList<SelectOption<TValue>> Options { get; set; } = default!;
 
-    /// <summary>Optional label displayed above the component.</summary>
-    [Parameter] public string? Label { get; set; }
+    /// <summary>The field's label.</summary>
+    [Parameter, EditorRequired] public string Label { get; set; } = default!;
+
+    /// <summary>Shows the required marker beside the label.</summary>
+    [Parameter] public bool Required { get; set; }
 
     /// <summary>Text shown in the trigger when nothing is selected.</summary>
     [Parameter] public string? Placeholder { get; set; }
@@ -39,8 +42,7 @@ public sealed partial class FormaMultiSelectDropDown<TValue> : InputBase<List<TV
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
-    private readonly string _labelId = $"ms-label-{Guid.NewGuid():N}";
-    private readonly string _triggerTextId = $"ms-trigger-{Guid.NewGuid():N}";
+    private readonly string _triggerId = $"ms-trigger-{Guid.NewGuid():N}";
     private readonly string _popupId = $"ms-popup-{Guid.NewGuid():N}";
 
     private bool _isOpen;
@@ -55,11 +57,6 @@ public sealed partial class FormaMultiSelectDropDown<TValue> : InputBase<List<TV
 
     private List<TValue> SelectedValues
         => Value ?? [];
-
-    // Both the caller's label and the trigger's own text, so the component announces
-    // "Categories, 2 selected" rather than losing one to the other.
-    private string? LabelledBy
-        => Label is null ? null : $"{_labelId} {_triggerTextId}";
 
     private IReadOnlyList<SelectOption<TValue>> FilteredOptions
         => string.IsNullOrWhiteSpace(_searchText)
@@ -81,7 +78,10 @@ public sealed partial class FormaMultiSelectDropDown<TValue> : InputBase<List<TV
         => _module = new JsModule(JS, ModulePath);
 
     protected override void OnParametersSet()
-        => ArgumentNullException.ThrowIfNull(Options);
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(Label);
+        ArgumentNullException.ThrowIfNull(Options);
+    }
 
     private SelectOption<TValue>? FindOption(TValue value)
         => Options.FirstOrDefault(o => EqualityComparer<TValue>.Default.Equals(o.Value, value));

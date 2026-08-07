@@ -8,7 +8,7 @@
         public void Should_render_trigger_button()
         {
             using var ctx = new FormaDatePickerTests();
-            var cut = ctx.Render(@<FormaDatePicker />);
+            var cut = ctx.Render(@<FormaDatePicker Label="Start date" />);
 
             Assert.NotNull(cut.Find(".forma-date-picker-trigger"));
         }
@@ -18,7 +18,7 @@
         {
             using var ctx = new FormaDatePickerTests();
             DateOnly? value = new DateOnly(2025, 3, 15);
-            var cut = ctx.Render(@<FormaDatePicker Value="value" />);
+            var cut = ctx.Render(@<FormaDatePicker Value="value" Label="Start date" />);
 
             var expected = value.Value.ToDateTime(TimeOnly.MinValue)
                 .ToString("d", CultureInfo.CurrentCulture);
@@ -33,7 +33,7 @@
             DateOnly? end = new DateOnly(2025, 3, 15);
             var cut = ctx.Render(@<FormaDatePicker StartDate="start" EndDate="end"
                                                 StartDateChanged="s => start = s"
-                                                EndDateChanged="e => end = e" />);
+                                                EndDateChanged="e => end = e" Label="Start date" />);
 
             var s = start!.Value.ToDateTime(TimeOnly.MinValue).ToString("d", CultureInfo.CurrentCulture);
             var e = end!.Value.ToDateTime(TimeOnly.MinValue).ToString("d", CultureInfo.CurrentCulture);
@@ -45,7 +45,7 @@
         {
             using var ctx = new FormaDatePickerTests();
             DateOnly? value = null;
-            var cut = ctx.Render(@<FormaDatePicker Value="value" />);
+            var cut = ctx.Render(@<FormaDatePicker Value="value" Label="Start date" />);
 
             var valueEl = cut.Find(".forma-date-picker-value");
             Assert.NotEmpty(valueEl.TextContent.Trim());
@@ -56,7 +56,7 @@
         public void Should_open_popup_on_trigger_click()
         {
             using var ctx = new FormaDatePickerTests();
-            var cut = ctx.Render(@<FormaDatePicker />);
+            var cut = ctx.Render(@<FormaDatePicker Label="Start date" />);
 
             cut.Find(".forma-date-picker-trigger").Click();
 
@@ -67,7 +67,7 @@
         public void Should_render_the_popup_as_a_popover_so_a_scrolling_ancestor_cannot_clip_it()
         {
             using var ctx = new FormaDatePickerTests();
-            var cut = ctx.Render(@<FormaDatePicker />);
+            var cut = ctx.Render(@<FormaDatePicker Label="Start date" />);
 
             cut.Find(".forma-date-picker-trigger").Click();
 
@@ -79,7 +79,7 @@
         public void Should_close_popup_on_backdrop_click()
         {
             using var ctx = new FormaDatePickerTests();
-            var cut = ctx.Render(@<FormaDatePicker />);
+            var cut = ctx.Render(@<FormaDatePicker Label="Start date" />);
 
             cut.Find(".forma-date-picker-trigger").Click();
             cut.Find(".forma-date-picker-backdrop").Click();
@@ -95,7 +95,7 @@
             DateOnly? end = null;
             var cut = ctx.Render(@<FormaDatePicker StartDate="start" EndDate="end"
                                                 StartDateChanged="s => start = s"
-                                                EndDateChanged="e => end = e" />);
+                                                EndDateChanged="e => end = e" Label="Start date" />);
 
             cut.Find(".forma-date-picker-trigger").Click();
 
@@ -106,7 +106,7 @@
         public void Should_render_single_calendar_in_value_mode()
         {
             using var ctx = new FormaDatePickerTests();
-            var cut = ctx.Render(@<FormaDatePicker />);
+            var cut = ctx.Render(@<FormaDatePicker Label="Start date" />);
 
             cut.Find(".forma-date-picker-trigger").Click();
 
@@ -118,7 +118,7 @@
         {
             using var ctx = new FormaDatePickerTests();
             DateOnly? value = null;
-            var cut = ctx.Render(@<FormaDatePicker Value="value" ValueChanged="v => value = v" />);
+            var cut = ctx.Render(@<FormaDatePicker Value="value" ValueChanged="v => value = v" Label="Start date" />);
 
             cut.Find(".forma-date-picker-trigger").Click();
             var day15 = cut.FindAll(".forma-date-picker-day")
@@ -138,7 +138,7 @@
             DateOnly? end = null;
             var cut = ctx.Render(@<FormaDatePicker StartDate="start" EndDate="end"
                                                 StartDateChanged="s => start = s"
-                                                EndDateChanged="e => end = e" />);
+                                                EndDateChanged="e => end = e" Label="Start date" />);
 
             cut.Find(".forma-date-picker-trigger").Click();
             var day5 = cut.FindAll(".forma-date-picker-day")
@@ -162,16 +162,15 @@
             using var ctx = new FormaDatePickerTests();
             var cut = ctx.Render(@<FormaDatePicker Label="Start Date" />);
 
-            Assert.Equal("Start Date", cut.Find(".forma-date-picker-label").TextContent);
+            Assert.Equal("Start Date", cut.Find(".forma-field-label").TextContent);
         }
 
         [Fact]
-        public void Should_not_render_label_when_not_provided()
+        public void Should_throw_when_the_label_is_blank()
         {
             using var ctx = new FormaDatePickerTests();
-            var cut = ctx.Render(@<FormaDatePicker />);
 
-            Assert.Empty(cut.FindAll(".forma-date-picker-label"));
+            Assert.Throws<ArgumentException>(() => ctx.Render(@<FormaDatePicker Label=" " />));
         }
 
         [Fact]
@@ -179,7 +178,7 @@
         {
             using var ctx = new FormaDatePickerTests();
             DateOnly? value = new DateOnly(2025, 6, 1);
-            var cut = ctx.Render(@<FormaDatePicker Value="value" />);
+            var cut = ctx.Render(@<FormaDatePicker Value="value" Label="Start date" />);
 
             Assert.Single(cut.FindAll(".forma-date-picker-clear"));
         }
@@ -189,7 +188,7 @@
         {
             using var ctx = new FormaDatePickerTests();
             DateOnly? value = null;
-            var cut = ctx.Render(@<FormaDatePicker Value="value" />);
+            var cut = ctx.Render(@<FormaDatePicker Value="value" Label="Start date" />);
 
             Assert.Empty(cut.FindAll(".forma-date-picker-clear"));
         }
@@ -199,7 +198,7 @@
         {
             using var ctx = new FormaDatePickerTests();
             DateOnly? value = new DateOnly(2025, 6, 1);
-            var cut = ctx.Render(@<FormaDatePicker Value="value" ValueChanged="v => value = v" />);
+            var cut = ctx.Render(@<FormaDatePicker Value="value" ValueChanged="v => value = v" Label="Start date" />);
 
             cut.Find(".forma-date-picker-clear").Click();
 
@@ -214,7 +213,7 @@
             DateOnly? end = new DateOnly(2025, 3, 15);
             var cut = ctx.Render(@<FormaDatePicker StartDate="start" EndDate="end"
                                                 StartDateChanged="s => start = s"
-                                                EndDateChanged="e => end = e" />);
+                                                EndDateChanged="e => end = e" Label="Start date" />);
 
             cut.Find(".forma-date-picker-clear").Click();
 
@@ -230,7 +229,7 @@
             DateOnly? end = null;
             var cut = ctx.Render(@<FormaDatePicker StartDate="start" EndDate="end"
                                                 StartDateChanged="s => start = s"
-                                                EndDateChanged="e => end = e" />);
+                                                EndDateChanged="e => end = e" Label="Start date" />);
 
             cut.Find(".forma-date-picker-trigger").Click();
 
@@ -241,7 +240,7 @@
         public void Should_not_show_presets_in_single_mode()
         {
             using var ctx = new FormaDatePickerTests();
-            var cut = ctx.Render(@<FormaDatePicker />);
+            var cut = ctx.Render(@<FormaDatePicker Label="Start date" />);
 
             cut.Find(".forma-date-picker-trigger").Click();
 
@@ -255,7 +254,7 @@
             DateOnly? value = new DateOnly(2025, 3, 15);
             var cut = ctx.Render(@<FormaDatePicker Value="value"
                                                 MinDate="@(new DateOnly(2025, 3, 10))"
-                                                MaxDate="@(new DateOnly(2025, 3, 20))" />);
+                                                MaxDate="@(new DateOnly(2025, 3, 20))" Label="Start date" />);
 
             cut.Find(".forma-date-picker-trigger").Click();
             var day5 = cut.FindAll(".forma-date-picker-day")
@@ -268,9 +267,9 @@
         public void Should_pass_additional_attributes()
         {
             using var ctx = new FormaDatePickerTests();
-            var cut = ctx.Render(@<FormaDatePicker data-testid="my-date" />);
+            var cut = ctx.Render(@<FormaDatePicker data-testid="my-date" Label="Start date" />);
 
-            Assert.Equal("my-date", cut.Find(".forma-date-picker").GetAttribute("data-testid"));
+            Assert.Equal("my-date", cut.Find(".forma-date-picker-trigger").GetAttribute("data-testid"));
         }
 
         [Fact]
@@ -278,7 +277,7 @@
         {
             using var ctx = new FormaDatePickerTests();
             DateOnly? value = new DateOnly(2025, 3, 15);
-            var cut = ctx.Render(@<FormaDatePicker Value="value" />);
+            var cut = ctx.Render(@<FormaDatePicker Value="value" Label="Start date" />);
 
             cut.Find(".forma-date-picker-trigger").Click();
             cut.Find(".forma-date-picker-nav").Click(); // prev button (single calendar has both nav buttons)
@@ -297,7 +296,7 @@
             DateOnly? end = null;
             var cut = ctx.Render(@<FormaDatePicker StartDate="start" EndDate="end"
                                                 StartDateChanged="s => start = s"
-                                                EndDateChanged="e => end = e" />);
+                                                EndDateChanged="e => end = e" Label="Start date" />);
 
             cut.Find(".forma-date-picker-trigger").Click();
             // Click day 20 first, then day 5 — should still produce start=5, end=20
@@ -323,7 +322,7 @@
             Assert.Throws<ArgumentException>(() =>
                 ctx.Render(@<FormaDatePicker StartDate="start" EndDate="end"
                                           StartDateChanged="s => start = s"
-                                          EndDateChanged="e => end = e" />));
+                                          EndDateChanged="e => end = e" Label="Start date" />));
         }
 
         [Fact]
@@ -336,7 +335,7 @@
             var cut = ctx.Render(@<FormaDatePicker StartDate="start" EndDate="end"
                                                 StartDateChanged="s => start = s"
                                                 EndDateChanged="e => end = e"
-                                                MinDate="minDate" />);
+                                                MinDate="minDate" Label="Start date" />);
 
             cut.Find(".forma-date-picker-trigger").Click();
             // Click "Last 7 Days" — should clamp start to MinDate
@@ -360,7 +359,7 @@
             var cut = ctx.Render(@<FormaDatePicker StartDate="start" EndDate="end"
                                                 StartDateChanged="s => start = s"
                                                 EndDateChanged="e => end = e"
-                                                MinDate="futureMin" MaxDate="futureMax" />);
+                                                MinDate="futureMin" MaxDate="futureMax" Label="Start date" />);
 
             cut.Find(".forma-date-picker-trigger").Click();
             var presetButtons = cut.FindAll(".forma-date-picker-presets button");
@@ -374,7 +373,7 @@
             DateOnly? value = new DateOnly(2025, 6, 15);
             var cut = ctx.Render(@<FormaDatePicker Value="value"
                                                 MinDate="@(new DateOnly(2025, 4, 1))"
-                                                MaxDate="@(new DateOnly(2025, 8, 31))" />);
+                                                MaxDate="@(new DateOnly(2025, 8, 31))" Label="Start date" />);
 
             cut.Find(".forma-date-picker-trigger").Click();
             var monthSelect = cut.FindAll(".forma-date-picker-select")[1];
@@ -400,7 +399,7 @@
             DateOnly? value = new DateOnly(2025, 6, 15);
             var cut = ctx.Render(@<FormaDatePicker Value="value"
                                                 MinDate="@(new DateOnly(2025, 1, 1))"
-                                                MaxDate="@(new DateOnly(2026, 12, 31))" />);
+                                                MaxDate="@(new DateOnly(2026, 12, 31))" Label="Start date" />);
 
             cut.Find(".forma-date-picker-trigger").Click();
             var yearSelect = cut.FindAll(".forma-date-picker-select")[0];
@@ -433,7 +432,7 @@
             CultureInfo.CurrentUICulture = hebrew;
 
             // Act — 5786 is a common year, running from autumn 2025 to autumn 2026
-            var cut = ctx.Render(@<FormaDatePicker Value="@(new DateOnly(2026, 8, 3))" UseNonGregorianMonths="true" />);
+            var cut = ctx.Render(@<FormaDatePicker Value="@(new DateOnly(2026, 8, 3))" UseNonGregorianMonths="true" Label="Start date" />);
             cut.Find(".forma-date-picker-trigger").Click();
 
             var months = cut.FindAll(".forma-date-picker-select")[1]
@@ -457,7 +456,7 @@
             CultureInfo.CurrentUICulture = hebrew;
 
             // Act — 5787 is a leap year, running from autumn 2026 to autumn 2027
-            var cut = ctx.Render(@<FormaDatePicker Value="@(new DateOnly(2027, 3, 1))" UseNonGregorianMonths="true" />);
+            var cut = ctx.Render(@<FormaDatePicker Value="@(new DateOnly(2027, 3, 1))" UseNonGregorianMonths="true" Label="Start date" />);
             cut.Find(".forma-date-picker-trigger").Click();
 
             var months = cut.FindAll(".forma-date-picker-select")[1]

@@ -23,7 +23,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Contains("Categories", cut.Find(".forma-multi-select-label").TextContent, StringComparison.Ordinal);
+            Assert.Contains("Categories", cut.Find(".forma-field-label").TextContent, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -35,7 +35,7 @@
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" Placeholder="Pick some" />
+                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" Placeholder="Pick some" Label="Categories" />
             </FakeFormHost>);
 
             // Assert
@@ -51,7 +51,7 @@
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" />
+                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" Label="Categories" />
             </FakeFormHost>);
 
             // Assert
@@ -65,7 +65,7 @@
             using var ctx = new FormaMultiSelectDropDownTests();
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" />
+                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" Label="Categories" />
             </FakeFormHost>);
 
             // Act
@@ -82,7 +82,7 @@
             using var ctx = new FormaMultiSelectDropDownTests();
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" />
+                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" Label="Categories" />
             </FakeFormHost>);
 
             // Act
@@ -99,7 +99,7 @@
             using var ctx = new FormaMultiSelectDropDownTests();
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" />
+                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" Label="Categories" />
             </FakeFormHost>);
             cut.Find(".forma-multi-select-trigger").Click();
 
@@ -117,7 +117,7 @@
             using var ctx = new FormaMultiSelectDropDownTests();
             var model = new FakeModel { Categories = [1, 2] };
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" />
+                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" Label="Categories" />
             </FakeFormHost>);
 
             // Act
@@ -134,7 +134,7 @@
             using var ctx = new FormaMultiSelectDropDownTests();
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" />
+                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" Label="Categories" />
             </FakeFormHost>);
             cut.Find(".forma-multi-select-trigger").Click();
 
@@ -154,7 +154,7 @@
             using var ctx = new FormaMultiSelectDropDownTests();
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" />
+                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" Label="Categories" />
             </FakeFormHost>);
             cut.Find(".forma-multi-select-trigger").Click();
 
@@ -172,7 +172,7 @@
             using var ctx = new FormaMultiSelectDropDownTests();
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="@([])" />
+                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="@([])" Label="Categories" />
             </FakeFormHost>);
 
             // Act
@@ -189,7 +189,7 @@
             using var ctx = new FormaMultiSelectDropDownTests();
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" />
+                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" Label="Categories" />
             </FakeFormHost>);
 
             // Act
@@ -208,7 +208,7 @@
             string? raised = null;
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options"
-                                          AllowAdd="true" OnAddNew="@(text => raised = text)" />
+                                          AllowAdd="true" OnAddNew="@(text => raised = text)" Label="Categories" />
             </FakeFormHost>);
             cut.Find(".forma-multi-select-trigger").Click();
             cut.Find(".forma-multi-select-search").Input("Yoga");
@@ -227,7 +227,7 @@
             using var ctx = new FormaMultiSelectDropDownTests();
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" />
+                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" Label="Categories" />
             </FakeFormHost>);
             cut.Find(".forma-multi-select-trigger").Click();
 
@@ -247,7 +247,7 @@
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" Disabled="true" />
+                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" Disabled="true" Label="Categories" />
             </FakeFormHost>);
 
             // Assert
@@ -262,7 +262,7 @@
             using var ctx = new FormaMultiSelectDropDownTests();
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" />
+                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" Label="Categories" />
             </FakeFormHost>);
             Assert.Equal("false", cut.Find(".forma-multi-select-trigger").GetAttribute("aria-expanded"));
 
@@ -280,7 +280,7 @@
             using var ctx = new FormaMultiSelectDropDownTests();
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" />
+                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" Label="Categories" />
             </FakeFormHost>);
             cut.Find(".forma-multi-select-trigger").Click();
 
@@ -298,7 +298,7 @@
             using var ctx = new FormaMultiSelectDropDownTests();
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" AllowAdd="true" />
+                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" AllowAdd="true" Label="Categories" />
             </FakeFormHost>);
             cut.Find(".forma-multi-select-trigger").Click();
 
@@ -322,7 +322,7 @@
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => ctx.Render(
                 @<FakeFormHost EditContext="@(new EditContext(model))">
-                    <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="@(null!)" />
+                    <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="@(null!)" Label="Categories" />
                 </FakeFormHost>));
         }
     }

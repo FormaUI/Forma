@@ -20,8 +20,11 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
     /// <summary>The options offered in the list.</summary>
     [Parameter, EditorRequired] public IReadOnlyList<SelectOption<TValue>> Options { get; set; } = default!;
 
-    /// <summary>Optional label displayed above the component.</summary>
-    [Parameter] public string? Label { get; set; }
+    /// <summary>The field's label.</summary>
+    [Parameter, EditorRequired] public string Label { get; set; } = default!;
+
+    /// <summary>Shows the required marker beside the label.</summary>
+    [Parameter] public bool Required { get; set; }
 
     /// <summary>Text shown in the trigger when nothing is selected.</summary>
     [Parameter] public string? Placeholder { get; set; }
@@ -33,8 +36,7 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
-    private readonly string _labelId = $"sel-label-{Guid.NewGuid():N}";
-    private readonly string _triggerTextId = $"sel-trigger-{Guid.NewGuid():N}";
+    private readonly string _triggerId = $"sel-trigger-{Guid.NewGuid():N}";
     private readonly string _popupId = $"sel-popup-{Guid.NewGuid():N}";
 
     private bool _isOpen;
@@ -48,11 +50,6 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
     private JsModule _keysModule = default!;
     private IJSObjectReference? _placement;
 
-    // Both the caller's label and the trigger's own text, so the component announces
-    // "Culture, Spanish" rather than losing one to the other.
-    private string? LabelledBy
-        => Label is null ? null : $"{_labelId} {_triggerTextId}";
-
     private string TriggerText
         => FindSelectedOption()?.Label ?? Placeholder ?? L["Select an option"];
 
@@ -64,6 +61,7 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
 
     protected override void OnParametersSet()
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(Label);
         ArgumentNullException.ThrowIfNull(Options);
 
         if (_optionElements.Length != Options.Count)

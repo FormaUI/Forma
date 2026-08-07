@@ -2,21 +2,23 @@
 @typeparam TValue where TValue : struct, System.Numerics.INumber<TValue>
 @inherits InputBase<TValue>
 
-<div class="forma-range">
-    <div class="forma-range-header">
-        <label for="@_inputId" class="forma-range-label">@Label</label>
+<FormaField Label="@Label" FieldId="@_inputId" LabelMode="FieldLabelMode.Above">
+    <ChildContent>
+        @* Sits on the label's row, so the reading stays beside the name it belongs to. *@
         <span class="forma-range-value" aria-hidden="true"><bdi dir="ltr">@DisplayValue</bdi></span>
-    </div>
-    <input @attributes="AdditionalAttributes"
-           id="@_inputId"
-           type="range"
-           class="forma-range-input @CssClass"
-           min="@FormatInvariant(Min)"
-           max="@FormatInvariant(Max)"
-           step="@FormatInvariant(Step)"
-           value="@CurrentValueAsString"
-           disabled="@Disabled"
-           aria-valuetext="@AriaValueText"
-           @oninput="@(e => CurrentValueAsString = e.Value?.ToString())" />
-    <ValidationMessage For="@ValueExpression" />
-</div>
+        <input @attributes="AdditionalAttributes"
+               id="@_inputId"
+               type="range"
+               class="forma-range-input @CssClass"
+               min="@FormatInvariant(Min)"
+               max="@FormatInvariant(Max)"
+               step="@FormatInvariant(Step)"
+               value="@CurrentValueAsString"
+               disabled="@Disabled"
+               aria-valuetext="@AriaValueText"
+               @oninput="@(e => CurrentValueAsString = e.Value?.ToString())" />
+    </ChildContent>
+    <Validation>
+        <ValidationMessage For="@ValueExpression" />
+    </Validation>
+</FormaField>

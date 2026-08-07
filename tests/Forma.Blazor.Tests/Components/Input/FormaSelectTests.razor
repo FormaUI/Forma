@@ -23,7 +23,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Contains("Status", cut.Find(".forma-select-label").TextContent, StringComparison.Ordinal);
+            Assert.Contains("Status", cut.Find(".forma-field-label").TextContent, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -35,7 +35,7 @@
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Placeholder="Pick one" />
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Placeholder="Pick one" Label="Status" />
             </FakeFormHost>);
 
             // Assert
@@ -51,7 +51,7 @@
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" />
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Label="Status" />
             </FakeFormHost>);
 
             // Assert
@@ -65,7 +65,7 @@
             using var ctx = new FormaSelectTests();
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" />
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Label="Status" />
             </FakeFormHost>);
 
             // Act
@@ -82,7 +82,7 @@
             using var ctx = new FormaSelectTests();
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" />
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Label="Status" />
             </FakeFormHost>);
 
             // Act
@@ -99,7 +99,7 @@
             using var ctx = new FormaSelectTests();
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" />
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Label="Status" />
             </FakeFormHost>);
             cut.Find(".forma-select-trigger").Click();
 
@@ -117,7 +117,7 @@
             using var ctx = new FormaSelectTests();
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" />
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Label="Status" />
             </FakeFormHost>);
             cut.Find(".forma-select-trigger").Click();
 
@@ -135,7 +135,7 @@
             using var ctx = new FormaSelectTests();
             var model = new FakeModel { Status = 3 };
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" />
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Label="Status" />
             </FakeFormHost>);
 
             // Act
@@ -155,7 +155,7 @@
             using var ctx = new FormaSelectTests();
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Disabled="true" />
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Disabled="true" Label="Status" />
             </FakeFormHost>);
 
             // Act
@@ -172,7 +172,7 @@
             using var ctx = new FormaSelectTests();
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="@(new List<SelectOption<int?>>())" />
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="@(new List<SelectOption<int?>>())" Label="Status" />
             </FakeFormHost>);
 
             // Act
@@ -189,7 +189,7 @@
             using var ctx = new FormaSelectTests();
             var model = new FakeModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" />
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Label="Status" />
             </FakeFormHost>);
             cut.Find(".forma-select-trigger").Click();
 
