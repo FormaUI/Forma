@@ -412,6 +412,125 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Blazor approach** | A thin wrapper over `<FormaButton Variant="Ghost" IconOnly>` supplying one eye glyph whose strike-through path is the only thing that changes, so the two states cannot drift apart. Ships no `.razor.css` — every visual decision belongs to `FormaButton`. `Revealed` and `Label` are both caller-owned: the component never assumes it is guarding a password |
 | **Notes** | `FormaPasswordInput` had reimplemented the ghost variant by hand — its own muted colour, hover pair, focus ring and coarse-pointer square — which is the same drift that produced `FormaCloseButton`. Because the button element now belongs to `FormaButton`, CSS isolation puts it out of reach of the field's own stylesheet, so the field positions a wrapper span instead of the control |
 
+### 41. `FormaDeleteButton`
+
+| | |
+|---|---|
+| **Glyph** | A **trash can**. Not the cross — a cross reads as *dismiss this from view*, and borrowing it for an irreversible action is how a user deletes something they meant to close |
+| **Old pattern** | The delete icon in each list page's action column, guarded by `AreYouSure(this, 'message')` before the postback |
+| **Used in** | Row actions on every list page, and the destructive action in an editor's footer |
+| **Parameters** | `string Label` (required), `ButtonSize Size`, `bool Disabled`, `EventCallback<MouseEventArgs> OnClick` |
+| **Blazor approach** | The same thin wrapper over `FormaButton` as `FormaCloseButton` and `FormaEyeButton`, supplying the trash glyph and no CSS of its own. Confirmation stays the caller's job through `IConfirmDialogService` — a button that confirms on its own cannot be composed into a bulk action that confirms once. **To settle when built:** whether it pins `Danger`, which is right for a lone destructive button but loud repeated down every grid row, or stays `Ghost` and leaves emphasis to the confirm step |
+
+### 42. `FormaUpdateButton`
+
+| | |
+|---|---|
+| **Glyph** | A **check mark** — the commit half of an inline edit, opposite the cross that discards it |
+| **Old pattern** | The save button ending an edit postback |
+| **Used in** | `FormaDataGrid`'s inline editing beside a cancel control, and editor footers |
+| **Parameters** | `string Label` (required), `ButtonSize Size`, `bool Disabled`, `EventCallback<MouseEventArgs> OnClick` |
+| **Blazor approach** | A wrapper over `FormaButton` supplying the check glyph. Pairs with the cross button in a row's edit state, which is what `FormaDataGrid`'s `SaveEditAsync`/`CancelEditAsync` already expect a caller to wire up from a `TemplateColumn` |
+
+### 43. `FormaEditButton`
+
+| | |
+|---|---|
+| **Glyph** | A **pencil** |
+| **Old pattern** | The edit icon in each action column, linking through to the full editor page |
+| **Used in** | Row actions on every list page; starts `FormaDataGrid`'s inline edit where the row is edited in place |
+| **Parameters** | `string Label` (required), `ButtonSize Size`, `bool Disabled`, `EventCallback<MouseEventArgs> OnClick` |
+| **Blazor approach** | A wrapper over `FormaButton` supplying the pencil glyph, and nothing else — whether the click navigates or calls `BeginEdit` is the caller's decision |
+
+### 44. `FormaAddButton`
+
+| | |
+|---|---|
+| **Glyph** | A **plus** |
+| **Old pattern** | The "new" button in each page's toolbar, opening the new-item modal |
+| **Used in** | `FormaToolbar` actions, `FormaMultiSelectDropDown`'s add-new affordance, and any editor that appends a row |
+| **Parameters** | `string Label` (required), `ButtonSize Size`, `bool Disabled`, `EventCallback<MouseEventArgs> OnClick`, `RenderFragment? ChildContent` |
+| **Blazor approach** | A wrapper over `FormaButton` supplying the plus glyph. The one of the set that is **not** always icon-only: a primary "add" is usually labelled in place ("New article"), so it takes optional `ChildContent` and drops `IconOnly` when given it, where the others stay square |
+
+### 45. `FormaOverflowMenu`
+
+| | |
+|---|---|
+| **Glyph** | An **ellipsis** — `⋯` horizontal in a toolbar, `⋮` vertical in a grid row, where a column is narrow and a row is tall |
+| **Old pattern** | `Info('divId', '#buttonId', 's')` opening a `dropdown-menu` from a row's options button |
+| **Used in** | Row actions once a row carries more than two, which is the threshold `FormaDropDownMenu` already names |
+| **Parameters** | `RenderFragment ChildContent` (the same `FormaDropDownMenuItem`/`Divider` children), `MenuOrientation Orientation`, `string Label` (required) |
+| **Blazor approach** | A preset over `FormaDropDownMenu` (#24) supplying the ellipsis trigger and the accessible name, owning no popup, positioning or keyboard logic of its own. It exists so every row's overflow affordance is the same glyph and the same target size, not to add behaviour |
+
+### 46. `FormaContextMenu`
+
+| | |
+|---|---|
+| **Old pattern** | None — Coi had no right-click menu; this is new capability rather than parity |
+| **Used in** | Grid rows and media tiles, as a shortcut to the actions the overflow menu already lists |
+| **Parameters** | `RenderFragment ChildContent` (menu items), `RenderFragment Target` (what right-clicking opens it), `bool Disabled` |
+| **Blazor approach** | Suppresses the native menu on `@oncontextmenu` and opens `FormaDropDownMenu`'s panel at the pointer through the shared `AnchoredPopup.js`, so the same clipping, flipping and viewport clamping apply. Must answer the context-menu key and `Shift+F10` as well as the pointer, and a touch user has no right-click at all — so it stays a **shortcut** to actions reachable elsewhere, never the only route to one |
+
+### 47. `FormaDuplicateButton`
+
+| | |
+|---|---|
+| **Glyph** | **Two overlapping sheets** — the copy glyph. Deliberately not a second pencil, so "make another one" can never be misread as "change this one" |
+| **Old pattern** | None in Coi's action columns |
+| **Used in** | Row actions on list pages — Épica names duplicate in the same breath as edit, publish, delete and view |
+| **Parameters** | `string Label` (required), `ButtonSize Size`, `bool Disabled`, `EventCallback<MouseEventArgs> OnClick` |
+| **Blazor approach** | The same thin wrapper over `FormaButton` as the rest of the set. What duplication means — deep copy, draft status, title suffix — belongs entirely to the caller |
+
+### 48. `FormaRefreshButton`
+
+| | |
+|---|---|
+| **Glyph** | A **circular arrow** |
+| **Old pattern** | None — Coi reloaded the whole page |
+| **Used in** | `FormaDataGrid`'s `RefreshDataAsync()`, which is public API today with no affordance of its own, and any list fed by a provider that can go stale |
+| **Parameters** | `string Label` (required), `ButtonSize Size`, `bool Busy`, `bool Disabled`, `EventCallback<MouseEventArgs> OnClick` |
+| **Blazor approach** | A wrapper over `FormaButton` that forwards `Busy`, so a slow refresh spins and announces `aria-busy` rather than looking dead while it waits. The only one of the set where `Busy` is the point rather than an afterthought |
+
+### 49. `FormaSortButton`
+
+| | |
+|---|---|
+| **Glyph** | **Two opposed arrows** — `↑↓` |
+| **Old pattern** | Coi sorted by clicking a column header; there was no sort control |
+| **Used in** | Layouts with no header row to click — `FormaFilePicker`'s tile grid, and any card list |
+| **Parameters** | `RenderFragment ChildContent` (the sort options as menu items), `string Label` (required) |
+| **Blazor approach** | A preset over `FormaDropDownMenu` like `FormaOverflowMenu`, because sorting offers a choice rather than performing one action. A grid that already has sortable column headers should keep using them — this exists for the layouts that have none, not as a second way to do the same thing |
+
+### 50. `FormaViewButton`
+
+| | |
+|---|---|
+| **Glyph** | **Layout lines** — stacked rows for a list, a square of cells for a tile grid |
+| **Old pattern** | None — Coi's image library had one fixed thumbnail grid |
+| **Used in** | `FormaFilePicker`, switching between a dense list and thumbnails |
+| **Parameters** | `ViewMode Mode`, `EventCallback<ViewMode> ModeChanged`, `string Label` (required), `ButtonSize Size`, `bool Disabled` |
+| **Blazor approach** | Stateful like `FormaEyeButton`, drawing the mode it will switch **to** and naming that mode in the label, since an icon-only toggle that draws its current state cannot say which it is. **To settle when built:** whether a two-option segmented control showing both modes at once beats a toggle, which is guesswork until the picker exists |
+
+### 51. `FormaShareButton`
+
+| | |
+|---|---|
+| **Glyph** | **Three connected nodes**. Deliberately *not* the arrow leaving a box, which is the external-link glyph — Épica already lists "view" as a row action meaning *open on the public site*, and two arrows-out-of-a-box in one row would be indistinguishable |
+| **Old pattern** | None |
+| **Used in** | Copying or sending an item's public link, from its editor or its row |
+| **Parameters** | `string Label` (required), `ButtonSize Size`, `bool Disabled`, `EventCallback<MouseEventArgs> OnClick` |
+| **Blazor approach** | A thin wrapper over `FormaButton` that raises `OnClick` and nothing more. It deliberately does **not** own `navigator.share()`: that API needs transient activation and a secure context, is absent on desktop Firefox, and therefore needs a copy-to-clipboard fallback — which is a product decision about what "share" means here, not something a glyph should choose for the host |
+
+### 52. `FormaPublishButton`
+
+| | |
+|---|---|
+| **Glyph** | A **globe**, struck through when the action is to unpublish — reusing the strike-through convention `FormaEyeButton` established, so "make this public" and "take it down" read as one control in two states rather than two unrelated icons |
+| **Old pattern** | Coi's per-item active/publish toggle |
+| **Used in** | Editor footers and row actions — Épica names publish beside edit, duplicate, delete and view, and `FormaStatusBadge` already renders the draft/scheduled/published state it changes |
+| **Parameters** | `bool Published`, `string Label` (required), `RenderFragment? ChildContent`, `ButtonSize Size`, `bool Busy`, `bool Disabled`, `EventCallback<MouseEventArgs> OnClick` |
+| **Blazor approach** | Stateful like `FormaEyeButton` and usually labelled like `FormaAddButton` — a primary "Publish" in an editor footer is text, the same action in a dense row is the glyph alone. **Scheduling stays out of it:** draft/scheduled/published is three states and a button offers two, so "Schedule…" belongs in a menu beside it rather than turning this control into a date picker |
+
 ---
 
 ## Components NOT Needed (handled by built-ins or native HTML)
@@ -448,6 +567,9 @@ Components are ordered by dependency and reuse frequency:
 | **Phase 10** | `FormaCloseButton` ✅ | Shared dismiss primitive — built after the fact and retrofitted onto `FormaModal`, `FormaToastContainer` and `FormaContextToolbar` as the single source of truth for the `×` control |
 | **Phase 11** | `FormaField` ✅, `FormaTextArea` ✅ | Shared field chrome — extracted from `FormaInput` so the floating label, focus ring and validation styling live once, then `FormaTextArea` built on it. `FormaPasswordInput` ✅ composes it; `FormaCurrencyInput` and `FormaSelect` will too rather than restating it |
 | **Phase 12** | `FormaEyeButton` ✅ | Shared reveal primitive — built after the fact and retrofitted onto `FormaPasswordInput`, which had hand-rolled the ghost icon button it now uses |
+| **Phase 13** | `FormaDeleteButton`, `FormaUpdateButton`, `FormaEditButton`, `FormaAddButton`, `FormaDuplicateButton`, `FormaRefreshButton`, `FormaShareButton`, `FormaPublishButton` | The rest of the icon-button vocabulary — the same thin wrapper over `FormaButton`, one glyph each, so a row's actions stop being ad-hoc markup per page |
+| **Phase 14** | `FormaOverflowMenu`, `FormaContextMenu`, `FormaSortButton` | Menu presets over `FormaDropDownMenu` — the ellipsis trigger first, then the same panel opened by right-click or by a sort control, once there is a menu worth opening that way |
+| **Phase 15** | `FormaViewButton` | Layout toggle — built with `FormaFilePicker`, the only surface that has two layouts to switch between |
 
 ---
 
@@ -480,6 +602,15 @@ Forma.Blazor/Components/
 │   ├── FormaButton.razor
 │   ├── FormaCloseButton.razor
 │   ├── FormaEyeButton.razor
+│   ├── FormaDeleteButton.razor
+│   ├── FormaUpdateButton.razor
+│   ├── FormaEditButton.razor
+│   ├── FormaAddButton.razor
+│   ├── FormaDuplicateButton.razor
+│   ├── FormaRefreshButton.razor
+│   ├── FormaShareButton.razor
+│   ├── FormaPublishButton.razor
+│   ├── FormaViewButton.razor
 │   ├── FormaCheckbox.razor
 │   ├── FormaField.razor
 │   ├── FormaInput.razor
@@ -499,6 +630,9 @@ Forma.Blazor/Components/
 │   ├── FormaDropDownMenu.razor
 │   ├── FormaDropDownMenuItem.razor
 │   ├── FormaDropDownMenuDivider.razor
+│   ├── FormaOverflowMenu.razor
+│   ├── FormaContextMenu.razor
+│   ├── FormaSortButton.razor
 │   ├── FormaFilePicker.razor
 │   └── FormaImagePicker.razor
 ├── Editors/
