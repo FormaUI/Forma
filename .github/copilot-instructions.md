@@ -323,6 +323,7 @@ Mirror source paths under `tests/Forma.Blazor.Tests/Components/{Category}/` with
 - Do create the context with `using var ctx = new FormaXTests();` and render with `ctx.Render(@<FormaX ... />)`.
 - Do render `InputBase<T>` components inside `FakeFormHost` with a `FakeModel` and `EditContext`.
 - Do assert rendered markup, attributes, and callback invocations rather than private state.
+- Do assert exact text when a component can render more than one message through the same element or class, such as an empty-list notice versus a no-search-matches notice; finding the element only confirms *a* message rendered, not which one.
 - Do place plain service tests under `tests/Forma.Blazor.Tests/Services/{Category}/`.
 - Do test only the public surface and keep shared usings in `_Imports.cs` or `_Imports.razor`.
 - Don't couple tests to implementation details or private fields.
