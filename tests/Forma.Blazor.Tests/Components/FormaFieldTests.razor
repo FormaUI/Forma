@@ -11,7 +11,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaField Label="Name" FieldId="fld-1">
+                @<FormaField Label="Name" TargetId="fld-1">
                     <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
                 </FormaField>);
 
@@ -29,7 +29,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaField Label="Name" FieldId="fld-7">
+                @<FormaField Label="Name" TargetId="fld-7">
                     <ChildContent><input class="forma-field-input" id="fld-7" /></ChildContent>
                 </FormaField>);
 
@@ -45,7 +45,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaField Label="Full Name" FieldId="fld-1">
+                @<FormaField Label="Full Name" TargetId="fld-1">
                     <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
                 </FormaField>);
 
@@ -61,7 +61,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaField Label="Name" FieldId="fld-1">
+                @<FormaField Label="Name" TargetId="fld-1">
                     <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
                 </FormaField>);
 
@@ -77,7 +77,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaField Label="Name" FieldId="fld-1" Required="true">
+                @<FormaField Label="Name" TargetId="fld-1" Required="true">
                     <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
                 </FormaField>);
 
@@ -93,7 +93,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaField Label="Notes" FieldId="fld-1" Multiline="true">
+                @<FormaField Label="Notes" TargetId="fld-1" Multiline="true">
                     <ChildContent><textarea class="forma-field-input" id="fld-1"></textarea></ChildContent>
                 </FormaField>);
 
@@ -109,7 +109,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaField Label="Name" FieldId="fld-1">
+                @<FormaField Label="Name" TargetId="fld-1">
                     <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
                 </FormaField>);
 
@@ -125,7 +125,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaField Label="Name" FieldId="fld-1">
+                @<FormaField Label="Name" TargetId="fld-1">
                     <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
                     <Validation><span class="stub-validation">Required</span></Validation>
                 </FormaField>);
@@ -144,12 +144,80 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaField Label="Active" FieldId="fld-1" LabelMode="FieldLabelMode.Inline">
+                @<FormaField Label="Active" TargetId="fld-1" LabelMode="FieldLabelMode.Inline">
                     <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
                 </FormaField>);
 
             // Assert
             Assert.Contains("forma-field-label-inline", cut.Find(".forma-field").ClassList);
+        }
+
+        [Fact]
+        public void Should_add_the_pinned_class_when_asked()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaField Label="Culture" TargetId="fld-1" LabelMode="FieldLabelMode.Pinned">
+                    <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
+                </FormaField>);
+
+            // Assert
+            Assert.Contains("forma-field-label-pinned", cut.Find(".forma-field").ClassList);
+        }
+
+        [Fact]
+        public void Should_add_the_above_class_when_asked()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaField Label="Volume" TargetId="fld-1" LabelMode="FieldLabelMode.Above">
+                    <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
+                </FormaField>);
+
+            // Assert
+            Assert.Contains("forma-field-label-above", cut.Find(".forma-field").ClassList);
+        }
+
+        [Fact]
+        public void Should_add_no_mode_class_when_the_label_floats()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaField Label="Name" TargetId="fld-1">
+                    <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
+                </FormaField>);
+
+            // Assert
+            Assert.Equal("forma-field", cut.Find(".forma-field").GetAttribute("class"));
+        }
+
+        [Fact]
+        public void Should_merge_a_host_class_onto_the_wrapper()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaField Label="Name" TargetId="fld-1" class="host-class">
+                    <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
+                </FormaField>);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("forma-field", cut.Find("div").ClassList);
+                Assert.Contains("host-class", cut.Find("div").ClassList);
+            });
         }
 
         [Fact]
@@ -160,7 +228,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaField FieldId="fld-1">
+                @<FormaField TargetId="fld-1">
                     <ChildContent><input class="forma-field-input" id="fld-1" aria-label="Name" /></ChildContent>
                 </FormaField>);
 
@@ -169,7 +237,7 @@
         }
 
         [Fact]
-        public void Should_not_require_a_field_id_when_no_label_renders()
+        public void Should_not_require_a_target_id_when_no_label_renders()
         {
             // Arrange
             using var ctx = new FormaFieldTests();
@@ -185,14 +253,34 @@
         }
 
         [Fact]
-        public void Should_reject_a_blank_field_id()
+        public void Should_splat_a_host_id_onto_the_wrapper()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaField Label="Name" TargetId="fld-1" id="wrapper-1">
+                    <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
+                </FormaField>);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("wrapper-1", cut.Find(".forma-field").GetAttribute("id"));
+                Assert.Equal("fld-1", cut.Find(".forma-field-label").GetAttribute("for"));
+            });
+        }
+
+        [Fact]
+        public void Should_reject_a_blank_target_id()
         {
             // Arrange
             using var ctx = new FormaFieldTests();
 
             // Act
             var act = () => ctx.Render(
-                @<FormaField Label="Name" FieldId="">
+                @<FormaField Label="Name" TargetId="">
                     <ChildContent><input class="forma-field-input" /></ChildContent>
                 </FormaField>);
 

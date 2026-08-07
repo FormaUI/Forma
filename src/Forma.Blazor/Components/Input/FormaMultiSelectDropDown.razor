@@ -2,7 +2,7 @@
 @namespace Forma.Blazor.Components.Input
 @inherits InputBase<List<TValue>>
 
-<FormaField Label="@Label" FieldId="@_triggerId" Required="@Required" LabelMode="FieldLabelMode.Pinned">
+<FormaField Label="@Label" TargetId="@_triggerId" Required="@Required" LabelMode="FieldLabelMode.Pinned">
     <ChildContent>
         <div class="forma-multi-select" @onkeydown="HandleKeyDownAsync">
             <div class="forma-multi-select-trigger-wrap" @ref="_anchorElement">

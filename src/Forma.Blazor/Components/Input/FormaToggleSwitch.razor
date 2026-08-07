@@ -1,7 +1,7 @@
 @namespace Forma.Blazor.Components.Input
 @inherits InputBase<bool>
 
-<FormaField Label="@Label" FieldId="@_id" LabelMode="FieldLabelMode.Inline">
+<FormaField Label="@Label" TargetId="@_id" LabelMode="FieldLabelMode.Inline">
     <ChildContent>
         <div class="forma-toggle-wrapper">
             @if (OffLabel is not null)

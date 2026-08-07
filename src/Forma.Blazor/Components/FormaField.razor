@@ -1,10 +1,10 @@
-@namespace Forma.Blazor.Components.Input
+@namespace Forma.Blazor.Components
 
 <div @attributes="AdditionalAttributes" class="@CssClass">
     @ChildContent
     @if (HasLabel)
     {
-        <label for="@FieldId" class="forma-field-label">
+        <label for="@TargetId" class="forma-field-label">
             @Label@if (Required) {<span class="forma-field-required" aria-hidden="true"> *</span>}
         </label>
     }

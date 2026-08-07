@@ -105,8 +105,8 @@ These components form the shell of a page. Build first.
 | | |
 |---|---|
 | **Old pattern** | `<label class="lblForm">` over a `.form-control`, floating on focus or value, with `<span class="mand">` for required and the error text below |
-| **Used in** | Chrome for every labelled form component — `FormaInput`, `FormaTextArea`, and the retrofit target for `FormaPasswordInput` and `FormaCurrencyInput` |
-| **Parameters** | `string Label`, `string FieldId`, `bool Required`, `bool Multiline`, `RenderFragment ChildContent` (the input element), `RenderFragment? Validation` |
+| **Used in** | Chrome for every labelled form component — `FormaInput`, `FormaTextArea`, `FormaPasswordInput`, `FormaSelect`, `FormaMultiSelectDropDown`, `FormaDatePicker`, `FormaColorPicker`, `FormaRangeSlider` and `FormaToggleSwitch` |
+| **Parameters** | `string? Label`, `string? TargetId`, `bool Required`, `bool Multiline`, `FieldLabelMode LabelMode`, `RenderFragment ChildContent` (the input element), `RenderFragment? Validation` |
 | **Blazor approach** | Renders the wrapper, label and validation slot, and styles the input element through `::deep .forma-field-input` — the one mechanism that reaches markup a *consuming* component rendered, since CSS isolation otherwise scopes each component's sheet to its own output. Non-generic: the consumer passes its own `<ValidationMessage For="...">` into `Validation` rather than the chrome taking a typed expression. `Multiline` anchors the label to the top, because an input element taller than one line has no vertical centre to sit against |
 | **Notes** | Exists so the floating label, border, focus ring and validation styling live in one file. Without it each labelled form component reimplements ~110 lines and they drift apart |
 
@@ -233,9 +233,9 @@ These components form the shell of a page. Build first.
 |---|---|
 | **Old pattern** | JS replaces native `<select>` with styled div: `.custom-select > .cs-val` (display) + `.cs-options > .cs-option` (dropdown). Click to open, click option to select, click outside to close |
 | **Used in** | Multiple admin pages for styled dropdowns |
-| **Parameters** | `@bind-Value` (any `TValue`, nullable to allow no selection), `IReadOnlyList<SelectOption<TValue>> Options`, `string? Label`, `string? Placeholder`, `bool Disabled` |
+| **Parameters** | `@bind-Value` (any `TValue`, nullable to allow no selection), `IReadOnlyList<SelectOption<TValue>> Options`, `string? Label`, `string? Placeholder`, `bool Required`, `bool Disabled` |
 | **Blazor approach** | A `<button>` trigger plus an anchored, keyboard-navigable listbox popup, sharing `AnchoredPopup.js` with `FormaDatePicker` and `FormaMultiSelectDropDown` so the list escapes any clipping ancestor. `InputBase<TValue>` directly, matching `InputDate<TValue>`/`InputNumber<TValue>` — the caller supplies a nullable `TValue` (`int?`, `string`, `MyEnum?`) when "nothing selected" needs representing, rather than the component forcing that shape itself |
-| **Notes** | Deliberately does **not** compose `FormaField`, matching `FormaMultiSelectDropDown` and `FormaDatePicker` rather than `FormaInput`: a button-triggered popup has no floating label to sit over. Opens focused on the current selection, the way a native `<select>` does. The selected option is marked by a checkmark plus bold weight, not colour alone |
+| **Notes** | Composes `FormaField` in `Pinned` mode, as `FormaMultiSelectDropDown` and `FormaDatePicker` do: the trigger always shows content of its own, so the label stays floated rather than sitting over it. Opens focused on the current selection, the way a native `<select>` does. The selected option is marked by a checkmark plus bold weight, not colour alone |
 
 ---
 
@@ -639,6 +639,8 @@ Components are ordered by dependency and reuse frequency:
 ```
 Forma.Blazor/Components/
 ├── FormaIcon.cs                          # readonly record struct with FontAwesome()/From() factories
+├── FormaField.razor / .razor.cs / .razor.css
+├── FieldLabelMode.cs                     # enum: Floating, Pinned, Above, Inline
 ├── Layout/
 │   ├── BreadcrumbItem.cs                # record with Label + Url?, constructor-validated
 │   ├── FormaPageHeader.razor / .razor.cs
@@ -682,7 +684,6 @@ Forma.Blazor/Components/
 │   ├── SelectOption.cs
 │   ├── PasswordStrength.cs
 │   ├── FormaCheckbox.razor
-│   ├── FormaField.razor
 │   ├── FormaInput.razor
 │   ├── FormaTextArea.razor
 │   ├── FormaToggleSwitch.razor
