@@ -48,6 +48,16 @@
     </div>
 
     <div class="demo-section">
+        <h2>@L["Nothing to choose from"]</h2>
+        <p class="desc">@L["Opening a list whose options have not loaded yet shows the empty notice rather than a blank popup."]</p>
+        <div class="demo-box">
+            <FormaMultiSelectDropDown TValue="int" @bind-Value="Model.EmptyChoices"
+                                      Options="_emptyOptions"
+                                      Label="@L["Playlists"]" />
+        </div>
+    </div>
+
+    <div class="demo-section">
         <h2>@L["Disabled"]</h2>
         <div class="demo-box">
             <FormaMultiSelectDropDown TValue="int" @bind-Value="Model.DisabledCategories"
@@ -59,6 +69,8 @@
 </EditForm>
 
 @code {
+    private readonly List<SelectOption<int>> _emptyOptions = [];
+
     private static readonly IReadOnlyList<SelectOption<int>> CategoryOptions =
     [
         new(1, "Road"),
@@ -112,6 +124,7 @@
         public List<int> Tags { get; set; } = [];
         public List<int> PreSelectedCategories { get; set; } = [];
         public List<int> CustomTags { get; set; } = [];
+        public List<int> EmptyChoices { get; set; } = [];
         public List<int> DisabledCategories { get; set; } = [];
     }
 }

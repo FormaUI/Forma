@@ -9,5 +9,8 @@
   "Add New Option": "Agregar Nueva Opción",
   "Search for a tag that doesn't exist yet, then use \"Add new\" to create and select it.": "Busca una etiqueta que aún no exista y usa \"Agregar nuevo\" para crearla y seleccionarla.",
   "Custom Tags": "Etiquetas Personalizadas",
+  "Nothing to choose from": "Nada para elegir",
+  "Opening a list whose options have not loaded yet shows the empty notice rather than a blank popup.": "Abrir una lista cuyas opciones aún no se han cargado muestra el aviso de vacío en lugar de un menú en blanco.",
+  "Playlists": "Listas de reproducción",
   "Disabled": "Deshabilitado"
 }

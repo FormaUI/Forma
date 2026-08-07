@@ -9,5 +9,8 @@
   "Add New Option": "הוספת אפשרות חדשה",
   "Search for a tag that doesn't exist yet, then use \"Add new\" to create and select it.": "חפש תגית שעדיין לא קיימת, ולאחר מכן השתמש ב\"הוסף חדש\" כדי ליצור ולבחור אותה.",
   "Custom Tags": "תגיות מותאמות אישית",
+  "Nothing to choose from": "אין מה לבחור",
+  "Opening a list whose options have not loaded yet shows the empty notice rather than a blank popup.": "פתיחת רשימה שהאפשרויות שלה טרם נטענו מציגה את הודעת הריקות במקום חלונית ריקה.",
+  "Playlists": "רשימות נגינה",
   "Disabled": "מושבת"
 }
