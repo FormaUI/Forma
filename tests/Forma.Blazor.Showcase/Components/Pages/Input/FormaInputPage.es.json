@@ -10,5 +10,13 @@
   "Phone Number": "Número de teléfono",
   "Website URL": "URL del sitio web",
   "Search": "Buscar",
-  "Company Name": "Nombre de la empresa"
+  "Company Name": "Nombre de la empresa",
+  "Validation": "Validación",
+  "Saving with the project name empty shows the validation message every Forma field renders through the same chrome. Editing the field clears it again.": "Guardar con el nombre del proyecto vacío muestra el mensaje de validación que todos los campos de Forma renderizan con el mismo armazón. Editar el campo lo vuelve a limpiar.",
+  "Project name": "Nombre del proyecto",
+  "Contact email": "Correo de contacto",
+  "Save": "Guardar",
+  "Saved.": "Guardado.",
+  "A project name is required.": "El nombre del proyecto es obligatorio.",
+  "Enter a valid email address.": "Ingrese un correo electrónico válido."
 }

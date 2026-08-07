@@ -18,5 +18,6 @@
   "Inside a scrolling container": "בתוך מיכל גלילה",
   "The box below scrolls and would clip an ordinary popup. The calendar opens in the top layer instead, so it stays whole, and it follows the trigger as the box scrolls.": "התיבה שלמטה נגללת והיתה חותכת חלון רגיל. הלוח נפתח בשכבה העליונה במקום זאת, ולכן הוא נשאר שלם ועוקב אחר השדה בעת גלילה.",
   "Date in a scroll box": "תאריך בתיבת גלילה",
-  "Scroll this box to move the field around.": "גלול את התיבה כדי להזיז את השדה."
+  "Scroll this box to move the field around.": "גלול את התיבה כדי להזיז את השדה.",
+  "Date": "תאריך"
 }

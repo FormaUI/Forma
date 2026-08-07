@@ -10,5 +10,13 @@
   "Phone Number": "מספר טלפון",
   "Website URL": "כתובת אתר",
   "Search": "חיפוש",
-  "Company Name": "שם חברה"
+  "Company Name": "שם חברה",
+  "Validation": "וולידציה",
+  "Saving with the project name empty shows the validation message every Forma field renders through the same chrome. Editing the field clears it again.": "שמירה כששם הפרויקט ריק מציגה את הודעת הוולידציה שכל שדה של Forma מרנדר באותה מעטפת. עריכת השדה מנקה אותה שוב.",
+  "Project name": "שם הפרויקט",
+  "Contact email": "אימייל ליצירת קשר",
+  "Save": "שמירה",
+  "Saved.": "נשמר.",
+  "A project name is required.": "שם פרויקט הוא שדה חובה.",
+  "Enter a valid email address.": "יש להזין כתובת אימייל תקינה."
 }

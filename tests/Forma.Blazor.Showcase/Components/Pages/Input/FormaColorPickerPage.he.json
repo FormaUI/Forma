@@ -5,5 +5,7 @@
   "With Alpha": "עם שקיפות",
   "Background": "רקע",
   "Accent": "צבע הדגשה",
-  "Overlay": "שכבת כיסוי"
+  "Overlay": "שכבת כיסוי",
+  "Primary": "ראשי",
+  "Secondary": "משני"
 }

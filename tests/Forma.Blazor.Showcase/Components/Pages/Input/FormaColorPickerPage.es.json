@@ -5,5 +5,7 @@
   "With Alpha": "Con alfa",
   "Background": "Fondo",
   "Accent": "Acento",
-  "Overlay": "Superposición"
+  "Overlay": "Superposición",
+  "Primary": "Primario",
+  "Secondary": "Secundario"
 }

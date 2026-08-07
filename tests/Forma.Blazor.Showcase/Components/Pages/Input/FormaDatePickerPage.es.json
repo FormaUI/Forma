@@ -18,5 +18,6 @@
   "Inside a scrolling container": "Dentro de un contenedor con desplazamiento",
   "The box below scrolls and would clip an ordinary popup. The calendar opens in the top layer instead, so it stays whole, and it follows the trigger as the box scrolls.": "La caja de abajo se desplaza y recortaría un popup común. El calendario se abre en la capa superior, así que se mantiene entero y sigue al campo mientras la caja se desplaza.",
   "Date in a scroll box": "Fecha en una caja con desplazamiento",
-  "Scroll this box to move the field around.": "Desplaza esta caja para mover el campo."
+  "Scroll this box to move the field around.": "Desplaza esta caja para mover el campo.",
+  "Date": "Fecha"
 }
