@@ -9,4 +9,5 @@ public sealed class FakeModel
     public List<int> Categories { get; set; } = [];
     public int Number { get; set; }
     public double Ratio { get; set; }
+    public int? Status { get; set; }
 }

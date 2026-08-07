@@ -1,0 +1,188 @@
+/* ============================================================
+   FormaSelect — themed single-select: a trigger button opening an
+   anchored, keyboard-navigable option list.
+   ============================================================ */
+
+.forma-select {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    margin-block-end: 1.25rem;
+    font-size: 0.9rem;
+}
+
+.forma-select-label {
+    font-weight: 500;
+    font-size: 0.875rem;
+    color: var(--forma-label-color, var(--text-color));
+}
+
+/* ---------- trigger ---------- */
+.forma-select-trigger-wrap {
+    position: relative;
+    display: inline-flex;
+}
+
+.forma-select-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-inline-size: 10rem;
+    padding-block: 0.375rem;
+    padding-inline: 0.75rem;
+    border: 1px solid var(--forma-input-border-color, var(--dark-border-color));
+    border-radius: 4px;
+    background: var(--forma-input-bg-color, var(--input-bg-color));
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+@media (hover: hover) {
+    .forma-select-trigger:hover:not(:disabled) {
+        border-color: var(--main-color, #0d6efd);
+    }
+}
+
+.forma-select-trigger:disabled {
+    cursor: default;
+    opacity: 0.65;
+}
+
+.forma-select-trigger:focus-visible {
+    outline: 2px solid var(--focus-color, #86b7fe);
+    outline-offset: 2px;
+}
+
+.forma-select-trigger-text {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.forma-select-trigger-text.placeholder {
+    color: var(--text-muted-color, #889097);
+}
+
+.forma-select-arrow {
+    flex-shrink: 0;
+    font-size: 0.625rem;
+    opacity: 0.55;
+}
+
+@media (pointer: coarse) {
+    .forma-select-trigger {
+        min-block-size: 2.75rem;
+    }
+}
+
+/* ---------- backdrop ---------- */
+.forma-select-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+}
+
+/* ---------- popup ---------- */
+/* A popover in the top layer, so no scrolling or clipping ancestor can cut the list off.
+   The top layer keeps no layout tie to the trigger, so the script sets left/top; the UA's
+   own inset and margin are cleared to let those land. */
+.forma-select-popup {
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    padding: 0.375rem;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    min-inline-size: 10rem;
+    max-inline-size: 20rem;
+    max-block-size: 16rem;
+    overflow-y: auto;
+    border: none;
+    border-radius: 4px;
+    background: #fff;
+    box-shadow: var(--shadow-md, 0 4px 16px rgba(0, 0, 0, 0.12));
+}
+
+/* Held back until the popover opens so it cannot flash at the top-left corner in the
+   frame between being rendered and being positioned. */
+.forma-select-popup:popover-open {
+    display: flex;
+}
+
+/* Without popover support the element is never display:none to begin with, so it needs
+   its layout unconditionally — the script still positions it. */
+@supports not selector(:popover-open) {
+    .forma-select-popup {
+        display: flex;
+    }
+}
+
+.forma-select-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-block: 0.375rem;
+    padding-inline: 0.5rem;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+@media (pointer: coarse) {
+    .forma-select-option {
+        min-block-size: 2.75rem;
+    }
+}
+
+@media (hover: hover) {
+    .forma-select-option:hover {
+        background: var(--hover-bg-color, rgba(98, 105, 118, 0.06));
+    }
+}
+
+.forma-select-option:focus-visible {
+    outline: 2px solid var(--focus-color, #86b7fe);
+    outline-offset: -2px;
+}
+
+/* Bold weight plus the check mark below are the state's second channel — the tinted
+   background alone would fail on a desaturated or forced-colours display. */
+.forma-select-option.selected {
+    background: var(--hover-bg-color, rgba(98, 105, 118, 0.06));
+    font-weight: 600;
+}
+
+.forma-select-option-check {
+    flex-shrink: 0;
+    color: var(--main-color, #0d6efd);
+}
+
+.forma-select-empty {
+    padding-block: 0.5rem;
+    padding-inline: 0.375rem;
+    color: var(--text-muted-color, #889097);
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+/* FormaField owns this same rule, but only for markup rendered inside its own component —
+   a trigger button has no floating label or box to compose it for, so the look is repeated
+   locally against the same tokens rather than forcing an ill-fitting composition. */
+.forma-select ::deep .validation-message {
+    display: block;
+    margin-block-start: 0.25rem;
+    font-size: 0.875rem;
+    color: var(--forma-invalid-color, var(--danger-color));
+}

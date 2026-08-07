@@ -1,0 +1,13 @@
+{
+  "A themed single-select: a trigger button opening an anchored, keyboard-navigable option list. The popup stays anchored to its trigger wherever the page scrolls.": "Un select de valor único con estilo propio: un botón activador que abre una lista de opciones anclada y navegable con teclado. La lista permanece anclada a su activador aunque la página se desplace.",
+  "Basic": "Básico",
+  "With Placeholder": "Con marcador de posición",
+  "Pre-selected Value": "Valor preseleccionado",
+  "Disabled": "Deshabilitado",
+  "No Options Yet": "Aún sin opciones",
+  "Culture": "Idioma",
+  "Status": "Estado",
+  "Choose a status": "Elegir un estado",
+  "Role": "Rol",
+  "Category": "Categoría"
+}

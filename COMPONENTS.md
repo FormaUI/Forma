@@ -105,7 +105,7 @@ These components form the shell of a page. Build first.
 | | |
 |---|---|
 | **Old pattern** | `<label class="lblForm">` over a `.form-control`, floating on focus or value, with `<span class="mand">` for required and the error text below |
-| **Used in** | Chrome for every labelled form component — `FormaInput`, `FormaTextArea`, and the retrofit target for `FormaPasswordInput`, `FormaCurrencyInput` and `FormaSelect` |
+| **Used in** | Chrome for every labelled form component — `FormaInput`, `FormaTextArea`, and the retrofit target for `FormaPasswordInput` and `FormaCurrencyInput` |
 | **Parameters** | `string Label`, `string FieldId`, `bool Required`, `bool Multiline`, `RenderFragment ChildContent` (the input element), `RenderFragment? Validation` |
 | **Blazor approach** | Renders the wrapper, label and validation slot, and styles the input element through `::deep .forma-field-input` — the one mechanism that reaches markup a *consuming* component rendered, since CSS isolation otherwise scopes each component's sheet to its own output. Non-generic: the consumer passes its own `<ValidationMessage For="...">` into `Validation` rather than the chrome taking a typed expression. `Multiline` anchors the label to the top, because an input element taller than one line has no vertical centre to sit against |
 | **Notes** | Exists so the floating label, border, focus ring and validation styling live in one file. Without it each labelled form component reimplements ~110 lines and they drift apart |
@@ -227,14 +227,15 @@ These components form the shell of a page. Build first.
 | **Parameters** | `@bind-Value` (List<int>), `IEnumerable<SelectOption> Options`, `string Placeholder`, `bool AllowAdd = false`, `EventCallback<string> OnAddNew` |
 | **Blazor approach** | Interactive component. Clicked → show dropdown with checkboxes. Selected items shown as removable tags above/inside the input area. Search/filter within dropdown. No external JS |
 
-### 20. `FormaSelect`
+### 20. `FormaSelect` ✅
 
 | | |
 |---|---|
 | **Old pattern** | JS replaces native `<select>` with styled div: `.custom-select > .cs-val` (display) + `.cs-options > .cs-option` (dropdown). Click to open, click option to select, click outside to close |
 | **Used in** | Multiple admin pages for styled dropdowns |
-| **Parameters** | `@bind-Value`, `IEnumerable<SelectOption> Options`, `string? Placeholder` |
-| **Blazor approach** | A `<button>` trigger plus an anchored option list, sharing `AnchoredPopup.js` with `FormaDatePicker` and `FormaMultiSelectDropDown` so the list escapes any clipping ancestor. Native `InputSelect` is the fallback where a plain select is acceptable, but its list is OS-rendered and cannot be themed to match the rest of the form vocabulary |
+| **Parameters** | `@bind-Value` (any `TValue`, nullable to allow no selection), `IReadOnlyList<SelectOption<TValue>> Options`, `string? Label`, `string? Placeholder`, `bool Disabled` |
+| **Blazor approach** | A `<button>` trigger plus an anchored, keyboard-navigable listbox popup, sharing `AnchoredPopup.js` with `FormaDatePicker` and `FormaMultiSelectDropDown` so the list escapes any clipping ancestor. `InputBase<TValue>` directly, matching `InputDate<TValue>`/`InputNumber<TValue>` — the caller supplies a nullable `TValue` (`int?`, `string`, `MyEnum?`) when "nothing selected" needs representing, rather than the component forcing that shape itself |
+| **Notes** | Deliberately does **not** compose `FormaField`, matching `FormaMultiSelectDropDown` and `FormaDatePicker` rather than `FormaInput`: a button-triggered popup has no floating label to sit over. Opens focused on the current selection, the way a native `<select>` does. The selected option is marked by a checkmark plus bold weight, not colour alone |
 
 ---
 
@@ -612,7 +613,7 @@ Components are ordered by dependency and reuse frequency:
 |---|---|---|
 | **Phase 1** | `FormaModal` ✅, `FormaConfirmDialog` ✅, `FormaToast` ✅ | Infrastructure — everything depends on modals and notifications |
 | **Phase 2** | `FormaPageHeader` ✅, `FormaToolbar` ✅, `FormaTabs` ✅ | Layout — the shell of a page |
-| **Phase 3** | `FormaInput` ✅, `FormaToggleSwitch` ✅, `FormaPasswordInput` ✅, `FormaCurrencyInput`, `FormaRangeSlider` ✅, `FormaDatePicker` ✅, `FormaSelect` | Form inputs — needed before building any edit forms |
+| **Phase 3** | `FormaInput` ✅, `FormaToggleSwitch` ✅, `FormaPasswordInput` ✅, `FormaCurrencyInput`, `FormaRangeSlider` ✅, `FormaDatePicker` ✅, `FormaSelect` ✅ | Form inputs — needed before building any edit forms |
 | **Phase 4** | `FormaDataGrid<TItem>` ✅, `FormaContextToolbar` ✅, `FormaStatusBadge` ✅, `FormaCapacityIndicator`, `FormaPagination` ✅ | Data display — needed for list pages |
 | **Phase 5** | `FormaSortableList<TItem>` ✅, `FormaMultiSelectDropDown`  ✅, `FormaCategorySelector`, `FormaDropDownMenu` ✅, `FormaColorPicker` ✅ | Interactive widgets — needed for editor pages |
 | **Phase 6** | `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components — built when their feature pages are built |
@@ -620,7 +621,7 @@ Components are ordered by dependency and reuse frequency:
 | **Phase 8** | `FormaButton` ✅ | Shared button primitive — built after the fact and retrofitted onto `FormaDataGrid`, `FormaModal`, `FormaConfirmDialog`, `FormaPagination`, `FormaDatePicker` as the single source of truth for buttons |
 | **Phase 9** | `FormaCheckbox` ✅ | Shared checkbox primitive — built after the fact and retrofitted onto `FormaDataGrid` and `FormaMultiSelectDropDown` as the single source of truth for checkboxes |
 | **Phase 10** | `FormaCloseButton` ✅ | Shared dismiss primitive — built after the fact and retrofitted onto `FormaModal`, `FormaToastContainer` and `FormaContextToolbar` as the single source of truth for the `×` control |
-| **Phase 11** | `FormaField` ✅, `FormaTextArea` ✅ | Shared field chrome — extracted from `FormaInput` so the floating label, focus ring and validation styling live once, then `FormaTextArea` built on it. `FormaPasswordInput` ✅ composes it; `FormaCurrencyInput` and `FormaSelect` will too rather than restating it |
+| **Phase 11** | `FormaField` ✅, `FormaTextArea` ✅ | Shared field chrome — extracted from `FormaInput` so the floating label, focus ring and validation styling live once, then `FormaTextArea` built on it. `FormaPasswordInput` ✅ composes it; `FormaCurrencyInput` will too rather than restating it |
 | **Phase 12** | `FormaEyeButton` ✅ | Shared reveal primitive — built after the fact and retrofitted onto `FormaPasswordInput`, which had hand-rolled the ghost icon button it now uses |
 | **Phase 13** | `FormaDeleteButton`, `FormaUpdateButton`, `FormaEditButton`, `FormaAddButton`, `FormaDuplicateButton`, `FormaRefreshButton`, `FormaShareButton`, `FormaPublishButton` | The rest of the icon-button vocabulary — the same thin wrapper over `FormaButton`, one glyph each, so a row's actions stop being ad-hoc markup per page |
 | **Phase 14** | `FormaOverflowMenu`, `FormaContextMenu` | Menu presets over `FormaDropDownMenu` — the ellipsis trigger first, then the same panel opened by right-click, once there is a menu worth opening that way |

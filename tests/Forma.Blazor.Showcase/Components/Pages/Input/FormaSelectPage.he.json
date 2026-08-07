@@ -1,0 +1,13 @@
+{
+  "A themed single-select: a trigger button opening an anchored, keyboard-navigable option list. The popup stays anchored to its trigger wherever the page scrolls.": "בחירה יחידה בעיצוב הספרייה: כפתור מפעיל הפותח רשימת אפשרויות מעוגנת הניתנת לניווט במקלדת. הרשימה נשארת מעוגנת לכפתור המפעיל גם כשהדף גולל.",
+  "Basic": "בסיסי",
+  "With Placeholder": "עם טקסט מציין מיקום",
+  "Pre-selected Value": "ערך שנבחר מראש",
+  "Disabled": "מושבת",
+  "No Options Yet": "עדיין אין אפשרויות",
+  "Culture": "שפה",
+  "Status": "סטטוס",
+  "Choose a status": "בחר סטטוס",
+  "Role": "תפקיד",
+  "Category": "קטגוריה"
+}

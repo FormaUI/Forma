@@ -1,0 +1,203 @@
+@inherits BunitContext
+
+@code {
+    public sealed class Component
+    {
+        private static readonly List<SelectOption<int?>> Options =
+        [
+            new(1, "Cycling"),
+            new(2, "Running"),
+            new(3, "Swimming"),
+        ];
+
+        [Fact]
+        public void Should_render_label_text()
+        {
+            // Arrange
+            using var ctx = new FormaSelectTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Label="Status" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Contains("Status", cut.Find(".forma-select-label").TextContent, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_show_placeholder_when_nothing_selected()
+        {
+            // Arrange
+            using var ctx = new FormaSelectTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Placeholder="Pick one" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("Pick one", cut.Find(".forma-select-trigger-text").TextContent);
+        }
+
+        [Fact]
+        public void Should_show_the_selected_option_s_label_in_the_trigger()
+        {
+            // Arrange
+            using var ctx = new FormaSelectTests();
+            var model = new FakeModel { Status = 2 };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("Running", cut.Find(".forma-select-trigger-text").TextContent);
+        }
+
+        [Fact]
+        public void Should_open_the_popup_on_trigger_click()
+        {
+            // Arrange
+            using var ctx = new FormaSelectTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find(".forma-select-trigger").Click();
+
+            // Assert
+            cut.Find(".forma-select-popup");
+        }
+
+        [Fact]
+        public void Should_list_every_option_in_the_popup()
+        {
+            // Arrange
+            using var ctx = new FormaSelectTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find(".forma-select-trigger").Click();
+
+            // Assert
+            Assert.Equal(3, cut.FindAll(".forma-select-option").Count);
+        }
+
+        [Fact]
+        public void Should_select_a_value_when_its_option_is_clicked()
+        {
+            // Arrange
+            using var ctx = new FormaSelectTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" />
+            </FakeFormHost>);
+            cut.Find(".forma-select-trigger").Click();
+
+            // Act
+            cut.FindAll(".forma-select-option")[1].Click();
+
+            // Assert
+            Assert.Equal(2, model.Status);
+        }
+
+        [Fact]
+        public void Should_close_the_popup_after_selecting_an_option()
+        {
+            // Arrange
+            using var ctx = new FormaSelectTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" />
+            </FakeFormHost>);
+            cut.Find(".forma-select-trigger").Click();
+
+            // Act
+            cut.FindAll(".forma-select-option")[0].Click();
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-select-popup"));
+        }
+
+        [Fact]
+        public void Should_mark_the_selected_option_with_aria_selected()
+        {
+            // Arrange
+            using var ctx = new FormaSelectTests();
+            var model = new FakeModel { Status = 3 };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find(".forma-select-trigger").Click();
+            var options = cut.FindAll(".forma-select-option");
+
+            // Assert
+            Assert.Equal("false", options[0].GetAttribute("aria-selected"));
+            Assert.Equal("false", options[1].GetAttribute("aria-selected"));
+            Assert.Equal("true", options[2].GetAttribute("aria-selected"));
+        }
+
+        [Fact]
+        public void Should_not_open_when_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaSelectTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Disabled="true" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find(".forma-select-trigger").Click();
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-select-popup"));
+        }
+
+        [Fact]
+        public void Should_show_empty_message_when_there_are_no_options()
+        {
+            // Arrange
+            using var ctx = new FormaSelectTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="@(new List<SelectOption<int?>>())" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find(".forma-select-trigger").Click();
+
+            // Assert
+            cut.Find(".forma-select-empty");
+        }
+
+        [Fact]
+        public void Should_close_the_popup_when_the_backdrop_is_clicked()
+        {
+            // Arrange
+            using var ctx = new FormaSelectTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" />
+            </FakeFormHost>);
+            cut.Find(".forma-select-trigger").Click();
+
+            // Act
+            cut.Find(".forma-select-backdrop").Click();
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-select-popup"));
+        }
+    }
+}
