@@ -198,6 +198,145 @@
         }
 
         [Fact]
+        public void Should_not_count_characters_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" MaxLength="280" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-textarea-count"));
+        }
+
+        [Fact]
+        public void Should_count_against_the_maximum_when_one_is_set()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" MaxLength="280" ShowCharacterCount="true" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("textarea").Input("hello");
+
+            // Assert
+            Assert.Equal("5 / 280", cut.Find(".forma-textarea-count bdi").TextContent);
+        }
+
+        [Fact]
+        public void Should_count_alone_when_no_maximum_is_set()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" ShowCharacterCount="true" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("textarea").Input("hello");
+
+            // Assert
+            Assert.Equal("5", cut.Find(".forma-textarea-count bdi").TextContent);
+        }
+
+        [Fact]
+        public void Should_start_the_count_at_zero()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" MaxLength="280" ShowCharacterCount="true" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("0 / 280", cut.Find(".forma-textarea-count bdi").TextContent);
+        }
+
+        [Fact]
+        public void Should_spell_the_count_out_for_a_screen_reader()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" MaxLength="280" ShowCharacterCount="true" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("textarea").Input("hello");
+
+            // Assert
+            Assert.Equal("5 of 280 characters", cut.Find(".forma-textarea-count-label").TextContent);
+            Assert.Equal("true", cut.Find(".forma-textarea-count bdi").GetAttribute("aria-hidden"));
+        }
+
+        [Fact]
+        public void Should_describe_the_textarea_by_its_count()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" MaxLength="280" ShowCharacterCount="true" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal(
+                cut.Find(".forma-textarea-count-label").GetAttribute("id"),
+                cut.Find("textarea").GetAttribute("aria-describedby"));
+        }
+
+        [Fact]
+        public void Should_keep_a_caller_s_own_description_alongside_the_count()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" MaxLength="280" ShowCharacterCount="true"
+                               aria-describedby="house-rules" />
+            </FakeFormHost>);
+
+            // Assert
+            var describedBy = cut.Find("textarea").GetAttribute("aria-describedby");
+            Assert.Equal($"house-rules {cut.Find(".forma-textarea-count-label").GetAttribute("id")}", describedBy);
+        }
+
+        [Fact]
+        public void Should_reserve_room_under_the_value_only_while_counting()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" ShowCharacterCount="true" />
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" />
+            </FakeFormHost>);
+
+            // Assert
+            var areas = cut.FindAll("textarea");
+            Assert.Contains("forma-textarea-counting", areas[0].ClassList);
+            Assert.DoesNotContain("forma-textarea-counting", areas[1].ClassList);
+        }
+
+        [Fact]
         public void Should_reject_a_blank_label()
         {
             // Arrange

@@ -36,6 +36,15 @@
     </div>
 
     <div class="demo-section">
+        <h2>@L["Counting characters"]</h2>
+        <p class="desc">@L["The count floats inside the field's end corner, clear of the resize grip, and reads out as a sentence rather than as glyphs. Without a maximum it simply counts up."]</p>
+        <div class="demo-box">
+            <FormaTextArea @bind-Value="_model.Tweet" Label="@L["Social post"]" MaxLength="280" ShowCharacterCount="true" />
+            <FormaTextArea @bind-Value="_model.Comment" Label="@L["Comment"]" ShowCharacterCount="true" />
+        </div>
+    </div>
+
+    <div class="demo-section">
         <h2>@L["Disabled"]</h2>
         <p class="desc">@L["A disabled field is dimmed, refuses the caret and shows a not-allowed cursor."]</p>
         <div class="demo-box">
@@ -82,6 +91,8 @@
         public string? Notes { get; set; }
         public string? Summary { get; set; }
         public string? Excerpt { get; set; }
+        public string? Tweet { get; set; }
+        public string? Comment { get; set; }
         public string? Title { get; set; }
         public string? Body { get; set; }
         public string? Locked { get; set; }

@@ -1,9 +1,56 @@
 /* ============================================================
    FormaTextArea — CSS isolation
-   Only the multi-line deltas; the field chrome lives in FormaField.
+   The multi-line deltas and the character counter that floats
+   over the field's end corner; the field chrome lives in
+   FormaField.
    ============================================================ */
 
 .forma-textarea {
     resize: vertical;
     min-block-size: calc(1.5em + 2.75rem);
+}
+
+/* Keeps typed text from ending underneath the counter, without spending the lines the
+   field was sized to show: the minimum grows by the strip, less the padding it replaces. */
+.forma-textarea-counting {
+    padding-block-end: 1.75rem;
+    min-block-size: calc(1.5em + 2.75rem - 0.375rem + 1.75rem);
+}
+
+.forma-textarea-count {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: flex-end;
+    block-size: 1rem;
+    /* Lifted over the field's last line, giving back below the flow height it costs. */
+    margin-block: -1.5rem 0.5rem;
+    /* Clears the resize grip, which sits in the same corner. */
+    margin-inline-end: 1.125rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    pointer-events: none;
+}
+
+/* Opaque, because a scrolled value passes behind it. */
+.forma-textarea-count bdi {
+    padding-inline: 0.25rem;
+    border-radius: 3px;
+    background: var(--forma-input-bg-color, var(--input-bg-color));
+    color: var(--forma-textarea-count-color, var(--text-color));
+}
+
+/* The glyphs read poorly aloud, so a screen reader is given this sentence instead. */
+.forma-textarea-count-label {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.forma-textarea:disabled ~ .forma-textarea-count bdi {
+    background: var(--forma-input-disabled-bg-color, var(--hover-bg-color));
+    color: var(--forma-input-disabled-color, var(--text-muted-color));
 }

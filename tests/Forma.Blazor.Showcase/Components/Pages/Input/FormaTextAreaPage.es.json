@@ -16,5 +16,9 @@
   "Locked note": "Nota bloqueada",
   "A disabled field is dimmed, refuses the caret and shows a not-allowed cursor.": "Un campo deshabilitado se atenúa, rechaza el cursor de texto y muestra el cursor de no permitido.",
   "An excerpt is required.": "El extracto es obligatorio.",
+  "Counting characters": "Contar caracteres",
+  "The count floats inside the field's end corner, clear of the resize grip, and reads out as a sentence rather than as glyphs. Without a maximum it simply counts up.": "El contador flota dentro de la esquina final del campo, sin estorbar al tirador de tamaño, y se anuncia como una frase en lugar de como signos. Sin un máximo, simplemente cuenta hacia arriba.",
+  "Social post": "Publicación social",
+  "Comment": "Comentario",
   "Validate": "Validar"
 }

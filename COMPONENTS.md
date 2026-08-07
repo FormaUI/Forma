@@ -116,8 +116,9 @@ These components form the shell of a page. Build first.
 |---|---|
 | **Old pattern** | `<asp:TextBox TextMode="MultiLine">` — the same `.form-control` class as a single-line field, plus `textarea { resize: vertical }` and a label offset (`.row textarea ~ label.lblForm { top: 13px }`) |
 | **Used in** | SEO head, meta description, store details — and in Épica, article excerpts and summaries |
-| **Parameters** | `@bind-Value`, `string Label`, `bool Required`, `int Rows` (default 3), `int? MaxLength` |
+| **Parameters** | `@bind-Value`, `string Label`, `bool Required`, `int Rows` (default 3), `int? MaxLength`, `bool ShowCharacterCount` |
 | **Blazor approach** | `InputBase<string?>` rendering a `<textarea>` into `FormaField` with `Multiline`. Owns only the multi-line deltas — `resize: vertical` and a minimum height — so it cannot drift from `FormaInput`. No JS: autofill does not apply to a textarea |
+| **Notes** | `ShowCharacterCount` floats a running count in the field's end corner, tracking the resizable edge from normal flow rather than absolute positioning. The count is isolated as `<bdi dir="ltr">` so an RTL line cannot render "5 / 280" as "280 / 5", and the glyphs are hidden from assistive technology in favour of a visually hidden sentence the field is described by |
 
 ### 9. `FormaStatusBadge` ✅
 

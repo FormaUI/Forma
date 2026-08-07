@@ -1,14 +1,18 @@
 namespace Forma.Blazor.Components.Input;
 
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.Extensions.Localization;
 
 /// <summary>A multi-line text field carrying the same chrome as FormaInput.</summary>
 public sealed partial class FormaTextArea : InputBase<string?>
 {
     private readonly string _inputId = $"fld-{Guid.NewGuid():N}";
+
+    [Inject] private IStringLocalizer<FormaTextArea> L { get; set; } = default!;
 
     /// <summary>The floating label text.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
@@ -21,6 +25,42 @@ public sealed partial class FormaTextArea : InputBase<string?>
 
     /// <summary>Maximum number of characters accepted.</summary>
     [Parameter] public int? MaxLength { get; set; }
+
+    /// <summary>Shows a running character count in the field's end corner, against MaxLength when one is set.</summary>
+    [Parameter] public bool ShowCharacterCount { get; set; }
+
+    private string CountId
+        => $"{_inputId}-count";
+
+    // UTF-16 code units, which is what the browser's own maxlength counts.
+    private int CharacterCount
+        => CurrentValue?.Length ?? 0;
+
+    private string CountText
+        => MaxLength is { } maxLength
+            ? $"{CharacterCount.ToString(CultureInfo.CurrentCulture)} / {maxLength.ToString(CultureInfo.CurrentCulture)}"
+            : CharacterCount.ToString(CultureInfo.CurrentCulture);
+
+    // The glyphs read poorly aloud, so the hidden label spells the count out instead.
+    private string CountLabel
+        => MaxLength is { } maxLength
+            ? L["{0} of {1} characters", CharacterCount, maxLength]
+            : L["{0} characters", CharacterCount];
+
+    // An explicit attribute overwrites one of the same name from AdditionalAttributes, so a
+    // caller's own description has to be carried through rather than dropped.
+    private string? DescribedBy
+    {
+        get
+        {
+            var caller = AdditionalAttributes?.GetValueOrDefault("aria-describedby")?.ToString();
+            var own = ShowCharacterCount ? CountId : null;
+
+            return string.IsNullOrWhiteSpace(caller) ? own
+                : string.IsNullOrEmpty(own) ? caller
+                : $"{caller} {own}";
+        }
+    }
 
     protected override void OnParametersSet()
     {

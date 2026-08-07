@@ -16,5 +16,9 @@
   "Locked note": "הערה נעולה",
   "A disabled field is dimmed, refuses the caret and shows a not-allowed cursor.": "שדה מושבת מועם, אינו מקבל סמן כתיבה ומציג סמן עכבר של פעולה אסורה.",
   "An excerpt is required.": "נדרש תקציר.",
+  "Counting characters": "ספירת תווים",
+  "The count floats inside the field's end corner, clear of the resize grip, and reads out as a sentence rather than as glyphs. Without a maximum it simply counts up.": "המונה צף בתוך פינת הסיום של השדה, מרוחק מידית שינוי הגודל, ומוקרא כמשפט ולא כסימנים. ללא מקסימום הוא פשוט סופר כלפי מעלה.",
+  "Social post": "פוסט לרשת חברתית",
+  "Comment": "תגובה",
   "Validate": "אמת"
 }
