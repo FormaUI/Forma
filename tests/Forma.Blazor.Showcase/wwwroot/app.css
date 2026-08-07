@@ -28,7 +28,8 @@
     font-size: 0.85rem;
 }
 
-/* Stands in for a saturated surface, so a ghost button's retint knobs are visible. */
+/* Stands in for a saturated surface, so a ghost button's retint knobs are visible. The resting
+   alpha is what it is because 0.75 lands at 2.97:1 against this background. */
 .demo-tinted {
     display: flex;
     align-items: center;
@@ -37,7 +38,7 @@
     border-radius: 6px;
     background: var(--info-color);
     color: #fff;
-    --forma-btn-ghost-color: rgba(255, 255, 255, 0.75);
+    --forma-btn-ghost-color: rgba(255, 255, 255, 0.85);
     --forma-btn-ghost-hover-color: #fff;
     --forma-btn-ghost-hover-bg-color: rgba(255, 255, 255, 0.18);
 }

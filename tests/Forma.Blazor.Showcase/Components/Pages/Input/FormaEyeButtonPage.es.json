@@ -5,8 +5,8 @@
   "Sizes": "Tamaños",
   "Disabled": "Deshabilitado",
   "On a coloured surface": "Sobre una superficie de color",
-  "A surface sets --forma-btn-ghost-color and its hover pair to retint the glyph, exactly as it would for the dismiss button.": "Una superficie define --forma-btn-ghost-color y su par de hover para recolorear el símbolo, igual que haría con el botón de cierre.",
+  "The glyph follows the surface through --forma-btn-ghost-color and its hover pair rather than a forked stylesheet. Nothing else changes: it reveals here exactly as it does above.": "El símbolo sigue a la superficie mediante --forma-btn-ghost-color y su par de hover, en lugar de una hoja de estilos bifurcada. Nada más cambia: revela aquí igual que arriba.",
+  "API key": "Clave de API",
   "Show value": "Mostrar valor",
-  "Hide value": "Ocultar valor",
-  "API key hidden": "Clave de API oculta"
+  "Hide value": "Ocultar valor"
 }

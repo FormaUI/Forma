@@ -5,8 +5,8 @@
   "Sizes": "גדלים",
   "Disabled": "מושבת",
   "On a coloured surface": "על משטח צבעוני",
-  "A surface sets --forma-btn-ghost-color and its hover pair to retint the glyph, exactly as it would for the dismiss button.": "משטח מגדיר את ‎--forma-btn-ghost-color‎ ואת זוג הריחוף שלו כדי לצבוע מחדש את הסמל, בדיוק כפי שהיה עושה עבור כפתור הסגירה.",
+  "The glyph follows the surface through --forma-btn-ghost-color and its hover pair rather than a forked stylesheet. Nothing else changes: it reveals here exactly as it does above.": "הסמל עוקב אחר המשטח דרך ‎--forma-btn-ghost-color‎ וזוג הריחוף שלו, במקום גיליון סגנונות מפוצל. שום דבר אחר אינו משתנה: הוא חושף כאן בדיוק כפי שהוא חושף למעלה.",
+  "API key": "מפתח API",
   "Show value": "הצג ערך",
-  "Hide value": "הסתר ערך",
-  "API key hidden": "מפתח ה-API מוסתר"
+  "Hide value": "הסתר ערך"
 }

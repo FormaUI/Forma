@@ -42,16 +42,22 @@
 
 <div class="demo-section">
     <h2>@L["On a coloured surface"]</h2>
-    <p class="desc">@L["A surface sets --forma-btn-ghost-color and its hover pair to retint the glyph, exactly as it would for the dismiss button."]</p>
+    <p class="desc">@L["The glyph follows the surface through --forma-btn-ghost-color and its hover pair rather than a forked stylesheet. Nothing else changes: it reveals here exactly as it does above."]</p>
     <div class="demo-box">
         <div class="demo-tinted">
-            <span>@L["API key hidden"]</span>
-            <FormaEyeButton Label="@L["Show value"]" Size="ButtonSize.Mini" />
+            <span>@L["API key"]</span>
+            <code>@(_keyRevealed ? ApiKey : new string('•', ApiKey.Length))</code>
+            <FormaEyeButton Label="@(_keyRevealed ? L["Hide value"] : L["Show value"])"
+                            Revealed="_keyRevealed"
+                            Size="ButtonSize.Mini"
+                            OnClick="() => _keyRevealed = !_keyRevealed" />
         </div>
     </div>
 </div>
 
 @code {
     private const string Secret = "s3cr3t-key-9f2a";
+    private const string ApiKey = "sk-live-4f9c2a71";
     private bool _revealed;
+    private bool _keyRevealed;
 }
