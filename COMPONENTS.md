@@ -612,22 +612,24 @@ Components are ordered by dependency and reuse frequency:
 |---|---|---|
 | **Phase 1** | `FormaModal` ✅, `FormaConfirmDialog` ✅, `FormaToast` ✅ | Infrastructure — everything depends on modals and notifications |
 | **Phase 2** | `FormaPageHeader` ✅, `FormaToolbar` ✅, `FormaTabs` ✅ | Layout — the shell of a page |
-| **Phase 3** | `FormaInput` ✅, `FormaToggleSwitch` ✅, `FormaPasswordInput` ✅, `FormaCurrencyInput`, `FormaRangeSlider` ✅, `FormaDatePicker`, `FormaSelect` | Form inputs — needed before building any edit forms |
+| **Phase 3** | `FormaInput` ✅, `FormaToggleSwitch` ✅, `FormaPasswordInput` ✅, `FormaCurrencyInput`, `FormaRangeSlider` ✅, `FormaDatePicker` ✅, `FormaSelect` | Form inputs — needed before building any edit forms |
 | **Phase 4** | `FormaDataGrid<TItem>` ✅, `FormaContextToolbar` ✅, `FormaStatusBadge` ✅, `FormaCapacityIndicator`, `FormaPagination` ✅ | Data display — needed for list pages |
-| **Phase 5** | `FormaSortableList<TItem>` ✅, `FormaMultiSelectDropDown`  ✅, `FormaCategorySelector`, `FormaDropDownMenu` ✅, `FormaColorPicker` | Interactive widgets — needed for editor pages |
-| **Phase 6** | `FormaUploader`, `FormaFilePicker`, `FormaImagePicker`, `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components — built when their feature pages are built. The media three build in that order: uploader, then the picker that hosts it, then the image skin over the picker |
-| **Phase 7** | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor`, `FormaRichTextEditor` | Complex editors — built alongside their specific pages |
+| **Phase 5** | `FormaSortableList<TItem>` ✅, `FormaMultiSelectDropDown`  ✅, `FormaCategorySelector`, `FormaDropDownMenu` ✅, `FormaColorPicker` ✅ | Interactive widgets — needed for editor pages |
+| **Phase 6** | `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components — built when their feature pages are built |
+| **Phase 7** | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor` | Complex editors — built alongside their specific pages |
 | **Phase 8** | `FormaButton` ✅ | Shared button primitive — built after the fact and retrofitted onto `FormaDataGrid`, `FormaModal`, `FormaConfirmDialog`, `FormaPagination`, `FormaDatePicker` as the single source of truth for buttons |
 | **Phase 9** | `FormaCheckbox` ✅ | Shared checkbox primitive — built after the fact and retrofitted onto `FormaDataGrid` and `FormaMultiSelectDropDown` as the single source of truth for checkboxes |
 | **Phase 10** | `FormaCloseButton` ✅ | Shared dismiss primitive — built after the fact and retrofitted onto `FormaModal`, `FormaToastContainer` and `FormaContextToolbar` as the single source of truth for the `×` control |
 | **Phase 11** | `FormaField` ✅, `FormaTextArea` ✅ | Shared field chrome — extracted from `FormaInput` so the floating label, focus ring and validation styling live once, then `FormaTextArea` built on it. `FormaPasswordInput` ✅ composes it; `FormaCurrencyInput` and `FormaSelect` will too rather than restating it |
 | **Phase 12** | `FormaEyeButton` ✅ | Shared reveal primitive — built after the fact and retrofitted onto `FormaPasswordInput`, which had hand-rolled the ghost icon button it now uses |
 | **Phase 13** | `FormaDeleteButton`, `FormaUpdateButton`, `FormaEditButton`, `FormaAddButton`, `FormaDuplicateButton`, `FormaRefreshButton`, `FormaShareButton`, `FormaPublishButton` | The rest of the icon-button vocabulary — the same thin wrapper over `FormaButton`, one glyph each, so a row's actions stop being ad-hoc markup per page |
-| **Phase 14** | `FormaOverflowMenu`, `FormaContextMenu`, `FormaSortMenu` | Menu presets over `FormaDropDownMenu` — the ellipsis trigger first, then the same panel opened by right-click or by a sort control, once there is a menu worth opening that way |
-| **Phase 15** | `FormaViewButton` | Layout toggle — built with `FormaFilePicker`, the only surface that has two layouts to switch between |
-| **Phase 16** | `FormaVideoPlayer`, `FormaFileViewer` | Media rendering — the player first because it stands alone and four Épica surfaces want it, then the viewer that delegates its video branch to it. Both precede the surfaces below, which enlarge and preview through them |
-| **Phase 17** | `FormaGallery`, `FormaFileManager` | Media surfaces — both compose the uploader, picker and viewer rather than re-solving them, so they follow once those exist. The manager's shared browsing half is extracted from `FormaFilePicker` in the same step, not copied |
-| **Phase 18** | `FormaImageEditor` | The heaviest media component and the last — it needs the surfaces above to launch it, and its pointer handles, coordinate mapping and keyboard path are worth building once the rest of the media flow is settled |
+| **Phase 14** | `FormaOverflowMenu`, `FormaContextMenu` | Menu presets over `FormaDropDownMenu` — the ellipsis trigger first, then the same panel opened by right-click, once there is a menu worth opening that way |
+| **Phase 15** | `FormaVideoPlayer`, `FormaFileViewer` | Media rendering — the player first because it stands alone and four Épica surfaces want it, then the viewer that delegates its video branch to it. Both come before the picker chain, which previews through the viewer |
+| **Phase 16** | `FormaUploader`, `FormaFilePicker`, `FormaImagePicker` | The picker chain, in that order: the uploader, then the picker that hosts it and previews through `FormaFileViewer`, then the image skin over the picker |
+| **Phase 17** | `FormaSortMenu`, `FormaViewButton` | The two controls that exist for the picker's tile grid — a layout with no column headers to sort by and two layouts to switch between. Neither has a surface to serve until Phase 16 exists |
+| **Phase 18** | `FormaGallery`, `FormaFileManager` | Media surfaces — both compose the uploader, picker and viewer rather than re-solving them. The manager's shared browsing half is extracted from `FormaFilePicker` in the same step, not copied |
+| **Phase 19** | `FormaRichTextEditor` | The largest editor, and last of the composing components — its chrome is `FormaSelect`, `FormaDropDownMenu` and `FormaColorPicker`, it delegates image insertion to `FormaImagePicker`, uploads through `FormaUploader`, and inserts `FormaVideoPlayer` |
+| **Phase 20** | `FormaImageEditor` | The heaviest media component and the last — it needs the surfaces above to launch it, and its pointer handles, coordinate mapping and keyboard path are worth building once the rest of the media flow is settled |
 
 ---
 
