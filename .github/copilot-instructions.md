@@ -329,7 +329,7 @@ Mirror source paths under `tests/Forma.Blazor.Tests/Components/{Category}/` with
 
 ## Showcase
 
-Every component requires `tests/Forma.Blazor.Showcase/Components/Pages/{Category}/FormaXPage.razor` and its translation pair.
+Every component requires `tests/Forma.Blazor.Showcase/Components/Pages/{Category}/FormaXPage.razor` and its translation pair. The gallery exists to be looked at, so a state it never renders is a state nobody has ever reviewed.
 
 ```razor
 @page "/x-component"
@@ -339,8 +339,11 @@ Every component requires `tests/Forma.Blazor.Showcase/Components/Pages/{Category
 ```
 
 - Do structure the page as `<h1>` plus `<p class="desc">`, followed by one `demo-section` containing `<h2>` and `demo-box` per scenario.
-- Do cover basic usage, labels, default/disabled/error states, and edge cases.
+- Do render the component in every state it can enter, not merely name the state: default, filled, required, disabled, invalid, plus whatever the component adds — empty collection, no search matches, over-limit count, indeterminate, loading.
+- Do make each state reachable on the page. A validation state needs a model rule and a submit, not a paragraph describing one.
+- Do treat the component's translation file as the inventory: if a key in `FormaX.he.json` cannot be displayed in the gallery, a state is missing.
 - Do localize all page copy so the `he` and `es-419` switchers exercise RTL and translation.
+- Don't count a state as covered because the parameter exists; count it when the page renders the component standing in it.
 - Don't treat the gallery page as optional or as documentation that can be added later.
 
 ## Build and verification
