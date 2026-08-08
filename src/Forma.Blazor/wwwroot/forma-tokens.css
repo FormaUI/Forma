@@ -38,6 +38,9 @@
     --modal-bg-color: #fafbfc;
     --hover-bg-color: rgba(98, 105, 118, 0.06);
     --media-bg-color: #000;
+    --media-fg-color: #fff;
+    --media-muted-fg-color: rgba(255, 255, 255, 0.72);
+    --media-scrim-color: rgba(0, 0, 0, 0.7);
 
     /* Status colors */
     --success-color: #28a745;

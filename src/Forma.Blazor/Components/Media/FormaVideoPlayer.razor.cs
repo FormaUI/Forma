@@ -34,6 +34,12 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
     /// <summary>Starts playback without interaction, always muted because browsers block unmuted autoplay.</summary>
     [Parameter] public bool Autoplay { get; set; }
 
+    /// <summary>Holds a hosting service's player back until the reader presses play, so nothing loads from it before then.</summary>
+    [Parameter] public bool DeferLoading { get; set; } = true;
+
+    /// <summary>Still shown before the player loads, served by the host so holding the player back stays worth doing.</summary>
+    [Parameter] public string? Placeholder { get; set; }
+
     /// <summary>Caption files offered for a file the browser plays; a hosting service serves its own.</summary>
     [Parameter] public IReadOnlyList<VideoCaptionTrack>? Captions { get; set; }
 
@@ -49,13 +55,23 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
 
     private JsModule _module = default!;
 
+    private readonly string _labelId = $"video-play-{Guid.NewGuid():N}";
+
+    private readonly string _noteId = $"video-note-{Guid.NewGuid():N}";
+
     private ElementReference _video;
 
     private bool _autoplayMuted;
 
+    private bool _activated;
+
     private string? _activatedSource;
 
     private PlayerFrame? Frame { get; set; }
+
+    // Autoplay is a request to start, so it overrides holding the player back.
+    private bool ShowFacade
+        => DeferLoading && !Autoplay && !_activated && Frame is EmbeddedPlayerFrame or HtmlPlayerFrame;
 
     private string CssClass
     {
@@ -67,7 +83,7 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
                 : null;
 
             // A service that sizes its own player is left to do so rather than cropped to the frame's ratio.
-            var classes = Frame is HtmlPlayerFrame ? "forma-video-player forma-video-player-flow" : "forma-video-player";
+            var classes = Frame is HtmlPlayerFrame && !ShowFacade ? "forma-video-player forma-video-player-flow" : "forma-video-player";
 
             return string.IsNullOrWhiteSpace(hostClass) ? classes : $"{classes} {hostClass}";
         }
@@ -81,7 +97,15 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
         ArgumentException.ThrowIfNullOrWhiteSpace(Source);
         ArgumentException.ThrowIfNullOrWhiteSpace(Title);
 
+        var previous = Frame;
+
         Frame = await ResolveFrameAsync();
+
+        // A different video is a fresh decision to load a third party.
+        if (previous?.Source != Frame?.Source)
+        {
+            _activated = false;
+        }
 
         // A frame of another kind takes the video element with it, so the next one has to be muted again.
         if (Frame is not NativePlayerFrame)
@@ -123,7 +147,7 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
         }
 
         // Keyed by address rather than script, because a new video needs the loaded script to scan again.
-        if (Frame is not HtmlPlayerFrame markup || _activatedSource == markup.Source)
+        if (ShowFacade || Frame is not HtmlPlayerFrame markup || _activatedSource == markup.Source)
         {
             return;
         }
@@ -133,6 +157,9 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
             _activatedSource = markup.Source;
         }
     }
+
+    private void Activate()
+        => _activated = true;
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()

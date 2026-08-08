@@ -1,4 +1,6 @@
 {
   "This video is unavailable.": "El video no está disponible.",
-  "Open this video on its own site.": "Abre este video en su propio sitio."
+  "Open this video on its own site.": "Abre este video en su propio sitio.",
+  "Play {0}": "Reproducir {0}",
+  "Loads from another site, which will see this visit.": "Se carga desde otro sitio, que verá esta visita."
 }

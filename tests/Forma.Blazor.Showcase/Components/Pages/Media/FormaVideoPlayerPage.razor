@@ -6,13 +6,15 @@
 
 <h1>FormaVideoPlayer</h1>
 <p class="desc">@L["A fluid 16:9 player. Give it any address and the player hands it to whichever provider recognises it, so a watch link, a share link and an embed link all work without saying which service they belong to."]</p>
+<p class="desc">@L["Every service demo below sets DeferLoading to false so its player can be reviewed at a glance. Left alone, each would wait behind a play control, as the section on holding a player back shows."]</p>
 
 <div class="demo-section">
     <h2>@L["YouTube"]</h2>
     <p class="desc">@L["Given a watch address; the player rewrites it to an embed URL of its own."]</p>
     <div class="demo-box">
         <FormaVideoPlayer Source="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-                          Title="@L["Sample YouTube video"]" />
+                          Title="@L["Sample YouTube video"]"
+                          DeferLoading="false" />
     </div>
 </div>
 
@@ -20,7 +22,8 @@
     <h2>@L["Vimeo"]</h2>
     <div class="demo-box">
         <FormaVideoPlayer Source="https://vimeo.com/76979871"
-                          Title="@L["Sample Vimeo video"]" />
+                          Title="@L["Sample Vimeo video"]"
+                          DeferLoading="false" />
     </div>
 </div>
 
@@ -29,7 +32,35 @@
     <p class="desc">@L["Twitch demands the name of the page embedding it, which the player supplies from the address bar. A past broadcast, a live channel and a clip are three different addresses on two different hosts."]</p>
     <div class="demo-box">
         <FormaVideoPlayer Source="https://www.twitch.tv/twitch"
-                          Title="@L["Sample Twitch broadcast"]" />
+                          Title="@L["Sample Twitch broadcast"]"
+                          DeferLoading="false" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Holding a player back until it is asked for"]</h2>
+    <p class="desc">@L["By default nothing is fetched from a hosting service until a reader presses play, so an article page carrying an embed leaks neither an address nor a visit. Autoplay overrides it, and a self-hosted file never needs it."]</p>
+    <div class="demo-box">
+        <FormaVideoPlayer Source="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                          Title="@L["Sample YouTube video"]" />
+    </div>
+    <div class="demo-box">
+        <FormaVideoPlayer Source="@TikTokSample" Title="@L["Sample TikTok video"]" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["With a still to look at"]</h2>
+    <p class="desc">@L["The still comes from the host's own server, never from the video's service — a poster fetched from the service would give away the visit the play control is there to withhold. It also stands in for a self-hosted file before it loads."]</p>
+    <div class="demo-box">
+        <FormaVideoPlayer Source="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                          Title="@L["Sample YouTube video"]"
+                          Placeholder="/media/sample-poster.svg" />
+    </div>
+    <div class="demo-box">
+        <FormaVideoPlayer Source="/media/sample.mp4"
+                          Title="@L["Sample video file"]"
+                          Placeholder="/media/sample-poster.svg" />
     </div>
 </div>
 
@@ -37,16 +68,16 @@
     <h2>@L["Services that bring their own player"]</h2>
     <p class="desc">@L["TikTok, Instagram, Facebook and X publish markup and a script rather than an embed address, and each sizes its own player — so the 16:9 frame steps aside for them. Block those scripts, as an ad blocker does, and a link to the video takes the player's place."]</p>
     <div class="demo-box">
-        <FormaVideoPlayer Source="@TikTokSample" Title="@L["Sample TikTok video"]" />
+        <FormaVideoPlayer Source="@TikTokSample" Title="@L["Sample TikTok video"]" DeferLoading="false" />
     </div>
     <div class="demo-box">
-        <FormaVideoPlayer Source="@InstagramSample" Title="@L["Sample Instagram post"]" />
+        <FormaVideoPlayer Source="@InstagramSample" Title="@L["Sample Instagram post"]" DeferLoading="false" />
     </div>
     <div class="demo-box">
-        <FormaVideoPlayer Source="@FacebookSample" Title="@L["Sample Facebook video"]" />
+        <FormaVideoPlayer Source="@FacebookSample" Title="@L["Sample Facebook video"]" DeferLoading="false" />
     </div>
     <div class="demo-box">
-        <FormaVideoPlayer Source="@TwitterSample" Title="@L["Sample X post"]" />
+        <FormaVideoPlayer Source="@TwitterSample" Title="@L["Sample X post"]" DeferLoading="false" />
     </div>
 </div>
 
@@ -94,7 +125,8 @@
     <div class="demo-box">
         <div style="max-inline-size: 20rem;">
             <FormaVideoPlayer Source="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-                              Title="@L["Sample YouTube video"]" />
+                              Title="@L["Sample YouTube video"]"
+                              DeferLoading="false" />
         </div>
     </div>
 </div>

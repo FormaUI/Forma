@@ -45,8 +45,74 @@
     text-align: center;
     color: var(--forma-video-fallback-color, var(--main-color));
 }
-
 /* The service replaces its own markup with an iframe, and that player stands in for the link. */
 [role="group"]:has(iframe) > .forma-video-player-fallback {
     display: none;
+}
+
+.forma-video-player-facade {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    inline-size: 100%;
+    block-size: 100%;
+    padding: 1rem;
+    border: 0;
+    background-color: transparent;
+    color: var(--forma-video-facade-color, var(--media-fg-color));
+    text-align: center;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+/* A play glyph points the way the media runs, not the way the text reads, so it stays put in RTL. */
+.forma-video-player-facade-glyph {
+    flex-shrink: 0;
+}
+
+.forma-video-player-facade-placeholder {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+}
+
+/* A still can be any colour, so the text sits on a scrim rather than on the picture. */
+.forma-video-player-facade:has(.forma-video-player-facade-placeholder)::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: var(--forma-video-facade-scrim-color, var(--media-scrim-color));
+}
+
+.forma-video-player-facade-glyph,
+.forma-video-player-facade-label,
+.forma-video-player-facade-note {
+    position: relative;
+    z-index: 1;
+}
+
+.forma-video-player-facade-label {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.forma-video-player-facade-note {
+    font-size: 0.8125rem;
+    color: var(--forma-video-facade-note-color, var(--media-muted-fg-color));
+}
+
+.forma-video-player-facade:focus-visible {
+    outline: 2px solid var(--focus-color);
+    outline-offset: -2px;
+}
+
+@media (hover: hover) {
+    .forma-video-player-facade:hover .forma-video-player-facade-label {
+        text-decoration: underline;
+    }
 }
