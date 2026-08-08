@@ -1,0 +1,47 @@
+@namespace Forma.Blazor.Components.Media
+
+<div @attributes="AdditionalAttributes" class="@CssClass">
+    @if (Frame is NativePlayerFrame native)
+    {
+        <video @ref="_video"
+               class="forma-video-player-frame"
+               src="@native.Source"
+               title="@Title"
+               controls
+               playsinline
+               autoplay="@Autoplay"
+               muted="@Autoplay">
+            @foreach (var caption in Captions ?? [])
+            {
+                <track kind="captions"
+                       src="@caption.Source"
+                       srclang="@caption.Language"
+                       label="@caption.Label"
+                       default="@caption.IsDefault" />
+            }
+        </video>
+    }
+    else if (Frame is EmbeddedPlayerFrame embedded)
+    {
+        <iframe class="forma-video-player-frame"
+                src="@embedded.Source"
+                title="@Title"
+                loading="lazy"
+                allow="accelerometer; encrypted-media; picture-in-picture"
+                allowfullscreen></iframe>
+    }
+    else if (Frame is HtmlPlayerFrame markup)
+    {
+        <div role="group" aria-label="@Title">
+            @((MarkupString)markup.Html)
+            <a class="forma-video-player-fallback"
+               href="@markup.Source"
+               target="_blank"
+               rel="noopener noreferrer">@L["Open this video on its own site."]</a>
+        </div>
+    }
+    else
+    {
+        <p class="forma-video-player-unavailable">@L["This video is unavailable."]</p>
+    }
+</div>

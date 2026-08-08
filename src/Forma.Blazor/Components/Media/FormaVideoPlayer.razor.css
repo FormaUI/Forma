@@ -1,0 +1,52 @@
+/* ============================================================
+   FormaVideoPlayer — CSS isolation
+   A fluid 16:9 frame the player fills, whether native or embedded.
+   ============================================================ */
+
+.forma-video-player {
+    position: relative;
+    inline-size: 100%;
+    aspect-ratio: 16 / 9;
+    background-color: var(--forma-video-bg-color, var(--media-bg-color));
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+/* A service that sizes its own player, often portrait, cannot be held to a 16:9 box. */
+.forma-video-player-flow {
+    aspect-ratio: auto;
+    background-color: transparent;
+    overflow: visible;
+}
+
+.forma-video-player-frame {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    border: 0;
+}
+
+.forma-video-player-unavailable {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    block-size: 100%;
+    margin: 0;
+    padding-inline: 1rem;
+    font-size: 0.875rem;
+    text-align: center;
+    color: var(--forma-video-unavailable-color, var(--text-muted-color));
+}
+
+.forma-video-player-fallback {
+    display: block;
+    padding-block: 0.75rem;
+    font-size: 0.875rem;
+    text-align: center;
+    color: var(--forma-video-fallback-color, var(--main-color));
+}
+
+/* The service replaces its own markup with an iframe, and that player stands in for the link. */
+[role="group"]:has(iframe) > .forma-video-player-fallback {
+    display: none;
+}
