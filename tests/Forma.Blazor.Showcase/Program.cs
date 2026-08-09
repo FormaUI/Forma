@@ -1,8 +1,10 @@
 using Forma.Blazor.Abstractions.Components.Feedback;
+using Forma.Blazor.Abstractions.Components.Files;
 using Forma.Blazor.Abstractions.Components.Indicators;
 using Forma.Blazor.Core.Components.Feedback;
 using Forma.Blazor.Core.Components.Indicators;
 using Forma.Blazor.Middlewares;
+using Forma.Blazor.Showcase;
 using Forma.Localization;
 using Forma.Web.Css;
 
@@ -10,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddJsonLocalization();
 builder.Services.AddScoped<IConfirmDialogService, ConfirmDialogService>();
 builder.Services.AddScoped<IToastService, ToastService>();
+builder.Services.AddScoped<IResourceProvider, TextFileResourceProvider>();
 
 // The statuses this application defines for itself — the library ships none.
 builder.Services.AddSingleton<IStatusBadgeCatalog>(new StatusBadgeCatalog(

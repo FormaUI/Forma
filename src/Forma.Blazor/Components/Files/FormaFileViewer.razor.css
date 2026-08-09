@@ -1,0 +1,226 @@
+/* ============================================================
+   FormaFileViewer — CSS isolation
+   One frame per resource kind, laid out by the viewer itself.
+   ============================================================ */
+
+.forma-file-viewer {
+    inline-size: 100%;
+    block-size: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.forma-file-viewer:focus-visible {
+    outline: 2px solid var(--focus-color);
+    outline-offset: 2px;
+}
+
+.forma-file-viewer-content {
+    position: relative;
+    flex: 1;
+    min-block-size: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.forma-file-viewer-image-frame {
+    position: relative;
+    flex: 1;
+    min-block-size: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+    background-color: var(--forma-file-viewer-bg-color, var(--media-bg-color));
+    border-radius: 4px;
+    /* Native touch scrolling already pans; this only adds the platform's own pinch-zoom. */
+    touch-action: pan-x pan-y pinch-zoom;
+}
+
+.forma-file-viewer-image {
+    display: block;
+    margin: auto;
+    max-inline-size: 100%;
+    max-block-size: 100%;
+    object-fit: contain;
+}
+
+.forma-file-viewer-image-frame.zoomed {
+    cursor: grab;
+}
+
+.forma-file-viewer-image-frame.zoomed .forma-file-viewer-image {
+    max-inline-size: none;
+    max-block-size: none;
+}
+
+.forma-file-viewer-zoom {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.forma-file-viewer-zoom-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 2rem;
+    block-size: 2rem;
+    padding: 0;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--input-bg-color);
+    color: var(--text-color);
+    font-size: 1.125rem;
+    line-height: 1;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+@media (pointer: coarse) {
+    .forma-file-viewer-zoom-button {
+        inline-size: 2.75rem;
+        block-size: 2.75rem;
+    }
+}
+
+.forma-file-viewer-zoom-button:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.forma-file-viewer-zoom-button:focus-visible {
+    outline: 2px solid var(--focus-color);
+    outline-offset: -2px;
+}
+
+@media (hover: hover) {
+    .forma-file-viewer-zoom-button:hover:not(:disabled) {
+        background-color: var(--hover-bg-color);
+    }
+}
+
+.forma-file-viewer-zoom-level {
+    min-inline-size: 3.5em;
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--text-muted-color);
+}
+
+.forma-file-viewer-audio {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+}
+
+.forma-file-viewer-audio audio {
+    inline-size: 100%;
+    max-inline-size: 28rem;
+}
+
+.forma-file-viewer-document {
+    inline-size: 100%;
+    block-size: 100%;
+    border: 0;
+}
+
+/* Converted markup is document content, so it scrolls and reads rather than fitting a frame. */
+.forma-file-viewer-html {
+    flex: 1;
+    min-block-size: 0;
+    overflow: auto;
+    padding: 1rem;
+    background-color: var(--input-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+
+.forma-file-viewer-unsupported {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--text-muted-color);
+}
+
+.forma-file-viewer-unsupported-glyph {
+    color: var(--text-muted-color);
+}
+
+.forma-file-viewer-unsupported-name {
+    margin: 0;
+    font-weight: 600;
+    color: var(--text-color);
+    overflow-wrap: anywhere;
+}
+
+.forma-file-viewer-unsupported-size {
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+.forma-file-viewer-unsupported-download {
+    color: var(--link-color);
+}
+
+.forma-file-viewer-metadata {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.875rem;
+    color: var(--text-muted-color);
+}
+
+.forma-file-viewer-metadata-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.forma-file-viewer-nav {
+    position: absolute;
+    inset-block-start: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 2.75rem;
+    block-size: 2.75rem;
+    border: 0;
+    border-radius: 999px;
+    background-color: var(--forma-file-viewer-nav-bg-color, var(--media-scrim-color));
+    color: var(--forma-file-viewer-nav-color, var(--media-fg-color));
+    font-size: 1.25rem;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.forma-file-viewer-nav-previous {
+    inset-inline-start: 0.5rem;
+}
+
+.forma-file-viewer-nav-next {
+    inset-inline-end: 0.5rem;
+}
+
+.forma-file-viewer-nav:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.forma-file-viewer-nav:focus-visible {
+    outline: 2px solid var(--focus-color);
+    outline-offset: 2px;
+}
+
+@media (hover: hover) {
+    .forma-file-viewer-nav:hover:not(:disabled) {
+        background-color: var(--forma-file-viewer-nav-hover-bg-color, var(--main-dark-color));
+    }
+}

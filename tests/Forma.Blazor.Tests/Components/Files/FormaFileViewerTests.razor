@@ -1,0 +1,542 @@
+@inherits BunitContext
+@using System.Globalization
+@using Forma.Blazor.Abstractions.Components.Files
+@using Forma.Blazor.Components.Files
+@using Forma.Blazor.Tests.Fakes
+@using Microsoft.Extensions.DependencyInjection
+
+@code {
+    public sealed class Component
+    {
+        private const string Image = "/media/cover.jpg";
+        private const string Video = "/media/clip.mp4";
+        private const string Audio = "/media/track.mp3";
+        private const string Pdf = "/media/brief.pdf";
+        private const string Page = "/media/notes.html";
+        private const string Unclaimed = "/media/archive.zip";
+
+        [Fact]
+        public void Should_fit_an_image_to_the_frame()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="@Image" />);
+            var img = cut.Find("img.forma-file-viewer-image");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(Image, img.GetAttribute("src"));
+                Assert.Equal("cover.jpg", img.GetAttribute("alt"));
+            });
+        }
+
+        [Fact]
+        public void Should_render_a_video_through_FormaVideoPlayer_without_deferring()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="@Video" />);
+            var video = cut.Find("video");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(Video, video.GetAttribute("src"));
+                Assert.Equal("clip.mp4", video.GetAttribute("title"));
+            });
+        }
+
+        [Fact]
+        public void Should_render_native_audio_controls()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="@Audio" />);
+            var audio = cut.Find("audio");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(Audio, audio.GetAttribute("src"));
+                Assert.NotNull(audio.GetAttribute("controls"));
+            });
+        }
+
+        [Fact]
+        public void Should_embed_a_pdf_by_its_media_type()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="@Pdf" />);
+            var embed = cut.Find("object.forma-file-viewer-document");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(Pdf, embed.GetAttribute("data"));
+                Assert.Equal("application/pdf", embed.GetAttribute("type"));
+                Assert.NotNull(embed.QuerySelector("a"));
+            });
+        }
+
+        [Fact]
+        public void Should_preview_an_uploaded_page_with_everything_withheld()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="@Page" />);
+            var frame = cut.Find("iframe.forma-file-viewer-document");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(Page, frame.GetAttribute("src"));
+                Assert.Equal(string.Empty, frame.GetAttribute("sandbox"));
+            });
+        }
+
+        [Fact]
+        public void Should_fall_back_to_a_download_when_no_provider_claims_the_source()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="@Unclaimed" />);
+            var download = cut.Find("a.forma-file-viewer-unsupported-download");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("archive.zip", cut.Find(".forma-file-viewer-unsupported-name").TextContent);
+                Assert.Equal(Unclaimed, download.GetAttribute("href"));
+            });
+        }
+
+        [Fact]
+        public void Should_use_a_supplied_template_when_no_provider_claims_the_source()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="@Unclaimed">
+                <UnsupportedTemplate>
+                    <p class="custom-fallback">@context</p>
+                </UnsupportedTemplate>
+            </FormaFileViewer>);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(Unclaimed, cut.Find("p.custom-fallback").TextContent);
+                Assert.Empty(cut.FindAll(".forma-file-viewer-unsupported-download"));
+            });
+        }
+
+        [Fact]
+        public void Should_render_markup_a_registered_provider_converted()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+            ctx.Services.AddScoped<IResourceProvider>(_ => new FakeResourceProvider(".docx", source => new MarkupResourceInfo(source, "<p>Converted body.</p>")));
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="/media/brief.docx" />);
+
+            // Assert
+            Assert.Equal("Converted body.", cut.Find(".forma-file-viewer-html p").TextContent);
+        }
+
+        [Fact]
+        public void Should_let_a_registered_provider_win_over_the_browser()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+            ctx.Services.AddScoped<IResourceProvider>(_ => new FakeResourceProvider(".pdf", source => new MarkupResourceInfo(source, "<p>Converted instead.</p>")));
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="@Pdf" />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("Converted instead.", cut.Find(".forma-file-viewer-html p").TextContent);
+                Assert.Empty(cut.FindAll("object"));
+            });
+        }
+
+        [Fact]
+        public void Should_fall_back_to_the_browser_when_no_provider_claims_the_source()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+            ctx.Services.AddScoped<IResourceProvider>(_ => new FakeResourceProvider(".docx", source => new MarkupResourceInfo(source, "<p>Never used.</p>")));
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="@Pdf" />);
+
+            // Assert
+            Assert.Equal(Pdf, cut.Find("object.forma-file-viewer-document").GetAttribute("data"));
+        }
+
+        [Fact]
+        public void Should_ask_a_provider_once_per_source_rather_than_once_per_render()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+            var provider = new FakeResourceProvider(".docx", source => new MarkupResourceInfo(source, "<p>Body.</p>"));
+            ctx.Services.AddScoped<IResourceProvider>(_ => provider);
+            var cut = ctx.Render(@<FormaFileViewer Source="/media/brief.docx" />);
+
+            // Act
+            cut.FindComponent<FormaFileViewer>().Render(parameters => parameters
+                .Add(viewer => viewer.Source, "/media/brief.docx")
+                .Add(viewer => viewer.ShowMetadata, true));
+
+            // Assert
+            Assert.Equal(1, provider.Calls);
+        }
+
+        [Fact]
+        public void Should_ask_a_provider_again_when_the_source_changes()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+            var provider = new FakeResourceProvider(".docx", source => new MarkupResourceInfo(source, "<p>Body.</p>"));
+            ctx.Services.AddScoped<IResourceProvider>(_ => provider);
+            var cut = ctx.Render(@<FormaFileViewer Source="/media/first.docx" />);
+
+            // Act
+            cut.FindComponent<FormaFileViewer>().Render(parameters => parameters.Add(viewer => viewer.Source, "/media/second.docx"));
+
+            // Assert
+            Assert.Equal(2, provider.Calls);
+        }
+
+        [Fact]
+        public void Should_show_metadata_when_requested()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="@Image" ShowMetadata="true" />);
+
+            // Assert
+            Assert.Equal("cover.jpg", cut.Find(".forma-file-viewer-metadata-name").TextContent);
+        }
+
+        [Fact]
+        public void Should_hide_metadata_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="@Image" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-file-viewer-metadata"));
+        }
+
+        [Fact]
+        public void Should_omit_a_size_no_provider_knew()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="@Image" ShowMetadata="true" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-file-viewer-metadata-size"));
+        }
+
+        [Fact]
+        public void Should_show_a_size_a_provider_knew()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+            ctx.Services.AddScoped<IResourceProvider>(_ => new FakeResourceProvider(".bin", source => new ResourceInfo(source) { Size = 2048 }));
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="/media/blob.bin" ShowMetadata="true" />);
+
+            // Assert
+            Assert.Equal("2 KB", cut.Find(".forma-file-viewer-metadata-size").TextContent);
+        }
+
+        [Fact]
+        public void Should_zoom_in_and_stop_at_the_top_step()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+            var cut = ctx.Render(@<FormaFileViewer Source="@Image" />);
+            var zoomIn = () => cut.Find("button.forma-file-viewer-zoom-button[aria-label='Zoom in']");
+
+            // Act
+            for (var i = 0; i < 10; i++)
+            {
+                zoomIn().Click();
+            }
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("400%", cut.Find(".forma-file-viewer-zoom-level").TextContent);
+                Assert.NotNull(zoomIn().GetAttribute("disabled"));
+            });
+        }
+
+        [Fact]
+        public void Should_start_unzoomed_with_zoom_out_unavailable()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="@Image" />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("100%", cut.Find(".forma-file-viewer-zoom-level").TextContent);
+                Assert.NotNull(cut.Find("button.forma-file-viewer-zoom-button[aria-label='Zoom out']").GetAttribute("disabled"));
+            });
+        }
+
+        [Fact]
+        public void Should_reset_zoom_when_the_source_changes()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+            var cut = ctx.Render(@<FormaFileViewer Source="@Image" />);
+            cut.Find("button.forma-file-viewer-zoom-button[aria-label='Zoom in']").Click();
+
+            // Act
+            cut.FindComponent<FormaFileViewer>().Render(parameters => parameters.Add(viewer => viewer.Source, "/media/other.jpg"));
+
+            // Assert
+            Assert.Equal("100%", cut.Find(".forma-file-viewer-zoom-level").TextContent);
+        }
+
+        [Fact]
+        public async Task Should_navigate_to_the_next_sibling()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+            string? navigatedTo = null;
+            var siblings = new List<string> { Image, Video, Audio };
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="@Image" Siblings="siblings" OnNavigate="EventCallback.Factory.Create<string>(this, s => navigatedTo = s)" />);
+            await cut.Find("button.forma-file-viewer-nav-next").ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
+
+            // Assert
+            Assert.Equal(Video, navigatedTo);
+        }
+
+        [Fact]
+        public async Task Should_navigate_to_the_previous_sibling()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+            string? navigatedTo = null;
+            var siblings = new List<string> { Image, Video, Audio };
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="@Video" Siblings="siblings" OnNavigate="EventCallback.Factory.Create<string>(this, s => navigatedTo = s)" />);
+            await cut.Find("button.forma-file-viewer-nav-previous").ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
+
+            // Assert
+            Assert.Equal(Image, navigatedTo);
+        }
+
+        [Fact]
+        public void Should_disable_next_at_the_last_sibling()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+            var siblings = new List<string> { Image, Video };
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="@Video" Siblings="siblings" />);
+
+            // Assert
+            Assert.NotNull(cut.Find("button.forma-file-viewer-nav-next").GetAttribute("disabled"));
+        }
+
+        [Fact]
+        public void Should_disable_previous_at_the_first_sibling()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+            var siblings = new List<string> { Image, Video };
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="@Image" Siblings="siblings" />);
+
+            // Assert
+            Assert.NotNull(cut.Find("button.forma-file-viewer-nav-previous").GetAttribute("disabled"));
+        }
+
+        [Fact]
+        public void Should_render_no_navigation_with_a_single_sibling()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+            var siblings = new List<string> { Image };
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="@Image" Siblings="siblings" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-file-viewer-nav"));
+        }
+
+        [Fact]
+        public async Task Should_navigate_with_arrow_keys()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+            string? navigatedTo = null;
+            var siblings = new List<string> { Image, Video };
+            var cut = ctx.Render(@<FormaFileViewer Source="@Image" Siblings="siblings" OnNavigate="EventCallback.Factory.Create<string>(this, s => navigatedTo = s)" />);
+
+            // Act
+            await cut.Find("div.forma-file-viewer").KeyDownAsync(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowRight" });
+
+            // Assert
+            Assert.Equal(Video, navigatedTo);
+        }
+
+        [Fact]
+        public async Task Should_reverse_arrow_keys_under_right_to_left()
+        {
+            // Arrange
+            var original = CultureInfo.CurrentCulture;
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("he");
+
+            try
+            {
+                using var ctx = new FormaFileViewerTests();
+                string? navigatedTo = null;
+                var siblings = new List<string> { Image, Video };
+                var cut = ctx.Render(@<FormaFileViewer Source="@Image" Siblings="siblings" OnNavigate="EventCallback.Factory.Create<string>(this, s => navigatedTo = s)" />);
+
+                // Act
+                await cut.Find("div.forma-file-viewer").KeyDownAsync(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowLeft" });
+
+                // Assert
+                Assert.Equal(Video, navigatedTo);
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = original;
+            }
+        }
+
+        [Fact]
+        public void Should_reject_a_blank_source()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+
+            // Act
+            var act = () => ctx.Render(@<FormaFileViewer Source=" " />);
+
+            // Assert
+            Assert.ThrowsAny<ArgumentException>(act);
+        }
+
+        [Fact]
+        public void Should_be_focusable_while_it_has_somewhere_to_navigate()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+            var siblings = new List<string> { Image, Video };
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="@Image" Siblings="siblings" />);
+            var viewer = cut.Find("div.forma-file-viewer");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("0", viewer.GetAttribute("tabindex"));
+                Assert.Equal("group", viewer.GetAttribute("role"));
+                Assert.Equal("cover.jpg", viewer.GetAttribute("aria-label"));
+            });
+        }
+
+        [Fact]
+        public void Should_stay_out_of_the_tab_order_with_nowhere_to_navigate()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="@Image" />);
+            var viewer = cut.Find("div.forma-file-viewer");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Null(viewer.GetAttribute("tabindex"));
+                Assert.Null(viewer.GetAttribute("role"));
+            });
+        }
+
+        [Fact]
+        public void Should_announce_the_zoom_level()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="@Image" />);
+            var level = cut.Find(".forma-file-viewer-zoom-level");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("status", level.GetAttribute("role"));
+                Assert.Null(level.GetAttribute("aria-hidden"));
+            });
+        }
+
+        [Fact]
+        public void Should_ignore_a_resolve_that_finished_after_the_source_changed()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+            var provider = new GatedResourceProvider();
+            ctx.Services.AddScoped<IResourceProvider>(_ => provider);
+            var cut = ctx.Render(@<FormaFileViewer Source="/media/slow.bin" ShowMetadata="true" />);
+
+            // Act
+            cut.FindComponent<FormaFileViewer>().Render(parameters => parameters.Add(viewer => viewer.Source, "/media/current.bin"));
+            provider.Complete("/media/current.bin", new ResourceInfo("/media/current.bin") { Size = 512 });
+            provider.Complete("/media/slow.bin", new ResourceInfo("/media/slow.bin") { Size = 2048 });
+
+            // Assert
+            cut.WaitForAssertion(() =>
+            {
+                Assert.Equal("current.bin", cut.Find(".forma-file-viewer-metadata-name").TextContent);
+                Assert.Equal("512 B", cut.Find(".forma-file-viewer-metadata-size").TextContent);
+            });
+        }
+    }
+}
