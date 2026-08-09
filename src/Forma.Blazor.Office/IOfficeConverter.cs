@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Components.Files.Converters;
+namespace Forma.Blazor.Office;
 
 /// <summary>Turns one Office format into markup a viewer can render.</summary>
 internal interface IOfficeConverter

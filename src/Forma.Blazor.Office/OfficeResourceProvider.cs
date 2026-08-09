@@ -1,8 +1,9 @@
-namespace Forma.Blazor.Components.Files;
+namespace Forma.Blazor.Office;
 
 using System.Diagnostics.CodeAnalysis;
 
-using Forma.Blazor.Components.Files.Converters;
+using Forma.Blazor.Components.Files;
+using Forma.Blazor.Office.Converters;
 
 using Ganss.Xss;
 
@@ -95,6 +96,11 @@ public sealed class OfficeResourceProvider : IResourceProvider
         var sanitizer = new HtmlSanitizer();
 
         sanitizer.AllowedSchemes.Add("data");
+
+        // Neither scheme can carry script, and a document routinely addresses a mailbox or a telephone.
+        sanitizer.AllowedSchemes.Add("mailto");
+        sanitizer.AllowedSchemes.Add("tel");
+
         sanitizer.FilterUrl += RejectDataUrlOutsideAnImage;
 
         return sanitizer;

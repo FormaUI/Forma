@@ -361,6 +361,25 @@ public sealed class OfficeResourceProviderTests
         Assert.Contains("https://example.com/report", markup.Html, StringComparison.Ordinal);
     }
 
+    // A document routinely addresses a mailbox, and that scheme cannot carry script.
+    [Fact]
+    public async Task Should_keep_a_link_to_a_mailbox()
+    {
+        // Arrange
+        var reader = new FakeResourceContentReader().Add(
+            "/media/report.docx",
+            OfficeFixture.Docx(document => document.AddHyperLink("Contact", new Uri("mailto:team@example.com"))));
+        var provider = new OfficeResourceProvider(reader, Localizer());
+
+        // Act
+        var resource = await provider.GetResourceAsync("/media/report.docx", TestContext.Current.CancellationToken);
+
+        // Assert
+        var markup = Assert.IsType<MarkupResourceInfo>(resource);
+
+        Assert.Contains("mailto:team@example.com", markup.Html, StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task Should_reject_an_address_that_is_missing()
     {

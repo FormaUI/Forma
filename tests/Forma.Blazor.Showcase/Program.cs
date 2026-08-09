@@ -4,6 +4,8 @@ using Forma.Blazor.Components.Indicators;
 using Forma.Blazor.Components.Media;
 using Forma.Blazor.Css;
 using Forma.Blazor.Globalization;
+using Forma.Blazor.Markdown;
+using Forma.Blazor.Office;
 using Forma.Blazor.Showcase;
 using Forma.Localization;
 

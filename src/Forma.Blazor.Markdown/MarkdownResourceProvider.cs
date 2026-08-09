@@ -1,6 +1,8 @@
-namespace Forma.Blazor.Components.Files;
+namespace Forma.Blazor.Markdown;
 
 using System.Diagnostics.CodeAnalysis;
+
+using Forma.Blazor.Components.Files;
 
 using Ganss.Xss;
 
@@ -19,7 +21,7 @@ public sealed class MarkdownResourceProvider : IResourceProvider
         .Build();
 
     private readonly IResourceContentReader _reader;
-    private readonly HtmlSanitizer _sanitizer = new();
+    private readonly HtmlSanitizer _sanitizer = CreateSanitizer();
 
     /// <summary>Creates the provider over the reader supplying document content.</summary>
     public MarkdownResourceProvider(IResourceContentReader reader)
@@ -72,4 +74,15 @@ public sealed class MarkdownResourceProvider : IResourceProvider
 
     private static bool Claims(string extension)
         => Array.Exists(Extensions, claimed => string.Equals(extension, claimed, StringComparison.OrdinalIgnoreCase));
+
+    private static HtmlSanitizer CreateSanitizer()
+    {
+        var sanitizer = new HtmlSanitizer();
+
+        // Neither scheme can carry script, and a document routinely addresses a mailbox or a telephone.
+        sanitizer.AllowedSchemes.Add("mailto");
+        sanitizer.AllowedSchemes.Add("tel");
+
+        return sanitizer;
+    }
 }

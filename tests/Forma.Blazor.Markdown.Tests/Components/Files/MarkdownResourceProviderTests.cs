@@ -129,6 +129,26 @@ public sealed class MarkdownResourceProviderTests
         Assert.Contains("https://example.com/docs", markup.Html, StringComparison.Ordinal);
     }
 
+    // A document routinely addresses a mailbox or a sibling file, neither of which is a scripting risk.
+    [Theory]
+    [InlineData("[Mail](mailto:team@example.com)", "mailto:team@example.com")]
+    [InlineData("[Sibling](./other.md)", "./other.md")]
+    [InlineData("[Anchor](#what-survives)", "#what-survives")]
+    public async Task Should_keep_a_link_that_carries_no_script(string markdown, string expected)
+    {
+        // Arrange
+        var reader = new FakeResourceContentReader().Add("/media/notes.md", markdown);
+        var provider = new MarkdownResourceProvider(reader);
+
+        // Act
+        var resource = await provider.GetResourceAsync("/media/notes.md", TestContext.Current.CancellationToken);
+
+        // Assert
+        var markup = Assert.IsType<MarkupResourceInfo>(resource);
+
+        Assert.Contains(expected, markup.Html, StringComparison.Ordinal);
+    }
+
     // A host with no reader for the address must degrade to the viewer's download link.
     [Fact]
     public async Task Should_return_nothing_when_the_reader_does_not_have_the_content()
@@ -147,7 +167,7 @@ public sealed class MarkdownResourceProviderTests
     public async Task Should_report_the_size_of_the_document_it_read()
     {
         // Arrange
-        const string Markdown = "# Sized";
+        const string Markdown = "# Sized \u00e9";
         var reader = new FakeResourceContentReader().Add("/media/notes.md", Markdown);
         var provider = new MarkdownResourceProvider(reader);
 
@@ -155,7 +175,7 @@ public sealed class MarkdownResourceProviderTests
         var resource = await provider.GetResourceAsync("/media/notes.md", TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(Markdown.Length, resource?.Size);
+        Assert.Equal(System.Text.Encoding.UTF8.GetByteCount(Markdown), resource?.Size);
     }
 
     // A file saved from an editor carries a byte order mark, which must not survive into the heading.

@@ -5,7 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
-        <RootNamespace>Forma.Blazor</RootNamespace>
+        <RootNamespace>Forma.Blazor.Markdown</RootNamespace>
         <AssemblyName>Forma.Blazor.Markdown</AssemblyName>
         <PackageId>2Site.Forma.Blazor.Markdown</PackageId>
     </PropertyGroup>

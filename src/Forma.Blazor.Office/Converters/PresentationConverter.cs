@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Components.Files.Converters;
+namespace Forma.Blazor.Office.Converters;
 
 using System.Net;
 using System.Text;

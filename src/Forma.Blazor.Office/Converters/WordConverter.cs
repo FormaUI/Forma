@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Components.Files.Converters;
+namespace Forma.Blazor.Office.Converters;
 
 using OfficeIMO.Word;
 using OfficeIMO.Word.Html;
