@@ -11,6 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddJsonLocalization();
 builder.Services.AddScoped<IConfirmDialogService, ConfirmDialogService>();
 builder.Services.AddScoped<IToastService, ToastService>();
+builder.Services.AddScoped<IResourceContentReader, WebRootContentReader>();
+builder.Services.AddScoped<IResourceProvider, OfficeResourceProvider>();
 builder.Services.AddScoped<IResourceProvider, TextFileResourceProvider>();
 builder.Services.AddScoped<IPlayerProvider, CustomPlayerProvider>();
 

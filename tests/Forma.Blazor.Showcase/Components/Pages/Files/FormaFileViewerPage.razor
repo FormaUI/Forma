@@ -56,6 +56,30 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["A Word document converted by Forma.Blazor.Office"]</h2>
+    <p class="desc">@L["The package reads the file through the host's content reader, converts it, and sanitises the result before the viewer renders it as markup."]</p>
+    <div class="demo-box">
+        <FormaFileViewer Source="/media/sample.docx" ShowMetadata="true" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A workbook, one table per sheet"]</h2>
+    <p class="desc">@L["OfficeIMO ships no HTML converter for Excel, so the package projects each sheet's used range into a table, bounded so a large sheet cannot flood the page."]</p>
+    <div class="demo-box">
+        <FormaFileViewer Source="/media/sample.xlsx" ShowMetadata="true" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A presentation, one section per slide"]</h2>
+    <p class="desc">@L["Each slide becomes a section carrying its text boxes, with speaker notes rendered as a quotation."]</p>
+    <div class="demo-box">
+        <FormaFileViewer Source="/media/sample.pptx" ShowMetadata="true" />
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["An address no provider claims"]</h2>
     <p class="desc">@L["Falls back to a type glyph, the name, the size when one is known, and a download link rather than a broken preview."]</p>
     <div class="demo-box">

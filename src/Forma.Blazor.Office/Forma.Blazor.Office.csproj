@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <RootNamespace>Forma.Blazor</RootNamespace>
+        <AssemblyName>Forma.Blazor.Office</AssemblyName>
+        <PackageId>2Site.Forma.Blazor.Office</PackageId>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Blazor.Framework\Forma.Blazor.Framework.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Components\**\*.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="HtmlSanitizer" Version="9.1.982" />
+      <PackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="10.0.10" />
+      <PackageReference Include="OfficeIMO.Excel" Version="3.2.0" />
+      <PackageReference Include="OfficeIMO.PowerPoint" Version="3.2.0" />
+      <PackageReference Include="OfficeIMO.Word.Html" Version="3.2.0" />
+    </ItemGroup>
+
+</Project>

@@ -4,10 +4,12 @@
     <Project Path="src\Forma.Blazor.Framework\Forma.Blazor.Framework.csproj" />
     <Project Path="src\Forma.Blazor.Core\Forma.Blazor.Core.csproj" />
     <Project Path="src\Forma.Blazor\Forma.Blazor.csproj" />
+    <Project Path="src\Forma.Blazor.Office\Forma.Blazor.Office.csproj" />
 
     <!-- Tests -->
     <Project Path="tests\Forma.Blazor.Showcase\Forma.Blazor.Showcase.csproj" />
     <Project Path="tests\Forma.Blazor.Tests\Forma.Blazor.Tests.csproj" />
+    <Project Path="tests\Forma.Blazor.Office.Tests\Forma.Blazor.Office.Tests.csproj" />
     <Project Path="tests\Forma.Localization.Tests\Forma.Localization.Tests.csproj" />
 
     <Configurations>
