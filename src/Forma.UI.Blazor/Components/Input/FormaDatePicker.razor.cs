@@ -10,7 +10,7 @@ using Microsoft.JSInterop;
 
 public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
 {
-    private const string ModulePath = "./_content/Forma.UI.Blazor/scripts/AnchoredPopup.js";
+    private const string ModulePath = "./_content/Forma.UI/scripts/AnchoredPopup.js";
     // ── Single-date mode ─────────────────────────────
     [Parameter] public DateOnly? Value { get; set; }
     [Parameter] public EventCallback<DateOnly?> ValueChanged { get; set; }

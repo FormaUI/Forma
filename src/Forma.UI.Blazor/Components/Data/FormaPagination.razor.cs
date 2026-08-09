@@ -14,7 +14,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
 {
     private const int BoundaryCount = 1;
     private const int SiblingCount = 1;
-    private const string ModulePath = "./_content/Forma.UI.Blazor/Components/Data/FormaPagination.razor.js";
+    private const string ModulePath = "./_content/Forma.UI/Components/Data/FormaPagination.razor.js";
 
     private readonly string _pageInputId = $"forma-pagination-input-{Guid.NewGuid():N}";
 

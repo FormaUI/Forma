@@ -7,7 +7,7 @@
         <LangVersion>latest</LangVersion>
         <RootNamespace>Forma.UI</RootNamespace>
         <PackageId>2Site.Forma.UI.Blazor</PackageId>
-        <StaticWebAssetBasePath>_content/Forma.UI.Blazor</StaticWebAssetBasePath>
+        <StaticWebAssetBasePath>_content/Forma.UI</StaticWebAssetBasePath>
         <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeReferencedProjectsInPackage</TargetsForTfmSpecificBuildOutput>
     </PropertyGroup>
 

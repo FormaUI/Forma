@@ -10,7 +10,7 @@ using Microsoft.JSInterop;
 
 public sealed partial class FormaModal : IAsyncDisposable
 {
-    private const string ModulePath = "./_content/Forma.UI.Blazor/Components/Feedback/FormaModal.razor.js";
+    private const string ModulePath = "./_content/Forma.UI/Components/Feedback/FormaModal.razor.js";
 
     private ElementReference _dialogRef;
     private JsModule _module = default!;

@@ -10,8 +10,8 @@ using Microsoft.JSInterop;
 /// <summary>A trigger button that opens an anchored menu of commands.</summary>
 public sealed partial class FormaDropDownMenu : ComponentBase, IAsyncDisposable
 {
-    private const string PlacementModulePath = "./_content/Forma.UI.Blazor/scripts/AnchoredPopup.js";
-    private const string KeysModulePath = "./_content/Forma.UI.Blazor/Components/Interactive/FormaDropDownMenu.razor.js";
+    private const string PlacementModulePath = "./_content/Forma.UI/scripts/AnchoredPopup.js";
+    private const string KeysModulePath = "./_content/Forma.UI/Components/Interactive/FormaDropDownMenu.razor.js";
 
     /// <summary>Content rendered inside the trigger button.</summary>
     [Parameter, EditorRequired] public RenderFragment Trigger { get; set; } = default!;

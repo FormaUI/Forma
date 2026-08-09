@@ -14,8 +14,8 @@ using Microsoft.JSInterop;
 /// <remarks>Bind <typeparamref name="TValue"/> to a nullable type (<c>int?</c>, <c>string</c>, <c>MyEnum?</c>) to allow no selection.</remarks>
 public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDisposable
 {
-    private const string PlacementModulePath = "./_content/Forma.UI.Blazor/scripts/AnchoredPopup.js";
-    private const string KeysModulePath = "./_content/Forma.UI.Blazor/Components/Input/FormaSelect.razor.js";
+    private const string PlacementModulePath = "./_content/Forma.UI/scripts/AnchoredPopup.js";
+    private const string KeysModulePath = "./_content/Forma.UI/Components/Input/FormaSelect.razor.js";
 
     /// <summary>The options offered in the list.</summary>
     [Parameter, EditorRequired] public IReadOnlyList<SelectOption<TValue>> Options { get; set; } = default!;

@@ -14,7 +14,7 @@ using Microsoft.JSInterop;
 public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisposable
     where TGridItem : notnull
 {
-    private const string ModulePath = "./_content/Forma.UI.Blazor/Components/Data/FormaDataGrid.razor.js";
+    private const string ModulePath = "./_content/Forma.UI/Components/Data/FormaDataGrid.razor.js";
 
     private readonly PaginationState _pagination = new();
 

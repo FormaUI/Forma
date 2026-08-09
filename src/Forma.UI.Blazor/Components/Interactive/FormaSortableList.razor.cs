@@ -10,7 +10,7 @@ using Microsoft.JSInterop;
 public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisposable
     where TItem : notnull
 {
-    private const string ModulePath = "./_content/Forma.UI.Blazor/Components/Interactive/FormaSortableList.razor.js";
+    private const string ModulePath = "./_content/Forma.UI/Components/Interactive/FormaSortableList.razor.js";
 
     /// <summary>The items to display, in their current order.</summary>
     [Parameter, EditorRequired] public IReadOnlyList<TItem> Items { get; set; } = default!;

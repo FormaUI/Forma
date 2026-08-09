@@ -12,7 +12,7 @@ using Microsoft.JSInterop;
 /// <summary>A password field with a toggle that reveals the typed value.</summary>
 public sealed partial class FormaPasswordInput : InputBase<string?>, IAsyncDisposable
 {
-    private const string ModulePath = "./_content/Forma.UI.Blazor/Components/Input/FormaInput.razor.js";
+    private const string ModulePath = "./_content/Forma.UI/Components/Input/FormaInput.razor.js";
 
     private readonly string _inputId = $"fld-{Guid.NewGuid():N}";
     private ElementReference _inputRef;

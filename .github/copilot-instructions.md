@@ -57,12 +57,12 @@ Coi's boxy gradient toggle becoming a token-driven iOS-style `FormaToggleSwitch`
 - Do represent colours and other CSS values with typed values such as `CssColor.FromRgba(...)` and `CssColor.FromHex(...)`.
 - Do share the `Forma.Framework` namespace across `Forma.Framework` and `Forma.Framework.Core` — the assembly name carries the split, not the namespace (matches `Microsoft.Extensions.DependencyInjection` / `.Abstractions`).
 - Do use the `Forma.UI` namespace for `Forma.UI.Blazor`, keeping `Forma.UI` free as the root for any future renderer.
-- Do keep these identities distinct: assembly `Forma.UI.Blazor`, namespace `Forma.UI`, package ID `2Site.Forma.UI.Blazor`, static asset base path `_content/Forma.UI.Blazor`.
+- Do keep these identities distinct: assembly `Forma.UI.Blazor`, namespace `Forma.UI`, package ID `2Site.Forma.UI.Blazor`, static asset base path `_content/Forma.UI`.
 - Do keep `Forma.UI.Blazor` the only packable project; every other project sets `IsPackable=false`, and the ones it references ship inside its package through `PrivateAssets="all"`.
 - Don't reference `Forma.Framework.Core` from `Forma.UI.Blazor`.
 - Don't represent typed CSS values as arbitrary strings.
 - Don't give any other project a `PackageId`, and don't set `AssemblyName` where it would only repeat the project name.
-- Don't rename or conflate these identities; `_content/Forma.UI.Blazor` is pinned and hardcoded by markup and JS.
+- Don't rename or conflate these identities; `_content/Forma.UI` is pinned and hardcoded by markup and JS.
 
 ## Dependencies
 
@@ -175,7 +175,7 @@ JS-free is the default, not a prohibition.
 - Do use only native modern browser APIs; keep each module small, colocated as `FormaX.razor.js`, and focused on one DOM responsibility.
 - Do keep behaviour in C# and use JS only for what the DOM cannot otherwise provide.
 - Do name JS parameters by role (`input`, `dialog`, `label`), not type (`inputEl`, `dialogElement`, `el`).
-- Do import the module on first render from `./_content/Forma.UI.Blazor/Components/{Category}/FormaX.razor.js`.
+- Do import the module on first render from `./_content/Forma.UI/Components/{Category}/FormaX.razor.js`.
 - Do catch `JSException` around every JS call because the circuit can drop mid-call.
 - Do dispose the module in `DisposeAsync` and catch `JSDisconnectedException`.
 - Don't use jQuery, npm packages, polyfills, or other external JS libraries. The sole exception is `FormaRichTextEditor`'s Markdown renderer — a parser is a solved problem, and it renders only; it never owns an editing surface, a selection, an undo stack or a toolbar. Adding a second exception is a decision for the maintainer, not a precedent already set.

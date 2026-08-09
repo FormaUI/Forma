@@ -15,7 +15,7 @@ using Microsoft.JSInterop;
 public sealed partial class FormaMultiSelectDropDown<TValue> : InputBase<List<TValue>>, IAsyncDisposable
     where TValue : notnull
 {
-    private const string ModulePath = "./_content/Forma.UI.Blazor/scripts/AnchoredPopup.js";
+    private const string ModulePath = "./_content/Forma.UI/scripts/AnchoredPopup.js";
 
     /// <summary>The options offered in the dropdown.</summary>
     [Parameter, EditorRequired] public IReadOnlyList<SelectOption<TValue>> Options { get; set; } = default!;

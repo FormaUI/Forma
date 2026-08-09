@@ -14,7 +14,7 @@ using Microsoft.JSInterop;
 /// <summary>Renders whatever resource a source address resolves to, through the first provider that claims it.</summary>
 public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
 {
-    private const string ModulePath = "./_content/Forma.UI.Blazor/Components/Files/FormaFileViewer.razor.js";
+    private const string ModulePath = "./_content/Forma.UI/Components/Files/FormaFileViewer.razor.js";
 
     private static readonly int[] ZoomSteps = [100, 150, 200, 300, 400];
 

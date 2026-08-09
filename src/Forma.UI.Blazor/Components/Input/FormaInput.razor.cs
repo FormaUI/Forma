@@ -10,7 +10,7 @@ using Microsoft.JSInterop;
 
 public sealed partial class FormaInput : InputBase<string?>, IAsyncDisposable
 {
-    private const string ModulePath = "./_content/Forma.UI.Blazor/Components/Input/FormaInput.razor.js";
+    private const string ModulePath = "./_content/Forma.UI/Components/Input/FormaInput.razor.js";
 
     private readonly string _inputId = $"fld-{Guid.NewGuid():N}";
     private ElementReference _inputRef;

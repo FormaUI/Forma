@@ -11,7 +11,7 @@ using Microsoft.JSInterop;
 /// <summary>A player for a file the browser can fetch, or a video a hosting service embeds.</summary>
 public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
 {
-    private const string ModulePath = "./_content/Forma.UI.Blazor/Components/Media/FormaVideoPlayer.razor.js";
+    private const string ModulePath = "./_content/Forma.UI/Components/Media/FormaVideoPlayer.razor.js";
 
     // Ordered: the file provider accepts any fetchable address, so it answers only once the services have declined.
     private static readonly IPlayerProvider[] Providers =

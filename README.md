@@ -55,15 +55,15 @@ These three identities are intentionally distinct — keep them straight:
 | --- | --- | --- |
 | Assembly name | `Forma.UI.Blazor` | Namespace root is `Forma.UI`. |
 | NuGet package id | `2Site.Forma.UI.Blazor` | The published package name. |
-| Static web asset base path | `_content/Forma.UI.Blazor` | Pinned via `<StaticWebAssetBasePath>`. |
+| Static web asset base path | `_content/Forma.UI` | Pinned via `<StaticWebAssetBasePath>`. |
 
 An RCL normally serves its static assets under `_content/{PackageId}`. Because the
-component markup and JS interop hardcode `_content/Forma.UI.Blazor/…`, the base path is
+component markup and JS interop hardcode `_content/Forma.UI/…`, the base path is
 **pinned to `Forma.UI.Blazor`** so those URLs stay stable regardless of what the NuGet
 package is named:
 
 ```xml
-<StaticWebAssetBasePath>_content/Forma.UI.Blazor</StaticWebAssetBasePath>
+<StaticWebAssetBasePath>_content/Forma.UI</StaticWebAssetBasePath>
 ```
 
 If you rename the package, do **not** change this — the asset URLs depend on it.
@@ -110,9 +110,9 @@ through `IStatusBadgeCatalog.Add`:
 **2. Reference the library stylesheets from your host `App.razor` `<head>`, in this order:**
 
 ```razor
-<link rel="stylesheet" href="@Assets["_content/Forma.UI.Blazor/forma-tokens.css"]" />
-<link rel="stylesheet" href="@Assets["_content/Forma.UI.Blazor/forma-reset.css"]" />
-<link rel="stylesheet" href="@Assets["_content/Forma.UI.Blazor/forma-base.css"]" />
+<link rel="stylesheet" href="@Assets["_content/Forma.UI/forma-tokens.css"]" />
+<link rel="stylesheet" href="@Assets["_content/Forma.UI/forma-reset.css"]" />
+<link rel="stylesheet" href="@Assets["_content/Forma.UI/forma-base.css"]" />
 ```
 
 Three layers, so a host takes only what it wants:
