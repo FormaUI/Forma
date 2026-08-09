@@ -99,11 +99,8 @@ public sealed class JsonStringLocalizerFactoryTests
         // Arrange
         var factory = new JsonStringLocalizerFactory();
 
-        // Act
-        var act = () => factory.Create(null!);
-
-        // Assert
-        Assert.Throws<ArgumentNullException>(act);
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => factory.Create(null!));
     }
 
     [Fact]

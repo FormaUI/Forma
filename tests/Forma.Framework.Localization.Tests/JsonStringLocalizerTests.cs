@@ -207,11 +207,8 @@ public sealed class JsonStringLocalizerTests
         // Arrange
         var strings = Localizer<Colocated>();
 
-        // Act
-        var act = () => strings[string.Empty];
-
-        // Assert
-        Assert.Throws<ArgumentException>(act);
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => strings[string.Empty]);
     }
 
     [Fact]
