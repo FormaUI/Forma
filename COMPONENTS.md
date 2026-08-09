@@ -717,12 +717,14 @@ Forma.Blazor/Components/
 │   ├── FormaVideoPlayer.razor
 │   ├── FormaDesignPicker.razor
 │   └── FormaFontPicker.razor
-└── Editors/
-    ├── FormaRichTextEditor.razor
-    ├── FormaNotesEditor.razor
-    ├── FormaPermissionMatrix.razor
-    ├── FormaProductOptionsEditor.razor
-    └── FormaFilterEditor.razor
+├── Editors/
+│   ├── FormaRichTextEditor.razor
+│   ├── FormaNotesEditor.razor
+│   ├── FormaPermissionMatrix.razor
+│   ├── FormaProductOptionsEditor.razor
+│   └── FormaFilterEditor.razor
+└── Metadata/
+    └── FormaPageLocalization.razor / .razor.cs    # canonical + hreflang links for the current page
 ```
 
 ```

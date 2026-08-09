@@ -73,7 +73,7 @@ These rules govern prose that *describes a thing*. They do not apply to this fil
 
 ## Component file layout
 
-Components live in `src/Forma.Blazor/Components/{Category}/`, where `{Category}` is `Layout`, `Feedback`, `Actions`, `Input`, `Data`, `Indicators`, `Interactive`, `Files`, `Media`, or `Editors`.
+Components live in `src/Forma.Blazor/Components/{Category}/`, where `{Category}` is `Layout`, `Feedback`, `Actions`, `Input`, `Data`, `Indicators`, `Interactive`, `Files`, `Media`, `Editors`, or `Metadata`.
 
 ```text
 Components/{Category}/
