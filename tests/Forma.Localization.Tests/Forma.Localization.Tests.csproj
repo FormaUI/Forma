@@ -27,6 +27,10 @@
         <EmbeddedResource Include="Resources\**\*.json" />
         <!-- Kept in the main assembly to cover the layout a project gets by opting out of satellites. -->
         <EmbeddedResource Update="Sources\MainAssembly.he.json" WithCulture="false" />
+        <!-- Embedded under the type's own namespace, which an assembly named apart from its root produces. -->
+        <EmbeddedResource Include="Foreign\ForeignRoot.he.json" LogicalName="Contoso.Widgets.ForeignRoot.he.json" WithCulture="false" />
+        <!-- A type outside any namespace, whose resource the root namespace alone qualifies. -->
+        <EmbeddedResource Include="GlobalRoot.he.json" WithCulture="false" />
     </ItemGroup>
 
 </Project>

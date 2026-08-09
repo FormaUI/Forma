@@ -63,6 +63,36 @@ public sealed class JsonStringLocalizerFactoryTests
         Assert.Equal("היום", localized.Value);
     }
 
+    // A project whose assembly name is not its root namespace embeds under the root, which the type carries.
+    [Fact]
+    public void Should_read_a_file_embedded_under_a_root_the_assembly_name_does_not_lead()
+    {
+        // Arrange
+        using var culture = new CultureScope("he");
+        var factory = new JsonStringLocalizerFactory();
+
+        // Act
+        var localized = factory.Create(typeof(Contoso.Widgets.ForeignRoot))["Today"];
+
+        // Assert
+        Assert.Equal("היום", localized.Value);
+    }
+
+    // A type outside any namespace carries no root, so the assembly name has to supply one.
+    [Fact]
+    public void Should_read_a_file_for_a_type_declared_without_a_namespace()
+    {
+        // Arrange
+        using var culture = new CultureScope("he");
+        var factory = new JsonStringLocalizerFactory();
+
+        // Act
+        var localized = factory.Create(typeof(GlobalRoot))["Today"];
+
+        // Assert
+        Assert.Equal("היום", localized.Value);
+    }
+
     [Fact]
     public void Should_reject_a_null_resource_source()
     {
