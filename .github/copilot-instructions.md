@@ -4,7 +4,7 @@ A reusable Blazor **component library**. **.NET 11 · C# latest · Razor Class L
 
 ## Source of truth
 
-- Do use [COMPONENTS.md](../COMPONENTS.md) for the 36-component inventory, tiers, replaced Coi patterns, build order, and completion status (`✅`).
+- Do use [COMPONENTS.md](../COMPONENTS.md) for the component inventory, build order, and completion status.
 - Do use [README.md](../README.md) for solution layout, packaging identities, and host consumption.
 - Do resolve C# style from `.editorconfig` with `read_editorconfig` before writing C#.
 - Do use `EpicaDeportiva/docs/forma-components.md` for Épica Deportiva's required and optional subset and remaining work.
@@ -37,19 +37,31 @@ Coi's boxy gradient toggle becoming a token-driven iOS-style `FormaToggleSwitch`
 
 | Project | Kind | May reference |
 |---------|------|---------------|
-| `src/Forma.Framework` | Class library | Nothing — contracts, messages, enums, `CssColor` |
+| `src/Forma.Framework.Css` | Class library | Nothing — typed CSS values such as `CssColor` |
+| `src/Forma.Framework.Resources` | Class library | Nothing — resource contracts and value types such as `IResourceProvider` and `ResourceInfo` |
+| `src/Forma.Framework.Localization` | Class library | Nothing — JSON-backed `IStringLocalizer` |
+| `src/Forma.Framework` | Class library | `Forma.Framework.Css` — contracts, messages, enums |
 | `src/Forma.Framework.Core` | Class library | `Forma.Framework` — implementations |
-| `src/Forma.UI.Blazor` | Razor Class Library | `Forma.Framework` only — packaged components |
-| `tests/Forma.UI.Blazor.Tests` | Test project | `Forma.UI.Blazor`, `Forma.Framework.Core` |
-| `tests/Forma.UI.Blazor.Showcase` | Web app | `Forma.UI.Blazor`, `Forma.Framework.Core` — reference host and gallery |
+| `src/Forma.Framework.Markdown` | Class library | `Forma.Framework.Resources` — Markdown conversion |
+| `src/Forma.Framework.Office` | Class library | `Forma.Framework.Resources` — Word, workbook, and presentation conversion |
+| `src/Forma.UI.Blazor` | Razor Class Library | `Forma.Framework`, `Forma.Framework.Css`, `Forma.Framework.Resources` — packaged components |
+| `src/Forma.UI.Blazor.Showcase` | Web app | `Forma.UI.Blazor`, `Forma.Framework.Core`, `Forma.Framework.Css`, `Forma.Framework.Resources`, `Forma.Framework.Office`, `Forma.Framework.Markdown`, `Forma.Framework.Localization` — reference host and gallery |
+| `tests/{Assembly}.Tests` | Test project | The one assembly it is named after, plus what its tests use directly |
+| `tests/Forma.Tests.Support` | Class library | Shared test fakes, fixtures, and utilities in the `Forma.Tests.*` namespaces |
+
+- Do put a type in `Forma.Framework.Css` or `Forma.Framework.Resources` when it is a horizontal concern no single vertical feature owns and a non-UI consumer needs it without pulling in `Forma.Framework`'s feature slices — `Forma.Framework.Office` depends on `Forma.Framework.Resources` alone, never on `Forma.Framework`.
+- Do decide by ownership, not by how many assemblies consume it: a contract a single feature owns stays with that feature in `Forma.Framework` no matter how many projects reference it, such as `IToastService` in `Feedback`.
+- Do keep a horizontal concern's folder and namespace in step with its project name — `Forma.Framework.Css` for typed CSS values, `Forma.Framework.Resources` for resource contracts — so a group that outgrows `Forma.Framework` can leave for its own assembly without touching a `using`.
 
 - Do make components depend on abstractions such as `IToastService`; let the host choose implementations through DI.
 - Do represent colours and other CSS values with typed values such as `CssColor.FromRgba(...)` and `CssColor.FromHex(...)`.
 - Do share the `Forma.Framework` namespace across `Forma.Framework` and `Forma.Framework.Core` — the assembly name carries the split, not the namespace (matches `Microsoft.Extensions.DependencyInjection` / `.Abstractions`).
 - Do use the `Forma.UI` namespace for `Forma.UI.Blazor`, keeping `Forma.UI` free as the root for any future renderer.
 - Do keep these identities distinct: assembly `Forma.UI.Blazor`, namespace `Forma.UI`, package ID `2Site.Forma.UI.Blazor`, static asset base path `_content/Forma.UI.Blazor`.
+- Do keep `Forma.UI.Blazor` the only packable project; every other project sets `IsPackable=false`, and the ones it references ship inside its package through `PrivateAssets="all"`.
 - Don't reference `Forma.Framework.Core` from `Forma.UI.Blazor`.
 - Don't represent typed CSS values as arbitrary strings.
+- Don't give any other project a `PackageId`, and don't set `AssemblyName` where it would only repeat the project name.
 - Don't rename or conflate these identities; `_content/Forma.UI.Blazor` is pinned and hardcoded by markup and JS.
 
 ## Dependencies
@@ -57,7 +69,7 @@ Coi's boxy gradient toggle becoming a token-driven iOS-style `FormaToggleSwitch`
 A project's references are part of its contract, because every consumer inherits them.
 
 - Do reference the narrowest package that supplies what the code uses, preferring the `.Abstractions` half when only contracts are needed.
-- Do confine `<FrameworkReference Include="Microsoft.AspNetCore.App" />` to `Forma.UI.Blazor`, the only project that renders through ASP.NET Core.
+- Do confine `<FrameworkReference Include="Microsoft.AspNetCore.App" />` to the projects that genuinely compile against ASP.NET Core: `Forma.UI.Blazor`, and `Forma.Tests.Support` for the Razor host component it ships.
 - Do give every project its own reference for what it uses directly, test projects included, rather than relying on one arriving transitively.
 - Do let the build settle it: NU1510 marks a package the framework already supplies, and an unresolved type marks one that is genuinely missing.
 - Don't reach for a shared framework to obtain a handful of types; `Forma.Framework.Localization` needs `Microsoft.Extensions.Localization.Abstractions` alone.
@@ -166,7 +178,7 @@ JS-free is the default, not a prohibition.
 - Do import the module on first render from `./_content/Forma.UI.Blazor/Components/{Category}/FormaX.razor.js`.
 - Do catch `JSException` around every JS call because the circuit can drop mid-call.
 - Do dispose the module in `DisposeAsync` and catch `JSDisconnectedException`.
-- Don't use jQuery, npm packages, polyfills, or other external JS libraries. The sole exception is `FormaRichTextEditor`'s Markdown renderer (#36) — a parser is a solved problem, and it renders only; it never owns an editing surface, a selection, an undo stack or a toolbar. Adding a second exception is a decision for the maintainer, not a precedent already set.
+- Don't use jQuery, npm packages, polyfills, or other external JS libraries. The sole exception is `FormaRichTextEditor`'s Markdown renderer — a parser is a solved problem, and it renders only; it never owns an editing surface, a selection, an undo stack or a toolbar. Adding a second exception is a decision for the maintainer, not a precedent already set.
 - Don't contort a component or ship a worse experience merely to remain script-free.
 - Don't treat the amount of JS required as a reason to leave a rough edge unresolved.
 
@@ -324,7 +336,7 @@ Every component must behave and look the same in both directions—mirrored, not
 
 ## Tests (bUnit + xUnit v3)
 
-Mirror source paths under `tests/Forma.UI.Blazor.Tests/Components/{Category}/` with `FormaXTests.razor` and `FormaXTests.razor.cs`.
+Every production assembly has exactly one test project named after it, so `Forma.Framework.Css` is tested by `tests/Forma.Framework.Css.Tests` and never from another project. Mirror source paths within it, so component tests live under `tests/Forma.UI.Blazor.Tests/Components/{Category}/` with `FormaXTests.razor` and `FormaXTests.razor.cs`.
 
 - Do keep `.razor.cs` to `public sealed partial class FormaXTests;`.
 - Do start `.razor` with `@inherits BunitContext` and place `[Fact]` methods in a nested `public sealed class Component`.
@@ -334,15 +346,16 @@ Mirror source paths under `tests/Forma.UI.Blazor.Tests/Components/{Category}/` w
 - Do assert rendered markup, attributes, and callback invocations rather than private state.
 - Do assert exact text when a component can render more than one message through the same element or class, such as an empty-list notice versus a no-search-matches notice; finding the element only confirms *a* message rendered, not which one.
 - Do put a service's tests beside the category that owns it, such as `Feedback/ToastServiceTests.cs`, because the test path mirrors where the production type lives.
-- Do place test-support types under `tests/Forma.UI.Blazor.Tests/Support/`, mirroring the production folder they serve, such as `Support/Components/Files/FakeResourceProvider.cs`.
-- Do put a support type that serves no single production area in `Support/Shared/`, as `FakeFormHost` and `FakeModel` do.
+- Do put every test fake, fixture, and utility in `tests/Forma.Tests.Support`, in a folder mirroring the production area it serves such as `Resources/`, `Media/`, and `Office/`, and put what no single area owns in `Shared/`.
+- Do let the namespace follow that folder, so `Forma.Tests.Resources` and `Forma.Tests.Shared`, and reference the project from each test project that uses one.
 - Do test only the public surface and keep shared usings in `_Imports.cs` or `_Imports.razor`.
+- Don't test a type from a project other than the one named after its assembly.
 - Don't couple tests to implementation details or private fields.
-- Don't group test-support types by artifact kind in folders such as `Fakes/`, `Fixtures/`, or `Helpers/`.
+- Don't give a test project its own `Support/` folder or its own copy of a support type.
 
 ## Showcase
 
-Every component requires `tests/Forma.UI.Blazor.Showcase/Components/Pages/{Category}/FormaXPage.razor` and its translation pair. The gallery exists to be looked at, so a state it never renders is a state nobody has ever reviewed.
+Every component requires `src/Forma.UI.Blazor.Showcase/Components/Pages/{Category}/FormaXPage.razor` and its translation pair. The gallery exists to be looked at, so a state it never renders is a state nobody has ever reviewed.
 
 ```razor
 @page "/x-component"
@@ -363,11 +376,15 @@ Every component requires `tests/Forma.UI.Blazor.Showcase/Components/Pages/{Categ
 
 ```powershell
 dotnet build Forma.slnx
-dotnet test
-dotnet run --project tests/Forma.UI.Blazor.Showcase
+dotnet test Forma.slnx
+dotnet format Forma.slnx --verify-no-changes
+dotnet run --project src/Forma.UI.Blazor.Showcase
 ```
 
-- Do require build and tests to pass before offering a component for review.
+- Do require build, tests, and the format check to pass before offering a component for review.
+- Do run the format check rather than trusting the build: it catches using-directive ordering and line endings that compilation ignores, and it does not read `.razor` files at all, so a misordered `@using` has to be caught by eye.
+- Do reopen `Forma.slnx` after adding a project; the C# extension rewrites it with a duplicate `<Folder>` entry and drops `<Configurations>`, which then fails the build with `MSB4025`.
+- Do stop a running Showcase process before rebuilding, because it holds its `bin` DLLs open and the copy fails with `MSB3027`.
 - Do inspect the component in all three cultures through the Showcase.
 - Don't pipe the Showcase command's output into `Select-String`, `Select-Object`, or another filter; closing the pipeline terminates the server.
 - Don't present a component as complete while build, tests, accessibility, touch, or direction checks remain unresolved.
