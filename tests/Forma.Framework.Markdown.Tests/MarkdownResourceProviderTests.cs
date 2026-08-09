@@ -1,7 +1,7 @@
 namespace Forma.Framework.Markdown.Tests;
 
-using Forma.Framework.Files;
-using Forma.Framework.Markdown.Tests.Support;
+using Forma.Framework.Resources;
+using Forma.Tests.Resources;
 
 public sealed class MarkdownResourceProviderTests
 {

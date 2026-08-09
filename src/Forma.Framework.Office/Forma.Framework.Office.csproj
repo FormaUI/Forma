@@ -5,13 +5,12 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
+        <IsPackable>false</IsPackable>
         <RootNamespace>Forma.Framework.Office</RootNamespace>
-        <AssemblyName>Forma.Framework.Office</AssemblyName>
-        <PackageId>2Site.Forma.Framework.Office</PackageId>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
     </ItemGroup>
 
     <ItemGroup>

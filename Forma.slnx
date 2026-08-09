@@ -1,15 +1,21 @@
 <Solution>
     <!-- Source -->
     <Project Path="src\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
+    <Project Path="src\Forma.Framework.Css\Forma.Framework.Css.csproj" />
+    <Project Path="src\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
     <Project Path="src\Forma.Framework\Forma.Framework.csproj" />
     <Project Path="src\Forma.Framework.Core\Forma.Framework.Core.csproj" />
     <Project Path="src\Forma.UI.Blazor\Forma.UI.Blazor.csproj" />
     <Project Path="src\Forma.Framework.Office\Forma.Framework.Office.csproj" />
     <Project Path="src\Forma.Framework.Markdown\Forma.Framework.Markdown.csproj" />
+    <Project Path="src\Forma.UI.Blazor.Showcase\Forma.UI.Blazor.Showcase.csproj" />
 
     <!-- Tests -->
-    <Project Path="tests\Forma.UI.Blazor.Showcase\Forma.UI.Blazor.Showcase.csproj" />
+    <Project Path="tests\Forma.Tests.Support\Forma.Tests.Support.csproj" />
     <Project Path="tests\Forma.UI.Blazor.Tests\Forma.UI.Blazor.Tests.csproj" />
+    <Project Path="tests\Forma.Framework.Css.Tests\Forma.Framework.Css.Tests.csproj" />
+    <Project Path="tests\Forma.Framework.Resources.Tests\Forma.Framework.Resources.Tests.csproj" />
+    <Project Path="tests\Forma.Framework.Core.Tests\Forma.Framework.Core.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Office.Tests\Forma.Framework.Office.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Markdown.Tests\Forma.Framework.Markdown.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Localization.Tests\Forma.Framework.Localization.Tests.csproj" />

@@ -1,6 +1,6 @@
 namespace Forma.Framework.Localization.Tests;
 
-using Forma.Framework.Localization.Tests.Sources;
+using Forma.Framework.Localization.Tests.Fixtures;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
@@ -57,7 +57,7 @@ public sealed class JsonStringLocalizerFactoryTests
         var factory = new JsonStringLocalizerFactory();
 
         // Act
-        var localized = factory.Create("Sources.Colocated", typeof(Colocated).Assembly.GetName().Name!)["Today"];
+        var localized = factory.Create("Fixtures.Colocated", typeof(Colocated).Assembly.GetName().Name!)["Today"];
 
         // Assert
         Assert.Equal("היום", localized.Value);

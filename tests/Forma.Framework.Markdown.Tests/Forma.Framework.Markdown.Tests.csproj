@@ -7,7 +7,6 @@
         <LangVersion>latest</LangVersion>
         <IsPackable>false</IsPackable>
         <RootNamespace>Forma.Framework.Markdown.Tests</RootNamespace>
-        <AssemblyName>Forma.Framework.Markdown.Tests</AssemblyName>
         <NoWarn>CA1707</NoWarn>
     </PropertyGroup>
 
@@ -19,6 +18,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Forma.Framework.Markdown\Forma.Framework.Markdown.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
+        <ProjectReference Include="..\Forma.Tests.Support\Forma.Tests.Support.csproj" />
     </ItemGroup>
 
 </Project>

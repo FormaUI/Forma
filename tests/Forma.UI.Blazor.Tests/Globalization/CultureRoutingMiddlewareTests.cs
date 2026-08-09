@@ -2,7 +2,7 @@ namespace Forma.UI.Blazor.Tests.Globalization;
 
 using System.Globalization;
 
-using Forma.UI.Blazor.Tests.Support.Shared;
+using Forma.Tests.Shared;
 using Forma.UI.Globalization;
 
 using Microsoft.AspNetCore.Http;

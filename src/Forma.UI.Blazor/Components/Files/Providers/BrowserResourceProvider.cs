@@ -2,7 +2,7 @@ namespace Forma.UI.Components.Files.Providers;
 
 using System.Diagnostics.CodeAnalysis;
 
-using Forma.Framework.Files;
+using Forma.Framework.Resources;
 using Forma.UI.Components.Files;
 
 /// <summary>Resolves the addresses a browser can render unaided, by the media type their extension implies.</summary>

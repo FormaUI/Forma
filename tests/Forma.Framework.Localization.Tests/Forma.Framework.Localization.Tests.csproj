@@ -7,7 +7,6 @@
         <LangVersion>latest</LangVersion>
         <IsPackable>false</IsPackable>
         <RootNamespace>Forma.Framework.Localization.Tests</RootNamespace>
-        <AssemblyName>Forma.Framework.Localization.Tests</AssemblyName>
         <NoWarn>CA1707</NoWarn>
     </PropertyGroup>
 
@@ -20,18 +19,19 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
+        <ProjectReference Include="..\Forma.Tests.Support\Forma.Tests.Support.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="Sources\**\*.json" />
+        <EmbeddedResource Include="Fixtures\**\*.json" />
         <!-- The same relative tree under a root, which is what ResourcesPath resolves against. -->
         <EmbeddedResource Include="Resources\**\*.json" />
         <!-- Kept in the main assembly to cover the layout a project gets by opting out of satellites. -->
-        <EmbeddedResource Update="Sources\MainAssembly.he.json" WithCulture="false" />
+        <EmbeddedResource Update="Fixtures\MainAssembly.he.json" WithCulture="false" />
         <!-- Embedded under the type's own namespace, which an assembly named apart from its root produces. -->
-        <EmbeddedResource Include="Foreign\ForeignRoot.he.json" LogicalName="Contoso.Widgets.ForeignRoot.he.json" WithCulture="false" />
+        <EmbeddedResource Update="Fixtures\Foreign\ForeignRoot.he.json" LogicalName="Contoso.Widgets.ForeignRoot.he.json" WithCulture="false" />
         <!-- A type outside any namespace, whose resource the root namespace alone qualifies. -->
-        <EmbeddedResource Include="GlobalRoot.he.json" WithCulture="false" />
+        <EmbeddedResource Update="Fixtures\GlobalRoot.he.json" LogicalName="Forma.Framework.Localization.Tests.GlobalRoot.he.json" WithCulture="false" />
     </ItemGroup>
 
 </Project>

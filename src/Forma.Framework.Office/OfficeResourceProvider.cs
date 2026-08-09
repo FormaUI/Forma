@@ -2,8 +2,8 @@ namespace Forma.Framework.Office;
 
 using System.Diagnostics.CodeAnalysis;
 
-using Forma.Framework.Files;
 using Forma.Framework.Office.Converters;
+using Forma.Framework.Resources;
 
 using Ganss.Xss;
 

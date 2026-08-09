@@ -2,7 +2,7 @@ namespace Forma.Framework.Markdown;
 
 using System.Diagnostics.CodeAnalysis;
 
-using Forma.Framework.Files;
+using Forma.Framework.Resources;
 
 using Ganss.Xss;
 

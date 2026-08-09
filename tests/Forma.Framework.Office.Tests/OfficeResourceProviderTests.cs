@@ -1,9 +1,10 @@
 namespace Forma.Framework.Office.Tests;
 
-using Forma.Framework.Files;
 using Forma.Framework.Localization;
-using Forma.Framework.Office.Tests.Support;
-using Forma.Framework.Office.Tests.Support.Shared;
+using Forma.Framework.Resources;
+using Forma.Tests.Office;
+using Forma.Tests.Resources;
+using Forma.Tests.Shared;
 
 using Microsoft.Extensions.Localization;
 

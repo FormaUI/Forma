@@ -570,7 +570,7 @@ These are more complex, possibly page-specific, but still benefit from being com
 |---|---|
 | **Old pattern** | The preview pane of `pops/images.aspx` — clicking a library entry to actually look at it |
 | **Used in** | The promise #35 already makes and does not own: showing whatever a chosen entry turns out to be. That belongs here, so the picker, the manager (#54) and the gallery's enlarge (#53) show one preview implementation rather than three |
-| **Parameters** | `string Source` (required), `IReadOnlyList<string>? Siblings`, `EventCallback<string> OnNavigate`, `bool ShowMetadata`, `RenderFragment<string>? UnsupportedTemplate`. The caller passes an address, not a resolved resource — a component handed a `ResourceInfo` would need every caller to resolve one first, which is the provider's job. `ResourceInfo` (`Source`, derived `Name`, `Kind`, `Size`, `virtual DisplaySize`, `Extension`), its `EmbeddedResourceInfo` and `MarkupResourceInfo` subtypes, `ResourceKind` and `IResourceProvider` live in `Forma.Framework`, which carries no ASP.NET Core reference — so a converting package stays a plain class library. `FileResourceInfo` wraps and implements `IBrowserFile`, so it lives in `Forma.UI.Blazor` where that reference already exists. Named for resources rather than media because the viewer renders documents too |
+| **Parameters** | `string Source` (required), `IReadOnlyList<string>? Siblings`, `EventCallback<string> OnNavigate`, `bool ShowMetadata`, `RenderFragment<string>? UnsupportedTemplate`. The caller passes an address, not a resolved resource — a component handed a `ResourceInfo` would need every caller to resolve one first, which is the provider's job. `ResourceInfo` (`Source`, derived `Name`, `Kind`, `Size`, `virtual DisplaySize`, `Extension`), its `EmbeddedResourceInfo` and `MarkupResourceInfo` subtypes, `ResourceKind` and `IResourceProvider` live in `Forma.Framework.Resources`, which carries no ASP.NET Core reference — so a converting package stays a plain class library. `FileResourceInfo` wraps and implements `IBrowserFile`, so it lives in `Forma.UI.Blazor` where that reference already exists. Named for resources rather than media because the viewer renders documents too |
 | **Blazor approach** | An ordered chain of `IResourceProvider`s resolves the address into a `ResourceInfo`, mirroring `FormaVideoPlayer`'s provider chain: the first to claim it decides what the resource is, and the viewer owns the markup for every kind, so a converting package never ships Razor or CSS. Resolution runs once per address rather than once per render. Providers the host registered are tried first; `BrowserResourceProvider` comes last and claims only what a browser renders unaided, so **an address no provider claims degrades to a type glyph, the name, the size when one is known, and a download link** rather than a broken embed. A `MarkupResourceInfo` is rendered as trusted markup, so a converting provider must sanitise its output. An `EmbeddedResourceInfo` whose content type is `text/*` is framed with `sandbox=""` — an opaque origin, withholding scripts, forms and navigation — because uploaded HTML is untrusted; anything else goes to `<object>` with a new-tab link as fallback content. With `Siblings` supplied the viewer steps through the set, resolving the horizontal arrow keys through `IsRightToLeft`; the host modal keeps `Escape` |
 | **Converting packages** | `Forma.Framework.Markdown` (Markdig) and `Forma.Framework.Office` (OfficeIMO) ship separately and return `MarkupResourceInfo`, so neither Markdig nor OfficeIMO lands in the package every consumer downloads. Each reads its bytes through an `IResourceContentReader` the host implements, so a converting package never assumes where a file lives, and sanitises its output with `HtmlSanitizer` before returning it. A host registers them like any other service — `AddScoped<IResourceProvider, …>()` — and without them `ResourceKind.Document` still works for whatever the browser handles natively |
 | **Zoom and pan** | Settled: the frame is a plain scrollable region (`overflow: auto`) rather than a transform-driven canvas. Touch and pen pan it natively, and `touch-action: pan-x pan-y pinch-zoom` hands pinch-to-zoom to the platform itself — the exact case CSS was expected to handle worst turned out not to need JS at all. The one gap native scrolling doesn't cover is a mouse click-drag, so a small colocated `.razor.js` adds that, gated to `pointerType === 'mouse'` so it never fights the browser's own touch scrolling. Zoom level moves in five fixed steps (100–400%) through on-screen +/− buttons, with no wheel or double-click zoom, since the scroll wheel already has a native job on this element and hijacking it would fight the reader's own scrolling |
@@ -728,9 +728,18 @@ Forma.UI.Blazor/Components/
 ```
 
 ```
+Forma.Framework.Css/
+└── CssColor.cs
+
+Forma.Framework.Resources/
+├── IResourceContentReader.cs
+├── IResourceProvider.cs
+├── ResourceInfo.cs
+├── MarkupResourceInfo.cs
+├── EmbeddedResourceInfo.cs
+└── ResourceKind.cs
+
 Forma.Framework/
-├── Css/
-│   └── CssColor.cs
 ├── INotifyStateChanged.cs
 ├── Feedback/
 │   ├── IToastService.cs

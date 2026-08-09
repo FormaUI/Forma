@@ -2,7 +2,7 @@ namespace Forma.UI.Components.Files;
 
 using System.Globalization;
 
-using Forma.Framework.Files;
+using Forma.Framework.Resources;
 using Forma.UI.Components.Files.Providers;
 using Forma.UI.Interop;
 

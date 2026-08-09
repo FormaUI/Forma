@@ -5,13 +5,12 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
+        <IsPackable>false</IsPackable>
         <RootNamespace>Forma.Framework.Markdown</RootNamespace>
-        <AssemblyName>Forma.Framework.Markdown</AssemblyName>
-        <PackageId>2Site.Forma.Framework.Markdown</PackageId>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
     </ItemGroup>
 
     <ItemGroup>

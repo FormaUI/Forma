@@ -6,10 +6,17 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <RootNamespace>Forma.UI</RootNamespace>
-        <AssemblyName>Forma.UI.Blazor</AssemblyName>
         <PackageId>2Site.Forma.UI.Blazor</PackageId>
         <StaticWebAssetBasePath>_content/Forma.UI.Blazor</StaticWebAssetBasePath>
+        <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeReferencedProjectsInPackage</TargetsForTfmSpecificBuildOutput>
     </PropertyGroup>
+
+    <!-- The referenced projects ship inside this package rather than as packages of their own. -->
+    <Target Name="IncludeReferencedProjectsInPackage" DependsOnTargets="ResolveReferences">
+        <ItemGroup>
+            <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.ReferenceSourceTarget)' == 'ProjectReference'" />
+        </ItemGroup>
+    </Target>
 
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
@@ -20,7 +27,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.csproj" />
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Css\Forma.Framework.Css.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Resources\Forma.Framework.Resources.csproj" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>

@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <IsPackable>false</IsPackable>
+        <RootNamespace>Forma.UI.Blazor.Showcase</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="11.0.0-preview.6.26359.118" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.UI.Blazor\Forma.UI.Blazor.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Office\Forma.Framework.Office.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Markdown\Forma.Framework.Markdown.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Core\Forma.Framework.Core.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Css\Forma.Framework.Css.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Components\**\*.json" />
+    </ItemGroup>
+
+</Project>

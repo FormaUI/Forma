@@ -5,7 +5,12 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
+        <IsPackable>false</IsPackable>
         <RootNamespace>Forma.Framework</RootNamespace>
     </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Framework.Css\Forma.Framework.Css.csproj" />
+    </ItemGroup>
 
 </Project>

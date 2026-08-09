@@ -11,17 +11,26 @@ The library targets **.NET 11** and Interactive Server components.
 | --- | --- | --- |
 | `src/Forma.UI.Blazor` | Razor Class Library | The component library (packaged for NuGet). |
 | `src/Forma.Framework.Core` | Class library | Service implementations (`ToastService`, `ConfirmDialogService`, `StatusBadgeCatalog`, `StateNotifier`). |
-| `src/Forma.Framework` | Class library | Contracts consumed by components and hosts (`IToastService`, `IConfirmDialogService`, `IStatusBadgeCatalog`, `INotifyStateChanged`, message/enum types, `IResourceProvider`, `IPlayerProvider`, `CssColor`). |
-| `tests/Forma.UI.Blazor.Showcase` | Web app | Interactive gallery for every component; doubles as a reference host. |
-| `tests/Forma.UI.Blazor.Tests` | Test project | bUnit + xUnit component tests. |
+| `src/Forma.Framework` | Class library | Contracts consumed by components and hosts (`IToastService`, `IConfirmDialogService`, `IStatusBadgeCatalog`, message/enum types, `IPlayerProvider`, `INotifyStateChanged`). |
+| `src/Forma.Framework.Css` | Class library | Typed CSS values (`CssColor`). |
+| `src/Forma.Framework.Resources` | Class library | Resource contracts and value types (`IResourceProvider`, `IResourceContentReader`, `ResourceInfo`). |
+| `src/Forma.Framework.Localization` | Class library | JSON-backed `IStringLocalizer`. |
+| `src/Forma.Framework.Markdown` | Class library | Markdown resource provider. |
+| `src/Forma.Framework.Office` | Class library | Word, workbook, and presentation resource provider. |
+| `src/Forma.UI.Blazor.Showcase` | Web app | Interactive gallery for every component; doubles as a reference host. |
+| `tests/{Assembly}.Tests` | Test project | One per production assembly, named after it (`Forma.UI.Blazor.Tests`, `Forma.Framework.Css.Tests`, …). |
+| `tests/Forma.Tests.Support` | Class library | Shared test fakes, fixtures, and utilities (`Forma.Tests.*` namespaces). |
 
-The reference graph runs one way: `Forma.Framework` ←
+The reference graph runs one way: `Forma.Framework.Css` / `Forma.Framework.Resources` ← `Forma.Framework` ←
 `Forma.UI.Blazor` / `Forma.Framework.Core`. `Forma.UI.Blazor` never references `Forma.Framework.Core` —
 components depend on the contract, and the host chooses the implementation.
-`Forma.Framework` and `Forma.Framework.Core` share the `Forma.Framework` namespace — the
-assembly name is what distinguishes them, the same way
-`Microsoft.Extensions.DependencyInjection.Abstractions` and
-`Microsoft.Extensions.DependencyInjection` both ship the `Microsoft.Extensions.DependencyInjection` namespace.
+`Forma.Framework` and `Forma.Framework.Core` share the `Forma.Framework` namespace — the assembly
+name is what distinguishes them, the same way `Microsoft.Extensions.DependencyInjection.Abstractions`
+and `Microsoft.Extensions.DependencyInjection` both ship the `Microsoft.Extensions.DependencyInjection`
+namespace. `Forma.Framework.Css` and `Forma.Framework.Resources` are horizontal concerns split into
+their own assemblies and namespaces (`Forma.Framework.Css`, `Forma.Framework.Resources`) so a
+non-UI consumer such as `Forma.Framework.Office` can depend on resources without pulling in the
+vertical feature slices (`Feedback`, `Indicators`) that live in `Forma.Framework` proper.
 `Forma.UI.Blazor` ships the `Forma.UI` namespace, leaving `Forma.UI` free as the root for
 any future renderer.
 
@@ -34,6 +43,11 @@ any future renderer.
   do **not** carry the prefix.
 
 ## Packaging & static assets
+
+`2Site.Forma.UI.Blazor` is the single published package. `Forma.Framework`,
+`Forma.Framework.Css` and `Forma.Framework.Resources` are `IsPackable=false` and referenced
+with `PrivateAssets="all"`, and the `IncludeReferencedProjectsInPackage` target copies their
+assemblies into `lib/`, so the package carries them without depending on ids nobody publishes.
 
 These three identities are intentionally distinct — keep them straight:
 
@@ -58,7 +72,7 @@ If you rename the package, do **not** change this — the asset URLs depend on i
 
 `Forma.UI.Blazor` is a component library: **the host application owns its own root document
 (`App.razor`) and router (`Routes.razor`).** The library ships components, styles,
-and JS only. See `tests/Forma.UI.Blazor.Showcase` for a complete working host.
+and JS only. See `src/Forma.UI.Blazor.Showcase` for a complete working host.
 
 **1. Register services and Interactive Server components:**
 
@@ -177,7 +191,7 @@ tracked in [`MIGRATION_PLAN.md`](https://github.com/2site-net/Coi/blob/main/MIGR
 ```pwsh
 dotnet build Forma.slnx
 dotnet test Forma.slnx
-dotnet run --project tests/Forma.UI.Blazor.Showcase
+dotnet run --project src/Forma.UI.Blazor.Showcase
 ```
 
 The showcase serves an interactive page per component. Culture routing redirects

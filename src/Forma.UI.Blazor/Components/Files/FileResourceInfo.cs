@@ -2,7 +2,7 @@ namespace Forma.UI.Components.Files;
 
 using System.Diagnostics.CodeAnalysis;
 
-using Forma.Framework.Files;
+using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components.Forms;
 

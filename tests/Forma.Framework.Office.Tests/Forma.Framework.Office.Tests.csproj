@@ -7,7 +7,6 @@
         <LangVersion>latest</LangVersion>
         <IsPackable>false</IsPackable>
         <RootNamespace>Forma.Framework.Office.Tests</RootNamespace>
-        <AssemblyName>Forma.Framework.Office.Tests</AssemblyName>
         <NoWarn>CA1707</NoWarn>
     </PropertyGroup>
 
@@ -19,7 +18,9 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Forma.Framework.Office\Forma.Framework.Office.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
+        <ProjectReference Include="..\Forma.Tests.Support\Forma.Tests.Support.csproj" />
     </ItemGroup>
 
 </Project>

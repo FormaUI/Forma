@@ -5,9 +5,8 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
+        <IsPackable>false</IsPackable>
         <RootNamespace>Forma.Framework.Localization</RootNamespace>
-        <AssemblyName>Forma.Framework.Localization</AssemblyName>
-        <PackageId>2Site.Forma.Framework.Localization</PackageId>
     </PropertyGroup>
 
     <ItemGroup>
