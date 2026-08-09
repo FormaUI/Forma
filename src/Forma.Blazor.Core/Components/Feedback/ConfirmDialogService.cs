@@ -1,7 +1,6 @@
-namespace Forma.Blazor.Core.Components.Feedback;
+namespace Forma.Blazor.Components.Feedback;
 
-using Forma.Blazor.Abstractions.Components.Feedback;
-using Forma.Blazor.Core.Foundation;
+using Forma.Blazor.Components;
 
 /// <summary><see cref="IConfirmDialogService"/> that tracks the active request and notifies subscribers on change.</summary>
 public sealed class ConfirmDialogService : IConfirmDialogService

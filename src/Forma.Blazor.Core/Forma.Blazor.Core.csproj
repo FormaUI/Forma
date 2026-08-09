@@ -5,19 +5,15 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
-        <RootNamespace>Forma.Blazor.Core</RootNamespace>
+        <RootNamespace>Forma.Blazor</RootNamespace>
     </PropertyGroup>
-
-    <ItemGroup>
-        <InternalsVisibleTo Include="Forma.Blazor.Tests" />
-    </ItemGroup>
 
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Forma.Blazor.Abstractions\Forma.Blazor.Abstractions.csproj" />
+        <ProjectReference Include="..\Forma.Blazor.Framework\Forma.Blazor.Framework.csproj" />
     </ItemGroup>
 
 </Project>

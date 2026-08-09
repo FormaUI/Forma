@@ -3,6 +3,8 @@ namespace Forma.Blazor.Components.Media.Providers;
 using System.Net;
 using System.Text.RegularExpressions;
 
+using Forma.Blazor.Components.Media;
+
 /// <summary>Embeds an Instagram post, reel or video through Instagram's own player script.</summary>
 internal sealed partial class InstagramPlayerProvider : IPlayerProvider
 {

@@ -1,7 +1,5 @@
 namespace Forma.Blazor.Components.Feedback;
 
-using Forma.Blazor.Abstractions.Components.Feedback;
-
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
 

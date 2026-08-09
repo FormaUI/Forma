@@ -11,14 +11,16 @@ The library targets **.NET 11** and Interactive Server components.
 | --- | --- | --- |
 | `src/Forma.Blazor` | Razor Class Library | The component library (packaged for NuGet). |
 | `src/Forma.Blazor.Core` | Class library | Service implementations (`ToastService`, `ConfirmDialogService`, `StatusBadgeCatalog`, `StateNotifier`). |
-| `src/Forma.Blazor.Abstractions` | Class library | Contracts consumed by components and hosts (`IToastService`, `IConfirmDialogService`, `IStatusBadgeCatalog`, `INotifyStateChanged`, message/enum types). |
-| `src/Forma.Web.Css` | Class library | Framework-agnostic CSS value types (`CssColor`). |
+| `src/Forma.Blazor.Framework` | Class library | Contracts consumed by components and hosts (`IToastService`, `IConfirmDialogService`, `IStatusBadgeCatalog`, `INotifyStateChanged`, message/enum types, `IResourceProvider`, `IPlayerProvider`, `CssColor`). |
 | `tests/Forma.Blazor.Showcase` | Web app | Interactive gallery for every component; doubles as a reference host. |
 | `tests/Forma.Blazor.Tests` | Test project | bUnit + xUnit component tests. |
 
-The reference graph runs one way: `Forma.Web.Css` ← `Forma.Blazor.Abstractions` ←
+The reference graph runs one way: `Forma.Blazor.Framework` ←
 `Forma.Blazor` / `Forma.Blazor.Core`. `Forma.Blazor` never references `Forma.Blazor.Core` —
-components depend on the contract, and the host chooses the implementation.
+components depend on the contract, and the host chooses the implementation. All three
+share the `Forma.Blazor` namespace — the assembly name is what distinguishes them, the
+same way `Microsoft.Extensions.DependencyInjection.Abstractions` and
+`Microsoft.Extensions.DependencyInjection` both ship the `Microsoft.Extensions.DependencyInjection` namespace.
 
 ## Naming & conventions
 
@@ -58,12 +60,12 @@ and JS only. See `tests/Forma.Blazor.Showcase` for a complete working host.
 **1. Register services and Interactive Server components:**
 
 ```csharp
-using Forma.Blazor.Abstractions.Components.Feedback;
-using Forma.Blazor.Abstractions.Components.Indicators;
+using Forma.Blazor.Components.Feedback;
+using Forma.Blazor.Components.Indicators;
 using Forma.Blazor.Core.Components.Feedback;
 using Forma.Blazor.Core.Components.Indicators;
+using Forma.Blazor.Css;
 using Forma.Blazor.Middlewares;
-using Forma.Web.Css;
 
 builder.Services.AddLocalization();
 builder.Services.AddScoped<IConfirmDialogService, ConfirmDialogService>();

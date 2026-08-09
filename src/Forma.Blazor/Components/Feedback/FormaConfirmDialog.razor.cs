@@ -1,7 +1,5 @@
 namespace Forma.Blazor.Components.Feedback;
 
-using Forma.Blazor.Abstractions.Components.Feedback;
-
 using Microsoft.AspNetCore.Components;
 
 public sealed partial class FormaConfirmDialog : IDisposable

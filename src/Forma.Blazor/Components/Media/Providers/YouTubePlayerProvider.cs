@@ -2,6 +2,8 @@ namespace Forma.Blazor.Components.Media.Providers;
 
 using System.Text.RegularExpressions;
 
+using Forma.Blazor.Components.Media;
+
 /// <summary>Embeds a YouTube video from its watch, share, embed, shorts or live address.</summary>
 internal sealed partial class YouTubePlayerProvider : IPlayerProvider
 {

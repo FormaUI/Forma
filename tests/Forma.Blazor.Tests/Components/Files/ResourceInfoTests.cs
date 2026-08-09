@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Tests.Components.Files;
 
-using Forma.Blazor.Abstractions.Components.Files;
+using Forma.Blazor.Components.Files;
 
 using Xunit;
 

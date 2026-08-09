@@ -2,7 +2,6 @@ namespace Forma.Blazor.Components.Files;
 
 using System.Globalization;
 
-using Forma.Blazor.Abstractions.Components.Files;
 using Forma.Blazor.Components.Files.Providers;
 using Forma.Blazor.Interop;
 

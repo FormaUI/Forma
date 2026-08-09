@@ -1,7 +1,6 @@
 namespace Forma.Blazor.Components.Indicators;
 
-using Forma.Blazor.Abstractions.Components.Indicators;
-using Forma.Web.Css;
+using Forma.Blazor.Css;
 
 using Microsoft.AspNetCore.Components;
 

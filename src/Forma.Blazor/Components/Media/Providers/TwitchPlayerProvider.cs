@@ -2,6 +2,8 @@ namespace Forma.Blazor.Components.Media.Providers;
 
 using System.Text.RegularExpressions;
 
+using Forma.Blazor.Components.Media;
+
 /// <summary>Embeds a Twitch stream, video or clip.</summary>
 internal sealed partial class TwitchPlayerProvider : IPlayerProvider
 {

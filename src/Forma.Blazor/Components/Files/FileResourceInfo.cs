@@ -2,8 +2,6 @@ namespace Forma.Blazor.Components.Files;
 
 using System.Diagnostics.CodeAnalysis;
 
-using Forma.Blazor.Abstractions.Components.Files;
-
 using Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>A resource backed by a file the browser handed over, such as one a reader dropped on an uploader.</summary>

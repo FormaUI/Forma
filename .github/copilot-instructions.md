@@ -37,20 +37,17 @@ Coi's boxy gradient toggle becoming a token-driven iOS-style `FormaToggleSwitch`
 
 | Project | Kind | May reference |
 |---------|------|---------------|
-| `src/Forma.Web.Css` | Class library | Nothing — framework-agnostic CSS value types |
-| `src/Forma.Blazor.Abstractions` | Class library | `Forma.Web.Css` — contracts, messages, enums |
-| `src/Forma.Blazor.Core` | Class library | `Forma.Blazor.Abstractions` — implementations |
-| `src/Forma.Blazor` | Razor Class Library | `Forma.Blazor.Abstractions` only — packaged components |
-| `tests/Forma.Web.Css.Tests` | Test project | `Forma.Web.Css` |
+| `src/Forma.Blazor.Framework` | Class library | Nothing — contracts, messages, enums, `CssColor` |
+| `src/Forma.Blazor.Core` | Class library | `Forma.Blazor.Framework` — implementations |
+| `src/Forma.Blazor` | Razor Class Library | `Forma.Blazor.Framework` only — packaged components |
 | `tests/Forma.Blazor.Tests` | Test project | `Forma.Blazor`, `Forma.Blazor.Core` |
 | `tests/Forma.Blazor.Showcase` | Web app | `Forma.Blazor`, `Forma.Blazor.Core` — reference host and gallery |
 
 - Do make components depend on abstractions such as `IToastService`; let the host choose implementations through DI.
 - Do represent colours and other CSS values with typed values such as `CssColor.FromRgba(...)` and `CssColor.FromHex(...)`.
-- Do reserve `Forma.Web.*` for framework-agnostic web value types.
+- Do share the `Forma.Blazor` namespace across `Forma.Blazor.Framework`, `Forma.Blazor.Core` and `Forma.Blazor` — the assembly name carries the split, not the namespace (matches `Microsoft.Extensions.DependencyInjection` / `.Abstractions`).
 - Do keep these identities distinct: assembly/namespace `Forma.Blazor`, package ID `2Site.Forma.Blazor`, static asset base path `_content/Forma.Blazor`.
 - Don't reference `Forma.Blazor.Core` from `Forma.Blazor`.
-- Don't put middleware, DI, hosting, or other infrastructure in `Forma.Web.*`.
 - Don't represent typed CSS values as arbitrary strings.
 - Don't rename or conflate the three public identities; `_content/Forma.Blazor` is pinned and hardcoded by markup and JS.
 
@@ -304,7 +301,7 @@ Every component must behave and look the same in both directions—mirrored, not
 
 ## Services
 
-- Do place contracts in `Forma.Blazor.Abstractions/Components/{Category}/IXService.cs`.
+- Do place contracts in `Forma.Blazor.Framework/Components/{Category}/IXService.cs`.
 - Do extend `INotifyStateChanged` when a component must rerender after service state changes.
 - Do place sealed implementations in `Forma.Blazor.Core/Components/{Category}/XService.cs`.
 - Do compose `StateNotifier` for `Func<Task>` subscribers, validate arguments, and put an optional `CancellationToken` last.
@@ -324,9 +321,12 @@ Mirror source paths under `tests/Forma.Blazor.Tests/Components/{Category}/` with
 - Do render `InputBase<T>` components inside `FakeFormHost` with a `FakeModel` and `EditContext`.
 - Do assert rendered markup, attributes, and callback invocations rather than private state.
 - Do assert exact text when a component can render more than one message through the same element or class, such as an empty-list notice versus a no-search-matches notice; finding the element only confirms *a* message rendered, not which one.
-- Do place plain service tests under `tests/Forma.Blazor.Tests/Services/{Category}/`.
+- Do put a service's tests beside the component category that owns it, such as `Components/Feedback/ToastServiceTests.cs`, because the test path mirrors where the production type lives.
+- Do place test-support types under `tests/Forma.Blazor.Tests/Support/`, mirroring the production folder they serve, such as `Support/Components/Files/FakeResourceProvider.cs`.
+- Do put a support type that serves no single production area in `Support/Shared/`, as `FakeFormHost` and `FakeModel` do.
 - Do test only the public surface and keep shared usings in `_Imports.cs` or `_Imports.razor`.
 - Don't couple tests to implementation details or private fields.
+- Don't group test-support types by artifact kind in folders such as `Fakes/`, `Fixtures/`, or `Helpers/`.
 
 ## Showcase
 

@@ -1,9 +1,7 @@
-namespace Forma.Blazor.Core.Components.Indicators;
+namespace Forma.Blazor.Components.Indicators;
 
 using System.Collections;
 using System.Collections.Concurrent;
-
-using Forma.Blazor.Abstractions.Components.Indicators;
 
 /// <summary>
 /// In-memory <see cref="IStatusBadgeCatalog"/> holding the statuses an application defines.

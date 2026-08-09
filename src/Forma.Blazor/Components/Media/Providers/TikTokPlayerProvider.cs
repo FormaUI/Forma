@@ -3,6 +3,8 @@ namespace Forma.Blazor.Components.Media.Providers;
 using System.Net;
 using System.Text.RegularExpressions;
 
+using Forma.Blazor.Components.Media;
+
 /// <summary>Embeds a TikTok video through TikTok's own player script.</summary>
 internal sealed partial class TikTokPlayerProvider : IPlayerProvider
 {

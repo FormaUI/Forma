@@ -1,8 +1,7 @@
 @inherits BunitContext
 @using System.Globalization
-@using Forma.Blazor.Abstractions.Components.Files
 @using Forma.Blazor.Components.Files
-@using Forma.Blazor.Tests.Fakes
+@using Forma.Blazor.Tests.Support.Components.Files
 @using Microsoft.Extensions.DependencyInjection
 
 @code {
@@ -522,7 +521,7 @@
         {
             // Arrange
             using var ctx = new FormaFileViewerTests();
-            var provider = new GatedResourceProvider();
+            var provider = new FakeGatedResourceProvider();
             ctx.Services.AddScoped<IResourceProvider>(_ => provider);
             var cut = ctx.Render(@<FormaFileViewer Source="/media/slow.bin" ShowMetadata="true" />);
 

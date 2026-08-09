@@ -1,7 +1,6 @@
 namespace Forma.Blazor.Tests.Components.Indicators;
 
-using Forma.Blazor.Abstractions.Components.Indicators;
-using Forma.Blazor.Core.Components.Indicators;
+using Forma.Blazor.Components.Indicators;
 
 public sealed partial class FormaStatusBadgeTests
 {

@@ -3,6 +3,8 @@ namespace Forma.Blazor.Components.Media.Providers;
 using System.Net;
 using System.Text.RegularExpressions;
 
+using Forma.Blazor.Components.Media;
+
 /// <summary>Embeds a Facebook video through Facebook's own player script.</summary>
 internal sealed partial class FacebookPlayerProvider : IPlayerProvider
 {

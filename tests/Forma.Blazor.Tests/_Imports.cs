@@ -3,8 +3,7 @@ global using System.Threading.Tasks;
 
 global using Bunit;
 
-global using Forma.Blazor.Abstractions.Components.Feedback;
-global using Forma.Blazor.Core.Components.Feedback;
+global using Forma.Blazor.Components.Feedback;
 global using Forma.Localization;
 
 global using Microsoft.AspNetCore.Components;

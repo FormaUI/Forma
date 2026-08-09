@@ -1,8 +1,7 @@
 <Solution>
     <!-- Source -->
-    <Project Path="src\Forma.Web.Css\Forma.Web.Css.csproj" />
     <Project Path="src\Forma.Localization\Forma.Localization.csproj" />
-    <Project Path="src\Forma.Blazor.Abstractions\Forma.Blazor.Abstractions.csproj" />
+    <Project Path="src\Forma.Blazor.Framework\Forma.Blazor.Framework.csproj" />
     <Project Path="src\Forma.Blazor.Core\Forma.Blazor.Core.csproj" />
     <Project Path="src\Forma.Blazor\Forma.Blazor.csproj" />
 
@@ -10,7 +9,6 @@
     <Project Path="tests\Forma.Blazor.Showcase\Forma.Blazor.Showcase.csproj" />
     <Project Path="tests\Forma.Blazor.Tests\Forma.Blazor.Tests.csproj" />
     <Project Path="tests\Forma.Localization.Tests\Forma.Localization.Tests.csproj" />
-    <Project Path="tests\Forma.Web.Css.Tests\Forma.Web.Css.Tests.csproj" />
 
     <Configurations>
         <Platform Name="Any CPU" />

@@ -1,12 +1,10 @@
-using Forma.Blazor.Abstractions.Components.Feedback;
-using Forma.Blazor.Abstractions.Components.Files;
-using Forma.Blazor.Abstractions.Components.Indicators;
-using Forma.Blazor.Core.Components.Feedback;
-using Forma.Blazor.Core.Components.Indicators;
+using Forma.Blazor.Components.Feedback;
+using Forma.Blazor.Components.Files;
+using Forma.Blazor.Components.Indicators;
+using Forma.Blazor.Css;
 using Forma.Blazor.Middlewares;
 using Forma.Blazor.Showcase;
 using Forma.Localization;
-using Forma.Web.Css;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddJsonLocalization();

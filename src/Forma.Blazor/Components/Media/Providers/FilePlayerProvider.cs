@@ -1,5 +1,7 @@
 namespace Forma.Blazor.Components.Media.Providers;
 
+using Forma.Blazor.Components.Media;
+
 /// <summary>Plays a file the browser can fetch, through its own player.</summary>
 internal sealed class FilePlayerProvider : IPlayerProvider
 {

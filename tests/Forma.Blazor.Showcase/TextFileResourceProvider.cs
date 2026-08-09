@@ -2,7 +2,7 @@ namespace Forma.Blazor.Showcase;
 
 using System.Net;
 
-using Forma.Blazor.Abstractions.Components.Files;
+using Forma.Blazor.Components.Files;
 
 using Microsoft.AspNetCore.Hosting;
 

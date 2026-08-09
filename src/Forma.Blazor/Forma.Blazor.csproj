@@ -20,7 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Forma.Blazor.Abstractions\Forma.Blazor.Abstractions.csproj" />
+        <ProjectReference Include="..\Forma.Blazor.Framework\Forma.Blazor.Framework.csproj" />
     </ItemGroup>
 
     <ItemGroup>
