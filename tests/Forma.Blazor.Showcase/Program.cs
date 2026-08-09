@@ -3,7 +3,7 @@ using Forma.Blazor.Components.Files;
 using Forma.Blazor.Components.Indicators;
 using Forma.Blazor.Components.Media;
 using Forma.Blazor.Css;
-using Forma.Blazor.Middlewares;
+using Forma.Blazor.Globalization;
 using Forma.Blazor.Showcase;
 using Forma.Localization;
 
@@ -24,16 +24,24 @@ builder.Services.AddSingleton<IStatusBadgeCatalog>(new StatusBadgeCatalog(
     new("rejected", CssColor.FromRgba(214, 57, 57, 0.14), CssColor.FromHex(0xa32222))
 ]));
 
+builder.Services.AddCultureRouting(new CultureRouterOptions
+{
+    Prefix = CulturePrefix.ExceptDefault,
+    DefaultCulture = "en",
+    Routes =
+    [
+        new() { Token = "en", Culture = new("en") },
+        new() { Token = "he", Culture = new("he") },
+        new() { Token = "es", Culture = new("es-419"), Aliases = ["es-419"] }
+    ]
+});
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 var app = builder.Build();
 
-app.UseCultureRouting(new CultureRouteOptions
-{
-    DefaultCulture = "en",
-    SupportedCultures = ["en", "he", "es-419"]
-});
+app.UseCultureRouting();
 
 app.UseRouting();
 app.UseAntiforgery();

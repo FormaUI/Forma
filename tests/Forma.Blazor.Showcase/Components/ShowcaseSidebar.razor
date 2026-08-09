@@ -1,20 +1,22 @@
-@using System.Globalization
 @using System.Reflection
+@using Forma.Blazor.Globalization
 @using Forma.Blazor.Showcase
+@inject CultureRouter Router
 @inject NavigationManager Nav
 
 <nav class="showcase-sidebar">
     <div class="culture-switcher">
-        <a href="@CultureLink("he")" data-enhance-nav="false" @onclick="SwitchToHebrew" class="@(IsCurrentCulture("he") ? "active" : "")">עב</a>
-        <a href="@CultureLink("en")" data-enhance-nav="false" @onclick="SwitchToEnglish" class="@(IsCurrentCulture("en") ? "active" : "")">En</a>
-        <a href="@CultureLink("es-419")" data-enhance-nav="false" @onclick="SwitchToSpanish" class="@(IsCurrentCulture("es-419") ? "active" : "")">Es</a>
+        @foreach (var route in Router.Routes)
+        {
+            <a href="@LinkTo(route)" data-enhance-nav="false" class="@(IsCurrent(route) ? "active" : "")">@Label(route)</a>
+        }
     </div>
     @foreach (var group in PageGroups)
     {
         <h3>@group.Key</h3>
         @foreach (var entry in group)
         {
-            <NavLink href="@($"{Culture}{entry.Route}")" Match="NavLinkMatch.Prefix">@entry.Title</NavLink>
+            <NavLink href="@Router.GetPath(Current, entry.Route)" Match="NavLinkMatch.Prefix">@entry.Title</NavLink>
         }
     }
 </nav>
@@ -24,25 +26,14 @@
 
     private static readonly ILookup<string, ShowcasePage> PageGroups = DiscoverPages();
 
-    private static readonly string[] SupportedCultures = ["en", "he", "es-419"];
-
-    // Route token for the active culture: the most specific supported culture the
-    // current UI culture maps to (e.g. es-419 stays "es-419", en-US collapses to "en").
-    private string Culture => ResolveRouteCulture();
-
-    private static string ResolveRouteCulture()
+    private static readonly Dictionary<string, string> Labels = new(StringComparer.Ordinal)
     {
-        for (var c = CultureInfo.CurrentUICulture; !string.IsNullOrEmpty(c.Name); c = c.Parent)
-        {
-            var match = Array.Find(SupportedCultures, sc => string.Equals(sc, c.Name, StringComparison.OrdinalIgnoreCase));
-            if (match is not null)
-            {
-                return match;
-            }
-        }
+        ["en"] = "En",
+        ["he"] = "עב",
+        ["es"] = "Es"
+    };
 
-        return SupportedCultures[0];
-    }
+    private CultureRoute Current => Router.CurrentRoute;
 
     private static ILookup<string, ShowcasePage> DiscoverPages()
     {
@@ -60,16 +51,12 @@
             .ToLookup(p => p.Category);
     }
 
-    private bool IsCurrentCulture(string culture) =>
-        string.Equals(Culture, culture, StringComparison.OrdinalIgnoreCase);
+    private static string Label(CultureRoute route)
+        => Labels.GetValueOrDefault(route.Token, route.Token);
 
-    private string CultureLink(string culture)
-    {
-        var path = new Uri(Nav.Uri).AbsolutePath;
-        return $"/{culture}{(path == "/" ? "" : path)}";
-    }
+    private bool IsCurrent(CultureRoute route)
+        => string.Equals(route.Token, Current.Token, StringComparison.Ordinal);
 
-    private void SwitchToHebrew() => Nav.NavigateTo(CultureLink("he"), forceLoad: true);
-    private void SwitchToEnglish() => Nav.NavigateTo(CultureLink("en"), forceLoad: true);
-    private void SwitchToSpanish() => Nav.NavigateTo(CultureLink("es-419"), forceLoad: true);
+    private string LinkTo(CultureRoute route)
+        => Router.GetUrl(route, Nav.ToBaseRelativePath(Nav.Uri));
 }

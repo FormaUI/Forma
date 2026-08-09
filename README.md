@@ -65,7 +65,7 @@ using Forma.Blazor.Components.Indicators;
 using Forma.Blazor.Core.Components.Feedback;
 using Forma.Blazor.Core.Components.Indicators;
 using Forma.Blazor.Css;
-using Forma.Blazor.Middlewares;
+using Forma.Blazor.Globalization;
 
 builder.Services.AddLocalization();
 builder.Services.AddScoped<IConfirmDialogService, ConfirmDialogService>();
@@ -117,12 +117,32 @@ hover, focus and link shades follow.
 **3. (Optional) Enable culture-in-path routing:**
 
 ```csharp
-app.UseCultureRouting(new CultureRouteOptions
+builder.Services.AddCultureRouting(new CultureRouterOptions
 {
+    Prefix = CulturePrefix.ExceptDefault,
     DefaultCulture = "en",
-    SupportedCultures = ["en", "he", "es-419"]
+    Routes =
+    [
+        new() { Token = "en", Culture = new("en") },
+        new() { Token = "he", Culture = new("he") },
+        new() { Token = "es", Culture = new("es-419"), Aliases = ["es-419"] }
+    ]
 });
+
+app.UseCultureRouting();
 ```
+
+`Token` is the URL segment, `Culture` the culture it applies, and `Aliases` are spellings that
+redirect to `Token`. A token must be a value Google accepts as an `hreflang`; set `HrefLang`
+explicitly when it is not, as `Token = "latam"` would need `HrefLang = "es"`.
+`CulturePrefix.Always` gives every culture a segment; `ExceptDefault`
+leaves the default culture unprefixed and redirects `/en/page` to `/page`.
+
+A registered token always names a culture, so no page route may reuse one, and a URL naming a
+culture in two consecutive segments such as `/he/en/page` is answered with `400 Bad Request`.
+
+Add `<FormaPageLocalization />` to your `<head>` to emit `rel="canonical"` and the
+`hreflang` set for the current page.
 
 **4. Include the library assembly when mapping components:**
 
