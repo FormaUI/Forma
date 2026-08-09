@@ -1,18 +1,18 @@
 <Solution>
     <!-- Source -->
-    <Project Path="src\Forma.Localization\Forma.Localization.csproj" />
-    <Project Path="src\Forma.Blazor.Framework\Forma.Blazor.Framework.csproj" />
-    <Project Path="src\Forma.Blazor.Core\Forma.Blazor.Core.csproj" />
-    <Project Path="src\Forma.Blazor\Forma.Blazor.csproj" />
-    <Project Path="src\Forma.Blazor.Office\Forma.Blazor.Office.csproj" />
-    <Project Path="src\Forma.Blazor.Markdown\Forma.Blazor.Markdown.csproj" />
+    <Project Path="src\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
+    <Project Path="src\Forma.Framework\Forma.Framework.csproj" />
+    <Project Path="src\Forma.Framework.Core\Forma.Framework.Core.csproj" />
+    <Project Path="src\Forma.UI.Blazor\Forma.UI.Blazor.csproj" />
+    <Project Path="src\Forma.Framework.Office\Forma.Framework.Office.csproj" />
+    <Project Path="src\Forma.Framework.Markdown\Forma.Framework.Markdown.csproj" />
 
     <!-- Tests -->
-    <Project Path="tests\Forma.Blazor.Showcase\Forma.Blazor.Showcase.csproj" />
-    <Project Path="tests\Forma.Blazor.Tests\Forma.Blazor.Tests.csproj" />
-    <Project Path="tests\Forma.Blazor.Office.Tests\Forma.Blazor.Office.Tests.csproj" />
-    <Project Path="tests\Forma.Blazor.Markdown.Tests\Forma.Blazor.Markdown.Tests.csproj" />
-    <Project Path="tests\Forma.Localization.Tests\Forma.Localization.Tests.csproj" />
+    <Project Path="tests\Forma.UI.Blazor.Showcase\Forma.UI.Blazor.Showcase.csproj" />
+    <Project Path="tests\Forma.UI.Blazor.Tests\Forma.UI.Blazor.Tests.csproj" />
+    <Project Path="tests\Forma.Framework.Office.Tests\Forma.Framework.Office.Tests.csproj" />
+    <Project Path="tests\Forma.Framework.Markdown.Tests\Forma.Framework.Markdown.Tests.csproj" />
+    <Project Path="tests\Forma.Framework.Localization.Tests\Forma.Framework.Localization.Tests.csproj" />
 
     <Configurations>
         <Platform Name="Any CPU" />

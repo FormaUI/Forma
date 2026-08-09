@@ -1,9 +1,9 @@
 <Project>
 
     <!--
-        Forma.Blazor Build Properties
+        Forma Build Properties
         
-        Shared properties for all Forma.Blazor projects.
+        Shared properties for all Forma projects.
     -->
 
     <PropertyGroup>

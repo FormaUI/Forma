@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <RootNamespace>Forma.Framework.Markdown</RootNamespace>
+        <AssemblyName>Forma.Framework.Markdown</AssemblyName>
+        <PackageId>2Site.Forma.Framework.Markdown</PackageId>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="HtmlSanitizer" Version="9.1.982" />
+      <PackageReference Include="Markdig" Version="1.3.2" />
+    </ItemGroup>
+
+</Project>

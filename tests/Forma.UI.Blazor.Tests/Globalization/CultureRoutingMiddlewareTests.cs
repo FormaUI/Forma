@@ -1,0 +1,328 @@
+namespace Forma.UI.Blazor.Tests.Globalization;
+
+using System.Globalization;
+
+using Forma.UI.Blazor.Tests.Support.Shared;
+using Forma.UI.Globalization;
+
+using Microsoft.AspNetCore.Http;
+
+public sealed class CultureRoutingMiddlewareTests
+{
+    [Theory]
+    [InlineData(CulturePrefix.ExceptDefault, "/file-viewer", "/file-viewer", "en")]
+    [InlineData(CulturePrefix.ExceptDefault, "/he/file-viewer", "/file-viewer", "he")]
+    [InlineData(CulturePrefix.ExceptDefault, "/es/file-viewer", "/file-viewer", "es-419")]
+    [InlineData(CulturePrefix.ExceptDefault, "/he", "/", "he")]
+    [InlineData(CulturePrefix.ExceptDefault, "/", "/", "en")]
+    [InlineData(CulturePrefix.Always, "/en/file-viewer", "/file-viewer", "en")]
+    [InlineData(CulturePrefix.Always, "/he/file-viewer", "/file-viewer", "he")]
+    [InlineData(CulturePrefix.Always, "/es/file-viewer", "/file-viewer", "es-419")]
+    public async Task Should_serve_a_canonical_url(CulturePrefix prefix, string requested, string forwarded, string culture)
+    {
+        // Arrange
+        using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
+        string? reached = null;
+        var middleware = new CultureRoutingMiddleware(context => { reached = context.Request.Path.Value; return Task.CompletedTask; }, Router(prefix));
+        var context = ContextFor(requested);
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(forwarded, reached);
+            Assert.Equal(culture, CultureInfo.CurrentUICulture.Name);
+            Assert.Equal(string.Empty, context.Response.Headers.Location.ToString());
+        });
+    }
+
+    [Theory]
+    [InlineData(CulturePrefix.ExceptDefault, "/en/file-viewer", "/file-viewer")]
+    [InlineData(CulturePrefix.ExceptDefault, "/EN/file-viewer", "/file-viewer")]
+    [InlineData(CulturePrefix.ExceptDefault, "/en", "/")]
+    [InlineData(CulturePrefix.ExceptDefault, "/es-419/file-viewer", "/es/file-viewer")]
+    [InlineData(CulturePrefix.ExceptDefault, "/HE/file-viewer", "/he/file-viewer")]
+    [InlineData(CulturePrefix.Always, "/file-viewer", "/en/file-viewer")]
+    [InlineData(CulturePrefix.Always, "/", "/en")]
+    [InlineData(CulturePrefix.Always, "/es-419/file-viewer", "/es/file-viewer")]
+    [InlineData(CulturePrefix.Always, "/HE/file-viewer", "/he/file-viewer")]
+    [InlineData(CulturePrefix.Always, "/xx/file-viewer", "/en/xx/file-viewer")]
+    public async Task Should_redirect_a_url_that_is_not_canonical(CulturePrefix prefix, string requested, string location)
+    {
+        // Arrange
+        using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
+        var reachedNext = false;
+        var middleware = new CultureRoutingMiddleware(_ => { reachedNext = true; return Task.CompletedTask; }, Router(prefix));
+        var context = ContextFor(requested);
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.False(reachedNext);
+            Assert.Equal(location, context.Response.Headers.Location.ToString());
+            Assert.Equal(StatusCodes.Status302Found, context.Response.StatusCode);
+        });
+    }
+
+    // An unknown first segment is left in place so the router can fail to match it, which is what
+    // turns a bogus culture into a 404 rather than silently serving some other page.
+    [Theory]
+    [InlineData("/xx/file-viewer")]
+    [InlineData("/en-GB/file-viewer")]
+    [InlineData("/es-anything/file-viewer")]
+    public async Task Should_forward_an_unknown_first_segment_unchanged(string requested)
+    {
+        // Arrange
+        using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
+        string? reached = null;
+        var middleware = new CultureRoutingMiddleware(context => { reached = context.Request.Path.Value; return Task.CompletedTask; }, Router(CulturePrefix.ExceptDefault));
+        var context = ContextFor(requested);
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(requested, reached);
+            Assert.Equal("en", CultureInfo.CurrentUICulture.Name);
+        });
+    }
+
+    // A segment equal to a registered token is always a culture, so two in a row name no address.
+    [Theory]
+    [InlineData("/he/es")]
+    [InlineData("/he/en/file-viewer")]
+    [InlineData("/es/es-419")]
+    [InlineData("/he/en/app.css")]
+    public async Task Should_reject_a_url_naming_consecutive_cultures(string requested)
+    {
+        // Arrange
+        using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
+        var reachedNext = false;
+        var middleware = new CultureRoutingMiddleware(_ => { reachedNext = true; return Task.CompletedTask; }, Router(CulturePrefix.ExceptDefault));
+        var context = ContextFor(requested);
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.False(reachedNext);
+            Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
+            Assert.Equal(string.Empty, context.Response.Headers.Location.ToString());
+        });
+    }
+
+    [Fact]
+    public async Task Should_carry_the_query_string_through_a_redirect()
+    {
+        // Arrange
+        using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
+        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, Router(CulturePrefix.ExceptDefault));
+        var context = ContextFor("/en/file-viewer");
+        context.Request.QueryString = new QueryString("?tab=2&q=a%20b");
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert
+        Assert.Equal("/file-viewer?tab=2&q=a%20b", context.Response.Headers.Location.ToString());
+    }
+
+    [Fact]
+    public async Task Should_carry_the_path_base_through_a_redirect()
+    {
+        // Arrange
+        using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
+        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, Router(CulturePrefix.ExceptDefault));
+        var context = ContextFor("/en/file-viewer");
+        context.Request.PathBase = new PathString("/app");
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert
+        Assert.Equal("/app/file-viewer", context.Response.Headers.Location.ToString());
+    }
+
+    [Fact]
+    public async Task Should_escape_a_reserved_character_in_a_redirect()
+    {
+        // Arrange
+        using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
+        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, Router(CulturePrefix.ExceptDefault));
+        var context = ContextFor("/en/a b");
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert
+        Assert.Equal("/a%20b", context.Response.Headers.Location.ToString());
+    }
+
+    [Theory]
+    [InlineData("/he/app.css", "/app.css")]
+    [InlineData("/he/_framework/blazor.web.js", "/_framework/blazor.web.js")]
+    [InlineData("/_blazor", "/_blazor")]
+    [InlineData("/favicon.ico", "/favicon.ico")]
+    public async Task Should_neither_redirect_nor_cookie_a_request_that_is_not_a_document(string requested, string forwarded)
+    {
+        // Arrange
+        using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
+        string? reached = null;
+        var middleware = new CultureRoutingMiddleware(context => { reached = context.Request.Path.Value; return Task.CompletedTask; }, Router(CulturePrefix.ExceptDefault));
+        var context = ContextFor(requested);
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(forwarded, reached);
+            Assert.Equal(string.Empty, context.Response.Headers.Location.ToString());
+            Assert.Equal(string.Empty, context.Response.Headers.SetCookie.ToString());
+        });
+    }
+
+    [Fact]
+    public async Task Should_write_the_culture_cookie_for_a_document()
+    {
+        // Arrange
+        using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
+        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, Router(CulturePrefix.ExceptDefault));
+        var context = ContextFor("/he/file-viewer");
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert
+        var cookie = context.Response.Headers.SetCookie.ToString();
+
+        Assert.Multiple(() =>
+        {
+            Assert.Contains("forma-culture=he;", cookie, StringComparison.Ordinal);
+            Assert.Contains("httponly", cookie, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("max-age=", cookie, StringComparison.OrdinalIgnoreCase);
+        });
+    }
+
+    [Fact]
+    public async Task Should_write_the_canonical_token_rather_than_the_alias_that_was_requested()
+    {
+        // Arrange
+        using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
+        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, Router(CulturePrefix.ExceptDefault));
+        var context = ContextFor("/es/file-viewer");
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert
+        Assert.Contains("forma-culture=es;", context.Response.Headers.SetCookie.ToString(), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Should_leave_the_culture_cookie_alone_when_it_already_matches()
+    {
+        // Arrange
+        using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
+        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, Router(CulturePrefix.ExceptDefault));
+        var context = ContextFor("/he/file-viewer");
+        context.Request.Headers.Cookie = "forma-culture=he";
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert
+        Assert.Equal(string.Empty, context.Response.Headers.SetCookie.ToString());
+    }
+
+    // Language must come from the URL alone, so a stored preference never changes what an address serves.
+    [Fact]
+    public async Task Should_ignore_the_culture_cookie_when_choosing_the_culture()
+    {
+        // Arrange
+        using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
+        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, Router(CulturePrefix.ExceptDefault));
+        var context = ContextFor("/file-viewer");
+        context.Request.Headers.Cookie = "forma-culture=he";
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.Equal("en", CultureInfo.CurrentUICulture.Name);
+            Assert.Equal(string.Empty, context.Response.Headers.Location.ToString());
+        });
+    }
+
+    // A framework endpoint has no culture segment, so the circuit it opens would otherwise be served
+    // the default culture while the document that started it was not.
+    [Theory]
+    [InlineData("/_blazor")]
+    [InlineData("/_blazor/negotiate")]
+    public async Task Should_take_the_culture_from_the_cookie_for_a_framework_endpoint(string requested)
+    {
+        // Arrange
+        using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
+        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, Router(CulturePrefix.ExceptDefault));
+        var context = ContextFor(requested);
+        context.Request.Headers.Cookie = "forma-culture=he";
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert
+        Assert.Equal("he", CultureInfo.CurrentUICulture.Name);
+    }
+
+    [Theory]
+    [InlineData("forma-culture=xx")]
+    [InlineData("forma-culture=es-419")]
+    [InlineData("forma-culture=")]
+    public async Task Should_fall_back_to_the_default_culture_when_the_cookie_names_no_route(string cookie)
+    {
+        // Arrange
+        using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
+        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, Router(CulturePrefix.ExceptDefault));
+        var context = ContextFor("/_blazor");
+        context.Request.Headers.Cookie = cookie;
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert
+        Assert.Equal("en", CultureInfo.CurrentUICulture.Name);
+    }
+
+    private static CultureRouter Router(CulturePrefix prefix)
+        => new(new CultureRouterOptions
+        {
+            Prefix = prefix,
+            DefaultCulture = "en",
+            Routes =
+            [
+                new() { Token = "en", Culture = new("en") },
+                new() { Token = "he", Culture = new("he") },
+                new() { Token = "es", Culture = new("es-419"), HrefLang = "es", Aliases = ["es-419"] }
+            ]
+        });
+
+    private static DefaultHttpContext ContextFor(string path)
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Path = path;
+
+        return context;
+    }
+}

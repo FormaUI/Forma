@@ -1,0 +1,52 @@
+@page "/toast"
+@attribute [ShowcasePage("FormaToast")]
+@rendermode InteractiveServer
+@using Forma.UI.Components.Feedback
+@inject IToastService ToastService
+@inject IStringLocalizer<FormaToastPage> L
+
+<h1>FormaToast</h1>
+<p class="desc">@L["Slide-in toast notifications via a service. Auto-dismiss with configurable duration."]</p>
+
+<div class="demo-section">
+    <h2>@L["Toast Types"]</h2>
+    <div class="demo-box" style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button class="btn btn-primary" @onclick="ShowSuccess">@L["Success"]</button>
+        <button class="btn btn-sec" @onclick="ShowError">@L["Error"]</button>
+        <button class="btn btn-sec" @onclick="ShowInfo">@L["Info"]</button>
+        <button class="btn btn-sec" @onclick="ShowWarning">@L["Warning"]</button>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Custom Duration"]</h2>
+    <div class="demo-box" style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button class="btn btn-sec" @onclick="() => ShowTimed(1000)">1s</button>
+        <button class="btn btn-sec" @onclick="() => ShowTimed(5000)">5s</button>
+        <button class="btn btn-sec" @onclick="() => ShowTimed(10000)">10s</button>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Multiple Toasts"]</h2>
+    <div class="demo-box">
+        <button class="btn btn-primary" @onclick="ShowMultiple">@L["Show 3 at once"]</button>
+    </div>
+</div>
+
+<FormaToastContainer />
+
+@code {
+    private Task ShowSuccess() => ToastService.ShowAsync(L["Record saved successfully."], ToastType.Success);
+    private Task ShowError() => ToastService.ShowAsync(L["Something went wrong."], ToastType.Error);
+    private Task ShowInfo() => ToastService.ShowAsync(L["New version available."], ToastType.Info);
+    private Task ShowWarning() => ToastService.ShowAsync(L["Disk space is running low."], ToastType.Warning);
+    private Task ShowTimed(int ms) => ToastService.ShowAsync(L["Dismisses in {0} second(s).", ms / 1000], ToastType.Info, TimeSpan.FromMilliseconds(ms));
+
+    private async Task ShowMultiple()
+    {
+        await ToastService.ShowAsync(L["First toast"], ToastType.Success);
+        await ToastService.ShowAsync(L["Second toast"], ToastType.Info);
+        await ToastService.ShowAsync(L["Third toast"], ToastType.Warning);
+    }
+}

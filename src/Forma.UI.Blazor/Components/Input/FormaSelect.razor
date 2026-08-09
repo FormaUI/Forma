@@ -1,0 +1,65 @@
+@typeparam TValue
+@namespace Forma.UI.Components.Input
+@inherits InputBase<TValue>
+
+<FormaField Label="@Label" TargetId="@_triggerId" Required="@Required" LabelMode="FieldLabelMode.Pinned">
+    <ChildContent>
+        <div class="forma-select-trigger-wrap" @ref="_anchorElement">
+            <button @attributes="AdditionalAttributes"
+                    type="button"
+                    id="@_triggerId"
+                    class="forma-field-input forma-select-trigger @CssClass"
+                    disabled="@Disabled"
+                    aria-haspopup="listbox"
+                    aria-expanded="@(_isOpen ? "true" : "false")"
+                    aria-controls="@(_isOpen ? _popupId : null)"
+                    aria-required="@(Required ? "true" : null)"
+                    @ref="_triggerElement"
+                    @onclick="Toggle"
+                    @onkeydown="HandleTriggerKeyDown">
+                <span class="forma-select-trigger-text@(FindSelectedOption() is null ? " placeholder" : "")">@TriggerText</span>
+                <span class="forma-select-arrow" aria-hidden="true">&#9662;</span>
+            </button>
+        </div>
+        @if (_isOpen)
+        {
+            <div class="forma-select-backdrop" @onclick="Close"></div>
+            @* Manual rather than auto: the backdrop above owns dismissal, which also sidesteps
+               the iOS 17–18.2 bug where a popover ignores a tap outside it. *@
+            <div class="forma-select-popup"
+                 id="@_popupId"
+                 role="listbox"
+                 aria-label="@Label"
+                 popover="manual"
+                 @ref="_popupElement"
+                 @onkeydown="HandlePopupKeyDownAsync">
+                @for (var i = 0; i < Options.Count; i++)
+                {
+                    var idx = i;
+                    var option = Options[idx];
+                    var selected = IsSelected(option);
+                    <button type="button"
+                            class="forma-select-option@(selected ? " selected" : "")"
+                            role="option"
+                            tabindex="-1"
+                            aria-selected="@(selected ? "true" : "false")"
+                            @ref="_optionElements[idx]"
+                            @onclick="() => SelectAsync(option)">
+                        <span class="forma-select-option-label">@option.Label</span>
+                        @if (selected)
+                        {
+                            <span class="forma-select-option-check" aria-hidden="true">&#10003;</span>
+                        }
+                    </button>
+                }
+                @if (Options.Count == 0)
+                {
+                    <div class="forma-select-empty">@L["No options available yet"]</div>
+                }
+            </div>
+        }
+    </ChildContent>
+    <Validation>
+        <ValidationMessage For="@ValueExpression" />
+    </Validation>
+</FormaField>

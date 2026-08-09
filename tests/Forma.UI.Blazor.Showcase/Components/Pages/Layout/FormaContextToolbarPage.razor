@@ -1,0 +1,59 @@
+@page "/context-toolbar"
+@attribute [ShowcasePage("FormaContextToolbar")]
+@rendermode InteractiveServer
+@using Forma.UI.Components.Layout
+@inject IStringLocalizer<FormaContextToolbarPage> L
+
+<h1>FormaContextToolbar</h1>
+<p class="desc">@L["A bar that appears once one or more rows are selected, holding bulk actions and a clear-selection button. Pairs with FormaDataGrid's checked selection."]</p>
+
+<div class="demo-section">
+    <h2>@L["Basic usage"]</h2>
+    <div class="demo-box">
+        <button class="btn btn-sec" @onclick="() => _basicCount = _basicCount > 0 ? 0 : 3">
+            @L["Toggle selection"]
+        </button>
+        <FormaContextToolbar Count="_basicCount" OnClear="() => _basicCount = 0">
+            <button class="btn btn-primary">@L["Delete"]</button>
+            <button class="btn btn-sec">@L["Publish"]</button>
+        </FormaContextToolbar>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Without a clear button"]</h2>
+    <div class="demo-box">
+        <FormaContextToolbar Count="2">
+            <button class="btn btn-primary">@L["Delete"]</button>
+        </FormaContextToolbar>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Several actions"]</h2>
+    <div class="demo-box">
+        <button class="btn btn-sec" @onclick="() => _wideCount = _wideCount > 0 ? 0 : 4">
+            @L["Toggle selection"]
+        </button>
+        <FormaContextToolbar Count="_wideCount" OnClear="() => _wideCount = 0">
+            <button class="btn btn-primary">@L["Delete"]</button>
+            <button class="btn btn-sec">@L["Publish"]</button>
+            <button class="btn btn-sec">@L["Unpublish"]</button>
+            <button class="btn btn-sec">@L["Export"]</button>
+        </FormaContextToolbar>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Caller-supplied caption"]</h2>
+    <div class="demo-box">
+        <FormaContextToolbar Count="7" Caption="@L["7 comments awaiting moderation"]">
+            <button class="btn btn-primary">@L["Publish"]</button>
+        </FormaContextToolbar>
+    </div>
+</div>
+
+@code {
+    private int _basicCount;
+    private int _wideCount = 4;
+}

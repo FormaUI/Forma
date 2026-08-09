@@ -1,0 +1,62 @@
+@using System.Reflection
+@using Forma.UI.Globalization
+@using Forma.UI.Blazor.Showcase
+@inject CultureRouter Router
+@inject NavigationManager Nav
+
+<nav class="showcase-sidebar">
+    <div class="culture-switcher">
+        @foreach (var route in Router.Routes)
+        {
+            <a href="@LinkTo(route)" data-enhance-nav="false" class="@(IsCurrent(route) ? "active" : "")">@Label(route)</a>
+        }
+    </div>
+    @foreach (var group in PageGroups)
+    {
+        <h3>@group.Key</h3>
+        @foreach (var entry in group)
+        {
+            <NavLink href="@Router.GetPath(Current, entry.Route)" Match="NavLinkMatch.Prefix">@entry.Title</NavLink>
+        }
+    }
+</nav>
+
+@code {
+    private record ShowcasePage(string Title, string Category, string Route);
+
+    private static readonly ILookup<string, ShowcasePage> PageGroups = DiscoverPages();
+
+    private static readonly Dictionary<string, string> Labels = new(StringComparer.Ordinal)
+    {
+        ["en"] = "En",
+        ["he"] = "עב",
+        ["es"] = "Es"
+    };
+
+    private CultureRoute Current => Router.CurrentRoute;
+
+    private static ILookup<string, ShowcasePage> DiscoverPages()
+    {
+        return typeof(Program).Assembly.GetTypes()
+            .Select(t => (Type: t, Attr: t.GetCustomAttribute<ShowcasePageAttribute>(), Route: t.GetCustomAttribute<RouteAttribute>()?.Template))
+            .Where(x => x.Attr is not null && x.Route is not null)
+            .Select(x =>
+            {
+                var ns = x.Type.Namespace ?? "";
+                var tag = ns.Contains('.') ? ns[(ns.LastIndexOf('.') + 1)..] : ns;
+                return new ShowcasePage(x.Attr!.Title, tag, x.Route!);
+            })
+            .OrderBy(p => p.Category)
+            .ThenBy(p => p.Title)
+            .ToLookup(p => p.Category);
+    }
+
+    private static string Label(CultureRoute route)
+        => Labels.GetValueOrDefault(route.Token, route.Token);
+
+    private bool IsCurrent(CultureRoute route)
+        => string.Equals(route.Token, Current.Token, StringComparison.Ordinal);
+
+    private string LinkTo(CultureRoute route)
+        => Router.GetUrl(route, Nav.ToBaseRelativePath(Nav.Uri));
+}

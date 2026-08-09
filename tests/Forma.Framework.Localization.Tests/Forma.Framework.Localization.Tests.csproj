@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <IsPackable>false</IsPackable>
+        <RootNamespace>Forma.Framework.Localization.Tests</RootNamespace>
+        <AssemblyName>Forma.Framework.Localization.Tests</AssemblyName>
+        <NoWarn>CA1707</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="xunit.v3" Version="3.0.1" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Sources\**\*.json" />
+        <!-- The same relative tree under a root, which is what ResourcesPath resolves against. -->
+        <EmbeddedResource Include="Resources\**\*.json" />
+        <!-- Kept in the main assembly to cover the layout a project gets by opting out of satellites. -->
+        <EmbeddedResource Update="Sources\MainAssembly.he.json" WithCulture="false" />
+        <!-- Embedded under the type's own namespace, which an assembly named apart from its root produces. -->
+        <EmbeddedResource Include="Foreign\ForeignRoot.he.json" LogicalName="Contoso.Widgets.ForeignRoot.he.json" WithCulture="false" />
+        <!-- A type outside any namespace, whose resource the root namespace alone qualifies. -->
+        <EmbeddedResource Include="GlobalRoot.he.json" WithCulture="false" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,94 @@
+@page "/drop-down-menu"
+@attribute [ShowcasePage("FormaDropDownMenu")]
+@rendermode InteractiveServer
+@using Forma.UI.Components.Input
+@using Forma.UI.Components.Interactive
+@inject IStringLocalizer<FormaDropDownMenuPage> L
+
+<h1>FormaDropDownMenu</h1>
+<p class="desc">@L["A trigger button that opens an anchored menu of commands."]</p>
+
+<div class="demo-section">
+    <h2>@L["Basic"]</h2>
+    <div class="demo-box">
+        <FormaDropDownMenu>
+            <Trigger>@L["Options"]</Trigger>
+            <ChildContent>
+                <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Print"])">@L["Print"]</FormaDropDownMenuItem>
+                <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Notes"])">@L["Notes"]</FormaDropDownMenuItem>
+            </ChildContent>
+        </FormaDropDownMenu>
+        <p class="demo-output">@L["Last action"]: <code>@(_lastAction ?? L["none yet"])</code></p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Grouped Items"]</h2>
+    <p class="desc">@L["A divider separates the invoice actions from the rest, matching how the order detail page groups its menu."]</p>
+    <div class="demo-box">
+        <FormaDropDownMenu>
+            <Trigger>@L["Options"]</Trigger>
+            <ChildContent>
+                <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Print"])">@L["Print"]</FormaDropDownMenuItem>
+                <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Notes"])">@L["Notes"]</FormaDropDownMenuItem>
+                <FormaDropDownMenuDivider />
+                <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Create invoice"])">@L["Create invoice"]</FormaDropDownMenuItem>
+                <FormaDropDownMenuItem Href="#">@L["Download invoice"]</FormaDropDownMenuItem>
+            </ChildContent>
+        </FormaDropDownMenu>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Disabled Item"]</h2>
+    <div class="demo-box">
+        <FormaDropDownMenu>
+            <Trigger>@L["Options"]</Trigger>
+            <ChildContent>
+                <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Edit"])">@L["Edit"]</FormaDropDownMenuItem>
+                <FormaDropDownMenuItem Disabled="true" OnClick="@(() => _lastAction = L["Delete"])">@L["Delete"]</FormaDropDownMenuItem>
+            </ChildContent>
+        </FormaDropDownMenu>
+        <p class="desc">@L["Publish this item to enable deleting it."]</p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Icon-Only Trigger"]</h2>
+    <p class="desc">@L["The trigger's accessible name comes from an aria-label, the same way an icon-only FormaButton is labelled."]</p>
+    <div class="demo-box">
+        <FormaDropDownMenu TriggerOptions="new() { IconOnly = true }" aria-label="@L["Row actions"]">
+            <Trigger>&#8942;</Trigger>
+            <ChildContent>
+                <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["View"])">@L["View"]</FormaDropDownMenuItem>
+                <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Edit"])">@L["Edit"]</FormaDropDownMenuItem>
+                <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Duplicate"])">@L["Duplicate"]</FormaDropDownMenuItem>
+                <FormaDropDownMenuDivider />
+                <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Delete"])">@L["Delete"]</FormaDropDownMenuItem>
+            </ChildContent>
+        </FormaDropDownMenu>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Keyboard"]</h2>
+    <p class="desc">@L["Open with Enter, Space, or the down arrow. Arrow keys move between items, Home and End jump to the ends, and Escape closes the menu and returns focus to the trigger."]</p>
+    <div class="demo-box">
+        <FormaDropDownMenu>
+            <Trigger>@L["Actions"]</Trigger>
+            <ChildContent>
+                <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["View"])">@L["View"]</FormaDropDownMenuItem>
+                <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Edit"])">@L["Edit"]</FormaDropDownMenuItem>
+                <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Duplicate"])">@L["Duplicate"]</FormaDropDownMenuItem>
+                <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Archive"])">@L["Archive"]</FormaDropDownMenuItem>
+                <FormaDropDownMenuDivider />
+                <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Delete"])">@L["Delete"]</FormaDropDownMenuItem>
+            </ChildContent>
+        </FormaDropDownMenu>
+        <p class="demo-output">@L["Last action"]: <code>@(_lastAction ?? L["none yet"])</code></p>
+    </div>
+</div>
+
+@code {
+    private string? _lastAction;
+}

@@ -1,4 +1,4 @@
-# Forma.Blazor
+# Forma.UI.Blazor
 
 A reusable Blazor **component library** — modals, toasts, pickers, tabs, data grids, and
 form inputs.
@@ -9,18 +9,21 @@ The library targets **.NET 11** and Interactive Server components.
 
 | Project | Kind | Purpose |
 | --- | --- | --- |
-| `src/Forma.Blazor` | Razor Class Library | The component library (packaged for NuGet). |
-| `src/Forma.Blazor.Core` | Class library | Service implementations (`ToastService`, `ConfirmDialogService`, `StatusBadgeCatalog`, `StateNotifier`). |
-| `src/Forma.Blazor.Framework` | Class library | Contracts consumed by components and hosts (`IToastService`, `IConfirmDialogService`, `IStatusBadgeCatalog`, `INotifyStateChanged`, message/enum types, `IResourceProvider`, `IPlayerProvider`, `CssColor`). |
-| `tests/Forma.Blazor.Showcase` | Web app | Interactive gallery for every component; doubles as a reference host. |
-| `tests/Forma.Blazor.Tests` | Test project | bUnit + xUnit component tests. |
+| `src/Forma.UI.Blazor` | Razor Class Library | The component library (packaged for NuGet). |
+| `src/Forma.Framework.Core` | Class library | Service implementations (`ToastService`, `ConfirmDialogService`, `StatusBadgeCatalog`, `StateNotifier`). |
+| `src/Forma.Framework` | Class library | Contracts consumed by components and hosts (`IToastService`, `IConfirmDialogService`, `IStatusBadgeCatalog`, `INotifyStateChanged`, message/enum types, `IResourceProvider`, `IPlayerProvider`, `CssColor`). |
+| `tests/Forma.UI.Blazor.Showcase` | Web app | Interactive gallery for every component; doubles as a reference host. |
+| `tests/Forma.UI.Blazor.Tests` | Test project | bUnit + xUnit component tests. |
 
-The reference graph runs one way: `Forma.Blazor.Framework` ←
-`Forma.Blazor` / `Forma.Blazor.Core`. `Forma.Blazor` never references `Forma.Blazor.Core` —
-components depend on the contract, and the host chooses the implementation. All three
-share the `Forma.Blazor` namespace — the assembly name is what distinguishes them, the
-same way `Microsoft.Extensions.DependencyInjection.Abstractions` and
+The reference graph runs one way: `Forma.Framework` ←
+`Forma.UI.Blazor` / `Forma.Framework.Core`. `Forma.UI.Blazor` never references `Forma.Framework.Core` —
+components depend on the contract, and the host chooses the implementation.
+`Forma.Framework` and `Forma.Framework.Core` share the `Forma.Framework` namespace — the
+assembly name is what distinguishes them, the same way
+`Microsoft.Extensions.DependencyInjection.Abstractions` and
 `Microsoft.Extensions.DependencyInjection` both ship the `Microsoft.Extensions.DependencyInjection` namespace.
+`Forma.UI.Blazor` ships the `Forma.UI` namespace, leaving `Forma.UI` free as the root for
+any future renderer.
 
 ## Naming & conventions
 
@@ -36,36 +39,34 @@ These three identities are intentionally distinct — keep them straight:
 
 | Property | Value | Notes |
 | --- | --- | --- |
-| Assembly name | `Forma.Blazor` | Namespace root is also `Forma.Blazor`. |
-| NuGet package id | `2Site.Forma.Blazor` | The published package name. |
-| Static web asset base path | `_content/Forma.Blazor` | Pinned via `<StaticWebAssetBasePath>`. |
+| Assembly name | `Forma.UI.Blazor` | Namespace root is `Forma.UI`. |
+| NuGet package id | `2Site.Forma.UI.Blazor` | The published package name. |
+| Static web asset base path | `_content/Forma.UI.Blazor` | Pinned via `<StaticWebAssetBasePath>`. |
 
 An RCL normally serves its static assets under `_content/{PackageId}`. Because the
-component markup and JS interop hardcode `_content/Forma.Blazor/…`, the base path is
-**pinned to `Forma.Blazor`** so those URLs stay stable regardless of what the NuGet
+component markup and JS interop hardcode `_content/Forma.UI.Blazor/…`, the base path is
+**pinned to `Forma.UI.Blazor`** so those URLs stay stable regardless of what the NuGet
 package is named:
 
 ```xml
-<StaticWebAssetBasePath>_content/Forma.Blazor</StaticWebAssetBasePath>
+<StaticWebAssetBasePath>_content/Forma.UI.Blazor</StaticWebAssetBasePath>
 ```
 
 If you rename the package, do **not** change this — the asset URLs depend on it.
 
 ## Consuming the library
 
-`Forma.Blazor` is a component library: **the host application owns its own root document
+`Forma.UI.Blazor` is a component library: **the host application owns its own root document
 (`App.razor`) and router (`Routes.razor`).** The library ships components, styles,
-and JS only. See `tests/Forma.Blazor.Showcase` for a complete working host.
+and JS only. See `tests/Forma.UI.Blazor.Showcase` for a complete working host.
 
 **1. Register services and Interactive Server components:**
 
 ```csharp
-using Forma.Blazor.Components.Feedback;
-using Forma.Blazor.Components.Indicators;
-using Forma.Blazor.Core.Components.Feedback;
-using Forma.Blazor.Core.Components.Indicators;
-using Forma.Blazor.Css;
-using Forma.Blazor.Globalization;
+using Forma.Framework.Css;
+using Forma.Framework.Feedback;
+using Forma.Framework.Indicators;
+using Forma.UI.Globalization;
 
 builder.Services.AddLocalization();
 builder.Services.AddScoped<IConfirmDialogService, ConfirmDialogService>();
@@ -95,9 +96,9 @@ through `IStatusBadgeCatalog.Add`:
 **2. Reference the library stylesheets from your host `App.razor` `<head>`, in this order:**
 
 ```razor
-<link rel="stylesheet" href="@Assets["_content/Forma.Blazor/forma-tokens.css"]" />
-<link rel="stylesheet" href="@Assets["_content/Forma.Blazor/forma-reset.css"]" />
-<link rel="stylesheet" href="@Assets["_content/Forma.Blazor/forma-base.css"]" />
+<link rel="stylesheet" href="@Assets["_content/Forma.UI.Blazor/forma-tokens.css"]" />
+<link rel="stylesheet" href="@Assets["_content/Forma.UI.Blazor/forma-reset.css"]" />
+<link rel="stylesheet" href="@Assets["_content/Forma.UI.Blazor/forma-base.css"]" />
 ```
 
 Three layers, so a host takes only what it wants:
@@ -149,7 +150,7 @@ Add `<FormaPageLocalization />` to your `<head>` to emit `rel="canonical"` and t
 ```csharp
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
-    .AddAdditionalAssemblies(typeof(Forma.Blazor._Imports).Assembly);
+    .AddAdditionalAssemblies(typeof(Forma.UI._Imports).Assembly);
 ```
 
 Components that use JS interop (`FormaModal`, `FormaInput`) require the
@@ -176,7 +177,7 @@ tracked in [`MIGRATION_PLAN.md`](https://github.com/2site-net/Coi/blob/main/MIGR
 ```pwsh
 dotnet build Forma.slnx
 dotnet test Forma.slnx
-dotnet run --project tests/Forma.Blazor.Showcase
+dotnet run --project tests/Forma.UI.Blazor.Showcase
 ```
 
 The showcase serves an interactive page per component. Culture routing redirects

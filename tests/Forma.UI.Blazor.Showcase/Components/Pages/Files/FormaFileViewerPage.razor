@@ -1,0 +1,123 @@
+@page "/file-viewer"
+@attribute [ShowcasePage("FormaFileViewer")]
+@rendermode InteractiveServer
+@using Forma.UI.Components.Files
+@inject IStringLocalizer<FormaFileViewerPage> L
+
+<h1>FormaFileViewer</h1>
+<p class="desc">@L["Give it an address and the first provider that claims it decides what the resource is; the viewer then renders whatever came back — an image, a video, audio, an embedded document, converted markup, or a download link."]</p>
+
+<div class="demo-section">
+    <h2>@L["An image"]</h2>
+    <p class="desc">@L["Fits to the frame; the zoom controls enlarge it, and dragging with a mouse pans it once zoomed. Touch and pinch pan and zoom natively."]</p>
+    <div class="demo-box" style="block-size: 22rem;">
+        <FormaFileViewer Source="/media/sample-poster.svg" ShowMetadata="true" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A video"]</h2>
+    <p class="desc">@L["Delegates to FormaVideoPlayer, loaded immediately rather than held behind its own play control — opening the viewer already is the reader's request to watch."]</p>
+    <div class="demo-box" style="block-size: 22rem;">
+        <FormaFileViewer Source="/media/sample.mp4" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Audio"]</h2>
+    <p class="desc">@L["A one-second tone generated for the gallery, played through the browser's own transport controls."]</p>
+    <div class="demo-box">
+        <FormaFileViewer Source="/media/sample.wav" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A document the browser embeds"]</h2>
+    <p class="desc">@L["A PDF goes to the browser's own object handling, with a link to open it in a new tab as fallback content."]</p>
+    <div class="demo-box" style="block-size: 22rem;">
+        <FormaFileViewer Source="/media/sample.pdf" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A page, sandboxed"]</h2>
+    <p class="desc">@L["An uploaded page is untrusted, so it previews in an opaque origin with scripts, forms and navigation withheld."]</p>
+    <div class="demo-box" style="block-size: 18rem;">
+        <FormaFileViewer Source="/media/sample.html" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A Markdown document converted by Forma.Framework.Markdown"]</h2>
+    <p class="desc">@L["Markdig renders it and a sanitiser cleans the result, so a tag written inside the document arrives as text rather than as markup."]</p>
+    <div class="demo-box">
+        <FormaFileViewer Source="/media/notes.md" ShowMetadata="true" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A Word document converted by Forma.Framework.Office"]</h2>
+    <p class="desc">@L["The package reads the file through the host's content reader, converts it, and sanitises the result before the viewer renders it as markup."]</p>
+    <div class="demo-box">
+        <FormaFileViewer Source="/media/sample.docx" ShowMetadata="true" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A workbook, one table per sheet"]</h2>
+    <p class="desc">@L["OfficeIMO ships no HTML converter for Excel, so the package projects each sheet's used range into a table, bounded so a large sheet cannot flood the page."]</p>
+    <div class="demo-box">
+        <FormaFileViewer Source="/media/sample.xlsx" ShowMetadata="true" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A presentation, one section per slide"]</h2>
+    <p class="desc">@L["Each slide becomes a section carrying its text boxes, with speaker notes rendered as a quotation."]</p>
+    <div class="demo-box">
+        <FormaFileViewer Source="/media/sample.pptx" ShowMetadata="true" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["An address no provider claims"]</h2>
+    <p class="desc">@L["Falls back to a type glyph, the name, the size when one is known, and a download link rather than a broken preview."]</p>
+    <div class="demo-box">
+        <FormaFileViewer Source="/media/archive.zip" ShowMetadata="true" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A caller-supplied fallback"]</h2>
+    <p class="desc">@L["UnsupportedTemplate replaces the built-in fallback entirely, for a host that wants its own treatment."]</p>
+    <div class="demo-box">
+        <FormaFileViewer Source="/media/archive.zip">
+            <UnsupportedTemplate>
+                <p class="showcase-custom-fallback">@L["No preview for {0}.", context]</p>
+            </UnsupportedTemplate>
+        </FormaFileViewer>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Browsing a set"]</h2>
+    <p class="desc">@L["With Siblings supplied, the arrow keys and the on-screen controls step through the set — reversed under a right-to-left culture, since left and right then read as forward and back the other way."]</p>
+    <div class="demo-box" style="block-size: 22rem;">
+        <FormaFileViewer Source="@_current" Siblings="_gallery" OnNavigate="HandleNavigate" ShowMetadata="true" />
+    </div>
+</div>
+
+@code {
+    private static readonly List<string> _gallery =
+    [
+        "/media/sample-poster.svg",
+        "/media/sample.mp4",
+        "/media/sample.pdf",
+        "/media/archive.zip",
+    ];
+
+    private string _current = _gallery[0];
+
+    private void HandleNavigate(string source)
+        => _current = source;
+}

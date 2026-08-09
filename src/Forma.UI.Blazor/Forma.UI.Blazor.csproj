@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <RootNamespace>Forma.UI</RootNamespace>
+        <AssemblyName>Forma.UI.Blazor</AssemblyName>
+        <PackageId>2Site.Forma.UI.Blazor</PackageId>
+        <StaticWebAssetBasePath>_content/Forma.UI.Blazor</StaticWebAssetBasePath>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="11.0.0-preview.6.26359.118" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Framework\Forma.Framework.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Components\**\*.json" />
+    </ItemGroup>
+
+</Project>

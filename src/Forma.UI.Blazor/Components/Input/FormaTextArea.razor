@@ -1,0 +1,28 @@
+@namespace Forma.UI.Components.Input
+@inherits InputBase<string?>
+
+<FormaField Label="@Label" TargetId="@_inputId" Required="@Required" Multiline="true">
+    <ChildContent>
+        <textarea @attributes="AdditionalAttributes"
+                  id="@_inputId"
+                  class="forma-field-input forma-textarea @(ShowCharacterCount ? "forma-textarea-counting" : null) @CssClass"
+                  placeholder=" "
+                  rows="@Rows"
+                  maxlength="@MaxLength"
+                  value="@CurrentValueAsString"
+                  @oninput="@(e => CurrentValueAsString = e.Value?.ToString())"
+                  aria-required="@(Required ? "true" : null)"
+                  aria-describedby="@DescribedBy"></textarea>
+        @if (ShowCharacterCount)
+        {
+            <div class="forma-textarea-count">
+                @* Isolated and pinned: an RTL line otherwise renders "5 / 280" as "280 / 5". *@
+                <bdi dir="ltr" aria-hidden="true">@CountText</bdi>
+                <span id="@CountId" class="forma-textarea-count-label">@CountLabel</span>
+            </div>
+        }
+    </ChildContent>
+    <Validation>
+        <ValidationMessage For="@ValueExpression" />
+    </Validation>
+</FormaField>

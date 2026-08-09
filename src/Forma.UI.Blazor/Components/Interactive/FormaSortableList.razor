@@ -1,0 +1,26 @@
+@typeparam TItem
+@namespace Forma.UI.Components.Interactive
+
+<div class="forma-sortable-list-container">
+    @* Safari drops list semantics from a list whose markers are removed, so the role is
+       restated rather than left to the ul alone. *@
+    <ul class="@ListCssClass" role="list" @attributes="AdditionalAttributes" @ref="_element">
+        @for (var i = 0; i < Items.Count; i++)
+        {
+            var item = Items[i];
+            var index = i;
+            <li class="forma-sortable-list-item" @key="ItemKey(item)">
+                <button type="button"
+                        class="forma-sortable-list-handle"
+                        disabled="@Disabled"
+                        aria-label="@HandleLabel(index)">
+                    <span aria-hidden="true">⠿</span>
+                </button>
+                <div class="forma-sortable-list-content">
+                    @ItemTemplate(item)
+                </div>
+            </li>
+        }
+    </ul>
+    <div class="forma-sortable-list-announcement" aria-live="polite">@_announcement</div>
+</div>

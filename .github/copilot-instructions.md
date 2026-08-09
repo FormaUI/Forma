@@ -1,4 +1,4 @@
-# Forma.Blazor — Copilot Instructions
+# Forma.UI.Blazor — Copilot Instructions
 
 A reusable Blazor **component library**. **.NET 11 · C# latest · Razor Class Library · Interactive Server · JS-free by default.**
 
@@ -37,19 +37,20 @@ Coi's boxy gradient toggle becoming a token-driven iOS-style `FormaToggleSwitch`
 
 | Project | Kind | May reference |
 |---------|------|---------------|
-| `src/Forma.Blazor.Framework` | Class library | Nothing — contracts, messages, enums, `CssColor` |
-| `src/Forma.Blazor.Core` | Class library | `Forma.Blazor.Framework` — implementations |
-| `src/Forma.Blazor` | Razor Class Library | `Forma.Blazor.Framework` only — packaged components |
-| `tests/Forma.Blazor.Tests` | Test project | `Forma.Blazor`, `Forma.Blazor.Core` |
-| `tests/Forma.Blazor.Showcase` | Web app | `Forma.Blazor`, `Forma.Blazor.Core` — reference host and gallery |
+| `src/Forma.Framework` | Class library | Nothing — contracts, messages, enums, `CssColor` |
+| `src/Forma.Framework.Core` | Class library | `Forma.Framework` — implementations |
+| `src/Forma.UI.Blazor` | Razor Class Library | `Forma.Framework` only — packaged components |
+| `tests/Forma.UI.Blazor.Tests` | Test project | `Forma.UI.Blazor`, `Forma.Framework.Core` |
+| `tests/Forma.UI.Blazor.Showcase` | Web app | `Forma.UI.Blazor`, `Forma.Framework.Core` — reference host and gallery |
 
 - Do make components depend on abstractions such as `IToastService`; let the host choose implementations through DI.
 - Do represent colours and other CSS values with typed values such as `CssColor.FromRgba(...)` and `CssColor.FromHex(...)`.
-- Do share the `Forma.Blazor` namespace across `Forma.Blazor.Framework`, `Forma.Blazor.Core` and `Forma.Blazor` — the assembly name carries the split, not the namespace (matches `Microsoft.Extensions.DependencyInjection` / `.Abstractions`).
-- Do keep these identities distinct: assembly/namespace `Forma.Blazor`, package ID `2Site.Forma.Blazor`, static asset base path `_content/Forma.Blazor`.
-- Don't reference `Forma.Blazor.Core` from `Forma.Blazor`.
+- Do share the `Forma.Framework` namespace across `Forma.Framework` and `Forma.Framework.Core` — the assembly name carries the split, not the namespace (matches `Microsoft.Extensions.DependencyInjection` / `.Abstractions`).
+- Do use the `Forma.UI` namespace for `Forma.UI.Blazor`, keeping `Forma.UI` free as the root for any future renderer.
+- Do keep these identities distinct: assembly `Forma.UI.Blazor`, namespace `Forma.UI`, package ID `2Site.Forma.UI.Blazor`, static asset base path `_content/Forma.UI.Blazor`.
+- Don't reference `Forma.Framework.Core` from `Forma.UI.Blazor`.
 - Don't represent typed CSS values as arbitrary strings.
-- Don't rename or conflate the three public identities; `_content/Forma.Blazor` is pinned and hardcoded by markup and JS.
+- Don't rename or conflate these identities; `_content/Forma.UI.Blazor` is pinned and hardcoded by markup and JS.
 
 ## Naming
 
@@ -73,7 +74,7 @@ These rules govern prose that *describes a thing*. They do not apply to this fil
 
 ## Component file layout
 
-Components live in `src/Forma.Blazor/Components/{Category}/`, where `{Category}` is `Layout`, `Feedback`, `Actions`, `Input`, `Data`, `Indicators`, `Interactive`, `Files`, `Media`, `Editors`, or `Metadata`.
+Components live in `src/Forma.UI.Blazor/Components/{Category}/`, where `{Category}` is `Layout`, `Feedback`, `Actions`, `Input`, `Data`, `Indicators`, `Interactive`, `Files`, `Media`, `Editors`, or `Metadata`.
 
 ```text
 Components/{Category}/
@@ -110,8 +111,8 @@ Components/{Category}/
 - Do add `AdditionalAttributes` with `CaptureUnmatchedValues = true` and `@attributes` when the root element should accept pass-through attributes.
 - Do generate element IDs as `$"prefix-{Guid.NewGuid():N}"` so multiple instances can coexist.
 - Don't place component logic in markup.
-- Don't use `.ConfigureAwait(false)` in `Forma.Blazor` components; leaving the synchronization context means state touched after an await has to be marshalled back through `InvokeAsync`. `src/Forma.Blazor/.editorconfig` sets `CA2007` to `none`, so nothing will flag it for you.
-- Don't omit `.ConfigureAwait(false)` from awaited service code in `Forma.Blazor.Core`, which runs off the renderer and where the root `.editorconfig` sets `CA2007` to `error`.
+- Don't use `.ConfigureAwait(false)` in `Forma.UI.Blazor` components; leaving the synchronization context means state touched after an await has to be marshalled back through `InvokeAsync`. `src/Forma.UI.Blazor/.editorconfig` sets `CA2007` to `none`, so nothing will flag it for you.
+- Don't omit `.ConfigureAwait(false)` from awaited service code in `Forma.Framework.Core`, which runs off the renderer and where the root `.editorconfig` sets `CA2007` to `error`.
 
 ## Options records
 
@@ -151,7 +152,7 @@ JS-free is the default, not a prohibition.
 - Do use only native modern browser APIs; keep each module small, colocated as `FormaX.razor.js`, and focused on one DOM responsibility.
 - Do keep behaviour in C# and use JS only for what the DOM cannot otherwise provide.
 - Do name JS parameters by role (`input`, `dialog`, `label`), not type (`inputEl`, `dialogElement`, `el`).
-- Do import the module on first render from `./_content/Forma.Blazor/Components/{Category}/FormaX.razor.js`.
+- Do import the module on first render from `./_content/Forma.UI.Blazor/Components/{Category}/FormaX.razor.js`.
 - Do catch `JSException` around every JS call because the circuit can drop mid-call.
 - Do dispose the module in `DisposeAsync` and catch `JSDisconnectedException`.
 - Don't use jQuery, npm packages, polyfills, or other external JS libraries. The sole exception is `FormaRichTextEditor`'s Markdown renderer (#36) — a parser is a solved problem, and it renders only; it never owns an editing surface, a selection, an undo stack or a toolbar. Adding a second exception is a decision for the maintainer, not a precedent already set.
@@ -162,7 +163,7 @@ JS-free is the default, not a prohibition.
 
 - Do use CSS isolation and begin each `.razor.css` file with a banner naming the component and its approach.
 - Do use logical properties such as `margin-block-end`, `inset-inline-start`, `padding-inline`, and `text-align: start` so RTL works without a second stylesheet.
-- Do read colours, fonts, and shadows from `src/Forma.Blazor/wwwroot/forma-tokens.css`.
+- Do read colours, fonts, and shadows from `src/Forma.UI.Blazor/wwwroot/forma-tokens.css`.
 - Do end every custom property containing a colour with `-color`.
 - Do make component-local colour knobs fall back to a token: `var(--forma-toggle-on-bg-color, var(--main-color))`.
 - Do reuse existing tokens such as `--main-color` and `--focus-color`; `--main-dark-color`, `--main-light-color`, and `--focus-color` derive from `--main-color`.
@@ -301,9 +302,9 @@ Every component must behave and look the same in both directions—mirrored, not
 
 ## Services
 
-- Do place contracts in `Forma.Blazor.Framework/Components/{Category}/IXService.cs`.
+- Do place contracts in `Forma.Framework/{Category}/IXService.cs`.
 - Do extend `INotifyStateChanged` when a component must rerender after service state changes.
-- Do place sealed implementations in `Forma.Blazor.Core/Components/{Category}/XService.cs`.
+- Do place sealed implementations in `Forma.Framework.Core/{Category}/XService.cs`.
 - Do compose `StateNotifier` for `Func<Task>` subscribers, validate arguments, and put an optional `CancellationToken` last.
 - Do subscribe from the component in `OnInitialized` and unsubscribe in `Dispose`.
 - Do let the host register services explicitly, such as `AddScoped<IXService, XService>()`.
@@ -312,7 +313,7 @@ Every component must behave and look the same in both directions—mirrored, not
 
 ## Tests (bUnit + xUnit v3)
 
-Mirror source paths under `tests/Forma.Blazor.Tests/Components/{Category}/` with `FormaXTests.razor` and `FormaXTests.razor.cs`.
+Mirror source paths under `tests/Forma.UI.Blazor.Tests/Components/{Category}/` with `FormaXTests.razor` and `FormaXTests.razor.cs`.
 
 - Do keep `.razor.cs` to `public sealed partial class FormaXTests;`.
 - Do start `.razor` with `@inherits BunitContext` and place `[Fact]` methods in a nested `public sealed class Component`.
@@ -321,8 +322,8 @@ Mirror source paths under `tests/Forma.Blazor.Tests/Components/{Category}/` with
 - Do render `InputBase<T>` components inside `FakeFormHost` with a `FakeModel` and `EditContext`.
 - Do assert rendered markup, attributes, and callback invocations rather than private state.
 - Do assert exact text when a component can render more than one message through the same element or class, such as an empty-list notice versus a no-search-matches notice; finding the element only confirms *a* message rendered, not which one.
-- Do put a service's tests beside the component category that owns it, such as `Components/Feedback/ToastServiceTests.cs`, because the test path mirrors where the production type lives.
-- Do place test-support types under `tests/Forma.Blazor.Tests/Support/`, mirroring the production folder they serve, such as `Support/Components/Files/FakeResourceProvider.cs`.
+- Do put a service's tests beside the category that owns it, such as `Feedback/ToastServiceTests.cs`, because the test path mirrors where the production type lives.
+- Do place test-support types under `tests/Forma.UI.Blazor.Tests/Support/`, mirroring the production folder they serve, such as `Support/Components/Files/FakeResourceProvider.cs`.
 - Do put a support type that serves no single production area in `Support/Shared/`, as `FakeFormHost` and `FakeModel` do.
 - Do test only the public surface and keep shared usings in `_Imports.cs` or `_Imports.razor`.
 - Don't couple tests to implementation details or private fields.
@@ -330,7 +331,7 @@ Mirror source paths under `tests/Forma.Blazor.Tests/Components/{Category}/` with
 
 ## Showcase
 
-Every component requires `tests/Forma.Blazor.Showcase/Components/Pages/{Category}/FormaXPage.razor` and its translation pair. The gallery exists to be looked at, so a state it never renders is a state nobody has ever reviewed.
+Every component requires `tests/Forma.UI.Blazor.Showcase/Components/Pages/{Category}/FormaXPage.razor` and its translation pair. The gallery exists to be looked at, so a state it never renders is a state nobody has ever reviewed.
 
 ```razor
 @page "/x-component"
@@ -352,7 +353,7 @@ Every component requires `tests/Forma.Blazor.Showcase/Components/Pages/{Category
 ```powershell
 dotnet build Forma.slnx
 dotnet test
-dotnet run --project tests/Forma.Blazor.Showcase
+dotnet run --project tests/Forma.UI.Blazor.Showcase
 ```
 
 - Do require build and tests to pass before offering a component for review.

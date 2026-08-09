@@ -1,8 +1,0 @@
-@namespace Forma.Blazor.Components.Metadata
-
-<link rel="canonical" href="@Canonical" />
-@foreach (var alternate in Alternates)
-{
-    <link rel="alternate" hreflang="@alternate.HrefLang" href="@alternate.Url" />
-}
-<link rel="alternate" hreflang="x-default" href="@XDefault" />

@@ -5,7 +5,7 @@
 > pattern to a Blazor component using **only** built-in Blazor components, native HTML elements,
 > and browser APIs — no external JS libraries.
 >
-> Target location: `Forma.Blazor/Components/`
+> Target location: `Forma.UI.Blazor/Components/`
 >
 > **Naming convention:** All components use the `Forma` prefix for their tag names (e.g., `<FormaModal>`,
 > `<FormaTabs>`) to avoid clashes with third-party libraries. CSS classes use the `forma-` prefix.
@@ -60,7 +60,7 @@ These components form the shell of a page. Build first.
 | **Old pattern** | `AreYouSure(this, 'message')` — custom confirm that returns bool. Used on delete buttons, destructive actions |
 | **Used in** | Every page with delete/remove actions (list pages bulk delete, individual row delete, design change, template swap) |
 | **Parameters** | Component is service-driven (no public message/label parameters). Dialog requests are sent via `IConfirmDialogService.ConfirmAsync(string message, string confirmText, string cancelText)` — all arguments validated non-empty |
-| **Blazor approach** | Built on `FormaModal` with explicit confirm/cancel actions supplied by the confirm component (modal default actions disabled for this case). Uses `IConfirmDialogService : INotifyStateChanged` (in `Forma.Blazor.Framework`) / `ConfirmDialogService` (in `Forma.Blazor.Core`), registered via DI, returning `Task<bool>`. Service composes `StateNotifier` for async subscriber notification. Sealed `IDisposable` component with code-behind in `.razor.cs` |
+| **Blazor approach** | Built on `FormaModal` with explicit confirm/cancel actions supplied by the confirm component (modal default actions disabled for this case). Uses `IConfirmDialogService : INotifyStateChanged` (in `Forma.Framework`) / `ConfirmDialogService` (in `Forma.Framework.Core`), registered via DI, returning `Task<bool>`. Service composes `StateNotifier` for async subscriber notification. Sealed `IDisposable` component with code-behind in `.razor.cs` |
 
 ### 6. `FormaToast` ✅
 
@@ -69,7 +69,7 @@ These components form the shell of a page. Build first.
 | **Old pattern** | `ShowInfo('message')` → Toastr-style slide-in notification + `BtnDone(btn)` save-confirmation animation (button text changes to ✓ briefly) |
 | **Used in** | All admin pages — after save, delete, update, import, export |
 | **Parameters** | Service-driven (no public component parameters). Toast requests sent via `IToastService.ShowAsync(string message, ToastType type = Success, TimeSpan? duration = null)` (default 3s). `ToastType` enum: `Success`, `Error`, `Info`, `Warning`. `IToastService` also exposes `IReadOnlyList<ToastMessage> Toasts`, `Task RemoveAsync(string id)`. Arguments validated (message non-empty, duration non-negative, id non-empty). |
-| **Blazor approach** | `IToastService : INotifyStateChanged` (in `Forma.Blazor.Framework`) / `ToastService` (in `Forma.Blazor.Core`), registered via DI. Service composes `StateNotifier` for async `Func<Task>` subscriber notification. A `FormaToastContainer` (sealed `IDisposable`, code-behind in `.razor.cs`) component at layout level subscribes and renders active toasts. Auto-dismissal via `System.Threading.Timer` per toast. CSS `@keyframes` slide-in animation, type-based color variants. No JS needed |
+| **Blazor approach** | `IToastService : INotifyStateChanged` (in `Forma.Framework`) / `ToastService` (in `Forma.Framework.Core`), registered via DI. Service composes `StateNotifier` for async `Func<Task>` subscriber notification. A `FormaToastContainer` (sealed `IDisposable`, code-behind in `.razor.cs`) component at layout level subscribes and renders active toasts. Auto-dismissal via `System.Threading.Timer` per toast. CSS `@keyframes` slide-in animation, type-based color variants. No JS needed |
 
 ---
 
@@ -560,7 +560,7 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Old pattern** | CKEditor's **YouTube embed** toolbar button (#36) and the raw `<iframe>` markup it pasted into the body |
 | **Used in** | The most-demanded component on this list — Épica wants it on four separate surfaces: YouTube-by-URL embeds in articles (6.5), the auto-embedded live broadcast player (9.2), the Videos module's listings and featured video (P10), and the home page's featured video block (11.4). `FormaFileViewer` (#56) delegates its video branch here, and `FormaRichTextEditor` inserts it |
 | **Parameters** | `string Source` (required), `string Title` (required — the player's accessible name), `bool Autoplay`, `bool DeferLoading` (default `true`), `string? Placeholder`, `IReadOnlyList<VideoCaptionTrack>? Captions`, plus captured pass-through attributes |
-| **Blazor approach** | Resolve the address through an ordered chain of `IPlayerProvider`s (`IPlayerProvider`, `PlayerOptions` and `PlayerFrame` live in `Forma.Blazor.Framework`), so a watch link, a share link and an embed link all work without the caller naming the service. Providers the host registered are tried first, so an application can teach the player an address shape this library never knew — or take over one it would otherwise claim — the same way a host extends `FormaFileViewer`; the eight built-ins follow, with `FilePlayerProvider` last because it accepts any fetchable address. YouTube, Vimeo and Twitch return an embed address the player loads in an `<iframe>`; TikTok, Instagram, Facebook and X publish markup plus a script instead, which a colocated JS module loads once and asks to scan, each service sizing its own player; any other fetchable address falls back to the browser's own `<video>`, with optional `<track>` captions. Size with the `aspect-ratio` property rather than a padding hack. **External JS is confined to the four services whose player *is* a script** — they publish no embed address, and the iframe providers need none |
+| **Blazor approach** | Resolve the address through an ordered chain of `IPlayerProvider`s (`IPlayerProvider`, `PlayerOptions` and `PlayerFrame` live in `Forma.Framework`), so a watch link, a share link and an embed link all work without the caller naming the service. Providers the host registered are tried first, so an application can teach the player an address shape this library never knew — or take over one it would otherwise claim — the same way a host extends `FormaFileViewer`; the eight built-ins follow, with `FilePlayerProvider` last because it accepts any fetchable address. YouTube, Vimeo and Twitch return an embed address the player loads in an `<iframe>`; TikTok, Instagram, Facebook and X publish markup plus a script instead, which a colocated JS module loads once and asks to scan, each service sizing its own player; any other fetchable address falls back to the browser's own `<video>`, with optional `<track>` captions. Size with the `aspect-ratio` property rather than a padding hack. **External JS is confined to the four services whose player *is* a script** — they publish no embed address, and the iframe providers need none |
 | **Privacy and weight** | Nothing is fetched from a hosting service until a reader presses play: `DeferLoading` holds both the embed address and the service script behind a play control, which `Autoplay` overrides and a self-hosted file never needs. Embed from `youtube-nocookie.com`, and ask for do-not-track wherever a service offers it — `dnt=1` on Vimeo, `data-dnt="true"` on X. A third-party frame that loads with every article page is both a tracking surface a public news site has to account for and a large fixed cost on a mobile connection. **The still is the host's to supply:** `Placeholder` takes an image the host serves from its own origin, and stands in for a self-hosted file too. Deriving one from the service instead — YouTube publishes a thumbnail per video id — would send the service the very request the play control exists to withhold, so the component never does it |
 | **Notes** | `Title` is required because an unnamed `<iframe>` is an unlabelled stop in the tab order. **Autoplay is not what Épica's 9.2 asks for** — "auto-embed live player" means the player appears without an editor placing it, not that it starts playing. Autoplay is forced muted through the JS property, because the `muted` attribute no longer reaches the element once Blazor has created it, and WCAG 1.4.2 requires a control over anything that plays by itself. A service script that never runs — blocked, or simply slow — leaves a link to the video in the player's place |
 
@@ -570,9 +570,9 @@ These are more complex, possibly page-specific, but still benefit from being com
 |---|---|
 | **Old pattern** | The preview pane of `pops/images.aspx` — clicking a library entry to actually look at it |
 | **Used in** | The promise #35 already makes and does not own: showing whatever a chosen entry turns out to be. That belongs here, so the picker, the manager (#54) and the gallery's enlarge (#53) show one preview implementation rather than three |
-| **Parameters** | `string Source` (required), `IReadOnlyList<string>? Siblings`, `EventCallback<string> OnNavigate`, `bool ShowMetadata`, `RenderFragment<string>? UnsupportedTemplate`. The caller passes an address, not a resolved resource — a component handed a `ResourceInfo` would need every caller to resolve one first, which is the provider's job. `ResourceInfo` (`Source`, derived `Name`, `Kind`, `Size`, `virtual DisplaySize`, `Extension`), its `EmbeddedResourceInfo` and `MarkupResourceInfo` subtypes, `ResourceKind` and `IResourceProvider` live in `Forma.Blazor.Framework`, which carries no ASP.NET Core reference — so a converting package stays a plain class library. `FileResourceInfo` wraps and implements `IBrowserFile`, so it lives in `Forma.Blazor` where that reference already exists. Named for resources rather than media because the viewer renders documents too |
+| **Parameters** | `string Source` (required), `IReadOnlyList<string>? Siblings`, `EventCallback<string> OnNavigate`, `bool ShowMetadata`, `RenderFragment<string>? UnsupportedTemplate`. The caller passes an address, not a resolved resource — a component handed a `ResourceInfo` would need every caller to resolve one first, which is the provider's job. `ResourceInfo` (`Source`, derived `Name`, `Kind`, `Size`, `virtual DisplaySize`, `Extension`), its `EmbeddedResourceInfo` and `MarkupResourceInfo` subtypes, `ResourceKind` and `IResourceProvider` live in `Forma.Framework`, which carries no ASP.NET Core reference — so a converting package stays a plain class library. `FileResourceInfo` wraps and implements `IBrowserFile`, so it lives in `Forma.UI.Blazor` where that reference already exists. Named for resources rather than media because the viewer renders documents too |
 | **Blazor approach** | An ordered chain of `IResourceProvider`s resolves the address into a `ResourceInfo`, mirroring `FormaVideoPlayer`'s provider chain: the first to claim it decides what the resource is, and the viewer owns the markup for every kind, so a converting package never ships Razor or CSS. Resolution runs once per address rather than once per render. Providers the host registered are tried first; `BrowserResourceProvider` comes last and claims only what a browser renders unaided, so **an address no provider claims degrades to a type glyph, the name, the size when one is known, and a download link** rather than a broken embed. A `MarkupResourceInfo` is rendered as trusted markup, so a converting provider must sanitise its output. An `EmbeddedResourceInfo` whose content type is `text/*` is framed with `sandbox=""` — an opaque origin, withholding scripts, forms and navigation — because uploaded HTML is untrusted; anything else goes to `<object>` with a new-tab link as fallback content. With `Siblings` supplied the viewer steps through the set, resolving the horizontal arrow keys through `IsRightToLeft`; the host modal keeps `Escape` |
-| **Converting packages** | `Forma.Blazor.Markdown` (Markdig) and `Forma.Blazor.Office` (OfficeIMO) ship separately and return `MarkupResourceInfo`, so neither Markdig nor OfficeIMO lands in the package every consumer downloads. Each reads its bytes through an `IResourceContentReader` the host implements, so a converting package never assumes where a file lives, and sanitises its output with `HtmlSanitizer` before returning it. A host registers them like any other service — `AddScoped<IResourceProvider, …>()` — and without them `ResourceKind.Document` still works for whatever the browser handles natively |
+| **Converting packages** | `Forma.Framework.Markdown` (Markdig) and `Forma.Framework.Office` (OfficeIMO) ship separately and return `MarkupResourceInfo`, so neither Markdig nor OfficeIMO lands in the package every consumer downloads. Each reads its bytes through an `IResourceContentReader` the host implements, so a converting package never assumes where a file lives, and sanitises its output with `HtmlSanitizer` before returning it. A host registers them like any other service — `AddScoped<IResourceProvider, …>()` — and without them `ResourceKind.Document` still works for whatever the browser handles natively |
 | **Zoom and pan** | Settled: the frame is a plain scrollable region (`overflow: auto`) rather than a transform-driven canvas. Touch and pen pan it natively, and `touch-action: pan-x pan-y pinch-zoom` hands pinch-to-zoom to the platform itself — the exact case CSS was expected to handle worst turned out not to need JS at all. The one gap native scrolling doesn't cover is a mouse click-drag, so a small colocated `.razor.js` adds that, gated to `pointerType === 'mouse'` so it never fights the browser's own touch scrolling. Zoom level moves in five fixed steps (100–400%) through on-screen +/− buttons, with no wheel or double-click zoom, since the scroll wheel already has a native job on this element and hijacking it would fight the reader's own scrolling |
 | **Notes** | **Viewing only — crop, rotate and resize are editing** and belong to `FormaImageEditor` (#57), even though Coi's `jcrop` widget sat on this same preview. A viewer that quietly mutates the file is a different component with a different contract, and folding it in here is how this one would stop being safe to open on anything |
 
@@ -639,7 +639,7 @@ Components are ordered by dependency and reuse frequency:
 ## File Structure
 
 ```
-Forma.Blazor/Components/
+Forma.UI.Blazor/Components/
 ├── FormaIcon.cs                          # readonly record struct with FontAwesome()/From() factories
 ├── FormaField.razor / .razor.cs / .razor.css
 ├── FieldLabelMode.cs                     # enum: Floating, Pinned, Above, Inline
@@ -728,27 +728,25 @@ Forma.Blazor/Components/
 ```
 
 ```
-Forma.Blazor.Framework/
+Forma.Framework/
 ├── Css/
 │   └── CssColor.cs
-└── Components/
-    ├── INotifyStateChanged.cs
-    ├── Feedback/
-    │   ├── IToastService.cs
-    │   ├── IConfirmDialogService.cs
-    │   ├── ToastMessage.cs
-    │   ├── ToastType.cs
-    │   └── ConfirmDialogRequest.cs
-    └── Indicators/
-        ├── IStatusBadgeCatalog.cs
-        └── StatusBadgeStyle.cs
+├── INotifyStateChanged.cs
+├── Feedback/
+│   ├── IToastService.cs
+│   ├── IConfirmDialogService.cs
+│   ├── ToastMessage.cs
+│   ├── ToastType.cs
+│   └── ConfirmDialogRequest.cs
+└── Indicators/
+    ├── IStatusBadgeCatalog.cs
+    └── StatusBadgeStyle.cs
 
-Forma.Blazor.Core/
-└── Components/
-    ├── StateNotifier.cs
-    ├── Feedback/
-    │   ├── ToastService.cs
-    │   └── ConfirmDialogService.cs
-    └── Indicators/
-        └── StatusBadgeCatalog.cs
+Forma.Framework.Core/
+├── StateNotifier.cs
+├── Feedback/
+│   ├── ToastService.cs
+│   └── ConfirmDialogService.cs
+└── Indicators/
+    └── StatusBadgeCatalog.cs
 ```

@@ -1,0 +1,27 @@
+@namespace Forma.UI.Components.Interactive
+
+@if (Href is not null)
+{
+    <a href="@Href"
+       class="forma-dropdown-menu-item"
+       role="menuitem"
+       tabindex="-1"
+       aria-disabled="@(Disabled ? "true" : null)"
+       @ref="_element"
+       @onclick="HandleActivateAsync"
+       @onclick:preventDefault="Disabled">
+        @ChildContent
+    </a>
+}
+else
+{
+    <button type="button"
+            class="forma-dropdown-menu-item"
+            role="menuitem"
+            tabindex="-1"
+            disabled="@Disabled"
+            @ref="_element"
+            @onclick="HandleActivateAsync">
+        @ChildContent
+    </button>
+}

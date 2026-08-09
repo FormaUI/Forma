@@ -1,0 +1,55 @@
+@page "/tabs"
+@attribute [ShowcasePage("FormaTabs")]
+@rendermode InteractiveServer
+@using Forma.UI.Components.Layout
+@inject IStringLocalizer<FormaTabsPage> L
+
+<h1>FormaTabs</h1>
+<p class="desc">@L["Tab container for organizing page content. Used in page editors, product editors, and settings pages."]</p>
+
+<div class="demo-section">
+    <h2>@L["Basic Tabs"]</h2>
+    <div class="demo-box">
+        <FormaTabs>
+            <FormaTab Title="@L["General"]">
+                <p>@L["General settings and configuration."]</p>
+            </FormaTab>
+            <FormaTab Title="@L["SEO"]">
+                <p>@L["Search engine optimization options."]</p>
+            </FormaTab>
+            <FormaTab Title="@L["Images"]">
+                <p>@L["Image gallery and uploads."]</p>
+            </FormaTab>
+        </FormaTabs>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Tabs with Icons"]</h2>
+    <div class="demo-box">
+        <FormaTabs>
+            <FormaTab Title="@L["Settings"]" Icon="@(FormaIcon.FontAwesome("gear"))">
+                <p>@L["System settings."]</p>
+            </FormaTab>
+            <FormaTab Title="@L["Users"]" Icon="@(FormaIcon.FontAwesome("users"))">
+                <p>@L["User management."]</p>
+            </FormaTab>
+            <FormaTab Title="@L["Billing"]" Icon="@(FormaIcon.FontAwesome("credit-card"))">
+                <p>@L["Billing and payments."]</p>
+            </FormaTab>
+        </FormaTabs>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Many Tabs"]</h2>
+    <div class="demo-box">
+        <FormaTabs>
+            <FormaTab Title="@L["Tab 1"]"><p>@L["Content for tab 1."]</p></FormaTab>
+            <FormaTab Title="@L["Tab 2"]"><p>@L["Content for tab 2."]</p></FormaTab>
+            <FormaTab Title="@L["Tab 3"]"><p>@L["Content for tab 3."]</p></FormaTab>
+            <FormaTab Title="@L["Tab 4"]"><p>@L["Content for tab 4."]</p></FormaTab>
+            <FormaTab Title="@L["Tab 5"]"><p>@L["Content for tab 5."]</p></FormaTab>
+        </FormaTabs>
+    </div>
+</div>

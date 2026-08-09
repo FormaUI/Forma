@@ -1,0 +1,614 @@
+@inherits BunitContext
+@using AngleSharp.Dom
+
+@code {
+    public sealed class Component
+    {
+        private static readonly FormaPaginationOptions NavigationBar =
+            new() { EnableNavigationSteps = true, EnableNavigationInput = true };
+
+        private static readonly FormaPaginationOptions NavigationStepsOnly =
+            new() { EnableNavigationSteps = true, EnableNavigationInput = false };
+
+        private static readonly FormaPaginationOptions NavigationInputOnly =
+            new() { EnableNavigationSteps = false, EnableNavigationInput = true, EnableGoButton = false };
+
+        private static readonly FormaPaginationOptions NothingEnabled =
+            new() { EnableNavigationSteps = false, EnableNavigationInput = false };
+
+        [Fact]
+        public void Should_render_nothing_when_there_is_only_one_page()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="5" PageSize="10" CurrentPage="1" Options="NavigationBar" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll("nav"));
+        }
+
+        [Fact]
+        public void Should_render_a_navigation_landmark_when_there_are_multiple_pages()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" />);
+            var nav = cut.Find("nav.forma-pagination");
+
+            // Assert
+            Assert.Equal("Pagination", nav.GetAttribute("aria-label"));
+        }
+
+        [Fact]
+        public void Should_disable_previous_on_the_first_page()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" Options="NavigationBar" />);
+
+            // Assert
+            Assert.True(cut.Find(".forma-pagination-prev").HasAttribute("disabled"));
+        }
+
+        [Fact]
+        public void Should_disable_next_on_the_last_page()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="5" Options="NavigationBar" />);
+
+            // Assert
+            Assert.True(cut.Find(".forma-pagination-next").HasAttribute("disabled"));
+        }
+
+        [Fact]
+        public void Should_enable_both_buttons_on_a_middle_page()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="3" Options="NavigationBar" />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.False(cut.Find(".forma-pagination-prev").HasAttribute("disabled"));
+                Assert.False(cut.Find(".forma-pagination-next").HasAttribute("disabled"));
+            });
+        }
+
+        [Fact]
+        public void Should_mark_the_current_page_with_aria_current()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="3" Options="NavigationBar" />);
+            var current = cut.Find(".forma-pagination-current");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("page", current.GetAttribute("aria-current"));
+                Assert.Equal("3", current.TextContent.Trim());
+                Assert.Equal("SPAN", current.TagName);
+            });
+        }
+
+        [Fact]
+        public void Should_name_a_page_button_after_its_number()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" Options="NavigationBar" />);
+            var second = cut.FindAll(".forma-pagination-link")
+                .Single(e => e.TextContent.Trim() == "2");
+
+            // Assert
+            Assert.Equal("Page 2", second.GetAttribute("aria-label"));
+        }
+
+        [Fact]
+        public void Should_render_every_page_without_gaps_when_the_page_count_is_small()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="70" PageSize="10" CurrentPage="4" Options="NavigationBar" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-pagination-ellipsis"));
+            Assert.Equal(
+                ["1", "2", "3", "4", "5", "6", "7"],
+                PageLabels(cut.FindAll(".forma-pagination-list > li")));
+        }
+
+        [Fact]
+        public void Should_collapse_pages_around_the_current_page_when_near_the_start()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="200" PageSize="10" CurrentPage="1" Options="NavigationBar" />);
+
+            // Assert
+            Assert.Equal(["1", "2", "…", "20"], PageLabels(cut.FindAll(".forma-pagination-list > li")));
+        }
+
+        [Fact]
+        public void Should_collapse_pages_on_both_sides_when_the_current_page_is_in_the_middle()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="200" PageSize="10" CurrentPage="10" Options="NavigationBar" />);
+
+            // Assert
+            Assert.Equal(["1", "…", "9", "10", "11", "…", "20"], PageLabels(cut.FindAll(".forma-pagination-list > li")));
+        }
+
+        [Fact]
+        public void Should_collapse_pages_around_the_current_page_when_near_the_end()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="200" PageSize="10" CurrentPage="20" Options="NavigationBar" />);
+
+            // Assert
+            Assert.Equal(["1", "…", "19", "20"], PageLabels(cut.FindAll(".forma-pagination-list > li")));
+        }
+
+        [Fact]
+        public void Should_invoke_the_callback_when_a_page_button_is_clicked()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+            var received = new List<int>();
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" Options="NavigationBar"
+                    OnPageChanged="@((int p) => received.Add(p))" />);
+
+            // Act
+            cut.FindAll(".forma-pagination-link")
+                .Single(e => e.TextContent.Trim() == "2")
+                .Click();
+
+            // Assert
+            Assert.Equal([2], received);
+        }
+
+        [Fact]
+        public void Should_invoke_the_callback_with_the_next_page_when_next_is_clicked()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+            var received = new List<int>();
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" Options="NavigationBar"
+                    OnPageChanged="@((int p) => received.Add(p))" />);
+
+            // Act
+            cut.Find(".forma-pagination-next").Click();
+
+            // Assert
+            Assert.Equal([2], received);
+        }
+
+        [Fact]
+        public void Should_invoke_the_callback_with_the_previous_page_when_previous_is_clicked()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+            var received = new List<int>();
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="2" Options="NavigationBar"
+                    OnPageChanged="@((int p) => received.Add(p))" />);
+
+            // Act
+            cut.Find(".forma-pagination-prev").Click();
+
+            // Assert
+            Assert.Equal([1], received);
+        }
+
+        [Fact]
+        public void Should_keep_base_class_when_host_adds_its_own()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" class="coi-pager" />);
+            var nav = cut.Find("nav");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("forma-pagination", nav.ClassList);
+                Assert.Contains("coi-pager", nav.ClassList);
+            });
+        }
+
+        [Fact]
+        public void Should_reject_a_negative_item_count()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+
+            // Act & Assert
+            Assert.Throws<ArgumentOutOfRangeException>(() => ctx.Render(
+                @<FormaPagination TotalItems="-1" PageSize="10" CurrentPage="1" />));
+        }
+
+        [Fact]
+        public void Should_reject_a_zero_page_size()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+
+            // Act & Assert
+            Assert.Throws<ArgumentOutOfRangeException>(() => ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="0" CurrentPage="1" />));
+        }
+
+        [Fact]
+        public void Should_clamp_a_current_page_before_the_first_page()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="0" Options="NavigationBar" />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("1", cut.Find(".forma-pagination-current").TextContent.Trim());
+                Assert.True(cut.Find(".forma-pagination-prev").HasAttribute("disabled"));
+            });
+        }
+
+        [Fact]
+        public void Should_clamp_a_current_page_past_the_last_page()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="99" Options="NavigationBar" />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("5", cut.Find(".forma-pagination-current").TextContent.Trim());
+                Assert.True(cut.Find(".forma-pagination-next").HasAttribute("disabled"));
+            });
+        }
+
+        [Fact]
+        public void Should_step_back_from_the_clamped_page_when_the_item_count_shrinks()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+            var received = new List<int>();
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="99" Options="NavigationBar"
+                    OnPageChanged="@((int p) => received.Add(p))" />);
+
+            // Act
+            cut.Find(".forma-pagination-prev").Click();
+
+            // Assert
+            Assert.Equal([4], received);
+        }
+
+        [Fact]
+        public void Should_let_host_name_the_navigation_landmark()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" aria-label="Order pages" />);
+
+            // Assert
+            Assert.Equal("Order pages", cut.Find("nav").GetAttribute("aria-label"));
+        }
+
+        [Fact]
+        public void Should_show_the_full_navigation_bar_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                cut.Find(".forma-pagination-jump-input");
+                cut.Find(".forma-pagination-list");
+            });
+        }
+
+        [Fact]
+        public void Should_show_both_when_the_buttons_are_enabled()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" Options="NavigationBar" />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                cut.Find(".forma-pagination-list");
+                cut.Find(".forma-pagination-jump-input");
+            });
+        }
+
+        [Fact]
+        public void Should_show_only_the_buttons_when_the_input_is_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" Options="NavigationStepsOnly" />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                cut.Find(".forma-pagination-list");
+                Assert.Empty(cut.FindAll(".forma-pagination-jump"));
+            });
+        }
+
+        [Fact]
+        public void Should_render_nothing_when_both_are_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" Options="NothingEnabled" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll("nav"));
+        }
+
+        [Fact]
+        public void Should_describe_the_page_input()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" />);
+            var input = cut.Find(".forma-pagination-jump-input");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("number", input.GetAttribute("type"));
+                Assert.Equal("1", input.GetAttribute("min"));
+                Assert.Equal("5", input.GetAttribute("max"));
+            });
+        }
+
+        [Fact]
+        public void Should_label_the_page_input()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" />);
+            var input = cut.Find(".forma-pagination-jump-input");
+            var label = cut.Find(".forma-pagination-jump-label");
+
+            // Assert
+            Assert.Equal(input.GetAttribute("id"), label.GetAttribute("for"));
+        }
+
+        [Fact]
+        public void Should_jump_to_a_typed_page_from_the_go_button()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+            var received = new List<int>();
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1"
+                    OnPageChanged="@((int p) => received.Add(p))" />);
+
+            // Act
+            cut.Find(".forma-pagination-jump-input").Input("4");
+            cut.Find(".forma-pagination-jump-go").Click();
+
+            // Assert
+            Assert.Equal([4], received);
+        }
+
+        [Fact]
+        public void Should_jump_to_a_typed_page_when_enter_is_pressed()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+            var received = new List<int>();
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1"
+                    OnPageChanged="@((int p) => received.Add(p))" />);
+
+            // Act
+            var input = cut.Find(".forma-pagination-jump-input");
+            input.Input("3");
+            input.KeyDown(Key.Enter);
+
+            // Assert
+            Assert.Equal([3], received);
+        }
+
+        [Fact]
+        public void Should_clamp_a_typed_page_past_the_last_page()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+            var received = new List<int>();
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1"
+                    OnPageChanged="@((int p) => received.Add(p))" />);
+
+            // Act
+            cut.Find(".forma-pagination-jump-input").Input("999");
+            cut.Find(".forma-pagination-jump-go").Click();
+
+            // Assert
+            Assert.Equal([5], received);
+        }
+
+        [Fact]
+        public void Should_ignore_a_page_input_that_is_not_a_number()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+            var received = new List<int>();
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1"
+                    OnPageChanged="@((int p) => received.Add(p))" />);
+
+            // Act
+            cut.Find(".forma-pagination-jump-input").Input("not a page");
+            cut.Find(".forma-pagination-jump-go").Click();
+
+            // Assert
+            Assert.Empty(received);
+        }
+
+        [Fact]
+        public void Should_ignore_a_typed_page_that_is_already_current()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+            var received = new List<int>();
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="2"
+                    OnPageChanged="@((int p) => received.Add(p))" />);
+
+            // Act
+            cut.Find(".forma-pagination-jump-input").Input("2");
+            cut.Find(".forma-pagination-jump-go").Click();
+
+            // Assert
+            Assert.Empty(received);
+        }
+
+        [Fact]
+        public void Should_hide_the_go_button_when_asked()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" Options="NavigationInputOnly" />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Empty(cut.FindAll("button"));
+                cut.Find(".forma-pagination-jump-input");
+            });
+        }
+
+        [Fact]
+        public void Should_still_jump_without_the_go_button()
+        {
+            // Arrange
+            using var ctx = new FormaPaginationTests();
+            var received = new List<int>();
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" Options="NavigationInputOnly"
+                    OnPageChanged="@((int p) => received.Add(p))" />);
+
+            // Act
+            var input = cut.Find(".forma-pagination-jump-input");
+            input.Input("2");
+            input.KeyDown(Key.Enter);
+
+            // Assert
+            Assert.Equal([2], received);
+        }
+
+        [Fact]
+        public void Should_read_the_box_when_typing_preceded_the_connection()
+        {
+            // Arrange — no Input() call, so the component never saw an input event.
+            using var ctx = new FormaPaginationTests();
+            var received = new List<int>();
+            ctx.JSInterop
+                .SetupModule("./_content/Forma.UI.Blazor/Components/Data/FormaPagination.razor.js")
+                .Setup<string>("takePageEntry", _ => true)
+                .SetResult("3");
+            var cut = ctx.Render(
+                @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1"
+                    OnPageChanged="@((int p) => received.Add(p))" />);
+
+            // Act
+            cut.Find(".forma-pagination-jump-input").KeyDown(Key.Enter);
+
+            // Assert
+            Assert.Equal([3], received);
+        }
+
+        private static List<string> PageLabels(IEnumerable<IElement> items)
+        {
+            var list = items.ToList();
+
+            return list
+                .Skip(1)
+                .Take(list.Count - 2)
+                .Select(li => li.TextContent.Trim())
+                .ToList();
+        }
+    }
+}

@@ -1,0 +1,113 @@
+@inherits BunitContext
+@using Forma.UI.Components.Metadata
+@using Forma.UI.Globalization
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.DependencyInjection
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_point_the_canonical_link_at_the_culture_the_url_names()
+        {
+            // Arrange
+            using var ctx = new FormaPageLocalizationTests();
+            Arrange(ctx, "/he/file-viewer");
+
+            // Act
+            var cut = ctx.Render(@<FormaPageLocalization />);
+
+            // Assert
+            Assert.Equal("http://localhost/he/file-viewer", cut.Find("link[rel=canonical]").GetAttribute("href"));
+        }
+
+        [Fact]
+        public void Should_leave_the_default_culture_unprefixed_in_the_canonical_link()
+        {
+            // Arrange
+            using var ctx = new FormaPageLocalizationTests();
+            Arrange(ctx, "/file-viewer");
+
+            // Act
+            var cut = ctx.Render(@<FormaPageLocalization />);
+
+            // Assert
+            Assert.Equal("http://localhost/file-viewer", cut.Find("link[rel=canonical]").GetAttribute("href"));
+        }
+
+        [Fact]
+        public void Should_annotate_every_culture_including_the_one_being_rendered()
+        {
+            // Arrange
+            using var ctx = new FormaPageLocalizationTests();
+            Arrange(ctx, "/he/file-viewer");
+
+            // Act
+            var cut = ctx.Render(@<FormaPageLocalization />);
+
+            // Assert
+            var alternates = cut.FindAll("link[rel=alternate]")
+                .Select(link => (Lang: link.GetAttribute("hreflang"), Href: link.GetAttribute("href")))
+                .ToArray();
+
+            Assert.Equal(
+                [
+                    ("en", "http://localhost/file-viewer"),
+                    ("he", "http://localhost/he/file-viewer"),
+                    ("es", "http://localhost/es/file-viewer"),
+                    ("x-default", "http://localhost/file-viewer")
+                ],
+                alternates);
+        }
+
+        // es-419 is a valid culture but an invalid hreflang, so the annotation must carry the substitute.
+        [Fact]
+        public void Should_annotate_a_culture_with_its_substitute_hreflang()
+        {
+            // Arrange
+            using var ctx = new FormaPageLocalizationTests();
+            Arrange(ctx, "/es/file-viewer");
+
+            // Act
+            var cut = ctx.Render(@<FormaPageLocalization />);
+
+            // Assert
+            Assert.DoesNotContain("es-419", cut.Markup, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_carry_the_query_string_into_every_link()
+        {
+            // Arrange
+            using var ctx = new FormaPageLocalizationTests();
+            Arrange(ctx, "/he/file-viewer?tab=2");
+
+            // Act
+            var cut = ctx.Render(@<FormaPageLocalization />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("http://localhost/he/file-viewer?tab=2", cut.Find("link[rel=canonical]").GetAttribute("href"));
+                Assert.Equal("http://localhost/file-viewer?tab=2", cut.Find("link[hreflang=x-default]").GetAttribute("href"));
+            });
+        }
+
+        private static void Arrange(FormaPageLocalizationTests ctx, string url)
+        {
+            ctx.Services.AddSingleton(new CultureRouter(new CultureRouterOptions
+            {
+                Prefix = CulturePrefix.ExceptDefault,
+                DefaultCulture = "en",
+                Routes =
+                [
+                    new() { Token = "en", Culture = new("en") },
+                    new() { Token = "he", Culture = new("he") },
+                    new() { Token = "es", Culture = new("es-419"), HrefLang = "es", Aliases = ["es-419"] }
+                ]
+            }));
+
+            ctx.Services.GetRequiredService<NavigationManager>().NavigateTo(url);
+        }
+    }
+}

@@ -1,0 +1,53 @@
+@page "/toolbar"
+@attribute [ShowcasePage("FormaToolbar")]
+@rendermode InteractiveServer
+@using Forma.UI.Components.Layout
+@inject IStringLocalizer<FormaToolbarPage> L
+
+<h1>FormaToolbar</h1>
+<p class="desc">@L["A flex container for search inputs, filters, and action buttons. Used across all list pages."]</p>
+
+<div class="demo-section">
+    <h2>@L["Search Only"]</h2>
+    <div class="demo-box">
+        <FormaToolbar OnSearch="HandleSearch1" SearchPlaceholder="@L["Search..."]" />
+        <p class="demo-output">@L["Last search"]: <code>@_lastSearch1</code></p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Actions Only"]</h2>
+    <div class="demo-box">
+        <FormaToolbar>
+            <button class="btn btn-primary">@L["Add New"]</button>
+            <button class="btn btn-sec">@L["Export"]</button>
+        </FormaToolbar>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Search with Actions"]</h2>
+    <div class="demo-box">
+        <FormaToolbar OnSearch="HandleSearch3" SearchPlaceholder="@L["Search..."]">
+            <button class="btn btn-primary">@L["Add New"]</button>
+        </FormaToolbar>
+        <p class="demo-output">@L["Last search"]: <code>@_lastSearch3</code></p>
+    </div>
+</div>
+
+@code {
+    private string _lastSearch1 = "";
+    private string _lastSearch3 = "";
+
+    private Task HandleSearch1(string value)
+    {
+        _lastSearch1 = value;
+        return Task.CompletedTask;
+    }
+
+    private Task HandleSearch3(string value)
+    {
+        _lastSearch3 = value;
+        return Task.CompletedTask;
+    }
+}
