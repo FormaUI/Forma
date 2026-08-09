@@ -52,6 +52,17 @@ Coi's boxy gradient toggle becoming a token-driven iOS-style `FormaToggleSwitch`
 - Don't represent typed CSS values as arbitrary strings.
 - Don't rename or conflate these identities; `_content/Forma.UI.Blazor` is pinned and hardcoded by markup and JS.
 
+## Dependencies
+
+A project's references are part of its contract, because every consumer inherits them.
+
+- Do reference the narrowest package that supplies what the code uses, preferring the `.Abstractions` half when only contracts are needed.
+- Do confine `<FrameworkReference Include="Microsoft.AspNetCore.App" />` to `Forma.UI.Blazor`, the only project that renders through ASP.NET Core.
+- Do give every project its own reference for what it uses directly, test projects included, rather than relying on one arriving transitively.
+- Do let the build settle it: NU1510 marks a package the framework already supplies, and an unresolved type marks one that is genuinely missing.
+- Don't reach for a shared framework to obtain a handful of types; `Forma.Framework.Localization` needs `Microsoft.Extensions.Localization.Abstractions` alone.
+- Don't keep a reference no code uses.
+
 ## Naming
 
 - Do prefix component tags with `Forma`: `<FormaModal>`, `<FormaDataGrid>`.
