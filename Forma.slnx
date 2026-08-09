@@ -5,11 +5,13 @@
     <Project Path="src\Forma.Blazor.Core\Forma.Blazor.Core.csproj" />
     <Project Path="src\Forma.Blazor\Forma.Blazor.csproj" />
     <Project Path="src\Forma.Blazor.Office\Forma.Blazor.Office.csproj" />
+    <Project Path="src\Forma.Blazor.Markdown\Forma.Blazor.Markdown.csproj" />
 
     <!-- Tests -->
     <Project Path="tests\Forma.Blazor.Showcase\Forma.Blazor.Showcase.csproj" />
     <Project Path="tests\Forma.Blazor.Tests\Forma.Blazor.Tests.csproj" />
     <Project Path="tests\Forma.Blazor.Office.Tests\Forma.Blazor.Office.Tests.csproj" />
+    <Project Path="tests\Forma.Blazor.Markdown.Tests\Forma.Blazor.Markdown.Tests.csproj" />
     <Project Path="tests\Forma.Localization.Tests\Forma.Localization.Tests.csproj" />
 
     <Configurations>

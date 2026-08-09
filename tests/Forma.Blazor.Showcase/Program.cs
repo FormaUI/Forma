@@ -13,7 +13,7 @@ builder.Services.AddScoped<IConfirmDialogService, ConfirmDialogService>();
 builder.Services.AddScoped<IToastService, ToastService>();
 builder.Services.AddScoped<IResourceContentReader, WebRootContentReader>();
 builder.Services.AddScoped<IResourceProvider, OfficeResourceProvider>();
-builder.Services.AddScoped<IResourceProvider, TextFileResourceProvider>();
+builder.Services.AddScoped<IResourceProvider, MarkdownResourceProvider>();
 builder.Services.AddScoped<IPlayerProvider, CustomPlayerProvider>();
 
 // The statuses this application defines for itself — the library ships none.

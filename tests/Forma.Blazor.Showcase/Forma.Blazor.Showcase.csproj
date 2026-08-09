@@ -16,6 +16,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\Forma.Blazor\Forma.Blazor.csproj" />
         <ProjectReference Include="..\..\src\Forma.Blazor.Office\Forma.Blazor.Office.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Blazor.Markdown\Forma.Blazor.Markdown.csproj" />
         <ProjectReference Include="..\..\src\Forma.Blazor.Core\Forma.Blazor.Core.csproj" />
         <ProjectReference Include="..\..\src\Forma.Localization\Forma.Localization.csproj" />
     </ItemGroup>
