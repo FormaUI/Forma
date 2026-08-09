@@ -1,8 +1,7 @@
 namespace Forma.Blazor.Tests.Css;
 
-using System.Globalization;
-
 using Forma.Blazor.Css;
+using Forma.Blazor.Tests.Support.Shared;
 
 public sealed class CssColorTests
 {
@@ -94,18 +93,10 @@ public sealed class CssColorTests
     public void Should_format_alpha_invariantly()
     {
         // Arrange
-        var previous = CultureInfo.CurrentCulture;
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
+        using var culture = new CultureFixture("de-DE");
 
-        try
-        {
-            // Act & Assert
-            Assert.Equal("rgba(0, 0, 0, 0.5)", CssColor.FromRgba(0, 0, 0, 0.5).ToRgbaString());
-        }
-        finally
-        {
-            CultureInfo.CurrentCulture = previous;
-        }
+        // Act & Assert
+        Assert.Equal("rgba(0, 0, 0, 0.5)", CssColor.FromRgba(0, 0, 0, 0.5).ToRgbaString());
     }
 
     [Fact]

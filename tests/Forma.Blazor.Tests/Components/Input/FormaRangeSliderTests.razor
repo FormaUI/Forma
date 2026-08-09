@@ -1,5 +1,4 @@
 @inherits BunitContext
-@using System.Globalization
 
 @code {
     public sealed class Component
@@ -190,56 +189,38 @@
         public void Should_keep_the_html_bounds_invariant_under_a_comma_decimal_culture()
         {
             // Arrange
+            using var culture = new CultureFixture("de-DE");
             using var ctx = new FormaRangeSliderTests();
-            var original = CultureInfo.CurrentCulture;
             var model = new FakeModel { Ratio = 0.5 };
 
-            try
-            {
-                CultureInfo.CurrentCulture = new CultureInfo("de-DE");
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaRangeSlider @bind-Value="model.Ratio" Label="Duration" Min="0.5" Max="5" Step="0.5" Unit="s" />
+            </FakeFormHost>);
 
-                // Act
-                var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                    <FormaRangeSlider @bind-Value="model.Ratio" Label="Duration" Min="0.5" Max="5" Step="0.5" Unit="s" />
-                </FakeFormHost>);
-
-                // Assert
-                var input = cut.Find(".forma-range-input");
-                Assert.Equal("0.5", input.GetAttribute("min"));
-                Assert.Equal("5", input.GetAttribute("max"));
-                Assert.Equal("0.5", input.GetAttribute("step"));
-                Assert.Equal("0.5", input.GetAttribute("value"));
-            }
-            finally
-            {
-                CultureInfo.CurrentCulture = original;
-            }
+            // Assert
+            var input = cut.Find(".forma-range-input");
+            Assert.Equal("0.5", input.GetAttribute("min"));
+            Assert.Equal("5", input.GetAttribute("max"));
+            Assert.Equal("0.5", input.GetAttribute("step"));
+            Assert.Equal("0.5", input.GetAttribute("value"));
         }
 
         [Fact]
         public void Should_show_the_value_in_the_reader_s_culture()
         {
             // Arrange
+            using var culture = new CultureFixture("de-DE");
             using var ctx = new FormaRangeSliderTests();
-            var original = CultureInfo.CurrentCulture;
             var model = new FakeModel { Ratio = 0.5 };
 
-            try
-            {
-                CultureInfo.CurrentCulture = new CultureInfo("de-DE");
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaRangeSlider @bind-Value="model.Ratio" Label="Duration" Min="0.5" Max="5" Step="0.5" Unit="s" />
+            </FakeFormHost>);
 
-                // Act
-                var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                    <FormaRangeSlider @bind-Value="model.Ratio" Label="Duration" Min="0.5" Max="5" Step="0.5" Unit="s" />
-                </FakeFormHost>);
-
-                // Assert
-                Assert.Equal("0,5s", cut.Find(".forma-range-value").TextContent);
-            }
-            finally
-            {
-                CultureInfo.CurrentCulture = original;
-            }
+            // Assert
+            Assert.Equal("0,5s", cut.Find(".forma-range-value").TextContent);
         }
 
         [Fact]

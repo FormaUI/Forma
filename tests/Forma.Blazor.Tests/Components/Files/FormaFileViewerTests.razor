@@ -1,5 +1,4 @@
 @inherits BunitContext
-@using System.Globalization
 @using Forma.Blazor.Components.Files
 @using Forma.Blazor.Tests.Support.Components.Files
 @using Microsoft.Extensions.DependencyInjection
@@ -425,26 +424,17 @@
         public async Task Should_reverse_arrow_keys_under_right_to_left()
         {
             // Arrange
-            var original = CultureInfo.CurrentCulture;
-            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("he");
+            using var culture = new CultureFixture("he");
+            using var ctx = new FormaFileViewerTests();
+            string? navigatedTo = null;
+            var siblings = new List<string> { Image, Video };
+            var cut = ctx.Render(@<FormaFileViewer Source="@Image" Siblings="siblings" OnNavigate="EventCallback.Factory.Create<string>(this, s => navigatedTo = s)" />);
 
-            try
-            {
-                using var ctx = new FormaFileViewerTests();
-                string? navigatedTo = null;
-                var siblings = new List<string> { Image, Video };
-                var cut = ctx.Render(@<FormaFileViewer Source="@Image" Siblings="siblings" OnNavigate="EventCallback.Factory.Create<string>(this, s => navigatedTo = s)" />);
+            // Act
+            await cut.Find("div.forma-file-viewer").KeyDownAsync(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowLeft" });
 
-                // Act
-                await cut.Find("div.forma-file-viewer").KeyDownAsync(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowLeft" });
-
-                // Assert
-                Assert.Equal(Video, navigatedTo);
-            }
-            finally
-            {
-                CultureInfo.CurrentCulture = original;
-            }
+            // Assert
+            Assert.Equal(Video, navigatedTo);
         }
 
         [Fact]
