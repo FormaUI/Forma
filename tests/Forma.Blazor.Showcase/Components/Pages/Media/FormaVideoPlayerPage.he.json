@@ -25,6 +25,8 @@
   "With captions": "עם כתוביות",
   "A self-hosted video carries its own caption files. The English track is the default; open the player's caption menu to switch to Spanish.": "סרטון מאוחסן מקומית נושא את קבצי הכתוביות שלו. הרצועה האנגלית היא ברירת המחדל; פתח את תפריט הכתוביות של הנגן כדי לעבור לספרדית.",
   "A scheme the browser will never fetch leaves a notice in place of the player rather than an empty frame or a crash.": "סכמה שהדפדפן לעולם לא יביא, משאירה הודעה במקום הנגן ולא מסגרת ריקה או קריסה.",
+  "An address only the host understands": "כתובת שרק המארח מבין",
+  "This page registers a provider that claims custom: addresses and resolves them against its own storage. A host's providers are tried before the services this library recognises, so one can teach the player an address shape the library never knew — or take over an address it would otherwise claim.": "דף זה רושם ספק התובע כתובות \u200ecustom:\u200e ומפענח אותן מול האחסון שלו. הספקים שהמארח רשם נבדקים לפני השירותים שהספרייה מכירה, כך שאפשר ללמד את הנגן צורת כתובת שהספרייה מעולם לא הכירה — או לקחת כתובת שהיא היתה תובעת אחרת.",
   "In a narrow column": "בעמודה צרה",
   "The frame keeps its 16:9 shape at any width, so it fits a sidebar as readily as an article body.": "המסגרת שומרת על יחס 16:9 בכל רוחב, ולכן היא מתאימה לסרגל צד באותה מידה שהיא מתאימה לגוף הכתבה.",
   "Sample YouTube video": "סרטון יוטיוב לדוגמה",

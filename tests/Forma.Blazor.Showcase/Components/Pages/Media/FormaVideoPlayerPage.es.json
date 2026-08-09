@@ -25,6 +25,8 @@
   "With captions": "Con subtítulos",
   "A self-hosted video carries its own caption files. The English track is the default; open the player's caption menu to switch to Spanish.": "Un video propio lleva sus propios archivos de subtítulos. La pista en inglés es la predeterminada; abre el menú de subtítulos del reproductor para cambiar al español.",
   "A scheme the browser will never fetch leaves a notice in place of the player rather than an empty frame or a crash.": "Un esquema que el navegador nunca va a solicitar deja un aviso en lugar del reproductor, en vez de un marco vacío o un error.",
+  "An address only the host understands": "Una dirección que solo el anfitrión entiende",
+  "This page registers a provider that claims custom: addresses and resolves them against its own storage. A host's providers are tried before the services this library recognises, so one can teach the player an address shape the library never knew — or take over an address it would otherwise claim.": "Esta página registra un proveedor que reclama las direcciones custom: y las resuelve contra su propio almacenamiento. Los proveedores del anfitrión se prueban antes que los servicios que esta biblioteca reconoce, así que uno puede enseñarle al reproductor una forma de dirección que la biblioteca nunca conoció, o quedarse con una que de otro modo ella reclamaría.",
   "In a narrow column": "En una columna estrecha",
   "The frame keeps its 16:9 shape at any width, so it fits a sidebar as readily as an article body.": "El marco conserva su proporción 16:9 a cualquier ancho, así que encaja en una barra lateral igual que en el cuerpo de un artículo.",
   "Sample YouTube video": "Video de YouTube de ejemplo",

@@ -53,6 +53,9 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
+    /// <summary>Providers the host registered, tried before the services this library recognises.</summary>
+    [Inject] private IEnumerable<IPlayerProvider> RegisteredProviders { get; set; } = default!;
+
     private JsModule _module = default!;
 
     private readonly string _labelId = $"video-play-{Guid.NewGuid():N}";
@@ -128,7 +131,8 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
             PageAddress = Uri.TryCreate(Navigation.BaseUri, UriKind.Absolute, out var pageAddress) ? pageAddress : null,
         };
 
-        foreach (var provider in Providers)
+        // A host provider comes first so it can claim an address, including one a built-in service would otherwise take.
+        foreach (var provider in RegisteredProviders.Concat(Providers))
         {
             if (await provider.GetPlayerFrameAsync(Source, options, CancellationToken.None) is { } frame)
             {

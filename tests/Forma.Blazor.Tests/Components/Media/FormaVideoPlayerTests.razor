@@ -1,5 +1,7 @@
 @inherits BunitContext
 @using Forma.Blazor.Components.Media
+@using Forma.Blazor.Tests.Support.Components.Media
+@using Microsoft.Extensions.DependencyInjection
 
 @code {
     public sealed class Component
@@ -771,6 +773,45 @@
 
             // Assert
             Assert.Throws<ArgumentException>(act);
+        }
+
+        [Fact]
+        public void Should_let_a_registered_provider_claim_an_address_a_service_would_take()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+            ctx.Services.AddScoped<IPlayerProvider>(_ => new FakePlayerProvider(
+                "https://www.youtube.com/",
+                source => new EmbeddedPlayerFrame("https://videos.example.com/mirror")));
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="https://www.youtube.com/watch?v=dQw4w9WgXcQ" Title="A video" DeferLoading="false" />);
+
+            // Assert
+            Assert.Equal("https://videos.example.com/mirror", cut.Find("iframe").GetAttribute("src"));
+        }
+
+        [Fact]
+        public void Should_fall_through_to_the_services_when_a_registered_provider_declines()
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+            var provider = new FakePlayerProvider(
+                "https://videos.example.com/",
+                source => new EmbeddedPlayerFrame(source));
+            ctx.Services.AddScoped<IPlayerProvider>(_ => provider);
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="https://youtu.be/dQw4w9WgXcQ" Title="A video" DeferLoading="false" />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(1, provider.Calls);
+                Assert.Equal(
+                    "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?rel=0",
+                    cut.Find("iframe").GetAttribute("src"));
+            });
         }
     }
 }

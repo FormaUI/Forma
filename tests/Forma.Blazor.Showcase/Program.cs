@@ -1,6 +1,7 @@
 using Forma.Blazor.Components.Feedback;
 using Forma.Blazor.Components.Files;
 using Forma.Blazor.Components.Indicators;
+using Forma.Blazor.Components.Media;
 using Forma.Blazor.Css;
 using Forma.Blazor.Middlewares;
 using Forma.Blazor.Showcase;
@@ -11,6 +12,7 @@ builder.Services.AddJsonLocalization();
 builder.Services.AddScoped<IConfirmDialogService, ConfirmDialogService>();
 builder.Services.AddScoped<IToastService, ToastService>();
 builder.Services.AddScoped<IResourceProvider, TextFileResourceProvider>();
+builder.Services.AddScoped<IPlayerProvider, CustomPlayerProvider>();
 
 // The statuses this application defines for itself — the library ships none.
 builder.Services.AddSingleton<IStatusBadgeCatalog>(new StatusBadgeCatalog(
