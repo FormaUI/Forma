@@ -94,14 +94,12 @@ Forma.UI.Blazor/Components/
 │   ├── ✅ FormaVideoPlayer.razor
 │   ├── FormaDesignPicker.razor
 │   └── FormaFontPicker.razor
-├── (0 / 5) Editors/
-│   ├── FormaRichTextEditor.razor
-│   ├── FormaNotesEditor.razor
-│   ├── FormaPermissionMatrix.razor
-│   ├── FormaProductOptionsEditor.razor
-│   └── FormaFilterEditor.razor
-└── (1 / 1) Metadata/
-    └── ✅ FormaPageLocalization.razor / .razor.cs    # canonical + hreflang links for the current page
+└── (0 / 5) Editors/
+    ├── FormaRichTextEditor.razor
+    ├── FormaNotesEditor.razor
+    ├── FormaPermissionMatrix.razor
+    ├── FormaProductOptionsEditor.razor
+    └── FormaFilterEditor.razor
 ```
 
 ```
@@ -714,15 +712,6 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Why not export the canvas** | Returning the finished bitmap from the browser looks simpler and is the wrong trade under Interactive Server: a base64 canvas export of a multi-megabyte photo crosses the SignalR circuit, where the default 32 KB receive limit rejects it outright, and re-encoding through the browser discards EXIF, ICC colour profiles and the original's quality. A rectangle is a few numbers |
 | **The two bugs to design out** | **Coordinate space** — report the rectangle in the image's *natural* pixels, never the displayed CSS pixels, because the editor scales the image to fit its box just as Coi's 590×350 did, and a crop that forgets the scale factor is wrong by exactly that ratio. **EXIF orientation** — a phone photo displays upright through `image-orientation` while its stored pixels are rotated, so coordinates taken from the display do not address the bytes the host will cut |
 | **Notes** | Neither jcrop nor Pixie is reachable without a mouse, and this repo does not ship that: the selection needs arrow-key nudging with a modifier to resize, numeric width/height fields as an exact path, and a live region announcing the rectangle as it changes. The handles are also the hardest touch target in the library — 44×44 under a coarse pointer around a rectangle whose corners may sit at the image edge, needing press-and-hold to start a drag so an ordinary swipe still scrolls. **To settle when built:** whether straightening by an arbitrary angle joins the 90° steps, since it forces canvas resampling and a bounds recalculation that quarter-turns avoid entirely |
-
-### 58. `FormaPageLocalization` ✅
-
-| | |
-|---|---|
-| **Old pattern** | None — Coi was single-language and never emitted an `hreflang` or `canonical` annotation. This is new scope that `CultureRouter`'s culture-in-path routing (`AddCultureRouting`) made possible, not a Web Forms behaviour being ported |
-| **Used in** | Every public page of a multilingual host, dropped once into the layout's `<head>`. Épica Deportiva ships `es`/`en` at launch, and the Showcase itself registers `en`/`he`/`es` to exercise it |
-| **Parameters** | None — the component takes no parameters, reading the current address from `NavigationManager` and the registered cultures from the injected `CultureRouter` |
-| **Blazor approach** | Emits one `<link rel="canonical">` for the current page and one `<link rel="alternate" hreflang="…">` per registered `CultureRoute`, plus `hreflang="x-default"` pointing at the default culture. Each URL is built by substituting the current route's prefix for each candidate's, so the set stays correct however many cultures are registered without the host assembling it by hand |
 
 ---
 

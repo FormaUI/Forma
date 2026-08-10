@@ -1,7 +1,0 @@
-{
-  "Emits the canonical link and the hreflang set addressing the current page in every culture. It belongs in the layout's head, where this Showcase already mounts it, so the invisible tags listed below are the ones this very page is serving.": "פולט את קישור ה-canonical ואת קבוצת ה-hreflang שמפנה לעמוד הנוכחי בכל שפה. מקומו ב-head של התבנית, שם ה-Showcase כבר מרכיב אותו, ולכן התגיות הבלתי נראות המפורטות למטה הן אלה שהעמוד הזה עצמו מגיש.",
-  "What this page emits": "מה העמוד הזה פולט",
-  "How it is used": "כיצד משתמשים בו",
-  "It takes no parameters and is mounted once in the layout's head, so every page it serves carries the tags.": "הוא אינו מקבל פרמטרים ומורכב פעם אחת ב-head של התבנית, כך שכל עמוד שהוא משרת נושא את התגיות.",
-  "Switch culture with the selector above to see every URL change with it.": "החליפו שפה בבורר שלמעלה כדי לראות כל כתובת משתנה יחד איתה."
-}

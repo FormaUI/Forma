@@ -1,7 +1,0 @@
-{
-  "Emits the canonical link and the hreflang set addressing the current page in every culture. It belongs in the layout's head, where this Showcase already mounts it, so the invisible tags listed below are the ones this very page is serving.": "Emite el enlace canonical y el conjunto de hreflang que apunta a la página actual en cada idioma. Va en el head del diseño, donde este Showcase ya lo monta, así que las etiquetas invisibles que se listan abajo son las que sirve esta misma página.",
-  "What this page emits": "Qué emite esta página",
-  "How it is used": "Cómo se usa",
-  "It takes no parameters and is mounted once in the layout's head, so every page it serves carries the tags.": "No recibe parámetros y se monta una sola vez en el head del diseño, de modo que cada página que sirve lleva las etiquetas.",
-  "Switch culture with the selector above to see every URL change with it.": "Cambia de idioma con el selector de arriba para ver cómo cambia cada URL junto con él."
-}

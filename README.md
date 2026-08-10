@@ -156,9 +156,6 @@ leaves the default culture unprefixed and redirects `/en/page` to `/page`.
 A registered token always names a culture, so no page route may reuse one, and a URL naming a
 culture in two consecutive segments such as `/he/en/page` is answered with `400 Bad Request`.
 
-Add `<FormaPageLocalization />` to your `<head>` to emit `rel="canonical"` and the
-`hreflang` set for the current page.
-
 **4. Include the library assembly when mapping components:**
 
 ```csharp

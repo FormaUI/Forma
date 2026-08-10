@@ -1,4 +1,4 @@
-namespace Forma.UI.Components.Metadata;
+namespace Forma.UI.Blazor.Showcase.Components;
 
 using Forma.UI.Globalization;
 
@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http;
 
 /// <summary>Emits the canonical link and the hreflang set addressing the current page in every culture.</summary>
-public sealed partial class FormaPageLocalization : ComponentBase
+public sealed partial class PageLocalization : ComponentBase
 {
     private CultureRoute? _current;
     private string _origin = string.Empty;
