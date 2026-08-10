@@ -1,4 +1,4 @@
-namespace Forma.UI.Blazor.Showcase.Components;
+namespace Forma.UI.Blazor.Showcase.Components.Metadata;
 
 using Forma.UI.Globalization;
 
