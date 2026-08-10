@@ -1,0 +1,23 @@
+@page "/page-localization"
+@attribute [ShowcasePage("FormaPageLocalization")]
+
+<h1>FormaPageLocalization</h1>
+<p class="desc">@L["Emits the canonical link and the hreflang set addressing the current page in every culture. It belongs in the layout's head, where this Showcase already mounts it, so the invisible tags listed below are the ones this very page is serving."]</p>
+
+<div class="demo-section">
+    <h2>@L["How it is used"]</h2>
+    <p class="desc">@L["It takes no parameters and is mounted once in the layout's head, so every page it serves carries the tags."]</p>
+    <div class="demo-box">
+        <pre dir="ltr"><code>&lt;head&gt;
+    &lt;FormaPageLocalization /&gt;
+&lt;/head&gt;</code></pre>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["What this page emits"]</h2>
+    <p class="desc">@L["Switch culture with the selector above to see every URL change with it."]</p>
+    <div class="demo-box">
+        <pre dir="ltr"><code>@Emitted</code></pre>
+    </div>
+</div>
