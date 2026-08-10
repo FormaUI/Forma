@@ -59,7 +59,7 @@ These three identities are intentionally distinct — keep them straight:
 
 An RCL normally serves its static assets under `_content/{PackageId}`. Because the
 component markup and JS interop hardcode `_content/Forma.UI/…`, the base path is
-**pinned to `Forma.UI.Blazor`** so those URLs stay stable regardless of what the NuGet
+**pinned to `Forma.UI`** so those URLs stay stable regardless of what the NuGet
 package is named:
 
 ```xml

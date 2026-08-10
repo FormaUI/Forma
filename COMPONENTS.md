@@ -13,6 +13,132 @@
 
 ---
 
+## File Structure
+
+```
+Forma.UI.Blazor/Components/
+├── FormaIcon.cs                          # readonly record struct with FontAwesome()/From() factories
+├── ✅ FormaField.razor / .razor.cs / .razor.css
+├── FieldLabelMode.cs                     # enum: Floating, Pinned, Above, Inline
+├── (4 / 4) Layout/
+│   ├── BreadcrumbItem.cs                # record with Label + Url?, constructor-validated
+│   ├── ✅ FormaPageHeader.razor / .razor.cs
+│   ├── ✅ FormaToolbar.razor / .razor.cs
+│   ├── ✅ FormaContextToolbar.razor / .razor.cs
+│   ├── ✅ FormaTabs.razor / .razor.cs
+│   └── ✅ FormaTab.razor / .razor.cs
+├── (3 / 3) Feedback/
+│   ├── ✅ FormaModal.razor / .razor.cs / .razor.js
+│   ├── ✅ FormaModal.razor.css
+│   ├── ModalSize.cs
+│   ├── ✅ FormaConfirmDialog.razor / .razor.cs
+│   ├── ✅ FormaConfirmDialog.razor.css
+│   ├── ✅ FormaToastContainer.razor / .razor.cs
+│   └── ✅ FormaToastContainer.razor.css
+├── (2 / 2) Data/
+│   ├── ✅ FormaDataGrid.razor
+│   └── ✅ FormaPagination.razor
+├── (1 / 2) Indicators/
+│   ├── ✅ FormaStatusBadge.razor
+│   └── FormaCapacityIndicator.razor
+├── (3 / 13) Actions/
+│   ├── ButtonSize.cs
+│   ├── ButtonType.cs
+│   ├── ButtonVariant.cs
+│   ├── FormaButtonOptions.cs
+│   ├── ✅ FormaButton.razor
+│   ├── ✅ FormaCloseButton.razor
+│   ├── ✅ FormaEyeButton.razor
+│   ├── FormaDeleteButton.razor
+│   ├── FormaUpdateButton.razor
+│   ├── FormaEditButton.razor
+│   ├── FormaAddButton.razor
+│   ├── FormaDuplicateButton.razor
+│   ├── FormaRefreshButton.razor
+│   ├── FormaShareButton.razor
+│   ├── FormaPublishButton.razor
+│   ├── FormaViewButton.razor
+│   └── FormaExportButton.razor
+├── (10 / 11) Input/
+│   ├── SelectOption.cs
+│   ├── PasswordStrength.cs
+│   ├── ✅ FormaCheckbox.razor
+│   ├── ✅ FormaInput.razor
+│   ├── ✅ FormaTextArea.razor
+│   ├── ✅ FormaToggleSwitch.razor
+│   ├── ✅ FormaPasswordInput.razor
+│   ├── FormaCurrencyInput.razor
+│   ├── ✅ FormaRangeSlider.razor
+│   ├── ✅ FormaDatePicker.razor
+│   ├── ✅ FormaSelect.razor
+│   ├── ✅ FormaColorPicker.razor
+│   └── ✅ FormaMultiSelectDropDown.razor
+├── (2 / 6) Interactive/
+│   ├── ✅ FormaSortableList.razor
+│   ├── FormaCategorySelector.razor
+│   ├── ✅ FormaDropDownMenu.razor
+│   ├── ✅ FormaDropDownMenuItem.razor
+│   ├── ✅ FormaDropDownMenuDivider.razor
+│   ├── FormaOverflowMenu.razor
+│   ├── FormaContextMenu.razor
+│   └── FormaSortMenu.razor
+├── (1 / 4) Files/
+│   ├── FormaUploader.razor
+│   ├── FormaFilePicker.razor
+│   ├── FormaFileManager.razor
+│   └── ✅ FormaFileViewer.razor          # dispatches to Media/ for the type it recognises
+├── (1 / 6) Media/
+│   ├── FormaImagePicker.razor
+│   ├── FormaGallery.razor
+│   ├── FormaImageEditor.razor / .razor.js
+│   ├── ✅ FormaVideoPlayer.razor
+│   ├── FormaDesignPicker.razor
+│   └── FormaFontPicker.razor
+├── (0 / 5) Editors/
+│   ├── FormaRichTextEditor.razor
+│   ├── FormaNotesEditor.razor
+│   ├── FormaPermissionMatrix.razor
+│   ├── FormaProductOptionsEditor.razor
+│   └── FormaFilterEditor.razor
+└── (0 / 1) Metadata/
+    └── FormaPageLocalization.razor / .razor.cs    # canonical + hreflang links for the current page
+```
+
+```
+Forma.Framework.Css/
+└── CssColor.cs
+
+Forma.Framework.Resources/
+├── IResourceContentReader.cs
+├── IResourceProvider.cs
+├── ResourceInfo.cs
+├── MarkupResourceInfo.cs
+├── EmbeddedResourceInfo.cs
+└── ResourceKind.cs
+
+Forma.Framework/
+├── INotifyStateChanged.cs
+├── Feedback/
+│   ├── IToastService.cs
+│   ├── IConfirmDialogService.cs
+│   ├── ToastMessage.cs
+│   ├── ToastType.cs
+│   └── ConfirmDialogRequest.cs
+└── Indicators/
+    ├── IStatusBadgeCatalog.cs
+    └── StatusBadgeStyle.cs
+
+Forma.Framework.Core/
+├── StateNotifier.cs
+├── Feedback/
+│   ├── ToastService.cs
+│   └── ConfirmDialogService.cs
+└── Indicators/
+    └── StatusBadgeCatalog.cs
+```
+
+---
+
 ## Tier 1 — Core Layout & Infrastructure
 
 These components form the shell of a page. Build first.
@@ -564,7 +690,7 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Privacy and weight** | Nothing is fetched from a hosting service until a reader presses play: `DeferLoading` holds both the embed address and the service script behind a play control, which `Autoplay` overrides and a self-hosted file never needs. Embed from `youtube-nocookie.com`, and ask for do-not-track wherever a service offers it — `dnt=1` on Vimeo, `data-dnt="true"` on X. A third-party frame that loads with every article page is both a tracking surface a public news site has to account for and a large fixed cost on a mobile connection. **The still is the host's to supply:** `Placeholder` takes an image the host serves from its own origin, and stands in for a self-hosted file too. Deriving one from the service instead — YouTube publishes a thumbnail per video id — would send the service the very request the play control exists to withhold, so the component never does it |
 | **Notes** | `Title` is required because an unnamed `<iframe>` is an unlabelled stop in the tab order. **Autoplay is not what Épica's 9.2 asks for** — "auto-embed live player" means the player appears without an editor placing it, not that it starts playing. Autoplay is forced muted through the JS property, because the `muted` attribute no longer reaches the element once Blazor has created it, and WCAG 1.4.2 requires a control over anything that plays by itself. A service script that never runs — blocked, or simply slow — leaves a link to the video in the player's place |
 
-### 56. `FormaFileViewer`
+### 56. `FormaFileViewer` ✅
 
 | | |
 |---|---|
@@ -627,135 +753,9 @@ Components are ordered by dependency and reuse frequency:
 | **Phase 12** | `FormaEyeButton` ✅ | Shared reveal primitive — built after the fact and retrofitted onto `FormaPasswordInput`, which had hand-rolled the ghost icon button it now uses |
 | **Phase 13** | `FormaDeleteButton`, `FormaUpdateButton`, `FormaEditButton`, `FormaAddButton`, `FormaDuplicateButton`, `FormaRefreshButton`, `FormaShareButton`, `FormaPublishButton` | The rest of the icon-button vocabulary — the same thin wrapper over `FormaButton`, one glyph each, so a row's actions stop being ad-hoc markup per page |
 | **Phase 14** | `FormaOverflowMenu`, `FormaContextMenu` | Menu presets over `FormaDropDownMenu` — the ellipsis trigger first, then the same panel opened by right-click, once there is a menu worth opening that way |
-| **Phase 15** | `FormaVideoPlayer` ✅, `FormaFileViewer` | Media rendering — the player first because it stands alone and four Épica surfaces want it, then the viewer that delegates its video branch to it. Both come before the picker chain, which previews through the viewer |
+| **Phase 15** | `FormaVideoPlayer` ✅, `FormaFileViewer` ✅ | Media rendering — the player first because it stands alone and four Épica surfaces want it, then the viewer that delegates its video branch to it. Both come before the picker chain, which previews through the viewer |
 | **Phase 16** | `FormaUploader`, `FormaFilePicker`, `FormaImagePicker` | The picker chain, in that order: the uploader, then the picker that hosts it and previews through `FormaFileViewer`, then the image skin over the picker |
 | **Phase 17** | `FormaSortMenu`, `FormaViewButton` | The two controls that exist for the picker's tile grid — a layout with no column headers to sort by and two layouts to switch between. Neither has a surface to serve until Phase 16 exists |
 | **Phase 18** | `FormaGallery`, `FormaFileManager` | Media surfaces — both compose the uploader, picker and viewer rather than re-solving them. The manager's shared browsing half is extracted from `FormaFilePicker` in the same step, not copied |
 | **Phase 19** | `FormaRichTextEditor` | The largest editor, and last of the composing components — its chrome is `FormaSelect`, `FormaDropDownMenu` and `FormaColorPicker`, it delegates image insertion to `FormaImagePicker`, uploads through `FormaUploader`, and inserts `FormaVideoPlayer` |
 | **Phase 20** | `FormaImageEditor` | The heaviest media component and the last — it needs the surfaces above to launch it, and its pointer handles, coordinate mapping and keyboard path are worth building once the rest of the media flow is settled |
-
----
-
-## File Structure
-
-```
-Forma.UI.Blazor/Components/
-├── FormaIcon.cs                          # readonly record struct with FontAwesome()/From() factories
-├── FormaField.razor / .razor.cs / .razor.css
-├── FieldLabelMode.cs                     # enum: Floating, Pinned, Above, Inline
-├── Layout/
-│   ├── BreadcrumbItem.cs                # record with Label + Url?, constructor-validated
-│   ├── FormaPageHeader.razor / .razor.cs
-│   ├── FormaToolbar.razor / .razor.cs
-│   ├── FormaContextToolbar.razor / .razor.cs
-│   ├── FormaTabs.razor / .razor.cs
-│   └── FormaTab.razor / .razor.cs
-├── Feedback/
-│   ├── FormaModal.razor / .razor.cs / .razor.js
-│   ├── FormaModal.razor.css
-│   ├── ModalSize.cs
-│   ├── FormaConfirmDialog.razor / .razor.cs
-│   ├── FormaConfirmDialog.razor.css
-│   ├── FormaToastContainer.razor / .razor.cs
-│   └── FormaToastContainer.razor.css
-├── Data/
-│   ├── FormaDataGrid.razor
-│   └── FormaPagination.razor
-├── Indicators/
-│   ├── FormaStatusBadge.razor
-│   └── FormaCapacityIndicator.razor
-├── Actions/
-│   ├── ButtonSize.cs
-│   ├── ButtonType.cs
-│   ├── ButtonVariant.cs
-│   ├── FormaButtonOptions.cs
-│   ├── FormaButton.razor
-│   ├── FormaCloseButton.razor
-│   ├── FormaEyeButton.razor
-│   ├── FormaDeleteButton.razor
-│   ├── FormaUpdateButton.razor
-│   ├── FormaEditButton.razor
-│   ├── FormaAddButton.razor
-│   ├── FormaDuplicateButton.razor
-│   ├── FormaRefreshButton.razor
-│   ├── FormaShareButton.razor
-│   ├── FormaPublishButton.razor
-│   ├── FormaViewButton.razor
-│   └── FormaExportButton.razor
-├── Input/
-│   ├── SelectOption.cs
-│   ├── PasswordStrength.cs
-│   ├── FormaCheckbox.razor
-│   ├── FormaInput.razor
-│   ├── FormaTextArea.razor
-│   ├── FormaToggleSwitch.razor
-│   ├── FormaPasswordInput.razor
-│   ├── FormaCurrencyInput.razor
-│   ├── FormaRangeSlider.razor
-│   ├── FormaDatePicker.razor
-│   ├── FormaSelect.razor
-│   ├── FormaColorPicker.razor
-│   └── FormaMultiSelectDropDown.razor
-├── Interactive/
-│   ├── FormaSortableList.razor
-│   ├── FormaCategorySelector.razor
-│   ├── FormaDropDownMenu.razor
-│   ├── FormaDropDownMenuItem.razor
-│   ├── FormaDropDownMenuDivider.razor
-│   ├── FormaOverflowMenu.razor
-│   ├── FormaContextMenu.razor
-│   └── FormaSortMenu.razor
-├── Files/
-│   ├── FormaUploader.razor
-│   ├── FormaFilePicker.razor
-│   ├── FormaFileManager.razor
-│   └── FormaFileViewer.razor          # dispatches to Media/ for the type it recognises
-├── Media/
-│   ├── FormaImagePicker.razor
-│   ├── FormaGallery.razor
-│   ├── FormaImageEditor.razor / .razor.js
-│   ├── FormaVideoPlayer.razor
-│   ├── FormaDesignPicker.razor
-│   └── FormaFontPicker.razor
-├── Editors/
-│   ├── FormaRichTextEditor.razor
-│   ├── FormaNotesEditor.razor
-│   ├── FormaPermissionMatrix.razor
-│   ├── FormaProductOptionsEditor.razor
-│   └── FormaFilterEditor.razor
-└── Metadata/
-    └── FormaPageLocalization.razor / .razor.cs    # canonical + hreflang links for the current page
-```
-
-```
-Forma.Framework.Css/
-└── CssColor.cs
-
-Forma.Framework.Resources/
-├── IResourceContentReader.cs
-├── IResourceProvider.cs
-├── ResourceInfo.cs
-├── MarkupResourceInfo.cs
-├── EmbeddedResourceInfo.cs
-└── ResourceKind.cs
-
-Forma.Framework/
-├── INotifyStateChanged.cs
-├── Feedback/
-│   ├── IToastService.cs
-│   ├── IConfirmDialogService.cs
-│   ├── ToastMessage.cs
-│   ├── ToastType.cs
-│   └── ConfirmDialogRequest.cs
-└── Indicators/
-    ├── IStatusBadgeCatalog.cs
-    └── StatusBadgeStyle.cs
-
-Forma.Framework.Core/
-├── StateNotifier.cs
-├── Feedback/
-│   ├── ToastService.cs
-│   └── ConfirmDialogService.cs
-└── Indicators/
-    └── StatusBadgeCatalog.cs
-```
