@@ -1,7 +1,6 @@
 namespace Forma.Framework.Resources;
 
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 
 /// <summary>A resource an <see cref="IResourceProvider"/> resolved from a source address.</summary>
 [SuppressMessage("Design", "CA1054:URI parameters should not be strings")]
@@ -31,26 +30,11 @@ public record ResourceInfo
 
     /// <summary>Size written for a reader, taking it as a count of bytes; a resource measured in anything else overrides this.</summary>
     public virtual string? DisplaySize
-        => Size is { } size ? FormatBytes(size) : null;
+        => Size is { } size ? ResourceFormatter.FromByteCount(size) : null;
 
     /// <summary>The name's extension, including the dot, or empty when it has none; compare it case-insensitively.</summary>
     public string Extension
         => Path.GetExtension(Name);
-
-    private static string FormatBytes(long bytes)
-    {
-        const long Kb = 1024;
-        const long Mb = Kb * 1024;
-        const long Gb = Mb * 1024;
-
-        return bytes switch
-        {
-            < Kb => string.Format(CultureInfo.CurrentCulture, "{0} B", bytes),
-            < Mb => string.Format(CultureInfo.CurrentCulture, "{0:0.#} KB", bytes / (double)Kb),
-            < Gb => string.Format(CultureInfo.CurrentCulture, "{0:0.#} MB", bytes / (double)Mb),
-            _ => string.Format(CultureInfo.CurrentCulture, "{0:0.#} GB", bytes / (double)Gb),
-        };
-    }
 
     // A source is as likely to be a URL as a path, so the query and fragment are dropped before the last segment.
     private static string ResolveName(string source)

@@ -7,10 +7,12 @@ using Forma.Framework.Media;
 using Forma.Framework.Office;
 using Forma.Framework.Resources;
 using Forma.UI.Blazor.Showcase;
+using Forma.UI.Blazor.Showcase.Features.Upload;
 using Forma.UI.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddJsonLocalization();
+builder.Services.AddSingleton(new SandboxAssets(builder.Environment.ContentRootPath));
 builder.Services.AddScoped<IConfirmDialogService, ConfirmDialogService>();
 builder.Services.AddScoped<IToastService, ToastService>();
 builder.Services.AddScoped<IResourceContentReader, WebRootContentReader>();

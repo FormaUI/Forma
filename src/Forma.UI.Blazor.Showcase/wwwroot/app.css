@@ -28,6 +28,26 @@
     font-size: 0.85rem;
 }
 
+/* The running report a demo prints as a component raises events: output rather than prose, so it
+   is set apart from the surrounding copy instead of carrying a list's bullets and indent. */
+.demo-log {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 0.8rem;
+    color: var(--text-muted-color);
+}
+
+.demo-log:not(:empty) {
+    margin-block-start: 0.5rem;
+    padding-inline-start: 0.75rem;
+    border-inline-start: 2px solid var(--border-color);
+}
+
+.demo-log li + li {
+    margin-block-start: 0.15rem;
+}
+
 /* Stands in for a saturated surface, so a ghost button's retint knobs are visible. The resting
    alpha is what it is because 0.75 lands at 2.97:1 against this background. */
 .demo-tinted {
