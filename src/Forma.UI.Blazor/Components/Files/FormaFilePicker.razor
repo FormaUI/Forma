@@ -1,0 +1,16 @@
+@namespace Forma.UI.Components.Files
+
+<div class="forma-file-picker" aria-busy="@_isBusy">
+    <label @ref="_dropZone" class="forma-file-picker-drop-zone @(_isBusy ? "forma-file-picker-busy" : "")">
+        <InputFile class="forma-file-picker-input" accept="@Accept" multiple="@AllowMultipleFiles" disabled="@_isBusy" OnChange="HandleChangeAsync" />
+        <span class="forma-file-picker-icon fa-solid fa-cloud-arrow-up" aria-hidden="true"></span>
+        <p class="forma-file-picker-prompt">@EffectivePrompt</p>
+    </label>
+
+    <ul class="forma-file-picker-rejections" role="alert">
+        @foreach (var rejection in _rejections)
+        {
+            <li>@RejectionText(rejection)</li>
+        }
+    </ul>
+</div>

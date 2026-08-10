@@ -1,0 +1,157 @@
+@inherits BunitContext
+@using Bunit.TestDoubles
+@using Forma.UI.Components.Files
+@using Microsoft.AspNetCore.Components.Forms
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_the_default_prompt()
+        {
+            // Arrange
+            using var ctx = new FormaFilePickerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFilePicker OnFilesSelected="@(_ => Task.CompletedTask)" />);
+
+            // Assert
+            Assert.Equal("Drop files here or click to browse", cut.Find(".forma-file-picker-prompt").TextContent);
+        }
+
+        [Fact]
+        public void Should_render_a_caller_supplied_prompt()
+        {
+            // Arrange
+            using var ctx = new FormaFilePickerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFilePicker Prompt="Drop images here" OnFilesSelected="@(_ => Task.CompletedTask)" />);
+
+            // Assert
+            Assert.Equal("Drop images here", cut.Find(".forma-file-picker-prompt").TextContent);
+        }
+
+        [Fact]
+        public void Should_report_a_file_that_passes_validation()
+        {
+            // Arrange
+            using var ctx = new FormaFilePickerTests();
+            IReadOnlyList<IBrowserFile>? selected = null;
+            var cut = ctx.Render(@<FormaFilePicker OnFilesSelected="@(files => { selected = files; return Task.CompletedTask; })" />);
+            var input = cut.FindComponent<InputFile>();
+
+            // Act
+            input.UploadFiles(InputFileContent.CreateFromText("hello", "cover.jpg", contentType: "image/jpeg"));
+
+            // Assert
+            Assert.Equal("cover.jpg", Assert.Single(selected!).Name);
+        }
+
+        [Fact]
+        public void Should_reject_a_file_whose_type_is_not_accepted()
+        {
+            // Arrange
+            using var ctx = new FormaFilePickerTests();
+            IReadOnlyList<RejectedFile>? rejected = null;
+            var cut = ctx.Render(@<FormaFilePicker Accept="image/*"
+                                                   OnFilesSelected="@(_ => Task.CompletedTask)"
+                                                   OnFilesRejected="@(files => { rejected = files; return Task.CompletedTask; })" />);
+            var input = cut.FindComponent<InputFile>();
+
+            // Act
+            input.UploadFiles(InputFileContent.CreateFromText("notes", "notes.txt", contentType: "text/plain"));
+            var rejection = Assert.Single(rejected!);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("notes.txt", rejection.Name);
+                Assert.Equal(FileRejectionReason.DisallowedType, rejection.Reason);
+                Assert.Contains("notes.txt", cut.Find(".forma-file-picker-rejections").TextContent);
+            });
+        }
+
+        [Fact]
+        public void Should_reject_a_file_larger_than_the_limit()
+        {
+            // Arrange
+            using var ctx = new FormaFilePickerTests();
+            IReadOnlyList<RejectedFile>? rejected = null;
+            var cut = ctx.Render(@<FormaFilePicker MaxFileSize="4"
+                                                   OnFilesSelected="@(_ => Task.CompletedTask)"
+                                                   OnFilesRejected="@(files => { rejected = files; return Task.CompletedTask; })" />);
+            var input = cut.FindComponent<InputFile>();
+
+            // Act
+            input.UploadFiles(InputFileContent.CreateFromText("far too long a body", "brief.pdf", contentType: "application/pdf"));
+
+            // Assert
+            Assert.Equal(FileRejectionReason.TooLarge, Assert.Single(rejected!).Reason);
+        }
+
+        [Fact]
+        public void Should_reject_files_beyond_the_selection_limit()
+        {
+            // Arrange
+            using var ctx = new FormaFilePickerTests();
+            IReadOnlyList<IBrowserFile>? selected = null;
+            IReadOnlyList<RejectedFile>? rejected = null;
+            var cut = ctx.Render(@<FormaFilePicker MaxSelectedFiles="1"
+                                                   OnFilesSelected="@(files => { selected = files; return Task.CompletedTask; })"
+                                                   OnFilesRejected="@(files => { rejected = files; return Task.CompletedTask; })" />);
+            var input = cut.FindComponent<InputFile>();
+
+            // Act
+            input.UploadFiles(
+                InputFileContent.CreateFromText("one", "one.jpg", contentType: "image/jpeg"),
+                InputFileContent.CreateFromText("two", "two.jpg", contentType: "image/jpeg"));
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("one.jpg", Assert.Single(selected!).Name);
+                Assert.Equal(FileRejectionReason.TooManyFiles, Assert.Single(rejected!).Reason);
+            });
+        }
+
+        [Fact]
+        public void Should_cap_a_single_file_selection_when_AllowMultipleFiles_is_false()
+        {
+            // Arrange
+            using var ctx = new FormaFilePickerTests();
+            IReadOnlyList<IBrowserFile>? selected = null;
+            var cut = ctx.Render(@<FormaFilePicker AllowMultipleFiles="false" OnFilesSelected="@(files => { selected = files; return Task.CompletedTask; })" />);
+            var input = cut.FindComponent<InputFile>();
+
+            // Act
+            input.UploadFiles(
+                InputFileContent.CreateFromText("one", "one.jpg", contentType: "image/jpeg"),
+                InputFileContent.CreateFromText("two", "two.jpg", contentType: "image/jpeg"));
+
+            // Assert
+            Assert.Equal("one.jpg", Assert.Single(selected!).Name);
+        }
+
+        [Fact]
+        public void Should_hand_the_host_a_readable_file_it_has_not_already_consumed()
+        {
+            // Arrange
+            using var ctx = new FormaFilePickerTests();
+            var content = "the quick brown fox";
+            var readBack = string.Empty;
+            var cut = ctx.Render(@<FormaFilePicker OnFilesSelected="@(async files =>
+                                                 {
+                                                     using var reader = new StreamReader(files[0].OpenReadStream());
+                                                     readBack = await reader.ReadToEndAsync();
+                                                 })" />);
+            var input = cut.FindComponent<InputFile>();
+
+            // Act
+            input.UploadFiles(InputFileContent.CreateFromText(content, "note.txt", contentType: "text/plain"));
+
+            // Assert
+            Assert.Equal(content, readBack);
+        }
+    }
+}

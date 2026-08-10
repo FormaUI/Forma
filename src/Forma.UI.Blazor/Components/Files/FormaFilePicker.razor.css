@@ -1,0 +1,92 @@
+/* ============================================================
+   FormaFilePicker — CSS isolation
+   A native file input styled as a drop zone. Drag-and-drop is
+   attached in JS; the click-to-browse path is plain HTML via the
+   implicit label/input association.
+   ============================================================ */
+
+.forma-file-picker {
+    display: flex;
+    flex-direction: column;
+}
+
+.forma-file-picker-drop-zone {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 2rem 1rem;
+    border: 2px dashed var(--light-border-color);
+    border-radius: 8px;
+    color: var(--text-muted-color);
+    text-align: center;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: border-color 120ms, background-color 120ms;
+}
+
+@media (hover: hover) {
+    .forma-file-picker-drop-zone:hover {
+        border-color: var(--main-color);
+        background-color: var(--hover-bg-color);
+    }
+}
+
+.forma-file-picker-drop-zone:has(:focus-visible) {
+    outline: 2px solid var(--focus-color);
+    outline-offset: 2px;
+}
+
+/* The second, colour-independent channel for the drag state: the border changes shape, not only colour. */
+.forma-file-picker-drop-zone.forma-file-picker-dragging {
+    border-style: solid;
+    border-color: var(--main-color);
+    background-color: var(--hover-bg-color);
+    color: var(--text-color);
+}
+
+.forma-file-picker-drop-zone.forma-file-picker-busy {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* InputFile is a genuine child component, so its rendered <input> never carries this file's scope attribute. */
+::deep .forma-file-picker-input {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+::deep .forma-file-picker-input:disabled {
+    cursor: not-allowed;
+}
+
+.forma-file-picker-icon {
+    font-size: 1.75rem;
+}
+
+.forma-file-picker-prompt {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.forma-file-picker-rejections {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    color: var(--danger-color);
+    font-size: 0.85rem;
+}
+
+/* The spacing sits on the first item so the always-present live region occupies nothing while it is empty. */
+.forma-file-picker-rejections > li:first-child {
+    margin-block-start: 0.75rem;
+}
