@@ -12,7 +12,7 @@
     <p class="desc">@L["No restriction, so every drop or pick is accepted."]</p>
     <div class="demo-box">
         <FormaFilePicker OnFilesSelected="@(files => HandleSelected("basic", files))" />
-        <ul>
+        <ul class="demo-log">
             @foreach (var line in Log("basic"))
             {
                 <li>@line</li>
@@ -28,7 +28,7 @@
         <FormaFilePicker Accept="image/*"
                          OnFilesSelected="@(files => HandleSelected("images", files))"
                          OnFilesRejected="@(files => HandleRejected("images", files))" />
-        <ul>
+        <ul class="demo-log">
             @foreach (var line in Log("images"))
             {
                 <li>@line</li>
@@ -44,7 +44,7 @@
         <FormaFilePicker MaxFileSize="@MaxSizeBytes"
                          OnFilesSelected="@(files => HandleSelected("size", files))"
                          OnFilesRejected="@(files => HandleRejected("size", files))" />
-        <ul>
+        <ul class="demo-log">
             @foreach (var line in Log("size"))
             {
                 <li>@line</li>
@@ -60,7 +60,7 @@
         <FormaFilePicker MaxSelectedFiles="2"
                          OnFilesSelected="@(files => HandleSelected("count", files))"
                          OnFilesRejected="@(files => HandleRejected("count", files))" />
-        <ul>
+        <ul class="demo-log">
             @foreach (var line in Log("count"))
             {
                 <li>@line</li>
