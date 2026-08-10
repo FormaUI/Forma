@@ -1,5 +1,143 @@
 /* Showcase app styles - add as needed */
 
+/* ============================================================
+   Gallery chrome — the shell the components are displayed in.
+   None of it ships in the library.
+   ============================================================ */
+
+body {
+    background: #f9fafb;
+}
+
+.showcase-layout {
+    display: flex;
+    min-block-size: 100vh;
+}
+
+.showcase-sidebar {
+    flex-shrink: 0;
+    inline-size: 240px;
+    padding: 20px 0;
+    background: #fff;
+    border-inline-end: 1px solid var(--border-color);
+}
+
+.showcase-sidebar h3 {
+    margin: 0 20px 16px;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-muted-color);
+}
+
+.showcase-sidebar a {
+    display: block;
+    padding: 8px 20px;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    text-decoration: none;
+}
+
+.showcase-sidebar a:hover {
+    background: var(--hover-bg-color);
+}
+
+.showcase-sidebar a.active {
+    font-weight: 600;
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.culture-switcher {
+    display: flex;
+    gap: 4px;
+    margin-block-end: 16px;
+    padding: 12px 20px 16px;
+    border-block-end: 1px solid var(--border-color);
+}
+
+.culture-switcher a {
+    padding: 4px 10px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted-color);
+    text-decoration: none;
+}
+
+.culture-switcher a.active {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #2563eb;
+}
+
+.culture-switcher a:hover:not(.active) {
+    background: var(--hover-bg-color);
+}
+
+.showcase-main {
+    flex: 1;
+    max-inline-size: 900px;
+    padding: 32px 40px;
+}
+
+.showcase-main h1 {
+    margin: 0 0 8px;
+    font-size: 1.5rem;
+}
+
+.showcase-main p.desc {
+    margin: 0 0 32px;
+    color: var(--text-muted-color);
+}
+
+.demo-section {
+    margin-block-end: 40px;
+}
+
+.demo-section h2 {
+    margin: 0 0 12px;
+    padding-block-end: 8px;
+    border-block-end: 1px solid var(--border-color);
+    font-size: 1.1rem;
+}
+
+.demo-box {
+    padding: 24px;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 120ms;
+}
+
+.btn-primary {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: #1d4ed8;
+}
+
+.btn-sec {
+    background: #fff;
+    color: var(--text-color);
+}
+
+.btn-sec:hover {
+    background: var(--hover-bg-color);
+}
+
 .row-inactive {
     opacity: 0.5;
 }
