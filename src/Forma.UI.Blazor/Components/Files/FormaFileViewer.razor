@@ -10,7 +10,7 @@
     <div class="forma-file-viewer-content">
         @if (Resource is MarkupResourceInfo markup)
         {
-            <div class="forma-file-viewer-html" role="group" aria-label="@DisplayName">
+            <div class="forma-file-viewer-html" dir="auto" role="group" aria-label="@DisplayName">
                 @((MarkupString)markup.Html)
             </div>
         }
@@ -74,7 +74,7 @@
                 <p class="forma-file-viewer-unsupported-name">@DisplayName</p>
                 @if (DisplaySize is not null)
                 {
-                    <p class="forma-file-viewer-unsupported-size">@DisplaySize</p>
+                    <p class="forma-file-viewer-unsupported-size"><bdi dir="auto">@DisplaySize</bdi></p>
                 }
                 <a class="forma-file-viewer-unsupported-download" href="@Source" download="@DisplayName">@L["Download {0}", DisplayName]</a>
             </div>
@@ -105,7 +105,7 @@
             <span class="forma-file-viewer-metadata-name">@DisplayName</span>
             @if (DisplaySize is not null)
             {
-                <span class="forma-file-viewer-metadata-size">@DisplaySize</span>
+                <span class="forma-file-viewer-metadata-size"><bdi dir="auto">@DisplaySize</bdi></span>
             }
         </div>
     }
