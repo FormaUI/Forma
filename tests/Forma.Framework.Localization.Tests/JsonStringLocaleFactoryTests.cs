@@ -5,14 +5,14 @@ using Forma.Framework.Localization.Tests.Fixtures;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 
-public sealed class JsonStringLocalizerFactoryTests
+public sealed class JsonStringLocaleFactoryTests
 {
     [Fact]
     public void Should_read_files_from_the_configured_resources_folder()
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var factory = new JsonStringLocalizerFactory(new JsonLocalizationOptions { ResourcesPath = "Resources" });
+        var factory = new JsonStringLocaleFactory(new JsonLocalizationOptions { ResourcesPath = "Resources" });
 
         // Act
         var localized = factory.Create(typeof(PathScoped))["Save"];
@@ -26,7 +26,7 @@ public sealed class JsonStringLocalizerFactoryTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var factory = new JsonStringLocalizerFactory(new JsonLocalizationOptions { ResourcesPath = "Resources" });
+        var factory = new JsonStringLocaleFactory(new JsonLocalizationOptions { ResourcesPath = "Resources" });
 
         // Act
         var localized = factory.Create(typeof(Colocated))["Today"];
@@ -36,10 +36,10 @@ public sealed class JsonStringLocalizerFactoryTests
     }
 
     [Fact]
-    public void Should_return_the_same_localizer_for_the_same_type()
+    public void Should_return_the_same_locale_for_the_same_type()
     {
         // Arrange
-        var factory = new JsonStringLocalizerFactory();
+        var factory = new JsonStringLocaleFactory();
 
         // Act
         var first = factory.Create(typeof(Colocated));
@@ -50,11 +50,11 @@ public sealed class JsonStringLocalizerFactoryTests
     }
 
     [Fact]
-    public void Should_create_a_localizer_from_a_base_name_and_assembly()
+    public void Should_create_a_locale_from_a_base_name_and_assembly()
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var factory = new JsonStringLocalizerFactory();
+        var factory = new JsonStringLocaleFactory();
 
         // Act
         var localized = factory.Create("Fixtures.Colocated", typeof(Colocated).Assembly.GetName().Name!)["Today"];
@@ -69,7 +69,7 @@ public sealed class JsonStringLocalizerFactoryTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var factory = new JsonStringLocalizerFactory();
+        var factory = new JsonStringLocaleFactory();
 
         // Act
         var localized = factory.Create(typeof(Contoso.Widgets.ForeignRoot))["Today"];
@@ -84,7 +84,7 @@ public sealed class JsonStringLocalizerFactoryTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var factory = new JsonStringLocalizerFactory();
+        var factory = new JsonStringLocaleFactory();
 
         // Act
         var localized = factory.Create(typeof(GlobalRoot))["Today"];
@@ -97,7 +97,7 @@ public sealed class JsonStringLocalizerFactoryTests
     public void Should_reject_a_null_resource_source()
     {
         // Arrange
-        var factory = new JsonStringLocalizerFactory();
+        var factory = new JsonStringLocaleFactory();
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => factory.Create(null!));
@@ -122,7 +122,7 @@ public sealed class JsonStringLocalizerFactoryTests
     {
         // Arrange
         var services = new ServiceCollection();
-        services.AddSingleton<IStringLocalizerFactory>(new JsonStringLocalizerFactory(new JsonLocalizationOptions { ResourcesPath = "Resources" }));
+        services.AddSingleton<IStringLocaleFactory>(new JsonStringLocaleFactory(new JsonLocalizationOptions { ResourcesPath = "Resources" }));
 
         // Act
         using var provider = services.AddJsonLocalization().BuildServiceProvider();

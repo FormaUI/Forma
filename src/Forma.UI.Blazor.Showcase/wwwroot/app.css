@@ -166,6 +166,49 @@ body {
     font-size: 0.85rem;
 }
 
+/* Reference output a demo prints as rows of inputs and results rather than prose. */
+.demo-table {
+    inline-size: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.demo-table th,
+.demo-table td {
+    padding: 0.4rem 0.6rem;
+    text-align: start;
+    vertical-align: top;
+    border-block-end: 1px solid var(--border-color);
+}
+
+.demo-table th {
+    color: var(--text-muted-color);
+    font-weight: 600;
+}
+
+/* A row header labels a single value, so it takes a fixed share; a column header sizes to its column. */
+.demo-table tbody th {
+    inline-size: 35%;
+}
+
+/* A key or resource name has no spaces to break at, so it wraps mid-token rather than overflowing. */
+.demo-table code {
+    overflow-wrap: anywhere;
+}
+
+/* Only the body's final row closes the table; a header row keeps the rule that separates it. */
+.demo-table tbody tr:last-child th,
+.demo-table tbody tr:last-child td {
+    border-block-end: none;
+}
+
+/* Stacked records inside one box, each its own small table. */
+.demo-table + .demo-table {
+    margin-block-start: 1rem;
+    padding-block-start: 1rem;
+    border-block-start: 1px solid var(--border-color);
+}
+
 /* The running report a demo prints as a component raises events: output rather than prose, so it
    is set apart from the surrounding copy instead of carrying a list's bullets and indent. */
 .demo-log {
@@ -217,6 +260,26 @@ body {
 
 .demo-inline-input {
     inline-size: 100%;
+}
+
+/* A labelled control that sits on one line beside its siblings rather than filling the row. */
+.demo-field {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.demo-number {
+    inline-size: 6rem;
+}
+
+/* A resolved value worth reading as a result rather than as running text. */
+.demo-chip {
+    padding: 0.15rem 0.6rem;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    background: var(--hover-bg-color);
+    font-size: 0.85rem;
 }
 
 /* Reproduces the case a popup has to survive: a bounded box that scrolls and would

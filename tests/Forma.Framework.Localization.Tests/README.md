@@ -1,6 +1,6 @@
 # Localization test fixtures
 
-The folder layout in this project is not organisation — it is the fixture. `JsonStringLocalizerFactory`
+The folder layout in this project is not organisation — it is the fixture. `JsonStringLocaleFactory`
 derives a resource's base name from the **type's full name**, and MSBuild derives an embedded resource's
 manifest name from the **file's folder path**. A test passes only when those two independently produced
 strings meet. Moving a file or renaming a folder therefore changes what is under test, and usually
@@ -68,5 +68,5 @@ The last two use `Update` rather than `Include`, since `Fixtures\**\*.json` alre
 ## Before you move anything
 
 Run this project's tests. They are the only check that the layout still matches the derivation, and they
-exist because of a real defect — a localizer resolving against the assembly name where it should have
+exist because of a real defect — a locale resolving against the assembly name where it should have
 used the type's own root returned English for every foreign-rooted type.

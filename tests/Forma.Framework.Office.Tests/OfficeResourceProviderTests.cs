@@ -10,8 +10,8 @@ using Microsoft.Extensions.Localization;
 
 public sealed class OfficeResourceProviderTests
 {
-    private static JsonStringLocalizer<OfficeResourceProvider> Localizer()
-        => new(new JsonStringLocalizerFactory());
+    private static StringLocalizerAdapter<OfficeResourceProvider> Localizer()
+        => new(new JsonStringLocale<OfficeResourceProvider>(new JsonStringLocaleFactory()));
 
     [Theory]
     [InlineData("/media/report.pdf")]

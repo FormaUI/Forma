@@ -15,13 +15,13 @@ internal sealed class JsonResourceCache
         ReadCommentHandling = JsonCommentHandling.Skip,
     };
 
-    private readonly ConcurrentDictionary<CacheKey, FrozenDictionary<string, string>?> _files = new();
+    private readonly ConcurrentDictionary<CacheKey, FrozenDictionary<string, JsonResourceEntry>?> _files = new();
 
     /// <summary>The translations for one culture, or null when the assembly carries no file for it.</summary>
-    public FrozenDictionary<string, string>? Read(Assembly assembly, string baseName, CultureInfo culture)
+    public FrozenDictionary<string, JsonResourceEntry>? Read(Assembly assembly, string baseName, CultureInfo culture)
         => _files.GetOrAdd(new CacheKey(assembly, baseName, culture.Name), static key => Load(key));
 
-    private static FrozenDictionary<string, string>? Load(CacheKey key)
+    private static FrozenDictionary<string, JsonResourceEntry>? Load(CacheKey key)
     {
         var name = key.CultureName.Length == 0 ? $"{key.BaseName}.json" : $"{key.BaseName}.{key.CultureName}.json";
 
@@ -32,7 +32,7 @@ internal sealed class JsonResourceCache
         }
 
         var entries = JsonSerializer.Deserialize<Dictionary<string, string>>(stream, SerializerOptions);
-        return entries?.ToFrozenDictionary(StringComparer.Ordinal) ?? [];
+        return entries?.ToFrozenDictionary(entry => entry.Key, entry => new JsonResourceEntry(entry.Key, entry.Value), StringComparer.Ordinal) ?? [];
     }
 
     // The SDK reads the culture out of a Name.culture.json file and moves it to a satellite assembly,
@@ -61,3 +61,6 @@ internal sealed class JsonResourceCache
 
     private readonly record struct CacheKey(Assembly Assembly, string BaseName, string CultureName);
 }
+
+/// <summary>A translation together with the key it was read under.</summary>
+internal readonly record struct JsonResourceEntry(string Name, string Format);

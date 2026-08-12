@@ -1,32 +1,36 @@
 namespace Forma.Framework.Localization;
 
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Reflection;
 
-using Microsoft.Extensions.Localization;
-
-/// <summary>Creates localizers that read their strings from JSON files embedded in the assembly owning the type.</summary>
-public sealed class JsonStringLocalizerFactory : IStringLocalizerFactory
+/// <summary>Creates locales that read their strings from JSON files embedded in the assembly owning the type.</summary>
+public sealed class JsonStringLocaleFactory : IStringLocaleFactory
 {
-    private readonly ConcurrentDictionary<string, IStringLocalizer> _localizers = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, IStringLocale> _locales = new(StringComparer.Ordinal);
     private readonly JsonResourceCache _cache = new();
+    private readonly PluralMessage _plural = new(PluralRuleSet.Default);
+    private readonly CultureInfo _primaryCulture;
     private readonly string _resourcesPath;
 
     /// <summary>Creates a factory reading files that sit beside the types they translate.</summary>
-    public JsonStringLocalizerFactory()
+    public JsonStringLocaleFactory()
         : this(new JsonLocalizationOptions())
     {
     }
 
     /// <summary>Creates a factory configured by the given options.</summary>
-    public JsonStringLocalizerFactory(JsonLocalizationOptions options)
+    public JsonStringLocaleFactory(JsonLocalizationOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
+        ArgumentException.ThrowIfNullOrWhiteSpace(options.PrimaryCulture);
+
+        _primaryCulture = CultureInfo.GetCultureInfo(options.PrimaryCulture);
         _resourcesPath = NormalizePath(options.ResourcesPath);
     }
 
-    /// <summary>Creates a localizer for the strings belonging to a type.</summary>
-    public IStringLocalizer Create(Type resourceSource)
+    /// <summary>Creates a locale for the strings belonging to a type.</summary>
+    public IStringLocale Create(Type resourceSource)
     {
         ArgumentNullException.ThrowIfNull(resourceSource);
 
@@ -39,8 +43,8 @@ public sealed class JsonStringLocalizerFactory : IStringLocalizerFactory
         return GetOrAdd(assembly, BaseNameFor(assemblyName, typeName));
     }
 
-    /// <summary>Creates a localizer for a base name inside the named assembly.</summary>
-    public IStringLocalizer Create(string baseName, string location)
+    /// <summary>Creates a locale for a base name inside the named assembly.</summary>
+    public IStringLocale Create(string baseName, string location)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(baseName);
         ArgumentException.ThrowIfNullOrWhiteSpace(location);
@@ -84,6 +88,6 @@ public sealed class JsonStringLocalizerFactory : IStringLocalizerFactory
             ? $"{assemblyName}.{relativeName}"
             : $"{assemblyName}.{_resourcesPath}.{relativeName}";
 
-    private IStringLocalizer GetOrAdd(Assembly assembly, string baseName)
-        => _localizers.GetOrAdd($"{assembly.FullName}|{baseName}", _ => new JsonStringLocalizer(_cache, assembly, baseName));
+    private IStringLocale GetOrAdd(Assembly assembly, string baseName)
+        => _locales.GetOrAdd($"{assembly.FullName}|{baseName}", _ => new JsonStringLocale(_cache, assembly, baseName, _plural, _primaryCulture));
 }

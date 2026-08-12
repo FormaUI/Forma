@@ -1,0 +1,4 @@
+[*.cs]
+
+# JsonStringLocale implements an interpolated-string-handler indexer, which cannot take a string.
+dotnet_diagnostic.CA1043.severity = none
