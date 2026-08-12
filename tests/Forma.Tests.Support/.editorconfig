@@ -1,0 +1,4 @@
+[*.cs]
+
+# The stub locales implement an interpolated-string-handler indexer, which cannot take a string.
+dotnet_diagnostic.CA1043.severity = none
