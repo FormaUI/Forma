@@ -15,6 +15,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Localization.Abstractions\Forma.Framework.Localization.Abstractions.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
     </ItemGroup>
 

@@ -1,0 +1,4 @@
+[*.cs]
+
+# The interpolated-string-handler indexer this assembly exists to provide cannot take a string.
+dotnet_diagnostic.CA1043.severity = none

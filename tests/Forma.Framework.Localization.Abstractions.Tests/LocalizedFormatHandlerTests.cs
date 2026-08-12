@@ -1,0 +1,168 @@
+namespace Forma.Framework.Localization.Abstractions.Tests;
+
+public sealed class LocalizedFormatHandlerTests
+{
+    [Fact]
+    public void Should_rebuild_the_key_with_numbered_holes()
+    {
+        // Arrange
+        var stored = 3;
+        var total = 4;
+
+        // Act
+        var (key, arguments) = Capture($"Stored {stored} of {total}.");
+
+        // Assert
+        Assert.Equal("Stored {0} of {1}.", key);
+        Assert.Equal([3, 4], arguments);
+    }
+
+    [Fact]
+    public void Should_keep_a_literal_without_holes_as_the_key()
+    {
+        // Act
+        var (key, arguments) = Capture($"Save");
+
+        // Assert
+        Assert.Equal("Save", key);
+        Assert.Empty(arguments);
+    }
+
+    [Fact]
+    public void Should_double_a_brace_so_the_key_survives_formatting()
+    {
+        // Arrange
+        var count = 3;
+
+        // Act
+        var (key, _) = Capture($"Use {{curly}} braces {count}.");
+
+        // Assert
+        Assert.Equal("Use {{curly}} braces {0}.", key);
+        Assert.Equal("Use {curly} braces 3.", string.Format(CultureInfo.InvariantCulture, key, 3));
+    }
+
+    [Fact]
+    public void Should_apply_a_format_specifier_before_capturing_the_value()
+    {
+        // Arrange
+        using var culture = new CultureScope("en");
+
+        // Act
+        var (key, arguments) = Capture($"Ratio {0.4567:P1}.");
+
+        // Assert
+        Assert.Equal("Ratio {0}.", key);
+        Assert.Equal("45.7%", arguments[0]);
+    }
+
+    [Fact]
+    public void Should_apply_an_alignment_before_capturing_the_value()
+    {
+        // Arrange
+        var name = "x";
+
+        // Act
+        var (key, arguments) = Capture($"{name,-3}|");
+
+        // Assert
+        Assert.Equal("{0}|", key);
+        Assert.Equal("x  ", arguments[0]);
+    }
+
+    [Fact]
+    public void Should_number_holes_past_the_first_ten()
+    {
+        // Arrange
+        var value = 1;
+
+        // Act
+        var (key, arguments) = Capture($"{value}{value}{value}{value}{value}{value}{value}{value}{value}{value}{value}");
+
+        // Assert
+        Assert.Equal("{0}{1}{2}{3}{4}{5}{6}{7}{8}{9}{10}", key);
+        Assert.Equal(11, arguments.Length);
+    }
+
+    [Fact]
+    public void Should_capture_a_null_hole_value()
+    {
+        // Arrange
+        string? missing = null;
+
+        // Act
+        var (key, arguments) = Capture($"Name {missing}.");
+
+        // Assert
+        Assert.Equal("Name {0}.", key);
+        Assert.Null(arguments[0]);
+    }
+
+    [Fact]
+    public void Should_grow_its_buffer_when_doubling_braces_outruns_the_estimate()
+    {
+        // Arrange
+        var handler = new LocalizedFormatHandler(literalLength: 100, formattedCount: 0);
+
+        // Act
+        handler.AppendLiteral(new string('{', 100));
+        var key = handler.Key.ToString();
+        handler.Clear();
+
+        // Assert
+        Assert.Equal(new string('{', 200), key);
+    }
+
+    [Fact]
+    public void Should_leave_the_key_empty_once_cleared()
+    {
+        // Arrange
+        var handler = new LocalizedFormatHandler(literalLength: 8, formattedCount: 0);
+        handler.AppendLiteral("Save");
+
+        // Act
+        handler.Clear();
+
+        // Assert
+        Assert.True(handler.Key.IsEmpty);
+    }
+
+    [Fact]
+    public void Should_report_no_arguments_once_cleared()
+    {
+        // Arrange
+        var handler = new LocalizedFormatHandler(literalLength: 8, formattedCount: 1);
+        handler.AppendFormatted(3);
+
+        // Act
+        handler.Clear();
+
+        // Assert
+        Assert.Empty(handler.GetArguments());
+    }
+
+    [Fact]
+    public void Should_keep_arguments_already_read_valid_after_clearing()
+    {
+        // Arrange
+        var handler = new LocalizedFormatHandler(literalLength: 8, formattedCount: 2);
+        handler.AppendFormatted(3);
+        handler.AppendFormatted(4);
+
+        // Act
+        var arguments = handler.GetArguments();
+        handler.Clear();
+
+        // Assert
+        Assert.Equal([3, 4], arguments);
+    }
+
+    private static (string Key, object?[] Arguments) Capture(LocalizedFormatHandler handler)
+    {
+        var key = handler.Key.ToString();
+        var arguments = handler.GetArguments();
+        handler.Clear();
+
+        return (key, arguments);
+    }
+}
