@@ -58,6 +58,26 @@
             Assert.Equal(2, cut.FindAll(".forma-multi-select-tag").Count);
         }
 
+        [Theory]
+        [InlineData(new[] { 1 }, "נבחר אחד")]
+        [InlineData(new[] { 1, 2 }, "שניים נבחרו")]
+        [InlineData(new[] { 1, 2, 3 }, "3 נבחרו")]
+        public void Should_agree_with_the_count_in_a_language_with_a_dual(int[] categories, string expected)
+        {
+            // Arrange
+            using var culture = new CultureScope("he");
+            using var ctx = new FormaMultiSelectDropDownTests();
+            var model = new FakeModel { Categories = [.. categories] };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaMultiSelectDropDown TValue="int" @bind-Value="model.Categories" Options="Options" Label="Categories" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal(expected, cut.Find(".forma-multi-select-trigger-text").TextContent);
+        }
+
         [Fact]
         public void Should_open_the_popup_on_trigger_click()
         {

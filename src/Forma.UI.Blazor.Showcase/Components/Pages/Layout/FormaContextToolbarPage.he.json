@@ -1,6 +1,9 @@
 {
   "A bar that appears once one or more rows are selected, holding bulk actions and a clear-selection button. Pairs with FormaDataGrid's checked selection.": "סרגל שמופיע ברגע שנבחרה שורה אחת או יותר, ומכיל פעולות קבוצתיות וכפתור לניקוי הבחירה. משתלב עם הבחירה המסומנת של FormaDataGrid.",
   "Basic usage": "שימוש בסיסי",
+  "Caption agreeing with the count": "כותרת המתאימה לכמות",
+  "Step the count up. The caption is a plural construct, so a language with a dual reads differently at one, two, and more.": "העלו את הכמות. הכותרת היא מבנה רבים, כך ששפה עם צורת זוגי נקראת אחרת באחד, בשניים וביותר.",
+  "Add one": "הוסף אחד",
   "Without a clear button": "ללא כפתור ניקוי",
   "Several actions": "מספר פעולות",
   "Caller-supplied caption": "כותרת מותאמת אישית",

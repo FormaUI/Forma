@@ -21,6 +21,19 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["Caption agreeing with the count"]</h2>
+    <p class="desc">@L["Step the count up. The caption is a plural construct, so a language with a dual reads differently at one, two, and more."]</p>
+    <div class="demo-box">
+        <button class="btn btn-sec" @onclick="() => _agreementCount = (_agreementCount + 1) % 4">
+            @L["Add one"]
+        </button>
+        <FormaContextToolbar Count="_agreementCount" OnClear="() => _agreementCount = 0">
+            <button class="btn btn-primary">@L["Delete"]</button>
+        </FormaContextToolbar>
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["Without a clear button"]</h2>
     <div class="demo-box">
         <FormaContextToolbar Count="2">
@@ -55,5 +68,6 @@
 
 @code {
     private int _basicCount;
+    private int _agreementCount = 1;
     private int _wideCount = 4;
 }

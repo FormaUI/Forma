@@ -81,6 +81,39 @@
             Assert.Equal("5 selected", cut.Find(".forma-context-toolbar-caption").TextContent);
         }
 
+        [Theory]
+        [InlineData(1, "נבחר אחד")]
+        [InlineData(2, "שניים נבחרו")]
+        [InlineData(5, "5 נבחרו")]
+        public void Should_agree_with_the_count_in_a_language_with_a_dual(int count, string expected)
+        {
+            // Arrange
+            using var culture = new CultureScope("he");
+            using var ctx = new FormaContextToolbarTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaContextToolbar Count="count" />);
+
+            // Assert
+            Assert.Equal(expected, cut.Find(".forma-context-toolbar-caption").TextContent);
+        }
+
+        [Theory]
+        [InlineData(1, "1 seleccionado")]
+        [InlineData(5, "5 seleccionados")]
+        public void Should_agree_with_the_count_in_spanish(int count, string expected)
+        {
+            // Arrange
+            using var culture = new CultureScope("es");
+            using var ctx = new FormaContextToolbarTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaContextToolbar Count="count" />);
+
+            // Assert
+            Assert.Equal(expected, cut.Find(".forma-context-toolbar-caption").TextContent);
+        }
+
         [Fact]
         public void Should_prefer_a_supplied_caption_over_the_count()
         {

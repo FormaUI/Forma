@@ -4,6 +4,6 @@
   "No options available yet": "Aún no hay opciones disponibles",
   "Add new": "Agregar nuevo",
   "Select options": "Seleccionar opciones",
-  "{0} selected": "{0} seleccionados",
+  "{0} selected": "{0, plural, one {# seleccionado} other {# seleccionados}}",
   "Remove {0}": "Quitar {0}"
 }

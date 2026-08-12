@@ -213,6 +213,46 @@
             Assert.Empty(cut.FindAll(".forma-textarea-count"));
         }
 
+        [Theory]
+        [InlineData("a", "1 character")]
+        [InlineData("abc", "3 characters")]
+        public void Should_agree_with_the_count_when_there_is_no_maximum(string typed, string expected)
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" ShowCharacterCount="true" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("textarea").Input(typed);
+
+            // Assert
+            Assert.Equal(expected, cut.Find(".forma-textarea-count-label").TextContent);
+        }
+
+        [Theory]
+        [InlineData("a", "תו אחד")]
+        [InlineData("ab", "שני תווים")]
+        [InlineData("abc", "3 תווים")]
+        public void Should_agree_with_the_count_in_a_language_with_a_dual(string typed, string expected)
+        {
+            // Arrange
+            using var culture = new CultureScope("he");
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" ShowCharacterCount="true" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("textarea").Input(typed);
+
+            // Assert
+            Assert.Equal(expected, cut.Find(".forma-textarea-count-label").TextContent);
+        }
+
         [Fact]
         public void Should_count_against_the_maximum_when_one_is_set()
         {

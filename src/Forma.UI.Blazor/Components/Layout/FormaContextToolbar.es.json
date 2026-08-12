@@ -1,4 +1,4 @@
 {
-  "{0} selected": "{0} seleccionados",
+  "{0} selected": "{0, plural, one {# seleccionado} other {# seleccionados}}",
   "Clear selection": "Borrar selección"
 }

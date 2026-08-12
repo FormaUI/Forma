@@ -1,4 +1,4 @@
 {
   "{0} of {1} characters": "{0} de {1} caracteres",
-  "{0} characters": "{0} caracteres"
+  "{0, plural, one {# character} other {# characters}}": "{0, plural, one {# carácter} other {# caracteres}}"
 }

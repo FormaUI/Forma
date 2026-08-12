@@ -45,7 +45,7 @@ public sealed partial class FormaTextArea : InputBase<string?>
     private string CountLabel
         => MaxLength is { } maxLength
             ? L["{0} of {1} characters", CharacterCount, maxLength]
-            : L["{0} characters", CharacterCount];
+            : L["{0, plural, one {# character} other {# characters}}", CharacterCount];
 
     // An explicit attribute overwrites one of the same name from AdditionalAttributes, so a
     // caller's own description has to be carried through rather than dropped.

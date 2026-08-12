@@ -1,6 +1,9 @@
 {
   "A bar that appears once one or more rows are selected, holding bulk actions and a clear-selection button. Pairs with FormaDataGrid's checked selection.": "Una barra que aparece en cuanto se selecciona una o más filas, con acciones masivas y un botón para borrar la selección. Se combina con la selección marcada de FormaDataGrid.",
   "Basic usage": "Uso básico",
+  "Caption agreeing with the count": "Título que concuerda con el recuento",
+  "Step the count up. The caption is a plural construct, so a language with a dual reads differently at one, two, and more.": "Aumenta el recuento. El título es una construcción plural, así que un idioma con dual se lee distinto en uno, dos y más.",
+  "Add one": "Añadir uno",
   "Without a clear button": "Sin botón de borrado",
   "Several actions": "Varias acciones",
   "Caller-supplied caption": "Título proporcionado por el llamador",
