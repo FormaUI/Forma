@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "Pill-shaped status label. The application defines its own statuses and colours; the library ships none.": "תג מצב בצורת גלולה. האפליקציה מגדירה את המצבים והצבעים שלה; הספרייה אינה מספקת אף אחד מהם.",
   "Application statuses": "מצבים של האפליקציה",
   "Registered once at startup, then referenced by name.": "נרשמים פעם אחת באתחול, ולאחר מכן מופנים אליהם לפי שם.",

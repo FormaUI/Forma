@@ -1,3 +1,4 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "[$ [0] plural; one: # file; other: # files; $]": "[$ [0] plural; one: קובץ אחד; two: שני קבצים; other: # קבצים; $]"
 }

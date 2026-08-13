@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "A themed single-select: a trigger button opening an anchored, keyboard-navigable option list. The popup stays anchored to its trigger wherever the page scrolls.": "Un select de valor único con estilo propio: un botón activador que abre una lista de opciones anclada y navegable con teclado. La lista permanece anclada a su activador aunque la página se desplace.",
   "Basic": "Básico",
   "With Placeholder": "Con marcador de posición",

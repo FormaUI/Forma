@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "Text input with a floating label that animates above the field on focus or when a value is present. Supports validation, required indicator, and autofill detection.": "שדה טקסט עם תווית צפה שמונפשת מעל השדה במיקוד או כשיש ערך. תומך בוולידציה, סימון שדה חובה, וזיהוי מילוי אוטומטי.",
   "Basic Fields": "שדות בסיסיים",
   "Required Fields": "שדות חובה",

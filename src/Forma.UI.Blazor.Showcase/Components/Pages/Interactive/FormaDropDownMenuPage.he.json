@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "A trigger button that opens an anchored menu of commands.": "כפתור מפעיל שפותח תפריט פקודות מעוגן.",
   "Basic": "בסיסי",
   "Options": "אפשרויות",

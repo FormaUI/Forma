@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "Drop files here or click to browse": "גררו קבצים לכאן או לחצו כדי לבחור",
   "\"{0}\" isn't an accepted file type.": "\"{0}\" אינו סוג קובץ מותר.",
   "\"{0}\" is too large.": "\"{0}\" גדול מדי.",

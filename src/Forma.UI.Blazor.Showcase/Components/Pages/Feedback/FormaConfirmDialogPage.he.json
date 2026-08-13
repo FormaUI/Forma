@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "Confirmation dialog built on FormaModal. Uses IConfirmDialogService to show async confirm/cancel prompts from anywhere.": "דיאלוג אישור שמבוסס על FormaModal. משתמש ב-IConfirmDialogService כדי להציג חלון אישור אסינכרוני מכל מקום.",
   "Basic Confirmation": "אישור בסיסי",
   "Delete Item": "מחק פריט",

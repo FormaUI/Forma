@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "Pill-shaped status label. The application defines its own statuses and colours; the library ships none.": "Etiqueta de estado en forma de píldora. La aplicación define sus propios estados y colores; la biblioteca no incluye ninguno.",
   "Application statuses": "Estados de la aplicación",
   "Registered once at startup, then referenced by name.": "Se registran una vez al iniciar y luego se referencian por nombre.",

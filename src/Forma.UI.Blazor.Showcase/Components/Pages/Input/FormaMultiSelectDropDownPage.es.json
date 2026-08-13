@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "A chip-style multi-select with a searchable checkbox-list popup. Selected values render as removable tags; the popup stays anchored to its trigger wherever the page scrolls.": "Un selector múltiple con etiquetas y un menú emergente con casillas de verificación con búsqueda. Los valores seleccionados se muestran como etiquetas que se pueden quitar; el menú se mantiene anclado a su disparador sin importar el desplazamiento de la página.",
   "Basic": "Básico",
   "With Label and Placeholder": "Con Etiqueta y Marcador",

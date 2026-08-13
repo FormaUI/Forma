@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "Reorder item {0} of {1}. Drag, or use arrow keys to move.": "סדר מחדש פריט {0} מתוך {1}. גרור, או השתמש בחצים כדי להזיז.",
   "Moved to position {0} of {1}.": "הועבר למיקום {0} מתוך {1}."
 }

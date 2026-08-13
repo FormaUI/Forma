@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "Today": "היום",
   "Last 7 days": "7 הימים האחרונים",
   "Moved to position {0} of {1}.": "הועבר למיקום {0} מתוך {1}."

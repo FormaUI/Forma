@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "A fluid 16:9 player. Give it any address and the player hands it to whichever provider recognises it, so a watch link, a share link and an embed link all work without saying which service they belong to.": "Un reproductor fluido en 16:9. Dale cualquier dirección y el reproductor se la entrega al proveedor que la reconozca, así que un enlace de reproducción, uno para compartir y uno de inserción funcionan sin decir a qué servicio pertenecen.",
   "YouTube": "YouTube",
   "Twitch": "Twitch",

@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "The half that moves the bytes. A picker chooses files off the device; this stores each one through an IFileStore the host supplies, showing progress per file and leaving the destination entirely to the application.": "החצי שמעביר את הבתים. בורר קבצים בוחר קבצים מהמכשיר, וזה שומר כל אחד מהם דרך IFileStore שהמארח מספק, מציג התקדמות לכל קובץ ומשאיר את היעד כולו ליישום.",
   "Storing as soon as files are picked": "שמירה מיד עם בחירת הקבצים",
   "AutoStart is on, so assigning a new selection begins the transfer without another gesture. This store takes anything.": "AutoStart פעיל, ולכן הקצאת בחירה חדשה מתחילה את ההעברה ללא פעולה נוספת. המאגר הזה מקבל כל קובץ.",

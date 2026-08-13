@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "Text input with a floating label that animates above the field on focus or when a value is present. Supports validation, required indicator, and autofill detection.": "Entrada de texto con una etiqueta flotante que se anima sobre el campo al enfocarlo o cuando hay un valor presente. Admite validación, indicador de campo obligatorio y detección de autocompletado.",
   "Basic Fields": "Campos básicos",
   "Required Fields": "Campos obligatorios",

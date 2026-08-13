@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "A bounded numeric input rendered as a native range slider, its current value shown beside the label rather than requiring a second field to read it.": "קלט מספרי חסום המוצג כמחוון טווח מובנה, כאשר הערך הנוכחי מוצג ליד התווית במקום לדרוש שדה נוסף כדי לקרוא אותו.",
   "Basic usage": "שימוש בסיסי",
   "Border radius": "רדיוס פינות",

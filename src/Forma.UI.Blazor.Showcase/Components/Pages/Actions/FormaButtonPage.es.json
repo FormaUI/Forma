@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "The Forma button. Five variants set its visual weight, two sizes set its density, and a busy state animates while work is in flight. Pure CSS — no JavaScript.": "El botón de Forma. Cinco variantes definen su peso visual, dos tamaños definen su densidad y un estado ocupado se anima mientras el trabajo está en curso. CSS puro — sin JavaScript.",
   "Variants": "Variantes",
   "Sizes": "Tamaños",

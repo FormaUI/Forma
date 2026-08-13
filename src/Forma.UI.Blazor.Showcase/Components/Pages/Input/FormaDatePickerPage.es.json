@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "A custom calendar date picker with dual-month view, date range selection with presets, locale-aware month and day names, and RTL support. Supports single-date and range modes. Replaces the legacy jQuery datepick / Easepick library.": "Un selector de fechas de calendario personalizado con vista de dos meses, selección de intervalos de fechas con valores predefinidos, nombres de meses y días según la configuración regional, y compatibilidad con RTL. Admite modos de fecha única e intervalo. Reemplaza la antigua biblioteca jQuery datepick / Easepick.",
   "Basic (Single Date)": "Básico (fecha única)",
   "With Label": "Con etiqueta",

@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "A bar that appears once one or more rows are selected, holding bulk actions and a clear-selection button. Pairs with FormaDataGrid's checked selection.": "סרגל שמופיע ברגע שנבחרה שורה אחת או יותר, ומכיל פעולות קבוצתיות וכפתור לניקוי הבחירה. משתלב עם הבחירה המסומנת של FormaDataGrid.",
   "Basic usage": "שימוש בסיסי",
   "Caption agreeing with the count": "כותרת המתאימה לכמות",

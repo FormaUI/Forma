@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "A bounded numeric input rendered as a native range slider, its current value shown beside the label rather than requiring a second field to read it.": "Una entrada numérica acotada representada como un control deslizante nativo, con su valor actual mostrado junto a la etiqueta en lugar de exigir un segundo campo para leerlo.",
   "Basic usage": "Uso básico",
   "Border radius": "Radio del borde",

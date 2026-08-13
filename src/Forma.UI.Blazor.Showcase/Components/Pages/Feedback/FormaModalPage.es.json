@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "Modal dialog using native <dialog> element. Provides backdrop, focus trap, Escape key, and scoped CSS animations.": "Cuadro de diálogo modal que usa el elemento nativo <dialog>. Proporciona fondo, trampa de foco, tecla Escape y animaciones CSS con ámbito.",
   "Basic Modal": "Modal básico",
   "Open Basic Modal": "Abrir modal básico",

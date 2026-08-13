@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "A list that reorders by dragging a handle or moving a focused item with the arrow keys.": "רשימה שניתנת לסידור מחדש על ידי גרירת ידית או הזזת פריט ממוקד עם מקשי החצים.",
   "Basic": "בסיסי",
   "Interactive Item Content": "תוכן פריט אינטראקטיבי",

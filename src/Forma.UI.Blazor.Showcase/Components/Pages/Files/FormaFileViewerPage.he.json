@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "Give it an address and the first provider that claims it decides what the resource is; the viewer then renders whatever came back — an image, a video, audio, an embedded document, converted markup, or a download link.": "תנו לו כתובת, והספק הראשון שתובע אותה קובע מהו המשאב; הצופה מציג אז את מה שחזר — תמונה, סרטון, שמע, מסמך מוטמע, תגיות שהומרו, או קישור הורדה.",
   "An image": "תמונה",
   "Fits to the frame; the zoom controls enlarge it, and dragging with a mouse pans it once zoomed. Touch and pinch pan and zoom natively.": "מתאימה עצמה למסגרת; פקדי הזום מגדילים אותה, וגרירה עם עכבר מזיזה אותה לאחר הגדלה. מגע וצביטה מזיזים ומגדילים באופן טבעי.",

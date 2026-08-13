@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "A paged, sortable table over a queryable set of items, built on QuickGrid.": "Una tabla paginada y ordenable sobre un conjunto de elementos consultables, construida sobre QuickGrid.",
   "Basic grid": "Tabla básica",
   "Mass-select checkboxes": "Casillas de selección múltiple",

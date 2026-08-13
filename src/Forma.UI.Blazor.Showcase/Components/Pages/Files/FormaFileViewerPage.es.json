@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "Give it an address and the first provider that claims it decides what the resource is; the viewer then renders whatever came back — an image, a video, audio, an embedded document, converted markup, or a download link.": "Dale una dirección y el primer proveedor que la reclame decide qué es el recurso; el visor muestra entonces lo que haya vuelto: una imagen, un video, audio, un documento incrustado, marcado convertido o un enlace de descarga.",
   "An image": "Una imagen",
   "Fits to the frame; the zoom controls enlarge it, and dragging with a mouse pans it once zoomed. Touch and pinch pan and zoom natively.": "Se ajusta al marco; los controles de zoom la amplían, y arrastrar con el mouse la desplaza una vez ampliada. El toque y el pellizco desplazan y amplían de forma nativa.",

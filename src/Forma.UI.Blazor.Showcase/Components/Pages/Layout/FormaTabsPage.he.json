@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "Tab container for organizing page content. Used in page editors, product editors, and settings pages.": "מיכל לשוניות לארגון תוכן הדף. משמש בעורכי עמודים, מוצרים והגדרות.",
   "Basic Tabs": "לשוניות בסיסיות",
   "Tabs with Icons": "לשוניות עם אייקונים",

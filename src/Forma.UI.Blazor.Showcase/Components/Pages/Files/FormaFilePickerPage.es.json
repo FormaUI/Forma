@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "A drop zone and file picker in one. Dragging a file onto it, or clicking it, hands the browser's file straight to the change handler — the same validated selection either way.": "Una zona de arrastre y un selector de archivos en uno. Arrastrar un archivo hasta ella, o hacer clic, entrega el archivo del navegador directamente al controlador de cambio; la misma selección validada en ambos casos.",
   "Any file": "Cualquier archivo",
   "No restriction, so every drop or pick is accepted.": "Sin restricciones, así que se acepta cualquier archivo arrastrado o seleccionado.",

@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "Every string Forma renders resolves through IStringLocale. Switch the culture in the sidebar to watch each section below change.": "Cada texto que Forma muestra se resuelve a través de IStringLocale. Cambia el idioma en la barra lateral y observa cómo cambia cada sección.",
   "The culture in force": "El idioma en vigor",
   "Translations are read for": "Las traducciones se leen para",

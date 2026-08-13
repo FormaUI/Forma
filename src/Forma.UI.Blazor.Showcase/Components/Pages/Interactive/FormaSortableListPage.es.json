@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "A list that reorders by dragging a handle or moving a focused item with the arrow keys.": "Una lista que se reordena arrastrando un asa o moviendo un elemento enfocado con las flechas.",
   "Basic": "Básico",
   "Interactive Item Content": "Contenido de elemento interactivo",

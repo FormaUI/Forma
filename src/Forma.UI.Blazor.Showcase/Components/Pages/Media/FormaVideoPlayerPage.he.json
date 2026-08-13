@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "A fluid 16:9 player. Give it any address and the player hands it to whichever provider recognises it, so a watch link, a share link and an embed link all work without saying which service they belong to.": "נגן גמיש ביחס 16:9. מסרו לו כל כתובת והנגן יעביר אותה לספק שמזהה אותה, כך שקישור צפייה, קישור שיתוף וקישור הטמעה פועלים בלי לציין לאיזה שירות הם שייכים.",
   "YouTube": "יוטיוב",
   "Twitch": "טוויץ'",

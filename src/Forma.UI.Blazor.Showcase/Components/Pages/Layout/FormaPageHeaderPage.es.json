@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "Page header with title, breadcrumb navigation, and optional action slot.": "Encabezado de página con título, navegación de ruta de navegación y espacio de acción opcional.",
   "Basic with Breadcrumbs": "Básico con rutas de navegación",
   "Title Only": "Solo título",

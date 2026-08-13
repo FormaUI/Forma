@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "A multi-line field wearing the same chrome as FormaInput: the floating label, focus ring and validation styling all come from the shared FormaField.": "Un campo de varias líneas con la misma envoltura que FormaInput: la etiqueta flotante, el anillo de foco y el estilo de validación provienen del FormaField compartido.",
   "Basic usage": "Uso básico",
   "Taller field": "Campo más alto",

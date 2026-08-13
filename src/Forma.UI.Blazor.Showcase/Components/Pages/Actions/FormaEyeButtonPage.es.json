@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "The reveal glyph, drawn as a ghost FormaButton square. Struck through while what it governs is hidden, plain once it is shown, so the state reads without colour. FormaPasswordInput's toggle is this component.": "El símbolo de revelar, dibujado como un cuadrado ghost de FormaButton. Tachado mientras lo que gobierna está oculto y limpio una vez mostrado, de modo que el estado se lee sin color. El interruptor de FormaPasswordInput es este componente.",
   "Both states": "Ambos estados",
   "The caller owns the state and the wording, because what is being revealed decides both.": "Quien lo usa es dueño del estado y del texto, porque ambos los decide aquello que se revela.",

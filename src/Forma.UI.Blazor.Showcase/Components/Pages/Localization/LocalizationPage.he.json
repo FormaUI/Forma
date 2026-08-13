@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "Every string Forma renders resolves through IStringLocale. Switch the culture in the sidebar to watch each section below change.": "כל מחרוזת ש-Forma מציגה עוברת דרך IStringLocale. החליפו שפה בסרגל הצד וראו כל מקטע כאן משתנה.",
   "The culture in force": "השפה הפעילה",
   "Translations are read for": "התרגומים נקראים עבור",

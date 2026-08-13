@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "A flex container for search inputs, filters, and action buttons. Used across all list pages.": "Un contenedor flexible para entradas de búsqueda, filtros y botones de acción. Se usa en todas las páginas de lista.",
   "Search Only": "Solo búsqueda",
   "Actions Only": "Solo acciones",

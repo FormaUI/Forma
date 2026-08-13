@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "Slide-in toast notifications via a service. Auto-dismiss with configurable duration.": "התראות צפות באמצעות שירות. סגירה אוטומטית עם משך זמן הניתן לקביעה.",
   "Toast Types": "סוגי התראות",
   "Success": "הצלחה",

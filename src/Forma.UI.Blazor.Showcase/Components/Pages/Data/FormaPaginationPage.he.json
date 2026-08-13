@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "A page-number navigator for splitting a list of items across multiple pages.": "ניווט עמודים לפיצול רשימת פריטים על פני מספר עמודים.",
   "Few pages": "מעט עמודים",
   "When every page fits, all of them are shown with no collapsed gaps.": "כשכל העמודים נכנסים, כולם מוצגים ללא קיצור.",

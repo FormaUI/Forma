@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "A chip-style multi-select with a searchable checkbox-list popup. Selected values render as removable tags; the popup stays anchored to its trigger wherever the page scrolls.": "בורר רב-ערכי בסגנון תגיות עם חלונית קופצת הניתנת לחיפוש עם תיבות סימון. הערכים שנבחרו מוצגים כתגיות הניתנות להסרה; החלונית נשארת מעוגנת לכפתור המפעיל אותה בכל מקום שהדף גולל אליו.",
   "Basic": "בסיסי",
   "With Label and Placeholder": "עם תווית וטקסט מציין מקום",

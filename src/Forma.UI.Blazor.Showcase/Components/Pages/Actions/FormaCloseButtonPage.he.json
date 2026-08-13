@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "The dismiss glyph every panel closes with. A ghost FormaButton drawn square, so the modal, the toast and the context toolbar share one shape, one focus ring and one touch target.": "סמל הסגירה שכל חלונית נסגרת איתו. FormaButton בסגנון ghost המצויר כריבוע, כך שהמודאל, ההודעה הצפה וסרגל ההקשר חולקים צורה אחת, טבעת מיקוד אחת ויעד מגע אחד.",
   "Sizes": "גדלים",
   "Disabled": "מושבת",

@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "The half that moves the bytes. A picker chooses files off the device; this stores each one through an IFileStore the host supplies, showing progress per file and leaving the destination entirely to the application.": "La mitad que mueve los bytes. Un selector elige archivos del dispositivo; este guarda cada uno mediante un IFileStore que aporta el anfitrión, muestra el progreso por archivo y deja el destino enteramente a la aplicación.",
   "Storing as soon as files are picked": "Guardar en cuanto se eligen los archivos",
   "AutoStart is on, so assigning a new selection begins the transfer without another gesture. This store takes anything.": "AutoStart está activo, así que asignar una selección nueva inicia la transferencia sin otro gesto. Este almacén acepta cualquier archivo.",

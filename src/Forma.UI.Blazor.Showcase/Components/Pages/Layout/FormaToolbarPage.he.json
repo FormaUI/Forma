@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "A flex container for search inputs, filters, and action buttons. Used across all list pages.": "מיכל גמיש לשדות חיפוש, מסננים וכפתורי פעולה. משמש בכל דפי הרשימה.",
   "Search Only": "חיפוש בלבד",
   "Actions Only": "פעולות בלבד",

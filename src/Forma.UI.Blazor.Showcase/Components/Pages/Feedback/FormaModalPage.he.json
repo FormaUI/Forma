@@ -1,4 +1,5 @@
 {
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "Modal dialog using native <dialog> element. Provides backdrop, focus trap, Escape key, and scoped CSS animations.": "חלון מודאלי המבוסס על <dialog> מקורי. כולל רקע כהה, נעילת פוקוס, מקש Escape ואנימציות CSS מבודדות.",
   "Basic Modal": "מודאל בסיסי",
   "Open Basic Modal": "פתח מודאל בסיסי",
