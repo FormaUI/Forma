@@ -1,4 +1,4 @@
-namespace Forma.Framework.Localization;
+namespace Forma.Framework.Localization.Cldr;
 
 using System.Globalization;
 

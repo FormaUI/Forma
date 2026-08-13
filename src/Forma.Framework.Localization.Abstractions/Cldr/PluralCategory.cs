@@ -1,4 +1,4 @@
-namespace Forma.Framework.Localization;
+namespace Forma.Framework.Localization.Cldr;
 
 /// <summary>The CLDR plural categories a language can distinguish.</summary>
 public enum PluralCategory

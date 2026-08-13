@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Reflection;
 
 /// <summary>Reads the strings for one base name, walking the culture chain and falling back to the key itself.</summary>
-internal sealed class JsonStringLocale(JsonResourceCache cache, Assembly assembly, string baseName, PluralMessage plural, CultureInfo primaryCulture) : IStringLocale
+internal sealed class JsonStringLocale(JsonResourceCache cache, Assembly assembly, string baseName, PluralExpressionEvaluator plural, CultureInfo primaryCulture) : IStringLocale
 {
     public LocalizedText this[string name]
     {
@@ -26,7 +26,7 @@ internal sealed class JsonStringLocale(JsonResourceCache cache, Assembly assembl
 
             var found = TryFind(name, out var entry);
             var retained = arguments.IsEmpty ? [] : arguments.ToArray();
-            var format = Expand(found ? entry.Format : name, found, retained);
+            var format = Evaluate(found ? entry.Format : name, found, retained);
 
             return new LocalizedText(name, string.Format(CultureInfo.CurrentCulture, format, retained), !found, baseName);
         }
@@ -41,7 +41,7 @@ internal sealed class JsonStringLocale(JsonResourceCache cache, Assembly assembl
             var arguments = handler.GetArguments();
             handler.Clear();
 
-            var format = Expand(found ? entry.Format : name, found, arguments);
+            var format = Evaluate(found ? entry.Format : name, found, arguments);
 
             return new LocalizedText(name, string.Format(CultureInfo.CurrentCulture, format, arguments), !found, baseName);
         }
@@ -54,7 +54,7 @@ internal sealed class JsonStringLocale(JsonResourceCache cache, Assembly assembl
 
         var found = TryFind(name, out var entry);
 
-        return new LocalizedPattern(name, Expand(found ? entry.Format : name, found, arguments), arguments, !found, baseName);
+        return new LocalizedPattern(name, Evaluate(found ? entry.Format : name, found, arguments), arguments, !found, baseName);
     }
 
     public LocalizedPattern Resolve(LocalizedFormatHandler handler)
@@ -64,7 +64,7 @@ internal sealed class JsonStringLocale(JsonResourceCache cache, Assembly assembl
         var arguments = handler.GetArguments();
         handler.Clear();
 
-        return new LocalizedPattern(name, Expand(found ? entry.Format : name, found, arguments), arguments, !found, baseName);
+        return new LocalizedPattern(name, Evaluate(found ? entry.Format : name, found, arguments), arguments, !found, baseName);
     }
 
     public IEnumerable<LocalizedText> GetAllStrings(bool includeParentCultures)
@@ -93,8 +93,8 @@ internal sealed class JsonStringLocale(JsonResourceCache cache, Assembly assembl
     }
 
     // A miss shows the key, which is written in the primary language, so its plural forms follow that language.
-    private string Expand(string format, bool found, IReadOnlyList<object?> arguments)
-        => plural.Expand(format, found ? CultureInfo.CurrentUICulture : primaryCulture, arguments);
+    private string Evaluate(string format, bool found, IReadOnlyList<object?> arguments)
+        => plural.Evaluate(format, found ? CultureInfo.CurrentUICulture : primaryCulture, arguments);
 
     private bool TryFind(string name, out JsonResourceEntry entry)
     {

@@ -1,9 +1,9 @@
 namespace Forma.Framework.Localization;
 
 /// <summary>One run of a composite format string: either literal text or a hole naming an argument.</summary>
-public readonly ref struct MessageSegment
+public readonly ref struct LocalizedSegment
 {
-    internal MessageSegment(ReadOnlySpan<char> text, int argumentIndex)
+    internal LocalizedSegment(ReadOnlySpan<char> text, int argumentIndex)
     {
         Text = text;
         ArgumentIndex = argumentIndex;
@@ -19,6 +19,6 @@ public readonly ref struct MessageSegment
     public ReadOnlySpan<char> Text { get; }
 
     /// <summary>Walks a composite format string as literal runs and holes, without copying either.</summary>
-    public static MessageSegmentEnumerator Parse(ReadOnlySpan<char> format)
+    public static LocalizedSegmentEnumerator Parse(ReadOnlySpan<char> format)
         => new(format);
 }

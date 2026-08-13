@@ -4,12 +4,14 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using System.Reflection;
 
+using Forma.Framework.Localization.Cldr;
+
 /// <summary>Creates locales that read their strings from JSON files embedded in the assembly owning the type.</summary>
 public sealed class JsonStringLocaleFactory : IStringLocaleFactory
 {
     private readonly ConcurrentDictionary<string, IStringLocale> _locales = new(StringComparer.Ordinal);
     private readonly JsonResourceCache _cache = new();
-    private readonly PluralMessage _plural = new(PluralRuleSet.Default);
+    private readonly PluralExpressionEvaluator _plural = new(PluralRuleSet.Default);
     private readonly CultureInfo _primaryCulture;
     private readonly string _resourcesPath;
 

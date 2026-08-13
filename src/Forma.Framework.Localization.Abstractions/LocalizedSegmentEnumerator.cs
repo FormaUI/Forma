@@ -5,17 +5,17 @@ using System.Globalization;
 
 /// <summary>Yields the literal runs and holes of a composite format string as slices of the original.</summary>
 /// <param name="format">The composite format to walk.</param>
-public ref struct MessageSegmentEnumerator(ReadOnlySpan<char> format)
+public ref struct LocalizedSegmentEnumerator(ReadOnlySpan<char> format)
 {
     private static readonly SearchValues<char> Braces = SearchValues.Create(['{', '}']);
 
     private ReadOnlySpan<char> _remaining = format;
 
     /// <summary>The segment the last <see cref="MoveNext"/> produced.</summary>
-    public MessageSegment Current { get; private set; } = default;
+    public LocalizedSegment Current { get; private set; } = default;
 
     /// <summary>Returns this enumerator, so it can drive a foreach directly.</summary>
-    public readonly MessageSegmentEnumerator GetEnumerator()
+    public readonly LocalizedSegmentEnumerator GetEnumerator()
         => this;
 
     /// <summary>Advances to the next literal run or hole.</summary>
@@ -40,7 +40,7 @@ public ref struct MessageSegmentEnumerator(ReadOnlySpan<char> format)
         // A doubled brace stands for one literal brace, which is why the pair is yielded as a run of its own.
         if (_remaining.Length > 1 && _remaining[1] == _remaining[0])
         {
-            Current = new MessageSegment(_remaining[..1], -1);
+            Current = new LocalizedSegment(_remaining[..1], -1);
             _remaining = _remaining[2..];
 
             return true;
@@ -73,7 +73,7 @@ public ref struct MessageSegmentEnumerator(ReadOnlySpan<char> format)
 
     private bool Take(int length, int argumentIndex)
     {
-        Current = new MessageSegment(argumentIndex < 0 ? _remaining[..length] : default, argumentIndex);
+        Current = new LocalizedSegment(argumentIndex < 0 ? _remaining[..length] : default, argumentIndex);
         _remaining = _remaining[length..];
 
         return true;

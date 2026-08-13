@@ -1,4 +1,4 @@
-namespace Forma.Framework.Localization;
+namespace Forma.Framework.Localization.Cldr;
 
 /// <summary>The cardinal plural rules transcribed from CLDR 48, for the languages Forma ships with.</summary>
 public sealed class PluralRuleSet : IPluralRuleSet

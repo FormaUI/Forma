@@ -1,6 +1,6 @@
 namespace Forma.Tests.Localization;
 
-using Forma.Framework.Localization;
+using Forma.Framework.Localization.Cldr;
 
 /// <summary>A rule set returning the category a test dictates, regardless of language.</summary>
 /// <param name="category">The category to return, or null to report the language as unknown.</param>

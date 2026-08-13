@@ -3,9 +3,11 @@ namespace Forma.Framework.Localization;
 using System.Buffers;
 using System.Globalization;
 
+using Forma.Framework.Localization.Cldr;
+
 /// <summary>Resolves the {index, plural, category {text}} construct inside a translated format.</summary>
 /// <param name="rules">The rules deciding which category a count falls into.</param>
-public sealed class PluralMessage(IPluralRuleSet rules)
+public sealed class PluralExpressionEvaluator(IPluralRuleSet rules)
 {
     private const string Marker = ", plural,";
     private const int StackLimit = 256;
@@ -13,7 +15,7 @@ public sealed class PluralMessage(IPluralRuleSet rules)
     private readonly IPluralRuleSet _rules = rules ?? throw new ArgumentNullException(nameof(rules));
 
     /// <summary>Replaces every plural construct with the branch the count selects, leaving other holes open.</summary>
-    public string Expand(string format, CultureInfo culture, IReadOnlyList<object?> arguments)
+    public string Evaluate(string format, CultureInfo culture, IReadOnlyList<object?> arguments)
     {
         ArgumentNullException.ThrowIfNull(format);
         ArgumentNullException.ThrowIfNull(culture);
@@ -21,11 +23,11 @@ public sealed class PluralMessage(IPluralRuleSet rules)
 
         // Most translations carry no plural construct, and this keeps them clear of the stack buffer below.
         return format.Contains(Marker, StringComparison.Ordinal)
-            ? ExpandCore(format, culture, arguments)
+            ? EvaluateCore(format, culture, arguments)
             : format;
     }
 
-    private string ExpandCore(string format, CultureInfo culture, IReadOnlyList<object?> arguments)
+    private string EvaluateCore(string format, CultureInfo culture, IReadOnlyList<object?> arguments)
     {
         var current = format;
 

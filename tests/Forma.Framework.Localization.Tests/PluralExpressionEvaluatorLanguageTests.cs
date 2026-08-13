@@ -1,13 +1,13 @@
 namespace Forma.Framework.Localization.Tests;
 
-public sealed class PluralMessageLanguageTests
+public sealed class PluralExpressionEvaluatorLanguageTests
 {
     private const string English = "{0, plural, one {# file} other {# files}}";
     private const string Hebrew = "{0, plural, one {קובץ אחד} two {שני קבצים} other {# קבצים}}";
     private const string Arabic = "{0, plural, zero {لا ملفات} one {ملف واحد} two {ملفان} few {# ملفات} many {# ملفًا} other {# ملف}}";
     private const string French = "{0, plural, one {# fichier} many {# millions de fichiers} other {# fichiers}}";
 
-    private static readonly PluralMessage Resolver = new(PluralRuleSet.Default);
+    private static readonly PluralExpressionEvaluator Evaluator = new(PluralRuleSet.Default);
 
     [Theory]
     [InlineData("en", English, 0, "0 files")]
@@ -28,39 +28,39 @@ public sealed class PluralMessageLanguageTests
         var culture = CultureInfo.GetCultureInfo(language);
 
         // Act
-        var expanded = Resolver.Expand(pattern, culture, [count]);
+        var evaluated = Evaluator.Evaluate(pattern, culture, [count]);
 
         // Assert
-        Assert.Equal(expected, expanded);
+        Assert.Equal(expected, evaluated);
     }
 
     [Fact]
     public void Should_fall_back_to_other_when_the_language_needs_a_branch_the_translation_omits()
     {
         // Act
-        var expanded = Resolver.Expand(English, CultureInfo.GetCultureInfo("ar"), [11]);
+        var evaluated = Evaluator.Evaluate(English, CultureInfo.GetCultureInfo("ar"), [11]);
 
         // Assert
-        Assert.Equal("11 files", expanded);
+        Assert.Equal("11 files", evaluated);
     }
 
     [Fact]
     public void Should_group_a_large_count_for_the_culture()
     {
         // Act
-        var expanded = Resolver.Expand(English, CultureInfo.GetCultureInfo("en"), [1000000]);
+        var evaluated = Evaluator.Evaluate(English, CultureInfo.GetCultureInfo("en"), [1000000]);
 
         // Assert
-        Assert.Equal("1,000,000 files", expanded);
+        Assert.Equal("1,000,000 files", evaluated);
     }
 
     [Fact]
     public void Should_keep_the_digits_a_fractional_count_was_written_with()
     {
         // Act
-        var expanded = Resolver.Expand(English, CultureInfo.GetCultureInfo("en"), [0.5m]);
+        var evaluated = Evaluator.Evaluate(English, CultureInfo.GetCultureInfo("en"), [0.5m]);
 
         // Assert
-        Assert.Equal("0.5 files", expanded);
+        Assert.Equal("0.5 files", evaluated);
     }
 }

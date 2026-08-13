@@ -1,6 +1,6 @@
 namespace Forma.Framework.Localization.Abstractions.Tests;
 
-public sealed class MessageSegmentTests
+public sealed class LocalizedSegmentTests
 {
     [Fact]
     public void Should_split_a_format_into_literals_and_holes()
@@ -139,7 +139,7 @@ public sealed class MessageSegmentTests
     {
         var literalLength = 0;
 
-        foreach (var segment in MessageSegment.Parse(format))
+        foreach (var segment in LocalizedSegment.Parse(format))
         {
             literalLength += segment.Text.Length;
         }
@@ -151,7 +151,7 @@ public sealed class MessageSegmentTests
     {
         var segments = new List<(string, int)>();
 
-        foreach (var segment in MessageSegment.Parse(format))
+        foreach (var segment in LocalizedSegment.Parse(format))
         {
             segments.Add((segment.Text.ToString(), segment.ArgumentIndex));
         }

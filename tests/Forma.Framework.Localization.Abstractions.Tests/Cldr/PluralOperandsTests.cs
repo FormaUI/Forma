@@ -1,4 +1,4 @@
-namespace Forma.Framework.Localization.Abstractions.Tests;
+namespace Forma.Framework.Localization.Abstractions.Tests.Cldr;
 
 public sealed class PluralOperandsTests
 {
