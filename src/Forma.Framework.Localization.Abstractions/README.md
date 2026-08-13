@@ -17,7 +17,7 @@ The localization contract and its value types. No package or project references.
 | `IPluralRuleSet` | Decides which plural category a count falls into for a language. |
 | `PluralCategory` | The six CLDR categories: `Zero`, `One`, `Two`, `Few`, `Many`, `Other`. |
 | `PluralOperands` | The CLDR operands a plural rule reads: `n`, `i`, `v`. |
-| `PluralMessage` | Resolves the plural construct inside a translated format. |
+| `PluralExpressionEvaluator` | Evaluates the plural expression inside a translated format. |
 
 ## Keys from interpolated strings
 
@@ -36,19 +36,38 @@ A plain string literal binds to `this[string]`, so a key computed at run time wo
 
 ## Plural syntax
 
-A translation may carry an ICU-style plural construct. The index names the argument holding the count,
-and `#` is replaced by that count formatted for the culture:
+A translation may carry a plural expression. The bracketed index names the argument holding the count,
+the keyword names the expression, and `#` is replaced by that count formatted for the culture:
 
 ```json
-"{0} files": "{0, plural, one {# file} other {# files}}"
+"{0} files": "[$ [0] plural; one: # file; other: # files; $]"
 ```
 
-`PluralMessage` asks an `IPluralRuleSet` for the count's category, falling back to `other` when the
-translation omits that branch or the rule set has no entry for the language. `#` keeps the digits the
-count was written with, so `0.5` does not round and `1000000` is grouped for the culture.
+Nothing in an expression is a brace, and that is deliberate twice over. The interpolated string handler
+doubles `{` and `}` when it copies a literal run, so a brace-delimited expression written as `$"..."`
+arrives mangled; and `string.Format` fills every brace it recognises, so an expression that survives
+evaluation would have its index overwritten by an argument. Brackets are invisible to both, which also
+means a translator opening a file cannot mistake `[0]` for a hole they may move or delete.
 
-A language only needs the branches it distinguishes: English `one` and `other`, Hebrew adds `two`,
+An interpolated call site writes the index as a real hole, since that is the only way the count can
+reach the arguments, and the key is canonicalized before lookup:
+
+```csharp
+L[$"[$ [{files}] plural; one: # file; other: # files; $]"]
+```
+
+Fields are `name: value` pairs separated by `; `, and the trailing `;` is required. A plural
+expression names its fields after CLDR's categories: `zero`, `one`, `two`, `few`, `many`, `other`.
+
+`PluralExpressionEvaluator` asks an `IPluralRuleSet` for the count's category, falling back to `other`
+when the translation omits that field or the rule set has no entry for the language. `#` keeps the
+digits the count was written with, so `0.5` does not round and `1000000` is grouped for the culture.
+
+A language only needs the fields it distinguishes: English `one` and `other`, Hebrew adds `two`,
 Arabic uses all six.
+
+Malformed input is left as written rather than throwing, because a translation is hand-edited data and
+a throw would break one culture's page while every test stayed green.
 
 ## Patterns and segments
 

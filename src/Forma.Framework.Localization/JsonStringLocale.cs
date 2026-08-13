@@ -3,6 +3,8 @@ namespace Forma.Framework.Localization;
 using System.Globalization;
 using System.Reflection;
 
+using Forma.Framework.Localization.Parser;
+
 /// <summary>Reads the strings for one base name, walking the culture chain and falling back to the key itself.</summary>
 internal sealed class JsonStringLocale(JsonResourceCache cache, Assembly assembly, string baseName, PluralExpressionEvaluator plural, CultureInfo primaryCulture) : IStringLocale
 {
@@ -36,8 +38,10 @@ internal sealed class JsonStringLocale(JsonResourceCache cache, Assembly assembl
     {
         get
         {
-            var found = TryFindBySpan(handler.Key, out var entry);
-            var name = found ? entry.Name : handler.Key.ToString();
+            var key = LocaleExpressionParser.TryNormalize(handler.Key, out var canonical) ? canonical.AsSpan() : handler.Key;
+
+            var found = TryFindBySpan(key, out var entry);
+            var name = found ? entry.Name : canonical ?? key.ToString();
             var arguments = handler.GetArguments();
             handler.Clear();
 
@@ -59,8 +63,10 @@ internal sealed class JsonStringLocale(JsonResourceCache cache, Assembly assembl
 
     public LocalizedPattern Resolve(LocalizedFormatHandler handler)
     {
-        var found = TryFindBySpan(handler.Key, out var entry);
-        var name = found ? entry.Name : handler.Key.ToString();
+        var key = LocaleExpressionParser.TryNormalize(handler.Key, out var canonical) ? canonical.AsSpan() : handler.Key;
+
+        var found = TryFindBySpan(key, out var entry);
+        var name = found ? entry.Name : canonical ?? key.ToString();
         var arguments = handler.GetArguments();
         handler.Clear();
 

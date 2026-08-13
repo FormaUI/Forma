@@ -12,36 +12,36 @@ public enum LocaleDiagnosticKind
     /// <summary>The header does not name a keyword.</summary>
     MissingKeyword,
 
-    /// <summary>The header names a keyword no construct defines.</summary>
+    /// <summary>The header names a keyword no expression defines.</summary>
     UnknownKeyword,
 
-    /// <summary>The header does not carry the argument hole the count comes from.</summary>
-    MissingArgumentHole,
+    /// <summary>The header does not carry the bracketed index the count comes from.</summary>
+    MissingArgumentIndex,
 
-    /// <summary>The argument hole does not hold a non-negative integer.</summary>
-    InvalidArgumentHole,
+    /// <summary>The bracketed index does not hold a non-negative integer.</summary>
+    InvalidArgumentIndex,
 
-    /// <summary>The expression carries no branches at all.</summary>
-    MissingBranches,
+    /// <summary>The expression carries no fields at all.</summary>
+    MissingFields,
 
-    /// <summary>A branch is not introduced by exactly one semicolon and one space.</summary>
+    /// <summary>A field is not introduced by exactly one semicolon and one space.</summary>
     MalformedFieldSeparator,
 
-    /// <summary>A branch does not separate its name from its value with a colon.</summary>
+    /// <summary>A field does not separate its name from its value with a colon.</summary>
     MissingNameSeparator,
 
-    /// <summary>A branch does not write its name against the colon followed by one space.</summary>
+    /// <summary>A field does not write its name against the colon followed by one space.</summary>
     MalformedNameSeparator,
 
-    /// <summary>A branch name is empty.</summary>
+    /// <summary>A field name is empty.</summary>
     EmptyFieldName,
 
-    /// <summary>A branch carries a name but no value.</summary>
+    /// <summary>A field carries a name but no value.</summary>
     EmptyFieldValue,
 
-    /// <summary>A branch name is not one the expression recognises.</summary>
+    /// <summary>A field name is not one the expression recognises.</summary>
     UnknownFieldName,
 
-    /// <summary>A branch name appears more than once in the same expression.</summary>
+    /// <summary>A field name appears more than once in the same expression.</summary>
     DuplicateFieldName,
 }

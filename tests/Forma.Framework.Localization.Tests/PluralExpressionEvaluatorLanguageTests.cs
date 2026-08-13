@@ -2,10 +2,10 @@ namespace Forma.Framework.Localization.Tests;
 
 public sealed class PluralExpressionEvaluatorLanguageTests
 {
-    private const string English = "{0, plural, one {# file} other {# files}}";
-    private const string Hebrew = "{0, plural, one {קובץ אחד} two {שני קבצים} other {# קבצים}}";
-    private const string Arabic = "{0, plural, zero {لا ملفات} one {ملف واحد} two {ملفان} few {# ملفات} many {# ملفًا} other {# ملف}}";
-    private const string French = "{0, plural, one {# fichier} many {# millions de fichiers} other {# fichiers}}";
+    private const string English = "[$ [0] plural; one: # file; other: # files; $]";
+    private const string Hebrew = "[$ [0] plural; one: קובץ אחד; two: שני קבצים; other: # קבצים; $]";
+    private const string Arabic = "[$ [0] plural; zero: لا ملفات; one: ملف واحد; two: ملفان; few: # ملفات; many: # ملفًا; other: # ملف; $]";
+    private const string French = "[$ [0] plural; one: # fichier; many: # millions de fichiers; other: # fichiers; $]";
 
     private static readonly PluralExpressionEvaluator Evaluator = new(PluralRuleSet.Default);
 
@@ -22,7 +22,7 @@ public sealed class PluralExpressionEvaluatorLanguageTests
     [InlineData("ar", Arabic, 11, "11 ملفًا")]
     [InlineData("fr", French, 0, "0 fichier")]
     [InlineData("fr", French, 2, "2 fichiers")]
-    public void Should_choose_the_branch_the_language_selects(string language, string pattern, int count, string expected)
+    public void Should_choose_the_field_the_language_selects(string language, string pattern, int count, string expected)
     {
         // Arrange
         var culture = CultureInfo.GetCultureInfo(language);
@@ -35,7 +35,7 @@ public sealed class PluralExpressionEvaluatorLanguageTests
     }
 
     [Fact]
-    public void Should_fall_back_to_other_when_the_language_needs_a_branch_the_translation_omits()
+    public void Should_fall_back_to_other_when_the_language_needs_a_field_the_translation_omits()
     {
         // Act
         var evaluated = Evaluator.Evaluate(English, CultureInfo.GetCultureInfo("ar"), [11]);

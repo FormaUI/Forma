@@ -316,10 +316,10 @@ public sealed class JsonStringLocaleTests
     }
 
     [Fact]
-    public void Should_expand_the_plural_construct_in_a_translation()
+    public void Should_evaluate_the_plural_expression_in_a_translation()
     {
         // Arrange
-        const string Key = "{0, plural, one {# file} other {# files}}";
+        const string Key = "[$ [0] plural; one: # file; other: # files; $]";
         using var culture = new CultureScope("he");
         var strings = Locale<Pluralized>();
 
@@ -337,11 +337,63 @@ public sealed class JsonStringLocaleTests
         });
     }
 
+    // The expression survives interpolation because the handler doubles only braces, which the delimiters avoid.
     [Fact]
-    public void Should_expand_the_plural_construct_in_the_key_when_untranslated()
+    public void Should_evaluate_a_plural_expression_written_as_an_interpolated_string()
     {
         // Arrange
-        const string Key = "{0, plural, one {# file} other {# files}}";
+        using var culture = new CultureScope("he");
+        var strings = Locale<Pluralized>();
+        const int Count = 2;
+
+        // Act
+        var localized = strings[$"[$ [{Count}] plural; one: # file; other: # files; $]"];
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.Equal("שני קבצים", localized.Value);
+            Assert.False(localized.ResourceNotFound);
+        });
+    }
+
+    // A bracketed index carries no braces, so formatting cannot mistake it for a hole and rewrite it.
+    [Theory]
+    [InlineData("[$ [0] plural; one: # file; other: # files $]")]
+    [InlineData("[$ [0] select; male: his; female: her; $]")]
+    public void Should_render_a_expression_it_cannot_evaluate_exactly_as_written(string key)
+    {
+        // Arrange
+        using var culture = new CultureScope("en");
+        var strings = Locale<Pluralized>();
+
+        // Act
+        var localized = strings[key, 7];
+
+        // Assert
+        Assert.Equal(key, localized.Value);
+    }
+
+    // Only a expression's own header is canonicalized, so brackets in prose keep the hole they mean to fill.
+    [Fact]
+    public void Should_fill_a_hole_inside_brackets_that_are_not_a_expression()
+    {
+        // Arrange
+        using var culture = new CultureScope("en");
+        var strings = Locale<Pluralized>();
+
+        // Act
+        var localized = strings[$"See [{7}] for details"];
+
+        // Assert
+        Assert.Equal("See [7] for details", localized.Value);
+    }
+
+    [Fact]
+    public void Should_evaluate_the_plural_expression_in_the_key_when_untranslated()
+    {
+        // Arrange
+        const string Key = "[$ [0] plural; one: # file; other: # files; $]";
         using var culture = new CultureScope("en");
         var strings = Locale<Pluralized>();
 
@@ -358,10 +410,10 @@ public sealed class JsonStringLocaleTests
     }
 
     [Fact]
-    public void Should_expand_an_untranslated_key_with_the_primary_language_rules()
+    public void Should_evaluate_an_untranslated_key_with_the_primary_language_rules()
     {
         // Arrange — the key is Hebrew, whose dual the displayed language does not have.
-        const string Key = "{0, plural, one {פריט אחד} two {שני פריטים} other {# פריטים}}";
+        const string Key = "[$ [0] plural; one: פריט אחד; two: שני פריטים; other: # פריטים; $]";
         using var culture = new CultureScope("en");
         var strings = new JsonStringLocaleFactory(new JsonLocalizationOptions { PrimaryCulture = "he" }).Create(typeof(Untranslated));
 

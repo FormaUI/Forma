@@ -1,10 +1,12 @@
 namespace Forma.Framework.Localization.Parser;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Text;
 
 using Forma.Framework.Localization.Parser.Syntax;
 
-/// <summary>Reads the <c>[$ keyword {0}; name: value; $]</c> expressions inside localized text.</summary>
+/// <summary>Reads the <c>[$ [0] keyword; name: value; $]</c> expressions inside localized text.</summary>
 public static class LocaleExpressionParser
 {
     /// <summary>The characters that open an expression.</summary>
@@ -13,10 +15,72 @@ public static class LocaleExpressionParser
     /// <summary>The characters that close an expression.</summary>
     public const string Closing = " $]";
 
-    /// <summary>The keyword naming an expression whose branches are plural categories.</summary>
+    /// <summary>The keyword naming an expression whose field names are plural categories.</summary>
     public const string PluralKeyword = "plural";
 
+    private const string Interpolated = "[{";
+
     private static readonly string[] PluralCategories = ["zero", "one", "two", "few", "many", "other"];
+
+    /// <summary>Rewrites the interpolation holes an interpolated key carries into plain argument indices.</summary>
+    /// <param name="text">The text to examine.</param>
+    /// <param name="normalized">The rewritten text, or <see langword="null"/> when the text already reads as written.</param>
+    /// <remarks>
+    /// An interpolated call site writes <c>[{files}]</c>, which the handler turns into <c>[{0}]</c>, while a
+    /// translation file carries the canonical <c>[0]</c>. Rewriting is confined to an expression's header so
+    /// that prose such as <c>See [{0}] for details</c> keeps the hole it means to fill.
+    /// </remarks>
+    public static bool TryNormalize(ReadOnlySpan<char> text, [NotNullWhen(true)] out string? normalized)
+    {
+        normalized = null;
+
+        if (!text.Contains(Interpolated, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var builder = new StringBuilder(text.Length);
+        var position = 0;
+
+        while (true)
+        {
+            var opening = text[position..].IndexOf(Opening, StringComparison.Ordinal);
+            if (opening < 0)
+            {
+                break;
+            }
+
+            var start = position + opening + Opening.Length;
+            builder.Append(text[position..start]);
+            position = start;
+
+            if (!text[start..].StartsWith(Interpolated, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var digits = start + Interpolated.Length;
+            var end = digits;
+            while (end < text.Length && char.IsAsciiDigit(text[end]))
+            {
+                end++;
+            }
+
+            // Only what the handler itself wrote is rewritten, so anything other than [{ digits }] is left alone.
+            if (end == digits || end + 1 >= text.Length || text[end] != '}' || text[end + 1] != ']')
+            {
+                continue;
+            }
+
+            builder.Append('[').Append(text[digits..end]).Append(']');
+            position = end + 2;
+        }
+
+        builder.Append(text[position..]);
+        normalized = builder.ToString();
+
+        return true;
+    }
 
     /// <summary>Reads every expression in the text, reporting what is wrong rather than throwing.</summary>
     /// <param name="text">The text to read.</param>
@@ -75,13 +139,13 @@ public static class LocaleExpressionParser
         var headerEnd = body.IndexOf(text, ';');
         if (headerEnd < 0)
         {
-            diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.MissingBranches, span));
+            diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.MissingFields, span));
 
             return null;
         }
 
         var header = new LocaleTextSpan(body.Start, headerEnd - body.Start);
-        if (!ReadHeader(text, header, diagnostics, out var keyword, out var hole, out var index))
+        if (!ReadHeader(text, header, diagnostics, out var keyword, out var argument, out var index))
         {
             return null;
         }
@@ -109,13 +173,13 @@ public static class LocaleExpressionParser
             isPlural ? PluralCategories : [],
             diagnostics);
 
-        // A branch that failed to parse already explains the empty list, so saying so again is noise.
+        // A field that failed to parse already explains the empty list, so saying so again is noise.
         if (fields.Count == 0 && diagnostics.Count == reported)
         {
-            diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.MissingBranches, span));
+            diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.MissingFields, span));
         }
 
-        return fields.Count == 0 ? null : new LocaleExpression(span, keyword, hole, index, fields);
+        return fields.Count == 0 ? null : new LocaleExpression(span, keyword, argument, index, fields);
     }
 
     private static bool ReadHeader(
@@ -123,56 +187,40 @@ public static class LocaleExpressionParser
         LocaleTextSpan header,
         List<LocaleDiagnostic> diagnostics,
         out LocaleTextSpan keyword,
-        out LocaleTextSpan hole,
+        out LocaleTextSpan argument,
         out int index)
     {
         keyword = default;
-        hole = default;
+        argument = default;
         index = 0;
 
-        if (header.IsEmpty)
+        var close = header.IndexOf(text, ']');
+        if (header.IsEmpty || text[header.Start] != '[' || close < 0)
         {
-            diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.MissingKeyword, header));
+            diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.MissingArgumentIndex, header));
 
             return false;
         }
 
-        var space = header.IndexOf(text, ' ');
-        if (space < 0)
-        {
-            // A header holding the hole alone is missing its keyword, not its hole.
-            var isHole = text[header.Start] == '{' && text[header.End - 1] == '}';
+        argument = new LocaleTextSpan(header.Start, close - header.Start + 1);
 
-            diagnostics.Add(new LocaleDiagnostic(
-                isHole ? LocaleDiagnosticKind.MissingKeyword : LocaleDiagnosticKind.MissingArgumentHole,
-                header));
-
-            return false;
-        }
-
-        keyword = new LocaleTextSpan(header.Start, space - header.Start);
-        if (keyword.IsEmpty)
-        {
-            diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.MissingKeyword, header));
-
-            return false;
-        }
-
-        hole = new LocaleTextSpan(space + 1, header.End - space - 1);
-        if (hole.Length < 3 || text[hole.Start] != '{' || text[hole.End - 1] != '}')
-        {
-            diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.MissingArgumentHole, hole.IsEmpty ? header : hole));
-
-            return false;
-        }
-
-        var digits = text.AsSpan(hole.Start + 1, hole.Length - 2);
+        var digits = text.AsSpan(argument.Start + 1, argument.Length - 2);
         if (!int.TryParse(digits, NumberStyles.None, CultureInfo.InvariantCulture, out index))
         {
-            diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.InvalidArgumentHole, hole));
+            diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.InvalidArgumentIndex, argument));
 
             return false;
         }
+
+        // A span is only well formed once a space and at least one more character are known to follow the index.
+        if (argument.End + 1 >= header.End || text[argument.End] != ' ')
+        {
+            diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.MissingKeyword, header));
+
+            return false;
+        }
+
+        keyword = new LocaleTextSpan(argument.End + 1, header.End - argument.End - 1);
 
         return true;
     }
