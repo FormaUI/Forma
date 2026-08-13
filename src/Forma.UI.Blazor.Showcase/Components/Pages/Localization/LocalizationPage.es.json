@@ -29,7 +29,7 @@
   "The count decides which branch of the construct is used. Try 1, 2 and 5, then switch to Hebrew, which has a dual the other two languages do not.": "El recuento decide qué rama del constructo se usa. Prueba 1, 2 y 5, y luego cambia al hebreo, que tiene un dual del que carecen los otros dos idiomas.",
   "Count": "Recuento",
   "Category": "Categoría",
-  "{0, plural, one {# file} other {# files}}": "{0, plural, one {# archivo} other {# archivos}}",
+  "[$ [0] plural; one: # file; other: # files; $]": "[$ [0] plural; one: # archivo; other: # archivos; $]",
   "The categories this language uses": "Las categorías que usa este idioma",
   "A language selects only the categories it needs, so a construct only has to carry those. A category it never selects is simply unused.": "Un idioma selecciona solo las categorías que necesita, así que un constructo solo debe llevar esas. Una categoría que nunca selecciona simplemente no se usa.",
   "1 and 1.0 can differ, because the rules read how the number was written rather than its value alone.": "1 y 1.0 pueden diferir, porque las reglas leen cómo se escribió el número y no solo su valor.",

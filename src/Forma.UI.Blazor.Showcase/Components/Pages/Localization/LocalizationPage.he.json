@@ -29,7 +29,7 @@
   "The count decides which branch of the construct is used. Try 1, 2 and 5, then switch to Hebrew, which has a dual the other two languages do not.": "הכמות קובעת באיזה ענף של המבנה משתמשים. נסו 1, 2 ו-5, ואז עברו לעברית, שיש בה צורת זוגי שאין בשתי השפות האחרות.",
   "Count": "כמות",
   "Category": "קטגוריה",
-  "{0, plural, one {# file} other {# files}}": "{0, plural, one {קובץ אחד} two {שני קבצים} other {# קבצים}}",
+  "[$ [0] plural; one: # file; other: # files; $]": "[$ [0] plural; one: קובץ אחד; two: שני קבצים; other: # קבצים; $]",
   "The categories this language uses": "הקטגוריות שהשפה הזו משתמשת בהן",
   "A language selects only the categories it needs, so a construct only has to carry those. A category it never selects is simply unused.": "שפה בוחרת רק בקטגוריות שהיא זקוקה להן, כך שמבנה צריך לשאת רק אותן. קטגוריה שהיא לעולם אינה בוחרת פשוט אינה בשימוש.",
   "1 and 1.0 can differ, because the rules read how the number was written rather than its value alone.": "1 ו-1.0 יכולים להיבדל, מפני שהכללים קוראים כיצד המספר נכתב ולא רק את ערכו.",

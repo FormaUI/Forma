@@ -132,7 +132,7 @@
             <tbody>
                 <tr>
                     <th><code dir="ltr">#</code></th>
-                    <td>@L["{0, plural, other {#}}", 1234567]</td>
+                    <td>@L["[$ [0] plural; other: #; $]", 1234567]</td>
                 </tr>
                 <tr>
                     <th><code dir="ltr">{0}</code></th>
@@ -208,9 +208,9 @@
 
 @code {
     private const string AbsentKey = "No translation exists for this sentence.";
-    private const string PluralKey = "{0, plural, one {# file} other {# files}}";
-    private const string IncompleteKey = "{0, plural, one {# file}}";
-    private const string HebrewSourceKey = "{0, plural, one {פריט אחד} two {שני פריטים} other {# פריטים}}";
+    private const string PluralKey = "[$ [0] plural; one: # file; other: # files; $]";
+    private const string IncompleteKey = "[$ [0] plural; one: # file; $]";
+    private const string HebrewSourceKey = "[$ [0] plural; one: פריט אחד; two: שני פריטים; other: # פריטים; $]";
 
     private static readonly decimal[] Samples = [0m, 0.5m, 1m, 1.0m, 2m, 3m, 5m, 11m, 100m, 1000000m];
 
