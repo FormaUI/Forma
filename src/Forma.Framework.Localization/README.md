@@ -49,17 +49,17 @@ Registers `IStringLocale<T>` and `IStringLocaleFactory`, plus the framework's `I
 
 ## Plural rules
 
-A translation resolves the construct `{index, plural, category {text}}` before its holes are filled,
-where `#` stands for the count formatted for the culture.
+A translation resolves the expression `[$ [index] plural; category: text; $]` before its holes are
+filled, where `#` stands for the count formatted for the culture.
 
 ```json
-"{0} selected": "{0, plural, one {נבחר אחד} two {שניים נבחרו} other {# נבחרו}}"
+"{0} selected": "[$ [0] plural; one: נבחר אחד; two: שניים נבחרו; other: # נבחרו; $]"
 ```
 
-A construct may sit in the translation alone, so a key carries one only where the primary language
+An expression may sit in the translation alone, so a key carries one only where the primary language
 itself inflects. A category the language never selects is ignored, and a category it selects but the
-construct omits falls back to `other`; with no `other` branch the result is empty. A malformed
-construct is left as written.
+expression omits falls back to `other`; with no `other` field the result is empty. A malformed
+expression is left as written.
 
 `PluralRuleSet` carries the cardinal rules from **CLDR 48**. `PluralRuleSet.Default` is a shared
 stateless instance.

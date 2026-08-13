@@ -19,5 +19,5 @@ public sealed class NeutralBacked;
 /// <summary>A culture file kept out of a satellite, so it stays in the main assembly.</summary>
 public sealed class MainAssembly;
 
-/// <summary>A translation carrying a plural construct.</summary>
+/// <summary>A translation carrying a plural expression.</summary>
 public sealed class Pluralized;
