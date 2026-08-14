@@ -1,4 +1,4 @@
-namespace Forma.Framework.Localization.Tests;
+namespace Forma.Framework.Localization.Abstractions.Tests;
 
 public sealed class PluralExpressionEvaluatorLanguageTests
 {
@@ -7,7 +7,7 @@ public sealed class PluralExpressionEvaluatorLanguageTests
     private const string Arabic = "[$ [0] plural; zero: لا ملفات; one: ملف واحد; two: ملفان; few: # ملفات; many: # ملفًا; other: # ملف; $]";
     private const string French = "[$ [0] plural; one: # fichier; many: # millions de fichiers; other: # fichiers; $]";
 
-    private static readonly PluralExpressionEvaluator Evaluator = new(PluralRuleSet.Default);
+    private static readonly PluralExpressionEvaluator Evaluator = new(CommonPluralRuleSet.Default);
 
     [Theory]
     [InlineData("en", English, 0, "0 files")]
@@ -68,7 +68,7 @@ public sealed class PluralExpressionEvaluatorLanguageTests
     public void Should_select_by_the_text_language_and_group_for_the_reader()
     {
         // Act
-        var evaluated = Evaluator.Evaluate(English, "en", CultureInfo.GetCultureInfo("es-CO"), [1234.5m]);
+        var evaluated = Evaluator.Evaluate(English, CultureInfo.GetCultureInfo("en"), CultureInfo.GetCultureInfo("es-CO"), [1234.5m]);
 
         // Assert
         Assert.Equal("1.234,5 files", evaluated);
@@ -78,7 +78,7 @@ public sealed class PluralExpressionEvaluatorLanguageTests
     public void Should_fall_back_to_other_when_the_text_names_no_language()
     {
         // Act
-        var evaluated = Evaluator.Evaluate(English, string.Empty, CultureInfo.GetCultureInfo("en"), [1]);
+        var evaluated = Evaluator.Evaluate(English, CultureInfo.InvariantCulture, CultureInfo.GetCultureInfo("en"), [1]);
 
         // Assert
         Assert.Equal("1 files", evaluated);

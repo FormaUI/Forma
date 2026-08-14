@@ -48,4 +48,27 @@ public sealed class PluralOperandsTests
         // Assert
         Assert.Equal(long.MaxValue, operands.IntegerPart);
     }
+
+    [Theory]
+    [InlineData("1", 0, 0, 0, 0)]
+    [InlineData("1.0", 1, 0, 0, 0)]
+    [InlineData("1.00", 2, 0, 0, 0)]
+    [InlineData("0.5", 1, 1, 5, 5)]
+    [InlineData("1.230", 3, 2, 230, 23)]
+    [InlineData("2.0300", 4, 2, 300, 3)]
+    public void Should_read_the_fraction_digits_as_a_value(string number, int digits, int significantDigits, long value, long significantValue)
+    {
+        // Act
+        var operands = PluralOperands.From(decimal.Parse(number, CultureInfo.InvariantCulture));
+
+        // Assert
+        Assert.Equal(digits, operands.FractionDigits);
+        Assert.Equal(significantDigits, operands.SignificantFractionDigits);
+        Assert.Equal(value, operands.FractionValue);
+        Assert.Equal(significantValue, operands.SignificantFractionValue);
+    }
+
+    [Fact]
+    public void Should_report_no_exponent_for_a_number_written_out_in_full()
+        => Assert.Equal(0, PluralOperands.From(1000000m).Exponent);
 }

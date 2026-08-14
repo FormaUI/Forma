@@ -6,7 +6,7 @@ using System.Reflection;
 using Forma.Framework.Localization.Parser;
 
 /// <summary>Reads the strings for one base name, walking the culture chain and falling back to the key itself.</summary>
-internal sealed class JsonStringLocale(JsonResourceCache cache, Assembly assembly, string baseName, PluralExpressionEvaluator plural, string sourceLanguage) : IStringLocale
+internal sealed class JsonStringLocale(JsonResourceCache cache, Assembly assembly, string baseName, PluralExpressionEvaluator plural, CultureInfo sourceCulture) : IStringLocale
 {
     public LocalizedText this[string name]
     {
@@ -102,7 +102,7 @@ internal sealed class JsonStringLocale(JsonResourceCache cache, Assembly assembl
     private string Evaluate(string format, bool found, IReadOnlyList<object?> arguments)
         => plural.Evaluate(
             format,
-            found ? CultureInfo.CurrentUICulture.TwoLetterISOLanguageName : sourceLanguage,
+            found ? CultureInfo.CurrentUICulture : sourceCulture,
             CultureInfo.CurrentUICulture,
             arguments);
 

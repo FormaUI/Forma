@@ -232,7 +232,7 @@
 
     private static string CategoryFor(decimal count)
     {
-        var category = PluralRuleSet.Default.Select(Language, PluralOperands.From(count));
+        var category = CommonPluralRuleSet.Default.Select(Language, PluralOperands.From(count));
 
         return category?.ToString().ToLowerInvariant() ?? "other";
     }

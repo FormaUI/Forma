@@ -1,6 +1,6 @@
 # Forma.Framework.Localization
 
-JSON-backed localization, and the CLDR plural rules for the languages Forma ships with.
+JSON-backed localization.
 
 ## Translation files
 
@@ -88,20 +88,8 @@ itself inflects. A category the language never selects is ignored, and a categor
 expression omits falls back to `other`; with no `other` field the result is empty. A malformed
 expression is left as written.
 
-`PluralRuleSet` carries the cardinal rules from **CLDR 48**. `PluralRuleSet.Default` is a shared
-stateless instance.
-
-| Language | Categories |
-| --- | --- |
-| `en` | one, other |
-| `es` | one, many, other |
-| `it` | one, many, other |
-| `fr` | one, many, other |
-| `he` | one, two, other |
-| `ar` | zero, one, two, few, many, other |
-
 Rules read CLDR operands rather than a bare integer, so `1` and `1.0` can differ: `1.0` is `one` in
-Spanish and `other` in English. `Select` returns `null` for a language it carries no rules for.
+Spanish and `other` in English. The rules themselves live in `Forma.Framework.Localization.Abstractions`.
 
 `SourceLanguage` names the language the keys are written in, and defaults to `en`. A key with no
 translation is shown as written, so its plural forms resolve under that language rather than the one

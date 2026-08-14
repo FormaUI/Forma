@@ -1,6 +1,6 @@
-namespace Forma.Framework.Localization.Tests.Language;
+namespace Forma.Framework.Localization.Abstractions.Tests.Language;
 
-public sealed class PluralRuleSetTests
+public sealed class CommonPluralRuleSetTests
 {
     [Theory]
     // English distinguishes only one, and a visible fraction leaves it.
@@ -51,7 +51,7 @@ public sealed class PluralRuleSetTests
         var value = decimal.Parse(number, CultureInfo.InvariantCulture);
 
         // Act
-        var category = PluralRuleSet.Default.Select(language, PluralOperands.From(value));
+        var category = CommonPluralRuleSet.Default.Select(language, PluralOperands.From(value));
 
         // Assert
         Assert.Equal(expected, category);
@@ -61,7 +61,7 @@ public sealed class PluralRuleSetTests
     public void Should_report_a_language_it_carries_no_rules_for()
     {
         // Act
-        var category = PluralRuleSet.Default.Select("ru", PluralOperands.From(2m));
+        var category = CommonPluralRuleSet.Default.Select("zxx", PluralOperands.From(2m));
 
         // Assert
         Assert.Null(category);
@@ -71,7 +71,7 @@ public sealed class PluralRuleSetTests
     public void Should_fall_back_to_other_for_a_language_it_carries_no_rules_for()
     {
         // Act
-        var category = PluralRuleSet.Default.Select(CultureInfo.GetCultureInfo("ru"), 2m);
+        var category = CommonPluralRuleSet.Default.Select(CultureInfo.GetCultureInfo("zxx"), 2m);
 
         // Assert
         Assert.Equal(PluralCategory.Other, category);
@@ -81,7 +81,7 @@ public sealed class PluralRuleSetTests
     public void Should_read_the_language_from_a_culture()
     {
         // Act
-        var category = PluralRuleSet.Default.Select(CultureInfo.GetCultureInfo("he-IL"), 2m);
+        var category = CommonPluralRuleSet.Default.Select(CultureInfo.GetCultureInfo("he-IL"), 2m);
 
         // Assert
         Assert.Equal(PluralCategory.Two, category);
@@ -91,7 +91,7 @@ public sealed class PluralRuleSetTests
     public void Should_treat_a_negative_count_by_its_magnitude()
     {
         // Act
-        var category = PluralRuleSet.Default.Select("ar", PluralOperands.From(-2m));
+        var category = CommonPluralRuleSet.Default.Select("ar", PluralOperands.From(-2m));
 
         // Assert
         Assert.Equal(PluralCategory.Two, category);
@@ -99,5 +99,5 @@ public sealed class PluralRuleSetTests
 
     [Fact]
     public void Should_reject_a_null_culture()
-        => Assert.Throws<ArgumentNullException>(() => PluralRuleSet.Default.Select(culture: null!, 1m));
+        => Assert.Throws<ArgumentNullException>(() => CommonPluralRuleSet.Default.Select(culture: null!, 1m));
 }

@@ -11,8 +11,8 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
 {
     private readonly ConcurrentDictionary<string, IStringLocale> _locales = new(StringComparer.Ordinal);
     private readonly JsonResourceCache _cache = new();
-    private readonly PluralExpressionEvaluator _plural = new(PluralRuleSet.Default);
-    private readonly string _sourceLanguage;
+    private readonly PluralExpressionEvaluator _plural = new(CommonPluralRuleSet.Default);
+    private readonly CultureInfo _sourceCulture;
     private readonly string _resourcesPath;
 
     /// <summary>Creates a factory reading files that sit beside the types they translate.</summary>
@@ -27,8 +27,9 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
         ArgumentNullException.ThrowIfNull(options);
         ArgumentException.ThrowIfNullOrWhiteSpace(options.SourceLanguage);
 
-        _sourceLanguage = CultureInfo.GetCultureInfo(options.SourceLanguage).TwoLetterISOLanguageName;
-        if (_sourceLanguage.Length == 0)
+        // A regional value survives, because CLDR keys a few of its rule sets by region rather than language.
+        _sourceCulture = CultureInfo.GetCultureInfo(options.SourceLanguage);
+        if (_sourceCulture.Name.Length == 0)
         {
             throw new ArgumentException($"'{options.SourceLanguage}' names no language.", nameof(options));
         }
@@ -96,5 +97,5 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
             : $"{assemblyName}.{_resourcesPath}.{relativeName}";
 
     private IStringLocale GetOrAdd(Assembly assembly, string baseName)
-        => _locales.GetOrAdd($"{assembly.FullName}|{baseName}", _ => new JsonStringLocale(_cache, assembly, baseName, _plural, _sourceLanguage));
+        => _locales.GetOrAdd($"{assembly.FullName}|{baseName}", _ => new JsonStringLocale(_cache, assembly, baseName, _plural, _sourceCulture));
 }
