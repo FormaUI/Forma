@@ -10,11 +10,8 @@ using Forma.Framework.Localization.Language;
 public sealed class JsonStringLocaleFactory : IStringLocaleFactory
 {
     private readonly ConcurrentDictionary<string, IStringLocale> _locales = new(StringComparer.Ordinal);
-    private readonly JsonResourceCache _cache = new();
-    private readonly PluralExpressionEvaluator _plural = new(CommonPluralRuleSet.Default);
-    private readonly CultureInfo _sourceCulture;
+    private readonly JsonLocaleContext _context;
     private readonly string _resourcesPath;
-    private readonly bool _requireMatchingLocalization;
 
     /// <summary>Creates a factory reading files that sit beside the types they translate.</summary>
     public JsonStringLocaleFactory()
@@ -29,14 +26,19 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
         ArgumentException.ThrowIfNullOrWhiteSpace(options.SourceLanguage);
 
         // A regional value survives, because CLDR keys a few of its rule sets by region rather than language.
-        _sourceCulture = CultureInfo.GetCultureInfo(options.SourceLanguage);
-        if (_sourceCulture.Name.Length == 0)
+        var sourceCulture = CultureInfo.GetCultureInfo(options.SourceLanguage);
+        if (sourceCulture.Name.Length == 0)
         {
             throw new ArgumentException($"'{options.SourceLanguage}' names no language.", nameof(options));
         }
 
+        _context = new JsonLocaleContext(
+            new JsonResourceCache(),
+            sourceCulture,
+            new PluralExpressionEvaluator(CommonPluralRuleSet.Default),
+            options);
+
         _resourcesPath = NormalizePath(options.ResourcesPath);
-        _requireMatchingLocalization = options.RequireMatchingLocalization;
     }
 
     /// <summary>Creates a locale for the strings belonging to a type.</summary>
@@ -99,7 +101,5 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
             : $"{assemblyName}.{_resourcesPath}.{relativeName}";
 
     private IStringLocale GetOrAdd(Assembly assembly, string baseName)
-        => _locales.GetOrAdd(
-            $"{assembly.FullName}|{baseName}",
-            _ => new JsonStringLocale(_cache, assembly, baseName, _plural, _sourceCulture, _requireMatchingLocalization));
+        => _locales.GetOrAdd($"{assembly.FullName}|{baseName}", _ => new JsonStringLocale(_context, assembly, baseName));
 }

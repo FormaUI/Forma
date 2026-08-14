@@ -6,13 +6,7 @@ using System.Reflection;
 using Forma.Framework.Localization.Parser;
 
 /// <summary>Reads the strings for one base name, walking the culture chain and falling back to the key itself.</summary>
-internal sealed class JsonStringLocale(
-    JsonResourceCache cache,
-    Assembly assembly,
-    string baseName,
-    PluralExpressionEvaluator plural,
-    CultureInfo sourceCulture,
-    bool requireMatchingLocalization) : IStringLocale
+internal sealed class JsonStringLocale(JsonLocaleContext context, Assembly assembly, string baseName) : IStringLocale
 {
     public LocalizedText this[string name]
     {
@@ -93,7 +87,7 @@ internal sealed class JsonStringLocale(
 
         for (var culture = CultureInfo.CurrentUICulture; culture.Name.Length != 0; culture = culture.Parent)
         {
-            var file = cache.Read(assembly, baseName, culture);
+            var file = context.Cache.Read(assembly, baseName, culture);
             if (file is not null)
             {
                 foreach (var entry in file)
@@ -118,16 +112,16 @@ internal sealed class JsonStringLocale(
 
     // The text a plural expression inflects decides the rules, so source-language text follows the source language.
     private string Evaluate(string format, bool translated, IReadOnlyList<object?> arguments)
-        => plural.Evaluate(
+        => context.PluralEvaluator.Evaluate(
             format,
-            translated ? CultureInfo.CurrentUICulture : sourceCulture,
+            translated ? CultureInfo.CurrentUICulture : context.SourceCulture,
             CultureInfo.CurrentUICulture,
             arguments);
 
     // Listing every string stays a survey rather than a demand, so it reports a miss instead of refusing it.
     private void RequireFound(string name, bool found)
     {
-        if (!found && requireMatchingLocalization)
+        if (!found && context.Options.RequireMatchingLocalization)
         {
             throw new LocalizationNotFoundException(
                 $"'{baseName}' carries no translation of '{name}' for '{CultureInfo.CurrentUICulture.Name}'.");
@@ -138,7 +132,7 @@ internal sealed class JsonStringLocale(
     {
         for (var culture = CultureInfo.CurrentUICulture; culture.Name.Length != 0; culture = culture.Parent)
         {
-            var file = cache.Read(assembly, baseName, culture);
+            var file = context.Cache.Read(assembly, baseName, culture);
             if (file is not null && file.TryGetValue(name, out entry))
             {
                 return true;
@@ -154,7 +148,7 @@ internal sealed class JsonStringLocale(
     {
         for (var culture = CultureInfo.CurrentUICulture; culture.Name.Length != 0; culture = culture.Parent)
         {
-            var file = cache.Read(assembly, baseName, culture);
+            var file = context.Cache.Read(assembly, baseName, culture);
             if (file is not null && file.GetAlternateLookup<ReadOnlySpan<char>>().TryGetValue(name, out entry))
             {
                 return true;
