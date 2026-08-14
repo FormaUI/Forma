@@ -63,4 +63,24 @@ public sealed class PluralExpressionEvaluatorLanguageTests
         // Assert
         Assert.Equal("0.5 files", evaluated);
     }
+
+    [Fact]
+    public void Should_select_by_the_text_language_and_group_for_the_reader()
+    {
+        // Act
+        var evaluated = Evaluator.Evaluate(English, "en", CultureInfo.GetCultureInfo("es-CO"), [1234.5m]);
+
+        // Assert
+        Assert.Equal("1.234,5 files", evaluated);
+    }
+
+    [Fact]
+    public void Should_fall_back_to_other_when_the_text_names_no_language()
+    {
+        // Act
+        var evaluated = Evaluator.Evaluate(English, string.Empty, CultureInfo.GetCultureInfo("en"), [1]);
+
+        // Assert
+        Assert.Equal("1 files", evaluated);
+    }
 }

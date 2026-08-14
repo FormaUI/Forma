@@ -372,12 +372,12 @@ public sealed class JsonStringLocaleTests
     }
 
     [Fact]
-    public void Should_evaluate_an_untranslated_key_with_the_primary_language_rules()
+    public void Should_evaluate_an_untranslated_key_with_the_source_language_rules()
     {
         // Arrange — the key is Hebrew, whose dual the displayed language does not have.
         const string Key = "[$ [0] plural; one: פריט אחד; two: שני פריטים; other: # פריטים; $]";
         using var culture = new CultureScope("en");
-        var strings = new JsonStringLocaleFactory(new JsonLocalizationOptions { PrimaryCulture = "he" }).Create(typeof(Untranslated));
+        var strings = new JsonStringLocaleFactory(new JsonLocalizationOptions { SourceLanguage = "he" }).Create(typeof(Untranslated));
 
         // Act
         var two = strings[Key, 2];
@@ -387,6 +387,40 @@ public sealed class JsonStringLocaleTests
     }
 
     [Fact]
-    public void Should_reject_a_blank_primary_culture()
-        => Assert.Throws<ArgumentException>(() => new JsonStringLocaleFactory(new JsonLocalizationOptions { PrimaryCulture = " " }));
+    public void Should_reject_a_blank_source_language()
+        => Assert.Throws<ArgumentException>(() => new JsonStringLocaleFactory(new JsonLocalizationOptions { SourceLanguage = " " }));
+
+    [Fact]
+    public void Should_reject_a_source_language_naming_no_language()
+        => Assert.Throws<ArgumentException>(() => new JsonStringLocaleFactory(new JsonLocalizationOptions { SourceLanguage = "x-test" }));
+
+    [Fact]
+    public void Should_read_a_regional_source_language_as_its_language()
+    {
+        // Arrange — the key is Hebrew, and only Hebrew's rules carry a dual.
+        const string Key = "[$ [0] plural; one: פריט אחד; two: שני פריטים; other: # פריטים; $]";
+        using var culture = new CultureScope("en");
+        var strings = new JsonStringLocaleFactory(new JsonLocalizationOptions { SourceLanguage = "he-IL" }).Create(typeof(Untranslated));
+
+        // Act
+        var two = strings[Key, 2];
+
+        // Assert
+        Assert.Equal("שני פריטים", two.Value);
+    }
+
+    [Fact]
+    public void Should_format_an_untranslated_count_for_the_reader()
+    {
+        // Arrange — the key is English, but its count belongs to the culture on screen.
+        const string Key = "[$ [0] plural; one: # file; other: # files; $]";
+        using var culture = new CultureScope("es-CO");
+        var strings = new JsonStringLocaleFactory(new JsonLocalizationOptions { SourceLanguage = "en" }).Create(typeof(Untranslated));
+
+        // Act
+        var many = strings[Key, 1234.5m];
+
+        // Assert
+        Assert.Equal("1.234,5 files", many.Value);
+    }
 }

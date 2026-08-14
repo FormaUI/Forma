@@ -163,7 +163,7 @@
 
 <div class="demo-section">
     <h2>@L["The language the keys are written in"]</h2>
-    <p class="desc">@L["This key has no translation, so it is shown exactly as authored — in Hebrew. Its plural forms have to follow Hebrew, whatever language is on screen, and PrimaryCulture is what says so."]</p>
+    <p class="desc">@L["This key has no translation, so it is shown exactly as authored — in Hebrew. Its plural forms have to follow Hebrew, whatever language is on screen, and SourceLanguage is what says so."]</p>
     <div class="demo-box">
         <table class="demo-table">
             <thead>
@@ -174,12 +174,12 @@
             </thead>
             <tbody>
                 <tr>
-                    <th><code dir="ltr">PrimaryCulture = "en"</code></th>
-                    <td>@EnglishPrimary[HebrewSourceKey, 2].Value</td>
+                    <th><code dir="ltr">SourceLanguage = "en"</code></th>
+                    <td>@EnglishSource[HebrewSourceKey, 2].Value</td>
                 </tr>
                 <tr>
-                    <th><code dir="ltr">PrimaryCulture = "he"</code></th>
-                    <td>@HebrewPrimary[HebrewSourceKey, 2].Value</td>
+                    <th><code dir="ltr">SourceLanguage = "he"</code></th>
+                    <td>@HebrewSource[HebrewSourceKey, 2].Value</td>
                 </tr>
             </tbody>
         </table>
@@ -214,11 +214,11 @@
 
     private static readonly decimal[] Samples = [0m, 0.5m, 1m, 1.0m, 2m, 3m, 5m, 11m, 100m, 1000000m];
 
-    private static readonly IStringLocale EnglishPrimary =
+    private static readonly IStringLocale EnglishSource =
         new JsonStringLocaleFactory().Create(typeof(LocalizationPage));
 
-    private static readonly IStringLocale HebrewPrimary =
-        new JsonStringLocaleFactory(new JsonLocalizationOptions { PrimaryCulture = "he" }).Create(typeof(LocalizationPage));
+    private static readonly IStringLocale HebrewSource =
+        new JsonStringLocaleFactory(new JsonLocalizationOptions { SourceLanguage = "he" }).Create(typeof(LocalizationPage));
 
     private int _written = 5;
     private int _allowed = 280;

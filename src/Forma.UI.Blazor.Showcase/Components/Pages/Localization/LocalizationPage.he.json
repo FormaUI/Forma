@@ -41,7 +41,7 @@
   "Renders as": "מוצג כ",
   "nothing at all": "כלום בכלל",
   "The language the keys are written in": "השפה שבה נכתבו המפתחות",
-  "This key has no translation, so it is shown exactly as authored — in Hebrew. Its plural forms have to follow Hebrew, whatever language is on screen, and PrimaryCulture is what says so.": "למפתח הזה אין תרגום, ולכן הוא מוצג בדיוק כפי שנכתב — בעברית. צורות הרבים שלו חייבות ללכת אחר העברית, בכל שפה שעל המסך, ו-PrimaryCulture הוא שקובע זאת.",
+  "This key has no translation, so it is shown exactly as authored — in Hebrew. Its plural forms have to follow Hebrew, whatever language is on screen, and SourceLanguage is what says so.": "למפתח הזה אין תרגום, ולכן הוא מוצג בדיוק כפי שנכתב — בעברית. צורות הרבים שלו חייבות ללכת אחר העברית, בכל שפה שעל המסך, ו-SourceLanguage הוא שקובע זאת.",
   "Setting": "הגדרה",
   "Forma's own keys are English, so the default already matches and nothing needs configuring.": "המפתחות של Forma עצמה הם באנגלית, כך שברירת המחדל כבר תואמת ואין מה להגדיר.",
   "Holes left open": "חורים שנשארים פתוחים",

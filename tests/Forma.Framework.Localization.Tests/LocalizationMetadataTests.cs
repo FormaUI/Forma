@@ -112,7 +112,7 @@ public sealed class LocalizationMetadataTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var strings = new JsonStringLocaleFactory(new JsonLocalizationOptions { PrimaryCulture = "es" }).Create(typeof(Colocated));
+        var strings = new JsonStringLocaleFactory(new JsonLocalizationOptions { SourceLanguage = "es" }).Create(typeof(Colocated));
 
         // Act
         var localized = strings["Today"];

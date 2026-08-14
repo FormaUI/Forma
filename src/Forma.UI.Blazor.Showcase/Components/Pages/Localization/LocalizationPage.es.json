@@ -41,7 +41,7 @@
   "Renders as": "Se muestra como",
   "nothing at all": "nada en absoluto",
   "The language the keys are written in": "El idioma en que están escritas las claves",
-  "This key has no translation, so it is shown exactly as authored — in Hebrew. Its plural forms have to follow Hebrew, whatever language is on screen, and PrimaryCulture is what says so.": "Esta clave no tiene traducción, así que se muestra tal como se escribió: en hebreo. Sus formas de plural deben seguir al hebreo, sea cual sea el idioma en pantalla, y PrimaryCulture es lo que lo indica.",
+  "This key has no translation, so it is shown exactly as authored — in Hebrew. Its plural forms have to follow Hebrew, whatever language is on screen, and SourceLanguage is what says so.": "Esta clave no tiene traducción, así que se muestra tal como se escribió: en hebreo. Sus formas de plural deben seguir al hebreo, sea cual sea el idioma en pantalla, y SourceLanguage es lo que lo indica.",
   "Setting": "Ajuste",
   "Forma's own keys are English, so the default already matches and nothing needs configuring.": "Las claves de Forma están en inglés, así que el valor predeterminado ya coincide y no hay nada que configurar.",
   "Holes left open": "Huecos que quedan abiertos",

@@ -18,6 +18,16 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules)
     {
         ArgumentNullException.ThrowIfNull(format);
         ArgumentNullException.ThrowIfNull(culture);
+
+        return Evaluate(format, culture.TwoLetterISOLanguageName, culture, arguments);
+    }
+
+    /// <summary>Replaces every plural expression, selecting the field by the language the text is written in and formatting the count for the reader.</summary>
+    public string Evaluate(string format, string language, CultureInfo culture, IReadOnlyList<object?> arguments)
+    {
+        ArgumentNullException.ThrowIfNull(format);
+        ArgumentNullException.ThrowIfNull(language);
+        ArgumentNullException.ThrowIfNull(culture);
         ArgumentNullException.ThrowIfNull(arguments);
 
         // An expression the parser rejected is absent from the result, so its text survives rather than vanishing.
@@ -37,7 +47,7 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules)
             // An expression named for something else keeps its text, so whatever owns it can still find it.
             if (expression.KeywordSpan.Slice(format).SequenceEqual(LocaleExpressionParser.PluralKeyword))
             {
-                AppendField(builder, format, expression, culture, arguments);
+                AppendField(builder, format, expression, language, culture, arguments);
             }
             else
             {
@@ -52,11 +62,11 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules)
         return builder.ToString();
     }
 
-    private void AppendField(StringBuilder builder, string text, LocaleExpression expression, CultureInfo culture, IReadOnlyList<object?> arguments)
+    private void AppendField(StringBuilder builder, string text, LocaleExpression expression, string language, CultureInfo culture, IReadOnlyList<object?> arguments)
     {
         var count = expression.ArgumentIndex < arguments.Count ? ToDecimal(arguments[expression.ArgumentIndex]) : 0m;
         var operands = PluralOperands.From(count);
-        var wanted = _rules.Select(culture.TwoLetterISOLanguageName, operands) ?? PluralCategory.Other;
+        var wanted = _rules.Select(language, operands) ?? PluralCategory.Other;
 
         var selected = Select(text, expression.Fields, wanted) ?? Select(text, expression.Fields, PluralCategory.Other);
         if (selected is not { } field)

@@ -68,7 +68,7 @@ and their order, and that a file declares the current schema rather than one lef
 
 ```csharp
 services.AddJsonLocalization();
-services.AddJsonLocalization(new JsonLocalizationOptions { ResourcesPath = "Resources", PrimaryCulture = "es" });
+services.AddJsonLocalization(new JsonLocalizationOptions { ResourcesPath = "Resources", SourceLanguage = "es" });
 ```
 
 Registers `IStringLocale<T>` and `IStringLocaleFactory`, plus the framework's `IStringLocalizer<T>` and
@@ -77,13 +77,13 @@ Registers `IStringLocale<T>` and `IStringLocaleFactory`, plus the framework's `I
 ## Plural rules
 
 A translation resolves the expression `[$ [index] plural; category: text; $]` before its holes are
-filled, where `#` stands for the count formatted for the culture.
+filled, where `#` stands for the count formatted for the reader's culture.
 
 ```json
 "{0} selected": "[$ [0] plural; one: נבחר אחד; two: שניים נבחרו; other: # נבחרו; $]"
 ```
 
-An expression may sit in the translation alone, so a key carries one only where the primary language
+An expression may sit in the translation alone, so a key carries one only where the source language
 itself inflects. A category the language never selects is ignored, and a category it selects but the
 expression omits falls back to `other`; with no `other` field the result is empty. A malformed
 expression is left as written.
@@ -103,6 +103,7 @@ stateless instance.
 Rules read CLDR operands rather than a bare integer, so `1` and `1.0` can differ: `1.0` is `one` in
 Spanish and `other` in English. `Select` returns `null` for a language it carries no rules for.
 
-`PrimaryCulture` names the language the keys are written in, and defaults to `en`. A key with no
+`SourceLanguage` names the language the keys are written in, and defaults to `en`. A key with no
 translation is shown as written, so its plural forms resolve under that language rather than the one
-on screen — a Hebrew key keeps its dual in front of an English reader.
+on screen — a Hebrew key keeps its dual in front of an English reader. The count itself still follows
+the reader, so an English key shows `1.234,5` to a Colombian.
