@@ -77,7 +77,7 @@ internal sealed class JsonStringLocale(JsonResourceCache cache, Assembly assembl
     {
         var seen = new HashSet<string>(StringComparer.Ordinal);
 
-        for (var culture = CultureInfo.CurrentUICulture; ; culture = culture.Parent)
+        for (var culture = CultureInfo.CurrentUICulture; culture.Name.Length != 0; culture = culture.Parent)
         {
             var file = cache.Read(assembly, baseName, culture);
             if (file is not null)
@@ -91,7 +91,7 @@ internal sealed class JsonStringLocale(JsonResourceCache cache, Assembly assembl
                 }
             }
 
-            if (!includeParentCultures || culture.Name.Length == 0)
+            if (!includeParentCultures)
             {
                 yield break;
             }
@@ -104,39 +104,33 @@ internal sealed class JsonStringLocale(JsonResourceCache cache, Assembly assembl
 
     private bool TryFind(string name, out JsonResourceEntry entry)
     {
-        for (var culture = CultureInfo.CurrentUICulture; ; culture = culture.Parent)
+        for (var culture = CultureInfo.CurrentUICulture; culture.Name.Length != 0; culture = culture.Parent)
         {
             var file = cache.Read(assembly, baseName, culture);
             if (file is not null && file.TryGetValue(name, out entry))
             {
                 return true;
             }
-
-            if (culture.Name.Length == 0)
-            {
-                entry = default;
-
-                return false;
-            }
         }
+
+        entry = default;
+
+        return false;
     }
 
     private bool TryFindBySpan(ReadOnlySpan<char> name, out JsonResourceEntry entry)
     {
-        for (var culture = CultureInfo.CurrentUICulture; ; culture = culture.Parent)
+        for (var culture = CultureInfo.CurrentUICulture; culture.Name.Length != 0; culture = culture.Parent)
         {
             var file = cache.Read(assembly, baseName, culture);
             if (file is not null && file.GetAlternateLookup<ReadOnlySpan<char>>().TryGetValue(name, out entry))
             {
                 return true;
             }
-
-            if (culture.Name.Length == 0)
-            {
-                entry = default;
-
-                return false;
-            }
         }
+
+        entry = default;
+
+        return false;
     }
 }

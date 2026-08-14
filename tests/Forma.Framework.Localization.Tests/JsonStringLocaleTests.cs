@@ -148,44 +148,6 @@ public sealed class JsonStringLocaleTests
     }
 
     [Fact]
-    public void Should_read_a_neutral_file_when_no_culture_is_set()
-    {
-        // Arrange
-        using var culture = new CultureScope("en");
-        var strings = Locale<NeutralBacked>();
-
-        // Act
-        var localized = strings["Cancel"];
-
-        // Assert
-        Assert.Multiple(() =>
-        {
-            Assert.Equal("Cancel", localized.Value);
-            Assert.False(localized.ResourceNotFound);
-        });
-    }
-
-    [Fact]
-    public void Should_fall_through_a_culture_file_to_the_neutral_one()
-    {
-        // Arrange
-        using var culture = new CultureScope("he");
-        var strings = Locale<NeutralBacked>();
-
-        // Act
-        var translated = strings["Save"];
-        var inherited = strings["Cancel"];
-
-        // Assert
-        Assert.Multiple(() =>
-        {
-            Assert.Equal("שמור", translated.Value);
-            Assert.Equal("Cancel", inherited.Value);
-            Assert.False(inherited.ResourceNotFound);
-        });
-    }
-
-    [Fact]
     public void Should_read_a_culture_file_kept_in_the_main_assembly()
     {
         // Arrange

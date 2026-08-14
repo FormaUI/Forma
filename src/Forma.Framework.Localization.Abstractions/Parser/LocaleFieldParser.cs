@@ -2,17 +2,51 @@ namespace Forma.Framework.Localization.Parser;
 
 using Forma.Framework.Localization.Parser.Syntax;
 
-/// <summary>Reads the <c>name: value;</c> pairs that make up an expression body or a metadata entry.</summary>
-internal static class LocaleFieldParser
+/// <summary>Reads the <c>name: value;</c> pairs that make up an expression body or a file's metadata.</summary>
+public static class LocaleFieldParser
 {
     private const string Separator = "; ";
+
+    /// <summary>Reads a standalone field list, such as the value of a file's metadata entry.</summary>
+    /// <param name="text">The whole list, ending with a semicolon.</param>
+    /// <remarks>
+    /// Whitespace around the list is ignored, because a hand-edited file should not fail on a character
+    /// its author cannot see. The linter is what holds the list to its exact written form.
+    /// </remarks>
+    public static LocaleFieldResult Parse(string text)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+
+        var diagnostics = new List<LocaleDiagnostic>();
+
+        var start = 0;
+        while (start < text.Length && char.IsWhiteSpace(text[start]))
+        {
+            start++;
+        }
+
+        var end = text.Length;
+        while (end > start && char.IsWhiteSpace(text[end - 1]))
+        {
+            end--;
+        }
+
+        if (end == start || text[end - 1] != ';')
+        {
+            diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.MissingTrailingSemicolon, new LocaleTextSpan(0, text.Length)));
+
+            return new LocaleFieldResult([], diagnostics);
+        }
+
+        return new LocaleFieldResult(Parse(text, new LocaleTextSpan(start, end - start - 1), [], diagnostics), diagnostics);
+    }
 
     /// <summary>Splits a body into its pairs, reporting what is wrong rather than throwing.</summary>
     /// <param name="text">The whole text the offsets index into.</param>
     /// <param name="body">The range holding the pairs, without the trailing semicolon.</param>
     /// <param name="knownNames">The names this body may use, or empty to accept any name.</param>
     /// <param name="diagnostics">Collects what was found wrong.</param>
-    public static List<LocaleField> Parse(
+    internal static List<LocaleField> Parse(
         string text,
         LocaleTextSpan body,
         ReadOnlySpan<string> knownNames,

@@ -13,11 +13,23 @@ public sealed class GenericArity<TValue>;
 /// <summary>Files reached through the configured resources folder rather than from beside the type.</summary>
 public sealed class PathScoped;
 
-/// <summary>A culture file backed by a neutral one holding the keys it omits.</summary>
-public sealed class NeutralBacked;
-
 /// <summary>A culture file kept out of a satellite, so it stays in the main assembly.</summary>
 public sealed class MainAssembly;
 
 /// <summary>A translation carrying a plural expression.</summary>
 public sealed class Pluralized;
+
+/// <summary>A file carrying no metadata entry at all.</summary>
+public sealed class Unmarked;
+
+/// <summary>A file whose metadata entry does not parse as a field list.</summary>
+public sealed class MalformedMetadata;
+
+/// <summary>A file written for a schema major this build does not read.</summary>
+public sealed class FutureSchema;
+
+/// <summary>A file written for a later minor schema, carrying a field this build does not know.</summary>
+public sealed class NewerMinor;
+
+/// <summary>A file declaring a culture other than the one its own name gives it.</summary>
+public sealed class MismatchedCulture;

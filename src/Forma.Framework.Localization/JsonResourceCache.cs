@@ -23,7 +23,7 @@ internal sealed class JsonResourceCache
 
     private static FrozenDictionary<string, JsonResourceEntry>? Load(CacheKey key)
     {
-        var name = key.CultureName.Length == 0 ? $"{key.BaseName}.json" : $"{key.BaseName}.{key.CultureName}.json";
+        var name = $"{key.BaseName}.{key.CultureName}.json";
 
         using var stream = OpenSatellite(key) ?? key.Assembly.GetManifestResourceStream(name);
         if (stream is null)
@@ -31,19 +31,17 @@ internal sealed class JsonResourceCache
             return null;
         }
 
-        var entries = JsonSerializer.Deserialize<Dictionary<string, string>>(stream, SerializerOptions);
-        return entries?.ToFrozenDictionary(entry => entry.Key, entry => new JsonResourceEntry(entry.Key, entry.Value), StringComparer.Ordinal) ?? [];
+        var entries = JsonSerializer.Deserialize<Dictionary<string, string>>(stream, SerializerOptions) ?? [];
+
+        LocalizationMetadata.Consume(entries, name, key.CultureName);
+
+        return entries.ToFrozenDictionary(entry => entry.Key, entry => new JsonResourceEntry(entry.Key, entry.Value), StringComparer.Ordinal);
     }
 
     // The SDK reads the culture out of a Name.culture.json file and moves it to a satellite assembly,
     // where the name it lands under has the culture stripped back off.
     private static Stream? OpenSatellite(CacheKey key)
     {
-        if (key.CultureName.Length == 0)
-        {
-            return null;
-        }
-
         try
         {
             var satellite = key.Assembly.GetSatelliteAssembly(CultureInfo.GetCultureInfo(key.CultureName));

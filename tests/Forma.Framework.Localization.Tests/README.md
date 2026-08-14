@@ -20,8 +20,8 @@ breaks it silently: a miss returns the key itself, so an assertion sees English 
 and third branches. A type rooted outside the assembly bypasses it entirely.
 
 The reader then looks for `{baseName}.json` inside the satellite assembly for the current UI culture,
-falling back to `{baseName}.{culture}.json` in the main assembly, walking `CultureInfo.Parent` until the
-neutral culture is reached.
+falling back to `{baseName}.{culture}.json` in the main assembly, walking `CultureInfo.Parent` and
+stopping before the invariant culture, which no file can name.
 
 ## Why each folder exists
 
@@ -46,11 +46,16 @@ precisely what the test asserts, so the duplicated `Fixtures` segment is require
 | `Colocated` | `…Tests.Fixtures` | The default layout, in two cultures, regional fallback to a parent, and that it stops being found once `ResourcesPath` is set | `Fixtures/Colocated.{he,es}.json` |
 | `Untranslated` | `…Tests.Fixtures` | No file in any culture, so the key comes back | *(none, deliberately)* |
 | `GenericArity<T>` | `…Tests.Fixtures` | The `` `1 `` arity is dropped from the file name | `Fixtures/GenericArity.he.json` |
-| `NeutralBacked` | `…Tests.Fixtures` | A culture file backed by a neutral one for the keys it omits | `Fixtures/NeutralBacked.he.json`, `NeutralBacked.json` |
 | `MainAssembly` | `…Tests.Fixtures` | A culture file kept out of a satellite | `Fixtures/MainAssembly.he.json` |
 | `PathScoped` | `…Tests.Fixtures` | `ResourcesPath` inserting a segment, with the namespace tail mirrored beneath it | `Resources/Fixtures/PathScoped.he.json` |
 | `ForeignRoot` | `Contoso.Widgets` | An assembly whose name does not lead its types' root namespace | `Fixtures/Foreign/ForeignRoot.he.json` |
 | `GlobalRoot` | *(none)* | A type declared without a namespace | `Fixtures/GlobalRoot.he.json` |
+| `Pluralized` | `…Tests.Fixtures` | A translation carrying a plural expression | `Fixtures/Pluralized.he.json` |
+| `Unmarked` | `…Tests.Fixtures` | A file carrying no metadata entry | `Fixtures/Unmarked.he.json` |
+| `MalformedMetadata` | `…Tests.Fixtures` | A metadata value that is not a field list | `Fixtures/MalformedMetadata.he.json` |
+| `FutureSchema` | `…Tests.Fixtures` | A schema major this build refuses | `Fixtures/FutureSchema.he.json` |
+| `NewerMinor` | `…Tests.Fixtures` | A later minor schema, and a metadata field this build ignores | `Fixtures/NewerMinor.he.json` |
+| `MismatchedCulture` | `…Tests.Fixtures` | A declared culture the file name contradicts | `Fixtures/MismatchedCulture.he.json` |
 
 ## The csproj entries
 
