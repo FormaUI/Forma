@@ -3,8 +3,8 @@
   "Zoom": "Zoom",
   "Zoom out": "Alejar",
   "Zoom in": "Acercar",
-  "Open {0} in a new tab.": "Abre {0} en una pestaña nueva.",
-  "Download {0}": "Descargar {0}",
+  "Open {DisplayName} in a new tab.": "Abre {DisplayName} en una pestaña nueva.",
+  "Download {DisplayName}": "Descargar {DisplayName}",
   "Previous": "Anterior",
   "Next": "Siguiente"
 }

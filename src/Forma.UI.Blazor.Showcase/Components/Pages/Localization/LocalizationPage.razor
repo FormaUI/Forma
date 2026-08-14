@@ -74,7 +74,15 @@
             <label class="demo-field">@L["Written"] <input type="number" class="demo-number" @bind="_written" @bind:event="oninput" /></label>
             <label class="demo-field">@L["Allowed"] <input type="number" class="demo-number" @bind="_allowed" @bind:event="oninput" /></label>
         </div>
-        <p>@L["{0} of {1} characters", _written, _allowed]</p>
+        <p>@L["{written} of {allowed} characters", ("written", _written), ("allowed", _allowed)]</p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Values paired by position"]</h2>
+    <p class="desc">@L["The names mark where the holes are, and the values are paired with them in the order the key writes them, so any expression can be passed. A translation refers to the holes by name, so it may put them in another order — the Hebrew here does."]</p>
+    <div class="demo-box">
+        <p>@L["Stored {stored} of {total}.", _written, _allowed]</p>
     </div>
 </div>
 
@@ -83,7 +91,7 @@
     <p class="desc">@L["The handler rebuilds the composite key from the literal text between the holes, then looks that up. The values never touch the key."]</p>
     <div class="demo-box">
         <p>@L[$"Stored {_written} of {_allowed}."]</p>
-        <p class="demo-note">@L["Rebuilt key"]: <code dir="ltr">Stored {0} of {1}.</code></p>
+        <p class="demo-note">@L["Rebuilt key"]: <code dir="ltr">Stored {_written} of {_allowed}.</code></p>
     </div>
 </div>
 
@@ -127,17 +135,17 @@
 
 <div class="demo-section">
     <h2>@L["A count written two ways"]</h2>
-    <p class="desc">@L["Both stand for the count. The hash is substituted while the plural is resolved and carries the culture's grouping; the numbered hole survives until the holes are filled."]</p>
+    <p class="desc">@L["Both stand for the count. The hash is substituted while the plural is resolved and carries the culture's grouping; the named hole survives until the holes are filled."]</p>
     <div class="demo-box">
         <table class="demo-table">
             <tbody>
                 <tr>
                     <th><code dir="ltr">#</code></th>
-                    <td>@L["[$ [0] plural; other: #; $]", 1234567]</td>
+                    <td>@L["[$ plural; other: #; $]", 1234567]</td>
                 </tr>
                 <tr>
-                    <th><code dir="ltr">{0}</code></th>
-                    <td>@L["{0}", 1234567]</td>
+                    <th><code dir="ltr">{count}</code></th>
+                    <td>@L["{count}", ("count", 1234567)]</td>
                 </tr>
             </tbody>
         </table>
@@ -209,9 +217,9 @@
 
 @code {
     private const string AbsentKey = "No translation exists for this sentence.";
-    private const string PluralKey = "[$ [0] plural; one: # file; other: # files; $]";
-    private const string IncompleteKey = "[$ [0] plural; one: # file; $]";
-    private const string HebrewSourceKey = "[$ [0] plural; one: פריט אחד; two: שני פריטים; other: # פריטים; $]";
+    private const string PluralKey = "[$ plural; one: # file; other: # files; $]";
+    private const string IncompleteKey = "[$ plural; one: # file; $]";
+    private const string HebrewSourceKey = "[$ plural; one: פריט אחד; two: שני פריטים; other: # פריטים; $]";
 
     private static readonly decimal[] Samples = [0m, 0.5m, 1m, 1.0m, 2m, 3m, 5m, 11m, 100m, 1000000m];
 
@@ -229,7 +237,7 @@
         => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
 
     private LocalizedPattern Pattern
-        => L.Resolve("{0} of {1} characters", _written, _allowed);
+        => L.Resolve("{written} of {allowed} characters", ("written", _written), ("allowed", _allowed));
 
     private static string CategoryFor(decimal count)
     {

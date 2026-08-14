@@ -2,12 +2,12 @@ namespace Forma.UI.Components.Input;
 
 using System.Diagnostics.CodeAnalysis;
 
+using Forma.Framework.Localization;
 using Forma.UI.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
 
 /// <summary>A themed single-select: a trigger button opening an anchored, keyboard-navigable option list.</summary>
@@ -32,7 +32,7 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
     /// <summary>Disables user interaction.</summary>
     [Parameter] public bool Disabled { get; set; }
 
-    [Inject] private IStringLocalizer<FormaSelect> L { get; set; } = default!;
+    [Inject] private IStringLocale<FormaSelect> L { get; set; } = default!;
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
@@ -275,6 +275,6 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
 }
 
 // Non-generic marker sharing FormaSelect's translation files across every closed instantiation —
-// IStringLocalizer<T> keys resources off T's FullName, which for an open generic type
+// IStringLocale<T> keys resources off T's FullName, which for an open generic type
 // includes its type arguments and would never match the embedded resource name.
 internal abstract class FormaSelect;

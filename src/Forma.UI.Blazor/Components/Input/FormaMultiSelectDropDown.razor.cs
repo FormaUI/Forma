@@ -3,12 +3,12 @@ namespace Forma.UI.Components.Input;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
+using Forma.Framework.Localization;
 using Forma.UI.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
 
 /// <summary>A multi-select component whose chosen values render as removable tags above a searchable checkbox-list popup.</summary>
@@ -38,7 +38,7 @@ public sealed partial class FormaMultiSelectDropDown<TValue> : InputBase<List<TV
     /// <summary>Disables user interaction.</summary>
     [Parameter] public bool Disabled { get; set; }
 
-    [Inject] private IStringLocalizer<FormaMultiSelectDropDown> L { get; set; } = default!;
+    [Inject] private IStringLocale<FormaMultiSelectDropDown> L { get; set; } = default!;
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
@@ -70,9 +70,16 @@ public sealed partial class FormaMultiSelectDropDown<TValue> : InputBase<List<TV
             .Compare(o.Label, _searchText.Trim(), CompareOptions.IgnoreCase) == 0);
 
     private string TriggerText
-        => SelectedValues.Count == 0
-            ? Placeholder ?? L["Select options"]
-            : L["{0} selected", SelectedValues.Count];
+    {
+        get
+        {
+            var selected = SelectedValues.Count;
+
+            return selected == 0
+                ? Placeholder ?? L["Select options"]
+                : L[$"{selected} selected"];
+        }
+    }
 
     protected override void OnInitialized()
         => _module = new JsModule(JS, ModulePath);
@@ -216,6 +223,6 @@ public sealed partial class FormaMultiSelectDropDown<TValue> : InputBase<List<TV
 }
 
 // Non-generic marker sharing FormaMultiSelectDropDown's translation files across every closed instantiation —
-// IStringLocalizer<T> keys resources off T's FullName, which for an open generic type
+// IStringLocale<T> keys resources off T's FullName, which for an open generic type
 // includes its type arguments and would never match the embedded resource name.
 internal abstract class FormaMultiSelectDropDown;

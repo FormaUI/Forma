@@ -2,6 +2,6 @@
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "This video is unavailable.": "הסרטון אינו זמין.",
   "Open this video on its own site.": "פתחו את הסרטון באתר שלו.",
-  "Play {0}": "נגנו את {0}",
+  "Play {Title}": "נגנו את {Title}",
   "Loads from another site, which will see this visit.": "נטען מאתר אחר, שידע על הביקור הזה."
 }

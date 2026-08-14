@@ -1,11 +1,11 @@
 namespace Forma.UI.Components.Media;
 
+using Forma.Framework.Localization;
 using Forma.Framework.Media;
 using Forma.UI.Components.Media.Providers;
 using Forma.UI.Interop;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
 
 /// <summary>A player for a file the browser can fetch, or a video a hosting service embeds.</summary>
@@ -48,7 +48,7 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
-    [Inject] private IStringLocalizer<FormaVideoPlayer> L { get; set; } = default!;
+    [Inject] private IStringLocale<FormaVideoPlayer> L { get; set; } = default!;
 
     [Inject] private NavigationManager Navigation { get; set; } = default!;
 

@@ -13,7 +13,7 @@
   "Something went wrong.": "משהו השתבש.",
   "New version available.": "גרסה חדשה זמינה.",
   "Disk space is running low.": "שטח הדיסק עומד להיגמר.",
-  "Dismisses in {0} second(s).": "נעלם בעוד {0} שניות.",
+  "Dismisses in {seconds} second(s).": "נעלם בעוד {seconds} שניות.",
   "First toast": "התראה ראשונה",
   "Second toast": "התראה שנייה",
   "Third toast": "התראה שלישית"

@@ -3,7 +3,7 @@
 @rendermode InteractiveServer
 @using Microsoft.AspNetCore.Components.Forms
 @using Forma.UI.Components.Input
-@inject IStringLocalizer<FormaButtonPage> L
+@inject IStringLocale<FormaButtonPage> L
 
 <h1>FormaButton</h1>
 <p class="desc">@L["The Forma button. Five variants set its visual weight, two sizes set its density, and a busy state animates while work is in flight. Pure CSS — no JavaScript."]</p>
@@ -39,7 +39,7 @@
                      OnClick="@(() => Record(L["Edit"]))">@L["Edit"]</FormaButton>
         <FormaButton Variant="ButtonVariant.Tertiary"
                      OnClick="@(() => Record(L["Delete"]))">@L["Delete"]</FormaButton>
-        <span class="demo-note">@L["Last action: {0}", _lastAction ?? L["none yet"]]</span>
+        <span class="demo-note">@L["Last action: {action}", ("action", _lastAction ?? L["none yet"].Value)]</span>
     </div>
 </div>
 
@@ -80,7 +80,7 @@
             </div>
         </EditForm>
         <p class="demo-note">
-            @L["Bound value: {0}", string.IsNullOrEmpty(Model.Name) ? L["(empty)"].Value : Model.Name]
+            @L["Bound value: {value}", ("value", string.IsNullOrEmpty(Model.Name) ? L["(empty)"].Value : Model.Name)]
         </p>
     </div>
 </div>

@@ -13,7 +13,7 @@
   "Something went wrong.": "Algo salió mal.",
   "New version available.": "Nueva versión disponible.",
   "Disk space is running low.": "El espacio en disco se está agotando.",
-  "Dismisses in {0} second(s).": "Se descarta en {0} segundo(s).",
+  "Dismisses in {seconds} second(s).": "Se descarta en {seconds} segundo(s).",
   "First toast": "Primer toast",
   "Second toast": "Segundo toast",
   "Third toast": "Tercer toast"

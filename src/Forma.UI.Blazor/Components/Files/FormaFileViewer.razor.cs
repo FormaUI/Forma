@@ -2,13 +2,13 @@ namespace Forma.UI.Components.Files;
 
 using System.Globalization;
 
+using Forma.Framework.Localization;
 using Forma.Framework.Resources;
 using Forma.UI.Components.Files.Providers;
 using Forma.UI.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
 
 /// <summary>Renders whatever resource a source address resolves to, through the first provider that claims it.</summary>
@@ -36,7 +36,7 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
     /// <summary>Replaces the built-in fallback shown when no provider claims the address.</summary>
     [Parameter] public RenderFragment<string>? UnsupportedTemplate { get; set; }
 
-    [Inject] private IStringLocalizer<FormaFileViewer> L { get; set; } = default!;
+    [Inject] private IStringLocale<FormaFileViewer> L { get; set; } = default!;
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 

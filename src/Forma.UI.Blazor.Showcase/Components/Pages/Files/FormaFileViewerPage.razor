@@ -2,7 +2,7 @@
 @attribute [ShowcasePage("FormaFileViewer")]
 @rendermode InteractiveServer
 @using Forma.UI.Components.Files
-@inject IStringLocalizer<FormaFileViewerPage> L
+@inject IStringLocale<FormaFileViewerPage> L
 
 <h1>FormaFileViewer</h1>
 <p class="desc">@L["Give it an address and the first provider that claims it decides what the resource is; the viewer then renders whatever came back — an image, a video, audio, an embedded document, converted markup, or a download link."]</p>
@@ -93,7 +93,7 @@
     <div class="demo-box">
         <FormaFileViewer Source="/media/archive.zip">
             <UnsupportedTemplate>
-                <p class="showcase-custom-fallback">@L["No preview for {0}.", context]</p>
+                <p class="showcase-custom-fallback">@L[$"No preview for {context}."]</p>
             </UnsupportedTemplate>
         </FormaFileViewer>
     </div>

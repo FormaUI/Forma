@@ -2,17 +2,21 @@ namespace Forma.UI.Components.Input;
 
 using System.Diagnostics.CodeAnalysis;
 
+using Forma.Framework.Localization;
 using Forma.UI.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
 
 /// <summary>A password field with a toggle that reveals the typed value.</summary>
 public sealed partial class FormaPasswordInput : InputBase<string?>, IAsyncDisposable
 {
     private const string ModulePath = "./_content/Forma.UI/Components/Input/FormaInput.razor.js";
+
+    // The lengths the built-in rating scores a point at; the longer one is also what the advice asks for.
+    private const int ScoredLength = 8;
+    private const int WellScoredLength = 12;
 
     private readonly string _inputId = $"fld-{Guid.NewGuid():N}";
     private ElementReference _inputRef;
@@ -24,7 +28,7 @@ public sealed partial class FormaPasswordInput : InputBase<string?>, IAsyncDispo
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
-    [Inject] private IStringLocalizer<FormaPasswordInput> L { get; set; } = default!;
+    [Inject] private IStringLocale<FormaPasswordInput> L { get; set; } = default!;
 
     /// <summary>The floating label text.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
@@ -71,12 +75,12 @@ public sealed partial class FormaPasswordInput : InputBase<string?>, IAsyncDispo
         var score = 0;
         var effectiveLength = RepeatingUnitLength(value);
 
-        if (effectiveLength >= 8)
+        if (effectiveLength >= ScoredLength)
         {
             score++;
         }
 
-        if (effectiveLength >= 12)
+        if (effectiveLength >= WellScoredLength)
         {
             score++;
         }
@@ -178,9 +182,9 @@ public sealed partial class FormaPasswordInput : InputBase<string?>, IAsyncDispo
             yield return L["Avoid repeating the same characters."];
         }
 
-        if (effectiveLength < 12)
+        if (effectiveLength < WellScoredLength)
         {
-            yield return L["Use at least 12 characters."];
+            yield return L["[$ plural; one: Use at least # character.; other: Use at least # characters.; $]", WellScoredLength];
         }
 
         if (!HasMixedCase(value))

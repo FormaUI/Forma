@@ -7,11 +7,11 @@
   "Rolled back": "Revertido",
   "Skipped": "Omitido",
   "Stored": "Guardado",
-  "Stored {0} of {1}.": "Se guardaron {0} de {1}.",
+  "Stored {stored} of {total}.": "Se guardaron {stored} de {total}.",
   "Upload": "Subir",
   "Uploading": "Subiendo",
-  "Uploading {0} of {1}.": "Subiendo {0} de {1}.",
+  "Uploading {started} of {total}.": "Subiendo {started} de {total}.",
   "Waiting": "En espera",
-  "{0} of {1}": "{0} de {1}",
-  "{0} left": "quedan {0}"
+  "{sent} of {size}": "{sent} de {size}",
+  "{remaining} left": "quedan {remaining}"
 }

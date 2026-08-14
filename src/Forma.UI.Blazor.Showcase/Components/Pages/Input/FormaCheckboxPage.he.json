@@ -10,5 +10,5 @@
   "Off": "כבוי",
   "On": "פעיל",
   "Select all": "בחר הכול",
-  "Item {0}": "פריט {0}"
+  "Item {number}": "פריט {number}"
 }

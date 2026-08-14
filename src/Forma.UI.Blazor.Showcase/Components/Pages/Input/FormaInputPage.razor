@@ -4,7 +4,7 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using System.ComponentModel.DataAnnotations
 @using Forma.UI.Components.Input
-@inject IStringLocalizer<FormaInputPage> L
+@inject IStringLocale<FormaInputPage> L
 
 <h1>FormaInput</h1>
 <p class="desc">@L["Text input with a floating label that animates above the field on focus or when a value is present. Supports validation, required indicator, and autofill detection."]</p>
@@ -87,7 +87,7 @@
     }
 
     // Validated through IValidatableObject because a DataAnnotations attribute cannot reach the localizer.
-    private sealed class ValidationDemoModel(IStringLocalizer<FormaInputPage> localizer) : IValidatableObject
+    private sealed class ValidationDemoModel(IStringLocale<FormaInputPage> localizer) : IValidatableObject
     {
         public string? ProjectName { get; set; }
 

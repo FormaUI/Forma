@@ -3,7 +3,7 @@
 @rendermode InteractiveServer
 @using Forma.UI.Components.Feedback
 @inject IToastService ToastService
-@inject IStringLocalizer<FormaToastPage> L
+@inject IStringLocale<FormaToastPage> L
 
 <h1>FormaToast</h1>
 <p class="desc">@L["Slide-in toast notifications via a service. Auto-dismiss with configurable duration."]</p>
@@ -41,7 +41,12 @@
     private Task ShowError() => ToastService.ShowAsync(L["Something went wrong."], ToastType.Error);
     private Task ShowInfo() => ToastService.ShowAsync(L["New version available."], ToastType.Info);
     private Task ShowWarning() => ToastService.ShowAsync(L["Disk space is running low."], ToastType.Warning);
-    private Task ShowTimed(int ms) => ToastService.ShowAsync(L["Dismisses in {0} second(s).", ms / 1000], ToastType.Info, TimeSpan.FromMilliseconds(ms));
+    private Task ShowTimed(int ms)
+    {
+        var seconds = ms / 1000;
+
+        return ToastService.ShowAsync(L[$"Dismisses in {seconds} second(s)."], ToastType.Info, TimeSpan.FromMilliseconds(ms));
+    }
 
     private async Task ShowMultiple()
     {

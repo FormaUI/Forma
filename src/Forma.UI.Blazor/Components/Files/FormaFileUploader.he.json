@@ -7,11 +7,11 @@
   "Rolled back": "בוטל והוסר",
   "Skipped": "דולג",
   "Stored": "נשמר",
-  "Stored {0} of {1}.": "נשמרו {0} מתוך {1}.",
+  "Stored {stored} of {total}.": "נשמרו {stored} מתוך {total}.",
   "Upload": "העלאה",
   "Uploading": "מעלה",
-  "Uploading {0} of {1}.": "מעלה {0} מתוך {1}.",
+  "Uploading {started} of {total}.": "מעלה {started} מתוך {total}.",
   "Waiting": "ממתין",
-  "{0} of {1}": "{0} מתוך {1}",
-  "{0} left": "נותרו {0}"
+  "{sent} of {size}": "{sent} מתוך {size}",
+  "{remaining} left": "נותרו {remaining}"
 }

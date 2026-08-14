@@ -2,14 +2,14 @@ namespace Forma.UI.Blazor.Showcase.Components.Pages.Indicators;
 
 using Forma.Framework.Css;
 using Forma.Framework.Indicators;
+using Forma.Framework.Localization;
 using Forma.UI.Components.Indicators;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.Localization;
 
 public sealed partial class FormaStatusBadgePage : ComponentBase
 {
-    [Inject] private IStringLocalizer<FormaStatusBadgePage> L { get; set; } = default!;
+    [Inject] private IStringLocale<FormaStatusBadgePage> L { get; set; } = default!;
 
     [Inject] private IStatusBadgeCatalog Catalog { get; set; } = default!;
 

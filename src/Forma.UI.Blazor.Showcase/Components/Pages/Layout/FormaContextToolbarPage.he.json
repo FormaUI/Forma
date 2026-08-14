@@ -8,7 +8,7 @@
   "Without a clear button": "ללא כפתור ניקוי",
   "Several actions": "מספר פעולות",
   "Caller-supplied caption": "כותרת מותאמת אישית",
-  "7 comments awaiting moderation": "7 תגובות ממתינות לאישור",
+  "[$ plural; one: # comment awaiting moderation; other: # comments awaiting moderation; $]": "[$ plural; one: תגובה אחת ממתינה לאישור; two: שתי תגובות ממתינות לאישור; other: # תגובות ממתינות לאישור; $]",
   "Toggle selection": "החלף בחירה",
   "Delete": "מחק",
   "Publish": "פרסם",

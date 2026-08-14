@@ -3,7 +3,7 @@
   "Pagination": "Paginación",
   "Previous": "Anterior",
   "Next": "Siguiente",
-  "Page {0}": "Página {0}",
+  "Page {pageNumber}": "Página {pageNumber}",
   "Go to page": "Ir a la página",
   "Go": "Ir"
 }

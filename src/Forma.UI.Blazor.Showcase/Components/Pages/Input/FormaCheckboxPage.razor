@@ -2,7 +2,7 @@
 @attribute [ShowcasePage("FormaCheckbox")]
 @rendermode InteractiveServer
 @using Forma.UI.Components.Input
-@inject IStringLocalizer<FormaCheckboxPage> L
+@inject IStringLocale<FormaCheckboxPage> L
 
 <h1>FormaCheckbox</h1>
 <p class="desc">@L["A styled checkbox with a script-driven indeterminate state, and an option to suppress the native toggle so the caller owns the checked state, as a tri-state select-all does."]</p>
@@ -32,7 +32,7 @@
             @for (var i = 0; i < _children.Length; i++)
             {
                 var index = i;
-                <FormaCheckbox Checked="_children[index]" CheckedChanged="v => _children[index] = v">@L["Item {0}", index + 1]</FormaCheckbox>
+                <FormaCheckbox Checked="_children[index]" CheckedChanged="v => _children[index] = v">@L["Item {number}", ("number", index + 1)]</FormaCheckbox>
             }
         </div>
     </div>

@@ -6,11 +6,11 @@
   "Starting by hand": "התחלה ידנית",
   "With AutoStart off the set waits, so a host can confirm or edit the queue before anything crosses the wire.": "כאשר AutoStart כבוי הקבוצה ממתינה, כך שהמארח יכול לאשר או לערוך את התור לפני שדבר עובר בקו.",
   "A small quota, where only some of the set fits": "מכסה קטנה, שבה רק חלק מהקבוצה נכנס",
-  "This store refuses anything over {0}, so a photo is turned away while a text file goes through. Each refusal is reported on its own and the rest of the set still continues.": "המאגר הזה מסרב לכל קובץ מעל {0}, ולכן תמונה נדחית בעוד שקובץ טקסט עובר. כל סירוב מדווח בנפרד ושאר הקבוצה ממשיכה.",
+  "This store refuses anything over {SmallMarkup}, so a photo is turned away while a text file goes through. Each refusal is reported on its own and the rest of the set still continues.": "המאגר הזה מסרב לכל קובץ מעל {SmallMarkup}, ולכן תמונה נדחית בעוד שקובץ טקסט עובר. כל סירוב מדווח בנפרד ושאר הקבוצה ממשיכה.",
   "A medium quota, stopping at the first failure": "מכסה בינונית, עם עצירה בכישלון הראשון",
-  "This store takes up to {0}. With StopOnFailure the set gives up as soon as one file is refused, and everything after it is marked skipped rather than attempted.": "המאגר הזה מקבל עד {0}. עם StopOnFailure הקבוצה נעצרת ברגע שקובץ אחד נדחה, וכל מה שאחריו מסומן כמדולג במקום שייעשה ניסיון.",
+  "This store takes up to {MediumMarkup}. With StopOnFailure the set gives up as soon as one file is refused, and everything after it is marked skipped rather than attempted.": "המאגר הזה מקבל עד {MediumMarkup}. עם StopOnFailure הקבוצה נעצרת ברגע שקובץ אחד נדחה, וכל מה שאחריו מסומן כמדולג במקום שייעשה ניסיון.",
   "A large quota, undoing a set that failed": "מכסה גדולה, עם ביטול קבוצה שנכשלה",
-  "This store takes up to {0}. With RollbackOnFailure everything already stored is removed again when any file fails, so the set is all or nothing — watch the store's contents empty out.": "המאגר הזה מקבל עד {0}. עם RollbackOnFailure כל מה שכבר נשמר מוסר שוב כאשר קובץ כלשהו נכשל, כך שהקבוצה היא הכול או לא כלום — אפשר לראות את תוכן המאגר מתרוקן.",
+  "This store takes up to {LargeMarkup}. With RollbackOnFailure everything already stored is removed again when any file fails, so the set is all or nothing — watch the store's contents empty out.": "המאגר הזה מקבל עד {LargeMarkup}. עם RollbackOnFailure כל מה שכבר נשמר מוסר שוב כאשר קובץ כלשהו נכשל, כך שהקבוצה היא הכול או לא כלום — אפשר לראות את תוכן המאגר מתרוקן.",
   "Uploads across a range of file sizes": "העלאות במגוון גדלים של קבצים",
   "The sandbox contains generated 4 KB, 256 KB, 2 MB, 100 MB, and 1 GB files. Pick any combination to exercise short and sustained transfers from:": "ארגז החול מכיל קבצים שנוצרו בגודל 4 KB, 256 KB, 2 MB, 100 MB ו-1 GB. בחרו כל שילוב כדי לבדוק העברות קצרות וממושכות מתוך:",
   "Every new selection clears the upload directory before its first file is written:": "כל בחירה חדשה מנקה את תיקיית ההעלאה לפני כתיבת הקובץ הראשון שלה:",
@@ -20,8 +20,8 @@
   "ShowTotalMetrics and ShowSummary are switched off here, so nothing is reported beneath the files: no totals line and no status message. Each row still carries its own measurements.": "כאן ShowTotalMetrics ו-ShowSummary כבויים, ולכן לא מדווח דבר מתחת לקבצים: אין שורת סיכום ואין הודעת מצב. כל שורה עדיין מציגה את המדידות שלה.",
   "A slow store, and cancelling it": "מאגר איטי, וביטולו",
   "This store pauses between reads so the progress bar is watchable and the cancel action is reachable. Anything not yet stored when you cancel is marked cancelled.": "המאגר הזה משהה בין קריאות כדי שסרגל ההתקדמות יהיה נצפה ופעולת הביטול תהיה נגישה. כל מה שטרם נשמר בעת הביטול מסומן כמבוטל.",
-  "Stored at {0}": "נשמר בכתובת {0}",
-  "{0} was refused: {1}": "{0} נדחה: {1}",
+  "Stored at {source}": "נשמר בכתובת {source}",
+  "{name} was refused: {reason}": "{name} נדחה: {reason}",
   "The store is holding nothing.": "המאגר אינו מחזיק דבר.",
-  "The store is holding: {0}": "המאגר מחזיק: {0}"
+  "The store is holding: {names}": "המאגר מחזיק: {names}"
 }

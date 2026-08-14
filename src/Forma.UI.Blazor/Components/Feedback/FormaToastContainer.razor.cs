@@ -1,9 +1,9 @@
 namespace Forma.UI.Components.Feedback;
 
 using Forma.Framework.Feedback;
+using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.Localization;
 
 public sealed partial class FormaToastContainer : IDisposable
 {
@@ -11,7 +11,7 @@ public sealed partial class FormaToastContainer : IDisposable
 
     [Inject] private IToastService ToastService { get; set; } = default!;
 
-    [Inject] private IStringLocalizer<FormaToastContainer> L { get; set; } = default!;
+    [Inject] private IStringLocale<FormaToastContainer> L { get; set; } = default!;
 
     protected override void OnInitialized() => ToastService.Subscribe(HandleChangeAsync);
 

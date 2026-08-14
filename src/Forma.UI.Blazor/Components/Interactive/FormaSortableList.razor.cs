@@ -1,9 +1,9 @@
 namespace Forma.UI.Components.Interactive;
 
+using Forma.Framework.Localization;
 using Forma.UI.Interop;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
 
 /// <summary>A list whose items can be reordered by dragging a handle or moving a focused item with the keyboard.</summary>
@@ -34,7 +34,7 @@ public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisp
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
-    [Inject] private IStringLocalizer<FormaSortableList> L { get; set; } = default!;
+    [Inject] private IStringLocale<FormaSortableList> L { get; set; } = default!;
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
@@ -89,7 +89,12 @@ public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisp
             : "forma-sortable-list";
 
     private string HandleLabel(int index)
-        => L["Reorder item {0} of {1}. Drag, or use arrow keys to move.", index + 1, Items.Count];
+    {
+        var position = index + 1;
+        var total = Items.Count;
+
+        return L[$"Reorder item {position} of {total}. Drag, or use arrow keys to move."];
+    }
 
     // sourceIndex and targetIndex are the two items' positions before either moves; removing
     // the source shifts every later index down by one, which only matters when the target
@@ -124,7 +129,11 @@ public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisp
         // same position would announce once; an alternating zero-width space keeps each
         // announcement a distinct string without altering what is read out.
         _announcementAlternate = !_announcementAlternate;
-        _announcement = L["Moved to position {0} of {1}.", newIndex + 1, reordered.Count]
+
+        var position = newIndex + 1;
+        var total = reordered.Count;
+
+        _announcement = L[$"Moved to position {position} of {total}."]
             + (_announcementAlternate ? "\u200B" : string.Empty);
 
         // Announced regardless of whether or when the host feeds the reordered list back,
@@ -148,6 +157,6 @@ public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisp
 }
 
 // Non-generic marker sharing FormaSortableList's translation files across every closed instantiation —
-// IStringLocalizer<T> keys resources off T's FullName, which for an open generic type
+// IStringLocale<T> keys resources off T's FullName, which for an open generic type
 // includes its type arguments and would never match the embedded resource name.
 internal abstract class FormaSortableList;

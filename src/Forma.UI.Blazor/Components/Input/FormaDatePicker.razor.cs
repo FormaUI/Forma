@@ -2,15 +2,20 @@ namespace Forma.UI.Components.Input;
 
 using System.Globalization;
 
+using Forma.Framework.Localization;
 using Forma.UI.Interop;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
 
 public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
 {
     private const string ModulePath = "./_content/Forma.UI/scripts/AnchoredPopup.js";
+
+    // The rolling windows the Last7Days and Last30Days presets cover, ending today.
+    private const int ShortRangeDays = 7;
+    private const int LongRangeDays = 30;
+
     // ── Single-date mode ─────────────────────────────
     [Parameter] public DateOnly? Value { get; set; }
     [Parameter] public EventCallback<DateOnly?> ValueChanged { get; set; }
@@ -31,7 +36,7 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
-    [Inject] private IStringLocalizer<FormaDatePicker> L { get; set; } = default!;
+    [Inject] private IStringLocale<FormaDatePicker> L { get; set; } = default!;
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
@@ -590,8 +595,8 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
         {
             Preset.Today => (today, today),
             Preset.Yesterday => (today.AddDays(-1), today.AddDays(-1)),
-            Preset.Last7Days => (today.AddDays(-6), today),
-            Preset.Last30Days => (today.AddDays(-29), today),
+            Preset.Last7Days => (today.AddDays(-(ShortRangeDays - 1)), today),
+            Preset.Last30Days => (today.AddDays(-(LongRangeDays - 1)), today),
             Preset.ThisMonth => (CalendarMonthStart(CalendarYear(today), CalendarMonth(today)), today),
             Preset.LastMonth => CalendarLastMonthRange(today),
             _ => (today, today)

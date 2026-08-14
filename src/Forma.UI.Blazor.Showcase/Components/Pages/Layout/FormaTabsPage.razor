@@ -2,7 +2,7 @@
 @attribute [ShowcasePage("FormaTabs")]
 @rendermode InteractiveServer
 @using Forma.UI.Components.Layout
-@inject IStringLocalizer<FormaTabsPage> L
+@inject IStringLocale<FormaTabsPage> L
 
 <h1>FormaTabs</h1>
 <p class="desc">@L["Tab container for organizing page content. Used in page editors, product editors, and settings pages."]</p>
@@ -45,11 +45,15 @@
     <h2>@L["Many Tabs"]</h2>
     <div class="demo-box">
         <FormaTabs>
-            <FormaTab Title="@L["Tab 1"]"><p>@L["Content for tab 1."]</p></FormaTab>
-            <FormaTab Title="@L["Tab 2"]"><p>@L["Content for tab 2."]</p></FormaTab>
-            <FormaTab Title="@L["Tab 3"]"><p>@L["Content for tab 3."]</p></FormaTab>
-            <FormaTab Title="@L["Tab 4"]"><p>@L["Content for tab 4."]</p></FormaTab>
-            <FormaTab Title="@L["Tab 5"]"><p>@L["Content for tab 5."]</p></FormaTab>
+            @for (var index = 1; index <= ManyTabCount; index++)
+            {
+                var number = index;
+                <FormaTab Title="@(L[$"Tab {number}"])"><p>@L[$"Content for tab {number}."]</p></FormaTab>
+            }
         </FormaTabs>
     </div>
 </div>
+
+@code {
+    private const int ManyTabCount = 5;
+}

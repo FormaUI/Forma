@@ -2,15 +2,20 @@ namespace Forma.UI.Blazor.Showcase.Components.Pages.Data;
 
 using System.ComponentModel.DataAnnotations;
 
+using Forma.Framework.Localization;
 using Forma.UI.Components.Data;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.Extensions.Localization;
 
 public sealed partial class FormaDataGridPage : ComponentBase
 {
-    [Inject] private IStringLocalizer<FormaDataGridPage> L { get; set; } = default!;
+    private const int SelectionLimit = 3;
+    private const int ManyRowCount = 47;
+    private const int ManyPageSize = 10;
+    private const int HugeRowCount = 5000;
+
+    [Inject] private IStringLocale<FormaDataGridPage> L { get; set; } = default!;
 
     private static readonly IQueryable<Employee> _employees = new[]
     {
@@ -22,11 +27,11 @@ public sealed partial class FormaDataGridPage : ComponentBase
         new Employee(6, "Frank Lee", "Sales", true),
     }.AsQueryable();
 
-    private static readonly IQueryable<GridItem> _manyItems = Enumerable.Range(1, 47)
+    private static readonly IQueryable<GridItem> _manyItems = Enumerable.Range(1, ManyRowCount)
         .Select(id => new GridItem(id, $"Sample item {id}"))
         .AsQueryable();
 
-    private static readonly IQueryable<GridItem> _hugeItems = Enumerable.Range(1, 5000)
+    private static readonly IQueryable<GridItem> _hugeItems = Enumerable.Range(1, HugeRowCount)
         .Select(id => new GridItem(id, $"Sample item {id}"))
         .AsQueryable();
 

@@ -3,12 +3,12 @@ namespace Forma.UI.Components.Files;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
+using Forma.Framework.Localization;
 using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Localization;
 
 /// <summary>Moves picked files into an <see cref="IFileStore"/>, reporting progress for each.</summary>
 public sealed partial class FormaFileUploader : ComponentBase, IDisposable
@@ -35,7 +35,7 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
 
     [Inject] private IServiceProvider Services { get; set; } = default!;
 
-    [Inject] private IStringLocalizer<FormaFileUploader> L { get; set; } = default!;
+    [Inject] private IStringLocale<FormaFileUploader> L { get; set; } = default!;
 
     private IFileStore _activeStore = default!;
 
@@ -96,7 +96,9 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
         {
             if (Options.ShowEstimate && IsUploading && Estimate is { } estimate)
             {
-                return L["{0} left", ResourceFormatter.FromDuration(estimate)];
+                var remaining = ResourceFormatter.FromDuration(estimate);
+
+                return L[$"{remaining} left"];
             }
 
             return Options.ShowElapsed ? ResourceFormatter.FromDuration(SetElapsed) : string.Empty;
@@ -112,14 +114,18 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
                 return string.Empty;
             }
 
+            var total = _uploads.Count;
+
             if (IsUploading)
             {
-                return L["Uploading {0} of {1}.", _uploads.Count(upload => upload.State > UploadState.Pending), _uploads.Count];
+                var started = _uploads.Count(upload => upload.State > UploadState.Pending);
+
+                return L[$"Uploading {started} of {total}."];
             }
 
             var stored = _uploads.Count(upload => upload.State == UploadState.Completed);
 
-            return L["Stored {0} of {1}.", stored, _uploads.Count];
+            return L[$"Stored {stored} of {total}."];
         }
     }
 
@@ -244,7 +250,9 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
             && upload.State == UploadState.Uploading
             && EstimateOf(upload.Transferred, upload.Size, upload.Elapsed) is { } estimate)
         {
-            return L["{0} left", ResourceFormatter.FromDuration(estimate)];
+            var remaining = ResourceFormatter.FromDuration(estimate);
+
+            return L[$"{remaining} left"];
         }
 
         return Options.ShowElapsed ? ResourceFormatter.FromDuration(upload.Elapsed) : string.Empty;
@@ -252,9 +260,17 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
 
     // A transfer that reached its total is just that size; repeating it as "3 MB of 3 MB" says nothing.
     private string ByteCountOf(long transferred, long total)
-        => transferred >= total
-            ? ResourceFormatter.FromByteCount(total)
-            : L["{0} of {1}", ResourceFormatter.FromByteCount(transferred), ResourceFormatter.FromByteCount(total)];
+    {
+        if (transferred >= total)
+        {
+            return ResourceFormatter.FromByteCount(total);
+        }
+
+        var sent = ResourceFormatter.FromByteCount(transferred);
+        var size = ResourceFormatter.FromByteCount(total);
+
+        return L[$"{sent} of {size}"];
+    }
 
     // Measurements move with the clock rather than with progress, so a stalled transfer keeps counting.
     private async Task TickAsync()

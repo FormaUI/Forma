@@ -1,5 +1,5 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
-  "{0} selected": "[$ [0] plural; one: # seleccionado; other: # seleccionados; $]",
+  "{selected} selected": "[$ [selected] plural; one: # seleccionado; other: # seleccionados; $]",
   "Clear selection": "Borrar selección"
 }

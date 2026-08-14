@@ -44,7 +44,7 @@
 
 <div class="demo-section">
     <h2>@L["A small quota, where only some of the set fits"]</h2>
-    <p class="desc">@((MarkupString)L["This store refuses anything over {0}, so a photo is turned away while a text file goes through. Each refusal is reported on its own and the rest of the set still continues.", SmallMarkup].Value)</p>
+    <p class="desc">@((MarkupString)L[$"This store refuses anything over {SmallMarkup}, so a photo is turned away while a text file goes through. Each refusal is reported on its own and the rest of the set still continues."].Value)</p>
     <div class="demo-box">
         <FormaFilePicker OnFilesSelected="@(files => Accept("small", files))" />
         <FormaFileUploader Store="@Store("small")"
@@ -63,7 +63,7 @@
 
 <div class="demo-section">
     <h2>@L["A medium quota, stopping at the first failure"]</h2>
-    <p class="desc">@((MarkupString)L["This store takes up to {0}. With StopOnFailure the set gives up as soon as one file is refused, and everything after it is marked skipped rather than attempted.", MediumMarkup].Value)</p>
+    <p class="desc">@((MarkupString)L[$"This store takes up to {MediumMarkup}. With StopOnFailure the set gives up as soon as one file is refused, and everything after it is marked skipped rather than attempted."].Value)</p>
     <div class="demo-box">
         <FormaFilePicker OnFilesSelected="@(files => Accept("stop", files))" />
         <FormaFileUploader Store="@Store("stop")"
@@ -83,7 +83,7 @@
 
 <div class="demo-section">
     <h2>@L["A large quota, undoing a set that failed"]</h2>
-    <p class="desc">@((MarkupString)L["This store takes up to {0}. With RollbackOnFailure everything already stored is removed again when any file fails, so the set is all or nothing — watch the store's contents empty out.", LargeMarkup].Value)</p>
+    <p class="desc">@((MarkupString)L[$"This store takes up to {LargeMarkup}. With RollbackOnFailure everything already stored is removed again when any file fails, so the set is all or nothing — watch the store's contents empty out."].Value)</p>
     <div class="demo-box">
         <FormaFilePicker OnFilesSelected="@(files => Accept("rollback", files))" />
         <FormaFileUploader Store="@Store("rollback")"

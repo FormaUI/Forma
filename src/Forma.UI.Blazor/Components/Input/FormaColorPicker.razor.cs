@@ -3,9 +3,10 @@ namespace Forma.UI.Components.Input;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
+using Forma.Framework.Localization;
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.Extensions.Localization;
 
 public sealed partial class FormaColorPicker : InputBase<string>
 {
@@ -17,7 +18,7 @@ public sealed partial class FormaColorPicker : InputBase<string>
     /// <summary>When true, shows an alpha (opacity) slider and accepts 8-digit hex values.</summary>
     [Parameter] public bool ShowAlpha { get; set; }
 
-    [Inject] private IStringLocalizer<FormaColorPicker> L { get; set; } = default!;
+    [Inject] private IStringLocale<FormaColorPicker> L { get; set; } = default!;
 
     private string RgbHex => CurrentValueAsString?.Length >= 7
         ? CurrentValueAsString[..7]

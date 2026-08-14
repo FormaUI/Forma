@@ -3,7 +3,7 @@
   "Pagination": "ניווט עמודים",
   "Previous": "הקודם",
   "Next": "הבא",
-  "Page {0}": "עמוד {0}",
+  "Page {pageNumber}": "עמוד {pageNumber}",
   "Go to page": "מעבר לעמוד",
   "Go": "עבור"
 }

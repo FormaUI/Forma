@@ -2,12 +2,12 @@ namespace Forma.UI.Components.Data;
 
 using System.Diagnostics.CodeAnalysis;
 
+using Forma.Framework.Localization;
 using Forma.UI.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.QuickGrid;
-using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
 
 /// <summary>A paged, sortable table over a queryable set of items, built on QuickGrid.</summary>
@@ -114,7 +114,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
-    [Inject] private IStringLocalizer<FormaDataGrid> L { get; set; } = default!;
+    [Inject] private IStringLocale<FormaDataGrid> L { get; set; } = default!;
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
@@ -596,6 +596,6 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
 }
 
 // Non-generic marker sharing FormaDataGrid's translation files across every closed instantiation —
-// IStringLocalizer<T> keys resources off T's FullName, which for an open generic type
+// IStringLocale<T> keys resources off T's FullName, which for an open generic type
 // includes its type arguments and would never match the embedded resource name.
 internal abstract class FormaDataGrid;

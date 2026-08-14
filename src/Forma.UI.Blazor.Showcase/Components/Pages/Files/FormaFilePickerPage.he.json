@@ -6,9 +6,9 @@
   "Restricted to images": "מוגבל לתמונות",
   "Accept is checked against both a click-picked file and a dropped one, since a drop never consults the file dialog's own filter.": "ה-Accept נבדק הן עבור קובץ שנבחר בלחיצה והן עבור קובץ שנגרר, מכיוון שגרירה אף פעם לא עוברת דרך הסינון של תיבת הדו-שיח של הקבצים.",
   "A size limit": "מגבלת גודל",
-  "Capped at {0} here; a larger file is declined before it is ever read.": "מוגבל כאן ל-{0}; קובץ גדול יותר נדחה עוד לפני שהוא נקרא.",
+  "Capped at {SizeMarkup} here; a larger file is declined before it is ever read.": "מוגבל כאן ל-{SizeMarkup}; קובץ גדול יותר נדחה עוד לפני שהוא נקרא.",
   "A selection limit": "מגבלת בחירה",
   "Capped at two files per drop or pick; anything past the cap is declined rather than the whole selection.": "מוגבל לשני קבצים לכל גרירה או בחירה; כל מה שמעבר למגבלה נדחה במקום כל הבחירה.",
-  "{0} selected": "{0} נבחר",
-  "{0} declined ({1})": "{0} נדחה ({1})"
+  "{name} selected": "{name} נבחר",
+  "{name} declined ({reason})": "{name} נדחה ({reason})"
 }

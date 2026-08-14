@@ -2,10 +2,10 @@ namespace Forma.UI.Components.Feedback;
 
 using System.Diagnostics.CodeAnalysis;
 
+using Forma.Framework.Localization;
 using Forma.UI.Interop;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
 
 public sealed partial class FormaModal : IAsyncDisposable
@@ -17,7 +17,7 @@ public sealed partial class FormaModal : IAsyncDisposable
     private bool _isOpen;
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
-    [Inject] private IStringLocalizer<FormaModal> L { get; set; } = default!;
+    [Inject] private IStringLocale<FormaModal> L { get; set; } = default!;
 
     /// <summary>Whether the modal is currently open.</summary>
     [Parameter, EditorRequired] public bool Opened { get; set; }

@@ -1,13 +1,13 @@
 namespace Forma.UI.Blazor.Showcase.Components.Pages.Data;
 
+using Forma.Framework.Localization;
 using Forma.UI.Components.Data;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.Localization;
 
 public sealed partial class FormaPaginationPage : ComponentBase
 {
-    [Inject] private IStringLocalizer<FormaPaginationPage> L { get; set; } = default!;
+    [Inject] private IStringLocale<FormaPaginationPage> L { get; set; } = default!;
 
     private static readonly FormaPaginationOptions NavigationStepsOnly =
         new() { EnableNavigationSteps = true, EnableNavigationInput = false };

@@ -2,11 +2,11 @@ namespace Forma.UI.Components.Data;
 
 using System.Globalization;
 
+using Forma.Framework.Localization;
 using Forma.UI.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
 
 /// <summary>A page-number navigator for splitting a list of items across multiple pages.</summary>
@@ -42,7 +42,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
-    [Inject] private IStringLocalizer<FormaPagination> L { get; set; } = default!;
+    [Inject] private IStringLocale<FormaPagination> L { get; set; } = default!;
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 

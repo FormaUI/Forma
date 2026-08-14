@@ -1,10 +1,10 @@
 namespace Forma.UI.Components.Files;
 
+using Forma.Framework.Localization;
 using Forma.UI.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
 
 /// <summary>A drop zone and file picker that validates a selection and hands the accepted files to the host.</summary>
@@ -35,7 +35,7 @@ public sealed partial class FormaFilePicker : ComponentBase, IAsyncDisposable
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
-    [Inject] private IStringLocalizer<FormaFilePicker> L { get; set; } = default!;
+    [Inject] private IStringLocale<FormaFilePicker> L { get; set; } = default!;
 
     private bool _attached;
 
@@ -165,13 +165,17 @@ public sealed partial class FormaFilePicker : ComponentBase, IAsyncDisposable
     }
 
     private string RejectionText(RejectedFile rejection)
-        => rejection.Reason switch
+    {
+        var name = rejection.Name;
+
+        return rejection.Reason switch
         {
-            FileRejectionReason.DisallowedType => L["\"{0}\" isn't an accepted file type.", rejection.Name],
-            FileRejectionReason.TooLarge => L["\"{0}\" is too large.", rejection.Name],
-            FileRejectionReason.TooManyFiles => L["\"{0}\" wasn't included \u2014 too many files at once.", rejection.Name],
-            _ => rejection.Name
+            FileRejectionReason.DisallowedType => L[$"\"{name}\" isn't an accepted file type."],
+            FileRejectionReason.TooLarge => L[$"\"{name}\" is too large."],
+            FileRejectionReason.TooManyFiles => L[$"\"{name}\" wasn't included \u2014 too many files at once."],
+            _ => name
         };
+    }
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()

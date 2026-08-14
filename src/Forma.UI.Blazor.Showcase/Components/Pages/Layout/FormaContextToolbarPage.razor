@@ -2,7 +2,7 @@
 @attribute [ShowcasePage("FormaContextToolbar")]
 @rendermode InteractiveServer
 @using Forma.UI.Components.Layout
-@inject IStringLocalizer<FormaContextToolbarPage> L
+@inject IStringLocale<FormaContextToolbarPage> L
 
 <h1>FormaContextToolbar</h1>
 <p class="desc">@L["A bar that appears once one or more rows are selected, holding bulk actions and a clear-selection button. Pairs with FormaDataGrid's checked selection."]</p>
@@ -60,13 +60,15 @@
 <div class="demo-section">
     <h2>@L["Caller-supplied caption"]</h2>
     <div class="demo-box">
-        <FormaContextToolbar Count="7" Caption="@L["7 comments awaiting moderation"]">
+        <FormaContextToolbar Count="ModerationCount" Caption="@(L["[$ plural; one: # comment awaiting moderation; other: # comments awaiting moderation; $]", ModerationCount])">
             <button class="btn btn-primary">@L["Publish"]</button>
         </FormaContextToolbar>
     </div>
 </div>
 
 @code {
+    private const int ModerationCount = 7;
+
     private int _basicCount;
     private int _agreementCount = 1;
     private int _wideCount = 4;

@@ -3,7 +3,7 @@
 @rendermode InteractiveServer
 @using Forma.UI.Components.Input
 @using Forma.UI.Components.Interactive
-@inject IStringLocalizer<FormaSortableListPage> L
+@inject IStringLocale<FormaSortableListPage> L
 
 <h1>FormaSortableList</h1>
 <p class="desc">@L["A list that reorders by dragging a handle or moving a focused item with the arrow keys."]</p>
@@ -58,7 +58,7 @@
                 </div>
             </ItemTemplate>
         </FormaSortableList>
-        <p class="demo-note">@(_lastClicked is null ? L["Drag a row anywhere to reorder, or press Edit — it still clicks."] : L["Edit was clicked on {0}, so the row did not take the press.", _lastClicked])</p>
+        <p class="demo-note">@(_lastClicked is null ? L["Drag a row anywhere to reorder, or press Edit — it still clicks."] : L[$"Edit was clicked on {_lastClicked}, so the row did not take the press."])</p>
     </div>
 </div>
 

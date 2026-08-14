@@ -10,5 +10,5 @@
   "Off": "Apagado",
   "On": "Encendido",
   "Select all": "Seleccionar todo",
-  "Item {0}": "Elemento {0}"
+  "Item {number}": "Elemento {number}"
 }

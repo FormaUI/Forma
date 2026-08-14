@@ -1,5 +1,5 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
-  "{0} of {1} characters": "{0} מתוך {1} תווים",
-  "[$ [0] plural; one: # character; other: # characters; $]": "[$ [0] plural; one: תו אחד; two: שני תווים; other: # תווים; $]"
+  "{characters} of {allowed} characters": "{characters} מתוך {allowed} תווים",
+  "[$ plural; one: # character; other: # characters; $]": "[$ plural; one: תו אחד; two: שני תווים; other: # תווים; $]"
 }

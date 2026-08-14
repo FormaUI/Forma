@@ -5,6 +5,6 @@
   "No options available yet": "אין עדיין אפשרויות",
   "Add new": "הוסף חדש",
   "Select options": "בחר אפשרויות",
-  "{0} selected": "[$ [0] plural; one: נבחר אחד; two: שניים נבחרו; other: # נבחרו; $]",
-  "Remove {0}": "הסר {0}"
+  "{selected} selected": "[$ [selected] plural; one: נבחר אחד; two: שניים נבחרו; other: # נבחרו; $]",
+  "Remove {text}": "הסר {text}"
 }

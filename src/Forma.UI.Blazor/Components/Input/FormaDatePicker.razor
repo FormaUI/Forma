@@ -125,13 +125,13 @@
                                  class="forma-date-picker-preset"
                                  Disabled="IsPresetDisabled(Preset.Last7Days)"
                                  OnClick="() => ApplyPreset(Preset.Last7Days)">
-                        @L["Last 7 days"]
+                        @L["[$ plural; one: Last # day; other: Last # days; $]", ShortRangeDays]
                     </FormaButton>
                     <FormaButton Variant="ButtonVariant.Ghost"
                                  class="forma-date-picker-preset"
                                  Disabled="IsPresetDisabled(Preset.Last30Days)"
                                  OnClick="() => ApplyPreset(Preset.Last30Days)">
-                        @L["Last 30 days"]
+                        @L["[$ plural; one: Last # day; other: Last # days; $]", LongRangeDays]
                     </FormaButton>
                     <FormaButton Variant="ButtonVariant.Ghost"
                                  class="forma-date-picker-preset"

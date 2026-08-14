@@ -1,7 +1,8 @@
 namespace Forma.UI.Components.Layout;
 
+using Forma.Framework.Localization;
+
 using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.Localization;
 
 /// <summary>A toolbar that appears while a selection is active, holding actions that apply to it.</summary>
 public sealed partial class FormaContextToolbar : ComponentBase
@@ -18,10 +19,17 @@ public sealed partial class FormaContextToolbar : ComponentBase
     /// <summary>Raised when the clear-selection button is pressed.</summary>
     [Parameter] public EventCallback OnClear { get; set; }
 
-    [Inject] private IStringLocalizer<FormaContextToolbar> L { get; set; } = default!;
+    [Inject] private IStringLocale<FormaContextToolbar> L { get; set; } = default!;
 
     private string CaptionText
-        => Caption ?? L["{0} selected", Count];
+    {
+        get
+        {
+            var selected = Count;
+
+            return Caption ?? L[$"{selected} selected"];
+        }
+    }
 
     protected override void OnParametersSet()
         => ArgumentOutOfRangeException.ThrowIfNegative(Count);

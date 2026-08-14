@@ -3,16 +3,17 @@ namespace Forma.UI.Components.Input;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
+using Forma.Framework.Localization;
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.Extensions.Localization;
 
 /// <summary>A multi-line text field carrying the same chrome as FormaInput.</summary>
 public sealed partial class FormaTextArea : InputBase<string?>
 {
     private readonly string _inputId = $"fld-{Guid.NewGuid():N}";
 
-    [Inject] private IStringLocalizer<FormaTextArea> L { get; set; } = default!;
+    [Inject] private IStringLocale<FormaTextArea> L { get; set; } = default!;
 
     /// <summary>The floating label text.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
@@ -43,9 +44,16 @@ public sealed partial class FormaTextArea : InputBase<string?>
 
     // The glyphs read poorly aloud, so the hidden label spells the count out instead.
     private string CountLabel
-        => MaxLength is { } maxLength
-            ? L["{0} of {1} characters", CharacterCount, maxLength]
-            : L["[$ [0] plural; one: # character; other: # characters; $]", CharacterCount];
+    {
+        get
+        {
+            var characters = CharacterCount;
+
+            return MaxLength is { } allowed
+                ? L[$"{characters} of {allowed} characters"]
+                : L["[$ plural; one: # character; other: # characters; $]", characters];
+        }
+    }
 
     // An explicit attribute overwrites one of the same name from AdditionalAttributes, so a
     // caller's own description has to be carried through rather than dropped.

@@ -1,12 +1,12 @@
 namespace Forma.UI.Blazor.Showcase.Components.Pages.Files;
 
+using Forma.Framework.Localization;
 using Forma.Framework.Resources;
 using Forma.UI.Blazor.Showcase.Features.Upload;
 using Forma.UI.Components.Files;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.Extensions.Localization;
 
 /// <summary>Demonstrates uploader transfer, failure, rollback, and cancellation states.</summary>
 public sealed partial class FormaFileUploaderPage : ComponentBase
@@ -17,7 +17,7 @@ public sealed partial class FormaFileUploaderPage : ComponentBase
 
     private const long SmallLimit = 4L * 1024;
 
-    [Inject] private IStringLocalizer<FormaFileUploaderPage> L { get; set; } = default!;
+    [Inject] private IStringLocale<FormaFileUploaderPage> L { get; set; } = default!;
 
     [Inject] private SandboxAssets Sandbox { get; set; } = default!;
 
@@ -62,7 +62,7 @@ public sealed partial class FormaFileUploaderPage : ComponentBase
     {
         foreach (var resource in resources)
         {
-            Entries(key).Add(L["Stored at {0}", resource.Source]);
+            Entries(key).Add(L["Stored at {source}", ("source", resource.Source)]);
         }
     }
 
@@ -78,7 +78,7 @@ public sealed partial class FormaFileUploaderPage : ComponentBase
     }
 
     private void Fail(string key, UploadFailure failure)
-        => Entries(key).Add(L["{0} was refused: {1}", failure.Name, failure.Error.Message]);
+        => Entries(key).Add(L["{name} was refused: {reason}", ("name", failure.Name), ("reason", failure.Error.Message)]);
 
     private string Holding(DefaultFileStore store)
     {
@@ -86,7 +86,7 @@ public sealed partial class FormaFileUploaderPage : ComponentBase
 
         return held.Count == 0
             ? L["The store is holding nothing."]
-            : L["The store is holding: {0}", string.Join(", ", held.Select(resource => resource.Name))];
+            : L["The store is holding: {names}", ("names", string.Join(", ", held.Select(resource => resource.Name)))];
     }
 
     private List<string> Log(string key)

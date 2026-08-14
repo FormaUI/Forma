@@ -1,10 +1,10 @@
 namespace Forma.UI.Blazor.Showcase.Components.Pages.Files;
 
+using Forma.Framework.Localization;
 using Forma.UI.Components.Files;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.Extensions.Localization;
 
 public sealed partial class FormaFilePickerPage : ComponentBase
 {
@@ -12,7 +12,7 @@ public sealed partial class FormaFilePickerPage : ComponentBase
 
     private readonly Dictionary<string, List<string>> _log = [];
 
-    [Inject] private IStringLocalizer<FormaFilePickerPage> L { get; set; } = default!;
+    [Inject] private IStringLocale<FormaFilePickerPage> L { get; set; } = default!;
 
     private static string SizeMarkup
         => $"""<bdi dir="ltr">{MaxSizeBytes / 1024} KB</bdi>""";
@@ -32,7 +32,7 @@ public sealed partial class FormaFilePickerPage : ComponentBase
     {
         foreach (var rejection in rejections)
         {
-            Entries(key).Add(L["{0} declined ({1})", rejection.Name, rejection.Reason]);
+            Entries(key).Add(L["{name} declined ({reason})", ("name", rejection.Name), ("reason", rejection.Reason)]);
         }
     }
 
@@ -40,7 +40,7 @@ public sealed partial class FormaFilePickerPage : ComponentBase
     {
         foreach (var file in files)
         {
-            Entries(key).Add(L["{0} selected", file.Name]);
+            Entries(key).Add(L["{name} selected", ("name", file.Name)]);
         }
     }
 

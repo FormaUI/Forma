@@ -1,7 +1,7 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "Drop files here or click to browse": "גררו קבצים לכאן או לחצו כדי לבחור",
-  "\"{0}\" isn't an accepted file type.": "\"{0}\" אינו סוג קובץ מותר.",
-  "\"{0}\" is too large.": "\"{0}\" גדול מדי.",
-  "\"{0}\" wasn't included — too many files at once.": "\"{0}\" לא נכלל — יותר מדי קבצים בבת אחת."
+  "\"{name}\" isn't an accepted file type.": "\"{name}\" אינו סוג קובץ מותר.",
+  "\"{name}\" is too large.": "\"{name}\" גדול מדי.",
+  "\"{name}\" wasn't included — too many files at once.": "\"{name}\" לא נכלל — יותר מדי קבצים בבת אחת."
 }

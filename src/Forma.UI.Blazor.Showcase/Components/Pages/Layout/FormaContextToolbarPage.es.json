@@ -8,7 +8,7 @@
   "Without a clear button": "Sin botón de borrado",
   "Several actions": "Varias acciones",
   "Caller-supplied caption": "Título proporcionado por el llamador",
-  "7 comments awaiting moderation": "7 comentarios pendientes de moderación",
+  "[$ plural; one: # comment awaiting moderation; other: # comments awaiting moderation; $]": "[$ plural; one: # comentario pendiente de moderación; other: # comentarios pendientes de moderación; $]",
   "Toggle selection": "Alternar selección",
   "Delete": "Eliminar",
   "Publish": "Publicar",
