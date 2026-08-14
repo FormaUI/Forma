@@ -20,8 +20,8 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
-$rulesPath = Join-Path $repositoryRoot 'src/Forma.Framework.Localization.Abstractions/Language/CommonPluralRuleSet.Generated.cs'
-$samplesPath = Join-Path $repositoryRoot 'tests/Forma.Framework.Localization.Abstractions.Tests/Language/PluralRuleSamples.Generated.cs'
+$rulesPath = Join-Path $repositoryRoot 'src/Forma.Framework.Localization/Language/CommonPluralRuleSet.Generated.cs'
+$samplesPath = Join-Path $repositoryRoot 'tests/Forma.Framework.Localization.Tests/Language/PluralRuleSamples.Generated.cs'
 
 $reference = if ($CldrVersion -eq 'latest') { 'main' } else { $CldrVersion }
 $sourceUrl = "https://raw.githubusercontent.com/unicode-org/cldr-json/$reference/cldr-json/cldr-core/supplemental/plurals.json"
@@ -261,7 +261,7 @@ $sampleBuilder = [System.Text.StringBuilder]::new()
 [void]$sampleBuilder.AppendLine("//     Generated from CLDR $version by scripts/Update-PluralRules.ps1. Do not edit.")
 [void]$sampleBuilder.AppendLine('// </auto-generated>')
 [void]$sampleBuilder.AppendLine()
-[void]$sampleBuilder.AppendLine('namespace Forma.Framework.Localization.Abstractions.Tests.Language;')
+[void]$sampleBuilder.AppendLine('namespace Forma.Framework.Localization.Tests.Language;')
 [void]$sampleBuilder.AppendLine()
 [void]$sampleBuilder.AppendLine('public static class PluralRuleSamples')
 [void]$sampleBuilder.AppendLine('{')

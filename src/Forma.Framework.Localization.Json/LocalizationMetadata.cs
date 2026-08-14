@@ -1,4 +1,6 @@
-namespace Forma.Framework.Localization;
+namespace Forma.Framework.Localization.Json;
+
+using Forma.Framework.Localization;
 
 using Forma.Framework.Localization.Parser;
 using Forma.Framework.Localization.Parser.Syntax;

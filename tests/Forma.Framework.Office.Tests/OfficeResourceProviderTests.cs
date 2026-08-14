@@ -1,6 +1,8 @@
 namespace Forma.Framework.Office.Tests;
 
 using Forma.Framework.Localization;
+using Forma.Framework.Localization.Adapter;
+using Forma.Framework.Localization.Json;
 using Forma.Framework.Resources;
 using Forma.Tests.Office;
 using Forma.Tests.Resources;

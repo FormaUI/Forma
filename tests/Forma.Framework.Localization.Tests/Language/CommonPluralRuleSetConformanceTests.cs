@@ -1,4 +1,4 @@
-namespace Forma.Framework.Localization.Abstractions.Tests.Language;
+namespace Forma.Framework.Localization.Tests.Language;
 
 public sealed class CommonPluralRuleSetConformanceTests
 {

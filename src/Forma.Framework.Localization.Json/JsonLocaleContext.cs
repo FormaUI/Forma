@@ -1,6 +1,9 @@
-namespace Forma.Framework.Localization;
+namespace Forma.Framework.Localization.Json;
 
 using System.Globalization;
+
+using Forma.Framework.Localization;
+using Forma.Framework.Localization.Language;
 
 /// <summary>What every locale a factory creates reads from and abides by.</summary>
 /// <param name="Cache">The files read so far, shared so two locales never parse one twice.</param>

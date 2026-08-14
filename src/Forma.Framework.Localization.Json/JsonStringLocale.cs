@@ -1,8 +1,9 @@
-namespace Forma.Framework.Localization;
+namespace Forma.Framework.Localization.Json;
 
 using System.Globalization;
 using System.Reflection;
 
+using Forma.Framework.Localization;
 using Forma.Framework.Localization.Parser;
 
 /// <summary>Reads the strings for one base name, walking the culture chain and falling back to the key itself.</summary>

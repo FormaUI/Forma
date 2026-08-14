@@ -2,7 +2,7 @@
 //     Generated from CLDR 48 by scripts/Update-PluralRules.ps1. Do not edit.
 // </auto-generated>
 
-namespace Forma.Framework.Localization.Abstractions.Tests.Language;
+namespace Forma.Framework.Localization.Tests.Language;
 
 public static class PluralRuleSamples
 {

@@ -1,4 +1,4 @@
-namespace Forma.Framework.Localization.Abstractions.Tests;
+namespace Forma.Framework.Localization.Tests.Language;
 
 using Forma.Framework.Localization.Language;
 

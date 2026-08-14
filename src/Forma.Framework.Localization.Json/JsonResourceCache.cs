@@ -1,10 +1,12 @@
-namespace Forma.Framework.Localization;
+namespace Forma.Framework.Localization.Json;
 
 using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Globalization;
 using System.Reflection;
 using System.Text.Json;
+
+using Forma.Framework.Localization;
 
 /// <summary>Reads the JSON translation files embedded in an assembly and keeps each one in memory after the first read.</summary>
 internal sealed class JsonResourceCache

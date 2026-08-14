@@ -1,9 +1,8 @@
-namespace Forma.Framework.Localization;
+namespace Forma.Framework.Localization.Language;
 
 using System.Globalization;
 using System.Text;
 
-using Forma.Framework.Localization.Language;
 using Forma.Framework.Localization.Parser;
 using Forma.Framework.Localization.Parser.Syntax;
 

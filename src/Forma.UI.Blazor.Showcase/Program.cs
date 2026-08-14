@@ -2,6 +2,7 @@ using Forma.Framework.Css;
 using Forma.Framework.Feedback;
 using Forma.Framework.Indicators;
 using Forma.Framework.Localization;
+using Forma.Framework.Localization.Json;
 using Forma.Framework.Markdown;
 using Forma.Framework.Media;
 using Forma.Framework.Office;

@@ -1,9 +1,10 @@
-namespace Forma.Framework.Localization;
+namespace Forma.Framework.Localization.Json;
 
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Reflection;
 
+using Forma.Framework.Localization;
 using Forma.Framework.Localization.Language;
 
 /// <summary>Creates locales that read their strings from JSON files embedded in the assembly owning the type.</summary>

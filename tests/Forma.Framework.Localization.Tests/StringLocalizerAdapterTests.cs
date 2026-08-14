@@ -1,5 +1,6 @@
 namespace Forma.Framework.Localization.Tests;
 
+using Forma.Framework.Localization.Adapter;
 using Forma.Tests.Localization;
 
 using Microsoft.Extensions.Localization;

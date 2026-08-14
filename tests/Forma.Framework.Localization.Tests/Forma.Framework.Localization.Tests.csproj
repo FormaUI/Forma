@@ -22,16 +22,4 @@
         <ProjectReference Include="..\Forma.Tests.Support\Forma.Tests.Support.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-        <EmbeddedResource Include="Fixtures\**\*.json" />
-        <!-- The same relative tree under a root, which is what ResourcesPath resolves against. -->
-        <EmbeddedResource Include="Resources\**\*.json" />
-        <!-- Kept in the main assembly to cover the layout a project gets by opting out of satellites. -->
-        <EmbeddedResource Update="Fixtures\MainAssembly.he.json" WithCulture="false" />
-        <!-- Embedded under the type's own namespace, which an assembly named apart from its root produces. -->
-        <EmbeddedResource Update="Fixtures\Foreign\ForeignRoot.he.json" LogicalName="Contoso.Widgets.ForeignRoot.he.json" WithCulture="false" />
-        <!-- A type outside any namespace, whose resource the root namespace alone qualifies. -->
-        <EmbeddedResource Update="Fixtures\GlobalRoot.he.json" LogicalName="Forma.Framework.Localization.Tests.GlobalRoot.he.json" WithCulture="false" />
-    </ItemGroup>
-
 </Project>

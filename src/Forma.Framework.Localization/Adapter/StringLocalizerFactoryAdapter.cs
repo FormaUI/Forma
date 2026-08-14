@@ -1,4 +1,6 @@
-namespace Forma.Framework.Localization;
+namespace Forma.Framework.Localization.Adapter;
+
+using Forma.Framework.Localization;
 
 using Microsoft.Extensions.Localization;
 

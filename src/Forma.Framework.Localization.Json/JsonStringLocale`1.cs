@@ -1,4 +1,6 @@
-namespace Forma.Framework.Localization;
+namespace Forma.Framework.Localization.Json;
+
+using Forma.Framework.Localization;
 
 /// <summary>Reads the strings belonging to <typeparamref name="T"/>.</summary>
 /// <typeparam name="T">The type whose translation files hold the strings.</typeparam>

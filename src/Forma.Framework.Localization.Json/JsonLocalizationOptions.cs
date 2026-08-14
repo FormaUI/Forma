@@ -1,4 +1,6 @@
-namespace Forma.Framework.Localization;
+namespace Forma.Framework.Localization.Json;
+
+using Forma.Framework.Localization;
 
 /// <summary>Settings for <see cref="JsonStringLocaleFactory"/>.</summary>
 public sealed class JsonLocalizationOptions : LocalizationOptions

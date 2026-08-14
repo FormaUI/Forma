@@ -1,6 +1,6 @@
-namespace Forma.Framework.Localization.Tests;
+namespace Forma.Framework.Localization.Json.Tests;
 
-using Forma.Framework.Localization.Tests.Fixtures;
+using Forma.Framework.Localization.Json.Tests.Fixtures;
 
 public sealed class JsonStringLocaleTests
 {

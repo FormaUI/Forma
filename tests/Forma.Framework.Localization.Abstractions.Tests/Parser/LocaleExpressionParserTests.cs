@@ -7,7 +7,9 @@ public sealed class LocaleExpressionParserTests
 {
     private const string Files = "[$ [0] plural; one: # file; other: # files; $]";
 
-    private static readonly LocaleKeywords Keywords = new(PluralExpressionEvaluator.Keyword);
+    // Spelled out here rather than borrowed from an evaluator, since the parser knows no keyword of its own.
+    private static readonly LocaleKeywords Keywords =
+        new(new LocaleKeyword("plural", "zero", "one", "two", "few", "many", "other"));
 
     private static string Text(LocaleTextSpan span, string text)
         => span.Slice(text).ToString();

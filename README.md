@@ -14,8 +14,9 @@ The library targets **.NET 11** and Interactive Server components.
 | `src/Forma.Framework` | Class library | Contracts consumed by components and hosts (`IToastService`, `IConfirmDialogService`, `IStatusBadgeCatalog`, message/enum types, `IPlayerProvider`, `INotifyStateChanged`). |
 | `src/Forma.Framework.Css` | Class library | Typed CSS values (`CssColor`). |
 | `src/Forma.Framework.Resources` | Class library | Resource contracts and value types (`IResourceProvider`, `IResourceContentReader`, `ResourceInfo`). |
-| `src/Forma.Framework.Localization` | Class library | JSON-backed `IStringLocalizer`. |
-| `src/Forma.Framework.Localization.Abstractions` | Class library | Localization contracts and value types (`IStringLocale`, `LocalizedText`, `LocalizedPattern`, `LocalizedFormatHandler`, `IPluralRuleSet`, `CommonPluralRuleSet`). |
+| `src/Forma.Framework.Localization` | Class library | Plural evaluation, the CLDR rule set, and the adapters presenting a locale as the framework's `IStringLocalizer`. |
+| `src/Forma.Framework.Localization.Json` | Class library | The JSON-backed localization backend (`JsonStringLocaleFactory`, `JsonLocalizationOptions`). |
+| `src/Forma.Framework.Localization.Abstractions` | Class library | Localization contracts and value types (`IStringLocale`, `LocalizedText`, `LocalizedPattern`, `LocalizedFormatHandler`, `IPluralRuleSet`, `PluralOperands`). |
 | `src/Forma.Framework.Markdown` | Class library | Markdown resource provider. |
 | `src/Forma.Framework.Office` | Class library | Word, workbook, and presentation resource provider. |
 | `src/Forma.UI.Blazor.Showcase` | Web app | Interactive gallery for every component; doubles as a reference host. |

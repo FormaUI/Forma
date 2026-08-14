@@ -1,4 +1,4 @@
-namespace Forma.Framework.Localization.Tests.Fixtures;
+namespace Forma.Framework.Localization.Json.Tests.Fixtures;
 
 /// <summary>Hebrew and Spanish files sitting beside the type, which is the default layout.</summary>
 public sealed class Colocated;

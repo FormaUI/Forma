@@ -1,4 +1,6 @@
-namespace Forma.Framework.Localization;
+namespace Forma.Framework.Localization.Json;
+
+using Forma.Framework.Localization;
 
 /// <summary>Thrown when a localization file's metadata is absent, malformed, or written for a schema this build cannot read.</summary>
 public sealed class LocalizationMetadataException : Exception

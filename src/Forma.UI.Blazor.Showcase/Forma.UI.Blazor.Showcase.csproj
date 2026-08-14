@@ -21,6 +21,7 @@
         <ProjectReference Include="..\Forma.Framework.Css\Forma.Framework.Css.csproj" />
         <ProjectReference Include="..\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
         <ProjectReference Include="..\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />
     </ItemGroup>
 
     <ItemGroup>
