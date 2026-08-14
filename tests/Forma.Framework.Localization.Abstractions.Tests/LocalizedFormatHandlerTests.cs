@@ -3,7 +3,7 @@ namespace Forma.Framework.Localization.Abstractions.Tests;
 public sealed class LocalizedFormatHandlerTests
 {
     [Fact]
-    public void Should_rebuild_the_key_with_numbered_holes()
+    public void Should_rebuild_the_key_with_named_holes()
     {
         // Arrange
         var stored = 3;
@@ -13,8 +13,18 @@ public sealed class LocalizedFormatHandlerTests
         var (key, arguments) = Capture($"Stored {stored} of {total}.");
 
         // Assert
-        Assert.Equal("Stored {0} of {1}.", key);
-        Assert.Equal([3, 4], arguments);
+        Assert.Equal("Stored {stored} of {total}.", key);
+        Assert.Equal([new LocalizedArgument("stored", 3), new LocalizedArgument("total", 4)], arguments);
+    }
+
+    [Fact]
+    public void Should_reject_a_hole_that_is_not_a_plain_identifier()
+    {
+        // Arrange
+        var model = new { Total = 5 };
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => Capture($"Stored {model.Total}."));
     }
 
     [Fact]
@@ -38,26 +48,28 @@ public sealed class LocalizedFormatHandlerTests
         var (key, _) = Capture($"Use {{curly}} braces {count}.");
 
         // Assert
-        Assert.Equal("Use {{curly}} braces {0}.", key);
-        Assert.Equal("Use {curly} braces 3.", string.Format(CultureInfo.InvariantCulture, key, 3));
+        Assert.Equal("Use {{curly}} braces {count}.", key);
+        Assert.Equal(
+            "Use {curly} braces 3.",
+            LocalizedFormat.Render(key, [new LocalizedArgument("count", 3)], CultureInfo.InvariantCulture));
     }
 
     [Fact]
-    public void Should_apply_a_format_specifier_before_capturing_the_value()
+    public void Should_keep_the_specifier_in_the_key_and_the_value_unrendered()
     {
         // Arrange
-        using var culture = new CultureScope("en");
+        var share = 0.4567;
 
         // Act
-        var (key, arguments) = Capture($"Ratio {0.4567:P1}.");
+        var (key, arguments) = Capture($"Ratio {share:P1}.");
 
         // Assert
-        Assert.Equal("Ratio {0}.", key);
-        Assert.Equal("45.7%", arguments[0]);
+        Assert.Equal("Ratio {share:P1}.", key);
+        Assert.Equal(0.4567, arguments[0].Value);
     }
 
     [Fact]
-    public void Should_apply_an_alignment_before_capturing_the_value()
+    public void Should_keep_the_alignment_in_the_key_and_the_value_unpadded()
     {
         // Arrange
         var name = "x";
@@ -66,22 +78,22 @@ public sealed class LocalizedFormatHandlerTests
         var (key, arguments) = Capture($"{name,-3}|");
 
         // Assert
-        Assert.Equal("{0}|", key);
-        Assert.Equal("x  ", arguments[0]);
+        Assert.Equal("{name,-3}|", key);
+        Assert.Equal("x", arguments[0].Value);
     }
 
     [Fact]
-    public void Should_number_holes_past_the_first_ten()
+    public void Should_repeat_the_same_name_for_a_value_used_more_than_once()
     {
         // Arrange
         var value = 1;
 
         // Act
-        var (key, arguments) = Capture($"{value}{value}{value}{value}{value}{value}{value}{value}{value}{value}{value}");
+        var (key, arguments) = Capture($"{value}{value}{value}");
 
         // Assert
-        Assert.Equal("{0}{1}{2}{3}{4}{5}{6}{7}{8}{9}{10}", key);
-        Assert.Equal(11, arguments.Length);
+        Assert.Equal("{value}{value}{value}", key);
+        Assert.Equal(3, arguments.Length);
     }
 
     [Fact]
@@ -94,8 +106,8 @@ public sealed class LocalizedFormatHandlerTests
         var (key, arguments) = Capture($"Name {missing}.");
 
         // Assert
-        Assert.Equal("Name {0}.", key);
-        Assert.Null(arguments[0]);
+        Assert.Equal("Name {missing}.", key);
+        Assert.Null(arguments[0].Value);
     }
 
     [Fact]
@@ -131,8 +143,9 @@ public sealed class LocalizedFormatHandlerTests
     public void Should_report_no_arguments_once_cleared()
     {
         // Arrange
+        var stored = 3;
         var handler = new LocalizedFormatHandler(literalLength: 8, formattedCount: 1);
-        handler.AppendFormatted(3);
+        handler.AppendFormatted(stored);
 
         // Act
         handler.Clear();
@@ -145,19 +158,21 @@ public sealed class LocalizedFormatHandlerTests
     public void Should_keep_arguments_already_read_valid_after_clearing()
     {
         // Arrange
+        var stored = 3;
+        var total = 4;
         var handler = new LocalizedFormatHandler(literalLength: 8, formattedCount: 2);
-        handler.AppendFormatted(3);
-        handler.AppendFormatted(4);
+        handler.AppendFormatted(stored);
+        handler.AppendFormatted(total);
 
         // Act
         var arguments = handler.GetArguments();
         handler.Clear();
 
         // Assert
-        Assert.Equal([3, 4], arguments);
+        Assert.Equal([new LocalizedArgument("stored", 3), new LocalizedArgument("total", 4)], arguments);
     }
 
-    private static (string Key, object?[] Arguments) Capture(LocalizedFormatHandler handler)
+    private static (string Key, LocalizedArgument[] Arguments) Capture(LocalizedFormatHandler handler)
     {
         var key = handler.Key.ToString();
         var arguments = handler.GetArguments();

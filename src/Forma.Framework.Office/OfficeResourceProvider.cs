@@ -2,12 +2,11 @@ namespace Forma.Framework.Office;
 
 using System.Diagnostics.CodeAnalysis;
 
+using Forma.Framework.Localization;
 using Forma.Framework.Office.Converters;
 using Forma.Framework.Resources;
 
 using Ganss.Xss;
-
-using Microsoft.Extensions.Localization;
 
 /// <summary>Converts a Word, Excel or PowerPoint document into sanitised markup, so a viewer can render one it could not otherwise show.</summary>
 [SuppressMessage("Design", "CA1054:URI parameters should not be strings")]
@@ -18,7 +17,7 @@ public sealed class OfficeResourceProvider : IResourceProvider
     private readonly HtmlSanitizer _sanitizer = CreateSanitizer();
 
     /// <summary>Creates the provider over the reader supplying document content.</summary>
-    public OfficeResourceProvider(IResourceContentReader reader, IStringLocalizer<OfficeResourceProvider> localizer)
+    public OfficeResourceProvider(IResourceContentReader reader, IStringLocale<OfficeResourceProvider> localizer)
     {
         ArgumentNullException.ThrowIfNull(reader);
         ArgumentNullException.ThrowIfNull(localizer);

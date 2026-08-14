@@ -29,18 +29,18 @@ public ref struct LocalizedSegmentEnumerator(ReadOnlySpan<char> format)
         var brace = _remaining.IndexOfAny(Braces);
         if (brace < 0)
         {
-            return Take(_remaining.Length, -1);
+            return TakeText(_remaining.Length);
         }
 
         if (brace > 0)
         {
-            return Take(brace, -1);
+            return TakeText(brace);
         }
 
         // A doubled brace stands for one literal brace, which is why the pair is yielded as a run of its own.
         if (_remaining.Length > 1 && _remaining[1] == _remaining[0])
         {
-            Current = new LocalizedSegment(_remaining[..1], -1);
+            Current = new LocalizedSegment(_remaining[..1], default, 0, default);
             _remaining = _remaining[2..];
 
             return true;
@@ -48,32 +48,52 @@ public ref struct LocalizedSegmentEnumerator(ReadOnlySpan<char> format)
 
         if (_remaining[0] == '}')
         {
-            return Take(1, -1);
+            return TakeText(1);
         }
 
         var close = _remaining.IndexOf('}');
         if (close < 0)
         {
-            return Take(_remaining.Length, -1);
+            return TakeText(_remaining.Length);
         }
 
-        return TryReadIndex(_remaining[1..close], out var index)
-            ? Take(close + 1, index)
-            : Take(close + 1, -1);
+        return TryReadHole(_remaining[1..close], out var name, out var alignment, out var format)
+            ? TakeHole(close + 1, name, alignment, format)
+            : TakeText(close + 1);
     }
 
-    // A hole may carry alignment and a format specifier, neither of which survives into a segment.
-    private static bool TryReadIndex(ReadOnlySpan<char> hole, out int index)
+    // A hole is "{name}", "{name,alignment}", "{name:format}" or the two together.
+    private static bool TryReadHole(ReadOnlySpan<char> hole, out ReadOnlySpan<char> name, out int alignment, out ReadOnlySpan<char> format)
     {
-        var end = hole.IndexOfAny(',', ':');
-        var digits = end < 0 ? hole : hole[..end];
+        alignment = 0;
+        format = default;
 
-        return int.TryParse(digits, NumberStyles.None, CultureInfo.InvariantCulture, out index);
+        var colon = hole.IndexOf(':');
+        var head = colon < 0 ? hole : hole[..colon];
+        format = colon < 0 ? default : hole[(colon + 1)..];
+
+        var comma = head.IndexOf(',');
+        name = comma < 0 ? head : head[..comma];
+
+        if (comma >= 0 && !int.TryParse(head[(comma + 1)..], NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out alignment))
+        {
+            return false;
+        }
+
+        return LocaleName.IsValid(name);
     }
 
-    private bool Take(int length, int argumentIndex)
+    private bool TakeText(int length)
     {
-        Current = new LocalizedSegment(argumentIndex < 0 ? _remaining[..length] : default, argumentIndex);
+        Current = new LocalizedSegment(_remaining[..length], default, 0, default);
+        _remaining = _remaining[length..];
+
+        return true;
+    }
+
+    private bool TakeHole(int length, ReadOnlySpan<char> name, int alignment, ReadOnlySpan<char> format)
+    {
+        Current = new LocalizedSegment(default, name, alignment, format);
         _remaining = _remaining[length..];
 
         return true;

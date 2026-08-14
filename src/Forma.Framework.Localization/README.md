@@ -1,8 +1,7 @@
 # Forma.Framework.Localization
 
-Implements the localization contracts, and presents a locale on the framework's localizer. Everything
-here is backend-agnostic: a backend registers `IStringLocaleFactory`, and this project supplies the
-plural machinery it evaluates with and the adapters it resolves through.
+Supplies the plural machinery a backend evaluates a translated format with. Everything here is
+backend-agnostic: a backend registers `IStringLocaleFactory` and evaluates through this project.
 
 `Forma.Framework.Localization.Json` is the backend Forma ships.
 
@@ -22,21 +21,3 @@ Rules are keyed by locale rather than language, because CLDR carries a few entri
 region or script. The fullest identifier wins and then falls back a subtag at a time, so `pt-PT`
 finds Portugal's rules, `es-CO` falls back to Spanish, and `0` is singular in Brazil but plural in
 Portugal. `Select` returns `null` for a locale it carries no rules for.
-
-## Adapter
-
-| Type | What it is |
-| --- | --- |
-| `StringLocalizerFactoryAdapter` | Presents an `IStringLocaleFactory` as an `IStringLocalizerFactory`. |
-| `StringLocalizerAdapter` | Presents an `IStringLocale` as an `IStringLocalizer`. |
-| `StringLocalizerAdapter<T>` | The same, for the base name derived from `T`. |
-
-## Registration
-
-```csharp
-services.AddStringLocalizerAdapter();
-```
-
-Registers `IStringLocalizer<T>` and `IStringLocalizerFactory` over whatever `IStringLocaleFactory` is
-already registered, so a consumer written against the framework's contract resolves. A backend's own
-registration calls this, so a host adding one never needs to.

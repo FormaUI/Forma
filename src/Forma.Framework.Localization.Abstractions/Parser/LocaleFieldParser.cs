@@ -9,10 +9,7 @@ public static class LocaleFieldParser
 
     /// <summary>Reads a standalone field list, such as the value of a file's metadata entry.</summary>
     /// <param name="text">The whole list, ending with a semicolon.</param>
-    /// <remarks>
-    /// Whitespace around the list is ignored, because a hand-edited file should not fail on a character
-    /// its author cannot see. The linter is what holds the list to its exact written form.
-    /// </remarks>
+    /// <remarks>Whitespace around the list is ignored.</remarks>
     public static LocaleFieldResult Parse(string text)
     {
         ArgumentNullException.ThrowIfNull(text);

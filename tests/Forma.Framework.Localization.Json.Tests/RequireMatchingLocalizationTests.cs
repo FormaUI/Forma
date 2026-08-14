@@ -154,7 +154,7 @@ public sealed class RequireMatchingLocalizationTests
         var strings = Locale<NullValued>(require: false);
 
         // Act
-        var none = strings["[$ [0] plural; one: # file; other: # files; $]", 0];
+        var none = strings["[$ plural; one: # file; other: # files; $]", 0];
 
         // Assert
         Assert.Equal("0 files", none.Value);

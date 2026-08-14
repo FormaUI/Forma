@@ -12,6 +12,8 @@ The localization contract and its value types. No package or project references.
 | `LocalizationOptions` | The settings every backend shares, whatever it reads translations from. |
 | `LocalizationNotFoundException` | Thrown when a key has no translation and the host requires one. |
 | `LocalizedText` | A translated string with the key it was looked up under. Converts implicitly to `string`. |
+| `LocalizedArgument` | A value with the name a hole refers to it by. Converts implicitly from `(string, object?)`. |
+| `LocalizedFormat` | Pairs values with a format's holes, and renders a format once they are paired. |
 | `LocalizedPattern` | A translated format whose plural forms are resolved and whose holes are still open. |
 | `LocalizedSegment` | One run of a format: literal text, or a hole naming an argument. |
 | `LocalizedSegmentEnumerator` | Walks a format as segments, slicing rather than copying. |
@@ -20,86 +22,99 @@ The localization contract and its value types. No package or project references.
 | `PluralCategory` | The six CLDR categories: `Zero`, `One`, `Two`, `Few`, `Many`, `Other`. |
 | `PluralOperands` | The CLDR operands a plural rule reads: `n`, `i`, `v`, `w`, `f`, `t`, `e`. |
 
-## Settings
-
-`SourceLanguage` names the language the keys are written in, and defaults to `en`. A key with no
-translation is shown as written, so its plural forms resolve under that language rather than the one
-on screen.
-
-`RequireMatchingLocalization` turns a key with no translation for the culture on screen from a
-fallback into a `LocalizationNotFoundException`, and defaults to false. Turn it on in development and
-CI to find what is untranslated, and leave it off in production, where degrading to the key beats
-breaking a page. Listing every string never throws under it, because a survey reports what is there
-rather than demanding what is not.
-
-## Keys from interpolated strings
-
-`LocalizedFormatHandler` turns an interpolated string into the composite-format key a translation file
-is keyed by, capturing the hole values separately:
+## Looking a string up
 
 ```csharp
-locale[$"Stored {stored} of {total}."]   // key "Stored {0} of {1}.", arguments [3, 4]
+locale["Save"]                    // "שמור"
+locale["Save"].ResourceNotFound   // false when a translation was found
+locale.GetAllStrings(includeParentCultures: true)
 ```
 
-A literal `{` or `}` is doubled. A format specifier or alignment is applied to the value before
-capture, so `$"Ratio {ratio:P1}"` keys on `"Ratio {0}"` and captures `"45.7%"`. `Clear()` releases the
-rented buffer.
+The key is the English source text, so a key with no translation renders as written.
 
-A plain string literal binds to `this[string]`, so a key computed at run time works too.
+## Filling holes
+
+A hole is `{name}`, optionally `{name,alignment}` and `{name:specifier}`. Three forms fill them:
+
+```csharp
+locale[$"Stored {stored} of {total}."]                              // names taken from the identifiers
+locale["Stored {stored} of {total}.", written, allowed]             // paired with the key's holes, in order
+locale["Stored {stored} of {total}.", ("stored", a), ("total", b)]  // names written out
+```
+
+All three produce the same key and the same arguments. Prefer interpolation; reach for the positional
+form when a value is an expression rather than a variable.
+
+| Rule | |
+| --- | --- |
+| An interpolated hole must be a plain identifier | `{model.Total}` throws; assign it to a local first |
+| The positional form takes one value per distinct hole | any other count throws |
+| A repeated hole is still one hole | `"{n} of {n}"` takes one value |
+| A key with no holes takes at most one value | which is what a nameless expression reads |
+| A hole with no argument renders as written | `{total}` appears literally |
+
+A specifier stays in the key and the value is passed unrendered, so the translation decides the
+formatting: `$"Ratio {ratio:P1}"` keys on `"Ratio {ratio:P1}"`, and a translation may write `{ratio}`
+or `{ratio:P2}` instead. A literal brace is doubled: `$"Use {{curly}}"`.
 
 ## Plural syntax
 
-A translation may carry a plural expression. The bracketed index names the argument holding the count,
-the keyword names the expression, and `#` is replaced by that count formatted for the culture:
+```text
+[$ [name] plural; category: text; …; $]
+```
+
+`[name]` is the argument holding the count, and `#` is that count formatted for the culture. Fields are
+`category: text` pairs separated by `; `, and the trailing `;` is required. Categories are CLDR's —
+`zero`, `one`, `two`, `few`, `many`, `other` — and a language needs only the ones it distinguishes, so
+English uses `one` and `other`, Hebrew adds `two`, Arabic uses all six.
 
 ```json
-"{0} files": "[$ [0] plural; one: # file; other: # files; $]"
+"{files} files": "[$ [files] plural; one: # file; other: # files; $]"
 ```
 
-Nothing in an expression is a brace, and that is deliberate twice over. The interpolated string handler
-doubles `{` and `}` when it copies a literal run, so a brace-delimited expression written as `$"..."`
-arrives mangled; and `string.Format` fills every brace it recognises, so an expression that survives
-evaluation would have its index overwritten by an argument. Brackets are invisible to both, which also
-means a translator opening a file cannot mistake `[0]` for a hole they may move or delete.
+Leave the name out when the count is the only value:
 
-An interpolated call site writes the index as a real hole, since that is the only way the count can
-reach the arguments, and the key is canonicalized before lookup:
+```json
+"[$ plural; one: # file; other: # files; $]": "[$ plural; one: קובץ אחד; two: שני קבצים; other: # קבצים; $]"
+```
+
+That form takes exactly one unnamed value; anything else throws. An interpolated call site writes the
+name as a hole, and the key is canonicalized before lookup:
 
 ```csharp
-L[$"[$ [{files}] plural; one: # file; other: # files; $]"]
+locale[$"[$ [{files}] plural; one: # file; other: # files; $]"]
 ```
 
-Fields are `name: value` pairs separated by `; `, and the trailing `;` is required. A plural
-expression names its fields after CLDR's categories: `zero`, `one`, `two`, `few`, `many`, `other`.
+Expressions use brackets and holes use braces, so the two never collide. The category comes from
+`IPluralRuleSet`, falling back to `other` when the translation omits the chosen field or the language
+has no rules. `#` keeps the digits the count was written with, so `0.5` does not round and `1000000` is
+grouped for the culture. A malformed expression is left as written.
 
-`PluralExpressionEvaluator` in `Forma.Framework.Localization` asks an `IPluralRuleSet` for the count's
-category, falling back to `other` when the translation omits that field or the rule set has no entry
-for the language. `#` keeps the digits the count was written with, so `0.5` does not round and
-`1000000` is grouped for the culture.
+## Settings
 
-A language only needs the fields it distinguishes: English `one` and `other`, Hebrew adds `two`,
-Arabic uses all six.
+`SourceLanguage` names the language the keys are written in, and defaults to `en`. An untranslated key
+resolves its plural forms under that language rather than the one on screen.
 
-Malformed input is left as written rather than throwing, because a translation is hand-edited data and
-a throw would break one culture's page while every test stayed green.
+`RequireMatchingLocalization` turns a missing translation from a fallback into a
+`LocalizationNotFoundException`, and defaults to false. Turn it on in development and CI to find what
+is untranslated. `GetAllStrings` never throws under it.
 
 ## Patterns and segments
 
-`Resolve` returns the translated format with plural forms selected and the holes still open. Segments
-split it into literal runs and holes, so a caller can render text and holes differently:
+`Resolve` returns the translated format with plural forms selected and the holes still open, so a
+caller can render literal text and holes differently — filling a hole with rendered content rather than
+text, for instance:
 
 ```csharp
 var pattern = locale.Resolve($"Capped at {limit} here.");
 
 foreach (var segment in pattern.Segments())
 {
-    // segment.IsHole ? pattern.Arguments[segment.ArgumentIndex] : segment.Text
+    // segment.IsHole ? the argument whose Name matches segment.Name : segment.Text
 }
 ```
 
-The split runs over the translated format, so a translation that reorders `{0}` and `{1}` moves the
-arguments with it.
-
+Segments run over the translated format, so a translation may order the holes however reads best.
 `LocalizedSegment.Text` is a `ReadOnlySpan<char>` sliced from the format and the enumerator is a
 `ref struct`, so walking allocates nothing. A doubled brace arrives as its own single-character run:
 `"Use {{curly}}"` yields `Use `, `{`, `curly`, `}`.

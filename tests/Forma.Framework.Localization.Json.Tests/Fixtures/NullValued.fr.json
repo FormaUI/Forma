@@ -1,4 +1,4 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: fr;",
-  "[$ [0] plural; one: # file; other: # files; $]": null
+  "[$ plural; one: # file; other: # files; $]": null
 }

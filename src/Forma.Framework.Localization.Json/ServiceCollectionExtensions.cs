@@ -13,7 +13,6 @@ public static class ServiceCollectionExtensions
         => services.AddJsonLocalization(new JsonLocalizationOptions());
 
     /// <summary>Registers locales reading files from the folder the options name.</summary>
-    /// <remarks>Also registers the framework's localizer adapters, so a consumer on either contract resolves.</remarks>
     public static IServiceCollection AddJsonLocalization(this IServiceCollection services, JsonLocalizationOptions options)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -22,6 +21,6 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<IStringLocaleFactory>(new JsonStringLocaleFactory(options));
         services.TryAddSingleton(typeof(IStringLocale<>), typeof(JsonStringLocale<>));
 
-        return services.AddStringLocalizerAdapter();
+        return services;
     }
 }

@@ -22,7 +22,7 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, Assembly assem
         }
     }
 
-    public LocalizedText this[string name, params ReadOnlySpan<object?> arguments]
+    public LocalizedText this[string name, params ReadOnlySpan<LocalizedArgument> arguments]
     {
         get
         {
@@ -34,9 +34,12 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, Assembly assem
             var retained = arguments.IsEmpty ? [] : arguments.ToArray();
             var format = Evaluate(found ? entry.Format : name, Translated(found, entry), retained);
 
-            return new LocalizedText(name, string.Format(CultureInfo.CurrentCulture, format, retained), !found, baseName);
+            return new LocalizedText(name, LocalizedFormat.Render(format, retained, CultureInfo.CurrentCulture), !found, baseName);
         }
     }
+
+    public LocalizedText this[string name, params ReadOnlySpan<object?> values]
+        => this[name, LocalizedFormat.Bind(name, values)];
 
     public LocalizedText this[LocalizedFormatHandler handler]
     {
@@ -53,11 +56,26 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, Assembly assem
 
             var format = Evaluate(found ? entry.Format : name, Translated(found, entry), arguments);
 
-            return new LocalizedText(name, string.Format(CultureInfo.CurrentCulture, format, arguments), !found, baseName);
+            return new LocalizedText(name, LocalizedFormat.Render(format, arguments, CultureInfo.CurrentCulture), !found, baseName);
         }
     }
 
-    public LocalizedPattern Resolve(string name, params object?[] arguments)
+    public LocalizedPattern Resolve(string name)
+    {
+        LocalizedArgument[] arguments = [];
+
+        return Resolve(name, arguments);
+    }
+
+    public LocalizedPattern Resolve(string name, params object?[] values)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+        ArgumentNullException.ThrowIfNull(values);
+
+        return Resolve(name, LocalizedFormat.Bind(name, values));
+    }
+
+    public LocalizedPattern Resolve(string name, params LocalizedArgument[] arguments)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentNullException.ThrowIfNull(arguments);
@@ -112,7 +130,7 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, Assembly assem
         => found && !entry.IsSourceText;
 
     // The text a plural expression inflects decides the rules, so source-language text follows the source language.
-    private string Evaluate(string format, bool translated, IReadOnlyList<object?> arguments)
+    private string Evaluate(string format, bool translated, IReadOnlyList<LocalizedArgument> arguments)
         => context.PluralEvaluator.Evaluate(
             format,
             translated ? CultureInfo.CurrentUICulture : context.SourceCulture,

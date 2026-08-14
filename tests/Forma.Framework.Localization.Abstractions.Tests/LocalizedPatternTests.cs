@@ -6,28 +6,31 @@ public sealed class LocalizedPatternTests
     public void Should_split_its_format_into_segments()
     {
         // Arrange
-        var pattern = new LocalizedPattern("Stored {0} of {1}.", "נשמרו {0} מתוך {1}.", [3, 4]);
+        var pattern = new LocalizedPattern(
+            "Stored {stored} of {total}.",
+            "נשמרו {stored} מתוך {total}.",
+            [new LocalizedArgument("stored", 3), new LocalizedArgument("total", 4)]);
 
         // Act
         var texts = new List<string>();
-        var indexes = new List<int>();
+        var names = new List<string>();
 
         foreach (var segment in pattern.Segments())
         {
             texts.Add(segment.Text.ToString());
-            indexes.Add(segment.ArgumentIndex);
+            names.Add(segment.Name.ToString());
         }
 
         // Assert
         Assert.Equal(["נשמרו ", "", " מתוך ", "", "."], texts);
-        Assert.Equal([-1, 0, -1, 1, -1], indexes);
+        Assert.Equal(["", "stored", "", "total", ""], names);
     }
 
     [Fact]
     public void Should_expose_the_arguments_the_holes_name()
     {
         // Arrange
-        var pattern = new LocalizedPattern("Stored {0}.", "נשמרו {0}.", [7]);
+        var pattern = new LocalizedPattern("Stored {stored}.", "נשמרו {stored}.", [new LocalizedArgument("stored", 7)]);
 
         // Act
         object? held = null;
@@ -36,7 +39,7 @@ public sealed class LocalizedPatternTests
         {
             if (segment.IsHole)
             {
-                held = pattern.Arguments[segment.ArgumentIndex];
+                held = Find(pattern, segment.Name);
             }
         }
 
@@ -48,7 +51,10 @@ public sealed class LocalizedPatternTests
     public void Should_keep_the_order_a_translation_reverses()
     {
         // Arrange
-        var pattern = new LocalizedPattern("{0} before {1}", "{1} לפני {0}", ["a", "b"]);
+        var pattern = new LocalizedPattern(
+            "{first} before {second}",
+            "{second} לפני {first}",
+            [new LocalizedArgument("first", "a"), new LocalizedArgument("second", "b")]);
 
         // Act
         var values = new List<object?>();
@@ -57,12 +63,25 @@ public sealed class LocalizedPatternTests
         {
             if (segment.IsHole)
             {
-                values.Add(pattern.Arguments[segment.ArgumentIndex]);
+                values.Add(Find(pattern, segment.Name));
             }
         }
 
         // Assert
         Assert.Equal(["b", "a"], values);
+    }
+
+    private static object? Find(LocalizedPattern pattern, ReadOnlySpan<char> name)
+    {
+        foreach (var argument in pattern.Arguments)
+        {
+            if (name.SequenceEqual(argument.Name))
+            {
+                return argument.Value;
+            }
+        }
+
+        return null;
     }
 
     [Fact]

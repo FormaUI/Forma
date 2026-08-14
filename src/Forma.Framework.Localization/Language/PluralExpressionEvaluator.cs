@@ -6,7 +6,7 @@ using System.Text;
 using Forma.Framework.Localization.Parser;
 using Forma.Framework.Localization.Parser.Syntax;
 
-/// <summary>Evaluates the <c>[$ [0] plural; one: text; other: text; $]</c> expression inside localized text.</summary>
+/// <summary>Evaluates the <c>[$ [count] plural; one: text; other: text; $]</c> expression inside localized text.</summary>
 /// <param name="rules">The rules deciding which category a count falls into.</param>
 public sealed class PluralExpressionEvaluator(IPluralRuleSet rules)
 {
@@ -18,7 +18,7 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules)
     private static LocaleKeywords Known { get; } = new(Keyword);
 
     /// <summary>Replaces every plural expression with the field the count selects, leaving other holes open.</summary>
-    public string Evaluate(string format, CultureInfo culture, IReadOnlyList<object?> arguments)
+    public string Evaluate(string format, CultureInfo culture, IReadOnlyList<LocalizedArgument> arguments)
     {
         ArgumentNullException.ThrowIfNull(format);
         ArgumentNullException.ThrowIfNull(culture);
@@ -27,7 +27,7 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules)
     }
 
     /// <summary>Replaces every plural expression, choosing the field by the culture the text is written in and formatting the count for the culture it is shown in.</summary>
-    public string Evaluate(string format, CultureInfo localeCulture, CultureInfo displayCulture, IReadOnlyList<object?> arguments)
+    public string Evaluate(string format, CultureInfo localeCulture, CultureInfo displayCulture, IReadOnlyList<LocalizedArgument> arguments)
     {
         ArgumentNullException.ThrowIfNull(format);
         ArgumentNullException.ThrowIfNull(localeCulture);
@@ -66,9 +66,15 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules)
         return builder.ToString();
     }
 
-    private void AppendField(StringBuilder builder, string text, LocaleExpression expression, CultureInfo localeCulture, CultureInfo displayCulture, IReadOnlyList<object?> arguments)
+    private void AppendField(StringBuilder builder, string text, LocaleExpression expression, CultureInfo localeCulture, CultureInfo displayCulture, IReadOnlyList<LocalizedArgument> arguments)
     {
-        var count = expression.ArgumentIndex < arguments.Count ? ToDecimal(arguments[expression.ArgumentIndex]) : 0m;
+        var name = expression.NameSpan.Slice(text);
+        if (name.IsEmpty)
+        {
+            RequireSoleArgument(arguments);
+        }
+
+        var count = ToDecimal(Find(name, arguments));
         var operands = PluralOperands.From(count);
         var wanted = _rules.Select(localeCulture.Name, operands) ?? PluralCategory.Other;
 
@@ -113,6 +119,29 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules)
         }
 
         return null;
+    }
+
+    private static object? Find(ReadOnlySpan<char> name, IReadOnlyList<LocalizedArgument> arguments)
+    {
+        for (var index = 0; index < arguments.Count; index++)
+        {
+            if (name.SequenceEqual(arguments[index].Name))
+            {
+                return arguments[index].Value;
+            }
+        }
+
+        return null;
+    }
+
+    // Naming no argument means "the only one there is", so more than one would make it mean "the first".
+    private static void RequireSoleArgument(IReadOnlyList<LocalizedArgument> arguments)
+    {
+        if (arguments.Count != 1 || arguments[0].Name.Length != 0)
+        {
+            throw new InvalidOperationException(
+                $"An expression naming no argument needs exactly one unnamed argument, but {arguments.Count} argument(s) were supplied. Name the argument and the expression.");
+        }
     }
 
     // The count keeps the digits it was written with, so 0.5 does not round away.

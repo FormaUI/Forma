@@ -4,7 +4,10 @@ using Forma.Framework.Localization.Language;
 
 public sealed class PluralExpressionEvaluatorTests
 {
-    private const string AllFields = "[$ [0] plural; zero: none; one: # one; two: # two; few: # few; many: # many; other: # other; $]";
+    private const string AllFields = "[$ [count] plural; zero: none; one: # one; two: # two; few: # few; many: # many; other: # other; $]";
+
+    private static LocalizedArgument Count(object? value)
+        => new("count", value);
 
     [Theory]
     [InlineData(PluralCategory.Zero, "none")]
@@ -19,10 +22,52 @@ public sealed class PluralExpressionEvaluatorTests
         var evaluator = new PluralExpressionEvaluator(new StubPluralRuleSet(category));
 
         // Act
-        var evaluated = evaluator.Evaluate(AllFields, CultureInfo.InvariantCulture, [3]);
+        var evaluated = evaluator.Evaluate(AllFields, CultureInfo.InvariantCulture, [Count(3)]);
 
         // Assert
         Assert.Equal(expected, evaluated);
+    }
+
+    [Fact]
+    public void Should_read_the_sole_argument_for_an_expression_naming_none()
+    {
+        // Arrange
+        var evaluator = new PluralExpressionEvaluator(new StubPluralRuleSet(PluralCategory.One));
+
+        // Act
+        var evaluated = evaluator.Evaluate(
+            "[$ plural; one: # file; other: # files; $]",
+            CultureInfo.InvariantCulture,
+            [LocalizedArgument.Unnamed(1)]);
+
+        // Assert
+        Assert.Equal("1 file", evaluated);
+    }
+
+    [Fact]
+    public void Should_reject_an_expression_naming_no_argument_when_more_than_one_is_supplied()
+    {
+        // Arrange
+        var evaluator = new PluralExpressionEvaluator(new StubPluralRuleSet(PluralCategory.One));
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => evaluator.Evaluate(
+            "[$ plural; one: # file; other: # files; $]",
+            CultureInfo.InvariantCulture,
+            [Count(1), new LocalizedArgument("other", 2)]));
+    }
+
+    [Fact]
+    public void Should_reject_an_expression_naming_no_argument_when_the_argument_is_named()
+    {
+        // Arrange
+        var evaluator = new PluralExpressionEvaluator(new StubPluralRuleSet(PluralCategory.One));
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => evaluator.Evaluate(
+            "[$ plural; one: # file; other: # files; $]",
+            CultureInfo.InvariantCulture,
+            [Count(1)]));
     }
 
     [Fact]
@@ -32,7 +77,7 @@ public sealed class PluralExpressionEvaluatorTests
         var evaluator = new PluralExpressionEvaluator(new StubPluralRuleSet(PluralCategory.Many));
 
         // Act
-        var evaluated = evaluator.Evaluate("[$ [0] plural; one: # file; other: # files; $]", CultureInfo.InvariantCulture, [7]);
+        var evaluated = evaluator.Evaluate("[$ [count] plural; one: # file; other: # files; $]", CultureInfo.InvariantCulture, [Count(7)]);
 
         // Assert
         Assert.Equal("7 files", evaluated);
@@ -45,7 +90,7 @@ public sealed class PluralExpressionEvaluatorTests
         var evaluator = new PluralExpressionEvaluator(new StubPluralRuleSet(category: null));
 
         // Act
-        var evaluated = evaluator.Evaluate(AllFields, CultureInfo.InvariantCulture, [3]);
+        var evaluated = evaluator.Evaluate(AllFields, CultureInfo.InvariantCulture, [Count(3)]);
 
         // Assert
         Assert.Equal("3 other", evaluated);
@@ -58,10 +103,10 @@ public sealed class PluralExpressionEvaluatorTests
         var evaluator = new PluralExpressionEvaluator(new StubPluralRuleSet(PluralCategory.Other));
 
         // Act
-        var evaluated = evaluator.Evaluate("[$ [0] plural; other: # files; $] in {1}", CultureInfo.InvariantCulture, [2, "Photos"]);
+        var evaluated = evaluator.Evaluate("[$ [count] plural; other: # files; $] in {album}", CultureInfo.InvariantCulture, [Count(2), new LocalizedArgument("album", "Photos")]);
 
         // Assert
-        Assert.Equal("2 files in {1}", evaluated);
+        Assert.Equal("2 files in {album}", evaluated);
     }
 
     [Fact]
@@ -72,9 +117,9 @@ public sealed class PluralExpressionEvaluatorTests
 
         // Act
         var evaluated = evaluator.Evaluate(
-            "[$ [0] plural; one: # file; other: # files; $] in [$ [1] plural; one: # folder; other: # folders; $]",
+            "[$ [files] plural; one: # file; other: # files; $] in [$ [folders] plural; one: # folder; other: # folders; $]",
             CultureInfo.InvariantCulture,
-            [1, 1]);
+            [new LocalizedArgument("files", 1), new LocalizedArgument("folders", 1)]);
 
         // Assert
         Assert.Equal("1 file in 1 folder", evaluated);
@@ -87,10 +132,10 @@ public sealed class PluralExpressionEvaluatorTests
         var evaluator = new PluralExpressionEvaluator(new StubPluralRuleSet(PluralCategory.Other));
 
         // Act
-        var evaluated = evaluator.Evaluate("Stored {0} of {1}.", CultureInfo.InvariantCulture, [1, 2]);
+        var evaluated = evaluator.Evaluate("Stored {stored} of {total}.", CultureInfo.InvariantCulture, [new LocalizedArgument("stored", 1), new LocalizedArgument("total", 2)]);
 
         // Assert
-        Assert.Equal("Stored {0} of {1}.", evaluated);
+        Assert.Equal("Stored {stored} of {total}.", evaluated);
     }
 
     [Fact]
@@ -107,17 +152,16 @@ public sealed class PluralExpressionEvaluatorTests
     }
 
     [Theory]
-    [InlineData("[$ [0] plural; one: # file")]
-    [InlineData("[$ [0] plural; one: # file; other: # files $]")]
-    [InlineData("[$ {0}; one: x; other: y; $]")]
-    [InlineData("[$ plural; one: x; other: y; $]")]
+    [InlineData("[$ [count] plural; one: # file")]
+    [InlineData("[$ [count] plural; one: # file; other: # files $]")]
+    [InlineData("[$ {count}; one: x; other: y; $]")]
     public void Should_leave_a_malformed_plural_expression_alone(string format)
     {
         // Arrange
         var evaluator = new PluralExpressionEvaluator(new StubPluralRuleSet(PluralCategory.One));
 
         // Act
-        var evaluated = evaluator.Evaluate(format, CultureInfo.InvariantCulture, [1]);
+        var evaluated = evaluator.Evaluate(format, CultureInfo.InvariantCulture, [Count(1)]);
 
         // Assert
         Assert.Equal(format, evaluated);
@@ -128,11 +172,11 @@ public sealed class PluralExpressionEvaluatorTests
     public void Should_leave_a_expression_named_for_something_else_alone()
     {
         // Arrange
-        const string Format = "[$ select {0}; male: his; female: her; $] bike";
+        const string Format = "[$ select {count}; male: his; female: her; $] bike";
         var evaluator = new PluralExpressionEvaluator(new StubPluralRuleSet(PluralCategory.One));
 
         // Act
-        var evaluated = evaluator.Evaluate(Format, CultureInfo.InvariantCulture, [1]);
+        var evaluated = evaluator.Evaluate(Format, CultureInfo.InvariantCulture, [Count(1)]);
 
         // Assert
         Assert.Equal(Format, evaluated);
@@ -145,7 +189,7 @@ public sealed class PluralExpressionEvaluatorTests
         var evaluator = new PluralExpressionEvaluator(new StubPluralRuleSet(PluralCategory.Other));
 
         // Act
-        var evaluated = evaluator.Evaluate("[$ [0] plural; other: # files; $]", CultureInfo.InvariantCulture, ["abc"]);
+        var evaluated = evaluator.Evaluate("[$ [count] plural; other: # files; $]", CultureInfo.InvariantCulture, [Count("abc")]);
 
         // Assert
         Assert.Equal("0 files", evaluated);

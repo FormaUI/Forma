@@ -10,6 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Forma.Framework.Localization.Abstractions\Forma.Framework.Localization.Abstractions.csproj" />
         <ProjectReference Include="..\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
     </ItemGroup>
 
@@ -19,7 +20,6 @@
 
     <ItemGroup>
       <PackageReference Include="HtmlSanitizer" Version="9.1.982" />
-      <PackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="10.0.10" />
       <PackageReference Include="OfficeIMO.Excel" Version="3.2.0" />
       <PackageReference Include="OfficeIMO.PowerPoint" Version="3.2.0" />
       <PackageReference Include="OfficeIMO.Word.Html" Version="3.2.0" />

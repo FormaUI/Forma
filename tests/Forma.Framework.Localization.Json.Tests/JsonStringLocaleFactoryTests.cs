@@ -3,7 +3,6 @@ namespace Forma.Framework.Localization.Json.Tests;
 using Forma.Framework.Localization.Json.Tests.Fixtures;
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Localization;
 
 public sealed class JsonStringLocaleFactoryTests
 {
@@ -104,14 +103,14 @@ public sealed class JsonStringLocaleFactoryTests
     }
 
     [Fact]
-    public void Should_resolve_a_typed_localizer_through_the_container()
+    public void Should_resolve_a_typed_locale_through_the_container()
     {
         // Arrange
         using var culture = new CultureScope("he");
         var services = new ServiceCollection().AddJsonLocalization().BuildServiceProvider();
 
         // Act
-        var localized = services.GetRequiredService<IStringLocalizer<Colocated>>()["Today"];
+        var localized = services.GetRequiredService<IStringLocale<Colocated>>()["Today"];
 
         // Assert
         Assert.Equal("היום", localized.Value);
@@ -127,7 +126,7 @@ public sealed class JsonStringLocaleFactoryTests
         // Act
         using var provider = services.AddJsonLocalization().BuildServiceProvider();
         using var culture = new CultureScope("he");
-        var localized = provider.GetRequiredService<IStringLocalizer<PathScoped>>()["Save"];
+        var localized = provider.GetRequiredService<IStringLocale<PathScoped>>()["Save"];
 
         // Assert
         Assert.Equal("שמור", localized.Value);

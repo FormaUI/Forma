@@ -2,10 +2,10 @@ namespace Forma.Framework.Localization.Tests.Language;
 
 public sealed class PluralExpressionEvaluatorLanguageTests
 {
-    private const string English = "[$ [0] plural; one: # file; other: # files; $]";
-    private const string Hebrew = "[$ [0] plural; one: קובץ אחד; two: שני קבצים; other: # קבצים; $]";
-    private const string Arabic = "[$ [0] plural; zero: لا ملفات; one: ملف واحد; two: ملفان; few: # ملفات; many: # ملفًا; other: # ملف; $]";
-    private const string French = "[$ [0] plural; one: # fichier; many: # millions de fichiers; other: # fichiers; $]";
+    private const string English = "[$ plural; one: # file; other: # files; $]";
+    private const string Hebrew = "[$ plural; one: קובץ אחד; two: שני קבצים; other: # קבצים; $]";
+    private const string Arabic = "[$ plural; zero: لا ملفات; one: ملف واحد; two: ملفان; few: # ملفات; many: # ملفًا; other: # ملف; $]";
+    private const string French = "[$ plural; one: # fichier; many: # millions de fichiers; other: # fichiers; $]";
 
     private static readonly PluralExpressionEvaluator Evaluator = new(CommonPluralRuleSet.Default);
 
@@ -28,7 +28,7 @@ public sealed class PluralExpressionEvaluatorLanguageTests
         var culture = CultureInfo.GetCultureInfo(language);
 
         // Act
-        var evaluated = Evaluator.Evaluate(pattern, culture, [count]);
+        var evaluated = Evaluator.Evaluate(pattern, culture, [LocalizedArgument.Unnamed(count)]);
 
         // Assert
         Assert.Equal(expected, evaluated);
@@ -38,7 +38,7 @@ public sealed class PluralExpressionEvaluatorLanguageTests
     public void Should_fall_back_to_other_when_the_language_needs_a_field_the_translation_omits()
     {
         // Act
-        var evaluated = Evaluator.Evaluate(English, CultureInfo.GetCultureInfo("ar"), [11]);
+        var evaluated = Evaluator.Evaluate(English, CultureInfo.GetCultureInfo("ar"), [LocalizedArgument.Unnamed(11)]);
 
         // Assert
         Assert.Equal("11 files", evaluated);
@@ -48,7 +48,7 @@ public sealed class PluralExpressionEvaluatorLanguageTests
     public void Should_group_a_large_count_for_the_culture()
     {
         // Act
-        var evaluated = Evaluator.Evaluate(English, CultureInfo.GetCultureInfo("en"), [1000000]);
+        var evaluated = Evaluator.Evaluate(English, CultureInfo.GetCultureInfo("en"), [LocalizedArgument.Unnamed(1000000)]);
 
         // Assert
         Assert.Equal("1,000,000 files", evaluated);
@@ -58,7 +58,7 @@ public sealed class PluralExpressionEvaluatorLanguageTests
     public void Should_keep_the_digits_a_fractional_count_was_written_with()
     {
         // Act
-        var evaluated = Evaluator.Evaluate(English, CultureInfo.GetCultureInfo("en"), [0.5m]);
+        var evaluated = Evaluator.Evaluate(English, CultureInfo.GetCultureInfo("en"), [LocalizedArgument.Unnamed(0.5m)]);
 
         // Assert
         Assert.Equal("0.5 files", evaluated);
@@ -68,7 +68,7 @@ public sealed class PluralExpressionEvaluatorLanguageTests
     public void Should_select_by_the_text_language_and_group_for_the_reader()
     {
         // Act
-        var evaluated = Evaluator.Evaluate(English, CultureInfo.GetCultureInfo("en"), CultureInfo.GetCultureInfo("es-CO"), [1234.5m]);
+        var evaluated = Evaluator.Evaluate(English, CultureInfo.GetCultureInfo("en"), CultureInfo.GetCultureInfo("es-CO"), [LocalizedArgument.Unnamed(1234.5m)]);
 
         // Assert
         Assert.Equal("1.234,5 files", evaluated);
@@ -78,7 +78,7 @@ public sealed class PluralExpressionEvaluatorLanguageTests
     public void Should_fall_back_to_other_when_the_text_names_no_language()
     {
         // Act
-        var evaluated = Evaluator.Evaluate(English, CultureInfo.InvariantCulture, CultureInfo.GetCultureInfo("en"), [1]);
+        var evaluated = Evaluator.Evaluate(English, CultureInfo.InvariantCulture, CultureInfo.GetCultureInfo("en"), [LocalizedArgument.Unnamed(1)]);
 
         // Assert
         Assert.Equal("1 files", evaluated);

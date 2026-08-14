@@ -71,7 +71,7 @@ public sealed class JsonStringLocaleTests
         var strings = Locale<Colocated>();
 
         // Act
-        var localized = strings["Moved to position {0} of {1}."];
+        var localized = strings["Moved to position {position} of {total}."];
 
         // Assert
         Assert.True(localized.ResourceNotFound);
@@ -113,7 +113,7 @@ public sealed class JsonStringLocaleTests
         var strings = Locale<Colocated>();
 
         // Act
-        var localized = strings["Moved to position {0} of {1}.", 2, 7];
+        var localized = strings["Moved to position {position} of {total}.", ("position", 2), ("total", 7)];
 
         // Assert
         Assert.Equal("הועבר למיקום 2 מתוך 7.", localized.Value);
@@ -127,10 +127,67 @@ public sealed class JsonStringLocaleTests
         var strings = Locale<Colocated>();
 
         // Act
-        var localized = strings["Moved to position {0} of {1}.", 2, 7];
+        var localized = strings["Moved to position {position} of {total}.", ("position", 2), ("total", 7)];
 
         // Assert
         Assert.Equal("Moved to position 2 of 7.", localized.Value);
+    }
+
+    [Fact]
+    public void Should_pair_values_with_the_keys_holes_by_position()
+    {
+        // Arrange
+        using var culture = new CultureScope("he");
+        var strings = Locale<Colocated>();
+
+        // Act
+        var localized = strings["Moved to position {position} of {total}.", 2, 7];
+
+        // Assert
+        Assert.Equal("הועבר למיקום 2 מתוך 7.", localized.Value);
+    }
+
+    // Only the key decides which value is which, so a translation is free to read in another order.
+    [Fact]
+    public void Should_keep_positional_values_with_their_holes_when_a_translation_reorders_them()
+    {
+        // Arrange
+        using var culture = new CultureScope("he");
+        var strings = Locale<Colocated>();
+
+        // Act
+        var localized = strings["Stored {stored} of {total}.", 3, 9];
+
+        // Assert
+        Assert.Equal("מתוך 9 נשמרו 3.", localized.Value);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(3)]
+    public void Should_reject_a_value_count_the_key_does_not_carry_holes_for(int count)
+    {
+        // Arrange
+        using var culture = new CultureScope("he");
+        var strings = Locale<Colocated>();
+        var values = new object?[count];
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => _ = strings["Stored {stored} of {total}.", values]);
+    }
+
+    [Fact]
+    public void Should_pair_values_with_the_keys_holes_when_resolving()
+    {
+        // Arrange
+        using var culture = new CultureScope("he");
+        var strings = Locale<Colocated>();
+
+        // Act
+        var pattern = strings.Resolve("Moved to position {position} of {total}.", 2, 7);
+
+        // Assert
+        Assert.Equal([new LocalizedArgument("position", 2), new LocalizedArgument("total", 7)], pattern.Arguments);
     }
 
     [Fact]
@@ -209,7 +266,9 @@ public sealed class JsonStringLocaleTests
         var names = strings.GetAllStrings(includeParentCultures: false).Select(s => s.Name);
 
         // Assert
-        Assert.Equal(["Last 7 days", "Moved to position {0} of {1}.", "Today"], names.Order(StringComparer.Ordinal));
+        Assert.Equal(
+            ["Last 7 days", "Moved to position {position} of {total}.", "Stored {stored} of {total}.", "Today"],
+            names.Order(StringComparer.Ordinal));
     }
 
     [Fact]
@@ -239,7 +298,9 @@ public sealed class JsonStringLocaleTests
         var strings = Locale<Colocated>();
 
         // Act
-        var localized = strings[$"Moved to position {2} of {7}."];
+        var position = 2;
+        var total = 7;
+        var localized = strings[$"Moved to position {position} of {total}."];
 
         // Assert
         Assert.Equal("הועבר למיקום 2 מתוך 7.", localized.Value);
@@ -253,13 +314,13 @@ public sealed class JsonStringLocaleTests
         var strings = Locale<Colocated>();
 
         // Act
-        var pattern = strings.Resolve("Moved to position {0} of {1}.", 2, 7);
+        var pattern = strings.Resolve("Moved to position {position} of {total}.", ("position", 2), ("total", 7));
 
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.Equal("הועבר למיקום {0} מתוך {1}.", pattern.Format);
-            Assert.Equal([2, 7], pattern.Arguments);
+            Assert.Equal("הועבר למיקום {position} מתוך {total}.", pattern.Format);
+            Assert.Equal([new LocalizedArgument("position", 2), new LocalizedArgument("total", 7)], pattern.Arguments);
         });
     }
 
@@ -271,17 +332,19 @@ public sealed class JsonStringLocaleTests
         var strings = Locale<Colocated>();
 
         // Act
-        var pattern = strings.Resolve($"Moved to position {2} of {7}.");
+        var position = 2;
+        var total = 7;
+        var pattern = strings.Resolve($"Moved to position {position} of {total}.");
 
         // Assert
-        Assert.Equal("הועבר למיקום {0} מתוך {1}.", pattern.Format);
+        Assert.Equal("הועבר למיקום {position} מתוך {total}.", pattern.Format);
     }
 
     [Fact]
     public void Should_evaluate_the_plural_expression_in_a_translation()
     {
         // Arrange
-        const string Key = "[$ [0] plural; one: # file; other: # files; $]";
+        const string Key = "[$ plural; one: # file; other: # files; $]";
         using var culture = new CultureScope("he");
         var strings = Locale<Pluralized>();
 
@@ -306,10 +369,10 @@ public sealed class JsonStringLocaleTests
         // Arrange
         using var culture = new CultureScope("he");
         var strings = Locale<Pluralized>();
-        const int Count = 2;
+        const int count = 2;
 
         // Act
-        var localized = strings[$"[$ [{Count}] plural; one: # file; other: # files; $]"];
+        var localized = strings[$"[$ [{count}] plural; one: # file; other: # files; $]"];
 
         // Assert
         Assert.Multiple(() =>
@@ -319,10 +382,10 @@ public sealed class JsonStringLocaleTests
         });
     }
 
-    // A bracketed index carries no braces, so formatting cannot mistake it for a hole and rewrite it.
+    // A bracketed name carries no braces, so formatting cannot mistake it for a hole and rewrite it.
     [Theory]
-    [InlineData("[$ [0] plural; one: # file; other: # files $]")]
-    [InlineData("[$ [0] select; male: his; female: her; $]")]
+    [InlineData("[$ plural; one: # file; other: # files $]")]
+    [InlineData("[$ select; male: his; female: her; $]")]
     public void Should_render_a_expression_it_cannot_evaluate_exactly_as_written(string key)
     {
         // Arrange
@@ -345,7 +408,8 @@ public sealed class JsonStringLocaleTests
         var strings = Locale<Pluralized>();
 
         // Act
-        var localized = strings[$"See [{7}] for details"];
+        var id = 7;
+        var localized = strings[$"See [{id}] for details"];
 
         // Assert
         Assert.Equal("See [7] for details", localized.Value);
@@ -355,7 +419,7 @@ public sealed class JsonStringLocaleTests
     public void Should_evaluate_the_plural_expression_in_the_key_when_untranslated()
     {
         // Arrange
-        const string Key = "[$ [0] plural; one: # file; other: # files; $]";
+        const string Key = "[$ plural; one: # file; other: # files; $]";
         using var culture = new CultureScope("en");
         var strings = Locale<Pluralized>();
 
@@ -375,7 +439,7 @@ public sealed class JsonStringLocaleTests
     public void Should_evaluate_an_untranslated_key_with_the_source_language_rules()
     {
         // Arrange — the key is Hebrew, whose dual the displayed language does not have.
-        const string Key = "[$ [0] plural; one: פריט אחד; two: שני פריטים; other: # פריטים; $]";
+        const string Key = "[$ plural; one: פריט אחד; two: שני פריטים; other: # פריטים; $]";
         using var culture = new CultureScope("en");
         var strings = new JsonStringLocaleFactory(new JsonLocalizationOptions { SourceLanguage = "he" }).Create(typeof(Untranslated));
 
@@ -398,7 +462,7 @@ public sealed class JsonStringLocaleTests
     public void Should_read_a_regional_source_language_as_its_language()
     {
         // Arrange — the key is Hebrew, and only Hebrew's rules carry a dual.
-        const string Key = "[$ [0] plural; one: פריט אחד; two: שני פריטים; other: # פריטים; $]";
+        const string Key = "[$ plural; one: פריט אחד; two: שני פריטים; other: # פריטים; $]";
         using var culture = new CultureScope("en");
         var strings = new JsonStringLocaleFactory(new JsonLocalizationOptions { SourceLanguage = "he-IL" }).Create(typeof(Untranslated));
 
@@ -413,7 +477,7 @@ public sealed class JsonStringLocaleTests
     public void Should_format_an_untranslated_count_for_the_reader()
     {
         // Arrange — the key is English, but its count belongs to the culture on screen.
-        const string Key = "[$ [0] plural; one: # file; other: # files; $]";
+        const string Key = "[$ plural; one: # file; other: # files; $]";
         using var culture = new CultureScope("es-CO");
         var strings = new JsonStringLocaleFactory(new JsonLocalizationOptions { SourceLanguage = "en" }).Create(typeof(Untranslated));
 

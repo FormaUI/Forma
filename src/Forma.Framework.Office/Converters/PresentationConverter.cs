@@ -3,12 +3,12 @@ namespace Forma.Framework.Office.Converters;
 using System.Net;
 using System.Text;
 
-using Microsoft.Extensions.Localization;
+using Forma.Framework.Localization;
 
 using OfficeIMO.PowerPoint;
 
 /// <summary>Projects a presentation into one section per slide, since OfficeIMO ships no HTML converter for it.</summary>
-internal sealed class PresentationConverter(IStringLocalizer localizer) : IOfficeConverter
+internal sealed class PresentationConverter(IStringLocale localizer) : IOfficeConverter
 {
     // A deck this long is already beyond what a preview pane can usefully show.
     private const int MaxSlides = 200;
@@ -31,7 +31,7 @@ internal sealed class PresentationConverter(IStringLocalizer localizer) : IOffic
 
             if (number == MaxSlides)
             {
-                markup.Append("<p>").Append(WebUtility.HtmlEncode(localizer["Showing the first {0} slides.", MaxSlides].Value)).Append("</p>");
+                markup.Append("<p>").Append(WebUtility.HtmlEncode(localizer[$"Showing the first {MaxSlides} slides."].Value)).Append("</p>");
 
                 break;
             }
@@ -74,7 +74,7 @@ internal sealed class PresentationConverter(IStringLocalizer localizer) : IOffic
 
         // A layout leaves a title placeholder behind whether or not the author filled it, so a blank one still needs naming.
         markup.Append("<h2>")
-            .Append(WebUtility.HtmlEncode(title ?? localizer["Slide {0}", number].Value))
+            .Append(WebUtility.HtmlEncode(title ?? localizer[$"Slide {number}"].Value))
             .Append("</h2>");
 
         foreach (var text in body)

@@ -9,7 +9,7 @@ A file sits beside the type it translates, keyed by the English source text:
 ```json
 {
     "Save": "שמור",
-    "Stored {0} of {1}.": "נשמרו {0} מתוך {1}."
+    "Stored {stored} of {total}.": "נשמרו {stored} מתוך {total}."
 }
 ```
 
@@ -61,20 +61,18 @@ Every localization file declares what it is, as its first property:
 }
 ```
 
-The entry is removed before lookup, so it appears in neither a key search nor `GetAllStrings`. Its
-value uses the same `name: value;` grammar as a plural expression, read by the same parser.
+The entry is removed before lookup, so it appears in neither a key search nor `GetAllStrings`.
 
 Reading a file without it throws `LocalizationMetadataException`, as does a malformed value, a
 `Culture` other than the one the file's own name gives it, or a `SchemaVersion` this build cannot
-read. Because every file names a culture, the check never depends on how a host is configured.
+read.
 
-`SchemaVersion` is compared by part. A differing **major** is refused, because the same field may no
-longer mean the same thing. A differing **minor** is accepted in either direction, since a minor bump
-is additive by definition — which is why a field this build does not recognise is ignored rather than
-rejected, and why a file written by a newer toolchain still loads here. **Patch** is never actionable.
+`SchemaVersion` is compared by part: a differing **major** is refused, a differing **minor** is
+accepted in either direction, and **patch** is ignored. A field this build does not recognise is
+ignored, so a file written by a newer toolchain still loads.
 
-The linter is what keeps the version honest: it enforces the marker's position, the required fields
-and their order, and that a file declares the current schema rather than one left behind.
+The linter enforces the marker's position, the required fields and their order, and that a file
+declares the current schema.
 
 ## Registration
 
@@ -83,30 +81,26 @@ services.AddJsonLocalization();
 services.AddJsonLocalization(new JsonLocalizationOptions { ResourcesPath = "Resources", SourceLanguage = "es" });
 ```
 
-Registers `IStringLocale<T>` and `IStringLocaleFactory`, plus the framework's `IStringLocalizer<T>` and
-`IStringLocalizerFactory` through the adapters, so a consumer on either contract resolves.
+Registers `IStringLocale<T>` and `IStringLocaleFactory`, so a consumer injecting either resolves.
 
 `JsonLocalizationOptions` adds `ResourcesPath` to the settings every backend shares, which
 `Forma.Framework.Localization.Abstractions` documents.
 
 ## Plural rules
 
-A translation resolves the expression `[$ [index] plural; category: text; $]` before its holes are
-filled, where `#` stands for the count formatted for the reader's culture.
+A translation resolves its plural expressions before the holes are filled.
+`Forma.Framework.Localization.Abstractions` documents the syntax.
 
 ```json
-"{0} selected": "[$ [0] plural; one: נבחר אחד; two: שניים נבחרו; other: # נבחרו; $]"
+"{selected} selected": "[$ [selected] plural; one: נבחר אחד; two: שניים נבחרו; other: # נבחרו; $]"
 ```
 
 An expression may sit in the translation alone, so a key carries one only where the source language
-itself inflects. A category the language never selects is ignored, and a category it selects but the
-expression omits falls back to `other`; with no `other` field the result is empty. A malformed
-expression is left as written.
+itself inflects.
 
 Rules read CLDR operands rather than a bare integer, so `1` and `1.0` can differ: `1.0` is `one` in
-Spanish and `other` in English. The rules themselves live in `Forma.Framework.Localization.Abstractions`.
+Spanish and `other` in English.
 
-`SourceLanguage` names the language the keys are written in, and defaults to `en`. A key with no
-translation is shown as written, so its plural forms resolve under that language rather than the one
-on screen — a Hebrew key keeps its dual in front of an English reader. The count itself still follows
-the reader, so an English key shows `1.234,5` to a Colombian.
+`SourceLanguage` names the language the keys are written in, and defaults to `en`. An untranslated key
+resolves its plural forms under that language — a Hebrew key keeps its dual in front of an English
+reader — while the count itself follows the reader, so an English key shows `1.234,5` to a Colombian.

@@ -15,11 +15,11 @@ public enum LocaleDiagnosticKind
     /// <summary>The header names a keyword no expression defines.</summary>
     UnknownKeyword,
 
-    /// <summary>The header does not carry the bracketed index the count comes from.</summary>
-    MissingArgumentIndex,
+    /// <summary>The header does not carry the bracketed name the count comes from.</summary>
+    MissingArgumentName,
 
-    /// <summary>The bracketed index does not hold a non-negative integer.</summary>
-    InvalidArgumentIndex,
+    /// <summary>The bracketed name is not a plain identifier.</summary>
+    InvalidArgumentName,
 
     /// <summary>The expression carries no fields at all.</summary>
     MissingFields,

@@ -14,8 +14,12 @@ public sealed class StubStringLocale(IReadOnlyDictionary<string, string> transla
         => Text(name, []);
 
     /// <summary>The translation for a key, formatted with the supplied arguments.</summary>
-    public LocalizedText this[string name, params ReadOnlySpan<object?> arguments]
+    public LocalizedText this[string name, params ReadOnlySpan<LocalizedArgument> arguments]
         => Text(name, arguments.ToArray());
+
+    /// <summary>The translation for a key, formatted with values paired to the key's holes by position.</summary>
+    public LocalizedText this[string name, params ReadOnlySpan<object?> values]
+        => Text(name, LocalizedFormat.Bind(name, values));
 
     /// <summary>The translation for an interpolated string.</summary>
     public LocalizedText this[LocalizedFormatHandler handler]
@@ -30,8 +34,20 @@ public sealed class StubStringLocale(IReadOnlyDictionary<string, string> transla
         }
     }
 
+    /// <summary>The translated format for a key that fills no holes.</summary>
+    public LocalizedPattern Resolve(string name)
+    {
+        LocalizedArgument[] arguments = [];
+
+        return Resolve(name, arguments);
+    }
+
+    /// <summary>The translated format for a key, with values paired to its holes by position.</summary>
+    public LocalizedPattern Resolve(string name, params object?[] values)
+        => Resolve(name, LocalizedFormat.Bind(name, values));
+
     /// <summary>The translated format for a key, with the holes left open.</summary>
-    public LocalizedPattern Resolve(string name, params object?[] arguments)
+    public LocalizedPattern Resolve(string name, params LocalizedArgument[] arguments)
         => new(name, Find(name, out var found), arguments, !found, searchedLocation);
 
     /// <summary>The translated format for an interpolated string, with the holes left open.</summary>
@@ -60,10 +76,10 @@ public sealed class StubStringLocale(IReadOnlyDictionary<string, string> transla
         return translation ?? name;
     }
 
-    private LocalizedText Text(string name, object?[] arguments)
+    private LocalizedText Text(string name, LocalizedArgument[] arguments)
     {
         var format = Find(name, out var found);
-        var value = arguments.Length == 0 ? format : string.Format(CultureInfo.CurrentCulture, format, arguments);
+        var value = arguments.Length == 0 ? format : LocalizedFormat.Render(format, arguments, CultureInfo.CurrentCulture);
 
         return new LocalizedText(name, value, !found, searchedLocation);
     }

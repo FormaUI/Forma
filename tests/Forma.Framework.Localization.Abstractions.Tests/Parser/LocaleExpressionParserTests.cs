@@ -5,7 +5,7 @@ using Forma.Framework.Localization.Parser.Syntax;
 
 public sealed class LocaleExpressionParserTests
 {
-    private const string Files = "[$ [0] plural; one: # file; other: # files; $]";
+    private const string Files = "[$ [count] plural; one: # file; other: # files; $]";
 
     // Spelled out here rather than borrowed from an evaluator, since the parser knows no keyword of its own.
     private static readonly LocaleKeywords Keywords =
@@ -29,7 +29,7 @@ public sealed class LocaleExpressionParserTests
     }
 
     [Fact]
-    public void Should_read_the_keyword_and_the_argument_index()
+    public void Should_read_the_keyword_and_the_argument_name()
     {
         // Act
         var expression = Assert.Single(LocaleExpressionParser.Parse(Files, Keywords).Expressions);
@@ -38,9 +38,27 @@ public sealed class LocaleExpressionParserTests
         Assert.Multiple(() =>
         {
             Assert.Equal("plural", Text(expression.KeywordSpan, Files));
-            Assert.Equal("[0]", Text(expression.ArgumentSpan, Files));
-            Assert.Equal(0, expression.ArgumentIndex);
+            Assert.Equal("[count]", Text(expression.ArgumentSpan, Files));
+            Assert.Equal("count", Text(expression.NameSpan, Files));
             Assert.Equal(Files, Text(expression.Span, Files));
+        });
+    }
+
+    [Fact]
+    public void Should_read_an_expression_that_names_no_argument()
+    {
+        // Arrange
+        const string Bare = "[$ plural; one: # file; other: # files; $]";
+
+        // Act
+        var expression = Assert.Single(LocaleExpressionParser.Parse(Bare, Keywords).Expressions);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.Equal("plural", Text(expression.KeywordSpan, Bare));
+            Assert.True(expression.NameSpan.IsEmpty);
+            Assert.Equal(2, expression.Fields.Count);
         });
     }
 
@@ -65,7 +83,7 @@ public sealed class LocaleExpressionParserTests
     public void Should_read_every_expression_in_one_run_of_text()
     {
         // Arrange
-        const string Pair = "[$ [0] plural; one: # file; other: # files; $] in [$ [1] plural; one: # folder; other: # folders; $]";
+        const string Pair = "[$ [files] plural; one: # file; other: # files; $] in [$ [folders] plural; one: # folder; other: # folders; $]";
 
         // Act
         var result = LocaleExpressionParser.Parse(Pair, Keywords);
@@ -74,8 +92,8 @@ public sealed class LocaleExpressionParserTests
         Assert.Multiple(() =>
         {
             Assert.Equal(2, result.Expressions.Count);
-            Assert.Equal(0, result.Expressions[0].ArgumentIndex);
-            Assert.Equal(1, result.Expressions[1].ArgumentIndex);
+            Assert.Equal("files", Text(result.Expressions[0].NameSpan, Pair));
+            Assert.Equal("folders", Text(result.Expressions[1].NameSpan, Pair));
             Assert.True(result.IsValid);
         });
     }
@@ -84,13 +102,13 @@ public sealed class LocaleExpressionParserTests
     public void Should_span_only_the_expression_within_surrounding_prose()
     {
         // Arrange
-        const string Prose = "Moved to [$ [0] plural; one: # place; other: # places; $] today";
+        const string Prose = "Moved to [$ [count] plural; one: # place; other: # places; $] today";
 
         // Act
         var expression = Assert.Single(LocaleExpressionParser.Parse(Prose, Keywords).Expressions);
 
         // Assert
-        Assert.Equal("[$ [0] plural; one: # place; other: # places; $]", Text(expression.Span, Prose));
+        Assert.Equal("[$ [count] plural; one: # place; other: # places; $]", Text(expression.Span, Prose));
     }
 
     // A semicolon only ends a field when a category follows, so prose keeps its own punctuation.
@@ -98,7 +116,7 @@ public sealed class LocaleExpressionParserTests
     public void Should_keep_a_semicolon_that_no_category_follows_inside_the_field()
     {
         // Arrange
-        const string Listed = "[$ [0] plural; other: # files; see the list; $]";
+        const string Listed = "[$ [count] plural; other: # files; see the list; $]";
 
         // Act
         var result = LocaleExpressionParser.Parse(Listed, Keywords);
@@ -113,8 +131,8 @@ public sealed class LocaleExpressionParserTests
     }
 
     [Theory]
-    [InlineData("[$ [0] plural; one: # file; other: # files;")]
-    [InlineData("[$ [0] plural; one: # file")]
+    [InlineData("[$ [count] plural; one: # file; other: # files;")]
+    [InlineData("[$ [count] plural; one: # file")]
     public void Should_report_a_expression_that_is_never_closed(string text)
     {
         // Act
@@ -132,19 +150,18 @@ public sealed class LocaleExpressionParserTests
     public void Should_report_a_body_that_does_not_end_with_a_semicolon()
     {
         // Act
-        var result = LocaleExpressionParser.Parse("[$ [0] plural; one: # file; other: # files $]", Keywords);
+        var result = LocaleExpressionParser.Parse("[$ [count] plural; one: # file; other: # files $]", Keywords);
 
         // Assert
         Assert.Equal(LocaleDiagnosticKind.MissingTrailingSemicolon, Assert.Single(result.Diagnostics).Kind);
     }
 
     [Theory]
-    [InlineData("[$ plural; one: # file; other: # files; $]", LocaleDiagnosticKind.MissingArgumentIndex)]
-    [InlineData("[$ 0 plural; one: # file; other: # files; $]", LocaleDiagnosticKind.MissingArgumentIndex)]
-    [InlineData("[$ [a] plural; one: # file; other: # files; $]", LocaleDiagnosticKind.InvalidArgumentIndex)]
-    [InlineData("[$ [-1] plural; one: # file; other: # files; $]", LocaleDiagnosticKind.InvalidArgumentIndex)]
-    [InlineData("[$ [] plural; one: # file; other: # files; $]", LocaleDiagnosticKind.InvalidArgumentIndex)]
-    public void Should_report_a_header_that_does_not_carry_an_argument_index(string text, LocaleDiagnosticKind expected)
+    [InlineData("[$ [0] plural; one: # file; other: # files; $]")]
+    [InlineData("[$ [a b] plural; one: # file; other: # files; $]")]
+    [InlineData("[$ [-1] plural; one: # file; other: # files; $]")]
+    [InlineData("[$ [] plural; one: # file; other: # files; $]")]
+    public void Should_report_a_bracketed_name_that_is_not_an_identifier(string text)
     {
         // Act
         var result = LocaleExpressionParser.Parse(text, Keywords);
@@ -153,14 +170,24 @@ public sealed class LocaleExpressionParserTests
         Assert.Multiple(() =>
         {
             Assert.Empty(result.Expressions);
-            Assert.Equal(expected, Assert.Single(result.Diagnostics).Kind);
+            Assert.Equal(LocaleDiagnosticKind.InvalidArgumentName, Assert.Single(result.Diagnostics).Kind);
         });
     }
 
+    [Fact]
+    public void Should_report_a_bracket_that_is_never_closed()
+    {
+        // Act
+        var result = LocaleExpressionParser.Parse("[$ [count plural; one: # file; other: # files; $]", Keywords);
+
+        // Assert
+        Assert.Equal(LocaleDiagnosticKind.MissingArgumentName, Assert.Single(result.Diagnostics).Kind);
+    }
+
     [Theory]
-    [InlineData("[$ [0]; one: # file; other: # files; $]")]
-    [InlineData("[$ [0] ; one: # file; other: # files; $]")]
-    public void Should_report_a_header_that_carries_the_index_alone(string text)
+    [InlineData("[$ [count]; one: # file; other: # files; $]")]
+    [InlineData("[$ [count] ; one: # file; other: # files; $]")]
+    public void Should_report_a_header_that_carries_the_name_alone(string text)
     {
         // Act
         var result = LocaleExpressionParser.Parse(text, Keywords);
@@ -177,7 +204,7 @@ public sealed class LocaleExpressionParserTests
     public void Should_report_a_keyword_no_expression_defines()
     {
         // Arrange
-        const string Unknown = "[$ [0] plurals; one: # file; other: # files; $]";
+        const string Unknown = "[$ [count] plurals; one: # file; other: # files; $]";
 
         // Act
         var result = LocaleExpressionParser.Parse(Unknown, Keywords);
@@ -196,7 +223,7 @@ public sealed class LocaleExpressionParserTests
     public void Should_not_check_field_names_against_categories_for_an_unknown_keyword()
     {
         // Act
-        var result = LocaleExpressionParser.Parse("[$ [0] select; male: his; female: her; $]", Keywords);
+        var result = LocaleExpressionParser.Parse("[$ [count] select; male: his; female: her; $]", Keywords);
 
         // Assert
         Assert.Multiple(() =>
@@ -213,7 +240,7 @@ public sealed class LocaleExpressionParserTests
         var keywords = new LocaleKeywords(new LocaleKeyword("gender", "male", "female", "other"));
 
         // Act
-        var result = LocaleExpressionParser.Parse("[$ [0] gender; male: his; female: her; $]", keywords);
+        var result = LocaleExpressionParser.Parse("[$ [count] gender; male: his; female: her; $]", keywords);
 
         // Assert
         Assert.Multiple(() =>
@@ -230,7 +257,7 @@ public sealed class LocaleExpressionParserTests
         var keywords = new LocaleKeywords(new LocaleKeyword("gender", "male", "female", "other"));
 
         // Act
-        var result = LocaleExpressionParser.Parse("[$ [0] gender; neuter: theirs; $]", keywords);
+        var result = LocaleExpressionParser.Parse("[$ [count] gender; neuter: theirs; $]", keywords);
 
         // Assert
         Assert.Equal(LocaleDiagnosticKind.UnknownFieldName, Assert.Single(result.Diagnostics).Kind);
@@ -243,7 +270,7 @@ public sealed class LocaleExpressionParserTests
         var keywords = new LocaleKeywords(new LocaleKeyword("select"));
 
         // Act
-        var result = LocaleExpressionParser.Parse("[$ [0] select; anything: here; $]", keywords);
+        var result = LocaleExpressionParser.Parse("[$ [count] select; anything: here; $]", keywords);
 
         // Assert
         Assert.Multiple(() =>
@@ -273,7 +300,7 @@ public sealed class LocaleExpressionParserTests
     public void Should_report_a_expression_with_no_fields()
     {
         // Act
-        var result = LocaleExpressionParser.Parse("[$ [0] plural; $]", Keywords);
+        var result = LocaleExpressionParser.Parse("[$ [count] plural; $]", Keywords);
 
         // Assert
         Assert.Equal(LocaleDiagnosticKind.MissingFields, Assert.Single(result.Diagnostics).Kind);
@@ -283,7 +310,7 @@ public sealed class LocaleExpressionParserTests
     public void Should_report_a_category_the_expression_does_not_recognise()
     {
         // Act
-        var result = LocaleExpressionParser.Parse("[$ [0] plural; single: # file; $]", Keywords);
+        var result = LocaleExpressionParser.Parse("[$ [count] plural; single: # file; $]", Keywords);
 
         // Assert
         Assert.Equal(LocaleDiagnosticKind.UnknownFieldName, Assert.Single(result.Diagnostics).Kind);
@@ -293,7 +320,7 @@ public sealed class LocaleExpressionParserTests
     public void Should_report_a_category_written_twice()
     {
         // Act
-        var result = LocaleExpressionParser.Parse("[$ [0] plural; one: # file; one: # files; $]", Keywords);
+        var result = LocaleExpressionParser.Parse("[$ [count] plural; one: # file; one: # files; $]", Keywords);
 
         // Assert
         Assert.Equal(LocaleDiagnosticKind.DuplicateFieldName, Assert.Single(result.Diagnostics).Kind);
@@ -303,7 +330,7 @@ public sealed class LocaleExpressionParserTests
     public void Should_report_a_field_with_no_colon()
     {
         // Act
-        var result = LocaleExpressionParser.Parse("[$ [0] plural; other # files; $]", Keywords);
+        var result = LocaleExpressionParser.Parse("[$ [count] plural; other # files; $]", Keywords);
 
         // Assert
         Assert.Equal(LocaleDiagnosticKind.MissingNameSeparator, Assert.Single(result.Diagnostics).Kind);
@@ -311,8 +338,8 @@ public sealed class LocaleExpressionParserTests
 
     // A category following the semicolon marks a separator the author meant, so the field is recovered rather than lost.
     [Theory]
-    [InlineData("[$ [0] plural;one: # file; other: # files; $]")]
-    [InlineData("[$ [0] plural; one: # file;other: # files; $]")]
+    [InlineData("[$ [count] plural;one: # file; other: # files; $]")]
+    [InlineData("[$ [count] plural; one: # file;other: # files; $]")]
     public void Should_recover_a_field_whose_semicolon_carries_no_space(string text)
     {
         // Act
@@ -330,8 +357,8 @@ public sealed class LocaleExpressionParserTests
     }
 
     [Theory]
-    [InlineData("[$ [0] plural; one : # file; other : # files; $]")]
-    [InlineData("[$ [0] plural; one:# file; other:# files; $]")]
+    [InlineData("[$ [count] plural; one : # file; other : # files; $]")]
+    [InlineData("[$ [count] plural; one:# file; other:# files; $]")]
     public void Should_recover_a_field_not_written_against_its_colon(string text)
     {
         // Act
@@ -351,9 +378,9 @@ public sealed class LocaleExpressionParserTests
 
     // Spacing cannot make an absent value present, so the shape of the separator is not what gets reported.
     [Theory]
-    [InlineData("[$ [0] plural; one: ; other: # files; $]")]
-    [InlineData("[$ [0] plural; one:; other: # files; $]")]
-    [InlineData("[$ [0] plural; one:    ; other: # files; $]")]
+    [InlineData("[$ [count] plural; one: ; other: # files; $]")]
+    [InlineData("[$ [count] plural; one:; other: # files; $]")]
+    [InlineData("[$ [count] plural; one:    ; other: # files; $]")]
     public void Should_report_a_field_that_carries_no_value(string text)
     {
         // Act
@@ -374,7 +401,7 @@ public sealed class LocaleExpressionParserTests
     public void Should_report_the_last_field_carrying_no_value()
     {
         // Act
-        var result = LocaleExpressionParser.Parse("[$ [0] plural; one: # file; other: ; $]", Keywords);
+        var result = LocaleExpressionParser.Parse("[$ [count] plural; one: # file; other: ; $]", Keywords);
 
         // Assert
         Assert.Equal(LocaleDiagnosticKind.EmptyFieldValue, Assert.Single(result.Diagnostics).Kind);
@@ -385,7 +412,7 @@ public sealed class LocaleExpressionParserTests
     public void Should_not_recover_a_separator_for_a_keyword_that_brings_no_names()
     {
         // Arrange
-        const string Unspaced = "[$ [0] select; male: his;female: her; $]";
+        const string Unspaced = "[$ [count] select; male: his;female: her; $]";
 
         // Act
         var result = LocaleExpressionParser.Parse(Unspaced, Keywords);
@@ -405,10 +432,10 @@ public sealed class LocaleExpressionParserTests
         => Assert.Throws<ArgumentNullException>(() => LocaleExpressionParser.Parse(null!, Keywords));
 
     [Fact]
-    public void Should_rewrite_an_interpolated_index_into_a_plain_one()
+    public void Should_rewrite_an_interpolated_name_into_a_plain_one()
     {
         // Act
-        var rewritten = LocaleExpressionParser.TryNormalize("[$ [{0}] plural; one: # file; other: # files; $]", out var normalized);
+        var rewritten = LocaleExpressionParser.TryNormalize("[$ [{count}] plural; one: # file; other: # files; $]", out var normalized);
 
         // Assert
         Assert.Multiple(() =>
@@ -420,12 +447,12 @@ public sealed class LocaleExpressionParserTests
 
     // Only an expression's own header is rewritten, so a hole the caller means to fill survives.
     [Theory]
-    [InlineData("See [{0}] for details")]
-    [InlineData("[$ [{0} plural; one: # file; other: # files; $]")]
-    [InlineData("[$ [{0} plural; one: a}]")]
+    [InlineData("See [{count}] for details")]
+    [InlineData("[$ [{count} plural; one: # file; other: # files; $]")]
+    [InlineData("[$ [{count} plural; one: a}]")]
     [InlineData("[$ [{} plural; one: a; $]")]
-    [InlineData("[$ [{x}] plural; one: a; $]")]
-    [InlineData("[$ [{0}")]
+    [InlineData("[$ [{0}] plural; one: a; $]")]
+    [InlineData("[$ [{count}")]
     public void Should_leave_brackets_that_do_not_open_a_header_alone(string text)
     {
         // Act
@@ -443,16 +470,16 @@ public sealed class LocaleExpressionParserTests
     public void Should_rewrite_the_header_while_prose_around_it_keeps_its_holes()
     {
         // Act
-        LocaleExpressionParser.TryNormalize("See [{0}] and [$ [{1}] plural; one: a; other: b; $] now", out var normalized);
+        LocaleExpressionParser.TryNormalize("See [{files}] and [$ [{count}] plural; one: a; other: b; $] now", out var normalized);
 
         // Assert
-        Assert.Equal("See [{0}] and [$ [1] plural; one: a; other: b; $] now", normalized);
+        Assert.Equal("See [{files}] and [$ [count] plural; one: a; other: b; $] now", normalized);
     }
 
     // Canonical text needs no rewriting, so nothing is allocated for it.
     [Theory]
-    [InlineData("[$ [0] plural; one: a; other: b; $]")]
-    [InlineData("Stored {0} of {1}.")]
+    [InlineData("[$ [count] plural; one: a; other: b; $]")]
+    [InlineData("Stored {stored} of {total}.")]
     [InlineData("")]
     public void Should_report_canonical_text_as_needing_no_rewrite(string text)
     {

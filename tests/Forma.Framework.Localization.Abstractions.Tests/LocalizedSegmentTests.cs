@@ -6,10 +6,10 @@ public sealed class LocalizedSegmentTests
     public void Should_split_a_format_into_literals_and_holes()
     {
         // Act
-        var segments = Collect("Stored {0} of {1}.");
+        var segments = Collect("Stored {stored} of {total}.");
 
         // Assert
-        Assert.Equal([("Stored ", -1), ("", 0), (" of ", -1), ("", 1), (".", -1)], segments);
+        Assert.Equal([("Stored ", ""), ("", "stored"), (" of ", ""), ("", "total"), (".", "")], segments);
     }
 
     [Fact]
@@ -19,18 +19,18 @@ public sealed class LocalizedSegmentTests
         var segments = Collect("Save");
 
         // Assert
-        Assert.Equal([("Save", -1)], segments);
+        Assert.Equal([("Save", "")], segments);
     }
 
     [Fact]
     public void Should_yield_a_doubled_brace_as_a_single_literal_brace()
     {
         // Act
-        var segments = Collect("Use {{curly}} braces {0}.");
+        var segments = Collect("Use {{curly}} braces {count}.");
 
         // Assert
         Assert.Equal(
-            [("Use ", -1), ("{", -1), ("curly", -1), ("}", -1), (" braces ", -1), ("", 0), (".", -1)],
+            [("Use ", ""), ("{", ""), ("curly", ""), ("}", ""), (" braces ", ""), ("", "count"), (".", "")],
             segments);
     }
 
@@ -38,60 +38,90 @@ public sealed class LocalizedSegmentTests
     public void Should_read_a_hole_wrapped_in_escaped_braces()
     {
         // Act
-        var segments = Collect("{{{0:D}}}");
+        var segments = Collect("{{{count:D}}}");
 
         // Assert
-        Assert.Equal([("{", -1), ("", 0), ("}", -1)], segments);
+        Assert.Equal([("{", ""), ("", "count"), ("}", "")], segments);
     }
 
     [Fact]
-    public void Should_report_the_same_index_each_time_a_format_repeats_it()
+    public void Should_report_the_same_name_each_time_a_format_repeats_it()
     {
         // Act
-        var segments = Collect("0x{0:X} {0:E} {0:N}");
+        var segments = Collect("0x{value:X} {value:E} {value:N}");
 
         // Assert
-        Assert.Equal([("0x", -1), ("", 0), (" ", -1), ("", 0), (" ", -1), ("", 0)], segments);
+        Assert.Equal([("0x", ""), ("", "value"), (" ", ""), ("", "value"), (" ", ""), ("", "value")], segments);
     }
 
     [Fact]
     public void Should_keep_a_hole_that_carries_a_format_specifier()
     {
         // Act
-        var segments = Collect("Ratio {0:P1}.");
+        var segments = Collect("Ratio {share:P1}.");
 
         // Assert
-        Assert.Equal([("Ratio ", -1), ("", 0), (".", -1)], segments);
+        Assert.Equal([("Ratio ", ""), ("", "share"), (".", "")], segments);
+    }
+
+    [Fact]
+    public void Should_expose_the_specifier_a_hole_carries()
+    {
+        // Act
+        var (name, alignment, format) = Single("Ratio {share:P1}.");
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.Equal("share", name);
+            Assert.Equal("P1", format);
+            Assert.Equal(0, alignment);
+        });
     }
 
     [Fact]
     public void Should_keep_a_hole_that_carries_an_alignment()
     {
         // Act
-        var segments = Collect("{0,-8}|");
+        var segments = Collect("{label,-8}|");
 
         // Assert
-        Assert.Equal([("", 0), ("|", -1)], segments);
+        Assert.Equal([("", "label"), ("|", "")], segments);
     }
 
     [Fact]
-    public void Should_treat_a_non_numeric_brace_group_as_literal_text()
+    public void Should_expose_the_alignment_a_hole_carries()
     {
         // Act
-        var segments = Collect("A {name} here");
+        var (name, alignment, format) = Single("{label,-8}|");
 
         // Assert
-        Assert.Equal([("A ", -1), ("{name}", -1), (" here", -1)], segments);
+        Assert.Multiple(() =>
+        {
+            Assert.Equal("label", name);
+            Assert.Equal(-8, alignment);
+            Assert.Equal(string.Empty, format);
+        });
+    }
+
+    [Fact]
+    public void Should_treat_a_brace_group_that_is_not_an_identifier_as_literal_text()
+    {
+        // Act
+        var segments = Collect("A {0} here");
+
+        // Assert
+        Assert.Equal([("A ", ""), ("{0}", ""), (" here", "")], segments);
     }
 
     [Fact]
     public void Should_treat_an_unclosed_brace_as_literal_text()
     {
         // Act
-        var segments = Collect("Broken {0 here");
+        var segments = Collect("Broken {count here");
 
         // Assert
-        Assert.Equal([("Broken ", -1), ("{0 here", -1)], segments);
+        Assert.Equal([("Broken ", ""), ("{count here", "")], segments);
     }
 
     [Fact]
@@ -101,17 +131,17 @@ public sealed class LocalizedSegmentTests
         var segments = Collect("Closed } here");
 
         // Assert
-        Assert.Equal([("Closed ", -1), ("}", -1), (" here", -1)], segments);
+        Assert.Equal([("Closed ", ""), ("}", ""), (" here", "")], segments);
     }
 
     [Fact]
     public void Should_report_holes_in_the_order_the_translation_puts_them()
     {
         // Act
-        var segments = Collect("{1} לפני {0}");
+        var segments = Collect("{total} \u05dc\u05e4\u05e0\u05d9 {stored}");
 
         // Assert
-        Assert.Equal([("", 1), (" לפני ", -1), ("", 0)], segments);
+        Assert.Equal([("", "total"), (" \u05dc\u05e4\u05e0\u05d9 ", ""), ("", "stored")], segments);
     }
 
     [Fact]
@@ -122,7 +152,7 @@ public sealed class LocalizedSegmentTests
     public void Should_walk_a_format_without_allocating()
     {
         // Arrange
-        const string Format = "Stored {0} of {1}.";
+        const string Format = "Stored {stored} of {total}.";
         _ = Walk(Format);
 
         // Act
@@ -147,13 +177,26 @@ public sealed class LocalizedSegmentTests
         return literalLength;
     }
 
-    private static List<(string Text, int ArgumentIndex)> Collect(string format)
+    private static (string Name, int Alignment, string Format) Single(string format)
     {
-        var segments = new List<(string, int)>();
+        foreach (var segment in LocalizedSegment.Parse(format))
+        {
+            if (segment.IsHole)
+            {
+                return (segment.Name.ToString(), segment.Alignment, segment.Format.ToString());
+            }
+        }
+
+        throw new InvalidOperationException($"'{format}' carries no hole.");
+    }
+
+    private static List<(string Text, string Name)> Collect(string format)
+    {
+        var segments = new List<(string, string)>();
 
         foreach (var segment in LocalizedSegment.Parse(format))
         {
-            segments.Add((segment.Text.ToString(), segment.ArgumentIndex));
+            segments.Add((segment.Text.ToString(), segment.Name.ToString()));
         }
 
         return segments;
