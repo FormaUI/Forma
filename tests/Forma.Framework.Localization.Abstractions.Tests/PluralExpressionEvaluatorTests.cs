@@ -1,6 +1,6 @@
 namespace Forma.Framework.Localization.Abstractions.Tests;
 
-using Forma.Framework.Localization.Cldr;
+using Forma.Framework.Localization.Language;
 
 public sealed class PluralExpressionEvaluatorTests
 {

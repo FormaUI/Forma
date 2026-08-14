@@ -1,4 +1,4 @@
-namespace Forma.Framework.Localization.Cldr;
+namespace Forma.Framework.Localization.Language;
 
 /// <summary>The CLDR operands a plural rule is written against.</summary>
 public readonly record struct PluralOperands

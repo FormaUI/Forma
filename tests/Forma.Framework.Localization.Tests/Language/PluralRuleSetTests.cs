@@ -1,4 +1,4 @@
-namespace Forma.Framework.Localization.Tests.Cldr;
+namespace Forma.Framework.Localization.Tests.Language;
 
 public sealed class PluralRuleSetTests
 {

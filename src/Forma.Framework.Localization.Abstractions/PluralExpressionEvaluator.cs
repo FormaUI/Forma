@@ -3,7 +3,7 @@ namespace Forma.Framework.Localization;
 using System.Globalization;
 using System.Text;
 
-using Forma.Framework.Localization.Cldr;
+using Forma.Framework.Localization.Language;
 using Forma.Framework.Localization.Parser;
 using Forma.Framework.Localization.Parser.Syntax;
 
