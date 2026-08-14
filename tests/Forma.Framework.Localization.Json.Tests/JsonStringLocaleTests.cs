@@ -50,6 +50,34 @@ public sealed class JsonStringLocaleTests
     }
 
     [Fact]
+    public void Should_unescape_a_doubled_brace_in_a_translation()
+    {
+        // Arrange
+        using var culture = new CultureScope("he");
+        var strings = Locale<Colocated>();
+
+        // Act
+        var localized = strings["Use {{curly}} braces."];
+
+        // Assert
+        Assert.Equal("השתמשו בסוגריים {מסולסלים}.", localized.Value);
+    }
+
+    [Fact]
+    public void Should_unescape_a_doubled_brace_in_a_key_it_falls_back_to()
+    {
+        // Arrange
+        using var culture = new CultureScope("en");
+        var strings = Locale<Colocated>();
+
+        // Act
+        var localized = strings["Use {{curly}} braces."];
+
+        // Assert
+        Assert.Equal("Use {curly} braces.", localized.Value);
+    }
+
+    [Fact]
     public void Should_fall_back_from_a_regional_culture_to_its_parent()
     {
         // Arrange
@@ -267,7 +295,7 @@ public sealed class JsonStringLocaleTests
 
         // Assert
         Assert.Equal(
-            ["Last 7 days", "Moved to position {position} of {total}.", "Stored {stored} of {total}.", "Today"],
+            ["Last 7 days", "Moved to position {position} of {total}.", "Stored {stored} of {total}.", "Today", "Use {{curly}} braces."],
             names.Order(StringComparer.Ordinal));
     }
 

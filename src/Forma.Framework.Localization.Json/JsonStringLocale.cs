@@ -18,7 +18,10 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, Assembly assem
             var found = TryFind(name, out var entry);
             RequireFound(name, found);
 
-            return new LocalizedText(name, found ? entry.Format : name, !found, baseName);
+            LocalizedArgument[] arguments = [];
+            var format = Evaluate(found ? entry.Format : name, Translated(found, entry), arguments);
+
+            return new LocalizedText(name, LocalizedFormat.Render(format, arguments, CultureInfo.CurrentCulture), !found, baseName);
         }
     }
 

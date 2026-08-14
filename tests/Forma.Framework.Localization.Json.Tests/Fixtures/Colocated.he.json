@@ -3,5 +3,6 @@
   "Today": "היום",
   "Last 7 days": "7 הימים האחרונים",
   "Moved to position {position} of {total}.": "הועבר למיקום {position} מתוך {total}.",
-  "Stored {stored} of {total}.": "מתוך {total} נשמרו {stored}."
+  "Stored {stored} of {total}.": "מתוך {total} נשמרו {stored}.",
+  "Use {{curly}} braces.": "השתמשו בסוגריים {{מסולסלים}}."
 }

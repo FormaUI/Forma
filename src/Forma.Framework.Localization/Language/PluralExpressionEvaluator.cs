@@ -87,7 +87,7 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules)
         Span<char> number = stackalloc char[96];
         var display = Format(count, operands.FractionDigits, displayCulture, number);
 
-        // A '#' stands for the count formatted in the culture it is shown in.
+        // A '#' stands for the count formatted in the culture it is shown in, and a doubled '#' for a literal one.
         var rest = field.Slice(text);
         while (true)
         {
@@ -100,8 +100,16 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules)
             }
 
             builder.Append(rest[..hash]);
-            builder.Append(display);
 
+            if (hash + 1 < rest.Length && rest[hash + 1] == '#')
+            {
+                builder.Append('#');
+                rest = rest[(hash + 2)..];
+
+                continue;
+            }
+
+            builder.Append(display);
             rest = rest[(hash + 1)..];
         }
     }

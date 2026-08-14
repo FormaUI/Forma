@@ -55,7 +55,12 @@ form when a value is an expression rather than a variable.
 
 A specifier stays in the key and the value is passed unrendered, so the translation decides the
 formatting: `$"Ratio {ratio:P1}"` keys on `"Ratio {ratio:P1}"`, and a translation may write `{ratio}`
-or `{ratio:P2}` instead. A literal brace is doubled: `$"Use {{curly}}"`.
+or `{ratio:P2}` instead.
+
+A literal brace is doubled, in keys and in translation files alike: `$"Use {{curly}}"` keys on
+`"Use {{curly}}"`, whose translation writes `{{` too and renders as `{`. Doubling is only needed when
+the braces would otherwise read as a hole naming an argument that was supplied, because a hole whose
+argument is missing already renders as written.
 
 ## Plural syntax
 
@@ -89,6 +94,11 @@ Expressions use brackets and holes use braces, so the two never collide. The cat
 `IPluralRuleSet`, falling back to `other` when the translation omits the chosen field or the language
 has no rules. `#` keeps the digits the count was written with, so `0.5` does not round and `1000000` is
 grouped for the culture. A malformed expression is left as written.
+
+`#` means the count only inside the field a plural expression selects. Ordinary prose keeps it, so
+`"Issue #42 in C#"` is untouched, and so is a `#` inside an expression named for another keyword.
+Inside a field a literal `#` is doubled, `##`, which is the only place the doubling means anything —
+elsewhere `#` needs no escape and `##` stays as written.
 
 ## Settings
 
