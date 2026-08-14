@@ -13,6 +13,11 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules)
 {
     private readonly IPluralRuleSet _rules = rules ?? throw new ArgumentNullException(nameof(rules));
 
+    /// <summary>The keyword a plural expression names, whose fields carry the CLDR categories.</summary>
+    public static LocaleKeyword Keyword { get; } = new("plural", "zero", "one", "two", "few", "many", "other");
+
+    private static LocaleKeywords Known { get; } = new(Keyword);
+
     /// <summary>Replaces every plural expression with the field the count selects, leaving other holes open.</summary>
     public string Evaluate(string format, CultureInfo culture, IReadOnlyList<object?> arguments)
     {
@@ -31,7 +36,7 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules)
         ArgumentNullException.ThrowIfNull(arguments);
 
         // An expression the parser rejected is absent from the result, so its text survives rather than vanishing.
-        var parsed = LocaleExpressionParser.Parse(format);
+        var parsed = LocaleExpressionParser.Parse(format, Known);
         if (parsed.Expressions.Count == 0)
         {
             return format;
@@ -45,7 +50,7 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules)
             builder.Append(format, position, expression.Span.Start - position);
 
             // An expression named for something else keeps its text, so whatever owns it can still find it.
-            if (expression.KeywordSpan.Slice(format).SequenceEqual(LocaleExpressionParser.PluralKeyword))
+            if (expression.KeywordSpan.Slice(format).SequenceEqual(Keyword.Name))
             {
                 AppendField(builder, format, expression, localeCulture, displayCulture, arguments);
             }

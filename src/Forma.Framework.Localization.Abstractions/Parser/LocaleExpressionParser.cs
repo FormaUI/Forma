@@ -15,12 +15,7 @@ public static class LocaleExpressionParser
     /// <summary>The characters that close an expression.</summary>
     public const string Closing = " $]";
 
-    /// <summary>The keyword naming an expression whose field names are plural categories.</summary>
-    public const string PluralKeyword = "plural";
-
     private const string Interpolated = "[{";
-
-    private static readonly string[] PluralCategories = ["zero", "one", "two", "few", "many", "other"];
 
     /// <summary>Rewrites the interpolation holes an interpolated key carries into plain argument indices.</summary>
     /// <param name="text">The text to examine.</param>
@@ -84,9 +79,11 @@ public static class LocaleExpressionParser
 
     /// <summary>Reads every expression in the text, reporting what is wrong rather than throwing.</summary>
     /// <param name="text">The text to read.</param>
-    public static LocaleParseResult Parse(string text)
+    /// <param name="keywords">The keywords to recognise, which decide what a field name may be.</param>
+    public static LocaleParseResult Parse(string text, LocaleKeywords keywords)
     {
         ArgumentNullException.ThrowIfNull(text);
+        ArgumentNullException.ThrowIfNull(keywords);
 
         // Most text carries no expression, and this keeps it clear of every allocation below.
         var first = text.IndexOf(Opening, StringComparison.Ordinal);
@@ -113,7 +110,7 @@ public static class LocaleExpressionParser
             var span = new LocaleTextSpan(opening, closing + Closing.Length - opening);
             var inner = new LocaleTextSpan(opening + Opening.Length, closing - opening - Opening.Length);
 
-            var expression = ReadExpression(text, span, inner, diagnostics);
+            var expression = ReadExpression(text, span, inner, keywords, diagnostics);
             if (expression is not null)
             {
                 expressions.Add(expression);
@@ -125,7 +122,7 @@ public static class LocaleExpressionParser
         return new LocaleParseResult(expressions, diagnostics);
     }
 
-    private static LocaleExpression? ReadExpression(string text, LocaleTextSpan span, LocaleTextSpan inner, List<LocaleDiagnostic> diagnostics)
+    private static LocaleExpression? ReadExpression(string text, LocaleTextSpan span, LocaleTextSpan inner, LocaleKeywords keywords, List<LocaleDiagnostic> diagnostics)
     {
         if (inner.IsEmpty || text[inner.End - 1] != ';')
         {
@@ -150,8 +147,8 @@ public static class LocaleExpressionParser
             return null;
         }
 
-        var isPlural = keyword.Slice(text).SequenceEqual(PluralKeyword);
-        if (!isPlural)
+        var defined = keywords.Find(keyword.Slice(text));
+        if (defined is null)
         {
             diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.UnknownKeyword, keyword));
         }
@@ -170,7 +167,7 @@ public static class LocaleExpressionParser
         var fields = LocaleFieldParser.Parse(
             text,
             new LocaleTextSpan(fieldsStart, body.End - fieldsStart),
-            isPlural ? PluralCategories : [],
+            defined is null ? default : defined.FieldNames,
             diagnostics);
 
         // A field that failed to parse already explains the empty list, so saying so again is noise.

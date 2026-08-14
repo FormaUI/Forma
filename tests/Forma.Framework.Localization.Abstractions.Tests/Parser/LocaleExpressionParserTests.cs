@@ -7,6 +7,8 @@ public sealed class LocaleExpressionParserTests
 {
     private const string Files = "[$ [0] plural; one: # file; other: # files; $]";
 
+    private static readonly LocaleKeywords Keywords = new(PluralExpressionEvaluator.Keyword);
+
     private static string Text(LocaleTextSpan span, string text)
         => span.Slice(text).ToString();
 
@@ -14,7 +16,7 @@ public sealed class LocaleExpressionParserTests
     public void Should_return_nothing_for_text_without_a_expression()
     {
         // Act
-        var result = LocaleExpressionParser.Parse("Stored {0} of {1}.");
+        var result = LocaleExpressionParser.Parse("Stored {0} of {1}.", Keywords);
 
         // Assert
         Assert.Multiple(() =>
@@ -28,7 +30,7 @@ public sealed class LocaleExpressionParserTests
     public void Should_read_the_keyword_and_the_argument_index()
     {
         // Act
-        var expression = Assert.Single(LocaleExpressionParser.Parse(Files).Expressions);
+        var expression = Assert.Single(LocaleExpressionParser.Parse(Files, Keywords).Expressions);
 
         // Assert
         Assert.Multiple(() =>
@@ -44,7 +46,7 @@ public sealed class LocaleExpressionParserTests
     public void Should_read_every_field_in_order()
     {
         // Act
-        var expression = Assert.Single(LocaleExpressionParser.Parse(Files).Expressions);
+        var expression = Assert.Single(LocaleExpressionParser.Parse(Files, Keywords).Expressions);
 
         // Assert
         Assert.Multiple(() =>
@@ -64,7 +66,7 @@ public sealed class LocaleExpressionParserTests
         const string Pair = "[$ [0] plural; one: # file; other: # files; $] in [$ [1] plural; one: # folder; other: # folders; $]";
 
         // Act
-        var result = LocaleExpressionParser.Parse(Pair);
+        var result = LocaleExpressionParser.Parse(Pair, Keywords);
 
         // Assert
         Assert.Multiple(() =>
@@ -83,7 +85,7 @@ public sealed class LocaleExpressionParserTests
         const string Prose = "Moved to [$ [0] plural; one: # place; other: # places; $] today";
 
         // Act
-        var expression = Assert.Single(LocaleExpressionParser.Parse(Prose).Expressions);
+        var expression = Assert.Single(LocaleExpressionParser.Parse(Prose, Keywords).Expressions);
 
         // Assert
         Assert.Equal("[$ [0] plural; one: # place; other: # places; $]", Text(expression.Span, Prose));
@@ -97,7 +99,7 @@ public sealed class LocaleExpressionParserTests
         const string Listed = "[$ [0] plural; other: # files; see the list; $]";
 
         // Act
-        var result = LocaleExpressionParser.Parse(Listed);
+        var result = LocaleExpressionParser.Parse(Listed, Keywords);
 
         // Assert
         var expression = Assert.Single(result.Expressions);
@@ -114,7 +116,7 @@ public sealed class LocaleExpressionParserTests
     public void Should_report_a_expression_that_is_never_closed(string text)
     {
         // Act
-        var result = LocaleExpressionParser.Parse(text);
+        var result = LocaleExpressionParser.Parse(text, Keywords);
 
         // Assert
         Assert.Multiple(() =>
@@ -128,7 +130,7 @@ public sealed class LocaleExpressionParserTests
     public void Should_report_a_body_that_does_not_end_with_a_semicolon()
     {
         // Act
-        var result = LocaleExpressionParser.Parse("[$ [0] plural; one: # file; other: # files $]");
+        var result = LocaleExpressionParser.Parse("[$ [0] plural; one: # file; other: # files $]", Keywords);
 
         // Assert
         Assert.Equal(LocaleDiagnosticKind.MissingTrailingSemicolon, Assert.Single(result.Diagnostics).Kind);
@@ -143,7 +145,7 @@ public sealed class LocaleExpressionParserTests
     public void Should_report_a_header_that_does_not_carry_an_argument_index(string text, LocaleDiagnosticKind expected)
     {
         // Act
-        var result = LocaleExpressionParser.Parse(text);
+        var result = LocaleExpressionParser.Parse(text, Keywords);
 
         // Assert
         Assert.Multiple(() =>
@@ -159,7 +161,7 @@ public sealed class LocaleExpressionParserTests
     public void Should_report_a_header_that_carries_the_index_alone(string text)
     {
         // Act
-        var result = LocaleExpressionParser.Parse(text);
+        var result = LocaleExpressionParser.Parse(text, Keywords);
 
         // Assert
         Assert.Multiple(() =>
@@ -176,7 +178,7 @@ public sealed class LocaleExpressionParserTests
         const string Unknown = "[$ [0] plurals; one: # file; other: # files; $]";
 
         // Act
-        var result = LocaleExpressionParser.Parse(Unknown);
+        var result = LocaleExpressionParser.Parse(Unknown, Keywords);
 
         // Assert
         var diagnostic = Assert.Single(result.Diagnostics);
@@ -192,7 +194,7 @@ public sealed class LocaleExpressionParserTests
     public void Should_not_check_field_names_against_categories_for_an_unknown_keyword()
     {
         // Act
-        var result = LocaleExpressionParser.Parse("[$ [0] select; male: his; female: her; $]");
+        var result = LocaleExpressionParser.Parse("[$ [0] select; male: his; female: her; $]", Keywords);
 
         // Assert
         Assert.Multiple(() =>
@@ -203,10 +205,73 @@ public sealed class LocaleExpressionParserTests
     }
 
     [Fact]
+    public void Should_read_a_keyword_the_caller_defines()
+    {
+        // Arrange
+        var keywords = new LocaleKeywords(new LocaleKeyword("gender", "male", "female", "other"));
+
+        // Act
+        var result = LocaleExpressionParser.Parse("[$ [0] gender; male: his; female: her; $]", keywords);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(2, Assert.Single(result.Expressions).Fields.Count);
+            Assert.Empty(result.Diagnostics);
+        });
+    }
+
+    [Fact]
+    public void Should_report_a_field_name_the_caller_s_keyword_does_not_define()
+    {
+        // Arrange
+        var keywords = new LocaleKeywords(new LocaleKeyword("gender", "male", "female", "other"));
+
+        // Act
+        var result = LocaleExpressionParser.Parse("[$ [0] gender; neuter: theirs; $]", keywords);
+
+        // Assert
+        Assert.Equal(LocaleDiagnosticKind.UnknownFieldName, Assert.Single(result.Diagnostics).Kind);
+    }
+
+    [Fact]
+    public void Should_accept_any_field_name_for_a_keyword_that_defines_none()
+    {
+        // Arrange
+        var keywords = new LocaleKeywords(new LocaleKeyword("select"));
+
+        // Act
+        var result = LocaleExpressionParser.Parse("[$ [0] select; anything: here; $]", keywords);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.Single(Assert.Single(result.Expressions).Fields);
+            Assert.Empty(result.Diagnostics);
+        });
+    }
+
+    [Fact]
+    public void Should_reject_a_field_name_repeated_within_a_keyword()
+        => Assert.Throws<ArgumentException>(() => new LocaleKeyword("gender", "male", "male"));
+
+    [Fact]
+    public void Should_reject_a_blank_field_name()
+        => Assert.Throws<ArgumentException>(() => new LocaleKeyword("gender", "male", " "));
+
+    [Fact]
+    public void Should_reject_a_keyword_name_repeated_within_a_set()
+        => Assert.Throws<ArgumentException>(() => new LocaleKeywords(new LocaleKeyword("plural"), new LocaleKeyword("plural")));
+
+    [Fact]
+    public void Should_reject_a_null_keyword_in_a_set()
+        => Assert.Throws<ArgumentNullException>(() => new LocaleKeywords(null!));
+
+    [Fact]
     public void Should_report_a_expression_with_no_fields()
     {
         // Act
-        var result = LocaleExpressionParser.Parse("[$ [0] plural; $]");
+        var result = LocaleExpressionParser.Parse("[$ [0] plural; $]", Keywords);
 
         // Assert
         Assert.Equal(LocaleDiagnosticKind.MissingFields, Assert.Single(result.Diagnostics).Kind);
@@ -216,7 +281,7 @@ public sealed class LocaleExpressionParserTests
     public void Should_report_a_category_the_expression_does_not_recognise()
     {
         // Act
-        var result = LocaleExpressionParser.Parse("[$ [0] plural; single: # file; $]");
+        var result = LocaleExpressionParser.Parse("[$ [0] plural; single: # file; $]", Keywords);
 
         // Assert
         Assert.Equal(LocaleDiagnosticKind.UnknownFieldName, Assert.Single(result.Diagnostics).Kind);
@@ -226,7 +291,7 @@ public sealed class LocaleExpressionParserTests
     public void Should_report_a_category_written_twice()
     {
         // Act
-        var result = LocaleExpressionParser.Parse("[$ [0] plural; one: # file; one: # files; $]");
+        var result = LocaleExpressionParser.Parse("[$ [0] plural; one: # file; one: # files; $]", Keywords);
 
         // Assert
         Assert.Equal(LocaleDiagnosticKind.DuplicateFieldName, Assert.Single(result.Diagnostics).Kind);
@@ -236,7 +301,7 @@ public sealed class LocaleExpressionParserTests
     public void Should_report_a_field_with_no_colon()
     {
         // Act
-        var result = LocaleExpressionParser.Parse("[$ [0] plural; other # files; $]");
+        var result = LocaleExpressionParser.Parse("[$ [0] plural; other # files; $]", Keywords);
 
         // Assert
         Assert.Equal(LocaleDiagnosticKind.MissingNameSeparator, Assert.Single(result.Diagnostics).Kind);
@@ -249,7 +314,7 @@ public sealed class LocaleExpressionParserTests
     public void Should_recover_a_field_whose_semicolon_carries_no_space(string text)
     {
         // Act
-        var result = LocaleExpressionParser.Parse(text);
+        var result = LocaleExpressionParser.Parse(text, Keywords);
 
         // Assert
         var expression = Assert.Single(result.Expressions);
@@ -268,7 +333,7 @@ public sealed class LocaleExpressionParserTests
     public void Should_recover_a_field_not_written_against_its_colon(string text)
     {
         // Act
-        var result = LocaleExpressionParser.Parse(text);
+        var result = LocaleExpressionParser.Parse(text, Keywords);
 
         // Assert
         var expression = Assert.Single(result.Expressions);
@@ -290,7 +355,7 @@ public sealed class LocaleExpressionParserTests
     public void Should_report_a_field_that_carries_no_value(string text)
     {
         // Act
-        var result = LocaleExpressionParser.Parse(text);
+        var result = LocaleExpressionParser.Parse(text, Keywords);
 
         // Assert
         var expression = Assert.Single(result.Expressions);
@@ -307,7 +372,7 @@ public sealed class LocaleExpressionParserTests
     public void Should_report_the_last_field_carrying_no_value()
     {
         // Act
-        var result = LocaleExpressionParser.Parse("[$ [0] plural; one: # file; other: ; $]");
+        var result = LocaleExpressionParser.Parse("[$ [0] plural; one: # file; other: ; $]", Keywords);
 
         // Assert
         Assert.Equal(LocaleDiagnosticKind.EmptyFieldValue, Assert.Single(result.Diagnostics).Kind);
@@ -321,7 +386,7 @@ public sealed class LocaleExpressionParserTests
         const string Unspaced = "[$ [0] select; male: his;female: her; $]";
 
         // Act
-        var result = LocaleExpressionParser.Parse(Unspaced);
+        var result = LocaleExpressionParser.Parse(Unspaced, Keywords);
 
         // Assert
         var field = Assert.Single(Assert.Single(result.Expressions).Fields);
@@ -335,7 +400,7 @@ public sealed class LocaleExpressionParserTests
 
     [Fact]
     public void Should_reject_null_text()
-        => Assert.Throws<ArgumentNullException>(() => LocaleExpressionParser.Parse(null!));
+        => Assert.Throws<ArgumentNullException>(() => LocaleExpressionParser.Parse(null!, Keywords));
 
     [Fact]
     public void Should_rewrite_an_interpolated_index_into_a_plain_one()
