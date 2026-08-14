@@ -11,8 +11,8 @@ The localization contract and its value types. No package or project references.
 | `IStringLocaleFactory` | Creates locales for a type or for a base name under a location. |
 | `LocalizedText` | A translated string with the key it was looked up under. Converts implicitly to `string`. |
 | `LocalizedPattern` | A translated format whose plural forms are resolved and whose holes are still open. |
-| `MessageSegment` | One run of a format: literal text, or a hole naming an argument. |
-| `MessageSegmentEnumerator` | Walks a format as segments, slicing rather than copying. |
+| `LocalizedSegment` | One run of a format: literal text, or a hole naming an argument. |
+| `LocalizedSegmentEnumerator` | Walks a format as segments, slicing rather than copying. |
 | `LocalizedFormatHandler` | Rebuilds a key from an interpolated string and captures the hole values. |
 | `IPluralRuleSet` | Decides which plural category a count falls into for a language. |
 | `PluralCategory` | The six CLDR categories: `Zero`, `One`, `Two`, `Few`, `Many`, `Other`. |
@@ -86,6 +86,6 @@ foreach (var segment in pattern.Segments())
 The split runs over the translated format, so a translation that reorders `{0}` and `{1}` moves the
 arguments with it.
 
-`MessageSegment.Text` is a `ReadOnlySpan<char>` sliced from the format and the enumerator is a
+`LocalizedSegment.Text` is a `ReadOnlySpan<char>` sliced from the format and the enumerator is a
 `ref struct`, so walking allocates nothing. A doubled brace arrives as its own single-character run:
 `"Use {{curly}}"` yields `Use `, `{`, `curly`, `}`.
