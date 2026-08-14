@@ -14,6 +14,7 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
     private readonly PluralExpressionEvaluator _plural = new(CommonPluralRuleSet.Default);
     private readonly CultureInfo _sourceCulture;
     private readonly string _resourcesPath;
+    private readonly bool _requireMatchingLocalization;
 
     /// <summary>Creates a factory reading files that sit beside the types they translate.</summary>
     public JsonStringLocaleFactory()
@@ -35,6 +36,7 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
         }
 
         _resourcesPath = NormalizePath(options.ResourcesPath);
+        _requireMatchingLocalization = options.RequireMatchingLocalization;
     }
 
     /// <summary>Creates a locale for the strings belonging to a type.</summary>
@@ -97,5 +99,7 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
             : $"{assemblyName}.{_resourcesPath}.{relativeName}";
 
     private IStringLocale GetOrAdd(Assembly assembly, string baseName)
-        => _locales.GetOrAdd($"{assembly.FullName}|{baseName}", _ => new JsonStringLocale(_cache, assembly, baseName, _plural, _sourceCulture));
+        => _locales.GetOrAdd(
+            $"{assembly.FullName}|{baseName}",
+            _ => new JsonStringLocale(_cache, assembly, baseName, _plural, _sourceCulture, _requireMatchingLocalization));
 }

@@ -17,6 +17,18 @@ A file sits beside the type it translates, keyed by the English source text:
 Every file names a culture: there is no cultureless file, because a key with no translation already
 falls back to itself, and the key is the source text.
 
+A `null` value says the translation is deliberately the key itself, so a file can record that a term
+is left as written without repeating it:
+
+```json
+{
+    "Cancel": null
+}
+```
+
+Such a key is found rather than missing, so `ResourceNotFound` stays false and nothing downstream
+ever reads a null.
+
 ## How a file is found
 
 A locale resolves a **base name** from the type's full name, then looks for a file under it:
@@ -73,6 +85,9 @@ services.AddJsonLocalization(new JsonLocalizationOptions { ResourcesPath = "Reso
 
 Registers `IStringLocale<T>` and `IStringLocaleFactory`, plus the framework's `IStringLocalizer<T>` and
 `IStringLocalizerFactory` through the adapters, so a consumer on either contract resolves.
+
+`JsonLocalizationOptions` adds `ResourcesPath` to the settings every backend shares, which
+`Forma.Framework.Localization.Abstractions` documents.
 
 ## Plural rules
 

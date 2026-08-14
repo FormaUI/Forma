@@ -6,7 +6,13 @@ using System.Reflection;
 using Forma.Framework.Localization.Parser;
 
 /// <summary>Reads the strings for one base name, walking the culture chain and falling back to the key itself.</summary>
-internal sealed class JsonStringLocale(JsonResourceCache cache, Assembly assembly, string baseName, PluralExpressionEvaluator plural, CultureInfo sourceCulture) : IStringLocale
+internal sealed class JsonStringLocale(
+    JsonResourceCache cache,
+    Assembly assembly,
+    string baseName,
+    PluralExpressionEvaluator plural,
+    CultureInfo sourceCulture,
+    bool requireMatchingLocalization) : IStringLocale
 {
     public LocalizedText this[string name]
     {
@@ -15,6 +21,7 @@ internal sealed class JsonStringLocale(JsonResourceCache cache, Assembly assembl
             ArgumentException.ThrowIfNullOrEmpty(name);
 
             var found = TryFind(name, out var entry);
+            RequireFound(name, found);
 
             return new LocalizedText(name, found ? entry.Format : name, !found, baseName);
         }
@@ -27,8 +34,10 @@ internal sealed class JsonStringLocale(JsonResourceCache cache, Assembly assembl
             ArgumentException.ThrowIfNullOrEmpty(name);
 
             var found = TryFind(name, out var entry);
+            RequireFound(name, found);
+
             var retained = arguments.IsEmpty ? [] : arguments.ToArray();
-            var format = Evaluate(found ? entry.Format : name, found, retained);
+            var format = Evaluate(found ? entry.Format : name, Translated(found, entry), retained);
 
             return new LocalizedText(name, string.Format(CultureInfo.CurrentCulture, format, retained), !found, baseName);
         }
@@ -45,7 +54,9 @@ internal sealed class JsonStringLocale(JsonResourceCache cache, Assembly assembl
             var arguments = handler.GetArguments();
             handler.Clear();
 
-            var format = Evaluate(found ? entry.Format : name, found, arguments);
+            RequireFound(name, found);
+
+            var format = Evaluate(found ? entry.Format : name, Translated(found, entry), arguments);
 
             return new LocalizedText(name, string.Format(CultureInfo.CurrentCulture, format, arguments), !found, baseName);
         }
@@ -57,8 +68,9 @@ internal sealed class JsonStringLocale(JsonResourceCache cache, Assembly assembl
         ArgumentNullException.ThrowIfNull(arguments);
 
         var found = TryFind(name, out var entry);
+        RequireFound(name, found);
 
-        return new LocalizedPattern(name, Evaluate(found ? entry.Format : name, found, arguments), arguments, !found, baseName);
+        return new LocalizedPattern(name, Evaluate(found ? entry.Format : name, Translated(found, entry), arguments), arguments, !found, baseName);
     }
 
     public LocalizedPattern Resolve(LocalizedFormatHandler handler)
@@ -70,7 +82,9 @@ internal sealed class JsonStringLocale(JsonResourceCache cache, Assembly assembl
         var arguments = handler.GetArguments();
         handler.Clear();
 
-        return new LocalizedPattern(name, Evaluate(found ? entry.Format : name, found, arguments), arguments, !found, baseName);
+        RequireFound(name, found);
+
+        return new LocalizedPattern(name, Evaluate(found ? entry.Format : name, Translated(found, entry), arguments), arguments, !found, baseName);
     }
 
     public IEnumerable<LocalizedText> GetAllStrings(bool includeParentCultures)
@@ -98,13 +112,27 @@ internal sealed class JsonStringLocale(JsonResourceCache cache, Assembly assembl
         }
     }
 
-    // A miss shows the key, which is written in the source language, so its plural forms follow that language.
-    private string Evaluate(string format, bool found, IReadOnlyList<object?> arguments)
+    // A format that is the key is source-language text, whether it was written as null or never found at all.
+    private static bool Translated(bool found, JsonResourceEntry entry)
+        => found && !entry.IsSourceText;
+
+    // The text a plural expression inflects decides the rules, so source-language text follows the source language.
+    private string Evaluate(string format, bool translated, IReadOnlyList<object?> arguments)
         => plural.Evaluate(
             format,
-            found ? CultureInfo.CurrentUICulture : sourceCulture,
+            translated ? CultureInfo.CurrentUICulture : sourceCulture,
             CultureInfo.CurrentUICulture,
             arguments);
+
+    // Listing every string stays a survey rather than a demand, so it reports a miss instead of refusing it.
+    private void RequireFound(string name, bool found)
+    {
+        if (!found && requireMatchingLocalization)
+        {
+            throw new LocalizationNotFoundException(
+                $"'{baseName}' carries no translation of '{name}' for '{CultureInfo.CurrentUICulture.Name}'.");
+        }
+    }
 
     private bool TryFind(string name, out JsonResourceEntry entry)
     {

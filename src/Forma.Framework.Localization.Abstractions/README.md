@@ -9,6 +9,8 @@ The localization contract and its value types. No package or project references.
 | `IStringLocale` | Translated strings for one resource base name. |
 | `IStringLocale<T>` | The same, for the base name derived from `T`. Adds no members. |
 | `IStringLocaleFactory` | Creates locales for a type or for a base name under a location. |
+| `LocalizationOptions` | The settings every backend shares, whatever it reads translations from. |
+| `LocalizationNotFoundException` | Thrown when a key has no translation and the host requires one. |
 | `LocalizedText` | A translated string with the key it was looked up under. Converts implicitly to `string`. |
 | `LocalizedPattern` | A translated format whose plural forms are resolved and whose holes are still open. |
 | `LocalizedSegment` | One run of a format: literal text, or a hole naming an argument. |
@@ -19,6 +21,18 @@ The localization contract and its value types. No package or project references.
 | `PluralCategory` | The six CLDR categories: `Zero`, `One`, `Two`, `Few`, `Many`, `Other`. |
 | `PluralOperands` | The CLDR operands a plural rule reads: `n`, `i`, `v`, `w`, `f`, `t`, `e`. |
 | `PluralExpressionEvaluator` | Evaluates the plural expression inside a translated format. |
+
+## Settings
+
+`SourceLanguage` names the language the keys are written in, and defaults to `en`. A key with no
+translation is shown as written, so its plural forms resolve under that language rather than the one
+on screen.
+
+`RequireMatchingLocalization` turns a key with no translation for the culture on screen from a
+fallback into a `LocalizationNotFoundException`, and defaults to false. Turn it on in development and
+CI to find what is untranslated, and leave it off in production, where degrading to the key beats
+breaking a page. Listing every string never throws under it, because a survey reports what is there
+rather than demanding what is not.
 
 ## Keys from interpolated strings
 

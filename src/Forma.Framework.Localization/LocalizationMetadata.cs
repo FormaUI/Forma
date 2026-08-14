@@ -19,7 +19,7 @@ internal static class LocalizationMetadata
     /// <param name="entries">The translations as read, including the metadata entry.</param>
     /// <param name="fileName">The file being read, named in anything thrown.</param>
     /// <param name="expectedCulture">The culture the file's own name gives it.</param>
-    public static void Consume(Dictionary<string, string> entries, string fileName, string expectedCulture)
+    public static void Consume(Dictionary<string, string?> entries, string fileName, string expectedCulture)
     {
         if (!entries.Remove(Marker, out var value) || value is null)
         {

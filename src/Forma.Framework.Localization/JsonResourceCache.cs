@@ -31,11 +31,15 @@ internal sealed class JsonResourceCache
             return null;
         }
 
-        var entries = JsonSerializer.Deserialize<Dictionary<string, string>>(stream, SerializerOptions) ?? [];
+        var entries = JsonSerializer.Deserialize<Dictionary<string, string?>>(stream, SerializerOptions) ?? [];
 
         LocalizationMetadata.Consume(entries, name, key.CultureName);
 
-        return entries.ToFrozenDictionary(entry => entry.Key, entry => new JsonResourceEntry(entry.Key, entry.Value), StringComparer.Ordinal);
+        // A null value says the translation is deliberately the key itself, so nothing downstream ever sees one.
+        return entries.ToFrozenDictionary(
+            entry => entry.Key,
+            entry => new JsonResourceEntry(entry.Key, entry.Value ?? entry.Key, entry.Value is null),
+            StringComparer.Ordinal);
     }
 
     // The SDK reads the culture out of a Name.culture.json file and moves it to a satellite assembly,
@@ -61,4 +65,4 @@ internal sealed class JsonResourceCache
 }
 
 /// <summary>A translation together with the key it was read under.</summary>
-internal readonly record struct JsonResourceEntry(string Name, string Format);
+internal readonly record struct JsonResourceEntry(string Name, string Format, bool IsSourceText);

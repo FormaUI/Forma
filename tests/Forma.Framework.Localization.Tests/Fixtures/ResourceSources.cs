@@ -33,3 +33,6 @@ public sealed class NewerMinor;
 
 /// <summary>A file declaring a culture other than the one its own name gives it.</summary>
 public sealed class MismatchedCulture;
+
+/// <summary>A file whose value is null, meaning the translation is deliberately the key.</summary>
+public sealed class NullValued;
