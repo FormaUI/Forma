@@ -115,6 +115,16 @@ public sealed class LocalizedSegmentTests
     }
 
     [Fact]
+    public void Should_treat_a_hole_whose_alignment_is_not_a_number_as_literal_text()
+    {
+        // Act
+        var segments = Collect("A {label,x} here");
+
+        // Assert
+        Assert.Equal([("A ", ""), ("{label,x}", ""), (" here", "")], segments);
+    }
+
+    [Fact]
     public void Should_treat_an_unclosed_brace_as_literal_text()
     {
         // Act

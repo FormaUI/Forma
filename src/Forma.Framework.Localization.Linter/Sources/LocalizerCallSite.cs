@@ -8,11 +8,11 @@ using Microsoft.CodeAnalysis;
 /// <param name="KeyOffset">Where the key's text starts inside the literal.</param>
 /// <param name="Arguments">How the lookup supplies the values its holes read.</param>
 /// <param name="ValueCount">How many values the lookup supplies.</param>
-/// <param name="Holes">What each hole of an interpolated key is written as, empty for any other key.</param>
+/// <param name="Names">The names the lookup gives its values, empty when it names none.</param>
 public sealed record LocalizerCallSite(
     string Key,
     FileLinePositionSpan Location,
     int KeyOffset,
     LocalizerArguments Arguments,
     int ValueCount,
-    IReadOnlyList<string> Holes);
+    IReadOnlyList<string> Names);

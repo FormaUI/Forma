@@ -15,9 +15,7 @@ public sealed class PluralArgumentChecker : ICallSiteRuleChecker
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        // Values paired by position are named after the key's holes, so nothing else can reach an expression.
-        if (context.Site.Arguments is not (LocalizerArguments.None or LocalizerArguments.Positional)
-            || !context.Expression.IsValid)
+        if (Supplied(context) is not { } supplied || !context.Expression.IsValid)
         {
             return;
         }
@@ -31,12 +29,22 @@ public sealed class PluralArgumentChecker : ICallSiteRuleChecker
 
             var name = expression.NameSpan.Slice(context.Site.Key).ToString();
 
-            if (!context.Holes.Contains(name, StringComparer.Ordinal))
+            if (!supplied.Contains(name, StringComparer.Ordinal))
             {
                 context.Report(
                     Code,
-                    $"The expression reads '{name}', which the key names no hole for, so it counts as zero.");
+                    $"The expression reads '{name}', which the lookup does not supply, so it counts as zero.");
             }
         }
     }
+
+    // Values paired by position or written into a hole are named after the key's holes.
+    private static IReadOnlyList<string>? Supplied(CallSiteContext context)
+        => context.Site.Arguments switch
+        {
+            LocalizerArguments.None => [],
+            LocalizerArguments.Positional or LocalizerArguments.Interpolated => context.Holes,
+            LocalizerArguments.Named => context.Site.Names,
+            _ => null,
+        };
 }

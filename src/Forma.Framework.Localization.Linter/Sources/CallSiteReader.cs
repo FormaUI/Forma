@@ -14,6 +14,8 @@ internal static class CallSiteReader
     /// <summary>The name a lookup goes through when it is not an indexer.</summary>
     public const string ResolveMethod = "Resolve";
 
+    private const string UnnamedMethod = "Unnamed";
+
     /// <summary>The call site a lookup's arguments describe, or null when the key is not readable text.</summary>
     /// <param name="tree">The tree the arguments were parsed from.</param>
     /// <param name="arguments">The arguments the lookup was given.</param>
@@ -26,13 +28,7 @@ internal static class CallSiteReader
         return list.FirstOrDefault()?.Expression switch
         {
             LiteralExpressionSyntax literal when literal.IsKind(SyntaxKind.StringLiteralExpression)
-                => new LocalizerCallSite(
-                    literal.Token.ValueText,
-                    tree.GetMappedLineSpan(literal.Span),
-                    Offset(literal),
-                    Supplies(symbol, model, list),
-                    list.Count - 1,
-                    []),
+                => Literal(tree, literal, Supplies(symbol, model, list), list.Count - 1),
             InterpolatedStringExpressionSyntax interpolated => Interpolated(tree, interpolated),
             _ => null,
         };
@@ -118,15 +114,61 @@ internal static class CallSiteReader
         }
     }
 
+    private static LocalizerCallSite Literal(
+        SyntaxTree tree,
+        LiteralExpressionSyntax literal,
+        (LocalizerArguments Kind, IReadOnlyList<string> Names) supplies,
+        int values)
+        => new(
+            literal.Token.ValueText,
+            tree.GetMappedLineSpan(literal.Span),
+            Offset(literal),
+            supplies.Kind,
+            values,
+            supplies.Names);
+
+    // A value names itself through a tuple, a construction, or the helper for the nameless one.
+    private static string? Named(ExpressionSyntax expression)
+        => expression switch
+        {
+            TupleExpressionSyntax { Arguments.Count: 2 } tuple => Text(tuple.Arguments[0].Expression),
+            ObjectCreationExpressionSyntax { ArgumentList.Arguments.Count: 2 } creation
+                => Text(creation.ArgumentList.Arguments[0].Expression),
+            InvocationExpressionSyntax { Expression: MemberAccessExpressionSyntax member }
+                when member.Name.Identifier.ValueText == UnnamedMethod => string.Empty,
+            _ => null,
+        };
+
+    // One value whose name cannot be read leaves the whole list unjudgeable.
+    private static (LocalizerArguments Kind, IReadOnlyList<string> Names) Names(SeparatedSyntaxList<ArgumentSyntax> list)
+    {
+        var names = new List<string>(list.Count - 1);
+
+        for (var index = 1; index < list.Count; index++)
+        {
+            if (Named(list[index].Expression) is not { } name)
+            {
+                return (LocalizerArguments.Unknown, []);
+            }
+
+            names.Add(name);
+        }
+
+        return (LocalizerArguments.Named, names);
+    }
+
     // The key's text starts after the opening quote, which a raw or verbatim literal makes more than one character.
     private static int Offset(LiteralExpressionSyntax literal)
         => literal.Token.Text.Length - literal.Token.Text.TrimStart('@', '$', '"').Length;
 
-    private static LocalizerArguments Supplies(ISymbol? symbol, SemanticModel? model, SeparatedSyntaxList<ArgumentSyntax> list)
+    private static (LocalizerArguments Kind, IReadOnlyList<string> Names) Supplies(
+        ISymbol? symbol,
+        SemanticModel? model,
+        SeparatedSyntaxList<ArgumentSyntax> list)
     {
         if (list.Count <= 1)
         {
-            return LocalizerArguments.None;
+            return (LocalizerArguments.None, []);
         }
 
         var parameters = symbol switch
@@ -138,21 +180,26 @@ internal static class CallSiteReader
 
         if (parameters.IsDefaultOrEmpty || Element(parameters[^1].Type) is not { } element)
         {
-            return LocalizerArguments.Unknown;
+            return (LocalizerArguments.Unknown, []);
         }
 
         if (list.Count == 2
             && model?.GetTypeInfo(list[1].Expression).Type is { } argument
             && Collection(argument, parameters[^1].Type, element))
         {
-            return LocalizerArguments.Unknown;
+            return (LocalizerArguments.Unknown, []);
         }
 
         return element switch
         {
-            { Name: nameof(LocalizedArgument) } => LocalizerArguments.Named,
-            { SpecialType: SpecialType.System_Object } => LocalizerArguments.Positional,
-            _ => LocalizerArguments.Unknown,
+            { Name: nameof(LocalizedArgument) } => Names(list),
+            { SpecialType: SpecialType.System_Object } => (LocalizerArguments.Positional, []),
+            _ => (LocalizerArguments.Unknown, []),
         };
     }
+
+    private static string? Text(ExpressionSyntax expression)
+        => expression is LiteralExpressionSyntax literal && literal.IsKind(SyntaxKind.StringLiteralExpression)
+            ? literal.Token.ValueText
+            : null;
 }

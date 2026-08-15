@@ -21,7 +21,7 @@ public sealed class HoleIdentifierChecker : ICallSiteRuleChecker
             return;
         }
 
-        foreach (var hole in context.Site.Holes)
+        foreach (var hole in context.Site.Names)
         {
             if (!LocaleName.IsValid(hole))
             {

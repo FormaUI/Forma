@@ -15,6 +15,12 @@ public static class LintCodes
         LintSeverity.Error,
         "A hole in an interpolated key is not a plain identifier, so the lookup throws.");
 
+    /// <summary>Text is written as a hole whose name the runtime cannot read.</summary>
+    public static LintCode HoleShapedText { get; } = new(
+        "LOC0018",
+        LintSeverity.Error,
+        "Text written as a hole names nothing a value can be read by, so it renders as written.");
+
     /// <summary>The file is not readable JSON.</summary>
     public static LintCode InvalidJson { get; } = new(
         "LOC0000",
@@ -99,6 +105,12 @@ public static class LintCodes
         LintSeverity.Error,
         "An expression names an argument the lookup does not supply, so it counts as zero.");
 
+    /// <summary>A value the lookup names is read by nothing in the key.</summary>
+    public static LintCode UnreadValue { get; } = new(
+        "LOC0017",
+        LintSeverity.Error,
+        "A lookup names a value the key never reads, so the hole it was meant for renders as written.");
+
     /// <summary>The lookup supplies a different number of values than its key names holes.</summary>
     public static LintCode ValueCountMismatch { get; } = new(
         "LOC0011",
@@ -125,5 +137,7 @@ public static class LintCodes
         MissingPluralOther,
         RazorNotAnalysed,
         UnknownTranslationHole,
+        UnreadValue,
+        HoleShapedText,
     ];
 }

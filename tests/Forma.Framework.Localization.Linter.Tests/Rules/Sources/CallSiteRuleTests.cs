@@ -196,4 +196,137 @@ public sealed class CallSiteRuleTests
         // Assert
         Assert.Equal([LintCodes.ValueCountMismatch], diagnostics.Codes());
     }
+
+    [Fact]
+    public void Should_report_a_named_value_the_key_never_reads()
+    {
+        // Act
+        var diagnostics = SourceLinterTestFactory.Lint(
+            """public string Read() => locale["Stored {stored} of {total}.", ("stord", (object?)1), ("total", (object?)2)];""");
+
+        // Assert
+        Assert.Equal([LintCodes.UnreadValue], diagnostics.Codes());
+    }
+
+    [Fact]
+    public void Should_accept_named_values_the_key_reads()
+    {
+        // Act
+        var diagnostics = SourceLinterTestFactory.Lint(
+            """public string Read() => locale["Stored {stored} of {total}.", ("stored", (object?)1), ("total", (object?)2)];""");
+
+        // Assert
+        Assert.Empty(diagnostics);
+    }
+
+    [Fact]
+    public void Should_accept_a_named_value_an_expression_reads()
+    {
+        // Act
+        var diagnostics = SourceLinterTestFactory.Lint(
+            """public string Read() => locale["[$ [count] plural; one: # file; other: # files; $]", ("count", (object?)1)];""");
+
+        // Assert
+        Assert.Empty(diagnostics);
+    }
+
+    [Fact]
+    public void Should_report_an_expression_reading_a_name_the_named_values_miss()
+    {
+        // Act
+        var diagnostics = SourceLinterTestFactory.Lint(
+            """public string Read() => locale["[$ [count] plural; one: # file; other: # files; $]", ("cont", (object?)1)];""");
+
+        // Assert
+        Assert.Equal(
+            [LintCodes.UnsuppliedPluralArgument, LintCodes.UnreadValue],
+            diagnostics.Codes().OrderBy(code => code.Id, StringComparer.Ordinal));
+    }
+
+    [Fact]
+    public void Should_report_an_expression_reading_a_name_an_interpolated_key_misses()
+    {
+        // Act
+        var diagnostics = SourceLinterTestFactory.Lint(
+            """public string Read() { var count = 1; return locale[$"{count} [$ [cont] plural; one: file; other: files; $]"]; }""");
+
+        // Assert
+        Assert.Equal([LintCodes.UnsuppliedPluralArgument], diagnostics.Codes());
+    }
+
+    [Fact]
+    public void Should_judge_no_names_it_cannot_read()
+    {
+        // Act
+        var diagnostics = SourceLinterTestFactory.Lint(
+            """
+            public string Read()
+            {
+                var pair = ("stord", (object?)1);
+
+                return locale["Stored {stored} of {total}.", pair];
+            }
+            """);
+
+        // Assert
+        Assert.Empty(diagnostics);
+    }
+
+    [Theory]
+    [InlineData("Value: {0}")]
+    [InlineData("Value: {0,5}")]
+    [InlineData("Value: {1:N0}")]
+    [InlineData("Value: {items.Length}")]
+    [InlineData("Value: {a-b}")]
+    [InlineData("Value: {stored,x}")]
+    [InlineData("Value: {stored,x:N0}")]
+    public void Should_report_a_key_writing_something_shaped_like_a_hole_it_cannot_read(string key)
+    {
+        // Act
+        var diagnostics = SourceLinterTestFactory.Lint($"""public string Read() => locale["{key}"];""");
+
+        // Assert
+        Assert.Equal([LintCodes.HoleShapedText], diagnostics.Codes());
+    }
+
+    [Theory]
+    [InlineData("Use {{curly}} braces")]
+    [InlineData("Set body { color: red } here")]
+    [InlineData("An empty { } pair")]
+    [InlineData("Nothing at all")]
+    [InlineData("Pick {colour, red} or blue")]
+    public void Should_leave_a_key_the_runtime_reads_as_prose_alone(string key)
+    {
+        // Act
+        var diagnostics = SourceLinterTestFactory.Lint($"""public string Read() => locale["{key}"];""");
+
+        // Assert
+        Assert.Empty(diagnostics);
+    }
+
+    [Theory]
+    [InlineData("Value: {stored}")]
+    [InlineData("Value: {stored,5}")]
+    [InlineData("Value: {stored,-5}")]
+    [InlineData("Value: {stored:N0}")]
+    [InlineData("Value: {stored,5:N0}")]
+    public void Should_leave_a_hole_the_runtime_reads_alone(string key)
+    {
+        // Act
+        var diagnostics = SourceLinterTestFactory.Lint($"""public string Read() => locale["{key}", 1];""");
+
+        // Assert
+        Assert.Empty(diagnostics);
+    }
+
+    [Fact]
+    public void Should_leave_an_interpolated_hole_to_the_rule_that_judges_it_as_code()
+    {
+        // Act
+        var diagnostics = SourceLinterTestFactory.Lint(
+            """public string Read() { var items = new[] { 1 }; return locale[$"Stored {items.Length}"]; }""");
+
+        // Assert
+        Assert.Equal([LintCodes.HoleNotIdentifier], diagnostics.Codes());
+    }
 }
