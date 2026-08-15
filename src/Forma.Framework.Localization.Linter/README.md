@@ -1,21 +1,21 @@
-# lintloc
+# locali
 
 A linter for the Forma localization system. It checks translation files against the
 schema, and checks `IStringLocale` call sites in C# and Razor against what the runtime
 will actually do with them.
 
-The binary is `lintloc`. The project is not packable, so run it from source:
+The binary is `locali`. The project is not packable, so run it from source:
 
 ```powershell
 dotnet run --project src/Forma.Framework.Localization.Linter -- --path <target>
 ```
 
-The examples below use `lintloc` for the built binary.
+The examples below use `locali` for the built binary.
 
 ## Running
 
 ```text
-Usage: lintloc --path <file-or-directory> [--report [<path>]]
+Usage: locali --path <file-or-directory> [--report [<path>]]
 
   --path    The file or directory to lint. A directory is searched recursively.
   --report  Write a JSON report. Defaults to localization-report.json in the
@@ -45,7 +45,7 @@ Razor emits no C# unless asked, and almost every call site in this repository li
 
 ```powershell
 dotnet build MyProject.csproj -p:EmitCompilerGeneratedFiles=true --no-incremental
-lintloc --path MyProject.csproj
+locali --path MyProject.csproj
 ```
 
 `--no-incremental` matters. An up-to-date project emits nothing, the build still reports
@@ -72,6 +72,7 @@ count values stay silent for it.
 | LOC0007 | Warning | The metadata entry declares an unknown field |
 | LOC0008 | Error | The file declares a culture its own name does not give it |
 | LOC0016 | Error | A translation fills a hole its key does not name |
+| LOC0018 | Error | A translation writes text shaped like a hole the runtime cannot read |
 
 LOC0016 catches the silent case: `"Stored {stored}."` translated as `"…{stord}…"` renders
 `{stord}` literally. A name may be written as a brace hole or as a plural expression's
@@ -89,21 +90,49 @@ translation is legal. Reordering or dropping a name is legal.
 | LOC0013 | Error | A key carries a malformed expression | renders as written, silently |
 | LOC0014 | Warning | A plural expression omits `other` | renders nothing, silently |
 | LOC0015 | Warning | A project's Razor markup went unchecked | — |
+| LOC0017 | Error | A named value the key never reads | the hole renders as written, silently |
+| LOC0018 | Error | A key writes text shaped like a hole the runtime cannot read | renders as written, silently |
 
-### What the rules deliberately do not report
+All three ways of filling holes are checked. An interpolated key and a positional call
+name their values after the key's holes; a named call writes the names out, and those are
+read from the source:
 
-Each rule fires only where the failure is certain, because a false positive in a build
-gate blocks correct code.
+```csharp
+locale[$"Stored {stored} of {total}."]                              // LOC0009
+locale["Stored {stored} of {total}.", written, allowed]             // LOC0011
+locale["Stored {stored} of {total}.", ("stored", a), ("total", b)]  // LOC0017
+```
 
-- `{0}`, `{a.b}` and `{ }` in a **literal** key are not holes; they render as written, so
-  they are not reported. Only an interpolated hole throws, which is what LOC0009 covers.
-- A hole repeated twice counts once, matching how the runtime pairs values.
-- Values that carry their own names (`LocalizedArgument`) are not counted against the
-  key's holes.
-- A values collection passed whole — `object?[]` into `params ReadOnlySpan<object?>` — is
-  not counted, because no `params` expansion happens. An `int[]` in the same position
-  *is* counted, because it cannot convert and arrives as a single boxed value.
-- When the overload cannot be resolved, the counting rules stay silent.
+A name is read from a tuple, from `new LocalizedArgument(…)`, and from
+`LocalizedArgument.Unnamed(…)`. One value whose name is not written out — a variable, or a
+collection passed whole — leaves the whole list unjudged, and the rules stay silent.
+
+### Where a rule stays silent
+
+Silence below is the rule working. A false positive in a build gate blocks correct code,
+so a rule fires only where the failure is certain.
+
+Reporting these would flag code that is right:
+
+- **A hole repeated twice counts once.** `"{n} of {n}"` takes one value, because that is
+  how the runtime pairs them. Counting it twice would report every correct call.
+- **A hole no value fills renders as written.** `Resolve` returns a pattern with its holes
+  still open for the caller to fill, so an unfilled hole is the feature, not a mistake.
+  A name supplied for a hole that does not exist is the certain half, and LOC0017 has it.
+- **Text shaped like a hole, containing a space, is prose.** `{ color: red }`, `{ }` and
+  `{colour, red}` render as written and were meant to. LOC0018 takes the other half,
+  where the text could only have been a hole: `{0}`, `{a.b}`, and `{stored,x}`, whose
+  name the runtime reads but whose alignment is not a number, so the hole goes unread.
+
+Nothing at the call site decides these, so there is nothing to judge:
+
+- **A values collection passed whole.** `object?[]` into `params ReadOnlySpan<object?>`
+  converts, so the items arrive as the values and their count is whatever the collection
+  holds at run time. An `int[]` in the same position cannot convert and arrives as one
+  boxed value, which is why that one *is* counted.
+- **An overload nothing resolved.** Only the syntactic path reaches this, and only when
+  the compilation did not bind the call. Build with the references in place and the
+  semantic path takes over.
 
 ## Layout
 
