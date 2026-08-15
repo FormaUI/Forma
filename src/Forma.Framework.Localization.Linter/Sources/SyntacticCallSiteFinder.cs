@@ -53,7 +53,7 @@ public sealed class SyntacticCallSiteFinder : ILocalizerCallSiteFinder
                 continue;
             }
 
-            if (CallSiteReader.Read(tree, arguments) is { } site)
+            if (CallSiteReader.Read(tree, arguments, null, null) is { } site)
             {
                 yield return site;
             }

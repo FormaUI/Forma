@@ -74,13 +74,8 @@ public sealed class SourceLinter(
 
     private IReadOnlyList<LintDiagnostic> Check(LocalizerCallSite site)
     {
-        if (site.Key is not { } key)
-        {
-            return [];
-        }
-
         // The key parses once here rather than inside each rule that reads its expressions.
-        var context = new CallSiteContext(site, LocaleExpressionParser.Parse(key, Known));
+        var context = new CallSiteContext(site, LocaleExpressionParser.Parse(site.Key, Known));
 
         foreach (var checker in _checkers)
         {

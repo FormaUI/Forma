@@ -78,6 +78,11 @@ internal static class Program
         builder.Services.AddSingleton<ILocalizationFileRuleChecker, CultureMatchesChecker>();
         builder.Services.AddSingleton<ILocalizationFileRuleChecker, TranslationHolesChecker>();
         builder.Services.AddSingleton<ICallSiteRuleChecker, MalformedExpressionChecker>();
+        builder.Services.AddSingleton<ICallSiteRuleChecker, HoleIdentifierChecker>();
+        builder.Services.AddSingleton<ICallSiteRuleChecker, ValueCountChecker>();
+        builder.Services.AddSingleton<ICallSiteRuleChecker, PluralArgumentChecker>();
+        builder.Services.AddSingleton<ICallSiteRuleChecker, SoleArgumentChecker>();
+        builder.Services.AddSingleton<ICallSiteRuleChecker, PluralOtherFieldChecker>();
 
         builder.Services.AddSingleton<ISchemaLinter, SchemaLinter>();
         builder.Services.AddSingleton<ISourceLinter, SourceLinter>();

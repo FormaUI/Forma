@@ -48,4 +48,14 @@ public sealed class LintCodesTests
         // Assert
         Assert.Equal(codes.Length, codes.Distinct().Count());
     }
+
+    [Fact]
+    public void Should_let_no_two_call_site_rules_report_under_the_same_code()
+    {
+        // Act
+        var codes = SourceLinterTestFactory.Checkers().Select(checker => checker.Code).ToArray();
+
+        // Assert
+        Assert.Equal(codes.Length, codes.Distinct().Count());
+    }
 }

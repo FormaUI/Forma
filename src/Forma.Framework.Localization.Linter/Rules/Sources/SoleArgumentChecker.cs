@@ -1,0 +1,34 @@
+namespace Forma.Framework.Localization.Linter.Rules.Sources;
+
+using Forma.Framework.Localization.Linter.Diagnostics;
+using Forma.Framework.Localization.Linter.Sources;
+
+/// <summary>Checks that an expression naming no argument is given the single value it reads.</summary>
+public sealed class SoleArgumentChecker : ICallSiteRuleChecker
+{
+    /// <inheritdoc />
+    public LintCode Code
+        => LintCodes.SoleArgumentExpected;
+
+    /// <inheritdoc />
+    public void Check(CallSiteContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        // A lookup supplying nothing leaves the expression with no argument at all to read.
+        if (context.Site.Arguments is not LocalizerArguments.None || !context.Expression.IsValid)
+        {
+            return;
+        }
+
+        foreach (var expression in context.Expression.Expressions)
+        {
+            if (expression.NameSpan.IsEmpty)
+            {
+                context.Report(
+                    Code,
+                    "The expression names no argument, so it reads the only value supplied, but the lookup supplies none.");
+            }
+        }
+    }
+}

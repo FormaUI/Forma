@@ -3,7 +3,16 @@ namespace Forma.Framework.Localization.Linter.Sources;
 using Microsoft.CodeAnalysis;
 
 /// <summary>A place in source where a localization key is looked up.</summary>
-/// <param name="Key">The key as written, or null when it is not a plain literal.</param>
+/// <param name="Key">The key the lookup reads, rebuilt from the parts when it is interpolated.</param>
 /// <param name="Location">Where the key sits, mapped back to the file a human wrote.</param>
 /// <param name="KeyOffset">Where the key's text starts inside the literal.</param>
-public sealed record LocalizerCallSite(string? Key, FileLinePositionSpan Location, int KeyOffset);
+/// <param name="Arguments">How the lookup supplies the values its holes read.</param>
+/// <param name="ValueCount">How many values the lookup supplies.</param>
+/// <param name="Holes">What each hole of an interpolated key is written as, empty for any other key.</param>
+public sealed record LocalizerCallSite(
+    string Key,
+    FileLinePositionSpan Location,
+    int KeyOffset,
+    LocalizerArguments Arguments,
+    int ValueCount,
+    IReadOnlyList<string> Holes);

@@ -9,6 +9,12 @@ public static class LintCodes
         LintSeverity.Error,
         "A file declares a culture its own name does not give it.");
 
+    /// <summary>A hole in an interpolated key is not a plain identifier.</summary>
+    public static LintCode HoleNotIdentifier { get; } = new(
+        "LOC0009",
+        LintSeverity.Error,
+        "A hole in an interpolated key is not a plain identifier, so the lookup throws.");
+
     /// <summary>The file is not readable JSON.</summary>
     public static LintCode InvalidJson { get; } = new(
         "LOC0000",
@@ -39,6 +45,12 @@ public static class LintCodes
         LintSeverity.Error,
         "A file carries no metadata entry.");
 
+    /// <summary>A plural expression omits the category every other one falls back to.</summary>
+    public static LintCode MissingPluralOther { get; } = new(
+        "LOC0014",
+        LintSeverity.Warning,
+        "A plural expression omits 'other', so a count it does not name renders as nothing.");
+
     /// <summary>The metadata entry omits a field the schema requires.</summary>
     public static LintCode MissingRequiredField { get; } = new(
         "LOC0004",
@@ -63,6 +75,12 @@ public static class LintCodes
         LintSeverity.Error,
         "A file is written for a schema this build does not define.");
 
+    /// <summary>An expression naming no argument is not given the single value it reads.</summary>
+    public static LintCode SoleArgumentExpected { get; } = new(
+        "LOC0012",
+        LintSeverity.Error,
+        "An expression naming no argument reads a single value the lookup does not supply, so it throws.");
+
     /// <summary>The metadata entry declares a field the schema does not define.</summary>
     public static LintCode UnknownMetadataField { get; } = new(
         "LOC0007",
@@ -74,6 +92,18 @@ public static class LintCodes
         "LOC0016",
         LintSeverity.Error,
         "A translation fills a hole its key does not name, so it renders as written.");
+
+    /// <summary>An expression names an argument the lookup never supplies.</summary>
+    public static LintCode UnsuppliedPluralArgument { get; } = new(
+        "LOC0010",
+        LintSeverity.Error,
+        "An expression names an argument the lookup does not supply, so it counts as zero.");
+
+    /// <summary>The lookup supplies a different number of values than its key names holes.</summary>
+    public static LintCode ValueCountMismatch { get; } = new(
+        "LOC0011",
+        LintSeverity.Error,
+        "A lookup supplies a different number of values than its key names holes, so it throws.");
 
     /// <summary>Every rule, ordered by the identifier it reports under.</summary>
     public static IReadOnlyList<LintCode> All { get; } =
@@ -87,7 +117,12 @@ public static class LintCodes
         SchemaVersionMismatch,
         UnknownMetadataField,
         CultureMismatch,
+        HoleNotIdentifier,
+        UnsuppliedPluralArgument,
+        ValueCountMismatch,
+        SoleArgumentExpected,
         MalformedSourceExpression,
+        MissingPluralOther,
         RazorNotAnalysed,
         UnknownTranslationHole,
     ];

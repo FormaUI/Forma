@@ -25,32 +25,39 @@ public sealed class SemanticCallSiteFinder : ILocalizerCallSiteFinder
         return contract is null ? [] : Walk(compilation, tree, contract);
     }
 
-    private static IEnumerable<LocalizerCallSite> Walk(Compilation compilation, SyntaxTree tree, INamedTypeSymbol contract)
-    {
-        var model = compilation.GetSemanticModel(tree);
-
-        foreach (var node in tree.GetRoot().DescendantNodes())
-        {
-            BaseArgumentListSyntax? arguments = node switch
-            {
-                ElementAccessExpressionSyntax access when Owns(model, access, contract) => access.ArgumentList,
-                InvocationExpressionSyntax invocation when Owns(model, invocation, contract) => invocation.ArgumentList,
-                _ => null,
-            };
-
-            if (arguments is not null && CallSiteReader.Read(tree, arguments) is { } site)
-            {
-                yield return site;
-            }
-        }
-    }
-
-    private static bool Owns(SemanticModel model, SyntaxNode node, INamedTypeSymbol contract)
-        => model.GetSymbolInfo(node).Symbol switch
+    private static bool Owns(ISymbol? symbol, INamedTypeSymbol contract)
+        => symbol switch
         {
             IPropertySymbol indexer => LocalizerContract.Implements(indexer.ContainingType, contract),
             IMethodSymbol method => method.Name == CallSiteReader.ResolveMethod
                 && LocalizerContract.Implements(method.ContainingType, contract),
             _ => false,
         };
+
+    private static IEnumerable<LocalizerCallSite> Walk(Compilation compilation, SyntaxTree tree, INamedTypeSymbol contract)
+    {
+        var model = compilation.GetSemanticModel(tree);
+
+        foreach (var node in tree.GetRoot().DescendantNodes())
+        {
+            var arguments = node switch
+            {
+                ElementAccessExpressionSyntax access => access.ArgumentList,
+                InvocationExpressionSyntax invocation => (BaseArgumentListSyntax)invocation.ArgumentList,
+                _ => null,
+            };
+
+            if (arguments is null)
+            {
+                continue;
+            }
+
+            var symbol = model.GetSymbolInfo(node).Symbol;
+
+            if (Owns(symbol, contract) && CallSiteReader.Read(tree, arguments, symbol, model) is { } site)
+            {
+                yield return site;
+            }
+        }
+    }
 }

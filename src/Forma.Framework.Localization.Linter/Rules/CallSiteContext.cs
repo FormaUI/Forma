@@ -10,12 +10,17 @@ using Forma.Framework.Localization.Parser.Syntax;
 public sealed class CallSiteContext(LocalizerCallSite site, LocaleParseResult expression)
 {
     private readonly List<LintDiagnostic> _reported = [];
+    private List<string>? _holes;
 
     /// <summary>The call site being checked.</summary>
     public LocalizerCallSite Site { get; } = site ?? throw new ArgumentNullException(nameof(site));
 
     /// <summary>The key's expressions, parsed once for every rule.</summary>
     public LocaleParseResult Expression { get; } = expression;
+
+    /// <summary>The distinct names the key's holes read, in the order they first appear.</summary>
+    public IReadOnlyList<string> Holes
+        => _holes ??= HoleNames.Distinct(Site.Key);
 
     /// <summary>Everything the rules reported.</summary>
     public IReadOnlyList<LintDiagnostic> Reported
