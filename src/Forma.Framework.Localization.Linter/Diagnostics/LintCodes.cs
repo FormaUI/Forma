@@ -29,4 +29,10 @@ public static class LintCodes
 
     /// <summary>The metadata entry declares a field the schema does not define.</summary>
     public const string UnknownMetadataField = "LOC0007";
+
+    /// <summary>A key written in source carries a malformed expression.</summary>
+    public const string MalformedSourceExpression = "LOC0013";
+
+    /// <summary>A project's Razor markup was not checked, because no generated C# was found.</summary>
+    public const string RazorNotAnalysed = "LOC0015";
 }

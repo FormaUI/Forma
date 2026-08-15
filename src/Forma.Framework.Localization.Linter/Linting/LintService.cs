@@ -1,35 +1,54 @@
 namespace Forma.Framework.Localization.Linter.Linting;
 
+using System.Collections.Concurrent;
+
 using Forma.Framework.Localization.Linter.Cli;
 using Forma.Framework.Localization.Linter.Diagnostics;
+using Forma.Framework.Localization.Linter.Projects;
+using Forma.Framework.Localization.Linter.Sources;
 
 using Microsoft.Extensions.Options;
 
-/// <summary>Lints every file the finder yields for the configured path.</summary>
+/// <summary>Lints the localization files and the source call sites the target names.</summary>
 /// <param name="options">What the command line asked for.</param>
-/// <param name="finder">Finds the files to read.</param>
-/// <param name="linter">Checks one file.</param>
+/// <param name="resolver">Turns the path into a file set.</param>
+/// <param name="linter">Checks one localization file.</param>
+/// <param name="loader">Loads the projects the source files belong to.</param>
+/// <param name="sources">Checks the keys written at call sites.</param>
 public sealed class LintService(
     IOptions<LinterOptions> options,
-    ILocalizationFileFinder finder,
-    ILocalizationFileLinter linter) : ILintService
+    ILintTargetResolver resolver,
+    ILocalizationFileLinter linter,
+    IProjectLoader loader,
+    ISourceLinter sources) : ILintService
 {
     private readonly LinterOptions _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
-    private readonly ILocalizationFileFinder _finder = finder ?? throw new ArgumentNullException(nameof(finder));
+    private readonly ILintTargetResolver _resolver = resolver ?? throw new ArgumentNullException(nameof(resolver));
     private readonly ILocalizationFileLinter _linter = linter ?? throw new ArgumentNullException(nameof(linter));
+    private readonly IProjectLoader _loader = loader ?? throw new ArgumentNullException(nameof(loader));
+    private readonly ISourceLinter _sources = sources ?? throw new ArgumentNullException(nameof(sources));
 
     /// <inheritdoc />
     public async ValueTask<LintResult> RunAsync(CancellationToken cancellationToken = default)
     {
-        var diagnostics = new List<LintDiagnostic>();
-        var files = 0;
+        var target = _resolver.Resolve(_options.Path);
+        var diagnostics = new ConcurrentBag<LintDiagnostic>();
 
-        foreach (var file in _finder.Find(_options.Path))
+        // Each file is read independently, so they overlap rather than queueing behind one another.
+        await Parallel.ForEachAsync(
+            target.LocalizationFiles,
+            cancellationToken,
+            async (file, token) =>
+            {
+                foreach (var diagnostic in await _linter.LintAsync(file, token).ConfigureAwait(false))
+                {
+                    diagnostics.Add(diagnostic);
+                }
+            }).ConfigureAwait(false);
+
+        foreach (var diagnostic in await LintSourcesAsync(target, cancellationToken).ConfigureAwait(false))
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            files++;
-
-            diagnostics.AddRange(await _linter.LintAsync(file, cancellationToken).ConfigureAwait(false));
+            diagnostics.Add(diagnostic);
         }
 
         return new LintResult(
@@ -37,6 +56,25 @@ public sealed class LintService(
                 .OrderBy(diagnostic => diagnostic.Path, StringComparer.Ordinal)
                 .ThenBy(diagnostic => diagnostic.Line)
                 .ThenBy(diagnostic => diagnostic.Column)],
-            files);
+            target.FileCount);
+    }
+
+    private async ValueTask<IReadOnlyList<LintDiagnostic>> LintSourcesAsync(LintTarget target, CancellationToken cancellationToken)
+    {
+        if (target.Projects.Count == 0)
+        {
+            return [];
+        }
+
+        // A project compiles whole because binding needs it, but only the named files are reported on.
+        var wanted = target.SourceFiles.Select(Path.GetFullPath).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var diagnostics = new List<LintDiagnostic>();
+
+        foreach (var project in await _loader.LoadAsync(target.Projects, cancellationToken).ConfigureAwait(false))
+        {
+            diagnostics.AddRange(await _sources.LintAsync(project, wanted, cancellationToken).ConfigureAwait(false));
+        }
+
+        return diagnostics;
     }
 }

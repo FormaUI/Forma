@@ -1,5 +1,7 @@
 namespace Forma.Framework.Localization.Linter;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Forma.Framework.Localization.Linter.Cli;
 using Forma.Framework.Localization.Linter.Linting;
 using Forma.Framework.Localization.Linter.Reporting;
@@ -27,6 +29,7 @@ public sealed partial class LintHostedService(
     public ExitCode ExitCode { get; private set; } = ExitCode.Clean;
 
     /// <inheritdoc />
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "The process boundary turns any failure into a non-zero exit code.")]
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         try
@@ -44,14 +47,11 @@ public sealed partial class LintHostedService(
         {
             ExitCode = ExitCode.Usage;
         }
-        catch (IOException exception)
+
+        // A run that could not finish must never look like a clean one, whatever stopped it.
+        catch (Exception exception)
         {
-            LogReadFailure(exception);
-            ExitCode = ExitCode.Usage;
-        }
-        catch (UnauthorizedAccessException exception)
-        {
-            LogAccessFailure(exception);
+            LogRunFailure(exception);
             ExitCode = ExitCode.Usage;
         }
         finally
@@ -60,9 +60,6 @@ public sealed partial class LintHostedService(
         }
     }
 
-    [LoggerMessage(Level = LogLevel.Error, Message = "The run could not read or write a file.")]
-    private partial void LogReadFailure(Exception exception);
-
-    [LoggerMessage(Level = LogLevel.Error, Message = "The run was refused access to a file.")]
-    private partial void LogAccessFailure(Exception exception);
+    [LoggerMessage(Level = LogLevel.Error, Message = "The run did not finish.")]
+    private partial void LogRunFailure(Exception exception);
 }

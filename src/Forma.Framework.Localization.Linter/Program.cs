@@ -2,7 +2,9 @@ namespace Forma.Framework.Localization.Linter;
 
 using Forma.Framework.Localization.Linter.Cli;
 using Forma.Framework.Localization.Linter.Linting;
+using Forma.Framework.Localization.Linter.Projects;
 using Forma.Framework.Localization.Linter.Reporting;
+using Forma.Framework.Localization.Linter.Sources;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -60,8 +62,12 @@ internal static class Program
                 $"'{options.Path}' is neither a file nor a directory.")
             .ValidateOnStart();
 
-        builder.Services.AddSingleton<ILocalizationFileFinder, LocalizationFileFinder>();
+        builder.Services.AddSingleton<ILintTargetResolver, LintTargetResolver>();
         builder.Services.AddSingleton<ILocalizationFileLinter, LocalizationFileLinter>();
+        builder.Services.AddSingleton<IProjectLoader, MSBuildProjectLoader>();
+        builder.Services.AddSingleton<SemanticCallSiteFinder>();
+        builder.Services.AddSingleton<SyntacticCallSiteFinder>();
+        builder.Services.AddSingleton<ISourceLinter, SourceLinter>();
         builder.Services.AddSingleton<ILintService, LintService>();
 
         builder.Services.AddSingleton<IDiagnosticReporter>(_ => new ConsoleDiagnosticReporter(Console.Out));

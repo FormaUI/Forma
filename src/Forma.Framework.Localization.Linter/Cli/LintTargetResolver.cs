@@ -1,0 +1,106 @@
+namespace Forma.Framework.Localization.Linter.Cli;
+
+/// <summary>Reads a path as a solution, a project, a directory or a single file.</summary>
+public sealed class LintTargetResolver : ILintTargetResolver
+{
+    private static readonly string[] SourceExtensions = [".cs", ".razor"];
+
+    /// <inheritdoc />
+    public LintTarget Resolve(string path)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(path);
+
+        if (Directory.Exists(path))
+        {
+            return FromFiles(Walk(path));
+        }
+
+        if (!File.Exists(path))
+        {
+            return LintTarget.Empty;
+        }
+
+        return Path.GetExtension(path).ToUpperInvariant() switch
+        {
+            ".SLN" or ".SLNX" => FromSolution(path),
+            ".CSPROJ" => FromProject(path),
+            _ => FromFiles([path]),
+        };
+    }
+
+    /// <summary>The project a source file belongs to, or null when no project sits above it.</summary>
+    /// <param name="file">The source file to place.</param>
+    public static string? ProjectOf(string file)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(file);
+
+        for (var folder = Directory.GetParent(Path.GetFullPath(file)); folder is not null; folder = folder.Parent)
+        {
+            var project = Directory.EnumerateFiles(folder.FullName, "*.csproj").FirstOrDefault();
+            if (project is not null)
+            {
+                return project;
+            }
+        }
+
+        return null;
+    }
+
+    // The build copies both translations and generated code beside the binaries, where reading them would double every report.
+    private static bool IsBuildOutput(string file)
+        => file.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+            .Any(static segment => segment is "bin" or "obj");
+
+    private static IEnumerable<string> Walk(string folder)
+        => Directory.EnumerateFiles(folder, "*.*", SearchOption.AllDirectories)
+            .Where(static file => !IsBuildOutput(file))
+            .Where(static file => IsLocalizationFile(file) || IsSourceFile(file));
+
+    private static bool IsLocalizationFile(string file)
+        => Path.GetExtension(file).Equals(".json", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsSourceFile(string file)
+        => SourceExtensions.Contains(Path.GetExtension(file), StringComparer.OrdinalIgnoreCase);
+
+    private static LintTarget FromFiles(IEnumerable<string> files)
+    {
+        var localization = new List<string>();
+        var sources = new List<string>();
+        var projects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var file in files)
+        {
+            if (IsLocalizationFile(file))
+            {
+                localization.Add(file);
+            }
+            else if (IsSourceFile(file))
+            {
+                sources.Add(file);
+
+                if (ProjectOf(file) is { } project)
+                {
+                    projects.Add(project);
+                }
+            }
+        }
+
+        return new LintTarget([.. localization], [.. sources], [.. projects]);
+    }
+
+    private static LintTarget FromProject(string project)
+    {
+        var folder = Path.GetDirectoryName(Path.GetFullPath(project))!;
+        var target = FromFiles(Walk(folder));
+
+        return target with { Projects = [project] };
+    }
+
+    private static LintTarget FromSolution(string solution)
+    {
+        var folder = Path.GetDirectoryName(Path.GetFullPath(solution))!;
+        var target = FromFiles(Walk(folder));
+
+        return target with { Projects = [solution] };
+    }
+}
