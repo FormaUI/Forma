@@ -7,7 +7,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <IsPackable>false</IsPackable>
-        <AssemblyName>lintloc</AssemblyName>
+        <AssemblyName>locali</AssemblyName>
         <RootNamespace>Forma.Framework.Localization.Linter</RootNamespace>
     </PropertyGroup>
 
