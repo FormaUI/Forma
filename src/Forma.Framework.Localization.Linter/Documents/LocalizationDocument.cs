@@ -91,13 +91,15 @@ public sealed class LocalizationDocument
 
     /// <summary>Builds a diagnostic pointing at a byte offset in this file.</summary>
     /// <param name="offset">The byte offset the diagnostic is about.</param>
-    /// <param name="code">The identifier the diagnostic is reported under.</param>
+    /// <param name="code">The rule the diagnostic is reported under.</param>
     /// <param name="message">What is wrong, in a sentence.</param>
-    /// <param name="severity">How much the diagnostic matters, which defaults to an error.</param>
-    public LintDiagnostic Diagnose(int offset, string code, string message, LintSeverity severity = LintSeverity.Error)
+    /// <param name="severity">How much the diagnostic matters, which defaults to the rule's own severity.</param>
+    public LintDiagnostic Diagnose(int offset, LintCode code, string message, LintSeverity? severity = null)
     {
+        ArgumentNullException.ThrowIfNull(code);
+
         var (line, column) = Map.Locate(offset);
 
-        return new LintDiagnostic(Path, line, column, severity, code, message);
+        return new LintDiagnostic(Path, line, column, severity ?? code.DefaultSeverity, code, message);
     }
 }

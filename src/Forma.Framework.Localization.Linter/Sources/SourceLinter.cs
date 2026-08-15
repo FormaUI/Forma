@@ -3,22 +3,26 @@ namespace Forma.Framework.Localization.Linter.Sources;
 using Forma.Framework.Localization.Language;
 using Forma.Framework.Localization.Linter.Diagnostics;
 using Forma.Framework.Localization.Linter.Projects;
+using Forma.Framework.Localization.Linter.Rules;
 using Forma.Framework.Localization.Parser;
 using Forma.Framework.Localization.Parser.Syntax;
 
 using Microsoft.CodeAnalysis;
 
-/// <summary>Runs the expression grammar over every key a project's call sites name.</summary>
+/// <summary>Finds a project's localization call sites, then lets every rule read each one.</summary>
 /// <param name="semantic">Finds call sites by binding the receiver.</param>
 /// <param name="syntactic">Finds call sites when no semantic model is available.</param>
+/// <param name="checkers">The rules to run over each call site.</param>
 public sealed class SourceLinter(
     SemanticCallSiteFinder semantic,
-    SyntacticCallSiteFinder syntactic) : ISourceLinter
+    SyntacticCallSiteFinder syntactic,
+    IEnumerable<ICallSiteRuleChecker> checkers) : ISourceLinter
 {
     private static readonly LocaleKeywords Known = new(PluralExpressionEvaluator.Keyword);
 
     private readonly SemanticCallSiteFinder _semantic = semantic ?? throw new ArgumentNullException(nameof(semantic));
     private readonly SyntacticCallSiteFinder _syntactic = syntactic ?? throw new ArgumentNullException(nameof(syntactic));
+    private readonly IEnumerable<ICallSiteRuleChecker> _checkers = checkers ?? throw new ArgumentNullException(nameof(checkers));
 
     /// <inheritdoc />
     public ValueTask<IReadOnlyList<LintDiagnostic>> LintAsync(
@@ -37,7 +41,7 @@ public sealed class SourceLinter(
                 project.Path,
                 1,
                 1,
-                LintSeverity.Warning,
+                LintCodes.RazorNotAnalysed.DefaultSeverity,
                 LintCodes.RazorNotAnalysed,
                 "The project carries Razor markup but no generated C# was found; build with EmitCompilerGeneratedFiles=true or its call sites go unchecked."));
         }
@@ -68,24 +72,21 @@ public sealed class SourceLinter(
     private static bool Wanted(LocalizerCallSite site, IReadOnlyCollection<string> files)
         => files.Contains(site.Location.Path, StringComparer.OrdinalIgnoreCase);
 
-    private static IEnumerable<LintDiagnostic> Check(LocalizerCallSite site)
+    private IReadOnlyList<LintDiagnostic> Check(LocalizerCallSite site)
     {
         if (site.Key is not { } key)
         {
-            yield break;
+            return [];
         }
 
-        var parsed = LocaleExpressionParser.Parse(key, Known);
+        // The key parses once here rather than inside each rule that reads its expressions.
+        var context = new CallSiteContext(site, LocaleExpressionParser.Parse(key, Known));
 
-        foreach (var diagnostic in parsed.Diagnostics)
+        foreach (var checker in _checkers)
         {
-            yield return new LintDiagnostic(
-                site.Location.Path,
-                site.Location.StartLinePosition.Line + 1,
-                site.Location.StartLinePosition.Character + 1 + site.KeyOffset,
-                LintSeverity.Error,
-                LintCodes.MalformedSourceExpression,
-                $"The key's expression is malformed: {diagnostic.Kind}.");
+            checker.Check(context);
         }
+
+        return context.Reported;
     }
 }

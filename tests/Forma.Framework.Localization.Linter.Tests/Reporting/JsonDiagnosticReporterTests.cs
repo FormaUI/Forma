@@ -21,7 +21,7 @@ public sealed class JsonDiagnosticReporterTests
         Assert.Multiple(
             () => Assert.Equal(4, written.FileCount),
             () => Assert.Equal(1, written.DiagnosticCount),
-            () => Assert.Equal(LintCodes.CultureMismatch, written.Diagnostics[0].Code),
+            () => Assert.Equal(LintCodes.CultureMismatch.Id, written.Diagnostics[0].Code),
             () => Assert.Equal("error", written.Diagnostics[0].Severity));
     }
 

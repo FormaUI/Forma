@@ -11,7 +11,7 @@ public sealed class SchemaLinterTests
             LocalizationFileFakeData.WithTrailingMarker("SchemaVersion: 1.0.0; Culture: he;"));
 
         // Act
-        var diagnostics = SchemaLinter.Lint(document, "he");
+        var diagnostics = SchemaLinterTestFactory.Create().Lint(document, "he");
 
         // Assert
         Assert.Equal([LintCodes.MarkerNotFirst], diagnostics.Codes());
@@ -26,7 +26,7 @@ public sealed class SchemaLinterTests
             LocalizationFileFakeData.WithTrailingMarker("SchemaVersion: 1.0.0; Culture: he;"));
 
         // Act
-        var diagnostics = SchemaLinter.Lint(document, "he");
+        var diagnostics = SchemaLinterTestFactory.Create().Lint(document, "he");
 
         // Assert
         Assert.Equal(LintSeverity.Warning, diagnostics.SoleSeverity());
@@ -41,7 +41,7 @@ public sealed class SchemaLinterTests
             LocalizationFileFakeData.WithMarker("SchemaVersion 1.0.0"));
 
         // Act
-        var diagnostics = SchemaLinter.Lint(document, "he");
+        var diagnostics = SchemaLinterTestFactory.Create().Lint(document, "he");
 
         // Assert
         Assert.Equal([LintCodes.MalformedMetadata], diagnostics.Codes());
@@ -56,7 +56,7 @@ public sealed class SchemaLinterTests
             LocalizationFileFakeData.WithMarker("SchemaVersion: 1.0.0;"));
 
         // Act
-        var diagnostics = SchemaLinter.Lint(document, "he");
+        var diagnostics = SchemaLinterTestFactory.Create().Lint(document, "he");
 
         // Assert
         Assert.Equal([LintCodes.MissingRequiredField], diagnostics.Codes());
@@ -71,7 +71,7 @@ public sealed class SchemaLinterTests
             LocalizationFileFakeData.WithMarker("Culture: he; SchemaVersion: 1.0.0;"));
 
         // Act
-        var diagnostics = SchemaLinter.Lint(document, "he");
+        var diagnostics = SchemaLinterTestFactory.Create().Lint(document, "he");
 
         // Assert
         Assert.Equal([LintCodes.RequiredFieldOutOfOrder], diagnostics.Codes());
@@ -86,7 +86,7 @@ public sealed class SchemaLinterTests
             LocalizationFileFakeData.WithMarker("Culture: he; SchemaVersion: 1.0.0;"));
 
         // Act
-        var diagnostics = SchemaLinter.Lint(document, "he");
+        var diagnostics = SchemaLinterTestFactory.Create().Lint(document, "he");
 
         // Assert
         Assert.Equal(LintSeverity.Warning, diagnostics.SoleSeverity());
@@ -101,7 +101,7 @@ public sealed class SchemaLinterTests
             LocalizationFileFakeData.WithMarker("SchemaVersion: 1.1.0; Culture: he;"));
 
         // Act
-        var diagnostics = SchemaLinter.Lint(document, "he");
+        var diagnostics = SchemaLinterTestFactory.Create().Lint(document, "he");
 
         // Assert
         Assert.Equal([LintCodes.SchemaVersionMismatch], diagnostics.Codes());
@@ -116,7 +116,7 @@ public sealed class SchemaLinterTests
             LocalizationFileFakeData.WithMarker("SchemaVersion: 1.1.0; Culture: he;"));
 
         // Act
-        var diagnostics = SchemaLinter.Lint(document, "he");
+        var diagnostics = SchemaLinterTestFactory.Create().Lint(document, "he");
 
         // Assert
         Assert.Equal(LintSeverity.Warning, diagnostics.SoleSeverity());
@@ -131,7 +131,7 @@ public sealed class SchemaLinterTests
             LocalizationFileFakeData.WithMarker("SchemaVersion: 2.0.0; Culture: he;"));
 
         // Act
-        var diagnostics = SchemaLinter.Lint(document, "he");
+        var diagnostics = SchemaLinterTestFactory.Create().Lint(document, "he");
 
         // Assert
         Assert.Equal(LintSeverity.Error, diagnostics.SoleSeverity());
@@ -146,7 +146,7 @@ public sealed class SchemaLinterTests
             LocalizationFileFakeData.WithMarker("SchemaVersion: 1.0.0; Culture: he; Translator: Dana;"));
 
         // Act
-        var diagnostics = SchemaLinter.Lint(document, "he");
+        var diagnostics = SchemaLinterTestFactory.Create().Lint(document, "he");
 
         // Assert
         Assert.Equal([LintCodes.UnknownMetadataField], diagnostics.Codes());
@@ -161,7 +161,7 @@ public sealed class SchemaLinterTests
             LocalizationFileFakeData.WithMarker("SchemaVersion: 1.0.0; Culture: he; Translator: Dana;"));
 
         // Act
-        var diagnostics = SchemaLinter.Lint(document, "he");
+        var diagnostics = SchemaLinterTestFactory.Create().Lint(document, "he");
 
         // Assert
         Assert.Equal(LintSeverity.Warning, diagnostics.SoleSeverity());
@@ -176,7 +176,7 @@ public sealed class SchemaLinterTests
             LocalizationFileFakeData.WithMarker("SchemaVersion: 1.0.0; Culture: he; Author: Dana; Revision: 3;"));
 
         // Act
-        var diagnostics = SchemaLinter.Lint(document, "he");
+        var diagnostics = SchemaLinterTestFactory.Create().Lint(document, "he");
 
         // Assert
         Assert.Empty(diagnostics);
@@ -191,7 +191,7 @@ public sealed class SchemaLinterTests
             LocalizationFileFakeData.WithMarker("SchemaVersion: 1.0.0; Culture: es;"));
 
         // Act
-        var diagnostics = SchemaLinter.Lint(document, "he");
+        var diagnostics = SchemaLinterTestFactory.Create().Lint(document, "he");
 
         // Assert
         Assert.Equal([LintCodes.CultureMismatch], diagnostics.Codes());
@@ -206,7 +206,7 @@ public sealed class SchemaLinterTests
             LocalizationFileFakeData.WithMarker("SchemaVersion: 1.0.0; Culture: es;"));
 
         // Act
-        var diagnostics = SchemaLinter.Lint(document, "he");
+        var diagnostics = SchemaLinterTestFactory.Create().Lint(document, "he");
 
         // Assert
         Assert.Equal(LintSeverity.Error, diagnostics.SoleSeverity());
@@ -221,7 +221,7 @@ public sealed class SchemaLinterTests
             LocalizationFileFakeData.WithMarker("SchemaVersion: 1.0.0; Culture: es;"));
 
         // Act
-        var diagnostics = SchemaLinter.Lint(document, "he");
+        var diagnostics = SchemaLinterTestFactory.Create().Lint(document, "he");
 
         // Assert
         Assert.Equal(2, diagnostics.Single().Line);

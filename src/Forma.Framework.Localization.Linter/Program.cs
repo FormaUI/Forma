@@ -4,6 +4,9 @@ using Forma.Framework.Localization.Linter.Cli;
 using Forma.Framework.Localization.Linter.Linting;
 using Forma.Framework.Localization.Linter.Projects;
 using Forma.Framework.Localization.Linter.Reporting;
+using Forma.Framework.Localization.Linter.Rules;
+using Forma.Framework.Localization.Linter.Rules.Files;
+using Forma.Framework.Localization.Linter.Rules.Sources;
 using Forma.Framework.Localization.Linter.Sources;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -67,6 +70,15 @@ internal static class Program
         builder.Services.AddSingleton<IProjectLoader, MSBuildProjectLoader>();
         builder.Services.AddSingleton<SemanticCallSiteFinder>();
         builder.Services.AddSingleton<SyntacticCallSiteFinder>();
+
+        builder.Services.AddSingleton<ILocalizationFileRuleChecker, RequiredFieldsChecker>();
+        builder.Services.AddSingleton<ILocalizationFileRuleChecker, RequiredFieldOrderChecker>();
+        builder.Services.AddSingleton<ILocalizationFileRuleChecker, UnknownFieldChecker>();
+        builder.Services.AddSingleton<ILocalizationFileRuleChecker, SchemaVersionChecker>();
+        builder.Services.AddSingleton<ILocalizationFileRuleChecker, CultureMatchesChecker>();
+        builder.Services.AddSingleton<ICallSiteRuleChecker, MalformedExpressionChecker>();
+
+        builder.Services.AddSingleton<ISchemaLinter, SchemaLinter>();
         builder.Services.AddSingleton<ISourceLinter, SourceLinter>();
         builder.Services.AddSingleton<ILintService, LintService>();
 

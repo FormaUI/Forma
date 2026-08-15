@@ -7,7 +7,7 @@ public static class LintDiagnosticTestExtensions
 {
     /// <summary>The code of every diagnostic, in the order they were reported.</summary>
     /// <param name="diagnostics">The diagnostics to read.</param>
-    public static string[] Codes(this IEnumerable<LintDiagnostic> diagnostics)
+    public static LintCode[] Codes(this IEnumerable<LintDiagnostic> diagnostics)
     {
         ArgumentNullException.ThrowIfNull(diagnostics);
 

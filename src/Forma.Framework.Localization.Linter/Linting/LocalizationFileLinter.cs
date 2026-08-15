@@ -6,10 +6,13 @@ using Forma.Framework.Localization.Json;
 using Forma.Framework.Localization.Linter.Diagnostics;
 using Forma.Framework.Localization.Linter.Documents;
 
-/// <summary>Reads a file and runs the schema checks over it.</summary>
-public sealed class LocalizationFileLinter : ILocalizationFileLinter
+/// <summary>Reads a file and runs the schema rules over it.</summary>
+/// <param name="schema">Runs the rules once the file is readable.</param>
+public sealed class LocalizationFileLinter(ISchemaLinter schema) : ILocalizationFileLinter
 {
     private static readonly byte[] MarkerUtf8 = Encoding.UTF8.GetBytes(LocalizationSchema.Marker);
+
+    private readonly ISchemaLinter _schema = schema ?? throw new ArgumentNullException(nameof(schema));
 
     /// <inheritdoc />
     public async ValueTask<IReadOnlyList<LintDiagnostic>> LintAsync(string file, CancellationToken cancellationToken = default)
@@ -41,7 +44,7 @@ public sealed class LocalizationFileLinter : ILocalizationFileLinter
         }
 
         return document!.Entries.Any(static entry => entry.Name == LocalizationSchema.Marker) || culture is not null
-            ? [.. SchemaLinter.Lint(document, culture)]
+            ? _schema.Lint(document, culture)
             : [];
     }
 
@@ -49,5 +52,5 @@ public sealed class LocalizationFileLinter : ILocalizationFileLinter
         => content.AsSpan().IndexOf(MarkerUtf8) >= 0;
 
     private static LintDiagnostic Unreadable(string file, string message)
-        => new(file, 1, 1, LintSeverity.Error, LintCodes.InvalidJson, message);
+        => new(file, 1, 1, LintCodes.InvalidJson.DefaultSeverity, LintCodes.InvalidJson, message);
 }

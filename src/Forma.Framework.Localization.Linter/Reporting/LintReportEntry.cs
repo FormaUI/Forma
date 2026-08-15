@@ -22,7 +22,7 @@ public sealed record LintReportEntry(string Path, int Line, int Column, string S
             diagnostic.Line,
             diagnostic.Column,
             diagnostic.SeverityLabel,
-            diagnostic.Code,
+            diagnostic.Code.Id,
             diagnostic.Message);
     }
 }

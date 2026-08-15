@@ -18,8 +18,8 @@ public static class LintServiceTestFactory
         return new LintService(
             Options.Create(new LinterOptions { Path = path }),
             new LintTargetResolver(),
-            new LocalizationFileLinter(),
+            new LocalizationFileLinter(SchemaLinterTestFactory.Create()),
             new StubProjectLoader(),
-            new SourceLinter(new SemanticCallSiteFinder(), new SyntacticCallSiteFinder()));
+            new SourceLinter(new SemanticCallSiteFinder(), new SyntacticCallSiteFinder(), SourceLinterTestFactory.Checkers()));
     }
 }
