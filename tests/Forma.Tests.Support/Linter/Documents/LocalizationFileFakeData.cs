@@ -1,0 +1,39 @@
+namespace Forma.Tests.Linter.Documents;
+
+using Forma.Framework.Localization.Json;
+
+/// <summary>Localization file contents a test can lint.</summary>
+public static class LocalizationFileFakeData
+{
+    /// <summary>The name a file carrying Hebrew translations has.</summary>
+    public const string HebrewName = "Colocated.he.json";
+
+    /// <summary>A file carrying a translation but no metadata entry.</summary>
+    public const string Unmarked = """{ "Today": "היום" }""";
+
+    /// <summary>A file that is not readable as JSON at all.</summary>
+    public const string Unreadable = "{ not json";
+
+    /// <summary>A file that follows the schema for Hebrew.</summary>
+    public static string Valid { get; } = WithMarker($"SchemaVersion: {LocalizationSchema.CurrentVersion}; Culture: he;");
+
+    /// <summary>A file whose metadata entry declares the fields given.</summary>
+    /// <param name="marker">The fields the entry declares.</param>
+    public static string WithMarker(string marker)
+        => $$"""
+            {
+              "{{LocalizationSchema.Marker}}": "{{marker}}",
+              "Today": "היום"
+            }
+            """;
+
+    /// <summary>A file that declares its metadata entry after a translation rather than first.</summary>
+    /// <param name="marker">The fields the entry declares.</param>
+    public static string WithTrailingMarker(string marker)
+        => $$"""
+            {
+              "Today": "היום",
+              "{{LocalizationSchema.Marker}}": "{{marker}}"
+            }
+            """;
+}

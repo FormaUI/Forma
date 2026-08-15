@@ -24,7 +24,7 @@ internal static class LocalizationMetadata
         if (!result.IsValid)
         {
             throw new LocalizationMetadataException(
-                $"'{fileName}' has a malformed '{LocalizationSchema.Marker}' entry; expected 'SchemaVersion: 1.0.0; Culture: {expectedCulture};'.");
+                $"'{fileName}' has a malformed '{LocalizationSchema.Marker}' entry; expected 'SchemaVersion: {LocalizationSchema.CurrentVersion}; Culture: {expectedCulture};'.");
         }
 
         ReadSchemaVersion(result, value, fileName);
