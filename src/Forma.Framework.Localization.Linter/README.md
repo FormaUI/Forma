@@ -38,23 +38,68 @@ Console output is MSBuild-formatted (`path(line,col): severity CODE: message`). 
 report carries `fileCount`, `diagnosticCount`, and a `diagnostics` array of
 `path`, `line`, `column`, `severity`, `code`, `message`.
 
-## Razor call sites need generated C#
+## Razor call sites
 
-Razor emits no C# unless asked, and almost every call site in this repository lives in
-`.razor`. Build with `EmitCompilerGeneratedFiles` so the linter can read them:
+Almost every call site in this repository lives in `.razor`, which reaches Roslyn only
+through the Razor source generator. The linter runs that generator itself, so nothing has
+to be emitted to disk and no build property is needed:
 
 ```powershell
-dotnet build MyProject.csproj -p:EmitCompilerGeneratedFiles=true --no-incremental
 locali --path MyProject.csproj
 ```
-
-`--no-incremental` matters. An up-to-date project emits nothing, the build still reports
-success, and the linter then reports LOC0015 having checked no Razor markup at all.
-LOC0015 is the signal that this happened; do not ignore it in a build gate.
 
 Call sites are found semantically where the compilation binds `IStringLocale`, and
 syntactically otherwise. The syntactic path cannot resolve overloads, so the rules that
 count values stay silent for it.
+
+### Why Roslyn is loaded from the SDK
+
+This part is a workaround. Roslyn refuses to load a generator built against a newer
+compiler than the host, reporting `ReferencesNewerCompiler` and returning no generators at
+all. The Razor generator ships inside the SDK and is built against the SDK's Roslyn, which
+is ahead of anything published:
+
+| | Version |
+|---|---|
+| Razor generator, from the SDK | built against Roslyn 5.9.0 |
+| Newest `Microsoft.CodeAnalysis.CSharp` on nuget.org | 5.6.0 |
+
+So the linter cannot load the generator using the packages it compiles against, and
+`GetSourceGeneratedDocumentsAsync` returns nothing for Razor. What closes the gap is that
+the SDK also carries a complete, version-matched Roslyn — compiler, workspaces and
+`Workspaces.MSBuild` — under `DotnetTools`, shipped for `dotnet format` and `dotnet watch`.
+
+`SdkRoslyn` binds to that copy from a `[ModuleInitializer]`, since resolution has to be
+registered before the first Roslyn type loads, which is earlier than `Main`. The three
+`Microsoft.CodeAnalysis.*` packages carry `ExcludeAssets="runtime"` so their assemblies
+stay reference-only and cannot shadow the SDK's at run time.
+
+Redirecting only part of the stack does not work: a 5.6.0 `Workspaces` on a 5.9.0 compiler
+throws `TypeLoadException` on members added in the newer version. It is all or nothing.
+
+### Removing it
+
+`DotnetTools` is an SDK implementation detail, not a documented redistribution point, so
+this should not outlive the version gap. Once a Roslyn at or above the SDK's is on
+nuget.org:
+
+1. Raise the three `Microsoft.CodeAnalysis.*` versions.
+2. Drop their `ExcludeAssets="runtime"`.
+3. Delete `Projects/SdkRoslyn.cs`, and register MSBuild in `MSBuildProjectLoader` again.
+
+Nothing else depends on it, and the fallback below stays either way.
+### When Roslyn cannot be bound
+
+The linter stops with exit code 2 and explains what it looked for. It cannot degrade:
+`ExcludeAssets="runtime"` keeps the published assemblies out of the output, so if the
+SDK's are not found there is no Roslyn to run on at all. Failing at startup is what keeps
+that from surfacing as an unrelated `FileNotFoundException` several frames later.
+
+LOC0015 covers the narrower case where Roslyn did load but a project produced no generated
+Razor. The linter then reads whatever a build left in `obj/**/generated/`, which needs
+`EmitCompilerGeneratedFiles=true` and a full build — an incremental one emits nothing while
+still reporting success. LOC0015 says that route came up empty too, so the project's markup
+went unchecked; do not ignore it in a build gate.
 
 ## Diagnostics
 
@@ -142,7 +187,7 @@ Nothing at the call site decides these, so there is nothing to judge:
 | `Diagnostics/` | `LintCode`, the `LintCodes` catalogue, `LintDiagnostic` |
 | `Documents/` | Reading a translation file into ordered entries with offsets |
 | `Linting/` | The services that drive file and schema linting |
-| `Projects/` | MSBuild loading, including emitted Razor sources |
+| `Projects/` | MSBuild loading, and binding Roslyn to the SDK's copy |
 | `Reporting/` | Console and JSON reporters |
 | `Rules/` | Rule contracts, rule contexts, shared hole-name reading |
 | `Rules/Files/` | Rules over a translation file |

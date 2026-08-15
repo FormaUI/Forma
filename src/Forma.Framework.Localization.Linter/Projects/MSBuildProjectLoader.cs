@@ -6,9 +6,10 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Text;
 
-/// <summary>Loads projects through MSBuild, adding the Razor generator's emitted C# to each compilation.</summary>
+/// <summary>Loads projects through MSBuild, with the Razor generator's C# in each compilation.</summary>
 public sealed class MSBuildProjectLoader : IProjectLoader
 {
+    private const string RazorSuffix = "_razor.g.cs";
     /// <inheritdoc />
     public async ValueTask<IReadOnlyList<LoadedProject>> LoadAsync(IEnumerable<string> paths, CancellationToken cancellationToken = default)
     {
@@ -19,8 +20,6 @@ public sealed class MSBuildProjectLoader : IProjectLoader
         {
             return [];
         }
-
-        Register();
 
         using var workspace = MSBuildWorkspace.Create();
         var opened = new List<ProjectId>();
@@ -42,15 +41,6 @@ public sealed class MSBuildProjectLoader : IProjectLoader
         }
 
         return loaded;
-    }
-
-    // MSBuild has to be located before any of its types load, and registering twice throws.
-    private static void Register()
-    {
-        if (!MSBuildLocator.IsRegistered)
-        {
-            MSBuildLocator.RegisterDefaults();
-        }
     }
 
     private static async ValueTask<IReadOnlyList<ProjectId>> OpenAsync(MSBuildWorkspace workspace, string path, CancellationToken cancellationToken)
@@ -95,6 +85,13 @@ public sealed class MSBuildProjectLoader : IProjectLoader
             return new LoadedProject(file, null, HasGeneratedSources: false, markup);
         }
 
+        // The generator runs in the workspace when Roslyn is the SDK's own, which needs nothing on disk.
+        var generated = await project.GetSourceGeneratedDocumentsAsync(cancellationToken).ConfigureAwait(false);
+        if (generated.Any(document => document.HintName.EndsWith(RazorSuffix, StringComparison.OrdinalIgnoreCase)))
+        {
+            return new LoadedProject(file, compilation, HasGeneratedSources: true, markup);
+        }
+
         var emitted = folder is null ? [] : Emitted(folder);
         if (emitted.Count == 0)
         {
@@ -126,7 +123,7 @@ public sealed class MSBuildProjectLoader : IProjectLoader
             .Select(source => CSharpSyntaxTree.ParseText(source.text, options, source.file))];
     }
 
-    // The Razor generator does not run inside the workspace, so its output is read from where a build emitted it.
+    // Read from where a build emitted it when the SDK ships no Roslyn new enough to run the generator here.
     private static IReadOnlyList<string> Emitted(string folder)
     {
         var generated = Path.Combine(folder, "obj");
