@@ -20,5 +20,6 @@ public static class SchemaLinterTestFactory
             new UnknownFieldChecker(),
             new SchemaVersionChecker(),
             new CultureMatchesChecker(),
+            new TranslationHolesChecker(),
         ];
 }

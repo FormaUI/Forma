@@ -76,6 +76,7 @@ internal static class Program
         builder.Services.AddSingleton<ILocalizationFileRuleChecker, UnknownFieldChecker>();
         builder.Services.AddSingleton<ILocalizationFileRuleChecker, SchemaVersionChecker>();
         builder.Services.AddSingleton<ILocalizationFileRuleChecker, CultureMatchesChecker>();
+        builder.Services.AddSingleton<ILocalizationFileRuleChecker, TranslationHolesChecker>();
         builder.Services.AddSingleton<ICallSiteRuleChecker, MalformedExpressionChecker>();
 
         builder.Services.AddSingleton<ISchemaLinter, SchemaLinter>();

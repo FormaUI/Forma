@@ -36,4 +36,31 @@ public static class LocalizationFileFakeData
               "{{LocalizationSchema.Marker}}": "{{marker}}"
             }
             """;
+
+    /// <summary>A schema-following file whose metadata entry carries a brace in an optional field.</summary>
+    public static string WithBracedMarker { get; } =
+        WithMarker($"SchemaVersion: {LocalizationSchema.CurrentVersion}; Culture: he; Author: {{Eyal}};");
+
+    /// <summary>A schema-following file carrying one translation.</summary>
+    /// <param name="key">The key the translation is written under.</param>
+    /// <param name="translation">The translation itself.</param>
+    public static string WithTranslation(string key, string translation)
+        => $$"""
+            {
+              "{{LocalizationSchema.Marker}}": "SchemaVersion: {{LocalizationSchema.CurrentVersion}}; Culture: he;",
+              "Today": "היום",
+              "{{key}}": "{{translation}}"
+            }
+            """;
+
+    /// <summary>A schema-following file whose one translation is deliberately the key itself.</summary>
+    /// <param name="key">The key left untranslated.</param>
+    public static string WithNullTranslation(string key)
+        => $$"""
+            {
+              "{{LocalizationSchema.Marker}}": "SchemaVersion: {{LocalizationSchema.CurrentVersion}}; Culture: he;",
+              "Today": "היום",
+              "{{key}}": null
+            }
+            """;
 }

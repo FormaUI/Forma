@@ -69,6 +69,12 @@ public static class LintCodes
         LintSeverity.Warning,
         "A metadata entry declares a field the schema does not define.");
 
+    /// <summary>A translation fills a hole its key does not name.</summary>
+    public static LintCode UnknownTranslationHole { get; } = new(
+        "LOC0016",
+        LintSeverity.Error,
+        "A translation fills a hole its key does not name, so it renders as written.");
+
     /// <summary>Every rule, ordered by the identifier it reports under.</summary>
     public static IReadOnlyList<LintCode> All { get; } =
     [
@@ -83,5 +89,6 @@ public static class LintCodes
         CultureMismatch,
         MalformedSourceExpression,
         RazorNotAnalysed,
+        UnknownTranslationHole,
     ];
 }
