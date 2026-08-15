@@ -1,4 +1,4 @@
-namespace Forma.Tests.Linter.Linting;
+namespace Forma.Framework.Localization.Linter.Tests.Support.Linting;
 
 using Forma.Framework.Localization.Linter.Cli;
 using Forma.Framework.Localization.Linter.Linting;

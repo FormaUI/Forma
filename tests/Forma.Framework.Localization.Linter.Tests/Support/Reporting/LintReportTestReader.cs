@@ -1,4 +1,4 @@
-namespace Forma.Tests.Linter.Reporting;
+namespace Forma.Framework.Localization.Linter.Tests.Support.Reporting;
 
 using System.Text.Json;
 

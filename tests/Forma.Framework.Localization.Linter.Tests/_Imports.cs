@@ -10,10 +10,10 @@ global using Forma.Framework.Localization.Linter.Diagnostics;
 global using Forma.Framework.Localization.Linter.Documents;
 global using Forma.Framework.Localization.Linter.Linting;
 global using Forma.Framework.Localization.Linter.Reporting;
-global using Forma.Tests.Linter.Diagnostics;
-global using Forma.Tests.Linter.Documents;
-global using Forma.Tests.Linter.Linting;
-global using Forma.Tests.Linter.Reporting;
+global using Forma.Framework.Localization.Linter.Tests.Support.Diagnostics;
+global using Forma.Framework.Localization.Linter.Tests.Support.Documents;
+global using Forma.Framework.Localization.Linter.Tests.Support.Linting;
+global using Forma.Framework.Localization.Linter.Tests.Support.Reporting;
 global using Forma.Tests.Shared;
 
 global using Xunit;

@@ -1,4 +1,4 @@
-namespace Forma.Tests.Linter.Diagnostics;
+namespace Forma.Framework.Localization.Linter.Tests.Support.Diagnostics;
 
 using Forma.Framework.Localization.Linter.Diagnostics;
 

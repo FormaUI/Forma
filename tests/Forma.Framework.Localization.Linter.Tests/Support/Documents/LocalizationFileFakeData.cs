@@ -1,4 +1,4 @@
-namespace Forma.Tests.Linter.Documents;
+namespace Forma.Framework.Localization.Linter.Tests.Support.Documents;
 
 using Forma.Framework.Localization.Json;
 
