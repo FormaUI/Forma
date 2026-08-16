@@ -1,0 +1,67 @@
+@page "/image-picker"
+@attribute [ShowcasePage("FormaImagePicker")]
+@rendermode InteractiveServer
+@using Forma.UI.Components.Files
+@using Microsoft.AspNetCore.Components.Forms
+
+<h1>FormaImagePicker</h1>
+<p class="desc">@L["A thin skin over FormaFilePicker that pins the accept filter to images and shows a thumbnail of each one accepted."]</p>
+
+<div class="demo-section">
+    <h2>@L["Basic picker"]</h2>
+    <p class="desc">@L["Pick or drop one or more images; each accepted file gets a thumbnail below the drop zone."]</p>
+    <div class="demo-box">
+        <FormaImagePicker OnFilesSelected="@(files => HandleSelected("basic", files))" />
+        <ul class="demo-log">
+            @foreach (var line in Log("basic"))
+            {
+                <li>@line</li>
+            }
+        </ul>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A single image"]</h2>
+    <p class="desc">@L["A new pick replaces the last one, matching a single cover-image field."]</p>
+    <div class="demo-box">
+        <FormaImagePicker AllowMultipleFiles="false" OnFilesSelected="@(files => HandleSelected("single", files))" />
+        <ul class="demo-log">
+            @foreach (var line in Log("single"))
+            {
+                <li>@line</li>
+            }
+        </ul>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A non-image rejected"]</h2>
+    <p class="desc">@L["The accept filter is pinned, so a non-image file is declined the same way FormaFilePicker declines one."]</p>
+    <div class="demo-box">
+        <FormaImagePicker OnFilesSelected="@(files => HandleSelected("rejected", files))"
+                          OnFilesRejected="@(files => HandleRejected("rejected", files))" />
+        <ul class="demo-log">
+            @foreach (var line in Log("rejected"))
+            {
+                <li>@line</li>
+            }
+        </ul>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A size cap"]</h2>
+    <p class="desc">@L["MaxFileSize declines an image over 100 KB, so the host never receives it."]</p>
+    <div class="demo-box">
+        <FormaImagePicker MaxFileSize="100_000"
+                          OnFilesSelected="@(files => HandleSelected("large", files))"
+                          OnFilesRejected="@(files => HandleRejected("large", files))" />
+        <ul class="demo-log">
+            @foreach (var line in Log("large"))
+            {
+                <li>@line</li>
+            }
+        </ul>
+    </div>
+</div>

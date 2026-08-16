@@ -1,0 +1,14 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "A thin skin over FormaFilePicker that pins the accept filter to images and shows a thumbnail of each one accepted.": "Una capa fina sobre FormaFilePicker que fija el filtro de aceptación a imágenes y muestra una miniatura de cada archivo aceptado.",
+  "Basic picker": "Selector básico",
+  "Pick or drop one or more images; each accepted file gets a thumbnail below the drop zone.": "Elige o suelta una o más imágenes; cada archivo aceptado obtiene una miniatura debajo de la zona de arrastre.",
+  "A single image": "Una sola imagen",
+  "A new pick replaces the last one, matching a single cover-image field.": "Una nueva selección reemplaza a la anterior, como corresponde a un campo de imagen de portada único.",
+  "A non-image rejected": "Un archivo que no es imagen es rechazado",
+  "The accept filter is pinned, so a non-image file is declined the same way FormaFilePicker declines one.": "El filtro de aceptación está fijado, así que un archivo que no es imagen se rechaza igual que lo haría FormaFilePicker.",
+  "A size cap": "Un límite de tamaño",
+  "MaxFileSize declines an image over 100 KB, so the host never receives it.": "MaxFileSize rechaza una imagen de más de 100 KB, así que el anfitrión nunca la recibe.",
+  "{name} selected": "{name} seleccionado",
+  "{name} declined ({reason})": "{name} rechazado ({reason})"
+}

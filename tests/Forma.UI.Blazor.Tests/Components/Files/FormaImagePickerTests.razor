@@ -1,0 +1,153 @@
+@inherits BunitContext
+@using Bunit.TestDoubles
+@using Forma.UI.Components.Files
+@using Microsoft.AspNetCore.Components.Forms
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_the_default_prompt()
+        {
+            // Arrange
+            using var ctx = new FormaImagePickerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaImagePicker OnFilesSelected="@(_ => Task.CompletedTask)" />);
+
+            // Assert
+            Assert.Equal("Drop images here or click to browse", cut.Find(".forma-file-picker-prompt").TextContent);
+        }
+
+        [Fact]
+        public void Should_render_a_caller_supplied_prompt()
+        {
+            // Arrange
+            using var ctx = new FormaImagePickerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaImagePicker Prompt="Drop a cover image" OnFilesSelected="@(_ => Task.CompletedTask)" />);
+
+            // Assert
+            Assert.Equal("Drop a cover image", cut.Find(".forma-file-picker-prompt").TextContent);
+        }
+
+        [Fact]
+        public void Should_pin_the_accept_filter_to_images()
+        {
+            // Arrange
+            using var ctx = new FormaImagePickerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaImagePicker OnFilesSelected="@(_ => Task.CompletedTask)" />);
+
+            // Assert
+            Assert.Equal("image/*", cut.Find("input[type=file]").GetAttribute("accept"));
+        }
+
+        [Fact]
+        public void Should_hand_the_host_the_accepted_files()
+        {
+            // Arrange
+            using var ctx = new FormaImagePickerTests();
+            IReadOnlyList<IBrowserFile>? selected = null;
+            var cut = ctx.Render(@<FormaImagePicker OnFilesSelected="@(files => { selected = files; return Task.CompletedTask; })" />);
+            var input = cut.FindComponent<InputFile>();
+
+            // Act
+            input.UploadFiles(InputFileContent.CreateFromText("cover bytes", "cover.jpg", contentType: "image/jpeg"));
+
+            // Assert
+            Assert.Equal("cover.jpg", Assert.Single(selected!).Name);
+        }
+
+        [Fact]
+        public void Should_report_a_rejected_file()
+        {
+            // Arrange
+            using var ctx = new FormaImagePickerTests();
+            IReadOnlyList<RejectedFile>? rejected = null;
+            var cut = ctx.Render(@<FormaImagePicker MaxFileSize="4"
+                                                    OnFilesSelected="@(_ => Task.CompletedTask)"
+                                                    OnFilesRejected="@(files => { rejected = files; return Task.CompletedTask; })" />);
+            var input = cut.FindComponent<InputFile>();
+
+            // Act
+            input.UploadFiles(InputFileContent.CreateFromText("far too long a body", "brief.jpg", contentType: "image/jpeg"));
+
+            // Assert
+            Assert.Equal(FileRejectionReason.TooLarge, Assert.Single(rejected!).Reason);
+        }
+
+        [Fact]
+        public void Should_show_a_thumbnail_for_an_accepted_image()
+        {
+            // Arrange
+            using var ctx = new FormaImagePickerTests();
+            var cut = ctx.Render(@<FormaImagePicker OnFilesSelected="@(_ => Task.CompletedTask)" />);
+            var input = cut.FindComponent<InputFile>();
+
+            // Act
+            input.UploadFiles(InputFileContent.CreateFromText("cover bytes", "cover.jpg", contentType: "image/jpeg"));
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Single(cut.FindAll(".forma-image-picker-thumbnail"));
+                Assert.Equal("cover.jpg", cut.Find(".forma-image-picker-name").TextContent);
+            });
+        }
+
+        [Fact]
+        public void Should_not_embed_the_image_data_in_the_markup()
+        {
+            // Arrange
+            using var ctx = new FormaImagePickerTests();
+            var cut = ctx.Render(@<FormaImagePicker OnFilesSelected="@(_ => Task.CompletedTask)" />);
+            var input = cut.FindComponent<InputFile>();
+
+            // Act
+            input.UploadFiles(InputFileContent.CreateFromText("cover bytes", "cover.jpg", contentType: "image/jpeg"));
+            var thumbnail = cut.Find(".forma-image-picker-thumbnail");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.False(thumbnail.HasAttribute("src"));
+                Assert.Equal(string.Empty, thumbnail.GetAttribute("alt"));
+            });
+        }
+
+        [Fact]
+        public void Should_clear_earlier_previews_when_every_file_is_rejected()
+        {
+            // Arrange
+            using var ctx = new FormaImagePickerTests();
+            var cut = ctx.Render(@<FormaImagePicker MaxFileSize="8" OnFilesSelected="@(_ => Task.CompletedTask)" />);
+            var input = cut.FindComponent<InputFile>();
+            input.UploadFiles(InputFileContent.CreateFromText("one", "one.jpg", contentType: "image/jpeg"));
+
+            // Act
+            input.UploadFiles(InputFileContent.CreateFromText("far too long a body", "big.jpg", contentType: "image/jpeg"));
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-image-picker-preview"));
+        }
+
+        [Fact]
+        public void Should_replace_earlier_previews_on_a_new_selection()
+        {
+            // Arrange
+            using var ctx = new FormaImagePickerTests();
+            var cut = ctx.Render(@<FormaImagePicker OnFilesSelected="@(_ => Task.CompletedTask)" />);
+            var input = cut.FindComponent<InputFile>();
+            input.UploadFiles(InputFileContent.CreateFromText("one", "one.jpg", contentType: "image/jpeg"));
+
+            // Act
+            input.UploadFiles(InputFileContent.CreateFromText("two", "two.jpg", contentType: "image/jpeg"));
+
+            // Assert
+            Assert.Equal("two.jpg", Assert.Single(cut.FindAll(".forma-image-picker-preview")).QuerySelector(".forma-image-picker-name")!.TextContent);
+        }
+    }
+}
