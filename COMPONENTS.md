@@ -384,7 +384,7 @@ These components form the shell of a page. Build first.
 | **Parameters** | `@bind-Items` (List<TItem>), `RenderFragment<TItem> ItemTemplate`, `string? DragHandleClass`, `EventCallback<List<TItem>> OnReorder` |
 | **Blazor approach** | Uses native HTML5 Drag and Drop API (`draggable`, `@ondragstart`, `@ondragover`, `@ondrop`). Track drag source/target index, reorder the list in C#, re-render. Minimal JS interop (only if `preventDefault` is needed on `dragover`) |
 
-### 22. `FormaImagePicker`
+### 22. `FormaImagePicker` ✅
 
 | | |
 |---|---|
@@ -778,7 +778,7 @@ Components are ordered by dependency and reuse frequency:
 | **Phase 13** | `FormaDeleteButton`, `FormaUpdateButton`, `FormaEditButton`, `FormaAddButton`, `FormaDuplicateButton`, `FormaRefreshButton`, `FormaShareButton`, `FormaPublishButton` | The rest of the icon-button vocabulary — the same thin wrapper over `FormaButton`, one glyph each, so a row's actions stop being ad-hoc markup per page |
 | **Phase 14** | `FormaOverflowMenu`, `FormaContextMenu` | Menu presets over `FormaDropDownMenu` — the ellipsis trigger first, then the same panel opened by right-click, once there is a menu worth opening that way |
 | **Phase 15** | `FormaVideoPlayer` ✅, `FormaFileViewer` ✅ | Media rendering — the player first because it stands alone and four Épica surfaces want it, then the viewer that delegates its video branch to it. Both come before the picker chain, which previews through the viewer |
-| **Phase 16** | `FormaFilePicker` ✅, `FormaFileUploader` ✅, `FormaImagePicker`, `FormaMediaPicker` | The intake chain, in that order: the device picker, then the uploader that moves what it picked, then the two type-restricted skins over the picker |
+| **Phase 16** | `FormaFilePicker` ✅, `FormaFileUploader` ✅, `FormaImagePicker` ✅, `FormaMediaPicker` | The intake chain, in that order: the device picker, then the uploader that moves what it picked, then the two type-restricted skins over the picker |
 | **Phase 17** | `FormaSortMenu`, `FormaViewButton` | The two controls that exist for the managers' tile grids — a layout with no column headers to sort by and two layouts to switch between. Neither has a surface to serve until Phase 18 exists |
 | **Phase 18** | `FormaGallery`, `FormaFileManager` | The server-side browsing surfaces — both compose the picker, uploader and viewer rather than re-solving them, and their shared browsing half is extracted in the same step rather than copied |
 | **Phase 19** | `FormaRichTextEditor` | The largest editor, and last of the composing components — its chrome is `FormaSelect`, `FormaDropDownMenu` and `FormaColorPicker`, it delegates image insertion to `FormaGallery`, uploads through `FormaFilePicker` and `FormaFileUploader`, and inserts `FormaVideoPlayer` |
