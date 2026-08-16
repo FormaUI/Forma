@@ -95,57 +95,59 @@ The linter stops with exit code 2 and explains what it looked for. It cannot deg
 SDK's are not found there is no Roslyn to run on at all. Failing at startup is what keeps
 that from surfacing as an unrelated `FileNotFoundException` several frames later.
 
-LOC0015 covers the narrower case where Roslyn did load but a project produced no generated
+LOC0206 covers the narrower case where Roslyn did load but a project produced no generated
 Razor. The linter then reads whatever a build left in `obj/**/generated/`, which needs
 `EmitCompilerGeneratedFiles=true` and a full build — an incremental one emits nothing while
-still reporting success. LOC0015 says that route came up empty too, so the project's markup
+still reporting success. LOC0206 says that route came up empty too, so the project's markup
 went unchecked; do not ignore it in a build gate.
 
 ## Diagnostics
 
-### Translation files
+A file rule reports in the 100s, a call-site rule in the 200s.
+
+### Translation files (LOC0100–LOC0199)
 
 | Code | Severity | Reports |
 |------|----------|---------|
-| LOC0000 | Error | The file is not readable JSON |
-| LOC0001 | Error | The file carries no `$localization` entry |
-| LOC0002 | Warning | The metadata entry is not the file's first property |
-| LOC0003 | Error | The metadata entry does not follow the field grammar |
-| LOC0004 | Error | The metadata entry omits a required field |
-| LOC0005 | Warning | The metadata entry declares its required fields out of order |
-| LOC0006 | Error | The file is written for a schema this build does not define |
-| LOC0007 | Warning | The metadata entry declares an unknown field |
-| LOC0008 | Error | The file declares a culture its own name does not give it |
-| LOC0016 | Error | A translation fills a hole its key does not name |
-| LOC0018 | Error | A translation writes text shaped like a hole the runtime cannot read |
+| LOC0100 | Error | The file is not readable JSON |
+| LOC0101 | Error | The file carries no `$localization` entry |
+| LOC0102 | Warning | The metadata entry is not the file's first property |
+| LOC0103 | Error | The metadata entry does not follow the field grammar |
+| LOC0104 | Error | The metadata entry omits a required field |
+| LOC0105 | Warning | The metadata entry declares its required fields out of order |
+| LOC0106 | Error | The file is written for a schema this build does not define |
+| LOC0107 | Warning | The metadata entry declares an unknown field |
+| LOC0108 | Error | The file declares a culture its own name does not give it |
+| LOC0109 | Error | A translation fills a hole its key does not name |
+| LOC0110 | Error | A translation writes text shaped like a hole the runtime cannot read |
 
-LOC0016 catches the silent case: `"Stored {stored}."` translated as `"…{stord}…"` renders
+LOC0109 catches the silent case: `"Stored {stored}."` translated as `"…{stord}…"` renders
 `{stord}` literally. A name may be written as a brace hole or as a plural expression's
 bracketed argument, and the two are equivalent, so mixing them across a key and its
 translation is legal. Reordering or dropping a name is legal.
 
-### Call sites
+### Call sites (LOC0200–LOC0299)
 
 | Code | Severity | Reports | Runtime |
 |------|----------|---------|---------|
-| LOC0009 | Error | An interpolated hole is not a plain identifier | throws |
-| LOC0010 | Error | An expression reads a name nothing supplies | counts as 0, silently |
-| LOC0011 | Error | The value count does not match the key's distinct holes | throws |
-| LOC0012 | Error | An expression naming no argument is given no value | throws |
-| LOC0013 | Error | A key carries a malformed expression | renders as written, silently |
-| LOC0014 | Warning | A plural expression omits `other` | renders nothing, silently |
-| LOC0015 | Warning | A project's Razor markup went unchecked | — |
-| LOC0017 | Error | A named value the key never reads | the hole renders as written, silently |
-| LOC0018 | Error | A key writes text shaped like a hole the runtime cannot read | renders as written, silently |
+| LOC0200 | Error | An interpolated hole is not a plain identifier | throws |
+| LOC0201 | Error | An expression reads a name nothing supplies | counts as 0, silently |
+| LOC0202 | Error | The value count does not match the key's distinct holes | throws |
+| LOC0203 | Error | An expression naming no argument is given no value | throws |
+| LOC0204 | Error | A key carries a malformed expression | renders as written, silently |
+| LOC0205 | Warning | A plural expression omits `other` | renders nothing, silently |
+| LOC0206 | Warning | A project's Razor markup went unchecked | — |
+| LOC0207 | Error | A named value the key never reads | the hole renders as written, silently |
+| LOC0208 | Error | A key writes text shaped like a hole the runtime cannot read | renders as written, silently |
 
 All three ways of filling holes are checked. An interpolated key and a positional call
 name their values after the key's holes; a named call writes the names out, and those are
 read from the source:
 
 ```csharp
-locale[$"Stored {stored} of {total}."]                              // LOC0009
-locale["Stored {stored} of {total}.", written, allowed]             // LOC0011
-locale["Stored {stored} of {total}.", ("stored", a), ("total", b)]  // LOC0017
+locale[$"Stored {stored} of {total}."]                              // LOC0200
+locale["Stored {stored} of {total}.", written, allowed]             // LOC0202
+locale["Stored {stored} of {total}.", ("stored", a), ("total", b)]  // LOC0207
 ```
 
 A name is read from a tuple, from `new LocalizedArgument(…)`, and from
@@ -163,10 +165,10 @@ Reporting these would flag code that is right:
   how the runtime pairs them. Counting it twice would report every correct call.
 - **A hole no value fills renders as written.** `Resolve` returns a pattern with its holes
   still open for the caller to fill, so an unfilled hole is the feature, not a mistake.
-  A name supplied for a hole that does not exist is the certain half, and LOC0017 has it.
+  A name supplied for a hole that does not exist is the certain half, and LOC0207 has it.
 - **Text shaped like a hole, containing a space, is prose.** `{ color: red }`, `{ }` and
-  `{colour, red}` render as written and were meant to. LOC0018 takes the other half,
-  where the text could only have been a hole: `{0}`, `{a.b}`, and `{stored,x}`, whose
+  `{colour, red}` render as written and were meant to. LOC0110 and LOC0208 take the other
+  half, where the text could only have been a hole: `{0}`, `{a.b}`, and `{stored,x}`, whose
   name the runtime reads but whose alignment is not a number, so the hole goes unread.
 
 Nothing at the call site decides these, so there is nothing to judge:
@@ -196,7 +198,8 @@ Nothing at the call site decides these, so there is nothing to judge:
 
 ## Adding a rule
 
-1. Add a `LintCode` to `Diagnostics/LintCodes.cs` and to its `All` list.
+1. Add a `LintCode` to `Diagnostics/LintCodes.cs` and to its `All` list, numbered in the
+   100s for a file rule or the 200s for a call-site rule.
 2. Implement `ILocalizationFileRuleChecker` or `ICallSiteRuleChecker` under
    `Rules/Files/` or `Rules/Sources/`. Expose the code through `Code` and report through
    the context, which owns the position.
@@ -204,8 +207,11 @@ Nothing at the call site decides these, so there is nothing to judge:
 4. Register it in the matching test factory under `tests/…/Support/`.
 
 `LintCodesTests` fails if a rule reports under a code missing from the catalogue, if two
-codes share an id, or if two rules in the same family report under the same code. A rule
-that needs to report two different things is two rules.
+codes share an id, if two rules in the same family report under the same code, or if a
+rule reports outside its family's range. The range rule means the same idea checked on
+both sides of a call — a key and a translation, say — needs two codes, one per family, as
+`TranslationHoleShapedText` (LOC0110) and `HoleShapedText` (LOC0208) show. A rule that
+needs to report two different things is two rules regardless of family.
 
 `HoleNames` reads the names a format refers to its values by, and matches the runtime's
 `LocalizedFormat.Names`. Use it rather than scanning for braces; a plural expression names

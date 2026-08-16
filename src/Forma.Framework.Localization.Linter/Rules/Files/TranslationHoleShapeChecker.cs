@@ -8,7 +8,7 @@ public sealed class TranslationHoleShapeChecker : ILocalizationFileRuleChecker
 {
     /// <inheritdoc />
     public LintCode Code
-        => LintCodes.HoleShapedText;
+        => LintCodes.TranslationHoleShapedText;
 
     /// <inheritdoc />
     public void Check(LocalizationFileContext context)

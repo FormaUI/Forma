@@ -15,9 +15,9 @@ public sealed class HoleShapeChecker : ICallSiteRuleChecker
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        // An interpolated hole is written as code, and LOC0009 judges it as code.
         if (context.Site.Arguments is LocalizerArguments.Interpolated)
         {
+            // An interpolated hole is written as code, and HoleNotIdentifier judges it as code.
             return;
         }
 

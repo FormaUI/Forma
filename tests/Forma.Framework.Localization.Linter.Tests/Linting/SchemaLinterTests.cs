@@ -237,6 +237,6 @@ public sealed class SchemaLinterTests
         var written = diagnostic.ToString();
 
         // Assert
-        Assert.Equal("C:/x/Colocated.he.json(2,20): error LOC0008: Wrong.", written);
+        Assert.Equal("C:/x/Colocated.he.json(2,20): error LOC0108: Wrong.", written);
     }
 }

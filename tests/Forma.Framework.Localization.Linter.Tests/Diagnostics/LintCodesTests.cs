@@ -58,4 +58,36 @@ public sealed class LintCodesTests
         // Assert
         Assert.Equal(codes.Length, codes.Distinct().Count());
     }
+
+    [Fact]
+    public void Should_number_every_catalogued_code_in_a_family_range()
+    {
+        // Act
+        var ids = LintCodes.All.Select(code => code.Id);
+
+        // Assert
+        Assert.All(ids, id => Assert.True(
+            id.StartsWith("LOC01", StringComparison.Ordinal) || id.StartsWith("LOC02", StringComparison.Ordinal),
+            $"'{id}' is in neither the file range nor the call-site range."));
+    }
+
+    [Fact]
+    public void Should_report_every_file_rule_in_the_100s()
+    {
+        // Act
+        var codes = SchemaLinterTestFactory.Checkers().Select(checker => checker.Code.Id);
+
+        // Assert
+        Assert.All(codes, id => Assert.StartsWith("LOC01", id, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Should_report_every_call_site_rule_in_the_200s()
+    {
+        // Act
+        var codes = SourceLinterTestFactory.Checkers().Select(checker => checker.Code.Id);
+
+        // Assert
+        Assert.All(codes, id => Assert.StartsWith("LOC02", id, StringComparison.Ordinal));
+    }
 }
