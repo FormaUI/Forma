@@ -469,10 +469,10 @@ These are more complex, possibly page-specific, but still benefit from being com
 
 | | |
 |---|---|
-| **Old pattern** | Click export → server generates Excel file → client polls with `DownloadTimer` until file ready → `window.location` to download URL |
+| **Old pattern** | Confirm dialog, then `WaitForDownload` navigates straight to a per-entity `.aspx` under `admin/services` that builds a workbook with EPPlus, saves it to a public `up/tmp` path and redirects to it. Generation is synchronous inside that request; a `dwait` cookie set alongside the redirect tells a 500 ms poll to hide the spinner, so nothing waits for readiness before downloading. Columns, headers and the query are hardcoded per entity, and the export always covers every row |
 | **Used in** | orders, leads |
 | **Parameters** | `string ExportUrl`, `string Label = "ייצוא"` |
-| **Blazor approach** | Button triggers server-side export. Use `NavigationManager` or JS interop `window.location.href` to initiate download. Consider `StreamRendering` for progress indication |
+| **Blazor approach** | Button triggers server-side export. Use `NavigationManager` or JS interop `window.location.href` to initiate download. Consider `StreamRendering` for progress indication. Stream the file from the authorized response rather than parking it under `wwwroot`, which exposed personal data at a guessable URL |
 
 ### 30. `FormaDesignPicker`
 
