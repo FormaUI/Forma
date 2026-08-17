@@ -51,7 +51,7 @@
         </button>
 
         <div class="forma-gallery-folder-actions">
-            @if (Sidebar.Options.AllowFolderRename)
+            @if (Sidebar.FileOptions.AllowFolderRename)
             {
                 <button type="button"
                         class="forma-gallery-folder-action-btn"
@@ -60,7 +60,7 @@
                     <span class="fa-solid fa-pen" aria-hidden="true"></span>
                 </button>
             }
-            @if (Sidebar.Options.AllowFolderDelete)
+            @if (Sidebar.FileOptions.AllowFolderDelete)
             {
                 <button type="button"
                         class="forma-gallery-folder-action-btn forma-gallery-folder-action-delete"

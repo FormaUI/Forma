@@ -22,8 +22,11 @@ public sealed class GalleryContext
         _dragStarted = dragStarted;
     }
 
-    /// <summary>Which operations the gallery offers.</summary>
+    /// <summary>How the gallery presents itself.</summary>
     public FormaGalleryOptions Options { get; internal set; } = FormaGalleryOptions.Default;
+
+    /// <summary>Which operations the gallery offers on the media and folders it lists.</summary>
+    public FormaGalleryFileOptions FileOptions { get; internal set; } = FormaGalleryFileOptions.Default;
 
     /// <summary>The item selection the gallery is tracking.</summary>
     public GallerySelection Selection { get; } = new();

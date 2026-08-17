@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Components;
 /// <summary>Showcase gallery page demonstrating the explorer-style FormaGallery component.</summary>
 public sealed partial class FormaGalleryPage : ComponentBase
 {
-    private readonly FormaGalleryOptions _fixedFolderOptions = new()
+    private readonly FormaGalleryFileOptions _fixedFolderOptions = new()
     {
         AllowFolderCreate = false,
         AllowFolderDelete = false,
@@ -34,6 +34,8 @@ public sealed partial class FormaGalleryPage : ComponentBase
 
     private List<ResourceInfo> _pagedEntries = [];
 
+    private List<ResourceInfo> _infiniteEntries = [];
+
     private List<ResourceInfo> _singleSelectEntries = [];
 
     private static GalleryDetailsColumns[] ColumnChoices
@@ -53,6 +55,10 @@ public sealed partial class FormaGalleryPage : ComponentBase
 
     private void ToggleColumn(GalleryDetailsColumns column, bool show)
         => _detailsColumns = show ? _detailsColumns | column : _detailsColumns & ~column;
+
+    // The sample list is already in memory, so a page would arrive too fast for the spinner to ever be seen.
+    private static Task SimulateFetchAsync(int page)
+        => Task.Delay(TimeSpan.FromMilliseconds(600));
 
     [Inject] private IStringLocale<FormaGalleryPage> L { get; set; } = default!;
 
@@ -96,6 +102,9 @@ public sealed partial class FormaGalleryPage : ComponentBase
 
         _pagedEntries = [.. Enumerable.Range(1, 10)
             .Select(i => new GalleryResourceInfo($"/media/sample-poster.svg?item={i}", ResourceKind.Image) { Size = 1000 * i, AddedAt = seeded.AddDays(-i), ModifiedAt = seeded.AddHours(-i) })];
+
+        _infiniteEntries = [.. Enumerable.Range(1, 5000)
+            .Select(i => new GalleryResourceInfo($"/media/sample-poster.svg?scroll={i}", ResourceKind.Image) { Size = 1000 * i, AddedAt = seeded.AddMinutes(-i), ModifiedAt = seeded.AddMinutes(-i) })];
     }
 
     private GalleryFolderInfo? CurrentFolderFor(string key)

@@ -36,7 +36,7 @@ public sealed partial class FormaGallerySidebar : ComponentBase, IAsyncDisposabl
     [Parameter] public EventCallback OnNewFolder { get; set; }
 
     /// <summary>Which folder operations the sidebar offers.</summary>
-    [Parameter] public FormaGalleryOptions Options { get; set; } = FormaGalleryOptions.Default;
+    [Parameter] public FormaGalleryFileOptions FileOptions { get; set; } = FormaGalleryFileOptions.Default;
 
     /// <summary>Total count of all items across the gallery.</summary>
     [Parameter] public int TotalCount { get; set; }

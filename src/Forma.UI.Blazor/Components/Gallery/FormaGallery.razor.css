@@ -8,6 +8,7 @@
     --forma-gallery-check-size: 1.5rem;
     --forma-gallery-check-glyph-size: 0.75rem;
     --forma-gallery-check-fg-color: #fff;
+    --forma-gallery-block-size: 40rem;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
@@ -17,12 +18,15 @@
     padding: 0.75rem;
     min-inline-size: 20rem;
     min-block-size: 18rem;
+    max-block-size: var(--forma-gallery-block-size);
     box-sizing: border-box;
 }
 
 .forma-gallery.is-resizable {
     resize: both;
-    overflow: auto;
+    overflow: hidden;
+    max-block-size: none;
+    block-size: var(--forma-gallery-block-size);
 }
 
 .forma-gallery.is-dialog {
@@ -105,6 +109,7 @@
     gap: 0;
     flex: 1;
     min-block-size: 0;
+    overflow: hidden;
 }
 
 /* --- Sidebar Splitter --- */
@@ -164,10 +169,20 @@
 .forma-gallery-content {
     flex: 1;
     min-inline-size: 0;
+    min-block-size: 0;
     display: flex;
     flex-direction: column;
     gap: 1rem;
     padding-inline-start: 0.6rem;
+}
+
+/* The media scrolls inside the panel so the toolbar, folder tree and pager stay put. */
+.forma-gallery-scroll {
+    flex: 1;
+    min-block-size: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
 }
 
 /* --- Empty State --- */
@@ -241,4 +256,82 @@
 .forma-gallery-pagination ::deep .forma-pagination {
     flex: 1;
     justify-content: space-between;
+}
+
+/* --- Infinite Scroll --- */
+.forma-gallery-scroll-status {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-muted-color);
+}
+
+/* The button is the whole path to the next page in the manual mode, so it is a real control rather than a scroll hint. */
+.forma-gallery-scroll-sentinel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: 3rem;
+    padding-block-end: 0.5rem;
+}
+
+.forma-gallery-spinner {
+    inline-size: 1.75rem;
+    block-size: 1.75rem;
+    border: 3px solid var(--light-border-color);
+    border-block-start-color: var(--main-color);
+    border-radius: 50%;
+    animation: forma-gallery-spin 0.7s linear infinite;
+}
+
+@keyframes forma-gallery-spin {
+    to {
+        rotate: 360deg;
+    }
+}
+
+/* The count beside it already states progress, so the ring stops rather than being replaced. */
+@media (prefers-reduced-motion: reduce) {
+    .forma-gallery-spinner {
+        animation: none;
+    }
+}
+
+.forma-gallery-scroll-sentinel ::deep .forma-gallery-load-more-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-block-size: 2.25rem;
+    padding-inline: 1.25rem;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    background: var(--input-bg-color);
+    color: var(--text-muted-color);
+    font-size: 0.85rem;
+    touch-action: manipulation;
+    transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+
+@media (hover: hover) {
+    .forma-gallery-scroll-sentinel ::deep .forma-gallery-load-more-btn:hover {
+        border-color: var(--main-color);
+        background: var(--hover-bg-color);
+        color: var(--main-color);
+    }
+}
+
+.forma-gallery-load-more-icon {
+    font-size: 0.7rem;
+    transition: translate 0.15s ease;
+}
+
+@media (hover: hover) {
+    .forma-gallery-scroll-sentinel ::deep .forma-gallery-load-more-btn:hover .forma-gallery-load-more-icon {
+        translate: 0 2px;
+    }
+}
+
+@media (pointer: coarse) {
+    .forma-gallery-scroll-sentinel ::deep .forma-gallery-load-more-btn {
+        min-block-size: 2.75rem;
+    }
 }

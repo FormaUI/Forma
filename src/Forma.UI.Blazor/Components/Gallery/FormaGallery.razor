@@ -5,7 +5,7 @@
 @using Forma.UI.Components.Files
 
 <CascadingValue Value="_context" IsFixed="false">
-<div class="forma-gallery @(Resizable ? "is-resizable" : "") @(AsDialog ? "is-dialog" : "")">
+<div class="forma-gallery @(Options.Resizable ? "is-resizable" : "") @(Options.AsDialog ? "is-dialog" : "")">
     <!-- Top Explorer Address Bar -->
     <FormaGalleryAddressBar Breadcrumbs="Breadcrumbs"
                             CanGoBack="CanGoBack"
@@ -13,7 +13,7 @@
                             CanGoUp="CanGoUp"
                             CurrentFolder="CurrentFolder"
                             Folders="Folders ?? []"
-                            ShowFolderMenu="ShowFolderMenu"
+                            ShowFolderMenu="Options.ShowFolderMenu"
                             Placeholder="@SearchPlaceholder"
                             SearchQuery="@_searchQuery"
                             OnBack="HandleBackAsync"
@@ -26,7 +26,7 @@
 
     <!-- Action & View Toolbar -->
     <FormaGalleryToolbar IsSelectMode="_context.Selection.IsSelectMode"
-                         Options="Options"
+                         FileOptions="FileOptions"
                          SelectedCount="_context.Selection.Count"
                          SortDirection="_sortDirection"
                          SortField="_sortField"
@@ -65,7 +65,7 @@
         @if (ShowsSidebar)
         {
             <FormaGallerySidebar CurrentFolder="CurrentFolder"
-                                 Options="Options"
+                                 FileOptions="FileOptions"
                                  Folders="Folders"
                                  TotalCount="TotalCount ?? Entries.Count"
                                  OnFolderDelete="OpenFolderDeleteDialog"
@@ -94,41 +94,70 @@
         }
 
         <div class="forma-gallery-content">
-            @if (PagedEntries.Count == 0)
-            {
-                <div class="forma-gallery-empty" role="status">
-                    <span class="fa-solid fa-images forma-gallery-empty-icon" aria-hidden="true"></span>
-                    @if (!string.IsNullOrWhiteSpace(_searchQuery))
-                    {
-                        <p>@L["No media matches \"{query}\"", ("query", _searchQuery)]</p>
-                    }
-                    else if (CurrentFolder is not null)
-                    {
-                        <p>@L["No media in this folder"]</p>
-                    }
-                    else
-                    {
-                        <p>@L["No media found"]</p>
-                    }
-                </div>
-            }
-            else
-            {
-                @if (_viewMode == GalleryViewMode.Thumbnails)
+            <div class="forma-gallery-scroll" id="@_scrollId">
+                @if (PagedEntries.Count == 0)
                 {
-                    <FormaGalleryThumbnailsView Entries="PagedEntries" />
-                }
-                else if (_viewMode == GalleryViewMode.Details)
-                {
-                    <FormaGalleryDetailsView Entries="PagedEntries" />
+                    <div class="forma-gallery-empty" role="status">
+                        <span class="fa-solid fa-images forma-gallery-empty-icon" aria-hidden="true"></span>
+                        @if (!string.IsNullOrWhiteSpace(_searchQuery))
+                        {
+                            <p>@L["No media matches \"{query}\"", ("query", _searchQuery)]</p>
+                        }
+                        else if (CurrentFolder is not null)
+                        {
+                            <p>@L["No media in this folder"]</p>
+                        }
+                        else
+                        {
+                            <p>@L["No media found"]</p>
+                        }
+                    </div>
                 }
                 else
                 {
-                    <FormaGalleryListView Entries="PagedEntries" />
+                    @if (_viewMode == GalleryViewMode.Thumbnails)
+                    {
+                        <FormaGalleryThumbnailsView Entries="PagedEntries" />
+                    }
+                    else if (_viewMode == GalleryViewMode.Details)
+                    {
+                        <FormaGalleryDetailsView Entries="PagedEntries" />
+                    }
+                    else
+                    {
+                        <FormaGalleryListView Entries="PagedEntries" />
+                    }
                 }
+
+                @if (IsInfiniteScrolling && HasMorePages)
+                {
+                    <div class="forma-gallery-scroll-sentinel" id="@_sentinelId">
+                        @if (Options.InfiniteScroll == GalleryInfiniteScrollMode.Automatic)
+                        {
+                            @if (_isLoadingPage)
+                            {
+                                <span class="forma-gallery-spinner" aria-hidden="true"></span>
+                            }
+                        }
+                        else
+                        {
+                            <FormaButton Variant="ButtonVariant.Ghost" class="forma-gallery-load-more-btn" OnClick="LoadNextPageAsync">
+                                <span class="fa-solid fa-chevron-down forma-gallery-load-more-icon" aria-hidden="true"></span>
+                                @L["Load more"]
+                            </FormaButton>
+                        }
+                    </div>
+                }
+            </div>
+
+            @if (IsInfiniteScrolling && FilteredAndSortedEntries.Count > 0)
+            {
+                <div class="forma-gallery-scroll-status" role="status">
+                    @L["Showing {shown} of {total}", ("shown", PagedEntries.Count), ("total", FilteredAndSortedEntries.Count)]
+                </div>
             }
 
-            @if (PageCount > 1 && !EnableInfiniteScroll)
+            @if (PageCount > 1 && !IsInfiniteScrolling)
             {
                 <div class="forma-gallery-pagination">
                     <FormaPagination TotalItems="FilteredAndSortedEntries.Count"

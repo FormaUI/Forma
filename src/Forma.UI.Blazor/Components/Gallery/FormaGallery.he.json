@@ -49,6 +49,8 @@
   "No media matches \"{query}\"": "לא נמצאה מדיה התואמת ל-\"{query}\"",
   "No media in this folder": "אין מדיה בתיקייה זו",
   "No media found": "לא נמצאה מדיה",
+  "Load more": "טעינת עוד",
+  "Showing {shown} of {total}": "מוצגים {shown} מתוך {total}",
   "Deselect {name}": "ביטול בחירת {name}",
   "Select {name}": "בחירת {name}",
   "Preview {name}": "תצוגה מקדימה של {name}",

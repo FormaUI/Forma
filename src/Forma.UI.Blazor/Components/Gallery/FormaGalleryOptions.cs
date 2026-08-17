@@ -1,39 +1,25 @@
 namespace Forma.UI.Components.Gallery;
 
-/// <summary>Which operations a <see cref="FormaGallery"/> and its views, toolbar and sidebar offer.</summary>
+/// <summary>How a <see cref="FormaGallery"/> presents itself: which surfaces it shows, and how it moves through a collection.</summary>
 public sealed record FormaGalleryOptions
 {
-    /// <summary>Every operation offered.</summary>
+    /// <summary>The standard presentation.</summary>
     public static FormaGalleryOptions Default { get; } = new();
 
-    /// <summary>Browsing and selection alone, with nothing that changes what is stored.</summary>
-    public static FormaGalleryOptions ReadOnly { get; } = new()
-    {
-        AllowDelete = false,
-        AllowRename = false,
-        AllowUpload = false,
-        AllowFolderCreate = false,
-        AllowFolderDelete = false,
-        AllowFolderRename = false
-    };
+    /// <summary>Whether the gallery is presented as dialog content, without a frame of its own.</summary>
+    public bool AsDialog { get; init; }
 
-    /// <summary>Whether media can be deleted.</summary>
-    public bool AllowDelete { get; init; } = true;
+    /// <summary>Whether the reader can resize the gallery.</summary>
+    public bool Resizable { get; init; }
 
-    /// <summary>Whether media can be renamed.</summary>
-    public bool AllowRename { get; init; } = true;
+    /// <summary>Whether the folder tree sidebar is shown.</summary>
+    public bool ShowSidebar { get; init; } = true;
 
-    /// <summary>Whether new media can be uploaded.</summary>
-    public bool AllowUpload { get; init; } = true;
+    /// <summary>Whether each breadcrumb offers a menu of that folder's children.</summary>
+    public bool ShowFolderMenu { get; init; } = true;
 
-    /// <summary>Whether folders can be created.</summary>
-    public bool AllowFolderCreate { get; init; } = true;
-
-    /// <summary>Whether folders can be deleted.</summary>
-    public bool AllowFolderDelete { get; init; } = true;
-
-    /// <summary>Whether folders can be renamed.</summary>
-    public bool AllowFolderRename { get; init; } = true;
+    /// <summary>Whether reaching the end of the list appends the next page, and whether a button does so instead.</summary>
+    public GalleryInfiniteScrollMode InfiniteScroll { get; init; } = GalleryInfiniteScrollMode.Off;
 
     /// <summary>Which optional columns the details view shows beside the name.</summary>
     public GalleryDetailsColumns DetailsColumns { get; init; } = GalleryDetailsColumns.Kind | GalleryDetailsColumns.Size | GalleryDetailsColumns.Modified;

@@ -38,7 +38,7 @@ public sealed partial class FormaGalleryToolbar : ComponentBase
     [Parameter] public EventCallback<GalleryViewMode> OnViewModeChanged { get; set; }
 
     /// <summary>Which operations the toolbar offers.</summary>
-    [Parameter] public FormaGalleryOptions Options { get; set; } = FormaGalleryOptions.Default;
+    [Parameter] public FormaGalleryFileOptions FileOptions { get; set; } = FormaGalleryFileOptions.Default;
 
     /// <summary>Number of currently selected items.</summary>
     [Parameter] public int SelectedCount { get; set; }

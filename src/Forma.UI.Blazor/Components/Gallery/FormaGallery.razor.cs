@@ -25,17 +25,11 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
         ShowConfirmAction = false
     };
 
-    /// <summary>Whether the gallery is presented in dialog presentation mode.</summary>
-    [Parameter] public bool AsDialog { get; set; }
-
     /// <summary>The currently active folder, or null for all media.</summary>
     [Parameter] public GalleryFolderInfo? CurrentFolder { get; set; }
 
     /// <summary>The active page, 1-based.</summary>
     [Parameter] public int CurrentPage { get; set; } = 1;
-
-    /// <summary>Whether infinite scroll dynamic chunk loading is enabled.</summary>
-    [Parameter] public bool EnableInfiniteScroll { get; set; }
 
     /// <summary>The media entries stored on the server to display in the gallery.</summary>
     [Parameter, EditorRequired] public IReadOnlyList<ResourceInfo> Entries { get; set; } = [];
@@ -43,14 +37,8 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
     /// <summary>Available folders for grouping media.</summary>
     [Parameter] public IReadOnlyList<GalleryFolderInfo>? Folders { get; set; }
 
-    /// <summary>Whether the folder tree sidebar is shown.</summary>
-    [Parameter] public bool ShowSidebar { get; set; } = true;
-
     private bool ShowsSidebar
-        => ShowSidebar && Folders is { Count: > 0 };
-
-    /// <summary>Whether each breadcrumb offers a menu of that folder's children.</summary>
-    [Parameter] public bool ShowFolderMenu { get; set; } = true;
+        => Options.ShowSidebar && Folders is { Count: > 0 };
 
     /// <summary>How many items the whole library holds, for hosts that supply one folder at a time; the supplied entries are counted when null.</summary>
     [Parameter] public int? TotalCount { get; set; }
@@ -58,8 +46,11 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
     /// <summary>The maximum number of items that may be selected at once (0 for unlimited).</summary>
     [Parameter] public int MaxSelection { get; set; }
 
-    /// <summary>Which operations the gallery offers.</summary>
+    /// <summary>How the gallery presents itself and moves through the collection.</summary>
     [Parameter] public FormaGalleryOptions Options { get; set; } = FormaGalleryOptions.Default;
+
+    /// <summary>Which operations the gallery offers on the media and folders it lists.</summary>
+    [Parameter] public FormaGalleryFileOptions FileOptions { get; set; } = FormaGalleryFileOptions.Default;
 
     /// <summary>Raised when media items are deleted.</summary>
     [Parameter] public EventCallback<GalleryDeleteRequest> OnDelete { get; set; }
@@ -96,9 +87,6 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
 
     /// <summary>The number of media entries shown per page.</summary>
     [Parameter] public int PageSize { get; set; } = DefaultPageSize;
-
-    /// <summary>Whether the gallery container is resizable by the user.</summary>
-    [Parameter] public bool Resizable { get; set; }
 
     /// <summary>Custom search placeholder text.</summary>
     [Parameter] public string? SearchPlaceholder { get; set; }
@@ -184,6 +172,18 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
 
     private IJSObjectReference? _splitterModule;
 
+    private readonly string _sentinelId = $"forma-gallery-sentinel-{Guid.NewGuid():N}";
+
+    private readonly string _scrollId = $"forma-gallery-scroll-{Guid.NewGuid():N}";
+
+    private DotNetObjectReference<FormaGallery>? _selfReference;
+
+    private bool _isSentinelObserved;
+
+    private bool _isSentinelStale;
+
+    private bool _isLoadingPage;
+
     private IReadOnlyList<ResourceInfo>? _syncedSelected;
 
     private GalleryViewMode _syncedViewMode;
@@ -203,7 +203,15 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
     // Several members read the ordered list while rendering, so it is built once and dropped whenever its inputs move.
     private List<ResourceInfo>? _filteredAndSorted;
 
-    private FormaGalleryOptions? _actionOptions;
+    private List<ResourceInfo>? _pagedEntries;
+
+    private List<ResourceInfo>? _pagedSource;
+
+    private int _pagedSkip;
+
+    private int _pagedTake;
+
+    private FormaGalleryFileOptions? _actionOptions;
 
     private Dictionary<string, GalleryFolderInfo> FolderLookup
     {
@@ -340,16 +348,32 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
     private int PageCount
         => Math.Max(1, (int)Math.Ceiling(FilteredAndSortedEntries.Count / (double)PageSize));
 
+    private bool HasMorePages
+        => EffectivePage < PageCount;
+
+    private bool IsInfiniteScrolling
+        => Options.InfiniteScroll != GalleryInfiniteScrollMode.Off;
+
     private List<ResourceInfo> PagedEntries
     {
         get
         {
-            if (EnableInfiniteScroll)
+            var source = FilteredAndSortedEntries;
+            var take = IsInfiniteScrolling ? EffectivePage * PageSize : PageSize;
+            var skip = IsInfiniteScrolling ? 0 : (EffectivePage - 1) * PageSize;
+
+            // Infinite scrolling grows this window to thousands, and rendering reads it several times, so it is rebuilt only when it moves.
+            if (_pagedEntries is not null && ReferenceEquals(_pagedSource, source) && _pagedSkip == skip && _pagedTake == take)
             {
-                return [.. FilteredAndSortedEntries.Take(EffectivePage * PageSize)];
+                return _pagedEntries;
             }
 
-            return [.. FilteredAndSortedEntries.Skip((EffectivePage - 1) * PageSize).Take(PageSize)];
+            _pagedSource = source;
+            _pagedSkip = skip;
+            _pagedTake = take;
+            _pagedEntries = [.. source.Skip(skip).Take(take)];
+
+            return _pagedEntries;
         }
     }
 
@@ -420,14 +444,15 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
     private void SyncContext()
     {
         _context.Options = Options;
+        _context.FileOptions = FileOptions;
         _context.Selection.MaxSelection = MaxSelection;
         _context.SortField = _sortField;
         _context.SortDirection = _sortDirection;
 
         // Only the options decide which actions exist, so the list and its closures survive an unrelated render.
-        if (!ReferenceEquals(_actionOptions, Options))
+        if (!ReferenceEquals(_actionOptions, FileOptions))
         {
-            _actionOptions = Options;
+            _actionOptions = FileOptions;
             _context.ItemActions = BuildItemActions();
         }
     }
@@ -445,7 +470,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
             }
         };
 
-        if (Options.AllowRename)
+        if (FileOptions.AllowRename)
         {
             actions.Add(new GalleryAction
             {
@@ -456,7 +481,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
             });
         }
 
-        if (Options.AllowDelete)
+        if (FileOptions.AllowDelete)
         {
             actions.Add(new GalleryAction
             {
@@ -601,6 +626,76 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
             {
             }
         }
+
+        await SyncSentinelAsync();
+    }
+
+    private async Task SyncSentinelAsync()
+    {
+        if (_splitterModule is null)
+        {
+            return;
+        }
+
+        // Only automatic scrolling watches the sentinel; the manual mode waits for the button to be pressed.
+        var wantsSentinel = Options.InfiniteScroll == GalleryInfiniteScrollMode.Automatic && HasMorePages;
+
+        if (wantsSentinel == _isSentinelObserved && !_isSentinelStale)
+        {
+            return;
+        }
+
+        try
+        {
+            if (wantsSentinel)
+            {
+                _selfReference ??= DotNetObjectReference.Create(this);
+
+                await _splitterModule.InvokeVoidAsync("observeSentinel", _sentinelId, _scrollId, _selfReference);
+            }
+            else
+            {
+                await _splitterModule.InvokeVoidAsync("disconnectSentinel", _sentinelId);
+            }
+
+            _isSentinelObserved = wantsSentinel;
+            _isSentinelStale = false;
+        }
+        catch (JSException)
+        {
+        }
+        catch (JSDisconnectedException)
+        {
+        }
+    }
+
+    /// <summary>Appends the next page of media, as the reader scrolls toward the end of the current one.</summary>
+    [JSInvokable]
+    public async Task LoadNextPageAsync()
+    {
+        if (_isLoadingPage || !IsInfiniteScrolling || !HasMorePages)
+        {
+            return;
+        }
+
+        _page = EffectivePage + 1;
+
+        // An observer reports crossings, not a standing state, so it is re-armed to keep filling a viewport the new page did not.
+        _isSentinelStale = true;
+        _isLoadingPage = true;
+
+        StateHasChanged();
+
+        try
+        {
+            await OnPageChanged.InvokeAsync(_page);
+        }
+        finally
+        {
+            _isLoadingPage = false;
+        }
+
+        StateHasChanged();
     }
 
     /// <inheritdoc />
@@ -610,12 +705,19 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
         {
             try
             {
+                if (_isSentinelObserved)
+                {
+                    await _splitterModule.InvokeVoidAsync("disconnectSentinel", _sentinelId);
+                }
+
                 await _splitterModule.DisposeAsync();
             }
             catch (JSDisconnectedException)
             {
             }
         }
+
+        _selfReference?.Dispose();
     }
 
     private void CloseDeleteDialog()

@@ -67,20 +67,19 @@
         </fieldset>
         <FormaGallery Entries="_allMedia"
                       ViewMode="GalleryViewMode.Details"
-                      Options="@(new FormaGalleryOptions { DetailsColumns = _detailsColumns })"
-                      ShowSidebar="false" />
+                      Options="@(new FormaGalleryOptions { DetailsColumns = _detailsColumns, ShowSidebar = false })" />
     </div>
 </div>
 
 <div class="demo-section">
     <h2>@L["Read-only gallery"]</h2>
-    <p class="desc">@L["With FormaGalleryOptions.ReadOnly, browsing and selection remain while upload, rename, delete, and every folder action disappear."]</p>
+    <p class="desc">@L["With FormaGalleryFileOptions.ReadOnly, browsing and selection remain while upload, rename, delete, and every folder action disappear."]</p>
     <div class="demo-box">
         <FormaGallery Entries="@(EntriesFor("readonly"))"
                       Folders="_sampleFolders"
                       CurrentFolder="@(CurrentFolderFor("readonly"))"
                       TotalCount="_allMedia.Count"
-                      Options="FormaGalleryOptions.ReadOnly"
+                      FileOptions="FormaGalleryFileOptions.ReadOnly"
                       OnFolderChanged="@(folder => HandleFolderChangedAsync("readonly", folder))"
                       SelectedChanged="@(items => HandleSelectedAsync("readonly", items))" />
         <ul class="demo-log">
@@ -100,7 +99,7 @@
                       Folders="_sampleFolders"
                       CurrentFolder="@(CurrentFolderFor("fixedfolders"))"
                       TotalCount="_allMedia.Count"
-                      Options="_fixedFolderOptions"
+                      FileOptions="_fixedFolderOptions"
                       OnFolderChanged="@(folder => HandleFolderChangedAsync("fixedfolders", folder))"
                       OnRename="@(req => HandleRenameAsync("fixedfolders", req))"
                       OnDelete="@(req => HandleDeleteAsync("fixedfolders", req))"
@@ -122,7 +121,7 @@
                       Folders="_sampleFolders"
                       CurrentFolder="@(CurrentFolderFor("nosidebar"))"
                       TotalCount="_allMedia.Count"
-                      ShowSidebar="false"
+                      Options="@(new FormaGalleryOptions { ShowSidebar = false })"
                       OnFolderChanged="@(folder => HandleFolderChangedAsync("nosidebar", folder))" />
     </div>
 </div>
@@ -135,7 +134,7 @@
                       Folders="_sampleFolders"
                       CurrentFolder="@(CurrentFolderFor("nomenu"))"
                       TotalCount="_allMedia.Count"
-                      ShowFolderMenu="false"
+                      Options="@(new FormaGalleryOptions { ShowFolderMenu = false })"
                       OnFolderChanged="@(folder => HandleFolderChangedAsync("nomenu", folder))" />
     </div>
 </div>
@@ -153,5 +152,24 @@
     <p class="desc">@L["A large collection splits across pages using FormaPagination."]</p>
     <div class="demo-box">
         <FormaGallery Entries="_pagedEntries" PageSize="4" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Infinite scrolling gallery"]</h2>
+    <p class="desc">@L["GalleryInfiniteScrollMode.Manual appends the next page as the reader nears the end, and offers a button for anyone not using a pointer. The media scrolls inside the panel, so the toolbar and folder tree stay put."]</p>
+    <div class="demo-box">
+        <FormaGallery Entries="_infiniteEntries" PageSize="24" Options="@(new FormaGalleryOptions { InfiniteScroll = GalleryInfiniteScrollMode.Manual })" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Automatic infinite scrolling"]</h2>
+    <p class="desc">@L["GalleryInfiniteScrollMode.Automatic drops the button entirely: pages arrive as the reader scrolls, marked by a spinner while each one loads, with the running count left as the reader's sense of position."]</p>
+    <div class="demo-box">
+        <FormaGallery Entries="_infiniteEntries"
+                      PageSize="24"
+                      Options="@(new FormaGalleryOptions { InfiniteScroll = GalleryInfiniteScrollMode.Automatic })"
+                      OnPageChanged="SimulateFetchAsync" />
     </div>
 </div>

@@ -8,7 +8,7 @@
     {
         <div class="forma-gallery-selection-bar">
             <div class="forma-gallery-selection-actions">
-                @if (Options.AllowDelete)
+                @if (FileOptions.AllowDelete)
                 {
                     <FormaButton Variant="ButtonVariant.Danger" Size="ButtonSize.Normal" class="forma-gallery-delete-btn" OnClick="OnDelete">
                         <span class="fa-solid fa-trash" aria-hidden="true"></span>
@@ -50,14 +50,14 @@
                 @L["Select"]
             }
         </FormaButton>
-        @if (Options.AllowFolderCreate && ShowNewFolder)
+        @if (FileOptions.AllowFolderCreate && ShowNewFolder)
         {
             <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Normal" class="forma-gallery-new-folder-btn" OnClick="OnNewFolder">
                 <span class="fa-solid fa-folder-plus" aria-hidden="true"></span>
                 @L["New folder"]
             </FormaButton>
         }
-        @if (Options.AllowUpload)
+        @if (FileOptions.AllowUpload)
         {
             <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Normal" class="forma-gallery-upload-btn" OnClick="OnToggleUpload">
                 <span class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></span>
