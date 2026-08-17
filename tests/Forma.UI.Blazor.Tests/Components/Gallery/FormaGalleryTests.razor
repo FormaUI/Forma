@@ -366,6 +366,29 @@
         }
 
         [Fact]
+        public void Should_re_read_the_window_after_a_resource_is_dropped_on_a_folder()
+        {
+            // Arrange
+            using var ctx = new FormaGalleryTests();
+            var provider = new FakeGalleryResourcesProvider([new ImageResourceInfo("https://example.com/photo.jpg")]);
+            var folder = new FolderResourceInfo("vacation") { Name = "Vacation" };
+
+            var cut = ctx.Render(@<FormaGallery ResourcesProvider="provider"
+                                                Folders="[folder]"
+                                                OnDrop="@(_ => Task.CompletedTask)" />);
+
+            cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".forma-gallery-item")));
+            var asked = provider.Queries.Count;
+
+            // Act
+            cut.Find(".forma-gallery-item").DragStart();
+            cut.FindAll(".forma-gallery-folder-row")[1].Drop();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.True(provider.Queries.Count > asked));
+        }
+
+        [Fact]
         public void Should_raise_on_folder_drop_when_folder_is_dropped_on_another_folder()
         {
             // Arrange

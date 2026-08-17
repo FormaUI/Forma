@@ -27,14 +27,12 @@ public sealed partial class FormaGalleryPage : ComponentBase
 
     private readonly Dictionary<string, string?> _currentFolderSources = [];
 
-    private readonly Dictionary<string, List<ResourceInfo>> _mediaByFolder = [];
-
     private readonly List<FolderResourceInfo> _sampleFolders =
     [
-        new FolderResourceInfo("covers") { Name = "Covers", Count = 4, Size = 3651724 },
-        new FolderResourceInfo("races") { Name = "Races", Count = 5, Size = 3490960 },
-        new FolderResourceInfo("2026") { Name = "2026", Parent = "races", Count = 2, Size = 2100000 },
-        new FolderResourceInfo("videos") { Name = "Videos", Count = 1, Size = 788493 }
+        new FolderResourceInfo("covers") { Name = "Covers" },
+        new FolderResourceInfo("races") { Name = "Races" },
+        new FolderResourceInfo("2026") { Name = "2026", Parent = "races" },
+        new FolderResourceInfo("videos") { Name = "Videos" }
     ];
 
     private List<ResourceInfo> _allMedia = [];
@@ -83,35 +81,21 @@ public sealed partial class FormaGalleryPage : ComponentBase
     {
         var seeded = new DateTimeOffset(2026, 3, 14, 9, 30, 0, TimeSpan.Zero);
 
-        _mediaByFolder["covers"] =
+        List<SampleResource> media =
         [
-            new ImageResourceInfo("/media/sample-poster.svg?in=covers") { Size = 12400, CreatedAt = seeded.AddDays(-40), ModifiedAt = seeded.AddDays(-2) },
-            new DocumentResourceInfo("/media/sample.pdf?in=covers") { Size = 639, CreatedAt = seeded.AddDays(-12), ModifiedAt = seeded.AddDays(-11) },
-            new DocumentResourceInfo("/media/sample.docx?in=covers") { Size = 14200, CreatedAt = seeded.AddDays(-3), ModifiedAt = seeded.AddHours(-5) },
-            new ArchiveResourceInfo("/media/press-kit.zip?in=covers") { Size = 2411724, Count = 14, CreatedAt = seeded.AddDays(-6), ModifiedAt = seeded.AddDays(-6) }
+            new(new ImageResourceInfo("/media/sample-poster.svg?in=covers") { Size = 12400, CreatedAt = seeded.AddDays(-40), ModifiedAt = seeded.AddDays(-2) }, "covers"),
+            new(new DocumentResourceInfo("/media/sample.pdf?in=covers") { Size = 639, CreatedAt = seeded.AddDays(-12), ModifiedAt = seeded.AddDays(-11) }, "covers"),
+            new(new DocumentResourceInfo("/media/sample.docx?in=covers") { Size = 14200, CreatedAt = seeded.AddDays(-3), ModifiedAt = seeded.AddHours(-5) }, "covers"),
+            new(new ArchiveResourceInfo("/media/press-kit.zip?in=covers") { Size = 2411724, Count = 14, CreatedAt = seeded.AddDays(-6), ModifiedAt = seeded.AddDays(-6) }, "covers"),
+            new(new ImageResourceInfo("/media/sample-poster.svg?in=races") { Size = 18800, CreatedAt = seeded.AddDays(-90), ModifiedAt = seeded.AddDays(-60) }, "races"),
+            new(new VideoResourceInfo("/media/sample.mp4?in=races") { Size = 788493, CreatedAt = seeded.AddDays(-30), ModifiedAt = seeded.AddDays(-30) }, "races"),
+            new(new AudioResourceInfo("/media/sample.wav?in=races") { Size = 16044, CreatedAt = seeded.AddDays(-7), ModifiedAt = seeded.AddDays(-1) }, "races"),
+            new(new DocumentResourceInfo("/media/notes.md?in=races") { Size = 850 }, "races"),
+            new(new FileResourceInfo("/media/telemetry.bin?in=races") { Size = 40960, CreatedAt = seeded.AddDays(-2), ModifiedAt = seeded.AddDays(-2) }, "races"),
+            new(new ImageResourceInfo("/media/sample-poster.svg?in=2026") { Size = 9700, CreatedAt = seeded.AddDays(-21), ModifiedAt = seeded.AddDays(-20) }, "2026"),
+            new(new DocumentResourceInfo("/media/sample.pdf?in=2026") { Size = 1200, CreatedAt = seeded.AddDays(-5), ModifiedAt = seeded.AddDays(-4) }, "2026"),
+            new(new VideoResourceInfo("/media/sample.mp4?in=videos") { Size = 788493, CreatedAt = seeded.AddDays(-60), ModifiedAt = seeded.AddDays(-15) }, "videos")
         ];
-
-        _mediaByFolder["races"] =
-        [
-            new ImageResourceInfo("/media/sample-poster.svg?in=races") { Size = 18800, CreatedAt = seeded.AddDays(-90), ModifiedAt = seeded.AddDays(-60) },
-            new VideoResourceInfo("/media/sample.mp4?in=races") { Size = 788493, CreatedAt = seeded.AddDays(-30), ModifiedAt = seeded.AddDays(-30) },
-            new AudioResourceInfo("/media/sample.wav?in=races") { Size = 16044, CreatedAt = seeded.AddDays(-7), ModifiedAt = seeded.AddDays(-1) },
-            new DocumentResourceInfo("/media/notes.md?in=races") { Size = 850 },
-            new FileResourceInfo("/media/telemetry.bin?in=races") { Size = 40960, CreatedAt = seeded.AddDays(-2), ModifiedAt = seeded.AddDays(-2) }
-        ];
-
-        _mediaByFolder["2026"] =
-        [
-            new ImageResourceInfo("/media/sample-poster.svg?in=2026") { Size = 9700, CreatedAt = seeded.AddDays(-21), ModifiedAt = seeded.AddDays(-20) },
-            new DocumentResourceInfo("/media/sample.pdf?in=2026") { Size = 1200, CreatedAt = seeded.AddDays(-5), ModifiedAt = seeded.AddDays(-4) }
-        ];
-
-        _mediaByFolder["videos"] =
-        [
-            new VideoResourceInfo("/media/sample.mp4?in=videos") { Size = 788493, CreatedAt = seeded.AddDays(-60), ModifiedAt = seeded.AddDays(-15) }
-        ];
-
-        _allMedia = [.. _mediaByFolder.Values.SelectMany(resources => resources)];
 
         _singleSelectResources =
         [
@@ -120,7 +104,8 @@ public sealed partial class FormaGalleryPage : ComponentBase
         ];
 
         // Every browsing demo reads through a store, so folder, search, sort and paging are answered the way a real library answers them.
-        _mediaStore = Store([.. _mediaByFolder.SelectMany(pair => pair.Value.Select(media => new SampleResource((FileResourceInfo)media, pair.Key)))]);
+        _mediaStore = Store(media);
+        SyncFromStore();
 
         _flatStore = Store([.. Enumerable.Range(1, 5000)
             .Select(i => new SampleResource(
@@ -155,6 +140,18 @@ public sealed partial class FormaGalleryPage : ComponentBase
     private SampleMediaStore Store(IReadOnlyList<SampleResource> resources)
         => new(resources, TimeSpan.FromMilliseconds(180)) { Queried = () => InvokeAsync(StateHasChanged) };
 
+    // The store is the demo's only copy of the media, so what a mutation changed has to be read back out of it.
+    private void SyncFromStore()
+    {
+        _allMedia = [.. _mediaStore.All()];
+
+        for (var index = 0; index < _sampleFolders.Count; index++)
+        {
+            var folder = _sampleFolders[index];
+            _sampleFolders[index] = folder with { Count = _mediaStore.CountIn(folder.Source), Size = _mediaStore.SizeIn(folder.Source) };
+        }
+    }
+
     private FolderResourceInfo? CurrentFolderFor(string key)
         => _currentFolderSources.GetValueOrDefault(key) is { } source ? _sampleFolders.Find(folder => folder.Source == source) : null;
 
@@ -168,6 +165,8 @@ public sealed partial class FormaGalleryPage : ComponentBase
 
     private Task HandleDeleteAsync(string key, GalleryDeleteRequest request)
     {
+        _mediaStore.Remove(request.Resources);
+        SyncFromStore();
         LogAction(key, L["Deleted {count} item(s)", ("count", request.Resources.Count)]);
 
         return Task.CompletedTask;
@@ -177,6 +176,9 @@ public sealed partial class FormaGalleryPage : ComponentBase
     {
         var count = request.Resources.Count;
         var folderName = FolderName(request.TargetFolder);
+
+        _mediaStore.Move(request.Resources, request.TargetFolder?.Source);
+        SyncFromStore();
         LogAction(key, L["Moved {count} item(s) to \"{folder}\"", ("count", count), ("folder", folderName)]);
 
         return Task.CompletedTask;
@@ -190,8 +192,7 @@ public sealed partial class FormaGalleryPage : ComponentBase
         var parent = request.ParentFolder;
         var source = $"folder-{Guid.NewGuid():N}";
 
-        _mediaByFolder[source] = [];
-        _sampleFolders.Add(new FolderResourceInfo(source) { Name = request.Name, Parent = parent?.Source });
+        _sampleFolders.Add(new FolderResourceInfo(source) { Name = request.Name, Parent = parent?.Source, Count = 0 });
 
         LogAction(key, L["Created folder \"{name}\" in {parent}", ("name", request.Name), ("parent", FolderName(parent))]);
 
@@ -202,8 +203,8 @@ public sealed partial class FormaGalleryPage : ComponentBase
     {
         var removed = request.Folder;
         _sampleFolders.RemoveAll(folder => folder.Source == removed.Source);
-        _mediaByFolder.Remove(removed.Source);
-        _allMedia = [.. _mediaByFolder.Values.SelectMany(resources => resources)];
+        _mediaStore.RemoveFolder(removed.Source);
+        SyncFromStore();
 
         foreach (var demo in _currentFolderSources.Where(pair => pair.Value == removed.Source).Select(pair => pair.Key).ToList())
         {
@@ -217,6 +218,13 @@ public sealed partial class FormaGalleryPage : ComponentBase
 
     private Task HandleFolderDropAsync(string key, GalleryFolderDropRequest request)
     {
+        var index = _sampleFolders.FindIndex(folder => folder.Source == request.SourceFolder.Source);
+
+        if (index >= 0)
+        {
+            _sampleFolders[index] = _sampleFolders[index] with { Parent = request.TargetFolder?.Source };
+        }
+
         LogAction(key, L["Moved folder \"{source}\" into \"{target}\"", ("source", request.SourceFolder.Name), ("target", FolderName(request.TargetFolder))]);
 
         return Task.CompletedTask;
@@ -238,6 +246,8 @@ public sealed partial class FormaGalleryPage : ComponentBase
 
     private Task HandleRenameAsync(string key, GalleryRenameRequest request)
     {
+        _mediaStore.Rename(request.Resource, request.NewName);
+        SyncFromStore();
         LogAction(key, L["Renamed \"{oldName}\" to \"{newName}\"", ("oldName", request.Resource.Name), ("newName", request.NewName)]);
 
         return Task.CompletedTask;

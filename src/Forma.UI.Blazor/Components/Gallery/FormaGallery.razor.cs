@@ -1008,6 +1008,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
             if (CanMoveFolder(draggedFolder, targetFolder))
             {
                 await OnFolderDrop.InvokeAsync(new GalleryFolderDropRequest(draggedFolder, targetFolder));
+                await RefreshProviderAsync();
             }
 
             return;
@@ -1020,6 +1021,11 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
                 : [draggedResource];
 
             await OnDrop.InvokeAsync(new GalleryDropRequest(resources, targetFolder));
+
+            // A move takes the resources out of the window they were dragged from, which only a re-read will show.
+            _context.Selection.Clear();
+            await NotifySelectionChangedAsync();
+            await RefreshProviderAsync();
         }
     }
 

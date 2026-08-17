@@ -63,6 +63,65 @@ public sealed class SampleMediaStore(IReadOnlyList<SampleResource> resources, Ti
 
         return page;
     }
+
+    /// <summary>Everything held, for a demo that hands the gallery its collection instead of a provider.</summary>
+    public IReadOnlyList<ResourceInfo> All()
+        => [.. _resources.Select(held => held.Resource)];
+
+    /// <summary>How many resources the folder holds.</summary>
+    public int CountIn(string folder)
+        => _resources.Count(held => held.Folder == folder);
+
+    /// <summary>How large the folder's contents are together.</summary>
+    public long SizeIn(string folder)
+        => _resources.Where(held => held.Folder == folder).Sum(held => held.Resource.Size ?? 0);
+
+    /// <summary>Moves the resources into the folder, or to the root when none is named.</summary>
+    public void Move(IReadOnlyList<ResourceInfo> resources, string? folder)
+    {
+        ArgumentNullException.ThrowIfNull(resources);
+
+        foreach (var moved in resources)
+        {
+            var index = IndexOf(moved);
+
+            if (index >= 0)
+            {
+                _resources[index] = _resources[index] with { Folder = folder };
+            }
+        }
+    }
+
+    /// <summary>Removes the resources.</summary>
+    public void Remove(IReadOnlyList<ResourceInfo> resources)
+    {
+        ArgumentNullException.ThrowIfNull(resources);
+
+        foreach (var removed in resources)
+        {
+            _resources.RemoveAll(held => held.Resource.Source == removed.Source);
+        }
+    }
+
+    /// <summary>Removes everything the folder held, as deleting a folder takes its contents with it.</summary>
+    public void RemoveFolder(string folder)
+        => _resources.RemoveAll(held => held.Folder == folder);
+
+    /// <summary>Renames the resource.</summary>
+    public void Rename(ResourceInfo resource, string name)
+    {
+        ArgumentNullException.ThrowIfNull(resource);
+
+        var index = IndexOf(resource);
+
+        if (index >= 0)
+        {
+            _resources[index] = _resources[index] with { Resource = _resources[index].Resource with { Name = name } };
+        }
+    }
+
+    private int IndexOf(ResourceInfo resource)
+        => _resources.FindIndex(held => held.Resource.Source == resource.Source);
 }
 
 /// <summary>A stored resource together with the folder holding it.</summary>
