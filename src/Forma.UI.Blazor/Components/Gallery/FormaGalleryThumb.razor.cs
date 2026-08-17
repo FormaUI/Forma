@@ -4,11 +4,11 @@ using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Renders a media item as an image thumbnail, or as the glyph standing in for its kind.</summary>
+/// <summary>Renders a media resource as an image thumbnail, or as the glyph standing in for what it is.</summary>
 public sealed partial class FormaGalleryThumb : ComponentBase
 {
-    /// <summary>The media item to depict.</summary>
-    [Parameter, EditorRequired] public ResourceInfo Entry { get; set; } = default!;
+    /// <summary>The media resource to depict.</summary>
+    [Parameter, EditorRequired] public ResourceInfo Resource { get; set; } = default!;
 
     /// <summary>How large the thumbnail renders.</summary>
     [Parameter] public GalleryThumbSize Size { get; set; } = GalleryThumbSize.Tile;
@@ -22,13 +22,15 @@ public sealed partial class FormaGalleryThumb : ComponentBase
         };
 
     private string KindGlyph
-        => Entry.Kind switch
+        => Resource switch
         {
-            ResourceKind.Video => "fa-film",
-            ResourceKind.Audio => "fa-music",
+            FolderResourceInfo => "fa-folder",
+            VideoResourceInfo => "fa-film",
+            AudioResourceInfo => "fa-music",
+            ArchiveResourceInfo => "fa-file-zipper",
             _ => "fa-file-lines"
         };
 
     protected override void OnParametersSet()
-        => ArgumentNullException.ThrowIfNull(Entry);
+        => ArgumentNullException.ThrowIfNull(Resource);
 }

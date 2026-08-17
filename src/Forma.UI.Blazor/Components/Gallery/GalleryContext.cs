@@ -31,11 +31,11 @@ public sealed class GalleryContext
     /// <summary>The folder list indexed, so the tree and the breadcrumb do not each rescan it.</summary>
     internal GalleryFolderTree Folders { get; set; } = GalleryFolderTree.Empty;
 
-    /// <summary>The item selection the gallery is tracking.</summary>
+    /// <summary>The selection the gallery is tracking.</summary>
     public GallerySelection Selection { get; } = new();
 
-    /// <summary>The operations offered on every media item, in render order.</summary>
-    public IReadOnlyList<GalleryAction> ItemActions { get; internal set; } = [];
+    /// <summary>The operations offered on every media resource, in render order.</summary>
+    public IReadOnlyList<GalleryAction> Actions { get; internal set; } = [];
 
     /// <summary>The field the gallery is sorted by.</summary>
     public GallerySortField SortField { get; internal set; } = GallerySortField.Name;
@@ -43,32 +43,32 @@ public sealed class GalleryContext
     /// <summary>The direction the gallery is sorted in.</summary>
     public GallerySortDirection SortDirection { get; internal set; } = GallerySortDirection.Ascending;
 
-    /// <summary>Produces the localized accessible name for selecting or deselecting an item.</summary>
+    /// <summary>Produces the localized accessible name for selecting or deselecting a resource.</summary>
     public Func<ResourceInfo, string> SelectLabel { get; internal set; } = _ => string.Empty;
 
-    /// <summary>Produces the localized accessible name for activating an item, reflecting the current mode.</summary>
+    /// <summary>Produces the localized accessible name for activating a resource, reflecting the current mode.</summary>
     public Func<ResourceInfo, string> ActivateLabel { get; internal set; } = _ => string.Empty;
 
-    /// <summary>Toggles the item's selection in selection mode, and previews it otherwise.</summary>
-    public Task ActivateAsync(ResourceInfo entry)
+    /// <summary>Toggles the resource's selection in selection mode, and previews it otherwise.</summary>
+    public Task ActivateAsync(ResourceInfo resource)
     {
-        ArgumentNullException.ThrowIfNull(entry);
+        ArgumentNullException.ThrowIfNull(resource);
 
-        return Selection.IsSelectMode ? ToggleSelectAsync(entry) : _preview(entry);
+        return Selection.IsSelectMode ? ToggleSelectAsync(resource) : _preview(resource);
     }
 
-    /// <summary>Adds the item to the selection, or removes it when it is already selected.</summary>
-    public async Task ToggleSelectAsync(ResourceInfo entry)
+    /// <summary>Adds the resource to the selection, or removes it when it is already selected.</summary>
+    public async Task ToggleSelectAsync(ResourceInfo resource)
     {
-        ArgumentNullException.ThrowIfNull(entry);
+        ArgumentNullException.ThrowIfNull(resource);
 
-        Selection.Toggle(entry);
+        Selection.Toggle(resource);
 
         await _selectionChanged();
     }
 
     /// <summary>Adds the folder to the selection, or removes it when it is already selected.</summary>
-    public async Task ToggleFolderSelectAsync(GalleryFolderInfo folder)
+    public async Task ToggleFolderSelectAsync(FolderResourceInfo folder)
     {
         ArgumentNullException.ThrowIfNull(folder);
 
@@ -81,11 +81,11 @@ public sealed class GalleryContext
     public Task SortByAsync(GallerySortField field)
         => _sortRequested(field);
 
-    /// <summary>Records the item as the one being dragged.</summary>
-    public void BeginDrag(ResourceInfo entry)
+    /// <summary>Records the resource as the one being dragged.</summary>
+    public void BeginDrag(ResourceInfo resource)
     {
-        ArgumentNullException.ThrowIfNull(entry);
+        ArgumentNullException.ThrowIfNull(resource);
 
-        _dragStarted(entry);
+        _dragStarted(resource);
     }
 }

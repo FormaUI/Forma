@@ -13,7 +13,7 @@ public enum GalleryViewMode
     List
 }
 
-/// <summary>Specifies the field by which gallery items are ordered.</summary>
+/// <summary>Specifies the field by which gallery resources are ordered.</summary>
 public enum GallerySortField
 {
     /// <summary>Sort by file name.</summary>
@@ -65,7 +65,7 @@ public enum GalleryDetailsColumns
     Added = 8
 }
 
-/// <summary>Specifies the sort direction for gallery items.</summary>
+/// <summary>Specifies the sort direction for gallery resources.</summary>
 public enum GallerySortDirection
 {
     /// <summary>Ascending order (A-Z, oldest first, smallest first).</summary>
@@ -75,7 +75,7 @@ public enum GallerySortDirection
     Descending
 }
 
-/// <summary>Specifies how a view positions its item action buttons.</summary>
+/// <summary>Specifies how a view positions its resource action buttons.</summary>
 public enum GalleryActionBarVariant
 {
     /// <summary>Placed in the flow of a row.</summary>

@@ -13,7 +13,7 @@ public sealed partial class FormaGalleryToolbar : ComponentBase
     /// <summary>Raised when selection mode is toggled.</summary>
     [Parameter] public EventCallback OnToggleSelectMode { get; set; }
 
-    /// <summary>Raised to clear the current item selection.</summary>
+    /// <summary>Raised to clear the current selection.</summary>
     [Parameter] public EventCallback OnClearSelection { get; set; }
 
     /// <summary>Raised when the delete selected action is clicked.</summary>
@@ -40,7 +40,7 @@ public sealed partial class FormaGalleryToolbar : ComponentBase
     /// <summary>Which operations the toolbar offers.</summary>
     [Parameter] public FormaGalleryFileOptions FileOptions { get; set; } = FormaGalleryFileOptions.Default;
 
-    /// <summary>Number of currently selected items.</summary>
+    /// <summary>Number of currently selected resources.</summary>
     [Parameter] public int SelectedCount { get; set; }
 
     /// <summary>Current sort direction.</summary>

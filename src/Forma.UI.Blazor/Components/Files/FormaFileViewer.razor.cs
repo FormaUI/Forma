@@ -6,6 +6,7 @@ using Forma.Framework.Localization;
 using Forma.Framework.Resources;
 using Forma.UI.Components.Files.Providers;
 using Forma.UI.Interop;
+using Forma.UI.Resources;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -138,7 +139,7 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (Resource is not { Kind: ResourceKind.Image })
+        if (Resource is not ImageResourceInfo)
         {
             return;
         }

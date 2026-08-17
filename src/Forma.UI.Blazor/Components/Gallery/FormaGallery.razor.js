@@ -23,8 +23,8 @@ export function observeSentinel(id, rootId, reference) {
     }
 
     // The panel scrolls rather than the page, so intersection is measured against it and not the viewport.
-    const observer = new IntersectionObserver(entries => {
-        if (entries.some(entry => entry.isIntersecting)) {
+    const observer = new IntersectionObserver(observations => {
+        if (observations.some(observation => observation.isIntersecting)) {
             reference.invokeMethodAsync('LoadNextPageAsync');
         }
     }, { root: document.getElementById(rootId), rootMargin: '200px' });

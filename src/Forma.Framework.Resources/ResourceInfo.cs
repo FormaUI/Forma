@@ -7,34 +7,29 @@ using System.Diagnostics.CodeAnalysis;
 [SuppressMessage("Design", "CA1056:URI properties should not be strings")]
 public record ResourceInfo
 {
-    public ResourceInfo(string source, ResourceKind kind = ResourceKind.Unknown)
+    /// <summary>Creates a resource nothing is known about beyond where it lives.</summary>
+    public ResourceInfo(string source)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(source);
 
         Source = source;
         Name = ResolveName(source);
-        Kind = kind;
     }
 
     /// <summary>Where the resource lives, as the provider was given it.</summary>
     public string Source { get; }
 
-    /// <summary>The resource's own name, taken from the source's last segment.</summary>
-    public string Name { get; }
+    /// <summary>The resource's own name, defaulting to the source's last segment.</summary>
+    public string Name { get; init; }
 
-    /// <summary>What the resource is, deciding which preview a viewer renders.</summary>
-    public ResourceKind Kind { get; init; }
-
-    /// <summary>How large the resource is, when something along the way knew; <see cref="DisplaySize"/> renders it.</summary>
+    /// <summary>How large the resource is in bytes; a folder counts what it holds.</summary>
     public long? Size { get; init; }
 
-    /// <summary>Size written for a reader, taking it as a count of bytes; a resource measured in anything else overrides this.</summary>
-    public virtual string? DisplaySize
-        => Size is { } size ? ResourceFormatter.FromByteCount(size) : null;
+    /// <summary>When the resource came into being.</summary>
+    public DateTimeOffset? CreatedAt { get; init; }
 
-    /// <summary>The name's extension, including the dot, or empty when it has none; compare it case-insensitively.</summary>
-    public string Extension
-        => Path.GetExtension(Name);
+    /// <summary>When the resource last changed.</summary>
+    public DateTimeOffset? ModifiedAt { get; init; }
 
     // A source is as likely to be a URL as a path, so the query and fragment are dropped before the last segment.
     private static string ResolveName(string source)

@@ -1,22 +1,22 @@
 @namespace Forma.UI.Components.Gallery
 
 <div class="forma-gallery-grid" role="list">
-    @foreach (var entry in Entries)
+    @foreach (var resource in Resources)
     {
-        var selected = Context.Selection.IsSelected(entry);
+        var selected = Context.Selection.IsSelected(resource);
 
         <div class="forma-gallery-item @(selected ? "is-selected" : "")"
              role="listitem"
              draggable="true"
-             @ondragstart="() => Context.BeginDrag(entry)">
+             @ondragstart="() => Context.BeginDrag(resource)">
             <div class="forma-gallery-thumbnail-wrap">
-                <FormaGalleryThumb Entry="entry" Size="GalleryThumbSize.Tile" />
+                <FormaGalleryThumb Resource="resource" Size="GalleryThumbSize.Tile" />
 
                 <button type="button"
                         class="forma-gallery-item-open"
-                        aria-label="@Context.ActivateLabel(entry)"
+                        aria-label="@Context.ActivateLabel(resource)"
                         aria-pressed="@(Context.Selection.IsSelectMode ? (selected ? "true" : "false") : null)"
-                        @onclick="() => Context.ActivateAsync(entry)"></button>
+                        @onclick="() => Context.ActivateAsync(resource)"></button>
 
                 @if (Context.Selection.IsSelectMode && !Context.Selection.HasFolders)
                 {
@@ -25,12 +25,12 @@
                     </span>
                 }
 
-                <FormaGalleryActionBar Entry="entry" Variant="GalleryActionBarVariant.Overlay" />
+                <FormaGalleryActionBar Resource="resource" Variant="GalleryActionBarVariant.Overlay" />
             </div>
 
             <div class="forma-gallery-item-info">
-                <span class="forma-gallery-item-name" title="@entry.Name">@entry.Name</span>
-                @if (entry.DisplaySize is { } size)
+                <span class="forma-gallery-item-name" title="@resource.Name">@resource.Name</span>
+                @if (resource.DisplaySize is { } size)
                 {
                     <span class="forma-gallery-item-size">@size</span>
                 }

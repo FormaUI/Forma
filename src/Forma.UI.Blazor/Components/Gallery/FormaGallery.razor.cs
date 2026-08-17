@@ -26,7 +26,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
     };
 
     /// <summary>The currently active folder, or null for all media.</summary>
-    [Parameter] public GalleryFolderInfo? CurrentFolder { get; set; }
+    [Parameter] public FolderResourceInfo? CurrentFolder { get; set; }
 
     /// <summary>The active page, 1-based.</summary>
     [Parameter] public int CurrentPage { get; set; } = 1;
@@ -38,15 +38,15 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
     [Parameter] public IGalleryResourcesProvider? ResourcesProvider { get; set; }
 
     /// <summary>Available folders for grouping media.</summary>
-    [Parameter] public IReadOnlyList<GalleryFolderInfo>? Folders { get; set; }
+    [Parameter] public IReadOnlyList<FolderResourceInfo>? Folders { get; set; }
 
     private bool ShowsSidebar
         => Options.ShowSidebar && Folders is { Count: > 0 };
 
-    /// <summary>How many items the whole library holds, for hosts that supply one folder at a time; the supplied entries are counted when null.</summary>
+    /// <summary>How many resources the whole library holds, for hosts that supply one folder at a time; the supplied resources are counted when null.</summary>
     [Parameter] public int? TotalCount { get; set; }
 
-    /// <summary>The maximum number of items that may be selected at once (0 for unlimited).</summary>
+    /// <summary>The maximum number of resources that may be selected at once (0 for unlimited).</summary>
     [Parameter] public int MaxSelection { get; set; }
 
     /// <summary>How the gallery presents itself and moves through the collection.</summary>
@@ -55,14 +55,14 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
     /// <summary>Which operations the gallery offers on the media and folders it lists.</summary>
     [Parameter] public FormaGalleryFileOptions FileOptions { get; set; } = FormaGalleryFileOptions.Default;
 
-    /// <summary>Raised when media items are deleted.</summary>
+    /// <summary>Raised when media resources are deleted.</summary>
     [Parameter] public EventCallback<GalleryDeleteRequest> OnDelete { get; set; }
 
-    /// <summary>Raised when media items are dropped onto a target folder.</summary>
+    /// <summary>Raised when media resources are dropped onto a target folder.</summary>
     [Parameter] public EventCallback<GalleryDropRequest> OnDrop { get; set; }
 
     /// <summary>Raised when the active folder changes.</summary>
-    [Parameter] public EventCallback<GalleryFolderInfo?> OnFolderChanged { get; set; }
+    [Parameter] public EventCallback<FolderResourceInfo?> OnFolderChanged { get; set; }
 
     /// <summary>Raised when a request is made to create a new folder.</summary>
     [Parameter] public EventCallback<GalleryFolderCreateRequest> OnFolderCreate { get; set; }
@@ -88,7 +88,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
     /// <summary>Raised when new media has been uploaded.</summary>
     [Parameter] public EventCallback<IReadOnlyList<ResourceInfo>> OnUploaded { get; set; }
 
-    /// <summary>The number of media entries shown per page.</summary>
+    /// <summary>The number of media resources shown per page.</summary>
     [Parameter] public int PageSize { get; set; } = DefaultPageSize;
 
     /// <summary>Custom search placeholder text.</summary>
@@ -97,7 +97,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
     /// <summary>The currently selected resources.</summary>
     [Parameter] public IReadOnlyList<ResourceInfo> Selected { get; set; } = [];
 
-    /// <summary>Raised when the selected items change.</summary>
+    /// <summary>Raised when the selected resources change.</summary>
     [Parameter] public EventCallback<IReadOnlyList<ResourceInfo>> SelectedChanged { get; set; }
 
     /// <summary>Active sort direction.</summary>
@@ -119,13 +119,13 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
-    private List<GalleryFolderInfo>? _deletingFolders;
+    private List<FolderResourceInfo>? _deletingFolders;
 
     private List<ResourceInfo>? _deletingResources;
 
-    private GalleryFolderInfo? _draggedFolder;
+    private FolderResourceInfo? _draggedFolder;
 
-    private ResourceInfo? _draggedItem;
+    private ResourceInfo? _draggedResource;
 
     private readonly List<string?> _history = [null];
 
@@ -137,7 +137,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
 
     private string _newFolderName = string.Empty;
 
-    private GalleryFolderInfo? _newFolderParent;
+    private FolderResourceInfo? _newFolderParent;
 
     private int _page = 1;
 
@@ -151,7 +151,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
 
     private string _renameNewName = string.Empty;
 
-    private GalleryFolderInfo? _renamingFolder;
+    private FolderResourceInfo? _renamingFolder;
 
     private ResourceInfo? _renamingResource;
 
@@ -206,7 +206,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
     // Several members read the ordered list while rendering, so it is built once and dropped whenever its inputs move.
     private List<ResourceInfo>? _filteredAndSorted;
 
-    private List<ResourceInfo>? _pagedEntries;
+    private List<ResourceInfo>? _pagedResources;
 
     private List<ResourceInfo>? _pagedSource;
 
@@ -229,63 +229,33 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
 
     private IGalleryResourcesProvider? _syncedProvider;
 
-    private string? _syncedFolderId;
+    private string? _syncedFolderSource;
 
     private int _syncedPageSize;
 
     private FormaGalleryFileOptions? _actionOptions;
 
-    private GalleryFolderTree _folderTree = GalleryFolderTree.Empty;
+    private GalleryFolderTree? _folderTree;
 
-    private IReadOnlyList<GalleryFolderInfo>? _breadcrumbSource;
+    private IReadOnlyList<FolderResourceInfo>? _breadcrumbs;
 
-    private GalleryFolderInfo? _breadcrumbFolder;
-
-    private IReadOnlyList<GalleryFolderInfo> _breadcrumbs = [];
-
-    /// <summary>The folder list indexed, rebuilt only when the host supplies a different one.</summary>
+    /// <summary>The folder list indexed, rebuilt once per parameter set because a host may mutate the list it passed.</summary>
     private GalleryFolderTree FolderTree
+        => _folderTree ??= new GalleryFolderTree(Folders);
+
+    private IReadOnlyList<FolderResourceInfo> Breadcrumbs
+        => _breadcrumbs ??= CurrentFolder is null ? [] : BuildBreadcrumbs(FolderTree, CurrentFolder);
+
+    private static List<FolderResourceInfo> BuildBreadcrumbs(GalleryFolderTree tree, FolderResourceInfo? current)
     {
-        get
-        {
-            if (!ReferenceEquals(_folderTree.Source, Folders))
-            {
-                _folderTree = new GalleryFolderTree(Folders);
-            }
-
-            return _folderTree;
-        }
-    }
-
-    private IReadOnlyList<GalleryFolderInfo> Breadcrumbs
-    {
-        get
-        {
-            var tree = FolderTree;
-
-            if (ReferenceEquals(_breadcrumbSource, Folders) && ReferenceEquals(_breadcrumbFolder, CurrentFolder))
-            {
-                return _breadcrumbs;
-            }
-
-            _breadcrumbSource = Folders;
-            _breadcrumbFolder = CurrentFolder;
-            _breadcrumbs = CurrentFolder is null ? [] : BuildBreadcrumbs(tree, CurrentFolder);
-
-            return _breadcrumbs;
-        }
-    }
-
-    private static List<GalleryFolderInfo> BuildBreadcrumbs(GalleryFolderTree tree, GalleryFolderInfo? current)
-    {
-        var path = new List<GalleryFolderInfo>();
+        var path = new List<FolderResourceInfo>();
         var visited = new HashSet<string>(StringComparer.Ordinal);
 
         // A host can supply a cyclic parent chain, so each folder is walked at most once.
-        while (current is not null && visited.Add(current.Id))
+        while (current is not null && visited.Add(current.Source))
         {
             path.Insert(0, current);
-            current = tree.Find(current.ParentId);
+            current = tree.Find(current.Parent);
         }
 
         return path;
@@ -344,7 +314,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
         }
     }
 
-    private List<ResourceInfo> FilteredAndSortedEntries
+    private List<ResourceInfo> FilteredAndSortedResources
     {
         get
         {
@@ -357,7 +327,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
 
             if (!string.IsNullOrWhiteSpace(_searchQuery))
             {
-                query = query.Where(entry => entry.Name.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(resource => resource.Name.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase));
             }
 
             query = (_sortField, _sortDirection) switch
@@ -366,12 +336,12 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
                 (GallerySortField.Name, GallerySortDirection.Descending) => query.OrderByDescending(e => e.Name, StringComparer.OrdinalIgnoreCase),
                 (GallerySortField.Size, GallerySortDirection.Ascending) => query.OrderBy(e => e.Size ?? 0),
                 (GallerySortField.Size, GallerySortDirection.Descending) => query.OrderByDescending(e => e.Size ?? 0),
-                (GallerySortField.Kind, GallerySortDirection.Ascending) => query.OrderBy(e => e.Kind.ToString()),
-                (GallerySortField.Kind, GallerySortDirection.Descending) => query.OrderByDescending(e => e.Kind.ToString()),
-                (GallerySortField.DateAdded, GallerySortDirection.Ascending) => query.OrderBy(e => e.Added() ?? DateTimeOffset.MinValue),
-                (GallerySortField.DateAdded, GallerySortDirection.Descending) => query.OrderByDescending(e => e.Added() ?? DateTimeOffset.MinValue),
-                (GallerySortField.DateModified, GallerySortDirection.Ascending) => query.OrderBy(e => e.Modified() ?? DateTimeOffset.MinValue),
-                (GallerySortField.DateModified, GallerySortDirection.Descending) => query.OrderByDescending(e => e.Modified() ?? DateTimeOffset.MinValue),
+                (GallerySortField.Kind, GallerySortDirection.Ascending) => query.OrderBy(e => e.KindLabel(L), StringComparer.CurrentCulture),
+                (GallerySortField.Kind, GallerySortDirection.Descending) => query.OrderByDescending(e => e.KindLabel(L), StringComparer.CurrentCulture),
+                (GallerySortField.DateAdded, GallerySortDirection.Ascending) => query.OrderBy(e => e.CreatedAt ?? DateTimeOffset.MinValue),
+                (GallerySortField.DateAdded, GallerySortDirection.Descending) => query.OrderByDescending(e => e.CreatedAt ?? DateTimeOffset.MinValue),
+                (GallerySortField.DateModified, GallerySortDirection.Ascending) => query.OrderBy(e => e.ModifiedAt ?? DateTimeOffset.MinValue),
+                (GallerySortField.DateModified, GallerySortDirection.Descending) => query.OrderByDescending(e => e.ModifiedAt ?? DateTimeOffset.MinValue),
                 _ => query
             };
 
@@ -386,7 +356,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
 
     /// <summary>How many resources match the current search and sort, or null when the provider cannot say.</summary>
     private int? MatchingCount
-        => IsProviderMode ? _providerTotal : FilteredAndSortedEntries.Count;
+        => IsProviderMode ? _providerTotal : FilteredAndSortedResources.Count;
 
     private int PageCount
         => MatchingCount is { } total ? Math.Max(1, (int)Math.Ceiling(total / (double)PageSize)) : 1;
@@ -417,45 +387,45 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
                 return _providerWindow;
             }
 
-            var source = FilteredAndSortedEntries;
+            var source = FilteredAndSortedResources;
             var take = IsInfiniteScrolling ? EffectivePage * PageSize : PageSize;
             var skip = IsInfiniteScrolling ? 0 : (EffectivePage - 1) * PageSize;
 
             // Infinite scrolling grows this window to thousands, and rendering reads it several times, so it is rebuilt only when it moves.
-            if (_pagedEntries is not null && ReferenceEquals(_pagedSource, source) && _pagedSkip == skip && _pagedTake == take)
+            if (_pagedResources is not null && ReferenceEquals(_pagedSource, source) && _pagedSkip == skip && _pagedTake == take)
             {
-                return _pagedEntries;
+                return _pagedResources;
             }
 
             _pagedSource = source;
             _pagedSkip = skip;
             _pagedTake = take;
-            _pagedEntries = [.. source.Skip(skip).Take(take)];
+            _pagedResources = [.. source.Skip(skip).Take(take)];
 
-            return _pagedEntries;
+            return _pagedResources;
         }
     }
 
     private IReadOnlyList<ResourceInfo> SelectedResources
         => _context.Selection.Resolve();
 
-    private IReadOnlyList<GalleryFolderInfo> SelectedFolders
+    private IReadOnlyList<FolderResourceInfo> SelectedFolders
         => _context.Selection.ResolveFolders();
 
     protected override void OnInitialized()
     {
         _context = new GalleryContext(
-            entry => { OpenPreview(entry); StateHasChanged(); return Task.CompletedTask; },
+            resource => { OpenPreview(resource); StateHasChanged(); return Task.CompletedTask; },
             NotifySelectionChangedAsync,
             HandleSortRequestedAsync,
-            entry => _draggedItem = entry);
+            resource => _draggedResource = resource);
 
-        _context.SelectLabel = entry => _context.Selection.IsSelected(entry)
-            ? L["Deselect {name}", ("name", entry.Name)].Value
-            : L["Select {name}", ("name", entry.Name)].Value;
-        _context.ActivateLabel = entry => _context.Selection.IsSelectMode
-            ? _context.SelectLabel(entry)
-            : L["Preview {name}", ("name", entry.Name)].Value;
+        _context.SelectLabel = resource => _context.Selection.IsSelected(resource)
+            ? L["Deselect {name}", ("name", resource.Name)].Value
+            : L["Select {name}", ("name", resource.Name)].Value;
+        _context.ActivateLabel = resource => _context.Selection.IsSelectMode
+            ? _context.SelectLabel(resource)
+            : L["Preview {name}", ("name", resource.Name)].Value;
 
         _page = CurrentPage;
         _viewMode = ViewMode;
@@ -479,6 +449,8 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
         }
 
         _filteredAndSorted = null;
+        _folderTree = null;
+        _breadcrumbs = null;
 
         Adopt(CurrentPage, ref _syncedCurrentPage, ref _page);
         Adopt(ViewMode, ref _syncedViewMode, ref _viewMode);
@@ -504,7 +476,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
 
         // The folder is the host's to know, so it is watched for change rather than sent, and a move invalidates the window.
         var moved = !ReferenceEquals(_syncedProvider, ResourcesProvider)
-            || _syncedFolderId != CurrentFolder?.Id
+            || _syncedFolderSource != CurrentFolder?.Source
             || _syncedPageSize != PageSize;
 
         if (!moved)
@@ -513,7 +485,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
         }
 
         _syncedProvider = ResourcesProvider;
-        _syncedFolderId = CurrentFolder?.Id;
+        _syncedFolderSource = CurrentFolder?.Source;
         _syncedPageSize = PageSize;
         _page = 1;
 
@@ -622,11 +594,11 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
         if (!ReferenceEquals(_actionOptions, FileOptions))
         {
             _actionOptions = FileOptions;
-            _context.ItemActions = BuildItemActions();
+            _context.Actions = BuildActions();
         }
     }
 
-    private List<GalleryAction> BuildItemActions()
+    private List<GalleryAction> BuildActions()
     {
         var actions = new List<GalleryAction>
         {
@@ -634,8 +606,8 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
             {
                 Id = "preview",
                 Icon = "fa-eye",
-                Label = entry => L["Preview {name}", ("name", entry.Name)].Value,
-                Invoke = entry => { OpenPreview(entry); StateHasChanged(); return Task.CompletedTask; }
+                Label = resource => L["Preview {name}", ("name", resource.Name)].Value,
+                Invoke = resource => { OpenPreview(resource); StateHasChanged(); return Task.CompletedTask; }
             }
         };
 
@@ -645,8 +617,8 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
             {
                 Id = "rename",
                 Icon = "fa-pen",
-                Label = entry => L["Rename {name}", ("name", entry.Name)].Value,
-                Invoke = entry => { OpenRenameDialog(entry); StateHasChanged(); return Task.CompletedTask; }
+                Label = resource => L["Rename {name}", ("name", resource.Name)].Value,
+                Invoke = resource => { OpenRenameDialog(resource); StateHasChanged(); return Task.CompletedTask; }
             });
         }
 
@@ -656,8 +628,8 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
             {
                 Id = "delete",
                 Icon = "fa-trash",
-                Label = entry => L["Delete {name}", ("name", entry.Name)].Value,
-                Invoke = entry => { OpenDeleteDialog(entry); StateHasChanged(); return Task.CompletedTask; },
+                Label = resource => L["Delete {name}", ("name", resource.Name)].Value,
+                Invoke = resource => { OpenDeleteDialog(resource); StateHasChanged(); return Task.CompletedTask; },
                 IsDestructive = true
             });
         }
@@ -926,8 +898,8 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
         if (CanGoBack)
         {
             _historyIndex--;
-            var folderId = _history[_historyIndex];
-            var folder = Folders?.FirstOrDefault(f => f.Id == folderId);
+            var folderSource = _history[_historyIndex];
+            var folder = Folders?.FirstOrDefault(f => f.Source == folderSource);
             _page = 1;
 
             await OnFolderChanged.InvokeAsync(folder);
@@ -991,9 +963,9 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
         }
     }
 
-    private async Task HandleFolderSelectedAsync(GalleryFolderInfo? folder)
+    private async Task HandleFolderSelectedAsync(FolderResourceInfo? folder)
     {
-        if (CurrentFolder?.Id == folder?.Id)
+        if (CurrentFolder?.Source == folder?.Source)
         {
             return;
         }
@@ -1003,7 +975,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
             _history.RemoveRange(_historyIndex + 1, _history.Count - (_historyIndex + 1));
         }
 
-        _history.Add(folder?.Id);
+        _history.Add(folder?.Source);
         _historyIndex = _history.Count - 1;
         _page = 1;
 
@@ -1015,21 +987,21 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
         if (CanGoForward)
         {
             _historyIndex++;
-            var folderId = _history[_historyIndex];
-            var folder = Folders?.FirstOrDefault(f => f.Id == folderId);
+            var folderSource = _history[_historyIndex];
+            var folder = Folders?.FirstOrDefault(f => f.Source == folderSource);
             _page = 1;
 
             await OnFolderChanged.InvokeAsync(folder);
         }
     }
 
-    private async Task HandleItemDropOnFolderAsync(GalleryFolderInfo? targetFolder)
+    private async Task HandleDropOnFolderAsync(FolderResourceInfo? targetFolder)
     {
-        // The drag ends whatever the drop lands on, so a rejected target cannot leave a stale item to move later.
+        // The drag ends whatever the drop lands on, so a rejected target cannot leave a stale resource to move later.
         var draggedFolder = _draggedFolder;
-        var draggedItem = _draggedItem;
+        var draggedResource = _draggedResource;
         _draggedFolder = null;
-        _draggedItem = null;
+        _draggedResource = null;
 
         if (draggedFolder is not null)
         {
@@ -1041,13 +1013,13 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
             return;
         }
 
-        if (draggedItem is not null)
+        if (draggedResource is not null)
         {
-            var items = _context.Selection.IsSelected(draggedItem) && SelectedResources.Count > 1
+            var resources = _context.Selection.IsSelected(draggedResource) && SelectedResources.Count > 1
                 ? SelectedResources
-                : [draggedItem];
+                : [draggedResource];
 
-            await OnDrop.InvokeAsync(new GalleryDropRequest(items, targetFolder));
+            await OnDrop.InvokeAsync(new GalleryDropRequest(resources, targetFolder));
         }
     }
 
@@ -1059,31 +1031,31 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
         await OnPageChanged.InvokeAsync(page);
     }
 
-    private bool CanMoveFolder(GalleryFolderInfo folder, GalleryFolderInfo? target)
+    private bool CanMoveFolder(FolderResourceInfo folder, FolderResourceInfo? target)
     {
         if (target is null)
         {
-            return folder.ParentId is not null;
+            return folder.Parent is not null;
         }
 
         // Moving a folder inside its own subtree would leave the tree cyclic and unrenderable.
-        return folder.Id != target.Id && !IsSelfOrDescendant(target, folder);
+        return folder.Source != target.Source && !IsSelfOrDescendant(target, folder);
     }
 
-    private bool IsSelfOrDescendant(GalleryFolderInfo candidate, GalleryFolderInfo ancestor)
+    private bool IsSelfOrDescendant(FolderResourceInfo candidate, FolderResourceInfo ancestor)
     {
         var tree = FolderTree;
         var visited = new HashSet<string>(StringComparer.Ordinal);
         var current = candidate;
 
-        while (current is not null && visited.Add(current.Id))
+        while (current is not null && visited.Add(current.Source))
         {
-            if (current.Id == ancestor.Id)
+            if (current.Source == ancestor.Source)
             {
                 return true;
             }
 
-            current = tree.Find(current.ParentId);
+            current = tree.Find(current.Parent);
         }
 
         return false;
@@ -1091,7 +1063,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
 
     private void HandlePreviewNavigate(string source)
     {
-        var next = VisibleResources.FirstOrDefault(entry => entry.Source == source);
+        var next = VisibleResources.FirstOrDefault(resource => resource.Source == source);
 
         if (next is not null)
         {
@@ -1176,8 +1148,8 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
     {
         if (CurrentFolder is not null)
         {
-            var parent = CurrentFolder.ParentId is { } parentId
-                ? Folders?.FirstOrDefault(f => f.Id == parentId)
+            var parent = CurrentFolder.Parent is { } parentSource
+                ? Folders?.FirstOrDefault(f => f.Source == parentSource)
                 : null;
 
             await HandleFolderSelectedAsync(parent);
@@ -1213,39 +1185,39 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
         {
             _deletingFolders = [.. SelectedFolders];
         }
-        else if (_context.Selection.HasItems)
+        else if (_context.Selection.HasResources)
         {
             _deletingResources = [.. SelectedResources];
         }
     }
 
-    private void OpenFolderDeleteDialog(GalleryFolderInfo folder)
+    private void OpenFolderDeleteDialog(FolderResourceInfo folder)
         => _deletingFolders = [folder];
 
-    private void OpenFolderDialog(GalleryFolderInfo? parent = null)
+    private void OpenFolderDialog(FolderResourceInfo? parent = null)
     {
         _newFolderParent = parent ?? CurrentFolder;
         _newFolderName = string.Empty;
         _isNewFolderOpen = true;
     }
 
-    private void OpenFolderRenameDialog(GalleryFolderInfo folder)
+    private void OpenFolderRenameDialog(FolderResourceInfo folder)
     {
         _renamingFolder = folder;
         _renameFolderName = folder.Name;
     }
 
-    private void OpenPreview(ResourceInfo entry)
+    private void OpenPreview(ResourceInfo resource)
     {
         // Captured once so the viewer is not handed a new list on every unrelated render.
         _previewSiblings = [.. VisibleResources.Select(sibling => sibling.Source)];
-        _previewResource = entry;
+        _previewResource = resource;
     }
 
-    private void OpenRenameDialog(ResourceInfo entry)
+    private void OpenRenameDialog(ResourceInfo resource)
     {
-        _renamingResource = entry;
-        _renameNewName = entry.Name;
+        _renamingResource = resource;
+        _renameNewName = resource.Name;
     }
 
     private void ToggleUpload()

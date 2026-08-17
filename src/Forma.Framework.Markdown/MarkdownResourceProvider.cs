@@ -40,7 +40,7 @@ public sealed class MarkdownResourceProvider : IResourceProvider
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(source);
 
-        var resource = new ResourceInfo(source);
+        var resource = new FileResourceInfo(source);
 
         if (!Claims(resource.Extension))
         {

@@ -1,43 +1,43 @@
 @namespace Forma.UI.Components.Gallery
 
 <div class="forma-gallery-list" role="list">
-    @foreach (var entry in Entries)
+    @foreach (var resource in Resources)
     {
-        var selected = Context.Selection.IsSelected(entry);
+        var selected = Context.Selection.IsSelected(resource);
 
         <div class="forma-gallery-list-item @(selected ? "is-selected" : "")"
              role="listitem"
              draggable="true"
-             @ondragstart="() => Context.BeginDrag(entry)">
+             @ondragstart="() => Context.BeginDrag(resource)">
             @if (Context.Selection.IsSelectMode && !Context.Selection.HasFolders)
             {
                 <button type="button"
                         class="forma-gallery-list-select @(selected ? "is-checked" : "")"
-                        aria-label="@Context.SelectLabel(entry)"
+                        aria-label="@Context.SelectLabel(resource)"
                         aria-pressed="@(selected ? "true" : "false")"
-                        @onclick="() => Context.ToggleSelectAsync(entry)">
+                        @onclick="() => Context.ToggleSelectAsync(resource)">
                     <span class="fa-solid fa-check" aria-hidden="true"></span>
                 </button>
             }
 
             <button type="button"
                     class="forma-gallery-list-main"
-                    aria-label="@Context.ActivateLabel(entry)"
-                    @onclick="() => Context.ActivateAsync(entry)">
+                    aria-label="@Context.ActivateLabel(resource)"
+                    @onclick="() => Context.ActivateAsync(resource)">
                 <span class="forma-gallery-list-media">
-                    <FormaGalleryThumb Entry="entry" Size="GalleryThumbSize.Row" />
+                    <FormaGalleryThumb Resource="resource" Size="GalleryThumbSize.Row" />
                 </span>
 
                 <span class="forma-gallery-list-info">
-                    <span class="forma-gallery-list-name" title="@entry.Name">@entry.Name</span>
-                    @if (entry.DisplaySize is { } size)
+                    <span class="forma-gallery-list-name" title="@resource.Name">@resource.Name</span>
+                    @if (resource.DisplaySize is { } size)
                     {
                         <span class="forma-gallery-list-size">@size</span>
                     }
                 </span>
             </button>
 
-            <FormaGalleryActionBar Entry="entry" Variant="GalleryActionBarVariant.Inline" />
+            <FormaGalleryActionBar Resource="resource" Variant="GalleryActionBarVariant.Inline" />
         </div>
     }
 </div>

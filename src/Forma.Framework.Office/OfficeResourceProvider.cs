@@ -41,7 +41,7 @@ public sealed class OfficeResourceProvider : IResourceProvider
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(source);
 
-        var resource = new ResourceInfo(source);
+        var resource = new FileResourceInfo(source);
 
         if (!_convertersByExtension.TryGetValue(resource.Extension, out var converter))
         {

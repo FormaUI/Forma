@@ -14,7 +14,7 @@
                 @((MarkupString)markup.Html)
             </div>
         }
-        else if (Resource is { Kind: ResourceKind.Image })
+        else if (Resource is ImageResourceInfo)
         {
             <div @ref="_imageFrame" class="forma-file-viewer-image-frame @(IsZoomed ? "zoomed" : "")">
                 @* A native image drag would fire dragstart and cancel the pointer mid-pan. *@
@@ -34,17 +34,17 @@
                 </button>
             </div>
         }
-        else if (Resource is { Kind: ResourceKind.Video })
+        else if (Resource is VideoResourceInfo)
         {
             <FormaVideoPlayer Source="@Resource.Source" Title="@DisplayName" DeferLoading="false" />
         }
-        else if (Resource is { Kind: ResourceKind.Audio })
+        else if (Resource is AudioResourceInfo)
         {
             <div class="forma-file-viewer-audio" role="group" aria-label="@DisplayName">
                 <audio controls src="@Resource.Source"></audio>
             </div>
         }
-        else if (Resource is EmbeddedResourceInfo { Kind: ResourceKind.Document } document)
+        else if (Resource is DocumentResourceInfo { ContentType: not null } document)
         {
             @if (document.ContentType.StartsWith("text/", StringComparison.OrdinalIgnoreCase))
             {

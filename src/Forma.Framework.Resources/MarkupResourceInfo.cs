@@ -7,10 +7,10 @@ using System.Diagnostics.CodeAnalysis;
 /// must return sanitised markup, because a viewer renders it as trusted HTML.
 /// </summary>
 [SuppressMessage("Design", "CA1054:URI parameters should not be strings")]
-public record MarkupResourceInfo : ResourceInfo
+public record MarkupResourceInfo : DocumentResourceInfo
 {
     public MarkupResourceInfo(string source, string html)
-        : base(source, ResourceKind.Document)
+        : base(source)
     {
         ArgumentNullException.ThrowIfNull(html);
 

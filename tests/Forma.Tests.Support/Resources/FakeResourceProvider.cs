@@ -14,7 +14,7 @@ public sealed class FakeResourceProvider(string extension, Func<string, Resource
         ArgumentException.ThrowIfNullOrWhiteSpace(source);
         Calls++;
 
-        var claims = new ResourceInfo(source).Extension.Equals(extension, StringComparison.OrdinalIgnoreCase);
+        var claims = new FileResourceInfo(source).Extension.Equals(extension, StringComparison.OrdinalIgnoreCase);
 
         return ValueTask.FromResult(claims ? resolve(source) : null);
     }

@@ -49,7 +49,7 @@ public sealed class OfficeResourceProviderTests
 
         Assert.Multiple(() =>
         {
-            Assert.Equal(ResourceKind.Document, markup.Kind);
+            Assert.IsAssignableFrom<DocumentResourceInfo>(markup);
             Assert.Contains("Quarterly revenue rose.", markup.Html, StringComparison.Ordinal);
         });
     }

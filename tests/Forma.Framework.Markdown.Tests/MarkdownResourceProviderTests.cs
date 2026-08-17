@@ -40,7 +40,7 @@ public sealed class MarkdownResourceProviderTests
 
         Assert.Multiple(() =>
         {
-            Assert.Equal(ResourceKind.Document, markup.Kind);
+            Assert.IsAssignableFrom<DocumentResourceInfo>(markup);
             Assert.Contains("Release notes</h1>", markup.Html, StringComparison.Ordinal);
             Assert.Contains("<strong>today</strong>", markup.Html, StringComparison.Ordinal);
         });

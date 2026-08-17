@@ -1,6 +1,7 @@
 namespace Forma.UI.Components.Gallery;
 
 using Forma.Framework.Localization;
+using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
 
@@ -8,7 +9,7 @@ using Microsoft.AspNetCore.Components;
 public sealed partial class FormaGalleryFolderNode : ComponentBase
 {
     /// <summary>The folder this node represents.</summary>
-    [Parameter, EditorRequired] public GalleryFolderInfo Folder { get; set; } = default!;
+    [Parameter, EditorRequired] public FolderResourceInfo Folder { get; set; } = default!;
 
     /// <summary>How many levels below the root this node sits, driving its indent.</summary>
     [Parameter] public int Depth { get; set; }

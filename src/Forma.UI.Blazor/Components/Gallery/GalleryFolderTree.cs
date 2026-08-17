@@ -1,23 +1,23 @@
 namespace Forma.UI.Components.Gallery;
 
+using Forma.Framework.Resources;
+
 /// <summary>The folder list indexed for lookup, so browsing does not rescan it for every node it draws.</summary>
 internal sealed class GalleryFolderTree
 {
-    private static readonly List<GalleryFolderInfo> NoChildren = [];
+    private static readonly List<FolderResourceInfo> NoChildren = [];
 
-    private readonly Dictionary<string, GalleryFolderInfo> _byId = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, FolderResourceInfo> _bySource = new(StringComparer.Ordinal);
 
-    private readonly Dictionary<string, List<GalleryFolderInfo>> _childrenByParent = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, List<FolderResourceInfo>> _childrenByParent = new(StringComparer.Ordinal);
 
-    private readonly List<GalleryFolderInfo> _roots = [];
+    private readonly List<FolderResourceInfo> _roots = [];
 
     /// <summary>A tree over no folders at all.</summary>
     public static GalleryFolderTree Empty { get; } = new(null);
 
-    public GalleryFolderTree(IReadOnlyList<GalleryFolderInfo>? folders)
+    public GalleryFolderTree(IReadOnlyList<FolderResourceInfo>? folders)
     {
-        Source = folders;
-
         if (folders is null)
         {
             return;
@@ -27,53 +27,50 @@ internal sealed class GalleryFolderTree
         {
             var folder = folders[index];
 
-            // A host can repeat an id; the first folder claiming it wins, matching what the breadcrumb walk would find.
-            _byId.TryAdd(folder.Id, folder);
+            // A host can repeat a source; the first folder claiming it wins, matching what the breadcrumb walk would find.
+            _bySource.TryAdd(folder.Source, folder);
 
-            if (folder.ParentId is not { } parentId)
+            if (folder.Parent is not { } parent)
             {
                 _roots.Add(folder);
                 continue;
             }
 
-            if (!_childrenByParent.TryGetValue(parentId, out var siblings))
+            if (!_childrenByParent.TryGetValue(parent, out var siblings))
             {
                 siblings = [];
-                _childrenByParent[parentId] = siblings;
+                _childrenByParent[parent] = siblings;
             }
 
             siblings.Add(folder);
         }
     }
 
-    /// <summary>The folder list this was built from, so a caller can tell whether it is still current.</summary>
-    public IReadOnlyList<GalleryFolderInfo>? Source { get; }
-
     /// <summary>The folders directly inside the parent, or the top-level folders when none is named.</summary>
-    public IReadOnlyList<GalleryFolderInfo> ChildrenOf(string? parentId)
+    public IReadOnlyList<FolderResourceInfo> ChildrenOf(string? parent)
     {
-        if (parentId is null)
+        if (parent is null)
         {
             return _roots;
         }
 
-        return _childrenByParent.TryGetValue(parentId, out var children) ? children : NoChildren;
+        return _childrenByParent.TryGetValue(parent, out var children) ? children : NoChildren;
     }
 
-    /// <summary>The folder with the id, or null when the tree has none.</summary>
-    public GalleryFolderInfo? Find(string? id)
-        => id is not null && _byId.TryGetValue(id, out var folder) ? folder : null;
+    /// <summary>The folder at the source, or null when the tree has none.</summary>
+    public FolderResourceInfo? Find(string? source)
+        => source is not null && _bySource.TryGetValue(source, out var folder) ? folder : null;
 
     /// <summary>Whether anything sits inside the folder.</summary>
-    public bool HasChildren(string id)
-        => _childrenByParent.ContainsKey(id);
+    public bool HasChildren(string source)
+        => _childrenByParent.ContainsKey(source);
 
     /// <summary>Every folder holding at least one other, which are the only ones a tree can collapse.</summary>
-    public IEnumerable<GalleryFolderInfo> Expandable()
+    public IEnumerable<FolderResourceInfo> Expandable()
     {
-        foreach (var folder in _byId.Values)
+        foreach (var folder in _bySource.Values)
         {
-            if (_childrenByParent.ContainsKey(folder.Id))
+            if (_childrenByParent.ContainsKey(folder.Source))
             {
                 yield return folder;
             }

@@ -37,7 +37,7 @@
         @for (var index = 0; index < Levels.Count; index++)
         {
             var level = Levels[index];
-            var isCurrent = CurrentFolder?.Id == level.Folder?.Id;
+            var isCurrent = CurrentFolder?.Source == level.Folder?.Source;
             var isLast = index == Levels.Count - 1;
             <button type="button"
                     class="forma-gallery-breadcrumb-item @(isCurrent ? "is-current" : "")"
@@ -48,7 +48,7 @@
                 @level.Name
             </button>
 
-            var children = ChildrenOf(level.ParentId);
+            var children = ChildrenOf(level.Parent);
 
             if (!ShowFolderMenu || children.Count == 0)
             {

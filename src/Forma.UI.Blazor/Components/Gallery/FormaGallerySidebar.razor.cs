@@ -3,6 +3,7 @@ namespace Forma.UI.Components.Gallery;
 using System.Globalization;
 
 using Forma.Framework.Localization;
+using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -12,27 +13,27 @@ using Microsoft.JSInterop;
 public sealed partial class FormaGallerySidebar : ComponentBase, IAsyncDisposable
 {
     /// <summary>The currently active folder, or null for all media.</summary>
-    [Parameter] public GalleryFolderInfo? CurrentFolder { get; set; }
+    [Parameter] public FolderResourceInfo? CurrentFolder { get; set; }
 
     /// <summary>List of available gallery folders.</summary>
-    [Parameter] public IReadOnlyList<GalleryFolderInfo> Folders { get; set; } = [];
+    [Parameter] public IReadOnlyList<FolderResourceInfo> Folders { get; set; } = [];
 
     [CascadingParameter] private GalleryContext Context { get; set; } = default!;
 
     /// <summary>Raised when a folder is deleted.</summary>
-    [Parameter] public EventCallback<GalleryFolderInfo> OnFolderDelete { get; set; }
+    [Parameter] public EventCallback<FolderResourceInfo> OnFolderDelete { get; set; }
 
     /// <summary>Raised when a folder starts being dragged.</summary>
-    [Parameter] public EventCallback<GalleryFolderInfo> OnFolderDragStart { get; set; }
+    [Parameter] public EventCallback<FolderResourceInfo> OnFolderDragStart { get; set; }
 
-    /// <summary>Raised when dropped items land on a folder target.</summary>
-    [Parameter] public EventCallback<GalleryFolderInfo?> OnFolderDrop { get; set; }
+    /// <summary>Raised when dropped resources land on a folder target.</summary>
+    [Parameter] public EventCallback<FolderResourceInfo?> OnFolderDrop { get; set; }
 
     /// <summary>Raised when a folder rename is requested.</summary>
-    [Parameter] public EventCallback<GalleryFolderInfo> OnFolderRename { get; set; }
+    [Parameter] public EventCallback<FolderResourceInfo> OnFolderRename { get; set; }
 
     /// <summary>Raised when a folder is selected.</summary>
-    [Parameter] public EventCallback<GalleryFolderInfo?> OnFolderSelected { get; set; }
+    [Parameter] public EventCallback<FolderResourceInfo?> OnFolderSelected { get; set; }
 
     /// <summary>Raised when new folder creation is requested.</summary>
     [Parameter] public EventCallback OnNewFolder { get; set; }
@@ -40,7 +41,7 @@ public sealed partial class FormaGallerySidebar : ComponentBase, IAsyncDisposabl
     /// <summary>Which folder operations the sidebar offers.</summary>
     [Parameter] public FormaGalleryFileOptions FileOptions { get; set; } = FormaGalleryFileOptions.Default;
 
-    /// <summary>Total count of all items across the gallery.</summary>
+    /// <summary>Total count of all resources across the gallery.</summary>
     [Parameter] public int TotalCount { get; set; }
 
     [Inject] private IStringLocale<FormaGallery> L { get; set; } = default!;
@@ -58,14 +59,14 @@ public sealed partial class FormaGallerySidebar : ComponentBase, IAsyncDisposabl
 
     private readonly string _titleId = $"forma-gallery-folders-{Guid.NewGuid():N}";
 
-    private IEnumerable<GalleryFolderInfo> ExpandableFolders
+    private IEnumerable<FolderResourceInfo> ExpandableFolders
         => Context.Folders.Expandable();
 
     private bool HasExpandableFolders
         => ExpandableFolders.Any();
 
     private bool IsFullyCollapsed
-        => ExpandableFolders.All(folder => _collapsed.Contains(folder.Id));
+        => ExpandableFolders.All(folder => _collapsed.Contains(folder.Source));
 
     private void ToggleAll()
     {
@@ -85,7 +86,7 @@ public sealed partial class FormaGallerySidebar : ComponentBase, IAsyncDisposabl
     {
         foreach (var folder in ExpandableFolders)
         {
-            _collapsed.Add(folder.Id);
+            _collapsed.Add(folder.Source);
         }
     }
 
@@ -218,39 +219,39 @@ public sealed partial class FormaGallerySidebar : ComponentBase, IAsyncDisposabl
     internal static void HandleDragOver(DragEventArgs e)
         => e.DataTransfer.DropEffect = "move";
 
-    internal IReadOnlyList<GalleryFolderInfo> ChildrenOf(string? parentId)
-        => Context.Folders.ChildrenOf(parentId);
+    internal IReadOnlyList<FolderResourceInfo> ChildrenOf(string? parent)
+        => Context.Folders.ChildrenOf(parent);
 
-    internal bool IsCurrent(GalleryFolderInfo folder)
-        => CurrentFolder?.Id == folder.Id;
+    internal bool IsCurrent(FolderResourceInfo folder)
+        => CurrentFolder?.Source == folder.Source;
 
     // Folders start expanded so a nested tree is discoverable without a first click.
-    internal bool IsExpanded(string folderId)
-        => !_collapsed.Contains(folderId);
+    internal bool IsExpanded(string folderSource)
+        => !_collapsed.Contains(folderSource);
 
-    internal void ToggleExpanded(string folderId)
+    internal void ToggleExpanded(string folderSource)
     {
-        if (!_collapsed.Remove(folderId))
+        if (!_collapsed.Remove(folderSource))
         {
-            _collapsed.Add(folderId);
+            _collapsed.Add(folderSource);
         }
 
         // The toolbar toggle reflects the whole tree, so the sidebar rerenders for a change made inside a node.
         StateHasChanged();
     }
 
-    internal Task SelectFolderAsync(GalleryFolderInfo? folder)
+    internal Task SelectFolderAsync(FolderResourceInfo? folder)
         => OnFolderSelected.InvokeAsync(folder);
 
-    internal Task RenameFolderAsync(GalleryFolderInfo folder)
+    internal Task RenameFolderAsync(FolderResourceInfo folder)
         => OnFolderRename.InvokeAsync(folder);
 
-    internal Task DeleteFolderAsync(GalleryFolderInfo folder)
+    internal Task DeleteFolderAsync(FolderResourceInfo folder)
         => OnFolderDelete.InvokeAsync(folder);
 
-    internal Task HandleDropOnFolderAsync(GalleryFolderInfo? folder)
+    internal Task HandleDropOnFolderAsync(FolderResourceInfo? folder)
         => OnFolderDrop.InvokeAsync(folder);
 
-    internal Task HandleFolderDragStartAsync(GalleryFolderInfo folder)
+    internal Task HandleFolderDragStartAsync(FolderResourceInfo folder)
         => OnFolderDragStart.InvokeAsync(folder);
 }

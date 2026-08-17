@@ -66,21 +66,21 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var entry in Entries)
+            @foreach (var resource in Resources)
             {
-                var selected = Context.Selection.IsSelected(entry);
+                var selected = Context.Selection.IsSelected(resource);
 
                 <tr class="forma-gallery-details-row @(selected ? "is-selected" : "")"
                     draggable="true"
-                    @ondragstart="() => Context.BeginDrag(entry)">
+                    @ondragstart="() => Context.BeginDrag(resource)">
                     <td class="forma-gallery-cell-select">
                         @if (Context.Selection.IsSelectMode && !Context.Selection.HasFolders)
                         {
                             <button type="button"
                                     class="forma-gallery-table-select @(selected ? "is-checked" : "")"
-                                    aria-label="@Context.SelectLabel(entry)"
+                                    aria-label="@Context.SelectLabel(resource)"
                                     aria-pressed="@(selected ? "true" : "false")"
-                                    @onclick="() => Context.ToggleSelectAsync(entry)">
+                                    @onclick="() => Context.ToggleSelectAsync(resource)">
                                 <span class="fa-solid fa-check" aria-hidden="true"></span>
                             </button>
                         }
@@ -88,30 +88,30 @@
                     <td class="forma-gallery-cell-name">
                         <button type="button"
                                 class="forma-gallery-name-wrap"
-                                aria-label="@Context.ActivateLabel(entry)"
-                                @onclick="() => Context.ActivateAsync(entry)">
-                            <FormaGalleryThumb Entry="entry" Size="GalleryThumbSize.Cell" />
-                            <span class="forma-gallery-details-name-text" title="@entry.Name">@entry.Name</span>
+                                aria-label="@Context.ActivateLabel(resource)"
+                                @onclick="() => Context.ActivateAsync(resource)">
+                            <FormaGalleryThumb Resource="resource" Size="GalleryThumbSize.Cell" />
+                            <span class="forma-gallery-details-name-text" title="@resource.Name">@resource.Name</span>
                         </button>
                     </td>
                     <td class="forma-gallery-cell-actions">
-                        <FormaGalleryActionBar Entry="entry" Variant="GalleryActionBarVariant.Inline" />
+                        <FormaGalleryActionBar Resource="resource" Variant="GalleryActionBarVariant.Inline" />
                     </td>
                     @if (ShowsKind)
                     {
-                        <td class="forma-gallery-cell-kind">@entry.Kind.ToString()</td>
+                        <td class="forma-gallery-cell-kind">@resource.KindLabel(L)</td>
                     }
                     @if (ShowsSize)
                     {
-                        <td class="forma-gallery-cell-size">@(entry.DisplaySize ?? Placeholder)</td>
+                        <td class="forma-gallery-cell-size">@(resource.DisplaySize ?? Placeholder)</td>
                     }
                     @if (ShowsModified)
                     {
-                        <td class="forma-gallery-cell-modified">@DisplayDate(entry.Modified())</td>
+                        <td class="forma-gallery-cell-modified">@DisplayDate(resource.ModifiedAt)</td>
                     }
                     @if (ShowsAdded)
                     {
-                        <td class="forma-gallery-cell-added">@DisplayDate(entry.Added())</td>
+                        <td class="forma-gallery-cell-added">@DisplayDate(resource.CreatedAt)</td>
                     }
                 </tr>
             }

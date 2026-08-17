@@ -2,13 +2,13 @@
 @using Forma.Framework.Resources
 
 <div class="forma-gallery-action-bar @(Variant == GalleryActionBarVariant.Overlay ? "is-overlay" : "is-inline")">
-    @foreach (var action in Context.ItemActions)
+    @foreach (var action in Context.Actions)
     {
         <button type="button"
                 class="forma-gallery-action-btn @(action.IsDestructive ? "is-destructive" : "")"
                 data-action="@action.Id"
-                aria-label="@action.Label(Entry)"
-                @onclick="() => action.Invoke(Entry)">
+                aria-label="@action.Label(Resource)"
+                @onclick="() => action.Invoke(Resource)">
             <span class="fa-solid @action.Icon" aria-hidden="true"></span>
         </button>
     }

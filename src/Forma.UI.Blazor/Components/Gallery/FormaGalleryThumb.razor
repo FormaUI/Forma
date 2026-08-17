@@ -1,9 +1,9 @@
 @namespace Forma.UI.Components.Gallery
 @using Forma.Framework.Resources
 
-@if (Entry.Kind == ResourceKind.Image)
+@if (Resource is ImageResourceInfo)
 {
-    <img src="@Entry.Source" alt="" class="forma-gallery-thumb @SizeClass" loading="lazy" />
+    <img src="@Resource.Source" alt="" class="forma-gallery-thumb @SizeClass" loading="lazy" />
 }
 else
 {

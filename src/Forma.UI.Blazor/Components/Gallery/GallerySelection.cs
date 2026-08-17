@@ -2,68 +2,68 @@ namespace Forma.UI.Components.Gallery;
 
 using Forma.Framework.Resources;
 
-/// <summary>The media items a gallery has selected, and whether it is currently in selection mode.</summary>
+/// <summary>The media resources a gallery has selected, and whether it is currently in selection mode.</summary>
 public sealed class GallerySelection
 {
-    // The selection outlives the window a catalog-backed gallery holds, so it keeps the resources rather than keys into a list it may no longer have.
+    // The selection outlives the window a provider-backed gallery holds, so it keeps the resources rather than keys into a list it may no longer have.
     private readonly Dictionary<string, ResourceInfo> _resources = new(StringComparer.Ordinal);
 
-    private readonly Dictionary<string, GalleryFolderInfo> _folders = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, FolderResourceInfo> _folders = new(StringComparer.Ordinal);
 
     private IReadOnlyList<ResourceInfo>? _resolvedResources;
 
-    private IReadOnlyList<GalleryFolderInfo>? _resolvedFolders;
+    private IReadOnlyList<FolderResourceInfo>? _resolvedFolders;
 
     /// <summary>Whether the gallery shows selection controls instead of activating previews.</summary>
     public bool IsSelectMode { get; internal set; }
 
-    /// <summary>How many items may be selected at once; zero for unlimited.</summary>
+    /// <summary>How many resources may be selected at once; zero for unlimited.</summary>
     public int MaxSelection { get; internal set; }
 
-    /// <summary>How many media items and folders are selected together.</summary>
+    /// <summary>How many media resources and folders are selected together.</summary>
     public int Count
         => _resources.Count + _folders.Count;
 
-    /// <summary>Whether any media item is selected.</summary>
-    public bool HasItems
+    /// <summary>Whether any media resource is selected.</summary>
+    public bool HasResources
         => _resources.Count > 0;
 
     /// <summary>Whether any folder is selected.</summary>
     public bool HasFolders
         => _folders.Count > 0;
 
-    /// <summary>Whether the item is selected.</summary>
-    public bool IsSelected(ResourceInfo entry)
+    /// <summary>Whether the resource is selected.</summary>
+    public bool IsSelected(ResourceInfo resource)
     {
-        ArgumentNullException.ThrowIfNull(entry);
+        ArgumentNullException.ThrowIfNull(resource);
 
-        return _resources.ContainsKey(entry.Source);
+        return _resources.ContainsKey(resource.Source);
     }
 
     /// <summary>Whether the folder is selected.</summary>
-    public bool IsFolderSelected(GalleryFolderInfo folder)
+    public bool IsFolderSelected(FolderResourceInfo folder)
     {
         ArgumentNullException.ThrowIfNull(folder);
 
-        return _folders.ContainsKey(folder.Id);
+        return _folders.ContainsKey(folder.Source);
     }
 
     /// <summary>The selected folders.</summary>
-    public IReadOnlyList<GalleryFolderInfo> ResolveFolders()
+    public IReadOnlyList<FolderResourceInfo> ResolveFolders()
         => _resolvedFolders ??= [.. _folders.Values];
 
-    /// <summary>The selected items.</summary>
+    /// <summary>The selected resources.</summary>
     public IReadOnlyList<ResourceInfo> Resolve()
         => _resolvedResources ??= [.. _resources.Values];
 
-    internal void Toggle(ResourceInfo entry)
+    internal void Toggle(ResourceInfo resource)
     {
         Invalidate();
 
         // Media and folders are deleted through different contracts, so only one kind is ever selected at a time.
         _folders.Clear();
 
-        if (_resources.Remove(entry.Source))
+        if (_resources.Remove(resource.Source))
         {
             return;
         }
@@ -71,29 +71,29 @@ public sealed class GallerySelection
         if (MaxSelection == 1)
         {
             _resources.Clear();
-            _resources[entry.Source] = entry;
+            _resources[resource.Source] = resource;
         }
         else if (MaxSelection <= 0 || _resources.Count < MaxSelection)
         {
-            _resources[entry.Source] = entry;
+            _resources[resource.Source] = resource;
         }
     }
 
-    internal void ToggleFolder(GalleryFolderInfo folder)
+    internal void ToggleFolder(FolderResourceInfo folder)
     {
         Invalidate();
         _resources.Clear();
 
-        if (!_folders.Remove(folder.Id))
+        if (!_folders.Remove(folder.Source))
         {
-            _folders[folder.Id] = folder;
+            _folders[folder.Source] = folder;
         }
     }
 
-    internal void Remove(ResourceInfo entry)
+    internal void Remove(ResourceInfo resource)
     {
         Invalidate();
-        _resources.Remove(entry.Source);
+        _resources.Remove(resource.Source);
     }
 
     internal void Clear()
@@ -103,15 +103,15 @@ public sealed class GallerySelection
         _folders.Clear();
     }
 
-    internal void Replace(IEnumerable<ResourceInfo> entries)
+    internal void Replace(IEnumerable<ResourceInfo> resources)
     {
         Invalidate();
         _resources.Clear();
         _folders.Clear();
 
-        foreach (var entry in entries)
+        foreach (var resource in resources)
         {
-            _resources[entry.Source] = entry;
+            _resources[resource.Source] = resource;
         }
     }
 

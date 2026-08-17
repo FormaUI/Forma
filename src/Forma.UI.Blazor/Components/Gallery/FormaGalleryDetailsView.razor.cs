@@ -7,11 +7,11 @@ using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Tabular details view for gallery media items with sortable column headers.</summary>
+/// <summary>Tabular details view for gallery media resources with sortable column headers.</summary>
 public sealed partial class FormaGalleryDetailsView : ComponentBase
 {
-    /// <summary>The collection of media items to display.</summary>
-    [Parameter] public IReadOnlyList<ResourceInfo> Entries { get; set; } = [];
+    /// <summary>The collection of media resources to display.</summary>
+    [Parameter] public IReadOnlyList<ResourceInfo> Resources { get; set; } = [];
 
     [CascadingParameter] private GalleryContext Context { get; set; } = default!;
 

@@ -1,11 +1,11 @@
 @namespace Forma.UI.Components.Gallery
 
 @{
-    var children = Sidebar.ChildrenOf(Folder.Id);
-    var expanded = Sidebar.IsExpanded(Folder.Id);
+    var children = Sidebar.ChildrenOf(Folder.Source);
+    var expanded = Sidebar.IsExpanded(Folder.Source);
     var isCurrent = Sidebar.IsCurrent(Folder);
     var selected = Context.Selection.IsFolderSelected(Folder);
-    var selectable = Context.Selection.IsSelectMode && !Context.Selection.HasItems;
+    var selectable = Context.Selection.IsSelectMode && !Context.Selection.HasResources;
 }
 
 <li role="treeitem"
@@ -34,7 +34,7 @@
             <button type="button"
                     class="forma-gallery-folder-twisty @(expanded ? "is-expanded" : "")"
                     aria-label="@(expanded ? L["Collapse {name}", ("name", Folder.Name)] : L["Expand {name}", ("name", Folder.Name)])"
-                    @onclick="() => Sidebar.ToggleExpanded(Folder.Id)">
+                    @onclick="() => Sidebar.ToggleExpanded(Folder.Source)">
                 <span class="fa-solid fa-chevron-right" aria-hidden="true"></span>
             </button>
         }
@@ -70,7 +70,10 @@
                 </button>
             }
         </div>
-        <span class="forma-gallery-folder-count">@Folder.ItemCount</span>
+        @if (Folder.Count is { } count)
+        {
+            <span class="forma-gallery-folder-count">@count</span>
+        }
     </div>
 
     @if (children.Count > 0 && expanded)

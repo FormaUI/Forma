@@ -15,7 +15,7 @@
                       CurrentFolder="@(CurrentFolderFor("full"))"
                       TotalCount="_allMedia.Count"
                       OnFolderChanged="@(folder => HandleFolderChangedAsync("full", folder))"
-                      SelectedChanged="@(items => HandleSelectedAsync("full", items))"
+                      SelectedChanged="@(resources => HandleSelectedAsync("full", resources))"
                       OnRename="@(req => HandleRenameAsync("full", req))"
                       OnDelete="@(req => HandleDeleteAsync("full", req))"
                       OnDrop="@(req => HandleDropAsync("full", req))"
@@ -23,11 +23,11 @@
                       OnFolderCreate="@(req => HandleFolderCreateAsync("full", req))"
                       OnFolderRename="@(req => HandleFolderRenameAsync("full", req))"
                       OnFolderDelete="@(req => HandleFolderDeleteAsync("full", req))"
-                      OnUploaded="@(items => HandleUploadedAsync("full", items))" />
+                      OnUploaded="@(resources => HandleUploadedAsync("full", resources))" />
         <ul class="demo-log">
-            @foreach (var entry in Log("full"))
+            @foreach (var resource in Log("full"))
             {
-                <li>@entry</li>
+                <li>@resource</li>
             }
         </ul>
     </div>
@@ -37,13 +37,13 @@
     <h2>@L["Single selection for a cover image"]</h2>
     <p class="desc">@L["With MaxSelection set to 1, picking any item immediately selects it alone. This one holds its collection through Resources, which is the simpler half of the contract and the right choice for a handful of items."]</p>
     <div class="demo-box">
-        <FormaGallery Resources="_singleSelectEntries"
+        <FormaGallery Resources="_singleSelectResources"
                       MaxSelection="1"
-                      SelectedChanged="@(items => HandleSelectedAsync("single", items))" />
+                      SelectedChanged="@(resources => HandleSelectedAsync("single", resources))" />
         <ul class="demo-log">
-            @foreach (var entry in Log("single"))
+            @foreach (var resource in Log("single"))
             {
-                <li>@entry</li>
+                <li>@resource</li>
             }
         </ul>
     </div>
@@ -81,11 +81,11 @@
                       TotalCount="_allMedia.Count"
                       FileOptions="FormaGalleryFileOptions.ReadOnly"
                       OnFolderChanged="@(folder => HandleFolderChangedAsync("readonly", folder))"
-                      SelectedChanged="@(items => HandleSelectedAsync("readonly", items))" />
+                      SelectedChanged="@(resources => HandleSelectedAsync("readonly", resources))" />
         <ul class="demo-log">
-            @foreach (var entry in Log("readonly"))
+            @foreach (var resource in Log("readonly"))
             {
-                <li>@entry</li>
+                <li>@resource</li>
             }
         </ul>
     </div>
@@ -103,11 +103,11 @@
                       OnFolderChanged="@(folder => HandleFolderChangedAsync("fixedfolders", folder))"
                       OnRename="@(req => HandleRenameAsync("fixedfolders", req))"
                       OnDelete="@(req => HandleDeleteAsync("fixedfolders", req))"
-                      OnUploaded="@(items => HandleUploadedAsync("fixedfolders", items))" />
+                      OnUploaded="@(resources => HandleUploadedAsync("fixedfolders", resources))" />
         <ul class="demo-log">
-            @foreach (var entry in Log("fixedfolders"))
+            @foreach (var resource in Log("fixedfolders"))
             {
-                <li>@entry</li>
+                <li>@resource</li>
             }
         </ul>
     </div>

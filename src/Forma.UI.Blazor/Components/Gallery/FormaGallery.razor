@@ -21,7 +21,7 @@
                             OnUp="HandleUpAsync"
                             OnRefresh="HandleRefreshAsync"
                             OnFolderSelected="HandleFolderSelectedAsync"
-                            OnBreadcrumbDrop="HandleItemDropOnFolderAsync"
+                            OnBreadcrumbDrop="HandleDropOnFolderAsync"
                             OnSearchQueryChanged="HandleSearchQueryChangedAsync" />
 
     <!-- Action & View Toolbar -->
@@ -70,7 +70,7 @@
                                  TotalCount="TotalCount ?? Resources?.Count ?? MatchingCount ?? 0"
                                  OnFolderDelete="OpenFolderDeleteDialog"
                                  OnFolderDragStart="folder => _draggedFolder = folder"
-                                 OnFolderDrop="HandleItemDropOnFolderAsync"
+                                 OnFolderDrop="HandleDropOnFolderAsync"
                                  OnFolderRename="OpenFolderRenameDialog"
                                  OnFolderSelected="HandleFolderSelectedAsync"
                                  OnNewFolder="() => OpenFolderDialog(CurrentFolder)" />
@@ -121,15 +121,15 @@
                 {
                     @if (_viewMode == GalleryViewMode.Thumbnails)
                     {
-                        <FormaGalleryThumbnailsView Entries="VisibleResources" />
+                        <FormaGalleryThumbnailsView Resources="VisibleResources" />
                     }
                     else if (_viewMode == GalleryViewMode.Details)
                     {
-                        <FormaGalleryDetailsView Entries="VisibleResources" />
+                        <FormaGalleryDetailsView Resources="VisibleResources" />
                     }
                     else
                     {
-                        <FormaGalleryListView Entries="VisibleResources" />
+                        <FormaGalleryListView Resources="VisibleResources" />
                     }
                 }
 

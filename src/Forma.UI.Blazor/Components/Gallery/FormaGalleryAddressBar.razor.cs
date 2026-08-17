@@ -1,6 +1,7 @@
 namespace Forma.UI.Components.Gallery;
 
 using Forma.Framework.Localization;
+using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -9,7 +10,7 @@ using Microsoft.AspNetCore.Components.Web;
 public sealed partial class FormaGalleryAddressBar : ComponentBase
 {
     /// <summary>Breadcrumb folder segments leading to the current folder.</summary>
-    [Parameter] public IReadOnlyList<GalleryFolderInfo> Breadcrumbs { get; set; } = [];
+    [Parameter] public IReadOnlyList<FolderResourceInfo> Breadcrumbs { get; set; } = [];
 
     /// <summary>Whether navigation backward is available in the history stack.</summary>
     [Parameter] public bool CanGoBack { get; set; }
@@ -21,21 +22,21 @@ public sealed partial class FormaGalleryAddressBar : ComponentBase
     [Parameter] public bool CanGoUp { get; set; }
 
     /// <summary>The currently active folder, or null for root.</summary>
-    [Parameter] public GalleryFolderInfo? CurrentFolder { get; set; }
+    [Parameter] public FolderResourceInfo? CurrentFolder { get; set; }
 
     /// <summary>Every known folder, used to list a breadcrumb level's children.</summary>
-    [Parameter] public IReadOnlyList<GalleryFolderInfo> Folders { get; set; } = [];
+    [Parameter] public IReadOnlyList<FolderResourceInfo> Folders { get; set; } = [];
 
     [CascadingParameter] private GalleryContext Context { get; set; } = default!;
 
     /// <summary>Raised when the back button is clicked.</summary>
     [Parameter] public EventCallback OnBack { get; set; }
 
-    /// <summary>Raised when dropped items land on a breadcrumb folder target.</summary>
-    [Parameter] public EventCallback<GalleryFolderInfo?> OnBreadcrumbDrop { get; set; }
+    /// <summary>Raised when dropped resources land on a breadcrumb folder target.</summary>
+    [Parameter] public EventCallback<FolderResourceInfo?> OnBreadcrumbDrop { get; set; }
 
     /// <summary>Raised when a breadcrumb segment folder is clicked.</summary>
-    [Parameter] public EventCallback<GalleryFolderInfo?> OnFolderSelected { get; set; }
+    [Parameter] public EventCallback<FolderResourceInfo?> OnFolderSelected { get; set; }
 
     /// <summary>Raised when the forward button is clicked.</summary>
     [Parameter] public EventCallback OnForward { get; set; }
@@ -72,15 +73,15 @@ public sealed partial class FormaGalleryAddressBar : ComponentBase
 
             foreach (var segment in Breadcrumbs)
             {
-                levels.Add(new BreadcrumbLevel(segment.Id, segment.Id, segment.Name, segment));
+                levels.Add(new BreadcrumbLevel(segment.Source, segment.Source, segment.Name, segment));
             }
 
             return levels;
         }
     }
 
-    private IReadOnlyList<GalleryFolderInfo> ChildrenOf(string? parentId)
-        => Context.Folders.ChildrenOf(parentId);
+    private IReadOnlyList<FolderResourceInfo> ChildrenOf(string? parent)
+        => Context.Folders.ChildrenOf(parent);
 
     private void ToggleLevelMenu(string levelKey)
         => _openLevelKey = _openLevelKey == levelKey ? null : levelKey;
@@ -88,7 +89,7 @@ public sealed partial class FormaGalleryAddressBar : ComponentBase
     private void CloseLevelMenu()
         => _openLevelKey = null;
 
-    private async Task SelectFromMenuAsync(GalleryFolderInfo folder)
+    private async Task SelectFromMenuAsync(FolderResourceInfo folder)
     {
         _openLevelKey = null;
 
@@ -103,7 +104,7 @@ public sealed partial class FormaGalleryAddressBar : ComponentBase
         }
     }
 
-    private sealed record BreadcrumbLevel(string Key, string? ParentId, string Name, GalleryFolderInfo? Folder);
+    private sealed record BreadcrumbLevel(string Key, string? Parent, string Name, FolderResourceInfo? Folder);
 
     private string SearchPlaceholder
     {
@@ -133,7 +134,7 @@ public sealed partial class FormaGalleryAddressBar : ComponentBase
         await OnSearchQueryChanged.InvokeAsync(string.Empty);
     }
 
-    private async Task HandleBreadcrumbDrop(GalleryFolderInfo? folder)
+    private async Task HandleBreadcrumbDrop(FolderResourceInfo? folder)
         => await OnBreadcrumbDrop.InvokeAsync(folder);
 
     private async Task HandleSearchInput(ChangeEventArgs e)

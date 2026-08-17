@@ -8,7 +8,7 @@
     public sealed class Component
     {
         [Fact]
-        public void Should_render_empty_state_when_entries_is_empty()
+        public void Should_render_empty_state_when_there_are_no_resources()
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
@@ -25,14 +25,14 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries =
+            IReadOnlyList<ResourceInfo> resources =
             [
-                new ResourceInfo("https://example.com/cover.jpg", ResourceKind.Image) { Size = 1024 },
-                new ResourceInfo("https://example.com/video.mp4", ResourceKind.Video) { Size = 2048000 }
+                new ImageResourceInfo("https://example.com/cover.jpg") { Size = 1024 },
+                new VideoResourceInfo("https://example.com/video.mp4") { Size = 2048000 }
             ];
 
             // Act
-            var cut = ctx.Render(@<FormaGallery Resources="entries" />);
+            var cut = ctx.Render(@<FormaGallery Resources="resources" />);
 
             // Assert
             var items = cut.FindAll(".forma-gallery-item");
@@ -46,11 +46,11 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries =
+            IReadOnlyList<ResourceInfo> resources =
             [
-                new ResourceInfo("https://example.com/cover.jpg", ResourceKind.Image) { Size = 1024 }
+                new ImageResourceInfo("https://example.com/cover.jpg") { Size = 1024 }
             ];
-            var cut = ctx.Render(@<FormaGallery Resources="entries" />);
+            var cut = ctx.Render(@<FormaGallery Resources="resources" />);
 
             // Act & Assert - Switch to Details
             cut.FindAll(".forma-gallery-view-btn")[1].Click();
@@ -66,17 +66,17 @@
         }
 
         [Fact]
-        public void Should_filter_entries_by_search_query()
+        public void Should_filter_resources_by_search_query()
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries =
+            IReadOnlyList<ResourceInfo> resources =
             [
-                new ResourceInfo("https://example.com/cover.jpg", ResourceKind.Image),
-                new ResourceInfo("https://example.com/banner.png", ResourceKind.Image),
-                new ResourceInfo("https://example.com/avatar.jpg", ResourceKind.Image)
+                new ImageResourceInfo("https://example.com/cover.jpg"),
+                new ImageResourceInfo("https://example.com/banner.png"),
+                new ImageResourceInfo("https://example.com/avatar.jpg")
             ];
-            var cut = ctx.Render(@<FormaGallery Resources="entries" />);
+            var cut = ctx.Render(@<FormaGallery Resources="resources" />);
 
             // Act
             cut.Find("input.forma-gallery-search-input").Input("banner");
@@ -91,9 +91,9 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            var parent = new GalleryFolderInfo("races", "Races", null, "/races", 10);
-            var child = new GalleryFolderInfo("2026", "2026", "races", "/races/2026", 5);
-            IReadOnlyList<GalleryFolderInfo> folders = [parent, child];
+            var parent = new FolderResourceInfo("races") { Name = "Races", Count = 10 };
+            var child = new FolderResourceInfo("2026") { Name = "2026", Parent = "races", Count = 5 };
+            IReadOnlyList<FolderResourceInfo> folders = [parent, child];
 
             // Act
             var cut = ctx.Render(@<FormaGallery Resources="[]" Folders="folders" CurrentFolder="child" />);
@@ -107,14 +107,48 @@
         }
 
         [Fact]
+        public void Should_show_a_folder_the_host_appended_to_the_list_it_already_passed()
+        {
+            // Arrange
+            using var ctx = new FormaGalleryTests();
+            var folders = new List<FolderResourceInfo> { new("races") { Name = "Races" } };
+            var cut = ctx.Render(@<FormaGallery Resources="[]" Folders="folders" />);
+            var gallery = cut.FindComponent<FormaGallery>();
+
+            // Act
+            folders.Add(new FolderResourceInfo("covers") { Name = "Covers" });
+            gallery.Render(parameters => parameters.Add(p => p.Folders, folders));
+
+            // Assert
+            var names = cut.FindAll(".forma-gallery-folder-name").Select(node => node.TextContent.Trim());
+            Assert.Contains("Covers", names);
+        }
+
+        [Fact]
+        public void Should_omit_the_folder_count_when_the_host_did_not_supply_one()
+        {
+            // Arrange
+            using var ctx = new FormaGalleryTests();
+            IReadOnlyList<FolderResourceInfo> folders = [new("races") { Name = "Races" }];
+
+            // Act
+            var cut = ctx.Render(@<FormaGallery Resources="[]" Folders="folders" />);
+
+            // Assert
+            var folderRow = cut.FindAll(".forma-gallery-folder-row")[1];
+            Assert.Equal("Races", folderRow.QuerySelector(".forma-gallery-folder-name")!.TextContent.Trim());
+            Assert.Null(folderRow.QuerySelector(".forma-gallery-folder-count"));
+        }
+
+        [Fact]
         public void Should_navigate_back_forward_and_up_in_folder_history()
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            var parent = new GalleryFolderInfo("races", "Races", null, "/races", 10);
-            var child = new GalleryFolderInfo("2026", "2026", "races", "/races/2026", 5);
-            IReadOnlyList<GalleryFolderInfo> folders = [parent, child];
-            GalleryFolderInfo? activeFolder = null;
+            var parent = new FolderResourceInfo("races") { Name = "Races", Count = 10 };
+            var child = new FolderResourceInfo("2026") { Name = "2026", Parent = "races", Count = 5 };
+            IReadOnlyList<FolderResourceInfo> folders = [parent, child];
+            FolderResourceInfo? activeFolder = null;
 
             var cut = ctx.Render(@<FormaGallery Resources="[]"
                                                 Folders="folders"
@@ -128,23 +162,23 @@
 
             // Assert folder changed to parent
             Assert.NotNull(activeFolder);
-            Assert.Equal("races", activeFolder.Id);
+            Assert.Equal("races", activeFolder.Source);
         }
 
         [Fact]
-        public void Should_sort_entries_by_name_and_size()
+        public void Should_sort_resources_by_name_and_size()
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries =
+            IReadOnlyList<ResourceInfo> resources =
             [
-                new ResourceInfo("https://example.com/b.jpg", ResourceKind.Image) { Size = 500 },
-                new ResourceInfo("https://example.com/a.jpg", ResourceKind.Image) { Size = 1000 },
-                new ResourceInfo("https://example.com/c.jpg", ResourceKind.Image) { Size = 200 }
+                new ImageResourceInfo("https://example.com/b.jpg") { Size = 500 },
+                new ImageResourceInfo("https://example.com/a.jpg") { Size = 1000 },
+                new ImageResourceInfo("https://example.com/c.jpg") { Size = 200 }
             ];
 
             // Act & Assert - Name ascending (default)
-            var cut = ctx.Render(@<FormaGallery Resources="entries" />);
+            var cut = ctx.Render(@<FormaGallery Resources="resources" />);
             var items = cut.FindAll(".forma-gallery-item-name");
             Assert.Equal("a.jpg", items[0].TextContent);
             Assert.Equal("b.jpg", items[1].TextContent);
@@ -159,18 +193,18 @@
         }
 
         [Fact]
-        public void Should_sort_entries_by_the_date_added_and_the_date_modified()
+        public void Should_sort_resources_by_the_date_added_and_the_date_modified()
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
             var epoch = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
-            IReadOnlyList<ResourceInfo> entries =
+            IReadOnlyList<ResourceInfo> resources =
             [
-                new GalleryResourceInfo("https://example.com/a.jpg", ResourceKind.Image) { AddedAt = epoch.AddDays(3), ModifiedAt = epoch.AddDays(1) },
-                new GalleryResourceInfo("https://example.com/b.jpg", ResourceKind.Image) { AddedAt = epoch.AddDays(1), ModifiedAt = epoch.AddDays(3) },
-                new GalleryResourceInfo("https://example.com/c.jpg", ResourceKind.Image) { AddedAt = epoch.AddDays(2), ModifiedAt = epoch.AddDays(2) }
+                new ImageResourceInfo("https://example.com/a.jpg") { CreatedAt = epoch.AddDays(3), ModifiedAt = epoch.AddDays(1) },
+                new ImageResourceInfo("https://example.com/b.jpg") { CreatedAt = epoch.AddDays(1), ModifiedAt = epoch.AddDays(3) },
+                new ImageResourceInfo("https://example.com/c.jpg") { CreatedAt = epoch.AddDays(2), ModifiedAt = epoch.AddDays(2) }
             ];
-            var cut = ctx.Render(@<FormaGallery Resources="entries" />);
+            var cut = ctx.Render(@<FormaGallery Resources="resources" />);
 
             // Act
             cut.Find(".forma-gallery-sort-select").Change("DateAdded");
@@ -188,16 +222,16 @@
         }
 
         [Fact]
-        public void Should_order_an_entry_without_a_date_first_when_sorting_by_date()
+        public void Should_order_a_resource_without_a_date_first_when_sorting_by_date()
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries =
+            IReadOnlyList<ResourceInfo> resources =
             [
-                new GalleryResourceInfo("https://example.com/dated.jpg", ResourceKind.Image) { ModifiedAt = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero) },
-                new ResourceInfo("https://example.com/undated.jpg", ResourceKind.Image)
+                new ImageResourceInfo("https://example.com/dated.jpg") { ModifiedAt = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero) },
+                new ImageResourceInfo("https://example.com/undated.jpg")
             ];
-            var cut = ctx.Render(@<FormaGallery Resources="entries" />);
+            var cut = ctx.Render(@<FormaGallery Resources="resources" />);
 
             // Act
             cut.Find(".forma-gallery-sort-select").Change("DateModified");
@@ -212,8 +246,8 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries = [new ResourceInfo("https://example.com/a.jpg", ResourceKind.Image)];
-            var cut = ctx.Render(@<FormaGallery Resources="entries" ViewMode="GalleryViewMode.Details" />);
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/a.jpg")];
+            var cut = ctx.Render(@<FormaGallery Resources="resources" ViewMode="GalleryViewMode.Details" />);
 
             // Assert
             Assert.Equal("—", cut.Find(".forma-gallery-cell-modified").TextContent.Trim());
@@ -224,11 +258,11 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries = [new GalleryResourceInfo("https://example.com/a.jpg", ResourceKind.Image) { Size = 10, AddedAt = DateTimeOffset.UnixEpoch }];
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/a.jpg") { Size = 10, CreatedAt = DateTimeOffset.UnixEpoch }];
             var options = new FormaGalleryOptions { DetailsColumns = GalleryDetailsColumns.Added };
 
             // Act
-            var cut = ctx.Render(@<FormaGallery Resources="entries" Options="options" ViewMode="GalleryViewMode.Details" />);
+            var cut = ctx.Render(@<FormaGallery Resources="resources" Options="options" ViewMode="GalleryViewMode.Details" />);
 
             // Assert
             Assert.Single(cut.FindAll(".forma-gallery-cell-added"));
@@ -241,10 +275,10 @@
         public void Should_announce_the_sorted_column_through_aria_sort()        {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries = [new ResourceInfo("https://example.com/a.jpg", ResourceKind.Image)];
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/a.jpg")];
 
             // Act
-            var cut = ctx.Render(@<FormaGallery Resources="entries" ViewMode="GalleryViewMode.Details" />);
+            var cut = ctx.Render(@<FormaGallery Resources="resources" ViewMode="GalleryViewMode.Details" />);
 
             // Assert
             Assert.Equal("ascending", cut.Find(".forma-gallery-col-name").GetAttribute("aria-sort"));
@@ -263,13 +297,13 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries =
+            IReadOnlyList<ResourceInfo> resources =
             [
-                new ResourceInfo("https://example.com/item1.jpg", ResourceKind.Image),
-                new ResourceInfo("https://example.com/item2.jpg", ResourceKind.Image)
+                new ImageResourceInfo("https://example.com/item1.jpg"),
+                new ImageResourceInfo("https://example.com/item2.jpg")
             ];
             IReadOnlyList<ResourceInfo>? selected = null;
-            var cut = ctx.Render(@<FormaGallery Resources="entries"
+            var cut = ctx.Render(@<FormaGallery Resources="resources"
                                                 MaxSelection="1"
                                                 SelectedChanged="@(items => { selected = items; return Task.CompletedTask; })" />);
 
@@ -288,12 +322,12 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries =
+            IReadOnlyList<ResourceInfo> resources =
             [
-                new ResourceInfo("https://example.com/item1.jpg", ResourceKind.Image)
+                new ImageResourceInfo("https://example.com/item1.jpg")
             ];
             IReadOnlyList<ResourceInfo>? applied = null;
-            var cut = ctx.Render(@<FormaGallery Resources="entries"
+            var cut = ctx.Render(@<FormaGallery Resources="resources"
                                                 SelectedChanged="@(items => { applied = items; return Task.CompletedTask; })" />);
             cut.Find(".forma-gallery-select-mode-btn").Click();
 
@@ -313,8 +347,8 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            var item = new ResourceInfo("https://example.com/photo.jpg", ResourceKind.Image);
-            var folder = new GalleryFolderInfo("vacation", "Vacation");
+            var item = new ImageResourceInfo("https://example.com/photo.jpg");
+            var folder = new FolderResourceInfo("vacation") { Name = "Vacation" };
             GalleryDropRequest? dropRequest = null;
 
             var cut = ctx.Render(@<FormaGallery Resources="[item]"
@@ -327,8 +361,8 @@
 
             // Assert
             Assert.NotNull(dropRequest);
-            Assert.Equal("photo.jpg", Assert.Single(dropRequest.Items).Name);
-            Assert.Equal("vacation", dropRequest.TargetFolder?.Id);
+            Assert.Equal("photo.jpg", Assert.Single(dropRequest.Resources).Name);
+            Assert.Equal("vacation", dropRequest.TargetFolder?.Source);
         }
 
         [Fact]
@@ -336,8 +370,8 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            var source = new GalleryFolderInfo("sub", "Subfolder");
-            var target = new GalleryFolderInfo("parent", "ParentFolder");
+            var source = new FolderResourceInfo("sub") { Name = "Subfolder" };
+            var target = new FolderResourceInfo("parent") { Name = "ParentFolder" };
             GalleryFolderDropRequest? folderDropRequest = null;
 
             var cut = ctx.Render(@<FormaGallery Resources="[]"
@@ -350,8 +384,8 @@
 
             // Assert
             Assert.NotNull(folderDropRequest);
-            Assert.Equal("sub", folderDropRequest.SourceFolder.Id);
-            Assert.Equal("parent", folderDropRequest.TargetFolder?.Id);
+            Assert.Equal("sub", folderDropRequest.SourceFolder.Source);
+            Assert.Equal("parent", folderDropRequest.TargetFolder?.Source);
         }
 
         [Fact]
@@ -359,11 +393,11 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries =
+            IReadOnlyList<ResourceInfo> resources =
             [
-                new ResourceInfo("https://example.com/photo.jpg", ResourceKind.Image)
+                new ImageResourceInfo("https://example.com/photo.jpg")
             ];
-            var cut = ctx.Render(@<FormaGallery Resources="entries" />);
+            var cut = ctx.Render(@<FormaGallery Resources="resources" />);
 
             // Act
             cut.Find(".forma-gallery-action-btn").Click();
@@ -377,12 +411,12 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries =
+            IReadOnlyList<ResourceInfo> resources =
             [
-                new ResourceInfo("https://example.com/old-name.jpg", ResourceKind.Image)
+                new ImageResourceInfo("https://example.com/old-name.jpg")
             ];
             GalleryRenameRequest? request = null;
-            var cut = ctx.Render(@<FormaGallery Resources="entries"
+            var cut = ctx.Render(@<FormaGallery Resources="resources"
                                                 OnRename="@(req => { request = req; return Task.CompletedTask; })" />);
 
             // Act
@@ -401,12 +435,12 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries =
+            IReadOnlyList<ResourceInfo> resources =
             [
-                new ResourceInfo("https://example.com/item.jpg", ResourceKind.Image)
+                new ImageResourceInfo("https://example.com/item.jpg")
             ];
             GalleryDeleteRequest? request = null;
-            var cut = ctx.Render(@<FormaGallery Resources="entries"
+            var cut = ctx.Render(@<FormaGallery Resources="resources"
                                                 OnDelete="@(req => { request = req; return Task.CompletedTask; })" />);
 
             // Act
@@ -415,7 +449,7 @@
 
             // Assert
             Assert.NotNull(request);
-            Assert.Equal("item.jpg", Assert.Single(request.Items).Name);
+            Assert.Equal("item.jpg", Assert.Single(request.Resources).Name);
         }
 
         [Fact]
@@ -423,7 +457,7 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            var folder = new GalleryFolderInfo("races", "Races");
+            var folder = new FolderResourceInfo("races") { Name = "Races" };
             GalleryFolderCreateRequest? createReq = null;
             GalleryFolderRenameRequest? renameReq = null;
             GalleryFolderDeleteRequest? deleteReq = null;
@@ -458,7 +492,7 @@
 
             // Assert delete
             Assert.NotNull(deleteReq);
-            Assert.Equal("races", deleteReq.Folder.Id);
+            Assert.Equal("races", deleteReq.Folder.Source);
         }
 
         [Fact]
@@ -466,11 +500,11 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries = [new ResourceInfo("https://example.com/cover.jpg", ResourceKind.Image)];
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
             var options = new FormaGalleryFileOptions { AllowRename = false, AllowDelete = false };
 
             // Act
-            var cut = ctx.Render(@<FormaGallery Resources="entries" FileOptions="options" />);
+            var cut = ctx.Render(@<FormaGallery Resources="resources" FileOptions="options" />);
 
             // Assert
             var labels = cut.FindAll(".forma-gallery-action-btn").Select(b => b.GetAttribute("aria-label")).ToList();
@@ -497,9 +531,9 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries = [new ResourceInfo("https://example.com/cover.jpg", ResourceKind.Image)];
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
             var options = new FormaGalleryFileOptions { AllowDelete = false };
-            var cut = ctx.Render(@<FormaGallery Resources="entries" FileOptions="options" />);
+            var cut = ctx.Render(@<FormaGallery Resources="resources" FileOptions="options" />);
 
             // Act
             cut.Find(".forma-gallery-select-mode-btn").Click();
@@ -515,7 +549,7 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            var folder = new GalleryFolderInfo("races", "Races");
+            var folder = new FolderResourceInfo("races") { Name = "Races" };
             var options = new FormaGalleryFileOptions { AllowFolderRename = false, AllowFolderDelete = false, AllowFolderCreate = false };
 
             // Act
@@ -531,11 +565,11 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries = [new ResourceInfo("https://example.com/cover.jpg", ResourceKind.Image)];
-            var folder = new GalleryFolderInfo("races", "Races");
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
+            var folder = new FolderResourceInfo("races") { Name = "Races" };
 
             // Act
-            var cut = ctx.Render(@<FormaGallery Resources="entries" Folders="[folder]" FileOptions="FormaGalleryFileOptions.ReadOnly" />);
+            var cut = ctx.Render(@<FormaGallery Resources="resources" Folders="[folder]" FileOptions="FormaGalleryFileOptions.ReadOnly" />);
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-gallery-new-folder-btn"));
@@ -551,11 +585,11 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries = [new ResourceInfo("https://example.com/cover.jpg", ResourceKind.Image)];
-            var folder = new GalleryFolderInfo("races", "Races");
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
+            var folder = new FolderResourceInfo("races") { Name = "Races" };
 
             // Act
-            var cut = ctx.Render(@<FormaGallery Resources="entries" Folders="[folder]" FileOptions="FormaGalleryFileOptions.Default" />);
+            var cut = ctx.Render(@<FormaGallery Resources="resources" Folders="[folder]" FileOptions="FormaGalleryFileOptions.Default" />);
 
             // Assert
             var labels = cut.FindAll(".forma-gallery-action-btn").Select(b => b.GetAttribute("aria-label")).ToList();
@@ -571,7 +605,7 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            var folder = new GalleryFolderInfo("races", "Races");
+            var folder = new FolderResourceInfo("races") { Name = "Races" };
 
             // Act
             var withoutFolders = ctx.Render(@<FormaGallery Resources="[]" />);
@@ -587,8 +621,8 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries = [new ResourceInfo("https://example.com/cover.jpg", ResourceKind.Image)];
-            var cut = ctx.Render(@<FormaGallery Resources="entries" />);
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
+            var cut = ctx.Render(@<FormaGallery Resources="resources" />);
 
             // Assert - not in select mode
             Assert.Empty(cut.FindAll(".forma-gallery-item-select"));
@@ -609,8 +643,8 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries = [new ResourceInfo("https://example.com/cover.jpg", ResourceKind.Image)];
-            var cut = ctx.Render(@<FormaGallery Resources="entries" />);
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
+            var cut = ctx.Render(@<FormaGallery Resources="resources" />);
 
             // Act
             cut.Find(".forma-gallery-item-open").Click();
@@ -625,8 +659,8 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries = [new ResourceInfo("https://example.com/cover.jpg", ResourceKind.Image)];
-            var cut = ctx.Render(@<FormaGallery Resources="entries" />);
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
+            var cut = ctx.Render(@<FormaGallery Resources="resources" />);
             cut.Find(".forma-gallery-select-mode-btn").Click();
             cut.Find(".forma-gallery-item-open").Click();
             Assert.NotNull(cut.Find(".forma-gallery-selection-bar"));
@@ -644,11 +678,11 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<GalleryFolderInfo> folders =
+            IReadOnlyList<FolderResourceInfo> folders =
             [
-                new GalleryFolderInfo("races", "Races"),
-                new GalleryFolderInfo("2026", "2026", "races"),
-                new GalleryFolderInfo("covers", "Covers")
+                new FolderResourceInfo("races") { Name = "Races" },
+                new FolderResourceInfo("2026") { Name = "2026", Parent = "races" },
+                new FolderResourceInfo("covers") { Name = "Covers" }
             ];
             var cut = ctx.Render(@<FormaGallery Resources="[]" Folders="folders" />);
 
@@ -665,9 +699,9 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries = [new ResourceInfo("https://example.com/cover.jpg", ResourceKind.Image)];
-            var folder = new GalleryFolderInfo("races", "Races");
-            var cut = ctx.Render(@<FormaGallery Resources="entries" Folders="[folder]" />);
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
+            var folder = new FolderResourceInfo("races") { Name = "Races" };
+            var cut = ctx.Render(@<FormaGallery Resources="resources" Folders="[folder]" />);
             cut.Find(".forma-gallery-select-mode-btn").Click();
             Assert.NotEmpty(cut.FindAll(".forma-gallery-item-select"));
             Assert.NotEmpty(cut.FindAll(".forma-gallery-folder-select"));
@@ -686,9 +720,9 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries = [new ResourceInfo("https://example.com/cover.jpg", ResourceKind.Image)];
-            var folder = new GalleryFolderInfo("races", "Races");
-            var cut = ctx.Render(@<FormaGallery Resources="entries" Folders="[folder]" />);
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
+            var folder = new FolderResourceInfo("races") { Name = "Races" };
+            var cut = ctx.Render(@<FormaGallery Resources="resources" Folders="[folder]" />);
             cut.Find(".forma-gallery-select-mode-btn").Click();
 
             // Act
@@ -704,7 +738,7 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            var folder = new GalleryFolderInfo("races", "Races");
+            var folder = new FolderResourceInfo("races") { Name = "Races" };
             GalleryFolderDeleteRequest? request = null;
             var cut = ctx.Render(@<FormaGallery Resources="[]"
                                                 Folders="[folder]"
@@ -718,14 +752,14 @@
 
             // Assert
             Assert.NotNull(request);
-            Assert.Equal("races", request.Folder.Id);
+            Assert.Equal("races", request.Folder.Source);
         }
         [Fact]
         public void Should_keep_the_breadcrumb_menu_when_the_sidebar_is_switched_off()
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            var folder = new GalleryFolderInfo("races", "Races");
+            var folder = new FolderResourceInfo("races") { Name = "Races" };
 
             // Act
             var cut = ctx.Render(@<FormaGallery Resources="[]" Folders="[folder]" Options="@(new FormaGalleryOptions { ShowSidebar = false })" />);
@@ -741,7 +775,7 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            var folder = new GalleryFolderInfo("races", "Races");
+            var folder = new FolderResourceInfo("races") { Name = "Races" };
 
             // Act
             var cut = ctx.Render(@<FormaGallery Resources="[]" Folders="[folder]" Options="@(new FormaGalleryOptions { ShowFolderMenu = false })" />);
@@ -755,8 +789,8 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries = [new ResourceInfo("https://example.com/cover.jpg", ResourceKind.Image)];
-            var cut = ctx.Render(@<FormaGallery Resources="entries" SelectedChanged="@(_ => Task.CompletedTask)" />);
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
+            var cut = ctx.Render(@<FormaGallery Resources="resources" SelectedChanged="@(_ => Task.CompletedTask)" />);
             cut.FindAll(".forma-gallery-view-btn")[2].Click();
             Assert.NotNull(cut.Find(".forma-gallery-list"));
             cut.Find(".forma-gallery-select-mode-btn").Click();
@@ -774,12 +808,12 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries =
+            IReadOnlyList<ResourceInfo> resources =
             [
-                new ResourceInfo("https://example.com/b.jpg", ResourceKind.Image) { Size = 10 },
-                new ResourceInfo("https://example.com/a.jpg", ResourceKind.Image) { Size = 90 }
+                new ImageResourceInfo("https://example.com/b.jpg") { Size = 10 },
+                new ImageResourceInfo("https://example.com/a.jpg") { Size = 90 }
             ];
-            var cut = ctx.Render(@<FormaGallery Resources="entries" SelectedChanged="@(_ => Task.CompletedTask)" />);
+            var cut = ctx.Render(@<FormaGallery Resources="resources" SelectedChanged="@(_ => Task.CompletedTask)" />);
             cut.Find(".forma-gallery-sort-select").Change("Size");
             Assert.Equal("b.jpg", cut.FindAll(".forma-gallery-item-name")[0].TextContent);
             cut.Find(".forma-gallery-select-mode-btn").Click();
@@ -795,8 +829,8 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries = [new ResourceInfo("https://example.com/cover.jpg", ResourceKind.Image)];
-            var cut = ctx.Render(@<FormaGallery Resources="entries" />);
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
+            var cut = ctx.Render(@<FormaGallery Resources="resources" />);
             cut.Find(".forma-gallery-item-open").Click();
             Assert.NotNull(cut.Find(".forma-modal"));
 
@@ -813,10 +847,10 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<GalleryFolderInfo> folders =
+            IReadOnlyList<FolderResourceInfo> folders =
             [
-                new GalleryFolderInfo("races", "Races"),
-                new GalleryFolderInfo("2026", "2026", "races")
+                new FolderResourceInfo("races") { Name = "Races" },
+                new FolderResourceInfo("2026") { Name = "2026", Parent = "races" }
             ];
             var cut = ctx.Render(@<FormaGallery Resources="[]" Folders="folders" />);
             Assert.Contains(cut.FindAll(".forma-gallery-folder-name"), n => n.TextContent.Trim() == "2026");
@@ -841,10 +875,10 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<GalleryFolderInfo> folders =
+            IReadOnlyList<FolderResourceInfo> folders =
             [
-                new GalleryFolderInfo("races", "Races"),
-                new GalleryFolderInfo("2026", "2026", "races")
+                new FolderResourceInfo("races") { Name = "Races" },
+                new FolderResourceInfo("2026") { Name = "2026", Parent = "races" }
             ];
             var cut = ctx.Render(@<FormaGallery Resources="[]" Folders="folders" />);
             Assert.NotNull(cut.Find(".forma-gallery-collapse-all-tool"));
@@ -861,7 +895,7 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            var folder = new GalleryFolderInfo("races", "Races");
+            var folder = new FolderResourceInfo("races") { Name = "Races" };
 
             // Act
             var cut = ctx.Render(@<FormaGallery Resources="[]" Folders="[folder]" />);
@@ -876,8 +910,8 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            var current = new GalleryFolderInfo("races", "Races");
-            IReadOnlyList<GalleryFolderInfo> folders = [current, new GalleryFolderInfo("races", "Races copy")];
+            var current = new FolderResourceInfo("races") { Name = "Races" };
+            IReadOnlyList<FolderResourceInfo> folders = [current, new FolderResourceInfo("races") { Name = "Races copy" }];
 
             // Act
             var cut = ctx.Render(@<FormaGallery Resources="[]" Folders="folders" CurrentFolder="current" />);
@@ -891,8 +925,8 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            var child = new GalleryFolderInfo("2026", "2026", "races");
-            IReadOnlyList<GalleryFolderInfo> folders = [new GalleryFolderInfo("races", "Races", "2026"), child];
+            var child = new FolderResourceInfo("2026") { Name = "2026", Parent = "races" };
+            IReadOnlyList<FolderResourceInfo> folders = [new FolderResourceInfo("races") { Name = "Races", Parent = "2026" }, child];
 
             // Act
             var cut = ctx.Render(@<FormaGallery Resources="[]" Folders="folders" CurrentFolder="child" />);
@@ -906,8 +940,8 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            var parent = new GalleryFolderInfo("races", "Races");
-            var child = new GalleryFolderInfo("2026", "2026", "races");
+            var parent = new FolderResourceInfo("races") { Name = "Races" };
+            var child = new FolderResourceInfo("2026") { Name = "2026", Parent = "races" };
             GalleryFolderDropRequest? request = null;
             var cut = ctx.Render(@<FormaGallery Resources="[]"
                                                 Folders="@(new[] { parent, child })"
@@ -927,12 +961,12 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries = [new ResourceInfo("https://example.com/a.jpg", ResourceKind.Image)];
-            var races = new GalleryFolderInfo("races", "Races");
-            var covers = new GalleryFolderInfo("covers", "Covers");
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/a.jpg")];
+            var races = new FolderResourceInfo("races") { Name = "Races" };
+            var covers = new FolderResourceInfo("covers") { Name = "Covers" };
             GalleryFolderDropRequest? folderRequest = null;
             GalleryDropRequest? itemRequest = null;
-            var cut = ctx.Render(@<FormaGallery Resources="entries"
+            var cut = ctx.Render(@<FormaGallery Resources="resources"
                                                 Folders="@(new[] { races, covers })"
                                                 OnFolderDrop="@(req => { folderRequest = req; return Task.CompletedTask; })"
                                                 OnDrop="@(req => { itemRequest = req; return Task.CompletedTask; })" />);
@@ -949,7 +983,7 @@
             // Assert
             Assert.Null(folderRequest);
             Assert.NotNull(itemRequest);
-            Assert.Equal("covers", itemRequest.TargetFolder?.Id);
+            Assert.Equal("covers", itemRequest.TargetFolder?.Source);
         }
 
         [Fact]
@@ -957,10 +991,10 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries = [new ResourceInfo("https://example.com/a.jpg", ResourceKind.Image)];
-            var races = new GalleryFolderInfo("races", "Races");
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/a.jpg")];
+            var races = new FolderResourceInfo("races") { Name = "Races" };
             GalleryDropRequest? request = null;
-            var cut = ctx.Render(@<FormaGallery Resources="entries"
+            var cut = ctx.Render(@<FormaGallery Resources="resources"
                                                 Folders="[races]"
                                                 OnDrop="@(req => { request = req; return Task.CompletedTask; })" />);
 
@@ -971,7 +1005,7 @@
             // Assert
             Assert.NotNull(request);
             Assert.Null(request.TargetFolder);
-            Assert.Equal("a.jpg", Assert.Single(request.Items).Name);
+            Assert.Equal("a.jpg", Assert.Single(request.Resources).Name);
         }
 
         [Fact]
@@ -979,8 +1013,8 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            var parent = new GalleryFolderInfo("races", "Races");
-            var child = new GalleryFolderInfo("2026", "2026", "races");
+            var parent = new FolderResourceInfo("races") { Name = "Races" };
+            var child = new FolderResourceInfo("2026") { Name = "2026", Parent = "races" };
             GalleryFolderDropRequest? request = null;
             var cut = ctx.Render(@<FormaGallery Resources="[]"
                                                 Folders="@(new[] { parent, child })"
@@ -993,7 +1027,7 @@
 
             // Assert
             Assert.NotNull(request);
-            Assert.Equal("2026", request.SourceFolder.Id);
+            Assert.Equal("2026", request.SourceFolder.Source);
             Assert.Null(request.TargetFolder);
         }
 
@@ -1002,7 +1036,7 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            var races = new GalleryFolderInfo("races", "Races");
+            var races = new FolderResourceInfo("races") { Name = "Races" };
             GalleryFolderDropRequest? request = null;
             var cut = ctx.Render(@<FormaGallery Resources="[]"
                                                 Folders="[races]"
@@ -1022,13 +1056,13 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries =
+            IReadOnlyList<ResourceInfo> resources =
             [
-                new ResourceInfo("https://example.com/a.jpg", ResourceKind.Image),
-                new ResourceInfo("https://example.com/b.jpg", ResourceKind.Image),
-                new ResourceInfo("https://example.com/c.jpg", ResourceKind.Image)
+                new ImageResourceInfo("https://example.com/a.jpg"),
+                new ImageResourceInfo("https://example.com/b.jpg"),
+                new ImageResourceInfo("https://example.com/c.jpg")
             ];
-            var cut = ctx.Render(@<FormaGallery Resources="entries" PageSize="2" Options="@(new FormaGalleryOptions { InfiniteScroll = GalleryInfiniteScrollMode.Manual })" />);
+            var cut = ctx.Render(@<FormaGallery Resources="resources" PageSize="2" Options="@(new FormaGalleryOptions { InfiniteScroll = GalleryInfiniteScrollMode.Manual })" />);
             Assert.Empty(cut.FindAll(".forma-gallery-pagination"));
             Assert.Equal(2, cut.FindAll(".forma-gallery-item").Count);
 
@@ -1045,15 +1079,15 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries =
+            IReadOnlyList<ResourceInfo> resources =
             [
-                new ResourceInfo("https://example.com/a.jpg", ResourceKind.Image),
-                new ResourceInfo("https://example.com/b.jpg", ResourceKind.Image),
-                new ResourceInfo("https://example.com/c.jpg", ResourceKind.Image)
+                new ImageResourceInfo("https://example.com/a.jpg"),
+                new ImageResourceInfo("https://example.com/b.jpg"),
+                new ImageResourceInfo("https://example.com/c.jpg")
             ];
 
             // Act
-            var cut = ctx.Render(@<FormaGallery Resources="entries" PageSize="2" Options="@(new FormaGalleryOptions { InfiniteScroll = GalleryInfiniteScrollMode.Manual })" />);
+            var cut = ctx.Render(@<FormaGallery Resources="resources" PageSize="2" Options="@(new FormaGalleryOptions { InfiniteScroll = GalleryInfiniteScrollMode.Manual })" />);
 
             // Assert
             var status = cut.Find(".forma-gallery-scroll-status");
@@ -1072,15 +1106,15 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries =
+            IReadOnlyList<ResourceInfo> resources =
             [
-                new ResourceInfo("https://example.com/a.jpg", ResourceKind.Image),
-                new ResourceInfo("https://example.com/b.jpg", ResourceKind.Image),
-                new ResourceInfo("https://example.com/c.jpg", ResourceKind.Image)
+                new ImageResourceInfo("https://example.com/a.jpg"),
+                new ImageResourceInfo("https://example.com/b.jpg"),
+                new ImageResourceInfo("https://example.com/c.jpg")
             ];
 
             // Act
-            var cut = ctx.Render(@<FormaGallery Resources="entries"
+            var cut = ctx.Render(@<FormaGallery Resources="resources"
                                                 PageSize="2"
                                                 Options="@(new FormaGalleryOptions { InfiniteScroll = GalleryInfiniteScrollMode.Automatic })" />);
 
@@ -1095,18 +1129,18 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries =
+            IReadOnlyList<ResourceInfo> resources =
             [
-                new ResourceInfo("https://example.com/a.jpg", ResourceKind.Image),
-                new ResourceInfo("https://example.com/b.jpg", ResourceKind.Image),
-                new ResourceInfo("https://example.com/c.jpg", ResourceKind.Image),
-                new ResourceInfo("https://example.com/d.jpg", ResourceKind.Image),
-                new ResourceInfo("https://example.com/e.jpg", ResourceKind.Image),
-                new ResourceInfo("https://example.com/f.jpg", ResourceKind.Image)
+                new ImageResourceInfo("https://example.com/a.jpg"),
+                new ImageResourceInfo("https://example.com/b.jpg"),
+                new ImageResourceInfo("https://example.com/c.jpg"),
+                new ImageResourceInfo("https://example.com/d.jpg"),
+                new ImageResourceInfo("https://example.com/e.jpg"),
+                new ImageResourceInfo("https://example.com/f.jpg")
             ];
             var pending = new TaskCompletionSource();
             var pages = new List<int>();
-            var cut = ctx.Render(@<FormaGallery Resources="entries"
+            var cut = ctx.Render(@<FormaGallery Resources="resources"
                                                 PageSize="2"
                                                 Options="@(new FormaGalleryOptions { InfiniteScroll = GalleryInfiniteScrollMode.Manual })"
                                                 OnPageChanged="@(page => { pages.Add(page); return pending.Task; })" />);
@@ -1134,7 +1168,7 @@
             // Arrange
             using var ctx = new FormaGalleryTests();
             var provider = new FakeGalleryResourcesProvider([.. Enumerable.Range(1, 500)
-                .Select(i => new ResourceInfo($"https://example.com/{i:D4}.jpg", ResourceKind.Image))]);
+                .Select(i => new ImageResourceInfo($"https://example.com/{i:D4}.jpg"))]);
 
             // Act
             var cut = ctx.Render(@<FormaGallery ResourcesProvider="provider" PageSize="10" />);
@@ -1151,7 +1185,7 @@
             // Arrange
             using var ctx = new FormaGalleryTests();
             var provider = new FakeGalleryResourcesProvider([.. Enumerable.Range(1, 50)
-                .Select(i => new ResourceInfo($"https://example.com/{i:D4}.jpg", ResourceKind.Image))]);
+                .Select(i => new ImageResourceInfo($"https://example.com/{i:D4}.jpg"))]);
             var cut = ctx.Render(@<FormaGallery ResourcesProvider="provider" PageSize="10" />);
 
             // Act
@@ -1168,7 +1202,7 @@
             // Arrange
             using var ctx = new FormaGalleryTests();
             var provider = new FakeGalleryResourcesProvider([.. Enumerable.Range(1, 50)
-                .Select(i => new ResourceInfo($"https://example.com/{i:D4}.jpg", ResourceKind.Image))]);
+                .Select(i => new ImageResourceInfo($"https://example.com/{i:D4}.jpg"))]);
             var cut = ctx.Render(@<FormaGallery ResourcesProvider="provider" PageSize="10" />);
 
             // Act
@@ -1185,7 +1219,7 @@
             // Arrange
             using var ctx = new FormaGalleryTests();
             var provider = new FakeGalleryResourcesProvider([.. Enumerable.Range(1, 50)
-                .Select(i => new ResourceInfo($"https://example.com/{i:D4}.jpg", ResourceKind.Image))]);
+                .Select(i => new ImageResourceInfo($"https://example.com/{i:D4}.jpg"))]);
             var cut = ctx.Render(@<FormaGallery ResourcesProvider="provider"
                                                 PageSize="10"
                                                 Options="@(new FormaGalleryOptions { InfiniteScroll = GalleryInfiniteScrollMode.Manual })" />);
@@ -1206,7 +1240,7 @@
             // Arrange
             using var ctx = new FormaGalleryTests();
             var provider = new FakeGalleryResourcesProvider([.. Enumerable.Range(1, 50)
-                .Select(i => new ResourceInfo($"https://example.com/{i:D4}.jpg", ResourceKind.Image))]);
+                .Select(i => new ImageResourceInfo($"https://example.com/{i:D4}.jpg"))]);
             IReadOnlyList<ResourceInfo> selected = [];
             var cut = ctx.Render(@<FormaGallery ResourcesProvider="provider"
                                                 PageSize="10"
@@ -1257,7 +1291,7 @@
             // Arrange
             using var ctx = new FormaGalleryTests();
             var provider = new FakeGalleryResourcesProvider([.. Enumerable.Range(1, 50)
-                .Select(i => new ResourceInfo($"https://example.com/{i:D4}.jpg", ResourceKind.Image))])
+                .Select(i => new ImageResourceInfo($"https://example.com/{i:D4}.jpg"))])
             {
                 Gate = new TaskCompletionSource()
             };
@@ -1279,15 +1313,15 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries =
+            IReadOnlyList<ResourceInfo> resources =
             [
-                new ResourceInfo("https://example.com/a.jpg", ResourceKind.Image),
-                new ResourceInfo("https://example.com/b.jpg", ResourceKind.Image),
-                new ResourceInfo("https://example.com/c.jpg", ResourceKind.Image)
+                new ImageResourceInfo("https://example.com/a.jpg"),
+                new ImageResourceInfo("https://example.com/b.jpg"),
+                new ImageResourceInfo("https://example.com/c.jpg")
             ];
 
             // Act
-            var cut = ctx.Render(@<FormaGallery Resources="entries" PageSize="2" />);
+            var cut = ctx.Render(@<FormaGallery Resources="resources" PageSize="2" />);
 
             // Assert
             Assert.NotNull(cut.Find(".forma-gallery-scroll"));
@@ -1308,15 +1342,15 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
-            IReadOnlyList<ResourceInfo> entries =
+            IReadOnlyList<ResourceInfo> resources =
             [
-                new ResourceInfo("https://example.com/a.jpg", ResourceKind.Image),
-                new ResourceInfo("https://example.com/b.jpg", ResourceKind.Image),
-                new ResourceInfo("https://example.com/c.jpg", ResourceKind.Image)
+                new ImageResourceInfo("https://example.com/a.jpg"),
+                new ImageResourceInfo("https://example.com/b.jpg"),
+                new ImageResourceInfo("https://example.com/c.jpg")
             ];
 
             // Act
-            var cut = ctx.Render(@<FormaGallery Resources="entries" PageSize="2" />);
+            var cut = ctx.Render(@<FormaGallery Resources="resources" PageSize="2" />);
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-gallery-scroll .forma-gallery-pagination"));

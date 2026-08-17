@@ -4,11 +4,11 @@ using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Compact list presentation view for gallery media items.</summary>
+/// <summary>Compact list presentation view for gallery media resources.</summary>
 public sealed partial class FormaGalleryListView : ComponentBase
 {
-    /// <summary>The collection of media items to display.</summary>
-    [Parameter] public IReadOnlyList<ResourceInfo> Entries { get; set; } = [];
+    /// <summary>The collection of media resources to display.</summary>
+    [Parameter] public IReadOnlyList<ResourceInfo> Resources { get; set; } = [];
 
     [CascadingParameter] private GalleryContext Context { get; set; } = default!;
 
