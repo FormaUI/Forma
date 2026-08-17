@@ -26,6 +26,8 @@ public sealed partial class FormaGalleryAddressBar : ComponentBase
     /// <summary>Every known folder, used to list a breadcrumb level's children.</summary>
     [Parameter] public IReadOnlyList<GalleryFolderInfo> Folders { get; set; } = [];
 
+    [CascadingParameter] private GalleryContext Context { get; set; } = default!;
+
     /// <summary>Raised when the back button is clicked.</summary>
     [Parameter] public EventCallback OnBack { get; set; }
 
@@ -78,7 +80,7 @@ public sealed partial class FormaGalleryAddressBar : ComponentBase
     }
 
     private IReadOnlyList<GalleryFolderInfo> ChildrenOf(string? parentId)
-        => [.. Folders.Where(folder => folder.ParentId == parentId)];
+        => Context.Folders.ChildrenOf(parentId);
 
     private void ToggleLevelMenu(string levelKey)
         => _openLevelKey = _openLevelKey == levelKey ? null : levelKey;

@@ -17,6 +17,8 @@ public sealed partial class FormaGallerySidebar : ComponentBase, IAsyncDisposabl
     /// <summary>List of available gallery folders.</summary>
     [Parameter] public IReadOnlyList<GalleryFolderInfo> Folders { get; set; } = [];
 
+    [CascadingParameter] private GalleryContext Context { get; set; } = default!;
+
     /// <summary>Raised when a folder is deleted.</summary>
     [Parameter] public EventCallback<GalleryFolderInfo> OnFolderDelete { get; set; }
 
@@ -57,7 +59,7 @@ public sealed partial class FormaGallerySidebar : ComponentBase, IAsyncDisposabl
     private readonly string _titleId = $"forma-gallery-folders-{Guid.NewGuid():N}";
 
     private IEnumerable<GalleryFolderInfo> ExpandableFolders
-        => Folders.Where(folder => Folders.Any(child => child.ParentId == folder.Id));
+        => Context.Folders.Expandable();
 
     private bool HasExpandableFolders
         => ExpandableFolders.Any();
@@ -217,7 +219,7 @@ public sealed partial class FormaGallerySidebar : ComponentBase, IAsyncDisposabl
         => e.DataTransfer.DropEffect = "move";
 
     internal IReadOnlyList<GalleryFolderInfo> ChildrenOf(string? parentId)
-        => [.. Folders.Where(folder => folder.ParentId == parentId)];
+        => Context.Folders.ChildrenOf(parentId);
 
     internal bool IsCurrent(GalleryFolderInfo folder)
         => CurrentFolder?.Id == folder.Id;

@@ -235,18 +235,25 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
 
     private FormaGalleryFileOptions? _actionOptions;
 
-    private Dictionary<string, GalleryFolderInfo> FolderLookup
+    private GalleryFolderTree _folderTree = GalleryFolderTree.Empty;
+
+    private IReadOnlyList<GalleryFolderInfo>? _breadcrumbSource;
+
+    private GalleryFolderInfo? _breadcrumbFolder;
+
+    private IReadOnlyList<GalleryFolderInfo> _breadcrumbs = [];
+
+    /// <summary>The folder list indexed, rebuilt only when the host supplies a different one.</summary>
+    private GalleryFolderTree FolderTree
     {
         get
         {
-            var lookup = new Dictionary<string, GalleryFolderInfo>(StringComparer.Ordinal);
-
-            foreach (var folder in Folders ?? [])
+            if (!ReferenceEquals(_folderTree.Source, Folders))
             {
-                lookup.TryAdd(folder.Id, folder);
+                _folderTree = new GalleryFolderTree(Folders);
             }
 
-            return lookup;
+            return _folderTree;
         }
     }
 
@@ -254,27 +261,34 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
     {
         get
         {
-            if (CurrentFolder is null || Folders is not { Count: > 0 })
+            var tree = FolderTree;
+
+            if (ReferenceEquals(_breadcrumbSource, Folders) && ReferenceEquals(_breadcrumbFolder, CurrentFolder))
             {
-                return [];
+                return _breadcrumbs;
             }
 
-            var path = new List<GalleryFolderInfo>();
-            var lookup = FolderLookup;
-            var visited = new HashSet<string>(StringComparer.Ordinal);
-            var current = CurrentFolder;
+            _breadcrumbSource = Folders;
+            _breadcrumbFolder = CurrentFolder;
+            _breadcrumbs = CurrentFolder is null ? [] : BuildBreadcrumbs(tree, CurrentFolder);
 
-            // A host can supply a cyclic parent chain, so each folder is walked at most once.
-            while (current is not null && visited.Add(current.Id))
-            {
-                path.Insert(0, current);
-                current = current.ParentId is { } parentId && lookup.TryGetValue(parentId, out var parent)
-                    ? parent
-                    : null;
-            }
-
-            return path;
+            return _breadcrumbs;
         }
+    }
+
+    private static List<GalleryFolderInfo> BuildBreadcrumbs(GalleryFolderTree tree, GalleryFolderInfo? current)
+    {
+        var path = new List<GalleryFolderInfo>();
+        var visited = new HashSet<string>(StringComparer.Ordinal);
+
+        // A host can supply a cyclic parent chain, so each folder is walked at most once.
+        while (current is not null && visited.Add(current.Id))
+        {
+            path.Insert(0, current);
+            current = tree.Find(current.ParentId);
+        }
+
+        return path;
     }
 
     private bool CanGoBack => _historyIndex > 0;
@@ -599,6 +613,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
     {
         _context.Options = Options;
         _context.FileOptions = FileOptions;
+        _context.Folders = FolderTree;
         _context.Selection.MaxSelection = MaxSelection;
         _context.SortField = _sortField;
         _context.SortDirection = _sortDirection;
@@ -1057,7 +1072,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
 
     private bool IsSelfOrDescendant(GalleryFolderInfo candidate, GalleryFolderInfo ancestor)
     {
-        var lookup = FolderLookup;
+        var tree = FolderTree;
         var visited = new HashSet<string>(StringComparer.Ordinal);
         var current = candidate;
 
@@ -1068,9 +1083,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
                 return true;
             }
 
-            current = current.ParentId is { } parentId && lookup.TryGetValue(parentId, out var parent)
-                ? parent
-                : null;
+            current = tree.Find(current.ParentId);
         }
 
         return false;

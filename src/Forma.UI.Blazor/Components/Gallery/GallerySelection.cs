@@ -10,6 +10,10 @@ public sealed class GallerySelection
 
     private readonly Dictionary<string, GalleryFolderInfo> _folders = new(StringComparer.Ordinal);
 
+    private IReadOnlyList<ResourceInfo>? _resolvedResources;
+
+    private IReadOnlyList<GalleryFolderInfo>? _resolvedFolders;
+
     /// <summary>Whether the gallery shows selection controls instead of activating previews.</summary>
     public bool IsSelectMode { get; internal set; }
 
@@ -46,14 +50,16 @@ public sealed class GallerySelection
 
     /// <summary>The selected folders.</summary>
     public IReadOnlyList<GalleryFolderInfo> ResolveFolders()
-        => [.. _folders.Values];
+        => _resolvedFolders ??= [.. _folders.Values];
 
     /// <summary>The selected items.</summary>
     public IReadOnlyList<ResourceInfo> Resolve()
-        => [.. _resources.Values];
+        => _resolvedResources ??= [.. _resources.Values];
 
     internal void Toggle(ResourceInfo entry)
     {
+        Invalidate();
+
         // Media and folders are deleted through different contracts, so only one kind is ever selected at a time.
         _folders.Clear();
 
@@ -75,6 +81,7 @@ public sealed class GallerySelection
 
     internal void ToggleFolder(GalleryFolderInfo folder)
     {
+        Invalidate();
         _resources.Clear();
 
         if (!_folders.Remove(folder.Id))
@@ -84,16 +91,21 @@ public sealed class GallerySelection
     }
 
     internal void Remove(ResourceInfo entry)
-        => _resources.Remove(entry.Source);
+    {
+        Invalidate();
+        _resources.Remove(entry.Source);
+    }
 
     internal void Clear()
     {
+        Invalidate();
         _resources.Clear();
         _folders.Clear();
     }
 
     internal void Replace(IEnumerable<ResourceInfo> entries)
     {
+        Invalidate();
         _resources.Clear();
         _folders.Clear();
 
@@ -101,5 +113,11 @@ public sealed class GallerySelection
         {
             _resources[entry.Source] = entry;
         }
+    }
+
+    private void Invalidate()
+    {
+        _resolvedResources = null;
+        _resolvedFolders = null;
     }
 }

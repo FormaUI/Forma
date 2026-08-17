@@ -28,6 +28,9 @@ public sealed class GalleryContext
     /// <summary>Which operations the gallery offers on the media and folders it lists.</summary>
     public FormaGalleryFileOptions FileOptions { get; internal set; } = FormaGalleryFileOptions.Default;
 
+    /// <summary>The folder list indexed, so the tree and the breadcrumb do not each rescan it.</summary>
+    internal GalleryFolderTree Folders { get; set; } = GalleryFolderTree.Empty;
+
     /// <summary>The item selection the gallery is tracking.</summary>
     public GallerySelection Selection { get; } = new();
 
