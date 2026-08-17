@@ -19,10 +19,10 @@
                             OnBack="HandleBackAsync"
                             OnForward="HandleForwardAsync"
                             OnUp="HandleUpAsync"
-                            OnRefresh="OnRefresh"
+                            OnRefresh="HandleRefreshAsync"
                             OnFolderSelected="HandleFolderSelectedAsync"
                             OnBreadcrumbDrop="HandleItemDropOnFolderAsync"
-                            OnSearchQueryChanged="HandleSearchQueryChanged" />
+                            OnSearchQueryChanged="HandleSearchQueryChangedAsync" />
 
     <!-- Action & View Toolbar -->
     <FormaGalleryToolbar IsSelectMode="_context.Selection.IsSelectMode"
@@ -35,8 +35,8 @@
                          OnDelete="() => OpenDeleteDialog()"
                          OnNewFolder="() => OpenFolderDialog(CurrentFolder)"
                          ShowNewFolder="@(!ShowsSidebar)"
-                         OnSortDirectionChanged="HandleSortDirectionChanged"
-                         OnSortFieldChanged="HandleSortFieldChanged"
+                         OnSortDirectionChanged="HandleSortDirectionChangedAsync"
+                         OnSortFieldChanged="HandleSortFieldChangedAsync"
                          OnToggleUpload="ToggleUpload"
                          OnToggleSelectMode="ToggleSelectModeAsync"
                          OnViewModeChanged="HandleViewModeChangedAsync" />
@@ -67,7 +67,7 @@
             <FormaGallerySidebar CurrentFolder="CurrentFolder"
                                  FileOptions="FileOptions"
                                  Folders="Folders"
-                                 TotalCount="TotalCount ?? Entries.Count"
+                                 TotalCount="TotalCount ?? Resources?.Count ?? MatchingCount ?? 0"
                                  OnFolderDelete="OpenFolderDeleteDialog"
                                  OnFolderDragStart="folder => _draggedFolder = folder"
                                  OnFolderDrop="HandleItemDropOnFolderAsync"
@@ -94,12 +94,16 @@
         }
 
         <div class="forma-gallery-content">
-            <div class="forma-gallery-scroll" id="@_scrollId">
-                @if (PagedEntries.Count == 0)
+            <div class="forma-gallery-scroll @(_isQuerying ? "is-busy" : "")" id="@_scrollId" aria-busy="@(_isQuerying ? "true" : "false")">
+                @if (VisibleResources.Count == 0)
                 {
                     <div class="forma-gallery-empty" role="status">
                         <span class="fa-solid fa-images forma-gallery-empty-icon" aria-hidden="true"></span>
-                        @if (!string.IsNullOrWhiteSpace(_searchQuery))
+                        @if (_isQuerying)
+                        {
+                            <p>@L["Loading media"]</p>
+                        }
+                        else if (!string.IsNullOrWhiteSpace(_searchQuery))
                         {
                             <p>@L["No media matches \"{query}\"", ("query", _searchQuery)]</p>
                         }
@@ -117,15 +121,15 @@
                 {
                     @if (_viewMode == GalleryViewMode.Thumbnails)
                     {
-                        <FormaGalleryThumbnailsView Entries="PagedEntries" />
+                        <FormaGalleryThumbnailsView Entries="VisibleResources" />
                     }
                     else if (_viewMode == GalleryViewMode.Details)
                     {
-                        <FormaGalleryDetailsView Entries="PagedEntries" />
+                        <FormaGalleryDetailsView Entries="VisibleResources" />
                     }
                     else
                     {
-                        <FormaGalleryListView Entries="PagedEntries" />
+                        <FormaGalleryListView Entries="VisibleResources" />
                     }
                 }
 
@@ -150,17 +154,24 @@
                 }
             </div>
 
-            @if (IsInfiniteScrolling && FilteredAndSortedEntries.Count > 0)
+            @if (IsInfiniteScrolling && VisibleResources.Count > 0)
             {
                 <div class="forma-gallery-scroll-status" role="status">
-                    @L["Showing {shown} of {total}", ("shown", PagedEntries.Count), ("total", FilteredAndSortedEntries.Count)]
+                    @if (MatchingCount is { } total)
+                    {
+                        @L["Showing {shown} of {total}", ("shown", VisibleResources.Count), ("total", total)]
+                    }
+                    else
+                    {
+                        @L["Showing {shown}", ("shown", VisibleResources.Count)]
+                    }
                 </div>
             }
 
-            @if (PageCount > 1 && !IsInfiniteScrolling)
+            @if (MatchingCount is not null && PageCount > 1 && !IsInfiniteScrolling)
             {
                 <div class="forma-gallery-pagination">
-                    <FormaPagination TotalItems="FilteredAndSortedEntries.Count"
+                    <FormaPagination TotalItems="MatchingCount ?? 0"
                                      PageSize="PageSize"
                                      CurrentPage="EffectivePage"
                                      OnPageChanged="HandlePageChangedAsync" />

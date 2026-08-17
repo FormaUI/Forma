@@ -9,6 +9,13 @@ using Microsoft.AspNetCore.Components;
 /// <summary>Showcase gallery page demonstrating the explorer-style FormaGallery component.</summary>
 public sealed partial class FormaGalleryPage : ComponentBase
 {
+    // The folder is the page's to know, so the gallery never has to send it back in a query.
+    private sealed class FolderScopedProvider(SampleMediaStore store, Func<string?> folder) : IGalleryResourcesProvider
+    {
+        public ValueTask<GalleryResourcePage> GetResourcesAsync(GalleryResourceQuery query, CancellationToken cancellationToken)
+            => store.GetPageAsync(folder(), query, cancellationToken);
+    }
+
     private readonly FormaGalleryFileOptions _fixedFolderOptions = new()
     {
         AllowFolderCreate = false,
@@ -32,9 +39,23 @@ public sealed partial class FormaGalleryPage : ComponentBase
 
     private List<ResourceInfo> _allMedia = [];
 
-    private List<ResourceInfo> _pagedEntries = [];
+    private readonly Dictionary<string, IGalleryResourcesProvider> _providers = [];
 
-    private List<ResourceInfo> _infiniteEntries = [];
+    private SampleMediaStore _mediaStore = default!;
+
+    private SampleMediaStore _libraryStore = default!;
+
+    private SampleMediaStore _flatStore = default!;
+
+    private int _libraryCount;
+
+    private IGalleryResourcesProvider ProviderFor(string key)
+        => _providers[key];
+
+    private string LibraryQueryDescription
+        => _libraryStore.LastQuery is { } query
+            ? $"skip {query.Skip}, take {query.Take}, sort {query.SortBy} {query.Direction}{(query.Search is null ? string.Empty : $", search \"{query.Search}\"")}"
+            : "none yet";
 
     private List<ResourceInfo> _singleSelectEntries = [];
 
@@ -56,10 +77,6 @@ public sealed partial class FormaGalleryPage : ComponentBase
     private void ToggleColumn(GalleryDetailsColumns column, bool show)
         => _detailsColumns = show ? _detailsColumns | column : _detailsColumns & ~column;
 
-    // The sample list is already in memory, so a page would arrive too fast for the spinner to ever be seen.
-    private static Task SimulateFetchAsync(int page)
-        => Task.Delay(TimeSpan.FromMilliseconds(600));
-
     [Inject] private IStringLocale<FormaGalleryPage> L { get; set; } = default!;
 
     protected override void OnInitialized()
@@ -78,7 +95,7 @@ public sealed partial class FormaGalleryPage : ComponentBase
             new GalleryResourceInfo("/media/sample-poster.svg?in=races", ResourceKind.Image) { Size = 18800, AddedAt = seeded.AddDays(-90), ModifiedAt = seeded.AddDays(-60) },
             new GalleryResourceInfo("/media/sample.mp4?in=races", ResourceKind.Video) { Size = 788493, AddedAt = seeded.AddDays(-30), ModifiedAt = seeded.AddDays(-30) },
             new GalleryResourceInfo("/media/sample.wav?in=races", ResourceKind.Audio) { Size = 16044, AddedAt = seeded.AddDays(-7), ModifiedAt = seeded.AddDays(-1) },
-            new ResourceInfo("/media/notes.md?in=races", ResourceKind.Document) { Size = 850 }
+            new GalleryResourceInfo("/media/notes.md?in=races", ResourceKind.Document) { Size = 850 }
         ];
 
         _mediaByFolder["2026"] =
@@ -100,18 +117,44 @@ public sealed partial class FormaGalleryPage : ComponentBase
             new GalleryResourceInfo("/media/sample.mp4", ResourceKind.Video) { Size = 788493, AddedAt = seeded.AddDays(-4), ModifiedAt = seeded.AddDays(-4) }
         ];
 
-        _pagedEntries = [.. Enumerable.Range(1, 10)
-            .Select(i => new GalleryResourceInfo($"/media/sample-poster.svg?item={i}", ResourceKind.Image) { Size = 1000 * i, AddedAt = seeded.AddDays(-i), ModifiedAt = seeded.AddHours(-i) })];
+        // Every browsing demo reads through a store, so folder, search, sort and paging are answered the way a real library answers them.
+        _mediaStore = Store([.. _mediaByFolder.SelectMany(pair => pair.Value.Select(media => new GalleryResourceEntry((GalleryResourceInfo)media, pair.Key)))]);
 
-        _infiniteEntries = [.. Enumerable.Range(1, 5000)
-            .Select(i => new GalleryResourceInfo($"/media/sample-poster.svg?scroll={i}", ResourceKind.Image) { Size = 1000 * i, AddedAt = seeded.AddMinutes(-i), ModifiedAt = seeded.AddMinutes(-i) })];
+        _flatStore = Store([.. Enumerable.Range(1, 5000)
+            .Select(i => new GalleryResourceEntry(
+                new GalleryResourceInfo($"/media/sample-poster.svg?scroll={i}", ResourceKind.Image) { Size = 1000 * i, AddedAt = seeded.AddMinutes(-i), ModifiedAt = seeded.AddMinutes(-i) },
+                null))]);
+
+        var folderIds = new string?[] { null, "covers", "races", "2026", "videos" };
+        var libraryEntries = Enumerable.Range(1, 20000)
+            .Select(i => new GalleryResourceEntry(
+                new GalleryResourceInfo($"/media/sample-poster.svg?library={i}", ResourceKind.Image)
+                {
+                    Size = 4000 + (i % 900 * 37),
+                    AddedAt = seeded.AddMinutes(-i),
+                    ModifiedAt = seeded.AddMinutes(-(i / 2))
+                },
+                folderIds[i % folderIds.Length]))
+            .ToList();
+
+        _libraryCount = libraryEntries.Count;
+        _libraryStore = Store(libraryEntries);
+
+        foreach (var key in new[] { "full", "readonly", "fixedfolders", "nosidebar", "nomenu" })
+        {
+            _providers[key] = new FolderScopedProvider(_mediaStore, () => CurrentFolderFor(key)?.Id);
+        }
+
+        _providers["library"] = new FolderScopedProvider(_libraryStore, () => CurrentFolderFor("library")?.Id);
+        _providers["paged"] = new FolderScopedProvider(_flatStore, () => null);
+        _providers["infinite"] = new FolderScopedProvider(_flatStore, () => null);
     }
+
+    private SampleMediaStore Store(IReadOnlyList<GalleryResourceEntry> entries)
+        => new(entries, TimeSpan.FromMilliseconds(180)) { Queried = () => InvokeAsync(StateHasChanged) };
 
     private GalleryFolderInfo? CurrentFolderFor(string key)
         => _currentFolderIds.GetValueOrDefault(key) is { } id ? _sampleFolders.Find(folder => folder.Id == id) : null;
-
-    private List<ResourceInfo> EntriesFor(string key)
-        => _currentFolderIds.GetValueOrDefault(key) is { } id ? _mediaByFolder[id] : _allMedia;
 
     private Task HandleFolderChangedAsync(string key, GalleryFolderInfo? folder)
     {

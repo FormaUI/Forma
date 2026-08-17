@@ -23,4 +23,7 @@ public sealed record FormaGalleryOptions
 
     /// <summary>Which optional columns the details view shows beside the name.</summary>
     public GalleryDetailsColumns DetailsColumns { get; init; } = GalleryDetailsColumns.Kind | GalleryDetailsColumns.Size | GalleryDetailsColumns.Modified;
+
+    /// <summary>How long typing pauses before a catalog is asked again; a held collection filters immediately.</summary>
+    public TimeSpan SearchDebounce { get; init; } = TimeSpan.FromMilliseconds(300);
 }

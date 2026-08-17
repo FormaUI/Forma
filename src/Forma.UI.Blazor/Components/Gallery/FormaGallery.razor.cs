@@ -31,8 +31,11 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
     /// <summary>The active page, 1-based.</summary>
     [Parameter] public int CurrentPage { get; set; } = 1;
 
-    /// <summary>The media entries stored on the server to display in the gallery.</summary>
-    [Parameter, EditorRequired] public IReadOnlyList<ResourceInfo> Entries { get; set; } = [];
+    /// <summary>The media to display, held in full. Supply this or <see cref="ResourcesProvider"/>, not both.</summary>
+    [Parameter] public IReadOnlyList<ResourceInfo>? Resources { get; set; }
+
+    /// <summary>Answers for one window of media at a time, for collections too large to hold. Supply this or <see cref="Resources"/>, not both.</summary>
+    [Parameter] public IGalleryResourcesProvider? ResourcesProvider { get; set; }
 
     /// <summary>Available folders for grouping media.</summary>
     [Parameter] public IReadOnlyList<GalleryFolderInfo>? Folders { get; set; }
@@ -211,6 +214,25 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
 
     private int _pagedTake;
 
+    private List<ResourceInfo> _providerWindow = [];
+
+    private int? _providerTotal;
+
+    // A store that cannot count still has to say whether the end has been reached, and a full window is the only signal left.
+    private bool _lastWindowWasFull;
+
+    private bool _isQuerying;
+
+    private CancellationTokenSource? _queryCancellation;
+
+    private CancellationTokenSource? _searchCancellation;
+
+    private IGalleryResourcesProvider? _syncedProvider;
+
+    private string? _syncedFolderId;
+
+    private int _syncedPageSize;
+
     private FormaGalleryFileOptions? _actionOptions;
 
     private Dictionary<string, GalleryFolderInfo> FolderLookup
@@ -317,7 +339,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
                 return _filteredAndSorted;
             }
 
-            IEnumerable<ResourceInfo> query = Entries;
+            IEnumerable<ResourceInfo> query = Resources ?? [];
 
             if (!string.IsNullOrWhiteSpace(_searchQuery))
             {
@@ -345,19 +367,42 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
         }
     }
 
+    private bool IsProviderMode
+        => ResourcesProvider is not null;
+
+    /// <summary>How many resources match the current search and sort, or null when the provider cannot say.</summary>
+    private int? MatchingCount
+        => IsProviderMode ? _providerTotal : FilteredAndSortedEntries.Count;
+
     private int PageCount
-        => Math.Max(1, (int)Math.Ceiling(FilteredAndSortedEntries.Count / (double)PageSize));
+        => MatchingCount is { } total ? Math.Max(1, (int)Math.Ceiling(total / (double)PageSize)) : 1;
 
     private bool HasMorePages
-        => EffectivePage < PageCount;
+    {
+        get
+        {
+            if (!IsInfiniteScrolling)
+            {
+                return EffectivePage < PageCount;
+            }
+
+            return MatchingCount is { } total ? VisibleResources.Count < total : _lastWindowWasFull;
+        }
+    }
 
     private bool IsInfiniteScrolling
         => Options.InfiniteScroll != GalleryInfiniteScrollMode.Off;
 
-    private List<ResourceInfo> PagedEntries
+    /// <summary>The resources on screen; a provider supplies its own window, and a held collection is sliced into one.</summary>
+    private List<ResourceInfo> VisibleResources
     {
         get
         {
+            if (IsProviderMode)
+            {
+                return _providerWindow;
+            }
+
             var source = FilteredAndSortedEntries;
             var take = IsInfiniteScrolling ? EffectivePage * PageSize : PageSize;
             var skip = IsInfiniteScrolling ? 0 : (EffectivePage - 1) * PageSize;
@@ -377,11 +422,11 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
         }
     }
 
-    private List<ResourceInfo> SelectedResources
-        => [.. _context.Selection.Resolve(Entries)];
+    private IReadOnlyList<ResourceInfo> SelectedResources
+        => _context.Selection.Resolve();
 
     private IReadOnlyList<GalleryFolderInfo> SelectedFolders
-        => _context.Selection.ResolveFolders(Folders ?? []);
+        => _context.Selection.ResolveFolders();
 
     protected override void OnInitialized()
     {
@@ -413,6 +458,12 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
 
     protected override void OnParametersSet()
     {
+        if (Resources is null == ResourcesProvider is null)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(FormaGallery)} requires exactly one of {nameof(Resources)} or {nameof(ResourcesProvider)}.");
+        }
+
         _filteredAndSorted = null;
 
         Adopt(CurrentPage, ref _syncedCurrentPage, ref _page);
@@ -428,6 +479,109 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
         }
 
         SyncContext();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!IsProviderMode)
+        {
+            return;
+        }
+
+        // The folder is the host's to know, so it is watched for change rather than sent, and a move invalidates the window.
+        var moved = !ReferenceEquals(_syncedProvider, ResourcesProvider)
+            || _syncedFolderId != CurrentFolder?.Id
+            || _syncedPageSize != PageSize;
+
+        if (!moved)
+        {
+            return;
+        }
+
+        _syncedProvider = ResourcesProvider;
+        _syncedFolderId = CurrentFolder?.Id;
+        _syncedPageSize = PageSize;
+        _page = 1;
+
+        await QueryAsync(append: false);
+    }
+
+    /// <summary>Fetches a window from the provider, replacing what is shown or extending it while infinite scrolling.</summary>
+    private async Task QueryAsync(bool append)
+    {
+        if (ResourcesProvider is not { } provider)
+        {
+            return;
+        }
+
+        // A newer window makes an older one irrelevant rather than merely late, so the earlier request is abandoned.
+        await CancelAsync(_queryCancellation);
+        _queryCancellation = new CancellationTokenSource();
+        var token = _queryCancellation.Token;
+
+        var query = new GalleryResourceQuery(
+            append ? _providerWindow.Count : (EffectivePage - 1) * PageSize,
+            PageSize,
+            string.IsNullOrWhiteSpace(_searchQuery) ? null : _searchQuery,
+            _sortField,
+            _sortDirection);
+
+        _isQuerying = true;
+        StateHasChanged();
+
+        try
+        {
+            var page = await provider.GetResourcesAsync(query, token);
+
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            // The views hold the window they were handed, so a longer one replaces it rather than growing it underneath them.
+            _providerWindow = append ? [.. _providerWindow, .. page.Resources] : [.. page.Resources];
+            _providerTotal = page.TotalCount;
+            _lastWindowWasFull = page.Resources.Count >= PageSize;
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+        finally
+        {
+            // A superseded query leaves the flag to the one that replaced it; anything else, including a failure, clears it.
+            if (!token.IsCancellationRequested)
+            {
+                _isQuerying = false;
+            }
+        }
+
+        StateHasChanged();
+    }
+
+    /// <summary>Re-reads the current window, after something the gallery does not own has changed the collection.</summary>
+    private Task RefreshProviderAsync()
+    {
+        if (!IsProviderMode)
+        {
+            return Task.CompletedTask;
+        }
+
+        // An append would stack a second copy of what is already shown, so a refresh always starts the window again.
+        _page = IsInfiniteScrolling ? 1 : _page;
+
+        return QueryAsync(append: false);
+    }
+
+    private static async Task CancelAsync(CancellationTokenSource? source)
+    {
+        if (source is null)
+        {
+            return;
+        }
+
+        await source.CancelAsync();
+        source.Dispose();
     }
 
     // A parameter is taken only when the host changes it, so an unrelated parent render leaves what the user chose alone.
@@ -503,12 +657,11 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
         StateHasChanged();
     }
 
-    private Task HandleSortRequestedAsync(GallerySortField field)
+    private async Task HandleSortRequestedAsync(GallerySortField field)
     {
-        HandleSortFieldChanged(field);
-        StateHasChanged();
+        await HandleSortFieldChangedAsync(field);
 
-        return Task.CompletedTask;
+        StateHasChanged();
     }
 
     private async Task ToggleSelectModeAsync()
@@ -688,6 +841,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
 
         try
         {
+            await QueryAsync(append: true);
             await OnPageChanged.InvokeAsync(_page);
         }
         finally
@@ -696,6 +850,12 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
         }
 
         StateHasChanged();
+    }
+
+    private async Task HandleRefreshAsync()
+    {
+        await OnRefresh.InvokeAsync();
+        await RefreshProviderAsync();
     }
 
     /// <inheritdoc />
@@ -718,6 +878,8 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
         }
 
         _selfReference?.Dispose();
+        _queryCancellation?.Dispose();
+        _searchCancellation?.Dispose();
     }
 
     private void CloseDeleteDialog()
@@ -784,6 +946,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
 
             await SelectedChanged.InvokeAsync(SelectedResources);
             await OnDelete.InvokeAsync(new GalleryDeleteRequest(targets));
+            await RefreshProviderAsync();
         }
     }
 
@@ -877,6 +1040,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
     {
         _page = page;
 
+        await QueryAsync(append: false);
         await OnPageChanged.InvokeAsync(page);
     }
 
@@ -914,7 +1078,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
 
     private void HandlePreviewNavigate(string source)
     {
-        var next = FilteredAndSortedEntries.FirstOrDefault(entry => entry.Source == source);
+        var next = VisibleResources.FirstOrDefault(entry => entry.Source == source);
 
         if (next is not null)
         {
@@ -934,24 +1098,47 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
         _renamingResource = null;
 
         await OnRename.InvokeAsync(new GalleryRenameRequest(resource, newName));
+        await RefreshProviderAsync();
     }
 
-    private void HandleSearchQueryChanged(string query)
+    private async Task HandleSearchQueryChangedAsync(string query)
     {
         _searchQuery = query;
         _page = 1;
         _filteredAndSorted = null;
+
+        if (!IsProviderMode)
+        {
+            return;
+        }
+
+        // A held collection filters as fast as it can render, but a provider would otherwise be asked once per keystroke.
+        await CancelAsync(_searchCancellation);
+        _searchCancellation = new CancellationTokenSource();
+
+        try
+        {
+            await Task.Delay(Options.SearchDebounce, _searchCancellation.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        await QueryAsync(append: false);
     }
 
-    private void HandleSortDirectionChanged(GallerySortDirection direction)
+    private async Task HandleSortDirectionChangedAsync(GallerySortDirection direction)
     {
         _sortDirection = direction;
         _page = 1;
         _filteredAndSorted = null;
         SyncContext();
+
+        await QueryAsync(append: false);
     }
 
-    private void HandleSortFieldChanged(GallerySortField field)
+    private async Task HandleSortFieldChangedAsync(GallerySortField field)
     {
         if (_sortField == field)
         {
@@ -968,6 +1155,8 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
         _page = 1;
         _filteredAndSorted = null;
         SyncContext();
+
+        await QueryAsync(append: false);
     }
 
     private async Task HandleUpAsync()
@@ -988,6 +1177,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
         _isUploadOpen = false;
 
         await OnUploaded.InvokeAsync(uploaded);
+        await RefreshProviderAsync();
     }
 
     private void HandleUploadFilesPicked(IReadOnlyList<IBrowserFile> files)
@@ -1012,7 +1202,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
         }
         else if (_context.Selection.HasItems)
         {
-            _deletingResources = SelectedResources;
+            _deletingResources = [.. SelectedResources];
         }
     }
 
@@ -1035,7 +1225,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
     private void OpenPreview(ResourceInfo entry)
     {
         // Captured once so the viewer is not handed a new list on every unrelated render.
-        _previewSiblings = [.. FilteredAndSortedEntries.Select(sibling => sibling.Source)];
+        _previewSiblings = [.. VisibleResources.Select(sibling => sibling.Source)];
         _previewResource = entry;
     }
 

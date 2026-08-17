@@ -10,7 +10,7 @@
     <h2>@L["Full media gallery"]</h2>
     <p class="desc">@L["Browse folders, preview media, select items, rename, delete, and upload."]</p>
     <div class="demo-box">
-        <FormaGallery Entries="@(EntriesFor("full"))"
+        <FormaGallery ResourcesProvider="@(ProviderFor("full"))"
                       Folders="_sampleFolders"
                       CurrentFolder="@(CurrentFolderFor("full"))"
                       TotalCount="_allMedia.Count"
@@ -35,9 +35,9 @@
 
 <div class="demo-section">
     <h2>@L["Single selection for a cover image"]</h2>
-    <p class="desc">@L["With MaxSelection set to 1, picking any item immediately selects it alone."]</p>
+    <p class="desc">@L["With MaxSelection set to 1, picking any item immediately selects it alone. This one holds its collection through Resources, which is the simpler half of the contract and the right choice for a handful of items."]</p>
     <div class="demo-box">
-        <FormaGallery Entries="_singleSelectEntries"
+        <FormaGallery Resources="_singleSelectEntries"
                       MaxSelection="1"
                       SelectedChanged="@(items => HandleSelectedAsync("single", items))" />
         <ul class="demo-log">
@@ -65,7 +65,7 @@
                 </label>
             }
         </fieldset>
-        <FormaGallery Entries="_allMedia"
+        <FormaGallery Resources="_allMedia"
                       ViewMode="GalleryViewMode.Details"
                       Options="@(new FormaGalleryOptions { DetailsColumns = _detailsColumns, ShowSidebar = false })" />
     </div>
@@ -75,7 +75,7 @@
     <h2>@L["Read-only gallery"]</h2>
     <p class="desc">@L["With FormaGalleryFileOptions.ReadOnly, browsing and selection remain while upload, rename, delete, and every folder action disappear."]</p>
     <div class="demo-box">
-        <FormaGallery Entries="@(EntriesFor("readonly"))"
+        <FormaGallery ResourcesProvider="@(ProviderFor("readonly"))"
                       Folders="_sampleFolders"
                       CurrentFolder="@(CurrentFolderFor("readonly"))"
                       TotalCount="_allMedia.Count"
@@ -95,7 +95,7 @@
     <h2>@L["Media without folder management"]</h2>
     <p class="desc">@L["Media stays fully editable while the folder tree is fixed, so items can be renamed and deleted but folders cannot."]</p>
     <div class="demo-box">
-        <FormaGallery Entries="@(EntriesFor("fixedfolders"))"
+        <FormaGallery ResourcesProvider="@(ProviderFor("fixedfolders"))"
                       Folders="_sampleFolders"
                       CurrentFolder="@(CurrentFolderFor("fixedfolders"))"
                       TotalCount="_allMedia.Count"
@@ -117,7 +117,7 @@
     <h2>@L["Breadcrumb-only navigation"]</h2>
     <p class="desc">@L["With ShowSidebar off, the folder tree is hidden and folders are reached through the breadcrumb menus instead."]</p>
     <div class="demo-box">
-        <FormaGallery Entries="@(EntriesFor("nosidebar"))"
+        <FormaGallery ResourcesProvider="@(ProviderFor("nosidebar"))"
                       Folders="_sampleFolders"
                       CurrentFolder="@(CurrentFolderFor("nosidebar"))"
                       TotalCount="_allMedia.Count"
@@ -130,7 +130,7 @@
     <h2>@L["Sidebar without breadcrumb menus"]</h2>
     <p class="desc">@L["With ShowFolderMenu off, the breadcrumbs become plain separators and the tree is the only way to change folder."]</p>
     <div class="demo-box">
-        <FormaGallery Entries="@(EntriesFor("nomenu"))"
+        <FormaGallery ResourcesProvider="@(ProviderFor("nomenu"))"
                       Folders="_sampleFolders"
                       CurrentFolder="@(CurrentFolderFor("nomenu"))"
                       TotalCount="_allMedia.Count"
@@ -140,10 +140,24 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["A library too large to hold"]</h2>
+    <p class="desc">@L["Twenty thousand items behind a provider. The gallery keeps only the window it is showing, and the folder never appears in the query because the page already knows it."]</p>
+    <div class="demo-box">
+        <FormaGallery ResourcesProvider="@(ProviderFor("library"))"
+                      Folders="_sampleFolders"
+                      CurrentFolder="@(CurrentFolderFor("library"))"
+                      PageSize="12"
+                      TotalCount="_libraryCount"
+                      OnFolderChanged="@(folder => HandleFolderChangedAsync("library", folder))" />
+        <p class="demo-note">@L["Windows fetched: {count}", ("count", _libraryStore.QueryCount)] — @LibraryQueryDescription</p>
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["Empty gallery"]</h2>
     <p class="desc">@L["When a folder has no media, the gallery displays an empty state."]</p>
     <div class="demo-box">
-        <FormaGallery Entries="[]" />
+        <FormaGallery Resources="[]" />
     </div>
 </div>
 
@@ -151,7 +165,7 @@
     <h2>@L["Paginated gallery"]</h2>
     <p class="desc">@L["A large collection splits across pages using FormaPagination."]</p>
     <div class="demo-box">
-        <FormaGallery Entries="_pagedEntries" PageSize="4" />
+        <FormaGallery ResourcesProvider="@(ProviderFor("paged"))" PageSize="4" />
     </div>
 </div>
 
@@ -159,7 +173,7 @@
     <h2>@L["Infinite scrolling gallery"]</h2>
     <p class="desc">@L["GalleryInfiniteScrollMode.Manual appends the next page as the reader nears the end, and offers a button for anyone not using a pointer. The media scrolls inside the panel, so the toolbar and folder tree stay put."]</p>
     <div class="demo-box">
-        <FormaGallery Entries="_infiniteEntries" PageSize="24" Options="@(new FormaGalleryOptions { InfiniteScroll = GalleryInfiniteScrollMode.Manual })" />
+        <FormaGallery ResourcesProvider="@(ProviderFor("infinite"))" PageSize="24" Options="@(new FormaGalleryOptions { InfiniteScroll = GalleryInfiniteScrollMode.Manual })" />
     </div>
 </div>
 
@@ -167,9 +181,8 @@
     <h2>@L["Automatic infinite scrolling"]</h2>
     <p class="desc">@L["GalleryInfiniteScrollMode.Automatic drops the button entirely: pages arrive as the reader scrolls, marked by a spinner while each one loads, with the running count left as the reader's sense of position."]</p>
     <div class="demo-box">
-        <FormaGallery Entries="_infiniteEntries"
+        <FormaGallery ResourcesProvider="@(ProviderFor("infinite"))"
                       PageSize="24"
-                      Options="@(new FormaGalleryOptions { InfiniteScroll = GalleryInfiniteScrollMode.Automatic })"
-                      OnPageChanged="SimulateFetchAsync" />
+                      Options="@(new FormaGalleryOptions { InfiniteScroll = GalleryInfiniteScrollMode.Automatic })" />
     </div>
 </div>

@@ -49,6 +49,7 @@
   "No media matches \"{query}\"": "Ningún medio coincide con \"{query}\"",
   "No media in this folder": "No hay medios en esta carpeta",
   "No media found": "No se encontraron medios",
+  "Loading media": "Cargando medios",
   "Load more": "Cargar más",
   "Showing {shown} of {total}": "Mostrando {shown} de {total}",
   "Deselect {name}": "Deseleccionar {name}",
