@@ -1,0 +1,43 @@
+@namespace Forma.UI.Components.Gallery
+
+<div class="forma-gallery-list" role="list">
+    @foreach (var entry in Entries)
+    {
+        var selected = Context.Selection.IsSelected(entry);
+
+        <div class="forma-gallery-list-item @(selected ? "is-selected" : "")"
+             role="listitem"
+             draggable="true"
+             @ondragstart="() => Context.BeginDrag(entry)">
+            @if (Context.Selection.IsSelectMode && !Context.Selection.HasFolders)
+            {
+                <button type="button"
+                        class="forma-gallery-list-select @(selected ? "is-checked" : "")"
+                        aria-label="@Context.SelectLabel(entry)"
+                        aria-pressed="@(selected ? "true" : "false")"
+                        @onclick="() => Context.ToggleSelectAsync(entry)">
+                    <span class="fa-solid fa-check" aria-hidden="true"></span>
+                </button>
+            }
+
+            <button type="button"
+                    class="forma-gallery-list-main"
+                    aria-label="@Context.ActivateLabel(entry)"
+                    @onclick="() => Context.ActivateAsync(entry)">
+                <span class="forma-gallery-list-media">
+                    <FormaGalleryThumb Entry="entry" Size="GalleryThumbSize.Row" />
+                </span>
+
+                <span class="forma-gallery-list-info">
+                    <span class="forma-gallery-list-name" title="@entry.Name">@entry.Name</span>
+                    @if (entry.DisplaySize is { } size)
+                    {
+                        <span class="forma-gallery-list-size">@size</span>
+                    }
+                </span>
+            </button>
+
+            <FormaGalleryActionBar Entry="entry" Variant="GalleryActionBarVariant.Inline" />
+        </div>
+    }
+</div>

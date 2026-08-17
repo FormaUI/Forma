@@ -1,0 +1,290 @@
+@namespace Forma.UI.Components.Gallery
+@using Forma.UI.Components.Actions
+@using Forma.UI.Components.Data
+@using Forma.UI.Components.Feedback
+@using Forma.UI.Components.Files
+
+<CascadingValue Value="_context" IsFixed="false">
+<div class="forma-gallery @(Resizable ? "is-resizable" : "") @(AsDialog ? "is-dialog" : "")">
+    <!-- Top Explorer Address Bar -->
+    <FormaGalleryAddressBar Breadcrumbs="Breadcrumbs"
+                            CanGoBack="CanGoBack"
+                            CanGoForward="CanGoForward"
+                            CanGoUp="CanGoUp"
+                            CurrentFolder="CurrentFolder"
+                            Folders="Folders ?? []"
+                            ShowFolderMenu="ShowFolderMenu"
+                            Placeholder="@SearchPlaceholder"
+                            SearchQuery="@_searchQuery"
+                            OnBack="HandleBackAsync"
+                            OnForward="HandleForwardAsync"
+                            OnUp="HandleUpAsync"
+                            OnRefresh="OnRefresh"
+                            OnFolderSelected="HandleFolderSelectedAsync"
+                            OnBreadcrumbDrop="HandleItemDropOnFolderAsync"
+                            OnSearchQueryChanged="HandleSearchQueryChanged" />
+
+    <!-- Action & View Toolbar -->
+    <FormaGalleryToolbar IsSelectMode="_context.Selection.IsSelectMode"
+                         Options="Options"
+                         SelectedCount="_context.Selection.Count"
+                         SortDirection="_sortDirection"
+                         SortField="_sortField"
+                         ViewMode="_viewMode"
+                         OnClearSelection="ClearSelectionAsync"
+                         OnDelete="() => OpenDeleteDialog()"
+                         OnNewFolder="() => OpenFolderDialog(CurrentFolder)"
+                         ShowNewFolder="@(!ShowsSidebar)"
+                         OnSortDirectionChanged="HandleSortDirectionChanged"
+                         OnSortFieldChanged="HandleSortFieldChanged"
+                         OnToggleUpload="ToggleUpload"
+                         OnToggleSelectMode="ToggleSelectModeAsync"
+                         OnViewModeChanged="HandleViewModeChangedAsync" />
+
+    <!-- Collapsible Upload Intake Panel -->
+    @if (_isUploadOpen)
+    {
+        <div class="forma-gallery-upload-panel">
+            <div class="forma-gallery-upload-header">
+                <h4 class="forma-gallery-upload-title">@L["Upload media"]</h4>
+                <FormaCloseButton Label="@L["Close upload"]" OnClick="CloseUpload" />
+            </div>
+            <FormaFilePicker Accept="image/*,video/*,audio/*"
+                             OnFilesSelected="HandleUploadFilesPicked" />
+            @if (_pickedUploadFiles is { Count: > 0 })
+            {
+                <FormaFileUploader Files="_pickedUploadFiles"
+                                   Store="Store"
+                                   OnCompleted="HandleUploadCompletedAsync" />
+            }
+        </div>
+    }
+
+    <!-- Main Layout: Sidebar & Content -->
+    <div class="forma-gallery-body @(_isResizingSidebar ? "is-resizing" : "")" style="@SidebarSizeStyle">
+        @if (ShowsSidebar)
+        {
+            <FormaGallerySidebar CurrentFolder="CurrentFolder"
+                                 Options="Options"
+                                 Folders="Folders"
+                                 TotalCount="TotalCount ?? Entries.Count"
+                                 OnFolderDelete="OpenFolderDeleteDialog"
+                                 OnFolderDragStart="folder => _draggedFolder = folder"
+                                 OnFolderDrop="HandleItemDropOnFolderAsync"
+                                 OnFolderRename="OpenFolderRenameDialog"
+                                 OnFolderSelected="HandleFolderSelectedAsync"
+                                 OnNewFolder="() => OpenFolderDialog(CurrentFolder)" />
+
+            <div class="forma-gallery-splitter @(_isResizingSidebar ? "is-resizing" : "")"
+                 @ref="_splitterElement"
+                 role="separator"
+                 aria-orientation="vertical"
+                 aria-label="@L["Resize folders panel"]"
+                 aria-valuemin="@MinSidebarWidth"
+                 aria-valuemax="@MaxSidebarWidth"
+                 aria-valuenow="@((int)Math.Round(_sidebarWidth))"
+                 tabindex="0"
+                 @onpointerdown="HandleSplitterPointerDownAsync"
+                 @onpointermove="HandleSplitterPointerMove"
+                 @onpointerup="HandleSplitterPointerUpAsync"
+                 @onpointercancel="HandleSplitterPointerUpAsync"
+                 @onkeydown="HandleSplitterKeyDown">
+                <span class="forma-gallery-splitter-grip" aria-hidden="true"></span>
+            </div>
+        }
+
+        <div class="forma-gallery-content">
+            @if (PagedEntries.Count == 0)
+            {
+                <div class="forma-gallery-empty" role="status">
+                    <span class="fa-solid fa-images forma-gallery-empty-icon" aria-hidden="true"></span>
+                    @if (!string.IsNullOrWhiteSpace(_searchQuery))
+                    {
+                        <p>@L["No media matches \"{query}\"", ("query", _searchQuery)]</p>
+                    }
+                    else if (CurrentFolder is not null)
+                    {
+                        <p>@L["No media in this folder"]</p>
+                    }
+                    else
+                    {
+                        <p>@L["No media found"]</p>
+                    }
+                </div>
+            }
+            else
+            {
+                @if (_viewMode == GalleryViewMode.Thumbnails)
+                {
+                    <FormaGalleryThumbnailsView Entries="PagedEntries" />
+                }
+                else if (_viewMode == GalleryViewMode.Details)
+                {
+                    <FormaGalleryDetailsView Entries="PagedEntries" />
+                }
+                else
+                {
+                    <FormaGalleryListView Entries="PagedEntries" />
+                }
+            }
+
+            @if (PageCount > 1 && !EnableInfiniteScroll)
+            {
+                <div class="forma-gallery-pagination">
+                    <FormaPagination TotalItems="FilteredAndSortedEntries.Count"
+                                     PageSize="PageSize"
+                                     CurrentPage="EffectivePage"
+                                     OnPageChanged="HandlePageChangedAsync" />
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Preview Lightbox Modal -->
+    @if (_previewResource is { } preview)
+    {
+        <FormaModal Opened="true"
+                    Size="ModalSize.ExtraLarge"
+                    Title="@preview.Name"
+                    Options="DialogModalOptions"
+                    OnClose="ClosePreview">
+            <Body>
+                <FormaFileViewer Source="@preview.Source"
+                                 Siblings="_previewSiblings"
+                                 OnNavigate="HandlePreviewNavigate" />
+            </Body>
+        </FormaModal>
+    }
+
+    <!-- Rename Media Modal -->
+    @if (_renamingResource is not null)
+    {
+        <FormaModal Opened="@(_renamingResource is not null)"
+                    Size="ModalSize.Small"
+                    Title="@L["Rename media"]"
+                    Options="DialogModalOptions"
+                    OnClose="CloseRenameDialog">
+            <Body>
+                <div class="forma-gallery-dialog-field">
+                    <label class="forma-gallery-dialog-label" for="forma-gallery-rename-input">@L["New name"]</label>
+                    <input id="forma-gallery-rename-input"
+                           class="forma-gallery-dialog-input"
+                           type="text"
+                           value="@_renameNewName"
+                           @oninput="e => _renameNewName = e.Value?.ToString() ?? string.Empty" />
+                </div>
+            </Body>
+            <Footer>
+                <FormaButton Variant="ButtonVariant.Secondary" OnClick="CloseRenameDialog">
+                    @L["Cancel"]
+                </FormaButton>
+                <FormaButton Variant="ButtonVariant.Primary" OnClick="HandleRenameConfirmedAsync">
+                    @L["Save"]
+                </FormaButton>
+            </Footer>
+        </FormaModal>
+    }
+
+    <!-- Delete Media Modal -->
+    @if (_deletingResources is not null)
+    {
+        <FormaModal Opened="@(_deletingResources is not null)"
+                    Size="ModalSize.Small"
+                    Title="@L["Delete media"]"
+                    Options="DialogModalOptions"
+                    OnClose="CloseDeleteDialog">
+            <Body>
+                <p class="forma-gallery-delete-message">@DeleteConfirmMessage</p>
+            </Body>
+            <Footer>
+                <FormaButton Variant="ButtonVariant.Secondary" OnClick="CloseDeleteDialog">
+                    @L["Cancel"]
+                </FormaButton>
+                <FormaButton Variant="ButtonVariant.Danger" OnClick="HandleDeleteConfirmedAsync">
+                    @L["Delete"]
+                </FormaButton>
+            </Footer>
+        </FormaModal>
+    }
+
+    <!-- Create Folder Modal -->
+    @if (_isNewFolderOpen)
+    {
+        <FormaModal Opened="_isNewFolderOpen"
+                    Size="ModalSize.Small"
+                    Title="@L["New folder"]"
+                    Options="DialogModalOptions"
+                    OnClose="CloseFolderDialog">
+            <Body>
+                <div class="forma-gallery-dialog-field">
+                    <label class="forma-gallery-dialog-label" for="forma-gallery-folder-input">@L["Folder name"]</label>
+                    <input id="forma-gallery-folder-input"
+                           class="forma-gallery-dialog-input"
+                           type="text"
+                           value="@_newFolderName"
+                           @oninput="e => _newFolderName = e.Value?.ToString() ?? string.Empty" />
+                </div>
+            </Body>
+            <Footer>
+                <FormaButton Variant="ButtonVariant.Secondary" OnClick="CloseFolderDialog">
+                    @L["Cancel"]
+                </FormaButton>
+                <FormaButton Variant="ButtonVariant.Primary" OnClick="HandleCreateFolderAsync">
+                    @L["Create"]
+                </FormaButton>
+            </Footer>
+        </FormaModal>
+    }
+
+    <!-- Rename Folder Modal -->
+    @if (_renamingFolder is not null)
+    {
+        <FormaModal Opened="@(_renamingFolder is not null)"
+                    Size="ModalSize.Small"
+                    Title="@L["Rename folder"]"
+                    Options="DialogModalOptions"
+                    OnClose="CloseFolderRenameDialog">
+            <Body>
+                <div class="forma-gallery-dialog-field">
+                    <label class="forma-gallery-dialog-label" for="forma-gallery-rename-folder-input">@L["Folder name"]</label>
+                    <input id="forma-gallery-rename-folder-input"
+                           class="forma-gallery-dialog-input"
+                           type="text"
+                           value="@_renameFolderName"
+                           @oninput="e => _renameFolderName = e.Value?.ToString() ?? string.Empty" />
+                </div>
+            </Body>
+            <Footer>
+                <FormaButton Variant="ButtonVariant.Secondary" OnClick="CloseFolderRenameDialog">
+                    @L["Cancel"]
+                </FormaButton>
+                <FormaButton Variant="ButtonVariant.Primary" OnClick="HandleFolderRenameConfirmedAsync">
+                    @L["Save"]
+                </FormaButton>
+            </Footer>
+        </FormaModal>
+    }
+
+    <!-- Delete Folder Modal -->
+    @if (_deletingFolders is { Count: > 0 })
+    {
+        <FormaModal Opened="@(_deletingFolders is { Count: > 0 })"
+                    Size="ModalSize.Small"
+                    Title="@L["Delete folder"]"
+                    Options="DialogModalOptions"
+                    OnClose="CloseFolderDeleteDialog">
+            <Body>
+                <p class="forma-gallery-delete-message">@FolderDeleteConfirmMessage</p>
+            </Body>
+            <Footer>
+                <FormaButton Variant="ButtonVariant.Secondary" OnClick="CloseFolderDeleteDialog">
+                    @L["Cancel"]
+                </FormaButton>
+                <FormaButton Variant="ButtonVariant.Danger" OnClick="HandleFolderDeleteConfirmedAsync">
+                    @L["Delete"]
+                </FormaButton>
+            </Footer>
+        </FormaModal>
+    }
+</div>
+</CascadingValue>

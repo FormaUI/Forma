@@ -1,0 +1,15 @@
+@namespace Forma.UI.Components.Gallery
+@using Forma.Framework.Resources
+
+<div class="forma-gallery-action-bar @(Variant == GalleryActionBarVariant.Overlay ? "is-overlay" : "is-inline")">
+    @foreach (var action in Context.ItemActions)
+    {
+        <button type="button"
+                class="forma-gallery-action-btn @(action.IsDestructive ? "is-destructive" : "")"
+                data-action="@action.Id"
+                aria-label="@action.Label(Entry)"
+                @onclick="() => action.Invoke(Entry)">
+            <span class="fa-solid @action.Icon" aria-hidden="true"></span>
+        </button>
+    }
+</div>

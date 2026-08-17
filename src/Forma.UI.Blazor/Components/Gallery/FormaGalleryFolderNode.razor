@@ -1,0 +1,85 @@
+@namespace Forma.UI.Components.Gallery
+
+@{
+    var children = Sidebar.ChildrenOf(Folder.Id);
+    var expanded = Sidebar.IsExpanded(Folder.Id);
+    var isCurrent = Sidebar.IsCurrent(Folder);
+    var selected = Context.Selection.IsFolderSelected(Folder);
+    var selectable = Context.Selection.IsSelectMode && !Context.Selection.HasItems;
+}
+
+<li role="treeitem"
+    aria-selected="@(isCurrent ? "true" : "false")"
+    aria-expanded="@(children.Count == 0 ? null : expanded ? "true" : "false")">
+    <div class="forma-gallery-folder-row @(isCurrent ? "is-active" : "") @(selected ? "is-selected" : "")"
+         style="--forma-gallery-folder-depth: @Depth"
+         draggable="true"
+         @ondragstart="() => Sidebar.HandleFolderDragStartAsync(Folder)"
+         @ondragover="args => FormaGallerySidebar.HandleDragOver(args)"
+         @ondragover:preventDefault="true"
+         @ondrop="() => Sidebar.HandleDropOnFolderAsync(Folder)">
+        @if (selectable)
+        {
+            <button type="button"
+                    class="forma-gallery-folder-select @(selected ? "is-checked" : "")"
+                    aria-label="@(selected ? L["Deselect folder \"{name}\"", ("name", Folder.Name)] : L["Select folder \"{name}\"", ("name", Folder.Name)])"
+                    aria-pressed="@(selected ? "true" : "false")"
+                    @onclick="() => Context.ToggleFolderSelectAsync(Folder)">
+                <span class="fa-solid fa-check" aria-hidden="true"></span>
+            </button>
+        }
+
+        @if (children.Count > 0)
+        {
+            <button type="button"
+                    class="forma-gallery-folder-twisty @(expanded ? "is-expanded" : "")"
+                    aria-label="@(expanded ? L["Collapse {name}", ("name", Folder.Name)] : L["Expand {name}", ("name", Folder.Name)])"
+                    @onclick="() => Sidebar.ToggleExpanded(Folder.Id)">
+                <span class="fa-solid fa-chevron-right" aria-hidden="true"></span>
+            </button>
+        }
+        else
+        {
+            <span class="forma-gallery-folder-twisty is-empty" aria-hidden="true"></span>
+        }
+
+        <button type="button"
+                class="forma-gallery-folder-target"
+                @onclick="() => Sidebar.SelectFolderAsync(Folder)">
+            <span class="fa-solid fa-folder@(isCurrent ? "-open" : "") forma-gallery-folder-icon" aria-hidden="true"></span>
+            <span class="forma-gallery-folder-name" title="@Folder.Name">@Folder.Name</span>
+        </button>
+
+        <div class="forma-gallery-folder-actions">
+            @if (Sidebar.Options.AllowFolderRename)
+            {
+                <button type="button"
+                        class="forma-gallery-folder-action-btn"
+                        aria-label="@L["Rename folder \"{name}\"", ("name", Folder.Name)]"
+                        @onclick="() => Sidebar.RenameFolderAsync(Folder)">
+                    <span class="fa-solid fa-pen" aria-hidden="true"></span>
+                </button>
+            }
+            @if (Sidebar.Options.AllowFolderDelete)
+            {
+                <button type="button"
+                        class="forma-gallery-folder-action-btn forma-gallery-folder-action-delete"
+                        aria-label="@L["Delete folder \"{name}\"", ("name", Folder.Name)]"
+                        @onclick="() => Sidebar.DeleteFolderAsync(Folder)">
+                    <span class="fa-solid fa-trash" aria-hidden="true"></span>
+                </button>
+            }
+        </div>
+        <span class="forma-gallery-folder-count">@Folder.ItemCount</span>
+    </div>
+
+    @if (children.Count > 0 && expanded)
+    {
+        <ul class="forma-gallery-folder-branch" role="group">
+            @foreach (var child in children)
+            {
+                <FormaGalleryFolderNode Folder="child" Depth="Depth + 1" />
+            }
+        </ul>
+    }
+</li>

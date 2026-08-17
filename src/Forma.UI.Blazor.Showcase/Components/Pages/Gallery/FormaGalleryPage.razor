@@ -1,0 +1,157 @@
+@page "/gallery"
+@attribute [ShowcasePage("FormaGallery")]
+@rendermode InteractiveServer
+@using Forma.UI.Components.Gallery
+
+<h1>FormaGallery</h1>
+<p class="desc">@L["A manager for media already on the server, in the shape of a gallery app: a dense thumbnail grid, folders, selection, pagination, upload, and enlargement through FormaFileViewer."]</p>
+
+<div class="demo-section">
+    <h2>@L["Full media gallery"]</h2>
+    <p class="desc">@L["Browse folders, preview media, select items, rename, delete, and upload."]</p>
+    <div class="demo-box">
+        <FormaGallery Entries="@(EntriesFor("full"))"
+                      Folders="_sampleFolders"
+                      CurrentFolder="@(CurrentFolderFor("full"))"
+                      TotalCount="_allMedia.Count"
+                      OnFolderChanged="@(folder => HandleFolderChangedAsync("full", folder))"
+                      SelectedChanged="@(items => HandleSelectedAsync("full", items))"
+                      OnRename="@(req => HandleRenameAsync("full", req))"
+                      OnDelete="@(req => HandleDeleteAsync("full", req))"
+                      OnDrop="@(req => HandleDropAsync("full", req))"
+                      OnFolderDrop="@(req => HandleFolderDropAsync("full", req))"
+                      OnFolderCreate="@(req => HandleFolderCreateAsync("full", req))"
+                      OnFolderRename="@(req => HandleFolderRenameAsync("full", req))"
+                      OnFolderDelete="@(req => HandleFolderDeleteAsync("full", req))"
+                      OnUploaded="@(items => HandleUploadedAsync("full", items))" />
+        <ul class="demo-log">
+            @foreach (var entry in Log("full"))
+            {
+                <li>@entry</li>
+            }
+        </ul>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Single selection for a cover image"]</h2>
+    <p class="desc">@L["With MaxSelection set to 1, picking any item immediately selects it alone."]</p>
+    <div class="demo-box">
+        <FormaGallery Entries="_singleSelectEntries"
+                      MaxSelection="1"
+                      SelectedChanged="@(items => HandleSelectedAsync("single", items))" />
+        <ul class="demo-log">
+            @foreach (var entry in Log("single"))
+            {
+                <li>@entry</li>
+            }
+        </ul>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Details columns"]</h2>
+    <p class="desc">@L["DetailsColumns picks which optional columns the details view renders beside the name. Nothing wraps, so a narrow gallery scrolls sideways rather than squeezing a column out."]</p>
+    <div class="demo-box">
+        <fieldset class="demo-row">
+            <legend>@L["Columns"]</legend>
+            @foreach (var column in ColumnChoices)
+            {
+                <label>
+                    <input type="checkbox"
+                           checked="@_detailsColumns.HasFlag(column)"
+                           @onchange="@(e => ToggleColumn(column, (bool)e.Value!))" />
+                    @ColumnLabel(column)
+                </label>
+            }
+        </fieldset>
+        <FormaGallery Entries="_allMedia"
+                      ViewMode="GalleryViewMode.Details"
+                      Options="@(new FormaGalleryOptions { DetailsColumns = _detailsColumns })"
+                      ShowSidebar="false" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Read-only gallery"]</h2>
+    <p class="desc">@L["With FormaGalleryOptions.ReadOnly, browsing and selection remain while upload, rename, delete, and every folder action disappear."]</p>
+    <div class="demo-box">
+        <FormaGallery Entries="@(EntriesFor("readonly"))"
+                      Folders="_sampleFolders"
+                      CurrentFolder="@(CurrentFolderFor("readonly"))"
+                      TotalCount="_allMedia.Count"
+                      Options="FormaGalleryOptions.ReadOnly"
+                      OnFolderChanged="@(folder => HandleFolderChangedAsync("readonly", folder))"
+                      SelectedChanged="@(items => HandleSelectedAsync("readonly", items))" />
+        <ul class="demo-log">
+            @foreach (var entry in Log("readonly"))
+            {
+                <li>@entry</li>
+            }
+        </ul>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Media without folder management"]</h2>
+    <p class="desc">@L["Media stays fully editable while the folder tree is fixed, so items can be renamed and deleted but folders cannot."]</p>
+    <div class="demo-box">
+        <FormaGallery Entries="@(EntriesFor("fixedfolders"))"
+                      Folders="_sampleFolders"
+                      CurrentFolder="@(CurrentFolderFor("fixedfolders"))"
+                      TotalCount="_allMedia.Count"
+                      Options="_fixedFolderOptions"
+                      OnFolderChanged="@(folder => HandleFolderChangedAsync("fixedfolders", folder))"
+                      OnRename="@(req => HandleRenameAsync("fixedfolders", req))"
+                      OnDelete="@(req => HandleDeleteAsync("fixedfolders", req))"
+                      OnUploaded="@(items => HandleUploadedAsync("fixedfolders", items))" />
+        <ul class="demo-log">
+            @foreach (var entry in Log("fixedfolders"))
+            {
+                <li>@entry</li>
+            }
+        </ul>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Breadcrumb-only navigation"]</h2>
+    <p class="desc">@L["With ShowSidebar off, the folder tree is hidden and folders are reached through the breadcrumb menus instead."]</p>
+    <div class="demo-box">
+        <FormaGallery Entries="@(EntriesFor("nosidebar"))"
+                      Folders="_sampleFolders"
+                      CurrentFolder="@(CurrentFolderFor("nosidebar"))"
+                      TotalCount="_allMedia.Count"
+                      ShowSidebar="false"
+                      OnFolderChanged="@(folder => HandleFolderChangedAsync("nosidebar", folder))" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Sidebar without breadcrumb menus"]</h2>
+    <p class="desc">@L["With ShowFolderMenu off, the breadcrumbs become plain separators and the tree is the only way to change folder."]</p>
+    <div class="demo-box">
+        <FormaGallery Entries="@(EntriesFor("nomenu"))"
+                      Folders="_sampleFolders"
+                      CurrentFolder="@(CurrentFolderFor("nomenu"))"
+                      TotalCount="_allMedia.Count"
+                      ShowFolderMenu="false"
+                      OnFolderChanged="@(folder => HandleFolderChangedAsync("nomenu", folder))" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Empty gallery"]</h2>
+    <p class="desc">@L["When a folder has no media, the gallery displays an empty state."]</p>
+    <div class="demo-box">
+        <FormaGallery Entries="[]" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Paginated gallery"]</h2>
+    <p class="desc">@L["A large collection splits across pages using FormaPagination."]</p>
+    <div class="demo-box">
+        <FormaGallery Entries="_pagedEntries" PageSize="4" />
+    </div>
+</div>

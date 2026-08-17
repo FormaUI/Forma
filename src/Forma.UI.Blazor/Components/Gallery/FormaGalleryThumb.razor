@@ -1,0 +1,11 @@
+@namespace Forma.UI.Components.Gallery
+@using Forma.Framework.Resources
+
+@if (Entry.Kind == ResourceKind.Image)
+{
+    <img src="@Entry.Source" alt="" class="forma-gallery-thumb @SizeClass" loading="lazy" />
+}
+else
+{
+    <span class="forma-gallery-thumb forma-gallery-thumb-glyph @SizeClass fa-solid @KindGlyph" aria-hidden="true"></span>
+}

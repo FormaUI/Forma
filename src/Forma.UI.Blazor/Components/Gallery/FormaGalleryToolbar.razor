@@ -1,0 +1,117 @@
+@namespace Forma.UI.Components.Gallery
+@using Forma.UI.Components.Actions
+
+<div class="forma-gallery-toolbar">
+    <span class="forma-gallery-sr-only" role="status" aria-live="polite">@SelectionAnnouncement</span>
+
+    @if (SelectedCount > 0)
+    {
+        <div class="forma-gallery-selection-bar">
+            <div class="forma-gallery-selection-actions">
+                @if (Options.AllowDelete)
+                {
+                    <FormaButton Variant="ButtonVariant.Danger" Size="ButtonSize.Normal" class="forma-gallery-delete-btn" OnClick="OnDelete">
+                        <span class="fa-solid fa-trash" aria-hidden="true"></span>
+                        @L["Delete"]
+                    </FormaButton>
+                }
+                <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Normal" class="forma-gallery-clear-btn" OnClick="OnClearSelection">
+                    <span class="fa-solid fa-square-minus" aria-hidden="true"></span>
+                    @L["Clear"]
+                </FormaButton>
+            </div>
+
+            <div class="forma-gallery-selection-status">
+                <span class="forma-gallery-selection-label">@L[$"{SelectedCount} selected"]</span>
+                <FormaCloseButton class="forma-gallery-exit-select-btn"
+                                  Label="@L["Leave selection mode"]"
+                                  OnClick="OnToggleSelectMode" />
+            </div>
+        </div>
+    }
+    else
+    {
+    <div class="forma-gallery-toolbar-left">
+        <FormaButton Variant="@(IsSelectMode ? ButtonVariant.Primary : ButtonVariant.Secondary)"
+                     Size="ButtonSize.Normal"
+                     class="forma-gallery-select-mode-btn"
+                     aria-pressed="@(IsSelectMode ? "true" : "false")"
+                     OnClick="OnToggleSelectMode">
+            @if (IsSelectMode)
+            {
+                <svg width="11" height="11" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                    <path d="M1 1l12 12M13 1 1 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                @L["Cancel"]
+            }
+            else
+            {
+                <span class="fa-solid fa-square-check" aria-hidden="true"></span>
+                @L["Select"]
+            }
+        </FormaButton>
+        @if (Options.AllowFolderCreate && ShowNewFolder)
+        {
+            <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Normal" class="forma-gallery-new-folder-btn" OnClick="OnNewFolder">
+                <span class="fa-solid fa-folder-plus" aria-hidden="true"></span>
+                @L["New folder"]
+            </FormaButton>
+        }
+        @if (Options.AllowUpload)
+        {
+            <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Normal" class="forma-gallery-upload-btn" OnClick="OnToggleUpload">
+                <span class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></span>
+                @L["Upload"]
+            </FormaButton>
+        }
+    </div>
+
+    <div class="forma-gallery-toolbar-right">
+        <!-- View Mode Switcher -->
+        <div class="forma-gallery-view-modes" role="group" aria-label="@L["View mode"]">
+            <button type="button"
+                    class="forma-gallery-view-btn @(ViewMode == GalleryViewMode.Thumbnails ? "is-active" : "")"
+                    aria-label="@L["Thumbnails"]"
+                    aria-pressed="@(ViewMode == GalleryViewMode.Thumbnails ? "true" : "false")"
+                    @onclick="() => OnViewModeChanged.InvokeAsync(GalleryViewMode.Thumbnails)">
+                <span class="fa-solid fa-border-all" aria-hidden="true"></span>
+            </button>
+            <button type="button"
+                    class="forma-gallery-view-btn @(ViewMode == GalleryViewMode.Details ? "is-active" : "")"
+                    aria-label="@L["Details"]"
+                    aria-pressed="@(ViewMode == GalleryViewMode.Details ? "true" : "false")"
+                    @onclick="() => OnViewModeChanged.InvokeAsync(GalleryViewMode.Details)">
+                <span class="fa-solid fa-table-list" aria-hidden="true"></span>
+            </button>
+            <button type="button"
+                    class="forma-gallery-view-btn @(ViewMode == GalleryViewMode.List ? "is-active" : "")"
+                    aria-label="@L["List"]"
+                    aria-pressed="@(ViewMode == GalleryViewMode.List ? "true" : "false")"
+                    @onclick="() => OnViewModeChanged.InvokeAsync(GalleryViewMode.List)">
+                <span class="fa-solid fa-list" aria-hidden="true"></span>
+            </button>
+        </div>
+
+        <!-- Sort Menu -->
+        <div class="forma-gallery-sort-group">
+            <select class="forma-gallery-sort-select"
+                    value="@SortField.ToString()"
+                    aria-label="@L["Sort by"]"
+                    @onchange="HandleSortFieldChange">
+                <option value="Name">@L["Name"]</option>
+                <option value="Size">@L["Size"]</option>
+                <option value="Kind">@L["Type"]</option>
+                <option value="DateAdded">@L["Date added"]</option>
+                <option value="DateModified">@L["Date modified"]</option>
+            </select>
+
+            <button type="button"
+                    class="forma-gallery-sort-direction-btn"
+                    aria-label="@(SortDirection == GallerySortDirection.Ascending ? L["Sort ascending"] : L["Sort descending"])"
+                    @onclick="ToggleSortDirection">
+                <span class="fa-solid @(SortDirection == GallerySortDirection.Ascending ? "fa-arrow-down-a-z" : "fa-arrow-up-z-a")" aria-hidden="true"></span>
+            </button>
+        </div>
+    </div>
+    }
+</div>

@@ -1,0 +1,120 @@
+@namespace Forma.UI.Components.Gallery
+
+<div class="forma-gallery-details-wrap">
+    <table class="forma-gallery-details-table" role="table">
+        <thead>
+            <tr>
+                <th class="forma-gallery-col-select"></th>
+                <th class="forma-gallery-col-name @(Context.SortField == GallerySortField.Name ? "is-sorted" : "")"
+                    aria-sort="@SortState(GallerySortField.Name)"
+                    @onclick="() => Context.SortByAsync(GallerySortField.Name)">
+                    <span>@L["Name"]</span>
+                    @if (Context.SortField == GallerySortField.Name)
+                    {
+                        <span class="fa-solid @(Context.SortDirection == GallerySortDirection.Ascending ? "fa-arrow-up" : "fa-arrow-down") forma-gallery-sort-arrow" aria-hidden="true"></span>
+                    }
+                </th>
+                <th class="forma-gallery-col-actions"><span class="forma-gallery-sr-only">@L["Actions"]</span></th>
+                @if (ShowsKind)
+                {
+                    <th class="forma-gallery-col-kind @(Context.SortField == GallerySortField.Kind ? "is-sorted" : "")"
+                        aria-sort="@SortState(GallerySortField.Kind)"
+                        @onclick="() => Context.SortByAsync(GallerySortField.Kind)">
+                        <span>@L["Type"]</span>
+                        @if (Context.SortField == GallerySortField.Kind)
+                        {
+                            <span class="fa-solid @(Context.SortDirection == GallerySortDirection.Ascending ? "fa-arrow-up" : "fa-arrow-down") forma-gallery-sort-arrow" aria-hidden="true"></span>
+                        }
+                    </th>
+                }
+                @if (ShowsSize)
+                {
+                    <th class="forma-gallery-col-size @(Context.SortField == GallerySortField.Size ? "is-sorted" : "")"
+                        aria-sort="@SortState(GallerySortField.Size)"
+                        @onclick="() => Context.SortByAsync(GallerySortField.Size)">
+                        <span>@L["Size"]</span>
+                        @if (Context.SortField == GallerySortField.Size)
+                        {
+                            <span class="fa-solid @(Context.SortDirection == GallerySortDirection.Ascending ? "fa-arrow-up" : "fa-arrow-down") forma-gallery-sort-arrow" aria-hidden="true"></span>
+                        }
+                    </th>
+                }
+                @if (ShowsModified)
+                {
+                    <th class="forma-gallery-col-modified @(Context.SortField == GallerySortField.DateModified ? "is-sorted" : "")"
+                        aria-sort="@SortState(GallerySortField.DateModified)"
+                        @onclick="() => Context.SortByAsync(GallerySortField.DateModified)">
+                        <span>@L["Modified"]</span>
+                        @if (Context.SortField == GallerySortField.DateModified)
+                        {
+                            <span class="fa-solid @(Context.SortDirection == GallerySortDirection.Ascending ? "fa-arrow-up" : "fa-arrow-down") forma-gallery-sort-arrow" aria-hidden="true"></span>
+                        }
+                    </th>
+                }
+                @if (ShowsAdded)
+                {
+                    <th class="forma-gallery-col-added @(Context.SortField == GallerySortField.DateAdded ? "is-sorted" : "")"
+                        aria-sort="@SortState(GallerySortField.DateAdded)"
+                        @onclick="() => Context.SortByAsync(GallerySortField.DateAdded)">
+                        <span>@L["Added"]</span>
+                        @if (Context.SortField == GallerySortField.DateAdded)
+                        {
+                            <span class="fa-solid @(Context.SortDirection == GallerySortDirection.Ascending ? "fa-arrow-up" : "fa-arrow-down") forma-gallery-sort-arrow" aria-hidden="true"></span>
+                        }
+                    </th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var entry in Entries)
+            {
+                var selected = Context.Selection.IsSelected(entry);
+
+                <tr class="forma-gallery-details-row @(selected ? "is-selected" : "")"
+                    draggable="true"
+                    @ondragstart="() => Context.BeginDrag(entry)">
+                    <td class="forma-gallery-cell-select">
+                        @if (Context.Selection.IsSelectMode && !Context.Selection.HasFolders)
+                        {
+                            <button type="button"
+                                    class="forma-gallery-table-select @(selected ? "is-checked" : "")"
+                                    aria-label="@Context.SelectLabel(entry)"
+                                    aria-pressed="@(selected ? "true" : "false")"
+                                    @onclick="() => Context.ToggleSelectAsync(entry)">
+                                <span class="fa-solid fa-check" aria-hidden="true"></span>
+                            </button>
+                        }
+                    </td>
+                    <td class="forma-gallery-cell-name">
+                        <button type="button"
+                                class="forma-gallery-name-wrap"
+                                aria-label="@Context.ActivateLabel(entry)"
+                                @onclick="() => Context.ActivateAsync(entry)">
+                            <FormaGalleryThumb Entry="entry" Size="GalleryThumbSize.Cell" />
+                            <span class="forma-gallery-details-name-text" title="@entry.Name">@entry.Name</span>
+                        </button>
+                    </td>
+                    <td class="forma-gallery-cell-actions">
+                        <FormaGalleryActionBar Entry="entry" Variant="GalleryActionBarVariant.Inline" />
+                    </td>
+                    @if (ShowsKind)
+                    {
+                        <td class="forma-gallery-cell-kind">@entry.Kind.ToString()</td>
+                    }
+                    @if (ShowsSize)
+                    {
+                        <td class="forma-gallery-cell-size">@(entry.DisplaySize ?? Placeholder)</td>
+                    }
+                    @if (ShowsModified)
+                    {
+                        <td class="forma-gallery-cell-modified">@DisplayDate(entry.Modified())</td>
+                    }
+                    @if (ShowsAdded)
+                    {
+                        <td class="forma-gallery-cell-added">@DisplayDate(entry.Added())</td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

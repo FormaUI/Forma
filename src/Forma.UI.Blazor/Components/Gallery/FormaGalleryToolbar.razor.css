@@ -1,0 +1,178 @@
+/* ============================================================
+   FormaGalleryToolbar — CSS isolation
+   Actions, selection state, view modes, and sorting controls
+   ============================================================ */
+
+.forma-gallery-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-block-size: 2.5rem;
+}
+
+/* A glyph's ink is taller than a capital, so it is lowered onto the label's cap-height centre. */
+.forma-gallery-select-mode-btn [class*="fa-"],
+.forma-gallery-select-mode-btn svg,
+.forma-gallery-new-folder-btn [class*="fa-"],
+.forma-gallery-upload-btn [class*="fa-"],
+.forma-gallery-delete-btn [class*="fa-"],
+.forma-gallery-clear-btn [class*="fa-"] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    translate: 0 0.064em;
+}
+
+.forma-gallery-selection-status ::deep .forma-gallery-exit-select-btn svg {
+    inline-size: 11px;
+    block-size: 11px;
+}
+
+.forma-gallery-sr-only {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+.forma-gallery-toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* The selection bar takes the whole toolbar row at the same height, so entering selection never moves the content below. */
+.forma-gallery-selection-bar {
+    flex: 1;
+    box-sizing: border-box;
+    min-block-size: 2.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    background: var(--hover-bg-color);
+    border: 1px solid var(--light-border-color);
+    padding-inline: 0.5rem;
+    padding-block: 0;
+    border-radius: 6px;
+}
+
+.forma-gallery-selection-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.forma-gallery-selection-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.forma-gallery-selection-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.forma-gallery-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* View Mode Buttons */
+.forma-gallery-view-modes {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--light-border-color);
+    border-radius: 6px;
+    background: var(--input-bg-color);
+    overflow: hidden;
+}
+
+.forma-gallery-view-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 2.25rem;
+    block-size: 2.25rem;
+    min-inline-size: 24px;
+    min-block-size: 24px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted-color);
+    cursor: pointer;
+    font-size: 0.9rem;
+    touch-action: manipulation;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+@media (hover: hover) {
+    .forma-gallery-view-btn:hover {
+        background: var(--hover-bg-color);
+        color: var(--text-color);
+    }
+}
+
+.forma-gallery-view-btn.is-active {
+    background: var(--hover-bg-color);
+    color: var(--main-color);
+}
+
+/* Sort Group */
+.forma-gallery-sort-group {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.forma-gallery-sort-select {
+    min-block-size: 2.25rem;
+    padding-inline-start: 0.5rem;
+    padding-inline-end: 1.5rem;
+    padding-block: 0.35rem;
+    border: 1px solid var(--light-border-color);
+    border-radius: 6px;
+    background: var(--input-bg-color);
+    color: var(--text-color);
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+
+.forma-gallery-sort-select:focus-visible {
+    outline: 2px solid var(--focus-color);
+    outline-offset: 1px;
+}
+
+.forma-gallery-sort-direction-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 2.25rem;
+    block-size: 2.25rem;
+    min-inline-size: 24px;
+    min-block-size: 24px;
+    border: 1px solid var(--light-border-color);
+    border-radius: 6px;
+    background: var(--input-bg-color);
+    color: var(--text-color);
+    cursor: pointer;
+    font-size: 0.85rem;
+    touch-action: manipulation;
+}
+
+@media (hover: hover) {
+    .forma-gallery-sort-direction-btn:hover {
+        background: var(--hover-bg-color);
+    }
+}
