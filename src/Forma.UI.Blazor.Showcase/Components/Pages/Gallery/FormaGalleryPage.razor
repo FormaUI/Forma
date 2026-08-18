@@ -92,6 +92,26 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["Constraints"]</h2>
+    <p class="desc">@L["This gallery accepts only images, holds two root folders, one subfolder each, nests two deep, and stops at four items or 1 MB. Trip any of them and the refusal is announced above the toolbar and reported to the host."]</p>
+    <div class="demo-box">
+        <FormaGallery Resources="_constrainedResources"
+                      Folders="_constrainedFolders"
+                      CurrentFolder="@(CurrentFolderFor("constrained"))"
+                      Constraints="_demoConstraints"
+                      OnFolderChanged="@(folder => HandleFolderChangedAsync("constrained", folder))"
+                      OnFolderCreate="@(req => HandleFolderCreateAsync("constrained", req))"
+                      OnRejected="@(rejection => HandleRejectedAsync("constrained", rejection))" />
+        <ul class="demo-log">
+            @foreach (var resource in Log("constrained"))
+            {
+                <li>@resource</li>
+            }
+        </ul>
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["Media without folder management"]</h2>
     <p class="desc">@L["Media stays fully editable while the folder tree is fixed, so items can be renamed and deleted but folders cannot."]</p>
     <div class="demo-box">

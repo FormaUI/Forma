@@ -103,6 +103,14 @@ public sealed partial class FormaGalleryPage : ComponentBase
             new VideoResourceInfo("/media/sample.mp4") { Size = 788493, CreatedAt = seeded.AddDays(-4), ModifiedAt = seeded.AddDays(-4) }
         ];
 
+        // Sits at three of four items and just under the byte ceiling, so one more upload trips a constraint.
+        _constrainedResources =
+        [
+            new ImageResourceInfo("/media/sample-poster.svg?shot=1") { Size = 340000, CreatedAt = seeded.AddDays(-3), ModifiedAt = seeded.AddDays(-3) },
+            new ImageResourceInfo("/media/sample-poster.svg?shot=2") { Size = 340000, CreatedAt = seeded.AddDays(-2), ModifiedAt = seeded.AddDays(-2) },
+            new ImageResourceInfo("/media/sample-poster.svg?proof=1") { Size = 340000, CreatedAt = seeded.AddDays(-1), ModifiedAt = seeded.AddDays(-1) }
+        ];
+
         // Every browsing demo reads through a store, so folder, search, sort and paging are answered the way a real library answers them.
         _mediaStore = Store(media);
         SyncFromStore();
@@ -139,6 +147,32 @@ public sealed partial class FormaGalleryPage : ComponentBase
 
     private SampleMediaStore Store(IReadOnlyList<SampleResource> resources)
         => new(resources, TimeSpan.FromMilliseconds(180)) { Queried = () => InvokeAsync(StateHasChanged) };
+
+    private static readonly FormaGalleryConstraints _demoConstraints = new()
+    {
+        AcceptedResourceKinds = "contentType:image",
+        MaxFolderDepth = 2,
+        MaxFolderRootCount = 2,
+        MaxFolderResourceCount = 3,
+        MaxSubfolderCount = 1,
+        MaxResourceCount = 4,
+        MaxTotalBytes = 1_048_576
+    };
+
+    private readonly List<FolderResourceInfo> _constrainedFolders =
+    [
+        new FolderResourceInfo("shots") { Name = "Shots", Count = 2 },
+        new FolderResourceInfo("proofs") { Name = "Proofs", Count = 1 }
+    ];
+
+    private List<ResourceInfo> _constrainedResources = [];
+
+    private Task HandleRejectedAsync(string key, GalleryRejection rejection)
+    {
+        LogAction(key, L["Refused ({reason}): {message}", ("reason", rejection.Reason), ("message", rejection.Message)]);
+
+        return Task.CompletedTask;
+    }
 
     // The store is the demo's only copy of the media, so what a mutation changed has to be read back out of it.
     private void SyncFromStore()

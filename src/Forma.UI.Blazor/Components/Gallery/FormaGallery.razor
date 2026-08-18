@@ -33,13 +33,25 @@
                          ViewMode="_viewMode"
                          OnClearSelection="ClearSelectionAsync"
                          OnDelete="() => OpenDeleteDialog()"
-                         OnFolderCreate="() => OpenFolderDialog(CurrentFolder)"
+                         OnFolderCreate="() => OpenFolderDialogAsync(CurrentFolder)"
                          ShowNewFolder="@(!ShowsSidebar)"
                          OnSortDirectionChanged="HandleSortDirectionChangedAsync"
                          OnSortFieldChanged="HandleSortFieldChangedAsync"
                          OnToggleUpload="ToggleUpload"
                          OnToggleSelectMode="ToggleSelectModeAsync"
                          OnViewModeChanged="HandleViewModeChangedAsync" />
+
+    <!-- Refusal notice; the region stays in the DOM so a message inserted into it is announced -->
+    <div class="forma-gallery-rejection-region" role="alert">
+        @if (_rejectionMessage is { Length: > 0 } rejection)
+        {
+            <div class="forma-gallery-rejection">
+                <span class="fa-solid fa-circle-exclamation forma-gallery-rejection-icon" aria-hidden="true"></span>
+                <span class="forma-gallery-rejection-text">@rejection</span>
+                <FormaCloseButton Label="@L["Dismiss"]" OnClick="() => _rejectionMessage = null" />
+            </div>
+        }
+    </div>
 
     <!-- Collapsible Upload Intake Panel -->
     @if (_isUploadOpen)
@@ -50,7 +62,7 @@
                 <FormaCloseButton Label="@L["Close upload"]" OnClick="CloseUpload" />
             </div>
             <FormaFilePicker Accept="image/*,video/*,audio/*"
-                             OnFilesSelected="HandleUploadFilesPicked" />
+                             OnFilesSelected="HandleUploadFilesPickedAsync" />
             @if (_pickedUploadFiles is { Count: > 0 })
             {
                 <FormaFileUploader Files="_pickedUploadFiles"
@@ -71,7 +83,7 @@
                                  OnFolderDelete="OpenFolderDeleteDialog"
                                  OnFolderDragStart="folder => _draggedFolder = folder"
                                  OnFolderDrop="HandleDropOnFolderAsync"
-                                 OnFolderCreate="OpenFolderDialog"
+                                 OnFolderCreate="OpenFolderDialogAsync"
                                  OnFolderRename="OpenFolderRenameDialog"
                                  OnFolderSelected="HandleFolderSelectedAsync" />
 

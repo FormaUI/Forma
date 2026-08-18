@@ -29,6 +29,35 @@
     block-size: var(--forma-gallery-block-size);
 }
 
+/* The region is always present so an inserted refusal is announced; empty, it takes no room. */
+.forma-gallery-rejection-region:empty {
+    display: none;
+}
+
+.forma-gallery-rejection {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid var(--danger-color);
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--danger-color) 8%, transparent);
+    padding-block: 0.5rem;
+    padding-inline: 0.75rem;
+    /* Darkened because the plain token on its own tint measures 4.16:1, under the 4.5:1 text floor. */
+    color: color-mix(in srgb, var(--danger-color) 82%, black);
+    font-size: 0.875rem;
+}
+
+.forma-gallery-rejection-icon {
+    flex-shrink: 0;
+    font-size: 1rem;
+}
+
+.forma-gallery-rejection-text {
+    flex: 1;
+    text-align: start;
+}
+
 .forma-gallery.is-dialog {
     border: none;
     padding: 0;

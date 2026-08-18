@@ -21,6 +21,156 @@
         }
 
         [Fact]
+        public void Should_list_only_the_resources_the_accept_pattern_admits()
+        {
+            // Arrange
+            using var ctx = new FormaGalleryTests();
+            IReadOnlyList<ResourceInfo> resources =
+            [
+                new ImageResourceInfo("https://example.com/cover.jpg"),
+                new DocumentResourceInfo("https://example.com/notes.pdf"),
+                new AudioResourceInfo("https://example.com/theme.wav")
+            ];
+            var constraints = new FormaGalleryConstraints { AcceptedResourceKinds = "globs:*.jpg;*.pdf" };
+
+            // Act
+            var cut = ctx.Render(@<FormaGallery Resources="resources" Constraints="constraints" />);
+
+            // Assert
+            var names = cut.FindAll(".forma-gallery-item-name").Select(node => node.TextContent.Trim()).ToList();
+            Assert.Equal(["cover.jpg", "notes.pdf"], names);
+        }
+
+        [Fact]
+        public void Should_list_only_the_resources_the_content_type_pattern_admits()
+        {
+            // Arrange
+            using var ctx = new FormaGalleryTests();
+            IReadOnlyList<ResourceInfo> resources =
+            [
+                new ImageResourceInfo("https://example.com/cover.jpg") { ContentType = "image/jpeg" },
+                new VideoResourceInfo("https://example.com/clip.mp4") { ContentType = "video/mp4" },
+                new DocumentResourceInfo("https://example.com/notes.pdf") { ContentType = "application/pdf" }
+            ];
+            var constraints = new FormaGalleryConstraints { AcceptedResourceKinds = "contentType:image;video" };
+
+            // Act
+            var cut = ctx.Render(@<FormaGallery Resources="resources" Constraints="constraints" />);
+
+            // Assert
+            var names = cut.FindAll(".forma-gallery-item-name").Select(node => node.TextContent.Trim()).ToList();
+            Assert.Equal(["clip.mp4", "cover.jpg"], names);
+        }
+
+        [Fact]
+        public void Should_match_a_glob_that_names_more_than_an_extension()
+        {
+            // Arrange
+            using var ctx = new FormaGalleryTests();
+            IReadOnlyList<ResourceInfo> resources =
+            [
+                new ImageResourceInfo("https://example.com/photo-01.jpg"),
+                new ImageResourceInfo("https://example.com/render-01.jpg")
+            ];
+            var constraints = new FormaGalleryConstraints { AcceptedResourceKinds = "globs:photo-*.jpg" };
+
+            // Act
+            var cut = ctx.Render(@<FormaGallery Resources="resources" Constraints="constraints" />);
+
+            // Assert
+            var names = cut.FindAll(".forma-gallery-item-name").Select(node => node.TextContent.Trim()).ToList();
+            Assert.Equal(["photo-01.jpg"], names);
+        }
+
+        [Fact]
+        public async Task Should_refuse_a_root_folder_beyond_the_root_folder_ceiling()
+        {
+            // Arrange
+            using var ctx = new FormaGalleryTests();
+            IReadOnlyList<FolderResourceInfo> folders = [new("races") { Name = "Races" }];
+            var constraints = new FormaGalleryConstraints { MaxFolderRootCount = 1 };
+            GalleryRejection? rejection = null;
+            GalleryFolderCreateRequest? created = null;
+
+            var cut = ctx.Render(@<FormaGallery Resources="[]"
+                                                Folders="folders"
+                                                Constraints="constraints"
+                                                OnRejected="@(r => { rejection = r; return Task.CompletedTask; })"
+                                                OnFolderCreate="@(r => { created = r; return Task.CompletedTask; })" />);
+
+            // Act
+            await cut.Find(".forma-gallery-sidebar button[aria-label='New folder']").ClickAsync(new());
+
+            // Assert
+            Assert.Null(created);
+            Assert.NotNull(rejection);
+            Assert.Equal(GalleryRejectionReason.FolderRootCount, rejection.Reason);
+            Assert.Equal(1, rejection.Allowed);
+            Assert.Equal(rejection.Message, cut.Find(".forma-gallery-rejection-text").TextContent.Trim());
+        }
+
+        [Fact]
+        public async Task Should_refuse_a_subfolder_beyond_the_subfolder_ceiling()
+        {
+            // Arrange
+            using var ctx = new FormaGalleryTests();
+            IReadOnlyList<FolderResourceInfo> folders =
+            [
+                new("races") { Name = "Races" },
+                new("2026") { Name = "2026", Parent = "races" }
+            ];
+            var constraints = new FormaGalleryConstraints { MaxSubfolderCount = 1 };
+            GalleryRejection? rejection = null;
+
+            var cut = ctx.Render(@<FormaGallery Resources="[]"
+                                                Folders="folders"
+                                                Constraints="constraints"
+                                                OnRejected="@(r => { rejection = r; return Task.CompletedTask; })" />);
+
+            // Act
+            await cut.Find("button[aria-label='New folder in \"Races\"']").ClickAsync(new());
+
+            // Assert
+            Assert.NotNull(rejection);
+            Assert.Equal(GalleryRejectionReason.SubfolderCount, rejection.Reason);
+        }
+
+        [Fact]
+        public async Task Should_refuse_a_folder_nested_beyond_the_depth_ceiling()
+        {
+            // Arrange
+            using var ctx = new FormaGalleryTests();
+            IReadOnlyList<FolderResourceInfo> folders = [new("races") { Name = "Races" }];
+            var constraints = new FormaGalleryConstraints { MaxFolderDepth = 1 };
+            GalleryRejection? rejection = null;
+
+            var cut = ctx.Render(@<FormaGallery Resources="[]"
+                                                Folders="folders"
+                                                Constraints="constraints"
+                                                OnRejected="@(r => { rejection = r; return Task.CompletedTask; })" />);
+
+            // Act
+            await cut.Find("button[aria-label='New folder in \"Races\"']").ClickAsync(new());
+
+            // Assert
+            Assert.NotNull(rejection);
+            Assert.Equal(GalleryRejectionReason.FolderDepth, rejection.Reason);
+        }
+
+        [Fact]
+        public void Should_announce_a_refusal_in_a_live_region()
+        {
+            // Arrange
+            using var ctx = new FormaGalleryTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaGallery Resources="[]" />);
+
+            // Assert
+            Assert.Equal("alert", cut.Find(".forma-gallery-rejection-region").GetAttribute("role"));
+        }
+
+        [Fact]
         public void Should_render_thumbnails_view_by_default()
         {
             // Arrange

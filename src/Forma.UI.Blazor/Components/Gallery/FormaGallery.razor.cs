@@ -46,6 +46,15 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
     /// <summary>How many resources the whole library holds, for hosts that supply one folder at a time; the supplied resources are counted when null.</summary>
     [Parameter] public int? TotalCount { get; set; }
 
+    /// <summary>How many bytes the whole library holds, for hosts that supply one folder at a time; the supplied resources are measured when null.</summary>
+    [Parameter] public long? TotalBytes { get; set; }
+
+    /// <summary>The ceilings the gallery keeps, refusing anything that would cross one.</summary>
+    [Parameter] public FormaGalleryConstraints Constraints { get; set; } = FormaGalleryConstraints.None;
+
+    /// <summary>Raised when a ceiling stopped an operation, with the reason already written for a reader.</summary>
+    [Parameter] public EventCallback<GalleryRejection> OnRejected { get; set; }
+
     /// <summary>The maximum number of resources that may be selected at once (0 for unlimited).</summary>
     [Parameter] public int MaxSelection { get; set; }
 
@@ -142,6 +151,12 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
     private int _page = 1;
 
     private IReadOnlyList<IBrowserFile>? _pickedUploadFiles;
+
+    private GalleryResourceFilter? _acceptFilter;
+
+    private string? _syncedAccept;
+
+    private string? _rejectionMessage;
 
     private ResourceInfo? _previewResource;
 
@@ -325,6 +340,11 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
 
             IEnumerable<ResourceInfo> query = Resources ?? [];
 
+            if (_acceptFilter is { } accepted)
+            {
+                query = query.Where(accepted.Accepts);
+            }
+
             if (!string.IsNullOrWhiteSpace(_searchQuery))
             {
                 query = query.Where(resource => resource.Name.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase));
@@ -452,6 +472,12 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
         _folderTree = null;
         _breadcrumbs = null;
 
+        if (!string.Equals(_syncedAccept, Constraints.AcceptedResourceKinds, StringComparison.Ordinal))
+        {
+            _syncedAccept = Constraints.AcceptedResourceKinds;
+            _acceptFilter = GalleryResourceFilter.Parse(Constraints.AcceptedResourceKinds);
+        }
+
         Adopt(CurrentPage, ref _syncedCurrentPage, ref _page);
         Adopt(ViewMode, ref _syncedViewMode, ref _viewMode);
         Adopt(SortField, ref _syncedSortField, ref _sortField);
@@ -524,8 +550,13 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
                 return;
             }
 
+            // A provider is expected to apply the same filter itself; this only keeps a stray resource off the screen.
+            var window = _acceptFilter is { } accepted
+                ? page.Resources.Where(accepted.Accepts)
+                : page.Resources;
+
             // The views hold the window they were handed, so a longer one replaces it rather than growing it underneath them.
-            _providerWindow = append ? [.. _providerWindow, .. page.Resources] : [.. page.Resources];
+            _providerWindow = append ? [.. _providerWindow, .. window] : [.. window];
             _providerTotal = page.TotalCount;
             _lastWindowWasFull = page.Resources.Count >= PageSize;
         }
@@ -557,6 +588,127 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
         _page = IsInfiniteScrolling ? 1 : _page;
 
         return QueryAsync(append: false);
+    }
+
+    private int RootFolderCount
+        => Folders?.Count(folder => folder.Parent is null) ?? 0;
+
+    private int KnownResourceCount
+        => TotalCount ?? Resources?.Count ?? MatchingCount ?? 0;
+
+    private long KnownByteCount
+        => TotalBytes ?? Resources?.Sum(resource => resource.Size ?? 0) ?? 0;
+
+    // A top-level folder counts as one, so the root itself is zero.
+    private int DepthOf(FolderResourceInfo? folder)
+    {
+        var tree = FolderTree;
+        var visited = new HashSet<string>(StringComparer.Ordinal);
+        var depth = 0;
+        var current = folder;
+
+        while (current is not null && visited.Add(current.Source))
+        {
+            depth++;
+            current = tree.Find(current.Parent);
+        }
+
+        return depth;
+    }
+
+    // How many levels the folder's own subtree spans, so moving it can be measured before it lands.
+    private int HeightOf(FolderResourceInfo folder)
+    {
+        var tallest = 0;
+
+        foreach (var child in FolderTree.ChildrenOf(folder.Source))
+        {
+            tallest = Math.Max(tallest, HeightOf(child));
+        }
+
+        return tallest + 1;
+    }
+
+    private async Task RejectAsync(GalleryRejectionReason reason, long? allowed, string message)
+    {
+        _rejectionMessage = message;
+
+        await OnRejected.InvokeAsync(new GalleryRejection(reason, allowed, message));
+    }
+
+    private async Task<bool> EnsureFolderHasRoomAsync(FolderResourceInfo? folder, int adding)
+    {
+        if (Constraints.MaxFolderResourceCount <= 0 || folder is null || (folder.Count ?? 0) + adding <= Constraints.MaxFolderResourceCount)
+        {
+            return true;
+        }
+
+        await RejectAsync(
+            GalleryRejectionReason.FolderResourceCount,
+            Constraints.MaxFolderResourceCount,
+            L["[$ plural; one: A folder holds at most # item.; other: A folder holds at most # items.; $]", Constraints.MaxFolderResourceCount].Value);
+
+        return false;
+    }
+
+    private async Task<bool> EnsureGalleryHasRoomAsync(int adding, long bytes)
+    {
+        if (Constraints.MaxResourceCount > 0 && KnownResourceCount + adding > Constraints.MaxResourceCount)
+        {
+            await RejectAsync(
+                GalleryRejectionReason.ResourceCount,
+                Constraints.MaxResourceCount,
+                L["[$ plural; one: This gallery holds at most # item.; other: This gallery holds at most # items.; $]", Constraints.MaxResourceCount].Value);
+
+            return false;
+        }
+
+        if (Constraints.MaxTotalBytes > 0 && KnownByteCount + bytes > Constraints.MaxTotalBytes)
+        {
+            await RejectAsync(
+                GalleryRejectionReason.TotalBytes,
+                Constraints.MaxTotalBytes,
+                L["This gallery holds at most {size}.", ("size", ResourceFormatter.FromByteCount(Constraints.MaxTotalBytes))].Value);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private async Task<bool> EnsureFolderFitsAsync(FolderResourceInfo? parent, int height)
+    {
+        if (Constraints.MaxFolderDepth > 0 && DepthOf(parent) + height > Constraints.MaxFolderDepth)
+        {
+            await RejectAsync(
+                GalleryRejectionReason.FolderDepth,
+                Constraints.MaxFolderDepth,
+                L["[$ plural; one: Folders cannot nest more than # level deep.; other: Folders cannot nest more than # levels deep.; $]", Constraints.MaxFolderDepth].Value);
+
+            return false;
+        }
+
+        if (parent is null && Constraints.MaxFolderRootCount > 0 && RootFolderCount >= Constraints.MaxFolderRootCount)
+        {
+            await RejectAsync(
+                GalleryRejectionReason.FolderRootCount,
+                Constraints.MaxFolderRootCount,
+                L["[$ plural; one: This gallery holds at most # top-level folder.; other: This gallery holds at most # top-level folders.; $]", Constraints.MaxFolderRootCount].Value);
+
+            return false;
+        }
+
+        if (parent is not null && Constraints.MaxSubfolderCount > 0 && FolderTree.ChildrenOf(parent.Source).Count >= Constraints.MaxSubfolderCount)
+        {
+            await RejectAsync(
+                GalleryRejectionReason.SubfolderCount,
+                Constraints.MaxSubfolderCount,
+                L["[$ plural; one: A folder holds at most # folder inside it.; other: A folder holds at most # folders inside it.; $]", Constraints.MaxSubfolderCount].Value);
+
+            return false;
+        }
+
+        return true;
     }
 
     private static async Task CancelAsync(CancellationTokenSource? source)
@@ -919,7 +1071,6 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
 
         await OnFolderCreate.InvokeAsync(request);
     }
-
     private async Task HandleDeleteConfirmedAsync()
     {
         if (_deletingResources is { Count: > 0 } targets)
@@ -1005,7 +1156,8 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
 
         if (draggedFolder is not null)
         {
-            if (CanMoveFolder(draggedFolder, targetFolder))
+            if (CanMoveFolder(draggedFolder, targetFolder)
+                && await EnsureFolderFitsAsync(targetFolder, HeightOf(draggedFolder)))
             {
                 await OnFolderDrop.InvokeAsync(new GalleryFolderDropRequest(draggedFolder, targetFolder));
                 await RefreshProviderAsync();
@@ -1019,6 +1171,11 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
             var resources = _context.Selection.IsSelected(draggedResource) && SelectedResources.Count > 1
                 ? SelectedResources
                 : [draggedResource];
+
+            if (!await EnsureFolderHasRoomAsync(targetFolder, resources.Count))
+            {
+                return;
+            }
 
             await OnDrop.InvokeAsync(new GalleryDropRequest(resources, targetFolder));
 
@@ -1171,8 +1328,29 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
         await RefreshProviderAsync();
     }
 
-    private void HandleUploadFilesPicked(IReadOnlyList<IBrowserFile> files)
-        => _pickedUploadFiles = files;
+    private async Task HandleUploadFilesPickedAsync(IReadOnlyList<IBrowserFile> files)
+    {
+        _rejectionMessage = null;
+
+        if (_acceptFilter is { } filter
+            && files.FirstOrDefault(file => !filter.Accepts(file.Name, file.ContentType)) is { } refused)
+        {
+            await RejectAsync(
+                GalleryRejectionReason.ResourceKind,
+                0,
+                L["\"{name}\" is not a kind of file this gallery accepts.", ("name", refused.Name)].Value);
+
+            return;
+        }
+
+        if (!await EnsureFolderHasRoomAsync(CurrentFolder, files.Count)
+            || !await EnsureGalleryHasRoomAsync(files.Count, files.Sum(file => file.Size)))
+        {
+            return;
+        }
+
+        _pickedUploadFiles = files;
+    }
 
     private async Task HandleViewModeChangedAsync(GalleryViewMode mode)
     {
@@ -1201,8 +1379,15 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
         => _deletingFolders = [folder];
 
     // Every caller names the parent it means, so no folder here is the root rather than wherever the reader happens to be.
-    private void OpenFolderDialog(FolderResourceInfo? parent)
+    private async Task OpenFolderDialogAsync(FolderResourceInfo? parent)
     {
+        _rejectionMessage = null;
+
+        if (!await EnsureFolderFitsAsync(parent, height: 1))
+        {
+            return;
+        }
+
         _newFolderParent = parent;
         _newFolderName = string.Empty;
         _isNewFolderOpen = true;

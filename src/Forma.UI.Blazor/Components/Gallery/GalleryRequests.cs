@@ -34,3 +34,9 @@ public sealed record GalleryFolderRenameRequest(FolderResourceInfo Folder, strin
 /// <summary>Request to delete an existing folder.</summary>
 /// <param name="Folder">The folder to delete.</param>
 public sealed record GalleryFolderDeleteRequest(FolderResourceInfo Folder);
+
+/// <summary>Report that the gallery refused a resource, and why.</summary>
+/// <param name="Reason">Why the gallery refused.</param>
+/// <param name="Allowed">The ceiling that was reached, or null when the reason is not a count.</param>
+/// <param name="Message">The reason, written for a reader in their own language.</param>
+public sealed record GalleryRejection(GalleryRejectionReason Reason, long? Allowed, string Message);
