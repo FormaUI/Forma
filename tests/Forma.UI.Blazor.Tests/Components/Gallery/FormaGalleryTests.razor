@@ -128,7 +128,8 @@
                                                 OnRejected="@(r => { rejection = r; return Task.CompletedTask; })" />);
 
             // Act
-            await cut.Find("button[aria-label='New folder in \"Races\"']").ClickAsync(new());
+            await cut.Find("button[aria-label='Actions for Races']").ClickAsync(new());
+            await cut.Find("[data-action='folder-create']").ClickAsync(new());
 
             // Assert
             Assert.NotNull(rejection);
@@ -150,7 +151,8 @@
                                                 OnRejected="@(r => { rejection = r; return Task.CompletedTask; })" />);
 
             // Act
-            await cut.Find("button[aria-label='New folder in \"Races\"']").ClickAsync(new());
+            await cut.Find("button[aria-label='Actions for Races']").ClickAsync(new());
+            await cut.Find("[data-action='folder-create']").ClickAsync(new());
 
             // Assert
             Assert.NotNull(rejection);
@@ -573,7 +575,8 @@
             var cut = ctx.Render(@<FormaGallery Resources="resources" />);
 
             // Act
-            cut.Find(".forma-gallery-action-btn").Click();
+            cut.Find(".forma-gallery-action-bar .forma-dropdown-menu-trigger").Click();
+            cut.Find("[data-action='preview']").Click();
 
             // Assert
             Assert.NotNull(cut.FindComponent<FormaFileViewer>());
@@ -593,7 +596,8 @@
                                                 OnRename="@(req => { request = req; return Task.CompletedTask; })" />);
 
             // Act
-            cut.FindAll(".forma-gallery-action-btn")[1].Click();
+            cut.Find(".forma-gallery-action-bar .forma-dropdown-menu-trigger").Click();
+            cut.Find("[data-action='rename']").Click();
             cut.Find("#forma-gallery-rename-input").Input("new-name.jpg");
             cut.Find(".forma-modal-footer .forma-btn-primary").Click();
 
@@ -617,7 +621,8 @@
                                                 OnDelete="@(req => { request = req; return Task.CompletedTask; })" />);
 
             // Act
-            cut.FindAll(".forma-gallery-action-btn")[2].Click();
+            cut.Find(".forma-gallery-action-bar .forma-dropdown-menu-trigger").Click();
+            cut.Find("[data-action='delete']").Click();
             cut.Find(".forma-modal-footer .forma-btn-danger").Click();
 
             // Assert
@@ -651,7 +656,8 @@
             Assert.Equal("New Album", createReq.Name);
 
             // Act - Rename Folder
-            cut.Find("[aria-label='Rename folder \"Races\"']").Click();
+            cut.Find("button[aria-label='Actions for Races']").Click();
+            cut.Find("[data-action='folder-rename']").Click();
             cut.Find("#forma-gallery-rename-folder-input").Input("Updated Races");
             cut.Find(".forma-modal-footer .forma-btn-primary").Click();
 
@@ -660,7 +666,8 @@
             Assert.Equal("Updated Races", renameReq.NewName);
 
             // Act - Delete Folder
-            cut.Find("[aria-label='Delete folder \"Races\"']").Click();
+            cut.Find("button[aria-label='Actions for Races']").Click();
+            cut.Find("[data-action='folder-delete']").Click();
             cut.Find(".forma-modal-footer .forma-btn-danger").Click();
 
             // Assert delete
@@ -681,7 +688,8 @@
                                                 OnFolderCreate="@(req => { createReq = req; return Task.CompletedTask; })" />);
 
             // Act
-            cut.Find("[aria-label='New folder in \"Races\"']").Click();
+            cut.Find("button[aria-label='Actions for Races']").Click();
+            cut.Find("[data-action='folder-create']").Click();
             cut.Find("#forma-gallery-folder-input").Input("2027");
             cut.Find(".forma-modal-footer .forma-btn-primary").Click();
 
@@ -727,7 +735,8 @@
             var cut = ctx.Render(@<FormaGallery Resources="resources" FileOptions="options" />);
 
             // Assert
-            var labels = cut.FindAll(".forma-gallery-action-btn").Select(b => b.GetAttribute("aria-label")).ToList();
+            cut.Find(".forma-gallery-action-bar .forma-dropdown-menu-trigger").Click();
+            var labels = cut.FindAll(".forma-dropdown-menu-item").Select(i => i.TextContent.Trim()).ToList();
             Assert.Equal(["Preview cover.jpg"], labels);
         }
 
@@ -778,7 +787,7 @@
             var cut = ctx.Render(@<FormaGallery Resources="[]" Folders="[folder]" FileOptions="options" />);
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-gallery-folder-action-btn"));
+            Assert.Empty(cut.FindAll(".forma-gallery-folder-actions"));
             Assert.Empty(cut.FindAll(".forma-gallery-new-folder-tool"));
         }
 
@@ -796,9 +805,10 @@
             // Assert
             Assert.Empty(cut.FindAll(".forma-gallery-new-folder-btn"));
             Assert.Empty(cut.FindAll(".forma-gallery-upload-btn"));
-            Assert.Empty(cut.FindAll(".forma-gallery-folder-action-btn"));
+            Assert.Empty(cut.FindAll(".forma-gallery-folder-actions"));
             Assert.Empty(cut.FindAll(".forma-gallery-new-folder-tool"));
-            var labels = cut.FindAll(".forma-gallery-action-btn").Select(b => b.GetAttribute("aria-label")).ToList();
+            cut.Find(".forma-gallery-action-bar .forma-dropdown-menu-trigger").Click();
+            var labels = cut.FindAll(".forma-dropdown-menu-item").Select(i => i.TextContent.Trim()).ToList();
             Assert.Equal(["Preview cover.jpg"], labels);
         }
 
@@ -814,12 +824,16 @@
             var cut = ctx.Render(@<FormaGallery Resources="resources" Folders="[folder]" FileOptions="FormaGalleryFileOptions.Default" />);
 
             // Assert
-            var labels = cut.FindAll(".forma-gallery-action-btn").Select(b => b.GetAttribute("aria-label")).ToList();
+            cut.Find(".forma-gallery-action-bar .forma-dropdown-menu-trigger").Click();
+            var labels = cut.FindAll(".forma-dropdown-menu-item").Select(i => i.TextContent.Trim()).ToList();
             Assert.Equal(["Preview cover.jpg", "Rename cover.jpg", "Delete cover.jpg"], labels);
             Assert.Single(cut.FindAll(".forma-gallery-new-folder-tool"));
             Assert.Empty(cut.FindAll(".forma-gallery-new-folder-btn"));
             Assert.Single(cut.FindAll(".forma-gallery-upload-btn"));
-            Assert.Equal(3, cut.FindAll(".forma-gallery-folder-action-btn").Count);
+            cut.Find("button[aria-label='Actions for Races']").Click();
+            Assert.Equal(
+                ["folder-create", "folder-rename", "folder-delete"],
+                cut.FindAll(".forma-gallery-folder-actions [data-action]").Select(i => i.GetAttribute("data-action")));
         }
 
         [Fact]
@@ -1170,9 +1184,8 @@
                                                 OnFolderDrop="@(req => { request = req; return Task.CompletedTask; })" />);
 
             // Act
-            var rows = cut.FindAll(".forma-gallery-folder-row");
-            rows[1].DragStart();
-            rows[2].Drop();
+            cut.FindAll(".forma-gallery-folder-row")[1].DragStart();
+            cut.FindAll(".forma-gallery-folder-row")[2].Drop();
 
             // Assert
             Assert.Null(request);

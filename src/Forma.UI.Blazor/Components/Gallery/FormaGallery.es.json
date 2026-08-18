@@ -60,6 +60,7 @@
   "Sort ascending": "Orden ascendente",
   "Sort descending": "Orden descendente",
   "Folders": "Carpetas",
+  "Actions for {name}": "Acciones para {name}",
   "Rename folder \"{name}\"": "Cambiar nombre de la carpeta \"{name}\"",
   "Delete folder \"{name}\"": "Eliminar carpeta \"{name}\"",
   "No media matches \"{query}\"": "Ningún medio coincide con \"{query}\"",

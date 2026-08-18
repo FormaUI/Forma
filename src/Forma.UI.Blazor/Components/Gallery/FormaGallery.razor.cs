@@ -448,6 +448,8 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
             ? _context.SelectLabel(resource)
             : L["Preview {name}", ("name", resource.Name)].Value;
 
+        _context.ActionsLabel = resource => L["Actions for {name}", ("name", resource.Name)].Value;
+
         _page = CurrentPage;
         _viewMode = ViewMode;
         _sortField = SortField;

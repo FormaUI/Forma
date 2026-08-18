@@ -61,11 +61,20 @@
     touch-action: manipulation;
 }
 
-.forma-gallery-item-select {
+/* The actions menu and the check share the tile's leading corner, so the check no longer places itself.
+   Transparent to the pointer so a tap on the check still reaches the full-tile button underneath. */
+.forma-gallery-item-lead {
     position: absolute;
     inset-block-start: 0.4rem;
     inset-inline-start: 0.4rem;
     z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    pointer-events: none;
+}
+
+.forma-gallery-item-select {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -73,6 +82,7 @@
     block-size: var(--forma-gallery-check-size);
     min-inline-size: 24px;
     min-block-size: 24px;
+    flex-shrink: 0;
     border-radius: 4px;
     border: 1px solid var(--dark-border-color);
     background: rgba(255, 255, 255, 0.95);

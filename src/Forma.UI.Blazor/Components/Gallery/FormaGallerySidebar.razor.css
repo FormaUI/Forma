@@ -96,7 +96,9 @@
         background: var(--hover-bg-color);
     }
 
-    .forma-gallery-folder-tree ::deep .forma-gallery-folder-row:hover .forma-gallery-folder-actions {
+    .forma-gallery-folder-tree ::deep .forma-gallery-folder-row:hover .forma-gallery-folder-actions,
+    .forma-gallery-folder-tree ::deep .forma-gallery-folder-row:focus-within .forma-gallery-folder-actions,
+    .forma-gallery-folder-tree ::deep .forma-gallery-folder-row:has(.forma-dropdown-menu) .forma-gallery-folder-actions {
         opacity: 1;
     }
 }
@@ -232,34 +234,6 @@
 @media (hover: none) {
     .forma-gallery-folder-tree ::deep .forma-gallery-folder-actions {
         opacity: 1;
-    }
-}
-
-.forma-gallery-folder-tree ::deep .forma-gallery-folder-action-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    inline-size: 1.5rem;
-    block-size: 1.5rem;
-    min-inline-size: 24px;
-    min-block-size: 24px;
-    border: none;
-    border-radius: 4px;
-    background: transparent;
-    color: var(--text-muted-color);
-    cursor: pointer;
-    font-size: 0.75rem;
-    touch-action: manipulation;
-}
-
-@media (hover: hover) {
-    .forma-gallery-folder-tree ::deep .forma-gallery-folder-action-btn:hover {
-        background: rgba(0, 0, 0, 0.08);
-        color: var(--text-color);
-    }
-
-    .forma-gallery-folder-tree ::deep .forma-gallery-folder-action-btn.forma-gallery-folder-action-delete:hover {
-        color: var(--danger-color);
     }
 }
 

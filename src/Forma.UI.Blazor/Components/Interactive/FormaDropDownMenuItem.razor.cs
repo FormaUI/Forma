@@ -13,13 +13,23 @@ public sealed partial class FormaDropDownMenuItem : IDisposable
     /// <summary>Blocks activation and dims the item.</summary>
     [Parameter] public bool Disabled { get; set; }
 
+    /// <summary>Marks the item as destroying data, colouring it as a warning.</summary>
+    [Parameter] public bool IsDestructive { get; set; }
+
     /// <summary>Raised when the item is activated.</summary>
     [Parameter] public EventCallback OnClick { get; set; }
 
     /// <summary>Content rendered inside the item.</summary>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
 
+    /// <summary>Additional attributes applied to the item element.</summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
     private ElementReference _element;
+
+    private string CssClass
+        => IsDestructive ? "forma-dropdown-menu-item is-destructive" : "forma-dropdown-menu-item";
 
     protected override void OnInitialized()
     {

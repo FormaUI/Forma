@@ -4,6 +4,7 @@
     <table class="forma-gallery-details-table" role="table">
         <thead>
             <tr>
+                <th class="forma-gallery-col-actions"><span class="forma-gallery-sr-only">@L["Actions"]</span></th>
                 <th class="forma-gallery-col-select"></th>
                 <th class="forma-gallery-col-name @(Context.SortField == GallerySortField.Name ? "is-sorted" : "")"
                     aria-sort="@SortState(GallerySortField.Name)"
@@ -14,7 +15,6 @@
                         <span class="forma-gallery-sort-arrow" aria-hidden="true"><FormaGlyph Name="@(Context.SortDirection == GallerySortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
                     }
                 </th>
-                <th class="forma-gallery-col-actions"><span class="forma-gallery-sr-only">@L["Actions"]</span></th>
                 @if (ShowsKind)
                 {
                     <th class="forma-gallery-col-kind @(Context.SortField == GallerySortField.Kind ? "is-sorted" : "")"
@@ -73,6 +73,9 @@
                 <tr class="forma-gallery-details-row @(selected ? "is-selected" : "")"
                     draggable="true"
                     @ondragstart="() => Context.BeginDrag(resource)">
+                    <td class="forma-gallery-cell-actions">
+                        <FormaGalleryActionBar Resource="resource" />
+                    </td>
                     <td class="forma-gallery-cell-select">
                         @if (Context.Selection.IsSelectMode && !Context.Selection.HasFolders)
                         {
@@ -93,9 +96,6 @@
                             <FormaGalleryThumb Resource="resource" Size="GalleryThumbSize.Cell" />
                             <span class="forma-gallery-details-name-text" title="@resource.Name">@resource.Name</span>
                         </button>
-                    </td>
-                    <td class="forma-gallery-cell-actions">
-                        <FormaGalleryActionBar Resource="resource" Variant="GalleryActionBarVariant.Inline" />
                     </td>
                     @if (ShowsKind)
                     {

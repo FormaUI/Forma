@@ -18,14 +18,16 @@
                         aria-pressed="@(Context.Selection.IsSelectMode ? (selected ? "true" : "false") : null)"
                         @onclick="() => Context.ActivateAsync(resource)"></button>
 
-                @if (Context.Selection.IsSelectMode && !Context.Selection.HasFolders)
-                {
-                    <span class="forma-gallery-item-select @(selected ? "is-checked" : "")" aria-hidden="true">
-                        <FormaGlyph Name="Glyph.Check" />
-                    </span>
-                }
+                <span class="forma-gallery-item-lead">
+                    <FormaGalleryActionBar Resource="resource" />
 
-                <FormaGalleryActionBar Resource="resource" Variant="GalleryActionBarVariant.Overlay" />
+                    @if (Context.Selection.IsSelectMode && !Context.Selection.HasFolders)
+                    {
+                        <span class="forma-gallery-item-select @(selected ? "is-checked" : "")" aria-hidden="true">
+                            <FormaGlyph Name="Glyph.Check" />
+                        </span>
+                    }
+                </span>
             </div>
 
             <div class="forma-gallery-item-info">

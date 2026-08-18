@@ -1,15 +1,19 @@
 @namespace Forma.UI.Blazor.Components.Gallery
 @using Forma.Framework.Resources
+@using Forma.UI.Blazor.Components.Interactive
 
-<div class="forma-gallery-action-bar @(Variant == GalleryActionBarVariant.Overlay ? "is-overlay" : "is-inline")">
-    @foreach (var action in Context.Actions)
-    {
-        <button type="button"
-                class="forma-gallery-action-btn @(action.IsDestructive ? "is-destructive" : "")"
-                data-action="@action.Id"
-                aria-label="@action.Label(Resource)"
-                @onclick="() => action.Invoke(Resource)">
-            <FormaGlyph Name="action.Icon" />
-        </button>
-    }
+<div class="forma-gallery-action-bar">
+    <FormaOverflowMenu Label="@Context.ActionsLabel(Resource)"
+                       Orientation="MenuOrientation.Vertical"
+                       Size="ButtonSize.Mini">
+        @foreach (var action in Context.Actions)
+        {
+            <FormaDropDownMenuItem IsDestructive="action.IsDestructive"
+                                   data-action="@action.Id"
+                                   OnClick="() => action.Invoke(Resource)">
+                <FormaGlyph Name="action.Icon" />
+                <span>@action.Label(Resource)</span>
+            </FormaDropDownMenuItem>
+        }
+    </FormaOverflowMenu>
 </div>

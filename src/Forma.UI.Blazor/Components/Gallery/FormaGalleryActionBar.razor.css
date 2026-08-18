@@ -1,75 +1,29 @@
-/* Item operation buttons, shared by every gallery view; the overlay variant floats over a thumbnail and the inline variant sits in a row. */
+/* Item operation menu, shared by every gallery view; it leads the item so its position never depends on the item's width. */
 
 .forma-gallery-action-bar {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    flex-shrink: 0;
+    pointer-events: auto;
 }
 
-.forma-gallery-action-bar.is-overlay {
-    position: absolute;
-    inset-block-start: 0.35rem;
-    inset-inline-end: 0.35rem;
-    z-index: 2;
-    opacity: 0;
-    transition: opacity 0.15s ease;
-}
-
-.forma-gallery-action-bar.is-inline {
-    opacity: 0;
-    transition: opacity 0.15s ease;
-}
-
+/* Hidden until asked for where a pointer can hover, so the row stays quiet; opacity rather than
+   display keeps the trigger in the tab order, which is what lets :focus-within reveal it. */
 @media (hover: hover) {
+    .forma-gallery-action-bar {
+        opacity: 0;
+        transition: opacity 0.15s ease;
+    }
+
     .forma-gallery-item:hover .forma-gallery-action-bar,
     .forma-gallery-item:focus-within .forma-gallery-action-bar,
+    .forma-gallery-item:has(.forma-dropdown-menu) .forma-gallery-action-bar,
     .forma-gallery-details-row:hover .forma-gallery-action-bar,
     .forma-gallery-details-row:focus-within .forma-gallery-action-bar,
+    .forma-gallery-details-row:has(.forma-dropdown-menu) .forma-gallery-action-bar,
     .forma-gallery-list-item:hover .forma-gallery-action-bar,
-    .forma-gallery-list-item:focus-within .forma-gallery-action-bar {
+    .forma-gallery-list-item:focus-within .forma-gallery-action-bar,
+    .forma-gallery-list-item:has(.forma-dropdown-menu) .forma-gallery-action-bar {
         opacity: 1;
-    }
-}
-
-@media (hover: none) {
-    .forma-gallery-action-bar {
-        opacity: 1;
-    }
-}
-
-.forma-gallery-action-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    inline-size: 1.65rem;
-    block-size: 1.65rem;
-    min-inline-size: 24px;
-    min-block-size: 24px;
-    flex-shrink: 0;
-    border-radius: 4px;
-    border: 1px solid var(--light-border-color);
-    background: rgba(255, 255, 255, 0.95);
-    color: var(--text-color);
-    cursor: pointer;
-    font-size: 0.75rem;
-    touch-action: manipulation;
-    transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-@media (hover: hover) {
-    .forma-gallery-action-btn:hover {
-        background: #fff;
-        color: var(--main-color);
-    }
-
-    .forma-gallery-action-btn.is-destructive:hover {
-        color: var(--danger-color);
-    }
-}
-
-@media (pointer: coarse) {
-    .forma-gallery-action-btn {
-        min-inline-size: 2.75rem;
-        min-block-size: 2.75rem;
     }
 }

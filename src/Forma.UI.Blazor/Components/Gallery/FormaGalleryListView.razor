@@ -9,6 +9,8 @@
              role="listitem"
              draggable="true"
              @ondragstart="() => Context.BeginDrag(resource)">
+            <FormaGalleryActionBar Resource="resource" />
+
             @if (Context.Selection.IsSelectMode && !Context.Selection.HasFolders)
             {
                 <button type="button"
@@ -36,8 +38,6 @@
                     }
                 </span>
             </button>
-
-            <FormaGalleryActionBar Resource="resource" Variant="GalleryActionBarVariant.Inline" />
         </div>
     }
 </div>

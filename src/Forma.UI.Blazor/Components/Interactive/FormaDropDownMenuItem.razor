@@ -3,7 +3,8 @@
 @if (Href is not null)
 {
     <a href="@Href"
-       class="forma-dropdown-menu-item"
+       @attributes="AdditionalAttributes"
+       class="@CssClass"
        role="menuitem"
        tabindex="-1"
        aria-disabled="@(Disabled ? "true" : null)"
@@ -16,7 +17,8 @@
 else
 {
     <button type="button"
-            class="forma-dropdown-menu-item"
+            @attributes="AdditionalAttributes"
+            class="@CssClass"
             role="menuitem"
             tabindex="-1"
             disabled="@Disabled"

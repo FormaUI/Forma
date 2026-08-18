@@ -60,6 +60,7 @@
   "Sort ascending": "מיון בסדר עולה",
   "Sort descending": "מיון בסדר יורד",
   "Folders": "תיקיות",
+  "Actions for {name}": "פעולות עבור {name}",
   "Rename folder \"{name}\"": "שינוי שם התיקייה \"{name}\"",
   "Delete folder \"{name}\"": "מחיקת התיקייה \"{name}\"",
   "No media matches \"{query}\"": "לא נמצאה מדיה התואמת ל-\"{query}\"",

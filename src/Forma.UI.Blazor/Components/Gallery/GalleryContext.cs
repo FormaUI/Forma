@@ -49,6 +49,9 @@ public sealed class GalleryContext
     /// <summary>Produces the localized accessible name for activating a resource, reflecting the current mode.</summary>
     public Func<ResourceInfo, string> ActivateLabel { get; internal set; } = _ => string.Empty;
 
+    /// <summary>Produces the localized accessible name for a resource's actions menu.</summary>
+    public Func<ResourceInfo, string> ActionsLabel { get; internal set; } = _ => string.Empty;
+
     /// <summary>Toggles the resource's selection in selection mode, and previews it otherwise.</summary>
     public Task ActivateAsync(ResourceInfo resource)
     {
