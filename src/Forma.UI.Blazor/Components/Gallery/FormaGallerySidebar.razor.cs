@@ -35,8 +35,8 @@ public sealed partial class FormaGallerySidebar : ComponentBase, IAsyncDisposabl
     /// <summary>Raised when a folder is selected.</summary>
     [Parameter] public EventCallback<FolderResourceInfo?> OnFolderSelected { get; set; }
 
-    /// <summary>Raised when new folder creation is requested.</summary>
-    [Parameter] public EventCallback OnNewFolder { get; set; }
+    /// <summary>Raised when a folder is to be created, under the folder given or at the root when none is.</summary>
+    [Parameter] public EventCallback<FolderResourceInfo?> OnFolderCreate { get; set; }
 
     /// <summary>Which folder operations the sidebar offers.</summary>
     [Parameter] public FormaGalleryFileOptions FileOptions { get; set; } = FormaGalleryFileOptions.Default;
@@ -248,6 +248,9 @@ public sealed partial class FormaGallerySidebar : ComponentBase, IAsyncDisposabl
 
     internal Task DeleteFolderAsync(FolderResourceInfo folder)
         => OnFolderDelete.InvokeAsync(folder);
+
+    internal Task CreateFolderAsync(FolderResourceInfo? parent)
+        => OnFolderCreate.InvokeAsync(parent);
 
     internal Task HandleDropOnFolderAsync(FolderResourceInfo? folder)
         => OnFolderDrop.InvokeAsync(folder);

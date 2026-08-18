@@ -33,7 +33,7 @@
                          ViewMode="_viewMode"
                          OnClearSelection="ClearSelectionAsync"
                          OnDelete="() => OpenDeleteDialog()"
-                         OnNewFolder="() => OpenFolderDialog(CurrentFolder)"
+                         OnFolderCreate="() => OpenFolderDialog(CurrentFolder)"
                          ShowNewFolder="@(!ShowsSidebar)"
                          OnSortDirectionChanged="HandleSortDirectionChangedAsync"
                          OnSortFieldChanged="HandleSortFieldChangedAsync"
@@ -71,9 +71,9 @@
                                  OnFolderDelete="OpenFolderDeleteDialog"
                                  OnFolderDragStart="folder => _draggedFolder = folder"
                                  OnFolderDrop="HandleDropOnFolderAsync"
+                                 OnFolderCreate="OpenFolderDialog"
                                  OnFolderRename="OpenFolderRenameDialog"
-                                 OnFolderSelected="HandleFolderSelectedAsync"
-                                 OnNewFolder="() => OpenFolderDialog(CurrentFolder)" />
+                                 OnFolderSelected="HandleFolderSelectedAsync" />
 
             <div class="forma-gallery-splitter @(_isResizingSidebar ? "is-resizing" : "")"
                  @ref="_splitterElement"

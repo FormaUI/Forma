@@ -51,6 +51,15 @@
         </button>
 
         <div class="forma-gallery-folder-actions">
+            @if (Sidebar.FileOptions.AllowFolderCreate)
+            {
+                <button type="button"
+                        class="forma-gallery-folder-action-btn"
+                        aria-label="@L["New folder in \"{name}\"", ("name", Folder.Name)]"
+                        @onclick="() => Sidebar.CreateFolderAsync(Folder)">
+                    <span class="fa-solid fa-folder-plus" aria-hidden="true"></span>
+                </button>
+            }
             @if (Sidebar.FileOptions.AllowFolderRename)
             {
                 <button type="button"

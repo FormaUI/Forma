@@ -11,7 +11,7 @@
                 <button type="button"
                         class="forma-gallery-sidebar-tool forma-gallery-new-folder-tool"
                         aria-label="@L["New folder"]"
-                        @onclick="OnNewFolder">
+                        @onclick="() => CreateFolderAsync(null)">
                     <span class="fa-solid fa-folder-plus" aria-hidden="true"></span>
                 </button>
             }

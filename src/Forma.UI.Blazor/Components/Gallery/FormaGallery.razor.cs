@@ -1200,9 +1200,10 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
     private void OpenFolderDeleteDialog(FolderResourceInfo folder)
         => _deletingFolders = [folder];
 
-    private void OpenFolderDialog(FolderResourceInfo? parent = null)
+    // Every caller names the parent it means, so no folder here is the root rather than wherever the reader happens to be.
+    private void OpenFolderDialog(FolderResourceInfo? parent)
     {
-        _newFolderParent = parent ?? CurrentFolder;
+        _newFolderParent = parent;
         _newFolderName = string.Empty;
         _isNewFolderOpen = true;
     }

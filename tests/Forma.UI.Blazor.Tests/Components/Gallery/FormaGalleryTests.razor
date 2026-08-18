@@ -501,7 +501,7 @@
             Assert.Equal("New Album", createReq.Name);
 
             // Act - Rename Folder
-            cut.Find(".forma-gallery-folder-action-btn").Click();
+            cut.Find("[aria-label='Rename folder \"Races\"']").Click();
             cut.Find("#forma-gallery-rename-folder-input").Input("Updated Races");
             cut.Find(".forma-modal-footer .forma-btn-primary").Click();
 
@@ -510,12 +510,59 @@
             Assert.Equal("Updated Races", renameReq.NewName);
 
             // Act - Delete Folder
-            cut.Find(".forma-gallery-folder-action-delete").Click();
+            cut.Find("[aria-label='Delete folder \"Races\"']").Click();
             cut.Find(".forma-modal-footer .forma-btn-danger").Click();
 
             // Assert delete
             Assert.NotNull(deleteReq);
             Assert.Equal("races", deleteReq.Folder.Source);
+        }
+
+        [Fact]
+        public void Should_raise_folder_create_with_the_node_as_parent_when_created_from_its_own_row()
+        {
+            // Arrange
+            using var ctx = new FormaGalleryTests();
+            var folder = new FolderResourceInfo("races") { Name = "Races" };
+            GalleryFolderCreateRequest? createReq = null;
+
+            var cut = ctx.Render(@<FormaGallery Resources="[]"
+                                                Folders="[folder]"
+                                                OnFolderCreate="@(req => { createReq = req; return Task.CompletedTask; })" />);
+
+            // Act
+            cut.Find("[aria-label='New folder in \"Races\"']").Click();
+            cut.Find("#forma-gallery-folder-input").Input("2027");
+            cut.Find(".forma-modal-footer .forma-btn-primary").Click();
+
+            // Assert
+            Assert.NotNull(createReq);
+            Assert.Equal("2027", createReq.Name);
+            Assert.Equal("races", createReq.ParentFolder?.Source);
+        }
+
+        [Fact]
+        public void Should_raise_folder_create_at_the_root_from_the_sidebar_toolbar_while_inside_a_folder()
+        {
+            // Arrange
+            using var ctx = new FormaGalleryTests();
+            var folder = new FolderResourceInfo("races") { Name = "Races" };
+            GalleryFolderCreateRequest? createReq = null;
+
+            var cut = ctx.Render(@<FormaGallery Resources="[]"
+                                                Folders="[folder]"
+                                                CurrentFolder="folder"
+                                                OnFolderCreate="@(req => { createReq = req; return Task.CompletedTask; })" />);
+
+            // Act
+            cut.Find(".forma-gallery-new-folder-tool").Click();
+            cut.Find("#forma-gallery-folder-input").Input("Archive");
+            cut.Find(".forma-modal-footer .forma-btn-primary").Click();
+
+            // Assert
+            Assert.NotNull(createReq);
+            Assert.Equal("Archive", createReq.Name);
+            Assert.Null(createReq.ParentFolder);
         }
 
         [Fact]
@@ -539,14 +586,16 @@
         {
             // Arrange
             using var ctx = new FormaGalleryTests();
+            var folder = new FolderResourceInfo("races") { Name = "Races" };
             var options = new FormaGalleryFileOptions { AllowUpload = false, AllowFolderCreate = false };
 
             // Act
-            var cut = ctx.Render(@<FormaGallery Resources="[]" FileOptions="options" />);
+            var cut = ctx.Render(@<FormaGallery Resources="[]" Folders="[folder]" FileOptions="options" />);
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-gallery-new-folder-btn"));
             Assert.Empty(cut.FindAll(".forma-gallery-upload-btn"));
+            Assert.Empty(cut.FindAll("[aria-label='New folder in \"Races\"']"));
         }
 
         [Fact]
@@ -620,7 +669,7 @@
             Assert.Single(cut.FindAll(".forma-gallery-new-folder-tool"));
             Assert.Empty(cut.FindAll(".forma-gallery-new-folder-btn"));
             Assert.Single(cut.FindAll(".forma-gallery-upload-btn"));
-            Assert.Equal(2, cut.FindAll(".forma-gallery-folder-action-btn").Count);
+            Assert.Equal(3, cut.FindAll(".forma-gallery-folder-action-btn").Count);
         }
 
         [Fact]

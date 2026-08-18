@@ -29,6 +29,7 @@
   "Search media...": "Buscar medios...",
   "Search {name}...": "Buscar en {name}...",
   "New folder": "Nueva carpeta",
+  "New folder in \"{name}\"": "Nueva carpeta en \"{name}\"",
   "Upload": "Subir",
   "Upload media": "Subir medios",
   "Close upload": "Cerrar subida",

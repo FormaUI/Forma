@@ -20,7 +20,7 @@ public sealed partial class FormaGalleryToolbar : ComponentBase
     [Parameter] public EventCallback OnDelete { get; set; }
 
     /// <summary>Raised when the new folder action is clicked.</summary>
-    [Parameter] public EventCallback OnNewFolder { get; set; }
+    [Parameter] public EventCallback OnFolderCreate { get; set; }
 
     /// <summary>Whether the toolbar offers the new folder action.</summary>
     [Parameter] public bool ShowNewFolder { get; set; } = true;
