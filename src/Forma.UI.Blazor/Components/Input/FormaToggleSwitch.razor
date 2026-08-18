@@ -18,7 +18,8 @@
                        @onchange="HandleChange"
                        disabled="@Disabled" />
                 <span class="forma-toggle-track" aria-hidden="true">
-                    <span class="forma-toggle-mark">@(CurrentValue ? CheckMark : CrossMark)</span>
+                    @* The mark carries on/off without relying on the track colour alone. *@
+                    <span class="forma-toggle-mark"><FormaGlyph Name="@(CurrentValue ? Glyph.Check : Glyph.Xmark)" /></span>
                     <span class="forma-toggle-knob"></span>
                 </span>
             </label>

@@ -13,9 +13,9 @@
                         aria-selected="@isActive.ToString().ToLowerInvariant()"
                         aria-controls="@panelId"
                         @onclick="() => SetActiveTab(tab)">
-                    @if (tab.Icon is not null)
+                    @if (tab.Icon is { } icon)
                     {
-                        <span class="@tab.Icon.Value.CssClass" aria-hidden="true"></span>
+                        <FormaGlyph Name="icon" />
                     }
                     @tab.Title
                 </button>

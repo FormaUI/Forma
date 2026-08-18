@@ -46,7 +46,7 @@
         @if (_rejectionMessage is { Length: > 0 } rejection)
         {
             <div class="forma-gallery-rejection">
-                <span class="fa-solid fa-circle-exclamation forma-gallery-rejection-icon" aria-hidden="true"></span>
+                <span class="forma-gallery-rejection-icon" aria-hidden="true"><FormaGlyph Name="Glyph.CircleExclamation" /></span>
                 <span class="forma-gallery-rejection-text">@rejection</span>
                 <FormaCloseButton Label="@L["Dismiss"]" OnClick="() => _rejectionMessage = null" />
             </div>
@@ -110,7 +110,7 @@
                 @if (VisibleResources.Count == 0)
                 {
                     <div class="forma-gallery-empty" role="status">
-                        <span class="fa-solid fa-images forma-gallery-empty-icon" aria-hidden="true"></span>
+                        <span class="forma-gallery-empty-icon" aria-hidden="true"><FormaGlyph Name="Glyph.Images" /></span>
                         @if (_isQuerying)
                         {
                             <p>@L["Loading media"]</p>
@@ -158,7 +158,7 @@
                         else
                         {
                             <FormaButton Variant="ButtonVariant.Ghost" class="forma-gallery-load-more-btn" OnClick="LoadNextPageAsync">
-                                <span class="fa-solid fa-chevron-down forma-gallery-load-more-icon" aria-hidden="true"></span>
+                                <span class="forma-gallery-load-more-icon" aria-hidden="true"><FormaGlyph Name="Glyph.ChevronDown" /></span>
                                 @L["Load more"]
                             </FormaButton>
                         }

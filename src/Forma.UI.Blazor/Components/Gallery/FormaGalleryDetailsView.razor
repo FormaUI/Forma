@@ -11,7 +11,7 @@
                     <span>@L["Name"]</span>
                     @if (Context.SortField == GallerySortField.Name)
                     {
-                        <span class="fa-solid @(Context.SortDirection == GallerySortDirection.Ascending ? "fa-arrow-up" : "fa-arrow-down") forma-gallery-sort-arrow" aria-hidden="true"></span>
+                        <span class="forma-gallery-sort-arrow" aria-hidden="true"><FormaGlyph Name="@(Context.SortDirection == GallerySortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
                     }
                 </th>
                 <th class="forma-gallery-col-actions"><span class="forma-gallery-sr-only">@L["Actions"]</span></th>
@@ -23,7 +23,7 @@
                         <span>@L["Type"]</span>
                         @if (Context.SortField == GallerySortField.Kind)
                         {
-                            <span class="fa-solid @(Context.SortDirection == GallerySortDirection.Ascending ? "fa-arrow-up" : "fa-arrow-down") forma-gallery-sort-arrow" aria-hidden="true"></span>
+                            <span class="forma-gallery-sort-arrow" aria-hidden="true"><FormaGlyph Name="@(Context.SortDirection == GallerySortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
                         }
                     </th>
                 }
@@ -35,7 +35,7 @@
                         <span>@L["Size"]</span>
                         @if (Context.SortField == GallerySortField.Size)
                         {
-                            <span class="fa-solid @(Context.SortDirection == GallerySortDirection.Ascending ? "fa-arrow-up" : "fa-arrow-down") forma-gallery-sort-arrow" aria-hidden="true"></span>
+                            <span class="forma-gallery-sort-arrow" aria-hidden="true"><FormaGlyph Name="@(Context.SortDirection == GallerySortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
                         }
                     </th>
                 }
@@ -47,7 +47,7 @@
                         <span>@L["Modified"]</span>
                         @if (Context.SortField == GallerySortField.DateModified)
                         {
-                            <span class="fa-solid @(Context.SortDirection == GallerySortDirection.Ascending ? "fa-arrow-up" : "fa-arrow-down") forma-gallery-sort-arrow" aria-hidden="true"></span>
+                            <span class="forma-gallery-sort-arrow" aria-hidden="true"><FormaGlyph Name="@(Context.SortDirection == GallerySortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
                         }
                     </th>
                 }
@@ -59,7 +59,7 @@
                         <span>@L["Added"]</span>
                         @if (Context.SortField == GallerySortField.DateAdded)
                         {
-                            <span class="fa-solid @(Context.SortDirection == GallerySortDirection.Ascending ? "fa-arrow-up" : "fa-arrow-down") forma-gallery-sort-arrow" aria-hidden="true"></span>
+                            <span class="forma-gallery-sort-arrow" aria-hidden="true"><FormaGlyph Name="@(Context.SortDirection == GallerySortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
                         }
                     </th>
                 }
@@ -81,7 +81,7 @@
                                     aria-label="@Context.SelectLabel(resource)"
                                     aria-pressed="@(selected ? "true" : "false")"
                                     @onclick="() => Context.ToggleSelectAsync(resource)">
-                                <span class="fa-solid fa-check" aria-hidden="true"></span>
+                                <FormaGlyph Name="Glyph.Check" />
                             </button>
                         }
                     </td>

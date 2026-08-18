@@ -41,6 +41,7 @@
             using var ctx = new FormaToastContainerTests();
             var cut = ctx.Render(@<FormaToastContainer />);
             var service = ctx.Services.GetRequiredService<IToastService>();
+            var expected = ctx.Render(@<FormaGlyph Name="Glyph.CircleXmark" />).Find("path").GetAttribute("d");
 
             // Act
             await service.ShowAsync("Broke!", ToastType.Error, cancellationToken: TestContext.Current.CancellationToken);
@@ -50,7 +51,7 @@
             // Assert
             Assert.Multiple(() =>
             {
-                Assert.Equal("\u2715", marker.TextContent);
+                Assert.Equal(expected, marker.QuerySelector("svg path")!.GetAttribute("d"));
                 Assert.Equal("true", marker.GetAttribute("aria-hidden"));
             });
         }

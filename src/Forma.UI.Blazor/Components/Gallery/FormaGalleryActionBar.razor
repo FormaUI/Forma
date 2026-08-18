@@ -9,7 +9,7 @@
                 data-action="@action.Id"
                 aria-label="@action.Label(Resource)"
                 @onclick="() => action.Invoke(Resource)">
-            <span class="fa-solid @action.Icon" aria-hidden="true"></span>
+            <FormaGlyph Name="action.Icon" />
         </button>
     }
 </div>

@@ -55,7 +55,7 @@
         }
 
         [Fact]
-        public void Should_render_icon_span_when_icon_is_set()
+        public void Should_render_a_glyph_when_icon_is_set()
         {
             // Arrange
             using var ctx = new FormaTabsTests();
@@ -63,20 +63,21 @@
             // Act
             var cut = ctx.Render(
                 @<FormaTabs>
-                    <FormaTab Title="Settings" Icon="@FormaIcon.From("icon-settings")">Content</FormaTab>
+                    <FormaTab Title="Settings" Icon="Glyph.Gear">Content</FormaTab>
                 </FormaTabs>);
-            var icon = cut.Find(".forma-tab-button span");
+            var icon = cut.Find(".forma-tab-button svg");
 
             // Assert
             Assert.Multiple(() =>
             {
-                Assert.Contains("icon-settings", (IEnumerable<string>)icon.ClassList);
+                Assert.Contains("forma-glyph", (IEnumerable<string>)icon.ClassList);
                 Assert.Equal("true", icon.GetAttribute("aria-hidden"));
+                Assert.False(string.IsNullOrWhiteSpace(cut.Find(".forma-tab-button svg path").GetAttribute("d")));
             });
         }
 
         [Fact]
-        public void Should_not_render_icon_span_when_icon_is_null()
+        public void Should_not_render_a_glyph_when_icon_is_null()
         {
             // Arrange
             using var ctx = new FormaTabsTests();
@@ -88,7 +89,7 @@
                 </FormaTabs>);
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-tab-button span"));
+            Assert.Empty(cut.FindAll(".forma-tab-button svg"));
         }
 
         [Fact]

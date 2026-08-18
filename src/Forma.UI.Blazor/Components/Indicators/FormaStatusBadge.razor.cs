@@ -1,7 +1,8 @@
 namespace Forma.UI.Components.Indicators;
 
-using Forma.Framework.Css;
 using Forma.Framework.Indicators;
+using Forma.Framework.Style.Css;
+using Forma.Framework.Style.Glyphs;
 
 using Microsoft.AspNetCore.Components;
 
@@ -21,7 +22,7 @@ public sealed partial class FormaStatusBadge : ComponentBase
     [Parameter] public CssColor? Foreground { get; set; }
 
     /// <summary>Glyph shown before the text, so the status reads without colour.</summary>
-    [Parameter] public string? Marker { get; set; }
+    [Parameter] public Glyph? Marker { get; set; }
 
     /// <summary>Additional attributes applied to the badge element.</summary>
     [Parameter(CaptureUnmatchedValues = true)]
@@ -32,8 +33,8 @@ public sealed partial class FormaStatusBadge : ComponentBase
     private StatusBadgeStyle? Registered
         => string.IsNullOrWhiteSpace(Status) ? null : Catalog.Find(Status);
 
-    private string? ResolvedMarker
-        => string.IsNullOrWhiteSpace(Marker) ? Registered?.Marker : Marker;
+    private Glyph? ResolvedMarker
+        => Marker ?? Registered?.Marker;
 
     // Host class and style are merged rather than splatted, so supplying either
     // never drops the badge's own styling.

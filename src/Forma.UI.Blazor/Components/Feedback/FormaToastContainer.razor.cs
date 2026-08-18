@@ -2,6 +2,7 @@ namespace Forma.UI.Components.Feedback;
 
 using Forma.Framework.Feedback;
 using Forma.Framework.Localization;
+using Forma.Framework.Style.Glyphs;
 
 using Microsoft.AspNetCore.Components;
 
@@ -15,13 +16,13 @@ public sealed partial class FormaToastContainer : IDisposable
 
     protected override void OnInitialized() => ToastService.Subscribe(HandleChangeAsync);
 
-    private static string MarkerFor(ToastType type)
+    private static Glyph MarkerFor(ToastType type)
         => type switch
         {
-            ToastType.Success => "\u2713",
-            ToastType.Error => "\u2715",
-            ToastType.Warning => "\u26A0",
-            _ => "\u2139"
+            ToastType.Success => Glyph.CircleCheck,
+            ToastType.Error => Glyph.CircleXmark,
+            ToastType.Warning => Glyph.TriangleExclamation,
+            _ => Glyph.CircleInfo
         };
 
     private Task HandleChangeAsync()

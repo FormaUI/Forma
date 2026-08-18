@@ -23,6 +23,7 @@
         {
             // Arrange
             using var ctx = new FormaOverflowMenuTests();
+            var expected = ctx.Render(@<FormaGlyph Name="Glyph.Ellipsis" />).Find("path").GetAttribute("d");
 
             // Act
             var cut = ctx.Render(
@@ -31,10 +32,7 @@
                 </FormaOverflowMenu>);
 
             // Assert
-            var dots = cut.FindAll("svg circle");
-            Assert.Equal(3, dots.Count);
-            Assert.Equal(["3", "8", "13"], dots.Select(dot => dot.GetAttribute("cx")));
-            Assert.All(dots, dot => Assert.Equal("8", dot.GetAttribute("cy")));
+            Assert.Equal(expected, cut.Find("svg path").GetAttribute("d"));
         }
 
         [Fact]
@@ -42,6 +40,7 @@
         {
             // Arrange
             using var ctx = new FormaOverflowMenuTests();
+            var expected = ctx.Render(@<FormaGlyph Name="Glyph.EllipsisVertical" />).Find("path").GetAttribute("d");
 
             // Act
             var cut = ctx.Render(
@@ -50,10 +49,7 @@
                 </FormaOverflowMenu>);
 
             // Assert
-            var dots = cut.FindAll("svg circle");
-            Assert.Equal(3, dots.Count);
-            Assert.Equal(["3", "8", "13"], dots.Select(dot => dot.GetAttribute("cy")));
-            Assert.All(dots, dot => Assert.Equal("8", dot.GetAttribute("cx")));
+            Assert.Equal(expected, cut.Find("svg path").GetAttribute("d"));
         }
 
         [Fact]

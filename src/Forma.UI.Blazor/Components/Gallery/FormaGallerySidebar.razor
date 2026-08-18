@@ -12,7 +12,7 @@
                         class="forma-gallery-sidebar-tool forma-gallery-new-folder-tool"
                         aria-label="@L["New folder"]"
                         @onclick="() => CreateFolderAsync(null)">
-                    <span class="fa-solid fa-folder-plus" aria-hidden="true"></span>
+                    <FormaGlyph Name="Glyph.FolderPlus" />
                 </button>
             }
             <button type="button"
@@ -20,7 +20,7 @@
                     disabled="@(!HasExpandableFolders)"
                     aria-label="@(IsFullyCollapsed ? L["Expand all folders"] : L["Collapse all folders"])"
                     @onclick="ToggleAll">
-                <span class="fa-solid @(IsFullyCollapsed ? "fa-square-plus" : "fa-square-minus")" aria-hidden="true"></span>
+                <FormaGlyph Name="@(IsFullyCollapsed ? Glyph.SquarePlus : Glyph.SquareMinus)" />
             </button>
         </div>
     </div>
@@ -36,7 +36,7 @@
                 <button type="button"
                         class="forma-gallery-folder-target"
                         @onclick="() => SelectFolderAsync(null)">
-                    <span class="fa-solid fa-folder@(CurrentFolder is null ? "-open" : "") forma-gallery-folder-icon" aria-hidden="true"></span>
+                    <span class="forma-gallery-folder-icon" aria-hidden="true"><FormaGlyph Name="@(CurrentFolder is null ? Glyph.FolderOpen : Glyph.Folder)" /></span>
                     <span class="forma-gallery-folder-name">@L["All media"]</span>
                 </button>
                 <span class="forma-gallery-folder-count">@TotalCount</span>

@@ -1,4 +1,4 @@
-namespace Forma.Framework.Css;
+namespace Forma.Framework.Style.Css;
 
 using System.Globalization;
 

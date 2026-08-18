@@ -69,8 +69,10 @@
 }
 
 /* A play glyph points the way the media runs, not the way the text reads, so it stays put in RTL. */
-.forma-video-player-facade-glyph {
-    flex-shrink: 0;
+::deep .forma-video-player-facade-glyph {
+    font-size: 2.75rem;
+    position: relative;
+    z-index: 1;
 }
 
 .forma-video-player-facade-placeholder {
@@ -89,7 +91,6 @@
     background-color: var(--forma-video-facade-scrim-color, var(--media-scrim-color));
 }
 
-.forma-video-player-facade-glyph,
 .forma-video-player-facade-label,
 .forma-video-player-facade-note {
     position: relative;

@@ -7,32 +7,32 @@
                 disabled="@(!CanGoBack)"
                 aria-label="@L["Back"]"
                 @onclick="OnBack">
-            <span class="fa-solid fa-arrow-left forma-gallery-nav-arrow" aria-hidden="true"></span>
+            <span class="forma-gallery-nav-arrow" aria-hidden="true"><FormaGlyph Name="Glyph.ArrowLeft" /></span>
         </button>
         <button type="button"
                 class="forma-gallery-nav-btn"
                 disabled="@(!CanGoForward)"
                 aria-label="@L["Forward"]"
                 @onclick="OnForward">
-            <span class="fa-solid fa-arrow-right forma-gallery-nav-arrow" aria-hidden="true"></span>
+            <span class="forma-gallery-nav-arrow" aria-hidden="true"><FormaGlyph Name="Glyph.ArrowRight" /></span>
         </button>
         <button type="button"
                 class="forma-gallery-nav-btn"
                 disabled="@(!CanGoUp)"
                 aria-label="@L["Up to parent folder"]"
                 @onclick="OnUp">
-            <span class="fa-solid fa-arrow-up" aria-hidden="true"></span>
+            <FormaGlyph Name="Glyph.ArrowUp" />
         </button>
         <button type="button"
                 class="forma-gallery-nav-btn"
                 aria-label="@L["Refresh"]"
                 @onclick="OnRefresh">
-            <span class="fa-solid fa-rotate-right" aria-hidden="true"></span>
+            <FormaGlyph Name="Glyph.RotateRight" />
         </button>
     </div>
 
     <nav class="forma-gallery-breadcrumb-bar" aria-label="@L["Folder path"]" @onkeydown="HandleMenuKeyDown">
-        <span class="fa-solid fa-folder-open forma-gallery-root-icon" aria-hidden="true"></span>
+        <span class="forma-gallery-root-icon" aria-hidden="true"><FormaGlyph Name="Glyph.FolderOpen" /></span>
 
         @for (var index = 0; index < Levels.Count; index++)
         {
@@ -54,7 +54,7 @@
             {
                 @if (!isLast)
                 {
-                    <span class="forma-gallery-breadcrumb-separator fa-solid fa-chevron-right" aria-hidden="true"></span>
+                    <span class="forma-gallery-breadcrumb-separator" aria-hidden="true"><FormaGlyph Name="Glyph.ChevronRight" /></span>
                 }
             }
             else
@@ -68,7 +68,7 @@
                             aria-expanded="@(isOpen ? "true" : "false")"
                             aria-label="@L["Folders in {name}", ("name", level.Name)]"
                             @onclick="() => ToggleLevelMenu(level.Key)">
-                        <span class="fa-solid fa-chevron-right" aria-hidden="true"></span>
+                        <FormaGlyph Name="Glyph.ChevronRight" />
                     </button>
 
                     @if (isOpen)
@@ -81,7 +81,7 @@
                                         class="forma-gallery-breadcrumb-menu-item"
                                         role="menuitem"
                                         @onclick="() => SelectFromMenuAsync(child)">
-                                    <span class="fa-solid fa-folder forma-gallery-menu-icon" aria-hidden="true"></span>
+                                    <span class="forma-gallery-menu-icon" aria-hidden="true"><FormaGlyph Name="Glyph.Folder" /></span>
                                     @child.Name
                                 </button>
                             }
@@ -93,7 +93,7 @@
     </nav>
 
     <div class="forma-gallery-search-wrap">
-        <span class="fa-solid fa-magnifying-glass forma-gallery-search-icon" aria-hidden="true"></span>
+        <span class="forma-gallery-search-icon" aria-hidden="true"><FormaGlyph Name="Glyph.MagnifyingGlass" /></span>
         <input class="forma-gallery-search-input"
                type="search"
                value="@SearchQuery"
@@ -103,9 +103,9 @@
         @if (!string.IsNullOrEmpty(SearchQuery))
         {
             <button type="button"
-                    class="forma-gallery-search-clear fa-solid fa-xmark"
+                    class="forma-gallery-search-clear"
                     aria-label="@L["Clear search"]"
-                    @onclick="ClearSearch"></button>
+                    @onclick="ClearSearch"><FormaGlyph Name="Glyph.Xmark" /></button>
         }
     </div>
 </div>

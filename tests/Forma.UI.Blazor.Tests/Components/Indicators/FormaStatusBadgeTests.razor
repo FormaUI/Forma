@@ -1,5 +1,5 @@
 @inherits BunitContext
-@using Forma.Framework.Css
+@using Forma.Framework.Style.Css
 
 @code {
     public sealed class Component
@@ -24,15 +24,16 @@
         {
             // Arrange
             using var ctx = new FormaStatusBadgeTests();
+            var expected = ctx.Render(@<FormaGlyph Name="Glyph.Check" />).Find("path").GetAttribute("d");
 
             // Act
-            var cut = ctx.Render(@<FormaStatusBadge Text="Published" Marker="✓" />);
+            var cut = ctx.Render(@<FormaStatusBadge Text="Published" Marker="Glyph.Check" />);
             var marker = cut.Find(".forma-status-badge-marker");
 
             // Assert
             Assert.Multiple(() =>
             {
-                Assert.Equal("✓", marker.TextContent);
+                Assert.Equal(expected, marker.QuerySelector("svg path")!.GetAttribute("d"));
                 Assert.Equal("true", marker.GetAttribute("aria-hidden"));
             });
         }

@@ -17,7 +17,7 @@
 
 ```
 Forma.UI.Blazor/Components/
-├── FormaIcon.cs                          # readonly record struct with FontAwesome()/From() factories
+├── FormaGlyph.razor / .razor.cs / .razor.css  # draws a Forma.Framework.Style.Glyphs.Glyph as inline SVG
 ├── ✅ FormaField.razor / .razor.cs / .razor.css
 ├── FieldLabelMode.cs                     # enum: Floating, Pinned, Above, Inline
 ├── (4 / 4) Layout/
@@ -110,8 +110,11 @@ Forma.UI.Blazor/Components/
 ```
 
 ```
-Forma.Framework.Css/
-└── CssColor.cs
+Forma.Framework.Style/
+├── Css/
+│   └── CssColor.cs
+└── Glyphs/
+    └── Glyph.cs
 
 Forma.Framework.Resources/
 ├── IResourceContentReader.cs
@@ -182,7 +185,7 @@ These components form the shell of a page. Build first.
 |---|---|
 | **Old pattern** | jQuery Tools Tabs: `<ul class="tabs"><li>` + `<div class="panes"><div class="panc">`. Click tab → show corresponding pane |
 | **Used in** | page editor (5 tabs), product editor (7 tabs), settings (5 tabs), store-settings (7 tabs), design (5 tabs) |
-| **Parameters** | `RenderFragment ChildContent` containing `FormaTab` children. Each `FormaTab` has `string Title` (required, validated), `FormaIcon? Icon` (typed icon via `FormaIcon` record struct), `RenderFragment ChildContent` |
+| **Parameters** | `RenderFragment ChildContent` containing `FormaTab` children. Each `FormaTab` has `string Title` (required, validated), `Glyph? Icon` (drawn by `FormaGlyph`), `RenderFragment ChildContent` |
 | **Blazor approach** | Interactive component. `FormaTabs` provides `CascadingValue` of itself; `FormaTab` children register/unregister via `CascadingParameter`. WAI-ARIA `tablist`/`tab`/`tabpanel` roles, `aria-selected`, `aria-controls`. Show/hide panes with CSS `::deep`. No JS needed. Code-behind in `.razor.cs` |
 
 ### 4. `FormaModal` ✅

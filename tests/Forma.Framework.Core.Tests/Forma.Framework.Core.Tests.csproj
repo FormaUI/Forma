@@ -19,7 +19,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\Forma.Framework\Forma.Framework.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Core\Forma.Framework.Core.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Framework.Css\Forma.Framework.Css.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Style\Forma.Framework.Style.csproj" />
     </ItemGroup>
 
 </Project>

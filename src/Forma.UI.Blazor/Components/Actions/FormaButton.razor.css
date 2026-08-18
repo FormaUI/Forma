@@ -124,14 +124,15 @@
 }
 
 /* The glyph belongs to the calling component's markup, so ::deep is what reaches it. Sizing it
-   here keeps it in step with the square: a ghost button has no box to see it shrink against. */
+   here keeps it in step with the square: a ghost button has no box to see it shrink against.
+   Only the height is pinned, because glyph artwork is not square. */
 .forma-btn-icon ::deep svg {
-    inline-size: 1rem;
+    inline-size: auto;
     block-size: 1rem;
 }
 
 .forma-btn-icon.forma-btn-mini ::deep svg {
-    inline-size: 0.8125rem;
+    inline-size: auto;
     block-size: 0.8125rem;
 }
 

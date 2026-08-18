@@ -1,0 +1,18 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "The library's own glyphs, drawn as inline SVG so no icon font has to be loaded.": "Los iconos propios de la biblioteca, dibujados como SVG en línea para no tener que cargar una fuente de iconos.",
+  "Every glyph": "Todos los iconos",
+  "Every glyph is Font Awesome Free artwork, inlined so no icon font has to be fetched.": "Cada icono es arte de Font Awesome Free, incrustado para no tener que descargar una fuente de iconos.",
+  "Sizing": "Tamaño",
+  "A glyph is one em tall and keeps its own aspect ratio, so it takes the font size of whatever contains it.": "Un icono mide un em de alto y conserva su propia proporción, así que toma el tamaño de fuente de su contenedor.",
+  "Colour": "Color",
+  "A glyph is filled with the current text colour, so it inherits any colour its container sets.": "Un icono se rellena con el color de texto actual, así que hereda el color que defina su contenedor.",
+  "Accent": "Acento",
+  "Error": "Error",
+  "Success": "Éxito",
+  "Inside a button": "Dentro de un botón",
+  "A glyph carries no accessible name of its own, so the button around it has to be labelled.": "Un icono no aporta nombre accesible propio, así que el botón que lo rodea debe estar etiquetado.",
+  "Upload": "Subir",
+  "Delete": "Eliminar",
+  "Search": "Buscar"
+}

@@ -1,6 +1,7 @@
 namespace Forma.UI.Components.Gallery;
 
 using Forma.Framework.Resources;
+using Forma.Framework.Style.Glyphs;
 
 using Microsoft.AspNetCore.Components;
 
@@ -21,14 +22,14 @@ public sealed partial class FormaGalleryThumb : ComponentBase
             _ => "is-tile"
         };
 
-    private string KindGlyph
+    private Glyph KindGlyph
         => Resource switch
         {
-            FolderResourceInfo => "fa-folder",
-            VideoResourceInfo => "fa-film",
-            AudioResourceInfo => "fa-music",
-            ArchiveResourceInfo => "fa-file-zipper",
-            _ => "fa-file-lines"
+            FolderResourceInfo => Glyph.Folder,
+            VideoResourceInfo => Glyph.Film,
+            AudioResourceInfo => Glyph.Music,
+            ArchiveResourceInfo => Glyph.FileZipper,
+            _ => Glyph.FileLines
         };
 
     protected override void OnParametersSet()

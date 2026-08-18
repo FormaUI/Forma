@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
+using Forma.Framework.Style.Glyphs;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -180,16 +181,16 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
         return _uploadTask;
     }
 
-    private static string StateGlyph(UploadState state)
+    private static Glyph StateGlyph(UploadState state)
         => state switch
         {
-            UploadState.Completed => "fa-solid fa-check",
-            UploadState.Failed => "fa-solid fa-triangle-exclamation",
-            UploadState.Skipped => "fa-solid fa-forward",
-            UploadState.RolledBack => "fa-solid fa-rotate-left",
-            UploadState.Cancelled => "fa-solid fa-ban",
-            UploadState.Uploading => "fa-solid fa-arrow-up",
-            _ => "fa-regular fa-clock"
+            UploadState.Completed => Glyph.Check,
+            UploadState.Failed => Glyph.TriangleExclamation,
+            UploadState.Skipped => Glyph.Forward,
+            UploadState.RolledBack => Glyph.RotateLeft,
+            UploadState.Cancelled => Glyph.Ban,
+            UploadState.Uploading => Glyph.ArrowUp,
+            _ => Glyph.Clock
         };
 
     private static double RateOf(long bytes, TimeSpan elapsed)

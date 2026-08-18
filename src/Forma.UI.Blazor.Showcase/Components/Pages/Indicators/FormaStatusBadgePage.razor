@@ -1,7 +1,7 @@
 @page "/status-badge"
 @attribute [ShowcasePage("FormaStatusBadge")]
 @using Forma.UI.Components.Indicators
-@using Forma.Framework.Css
+@using Forma.Framework.Style.Css
 
 <h1>FormaStatusBadge</h1>
 <p class="desc">@L["Pill-shaped status label. The application defines its own statuses and colours; the library ships none."]</p>
@@ -41,12 +41,12 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["With a marker"]</h2>
-    <p class="desc">@L["A glyph before the text, so the status is still legible when the colour is not."]</p>
+    <h2>@L["Overriding a status glyph"]</h2>
+    <p class="desc">@L["A badge shows the glyph its status registered, unless it is given one of its own."]</p>
     <div class="demo-box" style="display: flex; gap: 8px; flex-wrap: wrap;">
-        <FormaStatusBadge Text="@L["Published"]" Status="published" Marker="✓" />
-        <FormaStatusBadge Text="@L["Pending"]" Status="pending" Marker="⋯" />
-        <FormaStatusBadge Text="@L["Rejected"]" Status="rejected" Marker="✕" />
+        <FormaStatusBadge Text="@L["Pending"]" Status="pending" />
+        <FormaStatusBadge Text="@L["Pending"]" Status="pending" Marker="Glyph.CircleExclamation" />
+        <FormaStatusBadge Text="@L["No status"]" Marker="Glyph.CircleInfo" />
     </div>
 </div>
 

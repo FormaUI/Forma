@@ -75,6 +75,7 @@
             // Arrange
             using var ctx = new FormaToggleSwitchTests();
             var model = new FakeModel { Toggle = true };
+            var expected = ctx.Render(@<FormaGlyph Name="Glyph.Check" />).Find("path").GetAttribute("d");
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
@@ -82,7 +83,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Equal("\u2713", cut.Find(".forma-toggle-mark").TextContent);
+            Assert.Equal(expected, cut.Find(".forma-toggle-mark svg path").GetAttribute("d"));
         }
 
         [Fact]
@@ -91,6 +92,7 @@
             // Arrange
             using var ctx = new FormaToggleSwitchTests();
             var model = new FakeModel { Toggle = false };
+            var expected = ctx.Render(@<FormaGlyph Name="Glyph.Xmark" />).Find("path").GetAttribute("d");
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
@@ -98,7 +100,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Equal("\u2715", cut.Find(".forma-toggle-mark").TextContent);
+            Assert.Equal(expected, cut.Find(".forma-toggle-mark svg path").GetAttribute("d"));
         }
 
         [Fact]

@@ -15,7 +15,8 @@
             @foreach (var name in _previews)
             {
                 <li class="forma-image-picker-preview">
-                    <span class="forma-image-picker-frame fa-solid fa-image" aria-hidden="true">
+                    <span class="forma-image-picker-frame" aria-hidden="true">
+                        <FormaGlyph Name="Glyph.Image" />
                         <img data-forma-preview alt="" class="forma-image-picker-thumbnail" />
                     </span>
                     <span class="forma-image-picker-name">@name</span>

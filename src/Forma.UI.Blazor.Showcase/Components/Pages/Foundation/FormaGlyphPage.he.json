@@ -1,0 +1,18 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "The library's own glyphs, drawn as inline SVG so no icon font has to be loaded.": "הסמלים של הספרייה עצמה, מצוירים כ-SVG מוטבע כך שאין צורך לטעון גופן סמלים.",
+  "Every glyph": "כל הסמלים",
+  "Every glyph is Font Awesome Free artwork, inlined so no icon font has to be fetched.": "כל סמל הוא איור של Font Awesome Free, מוטבע בקוד כך שאין צורך להוריד גופן סמלים.",
+  "Sizing": "גודל",
+  "A glyph is one em tall and keeps its own aspect ratio, so it takes the font size of whatever contains it.": "גובה הסמל הוא em אחד והוא שומר על יחס המימדים שלו, לכן הוא מקבל את גודל הגופן של המכיל אותו.",
+  "Colour": "צבע",
+  "A glyph is filled with the current text colour, so it inherits any colour its container sets.": "הסמל ממולא בצבע הטקסט הנוכחי, לכן הוא יורש כל צבע שהמכיל אותו מגדיר.",
+  "Accent": "צבע הדגשה",
+  "Error": "שגיאה",
+  "Success": "הצלחה",
+  "Inside a button": "בתוך לחצן",
+  "A glyph carries no accessible name of its own, so the button around it has to be labelled.": "לסמל אין שם נגיש משלו, ולכן יש לתייג את הלחצן שסביבו.",
+  "Upload": "העלאה",
+  "Delete": "מחיקה",
+  "Search": "חיפוש"
+}

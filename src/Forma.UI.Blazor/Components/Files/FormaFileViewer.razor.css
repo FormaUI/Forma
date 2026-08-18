@@ -149,7 +149,8 @@
     color: var(--text-muted-color);
 }
 
-.forma-file-viewer-unsupported-glyph {
+::deep .forma-file-viewer-unsupported-glyph {
+    font-size: 3rem;
     color: var(--text-muted-color);
 }
 

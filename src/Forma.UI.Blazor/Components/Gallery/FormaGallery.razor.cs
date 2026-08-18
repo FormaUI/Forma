@@ -4,6 +4,7 @@ using System.Globalization;
 
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
+using Forma.Framework.Style.Glyphs;
 using Forma.UI.Components.Feedback;
 
 using Microsoft.AspNetCore.Components;
@@ -757,7 +758,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
             new()
             {
                 Id = "preview",
-                Icon = "fa-eye",
+                Icon = Glyph.Eye,
                 Label = resource => L["Preview {name}", ("name", resource.Name)].Value,
                 Invoke = resource => { OpenPreview(resource); StateHasChanged(); return Task.CompletedTask; }
             }
@@ -768,7 +769,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
             actions.Add(new GalleryAction
             {
                 Id = "rename",
-                Icon = "fa-pen",
+                Icon = Glyph.Pen,
                 Label = resource => L["Rename {name}", ("name", resource.Name)].Value,
                 Invoke = resource => { OpenRenameDialog(resource); StateHasChanged(); return Task.CompletedTask; }
             });
@@ -779,7 +780,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
             actions.Add(new GalleryAction
             {
                 Id = "delete",
-                Icon = "fa-trash",
+                Icon = Glyph.Trash,
                 Label = resource => L["Delete {name}", ("name", resource.Name)].Value,
                 Invoke = resource => { OpenDeleteDialog(resource); StateHasChanged(); return Task.CompletedTask; },
                 IsDestructive = true

@@ -1,5 +1,6 @@
-namespace Forma.Framework.Css.Tests;
+namespace Forma.Framework.Style.Tests.Css;
 
+using Forma.Framework.Style.Css;
 using Forma.Tests.Shared;
 
 using Xunit;

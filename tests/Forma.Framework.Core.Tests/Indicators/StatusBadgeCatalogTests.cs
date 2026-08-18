@@ -1,7 +1,7 @@
 namespace Forma.Framework.Core.Tests.Indicators;
 
-using Forma.Framework.Css;
 using Forma.Framework.Indicators;
+using Forma.Framework.Style.Css;
 
 using Xunit;
 

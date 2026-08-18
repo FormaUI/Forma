@@ -148,4 +148,10 @@ dotnet run --project src/Forma.UI.Blazor.Showcase
 
 The showcase serves an interactive page per component, in English, Hebrew, and Spanish.
 
+## Icons
+
+`FormaGlyph` draws the `Glyph` set as inline SVG, so a host loads no icon font. The artwork is
+[Font Awesome Free 6](https://fontawesome.com) and is used under
+[CC BY 4.0](https://fontawesome.com/license/free); regenerate it with `scripts/fetch-glyphs.ps1`.
+
 Contributor conventions live in [`.github/copilot-instructions.md`](.github/copilot-instructions.md).

@@ -37,21 +37,21 @@ Coi's boxy gradient toggle becoming a token-driven iOS-style `FormaToggleSwitch`
 
 | Project | Kind | May reference |
 |---------|------|---------------|
-| `src/Forma.Framework.Css` | Class library | Nothing — typed CSS values such as `CssColor` |
+| `src/Forma.Framework.Style` | Class library | Nothing — presentation vocabulary such as `CssColor` in `Css/` and `Glyph` in `Glyphs/` |
 | `src/Forma.Framework.Resources` | Class library | Nothing — resource contracts and value types such as `IResourceProvider` and `ResourceInfo` |
 | `src/Forma.Framework.Localization` | Class library | Nothing — JSON-backed `IStringLocalizer` |
-| `src/Forma.Framework` | Class library | `Forma.Framework.Css` — contracts, messages, enums |
+| `src/Forma.Framework` | Class library | `Forma.Framework.Style` — contracts, messages, enums |
 | `src/Forma.Framework.Core` | Class library | `Forma.Framework` — implementations |
 | `src/Forma.Framework.Markdown` | Class library | `Forma.Framework.Resources` — Markdown conversion |
 | `src/Forma.Framework.Office` | Class library | `Forma.Framework.Resources` — Word, workbook, and presentation conversion |
-| `src/Forma.UI.Blazor` | Razor Class Library | `Forma.Framework`, `Forma.Framework.Css`, `Forma.Framework.Resources` — packaged components |
-| `src/Forma.UI.Blazor.Showcase` | Web app | `Forma.UI.Blazor`, `Forma.Framework.Core`, `Forma.Framework.Css`, `Forma.Framework.Resources`, `Forma.Framework.Office`, `Forma.Framework.Markdown`, `Forma.Framework.Localization` — reference host and gallery |
+| `src/Forma.UI.Blazor` | Razor Class Library | `Forma.Framework`, `Forma.Framework.Style`, `Forma.Framework.Resources` — packaged components |
+| `src/Forma.UI.Blazor.Showcase` | Web app | `Forma.UI.Blazor`, `Forma.Framework.Core`, `Forma.Framework.Style`, `Forma.Framework.Resources`, `Forma.Framework.Office`, `Forma.Framework.Markdown`, `Forma.Framework.Localization` — reference host and gallery |
 | `tests/{Assembly}.Tests` | Test project | The one assembly it is named after, plus what its tests use directly |
 | `tests/Forma.Tests.Support` | Class library | Shared test fakes, fixtures, and utilities in the `Forma.Tests.*` namespaces |
 
-- Do put a type in `Forma.Framework.Css` or `Forma.Framework.Resources` when it is a horizontal concern no single vertical feature owns and a non-UI consumer needs it without pulling in `Forma.Framework`'s feature slices — `Forma.Framework.Office` depends on `Forma.Framework.Resources` alone, never on `Forma.Framework`.
+- Do put a type in `Forma.Framework.Style` or `Forma.Framework.Resources` when it is a horizontal concern no single vertical feature owns and a non-UI consumer needs it without pulling in `Forma.Framework`'s feature slices — `Forma.Framework.Office` depends on `Forma.Framework.Resources` alone, never on `Forma.Framework`.
 - Do decide by ownership, not by how many assemblies consume it: a contract a single feature owns stays with that feature in `Forma.Framework` no matter how many projects reference it, such as `IToastService` in `Feedback`.
-- Do keep a horizontal concern's folder and namespace in step with its project name — `Forma.Framework.Css` for typed CSS values, `Forma.Framework.Resources` for resource contracts — so a group that outgrows `Forma.Framework` can leave for its own assembly without touching a `using`.
+- Do keep a horizontal concern's folder and namespace in step, so `Forma.Framework.Style/Css/` holds `Forma.Framework.Style.Css` and `Forma.Framework.Style/Glyphs/` holds `Forma.Framework.Style.Glyphs`, and a type's namespace names the folder its file sits in.
 
 - Do make components depend on abstractions such as `IToastService`; let the host choose implementations through DI.
 - Do represent colours and other CSS values with typed values such as `CssColor.FromRgba(...)` and `CssColor.FromHex(...)`.
@@ -336,7 +336,7 @@ Every component must behave and look the same in both directions—mirrored, not
 
 ## Tests (bUnit + xUnit v3)
 
-Every production assembly has exactly one test project named after it, so `Forma.Framework.Css` is tested by `tests/Forma.Framework.Css.Tests` and never from another project. Mirror source paths within it, so component tests live under `tests/Forma.UI.Blazor.Tests/Components/{Category}/` with `FormaXTests.razor` and `FormaXTests.razor.cs`.
+Every production assembly has exactly one test project named after it, so `Forma.Framework.Style` is tested by `tests/Forma.Framework.Style.Tests` and never from another project. Mirror source paths within it, so component tests live under `tests/Forma.UI.Blazor.Tests/Components/{Category}/` with `FormaXTests.razor` and `FormaXTests.razor.cs`.
 
 - Do keep `.razor.cs` to `public sealed partial class FormaXTests;`.
 - Do start `.razor` with `@inherits BunitContext` and place `[Fact]` methods in a nested `public sealed class Component`.

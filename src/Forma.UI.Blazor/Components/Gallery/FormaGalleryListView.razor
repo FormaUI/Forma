@@ -16,7 +16,7 @@
                         aria-label="@Context.SelectLabel(resource)"
                         aria-pressed="@(selected ? "true" : "false")"
                         @onclick="() => Context.ToggleSelectAsync(resource)">
-                    <span class="fa-solid fa-check" aria-hidden="true"></span>
+                    <FormaGlyph Name="Glyph.Check" />
                 </button>
             }
 

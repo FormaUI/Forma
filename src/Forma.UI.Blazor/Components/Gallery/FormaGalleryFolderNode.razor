@@ -25,7 +25,7 @@
                     aria-label="@(selected ? L["Deselect folder \"{name}\"", ("name", Folder.Name)] : L["Select folder \"{name}\"", ("name", Folder.Name)])"
                     aria-pressed="@(selected ? "true" : "false")"
                     @onclick="() => Context.ToggleFolderSelectAsync(Folder)">
-                <span class="fa-solid fa-check" aria-hidden="true"></span>
+                <FormaGlyph Name="Glyph.Check" />
             </button>
         }
 
@@ -35,7 +35,7 @@
                     class="forma-gallery-folder-twisty @(expanded ? "is-expanded" : "")"
                     aria-label="@(expanded ? L["Collapse {name}", ("name", Folder.Name)] : L["Expand {name}", ("name", Folder.Name)])"
                     @onclick="() => Sidebar.ToggleExpanded(Folder.Source)">
-                <span class="fa-solid fa-chevron-right" aria-hidden="true"></span>
+                <FormaGlyph Name="Glyph.ChevronRight" />
             </button>
         }
         else
@@ -46,7 +46,7 @@
         <button type="button"
                 class="forma-gallery-folder-target"
                 @onclick="() => Sidebar.SelectFolderAsync(Folder)">
-            <span class="fa-solid fa-folder@(isCurrent ? "-open" : "") forma-gallery-folder-icon" aria-hidden="true"></span>
+            <span class="forma-gallery-folder-icon" aria-hidden="true"><FormaGlyph Name="@(isCurrent ? Glyph.FolderOpen : Glyph.Folder)" /></span>
             <span class="forma-gallery-folder-name" title="@Folder.Name">@Folder.Name</span>
         </button>
 
@@ -57,7 +57,7 @@
                         class="forma-gallery-folder-action-btn"
                         aria-label="@L["New folder in \"{name}\"", ("name", Folder.Name)]"
                         @onclick="() => Sidebar.CreateFolderAsync(Folder)">
-                    <span class="fa-solid fa-folder-plus" aria-hidden="true"></span>
+                    <FormaGlyph Name="Glyph.FolderPlus" />
                 </button>
             }
             @if (Sidebar.FileOptions.AllowFolderRename)
@@ -66,7 +66,7 @@
                         class="forma-gallery-folder-action-btn"
                         aria-label="@L["Rename folder \"{name}\"", ("name", Folder.Name)]"
                         @onclick="() => Sidebar.RenameFolderAsync(Folder)">
-                    <span class="fa-solid fa-pen" aria-hidden="true"></span>
+                    <FormaGlyph Name="Glyph.Pen" />
                 </button>
             }
             @if (Sidebar.FileOptions.AllowFolderDelete)
@@ -75,7 +75,7 @@
                         class="forma-gallery-folder-action-btn forma-gallery-folder-action-delete"
                         aria-label="@L["Delete folder \"{name}\"", ("name", Folder.Name)]"
                         @onclick="() => Sidebar.DeleteFolderAsync(Folder)">
-                    <span class="fa-solid fa-trash" aria-hidden="true"></span>
+                    <FormaGlyph Name="Glyph.Trash" />
                 </button>
             }
         </div>

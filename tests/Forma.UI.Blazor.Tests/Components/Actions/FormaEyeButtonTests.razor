@@ -49,12 +49,13 @@
         {
             // Arrange
             using var ctx = new FormaEyeButtonTests();
+            var expected = ctx.Render(@<FormaGlyph Name="Glyph.EyeSlash" />).Find("path").GetAttribute("d");
 
             // Act
             var cut = ctx.Render(@<FormaEyeButton Label="Show password" Revealed="false" />);
 
             // Assert
-            Assert.Equal(2, cut.FindAll("svg path").Count);
+            Assert.Equal(expected, cut.Find("svg path").GetAttribute("d"));
         }
 
         [Fact]
@@ -62,12 +63,13 @@
         {
             // Arrange
             using var ctx = new FormaEyeButtonTests();
+            var expected = ctx.Render(@<FormaGlyph Name="Glyph.Eye" />).Find("path").GetAttribute("d");
 
             // Act
             var cut = ctx.Render(@<FormaEyeButton Label="Hide password" Revealed="true" />);
 
             // Assert
-            Assert.Single(cut.FindAll("svg path"));
+            Assert.Equal(expected, cut.Find("svg path").GetAttribute("d"));
         }
 
         [Fact]
