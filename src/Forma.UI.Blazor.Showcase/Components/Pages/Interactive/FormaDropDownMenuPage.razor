@@ -71,6 +71,22 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["Header"]</h2>
+    <p class="desc">@L["A header names what the menu acts on, so the items themselves can stay short."]</p>
+    <div class="demo-box">
+        <FormaDropDownMenu TriggerOptions="new() { IconOnly = true }" aria-label="@L["Actions for report.pdf"]">
+            <Trigger>&#8942;</Trigger>
+            <HeaderContent>report.pdf</HeaderContent>
+            <ChildContent>
+                <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Preview"])">@L["Preview"]</FormaDropDownMenuItem>
+                <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Rename"])">@L["Rename"]</FormaDropDownMenuItem>
+                <FormaDropDownMenuItem IsDestructive="true" OnClick="@(() => _lastAction = L["Delete"])">@L["Delete"]</FormaDropDownMenuItem>
+            </ChildContent>
+        </FormaDropDownMenu>
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["Keyboard"]</h2>
     <p class="desc">@L["Open with Enter, Space, or the down arrow. Arrow keys move between items, Home and End jump to the ends, and Escape closes the menu and returns focus to the trigger."]</p>
     <div class="demo-box">

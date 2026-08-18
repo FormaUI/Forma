@@ -1,10 +1,10 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
-  "All files": "כל הקבצים",
+  "All Files": "כל הקבצים",
   "Cancel": "ביטול",
   "Cancelled": "בוטל",
   "Failed": "נכשל",
-  "Rolled back": "בוטל והוסר",
+  "Rolled Back": "בוטל והוסר",
   "Skipped": "דולג",
   "Stored": "נשמר",
   "Stored {stored} of {total}.": "נשמרו {stored} מתוך {total}.",

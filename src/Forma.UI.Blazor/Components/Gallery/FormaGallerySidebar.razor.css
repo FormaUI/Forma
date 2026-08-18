@@ -4,7 +4,7 @@
    ============================================================ */
 
 .forma-gallery-sidebar {
-    inline-size: var(--forma-gallery-sidebar-size, 14rem);
+    inline-size: var(--forma-gallery-sidebar-size, 18rem);
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
@@ -86,6 +86,7 @@
     position: relative;
     display: flex;
     align-items: center;
+    margin-block-end: 0.2rem;
     border-radius: 6px;
     background: transparent;
     transition: background-color 0.15s ease;
@@ -104,7 +105,6 @@
 }
 
 .forma-gallery-folder-tree ::deep .forma-gallery-folder-row.is-active {
-    background: var(--hover-bg-color);
     font-weight: 600;
 }
 
@@ -114,7 +114,11 @@
 
 .forma-gallery-folder-tree ::deep .forma-gallery-folder-row.is-selected {
     background: color-mix(in srgb, var(--main-color) 10%, transparent);
-    box-shadow: inset 0 0 0 1px var(--main-color);
+}
+
+.forma-gallery-folder-tree ::deep .forma-gallery-folder-row.is-selected .forma-gallery-folder-name {
+    color: var(--main-color);
+    font-weight: 700;
 }
 
 .forma-gallery-folder-tree ::deep .forma-gallery-folder-select {
@@ -245,6 +249,14 @@
     gap: 0.5rem;
     min-block-size: 2rem;
     padding-inline-start: 0.35rem;
+    border-radius: 6px;
+    transition: background-color 0.15s ease;
+}
+
+@media (hover: hover) {
+    .forma-gallery-sidebar-toolbar:hover {
+        background: var(--hover-bg-color);
+    }
 }
 
 .forma-gallery-sidebar-title {
@@ -300,7 +312,7 @@
 
 @media (hover: hover) {
     .forma-gallery-sidebar-tool:not(:disabled):hover {
-        background: rgba(0, 0, 0, 0.08);
+        background: rgba(98, 105, 118, 0.16);
         color: var(--text-color);
     }
 }

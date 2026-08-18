@@ -22,6 +22,11 @@
   "Duplicate": "שכפל",
   "Actions": "פעולות",
   "Archive": "העבר לארכיון",
+  "Header": "כותרת",
+  "A header names what the menu acts on, so the items themselves can stay short.": "כותרת מציינת על מה התפריט פועל, כך שהפריטים עצמם יכולים להישאר קצרים.",
+  "Actions for report.pdf": "פעולות עבור report.pdf",
+  "Preview": "תצוגה מקדמת",
+  "Rename": "שינוי שם",
   "Keyboard": "מקלדת",
   "Open with Enter, Space, or the down arrow. Arrow keys move between items, Home and End jump to the ends, and Escape closes the menu and returns focus to the trigger.": "פתח עם Enter, מקש רווח, או חץ למטה. מקשי החצים עוברים בין הפריטים, Home ו-End קופצים לקצוות, ו-Escape סוגר את התפריט ומחזיר את המיקוד לכפתור המפעיל."
 }

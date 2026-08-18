@@ -65,12 +65,12 @@
             using var ctx = new FormaCheckboxTests();
 
             // Act
-            var cut = ctx.Render(@<FormaCheckbox data-row-key="7" aria-label="Select row" />);
+            var cut = ctx.Render(@<FormaCheckbox data-row-key="7" aria-label="Select Row" />);
             var input = cut.Find(".forma-checkbox");
 
             // Assert
             Assert.Equal("7", input.GetAttribute("data-row-key"));
-            Assert.Equal("Select row", input.GetAttribute("aria-label"));
+            Assert.Equal("Select Row", input.GetAttribute("aria-label"));
         }
 
         [Fact]

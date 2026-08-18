@@ -4,14 +4,13 @@
     @foreach (var resource in Resources)
     {
         var selected = Context.Selection.IsSelected(resource);
+        var selecting = Context.Selection.IsSelectMode && !Context.Selection.HasFolders;
 
         <div class="forma-gallery-list-item @(selected ? "is-selected" : "")"
              role="listitem"
              draggable="true"
              @ondragstart="() => Context.BeginDrag(resource)">
-            <FormaGalleryActionBar Resource="resource" />
-
-            @if (Context.Selection.IsSelectMode && !Context.Selection.HasFolders)
+            @if (selecting)
             {
                 <button type="button"
                         class="forma-gallery-list-select @(selected ? "is-checked" : "")"
@@ -20,6 +19,10 @@
                         @onclick="() => Context.ToggleSelectAsync(resource)">
                     <FormaGlyph Name="Glyph.Check" />
                 </button>
+            }
+            else
+            {
+                <FormaGalleryActionBar Resource="resource" />
             }
 
             <button type="button"
@@ -31,10 +34,10 @@
                 </span>
 
                 <span class="forma-gallery-list-info">
-                    <span class="forma-gallery-list-name" title="@resource.Name">@resource.Name</span>
+                    <span class="forma-gallery-list-name" dir="auto" title="@resource.Name">@resource.Name</span>
                     @if (resource.DisplaySize is { } size)
                     {
-                        <span class="forma-gallery-list-size">@size</span>
+                        <span class="forma-gallery-list-size" dir="auto">@size</span>
                     }
                 </span>
             </button>

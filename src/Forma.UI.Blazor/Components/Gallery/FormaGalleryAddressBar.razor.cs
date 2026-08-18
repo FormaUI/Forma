@@ -69,7 +69,7 @@ public sealed partial class FormaGalleryAddressBar : ComponentBase
     {
         get
         {
-            var levels = new List<BreadcrumbLevel> { new(RootLevelKey, null, L["All media"].Value, null) };
+            var levels = new List<BreadcrumbLevel> { new(RootLevelKey, null, L["All Media"].Value, null) };
 
             foreach (var segment in Breadcrumbs)
             {

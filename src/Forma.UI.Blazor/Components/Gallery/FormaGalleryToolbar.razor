@@ -10,12 +10,12 @@
             <div class="forma-gallery-selection-actions">
                 @if (FileOptions.AllowDelete)
                 {
-                    <FormaButton Variant="ButtonVariant.Danger" Size="ButtonSize.Normal" class="forma-gallery-delete-btn" OnClick="OnDelete">
+                    <FormaButton Variant="ButtonVariant.Danger" Size="ButtonSize.Mini" class="forma-gallery-delete-btn" OnClick="OnDelete">
                         <FormaGlyph Name="Glyph.Trash" />
                         @L["Delete"]
                     </FormaButton>
                 }
-                <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Normal" class="forma-gallery-clear-btn" OnClick="OnClearSelection">
+                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-gallery-clear-btn" OnClick="OnClearSelection">
                     <FormaGlyph Name="Glyph.SquareMinus" />
                     @L["Clear"]
                 </FormaButton>
@@ -24,7 +24,7 @@
             <div class="forma-gallery-selection-status">
                 <span class="forma-gallery-selection-label">@L[$"{SelectedCount} selected"]</span>
                 <FormaCloseButton class="forma-gallery-exit-select-btn"
-                                  Label="@L["Leave selection mode"]"
+                                  Label="@L["Leave Selection Mode"]"
                                   OnClick="OnToggleSelectMode" />
             </div>
         </div>
@@ -32,8 +32,8 @@
     else
     {
     <div class="forma-gallery-toolbar-left">
-        <FormaButton Variant="@(IsSelectMode ? ButtonVariant.Primary : ButtonVariant.Secondary)"
-                     Size="ButtonSize.Normal"
+        <FormaButton Variant="@(IsSelectMode ? ButtonVariant.Primary : ButtonVariant.Ghost)"
+                     Size="ButtonSize.Mini"
                      class="forma-gallery-select-mode-btn"
                      aria-pressed="@(IsSelectMode ? "true" : "false")"
                      OnClick="OnToggleSelectMode">
@@ -50,14 +50,14 @@
         </FormaButton>
         @if (FileOptions.AllowFolderCreate && ShowNewFolder)
         {
-            <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Normal" class="forma-gallery-new-folder-btn" OnClick="OnFolderCreate">
+            <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-gallery-new-folder-btn" OnClick="OnFolderCreate">
                 <FormaGlyph Name="Glyph.FolderPlus" />
-                @L["New folder"]
+                @L["New Folder"]
             </FormaButton>
         }
         @if (FileOptions.AllowUpload)
         {
-            <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Normal" class="forma-gallery-upload-btn" OnClick="OnToggleUpload">
+            <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-gallery-upload-btn" OnClick="OnToggleUpload">
                 <FormaGlyph Name="Glyph.CloudArrowUp" />
                 @L["Upload"]
             </FormaButton>
@@ -66,7 +66,7 @@
 
     <div class="forma-gallery-toolbar-right">
         <!-- View Mode Switcher -->
-        <div class="forma-gallery-view-modes" role="group" aria-label="@L["View mode"]">
+        <div class="forma-gallery-view-modes" role="group" aria-label="@L["View Mode"]">
             <button type="button"
                     class="forma-gallery-view-btn @(ViewMode == GalleryViewMode.Thumbnails ? "is-active" : "")"
                     aria-label="@L["Thumbnails"]"
@@ -94,18 +94,18 @@
         <div class="forma-gallery-sort-group">
             <select class="forma-gallery-sort-select"
                     value="@SortField.ToString()"
-                    aria-label="@L["Sort by"]"
+                    aria-label="@L["Sort By"]"
                     @onchange="HandleSortFieldChange">
                 <option value="Name">@L["Name"]</option>
                 <option value="Size">@L["Size"]</option>
                 <option value="Kind">@L["Type"]</option>
-                <option value="DateAdded">@L["Date added"]</option>
-                <option value="DateModified">@L["Date modified"]</option>
+                <option value="DateAdded">@L["Date Added"]</option>
+                <option value="DateModified">@L["Date Modified"]</option>
             </select>
 
             <button type="button"
                     class="forma-gallery-sort-direction-btn"
-                    aria-label="@(SortDirection == GallerySortDirection.Ascending ? L["Sort ascending"] : L["Sort descending"])"
+                    aria-label="@(SortDirection == GallerySortDirection.Ascending ? L["Sort Ascending"] : L["Sort Descending"])"
                     @onclick="ToggleSortDirection">
                 <FormaGlyph Name="@(SortDirection == GallerySortDirection.Ascending ? Glyph.ArrowDownAZ : Glyph.ArrowUpZA)" />
             </button>

@@ -25,6 +25,10 @@
              popover="manual"
              @ref="_popupElement"
              @onkeydown="HandlePopupKeyDownAsync">
+            @if (HeaderContent is not null)
+            {
+                <div class="forma-dropdown-menu-header">@HeaderContent</div>
+            }
             @ChildContent
         </div>
     }

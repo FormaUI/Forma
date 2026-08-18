@@ -37,7 +37,7 @@
                             {
                                 @if (!HasMasterCaption)
                                 {
-                                    <FormaCheckbox aria-label="@L["Select all"]"
+                                    <FormaCheckbox aria-label="@L["Select All"]"
                                                    Checked="@AllSelected"
                                                    Indeterminate="@PartiallySelected"
                                                    Disabled="@MasterControlDisabled"
@@ -72,7 +72,7 @@
                             {
                                 <FormaCheckbox class="@(EnableCheckedSelection ? null : "forma-data-grid-row-marker")"
                                                data-row-key="@GetRowToken(row)"
-                                               aria-label="@L["Select row"]"
+                                               aria-label="@L["Select Row"]"
                                                aria-disabled="@(!CanInteractWithRow(row) ? "true" : null)"
                                                Checked="@IsSelected(row)"
                                                CheckedChanged="isSelected => ToggleSelectionAsync(row, isSelected)" />

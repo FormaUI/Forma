@@ -99,7 +99,7 @@
                                                 OnFolderCreate="@(r => { created = r; return Task.CompletedTask; })" />);
 
             // Act
-            await cut.Find(".forma-gallery-sidebar button[aria-label='New folder']").ClickAsync(new());
+            await cut.Find(".forma-gallery-sidebar button[aria-label='New Folder']").ClickAsync(new());
 
             // Assert
             Assert.Null(created);
@@ -252,8 +252,8 @@
 
             // Assert
             var breadcrumbs = cut.FindAll(".forma-gallery-breadcrumb-item");
-            Assert.Equal(3, breadcrumbs.Count); // "All media" > "Races" > "2026"
-            Assert.Equal("All media", breadcrumbs[0].TextContent.Trim());
+            Assert.Equal(3, breadcrumbs.Count); // "All Media" > "Races" > "2026"
+            Assert.Equal("All Media", breadcrumbs[0].TextContent.Trim());
             Assert.Equal("Races", breadcrumbs[1].TextContent.Trim());
             Assert.Equal("2026", breadcrumbs[2].TextContent.Trim());
         }
@@ -736,8 +736,9 @@
 
             // Assert
             cut.Find(".forma-gallery-action-bar .forma-dropdown-menu-trigger").Click();
+            Assert.Equal("cover.jpg", cut.Find(".forma-dropdown-menu-header").TextContent.Trim());
             var labels = cut.FindAll(".forma-dropdown-menu-item").Select(i => i.TextContent.Trim()).ToList();
-            Assert.Equal(["Preview cover.jpg"], labels);
+            Assert.Equal(["Preview"], labels);
         }
 
         [Fact]
@@ -754,7 +755,7 @@
             // Assert
             Assert.Empty(cut.FindAll(".forma-gallery-new-folder-btn"));
             Assert.Empty(cut.FindAll(".forma-gallery-upload-btn"));
-            Assert.Empty(cut.FindAll("[aria-label='New folder in \"Races\"']"));
+            Assert.Empty(cut.FindAll("[data-action='folder-create']"));
         }
 
         [Fact]
@@ -809,7 +810,7 @@
             Assert.Empty(cut.FindAll(".forma-gallery-new-folder-tool"));
             cut.Find(".forma-gallery-action-bar .forma-dropdown-menu-trigger").Click();
             var labels = cut.FindAll(".forma-dropdown-menu-item").Select(i => i.TextContent.Trim()).ToList();
-            Assert.Equal(["Preview cover.jpg"], labels);
+            Assert.Equal(["Preview"], labels);
         }
 
         [Fact]
@@ -826,11 +827,12 @@
             // Assert
             cut.Find(".forma-gallery-action-bar .forma-dropdown-menu-trigger").Click();
             var labels = cut.FindAll(".forma-dropdown-menu-item").Select(i => i.TextContent.Trim()).ToList();
-            Assert.Equal(["Preview cover.jpg", "Rename cover.jpg", "Delete cover.jpg"], labels);
+            Assert.Equal(["Preview", "Rename", "Delete"], labels);
             Assert.Single(cut.FindAll(".forma-gallery-new-folder-tool"));
             Assert.Empty(cut.FindAll(".forma-gallery-new-folder-btn"));
             Assert.Single(cut.FindAll(".forma-gallery-upload-btn"));
             cut.Find("button[aria-label='Actions for Races']").Click();
+            Assert.Equal("Races", cut.Find(".forma-gallery-folder-actions .forma-dropdown-menu-header").TextContent.Trim());
             Assert.Equal(
                 ["folder-create", "folder-rename", "folder-delete"],
                 cut.FindAll(".forma-gallery-folder-actions [data-action]").Select(i => i.GetAttribute("data-action")));
@@ -872,6 +874,91 @@
             Assert.Single(cut.FindAll(".forma-gallery-item-select"));
             Assert.Equal("true", cut.Find(".forma-gallery-select-mode-btn").GetAttribute("aria-pressed"));
             Assert.Equal("Select cover.jpg", cut.Find(".forma-gallery-item-open").GetAttribute("aria-label"));
+        }
+
+        [Theory]
+        [InlineData(GalleryViewMode.Thumbnails)]
+        [InlineData(GalleryViewMode.Details)]
+        [InlineData(GalleryViewMode.List)]
+        public void Should_replace_the_item_actions_trigger_with_the_checkbox_in_select_mode(GalleryViewMode viewMode)
+        {
+            // Arrange
+            using var ctx = new FormaGalleryTests();
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
+            var cut = ctx.Render(@<FormaGallery Resources="resources" ViewMode="viewMode" />);
+
+            // Assert - the trigger stands alone before select mode
+            Assert.Single(cut.FindAll(".forma-gallery-action-bar"));
+
+            // Act
+            cut.Find(".forma-gallery-select-mode-btn").Click();
+
+            // Assert - the checkbox replaces it rather than joining it
+            Assert.Empty(cut.FindAll(".forma-gallery-action-bar"));
+        }
+
+        [Fact]
+        public void Should_replace_the_folder_actions_trigger_with_the_checkbox_in_select_mode()
+        {
+            // Arrange
+            using var ctx = new FormaGalleryTests();
+            var folder = new FolderResourceInfo("races") { Name = "Races" };
+            var cut = ctx.Render(@<FormaGallery Resources="[]" Folders="[folder]" />);
+
+            // Assert - the trigger stands alone before select mode
+            Assert.Single(cut.FindAll(".forma-gallery-folder-actions"));
+            Assert.Empty(cut.FindAll(".forma-gallery-folder-select"));
+
+            // Act
+            cut.Find(".forma-gallery-select-mode-btn").Click();
+
+            // Assert - the checkbox replaces it rather than joining it
+            Assert.Empty(cut.FindAll(".forma-gallery-folder-actions"));
+            Assert.Single(cut.FindAll(".forma-gallery-folder-select"));
+        }
+
+        [Fact]
+        public void Should_hold_the_details_trigger_and_checkbox_in_the_same_leading_cell()
+        {
+            // Arrange
+            using var ctx = new FormaGalleryTests();
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
+            var cut = ctx.Render(@<FormaGallery Resources="resources" ViewMode="GalleryViewMode.Details" />);
+
+            // Assert - browsing puts the trigger in the leading cell
+            var lead = cut.Find(".forma-gallery-details-row td");
+            Assert.NotNull(lead.QuerySelector(".forma-gallery-action-bar"));
+            Assert.Null(lead.QuerySelector(".forma-gallery-table-select"));
+
+            // Act
+            cut.Find(".forma-gallery-select-mode-btn").Click();
+
+            // Assert - selecting puts the checkbox in that same cell
+            lead = cut.Find(".forma-gallery-details-row td");
+            Assert.NotNull(lead.QuerySelector(".forma-gallery-table-select"));
+            Assert.Null(lead.QuerySelector(".forma-gallery-action-bar"));
+        }
+
+        [Fact]
+        public void Should_keep_details_cells_aligned_with_their_headers_in_both_modes()
+        {
+            // Arrange
+            using var ctx = new FormaGalleryTests();
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
+            var cut = ctx.Render(@<FormaGallery Resources="resources" ViewMode="GalleryViewMode.Details" />);
+
+            // Assert - browsing
+            Assert.Equal(
+                cut.FindAll(".forma-gallery-details-table thead th").Count,
+                cut.Find(".forma-gallery-details-row").QuerySelectorAll("td").Length);
+
+            // Act
+            cut.Find(".forma-gallery-select-mode-btn").Click();
+
+            // Assert - selecting
+            Assert.Equal(
+                cut.FindAll(".forma-gallery-details-table thead th").Count,
+                cut.Find(".forma-gallery-details-row").QuerySelectorAll("td").Length);
         }
 
         [Fact]
@@ -1153,7 +1240,7 @@
             var cut = ctx.Render(@<FormaGallery Resources="[]" Folders="folders" CurrentFolder="current" />);
 
             // Assert
-            Assert.Equal(["All media", "Races"], cut.FindAll(".forma-gallery-breadcrumb-item").Select(b => b.TextContent.Trim()));
+            Assert.Equal(["All Media", "Races"], cut.FindAll(".forma-gallery-breadcrumb-item").Select(b => b.TextContent.Trim()));
         }
 
         [Fact]
@@ -1168,7 +1255,7 @@
             var cut = ctx.Render(@<FormaGallery Resources="[]" Folders="folders" CurrentFolder="child" />);
 
             // Assert
-            Assert.Equal(["All media", "Races", "2026"], cut.FindAll(".forma-gallery-breadcrumb-item").Select(b => b.TextContent.Trim()));
+            Assert.Equal(["All Media", "Races", "2026"], cut.FindAll(".forma-gallery-breadcrumb-item").Select(b => b.TextContent.Trim()));
         }
 
         [Fact]

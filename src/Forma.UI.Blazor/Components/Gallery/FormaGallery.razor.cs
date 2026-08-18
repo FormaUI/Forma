@@ -179,7 +179,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
 
     private const double MaxSidebarWidth = 28;
 
-    private double _sidebarWidth = 14;
+    private double _sidebarWidth = 18;
 
     private double _splitterOrigin;
 
@@ -761,7 +761,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
             {
                 Id = "preview",
                 Icon = Glyph.Eye,
-                Label = resource => L["Preview {name}", ("name", resource.Name)].Value,
+                Text = () => L["Preview"].Value,
                 Invoke = resource => { OpenPreview(resource); StateHasChanged(); return Task.CompletedTask; }
             }
         };
@@ -772,7 +772,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
             {
                 Id = "rename",
                 Icon = Glyph.Pen,
-                Label = resource => L["Rename {name}", ("name", resource.Name)].Value,
+                Text = () => L["Rename"].Value,
                 Invoke = resource => { OpenRenameDialog(resource); StateHasChanged(); return Task.CompletedTask; }
             });
         }
@@ -783,7 +783,7 @@ public sealed partial class FormaGallery : ComponentBase, IAsyncDisposable
             {
                 Id = "delete",
                 Icon = Glyph.Trash,
-                Label = resource => L["Delete {name}", ("name", resource.Name)].Value,
+                Text = () => L["Delete"].Value,
                 Invoke = resource => { OpenDeleteDialog(resource); StateHasChanged(); return Task.CompletedTask; },
                 IsDestructive = true
             });

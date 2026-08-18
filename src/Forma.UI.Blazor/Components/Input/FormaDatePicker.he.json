@@ -4,10 +4,10 @@
   "Today": "היום",
   "Yesterday": "אתמול",
   "[$ plural; one: Last # day; other: Last # days; $]": "[$ plural; one: יום אחרון; two: יומיים אחרונים; other: # ימים אחרונים; $]",
-  "This month": "החודש",
-  "Last month": "חודש שעבר",
-  "Select date": "בחר תאריך",
-  "Select range": "בחר טווח",
-  "Previous month": "החודש הקודם",
-  "Next month": "החודש הבא"
+  "This Month": "החודש",
+  "Last Month": "חודש שעבר",
+  "Select Date": "בחר תאריך",
+  "Select Range": "בחר טווח",
+  "Previous Month": "החודש הקודם",
+  "Next Month": "החודש הבא"
 }

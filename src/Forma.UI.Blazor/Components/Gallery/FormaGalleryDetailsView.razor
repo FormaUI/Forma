@@ -1,11 +1,14 @@
 @namespace Forma.UI.Blazor.Components.Gallery
 
+@{
+    var selecting = Context.Selection.IsSelectMode && !Context.Selection.HasFolders;
+}
+
 <div class="forma-gallery-details-wrap">
     <table class="forma-gallery-details-table" role="table">
         <thead>
             <tr>
-                <th class="forma-gallery-col-actions"><span class="forma-gallery-sr-only">@L["Actions"]</span></th>
-                <th class="forma-gallery-col-select"></th>
+                <th class="forma-gallery-col-actions"><span class="forma-gallery-sr-only">@(selecting ? L["Select"] : L["Actions"])</span></th>
                 <th class="forma-gallery-col-name @(Context.SortField == GallerySortField.Name ? "is-sorted" : "")"
                     aria-sort="@SortState(GallerySortField.Name)"
                     @onclick="() => Context.SortByAsync(GallerySortField.Name)">
@@ -74,10 +77,7 @@
                     draggable="true"
                     @ondragstart="() => Context.BeginDrag(resource)">
                     <td class="forma-gallery-cell-actions">
-                        <FormaGalleryActionBar Resource="resource" />
-                    </td>
-                    <td class="forma-gallery-cell-select">
-                        @if (Context.Selection.IsSelectMode && !Context.Selection.HasFolders)
+                        @if (selecting)
                         {
                             <button type="button"
                                     class="forma-gallery-table-select @(selected ? "is-checked" : "")"
@@ -87,6 +87,10 @@
                                 <FormaGlyph Name="Glyph.Check" />
                             </button>
                         }
+                        else
+                        {
+                            <FormaGalleryActionBar Resource="resource" />
+                        }
                     </td>
                     <td class="forma-gallery-cell-name">
                         <button type="button"
@@ -94,7 +98,7 @@
                                 aria-label="@Context.ActivateLabel(resource)"
                                 @onclick="() => Context.ActivateAsync(resource)">
                             <FormaGalleryThumb Resource="resource" Size="GalleryThumbSize.Cell" />
-                            <span class="forma-gallery-details-name-text" title="@resource.Name">@resource.Name</span>
+                            <span class="forma-gallery-details-name-text" dir="auto" title="@resource.Name">@resource.Name</span>
                         </button>
                     </td>
                     @if (ShowsKind)
@@ -103,7 +107,7 @@
                     }
                     @if (ShowsSize)
                     {
-                        <td class="forma-gallery-cell-size">@(resource.DisplaySize ?? Placeholder)</td>
+                        <td class="forma-gallery-cell-size" dir="auto">@(resource.DisplaySize ?? Placeholder)</td>
                     }
                     @if (ShowsModified)
                     {

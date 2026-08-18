@@ -58,8 +58,8 @@
     {
         <div class="forma-gallery-upload-panel">
             <div class="forma-gallery-upload-header">
-                <h4 class="forma-gallery-upload-title">@L["Upload media"]</h4>
-                <FormaCloseButton Label="@L["Close upload"]" OnClick="CloseUpload" />
+                <h4 class="forma-gallery-upload-title">@L["Upload Media"]</h4>
+                <FormaCloseButton Label="@L["Close Upload"]" OnClick="CloseUpload" />
             </div>
             <FormaFilePicker Accept="image/*,video/*,audio/*"
                              OnFilesSelected="HandleUploadFilesPickedAsync" />
@@ -91,7 +91,7 @@
                  @ref="_splitterElement"
                  role="separator"
                  aria-orientation="vertical"
-                 aria-label="@L["Resize folders panel"]"
+                 aria-label="@L["Resize Folders Panel"]"
                  aria-valuemin="@MinSidebarWidth"
                  aria-valuemax="@MaxSidebarWidth"
                  aria-valuenow="@((int)Math.Round(_sidebarWidth))"
@@ -159,7 +159,7 @@
                         {
                             <FormaButton Variant="ButtonVariant.Ghost" class="forma-gallery-load-more-btn" OnClick="LoadNextPageAsync">
                                 <span class="forma-gallery-load-more-icon" aria-hidden="true"><FormaGlyph Name="Glyph.ChevronDown" /></span>
-                                @L["Load more"]
+                                @L["Load More"]
                             </FormaButton>
                         }
                     </div>
@@ -213,12 +213,12 @@
     {
         <FormaModal Opened="@(_renamingResource is not null)"
                     Size="ModalSize.Small"
-                    Title="@L["Rename media"]"
+                    Title="@L["Rename Media"]"
                     Options="DialogModalOptions"
                     OnClose="CloseRenameDialog">
             <Body>
                 <div class="forma-gallery-dialog-field">
-                    <label class="forma-gallery-dialog-label" for="forma-gallery-rename-input">@L["New name"]</label>
+                    <label class="forma-gallery-dialog-label" for="forma-gallery-rename-input">@L["New Name"]</label>
                     <input id="forma-gallery-rename-input"
                            class="forma-gallery-dialog-input"
                            type="text"
@@ -242,7 +242,7 @@
     {
         <FormaModal Opened="@(_deletingResources is not null)"
                     Size="ModalSize.Small"
-                    Title="@L["Delete media"]"
+                    Title="@L["Delete Media"]"
                     Options="DialogModalOptions"
                     OnClose="CloseDeleteDialog">
             <Body>
@@ -264,12 +264,12 @@
     {
         <FormaModal Opened="_isNewFolderOpen"
                     Size="ModalSize.Small"
-                    Title="@L["New folder"]"
+                    Title="@L["New Folder"]"
                     Options="DialogModalOptions"
                     OnClose="CloseFolderDialog">
             <Body>
                 <div class="forma-gallery-dialog-field">
-                    <label class="forma-gallery-dialog-label" for="forma-gallery-folder-input">@L["Folder name"]</label>
+                    <label class="forma-gallery-dialog-label" for="forma-gallery-folder-input">@L["Folder Name"]</label>
                     <input id="forma-gallery-folder-input"
                            class="forma-gallery-dialog-input"
                            type="text"
@@ -293,12 +293,12 @@
     {
         <FormaModal Opened="@(_renamingFolder is not null)"
                     Size="ModalSize.Small"
-                    Title="@L["Rename folder"]"
+                    Title="@L["Rename Folder"]"
                     Options="DialogModalOptions"
                     OnClose="CloseFolderRenameDialog">
             <Body>
                 <div class="forma-gallery-dialog-field">
-                    <label class="forma-gallery-dialog-label" for="forma-gallery-rename-folder-input">@L["Folder name"]</label>
+                    <label class="forma-gallery-dialog-label" for="forma-gallery-rename-folder-input">@L["Folder Name"]</label>
                     <input id="forma-gallery-rename-folder-input"
                            class="forma-gallery-dialog-input"
                            type="text"
@@ -322,7 +322,7 @@
     {
         <FormaModal Opened="@(_deletingFolders is { Count: > 0 })"
                     Size="ModalSize.Small"
-                    Title="@L["Delete folder"]"
+                    Title="@L["Delete Folder"]"
                     Options="DialogModalOptions"
                     OnClose="CloseFolderDeleteDialog">
             <Body>

@@ -11,16 +11,16 @@
     align-items: center;
     justify-content: center;
     gap: 0.4rem;
-    padding-block: 0.45rem;
-    padding-inline: 1rem;
+    padding-block: 0.4rem;
+    padding-inline: 0.85rem;
     font-family: inherit;
-    font-size: 0.9rem;
+    font-size: 0.875rem;
     font-weight: 500;
     line-height: 1.4;
     border: 1px solid transparent;
-    border-radius: var(--forma-btn-radius, 6px);
+    border-radius: var(--forma-btn-radius, 8px);
     cursor: pointer;
-    transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+    transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
 }
 
 .forma-btn:focus-visible {
@@ -29,7 +29,8 @@
 }
 
 .forma-btn:disabled {
-    opacity: 0.6;
+    opacity: 0.55;
+    box-shadow: none;
     cursor: not-allowed;
 }
 
@@ -38,6 +39,7 @@
     background-color: var(--main-color);
     border-color: var(--main-color);
     color: #fff;
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--main-color) 28%, transparent);
 }
 
 @media (hover: hover) {
@@ -47,40 +49,58 @@
     }
 }
 
+.forma-btn-primary:active:not(:disabled) {
+    background-color: color-mix(in srgb, var(--main-dark-color) 88%, black);
+    border-color: color-mix(in srgb, var(--main-dark-color) 88%, black);
+    box-shadow: none;
+}
+
 .forma-btn-secondary {
-    background-color: color-mix(in srgb, var(--main-color) 4%, transparent);
-    border-color: var(--main-color);
+    background-color: var(--input-bg-color);
+    border-color: var(--light-border-color);
     color: var(--text-color);
+    box-shadow: var(--shadow-sm);
 }
 
 @media (hover: hover) {
     .forma-btn-secondary:hover:not(:disabled) {
-        background-color: color-mix(in srgb, var(--main-color) 14%, transparent);
-        border-color: var(--main-dark-color);
+        background-color: var(--hover-bg-color);
+        border-color: var(--dark-border-color);
     }
 }
 
+.forma-btn-secondary:active:not(:disabled) {
+    background-color: color-mix(in srgb, var(--text-color) 10%, transparent);
+    box-shadow: none;
+}
+
 .forma-btn-tertiary {
-    padding-block: 0.15rem;
+    padding-block: 0.2rem;
     padding-inline: 0.6rem;
     font-size: 0.8rem;
     font-weight: 400;
-    background-color: #fff;
+    background-color: transparent;
     border-color: var(--light-border-color);
-    color: var(--text-color);
+    color: var(--text-secondary-color);
 }
 
 @media (hover: hover) {
     .forma-btn-tertiary:hover:not(:disabled) {
         background-color: var(--hover-bg-color);
         border-color: var(--dark-border-color);
+        color: var(--text-color);
     }
+}
+
+.forma-btn-tertiary:active:not(:disabled) {
+    background-color: color-mix(in srgb, var(--text-color) 10%, transparent);
 }
 
 .forma-btn-danger {
     background-color: var(--danger-color);
     border-color: var(--danger-color);
     color: #fff;
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--danger-color) 28%, transparent);
 }
 
 @media (hover: hover) {
@@ -90,10 +110,16 @@
     }
 }
 
+.forma-btn-danger:active:not(:disabled) {
+    background-color: color-mix(in srgb, var(--danger-color) 72%, #000);
+    border-color: color-mix(in srgb, var(--danger-color) 72%, #000);
+    box-shadow: none;
+}
+
 .forma-btn-ghost {
     background-color: transparent;
     border-color: transparent;
-    color: var(--forma-btn-ghost-color, var(--text-muted-color));
+    color: var(--forma-btn-ghost-color, var(--text-secondary-color));
 }
 
 @media (hover: hover) {
@@ -103,11 +129,15 @@
     }
 }
 
+.forma-btn-ghost:active:not(:disabled) {
+    background-color: color-mix(in srgb, var(--text-color) 10%, transparent);
+}
+
 /* ---------- size ---------- */
 .forma-btn-mini {
-    padding-block: 0.2rem 0.3rem;
+    padding-block: 0.25rem;
     padding-inline: 0.7rem;
-    font-size: 0.8rem;
+    font-size: 0.8125rem;
 }
 
 /* ---------- icon only ---------- */
@@ -184,12 +214,9 @@
 }
 
 @media (pointer: coarse) {
-    .forma-btn {
-        min-block-size: 2.75rem;
-    }
-
+    .forma-btn,
     .forma-btn-mini {
-        min-block-size: 2.25rem;
+        min-block-size: 2.75rem;
     }
 
     .forma-btn-icon,

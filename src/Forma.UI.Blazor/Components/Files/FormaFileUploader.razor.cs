@@ -418,7 +418,7 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
             UploadState.Completed => L["Stored"],
             UploadState.Failed => L["Failed"],
             UploadState.Skipped => L["Skipped"],
-            UploadState.RolledBack => L["Rolled back"],
+            UploadState.RolledBack => L["Rolled Back"],
             UploadState.Cancelled => L["Cancelled"],
             UploadState.Uploading => L["Uploading"],
             _ => L["Waiting"]

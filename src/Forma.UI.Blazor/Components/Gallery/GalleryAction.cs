@@ -12,8 +12,8 @@ public sealed record GalleryAction
     /// <summary>The glyph rendered inside the action's button.</summary>
     public required Glyph Icon { get; init; }
 
-    /// <summary>Produces the localized accessible name for the resource the action would run on.</summary>
-    public required Func<ResourceInfo, string> Label { get; init; }
+    /// <summary>Produces the localized, resource-independent label shown for the action.</summary>
+    public required Func<string> Text { get; init; }
 
     /// <summary>Runs the operation against a resource.</summary>
     public required Func<ResourceInfo, Task> Invoke { get; init; }

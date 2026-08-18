@@ -17,6 +17,12 @@
     touch-action: manipulation;
 }
 
+/* The placeholder is UI text, so an empty field follows the page; dir="auto" would fall back to ltr and strand an RTL placeholder. */
+.forma-toolbar-search:placeholder-shown {
+    direction: inherit;
+    unicode-bidi: normal;
+}
+
 .forma-toolbar-search:focus-visible {
     outline: 2px solid var(--focus-color, #86b7fe);
     outline-offset: 1px;

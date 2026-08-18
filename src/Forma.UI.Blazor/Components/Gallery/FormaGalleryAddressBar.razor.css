@@ -254,11 +254,11 @@
     pointer-events: none;
 }
 
+/* Symmetric because the icon and clear button follow the wrapper's direction while the input follows what is typed. */
 .forma-gallery-search-input {
     inline-size: 100%;
     min-block-size: 2.25rem;
-    padding-inline-start: 2rem;
-    padding-inline-end: 1.75rem;
+    padding-inline: 2rem;
     padding-block: 0.35rem;
     border: 1px solid var(--light-border-color);
     border-radius: 6px;
@@ -268,10 +268,22 @@
     transition: border-color 0.15s ease;
 }
 
+/* The placeholder is UI text, so an empty field follows the page; dir="auto" would fall back to ltr and strand an RTL placeholder.
+   unicode-bidi is reset too because dir="auto" maps to plaintext, which would otherwise keep deriving direction from content. */
+.forma-gallery-search-input:placeholder-shown {
+    direction: inherit;
+    unicode-bidi: normal;
+}
+
 .forma-gallery-search-input:focus-visible {
     border-color: var(--focus-color);
     outline: 2px solid var(--focus-color);
     outline-offset: 1px;
+}
+
+/* WebKit draws its own clear button for type="search", which would sit beside the one below. */
+.forma-gallery-search-input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
 }
 
 .forma-gallery-search-clear {

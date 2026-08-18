@@ -51,7 +51,7 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
     private IJSObjectReference? _placement;
 
     private string TriggerText
-        => FindSelectedOption()?.Label ?? Placeholder ?? L["Select an option"];
+        => FindSelectedOption()?.Label ?? Placeholder ?? L["Select an Option"];
 
     protected override void OnInitialized()
     {

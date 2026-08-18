@@ -34,7 +34,6 @@
 }
 
 .forma-gallery-list-item.is-selected {
-    border-color: var(--main-color);
     background: color-mix(in srgb, var(--main-color) 8%, transparent);
 }
 
@@ -105,6 +104,11 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.forma-gallery-list-item.is-selected .forma-gallery-list-name {
+    color: var(--main-color);
+    font-weight: 700;
 }
 
 .forma-gallery-list-size {

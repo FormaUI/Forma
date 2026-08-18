@@ -19,7 +19,7 @@
         <button type="button"
                 class="forma-gallery-nav-btn"
                 disabled="@(!CanGoUp)"
-                aria-label="@L["Up to parent folder"]"
+                aria-label="@L["Up to Parent Folder"]"
                 @onclick="OnUp">
             <FormaGlyph Name="Glyph.ArrowUp" />
         </button>
@@ -31,7 +31,7 @@
         </button>
     </div>
 
-    <nav class="forma-gallery-breadcrumb-bar" aria-label="@L["Folder path"]" @onkeydown="HandleMenuKeyDown">
+    <nav class="forma-gallery-breadcrumb-bar" aria-label="@L["Folder Path"]" @onkeydown="HandleMenuKeyDown">
         <span class="forma-gallery-root-icon" aria-hidden="true"><FormaGlyph Name="Glyph.FolderOpen" /></span>
 
         @for (var index = 0; index < Levels.Count; index++)
@@ -41,6 +41,7 @@
             var isLast = index == Levels.Count - 1;
             <button type="button"
                     class="forma-gallery-breadcrumb-item @(isCurrent ? "is-current" : "")"
+                    dir="auto"
                     @ondragover="HandleDragOver"
                     @ondragover:preventDefault="true"
                     @ondrop="() => HandleBreadcrumbDrop(level.Folder)"
@@ -96,6 +97,7 @@
         <span class="forma-gallery-search-icon" aria-hidden="true"><FormaGlyph Name="Glyph.MagnifyingGlass" /></span>
         <input class="forma-gallery-search-input"
                type="search"
+               dir="auto"
                value="@SearchQuery"
                placeholder="@SearchPlaceholder"
                aria-label="@SearchPlaceholder"
@@ -104,7 +106,7 @@
         {
             <button type="button"
                     class="forma-gallery-search-clear"
-                    aria-label="@L["Clear search"]"
+                    aria-label="@L["Clear Search"]"
                     @onclick="ClearSearch"><FormaGlyph Name="Glyph.Xmark" /></button>
         }
     </div>

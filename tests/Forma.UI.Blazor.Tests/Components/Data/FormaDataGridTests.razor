@@ -758,7 +758,7 @@
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
-            var caption = new CheckedSelectionCaption { SelectAllText = "Select all" };
+            var caption = new CheckedSelectionCaption { SelectAllText = "Select All" };
 
             // Act
             var cut = ctx.Render(
@@ -770,7 +770,7 @@
             cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
 
             // Assert
-            Assert.Equal("Select all", cut.Find(".forma-data-grid-master-caption").TextContent);
+            Assert.Equal("Select All", cut.Find(".forma-data-grid-master-caption").TextContent);
             Assert.Empty(cut.FindAll("thead button.forma-data-grid-master-caption"));
         }
 
@@ -779,7 +779,7 @@
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
-            var caption = new CheckedSelectionCaption { SelectAllText = "Select all", DeselectAllText = "Deselect all" };
+            var caption = new CheckedSelectionCaption { SelectAllText = "Select All", DeselectAllText = "Deselect all" };
 
             // Act
             var cut = ctx.Render(
@@ -800,7 +800,7 @@
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
-            var caption = new CheckedSelectionCaption { SelectAllText = "Select all", DeselectAllText = "Deselect all" };
+            var caption = new CheckedSelectionCaption { SelectAllText = "Select All", DeselectAllText = "Deselect all" };
 
             // Act
             var cut = ctx.Render(

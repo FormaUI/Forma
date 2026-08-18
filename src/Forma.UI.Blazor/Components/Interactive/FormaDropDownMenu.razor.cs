@@ -16,6 +16,9 @@ public sealed partial class FormaDropDownMenu : ComponentBase, IAsyncDisposable
     /// <summary>Content rendered inside the trigger button.</summary>
     [Parameter, EditorRequired] public RenderFragment Trigger { get; set; } = default!;
 
+    /// <summary>Non-interactive content rendered above the items, such as the name of what the menu acts on.</summary>
+    [Parameter] public RenderFragment? HeaderContent { get; set; }
+
     /// <summary>The menu's items and dividers.</summary>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
 

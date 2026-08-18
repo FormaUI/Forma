@@ -22,6 +22,9 @@ public sealed partial class FormaOverflowMenu : ComponentBase
     /// <summary>Blocks interaction with the trigger button.</summary>
     [Parameter] public bool Disabled { get; set; }
 
+    /// <summary>Non-interactive content rendered above the items, such as the name of what the menu acts on.</summary>
+    [Parameter] public RenderFragment? HeaderContent { get; set; }
+
     /// <summary>The menu's items and dividers.</summary>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
 

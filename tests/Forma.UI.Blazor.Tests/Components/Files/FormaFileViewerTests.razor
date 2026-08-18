@@ -282,7 +282,7 @@
             // Arrange
             using var ctx = new FormaFileViewerTests();
             var cut = ctx.Render(@<FormaFileViewer Source="@Image" />);
-            var zoomIn = () => cut.Find("button.forma-file-viewer-zoom-button[aria-label='Zoom in']");
+            var zoomIn = () => cut.Find("button.forma-file-viewer-zoom-button[aria-label='Zoom In']");
 
             // Act
             for (var i = 0; i < 10; i++)
@@ -311,7 +311,7 @@
             Assert.Multiple(() =>
             {
                 Assert.Equal("100%", cut.Find(".forma-file-viewer-zoom-level").TextContent);
-                Assert.NotNull(cut.Find("button.forma-file-viewer-zoom-button[aria-label='Zoom out']").GetAttribute("disabled"));
+                Assert.NotNull(cut.Find("button.forma-file-viewer-zoom-button[aria-label='Zoom Out']").GetAttribute("disabled"));
             });
         }
 
@@ -321,7 +321,7 @@
             // Arrange
             using var ctx = new FormaFileViewerTests();
             var cut = ctx.Render(@<FormaFileViewer Source="@Image" />);
-            cut.Find("button.forma-file-viewer-zoom-button[aria-label='Zoom in']").Click();
+            cut.Find("button.forma-file-viewer-zoom-button[aria-label='Zoom In']").Click();
 
             // Act
             cut.FindComponent<FormaFileViewer>().Render(parameters => parameters.Add(viewer => viewer.Source, "/media/other.jpg"));

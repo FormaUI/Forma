@@ -3,8 +3,8 @@
   "Search": "חיפוש",
   "No matches": "אין תוצאות",
   "No options available yet": "אין עדיין אפשרויות",
-  "Add new": "הוסף חדש",
-  "Select options": "בחר אפשרויות",
+  "Add New": "הוסף חדש",
+  "Select Options": "בחר אפשרויות",
   "{selected} selected": "[$ [selected] plural; one: נבחר אחד; two: שניים נבחרו; other: # נבחרו; $]",
   "Remove {text}": "הסר {text}"
 }

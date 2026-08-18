@@ -1,8 +1,8 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "Zoom": "זום",
-  "Zoom out": "הקטן",
-  "Zoom in": "הגדל",
+  "Zoom Out": "הקטן",
+  "Zoom In": "הגדל",
   "Open {DisplayName} in a new tab.": "פתחו את {DisplayName} בכרטיסייה חדשה.",
   "Download {DisplayName}": "הורידו את {DisplayName}",
   "Previous": "הקודם",

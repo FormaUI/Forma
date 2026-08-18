@@ -4,10 +4,10 @@
   "Today": "Hoy",
   "Yesterday": "Ayer",
   "[$ plural; one: Last # day; other: Last # days; $]": "[$ plural; one: Último # día; other: Últimos # días; $]",
-  "This month": "Este mes",
-  "Last month": "Mes pasado",
-  "Select date": "Seleccionar fecha",
-  "Select range": "Seleccionar intervalo",
-  "Previous month": "Mes anterior",
-  "Next month": "Mes siguiente"
+  "This Month": "Este Mes",
+  "Last Month": "Mes Pasado",
+  "Select Date": "Seleccionar Fecha",
+  "Select Range": "Seleccionar Intervalo",
+  "Previous Month": "Mes Anterior",
+  "Next Month": "Mes Siguiente"
 }

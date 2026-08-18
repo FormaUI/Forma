@@ -22,6 +22,11 @@
   "Duplicate": "Duplicar",
   "Actions": "Acciones",
   "Archive": "Archivar",
+  "Header": "Encabezado",
+  "A header names what the menu acts on, so the items themselves can stay short.": "Un encabezado nombra sobre qué actúa el menú, para que los elementos puedan ser breves.",
+  "Actions for report.pdf": "Acciones para report.pdf",
+  "Preview": "Vista previa",
+  "Rename": "Cambiar nombre",
   "Keyboard": "Teclado",
   "Open with Enter, Space, or the down arrow. Arrow keys move between items, Home and End jump to the ends, and Escape closes the menu and returns focus to the trigger.": "Abre con Enter, la barra espaciadora o la flecha abajo. Las flechas se mueven entre los elementos, Inicio y Fin saltan a los extremos, y Escape cierra el menú y devuelve el foco al activador."
 }

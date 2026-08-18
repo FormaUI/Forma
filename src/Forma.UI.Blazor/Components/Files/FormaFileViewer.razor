@@ -25,11 +25,11 @@
                      style="@(IsZoomed ? $"inline-size: {ZoomPercent}%;" : null)" />
             </div>
             <div class="forma-file-viewer-zoom" role="group" aria-label="@L["Zoom"]">
-                <button type="button" class="forma-file-viewer-zoom-button" disabled="@(_zoomIndex == 0)" @onclick="ZoomOut" aria-label="@L["Zoom out"]">
+                <button type="button" class="forma-file-viewer-zoom-button" disabled="@(_zoomIndex == 0)" @onclick="ZoomOut" aria-label="@L["Zoom Out"]">
                     <span aria-hidden="true">&minus;</span>
                 </button>
                 <span class="forma-file-viewer-zoom-level" role="status">@ZoomPercent%</span>
-                <button type="button" class="forma-file-viewer-zoom-button" disabled="@(_zoomIndex == ZoomSteps.Length - 1)" @onclick="ZoomIn" aria-label="@L["Zoom in"]">
+                <button type="button" class="forma-file-viewer-zoom-button" disabled="@(_zoomIndex == ZoomSteps.Length - 1)" @onclick="ZoomIn" aria-label="@L["Zoom In"]">
                     <span aria-hidden="true">+</span>
                 </button>
             </div>

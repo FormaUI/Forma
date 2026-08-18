@@ -1,5 +1,5 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "{selected} selected": "[$ [selected] plural; one: נבחר אחד; two: שניים נבחרו; other: # נבחרו; $]",
-  "Clear selection": "נקה בחירה"
+  "Clear Selection": "נקה בחירה"
 }

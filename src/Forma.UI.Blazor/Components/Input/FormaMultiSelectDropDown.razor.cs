@@ -76,7 +76,7 @@ public sealed partial class FormaMultiSelectDropDown<TValue> : InputBase<List<TV
             var selected = SelectedValues.Count;
 
             return selected == 0
-                ? Placeholder ?? L["Select options"]
+                ? Placeholder ?? L["Select Options"]
                 : L[$"{selected} selected"];
         }
     }

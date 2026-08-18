@@ -19,7 +19,7 @@
     background: var(--input-bg-color);
     overflow: hidden;
     cursor: grab;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .forma-gallery-item:active {
@@ -29,13 +29,17 @@
 @media (hover: hover) {
     .forma-gallery-item:hover {
         border-color: var(--dark-border-color);
+        background: var(--hover-bg-color);
         box-shadow: var(--shadow-sm);
     }
 }
 
 .forma-gallery-item.is-selected {
-    border-color: var(--main-color);
-    box-shadow: 0 0 0 2px var(--main-color);
+    background: color-mix(in srgb, var(--main-color) 12%, transparent);
+}
+
+.forma-gallery-item.is-selected .forma-gallery-thumbnail-wrap {
+    background: color-mix(in srgb, var(--main-color) 12%, var(--hover-bg-color));
 }
 
 .forma-gallery-thumbnail-wrap {
@@ -113,6 +117,11 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.forma-gallery-item.is-selected .forma-gallery-item-name {
+    color: var(--main-color);
+    font-weight: 700;
 }
 
 .forma-gallery-item-size {

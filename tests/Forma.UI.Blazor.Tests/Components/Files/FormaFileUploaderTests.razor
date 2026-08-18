@@ -139,7 +139,7 @@
             // Assert
             cut.WaitForAssertion(() =>
             {
-                Assert.Equal("All files", cut.Find(".forma-file-uploader-totals-label").TextContent);
+                Assert.Equal("All Files", cut.Find(".forma-file-uploader-totals-label").TextContent);
                 Assert.Equal("(2 KB)", cut.Find(".forma-file-uploader-totals .forma-file-uploader-size").TextContent);
             });
         }
@@ -384,7 +384,7 @@
             Assert.Multiple(() =>
             {
                 Assert.Equal(["/stored/good.txt"], store.Deleted);
-                Assert.Equal("Rolled back", cut.FindAll(".forma-file-uploader-state")[0].TextContent);
+                Assert.Equal("Rolled Back", cut.FindAll(".forma-file-uploader-state")[0].TextContent);
                 Assert.Equal("Failed", cut.FindAll(".forma-file-uploader-state")[1].TextContent);
                 Assert.Equal("Stored 0 of 2.", cut.Find(".forma-file-uploader-summary").TextContent);
             });

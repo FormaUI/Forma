@@ -75,16 +75,6 @@ public enum GallerySortDirection
     Descending
 }
 
-/// <summary>Specifies how a view positions its resource action buttons.</summary>
-public enum GalleryActionBarVariant
-{
-    /// <summary>Placed in the flow of a row.</summary>
-    Inline,
-
-    /// <summary>Floated over a thumbnail.</summary>
-    Overlay
-}
-
 /// <summary>Specifies how large a media thumbnail renders.</summary>
 public enum GalleryThumbSize
 {

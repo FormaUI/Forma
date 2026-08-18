@@ -10,7 +10,7 @@
             using var ctx = new FormaEyeButtonTests();
 
             // Act
-            var cut = ctx.Render(@<FormaEyeButton Label="Show password" />);
+            var cut = ctx.Render(@<FormaEyeButton Label="Show Password" />);
 
             // Assert
             var button = cut.Find("button");
@@ -25,10 +25,10 @@
             using var ctx = new FormaEyeButtonTests();
 
             // Act
-            var cut = ctx.Render(@<FormaEyeButton Label="Show password" />);
+            var cut = ctx.Render(@<FormaEyeButton Label="Show Password" />);
 
             // Assert
-            Assert.Equal("Show password", cut.Find("button").GetAttribute("aria-label"));
+            Assert.Equal("Show Password", cut.Find("button").GetAttribute("aria-label"));
         }
 
         [Fact]
@@ -38,7 +38,7 @@
             using var ctx = new FormaEyeButtonTests();
 
             // Act
-            var cut = ctx.Render(@<FormaEyeButton Label="Show password" />);
+            var cut = ctx.Render(@<FormaEyeButton Label="Show Password" />);
 
             // Assert
             Assert.Equal("true", cut.Find("svg").GetAttribute("aria-hidden"));
@@ -52,7 +52,7 @@
             var expected = ctx.Render(@<FormaGlyph Name="Glyph.EyeSlash" />).Find("path").GetAttribute("d");
 
             // Act
-            var cut = ctx.Render(@<FormaEyeButton Label="Show password" Revealed="false" />);
+            var cut = ctx.Render(@<FormaEyeButton Label="Show Password" Revealed="false" />);
 
             // Assert
             Assert.Equal(expected, cut.Find("svg path").GetAttribute("d"));
@@ -66,7 +66,7 @@
             var expected = ctx.Render(@<FormaGlyph Name="Glyph.Eye" />).Find("path").GetAttribute("d");
 
             // Act
-            var cut = ctx.Render(@<FormaEyeButton Label="Hide password" Revealed="true" />);
+            var cut = ctx.Render(@<FormaEyeButton Label="Hide Password" Revealed="true" />);
 
             // Assert
             Assert.Equal(expected, cut.Find("svg path").GetAttribute("d"));
@@ -78,7 +78,7 @@
             // Arrange
             using var ctx = new FormaEyeButtonTests();
             var clicks = 0;
-            var cut = ctx.Render(@<FormaEyeButton Label="Show password" OnClick="() => clicks++" />);
+            var cut = ctx.Render(@<FormaEyeButton Label="Show Password" OnClick="() => clicks++" />);
 
             // Act
             cut.Find("button").Click();
@@ -94,7 +94,7 @@
             using var ctx = new FormaEyeButtonTests();
 
             // Act
-            var cut = ctx.Render(@<FormaEyeButton Label="Show password" Size="ButtonSize.Mini" />);
+            var cut = ctx.Render(@<FormaEyeButton Label="Show Password" Size="ButtonSize.Mini" />);
 
             // Assert
             Assert.Contains("forma-btn-mini", cut.Find("button").ClassList);
@@ -107,7 +107,7 @@
             using var ctx = new FormaEyeButtonTests();
 
             // Act
-            var cut = ctx.Render(@<FormaEyeButton Label="Show password" Disabled="true" />);
+            var cut = ctx.Render(@<FormaEyeButton Label="Show Password" Disabled="true" />);
 
             // Assert
             Assert.True(cut.Find("button").HasAttribute("disabled"));
@@ -120,7 +120,7 @@
             using var ctx = new FormaEyeButtonTests();
 
             // Act
-            var cut = ctx.Render(@<FormaEyeButton Label="Show password" aria-pressed="true" />);
+            var cut = ctx.Render(@<FormaEyeButton Label="Show Password" aria-pressed="true" />);
 
             // Assert
             Assert.Equal("true", cut.Find("button").GetAttribute("aria-pressed"));

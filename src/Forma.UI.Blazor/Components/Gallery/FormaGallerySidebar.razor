@@ -10,7 +10,7 @@
             {
                 <button type="button"
                         class="forma-gallery-sidebar-tool forma-gallery-new-folder-tool"
-                        aria-label="@L["New folder"]"
+                        aria-label="@L["New Folder"]"
                         @onclick="() => CreateFolderAsync(null)">
                     <FormaGlyph Name="Glyph.FolderPlus" />
                 </button>
@@ -18,7 +18,7 @@
             <button type="button"
                     class="forma-gallery-sidebar-tool @(IsFullyCollapsed ? "forma-gallery-expand-all-tool" : "forma-gallery-collapse-all-tool")"
                     disabled="@(!HasExpandableFolders)"
-                    aria-label="@(IsFullyCollapsed ? L["Expand all folders"] : L["Collapse all folders"])"
+                    aria-label="@(IsFullyCollapsed ? L["Expand All Folders"] : L["Collapse All Folders"])"
                     @onclick="ToggleAll">
                 <FormaGlyph Name="@(IsFullyCollapsed ? Glyph.SquarePlus : Glyph.SquareMinus)" />
             </button>
@@ -37,7 +37,7 @@
                         class="forma-gallery-folder-target"
                         @onclick="() => SelectFolderAsync(null)">
                     <span class="forma-gallery-folder-icon" aria-hidden="true"><FormaGlyph Name="@(CurrentFolder is null ? Glyph.FolderOpen : Glyph.Folder)" /></span>
-                    <span class="forma-gallery-folder-name">@L["All media"]</span>
+                    <span class="forma-gallery-folder-name">@L["All Media"]</span>
                 </button>
                 <span class="forma-gallery-folder-count">@TotalCount</span>
             </div>
@@ -53,7 +53,7 @@
          @ref="_sashElement"
          role="separator"
          aria-orientation="horizontal"
-         aria-label="@L["Resize folder list"]"
+         aria-label="@L["Resize Folder List"]"
          aria-valuemin="@MinTreeHeight"
          aria-valuemax="@MaxTreeHeight"
          aria-valuenow="@((int)Math.Round(_treeHeight ?? MeasuredTreeHeight))"

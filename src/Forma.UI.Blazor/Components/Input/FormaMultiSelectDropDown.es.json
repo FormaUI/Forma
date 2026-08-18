@@ -3,8 +3,8 @@
   "Search": "Buscar",
   "No matches": "Sin resultados",
   "No options available yet": "Aún no hay opciones disponibles",
-  "Add new": "Agregar nuevo",
-  "Select options": "Seleccionar opciones",
+  "Add New": "Agregar Nuevo",
+  "Select Options": "Seleccionar Opciones",
   "{selected} selected": "[$ [selected] plural; one: # seleccionado; other: # seleccionados; $]",
   "Remove {text}": "Quitar {text}"
 }

@@ -6,14 +6,19 @@
     <FormaOverflowMenu Label="@Context.ActionsLabel(Resource)"
                        Orientation="MenuOrientation.Vertical"
                        Size="ButtonSize.Mini">
-        @foreach (var action in Context.Actions)
-        {
-            <FormaDropDownMenuItem IsDestructive="action.IsDestructive"
-                                   data-action="@action.Id"
-                                   OnClick="() => action.Invoke(Resource)">
-                <FormaGlyph Name="action.Icon" />
-                <span>@action.Label(Resource)</span>
-            </FormaDropDownMenuItem>
-        }
+        <HeaderContent>
+            <span title="@Resource.Name">@Resource.Name</span>
+        </HeaderContent>
+        <ChildContent>
+            @foreach (var action in Context.Actions)
+            {
+                <FormaDropDownMenuItem IsDestructive="action.IsDestructive"
+                                       data-action="@action.Id"
+                                       OnClick="() => action.Invoke(Resource)">
+                    <FormaGlyph Name="action.Icon" />
+                    <span>@action.Text()</span>
+                </FormaDropDownMenuItem>
+            }
+        </ChildContent>
     </FormaOverflowMenu>
 </div>

@@ -4,6 +4,7 @@
     @foreach (var resource in Resources)
     {
         var selected = Context.Selection.IsSelected(resource);
+        var selecting = Context.Selection.IsSelectMode && !Context.Selection.HasFolders;
 
         <div class="forma-gallery-item @(selected ? "is-selected" : "")"
              role="listitem"
@@ -19,22 +20,24 @@
                         @onclick="() => Context.ActivateAsync(resource)"></button>
 
                 <span class="forma-gallery-item-lead">
-                    <FormaGalleryActionBar Resource="resource" />
-
-                    @if (Context.Selection.IsSelectMode && !Context.Selection.HasFolders)
+                    @if (selecting)
                     {
                         <span class="forma-gallery-item-select @(selected ? "is-checked" : "")" aria-hidden="true">
                             <FormaGlyph Name="Glyph.Check" />
                         </span>
                     }
+                    else
+                    {
+                        <FormaGalleryActionBar Resource="resource" />
+                    }
                 </span>
             </div>
 
             <div class="forma-gallery-item-info">
-                <span class="forma-gallery-item-name" title="@resource.Name">@resource.Name</span>
+                <span class="forma-gallery-item-name" dir="auto" title="@resource.Name">@resource.Name</span>
                 @if (resource.DisplaySize is { } size)
                 {
-                    <span class="forma-gallery-item-size">@size</span>
+                    <span class="forma-gallery-item-size" dir="auto">@size</span>
                 }
             </div>
         </div>

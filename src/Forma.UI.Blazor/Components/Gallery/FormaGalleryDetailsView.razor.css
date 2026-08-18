@@ -33,11 +33,6 @@
     cursor: pointer;
 }
 
-.forma-gallery-col-select {
-    inline-size: 3rem;
-    cursor: default !important;
-}
-
 .forma-gallery-col-name {
     min-inline-size: 12rem;
 }
@@ -60,7 +55,7 @@
 }
 
 .forma-gallery-col-actions {
-    inline-size: 7rem;
+    inline-size: 2.5rem;
     text-align: start;
     cursor: default !important;
 }
@@ -148,4 +143,9 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.forma-gallery-details-row.is-selected .forma-gallery-details-name-text {
+    color: var(--main-color);
+    font-weight: 700;
 }

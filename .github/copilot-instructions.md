@@ -324,6 +324,19 @@ Every component must behave and look the same in both directions—mirrored, not
 - Don't hardcode user-facing component strings.
 - Don't localize text supplied by the caller a second time inside the library.
 
+### Capitalization
+
+A string is a **label** when it names a thing the user acts on or reads as a heading — buttons, menu items, column headers, tab titles, field labels, select options, and the accessible names of icon-only controls. Everything else is **prose**: sentences, validation messages, empty-state copy, placeholders, tooltips that explain rather than name, and status readouts that combine a word with a value.
+
+- Do write labels in Title Case: `New Folder`, `Sort Ascending`, `Select an Option`, `All Media`.
+- Do capitalize the first and last word of a label, plus every noun, verb, adjective, adverb, and pronoun between them.
+- Do leave articles, coordinating conjunctions, and prepositions lowercase inside a label, so `Go to Page` and `Folders in {name}` keep their connectives down.
+- Do write prose in sentence case and punctuate it normally: `Drop files here or click to browse`, `"{name}" isn't an accepted file type.`
+- Do apply the identical rule to every Latin-script language, capitalizing the same word positions the English label does: `All Media` is `Todos los Medios`, never `Todos Los Medios`, and `Sort By` is `Ordenar Por`.
+- Do leave a script without letter case alone, such as Hebrew.
+- Do treat Title Case as Forma's own typographic style rather than any language's orthographic standard: English prose would write `Select an option`, and most Latin-script languages sentence-case titles by convention, yet every label is Title Case because it reads better and keeps one rule across the product.
+- Don't Title Case a sentence, and don't sentence-case a label.
+
 ## Services
 
 - Do place contracts in `Forma.UI.Features.Abstractions/{Category}/IXService.cs`.

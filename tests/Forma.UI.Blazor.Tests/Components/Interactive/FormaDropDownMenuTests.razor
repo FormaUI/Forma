@@ -38,6 +38,43 @@
         }
 
         [Fact]
+        public void Should_render_the_header_content_when_provided()
+        {
+            // Arrange
+            using var ctx = new FormaDropDownMenuTests();
+            var cut = ctx.Render(
+                @<FormaDropDownMenu>
+                    <Trigger>Options</Trigger>
+                    <HeaderContent>notes.md</HeaderContent>
+                    <ChildContent><FormaDropDownMenuItem>Print</FormaDropDownMenuItem></ChildContent>
+                </FormaDropDownMenu>);
+
+            // Act
+            cut.Find(".forma-dropdown-menu-trigger").Click();
+
+            // Assert
+            Assert.Equal("notes.md", cut.Find(".forma-dropdown-menu-header").TextContent.Trim());
+        }
+
+        [Fact]
+        public void Should_not_render_a_header_when_none_is_provided()
+        {
+            // Arrange
+            using var ctx = new FormaDropDownMenuTests();
+            var cut = ctx.Render(
+                @<FormaDropDownMenu>
+                    <Trigger>Options</Trigger>
+                    <ChildContent><FormaDropDownMenuItem>Print</FormaDropDownMenuItem></ChildContent>
+                </FormaDropDownMenu>);
+
+            // Act
+            cut.Find(".forma-dropdown-menu-trigger").Click();
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-dropdown-menu-header"));
+        }
+
+        [Fact]
         public void Should_open_the_popup_on_trigger_click()
         {
             // Arrange

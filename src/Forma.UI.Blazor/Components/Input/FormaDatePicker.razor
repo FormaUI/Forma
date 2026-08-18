@@ -39,7 +39,7 @@
                         <div class="forma-date-picker-month-header">
                             <FormaButton Variant="ButtonVariant.Ghost"
                                          class="forma-date-picker-nav"
-                                         aria-label="@L["Previous month"]"
+                                         aria-label="@L["Previous Month"]"
                                          Disabled="!CanPanelGoPrev(idx)"
                                          OnClick="() => PanelPrev(idx)">
                                 &#10094;
@@ -66,7 +66,7 @@
                             </div>
                             <FormaButton Variant="ButtonVariant.Ghost"
                                          class="forma-date-picker-nav"
-                                         aria-label="@L["Next month"]"
+                                         aria-label="@L["Next Month"]"
                                          Disabled="!CanPanelGoNext(idx)"
                                          OnClick="() => PanelNext(idx)">
                                 &#10095;
@@ -137,13 +137,13 @@
                                  class="forma-date-picker-preset"
                                  Disabled="IsPresetDisabled(Preset.ThisMonth)"
                                  OnClick="() => ApplyPreset(Preset.ThisMonth)">
-                        @L["This month"]
+                        @L["This Month"]
                     </FormaButton>
                     <FormaButton Variant="ButtonVariant.Ghost"
                                  class="forma-date-picker-preset"
                                  Disabled="IsPresetDisabled(Preset.LastMonth)"
                                  OnClick="() => ApplyPreset(Preset.LastMonth)">
-                        @L["Last month"]
+                        @L["Last Month"]
                     </FormaButton>
                 </div>
             }
