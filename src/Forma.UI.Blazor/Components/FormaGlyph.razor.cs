@@ -1,6 +1,6 @@
-namespace Forma.UI.Components;
+namespace Forma.UI.Blazor.Components;
 
-using Forma.Framework.Style.Glyphs;
+using Forma.UI.Style.Glyphs;
 
 using Microsoft.AspNetCore.Components;
 

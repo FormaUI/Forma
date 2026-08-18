@@ -1,4 +1,4 @@
-namespace Forma.UI.Components.Gallery;
+namespace Forma.UI.Blazor.Components.Gallery;
 
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;

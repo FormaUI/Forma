@@ -1,4 +1,4 @@
-namespace Forma.UI.Components.Media;
+namespace Forma.UI.Blazor.Components.Media;
 
 using System.Diagnostics.CodeAnalysis;
 

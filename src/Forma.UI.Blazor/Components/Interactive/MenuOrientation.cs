@@ -1,4 +1,4 @@
-namespace Forma.UI.Components.Interactive;
+namespace Forma.UI.Blazor.Components.Interactive;
 
 /// <summary>Which way an overflow menu's ellipsis glyph points.</summary>
 public enum MenuOrientation

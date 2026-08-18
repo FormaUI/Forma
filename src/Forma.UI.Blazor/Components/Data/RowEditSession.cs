@@ -1,4 +1,4 @@
-namespace Forma.UI.Components.Data;
+namespace Forma.UI.Blazor.Components.Data;
 
 using Microsoft.AspNetCore.Components.Forms;
 

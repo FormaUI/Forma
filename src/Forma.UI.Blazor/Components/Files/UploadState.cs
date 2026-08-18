@@ -1,4 +1,4 @@
-namespace Forma.UI.Components.Files;
+namespace Forma.UI.Blazor.Components.Files;
 
 /// <summary>Where one file has reached in an upload.</summary>
 public enum UploadState

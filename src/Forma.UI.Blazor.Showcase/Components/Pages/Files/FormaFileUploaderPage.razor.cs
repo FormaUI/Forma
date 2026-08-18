@@ -2,8 +2,8 @@ namespace Forma.UI.Blazor.Showcase.Components.Pages.Files;
 
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
+using Forma.UI.Blazor.Components.Files;
 using Forma.UI.Blazor.Showcase.Features.Upload;
-using Forma.UI.Components.Files;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;

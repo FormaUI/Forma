@@ -1,4 +1,4 @@
-namespace Forma.UI.Components.Actions;
+namespace Forma.UI.Blazor.Components.Actions;
 
 /// <summary>Appearance of a <see cref="FormaButton"/>, for a component that lets its caller style a button it renders.</summary>
 public sealed record FormaButtonOptions

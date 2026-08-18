@@ -1,4 +1,4 @@
-namespace Forma.UI.Globalization;
+namespace Forma.UI.Blazor.Globalization;
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;

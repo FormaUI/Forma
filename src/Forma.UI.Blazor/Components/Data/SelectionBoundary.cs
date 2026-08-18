@@ -1,4 +1,4 @@
-namespace Forma.UI.Components.Data;
+namespace Forma.UI.Blazor.Components.Data;
 
 /// <summary>A bound on how many rows a <see cref="FormaDataGrid{TGridItem}"/> may have selected.</summary>
 public enum SelectionBoundary

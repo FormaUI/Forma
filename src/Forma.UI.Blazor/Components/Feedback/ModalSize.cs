@@ -1,4 +1,4 @@
-namespace Forma.UI.Components.Feedback;
+namespace Forma.UI.Blazor.Components.Feedback;
 
 public enum ModalSize
 {

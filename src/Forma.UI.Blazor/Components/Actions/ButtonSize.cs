@@ -1,4 +1,4 @@
-namespace Forma.UI.Components.Actions;
+namespace Forma.UI.Blazor.Components.Actions;
 
 /// <summary>The amount of padding and text size a button is drawn at.</summary>
 public enum ButtonSize

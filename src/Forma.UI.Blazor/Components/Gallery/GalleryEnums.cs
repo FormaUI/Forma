@@ -1,4 +1,4 @@
-namespace Forma.UI.Components.Gallery;
+namespace Forma.UI.Blazor.Components.Gallery;
 
 /// <summary>Specifies the presentation mode for media in the gallery.</summary>
 public enum GalleryViewMode

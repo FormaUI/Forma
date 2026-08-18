@@ -1,4 +1,4 @@
-namespace Forma.UI.Interop;
+namespace Forma.UI.Blazor.Interop;
 
 using System.Diagnostics.CodeAnalysis;
 

@@ -1,4 +1,4 @@
-namespace Forma.UI.Components.Gallery;
+namespace Forma.UI.Blazor.Components.Gallery;
 
 /// <summary>Why a gallery refused to accept a resource.</summary>
 public enum GalleryRejectionReason

@@ -1,4 +1,4 @@
-namespace Forma.UI.Components.Data;
+namespace Forma.UI.Blazor.Components.Data;
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;

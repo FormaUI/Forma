@@ -1,8 +1,8 @@
-namespace Forma.UI.Components.Indicators;
+namespace Forma.UI.Blazor.Components.Indicators;
 
-using Forma.Framework.Indicators;
-using Forma.Framework.Style.Css;
-using Forma.Framework.Style.Glyphs;
+using Forma.UI.Features.Indicators;
+using Forma.UI.Style.Css;
+using Forma.UI.Style.Glyphs;
 
 using Microsoft.AspNetCore.Components;
 

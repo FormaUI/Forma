@@ -1,4 +1,4 @@
-namespace Forma.UI.Components.Gallery;
+namespace Forma.UI.Blazor.Components.Gallery;
 
 /// <summary>How a <see cref="FormaGallery"/> presents itself: which surfaces it shows, and how it moves through a collection.</summary>
 public sealed record FormaGalleryOptions

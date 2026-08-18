@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <IsPackable>false</IsPackable>
+        <RootNamespace>Forma.UI.Features.Tests</RootNamespace>
+        <NoWarn>CA1707</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="xunit.v3" Version="3.0.1" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Forma.UI.Features.Abstractions\Forma.UI.Features.Abstractions.csproj" />
+        <ProjectReference Include="..\..\src\Forma.UI.Features\Forma.UI.Features.csproj" />
+        <ProjectReference Include="..\..\src\Forma.UI.Style\Forma.UI.Style.csproj" />
+    </ItemGroup>
+
+</Project>

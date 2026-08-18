@@ -1,4 +1,4 @@
-namespace Forma.UI.Resources;
+namespace Forma.UI.Blazor.Resources;
 
 using Forma.Framework.Resources;
 

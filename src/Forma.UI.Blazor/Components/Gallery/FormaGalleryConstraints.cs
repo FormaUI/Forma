@@ -1,4 +1,4 @@
-namespace Forma.UI.Components.Gallery;
+namespace Forma.UI.Blazor.Components.Gallery;
 
 /// <summary>What a <see cref="FormaGallery"/> refuses, each ceiling unlimited when left at zero. Every member pairs with a <see cref="GalleryRejectionReason"/>.</summary>
 public sealed record FormaGalleryConstraints

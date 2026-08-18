@@ -1,4 +1,4 @@
-namespace Forma.UI.Components.Data;
+namespace Forma.UI.Blazor.Components.Data;
 
 /// <summary>Caption configuration for a <see cref="FormaDataGrid{TGridItem}"/>'s checked-selection master toggle.</summary>
 public sealed record CheckedSelectionCaption

@@ -19,7 +19,7 @@ The host owns its own `App.razor` and `Routes.razor`; the package ships componen
 **1. Register services:**
 
 ```csharp
-using Forma.Framework.Feedback;
+using Forma.UI.Features.Feedback;
 using Forma.Framework.Localization.Json;
 
 builder.Services.AddJsonLocalization();

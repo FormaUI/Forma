@@ -1,6 +1,6 @@
 namespace Forma.UI.Blazor.Tests.Components.Layout;
 
-using Forma.UI.Components.Layout;
+using Forma.UI.Blazor.Components.Layout;
 
 using Xunit;
 

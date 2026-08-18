@@ -3,7 +3,7 @@ namespace Forma.UI.Blazor.Showcase;
 using System.Diagnostics.CodeAnalysis;
 
 using Forma.Framework.Resources;
-using Forma.UI.Components.Files;
+using Forma.UI.Blazor.Components.Files;
 
 using Microsoft.AspNetCore.Hosting;
 

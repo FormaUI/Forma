@@ -1,4 +1,4 @@
-namespace Forma.UI.Components.Gallery;
+namespace Forma.UI.Blazor.Components.Gallery;
 
 /// <summary>Answers a gallery with one window of media at a time, for collections too large to hold.</summary>
 public interface IGalleryResourcesProvider

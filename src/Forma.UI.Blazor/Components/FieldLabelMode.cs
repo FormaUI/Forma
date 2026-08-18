@@ -1,4 +1,4 @@
-namespace Forma.UI.Components;
+namespace Forma.UI.Blazor.Components;
 
 /// <summary>Where a field's label sits relative to the element it names.</summary>
 public enum FieldLabelMode

@@ -1,4 +1,4 @@
-namespace Forma.UI.Components.Files;
+namespace Forma.UI.Blazor.Components.Files;
 
 /// <summary>How a <see cref="FormaFileUploader"/> runs a set, and which measurements it shows beside each file.</summary>
 public sealed record FormaFileUploaderOptions

@@ -1,7 +1,7 @@
 namespace Forma.UI.Blazor.Showcase;
 
-using Forma.Framework.Media;
-using Forma.UI.Components.Media;
+using Forma.UI.Blazor.Components.Media;
+using Forma.UI.Features.Media;
 
 /// <summary>
 /// Claims the gallery's own <c>custom:</c> addresses and resolves them against its storage,

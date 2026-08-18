@@ -1,4 +1,4 @@
-namespace Forma.UI.Components.Data;
+namespace Forma.UI.Blazor.Components.Data;
 
 /// <summary>The minimum and maximum row-count rules for a <see cref="FormaDataGrid{TGridItem}"/> selection.</summary>
 internal readonly record struct SelectionBounds(int? Minimum, int? Maximum)

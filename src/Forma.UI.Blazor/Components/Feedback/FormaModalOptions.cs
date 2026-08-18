@@ -1,4 +1,4 @@
-namespace Forma.UI.Components.Feedback;
+namespace Forma.UI.Blazor.Components.Feedback;
 
 /// <summary>Default close and footer-action behavior of a <see cref="FormaModal"/>.</summary>
 public sealed record FormaModalOptions

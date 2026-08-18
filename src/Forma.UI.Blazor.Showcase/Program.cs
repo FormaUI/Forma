@@ -1,16 +1,16 @@
-using Forma.Framework.Feedback;
-using Forma.Framework.Indicators;
 using Forma.Framework.Localization;
 using Forma.Framework.Localization.Json;
 using Forma.Framework.Markdown;
-using Forma.Framework.Media;
 using Forma.Framework.Office;
 using Forma.Framework.Resources;
-using Forma.Framework.Style.Css;
-using Forma.Framework.Style.Glyphs;
+using Forma.UI.Blazor.Globalization;
 using Forma.UI.Blazor.Showcase;
 using Forma.UI.Blazor.Showcase.Features.Upload;
-using Forma.UI.Globalization;
+using Forma.UI.Features.Feedback;
+using Forma.UI.Features.Indicators;
+using Forma.UI.Features.Media;
+using Forma.UI.Style.Css;
+using Forma.UI.Style.Glyphs;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddJsonLocalization();
@@ -57,6 +57,6 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<Forma.UI.Blazor.Showcase.Components.App>()
     .AddInteractiveServerRenderMode()
-    .AddAdditionalAssemblies(typeof(Forma.UI._Imports).Assembly);
+    .AddAdditionalAssemblies(typeof(Forma.UI.Blazor._Imports).Assembly);
 
 app.Run();

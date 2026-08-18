@@ -1,7 +1,7 @@
-namespace Forma.UI.Components.Gallery;
+namespace Forma.UI.Blazor.Components.Gallery;
 
 using Forma.Framework.Resources;
-using Forma.Framework.Style.Glyphs;
+using Forma.UI.Style.Glyphs;
 
 /// <summary>One operation a gallery offers on a single media resource.</summary>
 public sealed record GalleryAction

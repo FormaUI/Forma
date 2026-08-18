@@ -17,8 +17,8 @@
         <ProjectReference Include="..\Forma.UI.Blazor\Forma.UI.Blazor.csproj" />
         <ProjectReference Include="..\Forma.Framework.Office\Forma.Framework.Office.csproj" />
         <ProjectReference Include="..\Forma.Framework.Markdown\Forma.Framework.Markdown.csproj" />
-        <ProjectReference Include="..\Forma.Framework.Core\Forma.Framework.Core.csproj" />
-        <ProjectReference Include="..\Forma.Framework.Style\Forma.Framework.Style.csproj" />
+        <ProjectReference Include="..\Forma.UI.Features\Forma.UI.Features.csproj" />
+        <ProjectReference Include="..\Forma.UI.Style\Forma.UI.Style.csproj" />
         <ProjectReference Include="..\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
         <ProjectReference Include="..\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
         <ProjectReference Include="..\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />

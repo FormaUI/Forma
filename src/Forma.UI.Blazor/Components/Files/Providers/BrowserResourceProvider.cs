@@ -1,9 +1,9 @@
-namespace Forma.UI.Components.Files.Providers;
+namespace Forma.UI.Blazor.Components.Files.Providers;
 
 using System.Diagnostics.CodeAnalysis;
 
 using Forma.Framework.Resources;
-using Forma.UI.Components.Files;
+using Forma.UI.Blazor.Components.Files;
 
 /// <summary>Resolves the addresses a browser can render unaided, by the media type their extension implies.</summary>
 [SuppressMessage("Design", "CA1054:URI parameters should not be strings")]

@@ -1,4 +1,4 @@
-namespace Forma.UI.Components.Files;
+namespace Forma.UI.Blazor.Components.Files;
 
 /// <summary>Counts the bytes read through an inner stream, reporting the running total.</summary>
 internal sealed class UploadFileStream(Stream inner, Action<long> onProgress) : Stream

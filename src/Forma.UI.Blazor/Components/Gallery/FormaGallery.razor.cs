@@ -1,11 +1,11 @@
-namespace Forma.UI.Components.Gallery;
+namespace Forma.UI.Blazor.Components.Gallery;
 
 using System.Globalization;
 
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
-using Forma.Framework.Style.Glyphs;
-using Forma.UI.Components.Feedback;
+using Forma.UI.Blazor.Components.Feedback;
+using Forma.UI.Style.Glyphs;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;

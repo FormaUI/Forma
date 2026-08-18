@@ -1,9 +1,9 @@
-namespace Forma.UI.Components.Media.Providers;
+namespace Forma.UI.Blazor.Components.Media.Providers;
 
 using System.Text.RegularExpressions;
 
-using Forma.Framework.Media;
-using Forma.UI.Components.Media;
+using Forma.UI.Blazor.Components.Media;
+using Forma.UI.Features.Media;
 
 /// <summary>Embeds a Vimeo video from its watch or player address.</summary>
 internal sealed partial class VimeoPlayerProvider : IPlayerProvider

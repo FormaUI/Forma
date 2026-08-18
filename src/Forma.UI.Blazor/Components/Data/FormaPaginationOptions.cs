@@ -1,4 +1,4 @@
-namespace Forma.UI.Components.Data;
+namespace Forma.UI.Blazor.Components.Data;
 
 /// <summary>Which parts of a <see cref="FormaPagination"/> are shown.</summary>
 public sealed record FormaPaginationOptions

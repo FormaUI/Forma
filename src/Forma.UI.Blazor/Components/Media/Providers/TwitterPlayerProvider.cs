@@ -1,10 +1,10 @@
-namespace Forma.UI.Components.Media.Providers;
+namespace Forma.UI.Blazor.Components.Media.Providers;
 
 using System.Net;
 using System.Text.RegularExpressions;
 
-using Forma.Framework.Media;
-using Forma.UI.Components.Media;
+using Forma.UI.Blazor.Components.Media;
+using Forma.UI.Features.Media;
 
 /// <summary>Embeds a post on X through the service's own widget script.</summary>
 internal sealed partial class TwitterPlayerProvider : IPlayerProvider

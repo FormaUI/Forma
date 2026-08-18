@@ -3,7 +3,7 @@ namespace Forma.UI.Blazor.Showcase.Components.Pages.Data;
 using System.ComponentModel.DataAnnotations;
 
 using Forma.Framework.Localization;
-using Forma.UI.Components.Data;
+using Forma.UI.Blazor.Components.Data;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;

@@ -1,4 +1,4 @@
-namespace Forma.UI.Components.Gallery;
+namespace Forma.UI.Blazor.Components.Gallery;
 
 /// <summary>Which operations a <see cref="FormaGallery"/> offers on the media and folders it lists.</summary>
 public sealed record FormaGalleryFileOptions

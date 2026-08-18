@@ -1,4 +1,4 @@
-namespace Forma.UI.Components.Files;
+namespace Forma.UI.Blazor.Components.Files;
 
 /// <summary>Why <see cref="FormaFilePicker"/> declined a file.</summary>
 public enum FileRejectionReason

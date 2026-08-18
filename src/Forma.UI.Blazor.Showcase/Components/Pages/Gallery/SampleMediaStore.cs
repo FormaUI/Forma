@@ -1,7 +1,7 @@
 namespace Forma.UI.Blazor.Showcase.Components.Pages.Gallery;
 
 using Forma.Framework.Resources;
-using Forma.UI.Components.Gallery;
+using Forma.UI.Blazor.Components.Gallery;
 
 /// <summary>An in-memory store standing in for one the gallery would reach over IO.</summary>
 public sealed class SampleMediaStore(IReadOnlyList<SampleResource> resources, TimeSpan latency)

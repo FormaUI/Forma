@@ -1,7 +1,7 @@
 namespace Forma.UI.Blazor.Tests.Components.Gallery;
 
 using Forma.Framework.Resources;
-using Forma.UI.Components.Gallery;
+using Forma.UI.Blazor.Components.Gallery;
 
 /// <summary>An in-memory provider that records the queries it was asked, for tests about what a gallery fetches.</summary>
 public sealed class FakeGalleryResourcesProvider(IReadOnlyList<ResourceInfo> resources) : IGalleryResourcesProvider

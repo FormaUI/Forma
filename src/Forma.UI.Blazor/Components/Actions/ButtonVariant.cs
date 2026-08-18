@@ -1,4 +1,4 @@
-namespace Forma.UI.Components.Actions;
+namespace Forma.UI.Blazor.Components.Actions;
 
 /// <summary>The visual weight a button carries relative to the others around it.</summary>
 public enum ButtonVariant

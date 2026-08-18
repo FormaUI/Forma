@@ -20,8 +20,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Forma.UI.Blazor\Forma.UI.Blazor.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Framework.Core\Forma.Framework.Core.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Framework.Style\Forma.Framework.Style.csproj" />
+        <ProjectReference Include="..\..\src\Forma.UI.Features\Forma.UI.Features.csproj" />
+        <ProjectReference Include="..\..\src\Forma.UI.Style\Forma.UI.Style.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />
         <ProjectReference Include="..\Forma.Tests.Support\Forma.Tests.Support.csproj" />

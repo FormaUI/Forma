@@ -1,4 +1,4 @@
-namespace Forma.UI.Components.Data;
+namespace Forma.UI.Blazor.Components.Data;
 
 /// <summary>Details of a selection attempt blocked by a <see cref="FormaDataGrid{TGridItem}"/> selection bound.</summary>
 public sealed record SelectionRejected

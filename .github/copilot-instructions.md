@@ -37,32 +37,33 @@ Coi's boxy gradient toggle becoming a token-driven iOS-style `FormaToggleSwitch`
 
 | Project | Kind | May reference |
 |---------|------|---------------|
-| `src/Forma.Framework.Style` | Class library | Nothing — presentation vocabulary such as `CssColor` in `Css/` and `Glyph` in `Glyphs/` |
+| `src/Forma.UI.Style` | Class library | Nothing — presentation vocabulary such as `CssColor` in `Css/` and `Glyph` in `Glyphs/` |
 | `src/Forma.Framework.Resources` | Class library | Nothing — resource contracts and value types such as `IResourceProvider` and `ResourceInfo` |
 | `src/Forma.Framework.Localization` | Class library | Nothing — JSON-backed `IStringLocalizer` |
-| `src/Forma.Framework` | Class library | `Forma.Framework.Style` — contracts, messages, enums |
-| `src/Forma.Framework.Core` | Class library | `Forma.Framework` — implementations |
+| `src/Forma.UI.Features.Abstractions` | Class library | `Forma.UI.Style` — contracts, messages, enums |
+| `src/Forma.UI.Features` | Class library | `Forma.UI.Features.Abstractions` — implementations |
 | `src/Forma.Framework.Markdown` | Class library | `Forma.Framework.Resources` — Markdown conversion |
 | `src/Forma.Framework.Office` | Class library | `Forma.Framework.Resources` — Word, workbook, and presentation conversion |
-| `src/Forma.UI.Blazor` | Razor Class Library | `Forma.Framework`, `Forma.Framework.Style`, `Forma.Framework.Resources` — packaged components |
-| `src/Forma.UI.Blazor.Showcase` | Web app | `Forma.UI.Blazor`, `Forma.Framework.Core`, `Forma.Framework.Style`, `Forma.Framework.Resources`, `Forma.Framework.Office`, `Forma.Framework.Markdown`, `Forma.Framework.Localization` — reference host and gallery |
+| `src/Forma.UI.Blazor` | Razor Class Library | `Forma.UI.Features.Abstractions`, `Forma.UI.Style`, `Forma.Framework.Resources` — packaged components |
+| `src/Forma.UI.Blazor.Showcase` | Web app | `Forma.UI.Blazor`, `Forma.UI.Features`, `Forma.UI.Style`, `Forma.Framework.Resources`, `Forma.Framework.Office`, `Forma.Framework.Markdown`, `Forma.Framework.Localization` — reference host and gallery |
 | `tests/{Assembly}.Tests` | Test project | The one assembly it is named after, plus what its tests use directly |
 | `tests/Forma.Tests.Support` | Class library | Shared test fakes, fixtures, and utilities in the `Forma.Tests.*` namespaces |
 
-- Do put a type in `Forma.Framework.Style` or `Forma.Framework.Resources` when it is a horizontal concern no single vertical feature owns and a non-UI consumer needs it without pulling in `Forma.Framework`'s feature slices — `Forma.Framework.Office` depends on `Forma.Framework.Resources` alone, never on `Forma.Framework`.
-- Do decide by ownership, not by how many assemblies consume it: a contract a single feature owns stays with that feature in `Forma.Framework` no matter how many projects reference it, such as `IToastService` in `Feedback`.
-- Do keep a horizontal concern's folder and namespace in step, so `Forma.Framework.Style/Css/` holds `Forma.Framework.Style.Css` and `Forma.Framework.Style/Glyphs/` holds `Forma.Framework.Style.Glyphs`, and a type's namespace names the folder its file sits in.
+- Do split the family by audience: `Forma.UI.*` is one product serving the component library, while each `Forma.Framework.*` assembly stands alone — `Forma.Framework.Office` depends on `Forma.Framework.Resources` alone, never on anything in `Forma.UI`.
+- Do put a horizontal concern no single vertical feature owns into `Forma.UI.Style` when only the UI needs it, and into `Forma.Framework.Resources` when a consumer outside the UI needs it too.
+- Do decide by ownership, not by how many assemblies consume it: a contract a single feature owns stays with that feature in `Forma.UI.Features.Abstractions` no matter how many projects reference it, such as `IToastService` in `Feedback`.
+- Do keep a folder and its namespace in step, so `Forma.UI.Style/Css/` holds `Forma.UI.Style.Css` and `Forma.UI.Features.Abstractions/Feedback/` holds `Forma.UI.Features.Feedback` — the namespace is the product root plus the folder path, with the `.Abstractions` suffix dropped.
 
 - Do make components depend on abstractions such as `IToastService`; let the host choose implementations through DI.
 - Do represent colours and other CSS values with typed values such as `CssColor.FromRgba(...)` and `CssColor.FromHex(...)`.
-- Do share the `Forma.Framework` namespace across `Forma.Framework` and `Forma.Framework.Core` — the assembly name carries the split, not the namespace (matches `Microsoft.Extensions.DependencyInjection` / `.Abstractions`).
-- Do use the `Forma.UI` namespace for `Forma.UI.Blazor`, keeping `Forma.UI` free as the root for any future renderer.
-- Do keep these identities distinct: assembly `Forma.UI.Blazor`, namespace `Forma.UI`, package ID `2Site.Forma.UI.Blazor`, static asset base path `_content/Forma.UI`.
+- Do share the `Forma.UI.Features` namespace across `Forma.UI.Features` and `Forma.UI.Features.Abstractions` — the assembly name carries the split, not the namespace (matches `Microsoft.Extensions.DependencyInjection` / `.Abstractions`).
+- Do give every project outside such a pair a namespace equal to its assembly name, so `Forma.UI.Blazor` holds `Forma.UI.Blazor.*` and `Forma.UI.Style` holds `Forma.UI.Style.*`.
+- Do keep these identities distinct: assembly and namespace `Forma.UI.Blazor`, package ID `2Site.Forma.UI.Blazor`, static asset base path `_content/Forma.UI`.
 - Do keep `Forma.UI.Blazor` the only packable project; every other project sets `IsPackable=false`, and the ones it references ship inside its package through `PrivateAssets="all"`.
-- Don't reference `Forma.Framework.Core` from `Forma.UI.Blazor`.
+- Don't reference `Forma.UI.Features` from `Forma.UI.Blazor`; it takes `Forma.UI.Features.Abstractions`, and the two names differ only by suffix so the reference is easy to get wrong.
 - Don't represent typed CSS values as arbitrary strings.
 - Don't give any other project a `PackageId`, and don't set `AssemblyName` where it would only repeat the project name.
-- Don't rename or conflate these identities; `_content/Forma.UI` is pinned and hardcoded by markup and JS.
+- Don't rename or conflate these identities; `_content/Forma.UI` is pinned and hardcoded by markup and JS, and deliberately does not track the namespace.
 
 ## Dependencies
 
@@ -135,7 +136,7 @@ Components/{Category}/
 - Do generate element IDs as `$"prefix-{Guid.NewGuid():N}"` so multiple instances can coexist.
 - Don't place component logic in markup.
 - Don't use `.ConfigureAwait(false)` in `Forma.UI.Blazor` components; leaving the synchronization context means state touched after an await has to be marshalled back through `InvokeAsync`. `src/Forma.UI.Blazor/.editorconfig` sets `CA2007` to `none`, so nothing will flag it for you.
-- Don't omit `.ConfigureAwait(false)` from awaited service code in `Forma.Framework.Core`, which runs off the renderer and where the root `.editorconfig` sets `CA2007` to `error`.
+- Don't omit `.ConfigureAwait(false)` from awaited service code in `Forma.UI.Features`, which runs off the renderer and where the root `.editorconfig` sets `CA2007` to `error`.
 
 ## Options records
 
@@ -325,9 +326,9 @@ Every component must behave and look the same in both directions—mirrored, not
 
 ## Services
 
-- Do place contracts in `Forma.Framework/{Category}/IXService.cs`.
+- Do place contracts in `Forma.UI.Features.Abstractions/{Category}/IXService.cs`.
 - Do extend `INotifyStateChanged` when a component must rerender after service state changes.
-- Do place sealed implementations in `Forma.Framework.Core/{Category}/XService.cs`.
+- Do place sealed implementations in `Forma.UI.Features/{Category}/XService.cs`.
 - Do compose `StateNotifier` for `Func<Task>` subscribers, validate arguments, and put an optional `CancellationToken` last.
 - Do subscribe from the component in `OnInitialized` and unsubscribe in `Dispose`.
 - Do let the host register services explicitly, such as `AddScoped<IXService, XService>()`.
@@ -336,7 +337,7 @@ Every component must behave and look the same in both directions—mirrored, not
 
 ## Tests (bUnit + xUnit v3)
 
-Every production assembly has exactly one test project named after it, so `Forma.Framework.Style` is tested by `tests/Forma.Framework.Style.Tests` and never from another project. Mirror source paths within it, so component tests live under `tests/Forma.UI.Blazor.Tests/Components/{Category}/` with `FormaXTests.razor` and `FormaXTests.razor.cs`.
+Every production assembly has exactly one test project named after it, so `Forma.UI.Style` is tested by `tests/Forma.UI.Style.Tests` and never from another project. An `.Abstractions` assembly is the exception: it shares its sibling's namespace, so it shares its sibling's test project too — `Forma.UI.Features.Abstractions` is tested from `tests/Forma.UI.Features.Tests`. Mirror source paths within it, so component tests live under `tests/Forma.UI.Blazor.Tests/Components/{Category}/` with `FormaXTests.razor` and `FormaXTests.razor.cs`.
 
 - Do keep `.razor.cs` to `public sealed partial class FormaXTests;`.
 - Do start `.razor` with `@inherits BunitContext` and place `[Fact]` methods in a nested `public sealed class Component`.
@@ -349,7 +350,7 @@ Every production assembly has exactly one test project named after it, so `Forma
 - Do put every test fake, fixture, and utility in `tests/Forma.Tests.Support`, in a folder mirroring the production area it serves such as `Resources/`, `Media/`, and `Office/`, and put what no single area owns in `Shared/`.
 - Do let the namespace follow that folder, so `Forma.Tests.Resources` and `Forma.Tests.Shared`, and reference the project from each test project that uses one.
 - Do test only the public surface and keep shared usings in `_Imports.cs` or `_Imports.razor`.
-- Don't test a type from a project other than the one named after its assembly.
+- Don't test a type from a project other than the one named after its assembly, or — for an `.Abstractions` assembly — the one named after its sibling.
 - Don't couple tests to implementation details or private fields.
 - Don't give a test project its own `Support/` folder or its own copy of a support type.
 

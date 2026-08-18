@@ -1,6 +1,6 @@
-namespace Forma.UI.Components.Feedback;
+namespace Forma.UI.Blazor.Components.Feedback;
 
-using Forma.Framework.Feedback;
+using Forma.UI.Features.Feedback;
 
 using Microsoft.AspNetCore.Components;
 

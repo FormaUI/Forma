@@ -1,11 +1,11 @@
-namespace Forma.UI.Components.Files;
+namespace Forma.UI.Blazor.Components.Files;
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
-using Forma.Framework.Style.Glyphs;
+using Forma.UI.Style.Glyphs;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;

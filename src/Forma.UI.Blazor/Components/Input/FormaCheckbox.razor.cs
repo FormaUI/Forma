@@ -1,6 +1,6 @@
-namespace Forma.UI.Components.Input;
+namespace Forma.UI.Blazor.Components.Input;
 
-using Forma.UI.Interop;
+using Forma.UI.Blazor.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;

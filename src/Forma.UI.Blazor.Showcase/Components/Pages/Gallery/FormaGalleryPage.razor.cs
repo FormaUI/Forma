@@ -2,7 +2,7 @@ namespace Forma.UI.Blazor.Showcase.Components.Pages.Gallery;
 
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
-using Forma.UI.Components.Gallery;
+using Forma.UI.Blazor.Components.Gallery;
 
 using Microsoft.AspNetCore.Components;
 

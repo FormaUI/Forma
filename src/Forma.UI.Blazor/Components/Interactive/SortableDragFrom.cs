@@ -1,4 +1,4 @@
-namespace Forma.UI.Components.Interactive;
+namespace Forma.UI.Blazor.Components.Interactive;
 
 /// <summary>Where on a row a drag may start.</summary>
 public enum SortableDragFrom

@@ -1,7 +1,7 @@
 namespace Forma.UI.Blazor.Tests.Globalization;
 
 using Forma.Tests.Shared;
-using Forma.UI.Globalization;
+using Forma.UI.Blazor.Globalization;
 
 public sealed class CultureRouterTests
 {

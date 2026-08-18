@@ -1,9 +1,9 @@
-namespace Forma.UI.Components.Media;
+namespace Forma.UI.Blazor.Components.Media;
 
 using Forma.Framework.Localization;
-using Forma.Framework.Media;
-using Forma.UI.Components.Media.Providers;
-using Forma.UI.Interop;
+using Forma.UI.Blazor.Components.Media.Providers;
+using Forma.UI.Blazor.Interop;
+using Forma.UI.Features.Media;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;

@@ -1,4 +1,4 @@
-namespace Forma.UI.Components.Input;
+namespace Forma.UI.Blazor.Components.Input;
 
 using System.Diagnostics.CodeAnalysis;
 

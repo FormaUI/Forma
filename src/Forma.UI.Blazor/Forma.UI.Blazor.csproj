@@ -5,7 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
-        <RootNamespace>Forma.UI</RootNamespace>
+        <RootNamespace>Forma.UI.Blazor</RootNamespace>
         <PackageId>2Site.Forma.UI.Blazor</PackageId>
         <StaticWebAssetBasePath>_content/Forma.UI</StaticWebAssetBasePath>
         <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeReferencedProjectsInPackage</TargetsForTfmSpecificBuildOutput>
@@ -27,8 +27,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Forma.Framework\Forma.Framework.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework.Style\Forma.Framework.Style.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.UI.Features.Abstractions\Forma.UI.Features.Abstractions.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.UI.Style\Forma.UI.Style.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Localization.Abstractions\Forma.Framework.Localization.Abstractions.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Resources\Forma.Framework.Resources.csproj" PrivateAssets="all" />
     </ItemGroup>
