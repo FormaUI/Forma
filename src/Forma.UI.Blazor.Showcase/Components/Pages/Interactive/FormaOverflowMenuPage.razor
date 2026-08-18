@@ -1,0 +1,60 @@
+@page "/overflow-menu"
+@attribute [ShowcasePage("FormaOverflowMenu")]
+@rendermode InteractiveServer
+@using Forma.UI.Components.Actions
+@using Forma.UI.Components.Interactive
+@inject IStringLocale<FormaOverflowMenuPage> L
+
+<h1>FormaOverflowMenu</h1>
+<p class="desc">@L["A dropdown menu preset with an ellipsis trigger button."]</p>
+
+<div class="demo-section">
+    <h2>@L["Horizontal (Toolbar)"]</h2>
+    <p class="desc">@L["A horizontal ellipsis (⋯) for toolbars and wider contexts."]</p>
+    <div class="demo-box">
+        <FormaOverflowMenu Label="@L["More options"]">
+            <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Print"].Value)">@L["Print"]</FormaDropDownMenuItem>
+            <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Export"].Value)">@L["Export"]</FormaDropDownMenuItem>
+            <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Share"].Value)">@L["Share"]</FormaDropDownMenuItem>
+        </FormaOverflowMenu>
+        <p class="demo-output">@L["Last action"]: <code>@(_lastAction ?? L["none yet"].Value)</code></p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Vertical (Row Actions)"]</h2>
+    <p class="desc">@L["A vertical ellipsis (⋮) for table rows and narrow columns."]</p>
+    <div class="demo-box">
+        <FormaOverflowMenu Label="@L["Row actions"]" Orientation="MenuOrientation.Vertical">
+            <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Edit"].Value)">@L["Edit"]</FormaDropDownMenuItem>
+            <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Duplicate"].Value)">@L["Duplicate"]</FormaDropDownMenuItem>
+            <FormaDropDownMenuDivider />
+            <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Delete"].Value)">@L["Delete"]</FormaDropDownMenuItem>
+        </FormaOverflowMenu>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Mini Size"]</h2>
+    <p class="desc">@L["Sized mini to fit alongside compact row controls."]</p>
+    <div class="demo-box">
+        <FormaOverflowMenu Label="@L["Compact actions"]" Size="ButtonSize.Mini" Orientation="MenuOrientation.Vertical">
+            <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Edit"].Value)">@L["Edit"]</FormaDropDownMenuItem>
+            <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Delete"].Value)">@L["Delete"]</FormaDropDownMenuItem>
+        </FormaOverflowMenu>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Disabled"]</h2>
+    <p class="desc">@L["The trigger button is disabled when the surrounding row or action is unavailable."]</p>
+    <div class="demo-box">
+        <FormaOverflowMenu Label="@L["Unavailable actions"]" Disabled="true">
+            <FormaDropDownMenuItem>@L["Edit"]</FormaDropDownMenuItem>
+        </FormaOverflowMenu>
+    </div>
+</div>
+
+@code {
+    private string? _lastAction;
+}
