@@ -6,7 +6,7 @@
   "A video": "סרטון",
   "Delegates to FormaVideoPlayer, loaded immediately rather than held behind its own play control — opening the viewer already is the reader's request to watch.": "מעביר את הטיפול ל-FormaVideoPlayer, נטען מיד ולא מוחזק מאחורי פקד נגינה משלו — פתיחת הצופה היא כבר בקשת הקורא לצפות.",
   "Audio": "שמע",
-  "A one-second tone generated for the gallery, played through the browser's own transport controls.": "צליל בן שנייה שנוצר עבור הגלריה, מתנגן דרך פקדי הנגינה של הדפדפן עצמו.",
+  "A one-second tone generated for these demos, played through the browser's own transport controls.": "צליל בן שנייה שנוצר עבור ההדגמות האלה, מתנגן דרך פקדי הנגינה של הדפדפן עצמו.",
   "A document the browser embeds": "מסמך שהדפדפן מטמיע",
   "A PDF goes to the browser's own object handling, with a link to open it in a new tab as fallback content.": "קובץ PDF עובר לטיפול ה-object של הדפדפן עצמו, עם קישור לפתיחה בכרטיסייה חדשה כתוכן חלופי.",
   "A page, sandboxed": "דף, בארגז חול",

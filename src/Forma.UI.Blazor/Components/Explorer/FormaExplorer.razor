@@ -1,0 +1,342 @@
+@namespace Forma.UI.Blazor.Components.Explorer
+@using Forma.UI.Blazor.Components.Actions
+@using Forma.UI.Blazor.Components.Data
+@using Forma.UI.Blazor.Components.Feedback
+@using Forma.UI.Blazor.Components.Files
+
+<CascadingValue Value="_context" IsFixed="false">
+<div class="forma-explorer @(Options.Resizable ? "is-resizable" : "") @(Options.AsDialog ? "is-dialog" : "")">
+    <!-- Top Explorer Address Bar -->
+    <FormaExplorerAddressBar Breadcrumbs="Breadcrumbs"
+                            CanGoBack="CanGoBack"
+                            CanGoForward="CanGoForward"
+                            CanGoUp="CanGoUp"
+                            CurrentFolder="CurrentFolder"
+                            Folders="Folders ?? []"
+                            ShowFolderMenu="Options.ShowFolderMenu"
+                            Placeholder="@SearchPlaceholder"
+                            SearchQuery="@_searchQuery"
+                            OnBack="HandleBackAsync"
+                            OnForward="HandleForwardAsync"
+                            OnUp="HandleUpAsync"
+                            OnRefresh="HandleRefreshAsync"
+                            OnFolderSelected="HandleFolderSelectedAsync"
+                            OnBreadcrumbDrop="HandleDropOnFolderAsync"
+                            OnSearchQueryChanged="HandleSearchQueryChangedAsync" />
+
+    <!-- Action & View Toolbar -->
+    <FormaExplorerToolbar IsSelectMode="_context.Selection.IsSelectMode"
+                         FileOptions="FileOptions"
+                         SelectedCount="_context.Selection.Count"
+                         SortDirection="_sortDirection"
+                         SortField="_sortField"
+                         ViewMode="_viewMode"
+                         OnClearSelection="ClearSelectionAsync"
+                         OnDelete="() => OpenDeleteDialog()"
+                         OnFolderCreate="() => OpenFolderDialogAsync(CurrentFolder)"
+                         ShowNewFolder="@(!ShowsSidebar)"
+                         OnSortDirectionChanged="HandleSortDirectionChangedAsync"
+                         OnSortFieldChanged="HandleSortFieldChangedAsync"
+                         OnToggleUpload="ToggleUpload"
+                         OnToggleSelectMode="ToggleSelectModeAsync"
+                         OnViewModeChanged="HandleViewModeChangedAsync" />
+
+    <!-- Refusal notice; the region stays in the DOM so a message inserted into it is announced -->
+    <div class="forma-explorer-rejection-region" role="alert">
+        @if (_rejectionMessage is { Length: > 0 } rejection)
+        {
+            <div class="forma-explorer-rejection">
+                <span class="forma-explorer-rejection-icon" aria-hidden="true"><FormaGlyph Name="Glyph.CircleExclamation" /></span>
+                <span class="forma-explorer-rejection-text">@rejection</span>
+                <FormaCloseButton Label="@L["Dismiss"]" OnClick="() => _rejectionMessage = null" />
+            </div>
+        }
+    </div>
+
+    <!-- Collapsible Upload Intake Panel -->
+    @if (_isUploadOpen)
+    {
+        <div class="forma-explorer-upload-panel">
+            <div class="forma-explorer-upload-header">
+                <h4 class="forma-explorer-upload-title">@L["Upload Media"]</h4>
+                <FormaCloseButton Label="@L["Close Upload"]" OnClick="CloseUpload" />
+            </div>
+            <FormaFilePicker Accept="image/*,video/*,audio/*"
+                             OnFilesSelected="HandleUploadFilesPickedAsync" />
+            @if (_pickedUploadFiles is { Count: > 0 })
+            {
+                <FormaFileUploader Files="_pickedUploadFiles"
+                                   Store="Store"
+                                   OnCompleted="HandleUploadCompletedAsync" />
+            }
+        </div>
+    }
+
+    <!-- Main Layout: Sidebar & Content -->
+    <div class="forma-explorer-body @(_isResizingSidebar ? "is-resizing" : "")" style="@SidebarSizeStyle">
+        @if (ShowsSidebar)
+        {
+            <FormaExplorerSidebar CurrentFolder="CurrentFolder"
+                                 FileOptions="FileOptions"
+                                 Folders="Folders"
+                                 TotalCount="TotalCount ?? Resources?.Count ?? MatchingCount ?? 0"
+                                 OnFolderDelete="OpenFolderDeleteDialog"
+                                 OnFolderDragStart="folder => _draggedFolder = folder"
+                                 OnFolderDrop="HandleDropOnFolderAsync"
+                                 OnFolderCreate="OpenFolderDialogAsync"
+                                 OnFolderRename="OpenFolderRenameDialog"
+                                 OnFolderSelected="HandleFolderSelectedAsync" />
+
+            <div class="forma-explorer-splitter @(_isResizingSidebar ? "is-resizing" : "")"
+                 @ref="_splitterElement"
+                 role="separator"
+                 aria-orientation="vertical"
+                 aria-label="@L["Resize Folders Panel"]"
+                 aria-valuemin="@MinSidebarWidth"
+                 aria-valuemax="@MaxSidebarWidth"
+                 aria-valuenow="@((int)Math.Round(_sidebarWidth))"
+                 tabindex="0"
+                 @onpointerdown="HandleSplitterPointerDownAsync"
+                 @onpointermove="HandleSplitterPointerMove"
+                 @onpointerup="HandleSplitterPointerUpAsync"
+                 @onpointercancel="HandleSplitterPointerUpAsync"
+                 @onkeydown="HandleSplitterKeyDown">
+                <span class="forma-explorer-splitter-grip" aria-hidden="true"></span>
+            </div>
+        }
+
+        <div class="forma-explorer-content">
+            <div class="forma-explorer-scroll @(_isQuerying ? "is-busy" : "")" id="@_scrollId" aria-busy="@(_isQuerying ? "true" : "false")">
+                @if (VisibleResources.Count == 0)
+                {
+                    <div class="forma-explorer-empty" role="status">
+                        <span class="forma-explorer-empty-icon" aria-hidden="true"><FormaGlyph Name="Glyph.Images" /></span>
+                        @if (_isQuerying)
+                        {
+                            <p>@L["Loading media"]</p>
+                        }
+                        else if (!string.IsNullOrWhiteSpace(_searchQuery))
+                        {
+                            <p>@L["No media matches \"{query}\"", ("query", _searchQuery)]</p>
+                        }
+                        else if (CurrentFolder is not null)
+                        {
+                            <p>@L["No media in this folder"]</p>
+                        }
+                        else
+                        {
+                            <p>@L["No media found"]</p>
+                        }
+                    </div>
+                }
+                else
+                {
+                    @if (_viewMode == ExplorerViewMode.Thumbnails)
+                    {
+                        <FormaExplorerThumbnailsView Resources="VisibleResources" />
+                    }
+                    else if (_viewMode == ExplorerViewMode.Details)
+                    {
+                        <FormaExplorerDetailsView Resources="VisibleResources" />
+                    }
+                    else
+                    {
+                        <FormaExplorerListView Resources="VisibleResources" />
+                    }
+                }
+
+                @if (IsInfiniteScrolling && HasMorePages)
+                {
+                    <div class="forma-explorer-scroll-sentinel" id="@_sentinelId">
+                        @if (Options.InfiniteScroll == ExplorerInfiniteScrollMode.Automatic)
+                        {
+                            @if (_isLoadingPage)
+                            {
+                                <span class="forma-explorer-spinner" aria-hidden="true"></span>
+                            }
+                        }
+                        else
+                        {
+                            <FormaButton Variant="ButtonVariant.Ghost" class="forma-explorer-load-more-btn" OnClick="LoadNextPageAsync">
+                                <span class="forma-explorer-load-more-icon" aria-hidden="true"><FormaGlyph Name="Glyph.ChevronDown" /></span>
+                                @L["Load More"]
+                            </FormaButton>
+                        }
+                    </div>
+                }
+            </div>
+
+            @if (IsInfiniteScrolling && VisibleResources.Count > 0)
+            {
+                <div class="forma-explorer-scroll-status" role="status">
+                    @if (MatchingCount is { } total)
+                    {
+                        @L["Showing {shown} of {total}", ("shown", VisibleResources.Count), ("total", total)]
+                    }
+                    else
+                    {
+                        @L["Showing {shown}", ("shown", VisibleResources.Count)]
+                    }
+                </div>
+            }
+
+            @if (MatchingCount is not null && PageCount > 1 && !IsInfiniteScrolling)
+            {
+                <div class="forma-explorer-pagination">
+                    <FormaPagination TotalItems="MatchingCount ?? 0"
+                                     PageSize="PageSize"
+                                     CurrentPage="EffectivePage"
+                                     OnPageChanged="HandlePageChangedAsync" />
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Preview Lightbox Modal -->
+    @if (_previewResource is { } preview)
+    {
+        <FormaModal Opened="true"
+                    Size="ModalSize.ExtraLarge"
+                    Title="@preview.Name"
+                    Options="DialogModalOptions"
+                    OnClose="ClosePreview">
+            <Body>
+                <FormaFileViewer Source="@preview.Source"
+                                 Siblings="_previewSiblings"
+                                 OnNavigate="HandlePreviewNavigate" />
+            </Body>
+        </FormaModal>
+    }
+
+    <!-- Rename Media Modal -->
+    @if (_renamingResource is not null)
+    {
+        <FormaModal Opened="@(_renamingResource is not null)"
+                    Size="ModalSize.Small"
+                    Title="@L["Rename Media"]"
+                    Options="DialogModalOptions"
+                    OnClose="CloseRenameDialog">
+            <Body>
+                <div class="forma-explorer-dialog-field">
+                    <label class="forma-explorer-dialog-label" for="forma-explorer-rename-input">@L["New Name"]</label>
+                    <input id="forma-explorer-rename-input"
+                           class="forma-explorer-dialog-input"
+                           type="text"
+                           value="@_renameNewName"
+                           @oninput="e => _renameNewName = e.Value?.ToString() ?? string.Empty" />
+                </div>
+            </Body>
+            <Footer>
+                <FormaButton Variant="ButtonVariant.Secondary" OnClick="CloseRenameDialog">
+                    @L["Cancel"]
+                </FormaButton>
+                <FormaButton Variant="ButtonVariant.Primary" OnClick="HandleRenameConfirmedAsync">
+                    @L["Save"]
+                </FormaButton>
+            </Footer>
+        </FormaModal>
+    }
+
+    <!-- Delete Media Modal -->
+    @if (_deletingResources is not null)
+    {
+        <FormaModal Opened="@(_deletingResources is not null)"
+                    Size="ModalSize.Small"
+                    Title="@L["Delete Media"]"
+                    Options="DialogModalOptions"
+                    OnClose="CloseDeleteDialog">
+            <Body>
+                <p class="forma-explorer-delete-message">@DeleteConfirmMessage</p>
+            </Body>
+            <Footer>
+                <FormaButton Variant="ButtonVariant.Secondary" OnClick="CloseDeleteDialog">
+                    @L["Cancel"]
+                </FormaButton>
+                <FormaButton Variant="ButtonVariant.Danger" OnClick="HandleDeleteConfirmedAsync">
+                    @L["Delete"]
+                </FormaButton>
+            </Footer>
+        </FormaModal>
+    }
+
+    <!-- Create Folder Modal -->
+    @if (_isNewFolderOpen)
+    {
+        <FormaModal Opened="_isNewFolderOpen"
+                    Size="ModalSize.Small"
+                    Title="@L["New Folder"]"
+                    Options="DialogModalOptions"
+                    OnClose="CloseFolderDialog">
+            <Body>
+                <div class="forma-explorer-dialog-field">
+                    <label class="forma-explorer-dialog-label" for="forma-explorer-folder-input">@L["Folder Name"]</label>
+                    <input id="forma-explorer-folder-input"
+                           class="forma-explorer-dialog-input"
+                           type="text"
+                           value="@_newFolderName"
+                           @oninput="e => _newFolderName = e.Value?.ToString() ?? string.Empty" />
+                </div>
+            </Body>
+            <Footer>
+                <FormaButton Variant="ButtonVariant.Secondary" OnClick="CloseFolderDialog">
+                    @L["Cancel"]
+                </FormaButton>
+                <FormaButton Variant="ButtonVariant.Primary" OnClick="HandleCreateFolderAsync">
+                    @L["Create"]
+                </FormaButton>
+            </Footer>
+        </FormaModal>
+    }
+
+    <!-- Rename Folder Modal -->
+    @if (_renamingFolder is not null)
+    {
+        <FormaModal Opened="@(_renamingFolder is not null)"
+                    Size="ModalSize.Small"
+                    Title="@L["Rename Folder"]"
+                    Options="DialogModalOptions"
+                    OnClose="CloseFolderRenameDialog">
+            <Body>
+                <div class="forma-explorer-dialog-field">
+                    <label class="forma-explorer-dialog-label" for="forma-explorer-rename-folder-input">@L["Folder Name"]</label>
+                    <input id="forma-explorer-rename-folder-input"
+                           class="forma-explorer-dialog-input"
+                           type="text"
+                           value="@_renameFolderName"
+                           @oninput="e => _renameFolderName = e.Value?.ToString() ?? string.Empty" />
+                </div>
+            </Body>
+            <Footer>
+                <FormaButton Variant="ButtonVariant.Secondary" OnClick="CloseFolderRenameDialog">
+                    @L["Cancel"]
+                </FormaButton>
+                <FormaButton Variant="ButtonVariant.Primary" OnClick="HandleFolderRenameConfirmedAsync">
+                    @L["Save"]
+                </FormaButton>
+            </Footer>
+        </FormaModal>
+    }
+
+    <!-- Delete Folder Modal -->
+    @if (_deletingFolders is { Count: > 0 })
+    {
+        <FormaModal Opened="@(_deletingFolders is { Count: > 0 })"
+                    Size="ModalSize.Small"
+                    Title="@L["Delete Folder"]"
+                    Options="DialogModalOptions"
+                    OnClose="CloseFolderDeleteDialog">
+            <Body>
+                <p class="forma-explorer-delete-message">@FolderDeleteConfirmMessage</p>
+            </Body>
+            <Footer>
+                <FormaButton Variant="ButtonVariant.Secondary" OnClick="CloseFolderDeleteDialog">
+                    @L["Cancel"]
+                </FormaButton>
+                <FormaButton Variant="ButtonVariant.Danger" OnClick="HandleFolderDeleteConfirmedAsync">
+                    @L["Delete"]
+                </FormaButton>
+            </Footer>
+        </FormaModal>
+    }
+</div>
+</CascadingValue>

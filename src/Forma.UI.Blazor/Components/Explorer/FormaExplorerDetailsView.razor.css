@@ -1,0 +1,151 @@
+/* ============================================================
+   FormaExplorerDetailsView — CSS isolation
+   Tabular data grid with sortable columns and item operations
+   ============================================================ */
+
+.forma-explorer-details-wrap {
+    inline-size: 100%;
+    overflow-x: auto;
+    scrollbar-width: thin;
+}
+
+.forma-explorer-details-table {
+    min-inline-size: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    text-align: start;
+}
+
+.forma-explorer-details-table th,
+.forma-explorer-details-table td {
+    padding-inline: 0.75rem;
+    padding-block: 0.5rem;
+    border-block-end: 1px solid var(--light-border-color);
+    white-space: nowrap;
+}
+
+.forma-explorer-details-table th {
+    font-weight: 600;
+    color: var(--text-color);
+    background: var(--hover-bg-color);
+    white-space: nowrap;
+    user-select: none;
+    cursor: pointer;
+}
+
+.forma-explorer-col-name {
+    min-inline-size: 12rem;
+}
+
+.forma-explorer-cell-name {
+    max-inline-size: 0;
+}
+
+.forma-explorer-col-kind {
+    inline-size: 6rem;
+}
+
+.forma-explorer-col-size {
+    inline-size: 5.5rem;
+}
+
+.forma-explorer-col-modified,
+.forma-explorer-col-added {
+    inline-size: 9.5rem;
+}
+
+.forma-explorer-col-actions {
+    inline-size: 2.5rem;
+    text-align: start;
+    cursor: default !important;
+}
+
+.forma-explorer-sr-only {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+.forma-explorer-sort-arrow {
+    font-size: 0.75rem;
+    margin-inline-start: 0.35rem;
+    color: var(--main-color);
+}
+
+.forma-explorer-details-row {
+    cursor: grab;
+    transition: background-color 0.15s ease;
+}
+
+.forma-explorer-details-row:active {
+    cursor: grabbing;
+}
+
+@media (hover: hover) {
+    .forma-explorer-details-row:hover {
+        background: var(--hover-bg-color);
+    }
+}
+
+.forma-explorer-details-row.is-selected {
+    background: color-mix(in srgb, var(--main-color) 12%, transparent);
+}
+
+.forma-explorer-table-select {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: var(--forma-explorer-check-size);
+    block-size: var(--forma-explorer-check-size);
+    min-inline-size: 24px;
+    min-block-size: 24px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    border: 1px solid var(--dark-border-color);
+    background: var(--input-bg-color);
+    color: transparent;
+    cursor: pointer;
+    font-size: var(--forma-explorer-check-glyph-size);
+    touch-action: manipulation;
+}
+
+.forma-explorer-table-select.is-checked {
+    background: var(--main-color);
+    border-color: var(--main-color);
+    color: var(--forma-explorer-check-fg-color);
+}
+
+.forma-explorer-name-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    inline-size: 100%;
+    min-block-size: 2.25rem;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.forma-explorer-details-name-text {
+    font-weight: 500;
+    color: var(--text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.forma-explorer-details-row.is-selected .forma-explorer-details-name-text {
+    color: var(--main-color);
+    font-weight: 700;
+}

@@ -1,0 +1,113 @@
+@namespace Forma.UI.Blazor.Components.Explorer
+
+<div class="forma-explorer-address-bar @(!string.IsNullOrEmpty(SearchQuery) ? "has-search-query" : "")">
+    <div class="forma-explorer-nav-buttons" role="group" aria-label="@L["Navigation"]">
+        <button type="button"
+                class="forma-explorer-nav-btn"
+                disabled="@(!CanGoBack)"
+                aria-label="@L["Back"]"
+                @onclick="OnBack">
+            <span class="forma-explorer-nav-arrow" aria-hidden="true"><FormaGlyph Name="Glyph.ArrowLeft" /></span>
+        </button>
+        <button type="button"
+                class="forma-explorer-nav-btn"
+                disabled="@(!CanGoForward)"
+                aria-label="@L["Forward"]"
+                @onclick="OnForward">
+            <span class="forma-explorer-nav-arrow" aria-hidden="true"><FormaGlyph Name="Glyph.ArrowRight" /></span>
+        </button>
+        <button type="button"
+                class="forma-explorer-nav-btn"
+                disabled="@(!CanGoUp)"
+                aria-label="@L["Up to Parent Folder"]"
+                @onclick="OnUp">
+            <FormaGlyph Name="Glyph.ArrowUp" />
+        </button>
+        <button type="button"
+                class="forma-explorer-nav-btn"
+                aria-label="@L["Refresh"]"
+                @onclick="OnRefresh">
+            <FormaGlyph Name="Glyph.RotateRight" />
+        </button>
+    </div>
+
+    <nav class="forma-explorer-breadcrumb-bar" aria-label="@L["Folder Path"]" @onkeydown="HandleMenuKeyDown">
+        <span class="forma-explorer-root-icon" aria-hidden="true"><FormaGlyph Name="Glyph.FolderOpen" /></span>
+
+        @for (var index = 0; index < Levels.Count; index++)
+        {
+            var level = Levels[index];
+            var isCurrent = CurrentFolder?.Source == level.Folder?.Source;
+            var isLast = index == Levels.Count - 1;
+            <button type="button"
+                    class="forma-explorer-breadcrumb-item @(isCurrent ? "is-current" : "")"
+                    dir="auto"
+                    @ondragover="HandleDragOver"
+                    @ondragover:preventDefault="true"
+                    @ondrop="() => HandleBreadcrumbDrop(level.Folder)"
+                    @onclick="() => OnFolderSelected.InvokeAsync(level.Folder)">
+                @level.Name
+            </button>
+
+            var children = ChildrenOf(level.Parent);
+
+            if (!ShowFolderMenu || children.Count == 0)
+            {
+                @if (!isLast)
+                {
+                    <span class="forma-explorer-breadcrumb-separator" aria-hidden="true"><FormaGlyph Name="Glyph.ChevronRight" /></span>
+                }
+            }
+            else
+            {
+                var isOpen = _openLevelKey == level.Key;
+
+                <span class="forma-explorer-breadcrumb-level">
+                    <button type="button"
+                            class="forma-explorer-breadcrumb-chevron @(isOpen ? "is-open" : "")"
+                            aria-haspopup="menu"
+                            aria-expanded="@(isOpen ? "true" : "false")"
+                            aria-label="@L["Folders in {name}", ("name", level.Name)]"
+                            @onclick="() => ToggleLevelMenu(level.Key)">
+                        <FormaGlyph Name="Glyph.ChevronRight" />
+                    </button>
+
+                    @if (isOpen)
+                    {
+                        <span class="forma-explorer-breadcrumb-backdrop" @onclick="CloseLevelMenu"></span>
+                        <span class="forma-explorer-breadcrumb-menu" role="menu">
+                            @foreach (var child in children)
+                            {
+                                <button type="button"
+                                        class="forma-explorer-breadcrumb-menu-item"
+                                        role="menuitem"
+                                        @onclick="() => SelectFromMenuAsync(child)">
+                                    <span class="forma-explorer-menu-icon" aria-hidden="true"><FormaGlyph Name="Glyph.Folder" /></span>
+                                    @child.Name
+                                </button>
+                            }
+                        </span>
+                    }
+                </span>
+            }
+        }
+    </nav>
+
+    <div class="forma-explorer-search-wrap">
+        <span class="forma-explorer-search-icon" aria-hidden="true"><FormaGlyph Name="Glyph.MagnifyingGlass" /></span>
+        <input class="forma-explorer-search-input"
+               type="search"
+               dir="auto"
+               value="@SearchQuery"
+               placeholder="@SearchPlaceholder"
+               aria-label="@SearchPlaceholder"
+               @oninput="HandleSearchInput" />
+        @if (!string.IsNullOrEmpty(SearchQuery))
+        {
+            <button type="button"
+                    class="forma-explorer-search-clear"
+                    aria-label="@L["Clear Search"]"
+                    @onclick="ClearSearch"><FormaGlyph Name="Glyph.Xmark" /></button>
+        }
+    </div>
+</div>

@@ -25,7 +25,7 @@
 
 <div class="demo-section">
     <h2>@L["Audio"]</h2>
-    <p class="desc">@L["A one-second tone generated for the gallery, played through the browser's own transport controls."]</p>
+    <p class="desc">@L["A one-second tone generated for these demos, played through the browser's own transport controls."]</p>
     <div class="demo-box">
         <FormaFileViewer Source="/media/sample.wav" />
     </div>
@@ -103,12 +103,12 @@
     <h2>@L["Browsing a set"]</h2>
     <p class="desc">@L["With Siblings supplied, the arrow keys and the on-screen controls step through the set — reversed under a right-to-left culture, since left and right then read as forward and back the other way."]</p>
     <div class="demo-box" style="block-size: 22rem;">
-        <FormaFileViewer Source="@_current" Siblings="_gallery" OnNavigate="HandleNavigate" ShowMetadata="true" />
+        <FormaFileViewer Source="@_current" Siblings="_siblings" OnNavigate="HandleNavigate" ShowMetadata="true" />
     </div>
 </div>
 
 @code {
-    private static readonly List<string> _gallery =
+    private static readonly List<string> _siblings =
     [
         "/media/sample-poster.svg",
         "/media/sample.mp4",
@@ -116,7 +116,7 @@
         "/media/archive.zip",
     ];
 
-    private string _current = _gallery[0];
+    private string _current = _siblings[0];
 
     private void HandleNavigate(string source)
         => _current = source;

@@ -6,7 +6,7 @@
   "A video": "Un video",
   "Delegates to FormaVideoPlayer, loaded immediately rather than held behind its own play control — opening the viewer already is the reader's request to watch.": "Delega en FormaVideoPlayer, cargado de inmediato en vez de retenido tras su propio control de reproducción: abrir el visor ya es la solicitud del lector de ver el video.",
   "Audio": "Audio",
-  "A one-second tone generated for the gallery, played through the browser's own transport controls.": "Un tono de un segundo generado para la galería, reproducido con los propios controles de reproducción del navegador.",
+  "A one-second tone generated for these demos, played through the browser's own transport controls.": "Un tono de un segundo generado para estas demostraciones, reproducido con los propios controles de reproducción del navegador.",
   "A document the browser embeds": "Un documento que el navegador incrusta",
   "A PDF goes to the browser's own object handling, with a link to open it in a new tab as fallback content.": "Un PDF pasa al propio manejo de object del navegador, con un enlace para abrirlo en una pestaña nueva como contenido de respaldo.",
   "A page, sandboxed": "Una página, en un espacio aislado",

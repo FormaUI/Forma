@@ -1,0 +1,298 @@
+/* ============================================================
+   FormaExplorerAddressBar — CSS isolation
+   Explorer-style navigation buttons, breadcrumb bar, and search
+   ============================================================ */
+
+.forma-explorer-address-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-block-end: 0.5rem;
+    border-block-end: 1px solid var(--border-color);
+}
+
+.forma-explorer-nav-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    flex-shrink: 0;
+}
+
+.forma-explorer-nav-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 2rem;
+    block-size: 2rem;
+    min-inline-size: 24px;
+    min-block-size: 24px;
+    border: 1px solid var(--light-border-color);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-color);
+    cursor: pointer;
+    font-size: 0.8rem;
+    touch-action: manipulation;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+@media (hover: hover) {
+    .forma-explorer-nav-btn:not(:disabled):hover {
+        background: var(--hover-bg-color);
+        border-color: var(--dark-border-color);
+    }
+}
+
+.forma-explorer-nav-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* An arrow glyph is not bidi-mirrored, so back and forward are turned to follow the reading direction. */
+.forma-explorer-nav-arrow:dir(rtl) {
+    rotate: 180deg;
+}
+
+.forma-explorer-breadcrumb-bar {
+    flex: 1;
+    min-inline-size: 0;
+    min-block-size: 2.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding-inline: 0.6rem;
+    border: 1px solid var(--light-border-color);
+    border-radius: 6px;
+    background: var(--input-bg-color);
+    transition: flex 0.25s ease, max-inline-size 0.25s ease, opacity 0.2s ease, padding 0.25s ease, border-color 0.2s ease;
+}
+
+.forma-explorer-root-icon {
+    font-size: 0.9rem;
+    color: var(--main-color);
+    flex-shrink: 0;
+}
+
+.forma-explorer-breadcrumb-item {
+    min-inline-size: 0;
+    border: none;
+    background: transparent;
+    color: var(--text-color);
+    font-size: 0.875rem;
+    padding-inline: 0.35rem;
+    padding-block: 0.2rem;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    touch-action: manipulation;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+@media (hover: hover) {
+    .forma-explorer-breadcrumb-item:hover {
+        background: var(--hover-bg-color);
+        color: var(--main-color);
+    }
+}
+
+.forma-explorer-breadcrumb-item.is-current {
+    font-weight: 600;
+}
+
+.forma-explorer-breadcrumb-separator {
+    font-size: 0.65rem;
+    color: var(--text-muted-color);
+    flex-shrink: 0;
+}
+
+/* A chevron glyph is not bidi-mirrored, so the arrows are turned to follow the reading direction. */
+.forma-explorer-breadcrumb-separator:dir(rtl) {
+    rotate: 180deg;
+}
+
+.forma-explorer-breadcrumb-level {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-inline-size: 0;
+}
+
+.forma-explorer-breadcrumb-chevron {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: 24px;
+    min-block-size: 24px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-muted-color);
+    font-size: 0.65rem;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: background-color 0.15s ease, color 0.15s ease, rotate 0.15s ease;
+}
+
+.forma-explorer-breadcrumb-chevron:dir(rtl) {
+    rotate: 180deg;
+}
+
+@media (hover: hover) {
+    .forma-explorer-breadcrumb-chevron:hover {
+        background: var(--hover-bg-color);
+        color: var(--main-color);
+    }
+}
+
+/* Down reads the same in both directions, so the open state is not mirrored. */
+.forma-explorer-breadcrumb-chevron.is-open {
+    color: var(--main-color);
+    rotate: 90deg;
+}
+
+.forma-explorer-breadcrumb-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+}
+
+.forma-explorer-breadcrumb-menu {
+    position: absolute;
+    inset-block-start: calc(100% + 0.25rem);
+    inset-inline-start: 0;
+    z-index: 21;
+    display: flex;
+    flex-direction: column;
+    min-inline-size: 10rem;
+    max-inline-size: calc(100vw - 1rem);
+    max-block-size: 16rem;
+    overflow-y: auto;
+    padding: 0.25rem;
+    border: 1px solid var(--light-border-color);
+    border-radius: 6px;
+    background: var(--input-bg-color);
+    box-shadow: 0 6px 16px rgb(0 0 0 / 15%);
+}
+
+.forma-explorer-breadcrumb-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-block-size: 2.25rem;
+    padding-inline: 0.5rem;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-color);
+    font-size: 0.875rem;
+    text-align: start;
+    white-space: nowrap;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+@media (hover: hover) {
+    .forma-explorer-breadcrumb-menu-item:hover {
+        background: var(--hover-bg-color);
+        color: var(--main-color);
+    }
+}
+
+.forma-explorer-menu-icon {
+    font-size: 0.85rem;
+    color: var(--main-color);
+    flex-shrink: 0;
+}
+
+@media (pointer: coarse) {
+    .forma-explorer-breadcrumb-chevron {
+        min-inline-size: 2.75rem;
+        min-block-size: 2.75rem;
+    }
+
+    .forma-explorer-breadcrumb-menu-item {
+        min-block-size: 2.75rem;
+    }
+}
+
+.forma-explorer-search-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    inline-size: 16rem;
+    min-inline-size: 10rem;
+    transition: flex 0.25s ease, inline-size 0.25s ease, max-inline-size 0.25s ease;
+}
+
+/* Searching expands the search box across the bar; only focus inside the search box counts, so navigating does not collapse the breadcrumb. */
+.forma-explorer-search-wrap:focus-within,
+.forma-explorer-address-bar.has-search-query .forma-explorer-search-wrap {
+    flex: 1;
+    inline-size: auto;
+    max-inline-size: 100%;
+}
+
+.forma-explorer-address-bar:has(.forma-explorer-search-wrap:focus-within) .forma-explorer-breadcrumb-bar,
+.forma-explorer-address-bar.has-search-query .forma-explorer-breadcrumb-bar {
+    flex: 0 0 0;
+    max-inline-size: 0;
+    padding-inline: 0;
+    border-color: transparent;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.forma-explorer-search-icon {
+    position: absolute;
+    inset-inline-start: 0.65rem;
+    font-size: 0.8rem;
+    color: var(--text-muted-color);
+    pointer-events: none;
+}
+
+/* Symmetric because the icon and clear button follow the wrapper's direction while the input follows what is typed. */
+.forma-explorer-search-input {
+    inline-size: 100%;
+    min-block-size: 2.25rem;
+    padding-inline: 2rem;
+    padding-block: 0.35rem;
+    border: 1px solid var(--light-border-color);
+    border-radius: 6px;
+    background: var(--input-bg-color);
+    color: var(--text-color);
+    font-size: 0.875rem;
+    transition: border-color 0.15s ease;
+}
+
+/* The placeholder is UI text, so an empty field follows the page; dir="auto" would fall back to ltr and strand an RTL placeholder.
+   unicode-bidi is reset too because dir="auto" maps to plaintext, which would otherwise keep deriving direction from content. */
+.forma-explorer-search-input:placeholder-shown {
+    direction: inherit;
+    unicode-bidi: normal;
+}
+
+.forma-explorer-search-input:focus-visible {
+    border-color: var(--focus-color);
+    outline: 2px solid var(--focus-color);
+    outline-offset: 1px;
+}
+
+/* WebKit draws its own clear button for type="search", which would sit beside the one below. */
+.forma-explorer-search-input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+}
+
+.forma-explorer-search-clear {
+    position: absolute;
+    inset-inline-end: 0.5rem;
+    border: none;
+    background: transparent;
+    color: var(--text-muted-color);
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 0.2rem;
+}

@@ -1,0 +1,124 @@
+@namespace Forma.UI.Blazor.Components.Explorer
+
+@{
+    var selecting = Context.Selection.IsSelectMode && !Context.Selection.HasFolders;
+}
+
+<div class="forma-explorer-details-wrap">
+    <table class="forma-explorer-details-table" role="table">
+        <thead>
+            <tr>
+                <th class="forma-explorer-col-actions"><span class="forma-explorer-sr-only">@(selecting ? L["Select"] : L["Actions"])</span></th>
+                <th class="forma-explorer-col-name @(Context.SortField == ExplorerSortField.Name ? "is-sorted" : "")"
+                    aria-sort="@SortState(ExplorerSortField.Name)"
+                    @onclick="() => Context.SortByAsync(ExplorerSortField.Name)">
+                    <span>@L["Name"]</span>
+                    @if (Context.SortField == ExplorerSortField.Name)
+                    {
+                        <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaGlyph Name="@(Context.SortDirection == ExplorerSortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
+                    }
+                </th>
+                @if (ShowsKind)
+                {
+                    <th class="forma-explorer-col-kind @(Context.SortField == ExplorerSortField.Kind ? "is-sorted" : "")"
+                        aria-sort="@SortState(ExplorerSortField.Kind)"
+                        @onclick="() => Context.SortByAsync(ExplorerSortField.Kind)">
+                        <span>@L["Type"]</span>
+                        @if (Context.SortField == ExplorerSortField.Kind)
+                        {
+                            <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaGlyph Name="@(Context.SortDirection == ExplorerSortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
+                        }
+                    </th>
+                }
+                @if (ShowsSize)
+                {
+                    <th class="forma-explorer-col-size @(Context.SortField == ExplorerSortField.Size ? "is-sorted" : "")"
+                        aria-sort="@SortState(ExplorerSortField.Size)"
+                        @onclick="() => Context.SortByAsync(ExplorerSortField.Size)">
+                        <span>@L["Size"]</span>
+                        @if (Context.SortField == ExplorerSortField.Size)
+                        {
+                            <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaGlyph Name="@(Context.SortDirection == ExplorerSortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
+                        }
+                    </th>
+                }
+                @if (ShowsModified)
+                {
+                    <th class="forma-explorer-col-modified @(Context.SortField == ExplorerSortField.DateModified ? "is-sorted" : "")"
+                        aria-sort="@SortState(ExplorerSortField.DateModified)"
+                        @onclick="() => Context.SortByAsync(ExplorerSortField.DateModified)">
+                        <span>@L["Modified"]</span>
+                        @if (Context.SortField == ExplorerSortField.DateModified)
+                        {
+                            <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaGlyph Name="@(Context.SortDirection == ExplorerSortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
+                        }
+                    </th>
+                }
+                @if (ShowsAdded)
+                {
+                    <th class="forma-explorer-col-added @(Context.SortField == ExplorerSortField.DateAdded ? "is-sorted" : "")"
+                        aria-sort="@SortState(ExplorerSortField.DateAdded)"
+                        @onclick="() => Context.SortByAsync(ExplorerSortField.DateAdded)">
+                        <span>@L["Added"]</span>
+                        @if (Context.SortField == ExplorerSortField.DateAdded)
+                        {
+                            <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaGlyph Name="@(Context.SortDirection == ExplorerSortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
+                        }
+                    </th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var resource in Resources)
+            {
+                var selected = Context.Selection.IsSelected(resource);
+
+                <tr class="forma-explorer-details-row @(selected ? "is-selected" : "")"
+                    draggable="true"
+                    @ondragstart="() => Context.BeginDrag(resource)">
+                    <td class="forma-explorer-cell-actions">
+                        @if (selecting)
+                        {
+                            <button type="button"
+                                    class="forma-explorer-table-select @(selected ? "is-checked" : "")"
+                                    aria-label="@Context.SelectLabel(resource)"
+                                    aria-pressed="@(selected ? "true" : "false")"
+                                    @onclick="() => Context.ToggleSelectAsync(resource)">
+                                <FormaGlyph Name="Glyph.Check" />
+                            </button>
+                        }
+                        else
+                        {
+                            <FormaExplorerActionBar Resource="resource" />
+                        }
+                    </td>
+                    <td class="forma-explorer-cell-name">
+                        <button type="button"
+                                class="forma-explorer-name-wrap"
+                                aria-label="@Context.ActivateLabel(resource)"
+                                @onclick="() => Context.ActivateAsync(resource)">
+                            <FormaExplorerThumb Resource="resource" Size="ExplorerThumbSize.Cell" />
+                            <span class="forma-explorer-details-name-text" dir="auto" title="@resource.Name">@resource.Name</span>
+                        </button>
+                    </td>
+                    @if (ShowsKind)
+                    {
+                        <td class="forma-explorer-cell-kind">@resource.KindLabel(L)</td>
+                    }
+                    @if (ShowsSize)
+                    {
+                        <td class="forma-explorer-cell-size" dir="auto">@(resource.DisplaySize ?? Placeholder)</td>
+                    }
+                    @if (ShowsModified)
+                    {
+                        <td class="forma-explorer-cell-modified">@DisplayDate(resource.ModifiedAt)</td>
+                    }
+                    @if (ShowsAdded)
+                    {
+                        <td class="forma-explorer-cell-added">@DisplayDate(resource.CreatedAt)</td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

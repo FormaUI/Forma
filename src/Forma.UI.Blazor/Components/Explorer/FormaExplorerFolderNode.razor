@@ -1,0 +1,107 @@
+@namespace Forma.UI.Blazor.Components.Explorer
+@using Forma.UI.Blazor.Components.Interactive
+
+@{
+    var children = Sidebar.ChildrenOf(Folder.Source);
+    var expanded = Sidebar.IsExpanded(Folder.Source);
+    var isCurrent = Sidebar.IsCurrent(Folder);
+    var selected = Context.Selection.IsFolderSelected(Folder);
+    var selectable = Context.Selection.IsSelectMode && !Context.Selection.HasResources;
+    var options = Sidebar.FileOptions;
+    var hasActions = !selectable && (options.AllowFolderCreate || options.AllowFolderRename || options.AllowFolderDelete);
+}
+
+<li role="treeitem"
+    aria-selected="@(isCurrent ? "true" : "false")"
+    aria-expanded="@(children.Count == 0 ? null : expanded ? "true" : "false")">
+    <div class="forma-explorer-folder-row @(isCurrent ? "is-active" : "") @(selected ? "is-selected" : "")"
+         style="--forma-explorer-folder-depth: @Depth"
+         draggable="true"
+         @ondragstart="() => Sidebar.HandleFolderDragStartAsync(Folder)"
+         @ondragover="args => FormaExplorerSidebar.HandleDragOver(args)"
+         @ondragover:preventDefault="true"
+         @ondrop="() => Sidebar.HandleDropOnFolderAsync(Folder)">
+        @if (hasActions)
+        {
+            <div class="forma-explorer-folder-actions">
+                <FormaOverflowMenu Label="@L["Actions for {name}", ("name", Folder.Name)]"
+                                   Orientation="MenuOrientation.Vertical"
+                                   Size="ButtonSize.Mini">
+                    <HeaderContent>
+                        <span title="@Folder.Name">@Folder.Name</span>
+                    </HeaderContent>
+                    <ChildContent>
+                        @if (options.AllowFolderCreate)
+                        {
+                            <FormaDropDownMenuItem data-action="folder-create" OnClick="() => Sidebar.CreateFolderAsync(Folder)">
+                                <FormaGlyph Name="Glyph.FolderPlus" />
+                                <span>@L["New Folder"]</span>
+                            </FormaDropDownMenuItem>
+                        }
+                        @if (options.AllowFolderRename)
+                        {
+                            <FormaDropDownMenuItem data-action="folder-rename" OnClick="() => Sidebar.RenameFolderAsync(Folder)">
+                                <FormaGlyph Name="Glyph.Pen" />
+                                <span>@L["Rename Folder"]</span>
+                            </FormaDropDownMenuItem>
+                        }
+                        @if (options.AllowFolderDelete)
+                        {
+                            <FormaDropDownMenuItem data-action="folder-delete" IsDestructive="true" OnClick="() => Sidebar.DeleteFolderAsync(Folder)">
+                                <FormaGlyph Name="Glyph.Trash" />
+                                <span>@L["Delete Folder"]</span>
+                            </FormaDropDownMenuItem>
+                        }
+                    </ChildContent>
+                </FormaOverflowMenu>
+            </div>
+        }
+
+        @if (selectable)
+        {
+            <button type="button"
+                    class="forma-explorer-folder-select @(selected ? "is-checked" : "")"
+                    aria-label="@(selected ? L["Deselect Folder \"{name}\"", ("name", Folder.Name)] : L["Select Folder \"{name}\"", ("name", Folder.Name)])"
+                    aria-pressed="@(selected ? "true" : "false")"
+                    @onclick="() => Context.ToggleFolderSelectAsync(Folder)">
+                <FormaGlyph Name="Glyph.Check" />
+            </button>
+        }
+
+        @if (children.Count > 0)
+        {
+            <button type="button"
+                    class="forma-explorer-folder-twisty @(expanded ? "is-expanded" : "")"
+                    aria-label="@(expanded ? L["Collapse {name}", ("name", Folder.Name)] : L["Expand {name}", ("name", Folder.Name)])"
+                    @onclick="() => Sidebar.ToggleExpanded(Folder.Source)">
+                <FormaGlyph Name="Glyph.ChevronRight" />
+            </button>
+        }
+        else
+        {
+            <span class="forma-explorer-folder-twisty is-empty" aria-hidden="true"></span>
+        }
+
+        <button type="button"
+                class="forma-explorer-folder-target"
+                @onclick="() => Sidebar.SelectFolderAsync(Folder)">
+            <span class="forma-explorer-folder-icon" aria-hidden="true"><FormaGlyph Name="@(isCurrent ? Glyph.FolderOpen : Glyph.Folder)" /></span>
+            <span class="forma-explorer-folder-name" dir="auto" title="@Folder.Name">@Folder.Name</span>
+        </button>
+
+        @if (Folder.Count is { } count)
+        {
+            <span class="forma-explorer-folder-count">@count</span>
+        }
+    </div>
+
+    @if (children.Count > 0 && expanded)
+    {
+        <ul class="forma-explorer-folder-branch" role="group">
+            @foreach (var child in children)
+            {
+                <FormaExplorerFolderNode Folder="child" Depth="Depth + 1" />
+            }
+        </ul>
+    }
+</li>

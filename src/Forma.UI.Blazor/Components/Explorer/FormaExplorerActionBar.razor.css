@@ -1,0 +1,29 @@
+/* Item operation menu, shared by every explorer view; it leads the item so its position never depends on the item's width. */
+
+.forma-explorer-action-bar {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    pointer-events: auto;
+}
+
+/* Hidden until asked for where a pointer can hover, so the row stays quiet; opacity rather than
+   display keeps the trigger in the tab order, which is what lets :focus-within reveal it. */
+@media (hover: hover) {
+    .forma-explorer-action-bar {
+        opacity: 0;
+        transition: opacity 0.15s ease;
+    }
+
+    .forma-explorer-item:hover .forma-explorer-action-bar,
+    .forma-explorer-item:focus-within .forma-explorer-action-bar,
+    .forma-explorer-item:has(.forma-dropdown-menu) .forma-explorer-action-bar,
+    .forma-explorer-details-row:hover .forma-explorer-action-bar,
+    .forma-explorer-details-row:focus-within .forma-explorer-action-bar,
+    .forma-explorer-details-row:has(.forma-dropdown-menu) .forma-explorer-action-bar,
+    .forma-explorer-list-item:hover .forma-explorer-action-bar,
+    .forma-explorer-list-item:focus-within .forma-explorer-action-bar,
+    .forma-explorer-list-item:has(.forma-dropdown-menu) .forma-explorer-action-bar {
+        opacity: 1;
+    }
+}

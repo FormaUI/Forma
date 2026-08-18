@@ -2,7 +2,7 @@ namespace Forma.UI.Blazor.Showcase.Features.Upload;
 
 using Forma.Framework.Resources;
 
-/// <summary>A file store for the gallery that writes accepted files into its sandbox.</summary>
+/// <summary>A file store for the Showcase that writes accepted files into its sandbox.</summary>
 internal sealed class DefaultFileStore(SandboxAssets sandbox) : IFileStore
 {
     private const int BufferSize = 64 * 1024;

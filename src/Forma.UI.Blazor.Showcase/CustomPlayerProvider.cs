@@ -4,7 +4,7 @@ using Forma.UI.Blazor.Components.Media;
 using Forma.UI.Features.Media;
 
 /// <summary>
-/// Claims the gallery's own <c>custom:</c> addresses and resolves them against its storage,
+/// Claims the Showcase's own <c>custom:</c> addresses and resolves them against its storage,
 /// standing in for a host that identifies videos its own way rather than by a public address.
 /// </summary>
 public sealed class CustomPlayerProvider : IPlayerProvider

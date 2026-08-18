@@ -1,0 +1,69 @@
+@namespace Forma.UI.Blazor.Components.Explorer
+
+<CascadingValue Value="this" IsFixed="true">
+<aside class="forma-explorer-sidebar" aria-labelledby="@_titleId">
+    <div class="forma-explorer-sidebar-toolbar">
+        <span class="forma-explorer-sidebar-title" id="@_titleId">@L["Folders"]</span>
+
+        <div class="forma-explorer-sidebar-tools">
+            @if (FileOptions.AllowFolderCreate)
+            {
+                <button type="button"
+                        class="forma-explorer-sidebar-tool forma-explorer-new-folder-tool"
+                        aria-label="@L["New Folder"]"
+                        @onclick="() => CreateFolderAsync(null)">
+                    <FormaGlyph Name="Glyph.FolderPlus" />
+                </button>
+            }
+            <button type="button"
+                    class="forma-explorer-sidebar-tool @(IsFullyCollapsed ? "forma-explorer-expand-all-tool" : "forma-explorer-collapse-all-tool")"
+                    disabled="@(!HasExpandableFolders)"
+                    aria-label="@(IsFullyCollapsed ? L["Expand All Folders"] : L["Collapse All Folders"])"
+                    @onclick="ToggleAll">
+                <FormaGlyph Name="@(IsFullyCollapsed ? Glyph.SquarePlus : Glyph.SquareMinus)" />
+            </button>
+        </div>
+    </div>
+
+    <ul class="forma-explorer-folder-tree" role="tree" style="@TreeSizeStyle">
+        <li role="treeitem" aria-selected="@(CurrentFolder is null ? "true" : "false")">
+            <div class="forma-explorer-folder-row @(CurrentFolder is null ? "is-active" : "")"
+                 style="--forma-explorer-folder-depth: 0"
+                 @ondragover="HandleDragOver"
+                 @ondragover:preventDefault="true"
+                 @ondrop="() => HandleDropOnFolderAsync(null)">
+                <span class="forma-explorer-folder-twisty is-empty" aria-hidden="true"></span>
+                <button type="button"
+                        class="forma-explorer-folder-target"
+                        @onclick="() => SelectFolderAsync(null)">
+                    <span class="forma-explorer-folder-icon" aria-hidden="true"><FormaGlyph Name="@(CurrentFolder is null ? Glyph.FolderOpen : Glyph.Folder)" /></span>
+                    <span class="forma-explorer-folder-name">@L["All Media"]</span>
+                </button>
+                <span class="forma-explorer-folder-count">@TotalCount</span>
+            </div>
+        </li>
+
+        @foreach (var folder in ChildrenOf(null))
+        {
+            <FormaExplorerFolderNode Folder="folder" Depth="0" />
+        }
+    </ul>
+
+    <div class="forma-explorer-sidebar-sash @(_isResizingTree ? "is-resizing" : "")"
+         @ref="_sashElement"
+         role="separator"
+         aria-orientation="horizontal"
+         aria-label="@L["Resize Folder List"]"
+         aria-valuemin="@MinTreeHeight"
+         aria-valuemax="@MaxTreeHeight"
+         aria-valuenow="@((int)Math.Round(_treeHeight ?? MeasuredTreeHeight))"
+         tabindex="0"
+         @onpointerdown="HandleSashPointerDownAsync"
+         @onpointermove="HandleSashPointerMove"
+         @onpointerup="HandleSashPointerUpAsync"
+         @onpointercancel="HandleSashPointerUpAsync"
+         @onkeydown="HandleSashKeyDown">
+        <span class="forma-explorer-sidebar-sash-grip" aria-hidden="true"></span>
+    </div>
+</aside>
+</CascadingValue>

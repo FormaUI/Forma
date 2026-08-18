@@ -7,7 +7,7 @@ using Forma.UI.Blazor.Components.Files;
 
 using Microsoft.AspNetCore.Hosting;
 
-/// <summary>Reads resource content from the gallery's own web root, standing in for a host's real storage.</summary>
+/// <summary>Reads resource content from the Showcase's own web root, standing in for a host's real storage.</summary>
 public sealed class WebRootContentReader(IWebHostEnvironment environment) : IResourceContentReader
 {
     /// <inheritdoc />

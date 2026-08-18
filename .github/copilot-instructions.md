@@ -45,7 +45,7 @@ Coi's boxy gradient toggle becoming a token-driven iOS-style `FormaToggleSwitch`
 | `src/Forma.Framework.Markdown` | Class library | `Forma.Framework.Resources` — Markdown conversion |
 | `src/Forma.Framework.Office` | Class library | `Forma.Framework.Resources` — Word, workbook, and presentation conversion |
 | `src/Forma.UI.Blazor` | Razor Class Library | `Forma.UI.Features.Abstractions`, `Forma.UI.Style`, `Forma.Framework.Resources` — packaged components |
-| `src/Forma.UI.Blazor.Showcase` | Web app | `Forma.UI.Blazor`, `Forma.UI.Features`, `Forma.UI.Style`, `Forma.Framework.Resources`, `Forma.Framework.Office`, `Forma.Framework.Markdown`, `Forma.Framework.Localization` — reference host and gallery |
+| `src/Forma.UI.Blazor.Showcase` | Web app | `Forma.UI.Blazor`, `Forma.UI.Features`, `Forma.UI.Style`, `Forma.Framework.Resources`, `Forma.Framework.Office`, `Forma.Framework.Markdown`, `Forma.Framework.Localization` — reference host and component showcase |
 | `tests/{Assembly}.Tests` | Test project | The one assembly it is named after, plus what its tests use directly |
 | `tests/Forma.Tests.Support` | Class library | Shared test fakes, fixtures, and utilities in the `Forma.Tests.*` namespaces |
 
@@ -81,6 +81,8 @@ A project's references are part of its contract, because every consumer inherits
 - Do prefix component tags with `Forma`: `<FormaModal>`, `<FormaDataGrid>`.
 - Do prefix CSS classes with `forma-`: `.forma-toggle-track`.
 - Do leave C# services, enums, and records unprefixed because namespaces disambiguate them: `ToastService`, `ModalSize`, `BreadcrumbItem`.
+- Do give a supporting type its owning folder's name as a prefix only where that reads well and adds meaning, as `ExplorerAction`, `ExplorerContext`, and `ExplorerSelection` do against `System.Action` and a bare `Context`; `Data/` needs no `DataXxx` and takes none.
+- Do find a better name when a prefix is needed to disambiguate but reads badly.
 - Do call a thing Forma ships a **component**, and raw HTML an **element** — one word per concept. "Control" is Web Forms vocabulary inherited from Coi; keep it only in `aria-controls` and in descriptions of Coi's own markup.
 - Don't apply one naming convention indiscriminately across Razor tags, CSS classes, and C# types.
 
@@ -98,7 +100,7 @@ These rules govern prose that *describes a thing*. They do not apply to this fil
 
 ## Component file layout
 
-Components live in `src/Forma.UI.Blazor/Components/{Category}/`, where `{Category}` is `Layout`, `Feedback`, `Actions`, `Input`, `Data`, `Indicators`, `Interactive`, `Files`, `Media`, `Editors`, or `Metadata`.
+Components live in `src/Forma.UI.Blazor/Components/{Category}/`, where `{Category}` is `Layout`, `Feedback`, `Actions`, `Input`, `Data`, `Indicators`, `Interactive`, `Files`, `Media`, `Editors`, `Metadata`, or `Explorer`.
 
 ```text
 Components/{Category}/
@@ -111,10 +113,12 @@ Components/{Category}/
 ```
 
 - Do keep markup in `.razor`, logic in `.razor.cs`, and component styling in `.razor.css`.
+- Do give a component a category of its own, such as `Explorer`, when it is large enough to grow sub-components and supporting types of its own; the category then owns its folder and namespace.
 - Do place supporting types such as `ModalSize`, `BreadcrumbItem`, and `FormaIcon` beside the component that owns them.
 - Do add a colocated `.razor.js` only when HTML, CSS, and Blazor cannot provide the required behaviour.
 - Do add the translation pair only when the component invents user-facing text.
 - Don't use `@code` blocks in library components.
+- Don't file such a component under a category naming its subject matter instead, the way `Files` would swallow `Explorer`.
 - Don't put component-specific styles in global stylesheets or scatter supporting types into unrelated shared folders.
 
 ## Component authoring
@@ -369,7 +373,7 @@ Every production assembly has exactly one test project named after it, so `Forma
 
 ## Showcase
 
-Every component requires `src/Forma.UI.Blazor.Showcase/Components/Pages/{Category}/FormaXPage.razor` and its translation pair. The gallery exists to be looked at, so a state it never renders is a state nobody has ever reviewed.
+Every component requires `src/Forma.UI.Blazor.Showcase/Components/Pages/{Category}/FormaXPage.razor` and its translation pair. The Showcase exists to be looked at, so a state it never renders is a state nobody has ever reviewed.
 
 ```razor
 @page "/x-component"
@@ -381,10 +385,10 @@ Every component requires `src/Forma.UI.Blazor.Showcase/Components/Pages/{Categor
 - Do structure the page as `<h1>` plus `<p class="desc">`, followed by one `demo-section` containing `<h2>` and `demo-box` per scenario.
 - Do render the component in every state it can enter, not merely name the state: default, filled, required, disabled, invalid, plus whatever the component adds — empty collection, no search matches, over-limit count, indeterminate, loading.
 - Do make each state reachable on the page. A validation state needs a model rule and a submit, not a paragraph describing one.
-- Do treat the component's translation file as the inventory: if a key in `FormaX.he.json` cannot be displayed in the gallery, a state is missing.
+- Do treat the component's translation file as the inventory: if a key in `FormaX.he.json` cannot be displayed in the Showcase, a state is missing.
 - Do localize all page copy so the `he` and `es-419` switchers exercise RTL and translation.
 - Don't count a state as covered because the parameter exists; count it when the page renders the component standing in it.
-- Don't treat the gallery page as optional or as documentation that can be added later.
+- Don't treat the Showcase page as optional or as documentation that can be added later.
 
 ## Build and verification
 

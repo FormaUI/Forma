@@ -48,7 +48,7 @@ internal sealed class SandboxAssets
     /// <summary>Serializes changes to the shared upload directory.</summary>
     public SemaphoreSlim Gate { get; } = new(1, 1);
 
-    /// <summary>Directory receiving files written by the uploader gallery.</summary>
+    /// <summary>Directory receiving files written by the Showcase uploader.</summary>
     public string UploadDirectory { get; }
 
     /// <summary>The upload directory written from the project folder down, for display.</summary>

@@ -1,0 +1,130 @@
+/* ============================================================
+   FormaExplorerThumbnailsView — CSS isolation
+   Aspect-ratio responsive grid of media thumbnails with overlays
+   ============================================================ */
+
+.forma-explorer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 0.75rem;
+    align-content: start;
+}
+
+.forma-explorer-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--light-border-color);
+    border-radius: 8px;
+    background: var(--input-bg-color);
+    overflow: hidden;
+    cursor: grab;
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.forma-explorer-item:active {
+    cursor: grabbing;
+}
+
+@media (hover: hover) {
+    .forma-explorer-item:hover {
+        border-color: var(--dark-border-color);
+        background: var(--hover-bg-color);
+        box-shadow: var(--shadow-sm);
+    }
+}
+
+.forma-explorer-item.is-selected {
+    background: color-mix(in srgb, var(--main-color) 12%, transparent);
+}
+
+.forma-explorer-item.is-selected .forma-explorer-thumbnail-wrap {
+    background: color-mix(in srgb, var(--main-color) 12%, var(--hover-bg-color));
+}
+
+.forma-explorer-thumbnail-wrap {
+    position: relative;
+    aspect-ratio: 1;
+    inline-size: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--hover-bg-color);
+    overflow: hidden;
+}
+
+.forma-explorer-item-open {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    inline-size: 100%;
+    block-size: 100%;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+/* The actions menu and the check share the tile's leading corner, so the check no longer places itself.
+   Transparent to the pointer so a tap on the check still reaches the full-tile button underneath. */
+.forma-explorer-item-lead {
+    position: absolute;
+    inset-block-start: 0.4rem;
+    inset-inline-start: 0.4rem;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    pointer-events: none;
+}
+
+.forma-explorer-item-select {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: var(--forma-explorer-check-size);
+    block-size: var(--forma-explorer-check-size);
+    min-inline-size: 24px;
+    min-block-size: 24px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    border: 1px solid var(--dark-border-color);
+    background: rgba(255, 255, 255, 0.95);
+    color: transparent;
+    pointer-events: none;
+    font-size: var(--forma-explorer-check-glyph-size);
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.forma-explorer-item-select.is-checked {
+    background: var(--main-color);
+    border-color: var(--main-color);
+    color: var(--forma-explorer-check-fg-color);
+}
+
+.forma-explorer-item-info {
+    padding-inline: 0.5rem;
+    padding-block: 0.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.forma-explorer-item-name {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.forma-explorer-item.is-selected .forma-explorer-item-name {
+    color: var(--main-color);
+    font-weight: 700;
+}
+
+.forma-explorer-item-size {
+    font-size: 0.7rem;
+    color: var(--text-muted-color);
+}
