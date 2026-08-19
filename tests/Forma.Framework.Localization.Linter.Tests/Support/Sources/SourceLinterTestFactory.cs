@@ -43,10 +43,6 @@ public static class SourceLinterTestFactory
         var linter = new SourceLinter(new SemanticCallSiteFinder(), new SyntacticCallSiteFinder(), Checkers());
         var files = compilation.SyntaxTrees.Select(tree => tree.FilePath).ToArray();
 
-        return linter
-            .LintAsync(new LoadedProject("Scratch.csproj", compilation, HasGeneratedSources: false, HasRazorMarkup: false), files)
-            .AsTask()
-            .GetAwaiter()
-            .GetResult();
+        return linter.Lint(new LoadedProject("Scratch.csproj", compilation, HasGeneratedSources: false, HasRazorMarkup: false), files);
     }
 }

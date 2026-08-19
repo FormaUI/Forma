@@ -75,7 +75,7 @@ public sealed class LintService(
 
         foreach (var project in await _loader.LoadAsync(target.Projects, cancellationToken).ConfigureAwait(false))
         {
-            diagnostics.AddRange(await _sources.LintAsync(project, wanted, cancellationToken).ConfigureAwait(false));
+            diagnostics.AddRange(_sources.Lint(project, wanted, cancellationToken));
             diagnostics.AddRange(_reachability.Lint(project, target.LocalizationFilesOf(project.Path)));
         }
 

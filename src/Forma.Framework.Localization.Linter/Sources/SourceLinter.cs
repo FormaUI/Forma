@@ -25,7 +25,7 @@ public sealed class SourceLinter(
     private readonly IEnumerable<ICallSiteRuleChecker> _checkers = checkers ?? throw new ArgumentNullException(nameof(checkers));
 
     /// <inheritdoc />
-    public ValueTask<IReadOnlyList<LintDiagnostic>> LintAsync(
+    public IReadOnlyList<LintDiagnostic> Lint(
         LoadedProject project,
         IReadOnlyCollection<string> files,
         CancellationToken cancellationToken = default)
@@ -51,7 +51,7 @@ public sealed class SourceLinter(
             diagnostics.AddRange(Walk(compilation, files, cancellationToken));
         }
 
-        return ValueTask.FromResult<IReadOnlyList<LintDiagnostic>>(diagnostics);
+        return diagnostics;
     }
 
     private IReadOnlyList<LintDiagnostic> Walk(Compilation compilation, IReadOnlyCollection<string> files, CancellationToken cancellationToken)

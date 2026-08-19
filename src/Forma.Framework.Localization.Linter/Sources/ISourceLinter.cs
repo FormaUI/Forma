@@ -10,7 +10,7 @@ public interface ISourceLinter
     /// <param name="project">The project to read.</param>
     /// <param name="files">The source files the run asked for, or empty for all of them.</param>
     /// <param name="cancellationToken">Cancels the walk.</param>
-    ValueTask<IReadOnlyList<LintDiagnostic>> LintAsync(
+    IReadOnlyList<LintDiagnostic> Lint(
         LoadedProject project,
         IReadOnlyCollection<string> files,
         CancellationToken cancellationToken = default);
