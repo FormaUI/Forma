@@ -39,13 +39,6 @@ public sealed class ReachabilityLinter : IReachabilityLinter
             }
 
             var fullPath = Path.GetFullPath(file);
-            var fileDirectory = Path.GetDirectoryName(fullPath)!;
-
-            if (!IsUnder(fileDirectory, projectDirectory))
-            {
-                continue;
-            }
-
             var candidates = Candidates(root, projectDirectory, fullPath);
 
             if (candidates.Any(candidate => compilation.GetTypeByMetadataName(candidate) is not null))
@@ -64,10 +57,6 @@ public sealed class ReachabilityLinter : IReachabilityLinter
 
         return diagnostics;
     }
-
-    private static bool IsUnder(string directory, string root)
-        => directory.Equals(root, StringComparison.OrdinalIgnoreCase)
-            || directory.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
 
     // The SDK embeds a file as {RootNamespace}.{RelativeFolderPath}.{Name}, dropping the culture segment for
     // a satellite resource, so the type a file serves is named for its folder position, not its culture suffix.

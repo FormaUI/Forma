@@ -172,15 +172,14 @@ public sealed class ReachabilityLinterTests
     }
 
     [Fact]
-    public void Should_ignore_a_file_outside_the_project()
+    public void Should_report_nothing_when_the_project_owns_no_translation_files()
     {
         // Arrange
         var compilation = CompilationTestFactory.Unreferenced("namespace Scratch;");
         var project = new LoadedProject(ProjectPath, compilation, false, false);
-        var file = Path.Combine("C:", "Elsewhere", "FormaGallery.he.json");
 
         // Act
-        var diagnostics = new ReachabilityLinter().Lint(project, [file]);
+        var diagnostics = new ReachabilityLinter().Lint(project, []);
 
         // Assert
         Assert.Empty(diagnostics);

@@ -67,6 +67,7 @@ public sealed class LintTargetResolver : ILintTargetResolver
         var localization = new List<string>();
         var sources = new List<string>();
         var projects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var owned = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var file in files)
         {
@@ -74,9 +75,17 @@ public sealed class LintTargetResolver : ILintTargetResolver
             {
                 localization.Add(file);
 
+                // The nearest project above a file owns it, so a nested project keeps its own translations.
                 if (ProjectOf(file) is { } project)
                 {
                     projects.Add(project);
+
+                    if (!owned.TryGetValue(Path.GetFullPath(project), out var mine))
+                    {
+                        owned[Path.GetFullPath(project)] = mine = [];
+                    }
+
+                    mine.Add(file);
                 }
             }
             else if (IsSourceFile(file))
@@ -90,7 +99,11 @@ public sealed class LintTargetResolver : ILintTargetResolver
             }
         }
 
-        return new LintTarget([.. localization], [.. sources], [.. projects]);
+        return new LintTarget(
+            [.. localization],
+            [.. sources],
+            [.. projects],
+            owned.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<string>)pair.Value, StringComparer.OrdinalIgnoreCase));
     }
 
     private static LintTarget FromProject(string project)

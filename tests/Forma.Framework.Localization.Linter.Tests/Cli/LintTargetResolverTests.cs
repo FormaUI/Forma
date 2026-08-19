@@ -133,4 +133,52 @@ public sealed class LintTargetResolverTests
         // Assert
         Assert.Null(project);
     }
+
+    [Fact]
+    public void Should_attribute_a_translation_file_to_the_project_above_it()
+    {
+        // Arrange
+        using var directory = new TempDirectory();
+        var project = directory.Write("Scratch.csproj", "<Project />");
+        var file = directory.Write(Path.Combine("Components", LocalizationFileFakeData.HebrewName), LocalizationFileFakeData.Valid);
+
+        // Act
+        var target = new LintTargetResolver().Resolve(directory.Root);
+
+        // Assert
+        Assert.Equal([file], target.LocalizationFilesOf(project));
+    }
+
+    [Fact]
+    public void Should_attribute_a_translation_file_to_the_nearest_project_rather_than_its_parent()
+    {
+        // Arrange
+        using var directory = new TempDirectory();
+        var outer = directory.Write("Outer.csproj", "<Project />");
+        var inner = directory.Write(Path.Combine("Nested", "Inner.csproj"), "<Project />");
+        var file = directory.Write(Path.Combine("Nested", LocalizationFileFakeData.HebrewName), LocalizationFileFakeData.Valid);
+
+        // Act
+        var target = new LintTargetResolver().Resolve(directory.Root);
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal([file], target.LocalizationFilesOf(inner)),
+            () => Assert.Empty(target.LocalizationFilesOf(outer)));
+    }
+
+    [Fact]
+    public void Should_own_no_translation_files_when_none_sit_under_the_project()
+    {
+        // Arrange
+        using var directory = new TempDirectory();
+        var project = directory.Write("Scratch.csproj", "<Project />");
+        directory.Write("Widget.cs", "class Widget;");
+
+        // Act
+        var target = new LintTargetResolver().Resolve(directory.Root);
+
+        // Assert
+        Assert.Empty(target.LocalizationFilesOf(project));
+    }
 }
