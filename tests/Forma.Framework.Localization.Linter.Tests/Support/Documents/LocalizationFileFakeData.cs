@@ -63,4 +63,16 @@ public static class LocalizationFileFakeData
               "{{key}}": null
             }
             """;
+
+    /// <summary>A schema-following file declaring the same key twice, with different translations.</summary>
+    /// <param name="key">The key the file declares more than once.</param>
+    public static string WithDuplicateKey(string key)
+        => $$"""
+            {
+              "{{LocalizationSchema.Marker}}": "SchemaVersion: {{LocalizationSchema.CurrentVersion}}; Culture: he;",
+              "{{key}}": "ראשון",
+              "Today": "היום",
+              "{{key}}": "אחרון"
+            }
+            """;
 }

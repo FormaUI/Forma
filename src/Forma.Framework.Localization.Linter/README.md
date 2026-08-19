@@ -120,6 +120,7 @@ A file rule reports in the 100s, a call-site rule in the 200s.
 | LOC0108 | Error | The file declares a culture its own name does not give it |
 | LOC0109 | Error | A translation fills a hole its key does not name |
 | LOC0110 | Error | A translation writes text shaped like a hole the runtime cannot read |
+| LOC0111 | Error | The file declares the same key more than once |
 
 LOC0109 catches the silent case: `"Stored {stored}."` translated as `"…{stord}…"` renders
 `{stord}` literally. A name may be written as a brace hole or as a plural expression's

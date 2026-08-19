@@ -20,6 +20,7 @@ public static class LintCodes
             CultureMismatch,
             UnknownTranslationHole,
             TranslationHoleShapedText,
+            DuplicateKey,
             HoleNotIdentifier,
             UnsuppliedPluralArgument,
             ValueCountMismatch,
@@ -36,6 +37,12 @@ public static class LintCodes
         "LOC0108",
         LintSeverity.Error,
         "A file declares a culture its own name does not give it.");
+
+    /// <summary>The file declares the same key more than once.</summary>
+    public static LintCode DuplicateKey { get; } = new(
+        "LOC0111",
+        LintSeverity.Error,
+        "A file declares the same key more than once, so every translation but the last is dropped.");
 
     /// <summary>A hole in an interpolated key is not a plain identifier.</summary>
     public static LintCode HoleNotIdentifier { get; } = new(

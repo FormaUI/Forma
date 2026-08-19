@@ -22,5 +22,6 @@ public static class SchemaLinterTestFactory
             new CultureMatchesChecker(),
             new TranslationHolesChecker(),
             new TranslationHoleShapeChecker(),
+            new DuplicateKeyChecker(),
         ];
 }
