@@ -6,6 +6,8 @@ A reusable Blazor **component library**. **.NET 11 · C# latest · Razor Class L
 
 - Do use [COMPONENTS.md](../COMPONENTS.md) for the component inventory, build order, and completion status.
 - Do use [README.md](../README.md) for solution layout, packaging identities, and host consumption.
+- Do use [docs/composer-design.md](../docs/composer-design.md) for `FormaComposer`'s architecture, plugin model, assemblies, and phases.
+- Do put a component's own design document in `docs/` when it is large enough to own a plan, and treat it as authoritative for that component over the inventory's summary row.
 - Do resolve C# style from `.editorconfig` with `read_editorconfig` before writing C#.
 - Do use `EpicaDeportiva/docs/forma-components.md` for Épica Deportiva's required and optional subset and remaining work.
 - Do treat **Coi** (`c:\Users\eyal\Development\Projects\Coi`) and **Épica Deportiva** (`c:\Users\eyal\Development\Projects\EpicaDeportiva`) as the current consumers.
@@ -183,7 +185,12 @@ JS-free is the default, not a prohibition.
 - Do import the module on first render from `./_content/Forma.UI/Components/{Category}/FormaX.razor.js`.
 - Do catch `JSException` around every JS call because the circuit can drop mid-call.
 - Do dispose the module in `DisposeAsync` and catch `JSDisconnectedException`.
-- Don't use jQuery, npm packages, polyfills, or other external JS libraries. The sole exception is `FormaRichTextEditor`'s Markdown renderer — a parser is a solved problem, and it renders only; it never owns an editing surface, a selection, an undo stack or a toolbar. Adding a second exception is a decision for the maintainer, not a precedent already set.
+- Don't use jQuery, npm packages, polyfills, or other external JS libraries. `FormaComposer` is the single carve-out, because an editor hosts capabilities — Markdown rendering, maths typesetting, syntax highlighting — that are solved problems nobody should reimplement.
+- Do confine every such library to its own satellite package, `Forma.UI.Features.Composer.{Capability}`, reached only through a plugin contract, so a host that does not want the capability never downloads it and the engine never depends on it.
+- Do keep those libraries in a supporting role: a capability renders, converts, or classifies. The editing surface, the selection, the undo stack, and the toolbar stay Forma's, in C#.
+- Do ship them as plain static assets under `_content/…`, loaded through the plugin's declared assets. A bundler, a build step, or an `npm install` is still out.
+- Do make a capability that is absent or fails to load degrade to absent, never to a control that throws when pressed.
+- Don't widen the carve-out past `FormaComposer`, and don't let a missing capability break the editor around it.
 - Don't contort a component or ship a worse experience merely to remain script-free.
 - Don't treat the amount of JS required as a reason to leave a rough edge unresolved.
 
