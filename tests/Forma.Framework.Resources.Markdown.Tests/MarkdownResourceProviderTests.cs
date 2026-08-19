@@ -1,4 +1,4 @@
-namespace Forma.Framework.Markdown.Tests;
+namespace Forma.Framework.Resources.Markdown.Tests;
 
 using Forma.Framework.Resources;
 using Forma.Tests.Resources;

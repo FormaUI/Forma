@@ -6,12 +6,12 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <IsPackable>false</IsPackable>
-        <RootNamespace>Forma.Framework.Office</RootNamespace>
+        <RootNamespace>Forma.Framework.Resources.Office</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Forma.Framework.Localization.Abstractions\Forma.Framework.Localization.Abstractions.csproj" />
-        <ProjectReference Include="..\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Resources.Abstractions\Forma.Framework.Resources.Abstractions.csproj" />
     </ItemGroup>
 
     <ItemGroup>

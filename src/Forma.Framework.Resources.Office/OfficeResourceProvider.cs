@@ -1,10 +1,10 @@
-namespace Forma.Framework.Office;
+namespace Forma.Framework.Resources.Office;
 
 using System.Diagnostics.CodeAnalysis;
 
 using Forma.Framework.Localization;
-using Forma.Framework.Office.Converters;
 using Forma.Framework.Resources;
+using Forma.Framework.Resources.Office.Converters;
 
 using Ganss.Xss;
 

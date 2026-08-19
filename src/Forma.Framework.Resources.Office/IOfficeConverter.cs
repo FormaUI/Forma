@@ -1,4 +1,4 @@
-namespace Forma.Framework.Office;
+namespace Forma.Framework.Resources.Office;
 
 /// <summary>Turns one Office format into markup a viewer can render.</summary>
 internal interface IOfficeConverter

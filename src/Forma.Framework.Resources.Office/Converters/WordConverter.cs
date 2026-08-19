@@ -1,4 +1,4 @@
-namespace Forma.Framework.Office.Converters;
+namespace Forma.Framework.Resources.Office.Converters;
 
 using OfficeIMO.Word;
 using OfficeIMO.Word.Html;

@@ -1,6 +1,6 @@
 # Sample notes
 
-This file is converted by **Forma.Framework.Markdown**, which reads it through the
+This file is converted by **Forma.Framework.Resources.Markdown**, which reads it through the
 host's content reader, renders it with Markdig, and sanitises the result before
 the viewer shows it.
 

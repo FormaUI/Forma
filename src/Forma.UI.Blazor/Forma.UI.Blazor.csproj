@@ -30,6 +30,7 @@
         <ProjectReference Include="..\Forma.UI.Features.Abstractions\Forma.UI.Features.Abstractions.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.UI.Style\Forma.UI.Style.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Localization.Abstractions\Forma.Framework.Localization.Abstractions.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Resources.Abstractions\Forma.Framework.Resources.Abstractions.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Resources\Forma.Framework.Resources.csproj" PrivateAssets="all" />
     </ItemGroup>
 

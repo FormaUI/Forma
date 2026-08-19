@@ -40,19 +40,20 @@ Coi's boxy gradient toggle becoming a token-driven iOS-style `FormaToggleSwitch`
 | Project | Kind | May reference |
 |---------|------|---------------|
 | `src/Forma.UI.Style` | Class library | Nothing — presentation vocabulary such as `CssColor` in `Css/` and `Glyph` in `Glyphs/` |
-| `src/Forma.Framework.Resources` | Class library | Nothing — resource contracts and value types such as `IResourceProvider` and `ResourceInfo` |
+| `src/Forma.Framework.Resources.Abstractions` | Class library | Nothing — resource contracts and value types such as `IResourceProvider` and `ResourceInfo` |
+| `src/Forma.Framework.Resources` | Class library | Nothing — writes resource measurements as text for a reader (`ResourceFormatter`) |
 | `src/Forma.Framework.Localization` | Class library | Nothing — JSON-backed `IStringLocalizer` |
 | `src/Forma.UI.Features.Abstractions` | Class library | `Forma.UI.Style` — contracts, messages, enums |
 | `src/Forma.UI.Features` | Class library | `Forma.UI.Features.Abstractions` — implementations |
-| `src/Forma.Framework.Markdown` | Class library | `Forma.Framework.Resources` — Markdown conversion |
-| `src/Forma.Framework.Office` | Class library | `Forma.Framework.Resources` — Word, workbook, and presentation conversion |
-| `src/Forma.UI.Blazor` | Razor Class Library | `Forma.UI.Features.Abstractions`, `Forma.UI.Style`, `Forma.Framework.Resources` — packaged components |
-| `src/Forma.UI.Blazor.Showcase` | Web app | `Forma.UI.Blazor`, `Forma.UI.Features`, `Forma.UI.Style`, `Forma.Framework.Resources`, `Forma.Framework.Office`, `Forma.Framework.Markdown`, `Forma.Framework.Localization` — reference host and component showcase |
+| `src/Forma.Framework.Resources.Markdown` | Class library | `Forma.Framework.Resources.Abstractions` — Markdown conversion |
+| `src/Forma.Framework.Resources.Office` | Class library | `Forma.Framework.Resources.Abstractions` — Word, workbook, and presentation conversion |
+| `src/Forma.UI.Blazor` | Razor Class Library | `Forma.UI.Features.Abstractions`, `Forma.UI.Style`, `Forma.Framework.Resources.Abstractions`, `Forma.Framework.Resources` — packaged components |
+| `src/Forma.UI.Blazor.Showcase` | Web app | `Forma.UI.Blazor`, `Forma.UI.Features`, `Forma.UI.Style`, `Forma.Framework.Resources.Abstractions`, `Forma.Framework.Resources`, `Forma.Framework.Resources.Office`, `Forma.Framework.Resources.Markdown`, `Forma.Framework.Localization` — reference host and component showcase |
 | `tests/{Assembly}.Tests` | Test project | The one assembly it is named after, plus what its tests use directly |
 | `tests/Forma.Tests.Support` | Class library | Shared test fakes, fixtures, and utilities in the `Forma.Tests.*` namespaces |
 
-- Do split the family by audience: `Forma.UI.*` is one product serving the component library, while each `Forma.Framework.*` assembly stands alone — `Forma.Framework.Office` depends on `Forma.Framework.Resources` alone, never on anything in `Forma.UI`.
-- Do put a horizontal concern no single vertical feature owns into `Forma.UI.Style` when only the UI needs it, and into `Forma.Framework.Resources` when a consumer outside the UI needs it too.
+- Do split the family by audience: `Forma.UI.*` is one product serving the component library, while each `Forma.Framework.*` assembly stands alone — `Forma.Framework.Resources.Office` depends on `Forma.Framework.Resources.Abstractions` alone, never on anything in `Forma.UI`.
+- Do put a horizontal concern no single vertical feature owns into `Forma.UI.Style` when only the UI needs it, and into `Forma.Framework.Resources.Abstractions` when a consumer outside the UI needs it too.
 - Do decide by ownership, not by how many assemblies consume it: a contract a single feature owns stays with that feature in `Forma.UI.Features.Abstractions` no matter how many projects reference it, such as `IToastService` in `Feedback`.
 - Do keep a folder and its namespace in step, so `Forma.UI.Style/Css/` holds `Forma.UI.Style.Css` and `Forma.UI.Features.Abstractions/Feedback/` holds `Forma.UI.Features.Feedback` — the namespace is the product root plus the folder path, with the `.Abstractions` suffix dropped.
 

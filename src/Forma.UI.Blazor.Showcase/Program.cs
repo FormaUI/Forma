@@ -1,8 +1,8 @@
 using Forma.Framework.Localization;
 using Forma.Framework.Localization.Json;
-using Forma.Framework.Markdown;
-using Forma.Framework.Office;
 using Forma.Framework.Resources;
+using Forma.Framework.Resources.Markdown;
+using Forma.Framework.Resources.Office;
 using Forma.UI.Blazor.Globalization;
 using Forma.UI.Blazor.Showcase;
 using Forma.UI.Blazor.Showcase.Features.Upload;

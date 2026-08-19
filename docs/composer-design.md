@@ -498,7 +498,7 @@ This replaces the "lossless transitions" claim in the first draft, which was unt
 
 The refusal is surfaced, not swallowed: the switcher disables the Markdown editor and explains which features are in the way, so the author can remove them and try again.
 
-`Forma.Framework.Markdown` is **not** reused for this. It exists to render a stored `.md` resource for viewing, so its pipeline calls `DisableHtml()` and sanitises the output — one-way by construction. `Forma.UI.Features.Composer.Markdown` is a separate converter over the same Markdig dependency.
+`Forma.Framework.Resources.Markdown` is **not** reused for this. It exists to render a stored `.md` resource for viewing, so its pipeline calls `DisableHtml()` and sanitises the output — one-way by construction. `Forma.UI.Features.Composer.Markdown` is a separate converter over the same Markdig dependency.
 
 ---
 

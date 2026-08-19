@@ -6,11 +6,11 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <IsPackable>false</IsPackable>
-        <RootNamespace>Forma.Framework.Markdown</RootNamespace>
+        <RootNamespace>Forma.Framework.Resources.Markdown</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Resources.Abstractions\Forma.Framework.Resources.Abstractions.csproj" />
     </ItemGroup>
 
     <ItemGroup>

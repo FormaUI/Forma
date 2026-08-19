@@ -1,4 +1,4 @@
-namespace Forma.Framework.Markdown;
+namespace Forma.Framework.Resources.Markdown;
 
 using System.Diagnostics.CodeAnalysis;
 
