@@ -99,6 +99,7 @@ internal static class Program
 
         builder.Services.AddSingleton<ISchemaLinter, SchemaLinter>();
         builder.Services.AddSingleton<ISourceLinter, SourceLinter>();
+        builder.Services.AddSingleton<IReachabilityLinter, ReachabilityLinter>();
         builder.Services.AddSingleton<ILintService, LintService>();
 
         builder.Services.AddSingleton<IDiagnosticReporter>(_ => new ConsoleDiagnosticReporter(Console.Out));

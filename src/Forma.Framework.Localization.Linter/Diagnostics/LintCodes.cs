@@ -21,6 +21,7 @@ public static class LintCodes
             UnknownTranslationHole,
             TranslationHoleShapedText,
             DuplicateKey,
+            UnreachableTranslation,
             HoleNotIdentifier,
             UnsuppliedPluralArgument,
             ValueCountMismatch,
@@ -139,6 +140,12 @@ public static class LintCodes
         "LOC0109",
         LintSeverity.Error,
         "A translation fills a hole its key does not name, so it renders as written.");
+
+    /// <summary>No type exists with the full name a translation file's own location implies.</summary>
+    public static LintCode UnreachableTranslation { get; } = new(
+        "LOC0112",
+        LintSeverity.Error,
+        "No type exists with the full name this file's location implies, so the runtime never finds it.");
 
     /// <summary>A value the lookup names is read by nothing in the key.</summary>
     public static LintCode UnreadValue { get; } = new(

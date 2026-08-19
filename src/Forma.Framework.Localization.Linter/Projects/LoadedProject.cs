@@ -7,8 +7,10 @@ using Microsoft.CodeAnalysis;
 /// <param name="Compilation">The compilation, or null when the project would not load.</param>
 /// <param name="HasGeneratedSources">Whether generated C# for Razor markup was found on disk.</param>
 /// <param name="HasRazorMarkup">Whether the project carries any Razor markup at all.</param>
+/// <param name="RootNamespace">The root the project embeds its resources under, or null when it declares none.</param>
 public sealed record LoadedProject(
     string Path,
     Compilation? Compilation,
     bool HasGeneratedSources,
-    bool HasRazorMarkup);
+    bool HasRazorMarkup,
+    string? RootNamespace = null);

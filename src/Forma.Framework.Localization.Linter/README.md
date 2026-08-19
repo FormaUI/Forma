@@ -121,6 +121,16 @@ A file rule reports in the 100s, a call-site rule in the 200s.
 | LOC0109 | Error | A translation fills a hole its key does not name |
 | LOC0110 | Error | A translation writes text shaped like a hole the runtime cannot read |
 | LOC0111 | Error | The file declares the same key more than once |
+| LOC0112 | Error | No type exists with the full name a translation file's own location implies |
+
+LOC0112 covers the drift a rename opens: `JsonStringLocaleFactory` resolves a file by the
+owning type's full name, never by where the file sits, so moving a folder or renaming a type
+leaves the translations stranded while every other check stays green. The rule reads the name
+the default embedding convention gives a file and asks whether any type answers to it,
+allowing for the leading segments `ResourcesPath` inserts, the arity a generic's metadata name
+carries, and the missing root of a type in the global namespace. A file the project embeds
+under an explicit `LogicalName` is beyond it, because that decouples the file's position from
+its logical name entirely.
 
 LOC0109 catches the silent case: `"Stored {stored}."` translated as `"…{stord}…"` renders
 `{stord}` literally. A name may be written as a brace hole or as a plural expression's

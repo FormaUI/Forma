@@ -78,30 +78,31 @@ public sealed class MSBuildProjectLoader : IProjectLoader
         var file = project.FilePath ?? project.Name;
         var folder = project.FilePath is null ? null : Path.GetDirectoryName(project.FilePath);
         var markup = folder is not null && Directory.EnumerateFiles(folder, "*.razor", SearchOption.AllDirectories).Any();
+        var root = string.IsNullOrEmpty(project.DefaultNamespace) ? null : project.DefaultNamespace;
 
         var compilation = await project.GetCompilationAsync(cancellationToken).ConfigureAwait(false);
         if (compilation is null)
         {
-            return new LoadedProject(file, null, HasGeneratedSources: false, markup);
+            return new LoadedProject(file, null, HasGeneratedSources: false, markup, root);
         }
 
         // The generator runs in the workspace when Roslyn is the SDK's own, which needs nothing on disk.
         var generated = await project.GetSourceGeneratedDocumentsAsync(cancellationToken).ConfigureAwait(false);
         if (generated.Any(document => document.HintName.EndsWith(RazorSuffix, StringComparison.OrdinalIgnoreCase)))
         {
-            return new LoadedProject(file, compilation, HasGeneratedSources: true, markup);
+            return new LoadedProject(file, compilation, HasGeneratedSources: true, markup, root);
         }
 
         var emitted = folder is null ? [] : Emitted(folder);
         if (emitted.Count == 0)
         {
-            return new LoadedProject(file, compilation, HasGeneratedSources: false, markup);
+            return new LoadedProject(file, compilation, HasGeneratedSources: false, markup, root);
         }
 
         var options = compilation.SyntaxTrees.FirstOrDefault()?.Options as CSharpParseOptions;
         var trees = await ParseAsync(emitted, options, cancellationToken).ConfigureAwait(false);
 
-        return new LoadedProject(file, compilation.AddSyntaxTrees(trees), HasGeneratedSources: true, markup);
+        return new LoadedProject(file, compilation.AddSyntaxTrees(trees), HasGeneratedSources: true, markup, root);
     }
 
     private static async ValueTask<IReadOnlyList<SyntaxTree>> ParseAsync(

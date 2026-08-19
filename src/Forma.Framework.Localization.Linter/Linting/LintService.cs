@@ -15,18 +15,21 @@ using Microsoft.Extensions.Options;
 /// <param name="linter">Checks one localization file.</param>
 /// <param name="loader">Loads the projects the source files belong to.</param>
 /// <param name="sources">Checks the keys written at call sites.</param>
+/// <param name="reachability">Checks that a project's translation files can still be found by type.</param>
 public sealed class LintService(
     IOptions<LinterOptions> options,
     ILintTargetResolver resolver,
     ILocalizationFileLinter linter,
     IProjectLoader loader,
-    ISourceLinter sources) : ILintService
+    ISourceLinter sources,
+    IReachabilityLinter reachability) : ILintService
 {
     private readonly LinterOptions _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
     private readonly ILintTargetResolver _resolver = resolver ?? throw new ArgumentNullException(nameof(resolver));
     private readonly ILocalizationFileLinter _linter = linter ?? throw new ArgumentNullException(nameof(linter));
     private readonly IProjectLoader _loader = loader ?? throw new ArgumentNullException(nameof(loader));
     private readonly ISourceLinter _sources = sources ?? throw new ArgumentNullException(nameof(sources));
+    private readonly IReachabilityLinter _reachability = reachability ?? throw new ArgumentNullException(nameof(reachability));
 
     /// <inheritdoc />
     public async ValueTask<LintResult> RunAsync(CancellationToken cancellationToken = default)
@@ -46,7 +49,7 @@ public sealed class LintService(
                 }
             }).ConfigureAwait(false);
 
-        foreach (var diagnostic in await LintSourcesAsync(target, cancellationToken).ConfigureAwait(false))
+        foreach (var diagnostic in await LintProjectsAsync(target, cancellationToken).ConfigureAwait(false))
         {
             diagnostics.Add(diagnostic);
         }
@@ -59,7 +62,7 @@ public sealed class LintService(
             target.FileCount);
     }
 
-    private async ValueTask<IReadOnlyList<LintDiagnostic>> LintSourcesAsync(LintTarget target, CancellationToken cancellationToken)
+    private async ValueTask<IReadOnlyList<LintDiagnostic>> LintProjectsAsync(LintTarget target, CancellationToken cancellationToken)
     {
         if (target.Projects.Count == 0)
         {
@@ -73,6 +76,7 @@ public sealed class LintService(
         foreach (var project in await _loader.LoadAsync(target.Projects, cancellationToken).ConfigureAwait(false))
         {
             diagnostics.AddRange(await _sources.LintAsync(project, wanted, cancellationToken).ConfigureAwait(false));
+            diagnostics.AddRange(_reachability.Lint(project, target.LocalizationFiles));
         }
 
         return diagnostics;

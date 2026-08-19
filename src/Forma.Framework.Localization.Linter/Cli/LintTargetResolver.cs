@@ -73,6 +73,11 @@ public sealed class LintTargetResolver : ILintTargetResolver
             if (IsLocalizationFile(file))
             {
                 localization.Add(file);
+
+                if (ProjectOf(file) is { } project)
+                {
+                    projects.Add(project);
+                }
             }
             else if (IsSourceFile(file))
             {
