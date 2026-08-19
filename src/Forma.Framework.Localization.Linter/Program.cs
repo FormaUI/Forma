@@ -68,6 +68,7 @@ internal static class Program
                 bound.Path = options.Path;
                 bound.ReportPath = options.ReportPath;
                 bound.Excludes = options.Excludes;
+                bound.MinimumSeverity = options.MinimumSeverity;
             })
             .Validate(
                 bound => File.Exists(bound.Path) || Directory.Exists(bound.Path),

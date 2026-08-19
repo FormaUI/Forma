@@ -116,4 +116,37 @@ public sealed class LintServiceTests
         // Assert
         Assert.Equal([.. result.Diagnostics.Paths().Order(StringComparer.Ordinal)], result.Diagnostics.Paths());
     }
+
+    [Fact]
+    public async Task Should_leave_a_warning_out_when_the_run_reports_errors_only()
+    {
+        // Arrange
+        using var directory = new TempDirectory();
+        var file = directory.Write(LocalizationFileFakeData.HebrewName, LocalizationFileFakeData.TrailingMarker);
+
+        // Act
+        var result = await LintServiceTestFactory.Create(file).RunAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Empty(result.Diagnostics),
+            () => Assert.Equal(1, result.SuppressedCount));
+    }
+
+    [Fact]
+    public async Task Should_report_a_warning_when_the_run_reports_warnings()
+    {
+        // Arrange
+        using var directory = new TempDirectory();
+        var file = directory.Write(LocalizationFileFakeData.HebrewName, LocalizationFileFakeData.TrailingMarker);
+
+        // Act
+        var result = await LintServiceTestFactory.Create(file, LintSeverity.Warning)
+            .RunAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal([LintCodes.MarkerNotFirst], result.Diagnostics.Codes()),
+            () => Assert.Equal(0, result.SuppressedCount));
+    }
 }

@@ -17,6 +17,9 @@ public static class LocalizationFileFakeData
     /// <summary>A file that follows the schema for Hebrew.</summary>
     public static string Valid { get; } = WithMarker($"SchemaVersion: {LocalizationSchema.CurrentVersion}; Culture: he;");
 
+    /// <summary>A file that follows the schema for Hebrew but declares its metadata entry last.</summary>
+    public static string TrailingMarker { get; } = WithTrailingMarker($"SchemaVersion: {LocalizationSchema.CurrentVersion}; Culture: he;");
+
     /// <summary>A file whose metadata entry declares the fields given.</summary>
     /// <param name="marker">The fields the entry declares.</param>
     public static string WithMarker(string marker)

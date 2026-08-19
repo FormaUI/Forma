@@ -1,6 +1,7 @@
 namespace Forma.Framework.Localization.Linter.Tests.Support.Linting;
 
 using Forma.Framework.Localization.Linter.Cli;
+using Forma.Framework.Localization.Linter.Diagnostics;
 using Forma.Framework.Localization.Linter.Linting;
 using Forma.Framework.Localization.Linter.Sources;
 
@@ -11,12 +12,13 @@ public static class LintServiceTestFactory
 {
     /// <summary>A service that lints the file or directory named, without loading any project.</summary>
     /// <param name="path">What to lint.</param>
-    public static LintService Create(string path)
+    /// <param name="minimumSeverity">The lowest severity the run reports.</param>
+    public static LintService Create(string path, LintSeverity minimumSeverity = LintSeverity.Error)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
 
         return new LintService(
-            Options.Create(new LinterOptions { Path = path }),
+            Options.Create(new LinterOptions { Path = path, MinimumSeverity = minimumSeverity }),
             new LintTargetResolver(),
             new StubProjectLoader(),
             new LocalizationFileLinter(SchemaLinterTestFactory.Create()),

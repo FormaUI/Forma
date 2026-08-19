@@ -31,4 +31,22 @@ public sealed class ConsoleDiagnosticReporterTests
         var lines = writer.ToString().Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
         Assert.Equal([diagnostic.ToString(), "Linted 1 file(s); 1 diagnostic(s)."], lines);
     }
+
+    [Fact]
+    public async Task Should_say_how_many_diagnostics_the_severity_left_out()
+    {
+        // Arrange
+        await using var writer = new StringWriter();
+        var reporter = new ConsoleDiagnosticReporter(writer);
+
+        // Act
+        await reporter.ReportAsync(new LintResult([], 3, 2), TestContext.Current.CancellationToken);
+
+        // Assert
+        var lines = writer.ToString().Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+
+        Assert.Equal(
+            ["Linted 3 file(s); no diagnostics.", "2 diagnostic(s) hidden; pass --severity warning to see them."],
+            lines);
+    }
 }

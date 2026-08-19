@@ -54,12 +54,17 @@ public sealed class LintService(
             diagnostics.Add(diagnostic);
         }
 
-        return new LintResult(
-            [.. diagnostics
+        // A diagnostic below the severity leaves the result entirely, so it cannot reach the exit code either.
+        LintDiagnostic[] reported =
+        [
+            .. diagnostics
+                .Where(diagnostic => diagnostic.Severity >= _options.MinimumSeverity)
                 .OrderBy(diagnostic => diagnostic.Path, StringComparer.Ordinal)
                 .ThenBy(diagnostic => diagnostic.Line)
-                .ThenBy(diagnostic => diagnostic.Column)],
-            target.FileCount);
+                .ThenBy(diagnostic => diagnostic.Column),
+        ];
+
+        return new LintResult(reported, target.FileCount, diagnostics.Count - reported.Length);
     }
 
     private async ValueTask<IReadOnlyList<LintDiagnostic>> LintProjectsAsync(LintTarget target, CancellationToken cancellationToken)

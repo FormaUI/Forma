@@ -34,6 +34,7 @@ public sealed class JsonDiagnosticReporter(string path) : IDiagnosticReporter
         var report = new LintReport(
             result.FileCount,
             result.Diagnostics.Count,
+            result.SuppressedCount,
             [.. result.Diagnostics.Select(LintReportEntry.From)]);
 
         var stream = File.Create(_path);

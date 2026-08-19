@@ -26,6 +26,24 @@ public sealed class JsonDiagnosticReporterTests
     }
 
     [Fact]
+    public async Task Should_write_how_many_diagnostics_the_severity_left_out()
+    {
+        // Arrange
+        using var directory = new TempDirectory();
+        var report = Path.Combine(directory.Root, "report.json");
+
+        // Act
+        await new JsonDiagnosticReporter(report).ReportAsync(
+            new LintResult([], 4, 2),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        var written = LintReportTestReader.Read(await File.ReadAllTextAsync(report, TestContext.Current.CancellationToken));
+
+        Assert.Equal(2, written.SuppressedCount);
+    }
+
+    [Fact]
     public async Task Should_create_the_directory_the_report_goes_into()
     {
         // Arrange

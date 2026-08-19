@@ -1,5 +1,7 @@
 namespace Forma.Framework.Localization.Linter.Cli;
 
+using Forma.Framework.Localization.Linter.Diagnostics;
+
 /// <summary>Reads the arguments the process was started with.</summary>
 public static class CommandLine
 {
@@ -8,7 +10,8 @@ public static class CommandLine
     /// <summary>How to invoke the linter.</summary>
     public static string Usage
         => """
-           Usage: lintloc --path <file-or-directory> [--report [<path>]] [--exclude <glob>]
+           Usage: locali --path <file-or-directory> [--report [<path>]] [--exclude <glob>]
+                         [--severity <level>]
 
              --path     The file or directory to lint. A directory is searched recursively.
              --report   Write a JSON report. Defaults to localization-report.json in the
@@ -18,6 +21,9 @@ public static class CommandLine
                         more than once. Matching is case-insensitive against the whole
                         path written with forward slashes, and '*' spans separators, so
                         '*/Fixtures/*' skips a folder wherever it sits.
+             --severity The lowest severity to report, 'error' or 'warning'. Defaults to
+                        'error', so a warning neither prints nor fails the run; the
+                        summary still says how many were left out.
            """;
 
     /// <summary>Reads the arguments, reporting the reason rather than throwing when they do not make sense.</summary>
@@ -32,6 +38,7 @@ public static class CommandLine
         string? report = null;
         var wantsReport = false;
         var excludes = new List<string>();
+        var severity = LintSeverity.Error;
 
         for (var index = 0; index < args.Length; index++)
         {
@@ -71,6 +78,25 @@ public static class CommandLine
 
                     break;
 
+                case "--severity":
+                    if (index + 1 >= args.Length || args[index + 1].StartsWith("--", StringComparison.Ordinal))
+                    {
+                        error = "'--severity' needs a level.";
+
+                        return false;
+                    }
+
+                    if (ParseSeverity(args[++index]) is not { } level)
+                    {
+                        error = $"'{args[index]}' is not a severity; use 'error' or 'warning'.";
+
+                        return false;
+                    }
+
+                    severity = level;
+
+                    break;
+
                 default:
                     error = $"'{args[index]}' is not an argument the linter takes.";
 
@@ -90,10 +116,19 @@ public static class CommandLine
             Path = Path.GetFullPath(path),
             ReportPath = wantsReport ? ResolveReport(report) : null,
             Excludes = excludes,
+            MinimumSeverity = severity,
         };
 
         return true;
     }
+
+    private static LintSeverity? ParseSeverity(string value)
+        => value switch
+        {
+            _ when value.Equals("error", StringComparison.OrdinalIgnoreCase) => LintSeverity.Error,
+            _ when value.Equals("warning", StringComparison.OrdinalIgnoreCase) => LintSeverity.Warning,
+            _ => null,
+        };
 
     // Every path resolves against the current directory, so a report never lands somewhere the caller did not name.
     private static string ResolveReport(string? report)

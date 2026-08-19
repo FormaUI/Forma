@@ -23,5 +23,12 @@ public sealed class ConsoleDiagnosticReporter(TextWriter writer) : IDiagnosticRe
             : $"Linted {result.FileCount} file(s); {result.Diagnostics.Count} diagnostic(s).";
 
         await _writer.WriteLineAsync(summary.AsMemory(), cancellationToken).ConfigureAwait(false);
+
+        if (result.SuppressedCount > 0)
+        {
+            var hidden = $"{result.SuppressedCount} diagnostic(s) hidden; pass --severity warning to see them.";
+
+            await _writer.WriteLineAsync(hidden.AsMemory(), cancellationToken).ConfigureAwait(false);
+        }
     }
 }

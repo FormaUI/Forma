@@ -68,6 +68,71 @@ public sealed class CommandLineTests
     }
 
     [Fact]
+    public void Should_report_errors_only_when_no_severity_is_named()
+    {
+        // Act
+        _ = CommandLine.TryParse(["--path", "x"], out var options, out _);
+
+        // Assert
+        Assert.Equal(LintSeverity.Error, options!.MinimumSeverity);
+    }
+
+    [Theory]
+    [InlineData("warning", LintSeverity.Warning)]
+    [InlineData("WARNING", LintSeverity.Warning)]
+    [InlineData("error", LintSeverity.Error)]
+    public void Should_read_the_severity_whatever_case_it_is_written_in(string written, LintSeverity expected)
+    {
+        // Act
+        _ = CommandLine.TryParse(["--path", "x", "--severity", written], out var options, out _);
+
+        // Assert
+        Assert.Equal(expected, options!.MinimumSeverity);
+    }
+
+    [Fact]
+    public void Should_reject_a_severity_switch_with_no_level()
+    {
+        // Act
+        var parsed = CommandLine.TryParse(["--path", "x", "--severity"], out _, out var error);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.False(parsed);
+            Assert.Equal("'--severity' needs a level.", error);
+        });
+    }
+
+    [Fact]
+    public void Should_reject_a_level_that_is_not_a_severity()
+    {
+        // Act
+        var parsed = CommandLine.TryParse(["--path", "x", "--severity", "loud"], out _, out var error);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.False(parsed);
+            Assert.Equal("'loud' is not a severity; use 'error' or 'warning'.", error);
+        });
+    }
+
+    [Fact]
+    public void Should_reject_a_severity_written_as_its_underlying_number()
+    {
+        // Act
+        var parsed = CommandLine.TryParse(["--path", "x", "--severity", "0"], out _, out var error);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.False(parsed);
+            Assert.Equal("'0' is not a severity; use 'error' or 'warning'.", error);
+        });
+    }
+
+    [Fact]
     public void Should_reject_an_argument_the_linter_does_not_take()
     {
         // Act

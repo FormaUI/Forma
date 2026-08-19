@@ -1,6 +1,7 @@
 namespace Forma.Framework.Localization.Linter.Diagnostics;
 
 /// <summary>How much a diagnostic matters.</summary>
+/// <remarks>Declared in ascending order, so a comparison selects everything at a level and above.</remarks>
 public enum LintSeverity
 {
     /// <summary>Something worth changing that still loads.</summary>
