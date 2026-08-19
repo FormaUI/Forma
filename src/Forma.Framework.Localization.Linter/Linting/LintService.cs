@@ -12,24 +12,24 @@ using Microsoft.Extensions.Options;
 /// <summary>Lints the localization files and the source call sites the target names.</summary>
 /// <param name="options">What the command line asked for.</param>
 /// <param name="resolver">Turns the path into a file set.</param>
-/// <param name="linter">Checks one localization file.</param>
 /// <param name="loader">Loads the projects the source files belong to.</param>
-/// <param name="sources">Checks the keys written at call sites.</param>
-/// <param name="reachability">Checks that a project's translation files can still be found by type.</param>
+/// <param name="localizationFileLinter">Checks one localization file.</param>
+/// <param name="sourcesLinter">Checks the keys written at call sites.</param>
+/// <param name="reachabilityLinter">Checks that a project's translation files can still be found by type.</param>
 public sealed class LintService(
     IOptions<LinterOptions> options,
     ILintTargetResolver resolver,
-    ILocalizationFileLinter linter,
     IProjectLoader loader,
-    ISourceLinter sources,
-    IReachabilityLinter reachability) : ILintService
+    ILocalizationFileLinter localizationFileLinter,
+    ISourceLinter sourcesLinter,
+    IReachabilityLinter reachabilityLinter) : ILintService
 {
     private readonly LinterOptions _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
     private readonly ILintTargetResolver _resolver = resolver ?? throw new ArgumentNullException(nameof(resolver));
-    private readonly ILocalizationFileLinter _linter = linter ?? throw new ArgumentNullException(nameof(linter));
     private readonly IProjectLoader _loader = loader ?? throw new ArgumentNullException(nameof(loader));
-    private readonly ISourceLinter _sources = sources ?? throw new ArgumentNullException(nameof(sources));
-    private readonly IReachabilityLinter _reachability = reachability ?? throw new ArgumentNullException(nameof(reachability));
+    private readonly ILocalizationFileLinter _linter = localizationFileLinter ?? throw new ArgumentNullException(nameof(localizationFileLinter));
+    private readonly ISourceLinter _sources = sourcesLinter ?? throw new ArgumentNullException(nameof(sourcesLinter));
+    private readonly IReachabilityLinter _reachability = reachabilityLinter ?? throw new ArgumentNullException(nameof(reachabilityLinter));
 
     /// <inheritdoc />
     public async ValueTask<LintResult> RunAsync(CancellationToken cancellationToken = default)
