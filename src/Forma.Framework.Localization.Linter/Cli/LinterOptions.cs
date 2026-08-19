@@ -8,4 +8,7 @@ public sealed class LinterOptions
 
     /// <summary>Where to write the JSON report, or null when none was asked for.</summary>
     public string? ReportPath { get; set; }
+
+    /// <summary>The globs naming files the run leaves unread, empty when it reads everything.</summary>
+    public IReadOnlyList<string> Excludes { get; set; } = [];
 }

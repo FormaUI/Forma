@@ -34,7 +34,7 @@ public sealed class LintService(
     /// <inheritdoc />
     public async ValueTask<LintResult> RunAsync(CancellationToken cancellationToken = default)
     {
-        var target = _resolver.Resolve(_options.Path);
+        var target = _resolver.Resolve(_options.Path, _options.Excludes);
         var diagnostics = new ConcurrentBag<LintDiagnostic>();
 
         // Each file is read independently, so they overlap rather than queueing behind one another.

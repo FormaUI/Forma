@@ -31,6 +31,43 @@ public sealed class CommandLineTests
     }
 
     [Fact]
+    public void Should_reject_an_exclude_switch_with_no_glob()
+    {
+        // Act
+        var parsed = CommandLine.TryParse(["--path", "x", "--exclude"], out _, out var error);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.False(parsed);
+            Assert.Equal("'--exclude' needs a glob.", error);
+        });
+    }
+
+    [Fact]
+    public void Should_ask_for_no_exclusions_when_the_switch_is_absent()
+    {
+        // Act
+        _ = CommandLine.TryParse(["--path", "x"], out var options, out _);
+
+        // Assert
+        Assert.Empty(options!.Excludes);
+    }
+
+    [Fact]
+    public void Should_keep_every_exclude_the_command_line_repeats()
+    {
+        // Act
+        _ = CommandLine.TryParse(
+            ["--path", "x", "--exclude", "*/Fixtures/*", "--exclude", "*/obj/*"],
+            out var options,
+            out _);
+
+        // Assert
+        Assert.Equal(["*/Fixtures/*", "*/obj/*"], options!.Excludes);
+    }
+
+    [Fact]
     public void Should_reject_an_argument_the_linter_does_not_take()
     {
         // Act

@@ -15,18 +15,31 @@ The examples below use `locali` for the built binary.
 ## Running
 
 ```text
-Usage: locali --path <file-or-directory> [--report [<path>]]
+Usage: locali --path <file-or-directory> [--report [<path>]] [--exclude <glob>]
 
-  --path    The file or directory to lint. A directory is searched recursively.
-  --report  Write a JSON report. Defaults to localization-report.json in the
-            current directory; a path ending in .json names the file, and any
-            other path names the directory to write the default name into.
+  --path     The file or directory to lint. A directory is searched recursively.
+  --report   Write a JSON report. Defaults to localization-report.json in the
+             current directory; a path ending in .json names the file, and any
+             other path names the directory to write the default name into.
+  --exclude  Leave every file whose path matches the glob unread. May be given
+             more than once. Matching is case-insensitive against the whole
+             path written with forward slashes, and '*' spans separators, so
+             '*/Fixtures/*' skips a folder wherever it sits.
 ```
 
 `--path` accepts a `.json` file, a `.cs` or `.razor` file, a `.csproj`, a `.sln`/`.slnx`,
 or a directory. A directory is searched for `.json`, `.cs`, and `.razor`, skipping `bin`
 and `obj`. Source files are linted through the project that owns them, found by walking
 up to the nearest `.csproj`.
+
+`--exclude` is what makes a test tree lintable. A test project's fixtures are often
+malformed on purpose — a file with no `$localization` entry, a culture that disagrees with
+its own name — so linting them reports what the fixture exists to prove. Excluding the
+folder they live in leaves the rest of the tree checked:
+
+```powershell
+locali --path Forma.slnx --exclude "*/Fixtures/*"
+```
 
 | Exit code | Meaning |
 |-----------|---------|

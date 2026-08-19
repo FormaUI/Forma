@@ -168,6 +168,95 @@ public sealed class LintTargetResolverTests
     }
 
     [Fact]
+    public void Should_leave_an_excluded_file_unread()
+    {
+        // Arrange
+        using var directory = new TempDirectory();
+        var kept = directory.Write(LocalizationFileFakeData.HebrewName, LocalizationFileFakeData.Valid);
+        directory.Write(Path.Combine("Fixtures", "Broken.he.json"), LocalizationFileFakeData.Unmarked);
+
+        // Act
+        var target = new LintTargetResolver().Resolve(directory.Root, ["*/Fixtures/*"]);
+
+        // Assert
+        Assert.Equal([kept], target.LocalizationFiles);
+    }
+
+    [Fact]
+    public void Should_match_an_exclude_however_the_path_is_written()
+    {
+        // Arrange
+        using var directory = new TempDirectory();
+        directory.Write(Path.Combine("Fixtures", "Broken.he.json"), LocalizationFileFakeData.Unmarked);
+
+        // Act
+        var target = new LintTargetResolver().Resolve(directory.Root, ["*/fixtures/*"]);
+
+        // Assert
+        Assert.Empty(target.LocalizationFiles);
+    }
+
+    [Fact]
+    public void Should_exclude_source_files_as_well_as_translations()
+    {
+        // Arrange
+        using var directory = new TempDirectory();
+        directory.Write(Path.Combine("Fixtures", "Widget.cs"), "class Widget;");
+
+        // Act
+        var target = new LintTargetResolver().Resolve(directory.Root, ["*/Fixtures/*"]);
+
+        // Assert
+        Assert.Empty(target.SourceFiles);
+    }
+
+    [Fact]
+    public void Should_read_everything_when_no_exclude_is_given()
+    {
+        // Arrange
+        using var directory = new TempDirectory();
+        directory.Write(Path.Combine("Fixtures", "Broken.he.json"), LocalizationFileFakeData.Unmarked);
+
+        // Act
+        var target = new LintTargetResolver().Resolve(directory.Root);
+
+        // Assert
+        Assert.Single(target.LocalizationFiles);
+    }
+
+    [Fact]
+    public void Should_apply_an_exclude_to_a_project_target()
+    {
+        // Arrange
+        using var directory = new TempDirectory();
+        var project = directory.Write("Scratch.csproj", "<Project />");
+        var kept = directory.Write(LocalizationFileFakeData.HebrewName, LocalizationFileFakeData.Valid);
+        directory.Write(Path.Combine("Fixtures", "Broken.he.json"), LocalizationFileFakeData.Unmarked);
+
+        // Act
+        var target = new LintTargetResolver().Resolve(project, ["*/Fixtures/*"]);
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal([kept], target.LocalizationFiles),
+            () => Assert.Equal([project], target.Projects));
+    }
+
+    [Fact]
+    public void Should_leave_a_single_named_file_unread_when_it_is_excluded()
+    {
+        // Arrange
+        using var directory = new TempDirectory();
+        var file = directory.Write(Path.Combine("Fixtures", "Broken.he.json"), LocalizationFileFakeData.Unmarked);
+
+        // Act
+        var target = new LintTargetResolver().Resolve(file, ["*/Fixtures/*"]);
+
+        // Assert
+        Assert.Empty(target.LocalizationFiles);
+    }
+
+    [Fact]
     public void Should_own_no_translation_files_when_none_sit_under_the_project()
     {
         // Arrange

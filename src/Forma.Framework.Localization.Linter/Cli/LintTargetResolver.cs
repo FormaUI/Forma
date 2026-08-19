@@ -1,18 +1,22 @@
 namespace Forma.Framework.Localization.Linter.Cli;
 
+using System.IO.Enumeration;
+
 /// <summary>Reads a path as a solution, a project, a directory or a single file.</summary>
 public sealed class LintTargetResolver : ILintTargetResolver
 {
     private static readonly string[] SourceExtensions = [".cs", ".razor"];
 
     /// <inheritdoc />
-    public LintTarget Resolve(string path)
+    public LintTarget Resolve(string path, IReadOnlyCollection<string>? excludes = null)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
 
+        var skip = excludes ?? [];
+
         if (Directory.Exists(path))
         {
-            return FromFiles(Walk(path));
+            return FromFiles(Walk(path), skip);
         }
 
         if (!File.Exists(path))
@@ -22,9 +26,9 @@ public sealed class LintTargetResolver : ILintTargetResolver
 
         return Path.GetExtension(path).ToUpperInvariant() switch
         {
-            ".SLN" or ".SLNX" => FromSolution(path),
-            ".CSPROJ" => FromProject(path),
-            _ => FromFiles([path]),
+            ".SLN" or ".SLNX" => FromSolution(path, skip),
+            ".CSPROJ" => FromProject(path, skip),
+            _ => FromFiles([path], skip),
         };
     }
 
@@ -62,7 +66,7 @@ public sealed class LintTargetResolver : ILintTargetResolver
     private static bool IsSourceFile(string file)
         => SourceExtensions.Contains(Path.GetExtension(file), StringComparer.OrdinalIgnoreCase);
 
-    private static LintTarget FromFiles(IEnumerable<string> files)
+    private static LintTarget FromFiles(IEnumerable<string> files, IReadOnlyCollection<string> excludes)
     {
         var localization = new List<string>();
         var sources = new List<string>();
@@ -71,6 +75,11 @@ public sealed class LintTargetResolver : ILintTargetResolver
 
         foreach (var file in files)
         {
+            if (IsExcluded(file, excludes))
+            {
+                continue;
+            }
+
             if (IsLocalizationFile(file))
             {
                 localization.Add(file);
@@ -106,19 +115,33 @@ public sealed class LintTargetResolver : ILintTargetResolver
             owned.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<string>)pair.Value, StringComparer.OrdinalIgnoreCase));
     }
 
-    private static LintTarget FromProject(string project)
+    private static LintTarget FromProject(string project, IReadOnlyCollection<string> excludes)
     {
         var folder = Path.GetDirectoryName(Path.GetFullPath(project))!;
-        var target = FromFiles(Walk(folder));
+        var target = FromFiles(Walk(folder), excludes);
 
         return target with { Projects = [project] };
     }
 
-    private static LintTarget FromSolution(string solution)
+    private static LintTarget FromSolution(string solution, IReadOnlyCollection<string> excludes)
     {
         var folder = Path.GetDirectoryName(Path.GetFullPath(solution))!;
-        var target = FromFiles(Walk(folder));
+        var target = FromFiles(Walk(folder), excludes);
 
         return target with { Projects = [solution] };
+    }
+
+    // A glob reads against the whole path with forward slashes, so one pattern serves either platform,
+    // and '*' spans separators so a folder can be named without counting the folders above it.
+    private static bool IsExcluded(string file, IReadOnlyCollection<string> excludes)
+    {
+        if (excludes.Count == 0)
+        {
+            return false;
+        }
+
+        var path = Path.GetFullPath(file).Replace(Path.DirectorySeparatorChar, '/');
+
+        return excludes.Any(pattern => FileSystemName.MatchesSimpleExpression(pattern, path, ignoreCase: true));
     }
 }
