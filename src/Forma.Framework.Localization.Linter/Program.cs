@@ -98,6 +98,8 @@ internal static class Program
         builder.Services.AddSingleton<ICallSiteRuleChecker, PluralOtherFieldChecker>();
         builder.Services.AddSingleton<ICallSiteRuleChecker, UnreadValueChecker>();
         builder.Services.AddSingleton<ICallSiteRuleChecker, HoleShapeChecker>();
+        builder.Services.AddSingleton<ICallSiteRuleChecker, BareHoleKeyChecker>();
+        builder.Services.AddSingleton<ICallSiteRuleChecker, BareExpressionKeyChecker>();
 
         builder.Services.AddSingleton<ISchemaLinter, SchemaLinter>();
         builder.Services.AddSingleton<ISourceLinter, SourceLinter>();

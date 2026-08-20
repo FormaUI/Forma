@@ -329,4 +329,86 @@ public sealed class CallSiteRuleTests
         // Assert
         Assert.Equal([LintCodes.HoleNotIdentifier], diagnostics.Codes());
     }
+
+    [Theory]
+    [InlineData("""public string Read() => locale["{count}", 1];""")]
+    [InlineData("""public string Read() => locale["{count} / {total}", 1, 2];""")]
+    [InlineData("""public string Read() => locale["{count}: {total}", 1, 2];""")]
+    public void Should_report_a_key_carrying_holes_and_no_words(string source)
+    {
+        // Act
+        var diagnostics = SourceLinterTestFactory.Lint(source);
+
+        // Assert
+        Assert.Equal([LintCodes.BareHoleKey], diagnostics.Codes());
+    }
+
+    [Theory]
+    [InlineData("""public string Read() => locale["Stored {stored} of {total}.", 1, 2];""")]
+    [InlineData("""public string Read() => locale["Saved."];""")]
+    [InlineData("""public string Read() => locale["{count} files", 1];""")]
+    public void Should_leave_a_key_carrying_words_alone(string source)
+    {
+        // Act
+        var diagnostics = SourceLinterTestFactory.Lint(source);
+
+        // Assert
+        Assert.DoesNotContain(LintCodes.BareHoleKey, diagnostics.Codes());
+    }
+
+    [Fact]
+    public void Should_report_an_expression_key_carrying_no_words_in_any_field()
+    {
+        // Act
+        var diagnostics = SourceLinterTestFactory.Lint(
+            """public string Read() => locale["[$ plural; other: #; $]", 1];""");
+
+        // Assert
+        Assert.Equal([LintCodes.BareExpressionKey], diagnostics.Codes());
+    }
+
+    [Theory]
+    [InlineData("""public string Read() => locale[" [$ plural; other: #; $] ", 1];""")]
+    [InlineData("""public string Read() => locale["([$ plural; other: #; $])", 1];""")]
+    public void Should_report_an_expression_key_padded_with_no_words(string source)
+    {
+        // Act
+        var diagnostics = SourceLinterTestFactory.Lint(source);
+
+        // Assert
+        Assert.Equal([LintCodes.BareExpressionKey], diagnostics.Codes());
+    }
+
+    [Fact]
+    public void Should_report_a_key_of_two_expressions_carrying_no_words()
+    {
+        // Act
+        var diagnostics = SourceLinterTestFactory.Lint(
+            """public string Read() => locale["[$ [a] plural; other: #; $] / [$ [b] plural; other: #; $]", ("a", (object?)1), ("b", (object?)2)];""");
+
+        // Assert
+        Assert.Equal([LintCodes.BareExpressionKey], diagnostics.Codes());
+    }
+
+    [Fact]
+    public void Should_leave_an_expression_key_whose_fields_carry_words_alone()
+    {
+        // Act
+        var diagnostics = SourceLinterTestFactory.Lint(
+            """public string Read() => locale["[$ plural; one: # file; other: # files; $]", 1];""");
+
+        // Assert
+        Assert.DoesNotContain(LintCodes.BareExpressionKey, diagnostics.Codes());
+    }
+
+    [Fact]
+    public void Should_leave_an_expression_key_alone_when_prose_sits_outside_it()
+    {
+        // Act
+        var diagnostics = SourceLinterTestFactory.Lint(
+            """public string Read() => locale["Found: [$ [count] plural; other: #; $]", ("count", (object?)1)];""");
+
+        // Assert
+        Assert.DoesNotContain(LintCodes.BareExpressionKey, diagnostics.Codes());
+    }
 }

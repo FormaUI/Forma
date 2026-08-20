@@ -33,7 +33,21 @@ public static class LintCodes
             HoleShapedText,
             MissingTranslation,
             KeyNotAnalysed,
+            BareHoleKey,
+            BareExpressionKey,
         ];
+
+    /// <summary>The key carries holes but no words for a translator to read.</summary>
+    public static LintCode BareHoleKey { get; } = new(
+        "LOC0211",
+        LintSeverity.Warning,
+        "A key carries holes but no words anywhere else, so it names no text to translate.");
+
+    /// <summary>The expression key carries no words in any field, only the count.</summary>
+    public static LintCode BareExpressionKey { get; } = new(
+        "LOC0212",
+        LintSeverity.Warning,
+        "An expression key carries no words in any field, so it names no text to translate.");
 
     /// <summary>The file declares a culture its own name does not give it.</summary>
     public static LintCode CultureMismatch { get; } = new(
@@ -53,12 +67,6 @@ public static class LintCodes
         LintSeverity.Error,
         "A hole in an interpolated key is not a plain identifier, so the lookup throws.");
 
-    /// <summary>A lookup writes its key as an expression, so no rule could read it.</summary>
-    public static LintCode KeyNotAnalysed { get; } = new(
-        "LOC0210",
-        LintSeverity.Warning,
-        "A lookup writes its key as an expression, so what it reads went unchecked.");
-
     /// <summary>A key writes text shaped like a hole whose name the runtime cannot read.</summary>
     public static LintCode HoleShapedText { get; } = new(
         "LOC0208",
@@ -70,6 +78,12 @@ public static class LintCodes
         "LOC0100",
         LintSeverity.Error,
         "A file that claims to carry translations is not readable JSON.");
+
+    /// <summary>A lookup writes its key as an expression, so no rule could read it.</summary>
+    public static LintCode KeyNotAnalysed { get; } = new(
+        "LOC0210",
+        LintSeverity.Warning,
+        "A lookup writes its key as an expression, so what it reads went unchecked.");
 
     /// <summary>The metadata entry does not follow the field grammar.</summary>
     public static LintCode MalformedMetadata { get; } = new(
@@ -101,17 +115,17 @@ public static class LintCodes
         LintSeverity.Warning,
         "A plural expression omits 'other', so a count it does not name renders as nothing.");
 
-    /// <summary>A key written in source has no entry in one of its type's translation files.</summary>
-    public static LintCode MissingTranslation { get; } = new(
-        "LOC0209",
-        LintSeverity.Warning,
-        "A key written at a call site has no entry in a translation file its type already owns, so it renders untranslated.");
-
     /// <summary>The metadata entry omits a field the schema requires.</summary>
     public static LintCode MissingRequiredField { get; } = new(
         "LOC0104",
         LintSeverity.Error,
         "A metadata entry omits a field the schema requires.");
+
+    /// <summary>A key written in source has no entry in one of its type's translation files.</summary>
+    public static LintCode MissingTranslation { get; } = new(
+        "LOC0209",
+        LintSeverity.Warning,
+        "A key written at a call site has no entry in a translation file its type already owns, so it renders untranslated.");
 
     /// <summary>A project's Razor markup was not checked, because no generated C# was found.</summary>
     public static LintCode RazorNotAnalysed { get; } = new(

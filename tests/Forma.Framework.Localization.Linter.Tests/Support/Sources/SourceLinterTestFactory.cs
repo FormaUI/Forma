@@ -21,6 +21,8 @@ public static class SourceLinterTestFactory
             new PluralOtherFieldChecker(),
             new UnreadValueChecker(),
             new HoleShapeChecker(),
+            new BareHoleKeyChecker(),
+            new BareExpressionKeyChecker(),
         ];
 
     /// <summary>What the call-site rules report over members of a class that holds a localizer.</summary>
