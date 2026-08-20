@@ -60,7 +60,6 @@
     justify-content: space-between;
     gap: 0.5rem;
     background: var(--hover-bg-color);
-    border: 1px solid var(--light-border-color);
     padding-inline: 0.5rem;
     padding-block: 0;
     border-radius: 6px;
@@ -94,13 +93,12 @@
 .forma-explorer-view-modes {
     display: flex;
     align-items: center;
-    border: 1px solid var(--light-border-color);
     border-radius: 6px;
-    background: var(--input-bg-color);
     overflow: hidden;
 }
 
 .forma-explorer-view-btn {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -109,6 +107,7 @@
     min-inline-size: 24px;
     min-block-size: 24px;
     border: none;
+    border-radius: 6px;
     background: transparent;
     color: var(--text-muted-color);
     cursor: pointer;
@@ -124,17 +123,35 @@
     }
 }
 
+.forma-explorer-view-btn:focus-visible {
+    outline: 2px solid var(--focus-color);
+    outline-offset: -2px;
+}
+
 .forma-explorer-view-btn.is-active {
     background: var(--hover-bg-color);
     color: var(--main-color);
 }
 
-/* Sort Menu. The host class merges onto FormaButton's own element, so the trigger is reached through ::deep. */
-.forma-explorer-toolbar-right ::deep .forma-explorer-sort-trigger {
-    border: 1px solid var(--light-border-color);
-    background: var(--input-bg-color);
+/* An underline marks the active view, because the fill alone repeats what hover already draws. */
+.forma-explorer-view-btn.is-active::after {
+    content: "";
+    position: absolute;
+    inset-block-end: 0.25rem;
+    inline-size: 1rem;
+    block-size: 2px;
+    border-radius: 1px;
+    background: currentColor;
 }
 
+@media (pointer: coarse) {
+    .forma-explorer-view-btn {
+        inline-size: 2.75rem;
+        block-size: 2.75rem;
+    }
+}
+
+/* Sort Menu. The host class merges onto FormaButton's own element, so the trigger is reached through ::deep. */
 /* Matched to the view-mode buttons beside it, but only where FormaButton is not already enlarging it for touch. */
 @media (pointer: fine) {
     .forma-explorer-toolbar-right ::deep .forma-explorer-sort-trigger {
@@ -144,4 +161,9 @@
 
 .forma-explorer-sort-trigger-text {
     font-size: 0.875rem;
+}
+
+.forma-explorer-sort-trigger-caret {
+    font-size: 0.65rem;
+    color: var(--text-muted-color);
 }

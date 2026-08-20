@@ -3,12 +3,11 @@
    Explorer-style navigation buttons, breadcrumb bar, and search
    ============================================================ */
 
+/* No divider or trailing space of its own: the header band around it owns both. */
 .forma-explorer-address-bar {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding-block-end: 0.5rem;
-    border-block-end: 1px solid var(--border-color);
 }
 
 .forma-explorer-nav-buttons {
@@ -26,20 +25,32 @@
     block-size: 2rem;
     min-inline-size: 24px;
     min-block-size: 24px;
-    border: 1px solid var(--light-border-color);
-    border-radius: 4px;
+    border: none;
+    border-radius: 6px;
     background: transparent;
     color: var(--text-color);
     cursor: pointer;
     font-size: 0.8rem;
     touch-action: manipulation;
-    transition: background-color 0.15s ease, border-color 0.15s ease;
+    transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 @media (hover: hover) {
     .forma-explorer-nav-btn:not(:disabled):hover {
         background: var(--hover-bg-color);
-        border-color: var(--dark-border-color);
+        color: var(--main-color);
+    }
+}
+
+.forma-explorer-nav-btn:focus-visible {
+    outline: 2px solid var(--focus-color);
+    outline-offset: 1px;
+}
+
+@media (pointer: coarse) {
+    .forma-explorer-nav-btn {
+        inline-size: 2.75rem;
+        block-size: 2.75rem;
     }
 }
 
@@ -61,7 +72,7 @@
     align-items: center;
     gap: 0.35rem;
     padding-inline: 0.6rem;
-    border: 1px solid var(--light-border-color);
+    border: 1px solid var(--forma-explorer-field-border-color, var(--border-color));
     border-radius: 6px;
     background: var(--input-bg-color);
     transition: flex 0.25s ease, max-inline-size 0.25s ease, opacity 0.2s ease, padding 0.25s ease, border-color 0.2s ease;
@@ -260,7 +271,7 @@
     min-block-size: 2.25rem;
     padding-inline: 2rem;
     padding-block: 0.35rem;
-    border: 1px solid var(--light-border-color);
+    border: 1px solid var(--forma-explorer-field-border-color, var(--border-color));
     border-radius: 6px;
     background: var(--input-bg-color);
     color: var(--text-color);

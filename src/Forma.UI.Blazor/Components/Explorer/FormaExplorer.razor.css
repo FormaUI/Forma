@@ -9,17 +9,33 @@
     --forma-explorer-check-glyph-size: 0.75rem;
     --forma-explorer-check-fg-color: #fff;
     --forma-explorer-block-size: 40rem;
+    --forma-explorer-pad: 0.75rem;
+    --forma-explorer-radius: 8px;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: var(--forma-explorer-radius);
     background: var(--input-bg-color);
-    padding: 0.75rem;
+    padding: var(--forma-explorer-pad);
     min-inline-size: 20rem;
     min-block-size: 18rem;
     max-block-size: var(--forma-explorer-block-size);
     box-sizing: border-box;
+}
+
+/* Negative margins cancel the explorer's padding so the band and its rule reach both edges. */
+.forma-explorer-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-block-start: calc(-1 * var(--forma-explorer-pad));
+    margin-inline: calc(-1 * var(--forma-explorer-pad));
+    padding: var(--forma-explorer-pad);
+    background: var(--forma-explorer-header-bg-color, var(--modal-bg-color));
+    border-block-end: 1px solid var(--border-color);
+    border-start-start-radius: var(--forma-explorer-radius);
+    border-start-end-radius: var(--forma-explorer-radius);
 }
 
 .forma-explorer.is-resizable {
@@ -59,6 +75,8 @@
 }
 
 .forma-explorer.is-dialog {
+    --forma-explorer-pad: 0rem;
+    --forma-explorer-radius: 0;
     border: none;
     padding: 0;
     background: transparent;
