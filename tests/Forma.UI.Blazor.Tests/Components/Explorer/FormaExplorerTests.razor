@@ -251,7 +251,7 @@
             var cut = ctx.Render(@<FormaExplorer Resources="[]" Folders="folders" CurrentFolder="child" />);
 
             // Assert
-            var breadcrumbs = cut.FindAll(".forma-explorer-breadcrumb-item");
+            var breadcrumbs = cut.FindAll(".forma-breadcrumb-item");
             Assert.Equal(3, breadcrumbs.Count); // "All Media" > "Races" > "2026"
             Assert.Equal("All Media", breadcrumbs[0].TextContent.Trim());
             Assert.Equal("Races", breadcrumbs[1].TextContent.Trim());
@@ -1010,12 +1010,12 @@
             var cut = ctx.Render(@<FormaExplorer Resources="[]" Folders="folders" />);
 
             // Act
-            cut.Find(".forma-explorer-breadcrumb-chevron").Click();
+            cut.Find(".forma-breadcrumb-chevron").Click();
 
             // Assert
-            var items = cut.FindAll(".forma-explorer-breadcrumb-menu-item").Select(item => item.TextContent.Trim()).ToList();
+            var items = cut.FindAll(".forma-breadcrumb-menu-item").Select(item => item.TextContent.Trim()).ToList();
             Assert.Equal(["Races", "Covers"], items);
-            Assert.Equal("true", cut.Find(".forma-explorer-breadcrumb-chevron").GetAttribute("aria-expanded"));
+            Assert.Equal("true", cut.Find(".forma-breadcrumb-chevron").GetAttribute("aria-expanded"));
         }
         [Fact]
         public void Should_hide_media_checkboxes_when_a_folder_is_selected()
@@ -1090,7 +1090,7 @@
             // Assert
             Assert.Empty(cut.FindAll(".forma-explorer-sidebar"));
             Assert.Empty(cut.FindAll(".forma-explorer-splitter"));
-            Assert.NotEmpty(cut.FindAll(".forma-explorer-breadcrumb-chevron"));
+            Assert.NotEmpty(cut.FindAll(".forma-breadcrumb-chevron"));
         }
 
         [Fact]
@@ -1105,7 +1105,7 @@
 
             // Assert
             Assert.NotNull(cut.Find(".forma-explorer-sidebar"));
-            Assert.Empty(cut.FindAll(".forma-explorer-breadcrumb-chevron"));
+            Assert.Empty(cut.FindAll(".forma-breadcrumb-chevron"));
         }
         [Fact]
         public void Should_keep_the_view_mode_when_a_selection_change_re_renders_the_host()
@@ -1240,7 +1240,7 @@
             var cut = ctx.Render(@<FormaExplorer Resources="[]" Folders="folders" CurrentFolder="current" />);
 
             // Assert
-            Assert.Equal(["All Media", "Races"], cut.FindAll(".forma-explorer-breadcrumb-item").Select(b => b.TextContent.Trim()));
+            Assert.Equal(["All Media", "Races"], cut.FindAll(".forma-breadcrumb-item").Select(b => b.TextContent.Trim()));
         }
 
         [Fact]
@@ -1255,7 +1255,7 @@
             var cut = ctx.Render(@<FormaExplorer Resources="[]" Folders="folders" CurrentFolder="child" />);
 
             // Assert
-            Assert.Equal(["All Media", "Races", "2026"], cut.FindAll(".forma-explorer-breadcrumb-item").Select(b => b.TextContent.Trim()));
+            Assert.Equal(["All Media", "Races", "2026"], cut.FindAll(".forma-breadcrumb-item").Select(b => b.TextContent.Trim()));
         }
 
         [Fact]

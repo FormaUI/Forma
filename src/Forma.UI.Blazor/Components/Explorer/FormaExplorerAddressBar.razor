@@ -1,4 +1,5 @@
 @namespace Forma.UI.Blazor.Components.Explorer
+@using Forma.UI.Blazor.Components.Interactive
 
 <div class="forma-explorer-address-bar @(!string.IsNullOrEmpty(SearchQuery) ? "has-search-query" : "")">
     <div class="forma-explorer-nav-buttons" role="group" aria-label="@L["Navigation"]">
@@ -31,66 +32,13 @@
         </button>
     </div>
 
-    <nav class="forma-explorer-breadcrumb-bar" aria-label="@L["Folder Path"]" @onkeydown="HandleMenuKeyDown">
-        <span class="forma-explorer-root-icon" aria-hidden="true"><FormaGlyph Name="Glyph.FolderOpen" /></span>
-
-        @for (var index = 0; index < Levels.Count; index++)
-        {
-            var level = Levels[index];
-            var isCurrent = CurrentFolder?.Source == level.Folder?.Source;
-            var isLast = index == Levels.Count - 1;
-            <button type="button"
-                    class="forma-explorer-breadcrumb-item @(isCurrent ? "is-current" : "")"
-                    @ondragover="HandleDragOver"
-                    @ondragover:preventDefault="true"
-                    @ondrop="() => HandleBreadcrumbDrop(level.Folder)"
-                    @onclick="() => OnFolderSelected.InvokeAsync(level.Folder)">
-                @level.Name
-            </button>
-
-            var children = ChildrenOf(level.Parent);
-
-            if (!ShowFolderMenu || children.Count == 0)
-            {
-                @if (!isLast)
-                {
-                    <span class="forma-explorer-breadcrumb-separator" aria-hidden="true"><FormaGlyph Name="Glyph.ChevronRight" /></span>
-                }
-            }
-            else
-            {
-                var isOpen = _openLevelKey == level.Key;
-
-                <span class="forma-explorer-breadcrumb-level">
-                    <button type="button"
-                            class="forma-explorer-breadcrumb-chevron @(isOpen ? "is-open" : "")"
-                            aria-haspopup="menu"
-                            aria-expanded="@(isOpen ? "true" : "false")"
-                            aria-label="@L["Folders in {name}", ("name", level.Name)]"
-                            @onclick="() => ToggleLevelMenu(level.Key)">
-                        <FormaGlyph Name="Glyph.ChevronRight" />
-                    </button>
-
-                    @if (isOpen)
-                    {
-                        <span class="forma-explorer-breadcrumb-backdrop" @onclick="CloseLevelMenu"></span>
-                        <span class="forma-explorer-breadcrumb-menu" role="menu">
-                            @foreach (var child in children)
-                            {
-                                <button type="button"
-                                        class="forma-explorer-breadcrumb-menu-item"
-                                        role="menuitem"
-                                        @onclick="() => SelectFromMenuAsync(child)">
-                                    <span class="forma-explorer-menu-icon" aria-hidden="true"><FormaGlyph Name="Glyph.Folder" /></span>
-                                    @child.Name
-                                </button>
-                            }
-                        </span>
-                    }
-                </span>
-            }
-        }
-    </nav>
+    <div class="forma-explorer-breadcrumb-bar">
+        <FormaBreadcrumb Items="Items"
+                        RootIcon="Glyph.FolderOpen"
+                        AriaLabel="@L["Folder Path"]"
+                        OnItemClick="OnFolderSelected"
+                        OnItemDrop="OnBreadcrumbDrop" />
+    </div>
 
     <div class="forma-explorer-search-wrapper">
         <FormaSearchBox Value="@SearchQuery"

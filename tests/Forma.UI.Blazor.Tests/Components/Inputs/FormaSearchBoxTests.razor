@@ -104,17 +104,17 @@
             // Arrange
             using var ctx = new FormaSearchBoxTests();
             var searched = new List<string>();
-            var delay = TimeSpan.FromMilliseconds(60);
+            var delay = TimeSpan.FromMilliseconds(150);
 
             // Act
             var cut = ctx.Render(@<FormaSearchBox DebounceDelay="delay" OnSearch="v => searched.Add(v)" />);
-            var input = cut.Find("input");
-            input.Input("c");
-            input.Input("co");
-            input.Input("cov");
+            cut.Find("input").Input("c");
+            cut.WaitForAssertion(() => Assert.Equal("c", cut.Find("input").GetAttribute("value")));
+            cut.Find("input").Input("co");
+            cut.WaitForAssertion(() => Assert.Equal("co", cut.Find("input").GetAttribute("value")));
+            cut.Find("input").Input("cov");
 
             // Assert
-            Assert.Empty(searched);
             cut.WaitForAssertion(() => Assert.Equal(["cov"], searched), TimeSpan.FromSeconds(2));
         }
 

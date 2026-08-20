@@ -2,9 +2,9 @@ namespace Forma.UI.Blazor.Components.Explorer;
 
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
+using Forma.UI.Blazor.Components.Interactive;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 
 /// <summary>Address bar and navigation controls for a media explorer.</summary>
 public sealed partial class FormaExplorerAddressBar : ComponentBase
@@ -61,50 +61,49 @@ public sealed partial class FormaExplorerAddressBar : ComponentBase
 
     [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
 
-    private const string RootLevelKey = "\u0000root";
-
-    private string? _openLevelKey;
-
-    private IReadOnlyList<BreadcrumbLevel> Levels
+    private IReadOnlyList<BreadcrumbItem<FolderResourceInfo>> Items
     {
         get
         {
-            var levels = new List<BreadcrumbLevel> { new(RootLevelKey, null, L["All Media"].Value, null) };
+            var items = new List<BreadcrumbItem<FolderResourceInfo>>
+            {
+                new(L["All Media"].Value)
+                {
+                    IsCurrent = CurrentFolder is null,
+                    Children = ChildrenAsItems(null)
+                }
+            };
 
             foreach (var segment in Breadcrumbs)
             {
-                levels.Add(new BreadcrumbLevel(segment.Source, segment.Source, segment.Name, segment));
+                items.Add(new BreadcrumbItem<FolderResourceInfo>(segment.Name)
+                {
+                    Value = segment,
+                    IsCurrent = CurrentFolder?.Source == segment.Source,
+                    Children = ChildrenAsItems(segment.Source)
+                });
             }
 
-            return levels;
+            return items;
         }
+    }
+
+    private List<BreadcrumbItem<FolderResourceInfo>>? ChildrenAsItems(string? folderKey)
+    {
+        if (!ShowFolderMenu)
+        {
+            return null;
+        }
+
+        var children = ChildrenOf(folderKey);
+
+        return children.Count == 0
+            ? null
+            : [.. children.Select(child => new BreadcrumbItem<FolderResourceInfo>(child.Name) { Value = child })];
     }
 
     private IReadOnlyList<FolderResourceInfo> ChildrenOf(string? parent)
         => Context.Folders.ChildrenOf(parent);
-
-    private void ToggleLevelMenu(string levelKey)
-        => _openLevelKey = _openLevelKey == levelKey ? null : levelKey;
-
-    private void CloseLevelMenu()
-        => _openLevelKey = null;
-
-    private async Task SelectFromMenuAsync(FolderResourceInfo folder)
-    {
-        _openLevelKey = null;
-
-        await OnFolderSelected.InvokeAsync(folder);
-    }
-
-    private void HandleMenuKeyDown(KeyboardEventArgs args)
-    {
-        if (args.Key == "Escape")
-        {
-            _openLevelKey = null;
-        }
-    }
-
-    private sealed record BreadcrumbLevel(string Key, string? Parent, string Name, FolderResourceInfo? Folder);
 
     private string SearchPlaceholder
     {
@@ -123,12 +122,6 @@ public sealed partial class FormaExplorerAddressBar : ComponentBase
             return L["Search media..."].Value;
         }
     }
-
-    private static void HandleDragOver(DragEventArgs e)
-        => e.DataTransfer.DropEffect = "move";
-
-    private async Task HandleBreadcrumbDrop(FolderResourceInfo? folder)
-        => await OnBreadcrumbDrop.InvokeAsync(folder);
 
     private async Task HandleSearchValueChangedAsync(string query)
     {

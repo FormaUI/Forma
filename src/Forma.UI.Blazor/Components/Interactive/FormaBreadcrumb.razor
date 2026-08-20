@@ -1,0 +1,91 @@
+@typeparam TItem
+@namespace Forma.UI.Blazor.Components.Interactive
+
+<nav class="forma-breadcrumb" aria-label="@EffectiveAriaLabel" @onkeydown="HandleKeyDown">
+    @if (RootIcon is { } icon)
+    {
+        <span class="forma-breadcrumb-root-icon" aria-hidden="true"><FormaGlyph Name="icon" /></span>
+    }
+
+    <ol class="forma-breadcrumb-list">
+        @for (var index = 0; index < Items.Count; index++)
+        {
+            var item = Items[index];
+            var currentIndex = index;
+            var isLast = index == Items.Count - 1;
+            var isOpen = _openIndex == index;
+
+            <li class="forma-breadcrumb-level">
+                @if (item.Url is not null)
+                {
+                    <a class="forma-breadcrumb-item @(item.IsCurrent ? "is-current" : "")"
+                       href="@item.Url"
+                       aria-current="@(item.IsCurrent ? "page" : null)"
+                       @ondragover="HandleDragOver"
+                       @ondragover:preventDefault="OnItemDrop.HasDelegate"
+                       @ondrop="() => HandleItemDropAsync(item)">
+                        @item.Label
+                    </a>
+                }
+                else if (OnItemClick.HasDelegate)
+                {
+                    <button type="button"
+                            class="forma-breadcrumb-item @(item.IsCurrent ? "is-current" : "")"
+                            aria-current="@(item.IsCurrent ? "page" : null)"
+                            @ondragover="HandleDragOver"
+                            @ondragover:preventDefault="OnItemDrop.HasDelegate"
+                            @ondrop="() => HandleItemDropAsync(item)"
+                            @onclick="() => HandleItemClickAsync(item)">
+                        @item.Label
+                    </button>
+                }
+                else
+                {
+                    <span class="forma-breadcrumb-item @(item.IsCurrent ? "is-current" : "")"
+                          aria-current="@(item.IsCurrent ? "page" : null)">
+                        @item.Label
+                    </span>
+                }
+
+                @if (item.Children is { Count: > 0 } children)
+                {
+                    var menuId = $"{_menuIdPrefix}-{currentIndex}";
+
+                    <span class="forma-breadcrumb-menu-anchor">
+                        <button type="button"
+                                class="forma-breadcrumb-chevron @(isOpen ? "is-open" : "")"
+                                aria-expanded="@(isOpen ? "true" : "false")"
+                                aria-controls="@(isOpen ? menuId : null)"
+                                aria-label="@L["Show options for {label}", ("label", item.Label)]"
+                                @onclick="() => ToggleChildren(currentIndex)">
+                            <FormaGlyph Name="Glyph.ChevronRight" />
+                        </button>
+
+                        @if (isOpen)
+                        {
+                            <span class="forma-breadcrumb-backdrop" @onclick="CloseChildren"></span>
+                            @* A group of ordinary buttons rather than role="menu", which would promise arrow-key navigation this does not implement. *@
+                            <span class="forma-breadcrumb-menu"
+                                  id="@menuId"
+                                  role="group"
+                                  aria-label="@L["Show options for {label}", ("label", item.Label)]">
+                                @foreach (var child in children)
+                                {
+                                    <button type="button"
+                                            class="forma-breadcrumb-menu-item"
+                                            @onclick="() => HandleChildSelectedAsync(child)">
+                                        @child.Label
+                                    </button>
+                                }
+                            </span>
+                        }
+                    </span>
+                }
+                else if (!isLast)
+                {
+                    <span class="forma-breadcrumb-separator" aria-hidden="true"><FormaGlyph Name="Glyph.ChevronRight" /></span>
+                }
+            </li>
+        }
+    </ol>
+</nav>

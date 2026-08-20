@@ -1,4 +1,5 @@
 @inherits BunitContext
+@using Forma.UI.Blazor.Components.Interactive
 
 @code {
     public sealed class Component
@@ -41,7 +42,7 @@
             var cut = ctx.Render(@<FormaPageHeader Title="Dashboard" />);
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-page-header-breadcrumb"));
+            Assert.Empty(cut.FindAll(".forma-breadcrumb"));
         }
 
         [Fact]
@@ -49,13 +50,13 @@
         {
             // Arrange
             using var ctx = new FormaPageHeaderTests();
-            var crumbs = Array.Empty<BreadcrumbItem>();
+            var crumbs = Array.Empty<BreadcrumbItem<object?>>();
 
             // Act
             var cut = ctx.Render(@<FormaPageHeader Title="Dashboard" Breadcrumbs="@crumbs" />);
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-page-header-breadcrumb"));
+            Assert.Empty(cut.FindAll(".forma-breadcrumb"));
         }
 
         [Fact]
@@ -76,11 +77,11 @@
         {
             // Arrange
             using var ctx = new FormaPageHeaderTests();
-            BreadcrumbItem[] crumbs = [new("Home", "/"), new("Store"), new("Orders")];
+            BreadcrumbItem<object?>[] crumbs = [new("Home", "/"), new("Store"), new("Orders")];
 
             // Act
             var cut = ctx.Render(@<FormaPageHeader Title="Orders" Breadcrumbs="@crumbs" />);
-            var items = cut.FindAll(".forma-page-header-breadcrumb-item");
+            var items = cut.FindAll(".forma-breadcrumb-item");
 
             // Assert
             Assert.Equal(3, items.Count);
@@ -91,16 +92,16 @@
         {
             // Arrange
             using var ctx = new FormaPageHeaderTests();
-            BreadcrumbItem[] crumbs = [new("Home", "/"), new("Orders")];
+            BreadcrumbItem<object?>[] crumbs = [new("Home", "/"), new("Orders")];
 
             // Act
             var cut = ctx.Render(@<FormaPageHeader Title="Orders" Breadcrumbs="@crumbs" />);
-            var link = cut.Find(".forma-page-header-breadcrumb-item a");
+            var link = cut.Find("a.forma-breadcrumb-item");
 
             // Assert
             Assert.Multiple(() =>
             {
-                Assert.Equal("Home", link.TextContent);
+                Assert.Equal("Home", link.TextContent.Trim());
                 Assert.Equal("/", link.GetAttribute("href"));
             });
         }
@@ -110,29 +111,29 @@
         {
             // Arrange
             using var ctx = new FormaPageHeaderTests();
-            BreadcrumbItem[] crumbs = [new("Home", "/"), new("Current Page")];
+            BreadcrumbItem<object?>[] crumbs = [new("Home", "/"), new("Current Page")];
 
             // Act
             var cut = ctx.Render(@<FormaPageHeader Title="Current Page" Breadcrumbs="@crumbs" />);
-            var activeItem = cut.Find(".forma-page-header-breadcrumb-item.active span");
+            var currentItem = cut.Find("span.forma-breadcrumb-item");
 
             // Assert
-            Assert.Equal("Current Page", activeItem.TextContent);
+            Assert.Equal("Current Page", currentItem.TextContent.Trim());
         }
 
         [Fact]
-        public void Should_mark_items_without_url_as_active()
+        public void Should_render_items_without_url_as_static_text()
         {
             // Arrange
             using var ctx = new FormaPageHeaderTests();
-            BreadcrumbItem[] crumbs = [new("Home", "/"), new("Store"), new("Orders")];
+            BreadcrumbItem<object?>[] crumbs = [new("Home", "/"), new("Store"), new("Orders")];
 
             // Act
             var cut = ctx.Render(@<FormaPageHeader Title="Orders" Breadcrumbs="@crumbs" />);
-            var activeItems = cut.FindAll(".forma-page-header-breadcrumb-item.active");
+            var staticItems = cut.FindAll("span.forma-breadcrumb-item");
 
             // Assert
-            Assert.Equal(2, activeItems.Count);
+            Assert.Equal(2, staticItems.Count);
         }
 
         [Fact]
@@ -140,18 +141,19 @@
         {
             // Arrange
             using var ctx = new FormaPageHeaderTests();
-            BreadcrumbItem[] crumbs = [new("Home", "/"), new("Store"), new("Orders")];
+            BreadcrumbItem<object?>[] crumbs = [new("Home", "/"), new("Store"), new("Orders")];
 
             // Act
             var cut = ctx.Render(@<FormaPageHeader Title="Orders" Breadcrumbs="@crumbs" />);
-            var activeItems = cut.FindAll(".forma-page-header-breadcrumb-item.active");
+            var items = cut.FindAll(".forma-breadcrumb-item");
 
             // Assert
             Assert.Multiple(() =>
             {
-                Assert.Equal(2, activeItems.Count);
-                Assert.Null(activeItems[0].GetAttribute("aria-current"));
-                Assert.Equal("page", activeItems[1].GetAttribute("aria-current"));
+                Assert.Equal(3, items.Count);
+                Assert.Null(items[0].GetAttribute("aria-current"));
+                Assert.Null(items[1].GetAttribute("aria-current"));
+                Assert.Equal("page", items[2].GetAttribute("aria-current"));
             });
         }
 
@@ -160,7 +162,7 @@
         {
             // Arrange
             using var ctx = new FormaPageHeaderTests();
-            BreadcrumbItem[] crumbs = [new("Home", "/"), new("Orders")];
+            BreadcrumbItem<object?>[] crumbs = [new("Home", "/"), new("Orders")];
 
             // Act
             var cut = ctx.Render(@<FormaPageHeader Title="Orders" Breadcrumbs="@crumbs" />);

@@ -21,7 +21,6 @@ Forma.UI.Blazor/Components/
 ├── ✅ FormaField.razor / .razor.cs / .razor.css
 ├── FieldLabelMode.cs                     # enum: Floating, Pinned, Above, Inline
 ├── (4 / 4) Layout/
-│   ├── BreadcrumbItem.cs                # record with Label + Url?, constructor-validated
 │   ├── ✅ FormaPageHeader.razor / .razor.cs
 │   ├── ✅ FormaToolbar.razor / .razor.cs
 │   ├── ✅ FormaContextToolbar.razor / .razor.cs
@@ -77,6 +76,8 @@ Forma.UI.Blazor/Components/
 │   ├── ✅ FormaColorPicker.razor
 │   └── ✅ FormaMultiSelect.razor
 ├── (2 / 6) Interactive/
+│   ├── BreadcrumbItem.cs                # generic record: Label, Url?, Value?, IsCurrent, Children?
+│   ├── ✅ FormaBreadcrumb.razor / .razor.cs / .razor.css
 │   ├── ✅ FormaSortableList.razor
 │   ├── FormaCategorySelector.razor
 │   ├── ✅ FormaDropDownMenu.razor
@@ -817,6 +818,16 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Parameters** | `string Value`, `EventCallback<string> ValueChanged`, `EventCallback<string> OnSearch`, `TimeSpan? DebounceDelay`, `string? Placeholder`, `string? Id`, `bool Disabled`, `string? Class` |
 | **Blazor approach** | A plain `Value`/`ValueChanged` pair rather than `InputBase<T>`, since a search field has no validation state to carry. `Value` updates on every keystroke; `OnSearch` reports the committed term — instantly when `DebounceDelay` is null, or once typing pauses for that long otherwise. Enter and the built-in clear button both bypass a pending debounce and report immediately. The clear button is `FormaCloseButton`, reused rather than redrawn, and disables alongside the field |
 | **Notes** | `dir="auto"` follows what is typed, with the placeholder falling back to the page's own direction so an RTL placeholder does not strand itself in an empty LTR-default field. Retrofitted into `FormaExplorerAddressBar`, which keeps its own wrapper for the expand-on-focus and breadcrumb-collapse behaviour and now leaves the box itself to this component |
+
+### 61. `FormaBreadcrumb` ✅
+
+| | |
+|---|---|
+| **Old pattern** | The hand-rolled breadcrumb section of `FormaExplorerAddressBar` — root icon, chevron separators, a per-segment dropdown of alternatives, and drop-target handlers, all written directly into that component. `FormaPageHeader`'s own plain `<ol>` of links predates it too |
+| **Used in** | Any trail of segments: a page header's site navigation as well as an explorer's folder path. `FormaExplorerAddressBar` and `FormaPageHeader` both compose it now rather than drawing their own |
+| **Parameters** | `IReadOnlyList<BreadcrumbItem<TItem>> Items`, `Glyph? RootIcon`, `string? AriaLabel`, `EventCallback<TItem?> OnItemClick`, `EventCallback<TItem?> OnItemDrop`. `BreadcrumbItem<TItem>` (moved here from `Layout/`) carries `Label`, `Url?`, `Value?`, `IsCurrent`, and `Children?` for a segment's own dropdown |
+| **Blazor approach** | Generic over the value a click or drop reports back, the way `FormaDataGrid<TItem>` and `FormaSortableList<TItem>` already are, with a non-generic marker type so `IStringLocale` resolves independently of `TItem`. A segment with a `Url` renders a real `<a>`; one without renders a `<button>` when `OnItemClick` is wired, or falls back to static text when it is not — so a plain site breadcrumb never gains a false clickable affordance it does nothing with. A chevron beside a segment with `Children` opens a menu of alternatives, closing on a second click, a backdrop click, or Escape |
+| **Notes** | `aria-current="page"` is set from the caller-supplied `IsCurrent` rather than inferred from position, since a defensive comparison against the current value is more robust than assuming the last segment is always current. `FormaPageHeader` derives it itself — only the last crumb lacking a `Url` counts as current, not every non-linked one — which also means an intermediate category label no longer looks identical to the current page, since only the true current segment is bold. Chevron separators mirror through `:dir(rtl)`, matching the rest of the library's glyph-mirroring convention |
 
 ---
 

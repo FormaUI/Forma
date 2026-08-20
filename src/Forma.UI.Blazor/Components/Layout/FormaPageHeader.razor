@@ -1,27 +1,12 @@
+@using Forma.UI.Blazor.Components.Interactive
+
 <div class="forma-page-header">
     <div>
         <h1 class="forma-page-header-title">@Title</h1>
 
-        @if (Breadcrumbs is { Count: > 0 })
+        @if (RenderedBreadcrumbs is { Count: > 0 })
         {
-            <nav aria-label="Breadcrumb">
-                <ol class="forma-page-header-breadcrumb">
-                    @for (var i = 0; i < Breadcrumbs.Count; i++)
-                    {
-                        var crumb = Breadcrumbs[i];
-                        var isLast = i == Breadcrumbs.Count - 1;
-
-                        @if (crumb.Url is not null)
-                        {
-                            <li class="forma-page-header-breadcrumb-item"><a href="@crumb.Url">@crumb.Label</a></li>
-                        }
-                        else
-                        {
-                            <li class="forma-page-header-breadcrumb-item active" aria-current="@(isLast ? "page" : null)"><span>@crumb.Label</span></li>
-                        }
-                    }
-                </ol>
-            </nav>
+            <FormaBreadcrumb Items="RenderedBreadcrumbs" />
         }
     </div>
 
