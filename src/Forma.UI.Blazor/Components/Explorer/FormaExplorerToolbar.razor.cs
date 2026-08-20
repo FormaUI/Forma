@@ -1,6 +1,8 @@
 namespace Forma.UI.Blazor.Components.Explorer;
 
 using Forma.Framework.Localization;
+using Forma.UI.Blazor.Components.Actions;
+using Forma.UI.Style.Glyphs;
 
 using Microsoft.AspNetCore.Components;
 
@@ -54,23 +56,33 @@ public sealed partial class FormaExplorerToolbar : ComponentBase
 
     [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
 
+    private static readonly ExplorerSortField[] SortFields = Enum.GetValues<ExplorerSortField>();
+
+    private static readonly ExplorerSortDirection[] SortDirections = Enum.GetValues<ExplorerSortDirection>();
+
+    private static readonly FormaButtonOptions SortTriggerOptions =
+        new() { Variant = ButtonVariant.Ghost, Size = ButtonSize.Mini };
+
     private string SelectionAnnouncement
         => SelectedCount > 0 ? L[$"{SelectedCount} selected"].Value : string.Empty;
 
-    private async Task HandleSortFieldChange(ChangeEventArgs e)
-    {
-        if (Enum.TryParse<ExplorerSortField>(e.Value?.ToString(), out var field))
+    private Glyph DirectionGlyph
+        => GlyphFor(SortDirection);
+
+    private static Glyph GlyphFor(ExplorerSortDirection direction)
+        => direction == ExplorerSortDirection.Ascending ? Glyph.ArrowDownAZ : Glyph.ArrowUpZA;
+
+    private string SortFieldLabel(ExplorerSortField field)
+        => field switch
         {
-            await OnSortFieldChanged.InvokeAsync(field);
-        }
-    }
+            ExplorerSortField.Name => L["Name"].Value,
+            ExplorerSortField.Size => L["Size"].Value,
+            ExplorerSortField.Kind => L["Type"].Value,
+            ExplorerSortField.DateAdded => L["Date Added"].Value,
+            ExplorerSortField.DateModified => L["Date Modified"].Value,
+            _ => field.ToString(),
+        };
 
-    private async Task ToggleSortDirection()
-    {
-        var next = SortDirection == ExplorerSortDirection.Ascending
-            ? ExplorerSortDirection.Descending
-            : ExplorerSortDirection.Ascending;
-
-        await OnSortDirectionChanged.InvokeAsync(next);
-    }
+    private string DirectionLabel(ExplorerSortDirection direction)
+        => direction == ExplorerSortDirection.Ascending ? L["Ascending"].Value : L["Descending"].Value;
 }

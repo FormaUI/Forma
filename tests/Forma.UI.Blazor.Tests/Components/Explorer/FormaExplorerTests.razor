@@ -337,7 +337,7 @@
             Assert.Equal("c.jpg", items[2].TextContent);
 
             // Act - Sort by Size
-            cut.Find(".forma-explorer-sort-select").Change("Size");
+            SortBy(cut, ExplorerSortField.Size);
             items = cut.FindAll(".forma-explorer-item-name");
             Assert.Equal("c.jpg", items[0].TextContent);
             Assert.Equal("b.jpg", items[1].TextContent);
@@ -359,14 +359,14 @@
             var cut = ctx.Render(@<FormaExplorer Resources="resources" />);
 
             // Act
-            cut.Find(".forma-explorer-sort-select").Change("DateAdded");
+            SortBy(cut, ExplorerSortField.DateAdded);
 
             // Assert
             var items = cut.FindAll(".forma-explorer-item-name");
             Assert.Equal(["b.jpg", "c.jpg", "a.jpg"], items.Select(i => i.TextContent));
 
             // Act
-            cut.Find(".forma-explorer-sort-select").Change("DateModified");
+            SortBy(cut, ExplorerSortField.DateModified);
 
             // Assert
             items = cut.FindAll(".forma-explorer-item-name");
@@ -386,7 +386,7 @@
             var cut = ctx.Render(@<FormaExplorer Resources="resources" />);
 
             // Act
-            cut.Find(".forma-explorer-sort-select").Change("DateModified");
+            SortBy(cut, ExplorerSortField.DateModified);
 
             // Assert
             var items = cut.FindAll(".forma-explorer-item-name");
@@ -1137,7 +1137,7 @@
                 new ImageResourceInfo("https://example.com/a.jpg") { Size = 90 }
             ];
             var cut = ctx.Render(@<FormaExplorer Resources="resources" SelectedChanged="@(_ => Task.CompletedTask)" />);
-            cut.Find(".forma-explorer-sort-select").Change("Size");
+            SortBy(cut, ExplorerSortField.Size);
             Assert.Equal("b.jpg", cut.FindAll(".forma-explorer-item-name")[0].TextContent);
             cut.Find(".forma-explorer-select-mode-btn").Click();
 
@@ -1528,7 +1528,7 @@ var first = cut.InvokeAsync(explorer.LoadNextPageAsync);
             var cut = ctx.Render(@<FormaExplorer ResourcesProvider="provider" PageSize="10" />);
 
             // Act
-            cut.Find(".forma-explorer-sort-select").Change("Size");
+            SortBy(cut, ExplorerSortField.Size);
 
             // Assert
             Assert.Equal(ExplorerSortField.Size, provider.Queries[^1].SortBy);
@@ -1620,7 +1620,7 @@ var first = cut.InvokeAsync(explorer.LoadNextPageAsync);
             var cut = ctx.Render(@<FormaExplorer ResourcesProvider="provider" PageSize="5" />);
 
             // Act - a second window is asked for while the first is still held
-            cut.Find(".forma-explorer-sort-select").Change("Name");
+            SortBy(cut, ExplorerSortField.Name);
             provider.Gate.SetResult();
             cut.WaitForState(() => cut.FindAll(".forma-explorer-item").Count > 0);
 
@@ -1676,6 +1676,13 @@ var first = cut.InvokeAsync(explorer.LoadNextPageAsync);
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-explorer-scroll .forma-explorer-pagination"));
+        }
+
+        private static void SortBy<TComponent>(IRenderedComponent<TComponent> cut, ExplorerSortField field)
+            where TComponent : IComponent
+        {
+            cut.Find(".forma-explorer-sort-trigger").Click();
+            cut.Find($"[data-sort-field='{field}']").Click();
         }
     }
 }

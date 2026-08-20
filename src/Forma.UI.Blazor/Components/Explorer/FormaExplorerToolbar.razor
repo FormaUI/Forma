@@ -1,5 +1,6 @@
 @namespace Forma.UI.Blazor.Components.Explorer
 @using Forma.UI.Blazor.Components.Actions
+@using Forma.UI.Blazor.Components.Interactive
 
 <div class="forma-explorer-toolbar">
     <span class="forma-explorer-sr-only" role="status" aria-live="polite">@SelectionAnnouncement</span>
@@ -91,25 +92,38 @@
         </div>
 
         <!-- Sort Menu -->
-        <div class="forma-explorer-sort-group">
-            <select class="forma-explorer-sort-select"
-                    value="@SortField.ToString()"
-                    aria-label="@L["Sort By"]"
-                    @onchange="HandleSortFieldChange">
-                <option value="Name">@L["Name"]</option>
-                <option value="Size">@L["Size"]</option>
-                <option value="Kind">@L["Type"]</option>
-                <option value="DateAdded">@L["Date Added"]</option>
-                <option value="DateModified">@L["Date Modified"]</option>
-            </select>
-
-            <button type="button"
-                    class="forma-explorer-sort-direction-btn"
-                    aria-label="@(SortDirection == ExplorerSortDirection.Ascending ? L["Sort Ascending"] : L["Sort Descending"])"
-                    @onclick="ToggleSortDirection">
-                <FormaGlyph Name="@(SortDirection == ExplorerSortDirection.Ascending ? Glyph.ArrowDownAZ : Glyph.ArrowUpZA)" />
-            </button>
-        </div>
+        <FormaDropDownMenu class="forma-explorer-sort-trigger"
+                           TriggerOptions="SortTriggerOptions"
+                           aria-label="@L["Sort By"]">
+            <Trigger>
+                <FormaGlyph Name="@DirectionGlyph" />
+                <span class="forma-explorer-sort-trigger-text">@SortFieldLabel(SortField)</span>
+            </Trigger>
+            <ChildContent>
+                <div role="group" aria-label="@L["Sort By"]">
+                    @foreach (var field in SortFields)
+                    {
+                        <FormaDropDownMenuItem IsSelected="@(SortField == field)"
+                                               data-sort-field="@field"
+                                               OnClick="() => OnSortFieldChanged.InvokeAsync(field)">
+                            <span>@SortFieldLabel(field)</span>
+                        </FormaDropDownMenuItem>
+                    }
+                </div>
+                <FormaDropDownMenuDivider />
+                <div role="group" aria-label="@L["Sort Direction"]">
+                    @foreach (var direction in SortDirections)
+                    {
+                        <FormaDropDownMenuItem IsSelected="@(SortDirection == direction)"
+                                               data-sort-direction="@direction"
+                                               OnClick="() => OnSortDirectionChanged.InvokeAsync(direction)">
+                            <FormaGlyph Name="@GlyphFor(direction)" />
+                            <span>@DirectionLabel(direction)</span>
+                        </FormaDropDownMenuItem>
+                    }
+                </div>
+            </ChildContent>
+        </FormaDropDownMenu>
     </div>
     }
 </div>
