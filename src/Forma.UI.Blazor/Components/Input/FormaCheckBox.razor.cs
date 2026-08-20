@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
 /// <summary>A styled checkbox with a script-driven indeterminate state, optionally leaving the checked state to the caller.</summary>
-public sealed partial class FormaCheckbox : ComponentBase, IAsyncDisposable
+public sealed partial class FormaCheckBox : ComponentBase, IAsyncDisposable
 {
-    private const string ModulePath = "./_content/Forma.UI/Components/Input/FormaCheckbox.razor.js";
+    private const string ModulePath = "./_content/Forma.UI/Components/Input/FormaCheckBox.razor.js";
 
     /// <summary>Whether the checkbox is checked.</summary>
     [Parameter] public bool Checked { get; set; }

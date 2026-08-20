@@ -64,8 +64,8 @@ render mode.
 - **Feedback** — `FormaModal`, `FormaConfirmDialog`, `FormaToastContainer`
   (backed by `IConfirmDialogService` / `IToastService`).
 - **Forms** — `FormaDatePicker` (single + range, non-Gregorian aware), `FormaColorPicker`,
-  `FormaInput`, `FormaTextArea`, `FormaPasswordInput`, `FormaToggleSwitch`,
-  `FormaMultiSelectDropDown`, `FormaSelect`, `FormaButton`, `FormaCheckbox`.
+  `FormaInput`, `FormaTextArea`, `FormaPasswordBox`, `FormaToggleSwitch`,
+  `FormaMultiSelect`, `FormaSelect`, `FormaButton`, `FormaCheckBox`.
 - **Data** — `FormaDataGrid`, `FormaPagination`, `FormaStatusBadge`.
 - **Files** — `FormaFilePicker`, `FormaFileUploader`, `FormaFileViewer`.
 - **Interactive** — `FormaSortableList`, `FormaDropDownMenu`.

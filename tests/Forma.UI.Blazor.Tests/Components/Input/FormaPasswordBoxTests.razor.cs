@@ -1,8 +1,8 @@
 namespace Forma.UI.Blazor.Tests.Components.Input;
 
-public sealed partial class FormaMultiSelectDropDownTests
+public sealed partial class FormaPasswordBoxTests
 {
-    public FormaMultiSelectDropDownTests()
+    public FormaPasswordBoxTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddJsonLocalization();

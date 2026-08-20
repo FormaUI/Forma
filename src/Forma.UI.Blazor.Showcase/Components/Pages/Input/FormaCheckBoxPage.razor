@@ -1,25 +1,25 @@
 @page "/checkbox"
-@attribute [ShowcasePage("FormaCheckbox")]
+@attribute [ShowcasePage("FormaCheckBox")]
 @rendermode InteractiveServer
 @using Forma.UI.Blazor.Components.Input
-@inject IStringLocale<FormaCheckboxPage> L
+@inject IStringLocale<FormaCheckBoxPage> L
 
-<h1>FormaCheckbox</h1>
+<h1>FormaCheckBox</h1>
 <p class="desc">@L["A styled checkbox with a script-driven indeterminate state, and an option to suppress the native toggle so the caller owns the checked state, as a tri-state select-all does."]</p>
 
 <div class="demo-section">
     <h2>@L["Basic"]</h2>
     <div class="demo-box demo-row">
-        <FormaCheckbox Checked="_basic" CheckedChanged="v => _basic = v">@L["Subscribe to updates"]</FormaCheckbox>
-        <FormaCheckbox Checked="_prechecked" CheckedChanged="v => _prechecked = v">@L["Featured"]</FormaCheckbox>
+        <FormaCheckBox Checked="_basic" CheckedChanged="v => _basic = v">@L["Subscribe to updates"]</FormaCheckBox>
+        <FormaCheckBox Checked="_prechecked" CheckedChanged="v => _prechecked = v">@L["Featured"]</FormaCheckBox>
     </div>
 </div>
 
 <div class="demo-section">
     <h2>@L["Disabled"]</h2>
     <div class="demo-box demo-row">
-        <FormaCheckbox Checked="false" Disabled="true">@L["Off"]</FormaCheckbox>
-        <FormaCheckbox Checked="true" Disabled="true">@L["On"]</FormaCheckbox>
+        <FormaCheckBox Checked="false" Disabled="true">@L["Off"]</FormaCheckBox>
+        <FormaCheckBox Checked="true" Disabled="true">@L["On"]</FormaCheckBox>
     </div>
 </div>
 
@@ -27,12 +27,12 @@
     <h2>@L["Indeterminate"]</h2>
     <p class="desc">@L["The parent checkbox reflects and controls the state of its children, showing a dash when only some are checked."]</p>
     <div class="demo-box">
-        <FormaCheckbox Checked="@AllChildrenChecked" Indeterminate="@SomeChildrenChecked" PreventDefault="true" OnClick="ToggleAllChildren">@L["Select all"]</FormaCheckbox>
+        <FormaCheckBox Checked="@AllChildrenChecked" Indeterminate="@SomeChildrenChecked" PreventDefault="true" OnClick="ToggleAllChildren">@L["Select all"]</FormaCheckBox>
         <div class="demo-row demo-checkbox-children">
             @for (var i = 0; i < _children.Length; i++)
             {
                 var index = i;
-                <FormaCheckbox Checked="_children[index]" CheckedChanged="v => _children[index] = v">@L["Item {number}", ("number", index + 1)]</FormaCheckbox>
+                <FormaCheckBox Checked="_children[index]" CheckedChanged="v => _children[index] = v">@L["Item {number}", ("number", index + 1)]</FormaCheckBox>
             }
         </div>
     </div>

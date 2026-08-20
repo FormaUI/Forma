@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
 /// <summary>A multi-select component whose chosen values render as removable tags above a searchable checkbox-list popup.</summary>
-public sealed partial class FormaMultiSelectDropDown<TValue> : InputBase<List<TValue>>, IAsyncDisposable
+public sealed partial class FormaMultiSelect<TValue> : InputBase<List<TValue>>, IAsyncDisposable
     where TValue : notnull
 {
     private const string ModulePath = "./_content/Forma.UI/scripts/AnchoredPopup.js";
@@ -38,7 +38,7 @@ public sealed partial class FormaMultiSelectDropDown<TValue> : InputBase<List<TV
     /// <summary>Disables user interaction.</summary>
     [Parameter] public bool Disabled { get; set; }
 
-    [Inject] private IStringLocale<FormaMultiSelectDropDown> L { get; set; } = default!;
+    [Inject] private IStringLocale<FormaMultiSelect> L { get; set; } = default!;
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
@@ -222,7 +222,7 @@ public sealed partial class FormaMultiSelectDropDown<TValue> : InputBase<List<TV
     }
 }
 
-// Non-generic marker sharing FormaMultiSelectDropDown's translation files across every closed instantiation —
+// Non-generic marker sharing FormaMultiSelect's translation files across every closed instantiation —
 // IStringLocale<T> keys resources off T's FullName, which for an open generic type
 // includes its type arguments and would never match the embedded resource name.
-internal abstract class FormaMultiSelectDropDown;
+internal abstract class FormaMultiSelect;

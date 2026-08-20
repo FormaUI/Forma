@@ -124,7 +124,7 @@
 
 /* Collapsed rather than positioned out: an absolutely placed marker resolves against
    whatever ancestor happens to be positioned, and focusing it would scroll there
-   instead of to its own row. The checkbox itself is now rendered by FormaCheckbox, a
+   instead of to its own row. The checkbox itself is now rendered by FormaCheckBox, a
    child component, so reaching its class needs ::deep. */
 ::deep .forma-data-grid-row-marker {
     inline-size: 0;

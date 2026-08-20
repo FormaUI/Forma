@@ -342,7 +342,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
 
     // Row-click/keyboard selection is delegated to script, since QuickGrid exposes no
     // row-level attribute or modifier-key hook. The header/row checkboxes' own
-    // indeterminate state is handled internally by FormaCheckbox.
+    // indeterminate state is handled internally by FormaCheckBox.
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (EnableRowSelection && !_rowSelectionAttached)

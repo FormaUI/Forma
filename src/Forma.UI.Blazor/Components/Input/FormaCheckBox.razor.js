@@ -1,5 +1,5 @@
 /**
- * FormaCheckbox — indeterminate interop
+ * FormaCheckBox — indeterminate interop
  *
  * "Some but not all" is an IDL-only property on the element, with no content
  * attribute Blazor could render, so it has to be set from script.

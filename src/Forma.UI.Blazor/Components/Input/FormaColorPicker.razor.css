@@ -10,7 +10,7 @@
 }
 
 /* ---------- swatch wrapper (holds visual swatch + invisible native input) ---------- */
-/* Sits over the field box beside the hex text, the way FormaPasswordInput places its toggle.
+/* Sits over the field box beside the hex text, the way FormaPasswordBox places its toggle.
    Offset from the top rather than the bottom, so the optional alpha row below cannot move it. */
 .forma-color-swatch-wrapper {
     position: absolute;

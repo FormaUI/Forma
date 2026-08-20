@@ -62,17 +62,17 @@ Forma.UI.Blazor/Components/
 ├── (10 / 11) Input/
 │   ├── SelectOption.cs
 │   ├── PasswordStrength.cs
-│   ├── ✅ FormaCheckbox.razor
+│   ├── ✅ FormaCheckBox.razor
 │   ├── ✅ FormaInput.razor
 │   ├── ✅ FormaTextArea.razor
 │   ├── ✅ FormaToggleSwitch.razor
-│   ├── ✅ FormaPasswordInput.razor
+│   ├── ✅ FormaPasswordBox.razor
 │   ├── FormaCurrencyInput.razor
-│   ├── ✅ FormaRangeSlider.razor
+│   ├── ✅ FormaSlider.razor
 │   ├── ✅ FormaDatePicker.razor
 │   ├── ✅ FormaSelect.razor
 │   ├── ✅ FormaColorPicker.razor
-│   └── ✅ FormaMultiSelectDropDown.razor
+│   └── ✅ FormaMultiSelect.razor
 ├── (2 / 6) Interactive/
 │   ├── ✅ FormaSortableList.razor
 │   ├── FormaCategorySelector.razor
@@ -287,7 +287,7 @@ These components form the shell of a page. Build first.
 | | |
 |---|---|
 | **Old pattern** | `<label class="lblForm">` over a `.form-control`, floating on focus or value, with `<span class="mand">` for required and the error text below |
-| **Used in** | Chrome for every labelled form component — `FormaInput`, `FormaTextArea`, `FormaPasswordInput`, `FormaSelect`, `FormaMultiSelectDropDown`, `FormaDatePicker`, `FormaColorPicker`, `FormaRangeSlider` and `FormaToggleSwitch` |
+| **Used in** | Chrome for every labelled form component — `FormaInput`, `FormaTextArea`, `FormaPasswordBox`, `FormaSelect`, `FormaMultiSelect`, `FormaDatePicker`, `FormaColorPicker`, `FormaSlider` and `FormaToggleSwitch` |
 | **Parameters** | `string? Label`, `string? TargetId`, `bool Required`, `bool Multiline`, `FieldLabelMode LabelMode`, `RenderFragment ChildContent` (the input element), `RenderFragment? Validation` |
 | **Blazor approach** | Renders the wrapper, label and validation slot, and styles the input element through `::deep .forma-field-input` — the one mechanism that reaches markup a *consuming* component rendered, since CSS isolation otherwise scopes each component's sheet to its own output. Non-generic: the consumer passes its own `<ValidationMessage For="...">` into `Validation` rather than the chrome taking a typed expression. `Multiline` anchors the label to the top, because an input element taller than one line has no vertical centre to sit against |
 | **Notes** | Exists so the floating label, border, focus ring and validation styling live in one file. Without it each labelled form component reimplements ~110 lines and they drift apart |
@@ -368,10 +368,10 @@ These components form the shell of a page. Build first.
 | **Old pattern** | EasePick CDN library with Hebrew locale, year dropdown, reset button, min-date lock |
 | **Used in** | coupons (start/end dates) |
 | **Parameters** | `@bind-Value` (DateOnly?), `DateOnly? MinDate`, `string? Label` |
-| **Popup placement** | The calendar is a `popover`, so it renders in the **top layer** and no scrolling or clipping ancestor can cut it off — it works inside a grid's scroll region, a modal body, or any `overflow: auto` box. The top layer keeps no layout tie to the trigger, so the shared `wwwroot/scripts/AnchoredPopup.js` module measures and applies the position: it hangs from the trigger's inline-start edge (mirrored in RTL), flips above when there is no room below, clamps into the viewport, and follows scroll and resize. One positioning path for every browser rather than a CSS/JS split. That module is deliberately component-agnostic — `FormaSelect`, `FormaMultiSelectDropDown` and `FormaDropDownMenu` are the same trigger-plus-anchored-panel shape and should import it rather than re-solve the clipping. `popover="manual"` keeps the existing backdrop as the dismissal mechanism, which also sidesteps the iOS 17–18.2 bug where a popover ignores a tap outside it |
+| **Popup placement** | The calendar is a `popover`, so it renders in the **top layer** and no scrolling or clipping ancestor can cut it off — it works inside a grid's scroll region, a modal body, or any `overflow: auto` box. The top layer keeps no layout tie to the trigger, so the shared `wwwroot/scripts/AnchoredPopup.js` module measures and applies the position: it hangs from the trigger's inline-start edge (mirrored in RTL), flips above when there is no room below, clamps into the viewport, and follows scroll and resize. One positioning path for every browser rather than a CSS/JS split. That module is deliberately component-agnostic — `FormaSelect`, `FormaMultiSelect` and `FormaDropDownMenu` are the same trigger-plus-anchored-panel shape and should import it rather than re-solve the clipping. `popover="manual"` keeps the existing backdrop as the dismissal mechanism, which also sidesteps the iOS 17–18.2 bug where a popover ignores a tap outside it |
 | **Blazor approach** | Use Blazor `InputDate` which renders native `<input type="date">`. Browser provides locale-aware calendar. For reset, add a clear button. For min-date, use `min` HTML attribute |
 
-### 16. `FormaRangeSlider` ✅
+### 16. `FormaSlider` ✅
 
 | | |
 |---|---|
@@ -379,9 +379,9 @@ These components form the shell of a page. Build first.
 | **Used in** | forms (border radius), slider (duration), design/edit (font size, site width) |
 | **Parameters** | `@bind-Value` (any `INumber<TValue>`), `string Label`, `TValue Min`, `TValue Max`, `TValue Step = TValue.One`, `string? Unit` ("px", "%", "s"), `bool Disabled` |
 | **Blazor approach** | `InputBase<TValue>` rendering a native `<input type="range">`, generic over any `INumber<T>` so an `int` and a `double` slider share one component. The current value is shown beside the label rather than in a second field. Tints the native track and thumb with `accent-color` rather than hand-painting a filled track, so the browser's own RTL mirroring stays correct with no direction-aware calculation of its own to keep in step with it |
-| **Notes** | The displayed value is `aria-hidden`; a screen reader instead hears `aria-valuetext`, set only when `Unit` is given — without one the native `valuenow` already says the number, and setting it anyway would repeat the same words the input already announces on its own. The value's colour deliberately is not the muted caption token: at its font size that measures under 4.5:1, so it stays at full text contrast and is set apart by size alone, the same trade the strength meter in `FormaPasswordInput` makes |
+| **Notes** | The displayed value is `aria-hidden`; a screen reader instead hears `aria-valuetext`, set only when `Unit` is given — without one the native `valuenow` already says the number, and setting it anyway would repeat the same words the input already announces on its own. The value's colour deliberately is not the muted caption token: at its font size that measures under 4.5:1, so it stays at full text contrast and is set apart by size alone, the same trade the strength meter in `FormaPasswordBox` makes |
 
-### 17. `FormaPasswordInput` ✅
+### 17. `FormaPasswordBox` ✅
 
 | | |
 |---|---|
@@ -400,7 +400,7 @@ These components form the shell of a page. Build first.
 | **Parameters** | `@bind-Value` (decimal), `string Symbol = "₪"`, `string? Label` |
 | **Blazor approach** | `InputNumber` inside a flex container with the currency symbol as an adjacent `<span>`. CSS for visual grouping |
 
-### 19. `FormaMultiSelectDropDown` ✅
+### 19. `FormaMultiSelect` ✅
 
 | | |
 |---|---|
@@ -416,8 +416,8 @@ These components form the shell of a page. Build first.
 | **Old pattern** | JS replaces native `<select>` with styled div: `.custom-select > .cs-val` (display) + `.cs-options > .cs-option` (dropdown). Click to open, click option to select, click outside to close |
 | **Used in** | Multiple admin pages for styled dropdowns |
 | **Parameters** | `@bind-Value` (any `TValue`, nullable to allow no selection), `IReadOnlyList<SelectOption<TValue>> Options`, `string? Label`, `string? Placeholder`, `bool Required`, `bool Disabled` |
-| **Blazor approach** | A `<button>` trigger plus an anchored, keyboard-navigable listbox popup, sharing `AnchoredPopup.js` with `FormaDatePicker` and `FormaMultiSelectDropDown` so the list escapes any clipping ancestor. `InputBase<TValue>` directly, matching `InputDate<TValue>`/`InputNumber<TValue>` — the caller supplies a nullable `TValue` (`int?`, `string`, `MyEnum?`) when "nothing selected" needs representing, rather than the component forcing that shape itself |
-| **Notes** | Composes `FormaField` in `Pinned` mode, as `FormaMultiSelectDropDown` and `FormaDatePicker` do: the trigger always shows content of its own, so the label stays floated rather than sitting over it. Opens focused on the current selection, the way a native `<select>` does. The selected option is marked by a checkmark plus bold weight, not colour alone |
+| **Blazor approach** | A `<button>` trigger plus an anchored, keyboard-navigable listbox popup, sharing `AnchoredPopup.js` with `FormaDatePicker` and `FormaMultiSelect` so the list escapes any clipping ancestor. `InputBase<TValue>` directly, matching `InputDate<TValue>`/`InputNumber<TValue>` — the caller supplies a nullable `TValue` (`int?`, `string`, `MyEnum?`) when "nothing selected" needs representing, rather than the component forcing that shape itself |
+| **Notes** | Composes `FormaField` in `Pinned` mode, as `FormaMultiSelect` and `FormaDatePicker` do: the trigger always shows content of its own, so the label stays floated rather than sitting over it. Opens focused on the current selection, the way a native `<select>` does. The selected option is marked by a checkmark plus bold weight, not colour alone |
 
 ---
 
@@ -549,12 +549,12 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Parameters** | `ButtonVariant Variant` (Secondary/Primary/Tertiary/Danger/Ghost, default Secondary), `ButtonSize Size` (Normal/Mini, default Normal), `ButtonType Type` (Button/Submit/Reset, default Button), `bool Busy`, `bool Disabled`, `EventCallback<MouseEventArgs> OnClick`, `RenderFragment? ChildContent` |
 | **Blazor approach** | Plain `<button>` with a computed CSS class per variant/size. `Busy` announces itself via `aria-busy`/`aria-disabled` and blocks the click handler instead of using the native `disabled` attribute, so a busy button stays focusable and keeps its place in the tab order. Sealed component with code-behind in `.razor.cs` |
 
-### 33. `FormaCheckbox` ✅
+### 33. `FormaCheckBox` ✅
 
 | | |
 |---|---|
 | **Old pattern** | Plain `<input type="checkbox">` styled by `fa-3.6.5.css` — no shared component, each admin page restated its own markup |
-| **Used in** | Single source of truth for checkboxes across the library — the retrofit target for `FormaDataGrid`'s header/row selection checkboxes and `FormaMultiSelectDropDown`'s option checkboxes |
+| **Used in** | Single source of truth for checkboxes across the library — the retrofit target for `FormaDataGrid`'s header/row selection checkboxes and `FormaMultiSelect`'s option checkboxes |
 | **Parameters** | `bool Checked`, `EventCallback<bool> CheckedChanged`, `bool Indeterminate`, `bool Disabled`, `bool PreventDefault`, `EventCallback<MouseEventArgs> OnClick` |
 | **Blazor approach** | Plain `<input type="checkbox">`, not `InputBase<bool>` — callers that need form integration wrap it themselves. `Indeterminate` is IDL-only with no content attribute, so it is applied through a small JS interop module, and only when a checkbox actually becomes indeterminate. `PreventDefault` suppresses the native toggle so a caller that computes its own next state — `FormaDataGrid`'s tri-state select-all, which can reject a click outright — owns the checked state entirely; `OnClick` stays a plain notification that changes no behaviour on its own. Sealed component with code-behind in `.razor.cs` |
 
@@ -611,10 +611,10 @@ These are more complex, possibly page-specific, but still benefit from being com
 | | |
 |---|---|
 | **Old pattern** | `<span onclick="TogglePass(this)" class="fas fa-eye-slash">` beside a password field — a clickable span, not a button |
-| **Used in** | Single source of truth for reveal controls — `FormaPasswordInput`'s toggle, and any later show/hide or preview affordance |
+| **Used in** | Single source of truth for reveal controls — `FormaPasswordBox`'s toggle, and any later show/hide or preview affordance |
 | **Parameters** | `string Label` (required — the accessible name, which differs per use: show password, hide value, preview), `bool Revealed`, `ButtonSize Size`, `bool Disabled`, `EventCallback<MouseEventArgs> OnClick` |
 | **Blazor approach** | A thin wrapper over `<FormaButton Variant="Ghost" IconOnly>` supplying one eye glyph whose strike-through path is the only thing that changes, so the two states cannot drift apart. Ships no `.razor.css` — every visual decision belongs to `FormaButton`. `Revealed` and `Label` are both caller-owned: the component never assumes it is guarding a password |
-| **Notes** | `FormaPasswordInput` had reimplemented the ghost variant by hand — its own muted colour, hover pair, focus ring and coarse-pointer square — which is the same drift that produced `FormaCloseButton`. Because the button element now belongs to `FormaButton`, CSS isolation puts it out of reach of the field's own stylesheet, so the field positions a wrapper span instead of the control |
+| **Notes** | `FormaPasswordBox` had reimplemented the ghost variant by hand — its own muted colour, hover pair, focus ring and coarse-pointer square — which is the same drift that produced `FormaCloseButton`. Because the button element now belongs to `FormaButton`, CSS isolation puts it out of reach of the field's own stylesheet, so the field positions a wrapper span instead of the control |
 
 ### 41. `FormaDeleteButton`
 
@@ -652,7 +652,7 @@ These are more complex, possibly page-specific, but still benefit from being com
 |---|---|
 | **Glyph** | A **plus** |
 | **Old pattern** | The "new" button in each page's toolbar, opening the new-item modal |
-| **Used in** | `FormaToolbar` actions, `FormaMultiSelectDropDown`'s add-new affordance, and any editor that appends a row |
+| **Used in** | `FormaToolbar` actions, `FormaMultiSelect`'s add-new affordance, and any editor that appends a row |
 | **Parameters** | `string Label` (required), `ButtonSize Size`, `bool Disabled`, `EventCallback<MouseEventArgs> OnClick`, `RenderFragment? ChildContent` |
 | **Blazor approach** | A wrapper over `FormaButton` supplying the plus glyph. The one of the set that is **not** always icon-only: a primary "add" is usually labelled in place ("New article"), so it takes optional `ChildContent` and drops `IconOnly` when given it, where the others stay square |
 
@@ -820,16 +820,16 @@ Components are ordered by dependency and reuse frequency:
 |---|---|---|
 | **Phase 1** | `FormaModal` ✅, `FormaConfirmDialog` ✅, `FormaToast` ✅ | Infrastructure — everything depends on modals and notifications |
 | **Phase 2** | `FormaPageHeader` ✅, `FormaToolbar` ✅, `FormaTabs` ✅ | Layout — the shell of a page |
-| **Phase 3** | `FormaInput` ✅, `FormaToggleSwitch` ✅, `FormaPasswordInput` ✅, `FormaCurrencyInput`, `FormaRangeSlider` ✅, `FormaDatePicker` ✅, `FormaSelect` ✅ | Form inputs — needed before building any edit forms |
+| **Phase 3** | `FormaInput` ✅, `FormaToggleSwitch` ✅, `FormaPasswordBox` ✅, `FormaCurrencyInput`, `FormaSlider` ✅, `FormaDatePicker` ✅, `FormaSelect` ✅ | Form inputs — needed before building any edit forms |
 | **Phase 4** | `FormaDataGrid<TItem>` ✅, `FormaContextToolbar` ✅, `FormaStatusBadge` ✅, `FormaCapacityIndicator`, `FormaPagination` ✅ | Data display — needed for list pages |
-| **Phase 5** | `FormaSortableList<TItem>` ✅, `FormaMultiSelectDropDown`  ✅, `FormaCategorySelector`, `FormaDropDownMenu` ✅, `FormaColorPicker` ✅ | Interactive widgets — needed for editor pages |
+| **Phase 5** | `FormaSortableList<TItem>` ✅, `FormaMultiSelect`  ✅, `FormaCategorySelector`, `FormaDropDownMenu` ✅, `FormaColorPicker` ✅ | Interactive widgets — needed for editor pages |
 | **Phase 6** | `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components — built when their feature pages are built |
 | **Phase 7** | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor` | Complex editors — built alongside their specific pages |
 | **Phase 8** | `FormaButton` ✅ | Shared button primitive — built after the fact and retrofitted onto `FormaDataGrid`, `FormaModal`, `FormaConfirmDialog`, `FormaPagination`, `FormaDatePicker` as the single source of truth for buttons |
-| **Phase 9** | `FormaCheckbox` ✅ | Shared checkbox primitive — built after the fact and retrofitted onto `FormaDataGrid` and `FormaMultiSelectDropDown` as the single source of truth for checkboxes |
+| **Phase 9** | `FormaCheckBox` ✅ | Shared checkbox primitive — built after the fact and retrofitted onto `FormaDataGrid` and `FormaMultiSelect` as the single source of truth for checkboxes |
 | **Phase 10** | `FormaCloseButton` ✅ | Shared dismiss primitive — built after the fact and retrofitted onto `FormaModal`, `FormaToastContainer` and `FormaContextToolbar` as the single source of truth for the `×` control |
-| **Phase 11** | `FormaField` ✅, `FormaTextArea` ✅ | Shared field chrome — extracted from `FormaInput` so the floating label, focus ring and validation styling live once, then `FormaTextArea` built on it. `FormaPasswordInput` ✅ composes it; `FormaCurrencyInput` will too rather than restating it |
-| **Phase 12** | `FormaEyeButton` ✅ | Shared reveal primitive — built after the fact and retrofitted onto `FormaPasswordInput`, which had hand-rolled the ghost icon button it now uses |
+| **Phase 11** | `FormaField` ✅, `FormaTextArea` ✅ | Shared field chrome — extracted from `FormaInput` so the floating label, focus ring and validation styling live once, then `FormaTextArea` built on it. `FormaPasswordBox` ✅ composes it; `FormaCurrencyInput` will too rather than restating it |
+| **Phase 12** | `FormaEyeButton` ✅ | Shared reveal primitive — built after the fact and retrofitted onto `FormaPasswordBox`, which had hand-rolled the ghost icon button it now uses |
 | **Phase 13** | `FormaDeleteButton`, `FormaUpdateButton`, `FormaEditButton`, `FormaAddButton`, `FormaDuplicateButton`, `FormaRefreshButton`, `FormaShareButton`, `FormaPublishButton` | The rest of the icon-button vocabulary — the same thin wrapper over `FormaButton`, one glyph each, so a row's actions stop being ad-hoc markup per page |
 | **Phase 14** | `FormaOverflowMenu`, `FormaContextMenu` | Menu presets over `FormaDropDownMenu` — the ellipsis trigger first, then the same panel opened by right-click, once there is a menu worth opening that way |
 | **Phase 15** | `FormaVideoPlayer` ✅, `FormaFileViewer` ✅ | Media rendering — the player first because it stands alone and four Épica surfaces want it, then the viewer that delegates its video branch to it. Both come before the picker chain, which previews through the viewer |

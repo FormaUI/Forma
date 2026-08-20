@@ -1,5 +1,5 @@
 /* ============================================================
-   FormaRangeSlider — CSS isolation
+   FormaSlider — CSS isolation
    Tints the native track and thumb with accent-color rather than
    hand-painting a filled track, so the browser's own RTL mirroring
    stays correct without a second direction-aware calculation to

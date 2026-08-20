@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 
 /// <summary>A password field with a toggle that reveals the typed value.</summary>
-public sealed partial class FormaPasswordInput : InputBase<string?>, IAsyncDisposable
+public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposable
 {
     private const string ModulePath = "./_content/Forma.UI/Components/Input/FormaInput.razor.js";
 
@@ -28,7 +28,7 @@ public sealed partial class FormaPasswordInput : InputBase<string?>, IAsyncDispo
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
-    [Inject] private IStringLocale<FormaPasswordInput> L { get; set; } = default!;
+    [Inject] private IStringLocale<FormaPasswordBox> L { get; set; } = default!;
 
     /// <summary>The floating label text.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;

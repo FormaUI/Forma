@@ -1,8 +1,8 @@
 namespace Forma.UI.Blazor.Tests.Components.Input;
 
-public sealed partial class FormaCheckboxTests
+public sealed partial class FormaCheckBoxTests
 {
-    public FormaCheckboxTests()
+    public FormaCheckBoxTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
     }

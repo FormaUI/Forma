@@ -1,5 +1,5 @@
 /* ============================================================
-   FormaMultiSelectDropDown — the trigger, tag list and checkbox
+   FormaMultiSelect — the trigger, tag list and checkbox
    popup only; the label, box, focus ring and validation chrome
    belong to FormaField.
    ============================================================ */
@@ -168,7 +168,7 @@
     overflow-y: auto;
 }
 
-/* The option row is the label FormaCheckbox renders around itself, which supplies the
+/* The option row is the label FormaCheckBox renders around itself, which supplies the
    flex pairing and cursor; only the row's padding and hover affordances are added here. */
 .forma-multi-select-options ::deep .forma-checkbox-label {
     padding-block: 0.375rem;

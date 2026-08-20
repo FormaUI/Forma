@@ -37,7 +37,7 @@
                             {
                                 @if (!HasMasterCaption)
                                 {
-                                    <FormaCheckbox aria-label="@L["Select All"]"
+                                    <FormaCheckBox aria-label="@L["Select All"]"
                                                    Checked="@AllSelected"
                                                    Indeterminate="@PartiallySelected"
                                                    Disabled="@MasterControlDisabled"
@@ -70,7 +70,7 @@
                                gesture: the script only ever acts on rows that carry one. *@
                             @if (!_editSession.IsEditing(row))
                             {
-                                <FormaCheckbox class="@(EnableCheckedSelection ? null : "forma-data-grid-row-marker")"
+                                <FormaCheckBox class="@(EnableCheckedSelection ? null : "forma-data-grid-row-marker")"
                                                data-row-key="@GetRowToken(row)"
                                                aria-label="@L["Select Row"]"
                                                aria-disabled="@(!CanInteractWithRow(row) ? "true" : null)"
