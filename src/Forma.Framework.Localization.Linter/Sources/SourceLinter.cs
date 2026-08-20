@@ -51,33 +51,48 @@ public sealed class SourceLinter(
             return new SourceLintResult(diagnostics, []);
         }
 
-        var sites = Walk(compilation, files, cancellationToken);
+        var lookups = Walk(compilation, files, cancellationToken);
 
         // Each site parses its own key, so the rules run as wide as the walk that found them.
-        diagnostics.AddRange(sites
+        diagnostics.AddRange(lookups.Sites
             .AsParallel()
             .WithCancellation(cancellationToken)
             .SelectMany(Check));
 
-        return new SourceLintResult(diagnostics, sites);
+        diagnostics.AddRange(lookups.UnreadableKeys.Select(Unreadable));
+
+        return new SourceLintResult(diagnostics, lookups.Sites);
     }
 
-    private IReadOnlyList<LocalizerCallSite> Walk(Compilation compilation, IReadOnlyCollection<string> files, CancellationToken cancellationToken)
+    // Naming the blind spot keeps a run from reading as complete coverage when part of it was unreadable.
+    private static LintDiagnostic Unreadable(FileLinePositionSpan location)
+        => new(
+            location.Path,
+            location.StartLinePosition.Line + 1,
+            location.StartLinePosition.Character + 1,
+            LintCodes.KeyNotAnalysed.DefaultSeverity,
+            LintCodes.KeyNotAnalysed,
+            "The lookup's key is an expression rather than text, so no rule could check what it reads.");
+
+    private LocalizerLookups Walk(Compilation compilation, IReadOnlyCollection<string> files, CancellationToken cancellationToken)
     {
         var finder = _semantic.CanRead(compilation) ? (ILocalizerCallSiteFinder)_semantic : _syntactic;
 
         // Each tree binds independently, and the caller orders what comes back.
-        return [.. compilation.SyntaxTrees
+        var found = compilation.SyntaxTrees
             .AsParallel()
             .WithCancellation(cancellationToken)
-            .SelectMany(tree => finder.Find(compilation, tree)
-                .Where(site => Wanted(site, files))
-                .ToArray())];
+            .Select(tree => finder.Find(compilation, tree))
+            .ToArray();
+
+        return new LocalizerLookups(
+            [.. found.SelectMany(lookups => lookups.Sites).Where(site => Wanted(site.Location, files))],
+            [.. found.SelectMany(lookups => lookups.UnreadableKeys).Where(location => Wanted(location, files))]);
     }
 
     // A project compiles whole because binding needs it, so only the files the run named are reported on.
-    private static bool Wanted(LocalizerCallSite site, IReadOnlyCollection<string> files)
-        => files.Contains(site.Location.Path, StringComparer.OrdinalIgnoreCase);
+    private static bool Wanted(FileLinePositionSpan location, IReadOnlyCollection<string> files)
+        => files.Contains(location.Path, StringComparer.OrdinalIgnoreCase);
 
     private IReadOnlyList<LintDiagnostic> Check(LocalizerCallSite site)
     {

@@ -69,6 +69,6 @@ public sealed class SemanticCallSiteFinderTests
             }
             """);
 
-        return [.. compilation.SyntaxTrees.SelectMany(tree => new SemanticCallSiteFinder().Find(compilation, tree))];
+        return [.. compilation.SyntaxTrees.SelectMany(tree => new SemanticCallSiteFinder().Find(compilation, tree).Sites)];
     }
 }

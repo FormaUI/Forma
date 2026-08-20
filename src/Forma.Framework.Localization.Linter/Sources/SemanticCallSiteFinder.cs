@@ -15,14 +15,14 @@ public sealed class SemanticCallSiteFinder : ILocalizerCallSiteFinder
     }
 
     /// <inheritdoc />
-    public IEnumerable<LocalizerCallSite> Find(Compilation compilation, SyntaxTree tree)
+    public LocalizerLookups Find(Compilation compilation, SyntaxTree tree)
     {
         ArgumentNullException.ThrowIfNull(compilation);
         ArgumentNullException.ThrowIfNull(tree);
 
         var contract = compilation.GetTypeByMetadataName(LocalizerContract.MetadataName);
 
-        return contract is null ? [] : Walk(compilation, tree, contract);
+        return contract is null ? LocalizerLookups.Empty : Walk(compilation, tree, contract);
     }
 
     private static bool Owns(ISymbol? symbol, INamedTypeSymbol contract)
@@ -34,10 +34,12 @@ public sealed class SemanticCallSiteFinder : ILocalizerCallSiteFinder
             _ => false,
         };
 
-    private static IEnumerable<LocalizerCallSite> Walk(Compilation compilation, SyntaxTree tree, INamedTypeSymbol contract)
+    private static LocalizerLookups Walk(Compilation compilation, SyntaxTree tree, INamedTypeSymbol contract)
     {
         var model = compilation.GetSemanticModel(tree);
         var generic = compilation.GetTypeByMetadataName(LocalizerContract.GenericMetadataName);
+        var sites = new List<LocalizerCallSite>();
+        var unreadable = new List<FileLinePositionSpan>();
 
         foreach (var node in tree.GetRoot().DescendantNodes())
         {
@@ -55,11 +57,23 @@ public sealed class SemanticCallSiteFinder : ILocalizerCallSiteFinder
 
             var symbol = model.GetSymbolInfo(node).Symbol;
 
-            if (Owns(symbol, contract) && CallSiteReader.Read(tree, arguments, symbol, model) is { } site)
+            if (!Owns(symbol, contract))
             {
-                yield return site with { ResourceType = Resource(model, node, generic) };
+                continue;
+            }
+
+            if (CallSiteReader.Read(tree, arguments, symbol, model) is { } site)
+            {
+                sites.Add(site with { ResourceType = Resource(model, node, generic) });
+            }
+            else if (!LocalizerContract.InsideLocalizer(node, model, contract)
+                && CallSiteReader.UnreadableKey(tree, arguments) is { } location)
+            {
+                unreadable.Add(location);
             }
         }
+
+        return new LocalizerLookups(sites, unreadable);
     }
 
     // The indexer is declared on the unbound contract, so the type it translates is only on the receiver.

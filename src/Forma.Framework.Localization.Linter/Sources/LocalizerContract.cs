@@ -68,6 +68,34 @@ public static class LocalizerContract
         return string.Equals(name, TypeName, StringComparison.Ordinal);
     }
 
+    /// <summary>Whether the node sits inside a localizer, whose lookups forward a key rather than write one.</summary>
+    /// <param name="node">The node the lookup was found at.</param>
+    /// <param name="model">The model that bound the node.</param>
+    /// <param name="contract">The contract as the compilation resolved it.</param>
+    public static bool InsideLocalizer(SyntaxNode node, SemanticModel model, INamedTypeSymbol contract)
+    {
+        ArgumentNullException.ThrowIfNull(node);
+        ArgumentNullException.ThrowIfNull(model);
+        ArgumentNullException.ThrowIfNull(contract);
+
+        return Enclosing(node) is { } type
+            && model.GetDeclaredSymbol(type) is INamedTypeSymbol symbol
+            && Implements(symbol, contract);
+    }
+
+    /// <summary>Whether the node sits inside a type declaring itself a localizer, judged without a model.</summary>
+    /// <param name="node">The node the lookup was found at.</param>
+    public static bool InsideLocalizer(SyntaxNode node)
+    {
+        ArgumentNullException.ThrowIfNull(node);
+
+        return Enclosing(node)?.BaseList?.Types.Any(declared => Names(declared.Type)) == true;
+    }
+
     private static bool Closes(INamedTypeSymbol type, INamedTypeSymbol generic)
         => type.IsGenericType && SymbolEqualityComparer.Default.Equals(type.OriginalDefinition, generic);
+
+    // The member holding the lookup belongs to the nearest type, so an outer one says nothing about it.
+    private static TypeDeclarationSyntax? Enclosing(SyntaxNode node)
+        => node.Ancestors().OfType<TypeDeclarationSyntax>().FirstOrDefault();
 }

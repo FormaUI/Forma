@@ -177,6 +177,7 @@ translation is legal. Reordering or dropping a name is legal.
 | LOC0207 | Error | A named value the key never reads | the hole renders as written, silently |
 | LOC0208 | Error | A key writes text shaped like a hole the runtime cannot read | renders as written, silently |
 | LOC0209 | Warning | A key has no entry in a translation file its type owns | renders untranslated, silently |
+| LOC0210 | Warning | A lookup writes its key as an expression | unchecked, whatever it reads |
 
 LOC0209 catches the drift a new string opens. Adding `L["Details columns"]` to a component
 whose `he` and `es` files already exist leaves both files behind, and nothing else notices:
@@ -205,6 +206,28 @@ be translated — a bare number, a symbol, a proper noun — is declared, not om
 A parent culture answers for its children, because `JsonStringLocale` walks a culture up to
 its parents when it looks a key up. A `Widget.es-419.json` carrying only what differs from
 `Widget.es.json` is complete, and only a key neither file declares is reported.
+
+LOC0210 names what the other rules could not see. `L[column.ToString()]` reads a key only
+the run knows, so no rule can judge it and no coverage check can count it — leaving it
+silent would let a run read as complete when part of it was never looked at. It mirrors
+LOC0206, which says the same about Razor markup that produced no generated C#.
+
+A key written as a constant is not a blind spot, because the compiler folds it:
+
+```csharp
+private const string Retry = "Try again";
+
+locale[Retry]          // read as "Try again", checked like a literal
+locale["Try " + "again"]  // folded too
+locale[column.ToString()]  // LOC0210
+```
+
+A folded key is a real call site, so every rule reads it and LOC0209 expects a translation
+for it. Only the semantic path folds, since the syntactic one has no compiler to ask.
+
+A lookup inside a type that implements `IStringLocale` is left alone. Such a type forwards
+the key its own caller wrote rather than writing one, so `_inner[name]` in a decorator or a
+test stub is not a blind spot — the key belongs to whoever called it.
 
 All three ways of filling holes are checked. An interpolated key and a positional call
 name their values after the key's holes; a named call writes the names out, and those are

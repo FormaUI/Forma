@@ -30,9 +30,36 @@ internal static class CallSiteReader
             LiteralExpressionSyntax literal when literal.IsKind(SyntaxKind.StringLiteralExpression)
                 => Literal(tree, literal, Supplies(symbol, model, list), list.Count - 1),
             InterpolatedStringExpressionSyntax interpolated => Interpolated(tree, interpolated),
+            { } expression when Constant(expression, model) is { } text
+                => Constant(tree, expression, text, Supplies(symbol, model, list), list.Count - 1),
             _ => null,
         };
     }
+
+    // The compiler folds a constant, so a key written as one is as readable as a literal spelled out.
+    private static string? Constant(ExpressionSyntax expression, SemanticModel? model)
+        => model?.GetConstantValue(expression) is { HasValue: true, Value: string text } ? text : null;
+
+    // The span covers a reference rather than a quoted literal, so the key starts where the span does.
+    private static LocalizerCallSite Constant(
+        SyntaxTree tree,
+        ExpressionSyntax expression,
+        string key,
+        (LocalizerArguments Kind, IReadOnlyList<string> Names) supplies,
+        int values)
+        => new(
+            key,
+            tree.GetMappedLineSpan(expression.Span),
+            0,
+            supplies.Kind,
+            values,
+            supplies.Names);
+
+    /// <summary>Where a lookup writes the key that could not be read, or null when it writes no key at all.</summary>
+    /// <param name="tree">The tree the arguments were parsed from.</param>
+    /// <param name="arguments">The arguments the lookup was given.</param>
+    public static FileLinePositionSpan? UnreadableKey(SyntaxTree tree, BaseArgumentListSyntax arguments)
+        => arguments.Arguments.Count == 0 ? null : tree.GetMappedLineSpan(arguments.Arguments[0].Span);
 
     // Passing the collection itself rather than its items leaves nothing to count.
     private static bool Collection(ITypeSymbol argument, ITypeSymbol parameter, ITypeSymbol element)

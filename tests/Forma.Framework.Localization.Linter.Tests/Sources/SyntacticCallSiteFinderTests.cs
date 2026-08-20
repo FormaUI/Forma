@@ -18,7 +18,7 @@ public sealed class SyntacticCallSiteFinderTests
             """);
 
         // Act
-        var sites = new SyntacticCallSiteFinder().Find(compilation, compilation.SyntaxTrees.Single());
+        var sites = new SyntacticCallSiteFinder().Find(compilation, compilation.SyntaxTrees.Single()).Sites;
 
         // Assert
         Assert.Equal(["Today"], sites.Select(site => site.Key));
@@ -40,7 +40,7 @@ public sealed class SyntacticCallSiteFinderTests
             """);
 
         // Act
-        var sites = new SyntacticCallSiteFinder().Find(compilation, compilation.SyntaxTrees.Single());
+        var sites = new SyntacticCallSiteFinder().Find(compilation, compilation.SyntaxTrees.Single()).Sites;
 
         // Assert
         Assert.Equal(["Today"], sites.Select(site => site.Key));
@@ -62,7 +62,7 @@ public sealed class SyntacticCallSiteFinderTests
             """);
 
         // Act
-        var sites = new SyntacticCallSiteFinder().Find(compilation, compilation.SyntaxTrees.Single());
+        var sites = new SyntacticCallSiteFinder().Find(compilation, compilation.SyntaxTrees.Single()).Sites;
 
         // Assert
         Assert.Empty(sites);
@@ -82,7 +82,7 @@ public sealed class SyntacticCallSiteFinderTests
             """);
 
         // Act
-        var sites = new SyntacticCallSiteFinder().Find(compilation, compilation.SyntaxTrees.Single());
+        var sites = new SyntacticCallSiteFinder().Find(compilation, compilation.SyntaxTrees.Single()).Sites;
 
         // Assert
         Assert.Empty(sites);
@@ -111,7 +111,7 @@ public sealed class SyntacticCallSiteFinderTests
             """);
 
         // Act
-        var sites = new SyntacticCallSiteFinder().Find(compilation, compilation.SyntaxTrees.Last());
+        var sites = new SyntacticCallSiteFinder().Find(compilation, compilation.SyntaxTrees.Last()).Sites;
 
         // Assert
         Assert.Equal(["Today"], sites.Select(site => site.Key));
@@ -140,7 +140,7 @@ public sealed class SyntacticCallSiteFinderTests
             """);
 
         // Act
-        var sites = new SyntacticCallSiteFinder().Find(compilation, compilation.SyntaxTrees.Last());
+        var sites = new SyntacticCallSiteFinder().Find(compilation, compilation.SyntaxTrees.Last()).Sites;
 
         // Assert
         Assert.Empty(sites);
@@ -160,7 +160,7 @@ public sealed class SyntacticCallSiteFinderTests
             """);
 
         // Act
-        var sites = new SyntacticCallSiteFinder().Find(compilation, compilation.SyntaxTrees.Single());
+        var sites = new SyntacticCallSiteFinder().Find(compilation, compilation.SyntaxTrees.Single()).Sites;
 
         // Assert
         Assert.Equal(["Today"], sites.Select(site => site.Key));
@@ -187,7 +187,7 @@ public sealed class SyntacticCallSiteFinderTests
             """);
 
         // Act
-        var sites = new SyntacticCallSiteFinder().Find(compilation, compilation.SyntaxTrees.Single());
+        var sites = new SyntacticCallSiteFinder().Find(compilation, compilation.SyntaxTrees.Single()).Sites;
 
         // Assert
         Assert.Equal(["Today"], sites.Select(site => site.Key));
@@ -209,7 +209,7 @@ public sealed class SyntacticCallSiteFinderTests
             """);
 
         // Act
-        var sites = new SyntacticCallSiteFinder().Find(compilation, compilation.SyntaxTrees.Single());
+        var sites = new SyntacticCallSiteFinder().Find(compilation, compilation.SyntaxTrees.Single()).Sites;
 
         // Assert
         Assert.Equal(["Today"], sites.Select(site => site.Key));

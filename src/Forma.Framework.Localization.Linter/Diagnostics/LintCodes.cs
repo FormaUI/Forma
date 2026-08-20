@@ -32,6 +32,7 @@ public static class LintCodes
             UnreadValue,
             HoleShapedText,
             MissingTranslation,
+            KeyNotAnalysed,
         ];
 
     /// <summary>The file declares a culture its own name does not give it.</summary>
@@ -51,6 +52,12 @@ public static class LintCodes
         "LOC0200",
         LintSeverity.Error,
         "A hole in an interpolated key is not a plain identifier, so the lookup throws.");
+
+    /// <summary>A lookup writes its key as an expression, so no rule could read it.</summary>
+    public static LintCode KeyNotAnalysed { get; } = new(
+        "LOC0210",
+        LintSeverity.Warning,
+        "A lookup writes its key as an expression, so what it reads went unchecked.");
 
     /// <summary>A key writes text shaped like a hole whose name the runtime cannot read.</summary>
     public static LintCode HoleShapedText { get; } = new(

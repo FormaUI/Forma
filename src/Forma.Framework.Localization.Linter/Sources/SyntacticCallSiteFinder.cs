@@ -15,7 +15,7 @@ public sealed class SyntacticCallSiteFinder : ILocalizerCallSiteFinder
         => true;
 
     /// <inheritdoc />
-    public IEnumerable<LocalizerCallSite> Find(Compilation compilation, SyntaxTree tree)
+    public LocalizerLookups Find(Compilation compilation, SyntaxTree tree)
     {
         ArgumentNullException.ThrowIfNull(compilation);
         ArgumentNullException.ThrowIfNull(tree);
@@ -28,12 +28,15 @@ public sealed class SyntacticCallSiteFinder : ILocalizerCallSiteFinder
         return Walk(tree, root, members, IndexScopes(root));
     }
 
-    private static IEnumerable<LocalizerCallSite> Walk(
+    private static LocalizerLookups Walk(
         SyntaxTree tree,
         SyntaxNode root,
         IReadOnlyDictionary<string, HashSet<string>> members,
         IReadOnlyDictionary<SyntaxNode, HashSet<string>> scopes)
     {
+        var sites = new List<LocalizerCallSite>();
+        var unreadable = new List<FileLinePositionSpan>();
+
         foreach (var node in root.DescendantNodes())
         {
             (string? receiver, BaseArgumentListSyntax? arguments) = node switch
@@ -55,9 +58,16 @@ public sealed class SyntacticCallSiteFinder : ILocalizerCallSiteFinder
 
             if (CallSiteReader.Read(tree, arguments, null, null) is { } site)
             {
-                yield return site;
+                sites.Add(site);
+            }
+            else if (!LocalizerContract.InsideLocalizer(node)
+                && CallSiteReader.UnreadableKey(tree, arguments) is { } location)
+            {
+                unreadable.Add(location);
             }
         }
+
+        return new LocalizerLookups(sites, unreadable);
     }
 
     // A local or parameter shadows the type's own members, so the nearest scope is read first.
