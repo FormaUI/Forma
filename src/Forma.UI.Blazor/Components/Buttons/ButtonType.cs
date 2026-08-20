@@ -1,4 +1,4 @@
-namespace Forma.UI.Blazor.Components.Actions;
+namespace Forma.UI.Blazor.Components.Buttons;
 
 /// <summary>The behaviour a button has when it sits inside a form.</summary>
 public enum ButtonType

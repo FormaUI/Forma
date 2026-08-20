@@ -41,7 +41,7 @@ Forma.UI.Blazor/Components/
 ├── (1 / 2) Indicators/
 │   ├── ✅ FormaStatusBadge.razor
 │   └── FormaCapacityIndicator.razor
-├── (3 / 13) Actions/
+├── (3 / 13) Buttons/
 │   ├── ButtonSize.cs
 │   ├── ButtonType.cs
 │   ├── ButtonVariant.cs
@@ -703,7 +703,7 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Old pattern** | Coi sorted by clicking a column header, and had no standalone sort control. Header sorting is **not** what this replaces — `FormaDataGrid` already ships it by passing QuickGrid's `Sortable`, `SortBy`, `InitialSortDirection` and `GridSort<T>` straight through |
 | **Used in** | Layouts with no header row to click — the tile grids in `FormaExplorer` (#53) and `FormaFileManager` (#54), and any card list |
 | **Parameters** | `RenderFragment ChildContent` (the sort options as menu items), `string Label` (required) |
-| **Blazor approach** | A preset over `FormaDropDownMenu` like `FormaOverflowMenu`, because sorting offers a choice rather than performing one action — which is why it is a `Menu` and not a `Button`, and why it sits with the menus rather than in `Actions/`. A grid that already has sortable column headers should keep using them — two controls over one sort state is a synchronisation problem with no upside |
+| **Blazor approach** | A preset over `FormaDropDownMenu` like `FormaOverflowMenu`, because sorting offers a choice rather than performing one action — which is why it is a `Menu` and not a `Button`, and why it sits with the menus rather than in `Buttons/`. A grid that already has sortable column headers should keep using them — two controls over one sort state is a synchronisation problem with no upside |
 
 ### 50. `FormaViewButton`
 
