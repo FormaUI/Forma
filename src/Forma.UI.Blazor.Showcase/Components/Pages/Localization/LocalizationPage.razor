@@ -141,11 +141,11 @@
             <tbody>
                 <tr>
                     <th><code dir="ltr">#</code></th>
-                    <td>@L["[$ plural; other: #; $]", 1234567]</td>
+                    <td>@GroupedCount(1234567)</td>
                 </tr>
                 <tr>
                     <th><code dir="ltr">{count}</code></th>
-                    <td>@L["{count}", ("count", 1234567)]</td>
+                    <td>@RawCount(1234567)</td>
                 </tr>
             </tbody>
         </table>
@@ -220,8 +220,12 @@
     private const string PluralKey = "[$ plural; one: # file; other: # files; $]";
     private const string IncompleteKey = "[$ plural; one: # file; $]";
     private const string HebrewSourceKey = "[$ plural; one: פריט אחד; two: שני פריטים; other: # פריטים; $]";
+    private const string GroupedFormat = "[$ plural; other: #; $]";
+    private const string RawFormat = "{count}";
 
     private static readonly decimal[] Samples = [0m, 0.5m, 1m, 1.0m, 2m, 3m, 5m, 11m, 100m, 1000000m];
+
+    private static readonly PluralExpressionEvaluator PluralFormat = new(CommonPluralRuleSet.Default);
 
     private static readonly IStringLocale EnglishSource =
         new JsonStringLocaleFactory().Create(typeof(LocalizationPage));
@@ -245,4 +249,11 @@
 
         return category?.ToString().ToLowerInvariant() ?? "other";
     }
+
+    // Neither row names a translation, so both format the count directly rather than through a lookup.
+    private static string GroupedCount(decimal count)
+        => PluralFormat.Evaluate(GroupedFormat, CultureInfo.CurrentCulture, LocalizedFormat.Bind(GroupedFormat, count));
+
+    private static string RawCount(decimal count)
+        => LocalizedFormat.Render(RawFormat, LocalizedFormat.Bind(RawFormat, count), CultureInfo.CurrentCulture);
 }
