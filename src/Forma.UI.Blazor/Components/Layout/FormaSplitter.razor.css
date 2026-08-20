@@ -1,0 +1,90 @@
+/* ============================================================
+   FormaSplitter — CSS isolation
+   An invisible hit area that reveals an accent grip on hover,
+   focus, or while dragging, in either orientation.
+   ============================================================ */
+
+.forma-splitter {
+    position: relative;
+    z-index: 1;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    /* The divider owns its axis outright; without this a touch drag scrolls the page instead. */
+    touch-action: none;
+}
+
+.forma-splitter-grip {
+    border-radius: 2px;
+    background: transparent;
+    transition: background-color 0.1s ease;
+}
+
+.forma-splitter-vertical {
+    inline-size: var(--forma-splitter-thickness, 0.75rem);
+    cursor: col-resize;
+}
+
+.forma-splitter-vertical .forma-splitter-grip {
+    inline-size: var(--forma-splitter-grip-thickness, 3px);
+    block-size: 100%;
+}
+
+.forma-splitter-horizontal {
+    block-size: var(--forma-splitter-thickness, 0.75rem);
+    align-items: center;
+    cursor: row-resize;
+}
+
+.forma-splitter-horizontal .forma-splitter-grip {
+    inline-size: 100%;
+    block-size: var(--forma-splitter-grip-thickness, 3px);
+}
+
+/* A deliberate pause before the accent appears, so sweeping across the divider does not flash it. */
+@media (hover: hover) {
+    .forma-splitter:hover .forma-splitter-grip {
+        background: var(--forma-splitter-color, var(--main-color));
+        transition-delay: 0.25s;
+    }
+}
+
+.forma-splitter.is-resizing .forma-splitter-grip,
+.forma-splitter:focus-visible .forma-splitter-grip {
+    background: var(--forma-splitter-color, var(--main-color));
+    transition-delay: 0s;
+}
+
+/* Focus thickens the grip instead: an outline on something this thin draws as stray parallel lines rather than a ring. */
+.forma-splitter:focus-visible {
+    outline: none;
+}
+
+.forma-splitter-vertical:focus-visible .forma-splitter-grip {
+    inline-size: calc(var(--forma-splitter-grip-thickness, 3px) + 2px);
+}
+
+.forma-splitter-horizontal:focus-visible .forma-splitter-grip {
+    block-size: calc(var(--forma-splitter-grip-thickness, 3px) + 2px);
+}
+
+/* Forced colours drop the fill, so the ring comes back where it is the only thing left to see. */
+@media (forced-colors: active) {
+    .forma-splitter:focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: -2px;
+    }
+}
+
+@media (pointer: coarse) {
+    .forma-splitter-vertical {
+        inline-size: var(--forma-splitter-coarse-thickness, 2.75rem);
+    }
+
+    .forma-splitter-horizontal {
+        block-size: var(--forma-splitter-coarse-thickness, 2.75rem);
+    }
+}

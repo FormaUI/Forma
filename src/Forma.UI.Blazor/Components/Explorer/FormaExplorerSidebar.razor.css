@@ -28,48 +28,10 @@
     scrollbar-width: thin;
 }
 
-/* Sits between the tree and its footer so the tree's height can be dragged, like an Explorer section sash. */
-.forma-explorer-sidebar-sash {
-    flex: 0 0 auto;
-    block-size: 0.6rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: row-resize;
-    background: transparent;
-    border: none;
-    touch-action: none;
-}
-
-.forma-explorer-sidebar-sash-grip {
-    inline-size: 100%;
-    block-size: 0;
-    border-block-start: 1px dashed var(--light-border-color);
-    transition: border-color 0.1s ease, border-width 0.1s ease;
-}
-
-@media (hover: hover) {
-    .forma-explorer-sidebar-sash:hover .forma-explorer-sidebar-sash-grip {
-        border-block-start: 3px solid var(--main-color);
-        transition-delay: 0.25s;
-    }
-}
-
-.forma-explorer-sidebar-sash.is-resizing .forma-explorer-sidebar-sash-grip,
-.forma-explorer-sidebar-sash:focus-visible .forma-explorer-sidebar-sash-grip {
-    border-block-start: 3px solid var(--main-color);
-    transition-delay: 0s;
-}
-
-.forma-explorer-sidebar-sash:focus-visible {
-    outline: 2px solid var(--focus-color);
-    outline-offset: -2px;
-}
-
-@media (pointer: coarse) {
-    .forma-explorer-sidebar-sash {
-        block-size: 1.5rem;
-    }
+/* Sits between the tree and its footer so the tree's height can be dragged, like an Explorer section sash.
+   The divider is FormaSplitter's, so it is reached through ::deep and retuned through its own knobs. */
+::deep .forma-explorer-sidebar-sash {
+    --forma-splitter-thickness: 0.6rem;
 }
 
 /* Rows are rendered by FormaExplorerFolderNode as well as by this component, so row rules reach into the child through ::deep. */

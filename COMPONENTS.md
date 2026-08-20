@@ -20,9 +20,11 @@ Forma.UI.Blazor/Components/
 ├── FormaGlyph.razor / .razor.cs / .razor.css  # draws a Forma.UI.Style.Glyphs.Glyph as inline SVG
 ├── ✅ FormaField.razor / .razor.cs / .razor.css
 ├── FieldLabelMode.cs                     # enum: Floating, Pinned, Above, Inline
-├── (5 / 5) Layout/
+├── (6 / 6) Layout/
 │   ├── ✅ FormaCommandBar.razor / .razor.cs / .razor.css
 │   ├── ✅ FormaCommandBarRow.razor / .razor.cs / .razor.css / .razor.js
+│   ├── ✅ FormaSplitter.razor / .razor.cs / .razor.css / .razor.js
+│   ├── SplitterOrientation.cs                 # enum: Vertical, Horizontal
 │   ├── ✅ FormaPageHeader.razor / .razor.cs
 │   ├── ✅ FormaToolbar.razor / .razor.cs
 │   ├── ✅ FormaContextToolbar.razor / .razor.cs
@@ -841,6 +843,17 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Blazor approach** | A pair, split by what each owns. The bar is the surface and the stack — a flex column carrying the background, the rule and the padding, holding as many rows as a caller writes into it. Each row lays its commands on a horizontally scrolling track and, once they outgrow the width, flanks them with an arrow at either end, each disabled at the edge it can no longer travel toward. Retune with `--forma-command-bar-padding` and `--forma-command-bar-background-color` |
 | **Why it needs JS** | Whether a row overflows is a measurement only the browser holds, so a colocated module reports it back rather than C# guessing. A `ResizeObserver` watches the track and each command, and a `MutationObserver` watches the track's child list — **commands can be added or removed without the track's own box changing, which no `ResizeObserver` reports**, so watching size alone leaves the arrows stale the moment a caller's commands change. Reports are coalesced to one a frame and sent only when the answer changes, so scrolling never floods the circuit. Adding the arrows narrows the track, which re-triggers the observer — the loop settles because the second measurement changes nothing |
 | **Notes** | **It dictates where things go, never what they are.** No selection state, no bulk actions, no count readout — an explorer's select-mode bar stays the explorer's business, and the bar itself owns no strings at all. Scroll offsets are read through `Math.abs` because a right-to-left row counts `scrollLeft` downwards from zero, and the chevrons are turned per direction since they are not bidi-mirrored. Reached from a host's stylesheet through `::deep`, since the element belongs to this component's scope rather than the caller's |
+
+### 63. `FormaSplitter` ✅
+
+| | |
+|---|---|
+| **Old pattern** | Two hand-rolled sashes in the explorer — the vertical one resizing the folders panel and the horizontal one resizing the folder list — each with its own pointer plumbing, key handling and clamping |
+| **Used in** | Any pair of panes a reader can resize. `FormaExplorer` composes it for its sidebar splitter and `FormaExplorerSidebar` for its tree sash, which is what proved both orientations |
+| **Parameters** | `double Value`, `EventCallback<double> ValueChanged`, `double Min`, `double Max`, `double Step` (default `1`), `double PixelsPerUnit` (default `16`), `SplitterOrientation Orientation`, `string Label` (required), `EventCallback<bool> OnResizingChanged`, `string? Class`, plus captured pass-through attributes |
+| **Blazor approach** | The divider owns the interaction and the clamping; where the size is stored and how it is applied stays the caller's. `role="separator"` with `aria-orientation`, `aria-valuenow`, `aria-valuemin` and `aria-valuemax`, reachable by tab and driven by the arrow keys, `Home` and `End`. Pointer capture through a colocated module keeps the drag alive once the pointer leaves the divider's narrow hit area, and `OnResizingChanged` lets a host suppress text selection for the length of a drag |
+| **Units** | `PixelsPerUnit` converts a pointer's pixel travel into the caller's own unit, defaulting to `16` so a host sizing panes in rem needs no arithmetic of its own; a host working in pixels sets it to `1`. `Step` decides how far one arrow key travels, for a pane whose useful sizes are further apart than a single unit |
+| **Notes** | `aria-orientation` describes **the bar, not the axis it moves along** — a `Vertical` splitter is a vertical bar between side-by-side panes, dragged horizontally. Only the horizontal arrows resolve through `IsRightToLeft`, since a right-to-left layout puts the leading pane on the other side; `ArrowUp`, `ArrowDown`, `Home` and `End` are left alone. Focus thickens the grip rather than drawing an outline, which on something this thin renders as stray parallel lines, and the ring returns under forced colours where the fill is dropped |
 
 ---
 

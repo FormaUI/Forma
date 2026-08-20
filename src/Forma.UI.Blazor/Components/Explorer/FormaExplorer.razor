@@ -90,22 +90,14 @@
                                  OnFolderRename="OpenFolderRenameDialog"
                                  OnFolderSelected="HandleFolderSelectedAsync" />
 
-            <div class="forma-explorer-splitter @(_isResizingSidebar ? "is-resizing" : "")"
-                 @ref="_splitterElement"
-                 role="separator"
-                 aria-orientation="vertical"
-                 aria-label="@L["Resize Folders Panel"]"
-                 aria-valuemin="@MinSidebarWidth"
-                 aria-valuemax="@MaxSidebarWidth"
-                 aria-valuenow="@((int)Math.Round(_sidebarWidth))"
-                 tabindex="0"
-                 @onpointerdown="HandleSplitterPointerDownAsync"
-                 @onpointermove="HandleSplitterPointerMove"
-                 @onpointerup="HandleSplitterPointerUpAsync"
-                 @onpointercancel="HandleSplitterPointerUpAsync"
-                 @onkeydown="HandleSplitterKeyDown">
-                <span class="forma-explorer-splitter-grip" aria-hidden="true"></span>
-            </div>
+            <FormaSplitter Class="forma-explorer-splitter"
+                           Orientation="SplitterOrientation.Vertical"
+                           Value="_sidebarWidth"
+                           ValueChanged="width => _sidebarWidth = width"
+                           Min="MinSidebarWidth"
+                           Max="MaxSidebarWidth"
+                           Label="@L["Resize Folders Panel"]"
+                           OnResizingChanged="resizing => _isResizingSidebar = resizing" />
         }
 
         <div class="forma-explorer-content">

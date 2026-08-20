@@ -157,63 +157,9 @@
 }
 
 /* --- Sidebar Splitter --- */
-/* The sash is invisible at rest and reveals an accent line on hover, focus, or while dragging. */
-.forma-explorer-splitter {
-    position: relative;
-    z-index: 1;
-    flex: 0 0 auto;
-    inline-size: 0.75rem;
-    display: flex;
-    align-items: stretch;
-    justify-content: center;
-    cursor: col-resize;
-    background: transparent;
-    border: none;
-    touch-action: none;
-}
-
-.forma-explorer-splitter-grip {
-    inline-size: 3px;
-    block-size: 100%;
-    border-radius: 2px;
-    background: transparent;
-    transition: background-color 0.1s ease;
-}
-
-@media (hover: hover) {
-    .forma-explorer-splitter:hover .forma-explorer-splitter-grip {
-        background: var(--main-color);
-        transition-delay: 0.25s;
-    }
-}
-
-.forma-explorer-splitter.is-resizing .forma-explorer-splitter-grip,
-.forma-explorer-splitter:focus-visible .forma-explorer-splitter-grip {
-    background: var(--main-color);
-    transition-delay: 0s;
-}
-
-/* Focus widens the sash into one solid bar: an outline on something this thin draws as stray parallel lines rather than a ring. */
-.forma-explorer-splitter:focus-visible {
-    outline: none;
-}
-
-.forma-explorer-splitter:focus-visible .forma-explorer-splitter-grip {
-    inline-size: 5px;
-}
-
-/* Forced colours drop the fill, so the ring comes back where it is the only thing left to see. */
-@media (forced-colors: active) {
-    .forma-explorer-splitter:focus-visible {
-        outline: 2px solid Highlight;
-        outline-offset: -2px;
-    }
-}
-
-@media (pointer: coarse) {
-    .forma-explorer-splitter {
-        inline-size: 1.5rem;
-    }
+/* The divider is FormaSplitter's, so it is reached through ::deep; only its place in the row belongs here. */
+::deep .forma-explorer-splitter {
+    align-self: stretch;
 }
 
 /* A drag must not leave the panels selecting text as the pointer sweeps across them. */

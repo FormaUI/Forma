@@ -1,0 +1,125 @@
+@page "/splitter"
+@attribute [ShowcasePage("FormaSplitter")]
+@rendermode InteractiveServer
+@using System.Globalization
+@using Forma.UI.Blazor.Components.Layout
+@inject IStringLocale<FormaSplitterPage> L
+
+<h1>FormaSplitter</h1>
+<p class="description">@L["A draggable divider between two panes. It reports the size the pane before it should take, clamped to the bounds given, and answers the pointer, the keyboard and a screen reader alike."]</p>
+
+<div class="demo-section">
+    <h2>@L["Side by Side"]</h2>
+    <p class="description">@L["A vertical divider drags along the reading axis. The arrow keys move it a step at a time, Home and End take it to its bounds."]</p>
+    <div class="demo-box demo-box-flush">
+        <div class="demo-split demo-split-row @(_isResizingPanel ? "is-resizing" : "")" style="@RowStyle">
+            <div class="demo-pane">@L["Folders"]</div>
+            <FormaSplitter Orientation="SplitterOrientation.Vertical"
+                           @bind-Value="_panelWidth"
+                           Min="8"
+                           Max="24"
+                           Label="@L["Resize Folders Panel"]"
+                           OnResizingChanged="resizing => _isResizingPanel = resizing" />
+            <div class="demo-pane demo-pane-fill">@L["Content"]</div>
+        </div>
+    </div>
+    <p class="demo-output">@L["Width"]: <code>@Format(_panelWidth) rem</code></p>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Stacked"]</h2>
+    <p class="description">@L["A horizontal divider drags along the block axis instead, and takes the up and down arrows rather than left and right."]</p>
+    <div class="demo-box demo-box-flush">
+        <div class="demo-split demo-split-column @(_isResizingTree ? "is-resizing" : "")">
+            <div class="demo-pane" style="@TreeStyle">@L["Tree"]</div>
+            <FormaSplitter Orientation="SplitterOrientation.Horizontal"
+                           @bind-Value="_treeHeight"
+                           Min="4"
+                           Max="16"
+                           Label="@L["Resize Folder List"]"
+                           OnResizingChanged="resizing => _isResizingTree = resizing" />
+            <div class="demo-pane demo-pane-fill">@L["Details"]</div>
+        </div>
+    </div>
+    <p class="demo-output">@L["Height"]: <code>@Format(_treeHeight) rem</code></p>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Held Within Its Bounds"]</h2>
+    <p class="description">@L["The divider never reports a size outside the range it was given, so a pane cannot be dragged away entirely. This one is pinned between eight and twelve."]</p>
+    <div class="demo-box demo-box-flush">
+        <div class="demo-split demo-split-row" style="@ClampedStyle">
+            <div class="demo-pane">@L["Narrow Range"]</div>
+            <FormaSplitter Orientation="SplitterOrientation.Vertical"
+                           @bind-Value="_clampedWidth"
+                           Min="8"
+                           Max="12"
+                           Label="@L["Resize Narrow Panel"]" />
+            <div class="demo-pane demo-pane-fill">@L["Content"]</div>
+        </div>
+    </div>
+    <p class="demo-output">@L["Width"]: <code>@Format(_clampedWidth) rem</code> @L["of 8 to 12"]</p>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A Coarser Step"]</h2>
+    <p class="description">@L["Step decides how far one arrow key travels, for a pane whose useful sizes are further apart than a single unit."]</p>
+    <div class="demo-box demo-box-flush">
+        <div class="demo-split demo-split-row" style="@SteppedStyle">
+            <div class="demo-pane">@L["Steps of Four"]</div>
+            <FormaSplitter Orientation="SplitterOrientation.Vertical"
+                           @bind-Value="_steppedWidth"
+                           Min="8"
+                           Max="28"
+                           Step="4"
+                           Label="@L["Resize Stepped Panel"]" />
+            <div class="demo-pane demo-pane-fill">@L["Content"]</div>
+        </div>
+    </div>
+    <p class="demo-output">@L["Width"]: <code>@Format(_steppedWidth) rem</code></p>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Measured in Pixels"]</h2>
+    <p class="description">@L["PixelsPerUnit tells the divider how much one unit of the value is worth. Set to one, the pane is sized straight in pixels rather than in rem."]</p>
+    <div class="demo-box demo-box-flush">
+        <div class="demo-split demo-split-row" style="@PixelStyle">
+            <div class="demo-pane">@L["Pixels"]</div>
+            <FormaSplitter Orientation="SplitterOrientation.Vertical"
+                           @bind-Value="_pixelWidth"
+                           Min="120"
+                           Max="400"
+                           Step="10"
+                           PixelsPerUnit="1"
+                           Label="@L["Resize Pixel Panel"]" />
+            <div class="demo-pane demo-pane-fill">@L["Content"]</div>
+        </div>
+    </div>
+    <p class="demo-output">@L["Width"]: <code>@Format(_pixelWidth) px</code></p>
+</div>
+
+@code {
+    private double _panelWidth = 14;
+    private double _treeHeight = 8;
+    private double _clampedWidth = 10;
+    private double _steppedWidth = 16;
+    private double _pixelWidth = 220;
+    private bool _isResizingPanel;
+    private bool _isResizingTree;
+
+    private string RowStyle => Size("--demo-pane-size", _panelWidth, "rem");
+
+    private string TreeStyle => Size("block-size", _treeHeight, "rem");
+
+    private string ClampedStyle => Size("--demo-pane-size", _clampedWidth, "rem");
+
+    private string SteppedStyle => Size("--demo-pane-size", _steppedWidth, "rem");
+
+    private string PixelStyle => Size("--demo-pane-size", _pixelWidth, "px");
+
+    private static string Size(string property, double value, string unit)
+        => string.Create(CultureInfo.InvariantCulture, $"{property}: {value}{unit}");
+
+    private static string Format(double value)
+        => value.ToString("0.##", CultureInfo.InvariantCulture);
+}

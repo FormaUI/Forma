@@ -1,0 +1,422 @@
+@inherits BunitContext
+@using Microsoft.AspNetCore.Components.Web
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_a_separator()
+        {
+            // Arrange
+            using var ctx = new FormaSplitterTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" />);
+
+            // Assert
+            Assert.NotNull(cut.Find(".forma-splitter[role=separator]"));
+        }
+
+        [Fact]
+        public void Should_report_the_bounds_and_current_size()
+        {
+            // Arrange
+            using var ctx = new FormaSplitterTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" />);
+            var separator = cut.Find(".forma-splitter");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("18", separator.GetAttribute("aria-valuenow"));
+                Assert.Equal("10", separator.GetAttribute("aria-valuemin"));
+                Assert.Equal("28", separator.GetAttribute("aria-valuemax"));
+                Assert.Equal("Resize", separator.GetAttribute("aria-label"));
+                Assert.Equal("0", separator.GetAttribute("tabindex"));
+            });
+        }
+
+        [Fact]
+        public void Should_declare_a_vertical_orientation_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaSplitterTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("vertical", cut.Find(".forma-splitter").GetAttribute("aria-orientation"));
+                Assert.Contains("forma-splitter-vertical", cut.Find(".forma-splitter").ClassList);
+            });
+        }
+
+        [Fact]
+        public void Should_declare_a_horizontal_orientation_when_asked()
+        {
+            // Arrange
+            using var ctx = new FormaSplitterTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" Orientation="SplitterOrientation.Horizontal" />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("horizontal", cut.Find(".forma-splitter").GetAttribute("aria-orientation"));
+                Assert.Contains("forma-splitter-horizontal", cut.Find(".forma-splitter").ClassList);
+            });
+        }
+
+        [Fact]
+        public void Should_grow_on_the_forward_arrow_of_a_vertical_splitter()
+        {
+            // Arrange
+            using var ctx = new FormaSplitterTests();
+            double? reported = null;
+
+            // Act
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" ValueChanged="v => reported = v" />);
+            cut.Find(".forma-splitter").KeyDown("ArrowRight");
+
+            // Assert
+            Assert.Equal(19d, reported);
+        }
+
+        [Fact]
+        public void Should_shrink_on_the_backward_arrow_of_a_vertical_splitter()
+        {
+            // Arrange
+            using var ctx = new FormaSplitterTests();
+            double? reported = null;
+
+            // Act
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" ValueChanged="v => reported = v" />);
+            cut.Find(".forma-splitter").KeyDown("ArrowLeft");
+
+            // Assert
+            Assert.Equal(17d, reported);
+        }
+
+        [Fact]
+        public void Should_use_the_vertical_arrows_for_a_horizontal_splitter()
+        {
+            // Arrange
+            using var ctx = new FormaSplitterTests();
+            double? reported = null;
+
+            // Act
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" Orientation="SplitterOrientation.Horizontal" ValueChanged="v => reported = v" />);
+            cut.Find(".forma-splitter").KeyDown("ArrowDown");
+
+            // Assert
+            Assert.Equal(19d, reported);
+        }
+
+        [Fact]
+        public void Should_ignore_the_horizontal_arrows_on_a_horizontal_splitter()
+        {
+            // Arrange
+            using var ctx = new FormaSplitterTests();
+            double? reported = null;
+
+            // Act
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" Orientation="SplitterOrientation.Horizontal" ValueChanged="v => reported = v" />);
+            cut.Find(".forma-splitter").KeyDown("ArrowRight");
+
+            // Assert
+            Assert.Null(reported);
+        }
+
+        [Fact]
+        public void Should_grow_on_the_leading_arrow_of_a_right_to_left_vertical_splitter()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("he");
+            using var ctx = new FormaSplitterTests();
+            double? reported = null;
+
+            // Act
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" ValueChanged="v => reported = v" />);
+            cut.Find(".forma-splitter").KeyDown("ArrowLeft");
+
+            // Assert
+            Assert.Equal(19d, reported);
+        }
+
+        [Fact]
+        public void Should_shrink_on_the_trailing_arrow_of_a_right_to_left_vertical_splitter()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("he");
+            using var ctx = new FormaSplitterTests();
+            double? reported = null;
+
+            // Act
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" ValueChanged="v => reported = v" />);
+            cut.Find(".forma-splitter").KeyDown("ArrowRight");
+
+            // Assert
+            Assert.Equal(17d, reported);
+        }
+
+        [Fact]
+        public void Should_leave_the_vertical_arrows_alone_in_a_right_to_left_layout()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("he");
+            using var ctx = new FormaSplitterTests();
+            double? reported = null;
+
+            // Act
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" Orientation="SplitterOrientation.Horizontal" ValueChanged="v => reported = v" />);
+            cut.Find(".forma-splitter").KeyDown("ArrowDown");
+
+            // Assert
+            Assert.Equal(19d, reported);
+        }
+
+        [Fact]
+        public void Should_move_by_the_step_given()        {
+            // Arrange
+            using var ctx = new FormaSplitterTests();
+            double? reported = null;
+
+            // Act
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" Step="4" ValueChanged="v => reported = v" />);
+            cut.Find(".forma-splitter").KeyDown("ArrowRight");
+
+            // Assert
+            Assert.Equal(22d, reported);
+        }
+
+        [Fact]
+        public void Should_jump_to_the_minimum_on_home()
+        {
+            // Arrange
+            using var ctx = new FormaSplitterTests();
+            double? reported = null;
+
+            // Act
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" ValueChanged="v => reported = v" />);
+            cut.Find(".forma-splitter").KeyDown("Home");
+
+            // Assert
+            Assert.Equal(10d, reported);
+        }
+
+        [Fact]
+        public void Should_jump_to_the_maximum_on_end()
+        {
+            // Arrange
+            using var ctx = new FormaSplitterTests();
+            double? reported = null;
+
+            // Act
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" ValueChanged="v => reported = v" />);
+            cut.Find(".forma-splitter").KeyDown("End");
+
+            // Assert
+            Assert.Equal(28d, reported);
+        }
+
+        [Fact]
+        public void Should_clamp_at_the_maximum()
+        {
+            // Arrange
+            using var ctx = new FormaSplitterTests();
+            double? reported = null;
+
+            // Act
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="28" Min="10" Max="28" ValueChanged="v => reported = v" />);
+            cut.Find(".forma-splitter").KeyDown("ArrowRight");
+
+            // Assert
+            Assert.Null(reported);
+        }
+
+        [Fact]
+        public void Should_clamp_at_the_minimum()
+        {
+            // Arrange
+            using var ctx = new FormaSplitterTests();
+            double? reported = null;
+
+            // Act
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="10" Min="10" Max="28" ValueChanged="v => reported = v" />);
+            cut.Find(".forma-splitter").KeyDown("ArrowLeft");
+
+            // Assert
+            Assert.Null(reported);
+        }
+
+        [Fact]
+        public void Should_report_resizing_across_a_drag()
+        {
+            // Arrange
+            using var ctx = new FormaSplitterTests();
+            var reported = new List<bool>();
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" OnResizingChanged="r => reported.Add(r)" />);
+
+            // Act
+            cut.Find(".forma-splitter").PointerDown();
+            cut.Find(".forma-splitter").PointerUp();
+
+            // Assert
+            Assert.Equal([true, false], reported);
+        }
+
+        [Fact]
+        public void Should_mark_itself_while_a_drag_runs()
+        {
+            // Arrange
+            using var ctx = new FormaSplitterTests();
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" />);
+
+            // Act
+            cut.Find(".forma-splitter").PointerDown();
+
+            // Assert
+            Assert.Contains("is-resizing", cut.Find(".forma-splitter").ClassList);
+        }
+
+        [Fact]
+        public void Should_stop_marking_itself_once_the_drag_ends()
+        {
+            // Arrange
+            using var ctx = new FormaSplitterTests();
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" />);
+            cut.Find(".forma-splitter").PointerDown();
+
+            // Act
+            cut.Find(".forma-splitter").PointerUp();
+
+            // Assert
+            Assert.DoesNotContain("is-resizing", cut.Find(".forma-splitter").ClassList);
+        }
+
+        [Fact]
+        public void Should_ignore_a_pointer_move_that_no_drag_started()
+        {
+            // Arrange
+            using var ctx = new FormaSplitterTests();
+            double? reported = null;
+
+            // Act
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" ValueChanged="v => reported = v" />);
+            cut.Find(".forma-splitter").PointerMove(new PointerEventArgs { ClientX = 400 });
+
+            // Assert
+            Assert.Null(reported);
+        }
+
+        [Fact]
+        public void Should_resize_as_the_pointer_travels()
+        {
+            // Arrange
+            using var ctx = new FormaSplitterTests();
+            double? reported = null;
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" ValueChanged="v => reported = v" />);
+
+            // Act
+            cut.Find(".forma-splitter").PointerDown(new PointerEventArgs { ClientX = 100 });
+            cut.Find(".forma-splitter").PointerMove(new PointerEventArgs { ClientX = 132 });
+
+            // Assert
+            Assert.Equal(20d, reported);
+        }
+
+        [Fact]
+        public void Should_measure_the_block_axis_for_a_horizontal_splitter()
+        {
+            // Arrange
+            using var ctx = new FormaSplitterTests();
+            double? reported = null;
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" Orientation="SplitterOrientation.Horizontal" ValueChanged="v => reported = v" />);
+
+            // Act
+            cut.Find(".forma-splitter").PointerDown(new PointerEventArgs { ClientY = 100 });
+            cut.Find(".forma-splitter").PointerMove(new PointerEventArgs { ClientY = 132 });
+
+            // Assert
+            Assert.Equal(20d, reported);
+        }
+
+        [Fact]
+        public void Should_honour_a_caller_supplied_pixel_scale()
+        {
+            // Arrange
+            using var ctx = new FormaSplitterTests();
+            double? reported = null;
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="180" Min="100" Max="280" PixelsPerUnit="1" ValueChanged="v => reported = v" />);
+
+            // Act
+            cut.Find(".forma-splitter").PointerDown(new PointerEventArgs { ClientX = 100 });
+            cut.Find(".forma-splitter").PointerMove(new PointerEventArgs { ClientX = 132 });
+
+            // Assert
+            Assert.Equal(212d, reported);
+        }
+
+        [Fact]
+        public void Should_merge_custom_class_with_forma_splitter()
+        {
+            // Arrange
+            using var ctx = new FormaSplitterTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" Class="forma-explorer-splitter" />);
+
+            // Assert
+            var classes = cut.Find("div").ClassList;
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("forma-splitter", classes);
+                Assert.Contains("forma-explorer-splitter", classes);
+            });
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("   ")]
+        public void Should_reject_a_missing_label(string? label)
+        {
+            // Arrange
+            using var ctx = new FormaSplitterTests();
+
+            // Act & Assert
+            Assert.ThrowsAny<ArgumentException>(() => ctx.Render<FormaSplitter>(p => p
+                .Add(s => s.Label, label!)));
+        }
+
+        [Fact]
+        public void Should_reject_a_step_that_cannot_move()
+        {
+            // Arrange
+            using var ctx = new FormaSplitterTests();
+
+            // Act & Assert
+            Assert.Throws<ArgumentOutOfRangeException>(() => ctx.Render<FormaSplitter>(p => p
+                .Add(s => s.Label, "Resize")
+                .Add(s => s.Step, 0d)));
+        }
+
+        [Fact]
+        public void Should_reject_bounds_that_cross()
+        {
+            // Arrange
+            using var ctx = new FormaSplitterTests();
+
+            // Act & Assert
+            Assert.Throws<ArgumentOutOfRangeException>(() => ctx.Render<FormaSplitter>(p => p
+                .Add(s => s.Label, "Resize")
+                .Add(s => s.Min, 30d)
+                .Add(s => s.Max, 10d)));
+        }
+    }
+}

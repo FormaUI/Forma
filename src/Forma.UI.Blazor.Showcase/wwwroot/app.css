@@ -126,6 +126,43 @@ body {
     max-inline-size: 26rem;
 }
 
+/* Two panes with a divider between them, so a splitter has something real to resize. */
+.demo-split {
+    display: flex;
+    block-size: 12rem;
+    background: #fff;
+}
+
+.demo-split-column {
+    flex-direction: column;
+}
+
+.demo-pane {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--text-muted-color);
+    background: var(--hover-background-color);
+    overflow: hidden;
+}
+
+.demo-split-row > .demo-pane:first-child {
+    inline-size: var(--demo-pane-size);
+    flex-shrink: 0;
+}
+
+.demo-pane-fill {
+    flex: 1;
+    background: transparent;
+}
+
+/* A drag must not leave the panes selecting text as the pointer sweeps across them. */
+.demo-split.is-resizing {
+    user-select: none;
+}
+
 .button {
     padding: 8px 16px;
     border: 1px solid var(--border-color);

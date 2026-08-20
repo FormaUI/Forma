@@ -1,4 +1,5 @@
 @namespace Forma.UI.Blazor.Components.Explorer
+@using Forma.UI.Blazor.Components.Layout
 
 <CascadingValue Value="this" IsFixed="true">
 <aside class="forma-explorer-sidebar" aria-labelledby="@_titleId">
@@ -49,21 +50,12 @@
         }
     </ul>
 
-    <div class="forma-explorer-sidebar-sash @(_isResizingTree ? "is-resizing" : "")"
-         @ref="_sashElement"
-         role="separator"
-         aria-orientation="horizontal"
-         aria-label="@L["Resize Folder List"]"
-         aria-valuemin="@MinTreeHeight"
-         aria-valuemax="@MaxTreeHeight"
-         aria-valuenow="@((int)Math.Round(_treeHeight ?? MeasuredTreeHeight))"
-         tabindex="0"
-         @onpointerdown="HandleSashPointerDownAsync"
-         @onpointermove="HandleSashPointerMove"
-         @onpointerup="HandleSashPointerUpAsync"
-         @onpointercancel="HandleSashPointerUpAsync"
-         @onkeydown="HandleSashKeyDown">
-        <span class="forma-explorer-sidebar-sash-grip" aria-hidden="true"></span>
-    </div>
+    <FormaSplitter Class="forma-explorer-sidebar-sash"
+                   Orientation="SplitterOrientation.Horizontal"
+                   Value="@(_treeHeight ?? MeasuredTreeHeight)"
+                   ValueChanged="height => _treeHeight = height"
+                   Min="MinTreeHeight"
+                   Max="MaxTreeHeight"
+                   Label="@L["Resize Folder List"]" />
 </aside>
 </CascadingValue>

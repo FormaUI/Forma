@@ -17,9 +17,6 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable
 {
     private const int DefaultPageSize = 24;
 
-    // Splitter deltas arrive in pixels and the sidebar is sized in rem, so they are converted at the browser default.
-    private const double RootFontSize = 16;
-
     private static readonly FormaModalOptions DialogModalOptions = new()
     {
         ShowCancelAction = false,
@@ -181,15 +178,9 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable
 
     private double _sidebarWidth = 18;
 
-    private double _splitterOrigin;
-
-    private double _splitterStartWidth;
-
     private bool _isResizingSidebar;
 
-    private ElementReference _splitterElement;
-
-    private IJSObjectReference? _splitterModule;
+    private IJSObjectReference? _sentinelModule;
 
     private readonly string _sentinelId = $"forma-explorer-sentinel-{Guid.NewGuid():N}";
 
@@ -823,86 +814,6 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable
         await SelectedChanged.InvokeAsync([]);
     }
 
-    private async Task HandleSplitterPointerDownAsync(PointerEventArgs args)
-    {
-        _isResizingSidebar = true;
-        _splitterOrigin = args.ClientX;
-        _splitterStartWidth = _sidebarWidth;
-
-        if (_splitterModule is not null)
-        {
-            try
-            {
-                await _splitterModule.InvokeVoidAsync("capturePointer", _splitterElement, args.PointerId);
-            }
-            catch (JSException)
-            {
-            }
-            catch (JSDisconnectedException)
-            {
-            }
-        }
-    }
-
-    private void HandleSplitterPointerMove(PointerEventArgs args)
-    {
-        if (!_isResizingSidebar)
-        {
-            return;
-        }
-
-        // The sidebar sits at the inline start, so a right-to-left culture grows it as the pointer moves the other way.
-        var delta = (args.ClientX - _splitterOrigin) / RootFontSize;
-        var direction = CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? -1 : 1;
-
-        SetSidebarWidth(_splitterStartWidth + (delta * direction));
-    }
-
-    private async Task HandleSplitterPointerUpAsync(PointerEventArgs args)
-    {
-        _isResizingSidebar = false;
-
-        if (_splitterModule is not null)
-        {
-            try
-            {
-                await _splitterModule.InvokeVoidAsync("releasePointer", _splitterElement, args.PointerId);
-            }
-            catch (JSException)
-            {
-            }
-            catch (JSDisconnectedException)
-            {
-            }
-        }
-    }
-
-    private void HandleSplitterKeyDown(KeyboardEventArgs args)
-    {
-        var forward = CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? "ArrowLeft" : "ArrowRight";
-        var backward = CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? "ArrowRight" : "ArrowLeft";
-
-        if (args.Key == forward)
-        {
-            SetSidebarWidth(_sidebarWidth + 1);
-        }
-        else if (args.Key == backward)
-        {
-            SetSidebarWidth(_sidebarWidth - 1);
-        }
-        else if (args.Key == "Home")
-        {
-            SetSidebarWidth(MinSidebarWidth);
-        }
-        else if (args.Key == "End")
-        {
-            SetSidebarWidth(MaxSidebarWidth);
-        }
-    }
-
-    private void SetSidebarWidth(double width)
-        => _sidebarWidth = Math.Clamp(width, MinSidebarWidth, MaxSidebarWidth);
-
     private string SidebarSizeStyle
         => string.Create(CultureInfo.InvariantCulture, $"--forma-explorer-sidebar-size: {_sidebarWidth}rem");
 
@@ -912,7 +823,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable
         {
             try
             {
-                _splitterModule = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Forma.UI/Components/Explorer/FormaExplorer.razor.js");
+                _sentinelModule = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Forma.UI/Components/Explorer/FormaExplorer.razor.js");
             }
             catch (JSException)
             {
@@ -927,7 +838,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable
 
     private async Task SyncSentinelAsync()
     {
-        if (_splitterModule is null)
+        if (_sentinelModule is null)
         {
             return;
         }
@@ -946,11 +857,11 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable
             {
                 _selfReference ??= DotNetObjectReference.Create(this);
 
-                await _splitterModule.InvokeVoidAsync("observeSentinel", _sentinelId, _scrollId, _selfReference);
+                await _sentinelModule.InvokeVoidAsync("observeSentinel", _sentinelId, _scrollId, _selfReference);
             }
             else
             {
-                await _splitterModule.InvokeVoidAsync("disconnectSentinel", _sentinelId);
+                await _sentinelModule.InvokeVoidAsync("disconnectSentinel", _sentinelId);
             }
 
             _isSentinelObserved = wantsSentinel;
@@ -1003,16 +914,16 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        if (_splitterModule is not null)
+        if (_sentinelModule is not null)
         {
             try
             {
                 if (_isSentinelObserved)
                 {
-                    await _splitterModule.InvokeVoidAsync("disconnectSentinel", _sentinelId);
+                    await _sentinelModule.InvokeVoidAsync("disconnectSentinel", _sentinelId);
                 }
 
-                await _splitterModule.DisposeAsync();
+                await _sentinelModule.DisposeAsync();
             }
             catch (JSDisconnectedException)
             {

@@ -7,10 +7,9 @@ using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.JSInterop;
 
 /// <summary>Folders tree navigation sidebar with drag-and-drop target support for a media explorer.</summary>
-public sealed partial class FormaExplorerSidebar : ComponentBase, IAsyncDisposable
+public sealed partial class FormaExplorerSidebar : ComponentBase
 {
     /// <summary>The currently active folder, or null for all media.</summary>
     [Parameter] public FolderResourceInfo? CurrentFolder { get; set; }
@@ -46,14 +45,9 @@ public sealed partial class FormaExplorerSidebar : ComponentBase, IAsyncDisposab
 
     [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
 
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-
     private const double MinTreeHeight = 6;
 
     private const double MaxTreeHeight = 30;
-
-    // Splitter deltas arrive in pixels and the tree is sized in rem, so they are converted at the browser default.
-    private const double RootFontSize = 16;
 
     private readonly HashSet<string> _collapsed = [];
 
@@ -92,129 +86,14 @@ public sealed partial class FormaExplorerSidebar : ComponentBase, IAsyncDisposab
 
     private double? _treeHeight;
 
-    private double _sashOrigin;
-
-    private double _sashStartHeight;
-
-    private bool _isResizingTree;
-
-    private ElementReference _sashElement;
-
-    private IJSObjectReference? _sashModule;
-
     private string? TreeSizeStyle
         => _treeHeight is { } height
             ? string.Create(CultureInfo.InvariantCulture, $"block-size: {height}rem")
             : null;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            try
-            {
-                _sashModule = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Forma.UI/Components/Explorer/FormaExplorer.razor.js");
-            }
-            catch (JSException)
-            {
-            }
-            catch (JSDisconnectedException)
-            {
-            }
-        }
-    }
-
-    private async Task HandleSashPointerDownAsync(PointerEventArgs args)
-    {
-        _isResizingTree = true;
-        _sashOrigin = args.ClientY;
-        _sashStartHeight = _treeHeight ?? MeasuredTreeHeight;
-
-        if (_sashModule is not null)
-        {
-            try
-            {
-                await _sashModule.InvokeVoidAsync("capturePointer", _sashElement, args.PointerId);
-            }
-            catch (JSException)
-            {
-            }
-            catch (JSDisconnectedException)
-            {
-            }
-        }
-    }
-
-    private void HandleSashPointerMove(PointerEventArgs args)
-    {
-        if (_isResizingTree)
-        {
-            SetTreeHeight(_sashStartHeight + ((args.ClientY - _sashOrigin) / RootFontSize));
-        }
-    }
-
-    private async Task HandleSashPointerUpAsync(PointerEventArgs args)
-    {
-        _isResizingTree = false;
-
-        if (_sashModule is not null)
-        {
-            try
-            {
-                await _sashModule.InvokeVoidAsync("releasePointer", _sashElement, args.PointerId);
-            }
-            catch (JSException)
-            {
-            }
-            catch (JSDisconnectedException)
-            {
-            }
-        }
-    }
-
-    private void HandleSashKeyDown(KeyboardEventArgs args)
-    {
-        var current = _treeHeight ?? MeasuredTreeHeight;
-
-        if (args.Key == "ArrowDown")
-        {
-            SetTreeHeight(current + 1);
-        }
-        else if (args.Key == "ArrowUp")
-        {
-            SetTreeHeight(current - 1);
-        }
-        else if (args.Key == "Home")
-        {
-            SetTreeHeight(MinTreeHeight);
-        }
-        else if (args.Key == "End")
-        {
-            SetTreeHeight(MaxTreeHeight);
-        }
-    }
-
-    private void SetTreeHeight(double height)
-        => _treeHeight = Math.Clamp(height, MinTreeHeight, MaxTreeHeight);
-
     // Every row is the same height, so the rendered tree can be sized from the folder count without measuring the DOM.
     private double MeasuredTreeHeight
         => Math.Clamp((Folders.Count + 1) * 2, MinTreeHeight, MaxTreeHeight);
-
-    /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-    {
-        if (_sashModule is not null)
-        {
-            try
-            {
-                await _sashModule.DisposeAsync();
-            }
-            catch (JSDisconnectedException)
-            {
-            }
-        }
-    }
 
     internal static void HandleDragOver(DragEventArgs e)
         => e.DataTransfer.DropEffect = "move";
