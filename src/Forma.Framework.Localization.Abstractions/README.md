@@ -25,9 +25,9 @@ The localization contract and its value types. No package or project references.
 ## Looking a string up
 
 ```csharp
-locale["Save"]                    // "שמור"
-locale["Save"].ResourceNotFound   // false when a translation was found
-locale.GetAllStrings(includeParentCultures: true)
+L["Save"]                    // "שמור"
+L["Save"].ResourceNotFound   // false when a translation was found
+L.GetAllStrings(includeParentCultures: true)
 ```
 
 The key is the English source text, so a key with no translation renders as written.
@@ -37,9 +37,9 @@ The key is the English source text, so a key with no translation renders as writ
 A hole is `{name}`, optionally `{name,alignment}` and `{name:specifier}`. Three forms fill them:
 
 ```csharp
-locale[$"Stored {stored} of {total}."]                              // names taken from the identifiers
-locale["Stored {stored} of {total}.", written, allowed]             // paired with the key's holes, in order
-locale["Stored {stored} of {total}.", ("stored", a), ("total", b)]  // names written out
+L[$"Stored {stored} of {total}."]                              // names taken from the identifiers
+L["Stored {stored} of {total}.", written, allowed]             // paired with the key's holes, in order
+L["Stored {stored} of {total}.", ("stored", a), ("total", b)]  // names written out
 ```
 
 All three produce the same key and the same arguments. Prefer interpolation; reach for the positional
@@ -87,7 +87,7 @@ That form takes exactly one unnamed value; anything else throws. An interpolated
 name as a hole, and the key is canonicalized before lookup:
 
 ```csharp
-locale[$"[$ [{files}] plural; one: # file; other: # files; $]"]
+L[$"[$ [{files}] plural; one: # file; other: # files; $]"]
 ```
 
 Expressions use brackets and holes use braces, so the two never collide. The category comes from
@@ -116,7 +116,7 @@ caller can render literal text and holes differently — filling a hole with ren
 text, for instance:
 
 ```csharp
-var pattern = locale.Resolve($"Capped at {limit} here.");
+var pattern = L.Resolve($"Capped at {limit} here.");
 
 foreach (var segment in pattern.Segments())
 {

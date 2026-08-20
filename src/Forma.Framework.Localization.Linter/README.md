@@ -1,8 +1,20 @@
 # locali
 
-A linter for the Forma localization system. It checks translation files against the
-schema, and checks `IStringLocale` call sites in C# and Razor against what the runtime
-will actually do with them.
+`locali` checks that a solution's localization will actually work at run time.
+
+Two things go wrong quietly in a localized codebase, and a build catches neither:
+
+- **A lookup throws, or renders the wrong thing.** `L["Stored {stored} of {total}.", 1]`
+  supplies one value for two holes and throws at run time. A Hebrew translation that writes
+  `{stord}` renders those seven characters literally, in front of a user.
+- **A string silently stays in English.** Adding `L["Details columns"]` to a component whose `he`
+  and `es` files already exist leaves both files behind — and falling back to the key is exactly
+  what the runtime is defined to do, so nothing anywhere complains.
+
+The linter reads translation files against the schema, and reads every `IStringLocale` call site in
+C# and Razor against what the runtime will do with it. [Rules](#rules) lists what it reports.
+
+## Quick start
 
 The binary is `locali`. The project is not packable, so run it from source:
 
@@ -10,9 +22,21 @@ The binary is `locali`. The project is not packable, so run it from source:
 dotnet run --project src/Forma.Framework.Localization.Linter -- --path <target>
 ```
 
+Lint a whole solution, skipping the test fixtures that are malformed on purpose:
+
+```powershell
+locali --path Forma.slnx --exclude "*/Fixtures/*"
+```
+
+Errors are reported by default. To read the warnings as well:
+
+```powershell
+locali --path Forma.slnx --exclude "*/Fixtures/*" --severity warning
+```
+
 The examples below use `locali` for the built binary.
 
-## Running
+## Options
 
 ```text
 Usage: locali --path <file-or-directory> [--report [<path>]] [--exclude <glob>]
@@ -39,18 +63,23 @@ up to the nearest `.csproj`.
 `--exclude` is what makes a test tree lintable. A test project's fixtures are often
 malformed on purpose — a file with no `$localization` entry, a culture that disagrees with
 its own name — so linting them reports what the fixture exists to prove. Excluding the
-folder they live in leaves the rest of the tree checked:
+folder they live in leaves the rest of the tree checked.
 
-```powershell
-locali --path Forma.slnx --exclude "*/Fixtures/*"
+`--severity` decides what counts as a finding. An error is something the runtime will get
+wrong; a warning is something worth changing that still loads. `warning` includes both,
+since `LintSeverity` is declared in ascending order and the comparison is `>=`.
+
+## Output
+
+Console output is MSBuild-formatted, so an editor can navigate it:
+
+```text
+path(line,col): severity CODE: message
 ```
 
-`--severity` sets the lowest severity a run reports; `warning` includes both warnings and
-errors, since `LintSeverity` is declared in ascending order and the comparison is
-`>=`. An error is something the runtime will get wrong; a warning is something worth
-changing that still loads. Only errors are reported by default. A diagnostic below the
-level is left out of the console, the JSON report, and the exit code alike, but a default
-run still briefs what it left out, so a warning is never silently dropped:
+A diagnostic below `--severity` is left out of the console, the JSON report, and the exit
+code alike, but a default run still briefs what it left out, so a warning is never silently
+dropped:
 
 ```text
 Linted 658 file(s); 6 diagnostic(s).
@@ -62,12 +91,7 @@ Pass --severity warning to read them.
 ```
 
 The brief names each rule and how many it contributed, a line per family, so a run says
-whether the warnings are one rule worth looking at or noise already known about. Reading
-them is one switch away:
-
-```powershell
-locali --path Forma.slnx --exclude "*/Fixtures/*" --severity warning
-```
+whether the warnings are one rule worth looking at or noise already known about.
 
 | Exit code | Meaning |
 |-----------|---------|
@@ -75,11 +99,14 @@ locali --path Forma.slnx --exclude "*/Fixtures/*" --severity warning
 | 1 | At least one diagnostic was reported |
 | 2 | The command line was wrong, or a path could not be read |
 
-Console output is MSBuild-formatted (`path(line,col): severity CODE: message`). The JSON
-report carries `fileCount`, `diagnosticCount`, `suppressedCount`, and a `diagnostics` array
-of `path`, `line`, `column`, `severity`, `code`, `message`.
+`--report` writes a JSON report carrying `fileCount`, `diagnosticCount`, `suppressedCount`,
+and a `diagnostics` array of `path`, `line`, `column`, `severity`, `code`, `message`.
 
-## Razor call sites
+## How call sites are found
+
+Call sites are found semantically where the compilation binds `IStringLocale`, and
+syntactically otherwise. The syntactic path cannot resolve overloads, so the rules that
+count values stay silent for it.
 
 Almost every call site in this repository lives in `.razor`, which reaches Roslyn only
 through the Razor source generator. The linter runs that generator itself, so nothing has
@@ -89,60 +116,16 @@ to be emitted to disk and no build property is needed:
 locali --path MyProject.csproj
 ```
 
-Call sites are found semantically where the compilation binds `IStringLocale`, and
-syntactically otherwise. The syntactic path cannot resolve overloads, so the rules that
-count values stay silent for it.
-
-### Why Roslyn is loaded from the SDK
-
-This part is a workaround. Roslyn refuses to load a generator built against a newer
-compiler than the host, reporting `ReferencesNewerCompiler` and returning no generators at
-all. The Razor generator ships inside the SDK and is built against the SDK's Roslyn, which
-is ahead of anything published:
-
-| | Version |
-|---|---|
-| Razor generator, from the SDK | built against Roslyn 5.9.0 |
-| Newest `Microsoft.CodeAnalysis.CSharp` on nuget.org | 5.6.0 |
-
-So the linter cannot load the generator using the packages it compiles against, and
-`GetSourceGeneratedDocumentsAsync` returns nothing for Razor. What closes the gap is that
-the SDK also carries a complete, version-matched Roslyn — compiler, workspaces and
-`Workspaces.MSBuild` — under `DotnetTools`, shipped for `dotnet format` and `dotnet watch`.
-
-`SdkRoslyn` binds to that copy from a `[ModuleInitializer]`, since resolution has to be
-registered before the first Roslyn type loads, which is earlier than `Main`. The three
-`Microsoft.CodeAnalysis.*` packages carry `ExcludeAssets="runtime"` so their assemblies
-stay reference-only and cannot shadow the SDK's at run time.
-
-Redirecting only part of the stack does not work: a 5.6.0 `Workspaces` on a 5.9.0 compiler
-throws `TypeLoadException` on members added in the newer version. It is all or nothing.
-
-### Removing it
-
-`DotnetTools` is an SDK implementation detail, not a documented redistribution point, so
-this should not outlive the version gap. Once a Roslyn at or above the SDK's is on
-nuget.org:
-
-1. Raise the three `Microsoft.CodeAnalysis.*` versions.
-2. Drop their `ExcludeAssets="runtime"`.
-3. Delete `Projects/SdkRoslyn.cs`, and register MSBuild in `MSBuildProjectLoader` again.
-
-Nothing else depends on it, and the fallback below stays either way.
-### When Roslyn cannot be bound
-
-The linter stops with exit code 2 and explains what it looked for. It cannot degrade:
-`ExcludeAssets="runtime"` keeps the published assemblies out of the output, so if the
-SDK's are not found there is no Roslyn to run on at all. Failing at startup is what keeps
-that from surfacing as an unrelated `FileNotFoundException` several frames later.
-
 LOC0206 covers the narrower case where Roslyn did load but a project produced no generated
 Razor. The linter then reads whatever a build left in `obj/**/generated/`, which needs
 `EmitCompilerGeneratedFiles=true` and a full build — an incremental one emits nothing while
 still reporting success. LOC0206 says that route came up empty too, so the project's markup
 went unchecked; do not ignore it in a build gate.
 
-## Diagnostics
+Loading Roslyn is itself a workaround, described under
+[Roslyn is loaded from the SDK](#roslyn-is-loaded-from-the-sdk).
+
+## Rules
 
 A file rule reports in the 100s, a call-site rule in the 200s.
 
@@ -193,6 +176,8 @@ translation is legal. Reordering or dropping a name is legal.
 | LOC0208 | Error | A key writes text shaped like a hole the runtime cannot read | renders as written, silently |
 | LOC0209 | Warning | A key has no entry in a translation file its type owns | renders untranslated, silently |
 | LOC0210 | Warning | A lookup writes its key as an expression | unchecked, whatever it reads |
+| LOC0211 | Warning | A key carries holes but no words anywhere else | works, but names no translation |
+| LOC0212 | Warning | An expression key carries no words in any field | works, but names no translation |
 
 LOC0209 catches the drift a new string opens. Adding `L["Details columns"]` to a component
 whose `he` and `es` files already exist leaves both files behind, and nothing else notices:
@@ -210,13 +195,26 @@ Writing the key with a JSON `null` answers it:
 ```json
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
-  "{count}": null
+  "Email": null
 }
 ```
 
 That is the runtime's own way of saying a key stays in the source language here, which
-`JsonResourceCache` reads as source text rather than a missing entry. A key that should not
-be translated — a bare number, a symbol, a proper noun — is declared, not omitted.
+`JsonResourceCache` reads as source text rather than a missing entry. A key whose right
+translation is the source text — a term the language borrows, an acronym, a brand, a symbol
+— is declared, not omitted.
+
+The escape hatch is not free: a null entry is *found*, and a found entry behaves differently
+from an absent one wherever a caller can tell the two apart:
+
+| | `"Email": null` | key absent |
+| --- | --- | --- |
+| `ResourceNotFound` | `false` | `true` |
+| `RequireMatchingLocalization` | passes | throws |
+| `GetAllStrings` | lists it | omits it |
+
+A key that has to read as genuinely missing cannot use `null` for that reason — it would pass
+checks meant to catch it — and the warning is the honest answer there instead.
 
 A parent culture answers for its children, because `JsonStringLocale` walks a culture up to
 its parents when it looks a key up. A `Widget.es-419.json` carrying only what differs from
@@ -232,9 +230,9 @@ A key written as a constant is not a blind spot, because the compiler folds it:
 ```csharp
 private const string Retry = "Try again";
 
-locale[Retry]          // read as "Try again", checked like a literal
-locale["Try " + "again"]  // folded too
-locale[column.ToString()]  // LOC0210
+L[Retry]                  // read as "Try again", checked like a literal
+L["Try " + "again"]       // folded too
+L[column.ToString()]      // LOC0210
 ```
 
 A folded key is a real call site, so every rule reads it and LOC0209 expects a translation
@@ -244,14 +242,25 @@ A lookup inside a type that implements `IStringLocale` is left alone. Such a typ
 the key its own caller wrote rather than writing one, so `_inner[name]` in a decorator or a
 test stub is not a blind spot — the key belongs to whoever called it.
 
+LOC0211 and LOC0212 catch a key with nothing for a translator to read. A key made only of
+holes and punctuation, such as `"{count} / {total}"`, and a plural expression whose fields
+carry only `#`, such as `"[$ plural; other: #; $]"`, both format a value rather than say
+anything, so `$"{count} / {total}"` or `count.ToString("N0", culture)` replaces the lookup
+outright — there is no translation file entry for either rule to expect, because there is no
+prose to translate. A field or a literal run carrying a single letter is enough to clear
+either rule, so `"{count} files"` and `"[$ plural; one: # file; other: # files; $]"` are left
+alone. A localization file cannot rescue such a key either: `null` marks a key whose
+translation is deliberately the source text, and there is no source text here to mark, only a
+value with nowhere to put it.
+
 All three ways of filling holes are checked. An interpolated key and a positional call
 name their values after the key's holes; a named call writes the names out, and those are
 read from the source:
 
 ```csharp
-locale[$"Stored {stored} of {total}."]                              // LOC0200
-locale["Stored {stored} of {total}.", written, allowed]             // LOC0202
-locale["Stored {stored} of {total}.", ("stored", a), ("total", b)]  // LOC0207
+L[$"Stored {stored} of {total}."]                              // LOC0200
+L["Stored {stored} of {total}.", written, allowed]             // LOC0202
+L["Stored {stored} of {total}.", ("stored", a), ("total", b)]  // LOC0207
 ```
 
 A name is read from a tuple, from `new LocalizedArgument(…)`, and from
@@ -288,7 +297,9 @@ Nothing at the call site decides these, so there is nothing to judge:
   project owns, so linting a lone `.razor` file checks its call sites and nothing else.
   Point `--path` at the project, the solution, or a folder to get them.
 
-## Layout
+## Contributing
+
+### Layout
 
 | Folder | Holds |
 |--------|-------|
@@ -303,7 +314,7 @@ Nothing at the call site decides these, so there is nothing to judge:
 | `Rules/Sources/` | Rules over a call site |
 | `Sources/` | Finding call sites, and the rules that read a project's translation files whole |
 
-## Adding a rule
+### Adding a rule
 
 1. Add a `LintCode` to `Diagnostics/LintCodes.cs` and to its `All` list, numbered in the
    100s for a file rule or the 200s for a call-site rule.
@@ -327,7 +338,7 @@ its argument in brackets, and escaped braces are literal text.
 A rule that depends on how values reach the call site should read
 `context.Site.Arguments` and return when it is `Unknown`.
 
-## Build and test
+### Build and test
 
 ```powershell
 dotnet build Forma.slnx
@@ -343,3 +354,48 @@ Run a new rule over `src/Forma.UI.Blazor` and `src/Forma.UI.Blazor.Showcase` bef
 trusting it; both lint clean, so anything it reports there is a false positive. They do
 not cover every shape a call site can take — nothing in `src` passes named
 `LocalizedArgument` values or a values collection whole — so those belong in unit tests.
+
+## Roslyn is loaded from the SDK
+
+This part is a workaround, and nothing above depends on understanding it.
+
+Roslyn refuses to load a generator built against a newer compiler than the host, reporting
+`ReferencesNewerCompiler` and returning no generators at all. The Razor generator ships
+inside the SDK and is built against the SDK's Roslyn, which is ahead of anything published:
+
+| | Version |
+|---|---|
+| Razor generator, from the SDK | built against Roslyn 5.9.0 |
+| Newest `Microsoft.CodeAnalysis.CSharp` on nuget.org | 5.6.0 |
+
+So the linter cannot load the generator using the packages it compiles against, and
+`GetSourceGeneratedDocumentsAsync` returns nothing for Razor. What closes the gap is that
+the SDK also carries a complete, version-matched Roslyn — compiler, workspaces and
+`Workspaces.MSBuild` — under `DotnetTools`, shipped for `dotnet format` and `dotnet watch`.
+
+`SdkRoslyn` binds to that copy from a `[ModuleInitializer]`, since resolution has to be
+registered before the first Roslyn type loads, which is earlier than `Main`. The three
+`Microsoft.CodeAnalysis.*` packages carry `ExcludeAssets="runtime"` so their assemblies
+stay reference-only and cannot shadow the SDK's at run time.
+
+Redirecting only part of the stack does not work: a 5.6.0 `Workspaces` on a 5.9.0 compiler
+throws `TypeLoadException` on members added in the newer version. It is all or nothing.
+
+### When Roslyn cannot be bound
+
+The linter stops with exit code 2 and explains what it looked for. It cannot degrade:
+`ExcludeAssets="runtime"` keeps the published assemblies out of the output, so if the
+SDK's are not found there is no Roslyn to run on at all. Failing at startup is what keeps
+that from surfacing as an unrelated `FileNotFoundException` several frames later.
+
+### Removing it
+
+`DotnetTools` is an SDK implementation detail, not a documented redistribution point, so
+this should not outlive the version gap. Once a Roslyn at or above the SDK's is on
+nuget.org:
+
+1. Raise the three `Microsoft.CodeAnalysis.*` versions.
+2. Drop their `ExcludeAssets="runtime"`.
+3. Delete `Projects/SdkRoslyn.cs`, and register MSBuild in `MSBuildProjectLoader` again.
+
+Nothing else depends on it, and the startup failure above stays either way.
