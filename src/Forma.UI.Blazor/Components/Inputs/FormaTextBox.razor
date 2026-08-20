@@ -1,0 +1,32 @@
+@namespace Forma.UI.Blazor.Components.Inputs
+@inherits InputBase<string?>
+
+@{
+    RenderFragment box =
+        @<input @attributes="AdditionalAttributes"
+                id="@ElementId"
+                type="text"
+                class="@BoxClass @CssClass"
+                placeholder="@EffectivePlaceholder"
+                value="@CurrentValueAsString"
+                disabled="@Disabled"
+                readonly="@ReadOnly"
+                aria-required="@(Required ? "true" : null)"
+                @oninput="HandleInput" />;
+}
+
+@if (Size is TextBoxSize.Large)
+{
+    <FormaField Label="@Label" TargetId="@ElementId" Required="@Required">
+        <ChildContent>
+            @box
+        </ChildContent>
+        <Validation>
+            <ValidationMessage For="@ValueExpression" />
+        </Validation>
+    </FormaField>
+}
+else
+{
+    @box
+}

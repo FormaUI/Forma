@@ -1,0 +1,367 @@
+@inherits BunitContext
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_input_element_with_forma_text_box_class()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" />
+            </FakeFormHost>);
+
+            // Assert
+            var input = cut.Find("input.forma-text-box");
+            Assert.NotNull(input);
+        }
+
+        [Fact]
+        public void Should_render_a_text_type()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("text", cut.Find("input").GetAttribute("type"));
+        }
+
+        [Fact]
+        public void Should_stay_a_text_type_when_a_caller_supplies_another()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" type="email" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("text", cut.Find("input").GetAttribute("type"));
+        }
+
+        [Fact]
+        public void Should_render_placeholder_when_specified()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" Placeholder="Search here..." />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("Search here...", cut.Find("input").GetAttribute("placeholder"));
+        }
+
+        [Fact]
+        public void Should_render_initial_value()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel { Text = "Initial Value" };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("Initial Value", cut.Find("input").GetAttribute("value"));
+        }
+
+        [Fact]
+        public void Should_update_value_on_input()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("input").Input("Updated Value");
+
+            // Assert
+            Assert.Equal("Updated Value", model.Text);
+        }
+
+        [Fact]
+        public void Should_render_id_when_specified()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" Id="custom-text-box" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("custom-text-box", cut.Find("input").GetAttribute("id"));
+        }
+
+        [Fact]
+        public void Should_keep_a_caller_supplied_id_attribute()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" id="from-attribute" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("from-attribute", cut.Find("input").GetAttribute("id"));
+        }
+
+        [Fact]
+        public void Should_support_disabled_attribute()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" Disabled="true" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.True(cut.Find("input").HasAttribute("disabled"));
+        }
+
+        [Fact]
+        public void Should_support_readonly_attribute()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" ReadOnly="true" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.True(cut.Find("input").HasAttribute("readonly"));
+        }
+
+        [Fact]
+        public void Should_pass_through_unmatched_attributes()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" autocomplete="off" maxlength="50" data-testid="tb-1" />
+            </FakeFormHost>);
+            var input = cut.Find("input");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("off", input.GetAttribute("autocomplete"));
+                Assert.Equal("50", input.GetAttribute("maxlength"));
+                Assert.Equal("tb-1", input.GetAttribute("data-testid"));
+            });
+        }
+
+        [Fact]
+        public void Should_merge_custom_class_with_forma_text_box()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" class="custom-class" />
+            </FakeFormHost>);
+            var classes = cut.Find("input").ClassList;
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("forma-text-box", classes);
+                Assert.Contains("custom-class", classes);
+            });
+        }
+
+        [Fact]
+        public void Should_apply_validation_classes_when_invalid()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+            var editContext = new EditContext(model);
+            var messages = new ValidationMessageStore(editContext);
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="editContext">
+                <FormaTextBox @bind-Value="model.Text" />
+            </FakeFormHost>);
+
+            cut.InvokeAsync(() =>
+            {
+                messages.Add(editContext.Field(nameof(FakeModel.Text)), "Required field");
+                editContext.NotifyValidationStateChanged();
+            });
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Contains("invalid", cut.Find("input").ClassList));
+        }
+
+        [Fact]
+        public void Should_stand_bare_at_the_normal_size()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("forma-text-box", cut.Find("input").ClassList);
+                Assert.Empty(cut.FindAll(".forma-field"));
+            });
+        }
+
+        [Fact]
+        public void Should_wear_the_field_chrome_at_the_large_size()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" Size="TextBoxSize.Large" Label="Project" Id="project" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.NotNull(cut.Find(".forma-field"));
+                Assert.Contains("forma-field-input", cut.Find("input").ClassList);
+                Assert.Equal("Project", cut.Find("label.forma-field-label").TextContent.Trim());
+                Assert.Equal("project", cut.Find("label.forma-field-label").GetAttribute("for"));
+            });
+        }
+
+        [Fact]
+        public void Should_bind_a_generated_id_to_the_label_when_none_is_given()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" Size="TextBoxSize.Large" Label="Project" />
+            </FakeFormHost>);
+
+            // Assert
+            var id = cut.Find("input").GetAttribute("id");
+            Assert.Multiple(() =>
+            {
+                Assert.False(string.IsNullOrWhiteSpace(id));
+                Assert.Equal(id, cut.Find("label.forma-field-label").GetAttribute("for"));
+            });
+        }
+
+        [Fact]
+        public void Should_refuse_a_label_at_the_normal_size()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var render = () => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" Label="Project" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Throws<InvalidOperationException>(render);
+        }
+
+        [Fact]
+        public void Should_report_invalid_without_being_modified()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+            var editContext = new EditContext(model);
+            var messages = new ValidationMessageStore(editContext);
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="editContext">
+                <FormaTextBox @bind-Value="model.Text" />
+            </FakeFormHost>);
+
+            cut.InvokeAsync(() =>
+            {
+                messages.Add(editContext.Field(nameof(FakeModel.Text)), "Required field");
+                editContext.NotifyValidationStateChanged();
+            });
+
+            // Assert
+            cut.WaitForAssertion(() =>
+            {
+                var classes = cut.Find("input").ClassList;
+                Assert.Contains("invalid", classes);
+                Assert.DoesNotContain("modified", classes);
+            });
+        }
+
+        [Fact]
+        public void Should_apply_validation_classes_when_valid_and_modified()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+            var editContext = new EditContext(model);
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="editContext">
+                <FormaTextBox @bind-Value="model.Text" />
+            </FakeFormHost>);
+
+            cut.Find("input").Input("Valid Text");
+
+            // Assert
+            var classes = cut.Find("input").ClassList;
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("modified", classes);
+                Assert.Contains("valid", classes);
+            });
+        }
+    }
+}

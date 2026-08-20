@@ -1,0 +1,168 @@
+@page "/text-box"
+@attribute [ShowcasePage("FormaTextBox")]
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using Forma.UI.Blazor.Components.Buttons
+@using Forma.UI.Blazor.Components.Inputs
+@using Microsoft.AspNetCore.Components.Forms
+@inject IStringLocale<FormaTextBoxPage> L
+
+<h1>FormaTextBox</h1>
+<p class="description">@L["A plain single-line text field: the box every Forma input draws, without the floating label and validation chrome FormaField adds. It needs no surrounding form, which is what makes it the one to reach for in a toolbar, a filter row or a grid cell."]</p>
+
+<div class="demo-section">
+    <h2>@L["Basic Usage"]</h2>
+    <p class="description">@L["No EditForm anywhere on this section — the field binds and updates on its own."]</p>
+    <div class="demo-box">
+        <FormaTextBox @bind-Value="_model.Name" Placeholder="@L["Enter a name..."]" aria-label="@L["Enter a name..."]" />
+        <p class="demo-output">@L["Value"]: <code>@_model.Name</code></p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Sizes"]</h2>
+    <p class="description">@L["Normal is the default: a bare input standing level with a button, which is what a toolbar or a grid cell wants. Large wraps it in the same FormaField the labelled inputs use, so it gains the floating label and validation chrome rather than imitating them."]</p>
+    <div class="demo-box">
+        <div class="demo-stack">
+            <div class="demo-row">
+                <FormaTextBox @bind-Value="_model.NormalSize" Placeholder="@L["Normal"]" aria-label="@L["Normal"]" class="demo-row-field" />
+                <FormaButton Variant="ButtonVariant.Secondary">@L["Add"]</FormaButton>
+            </div>
+            <EditForm Model="_model" FormName="textbox-sizes">
+                <FormaTextBox @bind-Value="_model.LargeSize" Size="TextBoxSize.Large" Label="@L["Large, with a floating label"]" />
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Naming the Field"]</h2>
+    <p class="description">@L["The text box carries no label of its own, so naming it is the caller's job and there are two ways to do it. A visible label is bound through Id; where no visible label belongs, aria-label names it instead. A placeholder is not a name — it disappears as soon as anyone types."]</p>
+    <div class="demo-box">
+        <div class="demo-stack">
+            <label for="text-box-nickname">@L["Nickname"]</label>
+            <FormaTextBox @bind-Value="_model.Nickname" Id="text-box-nickname" />
+
+            <p class="demo-note">@L["Named by aria-label, with the placeholder repeating it for sighted readers:"]</p>
+            <FormaTextBox @bind-Value="_model.Handle" Placeholder="@L["Handle"]" aria-label="@L["Handle"]" />
+        </div>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Disabled and Read-Only"]</h2>
+    <p class="description">@L["Both refuse edits and share a muted background, but they are not the same state: a disabled field is skipped by the keyboard and dimmed, while a read-only one still takes focus and reads at full contrast so its value stays legible."]</p>
+    <div class="demo-box">
+        <div class="demo-stack">
+            <FormaTextBox @bind-Value="_model.DisabledValue" Disabled="true" aria-label="@L["Disabled Field"]" />
+            <p class="demo-note">@L["Read-only, and still reachable by keyboard:"]</p>
+            <FormaTextBox @bind-Value="_model.ReadOnlyValue" ReadOnly="true" aria-label="@L["Read-Only Field"]" />
+        </div>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Form Validation"]</h2>
+    <p class="description">@L["Inside an EditForm the field takes Blazor's validation classes. Saving while it is empty turns the border red without the field ever having been touched, and typing a value turns it green."]</p>
+    <div class="demo-box">
+        <EditForm Model="_validationModel" FormName="textbox-validation" OnValidSubmit="HandleValidationSubmit" class="demo-stack">
+            <DataAnnotationsValidator />
+            <FormaTextBox @bind-Value="_validationModel.Title" Placeholder="@L["Project Title (Required)"]" aria-label="@L["Project Title (Required)"]" />
+            <ValidationMessage For="@(() => _validationModel.Title)" />
+            <div class="demo-row">
+                <FormaButton Type="ButtonType.Submit" Variant="ButtonVariant.Primary">@L["Save"]</FormaButton>
+                @if (!string.IsNullOrEmpty(_statusMessage))
+                {
+                    <span role="status">@_statusMessage</span>
+                }
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Beside a Labelled Field"]</h2>
+    <p class="description">@L["At the large size it is the same FormaField that wraps FormaInput and FormaPasswordBox, so the label, the box and the validation message are drawn by one component rather than three that could drift."]</p>
+    <div class="demo-box">
+        <EditForm Model="_model" FormName="textbox-parity">
+            <FormaInput @bind-Value="_model.Title" Label="@L["Title"]" />
+            <FormaTextBox @bind-Value="_model.Slug" Size="TextBoxSize.Large" Label="@L["Slug"]" />
+        </EditForm>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["In a Toolbar Row"]</h2>
+    <p class="description">@L["With no label to stack above it and no margin of its own, the field sits on one line beside a button. Unmatched attributes reach the input, so this one caps its length at twenty characters."]</p>
+    <div class="demo-box">
+        <div class="demo-stack">
+            <div class="demo-row">
+                <FormaTextBox @bind-Value="_model.Tag" Placeholder="@L["Add a tag..."]" aria-label="@L["Add a tag..."]" maxlength="20" class="demo-row-field" />
+                <FormaButton Variant="ButtonVariant.Secondary" OnClick="AddTag">@L["Add"]</FormaButton>
+            </div>
+            @if (_tags.Count > 0)
+            {
+                <div class="demo-row">
+                    @foreach (var tag in _tags)
+                    {
+                        <span class="demo-chip">@tag</span>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private readonly DemoModel _model = new();
+    private readonly List<string> _tags = [];
+    private ValidationModel _validationModel = default!;
+    private string? _statusMessage;
+
+    protected override void OnInitialized()
+    {
+        _validationModel = new ValidationModel(L);
+        _model.Name = L["Acme Corp"].Value;
+        _model.DisabledValue = L["Locked by an administrator"].Value;
+        _model.ReadOnlyValue = L["Generated on save"].Value;
+    }
+
+    private void HandleValidationSubmit()
+        => _statusMessage = L["Saved."].Value;
+
+    private void AddTag()
+    {
+        if (!string.IsNullOrWhiteSpace(_model.Tag))
+        {
+            _tags.Add(_model.Tag.Trim());
+            _model.Tag = null;
+        }
+    }
+
+    private sealed class DemoModel
+    {
+        public string? Name { get; set; }
+        public string? NormalSize { get; set; }
+        public string? LargeSize { get; set; }
+        public string? Nickname { get; set; }
+        public string? Handle { get; set; }
+        public string? DisabledValue { get; set; }
+        public string? ReadOnlyValue { get; set; }
+        public string? Title { get; set; }
+        public string? Slug { get; set; }
+        public string? Tag { get; set; }
+    }
+
+    private sealed class ValidationModel(IStringLocale<FormaTextBoxPage> localizer) : IValidatableObject
+    {
+        public string? Title { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (string.IsNullOrWhiteSpace(Title))
+            {
+                yield return new ValidationResult(localizer["A project title is required."], [nameof(Title)]);
+            }
+        }
+    }
+}
