@@ -24,11 +24,29 @@ public sealed class ConsoleDiagnosticReporter(TextWriter writer) : IDiagnosticRe
 
         await _writer.WriteLineAsync(summary.AsMemory(), cancellationToken).ConfigureAwait(false);
 
-        if (result.SuppressedCount > 0)
+        if (result.Suppressed.Count == 0)
         {
-            var hidden = $"{result.SuppressedCount} diagnostic(s) hidden; pass --severity warning to see them.";
-
-            await _writer.WriteLineAsync(hidden.AsMemory(), cancellationToken).ConfigureAwait(false);
+            return;
         }
+
+        await _writer.WriteLineAsync(ReadOnlyMemory<char>.Empty, cancellationToken).ConfigureAwait(false);
+        await _writer
+            .WriteLineAsync($"{result.SuppressedCount} warning(s) not shown:".AsMemory(), cancellationToken)
+            .ConfigureAwait(false);
+
+        foreach (var family in result.Suppressed.GroupBy(Family))
+        {
+            var codes = string.Join(", ", family.Select(rule => $"{rule.Code.Id} ({rule.Count})"));
+
+            await _writer.WriteLineAsync($"  - {codes}".AsMemory(), cancellationToken).ConfigureAwait(false);
+        }
+
+        await _writer
+            .WriteLineAsync("Pass --severity warning to read them.".AsMemory(), cancellationToken)
+            .ConfigureAwait(false);
     }
+
+    // A file rule reports in the 100s and a call-site rule in the 200s, so the range gives the brief its lines.
+    private static string Family(SuppressedRule rule)
+        => rule.Code.Id[..^2];
 }

@@ -12,7 +12,7 @@ public sealed class JsonDiagnosticReporterTests
 
         // Act
         await new JsonDiagnosticReporter(report).ReportAsync(
-            new LintResult([diagnostic], 4),
+            new LintResult([diagnostic], 4, []),
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -34,7 +34,7 @@ public sealed class JsonDiagnosticReporterTests
 
         // Act
         await new JsonDiagnosticReporter(report).ReportAsync(
-            new LintResult([], 4, 2),
+            new LintResult([], 4, [new SuppressedRule(LintCodes.MissingTranslation, 2)]),
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -52,7 +52,7 @@ public sealed class JsonDiagnosticReporterTests
 
         // Act
         await new JsonDiagnosticReporter(report).ReportAsync(
-            new LintResult([], 0),
+            new LintResult([], 0, []),
             TestContext.Current.CancellationToken);
 
         // Assert

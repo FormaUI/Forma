@@ -67,7 +67,17 @@ public sealed class LintService(
                 .ThenBy(diagnostic => diagnostic.Column),
         ];
 
-        return new LintResult(reported, target.FileCount, diagnostics.Count - reported.Length);
+        // What was left out is still counted per rule, so a default run says what it is not showing.
+        SuppressedRule[] suppressed =
+        [
+            .. diagnostics
+                .Where(diagnostic => diagnostic.Severity < _options.MinimumSeverity)
+                .GroupBy(diagnostic => diagnostic.Code)
+                .Select(rule => new SuppressedRule(rule.Key, rule.Count()))
+                .OrderBy(rule => rule.Code.Id, StringComparer.Ordinal),
+        ];
+
+        return new LintResult(reported, target.FileCount, suppressed);
     }
 
     private async ValueTask<IReadOnlyList<LintDiagnostic>> LintProjectsAsync(LintTarget target, CancellationToken cancellationToken)
