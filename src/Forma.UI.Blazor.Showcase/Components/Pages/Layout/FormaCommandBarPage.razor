@@ -1,0 +1,134 @@
+@page "/command-bar"
+@attribute [ShowcasePage("FormaCommandBar")]
+@rendermode InteractiveServer
+@using Forma.UI.Blazor.Components.Buttons
+@using Forma.UI.Blazor.Components.Inputs
+@using Forma.UI.Blazor.Components.Layout
+@inject IStringLocale<FormaCommandBarPage> L
+
+<h1>FormaCommandBar</h1>
+<p class="description">@L["The region a page puts above its content. The bar owns the surface and stacks as many rows as a caller gives it; each row lays its commands on a track that scrolls behind arrows once they outgrow the width. What those commands are is never the bar's business."]</p>
+
+<div class="demo-section">
+    <h2>@L["A Header of Two Rows"]</h2>
+    <p class="description">@L["Rows stack in the order they are written. This is the shape a file explorer uses: somewhere to navigate and search above, the commands acting on what is shown below."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaCommandBar>
+            <FormaCommandBarRow>
+                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" IconOnly="true" aria-label="@L["Back"]"><FormaGlyph Name="Glyph.ArrowLeft" /></FormaButton>
+                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" IconOnly="true" aria-label="@L["Up"]"><FormaGlyph Name="Glyph.ArrowUp" /></FormaButton>
+                <FormaSearchBox Value="@_query" ValueChanged="v => _query = v" Placeholder="@L["Search media..."]" aria-label="@L["Search media..."]" />
+            </FormaCommandBarRow>
+            <FormaCommandBarRow>
+                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini"><FormaGlyph Name="Glyph.SquareCheck" /> @L["Select"]</FormaButton>
+                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini"><FormaGlyph Name="Glyph.CloudArrowUp" /> @L["Upload"]</FormaButton>
+                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini"><FormaGlyph Name="Glyph.FolderPlus" /> @L["New Folder"]</FormaButton>
+            </FormaCommandBarRow>
+        </FormaCommandBar>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Commands That Outgrow the Row"]</h2>
+    <p class="description">@L["Once the commands no longer fit, an arrow appears at each end. Each is disabled at the edge it can no longer travel toward, so the pair also reads as how far along the row you are."]</p>
+    <div class="demo-box demo-box-flush demo-command-bar-narrow">
+        <FormaCommandBar>
+            <FormaCommandBarRow>
+                @foreach (var command in ManyCommands)
+                {
+                    <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini">@command</FormaButton>
+                }
+            </FormaCommandBarRow>
+        </FormaCommandBar>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["As Many Rows as You Like"]</h2>
+    <p class="description">@L["Each row scrolls on its own, so a crowded row of filters never drags the row of actions along with it."]</p>
+    <div class="demo-box demo-box-flush demo-command-bar-narrow">
+        <FormaCommandBar>
+            <FormaCommandBarRow>
+                <FormaButton Variant="ButtonVariant.Primary" Size="ButtonSize.Mini">@L["Publish"]</FormaButton>
+                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini">@L["Discard"]</FormaButton>
+            </FormaCommandBarRow>
+            <FormaCommandBarRow>
+                @foreach (var filter in ManyFilters)
+                {
+                    <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini">@filter</FormaButton>
+                }
+            </FormaCommandBarRow>
+        </FormaCommandBar>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Commands That Change"]</h2>
+    <p class="description">@L["A row notices its commands being added or removed, not only the window being resized, so the arrows appear the moment the row stops fitting."]</p>
+    <div class="demo-box demo-box-flush demo-command-bar-narrow">
+        <FormaCommandBar>
+            <FormaCommandBarRow>
+                @for (var index = 0; index < _visibleCommands; index++)
+                {
+                    var command = ManyCommands[index];
+                    <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini">@command</FormaButton>
+                }
+            </FormaCommandBarRow>
+        </FormaCommandBar>
+    </div>
+    <div class="demo-row">
+        <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="() => _visibleCommands = Math.Min(_visibleCommands + 2, ManyCommands.Length)">@L["Add Commands"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="() => _visibleCommands = Math.Max(_visibleCommands - 2, 1)">@L["Remove Commands"]</FormaButton>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A Row That Fits"]</h2>
+    <p class="description">@L["With room to spare there is nothing to scroll, so no arrows are drawn at all rather than sitting there permanently dimmed."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaCommandBar>
+            <FormaCommandBarRow>
+                <FormaButton Variant="ButtonVariant.Primary" Size="ButtonSize.Mini">@L["Save"]</FormaButton>
+                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini">@L["Cancel"]</FormaButton>
+            </FormaCommandBarRow>
+        </FormaCommandBar>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Nothing but the Region"]</h2>
+    <p class="description">@L["Given no rows the bar is only its own surface, which is what a caller wanting somewhere to put its own layout gets."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaCommandBar />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Retuned by the Caller"]</h2>
+    <p class="description">@L["The padding and the surface are knobs, so a host can seat the bar in its own chrome without forking the stylesheet."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaCommandBar Class="demo-command-bar-tinted">
+            <FormaCommandBarRow>
+                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini">@L["Publish"]</FormaButton>
+                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini">@L["Discard"]</FormaButton>
+            </FormaCommandBarRow>
+        </FormaCommandBar>
+    </div>
+</div>
+
+@code {
+    private string _query = string.Empty;
+    private int _visibleCommands = 2;
+
+    private string[] ManyCommands =>
+    [
+        L["New"], L["Open"], L["Save"], L["Rename"], L["Duplicate"],
+        L["Move"], L["Copy"], L["Share"], L["Export"], L["Archive"], L["Delete"]
+    ];
+
+    private string[] ManyFilters =>
+    [
+        L["All"], L["Images"], L["Video"], L["Audio"], L["Documents"],
+        L["Archives"], L["Recent"], L["Starred"], L["Shared with Me"]
+    ];
+}

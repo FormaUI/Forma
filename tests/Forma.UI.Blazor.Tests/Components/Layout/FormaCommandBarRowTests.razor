@@ -1,0 +1,189 @@
+@inherits BunitContext
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_commands_on_the_track()
+        {
+            // Arrange
+            using var ctx = new FormaCommandBarRowTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaCommandBarRow>
+                    <button>Upload</button>
+                </FormaCommandBarRow>);
+
+            // Assert
+            Assert.Equal("Upload", cut.Find(".forma-command-bar-row .forma-command-bar-track button").TextContent);
+        }
+
+        [Fact]
+        public void Should_not_render_arrows_while_the_commands_fit()
+        {
+            // Arrange
+            using var ctx = new FormaCommandBarRowTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaCommandBarRow>
+                    <button>Upload</button>
+                </FormaCommandBarRow>);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-command-bar-scroll"));
+        }
+
+        [Fact]
+        public void Should_render_both_arrows_once_the_commands_overflow()
+        {
+            // Arrange
+            using var ctx = new FormaCommandBarRowTests();
+            var cut = ctx.Render(
+                @<FormaCommandBarRow>
+                    <button>Upload</button>
+                </FormaCommandBarRow>);
+
+            // Act
+            _ = cut.FindComponent<FormaCommandBarRow>().Instance.ReportOverflowAsync(canScrollBack: false, canScrollForward: true);
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal(2, cut.FindAll(".forma-command-bar-scroll").Count));
+        }
+
+        [Fact]
+        public void Should_disable_the_back_arrow_at_the_start_of_the_row()
+        {
+            // Arrange
+            using var ctx = new FormaCommandBarRowTests();
+            var cut = ctx.Render(
+                @<FormaCommandBarRow>
+                    <button>Upload</button>
+                </FormaCommandBarRow>);
+
+            // Act
+            _ = cut.FindComponent<FormaCommandBarRow>().Instance.ReportOverflowAsync(canScrollBack: false, canScrollForward: true);
+
+            // Assert
+            cut.WaitForAssertion(() =>
+            {
+                Assert.True(cut.Find(".forma-command-bar-scroll-back").HasAttribute("disabled"));
+                Assert.False(cut.Find(".forma-command-bar-scroll-forward").HasAttribute("disabled"));
+            });
+        }
+
+        [Fact]
+        public void Should_disable_the_forward_arrow_at_the_end_of_the_row()
+        {
+            // Arrange
+            using var ctx = new FormaCommandBarRowTests();
+            var cut = ctx.Render(
+                @<FormaCommandBarRow>
+                    <button>Upload</button>
+                </FormaCommandBarRow>);
+
+            // Act
+            _ = cut.FindComponent<FormaCommandBarRow>().Instance.ReportOverflowAsync(canScrollBack: true, canScrollForward: false);
+
+            // Assert
+            cut.WaitForAssertion(() =>
+            {
+                Assert.False(cut.Find(".forma-command-bar-scroll-back").HasAttribute("disabled"));
+                Assert.True(cut.Find(".forma-command-bar-scroll-forward").HasAttribute("disabled"));
+            });
+        }
+
+        [Fact]
+        public void Should_drop_the_arrows_again_once_the_row_fits()
+        {
+            // Arrange
+            using var ctx = new FormaCommandBarRowTests();
+            var cut = ctx.Render(
+                @<FormaCommandBarRow>
+                    <button>Upload</button>
+                </FormaCommandBarRow>);
+            _ = cut.FindComponent<FormaCommandBarRow>().Instance.ReportOverflowAsync(canScrollBack: true, canScrollForward: true);
+            cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".forma-command-bar-scroll")));
+
+            // Act
+            _ = cut.FindComponent<FormaCommandBarRow>().Instance.ReportOverflowAsync(canScrollBack: false, canScrollForward: false);
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".forma-command-bar-scroll")));
+        }
+
+        [Fact]
+        public void Should_name_the_arrows_from_the_localizer()
+        {
+            // Arrange
+            using var ctx = new FormaCommandBarRowTests();
+            var cut = ctx.Render(
+                @<FormaCommandBarRow>
+                    <button>Upload</button>
+                </FormaCommandBarRow>);
+
+            // Act
+            _ = cut.FindComponent<FormaCommandBarRow>().Instance.ReportOverflowAsync(canScrollBack: true, canScrollForward: true);
+
+            // Assert
+            cut.WaitForAssertion(() =>
+            {
+                Assert.Equal("Scroll Commands Back", cut.Find(".forma-command-bar-scroll-back").GetAttribute("aria-label"));
+                Assert.Equal("Scroll Commands Forward", cut.Find(".forma-command-bar-scroll-forward").GetAttribute("aria-label"));
+            });
+        }
+
+        [Fact]
+        public void Should_let_the_caller_name_the_arrows()
+        {
+            // Arrange
+            using var ctx = new FormaCommandBarRowTests();
+            var cut = ctx.Render(
+                @<FormaCommandBarRow ScrollBackLabel="Earlier filters" ScrollForwardLabel="Later filters">
+                    <button>Upload</button>
+                </FormaCommandBarRow>);
+
+            // Act
+            _ = cut.FindComponent<FormaCommandBarRow>().Instance.ReportOverflowAsync(canScrollBack: true, canScrollForward: true);
+
+            // Assert
+            cut.WaitForAssertion(() =>
+            {
+                Assert.Equal("Earlier filters", cut.Find(".forma-command-bar-scroll-back").GetAttribute("aria-label"));
+                Assert.Equal("Later filters", cut.Find(".forma-command-bar-scroll-forward").GetAttribute("aria-label"));
+            });
+        }
+
+        [Fact]
+        public void Should_merge_custom_class_with_forma_command_bar_row()
+        {
+            // Arrange
+            using var ctx = new FormaCommandBarRowTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCommandBarRow Class="demo-filters" />);
+
+            // Assert
+            var classes = cut.Find("div").ClassList;
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("forma-command-bar-row", classes);
+                Assert.Contains("demo-filters", classes);
+            });
+        }
+
+        [Fact]
+        public void Should_pass_through_unmatched_attributes()
+        {
+            // Arrange
+            using var ctx = new FormaCommandBarRowTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCommandBarRow aria-label="Filters" />);
+
+            // Assert
+            Assert.Equal("Filters", cut.Find(".forma-command-bar-row").GetAttribute("aria-label"));
+        }
+    }
+}

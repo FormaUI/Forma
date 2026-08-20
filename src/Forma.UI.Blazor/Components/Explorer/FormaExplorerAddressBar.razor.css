@@ -3,7 +3,7 @@
    Explorer-style navigation buttons, breadcrumb bar, and search
    ============================================================ */
 
-/* No divider or trailing space of its own: the header band around it owns both. */
+/* No divider or trailing space of its own: the header region around it owns both. */
 .forma-explorer-address-bar {
     display: flex;
     align-items: center;

@@ -1,0 +1,86 @@
+@inherits BunitContext
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_the_region()
+        {
+            // Arrange
+            using var ctx = new FormaCommandBarTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCommandBar />);
+
+            // Assert
+            Assert.NotNull(cut.Find(".forma-command-bar"));
+        }
+
+        [Fact]
+        public void Should_render_nothing_inside_the_region_without_rows()
+        {
+            // Arrange
+            using var ctx = new FormaCommandBarTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCommandBar />);
+
+            // Assert
+            Assert.Empty(cut.Find(".forma-command-bar").Children);
+        }
+
+        [Fact]
+        public void Should_stack_rows_in_the_order_they_are_written()
+        {
+            // Arrange
+            using var ctx = new FormaCommandBarTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaCommandBar>
+                    <div class="first">Navigate</div>
+                    <div class="second">Commands</div>
+                </FormaCommandBar>);
+
+            // Assert
+            var rows = cut.Find(".forma-command-bar").Children;
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(2, rows.Length);
+                Assert.Contains("first", rows[0].ClassList);
+                Assert.Contains("second", rows[1].ClassList);
+            });
+        }
+
+        [Fact]
+        public void Should_merge_custom_class_with_forma_command_bar()
+        {
+            // Arrange
+            using var ctx = new FormaCommandBarTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCommandBar Class="forma-explorer-header" />);
+
+            // Assert
+            var classes = cut.Find("div").ClassList;
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("forma-command-bar", classes);
+                Assert.Contains("forma-explorer-header", classes);
+            });
+        }
+
+        [Fact]
+        public void Should_pass_through_unmatched_attributes()
+        {
+            // Arrange
+            using var ctx = new FormaCommandBarTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCommandBar aria-label="Page commands" />);
+
+            // Assert
+            Assert.Equal("Page commands", cut.Find(".forma-command-bar").GetAttribute("aria-label"));
+        }
+    }
+}

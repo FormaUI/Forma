@@ -1,0 +1,15 @@
+/* ============================================================
+   FormaCommandBar — CSS isolation
+   The region alone: surface, the rule beneath it, and the stack
+   its rows sit in. What fills a row is the caller's.
+   ============================================================ */
+
+.forma-command-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: var(--forma-command-bar-padding, 0.75rem);
+    background: var(--forma-command-bar-background-color, var(--modal-background-color));
+    border-block-end: 1px solid var(--border-color);
+    box-sizing: border-box;
+}

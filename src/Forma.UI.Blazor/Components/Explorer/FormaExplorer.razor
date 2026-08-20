@@ -3,10 +3,11 @@
 @using Forma.UI.Blazor.Components.Data
 @using Forma.UI.Blazor.Components.Feedback
 @using Forma.UI.Blazor.Components.Files
+@using Forma.UI.Blazor.Components.Layout
 
 <CascadingValue Value="_context" IsFixed="false">
 <div class="forma-explorer @(Options.Resizable ? "is-resizable" : "") @(Options.AsDialog ? "is-dialog" : "")">
-<div class="forma-explorer-header">
+<FormaCommandBar Class="forma-explorer-header">
     <!-- Top Explorer Address Bar -->
     <FormaExplorerAddressBar Breadcrumbs="Breadcrumbs"
                             CanGoBack="CanGoBack"
@@ -41,7 +42,7 @@
                          OnToggleUpload="ToggleUpload"
                          OnToggleSelectMode="ToggleSelectModeAsync"
                          OnViewModeChanged="HandleViewModeChangedAsync" />
-</div>
+</FormaCommandBar>
 
     <!-- Refusal notice; the region stays in the DOM so a message inserted into it is announced -->
     <div class="forma-explorer-rejection-region" role="alert">

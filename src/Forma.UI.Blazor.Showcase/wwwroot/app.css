@@ -110,6 +110,22 @@ body {
     border-radius: 8px;
 }
 
+/* Lets a region reach the box's own edges, the way it would seat in a real surface. */
+.demo-box-flush {
+    padding: 0;
+    overflow: hidden;
+}
+
+.demo-command-bar-tinted {
+    --forma-command-bar-padding: 1.25rem;
+    --forma-command-bar-background-color: var(--hover-background-color);
+}
+
+/* Forces the overflow case without needing the window resized. */
+.demo-command-bar-narrow {
+    max-inline-size: 26rem;
+}
+
 .button {
     padding: 8px 16px;
     border: 1px solid var(--border-color);

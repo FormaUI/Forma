@@ -20,7 +20,9 @@ Forma.UI.Blazor/Components/
 ├── FormaGlyph.razor / .razor.cs / .razor.css  # draws a Forma.UI.Style.Glyphs.Glyph as inline SVG
 ├── ✅ FormaField.razor / .razor.cs / .razor.css
 ├── FieldLabelMode.cs                     # enum: Floating, Pinned, Above, Inline
-├── (4 / 4) Layout/
+├── (5 / 5) Layout/
+│   ├── ✅ FormaCommandBar.razor / .razor.cs / .razor.css
+│   ├── ✅ FormaCommandBarRow.razor / .razor.cs / .razor.css / .razor.js
 │   ├── ✅ FormaPageHeader.razor / .razor.cs
 │   ├── ✅ FormaToolbar.razor / .razor.cs
 │   ├── ✅ FormaContextToolbar.razor / .razor.cs
@@ -828,6 +830,17 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Parameters** | `IReadOnlyList<BreadcrumbItem<TItem>> Items`, `Glyph? RootIcon`, `string? AriaLabel`, `EventCallback<TItem?> OnItemClick`, `EventCallback<TItem?> OnItemDrop`. `BreadcrumbItem<TItem>` (moved here from `Layout/`) carries `Label`, `Url?`, `Value?`, `IsCurrent`, and `Children?` for a segment's own dropdown |
 | **Blazor approach** | Generic over the value a click or drop reports back, the way `FormaDataGrid<TItem>` and `FormaSortableList<TItem>` already are, with a non-generic marker type so `IStringLocale` resolves independently of `TItem`. A segment with a `Url` renders a real `<a>`; one without renders a `<button>` when `OnItemClick` is wired, or falls back to static text when it is not — so a plain site breadcrumb never gains a false clickable affordance it does nothing with. A chevron beside a segment with `Children` opens a menu of alternatives, closing on a second click, a backdrop click, or Escape |
 | **Notes** | `aria-current="page"` is set from the caller-supplied `IsCurrent` rather than inferred from position, since a defensive comparison against the current value is more robust than assuming the last segment is always current. `FormaPageHeader` derives it itself — only the last crumb lacking a `Url` counts as current, not every non-linked one — which also means an intermediate category label no longer looks identical to the current page, since only the true current segment is bold. Chevron separators mirror through `:dir(rtl)`, matching the rest of the library's glyph-mirroring convention |
+
+### 62. `FormaCommandBar` ✅
+
+| | |
+|---|---|
+| **Old pattern** | The header region of `FormaExplorer` — the surface, the rule beneath it and the stacked rows — written into the explorer's own stylesheet |
+| **Used in** | The region above any page's content: an explorer header, a list page's action strip, an editor's publish bar. `FormaExplorer` composes it for its own header |
+| **Parameters** | `FormaCommandBar`: `RenderFragment? ChildContent`, `string? Class`, plus captured pass-through attributes. `FormaCommandBarRow`: `RenderFragment? ChildContent`, `string? ScrollBackLabel`, `string? ScrollForwardLabel`, `string? Class`, plus captured pass-through attributes |
+| **Blazor approach** | A pair, split by what each owns. The bar is the surface and the stack — a flex column carrying the background, the rule and the padding, holding as many rows as a caller writes into it. Each row lays its commands on a horizontally scrolling track and, once they outgrow the width, flanks them with an arrow at either end, each disabled at the edge it can no longer travel toward. Retune with `--forma-command-bar-padding` and `--forma-command-bar-background-color` |
+| **Why it needs JS** | Whether a row overflows is a measurement only the browser holds, so a colocated module reports it back rather than C# guessing. A `ResizeObserver` watches the track and each command, and a `MutationObserver` watches the track's child list — **commands can be added or removed without the track's own box changing, which no `ResizeObserver` reports**, so watching size alone leaves the arrows stale the moment a caller's commands change. Reports are coalesced to one a frame and sent only when the answer changes, so scrolling never floods the circuit. Adding the arrows narrows the track, which re-triggers the observer — the loop settles because the second measurement changes nothing |
+| **Notes** | **It dictates where things go, never what they are.** No selection state, no bulk actions, no count readout — an explorer's select-mode bar stays the explorer's business, and the bar itself owns no strings at all. Scroll offsets are read through `Math.abs` because a right-to-left row counts `scrollLeft` downwards from zero, and the chevrons are turned per direction since they are not bidi-mirrored. Reached from a host's stylesheet through `::deep`, since the element belongs to this component's scope rather than the caller's |
 
 ---
 
