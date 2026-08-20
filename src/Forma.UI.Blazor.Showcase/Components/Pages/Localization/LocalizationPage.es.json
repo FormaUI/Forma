@@ -39,6 +39,8 @@
   "1 and 1.0 can differ, because the rules read how the number was written rather than its value alone.": "1 y 1.0 pueden diferir, porque las reglas leen cómo se escribió el número y no solo su valor.",
   "A count written two ways": "Un recuento escrito de dos maneras",
   "Both stand for the count. The hash is substituted while the plural is resolved and carries the culture's grouping; the named hole survives until the holes are filled.": "Ambos representan el recuento. La almohadilla se sustituye al resolver el plural y lleva la separación de miles del idioma; el hueco con nombre sobrevive hasta que se rellenan los huecos.",
+  "[$ plural; other: #; $]": null,
+  "{count}": null,
   "A branch that is missing": "Una rama que falta",
   "A construct needs a branch for every category its language can select. When the one chosen is absent and there is no other branch to fall back to, the result is empty.": "Un constructo necesita una rama para cada categoría que su idioma pueda seleccionar. Cuando la elegida no está y no hay una rama other a la que recurrir, el resultado queda vacío.",
   "Renders as": "Se muestra como",
