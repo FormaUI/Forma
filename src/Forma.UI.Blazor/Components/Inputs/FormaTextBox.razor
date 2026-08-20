@@ -7,17 +7,22 @@
                 id="@ElementId"
                 type="text"
                 class="@BoxClass @CssClass"
+                style="@BoxStyle"
                 placeholder="@EffectivePlaceholder"
                 value="@CurrentValueAsString"
                 disabled="@Disabled"
                 readonly="@ReadOnly"
+                maxlength="@MaxLength"
+                pattern="@Pattern"
+                inputmode="@InputModeValue"
+                autocomplete="@AutoComplete"
                 aria-required="@(Required ? "true" : null)"
                 @oninput="HandleInput" />;
 }
 
-@if (Size is TextBoxSize.Large)
+@if (HasLabel)
 {
-    <FormaField Label="@Label" TargetId="@ElementId" Required="@Required">
+    <FormaField Label="@Label" TargetId="@ElementId" Required="@Required" style="@FieldStyle">
         <ChildContent>
             @box
         </ChildContent>

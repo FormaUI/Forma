@@ -233,7 +233,7 @@
         }
 
         [Fact]
-        public void Should_stand_bare_at_the_normal_size()
+        public void Should_stand_bare_without_a_label()
         {
             // Arrange
             using var ctx = new FormaTextBoxTests();
@@ -253,7 +253,7 @@
         }
 
         [Fact]
-        public void Should_wear_the_field_chrome_at_the_large_size()
+        public void Should_wear_the_field_chrome_once_given_a_label()
         {
             // Arrange
             using var ctx = new FormaTextBoxTests();
@@ -261,7 +261,7 @@
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaTextBox @bind-Value="model.Text" Size="TextBoxSize.Large" Label="Project" Id="project" />
+                <FormaTextBox @bind-Value="model.Text" Label="Project" Id="project" />
             </FakeFormHost>);
 
             // Assert
@@ -275,6 +275,26 @@
         }
 
         [Fact]
+        public void Should_stay_bare_when_the_label_is_only_whitespace()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" Label="   " />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("forma-text-box", cut.Find("input").ClassList);
+                Assert.Empty(cut.FindAll(".forma-field"));
+            });
+        }
+
+        [Fact]
         public void Should_bind_a_generated_id_to_the_label_when_none_is_given()
         {
             // Arrange
@@ -283,7 +303,7 @@
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaTextBox @bind-Value="model.Text" Size="TextBoxSize.Large" Label="Project" />
+                <FormaTextBox @bind-Value="model.Text" Label="Project" />
             </FakeFormHost>);
 
             // Assert
@@ -296,19 +316,174 @@
         }
 
         [Fact]
-        public void Should_refuse_a_label_at_the_normal_size()
+        public void Should_render_the_native_constraints_given()
         {
             // Arrange
             using var ctx = new FormaTextBoxTests();
             var model = new FakeModel();
 
             // Act
-            var render = () => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaTextBox @bind-Value="model.Text" Label="Project" />
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text"
+                              MaxLength="20"
+                              Pattern="[a-z]+"
+                              InputMode="TextInputMode.Email"
+                              AutoComplete="email" />
+            </FakeFormHost>);
+            var input = cut.Find("input");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("20", input.GetAttribute("maxlength"));
+                Assert.Equal("[a-z]+", input.GetAttribute("pattern"));
+                Assert.Equal("email", input.GetAttribute("inputmode"));
+                Assert.Equal("email", input.GetAttribute("autocomplete"));
+            });
+        }
+
+        [Fact]
+        public void Should_leave_the_native_constraints_off_when_not_given()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" />
+            </FakeFormHost>);
+            var input = cut.Find("input");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.False(input.HasAttribute("maxlength"));
+                Assert.False(input.HasAttribute("pattern"));
+                Assert.False(input.HasAttribute("inputmode"));
+                Assert.False(input.HasAttribute("autocomplete"));
+                Assert.False(input.HasAttribute("style"));
+            });
+        }
+
+        [Fact]
+        public void Should_ask_for_a_digits_only_keypad_in_lower_case()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" InputMode="TextInputMode.Numeric" />
             </FakeFormHost>);
 
             // Assert
-            Assert.Throws<InvalidOperationException>(render);
+            Assert.Equal("numeric", cut.Find("input").GetAttribute("inputmode"));
+        }
+
+        [Fact]
+        public void Should_render_the_fractional_keypad_as_decimal()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" InputMode="TextInputMode.Fractional" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("decimal", cut.Find("input").GetAttribute("inputmode"));
+        }
+
+        [Fact]
+        public void Should_size_the_box_to_the_width_given()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" Width="CssLength.FromRem(18.5)" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("inline-size: 18.5rem", cut.Find("input").GetAttribute("style"));
+        }
+
+        [Fact]
+        public void Should_keep_a_callers_own_style_beside_the_width()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" Width="CssLength.FromCh(12)" style="color: red;" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("color: red; inline-size: 12ch", cut.Find("input").GetAttribute("style"));
+        }
+
+        [Fact]
+        public void Should_keep_a_callers_own_style_when_no_width_is_given()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" style="color: red" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("color: red", cut.Find("input").GetAttribute("style"));
+        }
+
+        [Fact]
+        public void Should_size_the_field_rather_than_the_input_when_labelled()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" Label="Project" Width="CssLength.FromPx(240)" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("inline-size: 240px", cut.Find(".forma-field").GetAttribute("style"));
+                Assert.False(cut.Find("input").HasAttribute("style"));
+            });
+        }
+
+        [Fact]
+        public void Should_keep_a_callers_own_style_on_a_labelled_input()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" Label="Project" Width="CssLength.FromPx(240)" style="color: red" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("inline-size: 240px", cut.Find(".forma-field").GetAttribute("style"));
+                Assert.Equal("color: red", cut.Find("input").GetAttribute("style"));
+            });
         }
 
         [Fact]
