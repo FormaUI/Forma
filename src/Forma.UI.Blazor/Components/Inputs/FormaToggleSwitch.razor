@@ -1,0 +1,35 @@
+@namespace Forma.UI.Blazor.Components.Inputs
+@inherits InputBase<bool>
+
+<FormaField Label="@Label" TargetId="@_id" LabelMode="FieldLabelMode.Inline">
+    <ChildContent>
+        <div class="forma-toggle-wrapper">
+            @if (OffLabel is not null)
+            {
+                <span class="forma-toggle-label forma-toggle-off-label">@OffLabel</span>
+            }
+            <label class="@(Disabled ? "forma-toggle disabled" : "forma-toggle")">
+                <input @attributes="AdditionalAttributes"
+                       id="@_id"
+                       type="checkbox"
+                       role="switch"
+                       class="forma-toggle-input @CssClass"
+                       checked="@CurrentValue"
+                       @onchange="HandleChange"
+                       disabled="@Disabled" />
+                <span class="forma-toggle-track" aria-hidden="true">
+                    @* The mark carries on/off without relying on the track colour alone. *@
+                    <span class="forma-toggle-mark"><FormaGlyph Name="@(CurrentValue ? Glyph.Check : Glyph.Xmark)" /></span>
+                    <span class="forma-toggle-knob"></span>
+                </span>
+            </label>
+            @if (OnLabel is not null)
+            {
+                <span class="forma-toggle-label forma-toggle-on-label">@OnLabel</span>
+            }
+        </div>
+    </ChildContent>
+    <Validation>
+        <ValidationMessage For="@ValueExpression" />
+    </Validation>
+</FormaField>

@@ -1,0 +1,9 @@
+namespace Forma.UI.Blazor.Tests.Components.Inputs;
+
+public sealed partial class FormaColorPickerTests
+{
+    public FormaColorPickerTests()
+    {
+        Services.AddJsonLocalization();
+    }
+}

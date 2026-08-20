@@ -59,7 +59,7 @@ Forma.UI.Blazor/Components/
 │   ├── FormaPublishButton.razor
 │   ├── FormaViewButton.razor
 │   └── FormaExportButton.razor
-├── (10 / 11) Input/
+├── (10 / 11) Inputs/
 │   ├── SelectOption.cs
 │   ├── PasswordStrength.cs
 │   ├── ✅ FormaCheckBox.razor
