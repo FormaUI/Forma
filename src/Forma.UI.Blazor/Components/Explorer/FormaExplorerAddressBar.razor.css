@@ -84,6 +84,7 @@
     flex-shrink: 0;
 }
 
+/* Isolated but not self-directed: deriving direction from the folder name would align a Latin one against the reading direction. */
 .forma-explorer-breadcrumb-item {
     min-inline-size: 0;
     border: none;
@@ -94,6 +95,7 @@
     padding-block: 0.2rem;
     border-radius: 4px;
     cursor: pointer;
+    unicode-bidi: isolate;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

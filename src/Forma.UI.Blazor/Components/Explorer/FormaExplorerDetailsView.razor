@@ -98,7 +98,7 @@
                                 aria-label="@Context.ActivateLabel(resource)"
                                 @onclick="() => Context.ActivateAsync(resource)">
                             <FormaExplorerThumb Resource="resource" Size="ExplorerThumbSize.Cell" />
-                            <span class="forma-explorer-details-name-text" dir="auto" title="@resource.Name">@resource.Name</span>
+                            <span class="forma-explorer-details-name-text" title="@resource.Name">@resource.Name</span>
                         </button>
                     </td>
                     @if (ShowsKind)

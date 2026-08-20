@@ -86,7 +86,7 @@
                 class="forma-explorer-folder-target"
                 @onclick="() => Sidebar.SelectFolderAsync(Folder)">
             <span class="forma-explorer-folder-icon" aria-hidden="true"><FormaGlyph Name="@(isCurrent ? Glyph.FolderOpen : Glyph.Folder)" /></span>
-            <span class="forma-explorer-folder-name" dir="auto" title="@Folder.Name">@Folder.Name</span>
+            <span class="forma-explorer-folder-name" title="@Folder.Name">@Folder.Name</span>
         </button>
 
         @if (Folder.Count is { } count)

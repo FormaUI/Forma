@@ -196,9 +196,21 @@
     transition-delay: 0s;
 }
 
+/* Focus widens the sash into one solid bar: an outline on something this thin draws as stray parallel lines rather than a ring. */
 .forma-explorer-splitter:focus-visible {
-    outline: 2px solid var(--focus-color);
-    outline-offset: -2px;
+    outline: none;
+}
+
+.forma-explorer-splitter:focus-visible .forma-explorer-splitter-grip {
+    inline-size: 5px;
+}
+
+/* Forced colours drop the fill, so the ring comes back where it is the only thing left to see. */
+@media (forced-colors: active) {
+    .forma-explorer-splitter:focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: -2px;
+    }
 }
 
 @media (pointer: coarse) {

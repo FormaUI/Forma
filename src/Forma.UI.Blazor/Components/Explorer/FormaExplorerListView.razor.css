@@ -97,10 +97,12 @@
     touch-action: manipulation;
 }
 
+/* Isolated but not self-directed: deriving direction from the name would align a Latin one against the reading direction. */
 .forma-explorer-list-name {
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--text-color);
+    unicode-bidi: isolate;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

@@ -41,7 +41,6 @@
             var isLast = index == Levels.Count - 1;
             <button type="button"
                     class="forma-explorer-breadcrumb-item @(isCurrent ? "is-current" : "")"
-                    dir="auto"
                     @ondragover="HandleDragOver"
                     @ondragover:preventDefault="true"
                     @ondrop="() => HandleBreadcrumbDrop(level.Folder)"
