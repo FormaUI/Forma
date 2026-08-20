@@ -13,12 +13,12 @@
 }
 
 /* A glyph's ink is taller than a capital, so it is lowered onto the label's cap-height centre. */
-.forma-explorer-select-mode-btn [class*="fa-"],
-.forma-explorer-select-mode-btn svg,
-.forma-explorer-new-folder-btn [class*="fa-"],
-.forma-explorer-upload-btn [class*="fa-"],
-.forma-explorer-delete-btn [class*="fa-"],
-.forma-explorer-clear-btn [class*="fa-"] {
+.forma-explorer-select-mode-button [class*="fa-"],
+.forma-explorer-select-mode-button svg,
+.forma-explorer-new-folder-button [class*="fa-"],
+.forma-explorer-upload-button [class*="fa-"],
+.forma-explorer-delete-button [class*="fa-"],
+.forma-explorer-clear-button [class*="fa-"] {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -26,12 +26,12 @@
     translate: 0 0.064em;
 }
 
-.forma-explorer-selection-status ::deep .forma-explorer-exit-select-btn svg {
+.forma-explorer-selection-status ::deep .forma-explorer-exit-select-button svg {
     inline-size: 11px;
     block-size: 11px;
 }
 
-.forma-explorer-sr-only {
+.forma-explorer-visually-hidden {
     position: absolute;
     inline-size: 1px;
     block-size: 1px;
@@ -59,7 +59,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
-    background: var(--hover-bg-color);
+    background: var(--hover-background-color);
     padding-inline: 0.5rem;
     padding-block: 0;
     border-radius: 6px;
@@ -97,7 +97,7 @@
     overflow: hidden;
 }
 
-.forma-explorer-view-btn {
+.forma-explorer-view-button {
     position: relative;
     display: flex;
     align-items: center;
@@ -117,24 +117,24 @@
 }
 
 @media (hover: hover) {
-    .forma-explorer-view-btn:hover {
-        background: var(--hover-bg-color);
+    .forma-explorer-view-button:hover {
+        background: var(--hover-background-color);
         color: var(--text-color);
     }
 }
 
-.forma-explorer-view-btn:focus-visible {
+.forma-explorer-view-button:focus-visible {
     outline: 2px solid var(--focus-color);
     outline-offset: -2px;
 }
 
-.forma-explorer-view-btn.is-active {
-    background: var(--hover-bg-color);
+.forma-explorer-view-button.is-active {
+    background: var(--hover-background-color);
     color: var(--main-color);
 }
 
 /* An underline marks the active view, because the fill alone repeats what hover already draws. */
-.forma-explorer-view-btn.is-active::after {
+.forma-explorer-view-button.is-active::after {
     content: "";
     position: absolute;
     inset-block-end: 0.25rem;
@@ -145,7 +145,7 @@
 }
 
 @media (pointer: coarse) {
-    .forma-explorer-view-btn {
+    .forma-explorer-view-button {
         inline-size: 2.75rem;
         block-size: 2.75rem;
     }

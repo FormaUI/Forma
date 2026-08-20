@@ -42,7 +42,7 @@
 
 @media (hover: hover) {
     ::deep button.forma-pagination-link:hover:not(:disabled) {
-        background: var(--hover-bg-color);
+        background: var(--hover-background-color);
     }
 }
 

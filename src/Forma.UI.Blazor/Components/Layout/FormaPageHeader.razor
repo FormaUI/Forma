@@ -1,11 +1,11 @@
 <div class="forma-page-header">
     <div>
-        <h1 class="forma-page-title">@Title</h1>
+        <h1 class="forma-page-header-title">@Title</h1>
 
         @if (Breadcrumbs is { Count: > 0 })
         {
             <nav aria-label="Breadcrumb">
-                <ol class="forma-breadcrumb">
+                <ol class="forma-page-header-breadcrumb">
                     @for (var i = 0; i < Breadcrumbs.Count; i++)
                     {
                         var crumb = Breadcrumbs[i];
@@ -13,11 +13,11 @@
 
                         @if (crumb.Url is not null)
                         {
-                            <li class="forma-breadcrumb-item"><a href="@crumb.Url">@crumb.Label</a></li>
+                            <li class="forma-page-header-breadcrumb-item"><a href="@crumb.Url">@crumb.Label</a></li>
                         }
                         else
                         {
-                            <li class="forma-breadcrumb-item active" aria-current="@(isLast ? "page" : null)"><span>@crumb.Label</span></li>
+                            <li class="forma-page-header-breadcrumb-item active" aria-current="@(isLast ? "page" : null)"><span>@crumb.Label</span></li>
                         }
                     }
                 </ol>

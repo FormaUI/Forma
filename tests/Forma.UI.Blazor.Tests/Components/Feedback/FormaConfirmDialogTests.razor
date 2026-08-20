@@ -38,8 +38,8 @@
 
             // Act
             _ = service.ConfirmAsync("Delete this item?", "Confirm", "Cancel", TestContext.Current.CancellationToken);
-            cut.WaitForState(() => cut.FindAll(".forma-confirm-message").Count > 0);
-            var message = cut.Find(".forma-confirm-message");
+            cut.WaitForState(() => cut.FindAll(".forma-confirm-dialog-message").Count > 0);
+            var message = cut.Find(".forma-confirm-dialog-message");
 
             // Assert
             Assert.Equal("Delete this item?", message.TextContent);
@@ -55,9 +55,9 @@
 
             // Act
             _ = service.ConfirmAsync("Are you sure?", "Confirm", "Cancel", TestContext.Current.CancellationToken);
-            cut.WaitForState(() => cut.FindAll(".forma-btn-danger").Count > 0);
-            var confirmBtn = cut.Find(".forma-btn-danger");
-            var cancelBtn = cut.Find(".forma-btn-secondary");
+            cut.WaitForState(() => cut.FindAll(".forma-button-danger").Count > 0);
+            var confirmBtn = cut.Find(".forma-button-danger");
+            var cancelBtn = cut.Find(".forma-button-secondary");
 
             // Assert
             Assert.Multiple(() =>
@@ -77,9 +77,9 @@
 
             // Act
             _ = service.ConfirmAsync("Remove?", "מחק", "חזור", TestContext.Current.CancellationToken);
-            cut.WaitForState(() => cut.FindAll(".forma-btn-danger").Count > 0);
-            var confirmBtn = cut.Find(".forma-btn-danger");
-            var cancelBtn = cut.Find(".forma-btn-secondary");
+            cut.WaitForState(() => cut.FindAll(".forma-button-danger").Count > 0);
+            var confirmBtn = cut.Find(".forma-button-danger");
+            var cancelBtn = cut.Find(".forma-button-secondary");
 
             // Assert
             Assert.Multiple(() =>
@@ -99,7 +99,7 @@
 
             // Act
             _ = service.ConfirmAsync("Proceed?", "Confirm", "Cancel", TestContext.Current.CancellationToken);
-            cut.WaitForState(() => cut.FindAll(".forma-btn-danger").Count > 0);
+            cut.WaitForState(() => cut.FindAll(".forma-button-danger").Count > 0);
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-modal-action"));
@@ -115,8 +115,8 @@
             var resultTask = service.ConfirmAsync("Proceed?", "Confirm", "Cancel", TestContext.Current.CancellationToken);
 
             // Act
-            cut.WaitForState(() => cut.FindAll(".forma-btn-danger").Count > 0);
-            await cut.Find(".forma-btn-danger").ClickAsync(new());
+            cut.WaitForState(() => cut.FindAll(".forma-button-danger").Count > 0);
+            await cut.Find(".forma-button-danger").ClickAsync(new());
             var result = await resultTask;
 
             // Assert
@@ -133,8 +133,8 @@
             var resultTask = service.ConfirmAsync("Proceed?", "Confirm", "Cancel", TestContext.Current.CancellationToken);
 
             // Act
-            cut.WaitForState(() => cut.FindAll(".forma-btn-secondary").Count > 0);
-            await cut.Find(".forma-btn-secondary").ClickAsync(new());
+            cut.WaitForState(() => cut.FindAll(".forma-button-secondary").Count > 0);
+            await cut.Find(".forma-button-secondary").ClickAsync(new());
             var result = await resultTask;
 
             // Assert
@@ -151,7 +151,7 @@
             var resultTask = service.ConfirmAsync("Proceed?", "Confirm", "Cancel", TestContext.Current.CancellationToken);
 
             // Act
-            cut.WaitForState(() => cut.FindAll(".forma-confirm-message").Count > 0);
+            cut.WaitForState(() => cut.FindAll(".forma-confirm-dialog-message").Count > 0);
             await cut.Find("dialog").TriggerEventAsync("onclose", new EventArgs());
             var result = await resultTask;
 
@@ -174,8 +174,8 @@
             // Act
             var secondTask = service.ConfirmAsync("Second?", "Confirm", "Cancel", TestContext.Current.CancellationToken);
             var firstResult = await firstTask;
-            cut.WaitForState(() => cut.Find(".forma-confirm-message").TextContent == "Second?");
-            await cut.Find(".forma-btn-danger").ClickAsync(new());
+            cut.WaitForState(() => cut.Find(".forma-confirm-dialog-message").TextContent == "Second?");
+            await cut.Find(".forma-button-danger").ClickAsync(new());
             var secondResult = await secondTask;
 
             // Assert

@@ -5,7 +5,7 @@
 @inject IStringLocale<FormaSliderPage> L
 
 <h1>FormaSlider</h1>
-<p class="desc">@L["A bounded numeric input rendered as a native range slider, its current value shown beside the label rather than requiring a second field to read it."]</p>
+<p class="description">@L["A bounded numeric input rendered as a native range slider, its current value shown beside the label rather than requiring a second field to read it."]</p>
 
 <EditForm Model="_model">
 
@@ -19,7 +19,7 @@
 
     <div class="demo-section">
         <h2>@L["A step larger than one"]</h2>
-        <p class="desc">@L["Step controls the increment a drag or arrow key moves the value by."]</p>
+        <p class="description">@L["Step controls the increment a drag or arrow key moves the value by."]</p>
         <div class="demo-box">
             <FormaSlider @bind-Value="_model.Volume" Label="@L["Volume"]" Min="0" Max="100" Step="5" Unit="%" />
         </div>
@@ -27,7 +27,7 @@
 
     <div class="demo-section">
         <h2>@L["A decimal value"]</h2>
-        <p class="desc">@L["The slider is generic over any INumber<T>, so a fractional step works the same way as a whole one."]</p>
+        <p class="description">@L["The slider is generic over any INumber<T>, so a fractional step works the same way as a whole one."]</p>
         <div class="demo-box">
             <FormaSlider @bind-Value="_model.Duration" Label="@L["Duration"]" Min="0.5" Max="5" Step="0.5" Unit="s" />
         </div>
@@ -35,7 +35,7 @@
 
     <div class="demo-section">
         <h2>@L["Without a unit"]</h2>
-        <p class="desc">@L["A bare count needs no suffix, and aria-valuetext is left to the native valuenow the input already announces."]</p>
+        <p class="description">@L["A bare count needs no suffix, and aria-valuetext is left to the native valuenow the input already announces."]</p>
         <div class="demo-box">
             <FormaSlider @bind-Value="_model.Priority" Label="@L["Priority"]" Min="1" Max="5" />
         </div>

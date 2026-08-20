@@ -1,42 +1,42 @@
 /* Media depiction shared by every explorer view; an image renders directly and any other kind falls back to a glyph. */
 
-.forma-explorer-thumb {
+.forma-explorer-thumbnail {
     flex-shrink: 0;
     object-fit: cover;
 }
 
-.forma-explorer-thumb-glyph {
+.forma-explorer-thumbnail-glyph {
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--text-muted-color);
 }
 
-.forma-explorer-thumb.is-tile {
+.forma-explorer-thumbnail.is-tile {
     inline-size: 100%;
     block-size: 100%;
 }
 
-.forma-explorer-thumb-glyph.is-tile {
+.forma-explorer-thumbnail-glyph.is-tile {
     font-size: 2.5rem;
 }
 
-.forma-explorer-thumb.is-row {
+.forma-explorer-thumbnail.is-row {
     inline-size: 2rem;
     block-size: 2rem;
     border-radius: 4px;
 }
 
-.forma-explorer-thumb-glyph.is-row {
+.forma-explorer-thumbnail-glyph.is-row {
     font-size: 1.25rem;
 }
 
-.forma-explorer-thumb.is-cell {
+.forma-explorer-thumbnail.is-cell {
     inline-size: 1.75rem;
     block-size: 1.75rem;
     border-radius: 4px;
 }
 
-.forma-explorer-thumb-glyph.is-cell {
+.forma-explorer-thumbnail-glyph.is-cell {
     font-size: 1.25rem;
 }

@@ -5,7 +5,7 @@
 @inject IStringLocale<FormaToolbarPage> L
 
 <h1>FormaToolbar</h1>
-<p class="desc">@L["A flex container for search inputs, filters, and action buttons. Used across all list pages."]</p>
+<p class="description">@L["A flex container for search inputs, filters, and action buttons. Used across all list pages."]</p>
 
 <div class="demo-section">
     <h2>@L["Search Only"]</h2>
@@ -19,8 +19,8 @@
     <h2>@L["Actions Only"]</h2>
     <div class="demo-box">
         <FormaToolbar>
-            <button class="btn btn-primary">@L["Add New"]</button>
-            <button class="btn btn-sec">@L["Export"]</button>
+            <button class="button button-primary">@L["Add New"]</button>
+            <button class="button button-secondary">@L["Export"]</button>
         </FormaToolbar>
     </div>
 </div>
@@ -29,7 +29,7 @@
     <h2>@L["Search with Actions"]</h2>
     <div class="demo-box">
         <FormaToolbar OnSearch="HandleSearch3" SearchPlaceholder="@L["Search..."]">
-            <button class="btn btn-primary">@L["Add New"]</button>
+            <button class="button button-primary">@L["Add New"]</button>
         </FormaToolbar>
         <p class="demo-output">@L["Last search"]: <code>@_lastSearch3</code></p>
     </div>

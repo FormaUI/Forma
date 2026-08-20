@@ -94,7 +94,7 @@
 
 @media (hover: hover) {
     .forma-explorer-folder-tree ::deep .forma-explorer-folder-row:hover {
-        background: var(--hover-bg-color);
+        background: var(--hover-background-color);
     }
 
     .forma-explorer-folder-tree ::deep .forma-explorer-folder-row:hover .forma-explorer-folder-actions,
@@ -132,7 +132,7 @@
     flex-shrink: 0;
     border-radius: 4px;
     border: 1px solid var(--dark-border-color);
-    background: var(--input-bg-color);
+    background: var(--input-background-color);
     color: transparent;
     cursor: pointer;
     font-size: var(--forma-explorer-check-glyph-size);
@@ -143,7 +143,7 @@
 .forma-explorer-folder-tree ::deep .forma-explorer-folder-select.is-checked {
     background: var(--main-color);
     border-color: var(--main-color);
-    color: var(--forma-explorer-check-fg-color);
+    color: var(--forma-explorer-check-foreground-color);
 }
 
 .forma-explorer-folder-tree ::deep .forma-explorer-folder-twisty {
@@ -257,7 +257,7 @@
 
 @media (hover: hover) {
     .forma-explorer-sidebar-toolbar:hover {
-        background: var(--hover-bg-color);
+        background: var(--hover-background-color);
     }
 }
 

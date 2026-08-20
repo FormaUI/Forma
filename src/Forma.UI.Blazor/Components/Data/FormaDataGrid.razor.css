@@ -74,7 +74,7 @@
     position: sticky;
     inset-block-start: 0;
     z-index: 1;
-    background: var(--forma-data-grid-header-bg-color, #fff);
+    background: var(--forma-data-grid-header-background-color, #fff);
     box-shadow: 0 1px 0 var(--border-color, rgba(98, 105, 118, 0.16));
 }
 
@@ -144,7 +144,7 @@
 /* A tinted background reads as "selected" without depending on the checkbox column,
    so it still shows on a row selected through EnableRowSelection alone. */
 ::deep .forma-data-grid-row-selected {
-    background: var(--forma-data-grid-row-selected-bg-color, color-mix(in srgb, var(--main-color, #0d6efd) 8%, transparent));
+    background: var(--forma-data-grid-row-selected-background-color, color-mix(in srgb, var(--main-color, #0d6efd) 8%, transparent));
 }
 
 /* Muted rather than hidden: a disabled row stays legible so its data is still readable,

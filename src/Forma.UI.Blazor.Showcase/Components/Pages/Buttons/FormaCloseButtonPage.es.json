@@ -4,7 +4,7 @@
   "Sizes": "Tamaños",
   "Disabled": "Deshabilitado",
   "On a coloured surface": "Sobre una superficie de color",
-  "A surface sets --forma-btn-ghost-color and its hover pair to retint the glyph; the toast does exactly this.": "Una superficie define --forma-btn-ghost-color y su par de hover para recolorear el icono; el toast hace exactamente eso.",
+  "A surface sets --forma-button-ghost-color and its hover pair to retint the glyph; the toast does exactly this.": "Una superficie define --forma-button-ghost-color y su par de hover para recolorear el icono; el toast hace exactamente eso.",
   "Saved successfully": "Guardado correctamente",
   "Close": "Cerrar",
   "Dismiss": "Descartar",

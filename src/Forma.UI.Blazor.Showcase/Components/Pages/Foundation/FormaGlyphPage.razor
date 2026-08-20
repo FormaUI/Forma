@@ -3,11 +3,11 @@
 @inject IStringLocale<FormaGlyphPage> L
 
 <h1>FormaGlyph</h1>
-<p class="desc">@L["The library's own glyphs, drawn as inline SVG so no icon font has to be loaded."]</p>
+<p class="description">@L["The library's own glyphs, drawn as inline SVG so no icon font has to be loaded."]</p>
 
 <div class="demo-section">
     <h2>@L["Every glyph"]</h2>
-    <p class="desc">@L["Every glyph is Font Awesome Free artwork, inlined so no icon font has to be fetched."]</p>
+    <p class="description">@L["Every glyph is Font Awesome Free artwork, inlined so no icon font has to be fetched."]</p>
     <div class="demo-box">
         <ul class="glyph-grid">
             @foreach (var glyph in Enum.GetValues<Glyph>())
@@ -23,7 +23,7 @@
 
 <div class="demo-section">
     <h2>@L["Sizing"]</h2>
-    <p class="desc">@L["A glyph is one em tall and keeps its own aspect ratio, so it takes the font size of whatever contains it."]</p>
+    <p class="description">@L["A glyph is one em tall and keeps its own aspect ratio, so it takes the font size of whatever contains it."]</p>
     <div class="demo-box">
         <div class="glyph-sizes">
             <span style="font-size: 0.75rem;"><FormaGlyph Name="Glyph.Folder" /> 0.75rem</span>
@@ -36,7 +36,7 @@
 
 <div class="demo-section">
     <h2>@L["Colour"]</h2>
-    <p class="desc">@L["A glyph is filled with the current text colour, so it inherits any colour its container sets."]</p>
+    <p class="description">@L["A glyph is filled with the current text colour, so it inherits any colour its container sets."]</p>
     <div class="demo-box">
         <div class="glyph-sizes">
             <span style="color: var(--main-color);"><FormaGlyph Name="Glyph.Check" /> @L["Accent"]</span>
@@ -48,7 +48,7 @@
 
 <div class="demo-section">
     <h2>@L["Inside a button"]</h2>
-    <p class="desc">@L["A glyph carries no accessible name of its own, so the button around it has to be labelled."]</p>
+    <p class="description">@L["A glyph carries no accessible name of its own, so the button around it has to be labelled."]</p>
     <div class="demo-box">
         <div class="glyph-sizes">
             <FormaButton Variant="ButtonVariant.Primary">

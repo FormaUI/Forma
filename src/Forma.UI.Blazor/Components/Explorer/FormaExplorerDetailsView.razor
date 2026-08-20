@@ -4,12 +4,12 @@
     var selecting = Context.Selection.IsSelectMode && !Context.Selection.HasFolders;
 }
 
-<div class="forma-explorer-details-wrap">
+<div class="forma-explorer-details-wrapper">
     <table class="forma-explorer-details-table" role="table">
         <thead>
             <tr>
-                <th class="forma-explorer-col-actions"><span class="forma-explorer-sr-only">@(selecting ? L["Select"] : L["Actions"])</span></th>
-                <th class="forma-explorer-col-name @(Context.SortField == ExplorerSortField.Name ? "is-sorted" : "")"
+                <th class="forma-explorer-column-actions"><span class="forma-explorer-visually-hidden">@(selecting ? L["Select"] : L["Actions"])</span></th>
+                <th class="forma-explorer-column-name @(Context.SortField == ExplorerSortField.Name ? "is-sorted" : "")"
                     aria-sort="@SortState(ExplorerSortField.Name)"
                     @onclick="() => Context.SortByAsync(ExplorerSortField.Name)">
                     <span>@L["Name"]</span>
@@ -20,7 +20,7 @@
                 </th>
                 @if (ShowsKind)
                 {
-                    <th class="forma-explorer-col-kind @(Context.SortField == ExplorerSortField.Kind ? "is-sorted" : "")"
+                    <th class="forma-explorer-column-kind @(Context.SortField == ExplorerSortField.Kind ? "is-sorted" : "")"
                         aria-sort="@SortState(ExplorerSortField.Kind)"
                         @onclick="() => Context.SortByAsync(ExplorerSortField.Kind)">
                         <span>@L["Type"]</span>
@@ -32,7 +32,7 @@
                 }
                 @if (ShowsSize)
                 {
-                    <th class="forma-explorer-col-size @(Context.SortField == ExplorerSortField.Size ? "is-sorted" : "")"
+                    <th class="forma-explorer-column-size @(Context.SortField == ExplorerSortField.Size ? "is-sorted" : "")"
                         aria-sort="@SortState(ExplorerSortField.Size)"
                         @onclick="() => Context.SortByAsync(ExplorerSortField.Size)">
                         <span>@L["Size"]</span>
@@ -44,7 +44,7 @@
                 }
                 @if (ShowsModified)
                 {
-                    <th class="forma-explorer-col-modified @(Context.SortField == ExplorerSortField.DateModified ? "is-sorted" : "")"
+                    <th class="forma-explorer-column-modified @(Context.SortField == ExplorerSortField.DateModified ? "is-sorted" : "")"
                         aria-sort="@SortState(ExplorerSortField.DateModified)"
                         @onclick="() => Context.SortByAsync(ExplorerSortField.DateModified)">
                         <span>@L["Modified"]</span>
@@ -56,7 +56,7 @@
                 }
                 @if (ShowsAdded)
                 {
-                    <th class="forma-explorer-col-added @(Context.SortField == ExplorerSortField.DateAdded ? "is-sorted" : "")"
+                    <th class="forma-explorer-column-added @(Context.SortField == ExplorerSortField.DateAdded ? "is-sorted" : "")"
                         aria-sort="@SortState(ExplorerSortField.DateAdded)"
                         @onclick="() => Context.SortByAsync(ExplorerSortField.DateAdded)">
                         <span>@L["Added"]</span>
@@ -94,10 +94,10 @@
                     </td>
                     <td class="forma-explorer-cell-name">
                         <button type="button"
-                                class="forma-explorer-name-wrap"
+                                class="forma-explorer-name-wrapper"
                                 aria-label="@Context.ActivateLabel(resource)"
                                 @onclick="() => Context.ActivateAsync(resource)">
-                            <FormaExplorerThumb Resource="resource" Size="ExplorerThumbSize.Cell" />
+                            <FormaExplorerThumbnail Resource="resource" Size="ExplorerThumbnailSize.Cell" />
                             <span class="forma-explorer-details-name-text" title="@resource.Name">@resource.Name</span>
                         </button>
                     </td>

@@ -7,7 +7,7 @@
     position: relative;
     inline-size: 100%;
     aspect-ratio: 16 / 9;
-    background-color: var(--forma-video-bg-color, var(--media-bg-color));
+    background-color: var(--forma-video-player-background-color, var(--media-background-color));
     border-radius: 4px;
     overflow: hidden;
 }
@@ -35,7 +35,7 @@
     padding-inline: 1rem;
     font-size: 0.875rem;
     text-align: center;
-    color: var(--forma-video-unavailable-color, var(--text-muted-color));
+    color: var(--forma-video-player-unavailable-color, var(--text-muted-color));
 }
 
 .forma-video-player-fallback {
@@ -43,7 +43,7 @@
     padding-block: 0.75rem;
     font-size: 0.875rem;
     text-align: center;
-    color: var(--forma-video-fallback-color, var(--main-color));
+    color: var(--forma-video-player-fallback-color, var(--main-color));
 }
 /* The service replaces its own markup with an iframe, and that player stands in for the link. */
 [role="group"]:has(iframe) > .forma-video-player-fallback {
@@ -62,7 +62,7 @@
     padding: 1rem;
     border: 0;
     background-color: transparent;
-    color: var(--forma-video-facade-color, var(--media-fg-color));
+    color: var(--forma-video-player-facade-color, var(--media-foreground-color));
     text-align: center;
     cursor: pointer;
     touch-action: manipulation;
@@ -88,7 +88,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background-color: var(--forma-video-facade-scrim-color, var(--media-scrim-color));
+    background-color: var(--forma-video-player-facade-scrim-color, var(--media-scrim-color));
 }
 
 .forma-video-player-facade-label,
@@ -104,7 +104,7 @@
 
 .forma-video-player-facade-note {
     font-size: 0.8125rem;
-    color: var(--forma-video-facade-note-color, var(--media-muted-fg-color));
+    color: var(--forma-video-player-facade-note-color, var(--media-muted-foreground-color));
 }
 
 .forma-video-player-facade:focus-visible {

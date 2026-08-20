@@ -30,7 +30,7 @@
 @media (hover: hover) {
     .forma-file-picker-drop-zone:hover {
         border-color: var(--main-color);
-        background-color: var(--hover-bg-color);
+        background-color: var(--hover-background-color);
     }
 }
 
@@ -43,7 +43,7 @@
 .forma-file-picker-drop-zone.forma-file-picker-dragging {
     border-style: solid;
     border-color: var(--main-color);
-    background-color: var(--hover-bg-color);
+    background-color: var(--hover-background-color);
     color: var(--text-color);
 }
 

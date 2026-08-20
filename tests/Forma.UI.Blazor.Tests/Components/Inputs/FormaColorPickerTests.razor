@@ -14,7 +14,7 @@
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaColorPicker @bind-Value="model.Color" Label="Brand colour" />
             </FakeFormHost>);
-            var swatch = cut.Find(".forma-color-swatch");
+            var swatch = cut.Find(".forma-color-picker-swatch");
 
             // Assert
             Assert.Contains("background-color: #FF5533", swatch.GetAttribute("style"));
@@ -33,7 +33,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Equal("#FF5533", cut.Find(".forma-color-hex-input").GetAttribute("value"));
+            Assert.Equal("#FF5533", cut.Find(".forma-color-picker-hex-input").GetAttribute("value"));
         }
 
         [Fact]
@@ -96,7 +96,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Equal("my-picker", cut.Find(".forma-color-hex-input").GetAttribute("data-testid"));
+            Assert.Equal("my-picker", cut.Find(".forma-color-picker-hex-input").GetAttribute("data-testid"));
         }
 
         [Fact]
@@ -112,7 +112,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-color-alpha-row"));
+            Assert.Empty(cut.FindAll(".forma-color-picker-alpha-row"));
         }
 
         [Fact]
@@ -128,7 +128,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Single(cut.FindAll(".forma-color-alpha-row"));
+            Assert.Single(cut.FindAll(".forma-color-picker-alpha-row"));
         }
 
         [Fact]
@@ -142,7 +142,7 @@
             </FakeFormHost>);
 
             // Act
-            await cut.Find(".forma-color-hex-input").ChangeAsync(new ChangeEventArgs { Value = "#00FF00" });
+            await cut.Find(".forma-color-picker-hex-input").ChangeAsync(new ChangeEventArgs { Value = "#00FF00" });
 
             // Assert
             Assert.Equal("#00FF00", model.Color);

@@ -16,7 +16,7 @@
             </FakeFormHost>);
 
             // Assert
-            cut.Find(".forma-toggle-wrapper");
+            cut.Find(".forma-toggle-switch-wrapper");
         }
 
         [Fact]
@@ -83,7 +83,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Equal(expected, cut.Find(".forma-toggle-mark svg path").GetAttribute("d"));
+            Assert.Equal(expected, cut.Find(".forma-toggle-switch-mark svg path").GetAttribute("d"));
         }
 
         [Fact]
@@ -100,7 +100,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Equal(expected, cut.Find(".forma-toggle-mark svg path").GetAttribute("d"));
+            Assert.Equal(expected, cut.Find(".forma-toggle-switch-mark svg path").GetAttribute("d"));
         }
 
         [Fact]
@@ -116,7 +116,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Equal("true", cut.Find(".forma-toggle-track").GetAttribute("aria-hidden"));
+            Assert.Equal("true", cut.Find(".forma-toggle-switch-track").GetAttribute("aria-hidden"));
         }
 
         [Fact]
@@ -130,7 +130,7 @@
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaToggleSwitch @bind-Value="model.Toggle" OnLabel="Enabled" />
             </FakeFormHost>);
-            var label = cut.Find(".forma-toggle-on-label");
+            var label = cut.Find(".forma-toggle-switch-on-label");
 
             // Assert
             Assert.Equal("Enabled", label.TextContent);
@@ -149,7 +149,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-toggle-on-label"));
+            Assert.Empty(cut.FindAll(".forma-toggle-switch-on-label"));
         }
 
         [Fact]
@@ -163,7 +163,7 @@
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaToggleSwitch @bind-Value="model.Toggle" OffLabel="Disabled" />
             </FakeFormHost>);
-            var label = cut.Find(".forma-toggle-off-label");
+            var label = cut.Find(".forma-toggle-switch-off-label");
 
             // Assert
             Assert.Equal("Disabled", label.TextContent);
@@ -182,7 +182,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-toggle-off-label"));
+            Assert.Empty(cut.FindAll(".forma-toggle-switch-off-label"));
         }
 
         [Fact]
@@ -200,8 +200,8 @@
             // Assert
             Assert.Multiple(() =>
             {
-                Assert.Single(cut.FindAll(".forma-toggle-off-label"));
-                Assert.Single(cut.FindAll(".forma-toggle-on-label"));
+                Assert.Single(cut.FindAll(".forma-toggle-switch-off-label"));
+                Assert.Single(cut.FindAll(".forma-toggle-switch-on-label"));
             });
         }
 
@@ -222,7 +222,7 @@
             Assert.Multiple(() =>
             {
                 Assert.NotNull(input.GetAttribute("disabled"));
-                Assert.Contains("disabled", cut.Find(".forma-toggle").ClassList);
+                Assert.Contains("disabled", cut.Find(".forma-toggle-switch").ClassList);
             });
         }
 

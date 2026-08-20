@@ -58,12 +58,12 @@ public sealed partial class FormaStatusBadge : ComponentBase
 
             if (background is not null)
             {
-                declarations.Add($"--forma-status-badge-bg-color: {background};");
+                declarations.Add($"--forma-status-badge-background-color: {background};");
             }
 
             if (foreground is not null)
             {
-                declarations.Add($"--forma-status-badge-fg-color: {foreground};");
+                declarations.Add($"--forma-status-badge-foreground-color: {foreground};");
             }
 
             var hostStyle = HostAttribute("style");

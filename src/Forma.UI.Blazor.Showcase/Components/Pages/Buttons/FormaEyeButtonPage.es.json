@@ -6,7 +6,7 @@
   "Sizes": "Tamaños",
   "Disabled": "Deshabilitado",
   "On a coloured surface": "Sobre una superficie de color",
-  "The glyph follows the surface through --forma-btn-ghost-color and its hover pair rather than a forked stylesheet. Nothing else changes: it reveals here exactly as it does above.": "El símbolo sigue a la superficie mediante --forma-btn-ghost-color y su par de hover, en lugar de una hoja de estilos bifurcada. Nada más cambia: revela aquí igual que arriba.",
+  "The glyph follows the surface through --forma-button-ghost-color and its hover pair rather than a forked stylesheet. Nothing else changes: it reveals here exactly as it does above.": "El símbolo sigue a la superficie mediante --forma-button-ghost-color y su par de hover, en lugar de una hoja de estilos bifurcada. Nada más cambia: revela aquí igual que arriba.",
   "API key": "Clave de API",
   "Show value": "Mostrar valor",
   "Hide value": "Ocultar valor"

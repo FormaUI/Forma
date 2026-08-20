@@ -16,7 +16,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Equal("range", cut.Find(".forma-range-input").GetAttribute("type"));
+            Assert.Equal("range", cut.Find(".forma-slider").GetAttribute("type"));
         }
 
         [Fact]
@@ -48,7 +48,7 @@
             </FakeFormHost>);
 
             // Assert
-            var input = cut.Find(".forma-range-input");
+            var input = cut.Find(".forma-slider");
             Assert.Equal("0", input.GetAttribute("min"));
             Assert.Equal("20", input.GetAttribute("max"));
             Assert.Equal("2", input.GetAttribute("step"));
@@ -67,7 +67,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Equal("1", cut.Find(".forma-range-input").GetAttribute("step"));
+            Assert.Equal("1", cut.Find(".forma-slider").GetAttribute("step"));
         }
 
         [Fact]
@@ -83,7 +83,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Equal("8", cut.Find(".forma-range-value").TextContent);
+            Assert.Equal("8", cut.Find(".forma-slider-value").TextContent);
         }
 
         [Fact]
@@ -99,7 +99,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Equal("8px", cut.Find(".forma-range-value").TextContent);
+            Assert.Equal("8px", cut.Find(".forma-slider-value").TextContent);
         }
 
         [Fact]
@@ -115,7 +115,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Equal("true", cut.Find(".forma-range-value").GetAttribute("aria-hidden"));
+            Assert.Equal("true", cut.Find(".forma-slider-value").GetAttribute("aria-hidden"));
         }
 
         [Fact]
@@ -131,7 +131,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Equal("8px", cut.Find(".forma-range-input").GetAttribute("aria-valuetext"));
+            Assert.Equal("8px", cut.Find(".forma-slider").GetAttribute("aria-valuetext"));
         }
 
         [Fact]
@@ -147,7 +147,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Null(cut.Find(".forma-range-input").GetAttribute("aria-valuetext"));
+            Assert.Null(cut.Find(".forma-slider").GetAttribute("aria-valuetext"));
         }
 
         [Fact]
@@ -161,7 +161,7 @@
             </FakeFormHost>);
 
             // Act
-            cut.Find(".forma-range-input").Input("12");
+            cut.Find(".forma-slider").Input("12");
 
             // Assert
             Assert.Equal(12, model.Number);
@@ -180,7 +180,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.True(cut.Find(".forma-range-input").HasAttribute("disabled"));
+            Assert.True(cut.Find(".forma-slider").HasAttribute("disabled"));
         }
 
         // The html attributes must stay machine-readable while the shown value follows the
@@ -199,7 +199,7 @@
             </FakeFormHost>);
 
             // Assert
-            var input = cut.Find(".forma-range-input");
+            var input = cut.Find(".forma-slider");
             Assert.Equal("0.5", input.GetAttribute("min"));
             Assert.Equal("5", input.GetAttribute("max"));
             Assert.Equal("0.5", input.GetAttribute("step"));
@@ -220,7 +220,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Equal("0,5s", cut.Find(".forma-range-value").TextContent);
+            Assert.Equal("0,5s", cut.Find(".forma-slider-value").TextContent);
         }
 
         [Fact]
@@ -236,7 +236,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.True(cut.Find(".forma-range-input").HasAttribute("disabled"));
+            Assert.True(cut.Find(".forma-slider").HasAttribute("disabled"));
         }
 
         [Fact]

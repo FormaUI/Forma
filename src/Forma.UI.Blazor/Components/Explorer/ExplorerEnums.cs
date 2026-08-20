@@ -76,7 +76,7 @@ public enum ExplorerSortDirection
 }
 
 /// <summary>Specifies how large a media thumbnail renders.</summary>
-public enum ExplorerThumbSize
+public enum ExplorerThumbnailSize
 {
     /// <summary>Fills a grid tile.</summary>
     Tile,

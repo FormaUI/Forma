@@ -7,7 +7,7 @@
 @inject IStringLocale<FormaInputPage> L
 
 <h1>FormaInput</h1>
-<p class="desc">@L["Text input with a floating label that animates above the field on focus or when a value is present. Supports validation, required indicator, and autofill detection."]</p>
+<p class="description">@L["Text input with a floating label that animates above the field on focus or when a value is present. Supports validation, required indicator, and autofill detection."]</p>
 
 <EditForm Model="Model" FormName="field-demo" OnValidSubmit="HandleSubmit">
     <DataAnnotationsValidator />
@@ -46,7 +46,7 @@
 
 <div class="demo-section">
     <h2>@L["Validation"]</h2>
-    <p class="desc">@L["Saving with the project name empty shows the validation message every Forma field renders through the same chrome. Editing the field clears it again."]</p>
+    <p class="description">@L["Saving with the project name empty shows the validation message every Forma field renders through the same chrome. Editing the field clears it again."]</p>
     <div class="demo-box">
         <EditForm Model="ValidationModel" FormName="field-validation" OnValidSubmit="HandleValidationSubmit">
             <DataAnnotationsValidator />

@@ -82,7 +82,7 @@ A project's references are part of its contract, because every consumer inherits
 ## Naming
 
 - Do prefix component tags with `Forma`: `<FormaModal>`, `<FormaDataGrid>`.
-- Do prefix CSS classes with `forma-`: `.forma-toggle-track`.
+- Do prefix CSS classes with `forma-`: `.forma-toggle-switch-track`.
 - Do leave C# services, enums, and records unprefixed because namespaces disambiguate them: `ToastService`, `ModalSize`, `BreadcrumbItem`.
 - Do give a supporting type its owning folder's name as a prefix only where that reads well and adds meaning, as `ExplorerAction`, `ExplorerContext`, and `ExplorerSelection` do against `System.Action` and a bare `Context`; `Data/` needs no `DataXxx` and takes none.
 - Do find a better name when a prefix is needed to disambiguate but reads badly.
@@ -201,7 +201,7 @@ JS-free is the default, not a prohibition.
 - Do use logical properties such as `margin-block-end`, `inset-inline-start`, `padding-inline`, and `text-align: start` so RTL works without a second stylesheet.
 - Do read colours, fonts, and shadows from `src/Forma.UI.Blazor/wwwroot/forma-tokens.css`.
 - Do end every custom property containing a colour with `-color`.
-- Do make component-local colour knobs fall back to a token: `var(--forma-toggle-on-bg-color, var(--main-color))`.
+- Do make component-local colour knobs fall back to a token: `var(--forma-toggle-switch-on-background-color, var(--main-color))`.
 - Do reuse existing tokens such as `--main-color` and `--focus-color`; `--main-dark-color`, `--main-light-color`, and `--focus-color` derive from `--main-color`.
 - Do keep `forma-tokens.css` value-only, `forma-reset.css` limited to cross-browser normalization, and `forma-base.css` limited to the opt-in element-level look.
 - Do keep component rules in the component's isolated stylesheet.
@@ -390,7 +390,7 @@ Every component requires `src/Forma.UI.Blazor.Showcase/Components/Pages/{Categor
 @inject IStringLocalizer<FormaXPage> L
 ```
 
-- Do structure the page as `<h1>` plus `<p class="desc">`, followed by one `demo-section` containing `<h2>` and `demo-box` per scenario.
+- Do structure the page as `<h1>` plus `<p class="description">`, followed by one `demo-section` containing `<h2>` and `demo-box` per scenario.
 - Do render the component in every state it can enter, not merely name the state: default, filled, required, disabled, invalid, plus whatever the component adds — empty collection, no search matches, over-limit count, indeterminate, loading.
 - Do make each state reachable on the page. A validation state needs a model rule and a submit, not a paragraph describing one.
 - Do treat the component's translation file as the inventory: if a key in `FormaX.he.json` cannot be displayed in the Showcase, a state is missing.

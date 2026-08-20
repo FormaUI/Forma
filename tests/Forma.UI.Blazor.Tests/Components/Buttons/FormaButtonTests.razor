@@ -11,7 +11,7 @@
 
             // Act
             var cut = ctx.Render(@<FormaButton>Save</FormaButton>);
-            var button = cut.Find(".forma-btn");
+            var button = cut.Find(".forma-button");
 
             // Assert
             Assert.Equal("BUTTON", button.TagName);
@@ -28,15 +28,15 @@
             var cut = ctx.Render(@<FormaButton>Save</FormaButton>);
 
             // Assert
-            Assert.Contains("forma-btn-secondary", cut.Find(".forma-btn").ClassName);
+            Assert.Contains("forma-button-secondary", cut.Find(".forma-button").ClassName);
         }
 
         [Theory]
-        [InlineData(ButtonVariant.Primary, "forma-btn-primary")]
-        [InlineData(ButtonVariant.Secondary, "forma-btn-secondary")]
-        [InlineData(ButtonVariant.Tertiary, "forma-btn-tertiary")]
-        [InlineData(ButtonVariant.Danger, "forma-btn-danger")]
-        [InlineData(ButtonVariant.Ghost, "forma-btn-ghost")]
+        [InlineData(ButtonVariant.Primary, "forma-button-primary")]
+        [InlineData(ButtonVariant.Secondary, "forma-button-secondary")]
+        [InlineData(ButtonVariant.Tertiary, "forma-button-tertiary")]
+        [InlineData(ButtonVariant.Danger, "forma-button-danger")]
+        [InlineData(ButtonVariant.Ghost, "forma-button-ghost")]
         public void Should_render_the_class_of_the_requested_variant(ButtonVariant variant, string expected)
         {
             // Arrange
@@ -46,7 +46,7 @@
             var cut = ctx.Render(@<FormaButton Variant="variant">Save</FormaButton>);
 
             // Assert
-            Assert.Contains(expected, cut.Find(".forma-btn").ClassName);
+            Assert.Contains(expected, cut.Find(".forma-button").ClassName);
         }
 
         [Fact]
@@ -60,8 +60,8 @@
             var mini = ctx.Render(@<FormaButton Size="ButtonSize.Mini">Save</FormaButton>);
 
             // Assert
-            Assert.DoesNotContain("forma-btn-mini", normal.Find(".forma-btn").ClassName);
-            Assert.Contains("forma-btn-mini", mini.Find(".forma-btn").ClassName);
+            Assert.DoesNotContain("forma-button-mini", normal.Find(".forma-button").ClassName);
+            Assert.Contains("forma-button-mini", mini.Find(".forma-button").ClassName);
         }
 
         [Fact]
@@ -75,8 +75,8 @@
             var icon = ctx.Render(@<FormaButton IconOnly="true">X</FormaButton>);
 
             // Assert
-            Assert.DoesNotContain("forma-btn-icon", text.Find(".forma-btn").ClassName);
-            Assert.Contains("forma-btn-icon", icon.Find(".forma-btn").ClassName);
+            Assert.DoesNotContain("forma-button-icon", text.Find(".forma-button").ClassName);
+            Assert.Contains("forma-button-icon", icon.Find(".forma-button").ClassName);
         }
 
         [Theory]
@@ -92,7 +92,7 @@
             var cut = ctx.Render(@<FormaButton Type="type">Save</FormaButton>);
 
             // Assert
-            Assert.Equal(expected, cut.Find(".forma-btn").GetAttribute("type"));
+            Assert.Equal(expected, cut.Find(".forma-button").GetAttribute("type"));
         }
 
         [Fact]
@@ -104,7 +104,7 @@
 
             // Act
             var cut = ctx.Render(@<FormaButton OnClick="() => clicks++">Save</FormaButton>);
-            cut.Find(".forma-btn").Click();
+            cut.Find(".forma-button").Click();
 
             // Assert
             Assert.Equal(1, clicks);
@@ -120,7 +120,7 @@
             var cut = ctx.Render(@<FormaButton Disabled="true">Save</FormaButton>);
 
             // Assert
-            Assert.True(cut.Find(".forma-btn").HasAttribute("disabled"));
+            Assert.True(cut.Find(".forma-button").HasAttribute("disabled"));
         }
 
         [Fact]
@@ -131,10 +131,10 @@
 
             // Act
             var cut = ctx.Render(@<FormaButton Busy="true">Save</FormaButton>);
-            var button = cut.Find(".forma-btn");
+            var button = cut.Find(".forma-button");
 
             // Assert
-            Assert.Contains("forma-btn-busy", button.ClassName);
+            Assert.Contains("forma-button-busy", button.ClassName);
             Assert.Equal("true", button.GetAttribute("aria-busy"));
             Assert.Equal("true", button.GetAttribute("aria-disabled"));
             Assert.False(button.HasAttribute("disabled"));
@@ -149,7 +149,7 @@
 
             // Act
             var cut = ctx.Render(@<FormaButton Busy="true" OnClick="() => clicks++">Save</FormaButton>);
-            cut.Find(".forma-btn").Click();
+            cut.Find(".forma-button").Click();
 
             // Assert
             Assert.Equal(0, clicks);
@@ -163,7 +163,7 @@
 
             // Act
             var cut = ctx.Render(@<FormaButton>Save</FormaButton>);
-            var button = cut.Find(".forma-btn");
+            var button = cut.Find(".forma-button");
 
             // Assert
             Assert.False(button.HasAttribute("aria-busy"));
@@ -178,10 +178,10 @@
 
             // Act
             var cut = ctx.Render(@<FormaButton class="row-action">Save</FormaButton>);
-            var className = cut.Find(".forma-btn").ClassName;
+            var className = cut.Find(".forma-button").ClassName;
 
             // Assert
-            Assert.Contains("forma-btn-secondary", className);
+            Assert.Contains("forma-button-secondary", className);
             Assert.Contains("row-action", className);
         }
 
@@ -195,7 +195,7 @@
             var cut = ctx.Render(@<FormaButton aria-label="Delete row" />);
 
             // Assert
-            Assert.Equal("Delete row", cut.Find(".forma-btn").GetAttribute("aria-label"));
+            Assert.Equal("Delete row", cut.Find(".forma-button").GetAttribute("aria-label"));
         }
     }
 }

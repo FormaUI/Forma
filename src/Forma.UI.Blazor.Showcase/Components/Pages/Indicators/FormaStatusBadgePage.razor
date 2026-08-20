@@ -4,11 +4,11 @@
 @using Forma.UI.Style.Css
 
 <h1>FormaStatusBadge</h1>
-<p class="desc">@L["Pill-shaped status label. The application defines its own statuses and colours; the library ships none."]</p>
+<p class="description">@L["Pill-shaped status label. The application defines its own statuses and colours; the library ships none."]</p>
 
 <div class="demo-section">
     <h2>@L["Application statuses"]</h2>
-    <p class="desc">@L["Registered once at startup, then referenced by name."]</p>
+    <p class="description">@L["Registered once at startup, then referenced by name."]</p>
     <div class="demo-box" style="display: flex; gap: 8px; flex-wrap: wrap;">
         <FormaStatusBadge Text="@L["Draft"]" Status="draft" />
         <FormaStatusBadge Text="@L["Scheduled"]" Status="scheduled" />
@@ -20,7 +20,7 @@
 
 <div class="demo-section">
     <h2>@L["A second vocabulary"]</h2>
-    <p class="desc">@L["The same component with an unrelated set of statuses, registered by the page itself."]</p>
+    <p class="description">@L["The same component with an unrelated set of statuses, registered by the page itself."]</p>
     <div class="demo-box" style="display: flex; gap: 8px; flex-wrap: wrap;">
         @foreach (var status in OrderStatuses)
         {
@@ -31,7 +31,7 @@
 
 <div class="demo-section">
     <h2>@L["Colours without a status"]</h2>
-    <p class="desc">@L["One-off badges can pass colours directly instead of registering a status."]</p>
+    <p class="description">@L["One-off badges can pass colours directly instead of registering a status."]</p>
     <div class="demo-box" style="display: flex; gap: 8px; flex-wrap: wrap;">
         <FormaStatusBadge Text="@L["Shipped"]"
                           Background="CssColor.FromRgba(111, 66, 193, 0.14)" Foreground="CssColor.FromHex(0x59359a)" />
@@ -42,7 +42,7 @@
 
 <div class="demo-section">
     <h2>@L["Overriding a status glyph"]</h2>
-    <p class="desc">@L["A badge shows the glyph its status registered, unless it is given one of its own."]</p>
+    <p class="description">@L["A badge shows the glyph its status registered, unless it is given one of its own."]</p>
     <div class="demo-box" style="display: flex; gap: 8px; flex-wrap: wrap;">
         <FormaStatusBadge Text="@L["Pending"]" Status="pending" />
         <FormaStatusBadge Text="@L["Pending"]" Status="pending" Marker="Glyph.CircleExclamation" />
@@ -52,7 +52,7 @@
 
 <div class="demo-section">
     <h2>@L["Fallback"]</h2>
-    <p class="desc">@L["An unregistered status, or no status at all, falls back to the neutral default."]</p>
+    <p class="description">@L["An unregistered status, or no status at all, falls back to the neutral default."]</p>
     <div class="demo-box" style="display: flex; gap: 8px; flex-wrap: wrap;">
         <FormaStatusBadge Text="@L["Unknown status"]" Status="never-registered" />
         <FormaStatusBadge Text="@L["No status"]" />

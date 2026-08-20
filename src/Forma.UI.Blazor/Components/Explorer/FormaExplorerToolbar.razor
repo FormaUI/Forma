@@ -3,7 +3,7 @@
 @using Forma.UI.Blazor.Components.Interactive
 
 <div class="forma-explorer-toolbar">
-    <span class="forma-explorer-sr-only" role="status" aria-live="polite">@SelectionAnnouncement</span>
+    <span class="forma-explorer-visually-hidden" role="status" aria-live="polite">@SelectionAnnouncement</span>
 
     @if (SelectedCount > 0)
     {
@@ -11,12 +11,12 @@
             <div class="forma-explorer-selection-actions">
                 @if (FileOptions.AllowDelete)
                 {
-                    <FormaButton Variant="ButtonVariant.Danger" Size="ButtonSize.Mini" class="forma-explorer-delete-btn" OnClick="OnDelete">
+                    <FormaButton Variant="ButtonVariant.Danger" Size="ButtonSize.Mini" class="forma-explorer-delete-button" OnClick="OnDelete">
                         <FormaGlyph Name="Glyph.Trash" />
                         @L["Delete"]
                     </FormaButton>
                 }
-                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-explorer-clear-btn" OnClick="OnClearSelection">
+                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-explorer-clear-button" OnClick="OnClearSelection">
                     <FormaGlyph Name="Glyph.SquareMinus" />
                     @L["Clear"]
                 </FormaButton>
@@ -24,7 +24,7 @@
 
             <div class="forma-explorer-selection-status">
                 <span class="forma-explorer-selection-label">@L[$"{SelectedCount} selected"]</span>
-                <FormaCloseButton class="forma-explorer-exit-select-btn"
+                <FormaCloseButton class="forma-explorer-exit-select-button"
                                   Label="@L["Leave Selection Mode"]"
                                   OnClick="OnToggleSelectMode" />
             </div>
@@ -35,7 +35,7 @@
     <div class="forma-explorer-toolbar-left">
         <FormaButton Variant="@(IsSelectMode ? ButtonVariant.Primary : ButtonVariant.Ghost)"
                      Size="ButtonSize.Mini"
-                     class="forma-explorer-select-mode-btn"
+                     class="forma-explorer-select-mode-button"
                      aria-pressed="@(IsSelectMode ? "true" : "false")"
                      OnClick="OnToggleSelectMode">
             @if (IsSelectMode)
@@ -51,14 +51,14 @@
         </FormaButton>
         @if (FileOptions.AllowFolderCreate && ShowNewFolder)
         {
-            <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-explorer-new-folder-btn" OnClick="OnFolderCreate">
+            <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-explorer-new-folder-button" OnClick="OnFolderCreate">
                 <FormaGlyph Name="Glyph.FolderPlus" />
                 @L["New Folder"]
             </FormaButton>
         }
         @if (FileOptions.AllowUpload)
         {
-            <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-explorer-upload-btn" OnClick="OnToggleUpload">
+            <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-explorer-upload-button" OnClick="OnToggleUpload">
                 <FormaGlyph Name="Glyph.CloudArrowUp" />
                 @L["Upload"]
             </FormaButton>
@@ -69,21 +69,21 @@
         <!-- View Mode Switcher -->
         <div class="forma-explorer-view-modes" role="group" aria-label="@L["View Mode"]">
             <button type="button"
-                    class="forma-explorer-view-btn @(ViewMode == ExplorerViewMode.Thumbnails ? "is-active" : "")"
+                    class="forma-explorer-view-button @(ViewMode == ExplorerViewMode.Thumbnails ? "is-active" : "")"
                     aria-label="@L["Thumbnails"]"
                     aria-pressed="@(ViewMode == ExplorerViewMode.Thumbnails ? "true" : "false")"
                     @onclick="() => OnViewModeChanged.InvokeAsync(ExplorerViewMode.Thumbnails)">
                 <FormaGlyph Name="Glyph.BorderAll" />
             </button>
             <button type="button"
-                    class="forma-explorer-view-btn @(ViewMode == ExplorerViewMode.Details ? "is-active" : "")"
+                    class="forma-explorer-view-button @(ViewMode == ExplorerViewMode.Details ? "is-active" : "")"
                     aria-label="@L["Details"]"
                     aria-pressed="@(ViewMode == ExplorerViewMode.Details ? "true" : "false")"
                     @onclick="() => OnViewModeChanged.InvokeAsync(ExplorerViewMode.Details)">
                 <FormaGlyph Name="Glyph.TableList" />
             </button>
             <button type="button"
-                    class="forma-explorer-view-btn @(ViewMode == ExplorerViewMode.List ? "is-active" : "")"
+                    class="forma-explorer-view-button @(ViewMode == ExplorerViewMode.List ? "is-active" : "")"
                     aria-label="@L["List"]"
                     aria-pressed="@(ViewMode == ExplorerViewMode.List ? "true" : "false")"
                     @onclick="() => OnViewModeChanged.InvokeAsync(ExplorerViewMode.List)">

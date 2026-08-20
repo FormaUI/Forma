@@ -6,7 +6,7 @@
   "Sizes": "גדלים",
   "Disabled": "מושבת",
   "On a coloured surface": "על משטח צבעוני",
-  "The glyph follows the surface through --forma-btn-ghost-color and its hover pair rather than a forked stylesheet. Nothing else changes: it reveals here exactly as it does above.": "הסמל עוקב אחר המשטח דרך ‎--forma-btn-ghost-color‎ וזוג הריחוף שלו, במקום גיליון סגנונות מפוצל. שום דבר אחר אינו משתנה: הוא חושף כאן בדיוק כפי שהוא חושף למעלה.",
+  "The glyph follows the surface through --forma-button-ghost-color and its hover pair rather than a forked stylesheet. Nothing else changes: it reveals here exactly as it does above.": "הסמל עוקב אחר המשטח דרך ‎--forma-button-ghost-color‎ וזוג הריחוף שלו, במקום גיליון סגנונות מפוצל. שום דבר אחר אינו משתנה: הוא חושף כאן בדיוק כפי שהוא חושף למעלה.",
   "API key": "מפתח API",
   "Show value": "הצג ערך",
   "Hide value": "הסתר ערך"

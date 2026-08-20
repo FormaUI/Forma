@@ -5,7 +5,7 @@
 @inject IStringLocale<FormaCheckBoxPage> L
 
 <h1>FormaCheckBox</h1>
-<p class="desc">@L["A styled checkbox with a script-driven indeterminate state, and an option to suppress the native toggle so the caller owns the checked state, as a tri-state select-all does."]</p>
+<p class="description">@L["A styled checkbox with a script-driven indeterminate state, and an option to suppress the native toggle so the caller owns the checked state, as a tri-state select-all does."]</p>
 
 <div class="demo-section">
     <h2>@L["Basic"]</h2>
@@ -25,7 +25,7 @@
 
 <div class="demo-section">
     <h2>@L["Indeterminate"]</h2>
-    <p class="desc">@L["The parent checkbox reflects and controls the state of its children, showing a dash when only some are checked."]</p>
+    <p class="description">@L["The parent checkbox reflects and controls the state of its children, showing a dash when only some are checked."]</p>
     <div class="demo-box">
         <FormaCheckBox Checked="@AllChildrenChecked" Indeterminate="@SomeChildrenChecked" PreventDefault="true" OnClick="ToggleAllChildren">@L["Select all"]</FormaCheckBox>
         <div class="demo-row demo-checkbox-children">

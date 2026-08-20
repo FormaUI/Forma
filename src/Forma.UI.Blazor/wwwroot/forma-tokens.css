@@ -34,12 +34,12 @@
     --dark-border-color: rgba(98, 105, 118, 0.31);
 
     /* Surfaces */
-    --input-bg-color: #fff;
-    --modal-bg-color: #fafbfc;
-    --hover-bg-color: rgba(98, 105, 118, 0.06);
-    --media-bg-color: #000;
-    --media-fg-color: #fff;
-    --media-muted-fg-color: rgba(255, 255, 255, 0.72);
+    --input-background-color: #fff;
+    --modal-background-color: #fafbfc;
+    --hover-background-color: rgba(98, 105, 118, 0.06);
+    --media-background-color: #000;
+    --media-foreground-color: #fff;
+    --media-muted-foreground-color: rgba(255, 255, 255, 0.72);
     --media-scrim-color: rgba(0, 0, 0, 0.7);
 
     /* Status colors */
@@ -49,7 +49,7 @@
     --info-color: #307fdd;
 
     /* Shadows */
-    --shadow-sm: rgba(30, 41, 59, 0.04) 0 2px 4px 0;
-    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
-    --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.18);
+    --shadow-small: rgba(30, 41, 59, 0.04) 0 2px 4px 0;
+    --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.12);
+    --shadow-large: 0 8px 30px rgba(0, 0, 0, 0.18);
 }

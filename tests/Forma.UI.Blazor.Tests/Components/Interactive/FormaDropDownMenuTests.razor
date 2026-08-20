@@ -215,7 +215,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDropDownMenu class="btn btn-sec">
+                @<FormaDropDownMenu class="button button-secondary">
                     <Trigger>Options</Trigger>
                     <ChildContent><FormaDropDownMenuItem>Print</FormaDropDownMenuItem></ChildContent>
                 </FormaDropDownMenu>);
@@ -225,8 +225,8 @@
             Assert.Multiple(() =>
             {
                 Assert.Contains("forma-dropdown-menu-trigger", classes);
-                Assert.Contains("btn", classes);
-                Assert.Contains("btn-sec", classes);
+                Assert.Contains("button", classes);
+                Assert.Contains("button-secondary", classes);
             });
         }
 
@@ -247,9 +247,9 @@
             var classes = cut.Find("button").ClassList;
             Assert.Multiple(() =>
             {
-                Assert.Contains("forma-btn-danger", classes);
-                Assert.Contains("forma-btn-mini", classes);
-                Assert.Contains("forma-btn-icon", classes);
+                Assert.Contains("forma-button-danger", classes);
+                Assert.Contains("forma-button-mini", classes);
+                Assert.Contains("forma-button-icon", classes);
             });
         }
 
@@ -267,7 +267,7 @@
                 </FormaDropDownMenu>);
 
             // Assert
-            Assert.Contains("forma-btn-secondary", cut.Find("button").ClassList);
+            Assert.Contains("forma-button-secondary", cut.Find("button").ClassList);
         }
 
         [Fact]

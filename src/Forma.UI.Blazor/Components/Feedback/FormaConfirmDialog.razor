@@ -3,10 +3,10 @@
           Size="ModalSize.Small"
           Options="ModalOptions">
     <Body>
-        <p class="forma-confirm-message">@_request?.Message</p>
+        <p class="forma-confirm-dialog-message">@_request?.Message</p>
     </Body>
     <Footer>
-        <div class="forma-confirm-actions">
+        <div class="forma-confirm-dialog-actions">
             <FormaButton Variant="ButtonVariant.Secondary" OnClick="HandleCancel">
                 @_request?.CancelText
             </FormaButton>

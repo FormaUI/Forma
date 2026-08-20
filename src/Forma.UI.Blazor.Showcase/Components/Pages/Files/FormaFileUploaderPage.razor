@@ -4,11 +4,11 @@
 @using Forma.UI.Blazor.Components.Files
 
 <h1>FormaFileUploader</h1>
-<p class="desc">@L["The half that moves the bytes. A picker chooses files off the device; this stores each one through an IFileStore the host supplies, showing progress per file and leaving the destination entirely to the application."]</p>
+<p class="description">@L["The half that moves the bytes. A picker chooses files off the device; this stores each one through an IFileStore the host supplies, showing progress per file and leaving the destination entirely to the application."]</p>
 
 <div class="demo-section">
     <h2>@L["Storing as soon as files are picked"]</h2>
-    <p class="desc">@L["AutoStart is on, so assigning a new selection begins the transfer without another gesture. This store takes anything."]</p>
+    <p class="description">@L["AutoStart is on, so assigning a new selection begins the transfer without another gesture. This store takes anything."]</p>
     <div class="demo-box">
         <FormaFilePicker OnFilesSelected="@(files => Accept("auto", files))" />
         <FormaFileUploader Store="@Store("auto")"
@@ -26,7 +26,7 @@
 
 <div class="demo-section">
     <h2>@L["Starting by hand"]</h2>
-    <p class="desc">@L["With AutoStart off the set waits, so a host can confirm or edit the queue before anything crosses the wire."]</p>
+    <p class="description">@L["With AutoStart off the set waits, so a host can confirm or edit the queue before anything crosses the wire."]</p>
     <div class="demo-box">
         <FormaFilePicker OnFilesSelected="@(files => Accept("manual", files))" />
         <FormaFileUploader Store="@Store("manual")"
@@ -44,7 +44,7 @@
 
 <div class="demo-section">
     <h2>@L["A small quota, where only some of the set fits"]</h2>
-    <p class="desc">@((MarkupString)L[$"This store refuses anything over {SmallMarkup}, so a photo is turned away while a text file goes through. Each refusal is reported on its own and the rest of the set still continues."].Value)</p>
+    <p class="description">@((MarkupString)L[$"This store refuses anything over {SmallMarkup}, so a photo is turned away while a text file goes through. Each refusal is reported on its own and the rest of the set still continues."].Value)</p>
     <div class="demo-box">
         <FormaFilePicker OnFilesSelected="@(files => Accept("small", files))" />
         <FormaFileUploader Store="@Store("small")"
@@ -63,7 +63,7 @@
 
 <div class="demo-section">
     <h2>@L["A medium quota, stopping at the first failure"]</h2>
-    <p class="desc">@((MarkupString)L[$"This store takes up to {MediumMarkup}. With StopOnFailure the set gives up as soon as one file is refused, and everything after it is marked skipped rather than attempted."].Value)</p>
+    <p class="description">@((MarkupString)L[$"This store takes up to {MediumMarkup}. With StopOnFailure the set gives up as soon as one file is refused, and everything after it is marked skipped rather than attempted."].Value)</p>
     <div class="demo-box">
         <FormaFilePicker OnFilesSelected="@(files => Accept("stop", files))" />
         <FormaFileUploader Store="@Store("stop")"
@@ -83,7 +83,7 @@
 
 <div class="demo-section">
     <h2>@L["A large quota, undoing a set that failed"]</h2>
-    <p class="desc">@((MarkupString)L[$"This store takes up to {LargeMarkup}. With RollbackOnFailure everything already stored is removed again when any file fails, so the set is all or nothing — watch the store's contents empty out."].Value)</p>
+    <p class="description">@((MarkupString)L[$"This store takes up to {LargeMarkup}. With RollbackOnFailure everything already stored is removed again when any file fails, so the set is all or nothing — watch the store's contents empty out."].Value)</p>
     <div class="demo-box">
         <FormaFilePicker OnFilesSelected="@(files => Accept("rollback", files))" />
         <FormaFileUploader Store="@Store("rollback")"
@@ -103,11 +103,11 @@
 
 <div class="demo-section">
     <h2>@L["Uploads across a range of file sizes"]</h2>
-    <p class="desc">@L["The sandbox contains generated 4 KB, 256 KB, 2 MB, 100 MB, and 1 GB files. Pick any combination to exercise short and sustained transfers from:"]</p>
+    <p class="description">@L["The sandbox contains generated 4 KB, 256 KB, 2 MB, 100 MB, and 1 GB files. Pick any combination to exercise short and sustained transfers from:"]</p>
     <p><code><bdi dir="ltr">@Sandbox.AssetDisplayPath</bdi></code></p>
-    <p class="desc">@L["Every new selection clears the upload directory before its first file is written:"]</p>
+    <p class="description">@L["Every new selection clears the upload directory before its first file is written:"]</p>
     <p><code><bdi dir="ltr">@Sandbox.UploadDisplayPath</bdi></code></p>
-    <p class="desc">@L["Every measurement is switched on here through FormaFileUploaderOptions, so each file and the set as a whole report bytes, elapsed time, speed, and the time remaining."]</p>
+    <p class="description">@L["Every measurement is switched on here through FormaFileUploaderOptions, so each file and the set as a whole report bytes, elapsed time, speed, and the time remaining."]</p>
     <div class="demo-box">
         <FormaFilePicker Prompt="@L["Pick sandbox files of any size"]"
                          OnFilesSelected="@(files => Accept("disk", files))" />
@@ -128,7 +128,7 @@
 
 <div class="demo-section">
     <h2>@L["The list on its own"]</h2>
-    <p class="desc">@L["ShowTotalMetrics and ShowSummary are switched off here, so nothing is reported beneath the files: no totals line and no status message. Each row still carries its own measurements."]</p>
+    <p class="description">@L["ShowTotalMetrics and ShowSummary are switched off here, so nothing is reported beneath the files: no totals line and no status message. Each row still carries its own measurements."]</p>
     <div class="demo-box">
         <FormaFilePicker OnFilesSelected="@(files => Accept("bare", files))" />
         <FormaFileUploader Store="@Store("bare")"
@@ -148,7 +148,7 @@
 
 <div class="demo-section">
     <h2>@L["A slow store, and cancelling it"]</h2>
-    <p class="desc">@L["This store pauses between reads so the progress bar is watchable and the cancel action is reachable. Anything not yet stored when you cancel is marked cancelled."]</p>
+    <p class="description">@L["This store pauses between reads so the progress bar is watchable and the cancel action is reachable. Anything not yet stored when you cancel is marked cancelled."]</p>
     <div class="demo-box">
         <FormaFilePicker OnFilesSelected="@(files => Accept("slow", files))" />
         <FormaFileUploader Store="@Store("slow")"

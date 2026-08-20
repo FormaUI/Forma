@@ -29,7 +29,7 @@
     padding: 8px 12px;
     border: 1px solid var(--border-color);
     border-radius: 6px;
-    background: var(--forma-context-toolbar-bg-color, color-mix(in srgb, var(--main-color, #0d6efd) 8%, transparent));
+    background: var(--forma-context-toolbar-background-color, color-mix(in srgb, var(--main-color, #0d6efd) 8%, transparent));
 }
 
 .forma-context-toolbar-caption {

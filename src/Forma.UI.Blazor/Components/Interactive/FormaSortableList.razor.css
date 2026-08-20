@@ -23,7 +23,7 @@
     padding-inline: 0.5rem;
     border: 1px solid var(--border-color, rgba(98, 105, 118, 0.16));
     border-radius: 6px;
-    background: var(--forma-sortable-list-bg-color, #fff);
+    background: var(--forma-sortable-list-background-color, #fff);
 }
 
 .forma-sortable-list-item.forma-sortable-list-dragging {
@@ -90,7 +90,7 @@
 
 @media (hover: hover) {
     .forma-sortable-list-handle:hover:not(:disabled) {
-        background: var(--hover-bg-color, rgba(98, 105, 118, 0.06));
+        background: var(--hover-background-color, rgba(98, 105, 118, 0.06));
     }
 }
 

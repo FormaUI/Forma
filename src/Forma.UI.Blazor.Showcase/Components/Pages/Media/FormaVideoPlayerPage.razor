@@ -5,12 +5,12 @@
 @inject IStringLocale<FormaVideoPlayerPage> L
 
 <h1>FormaVideoPlayer</h1>
-<p class="desc">@L["A fluid 16:9 player. Give it any address and the player hands it to whichever provider recognises it, so a watch link, a share link and an embed link all work without saying which service they belong to."]</p>
-<p class="desc">@L["Every service demo below sets DeferLoading to false so its player can be reviewed at a glance. Left alone, each would wait behind a play control, as the section on holding a player back shows."]</p>
+<p class="description">@L["A fluid 16:9 player. Give it any address and the player hands it to whichever provider recognises it, so a watch link, a share link and an embed link all work without saying which service they belong to."]</p>
+<p class="description">@L["Every service demo below sets DeferLoading to false so its player can be reviewed at a glance. Left alone, each would wait behind a play control, as the section on holding a player back shows."]</p>
 
 <div class="demo-section">
     <h2>@L["YouTube"]</h2>
-    <p class="desc">@L["Given a watch address; the player rewrites it to an embed URL of its own."]</p>
+    <p class="description">@L["Given a watch address; the player rewrites it to an embed URL of its own."]</p>
     <div class="demo-box">
         <FormaVideoPlayer Source="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
                           Title="@L["Sample YouTube video"]"
@@ -29,7 +29,7 @@
 
 <div class="demo-section">
     <h2>@L["Twitch"]</h2>
-    <p class="desc">@L["Twitch demands the name of the page embedding it, which the player supplies from the address bar. A past broadcast, a live channel and a clip are three different addresses on two different hosts."]</p>
+    <p class="description">@L["Twitch demands the name of the page embedding it, which the player supplies from the address bar. A past broadcast, a live channel and a clip are three different addresses on two different hosts."]</p>
     <div class="demo-box">
         <FormaVideoPlayer Source="https://www.twitch.tv/twitch"
                           Title="@L["Sample Twitch broadcast"]"
@@ -39,7 +39,7 @@
 
 <div class="demo-section">
     <h2>@L["Holding a player back until it is asked for"]</h2>
-    <p class="desc">@L["By default nothing is fetched from a hosting service until a reader presses play, so an article page carrying an embed leaks neither an address nor a visit. Autoplay overrides it, and a self-hosted file never needs it."]</p>
+    <p class="description">@L["By default nothing is fetched from a hosting service until a reader presses play, so an article page carrying an embed leaks neither an address nor a visit. Autoplay overrides it, and a self-hosted file never needs it."]</p>
     <div class="demo-box">
         <FormaVideoPlayer Source="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
                           Title="@L["Sample YouTube video"]" />
@@ -51,7 +51,7 @@
 
 <div class="demo-section">
     <h2>@L["With a still to look at"]</h2>
-    <p class="desc">@L["The still comes from the host's own server, never from the video's service — a poster fetched from the service would give away the visit the play control is there to withhold. It also stands in for a self-hosted file before it loads."]</p>
+    <p class="description">@L["The still comes from the host's own server, never from the video's service — a poster fetched from the service would give away the visit the play control is there to withhold. It also stands in for a self-hosted file before it loads."]</p>
     <div class="demo-box">
         <FormaVideoPlayer Source="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
                           Title="@L["Sample YouTube video"]"
@@ -66,7 +66,7 @@
 
 <div class="demo-section">
     <h2>@L["Services that bring their own player"]</h2>
-    <p class="desc">@L["TikTok, Instagram, Facebook and X publish markup and a script rather than an embed address, and each sizes its own player — so the 16:9 frame steps aside for them. Block those scripts, as an ad blocker does, and a link to the video takes the player's place."]</p>
+    <p class="description">@L["TikTok, Instagram, Facebook and X publish markup and a script rather than an embed address, and each sizes its own player — so the 16:9 frame steps aside for them. Block those scripts, as an ad blocker does, and a link to the video takes the player's place."]</p>
     <div class="demo-box">
         <FormaVideoPlayer Source="@TikTokSample" Title="@L["Sample TikTok video"]" DeferLoading="false" />
     </div>
@@ -83,7 +83,7 @@
 
 <div class="demo-section">
     <h2>@L["A self-hosted file"]</h2>
-    <p class="desc">@L["No embed and no provider chrome — the browser's own player loads the file directly."]</p>
+    <p class="description">@L["No embed and no provider chrome — the browser's own player loads the file directly."]</p>
     <div class="demo-box">
         <FormaVideoPlayer Source="/media/sample.mp4"
                           Title="@L["Sample video file"]" />
@@ -92,7 +92,7 @@
 
 <div class="demo-section">
     <h2>@L["Playing on arrival"]</h2>
-    <p class="desc">@L["Autoplay is always muted, because browsers block a video that starts with sound."]</p>
+    <p class="description">@L["Autoplay is always muted, because browsers block a video that starts with sound."]</p>
     <div class="demo-box">
         <FormaVideoPlayer Source="/media/sample.mp4"
                           Title="@L["Sample video file"]"
@@ -102,7 +102,7 @@
 
 <div class="demo-section">
     <h2>@L["With captions"]</h2>
-    <p class="desc">@L["A self-hosted video carries its own caption files. The English track is the default; open the player's caption menu to switch to Spanish."]</p>
+    <p class="description">@L["A self-hosted video carries its own caption files. The English track is the default; open the player's caption menu to switch to Spanish."]</p>
     <div class="demo-box">
         <FormaVideoPlayer Source="/media/sample.mp4"
                           Title="@L["Sample video file"]"
@@ -112,7 +112,7 @@
 
 <div class="demo-section">
     <h2>@L["An address no player can reach"]</h2>
-    <p class="desc">@L["A scheme the browser will never fetch leaves a notice in place of the player rather than an empty frame or a crash."]</p>
+    <p class="description">@L["A scheme the browser will never fetch leaves a notice in place of the player rather than an empty frame or a crash."]</p>
     <div class="demo-box">
         <FormaVideoPlayer Source="ftp://example.com/stage-1.mp4"
                           Title="@L["Sample video file"]" />
@@ -121,7 +121,7 @@
 
 <div class="demo-section">
     <h2>@L["An address only the host understands"]</h2>
-    <p class="desc">@L["This page registers a provider that claims custom: addresses and resolves them against its own storage. A host's providers are tried before the services this library recognises, so one can teach the player an address shape the library never knew — or take over an address it would otherwise claim."]</p>
+    <p class="description">@L["This page registers a provider that claims custom: addresses and resolves them against its own storage. A host's providers are tried before the services this library recognises, so one can teach the player an address shape the library never knew — or take over an address it would otherwise claim."]</p>
     <div class="demo-box">
         <FormaVideoPlayer Source="custom:sample" Title="@L["Sample video file"]" />
     </div>
@@ -129,7 +129,7 @@
 
 <div class="demo-section">
     <h2>@L["In a narrow column"]</h2>
-    <p class="desc">@L["The frame keeps its 16:9 shape at any width, so it fits a sidebar as readily as an article body."]</p>
+    <p class="description">@L["The frame keeps its 16:9 shape at any width, so it fits a sidebar as readily as an article body."]</p>
     <div class="demo-box">
         <div style="max-inline-size: 20rem;">
             <FormaVideoPlayer Source="https://www.youtube.com/watch?v=dQw4w9WgXcQ"

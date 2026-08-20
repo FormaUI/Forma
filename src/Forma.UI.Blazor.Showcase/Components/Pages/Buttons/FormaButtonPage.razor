@@ -6,7 +6,7 @@
 @inject IStringLocale<FormaButtonPage> L
 
 <h1>FormaButton</h1>
-<p class="desc">@L["The Forma button. Five variants set its visual weight, two sizes set its density, and a busy state animates while work is in flight. Pure CSS — no JavaScript."]</p>
+<p class="description">@L["The Forma button. Five variants set its visual weight, two sizes set its density, and a busy state animates while work is in flight. Pure CSS — no JavaScript."]</p>
 
 <div class="demo-section">
     <h2>@L["Variants"]</h2>
@@ -31,7 +31,7 @@
 
 <div class="demo-section">
     <h2>@L["Row actions"]</h2>
-    <p class="desc">@L["The tertiary variant is the one built for repeated inline commands, such as the actions at the end of a table row."]</p>
+    <p class="description">@L["The tertiary variant is the one built for repeated inline commands, such as the actions at the end of a table row."]</p>
     <div class="demo-box demo-row">
         <FormaButton Variant="ButtonVariant.Tertiary"
                      OnClick="@(() => Record(L["View"]))">@L["View"]</FormaButton>
@@ -56,7 +56,7 @@
 
 <div class="demo-section">
     <h2>@L["Busy"]</h2>
-    <p class="desc">@L["A busy button keeps its label, announces itself with aria-busy, and stops accepting clicks until the work finishes."]</p>
+    <p class="description">@L["A busy button keeps its label, announces itself with aria-busy, and stops accepting clicks until the work finishes."]</p>
     <div class="demo-box demo-row">
         <FormaButton Variant="ButtonVariant.Primary" Busy="true">@L["Saving…"]</FormaButton>
         <FormaButton Busy="true">@L["Saving…"]</FormaButton>
@@ -67,7 +67,7 @@
 
 <div class="demo-section">
     <h2>@L["Inside a form"]</h2>
-    <p class="desc">@L["Submit and reset buttons drive the surrounding form without any click handler of their own. A native reset clears the inputs but leaves the bound model alone, so the value below is what the form still holds."]</p>
+    <p class="description">@L["Submit and reset buttons drive the surrounding form without any click handler of their own. A native reset clears the inputs but leaves the bound model alone, so the value below is what the form still holds."]</p>
     <div class="demo-box">
         <EditForm Model="Model" FormName="button-demo" OnValidSubmit="HandleSubmitAsync">
             <FormaInput @bind-Value="Model.Name" Label="@L["Name"]" />

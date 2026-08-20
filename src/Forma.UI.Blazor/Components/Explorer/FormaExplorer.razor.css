@@ -7,17 +7,17 @@
 .forma-explorer {
     --forma-explorer-check-size: 1.5rem;
     --forma-explorer-check-glyph-size: 0.75rem;
-    --forma-explorer-check-fg-color: #fff;
+    --forma-explorer-check-foreground-color: #fff;
     --forma-explorer-block-size: 40rem;
-    --forma-explorer-pad: 0.75rem;
+    --forma-explorer-padding: 0.75rem;
     --forma-explorer-radius: 8px;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
     border: 1px solid var(--border-color);
     border-radius: var(--forma-explorer-radius);
-    background: var(--input-bg-color);
-    padding: var(--forma-explorer-pad);
+    background: var(--input-background-color);
+    padding: var(--forma-explorer-padding);
     min-inline-size: 20rem;
     min-block-size: 18rem;
     max-block-size: var(--forma-explorer-block-size);
@@ -29,10 +29,10 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    margin-block-start: calc(-1 * var(--forma-explorer-pad));
-    margin-inline: calc(-1 * var(--forma-explorer-pad));
-    padding: var(--forma-explorer-pad);
-    background: var(--forma-explorer-header-bg-color, var(--modal-bg-color));
+    margin-block-start: calc(-1 * var(--forma-explorer-padding));
+    margin-inline: calc(-1 * var(--forma-explorer-padding));
+    padding: var(--forma-explorer-padding);
+    background: var(--forma-explorer-header-background-color, var(--modal-background-color));
     border-block-end: 1px solid var(--border-color);
     border-start-start-radius: var(--forma-explorer-radius);
     border-start-end-radius: var(--forma-explorer-radius);
@@ -75,7 +75,7 @@
 }
 
 .forma-explorer.is-dialog {
-    --forma-explorer-pad: 0rem;
+    --forma-explorer-padding: 0rem;
     --forma-explorer-radius: 0;
     border: none;
     padding: 0;
@@ -88,7 +88,7 @@
     flex-direction: column;
     gap: 0.75rem;
     padding: 1rem;
-    background: var(--modal-bg-color);
+    background: var(--modal-background-color);
     border: 1px dashed var(--dark-border-color);
     border-radius: 8px;
 }
@@ -113,7 +113,7 @@
 }
 
 .forma-explorer ::deep .forma-modal .forma-file-viewer-image-frame {
-    background: var(--media-bg-color);
+    background: var(--media-background-color);
     border-radius: 6px;
 }
 
@@ -128,7 +128,7 @@
     justify-content: center;
     inline-size: 100%;
     flex: 1;
-    background: var(--media-bg-color);
+    background: var(--media-background-color);
     border-radius: 6px;
 }
 
@@ -287,7 +287,7 @@
     padding-block: 0.35rem;
     border: 1px solid var(--light-border-color);
     border-radius: 6px;
-    background: var(--input-bg-color);
+    background: var(--input-background-color);
     color: var(--text-color);
     font-size: 0.875rem;
     transition: border-color 0.15s ease;
@@ -355,7 +355,7 @@
     }
 }
 
-.forma-explorer-scroll-sentinel ::deep .forma-explorer-load-more-btn {
+.forma-explorer-scroll-sentinel ::deep .forma-explorer-load-more-button {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
@@ -363,7 +363,7 @@
     padding-inline: 1.25rem;
     border: 1px solid var(--border-color);
     border-radius: 999px;
-    background: var(--input-bg-color);
+    background: var(--input-background-color);
     color: var(--text-muted-color);
     font-size: 0.85rem;
     touch-action: manipulation;
@@ -371,9 +371,9 @@
 }
 
 @media (hover: hover) {
-    .forma-explorer-scroll-sentinel ::deep .forma-explorer-load-more-btn:hover {
+    .forma-explorer-scroll-sentinel ::deep .forma-explorer-load-more-button:hover {
         border-color: var(--main-color);
-        background: var(--hover-bg-color);
+        background: var(--hover-background-color);
         color: var(--main-color);
     }
 }
@@ -384,13 +384,13 @@
 }
 
 @media (hover: hover) {
-    .forma-explorer-scroll-sentinel ::deep .forma-explorer-load-more-btn:hover .forma-explorer-load-more-icon {
+    .forma-explorer-scroll-sentinel ::deep .forma-explorer-load-more-button:hover .forma-explorer-load-more-icon {
         translate: 0 2px;
     }
 }
 
 @media (pointer: coarse) {
-    .forma-explorer-scroll-sentinel ::deep .forma-explorer-load-more-btn {
+    .forma-explorer-scroll-sentinel ::deep .forma-explorer-load-more-button {
         min-block-size: 2.75rem;
     }
 }

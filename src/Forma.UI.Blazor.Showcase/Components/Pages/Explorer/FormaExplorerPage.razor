@@ -4,11 +4,11 @@
 @using Forma.UI.Blazor.Components.Explorer
 
 <h1>FormaExplorer</h1>
-<p class="desc">@L["A manager for media already on the server, in the shape of a resource explorer: a dense thumbnail grid, folders, selection, pagination, upload, and enlargement through FormaFileViewer."]</p>
+<p class="description">@L["A manager for media already on the server, in the shape of a resource explorer: a dense thumbnail grid, folders, selection, pagination, upload, and enlargement through FormaFileViewer."]</p>
 
 <div class="demo-section">
     <h2>@L["Full media explorer"]</h2>
-    <p class="desc">@L["Browse folders, preview media, select items, rename, delete, and upload."]</p>
+    <p class="description">@L["Browse folders, preview media, select items, rename, delete, and upload."]</p>
     <div class="demo-box">
         <FormaExplorer ResourcesProvider="@(ProviderFor("full"))"
                       Folders="_sampleFolders"
@@ -35,7 +35,7 @@
 
 <div class="demo-section">
     <h2>@L["Single selection for a cover image"]</h2>
-    <p class="desc">@L["With MaxSelection set to 1, picking any item immediately selects it alone. This one holds its collection through Resources, which is the simpler half of the contract and the right choice for a handful of items."]</p>
+    <p class="description">@L["With MaxSelection set to 1, picking any item immediately selects it alone. This one holds its collection through Resources, which is the simpler half of the contract and the right choice for a handful of items."]</p>
     <div class="demo-box">
         <FormaExplorer Resources="_singleSelectResources"
                       MaxSelection="1"
@@ -51,7 +51,7 @@
 
 <div class="demo-section">
     <h2>@L["Details columns"]</h2>
-    <p class="desc">@L["DetailsColumns picks which optional columns the details view renders beside the name. Nothing wraps, so a narrow explorer scrolls sideways rather than squeezing a column out."]</p>
+    <p class="description">@L["DetailsColumns picks which optional columns the details view renders beside the name. Nothing wraps, so a narrow explorer scrolls sideways rather than squeezing a column out."]</p>
     <div class="demo-box">
         <fieldset class="demo-row">
             <legend>@L["Columns"]</legend>
@@ -73,7 +73,7 @@
 
 <div class="demo-section">
     <h2>@L["Read-only explorer"]</h2>
-    <p class="desc">@L["With FormaExplorerFileOptions.ReadOnly, browsing and selection remain while upload, rename, delete, and every folder action disappear."]</p>
+    <p class="description">@L["With FormaExplorerFileOptions.ReadOnly, browsing and selection remain while upload, rename, delete, and every folder action disappear."]</p>
     <div class="demo-box">
         <FormaExplorer ResourcesProvider="@(ProviderFor("readonly"))"
                       Folders="_sampleFolders"
@@ -93,7 +93,7 @@
 
 <div class="demo-section">
     <h2>@L["Constraints"]</h2>
-    <p class="desc">@L["This explorer accepts only images, holds two root folders, one subfolder each, nests two deep, and stops at four items or 1 MB. Trip any of them and the refusal is announced above the toolbar and reported to the host."]</p>
+    <p class="description">@L["This explorer accepts only images, holds two root folders, one subfolder each, nests two deep, and stops at four items or 1 MB. Trip any of them and the refusal is announced above the toolbar and reported to the host."]</p>
     <div class="demo-box">
         <FormaExplorer Resources="_constrainedResources"
                       Folders="_constrainedFolders"
@@ -113,7 +113,7 @@
 
 <div class="demo-section">
     <h2>@L["Media without folder management"]</h2>
-    <p class="desc">@L["Media stays fully editable while the folder tree is fixed, so items can be renamed and deleted but folders cannot."]</p>
+    <p class="description">@L["Media stays fully editable while the folder tree is fixed, so items can be renamed and deleted but folders cannot."]</p>
     <div class="demo-box">
         <FormaExplorer ResourcesProvider="@(ProviderFor("fixedfolders"))"
                       Folders="_sampleFolders"
@@ -135,7 +135,7 @@
 
 <div class="demo-section">
     <h2>@L["Breadcrumb-only navigation"]</h2>
-    <p class="desc">@L["With ShowSidebar off, the folder tree is hidden and folders are reached through the breadcrumb menus instead."]</p>
+    <p class="description">@L["With ShowSidebar off, the folder tree is hidden and folders are reached through the breadcrumb menus instead."]</p>
     <div class="demo-box">
         <FormaExplorer ResourcesProvider="@(ProviderFor("nosidebar"))"
                       Folders="_sampleFolders"
@@ -148,7 +148,7 @@
 
 <div class="demo-section">
     <h2>@L["Sidebar without breadcrumb menus"]</h2>
-    <p class="desc">@L["With ShowFolderMenu off, the breadcrumbs become plain separators and the tree is the only way to change folder."]</p>
+    <p class="description">@L["With ShowFolderMenu off, the breadcrumbs become plain separators and the tree is the only way to change folder."]</p>
     <div class="demo-box">
         <FormaExplorer ResourcesProvider="@(ProviderFor("nomenu"))"
                       Folders="_sampleFolders"
@@ -161,7 +161,7 @@
 
 <div class="demo-section">
     <h2>@L["A library too large to hold"]</h2>
-    <p class="desc">@L["Twenty thousand items behind a provider. The explorer keeps only the window it is showing, and the folder never appears in the query because the page already knows it."]</p>
+    <p class="description">@L["Twenty thousand items behind a provider. The explorer keeps only the window it is showing, and the folder never appears in the query because the page already knows it."]</p>
     <div class="demo-box">
         <FormaExplorer ResourcesProvider="@(ProviderFor("library"))"
                       Folders="_sampleFolders"
@@ -175,7 +175,7 @@
 
 <div class="demo-section">
     <h2>@L["Empty explorer"]</h2>
-    <p class="desc">@L["When a folder has no media, the explorer displays an empty state."]</p>
+    <p class="description">@L["When a folder has no media, the explorer displays an empty state."]</p>
     <div class="demo-box">
         <FormaExplorer Resources="[]" />
     </div>
@@ -183,7 +183,7 @@
 
 <div class="demo-section">
     <h2>@L["Paginated explorer"]</h2>
-    <p class="desc">@L["A large collection splits across pages using FormaPagination."]</p>
+    <p class="description">@L["A large collection splits across pages using FormaPagination."]</p>
     <div class="demo-box">
         <FormaExplorer ResourcesProvider="@(ProviderFor("paged"))" PageSize="4" />
     </div>
@@ -191,7 +191,7 @@
 
 <div class="demo-section">
     <h2>@L["Infinite scrolling explorer"]</h2>
-    <p class="desc">@L["ExplorerInfiniteScrollMode.Manual appends the next page as the reader nears the end, and offers a button for anyone not using a pointer. The media scrolls inside the panel, so the toolbar and folder tree stay put."]</p>
+    <p class="description">@L["ExplorerInfiniteScrollMode.Manual appends the next page as the reader nears the end, and offers a button for anyone not using a pointer. The media scrolls inside the panel, so the toolbar and folder tree stay put."]</p>
     <div class="demo-box">
         <FormaExplorer ResourcesProvider="@(ProviderFor("infinite"))" PageSize="24" Options="@(new FormaExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Manual })" />
     </div>
@@ -199,7 +199,7 @@
 
 <div class="demo-section">
     <h2>@L["Automatic infinite scrolling"]</h2>
-    <p class="desc">@L["ExplorerInfiniteScrollMode.Automatic drops the button entirely: pages arrive as the reader scrolls, marked by a spinner while each one loads, with the running count left as the reader's sense of position."]</p>
+    <p class="description">@L["ExplorerInfiniteScrollMode.Automatic drops the button entirely: pages arrive as the reader scrolls, marked by a spinner while each one loads, with the running count left as the reader's sense of position."]</p>
     <div class="demo-box">
         <FormaExplorer ResourcesProvider="@(ProviderFor("infinite"))"
                       PageSize="24"

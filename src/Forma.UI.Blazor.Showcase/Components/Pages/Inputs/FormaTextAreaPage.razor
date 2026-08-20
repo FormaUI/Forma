@@ -5,7 +5,7 @@
 @inject IStringLocale<FormaTextAreaPage> L
 
 <h1>FormaTextArea</h1>
-<p class="desc">@L["A multi-line field wearing the same chrome as FormaInput: the floating label, focus ring and validation styling all come from the shared FormaField."]</p>
+<p class="description">@L["A multi-line field wearing the same chrome as FormaInput: the floating label, focus ring and validation styling all come from the shared FormaField."]</p>
 
 <EditForm EditContext="_editContext">
 
@@ -26,10 +26,10 @@
 
     <div class="demo-section">
         <h2>@L["Required and length-limited"]</h2>
-        <p class="desc">@L["Submit with the field empty to see the validation border and message."]</p>
+        <p class="description">@L["Submit with the field empty to see the validation border and message."]</p>
         <div class="demo-box">
             <FormaTextArea @bind-Value="_model.Excerpt" Label="@L["Excerpt"]" Required="true" MaxLength="280" />
-            <button type="button" class="btn btn-primary" @onclick="Validate">
+            <button type="button" class="button button-primary" @onclick="Validate">
                 @L["Validate"]
             </button>
         </div>
@@ -37,7 +37,7 @@
 
     <div class="demo-section">
         <h2>@L["Counting characters"]</h2>
-        <p class="desc">@L["The count floats inside the field's end corner, clear of the resize grip, and reads out as a sentence rather than as glyphs. Without a maximum it simply counts up."]</p>
+        <p class="description">@L["The count floats inside the field's end corner, clear of the resize grip, and reads out as a sentence rather than as glyphs. Without a maximum it simply counts up."]</p>
         <div class="demo-box">
             <FormaTextArea @bind-Value="_model.Tweet" Label="@L["Social post"]" MaxLength="280" ShowCharacterCount="true" />
             <FormaTextArea @bind-Value="_model.Comment" Label="@L["Comment"]" ShowCharacterCount="true" />
@@ -46,7 +46,7 @@
 
     <div class="demo-section">
         <h2>@L["Disabled"]</h2>
-        <p class="desc">@L["A disabled field is dimmed, refuses the caret and shows a not-allowed cursor."]</p>
+        <p class="description">@L["A disabled field is dimmed, refuses the caret and shows a not-allowed cursor."]</p>
         <div class="demo-box">
             <FormaTextArea @bind-Value="_model.Locked" Label="@L["Locked note"]" disabled />
         </div>
@@ -54,7 +54,7 @@
 
     <div class="demo-section">
         <h2>@L["Beside a FormaInput"]</h2>
-        <p class="desc">@L["Both components share one stylesheet, so their borders, labels and focus rings cannot drift apart."]</p>
+        <p class="description">@L["Both components share one stylesheet, so their borders, labels and focus rings cannot drift apart."]</p>
         <div class="demo-box">
             <FormaInput @bind-Value="_model.Title" Label="@L["Title"]" />
             <FormaTextArea @bind-Value="_model.Body" Label="@L["Body"]" />

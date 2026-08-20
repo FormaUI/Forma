@@ -3,14 +3,14 @@
     Confirmation dialog built on FormaModal.
 */
 
-.forma-confirm-message {
+.forma-confirm-dialog-message {
     margin: 0;
     font-size: 0.95rem;
     line-height: 1.6;
     color: var(--text-color);
 }
 
-.forma-confirm-actions {
+.forma-confirm-dialog-actions {
     display: flex;
     gap: 8px;
     margin-inline-start: auto;

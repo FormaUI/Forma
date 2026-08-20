@@ -4,12 +4,12 @@
 @inject IStringLocale<FormaModalPage> L
 
 <h1>FormaModal</h1>
-<p class="desc">@L["Modal dialog using native <dialog> element. Provides backdrop, focus trap, Escape key, and scoped CSS animations."]</p>
+<p class="description">@L["Modal dialog using native <dialog> element. Provides backdrop, focus trap, Escape key, and scoped CSS animations."]</p>
 
 <div class="demo-section">
     <h2>@L["Basic Modal"]</h2>
     <div class="demo-box">
-        <button class="btn btn-primary" @onclick="() => _showBasic = true">@L["Open Basic Modal"]</button>
+        <button class="button button-primary" @onclick="() => _showBasic = true">@L["Open Basic Modal"]</button>
         <FormaModal Opened="_showBasic" OnClose="() => _showBasic = false" Title="@L["Basic Modal"]">
             <Body>
                 <p>@L["This is a basic modal with a title and child content."]</p>
@@ -21,7 +21,7 @@
 <div class="demo-section">
     <h2>@L["No Header (Title = null)"]</h2>
     <div class="demo-box">
-        <button class="btn btn-primary" @onclick="() => _showNoHeader = true">@L["Open Headerless Modal"]</button>
+        <button class="button button-primary" @onclick="() => _showNoHeader = true">@L["Open Headerless Modal"]</button>
         <FormaModal Opened="_showNoHeader" OnClose="() => _showNoHeader = false" Options="HideConfirmAction">
             <Body>
                 <p>@L["This modal has no header - useful for simple alerts or custom layouts."]</p>
@@ -36,7 +36,7 @@
         @foreach (var size in _sizes)
         {
             var s = size;
-            <button class="btn btn-sec" @onclick="() => _activeSize = s">@s</button>
+            <button class="button button-secondary" @onclick="() => _activeSize = s">@s</button>
         }
         @if (_activeSize is not null)
         {
@@ -53,8 +53,8 @@
 <div class="demo-section">
     <h2>@L["Custom Footer"]</h2>
     <div class="demo-box" style="display: flex; gap: 8px; flex-wrap: wrap;">
-        <button class="btn btn-sec" @onclick="() => _showFooterOnly = true">@L["Open Footer Only"]</button>
-        <button class="btn btn-primary" @onclick="() => _showFooterWithActions = true">@L["Open Footer + Actions"]</button>
+        <button class="button button-secondary" @onclick="() => _showFooterOnly = true">@L["Open Footer Only"]</button>
+        <button class="button button-primary" @onclick="() => _showFooterWithActions = true">@L["Open Footer + Actions"]</button>
 
         <FormaModal Opened="_showFooterOnly" OnClose="() => _showFooterOnly = false" Title="@L["Footer Only"]"
                   Options="HideFooterActions">
@@ -80,7 +80,7 @@
 <div class="demo-section">
     <h2>@L["No Footer"]</h2>
     <div class="demo-box">
-        <button class="btn btn-primary" @onclick="() => _showNoFooter = true">@L["Open (no footer)"]</button>
+        <button class="button button-primary" @onclick="() => _showNoFooter = true">@L["Open (no footer)"]</button>
         <FormaModal Opened="_showNoFooter" OnClose="() => _showNoFooter = false" Title="@L["Information"]">
             <Body>
                 <p>@L["This modal has no footer - close it with Escape, backdrop click, or the X button."]</p>
@@ -92,7 +92,7 @@
 <div class="demo-section">
     <h2>@L["Backdrop Click Disabled"]</h2>
     <div class="demo-box">
-        <button class="btn btn-primary" @onclick="() => _showNoBackdrop = true">@L["Open (no backdrop close)"]</button>
+        <button class="button button-primary" @onclick="() => _showNoBackdrop = true">@L["Open (no backdrop close)"]</button>
         <FormaModal Opened="_showNoBackdrop" OnClose="() => _showNoBackdrop = false"
                     Title="@L["Must Use X or Button"]" Options="RequireExplicitClose">
             <Body>

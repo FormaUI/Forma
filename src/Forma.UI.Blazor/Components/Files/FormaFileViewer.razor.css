@@ -32,7 +32,7 @@
     align-items: center;
     justify-content: center;
     overflow: auto;
-    background-color: var(--forma-file-viewer-bg-color, var(--media-bg-color));
+    background-color: var(--forma-file-viewer-background-color, var(--media-background-color));
     border-radius: 4px;
     /* Native touch scrolling already pans; this only adds the platform's own pinch-zoom. */
     touch-action: pan-x pan-y pinch-zoom;
@@ -71,7 +71,7 @@
     padding: 0;
     border: 1px solid var(--border-color);
     border-radius: 4px;
-    background-color: var(--input-bg-color);
+    background-color: var(--input-background-color);
     color: var(--text-color);
     font-size: 1.125rem;
     line-height: 1;
@@ -98,7 +98,7 @@
 
 @media (hover: hover) {
     .forma-file-viewer-zoom-button:hover:not(:disabled) {
-        background-color: var(--hover-bg-color);
+        background-color: var(--hover-background-color);
     }
 }
 
@@ -133,7 +133,7 @@
     min-block-size: 0;
     overflow: auto;
     padding: 1rem;
-    background-color: var(--input-bg-color);
+    background-color: var(--input-background-color);
     border: 1px solid var(--border-color);
     border-radius: 4px;
 }
@@ -195,8 +195,8 @@
     block-size: 2.75rem;
     border: 0;
     border-radius: 999px;
-    background-color: var(--forma-file-viewer-nav-bg-color, var(--media-scrim-color));
-    color: var(--forma-file-viewer-nav-color, var(--media-fg-color));
+    background-color: var(--forma-file-viewer-nav-background-color, var(--media-scrim-color));
+    color: var(--forma-file-viewer-nav-color, var(--media-foreground-color));
     font-size: 1.25rem;
     cursor: pointer;
     touch-action: manipulation;
@@ -222,6 +222,6 @@
 
 @media (hover: hover) {
     .forma-file-viewer-nav:hover:not(:disabled) {
-        background-color: var(--forma-file-viewer-nav-hover-bg-color, var(--main-dark-color));
+        background-color: var(--forma-file-viewer-nav-hover-background-color, var(--main-dark-color));
     }
 }

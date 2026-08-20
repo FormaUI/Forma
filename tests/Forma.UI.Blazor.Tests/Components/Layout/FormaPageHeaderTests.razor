@@ -11,7 +11,7 @@
 
             // Act
             var cut = ctx.Render(@<FormaPageHeader Title="Orders" />);
-            var title = cut.Find(".forma-page-title");
+            var title = cut.Find(".forma-page-header-title");
 
             // Assert
             Assert.Equal("Orders", title.TextContent);
@@ -25,7 +25,7 @@
 
             // Act
             var cut = ctx.Render(@<FormaPageHeader Title="Dashboard" />);
-            var h1 = cut.Find("h1.forma-page-title");
+            var h1 = cut.Find("h1.forma-page-header-title");
 
             // Assert
             Assert.Equal("Dashboard", h1.TextContent);
@@ -41,7 +41,7 @@
             var cut = ctx.Render(@<FormaPageHeader Title="Dashboard" />);
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-breadcrumb"));
+            Assert.Empty(cut.FindAll(".forma-page-header-breadcrumb"));
         }
 
         [Fact]
@@ -55,7 +55,7 @@
             var cut = ctx.Render(@<FormaPageHeader Title="Dashboard" Breadcrumbs="@crumbs" />);
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-breadcrumb"));
+            Assert.Empty(cut.FindAll(".forma-page-header-breadcrumb"));
         }
 
         [Fact]
@@ -80,7 +80,7 @@
 
             // Act
             var cut = ctx.Render(@<FormaPageHeader Title="Orders" Breadcrumbs="@crumbs" />);
-            var items = cut.FindAll(".forma-breadcrumb-item");
+            var items = cut.FindAll(".forma-page-header-breadcrumb-item");
 
             // Assert
             Assert.Equal(3, items.Count);
@@ -95,7 +95,7 @@
 
             // Act
             var cut = ctx.Render(@<FormaPageHeader Title="Orders" Breadcrumbs="@crumbs" />);
-            var link = cut.Find(".forma-breadcrumb-item a");
+            var link = cut.Find(".forma-page-header-breadcrumb-item a");
 
             // Assert
             Assert.Multiple(() =>
@@ -114,7 +114,7 @@
 
             // Act
             var cut = ctx.Render(@<FormaPageHeader Title="Current Page" Breadcrumbs="@crumbs" />);
-            var activeItem = cut.Find(".forma-breadcrumb-item.active span");
+            var activeItem = cut.Find(".forma-page-header-breadcrumb-item.active span");
 
             // Assert
             Assert.Equal("Current Page", activeItem.TextContent);
@@ -129,7 +129,7 @@
 
             // Act
             var cut = ctx.Render(@<FormaPageHeader Title="Orders" Breadcrumbs="@crumbs" />);
-            var activeItems = cut.FindAll(".forma-breadcrumb-item.active");
+            var activeItems = cut.FindAll(".forma-page-header-breadcrumb-item.active");
 
             // Assert
             Assert.Equal(2, activeItems.Count);
@@ -144,7 +144,7 @@
 
             // Act
             var cut = ctx.Render(@<FormaPageHeader Title="Orders" Breadcrumbs="@crumbs" />);
-            var activeItems = cut.FindAll(".forma-breadcrumb-item.active");
+            var activeItems = cut.FindAll(".forma-page-header-breadcrumb-item.active");
 
             // Assert
             Assert.Multiple(() =>

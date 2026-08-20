@@ -5,11 +5,11 @@
 @inject IStringLocale<FormaEyeButtonPage> L
 
 <h1>FormaEyeButton</h1>
-<p class="desc">@L["The reveal glyph, drawn as a ghost FormaButton square. Struck through while what it governs is hidden, plain once it is shown, so the state reads without colour. FormaPasswordBox's toggle is this component."]</p>
+<p class="description">@L["The reveal glyph, drawn as a ghost FormaButton square. Struck through while what it governs is hidden, plain once it is shown, so the state reads without colour. FormaPasswordBox's toggle is this component."]</p>
 
 <div class="demo-section">
     <h2>@L["Both states"]</h2>
-    <p class="desc">@L["The caller owns the state and the wording, because what is being revealed decides both."]</p>
+    <p class="description">@L["The caller owns the state and the wording, because what is being revealed decides both."]</p>
     <div class="demo-box">
         <div class="demo-row">
             <FormaEyeButton Label="@(_revealed ? L["Hide value"] : L["Show value"])"
@@ -42,7 +42,7 @@
 
 <div class="demo-section">
     <h2>@L["On a coloured surface"]</h2>
-    <p class="desc">@L["The glyph follows the surface through --forma-btn-ghost-color and its hover pair rather than a forked stylesheet. Nothing else changes: it reveals here exactly as it does above."]</p>
+    <p class="description">@L["The glyph follows the surface through --forma-button-ghost-color and its hover pair rather than a forked stylesheet. Nothing else changes: it reveals here exactly as it does above."]</p>
     <div class="demo-box">
         <div class="demo-tinted">
             <span>@L["API key"]</span>

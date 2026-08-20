@@ -5,7 +5,7 @@
    ============================================================ */
 
 /* ---------- base ---------- */
-.forma-btn {
+.forma-button {
     position: relative;
     display: inline-flex;
     align-items: center;
@@ -18,24 +18,24 @@
     font-weight: 500;
     line-height: 1.4;
     border: 1px solid transparent;
-    border-radius: var(--forma-btn-radius, 8px);
+    border-radius: var(--forma-button-radius, 8px);
     cursor: pointer;
     transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
 }
 
-.forma-btn:focus-visible {
+.forma-button:focus-visible {
     outline: 2px solid var(--main-color);
     outline-offset: 2px;
 }
 
-.forma-btn:disabled {
+.forma-button:disabled {
     opacity: 0.55;
     box-shadow: none;
     cursor: not-allowed;
 }
 
 /* ---------- variants ---------- */
-.forma-btn-primary {
+.forma-button-primary {
     background-color: var(--main-color);
     border-color: var(--main-color);
     color: #fff;
@@ -43,38 +43,38 @@
 }
 
 @media (hover: hover) {
-    .forma-btn-primary:hover:not(:disabled) {
+    .forma-button-primary:hover:not(:disabled) {
         background-color: var(--main-dark-color);
         border-color: var(--main-dark-color);
     }
 }
 
-.forma-btn-primary:active:not(:disabled) {
+.forma-button-primary:active:not(:disabled) {
     background-color: color-mix(in srgb, var(--main-dark-color) 88%, black);
     border-color: color-mix(in srgb, var(--main-dark-color) 88%, black);
     box-shadow: none;
 }
 
-.forma-btn-secondary {
-    background-color: var(--input-bg-color);
+.forma-button-secondary {
+    background-color: var(--input-background-color);
     border-color: var(--light-border-color);
     color: var(--text-color);
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-small);
 }
 
 @media (hover: hover) {
-    .forma-btn-secondary:hover:not(:disabled) {
-        background-color: var(--hover-bg-color);
+    .forma-button-secondary:hover:not(:disabled) {
+        background-color: var(--hover-background-color);
         border-color: var(--dark-border-color);
     }
 }
 
-.forma-btn-secondary:active:not(:disabled) {
+.forma-button-secondary:active:not(:disabled) {
     background-color: color-mix(in srgb, var(--text-color) 10%, transparent);
     box-shadow: none;
 }
 
-.forma-btn-tertiary {
+.forma-button-tertiary {
     padding-block: 0.2rem;
     padding-inline: 0.6rem;
     font-size: 0.8rem;
@@ -85,18 +85,18 @@
 }
 
 @media (hover: hover) {
-    .forma-btn-tertiary:hover:not(:disabled) {
-        background-color: var(--hover-bg-color);
+    .forma-button-tertiary:hover:not(:disabled) {
+        background-color: var(--hover-background-color);
         border-color: var(--dark-border-color);
         color: var(--text-color);
     }
 }
 
-.forma-btn-tertiary:active:not(:disabled) {
+.forma-button-tertiary:active:not(:disabled) {
     background-color: color-mix(in srgb, var(--text-color) 10%, transparent);
 }
 
-.forma-btn-danger {
+.forma-button-danger {
     background-color: var(--danger-color);
     border-color: var(--danger-color);
     color: #fff;
@@ -104,51 +104,51 @@
 }
 
 @media (hover: hover) {
-    .forma-btn-danger:hover:not(:disabled) {
+    .forma-button-danger:hover:not(:disabled) {
         background-color: color-mix(in srgb, var(--danger-color) 85%, #000);
         border-color: color-mix(in srgb, var(--danger-color) 85%, #000);
     }
 }
 
-.forma-btn-danger:active:not(:disabled) {
+.forma-button-danger:active:not(:disabled) {
     background-color: color-mix(in srgb, var(--danger-color) 72%, #000);
     border-color: color-mix(in srgb, var(--danger-color) 72%, #000);
     box-shadow: none;
 }
 
-.forma-btn-ghost {
+.forma-button-ghost {
     background-color: transparent;
     border-color: transparent;
-    color: var(--forma-btn-ghost-color, var(--text-secondary-color));
+    color: var(--forma-button-ghost-color, var(--text-secondary-color));
 }
 
 @media (hover: hover) {
-    .forma-btn-ghost:hover:not(:disabled) {
-        background-color: var(--forma-btn-ghost-hover-bg-color, var(--hover-bg-color));
-        color: var(--forma-btn-ghost-hover-color, var(--text-color));
+    .forma-button-ghost:hover:not(:disabled) {
+        background-color: var(--forma-button-ghost-hover-background-color, var(--hover-background-color));
+        color: var(--forma-button-ghost-hover-color, var(--text-color));
     }
 }
 
-.forma-btn-ghost:active:not(:disabled) {
+.forma-button-ghost:active:not(:disabled) {
     background-color: color-mix(in srgb, var(--text-color) 10%, transparent);
 }
 
 /* ---------- size ---------- */
-.forma-btn-mini {
+.forma-button-mini {
     padding-block: 0.25rem;
     padding-inline: 0.7rem;
     font-size: 0.8125rem;
 }
 
 /* ---------- icon only ---------- */
-.forma-btn-icon {
+.forma-button-icon {
     padding: 0;
     inline-size: 30px;
     block-size: 30px;
     flex-shrink: 0;
 }
 
-.forma-btn-icon.forma-btn-mini {
+.forma-button-icon.forma-button-mini {
     inline-size: 24px;
     block-size: 24px;
 }
@@ -156,23 +156,23 @@
 /* The glyph belongs to the calling component's markup, so ::deep is what reaches it. Sizing it
    here keeps it in step with the square: a ghost button has no box to see it shrink against.
    Only the height is pinned, because glyph artwork is not square. */
-.forma-btn-icon ::deep svg {
+.forma-button-icon ::deep svg {
     inline-size: auto;
     block-size: 1rem;
 }
 
-.forma-btn-icon.forma-btn-mini ::deep svg {
+.forma-button-icon.forma-button-mini ::deep svg {
     inline-size: auto;
     block-size: 0.8125rem;
 }
 
 /* ---------- busy ---------- */
-.forma-btn-busy {
+.forma-button-busy {
     cursor: wait;
     overflow: hidden;
 }
 
-.forma-btn-busy::after {
+.forma-button-busy::after {
     content: "";
     position: absolute;
     inset-block: 0;
@@ -181,19 +181,19 @@
         60deg,
         transparent,
         transparent 0.75rem,
-        var(--forma-btn-busy-stripe-color, rgba(255, 255, 255, 0.28)) 0.75rem,
-        var(--forma-btn-busy-stripe-color, rgba(255, 255, 255, 0.28)) 1.5rem
+        var(--forma-button-busy-stripe-color, rgba(255, 255, 255, 0.28)) 0.75rem,
+        var(--forma-button-busy-stripe-color, rgba(255, 255, 255, 0.28)) 1.5rem
     );
-    animation: forma-btn-busy-stripes 1s linear infinite;
+    animation: forma-button-busy-stripes 1s linear infinite;
 }
 
-.forma-btn-secondary.forma-btn-busy::after,
-.forma-btn-tertiary.forma-btn-busy::after,
-.forma-btn-ghost.forma-btn-busy::after {
-    --forma-btn-busy-stripe-color: rgba(98, 105, 118, 0.18);
+.forma-button-secondary.forma-button-busy::after,
+.forma-button-tertiary.forma-button-busy::after,
+.forma-button-ghost.forma-button-busy::after {
+    --forma-button-busy-stripe-color: rgba(98, 105, 118, 0.18);
 }
 
-@keyframes forma-btn-busy-stripes {
+@keyframes forma-button-busy-stripes {
     from {
         inset-inline-start: -1.5rem;
     }
@@ -204,23 +204,23 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .forma-btn-busy::after {
+    .forma-button-busy::after {
         animation: none;
     }
 }
 
-.forma-btn {
+.forma-button {
     touch-action: manipulation;
 }
 
 @media (pointer: coarse) {
-    .forma-btn,
-    .forma-btn-mini {
+    .forma-button,
+    .forma-button-mini {
         min-block-size: 2.75rem;
     }
 
-    .forma-btn-icon,
-    .forma-btn-icon.forma-btn-mini {
+    .forma-button-icon,
+    .forma-button-icon.forma-button-mini {
         inline-size: 2.75rem;
         block-size: 2.75rem;
     }

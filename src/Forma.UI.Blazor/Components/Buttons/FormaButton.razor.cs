@@ -54,11 +54,11 @@ public sealed partial class FormaButton : ComponentBase
 
     private string VariantClass => Variant switch
     {
-        ButtonVariant.Primary => "forma-btn-primary",
-        ButtonVariant.Tertiary => "forma-btn-tertiary",
-        ButtonVariant.Danger => "forma-btn-danger",
-        ButtonVariant.Ghost => "forma-btn-ghost",
-        _ => "forma-btn-secondary"
+        ButtonVariant.Primary => "forma-button-primary",
+        ButtonVariant.Tertiary => "forma-button-tertiary",
+        ButtonVariant.Danger => "forma-button-danger",
+        ButtonVariant.Ghost => "forma-button-ghost",
+        _ => "forma-button-secondary"
     };
 
     // Host class is merged rather than splatted, so supplying one never drops the button's own styling.
@@ -66,21 +66,21 @@ public sealed partial class FormaButton : ComponentBase
     {
         get
         {
-            var classes = new List<string>(6) { "forma-btn", VariantClass };
+            var classes = new List<string>(6) { "forma-button", VariantClass };
 
             if (Size is ButtonSize.Mini)
             {
-                classes.Add("forma-btn-mini");
+                classes.Add("forma-button-mini");
             }
 
             if (IconOnly)
             {
-                classes.Add("forma-btn-icon");
+                classes.Add("forma-button-icon");
             }
 
             if (Busy)
             {
-                classes.Add("forma-btn-busy");
+                classes.Add("forma-button-busy");
             }
 
             var hostClass = AdditionalAttributes is not null && AdditionalAttributes.TryGetValue("class", out var value)

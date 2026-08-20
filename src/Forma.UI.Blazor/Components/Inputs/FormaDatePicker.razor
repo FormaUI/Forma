@@ -2,9 +2,9 @@
 
 <FormaField Label="@Label" TargetId="@_triggerId" LabelMode="FieldLabelMode.Pinned">
     <ChildContent>
-        @* The root keeps the --dp-* custom properties the calendar popup reads. *@
+        @* The root keeps the --forma-date-picker-* custom properties the calendar popup reads. *@
         <div class="forma-date-picker">
-            <div class="forma-date-picker-trigger-wrap" @ref="_anchorElement">
+            <div class="forma-date-picker-trigger-wrapper" @ref="_anchorElement">
                 <button @attributes="AdditionalAttributes"
                         type="button"
                         id="@_triggerId"

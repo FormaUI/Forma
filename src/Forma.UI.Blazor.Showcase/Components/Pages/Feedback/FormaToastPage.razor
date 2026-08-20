@@ -6,31 +6,31 @@
 @inject IStringLocale<FormaToastPage> L
 
 <h1>FormaToast</h1>
-<p class="desc">@L["Slide-in toast notifications via a service. Auto-dismiss with configurable duration."]</p>
+<p class="description">@L["Slide-in toast notifications via a service. Auto-dismiss with configurable duration."]</p>
 
 <div class="demo-section">
     <h2>@L["Toast Types"]</h2>
     <div class="demo-box" style="display: flex; gap: 8px; flex-wrap: wrap;">
-        <button class="btn btn-primary" @onclick="ShowSuccess">@L["Success"]</button>
-        <button class="btn btn-sec" @onclick="ShowError">@L["Error"]</button>
-        <button class="btn btn-sec" @onclick="ShowInfo">@L["Info"]</button>
-        <button class="btn btn-sec" @onclick="ShowWarning">@L["Warning"]</button>
+        <button class="button button-primary" @onclick="ShowSuccess">@L["Success"]</button>
+        <button class="button button-secondary" @onclick="ShowError">@L["Error"]</button>
+        <button class="button button-secondary" @onclick="ShowInfo">@L["Info"]</button>
+        <button class="button button-secondary" @onclick="ShowWarning">@L["Warning"]</button>
     </div>
 </div>
 
 <div class="demo-section">
     <h2>@L["Custom Duration"]</h2>
     <div class="demo-box" style="display: flex; gap: 8px; flex-wrap: wrap;">
-        <button class="btn btn-sec" @onclick="() => ShowTimed(1000)">1s</button>
-        <button class="btn btn-sec" @onclick="() => ShowTimed(5000)">5s</button>
-        <button class="btn btn-sec" @onclick="() => ShowTimed(10000)">10s</button>
+        <button class="button button-secondary" @onclick="() => ShowTimed(1000)">1s</button>
+        <button class="button button-secondary" @onclick="() => ShowTimed(5000)">5s</button>
+        <button class="button button-secondary" @onclick="() => ShowTimed(10000)">10s</button>
     </div>
 </div>
 
 <div class="demo-section">
     <h2>@L["Multiple Toasts"]</h2>
     <div class="demo-box">
-        <button class="btn btn-primary" @onclick="ShowMultiple">@L["Show 3 at once"]</button>
+        <button class="button button-primary" @onclick="ShowMultiple">@L["Show 3 at once"]</button>
     </div>
 </div>
 

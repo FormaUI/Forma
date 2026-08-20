@@ -17,7 +17,7 @@
     flex-shrink: 0;
 }
 
-.forma-explorer-nav-btn {
+.forma-explorer-nav-button {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -36,25 +36,25 @@
 }
 
 @media (hover: hover) {
-    .forma-explorer-nav-btn:not(:disabled):hover {
-        background: var(--hover-bg-color);
+    .forma-explorer-nav-button:not(:disabled):hover {
+        background: var(--hover-background-color);
         color: var(--main-color);
     }
 }
 
-.forma-explorer-nav-btn:focus-visible {
+.forma-explorer-nav-button:focus-visible {
     outline: 2px solid var(--focus-color);
     outline-offset: 1px;
 }
 
 @media (pointer: coarse) {
-    .forma-explorer-nav-btn {
+    .forma-explorer-nav-button {
         inline-size: 2.75rem;
         block-size: 2.75rem;
     }
 }
 
-.forma-explorer-nav-btn:disabled {
+.forma-explorer-nav-button:disabled {
     opacity: 0.4;
     cursor: not-allowed;
 }
@@ -74,7 +74,7 @@
     padding-inline: 0.6rem;
     border: 1px solid var(--forma-explorer-field-border-color, var(--border-color));
     border-radius: 6px;
-    background: var(--input-bg-color);
+    background: var(--input-background-color);
     transition: flex 0.25s ease, max-inline-size 0.25s ease, opacity 0.2s ease, padding 0.25s ease, border-color 0.2s ease;
 }
 
@@ -105,7 +105,7 @@
 
 @media (hover: hover) {
     .forma-explorer-breadcrumb-item:hover {
-        background: var(--hover-bg-color);
+        background: var(--hover-background-color);
         color: var(--main-color);
     }
 }
@@ -155,7 +155,7 @@
 
 @media (hover: hover) {
     .forma-explorer-breadcrumb-chevron:hover {
-        background: var(--hover-bg-color);
+        background: var(--hover-background-color);
         color: var(--main-color);
     }
 }
@@ -186,7 +186,7 @@
     padding: 0.25rem;
     border: 1px solid var(--light-border-color);
     border-radius: 6px;
-    background: var(--input-bg-color);
+    background: var(--input-background-color);
     box-shadow: 0 6px 16px rgb(0 0 0 / 15%);
 }
 
@@ -209,7 +209,7 @@
 
 @media (hover: hover) {
     .forma-explorer-breadcrumb-menu-item:hover {
-        background: var(--hover-bg-color);
+        background: var(--hover-background-color);
         color: var(--main-color);
     }
 }
@@ -231,7 +231,7 @@
     }
 }
 
-.forma-explorer-search-wrap {
+.forma-explorer-search-wrapper {
     position: relative;
     display: flex;
     align-items: center;
@@ -241,14 +241,14 @@
 }
 
 /* Searching expands the search box across the bar; only focus inside the search box counts, so navigating does not collapse the breadcrumb. */
-.forma-explorer-search-wrap:focus-within,
-.forma-explorer-address-bar.has-search-query .forma-explorer-search-wrap {
+.forma-explorer-search-wrapper:focus-within,
+.forma-explorer-address-bar.has-search-query .forma-explorer-search-wrapper {
     flex: 1;
     inline-size: auto;
     max-inline-size: 100%;
 }
 
-.forma-explorer-address-bar:has(.forma-explorer-search-wrap:focus-within) .forma-explorer-breadcrumb-bar,
+.forma-explorer-address-bar:has(.forma-explorer-search-wrapper:focus-within) .forma-explorer-breadcrumb-bar,
 .forma-explorer-address-bar.has-search-query .forma-explorer-breadcrumb-bar {
     flex: 0 0 0;
     max-inline-size: 0;
@@ -275,7 +275,7 @@
     padding-block: 0.35rem;
     border: 1px solid var(--forma-explorer-field-border-color, var(--border-color));
     border-radius: 6px;
-    background: var(--input-bg-color);
+    background: var(--input-background-color);
     color: var(--text-color);
     font-size: 0.875rem;
     transition: border-color 0.15s ease;

@@ -205,15 +205,15 @@
             var cut = ctx.Render(@<FormaExplorer Resources="resources" />);
 
             // Act & Assert - Switch to Details
-            cut.FindAll(".forma-explorer-view-btn")[1].Click();
+            cut.FindAll(".forma-explorer-view-button")[1].Click();
             Assert.NotNull(cut.Find(".forma-explorer-details-table"));
 
             // Act & Assert - Switch to List
-            cut.FindAll(".forma-explorer-view-btn")[2].Click();
+            cut.FindAll(".forma-explorer-view-button")[2].Click();
             Assert.NotNull(cut.Find(".forma-explorer-list"));
 
             // Act & Assert - Switch back to Thumbnails
-            cut.FindAll(".forma-explorer-view-btn")[0].Click();
+            cut.FindAll(".forma-explorer-view-button")[0].Click();
             Assert.NotNull(cut.Find(".forma-explorer-grid"));
         }
 
@@ -308,7 +308,7 @@
                                                 OnFolderChanged="@(f => { activeFolder = f; return Task.CompletedTask; })" />);
 
             // Assert Up button is enabled for child folder
-            var upBtn = cut.FindAll(".forma-explorer-nav-btn")[2];
+            var upBtn = cut.FindAll(".forma-explorer-nav-button")[2];
             Assert.False(upBtn.HasAttribute("disabled"));
             upBtn.Click();
 
@@ -433,15 +433,15 @@
             var cut = ctx.Render(@<FormaExplorer Resources="resources" ViewMode="ExplorerViewMode.Details" />);
 
             // Assert
-            Assert.Equal("ascending", cut.Find(".forma-explorer-col-name").GetAttribute("aria-sort"));
-            Assert.Equal("none", cut.Find(".forma-explorer-col-size").GetAttribute("aria-sort"));
+            Assert.Equal("ascending", cut.Find(".forma-explorer-column-name").GetAttribute("aria-sort"));
+            Assert.Equal("none", cut.Find(".forma-explorer-column-size").GetAttribute("aria-sort"));
 
             // Act
-            cut.Find(".forma-explorer-col-size").Click();
+            cut.Find(".forma-explorer-column-size").Click();
 
             // Assert
-            Assert.Equal("ascending", cut.Find(".forma-explorer-col-size").GetAttribute("aria-sort"));
-            Assert.Equal("none", cut.Find(".forma-explorer-col-name").GetAttribute("aria-sort"));
+            Assert.Equal("ascending", cut.Find(".forma-explorer-column-size").GetAttribute("aria-sort"));
+            Assert.Equal("none", cut.Find(".forma-explorer-column-name").GetAttribute("aria-sort"));
         }
 
         [Fact]
@@ -460,7 +460,7 @@
                                                 SelectedChanged="@(items => { selected = items; return Task.CompletedTask; })" />);
 
             // Act
-            cut.Find(".forma-explorer-select-mode-btn").Click();
+            cut.Find(".forma-explorer-select-mode-button").Click();
             cut.FindAll(".forma-explorer-item-open")[0].Click();
             cut.FindAll(".forma-explorer-item-open")[1].Click();
 
@@ -481,7 +481,7 @@
             IReadOnlyList<ResourceInfo>? applied = null;
             var cut = ctx.Render(@<FormaExplorer Resources="resources"
                                                 SelectedChanged="@(items => { applied = items; return Task.CompletedTask; })" />);
-            cut.Find(".forma-explorer-select-mode-btn").Click();
+            cut.Find(".forma-explorer-select-mode-button").Click();
 
             // Act
             cut.Find(".forma-explorer-item-open").Click();
@@ -599,7 +599,7 @@
             cut.Find(".forma-explorer-action-bar .forma-dropdown-menu-trigger").Click();
             cut.Find("[data-action='rename']").Click();
             cut.Find("#forma-explorer-rename-input").Input("new-name.jpg");
-            cut.Find(".forma-modal-footer .forma-btn-primary").Click();
+            cut.Find(".forma-modal-footer .forma-button-primary").Click();
 
             // Assert
             Assert.NotNull(request);
@@ -623,7 +623,7 @@
             // Act
             cut.Find(".forma-explorer-action-bar .forma-dropdown-menu-trigger").Click();
             cut.Find("[data-action='delete']").Click();
-            cut.Find(".forma-modal-footer .forma-btn-danger").Click();
+            cut.Find(".forma-modal-footer .forma-button-danger").Click();
 
             // Assert
             Assert.NotNull(request);
@@ -649,7 +649,7 @@
             // Act - Create Folder
             cut.Find(".forma-explorer-new-folder-tool").Click();
             cut.Find("#forma-explorer-folder-input").Input("New Album");
-            cut.Find(".forma-modal-footer .forma-btn-primary").Click();
+            cut.Find(".forma-modal-footer .forma-button-primary").Click();
 
             // Assert create
             Assert.NotNull(createReq);
@@ -659,7 +659,7 @@
             cut.Find("button[aria-label='Actions for Races']").Click();
             cut.Find("[data-action='folder-rename']").Click();
             cut.Find("#forma-explorer-rename-folder-input").Input("Updated Races");
-            cut.Find(".forma-modal-footer .forma-btn-primary").Click();
+            cut.Find(".forma-modal-footer .forma-button-primary").Click();
 
             // Assert rename
             Assert.NotNull(renameReq);
@@ -668,7 +668,7 @@
             // Act - Delete Folder
             cut.Find("button[aria-label='Actions for Races']").Click();
             cut.Find("[data-action='folder-delete']").Click();
-            cut.Find(".forma-modal-footer .forma-btn-danger").Click();
+            cut.Find(".forma-modal-footer .forma-button-danger").Click();
 
             // Assert delete
             Assert.NotNull(deleteReq);
@@ -691,7 +691,7 @@
             cut.Find("button[aria-label='Actions for Races']").Click();
             cut.Find("[data-action='folder-create']").Click();
             cut.Find("#forma-explorer-folder-input").Input("2027");
-            cut.Find(".forma-modal-footer .forma-btn-primary").Click();
+            cut.Find(".forma-modal-footer .forma-button-primary").Click();
 
             // Assert
             Assert.NotNull(createReq);
@@ -715,7 +715,7 @@
             // Act
             cut.Find(".forma-explorer-new-folder-tool").Click();
             cut.Find("#forma-explorer-folder-input").Input("Archive");
-            cut.Find(".forma-modal-footer .forma-btn-primary").Click();
+            cut.Find(".forma-modal-footer .forma-button-primary").Click();
 
             // Assert
             Assert.NotNull(createReq);
@@ -753,8 +753,8 @@
             var cut = ctx.Render(@<FormaExplorer Resources="[]" Folders="[folder]" FileOptions="options" />);
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-explorer-new-folder-btn"));
-            Assert.Empty(cut.FindAll(".forma-explorer-upload-btn"));
+            Assert.Empty(cut.FindAll(".forma-explorer-new-folder-button"));
+            Assert.Empty(cut.FindAll(".forma-explorer-upload-button"));
             Assert.Empty(cut.FindAll("[data-action='folder-create']"));
         }
 
@@ -768,12 +768,12 @@
             var cut = ctx.Render(@<FormaExplorer Resources="resources" FileOptions="options" />);
 
             // Act
-            cut.Find(".forma-explorer-select-mode-btn").Click();
+            cut.Find(".forma-explorer-select-mode-button").Click();
             cut.Find(".forma-explorer-item-open").Click();
 
             // Assert
             Assert.NotNull(cut.Find(".forma-explorer-selection-bar"));
-            Assert.Empty(cut.FindAll(".forma-explorer-selection-bar .forma-btn-danger"));
+            Assert.Empty(cut.FindAll(".forma-explorer-selection-bar .forma-button-danger"));
         }
 
         [Fact]
@@ -804,8 +804,8 @@
             var cut = ctx.Render(@<FormaExplorer Resources="resources" Folders="[folder]" FileOptions="FormaExplorerFileOptions.ReadOnly" />);
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-explorer-new-folder-btn"));
-            Assert.Empty(cut.FindAll(".forma-explorer-upload-btn"));
+            Assert.Empty(cut.FindAll(".forma-explorer-new-folder-button"));
+            Assert.Empty(cut.FindAll(".forma-explorer-upload-button"));
             Assert.Empty(cut.FindAll(".forma-explorer-folder-actions"));
             Assert.Empty(cut.FindAll(".forma-explorer-new-folder-tool"));
             cut.Find(".forma-explorer-action-bar .forma-dropdown-menu-trigger").Click();
@@ -829,8 +829,8 @@
             var labels = cut.FindAll(".forma-dropdown-menu-item").Select(i => i.TextContent.Trim()).ToList();
             Assert.Equal(["Preview", "Rename", "Delete"], labels);
             Assert.Single(cut.FindAll(".forma-explorer-new-folder-tool"));
-            Assert.Empty(cut.FindAll(".forma-explorer-new-folder-btn"));
-            Assert.Single(cut.FindAll(".forma-explorer-upload-btn"));
+            Assert.Empty(cut.FindAll(".forma-explorer-new-folder-button"));
+            Assert.Single(cut.FindAll(".forma-explorer-upload-button"));
             cut.Find("button[aria-label='Actions for Races']").Click();
             Assert.Equal("Races", cut.Find(".forma-explorer-folder-actions .forma-dropdown-menu-header").TextContent.Trim());
             Assert.Equal(
@@ -850,8 +850,8 @@
             var hiddenSidebar = ctx.Render(@<FormaExplorer Resources="[]" Folders="[folder]" Options="@(new FormaExplorerOptions { ShowSidebar = false })" />);
 
             // Assert
-            Assert.Single(withoutFolders.FindAll(".forma-explorer-new-folder-btn"));
-            Assert.Single(hiddenSidebar.FindAll(".forma-explorer-new-folder-btn"));
+            Assert.Single(withoutFolders.FindAll(".forma-explorer-new-folder-button"));
+            Assert.Single(hiddenSidebar.FindAll(".forma-explorer-new-folder-button"));
         }
 
         [Fact]
@@ -864,15 +864,15 @@
 
             // Assert - not in select mode
             Assert.Empty(cut.FindAll(".forma-explorer-item-select"));
-            Assert.Equal("false", cut.Find(".forma-explorer-select-mode-btn").GetAttribute("aria-pressed"));
+            Assert.Equal("false", cut.Find(".forma-explorer-select-mode-button").GetAttribute("aria-pressed"));
             Assert.Equal("Preview cover.jpg", cut.Find(".forma-explorer-item-open").GetAttribute("aria-label"));
 
             // Act
-            cut.Find(".forma-explorer-select-mode-btn").Click();
+            cut.Find(".forma-explorer-select-mode-button").Click();
 
             // Assert - in select mode
             Assert.Single(cut.FindAll(".forma-explorer-item-select"));
-            Assert.Equal("true", cut.Find(".forma-explorer-select-mode-btn").GetAttribute("aria-pressed"));
+            Assert.Equal("true", cut.Find(".forma-explorer-select-mode-button").GetAttribute("aria-pressed"));
             Assert.Equal("Select cover.jpg", cut.Find(".forma-explorer-item-open").GetAttribute("aria-label"));
         }
 
@@ -891,7 +891,7 @@
             Assert.Single(cut.FindAll(".forma-explorer-action-bar"));
 
             // Act
-            cut.Find(".forma-explorer-select-mode-btn").Click();
+            cut.Find(".forma-explorer-select-mode-button").Click();
 
             // Assert - the checkbox replaces it rather than joining it
             Assert.Empty(cut.FindAll(".forma-explorer-action-bar"));
@@ -910,7 +910,7 @@
             Assert.Empty(cut.FindAll(".forma-explorer-folder-select"));
 
             // Act
-            cut.Find(".forma-explorer-select-mode-btn").Click();
+            cut.Find(".forma-explorer-select-mode-button").Click();
 
             // Assert - the checkbox replaces it rather than joining it
             Assert.Empty(cut.FindAll(".forma-explorer-folder-actions"));
@@ -931,7 +931,7 @@
             Assert.Null(lead.QuerySelector(".forma-explorer-table-select"));
 
             // Act
-            cut.Find(".forma-explorer-select-mode-btn").Click();
+            cut.Find(".forma-explorer-select-mode-button").Click();
 
             // Assert - selecting puts the checkbox in that same cell
             lead = cut.Find(".forma-explorer-details-row td");
@@ -953,7 +953,7 @@
                 cut.Find(".forma-explorer-details-row").QuerySelectorAll("td").Length);
 
             // Act
-            cut.Find(".forma-explorer-select-mode-btn").Click();
+            cut.Find(".forma-explorer-select-mode-button").Click();
 
             // Assert - selecting
             Assert.Equal(
@@ -984,12 +984,12 @@
             using var ctx = new FormaExplorerTests();
             IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
             var cut = ctx.Render(@<FormaExplorer Resources="resources" />);
-            cut.Find(".forma-explorer-select-mode-btn").Click();
+            cut.Find(".forma-explorer-select-mode-button").Click();
             cut.Find(".forma-explorer-item-open").Click();
             Assert.NotNull(cut.Find(".forma-explorer-selection-bar"));
 
             // Act
-            cut.Find(".forma-explorer-exit-select-btn").Click();
+            cut.Find(".forma-explorer-exit-select-button").Click();
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-explorer-selection-bar"));
@@ -1025,7 +1025,7 @@
             IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
             var folder = new FolderResourceInfo("races") { Name = "Races" };
             var cut = ctx.Render(@<FormaExplorer Resources="resources" Folders="[folder]" />);
-            cut.Find(".forma-explorer-select-mode-btn").Click();
+            cut.Find(".forma-explorer-select-mode-button").Click();
             Assert.NotEmpty(cut.FindAll(".forma-explorer-item-select"));
             Assert.NotEmpty(cut.FindAll(".forma-explorer-folder-select"));
 
@@ -1046,7 +1046,7 @@
             IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
             var folder = new FolderResourceInfo("races") { Name = "Races" };
             var cut = ctx.Render(@<FormaExplorer Resources="resources" Folders="[folder]" />);
-            cut.Find(".forma-explorer-select-mode-btn").Click();
+            cut.Find(".forma-explorer-select-mode-button").Click();
 
             // Act
             cut.Find(".forma-explorer-item-open").Click();
@@ -1066,12 +1066,12 @@
             var cut = ctx.Render(@<FormaExplorer Resources="[]"
                                                 Folders="[folder]"
                                                 OnFolderDelete="@(req => { request = req; return Task.CompletedTask; })" />);
-            cut.Find(".forma-explorer-select-mode-btn").Click();
+            cut.Find(".forma-explorer-select-mode-button").Click();
             cut.Find(".forma-explorer-folder-select").Click();
 
             // Act
-            cut.Find(".forma-explorer-delete-btn").Click();
-            cut.Find(".forma-modal-footer .forma-btn-danger").Click();
+            cut.Find(".forma-explorer-delete-button").Click();
+            cut.Find(".forma-modal-footer .forma-button-danger").Click();
 
             // Assert
             Assert.NotNull(request);
@@ -1114,9 +1114,9 @@
             using var ctx = new FormaExplorerTests();
             IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
             var cut = ctx.Render(@<FormaExplorer Resources="resources" SelectedChanged="@(_ => Task.CompletedTask)" />);
-            cut.FindAll(".forma-explorer-view-btn")[2].Click();
+            cut.FindAll(".forma-explorer-view-button")[2].Click();
             Assert.NotNull(cut.Find(".forma-explorer-list"));
-            cut.Find(".forma-explorer-select-mode-btn").Click();
+            cut.Find(".forma-explorer-select-mode-button").Click();
 
             // Act
             cut.Find(".forma-explorer-list-main").Click();
@@ -1139,7 +1139,7 @@
             var cut = ctx.Render(@<FormaExplorer Resources="resources" SelectedChanged="@(_ => Task.CompletedTask)" />);
             SortBy(cut, ExplorerSortField.Size);
             Assert.Equal("b.jpg", cut.FindAll(".forma-explorer-item-name")[0].TextContent);
-            cut.Find(".forma-explorer-select-mode-btn").Click();
+            cut.Find(".forma-explorer-select-mode-button").Click();
 
             // Act
             cut.Find(".forma-explorer-item-open").Click();
@@ -1389,7 +1389,7 @@
             Assert.Equal(2, cut.FindAll(".forma-explorer-item").Count);
 
             // Act
-            cut.Find(".forma-explorer-load-more-btn").Click();
+            cut.Find(".forma-explorer-load-more-button").Click();
 
             // Assert
             Assert.Equal(3, cut.FindAll(".forma-explorer-item").Count);
@@ -1417,7 +1417,7 @@
             Assert.Equal("Showing 2 of 3", status.TextContent.Trim());
 
             // Act
-            cut.Find(".forma-explorer-load-more-btn").Click();
+            cut.Find(".forma-explorer-load-more-button").Click();
 
             // Assert
             Assert.Equal("Showing 3 of 3", cut.Find(".forma-explorer-scroll-status").TextContent.Trim());
@@ -1442,7 +1442,7 @@
 
             // Assert
             Assert.NotNull(cut.Find(".forma-explorer-scroll-sentinel"));
-            Assert.Empty(cut.FindAll(".forma-explorer-load-more-btn"));
+            Assert.Empty(cut.FindAll(".forma-explorer-load-more-button"));
             Assert.Empty(cut.FindAll(".forma-explorer-spinner"));
         }
 
@@ -1548,7 +1548,7 @@ var first = cut.InvokeAsync(explorer.LoadNextPageAsync);
             Assert.Equal(10, cut.FindAll(".forma-explorer-item").Count);
 
             // Act
-            cut.Find(".forma-explorer-load-more-btn").Click();
+            cut.Find(".forma-explorer-load-more-button").Click();
 
             // Assert
             Assert.Equal(20, cut.FindAll(".forma-explorer-item").Count);
@@ -1567,7 +1567,7 @@ var first = cut.InvokeAsync(explorer.LoadNextPageAsync);
             var cut = ctx.Render(@<FormaExplorer ResourcesProvider="provider"
                                                 PageSize="10"
                                                 SelectedChanged="@(items => { selected = items; return Task.CompletedTask; })" />);
-            cut.Find(".forma-explorer-select-mode-btn").Click();
+            cut.Find(".forma-explorer-select-mode-button").Click();
             cut.Find(".forma-explorer-item-open").Click();
             Assert.Single(selected);
 

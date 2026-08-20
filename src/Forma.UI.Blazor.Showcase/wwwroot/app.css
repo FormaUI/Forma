@@ -39,7 +39,7 @@ body {
 }
 
 .showcase-sidebar a:hover {
-    background: var(--hover-bg-color);
+    background: var(--hover-background-color);
 }
 
 .showcase-sidebar a.active {
@@ -73,7 +73,7 @@ body {
 }
 
 .culture-switcher a:hover:not(.active) {
-    background: var(--hover-bg-color);
+    background: var(--hover-background-color);
 }
 
 .showcase-main {
@@ -87,7 +87,7 @@ body {
     font-size: 1.5rem;
 }
 
-.showcase-main p.desc {
+.showcase-main p.description {
     margin: 0 0 32px;
     color: var(--text-muted-color);
 }
@@ -110,7 +110,7 @@ body {
     border-radius: 8px;
 }
 
-.btn {
+.button {
     padding: 8px 16px;
     border: 1px solid var(--border-color);
     border-radius: 6px;
@@ -119,23 +119,23 @@ body {
     transition: background 120ms;
 }
 
-.btn-primary {
+.button-primary {
     background: #2563eb;
     border-color: #2563eb;
     color: #fff;
 }
 
-.btn-primary:hover {
+.button-primary:hover {
     background: #1d4ed8;
 }
 
-.btn-sec {
+.button-secondary {
     background: #fff;
     color: var(--text-color);
 }
 
-.btn-sec:hover {
-    background: var(--hover-bg-color);
+.button-secondary:hover {
+    background: var(--hover-background-color);
 }
 
 .row-inactive {
@@ -239,9 +239,9 @@ body {
     border-radius: 6px;
     background: var(--info-color);
     color: #fff;
-    --forma-btn-ghost-color: rgba(255, 255, 255, 0.85);
-    --forma-btn-ghost-hover-color: #fff;
-    --forma-btn-ghost-hover-bg-color: rgba(255, 255, 255, 0.18);
+    --forma-button-ghost-color: rgba(255, 255, 255, 0.85);
+    --forma-button-ghost-hover-color: #fff;
+    --forma-button-ghost-hover-background-color: rgba(255, 255, 255, 0.18);
 }
 
 .demo-sortable-tag {
@@ -278,7 +278,7 @@ body {
     padding: 0.15rem 0.6rem;
     border: 1px solid var(--border-color);
     border-radius: 999px;
-    background: var(--hover-bg-color);
+    background: var(--hover-background-color);
     font-size: 0.85rem;
 }
 

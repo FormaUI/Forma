@@ -6,7 +6,7 @@
 @inject IStringLocale<FormaMultiSelectPage> L
 
 <h1>FormaMultiSelect</h1>
-<p class="desc">@L["A chip-style multi-select with a searchable checkbox-list popup. Selected values render as removable tags; the popup stays anchored to its trigger wherever the page scrolls."]</p>
+<p class="description">@L["A chip-style multi-select with a searchable checkbox-list popup. Selected values render as removable tags; the popup stays anchored to its trigger wherever the page scrolls."]</p>
 
 <EditForm Model="Model" FormName="multi-select-demo" OnValidSubmit="HandleSubmit">
     <div class="demo-section">
@@ -37,7 +37,7 @@
 
     <div class="demo-section">
         <h2>@L["Add New Option"]</h2>
-        <p class="desc">@L["Search for a tag that doesn't exist yet, then use \"Add new\" to create and select it."]</p>
+        <p class="description">@L["Search for a tag that doesn't exist yet, then use \"Add new\" to create and select it."]</p>
         <div class="demo-box">
             <FormaMultiSelect TValue="int" @bind-Value="Model.CustomTags"
                                       Options="_customTagOptions"
@@ -49,7 +49,7 @@
 
     <div class="demo-section">
         <h2>@L["Nothing to choose from"]</h2>
-        <p class="desc">@L["Opening a list whose options have not loaded yet shows the empty notice rather than a blank popup."]</p>
+        <p class="description">@L["Opening a list whose options have not loaded yet shows the empty notice rather than a blank popup."]</p>
         <div class="demo-box">
             <FormaMultiSelect TValue="int" @bind-Value="Model.EmptyChoices"
                                       Options="_emptyOptions"

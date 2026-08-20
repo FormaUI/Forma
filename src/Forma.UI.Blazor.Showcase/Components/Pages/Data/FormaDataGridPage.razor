@@ -4,7 +4,7 @@
 @using Forma.UI.Blazor.Components.Inputs
 
 <h1>FormaDataGrid</h1>
-<p class="desc">@L["A paged, sortable table over a queryable set of items, built on QuickGrid."]</p>
+<p class="description">@L["A paged, sortable table over a queryable set of items, built on QuickGrid."]</p>
 
 <div class="demo-section">
     <h2>@L["Basic grid"]</h2>
@@ -37,7 +37,7 @@
 
 <div class="demo-section">
     <h2>@L["Row selection"]</h2>
-    <p class="desc">@L["Click a row to select only it; Ctrl/Cmd-click to toggle one row; Shift-click or Shift with arrow keys to select a range."]</p>
+    <p class="description">@L["Click a row to select only it; Ctrl/Cmd-click to toggle one row; Shift-click or Shift with arrow keys to select a range."]</p>
     <div class="demo-box">
         <FormaDataGrid TGridItem="Employee" Items="_employees" PageSize="5" EnableRowSelection="true"
                        QueryParameterNamePrefix="row-selectable"
@@ -54,7 +54,7 @@
 
 <div class="demo-section">
     <h2>@L["Selection limits and captions"]</h2>
-    <p class="desc">@L[$"At most {SelectionLimit} rows; the master toggle is a text caption instead of a checkbox."]</p>
+    <p class="description">@L[$"At most {SelectionLimit} rows; the master toggle is a text caption instead of a checkbox."]</p>
     <div class="demo-box">
         <FormaDataGrid TGridItem="Employee" Items="_employees" PageSize="5" EnableCheckedSelection="true"
                        QueryParameterNamePrefix="limited" MaximumSelection="SelectionLimit"
@@ -88,7 +88,7 @@
 
 <div class="demo-section">
     <h2>@L["Custom cell rendering and row styling"]</h2>
-    <p class="desc">@L["A TemplateColumn renders a FormaStatusBadge per row; RowClass dims inactive rows."]</p>
+    <p class="description">@L["A TemplateColumn renders a FormaStatusBadge per row; RowClass dims inactive rows."]</p>
     <div class="demo-box">
         <FormaDataGrid TGridItem="Employee" Items="_employees" PageSize="5" RowClass="GetRowClass"
                        QueryParameterNamePrefix="styled">
@@ -106,7 +106,7 @@
 
 <div class="demo-section">
     <h2>@L["Row actions"]</h2>
-    <p class="desc">@L["An action column is an ordinary TemplateColumn — the grid adds no button components of its own. In a real app these navigate to an editor page or raise a confirm dialog."]</p>
+    <p class="description">@L["An action column is an ordinary TemplateColumn — the grid adds no button components of its own. In a real app these navigate to an editor page or raise a confirm dialog."]</p>
     <div class="demo-box">
         <FormaDataGrid TGridItem="Employee" Items="_employees" PageSize="5"
                        QueryParameterNamePrefix="actions">
@@ -130,7 +130,7 @@
 </div>
 
 <div class="demo-section">    <h2>@L["Modal details"]</h2>
-    <p class="desc">@L["A single FormaModal instance is shared by every row; the action column tells it which row to show."]</p>
+    <p class="description">@L["A single FormaModal instance is shared by every row; the action column tells it which row to show."]</p>
     <div class="demo-box">
         <FormaDataGrid TGridItem="Employee" Items="_employees" PageSize="5"
                        QueryParameterNamePrefix="modal">
@@ -164,7 +164,7 @@
 </div>
 
 <div class="demo-section">    <h2>@L["Inline editing inside a form"]</h2>
-    <p class="desc">@L["FormaPropertyColumn shows its property, then swaps to an editor chosen from the property's type while its row is edited — text, number and date here. The grid owns the edit: it copies the row, validates the copy against its data annotations, and reports it only once valid, so Cancel discards and Save commits. The edited row drops out of selection while it is open."]</p>
+    <p class="description">@L["FormaPropertyColumn shows its property, then swaps to an editor chosen from the property's type while its row is edited — text, number and date here. The grid owns the edit: it copies the row, validates the copy against its data annotations, and reports it only once valid, so Cancel discards and Save commits. The edited row drops out of selection while it is open."]</p>
     <div class="demo-box">
         <FormaDataGrid @ref="_editGrid" TGridItem="EditableEmployee" Items="@_editable.AsQueryable()"
                        EnablePagination="false" QueryParameterNamePrefix="editing"
@@ -212,7 +212,7 @@
 
 <div class="demo-section">
     <h2>@L["Virtualized"]</h2>
-    <p class="desc">@L["Pagination is off and the surrounding box has a fixed height, so the rows scroll inside the grid while the header and footer stay put. Only the rows near the viewport are rendered."]</p>
+    <p class="description">@L["Pagination is off and the surrounding box has a fixed height, so the rows scroll inside the grid while the header and footer stay put. Only the rows near the viewport are rendered."]</p>
     <div class="demo-box demo-box-bounded">
         <FormaDataGrid Items="_hugeItems" EnablePagination="false" Virtualize="true"
                        QueryParameterNamePrefix="virtualized">

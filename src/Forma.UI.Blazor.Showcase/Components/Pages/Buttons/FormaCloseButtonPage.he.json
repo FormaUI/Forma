@@ -4,7 +4,7 @@
   "Sizes": "גדלים",
   "Disabled": "מושבת",
   "On a coloured surface": "על רקע צבעוני",
-  "A surface sets --forma-btn-ghost-color and its hover pair to retint the glyph; the toast does exactly this.": "משטח מגדיר את ‎--forma-btn-ghost-color‎ ואת זוג המשתנים של המעבר כדי לצבוע מחדש את הסמל; ההודעה הצפה עושה בדיוק זאת.",
+  "A surface sets --forma-button-ghost-color and its hover pair to retint the glyph; the toast does exactly this.": "משטח מגדיר את ‎--forma-button-ghost-color‎ ואת זוג המשתנים של המעבר כדי לצבוע מחדש את הסמל; ההודעה הצפה עושה בדיוק זאת.",
   "Saved successfully": "נשמר בהצלחה",
   "Close": "סגור",
   "Dismiss": "בטל",

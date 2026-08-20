@@ -114,11 +114,11 @@
             // Act
             var cut = ctx.Render(
                 @<FormaToolbar>
-                    <button id="test-btn">Click</button>
+                    <button id="test-button">Click</button>
                 </FormaToolbar>);
 
             // Assert
-            cut.Find("#test-btn");
+            cut.Find("#test-button");
         }
 
         [Fact]

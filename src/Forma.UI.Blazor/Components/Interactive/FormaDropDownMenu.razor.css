@@ -37,8 +37,8 @@
     overflow-y: auto;
     border: 1px solid var(--border-color, rgba(98, 105, 118, 0.16));
     border-radius: 8px;
-    background: var(--input-bg-color, #fff);
-    box-shadow: var(--shadow-md, 0 8px 24px rgba(0, 0, 0, 0.14));
+    background: var(--input-background-color, #fff);
+    box-shadow: var(--shadow-medium, 0 8px 24px rgba(0, 0, 0, 0.14));
 }
 
 /* Held back until the popover opens so it cannot flash at the top-left corner in the
@@ -116,7 +116,7 @@
 
 @media (hover: hover) {
     ::deep .forma-dropdown-menu-item:hover:not(:disabled) {
-        background: var(--hover-bg-color, rgba(98, 105, 118, 0.06));
+        background: var(--hover-background-color, rgba(98, 105, 118, 0.06));
     }
 
     ::deep .forma-dropdown-menu-item:hover:not(:disabled) .forma-glyph {
@@ -124,7 +124,7 @@
     }
 
     ::deep .forma-dropdown-menu-item.is-destructive:hover:not(:disabled) {
-        background: var(--forma-dropdown-menu-destructive-bg-color, rgba(214, 57, 57, 0.10));
+        background: var(--forma-dropdown-menu-destructive-background-color, rgba(214, 57, 57, 0.10));
         color: var(--forma-dropdown-menu-destructive-color, var(--danger-color));
     }
 }

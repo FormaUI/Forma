@@ -6,7 +6,7 @@
 @inject IStringLocale<FormaToggleSwitchPage> L
 
 <h1>FormaToggleSwitch</h1>
-<p class="desc">@L["An iOS-style toggle switch for boolean values. Supports optional on/off labels and a disabled state. Pure CSS — no JavaScript."]</p>
+<p class="description">@L["An iOS-style toggle switch for boolean values. Supports optional on/off labels and a disabled state. Pure CSS — no JavaScript."]</p>
 
 <EditForm Model="Model" FormName="toggle-demo" OnValidSubmit="HandleSubmit">
     <div class="demo-section">
@@ -31,7 +31,7 @@
 
     <div class="demo-section">
         <h2>@L["As a named setting"]</h2>
-        <p class="desc">@L["A label names the setting itself, so the switch needs no aria-label of its own. Pair it with the on/off labels sparingly — together they make for a busy row."]</p>
+        <p class="description">@L["A label names the setting itself, so the switch needs no aria-label of its own. Pair it with the on/off labels sparingly — together they make for a busy row."]</p>
         <div class="demo-box">
             <FormaToggleSwitch @bind-Value="Model.Newsletter" Label="@L["Send the weekly newsletter"]" />
             <FormaToggleSwitch @bind-Value="Model.Indexing" Label="@L["Allow search engines to index"]" />

@@ -3,29 +3,29 @@
 
 <FormaField Label="@Label" TargetId="@_id" LabelMode="FieldLabelMode.Inline">
     <ChildContent>
-        <div class="forma-toggle-wrapper">
+        <div class="forma-toggle-switch-wrapper">
             @if (OffLabel is not null)
             {
-                <span class="forma-toggle-label forma-toggle-off-label">@OffLabel</span>
+                <span class="forma-toggle-switch-label forma-toggle-switch-off-label">@OffLabel</span>
             }
-            <label class="@(Disabled ? "forma-toggle disabled" : "forma-toggle")">
+            <label class="@(Disabled ? "forma-toggle-switch disabled" : "forma-toggle-switch")">
                 <input @attributes="AdditionalAttributes"
                        id="@_id"
                        type="checkbox"
                        role="switch"
-                       class="forma-toggle-input @CssClass"
+                       class="forma-toggle-switch-input @CssClass"
                        checked="@CurrentValue"
                        @onchange="HandleChange"
                        disabled="@Disabled" />
-                <span class="forma-toggle-track" aria-hidden="true">
+                <span class="forma-toggle-switch-track" aria-hidden="true">
                     @* The mark carries on/off without relying on the track colour alone. *@
-                    <span class="forma-toggle-mark"><FormaGlyph Name="@(CurrentValue ? Glyph.Check : Glyph.Xmark)" /></span>
-                    <span class="forma-toggle-knob"></span>
+                    <span class="forma-toggle-switch-mark"><FormaGlyph Name="@(CurrentValue ? Glyph.Check : Glyph.Xmark)" /></span>
+                    <span class="forma-toggle-switch-knob"></span>
                 </span>
             </label>
             @if (OnLabel is not null)
             {
-                <span class="forma-toggle-label forma-toggle-on-label">@OnLabel</span>
+                <span class="forma-toggle-switch-label forma-toggle-switch-on-label">@OnLabel</span>
             }
         </div>
     </ChildContent>

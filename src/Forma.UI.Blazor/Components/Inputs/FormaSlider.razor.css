@@ -7,36 +7,36 @@
    ============================================================ */
 
 /* Pulled onto the label's row, which FormaField lays out above the slider. */
-.forma-range-value {
+.forma-slider-value {
     position: absolute;
     inset-block-start: 0;
     inset-inline-end: 0;
-    color: var(--forma-range-value-color, var(--text-color));
+    color: var(--forma-slider-value-color, var(--text-color));
     font-size: 0.85rem;
 }
 
-.forma-range-input {
+.forma-slider {
     display: block;
     inline-size: 100%;
-    accent-color: var(--forma-range-accent-color, var(--main-color));
+    accent-color: var(--forma-slider-accent-color, var(--main-color));
     touch-action: manipulation;
 }
 
-.forma-range-input:disabled {
-    accent-color: var(--forma-range-disabled-accent-color, var(--text-muted-color));
+.forma-slider:disabled {
+    accent-color: var(--forma-slider-disabled-accent-color, var(--text-muted-color));
     opacity: 0.65;
     cursor: not-allowed;
 }
 
-.forma-range-input:focus-visible {
-    outline: 2px solid var(--forma-range-focus-color, var(--focus-color));
+.forma-slider:focus-visible {
+    outline: 2px solid var(--forma-slider-focus-color, var(--focus-color));
     outline-offset: 2px;
 }
 
 /* Only the track grows: a native-appearance range ignores author thumb styling, so the
    touch target is the input's own height rather than a larger drawn thumb. */
 @media (pointer: coarse) {
-    .forma-range-input {
+    .forma-slider {
         block-size: 2.75rem;
     }
 }

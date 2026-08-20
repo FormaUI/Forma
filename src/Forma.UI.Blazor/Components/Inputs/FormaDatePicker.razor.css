@@ -4,20 +4,20 @@
 
 /* ---------- root ---------- */
 .forma-date-picker {
-    --dp-primary-color: var(--main-color, #16a8ff);
-    --dp-primary-fg-color: #fff;
-    --dp-range-bg-color: color-mix(in srgb, var(--dp-primary-color) 8%, transparent);
-    --dp-border-color: #ced4da;
-    --dp-day-width: 40px;
-    --dp-day-height: 35px;
-    --dp-radius: 6px;
+    --forma-date-picker-primary-color: var(--main-color, #16a8ff);
+    --forma-date-picker-primary-foreground-color: #fff;
+    --forma-date-picker-range-background-color: color-mix(in srgb, var(--forma-date-picker-primary-color) 8%, transparent);
+    --forma-date-picker-border-color: #ced4da;
+    --forma-date-picker-day-width: 40px;
+    --forma-date-picker-day-height: 35px;
+    --forma-date-picker-radius: 6px;
 
     position: relative;
     font-size: 0.9rem;
 }
 
 /* ---------- trigger ---------- */
-.forma-date-picker-trigger-wrap {
+.forma-date-picker-trigger-wrapper {
     position: relative;
     display: block;
 }
@@ -35,7 +35,7 @@
 
 @media (hover: hover) {
     .forma-date-picker-trigger:hover {
-        border-color: var(--dp-primary-color);
+        border-color: var(--forma-date-picker-primary-color);
     }
 }
 
@@ -101,7 +101,7 @@
     overflow: visible;
     border: none;
     background: #fff;
-    border-radius: var(--dp-radius);
+    border-radius: var(--forma-date-picker-radius);
     box-shadow: 0 2px 9px rgba(0, 0, 0, 0.2);
 }
 
@@ -189,20 +189,20 @@
 /* weekday headers */
 .forma-date-picker-weekdays {
     display: grid;
-    grid-template-columns: repeat(7, var(--dp-day-width));
+    grid-template-columns: repeat(7, var(--forma-date-picker-day-width));
     justify-items: center;
     font-size: 0.75rem;
     color: #9e9e9e;
     font-weight: 700;
     margin-bottom: 2px;
-    height: var(--dp-day-height);
+    height: var(--forma-date-picker-day-height);
     align-items: center;
 }
 
 /* day grid */
 .forma-date-picker-days {
     display: grid;
-    grid-template-columns: repeat(7, var(--dp-day-width));
+    grid-template-columns: repeat(7, var(--forma-date-picker-day-width));
 }
 
 /* individual day */
@@ -210,8 +210,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: var(--dp-day-width);
-    height: var(--dp-day-height);
+    width: var(--forma-date-picker-day-width);
+    height: var(--forma-date-picker-day-height);
     border: none;
     background: transparent;
     border-radius: 4px;
@@ -250,15 +250,15 @@
 
 /* selected */
 .forma-date-picker-day.selected {
-    background: var(--dp-primary-color);
-    color: var(--dp-primary-fg-color);
+    background: var(--forma-date-picker-primary-color);
+    color: var(--forma-date-picker-primary-foreground-color);
     border-radius: 4px;
     font-weight: 700;
 }
 
 /* range — underlined so the span reads without relying on the fill colour */
 .forma-date-picker-day.in-range {
-    background: var(--dp-range-bg-color);
+    background: var(--forma-date-picker-range-background-color);
     border-radius: 0;
     text-decoration: underline;
     text-underline-offset: 2px;
@@ -309,8 +309,8 @@
 @media (hover: hover) {
     ::deep .forma-date-picker-preset.forma-date-picker-preset:hover:not(:disabled) {
         background: #f5f5f5;
-        border-color: var(--dp-primary-color);
-        color: var(--dp-primary-color);
+        border-color: var(--forma-date-picker-primary-color);
+        color: var(--forma-date-picker-primary-color);
     }
 }
 
@@ -332,8 +332,8 @@
 
 @media (pointer: coarse) {
     .forma-date-picker {
-        --dp-day-width: 2.75rem;
-        --dp-day-height: 2.75rem;
+        --forma-date-picker-day-width: 2.75rem;
+        --forma-date-picker-day-height: 2.75rem;
     }
 
     .forma-date-picker-trigger,

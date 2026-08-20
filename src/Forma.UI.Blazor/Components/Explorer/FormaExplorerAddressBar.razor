@@ -3,28 +3,28 @@
 <div class="forma-explorer-address-bar @(!string.IsNullOrEmpty(SearchQuery) ? "has-search-query" : "")">
     <div class="forma-explorer-nav-buttons" role="group" aria-label="@L["Navigation"]">
         <button type="button"
-                class="forma-explorer-nav-btn"
+                class="forma-explorer-nav-button"
                 disabled="@(!CanGoBack)"
                 aria-label="@L["Back"]"
                 @onclick="OnBack">
             <span class="forma-explorer-nav-arrow" aria-hidden="true"><FormaGlyph Name="Glyph.ArrowLeft" /></span>
         </button>
         <button type="button"
-                class="forma-explorer-nav-btn"
+                class="forma-explorer-nav-button"
                 disabled="@(!CanGoForward)"
                 aria-label="@L["Forward"]"
                 @onclick="OnForward">
             <span class="forma-explorer-nav-arrow" aria-hidden="true"><FormaGlyph Name="Glyph.ArrowRight" /></span>
         </button>
         <button type="button"
-                class="forma-explorer-nav-btn"
+                class="forma-explorer-nav-button"
                 disabled="@(!CanGoUp)"
                 aria-label="@L["Up to Parent Folder"]"
                 @onclick="OnUp">
             <FormaGlyph Name="Glyph.ArrowUp" />
         </button>
         <button type="button"
-                class="forma-explorer-nav-btn"
+                class="forma-explorer-nav-button"
                 aria-label="@L["Refresh"]"
                 @onclick="OnRefresh">
             <FormaGlyph Name="Glyph.RotateRight" />
@@ -92,7 +92,7 @@
         }
     </nav>
 
-    <div class="forma-explorer-search-wrap">
+    <div class="forma-explorer-search-wrapper">
         <span class="forma-explorer-search-icon" aria-hidden="true"><FormaGlyph Name="Glyph.MagnifyingGlass" /></span>
         <input class="forma-explorer-search-input"
                type="search"

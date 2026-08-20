@@ -107,7 +107,7 @@ Forma.UI.Blazor/Components/
 │   ├── FormaExplorerThumbnailsView.razor
 │   ├── FormaExplorerDetailsView.razor
 │   ├── FormaExplorerListView.razor
-│   ├── FormaExplorerThumb.razor          # media depiction shared by all three views
+│   ├── FormaExplorerThumbnail.razor      # media depiction shared by all three views
 │   ├── FormaExplorerActionBar.razor      # per-item operations as an overflow menu
 │   ├── ExplorerContext.cs                # cascaded state and per-item actions
 │   ├── ExplorerSelection.cs
@@ -604,7 +604,7 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Used in** | Single source of truth for dismiss controls — `FormaModal`'s header, `FormaToastContainer`'s toasts, `FormaContextToolbar`'s clear-selection control |
 | **Parameters** | `string Label` (required — the accessible name, which differs per use: close, dismiss, clear selection), `EventCallback<MouseEventArgs> OnClick`, `bool Disabled` |
 | **Blazor approach** | A thin wrapper over `<FormaButton Variant="Ghost" IconOnly>` supplying the one X glyph, so it owns no colours of its own and inherits the ghost variant's treatment and the icon-only square sizing. `Label` is required rather than defaulted because a wrong accessible name is worse than an obvious compile error, and the three call sites genuinely differ. Ships no `.razor.css` — every visual decision belongs to `FormaButton` |
-| **Notes** | Before this existed the three call sites had each reimplemented `.forma-btn-ghost` verbatim and drifted: two drew a 14×14 SVG while the toast used the `&times;` entity, and the focus ring was `--focus-color` against `FormaButton`'s `--main-color`. Retinting for a saturated surface (the toast) goes through `--forma-btn-ghost-*-color` knobs rather than a fork |
+| **Notes** | Before this existed the three call sites had each reimplemented `.forma-button-ghost` verbatim and drifted: two drew a 14×14 SVG while the toast used the `&times;` entity, and the focus ring was `--focus-color` against `FormaButton`'s `--main-color`. Retinting for a saturated surface (the toast) goes through `--forma-button-ghost-*-color` knobs rather than a fork |
 
 ### 40. `FormaEyeButton` ✅
 

@@ -36,7 +36,7 @@
 .forma-textarea-count bdi {
     padding-inline: 0.25rem;
     border-radius: 3px;
-    background: var(--forma-input-bg-color, var(--input-bg-color));
+    background: var(--forma-input-background-color, var(--input-background-color));
     color: var(--forma-textarea-count-color, var(--text-color));
 }
 
@@ -51,6 +51,6 @@
 }
 
 .forma-textarea:disabled ~ .forma-textarea-count bdi {
-    background: var(--forma-input-disabled-bg-color, var(--hover-bg-color));
+    background: var(--forma-input-disabled-background-color, var(--hover-background-color));
     color: var(--forma-input-disabled-color, var(--text-muted-color));
 }

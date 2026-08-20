@@ -5,14 +5,14 @@
    ============================================================ */
 
 /* ---------- wrapper ---------- */
-.forma-toggle-wrapper {
+.forma-toggle-switch-wrapper {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
 }
 
 /* ---------- label (the click target) ---------- */
-.forma-toggle {
+.forma-toggle-switch {
     display: inline-flex;
     align-items: center;
     cursor: pointer;
@@ -20,13 +20,13 @@
     touch-action: manipulation;
 }
 
-.forma-toggle.disabled {
+.forma-toggle-switch.disabled {
     opacity: 0.65;
     cursor: not-allowed;
 }
 
 /* ---------- hidden checkbox ---------- */
-.forma-toggle-input {
+.forma-toggle-switch-input {
     position: absolute;
     opacity: 0;
     width: 0;
@@ -35,44 +35,44 @@
 }
 
 /* ---------- track ---------- */
-.forma-toggle-track {
+.forma-toggle-switch-track {
     position: relative;
     display: inline-block;
     width: 3rem;
     height: 1.5rem;
-    background-color: var(--forma-toggle-off-bg-color, #adb5bd);
+    background-color: var(--forma-toggle-switch-off-background-color, #adb5bd);
     border-radius: 1.5rem;
     transition: background-color 0.2s ease;
 }
 
-.forma-toggle-input:checked + .forma-toggle-track {
-    background-color: var(--forma-toggle-on-bg-color, var(--main-color, #0d6efd));
+.forma-toggle-switch-input:checked + .forma-toggle-switch-track {
+    background-color: var(--forma-toggle-switch-on-background-color, var(--main-color, #0d6efd));
 }
 
-.forma-toggle-input:focus-visible + .forma-toggle-track {
+.forma-toggle-switch-input:focus-visible + .forma-toggle-switch-track {
     outline: 2px solid var(--focus-color, #86b7fe);
     outline-offset: 2px;
 }
 
 /* ---------- state mark ---------- */
-.forma-toggle-mark {
+.forma-toggle-switch-mark {
     position: absolute;
     inset-block-start: 50%;
     inset-inline-end: 0.4375rem;
     transform: translateY(-50%);
     font-size: 0.75rem;
     line-height: 1;
-    color: var(--forma-toggle-off-mark-color, rgba(0, 0, 0, 0.6));
+    color: var(--forma-toggle-switch-off-mark-color, rgba(0, 0, 0, 0.6));
 }
 
-.forma-toggle-input:checked + .forma-toggle-track .forma-toggle-mark {
+.forma-toggle-switch-input:checked + .forma-toggle-switch-track .forma-toggle-switch-mark {
     inset-inline-end: auto;
     inset-inline-start: 0.4375rem;
-    color: var(--forma-toggle-on-mark-color, #fff);
+    color: var(--forma-toggle-switch-on-mark-color, #fff);
 }
 
 /* ---------- knob ---------- */
-.forma-toggle-knob {
+.forma-toggle-switch-knob {
     position: absolute;
     inset-block-start: 0.125rem;
     inset-inline-start: 0.125rem;
@@ -84,20 +84,20 @@
     transition: inset-inline-start 0.2s ease;
 }
 
-.forma-toggle-input:checked + .forma-toggle-track .forma-toggle-knob {
+.forma-toggle-switch-input:checked + .forma-toggle-switch-track .forma-toggle-switch-knob {
     inset-inline-start: calc(100% - 1.375rem);
 }
 
 /* ---------- labels ---------- */
-.forma-toggle-label {
+.forma-toggle-switch-label {
     font-size: 0.875rem;
-    color: var(--forma-toggle-label-color, #6c757d);
+    color: var(--forma-toggle-switch-label-color, #6c757d);
     user-select: none;
 }
 
 /* Padding rather than a taller track, so the knob geometry is untouched. */
 @media (pointer: coarse) {
-    .forma-toggle {
+    .forma-toggle-switch {
         padding-block: 0.625rem;
     }
 }

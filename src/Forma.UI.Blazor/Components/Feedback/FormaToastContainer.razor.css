@@ -48,9 +48,9 @@
 /* Custom properties cascade into the nested button's own scope, which plain
    selectors cannot reach. */
 .forma-toast {
-    --forma-btn-ghost-color: rgba(255, 255, 255, 0.75);
-    --forma-btn-ghost-hover-color: #fff;
-    --forma-btn-ghost-hover-bg-color: rgba(255, 255, 255, 0.18);
+    --forma-button-ghost-color: rgba(255, 255, 255, 0.75);
+    --forma-button-ghost-hover-color: #fff;
+    --forma-button-ghost-hover-background-color: rgba(255, 255, 255, 0.18);
 }
 
 /* ── Type variants ── */

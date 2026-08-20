@@ -6,14 +6,14 @@
     margin-block-end: 24px;
 }
 
-.forma-page-title {
+.forma-page-header-title {
     font-size: clamp(1.25rem, 1rem + 1.5vw, 2rem);
     font-weight: 600;
     margin: 0;
     line-height: 1.3;
 }
 
-.forma-breadcrumb {
+.forma-page-header-breadcrumb {
     display: flex;
     flex-wrap: wrap;
     list-style: none;
@@ -22,37 +22,37 @@
     gap: 0;
 }
 
-.forma-breadcrumb-item {
+.forma-page-header-breadcrumb-item {
     color: var(--text-muted-color, #6c757d);
     font-size: 0.875rem;
 }
 
-.forma-breadcrumb-item + .forma-breadcrumb-item::before {
+.forma-page-header-breadcrumb-item + .forma-page-header-breadcrumb-item::before {
     content: "/";
     padding-inline: 0.5rem;
     color: var(--text-muted-color, #6c757d);
 }
 
-.forma-breadcrumb-item a {
+.forma-page-header-breadcrumb-item a {
     color: var(--link-color, #0d6efd);
     text-decoration: none;
     touch-action: manipulation;
 }
 
 @media (pointer: coarse) {
-    .forma-breadcrumb-item a {
+    .forma-page-header-breadcrumb-item a {
         display: inline-block;
         padding-block: 0.5rem;
     }
 }
 
 @media (hover: hover) {
-    .forma-breadcrumb-item a:hover {
+    .forma-page-header-breadcrumb-item a:hover {
         text-decoration: underline;
     }
 }
 
-.forma-breadcrumb-item.active span {
+.forma-page-header-breadcrumb-item.active span {
     color: var(--text-muted-color, #6c757d);
 }
 
