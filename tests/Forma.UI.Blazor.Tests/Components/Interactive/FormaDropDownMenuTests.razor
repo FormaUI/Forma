@@ -271,6 +271,127 @@
         }
 
         [Fact]
+        public void Should_render_an_ordinary_item_as_a_menuitem_carrying_no_checked_state()
+        {
+            // Arrange
+            using var ctx = new FormaDropDownMenuTests();
+            var cut = ctx.Render(
+                @<FormaDropDownMenu>
+                    <Trigger>Options</Trigger>
+                    <ChildContent><FormaDropDownMenuItem>Print</FormaDropDownMenuItem></ChildContent>
+                </FormaDropDownMenu>);
+
+            // Act
+            cut.Find(".forma-dropdown-menu-trigger").Click();
+
+            // Assert
+            var item = cut.Find(".forma-dropdown-menu-item");
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("menuitem", item.GetAttribute("role"));
+                Assert.Null(item.GetAttribute("aria-checked"));
+            });
+        }
+
+        [Fact]
+        public void Should_render_a_chosen_item_as_a_checked_radio_carrying_a_mark()
+        {
+            // Arrange
+            using var ctx = new FormaDropDownMenuTests();
+            var cut = ctx.Render(
+                @<FormaDropDownMenu>
+                    <Trigger>Sort</Trigger>
+                    <ChildContent>
+                        <FormaDropDownMenuItem IsSelected="true">Name</FormaDropDownMenuItem>
+                        <FormaDropDownMenuItem IsSelected="false">Size</FormaDropDownMenuItem>
+                    </ChildContent>
+                </FormaDropDownMenu>);
+
+            // Act
+            cut.Find(".forma-dropdown-menu-trigger").Click();
+
+            // Assert
+            var items = cut.FindAll(".forma-dropdown-menu-item");
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("menuitemradio", items[0].GetAttribute("role"));
+                Assert.Equal("true", items[0].GetAttribute("aria-checked"));
+                Assert.Equal("menuitemradio", items[1].GetAttribute("role"));
+                Assert.Equal("false", items[1].GetAttribute("aria-checked"));
+            });
+        }
+
+        [Fact]
+        public void Should_mark_the_chosen_item_without_relying_on_colour()
+        {
+            // Arrange
+            using var ctx = new FormaDropDownMenuTests();
+            var cut = ctx.Render(
+                @<FormaDropDownMenu>
+                    <Trigger>Sort</Trigger>
+                    <ChildContent>
+                        <FormaDropDownMenuItem IsSelected="true">Name</FormaDropDownMenuItem>
+                        <FormaDropDownMenuItem IsSelected="false">Size</FormaDropDownMenuItem>
+                    </ChildContent>
+                </FormaDropDownMenu>);
+
+            // Act
+            cut.Find(".forma-dropdown-menu-trigger").Click();
+
+            // Assert
+            var items = cut.FindAll(".forma-dropdown-menu-item");
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("is-selected", items[0].ClassList);
+                Assert.Single(items[0].QuerySelectorAll(".forma-dropdown-menu-item-check"));
+                Assert.DoesNotContain("is-selected", items[1].ClassList);
+                Assert.Empty(items[1].QuerySelectorAll(".forma-dropdown-menu-item-check"));
+            });
+        }
+
+        [Fact]
+        public void Should_hide_the_chosen_mark_from_assistive_technology()
+        {
+            // Arrange
+            using var ctx = new FormaDropDownMenuTests();
+            var cut = ctx.Render(
+                @<FormaDropDownMenu>
+                    <Trigger>Sort</Trigger>
+                    <ChildContent><FormaDropDownMenuItem IsSelected="true">Name</FormaDropDownMenuItem></ChildContent>
+                </FormaDropDownMenu>);
+
+            // Act
+            cut.Find(".forma-dropdown-menu-trigger").Click();
+
+            // Assert
+            Assert.Equal("true", cut.Find(".forma-dropdown-menu-item-check").GetAttribute("aria-hidden"));
+        }
+
+        [Fact]
+        public void Should_mark_a_chosen_link_item_the_same_way()
+        {
+            // Arrange
+            using var ctx = new FormaDropDownMenuTests();
+            var cut = ctx.Render(
+                @<FormaDropDownMenu>
+                    <Trigger>Sort</Trigger>
+                    <ChildContent><FormaDropDownMenuItem Href="?sort=name" IsSelected="true">Name</FormaDropDownMenuItem></ChildContent>
+                </FormaDropDownMenu>);
+
+            // Act
+            cut.Find(".forma-dropdown-menu-trigger").Click();
+
+            // Assert
+            var item = cut.Find("a.forma-dropdown-menu-item");
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("menuitemradio", item.GetAttribute("role"));
+                Assert.Equal("true", item.GetAttribute("aria-checked"));
+                Assert.Single(item.QuerySelectorAll(".forma-dropdown-menu-item-check"));
+            });
+        }
+
+        [Fact]
         public void Should_set_aria_expanded_when_open()
         {
             // Arrange

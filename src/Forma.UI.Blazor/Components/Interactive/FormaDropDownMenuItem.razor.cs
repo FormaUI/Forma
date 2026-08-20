@@ -16,6 +16,9 @@ public sealed partial class FormaDropDownMenuItem : IDisposable
     /// <summary>Marks the item as destroying data, colouring it as a warning.</summary>
     [Parameter] public bool IsDestructive { get; set; }
 
+    /// <summary>Whether the item is the chosen one of a set the menu picks between, rendering it as a radio item; null for an ordinary command.</summary>
+    [Parameter] public bool? IsSelected { get; set; }
+
     /// <summary>Raised when the item is activated.</summary>
     [Parameter] public EventCallback OnClick { get; set; }
 
@@ -29,7 +32,16 @@ public sealed partial class FormaDropDownMenuItem : IDisposable
     private ElementReference _element;
 
     private string CssClass
-        => IsDestructive ? "forma-dropdown-menu-item is-destructive" : "forma-dropdown-menu-item";
+        => string.Concat(
+            "forma-dropdown-menu-item",
+            IsDestructive ? " is-destructive" : string.Empty,
+            IsSelected is true ? " is-selected" : string.Empty);
+
+    private string Role
+        => IsSelected is null ? "menuitem" : "menuitemradio";
+
+    private string? AriaChecked
+        => IsSelected is null ? null : IsSelected.Value ? "true" : "false";
 
     protected override void OnInitialized()
     {

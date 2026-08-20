@@ -97,6 +97,17 @@
     color: var(--text-muted-color, #889097);
 }
 
+/* The chosen item of a set carries weight and a mark, so the choice survives without colour. */
+::deep .forma-dropdown-menu-item.is-selected {
+    font-weight: 600;
+}
+
+::deep .forma-dropdown-menu-item-check {
+    margin-inline-start: auto;
+    padding-inline-start: 1rem;
+    color: var(--forma-dropdown-menu-selected-color, var(--main-color));
+}
+
 @media (pointer: coarse) {
     ::deep .forma-dropdown-menu-item {
         min-block-size: 2.75rem;
