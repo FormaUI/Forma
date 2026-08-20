@@ -231,7 +231,7 @@
             var cut = ctx.Render(@<FormaExplorer Resources="resources" />);
 
             // Act
-            cut.Find("input.forma-explorer-search-input").Input("banner");
+            cut.Find("input.forma-search-box").Input("banner");
 
             // Assert
             var item = Assert.Single(cut.FindAll(".forma-explorer-item"));

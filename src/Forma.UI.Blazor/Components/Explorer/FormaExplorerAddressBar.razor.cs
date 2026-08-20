@@ -127,19 +127,12 @@ public sealed partial class FormaExplorerAddressBar : ComponentBase
     private static void HandleDragOver(DragEventArgs e)
         => e.DataTransfer.DropEffect = "move";
 
-    private async Task ClearSearch()
-    {
-        SearchQuery = string.Empty;
-
-        await OnSearchQueryChanged.InvokeAsync(string.Empty);
-    }
-
     private async Task HandleBreadcrumbDrop(FolderResourceInfo? folder)
         => await OnBreadcrumbDrop.InvokeAsync(folder);
 
-    private async Task HandleSearchInput(ChangeEventArgs e)
+    private async Task HandleSearchValueChangedAsync(string query)
     {
-        SearchQuery = e.Value?.ToString() ?? string.Empty;
+        SearchQuery = query;
 
         await OnSearchQueryChanged.InvokeAsync(SearchQuery);
     }

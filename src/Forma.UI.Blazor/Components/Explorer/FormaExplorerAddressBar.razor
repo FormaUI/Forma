@@ -93,20 +93,9 @@
     </nav>
 
     <div class="forma-explorer-search-wrapper">
-        <span class="forma-explorer-search-icon" aria-hidden="true"><FormaGlyph Name="Glyph.MagnifyingGlass" /></span>
-        <input class="forma-explorer-search-input"
-               type="search"
-               dir="auto"
-               value="@SearchQuery"
-               placeholder="@SearchPlaceholder"
-               aria-label="@SearchPlaceholder"
-               @oninput="HandleSearchInput" />
-        @if (!string.IsNullOrEmpty(SearchQuery))
-        {
-            <button type="button"
-                    class="forma-explorer-search-clear"
-                    aria-label="@L["Clear Search"]"
-                    @onclick="ClearSearch"><FormaGlyph Name="Glyph.Xmark" /></button>
-        }
+        <FormaSearchBox Value="@SearchQuery"
+                        ValueChanged="HandleSearchValueChangedAsync"
+                        Placeholder="@SearchPlaceholder"
+                        aria-label="@SearchPlaceholder" />
     </div>
 </div>

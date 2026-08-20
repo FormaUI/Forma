@@ -1,0 +1,253 @@
+@inherits BunitContext
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_input_element_with_forma_search_box_class()
+        {
+            // Arrange
+            using var ctx = new FormaSearchBoxTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSearchBox />);
+
+            // Assert
+            Assert.NotNull(cut.Find("input.forma-search-box"));
+        }
+
+        [Fact]
+        public void Should_render_a_search_type()
+        {
+            // Arrange
+            using var ctx = new FormaSearchBoxTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSearchBox />);
+
+            // Assert
+            Assert.Equal("search", cut.Find("input").GetAttribute("type"));
+        }
+
+        [Fact]
+        public void Should_render_leading_magnifying_glass_icon()
+        {
+            // Arrange
+            using var ctx = new FormaSearchBoxTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSearchBox />);
+
+            // Assert
+            Assert.NotNull(cut.Find(".forma-search-box-icon svg"));
+        }
+
+        [Fact]
+        public void Should_render_placeholder_when_specified()
+        {
+            // Arrange
+            using var ctx = new FormaSearchBoxTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSearchBox Placeholder="Search articles..." />);
+
+            // Assert
+            Assert.Equal("Search articles...", cut.Find("input").GetAttribute("placeholder"));
+        }
+
+        [Fact]
+        public void Should_render_initial_value()
+        {
+            // Arrange
+            using var ctx = new FormaSearchBoxTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSearchBox Value="banner" />);
+
+            // Assert
+            Assert.Equal("banner", cut.Find("input").GetAttribute("value"));
+        }
+
+        [Fact]
+        public void Should_update_value_on_input()
+        {
+            // Arrange
+            using var ctx = new FormaSearchBoxTests();
+            string? bound = null;
+
+            // Act
+            var cut = ctx.Render(@<FormaSearchBox Value="@bound" ValueChanged="v => bound = v" />);
+            cut.Find("input").Input("cover");
+
+            // Assert
+            Assert.Equal("cover", bound);
+        }
+
+        [Fact]
+        public void Should_raise_on_search_instantly_without_a_debounce_delay()
+        {
+            // Arrange
+            using var ctx = new FormaSearchBoxTests();
+            var searched = new List<string>();
+
+            // Act
+            var cut = ctx.Render(@<FormaSearchBox OnSearch="v => searched.Add(v)" />);
+            cut.Find("input").Input("cover");
+
+            // Assert
+            Assert.Equal(["cover"], searched);
+        }
+
+        [Fact]
+        public void Should_debounce_on_search_until_typing_pauses()
+        {
+            // Arrange
+            using var ctx = new FormaSearchBoxTests();
+            var searched = new List<string>();
+            var delay = TimeSpan.FromMilliseconds(60);
+
+            // Act
+            var cut = ctx.Render(@<FormaSearchBox DebounceDelay="delay" OnSearch="v => searched.Add(v)" />);
+            var input = cut.Find("input");
+            input.Input("c");
+            input.Input("co");
+            input.Input("cov");
+
+            // Assert
+            Assert.Empty(searched);
+            cut.WaitForAssertion(() => Assert.Equal(["cov"], searched), TimeSpan.FromSeconds(2));
+        }
+
+        [Fact]
+        public void Should_not_render_clear_button_when_empty()
+        {
+            // Arrange
+            using var ctx = new FormaSearchBoxTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSearchBox />);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-search-box-clear"));
+        }
+
+        [Fact]
+        public void Should_render_clear_button_when_populated()
+        {
+            // Arrange
+            using var ctx = new FormaSearchBoxTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSearchBox Value="banner" />);
+
+            // Assert
+            Assert.NotNull(cut.Find(".forma-search-box-clear button"));
+        }
+
+        [Fact]
+        public void Should_clear_value_and_raise_search_immediately_when_cleared()
+        {
+            // Arrange
+            using var ctx = new FormaSearchBoxTests();
+            string? bound = "banner";
+            var searched = new List<string>();
+            var delay = TimeSpan.FromSeconds(30);
+
+            // Act
+            var cut = ctx.Render(@<FormaSearchBox Value="@bound" ValueChanged="v => bound = v" DebounceDelay="delay" OnSearch="v => searched.Add(v)" />);
+            cut.Find(".forma-search-box-clear button").Click();
+
+            // Assert
+            Assert.Equal(string.Empty, bound);
+            cut.WaitForAssertion(() => Assert.Equal([string.Empty], searched));
+        }
+
+        [Fact]
+        public void Should_raise_on_search_immediately_on_enter_bypassing_debounce()
+        {
+            // Arrange
+            using var ctx = new FormaSearchBoxTests();
+            var searched = new List<string>();
+            var delay = TimeSpan.FromSeconds(30);
+
+            // Act
+            var cut = ctx.Render(@<FormaSearchBox DebounceDelay="delay" OnSearch="v => searched.Add(v)" />);
+            var input = cut.Find("input");
+            input.Input("cover");
+            input.KeyDown(Key.Enter);
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal(["cover"], searched));
+        }
+
+        [Fact]
+        public void Should_support_disabled_attribute()
+        {
+            // Arrange
+            using var ctx = new FormaSearchBoxTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSearchBox Disabled="true" />);
+
+            // Assert
+            Assert.True(cut.Find("input").HasAttribute("disabled"));
+        }
+
+        [Fact]
+        public void Should_disable_the_clear_button_when_the_field_is_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaSearchBoxTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSearchBox Value="banner" Disabled="true" />);
+
+            // Assert
+            Assert.True(cut.Find(".forma-search-box-clear button").HasAttribute("disabled"));
+        }
+
+        [Fact]
+        public void Should_render_id_when_specified()
+        {
+            // Arrange
+            using var ctx = new FormaSearchBoxTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSearchBox Id="site-search" />);
+
+            // Assert
+            Assert.Equal("site-search", cut.Find("input").GetAttribute("id"));
+        }
+
+        [Fact]
+        public void Should_pass_through_unmatched_attributes()
+        {
+            // Arrange
+            using var ctx = new FormaSearchBoxTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSearchBox aria-label="Search the site" />);
+
+            // Assert
+            Assert.Equal("Search the site", cut.Find("input").GetAttribute("aria-label"));
+        }
+
+        [Fact]
+        public void Should_merge_custom_class_with_forma_search_box()
+        {
+            // Arrange
+            using var ctx = new FormaSearchBoxTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSearchBox Class="demo-row-field" />);
+
+            // Assert
+            var classes = cut.Find("input").ClassList;
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("forma-search-box", classes);
+                Assert.Contains("demo-row-field", classes);
+            });
+        }
+    }
+}

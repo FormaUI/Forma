@@ -66,6 +66,7 @@ Forma.UI.Blazor/Components/
 │   ├── ✅ FormaCheckBox.razor
 │   ├── ✅ FormaInput.razor
 │   ├── ✅ FormaTextBox.razor
+│   ├── ✅ FormaSearchBox.razor
 │   ├── ✅ FormaTextArea.razor
 │   ├── ✅ FormaToggleSwitch.razor
 │   ├── ✅ FormaPasswordBox.razor
@@ -806,6 +807,16 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Blazor approach** | `InputBase<string?>` rendering a plain `<input>`, no JavaScript. At `Normal` it is bare, carrying `.forma-text-box` and nothing around it. At `Large` it renders that same input inside `FormaField` wearing `.forma-field-input`, so the label, the box and the validation slot come from the one component `FormaInput` and `FormaPasswordBox` already use rather than from a second set of rules imitating it |
 | **Sizes** | `Normal` stands level with a `FormaButton`, which is what a toolbar, a filter row or a grid cell needs, and takes no label \u2014 a labelled field is tall because it reserves room for a floating label, and this one has none to reserve. `Large` is the field: it wraps in `FormaField`, so `Label` and `Required` become meaningful there and only there, and setting `Label` at `Normal` throws rather than silently dropping it |
 | **Notes** | The type is pinned to `text`; a field needing `email`, `tel`, `url` or `search` is `FormaInput`'s job. At `Normal` it carries no label, so a caller names it through `Id` and a real `<label for>`, or through `aria-label` where no visible label belongs. `Placeholder` gives way to the floating label once one is set, since the two would otherwise sit on top of each other. The invalid border does not wait for `modified`, since submitting an untouched required field marks it invalid without ever marking it modified |
+
+### 60. `FormaSearchBox` ✅
+
+| | |
+|---|---|
+| **Old pattern** | The hand-rolled search box in `FormaExplorerAddressBar` — a magnifying glass glyph, a `type="search"` input, and a clear button, all written directly into that component |
+| **Used in** | General search and filter fields anywhere a caller wants a `type="search"` box rather than a plain `FormaTextBox`. Now the box `FormaExplorerAddressBar` composes rather than draws itself |
+| **Parameters** | `string Value`, `EventCallback<string> ValueChanged`, `EventCallback<string> OnSearch`, `TimeSpan? DebounceDelay`, `string? Placeholder`, `string? Id`, `bool Disabled`, `string? Class` |
+| **Blazor approach** | A plain `Value`/`ValueChanged` pair rather than `InputBase<T>`, since a search field has no validation state to carry. `Value` updates on every keystroke; `OnSearch` reports the committed term — instantly when `DebounceDelay` is null, or once typing pauses for that long otherwise. Enter and the built-in clear button both bypass a pending debounce and report immediately. The clear button is `FormaCloseButton`, reused rather than redrawn, and disables alongside the field |
+| **Notes** | `dir="auto"` follows what is typed, with the placeholder falling back to the page's own direction so an RTL placeholder does not strand itself in an empty LTR-default field. Retrofitted into `FormaExplorerAddressBar`, which keeps its own wrapper for the expand-on-focus and breadcrumb-collapse behaviour and now leaves the box itself to this component |
 
 ---
 

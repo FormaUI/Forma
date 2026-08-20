@@ -1,0 +1,83 @@
+/* ============================================================
+   FormaSearchBox — CSS isolation
+   Leading glyph, a box matching FormaTextBox's normal size, and
+   a clear button that appears once the field is populated.
+   ============================================================ */
+
+.forma-search-box-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    inline-size: 100%;
+}
+
+.forma-search-box-icon {
+    position: absolute;
+    inset-inline-start: 0.65rem;
+    font-size: 0.8rem;
+    color: var(--text-muted-color);
+    pointer-events: none;
+}
+
+.forma-search-box {
+    inline-size: 100%;
+    min-block-size: 2.125rem;
+    padding-inline: 2rem;
+    padding-block: 0.25rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--forma-input-color, var(--text-color));
+    background-color: var(--forma-input-background-color, var(--input-background-color));
+    border: 1px solid var(--forma-input-border-color, var(--dark-border-color));
+    border-radius: 4px;
+    outline: none;
+    box-sizing: border-box;
+    touch-action: manipulation;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+/* The placeholder is UI text, so an empty field follows the page rather than the value typed into it.
+   unicode-bidi is reset too because dir="auto" maps to plaintext, which would otherwise keep deriving direction from content. */
+.forma-search-box:placeholder-shown {
+    direction: inherit;
+    unicode-bidi: normal;
+}
+
+.forma-search-box::placeholder {
+    color: var(--forma-placeholder-color, var(--text-secondary-color));
+    opacity: 1;
+}
+
+.forma-search-box:focus {
+    border-color: var(--forma-input-focus-border-color, var(--focus-color));
+    box-shadow: 0 0 0 0.2rem var(--forma-input-focus-shadow-color, color-mix(in srgb, var(--focus-color) 25%, transparent));
+}
+
+@media (forced-colors: active) {
+    .forma-search-box:focus {
+        outline: 2px solid Highlight;
+        outline-offset: 1px;
+    }
+}
+
+.forma-search-box:disabled {
+    color: var(--forma-input-disabled-color, var(--text-muted-color));
+    background-color: var(--forma-input-disabled-background-color, var(--hover-background-color));
+    cursor: not-allowed;
+}
+
+/* WebKit draws its own clear button for type="search", which would sit beside the one this component owns. */
+.forma-search-box::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+}
+
+.forma-search-box-clear {
+    position: absolute;
+    inset-inline-end: 0.35rem;
+}
+
+@media (pointer: coarse) {
+    .forma-search-box {
+        min-block-size: 2.75rem;
+    }
+}

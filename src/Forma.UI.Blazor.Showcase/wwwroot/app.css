@@ -282,6 +282,15 @@ body {
     font-size: 0.85rem;
 }
 
+/* A filtered result set, shown so a reader can see a search actually narrow it. */
+.demo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin: 0.75rem 0 0;
+    padding-inline-start: 1.25rem;
+}
+
 /* A field that shares a row with an action rather than filling it. */
 .demo-row-field {
     flex: 1 1 12rem;
