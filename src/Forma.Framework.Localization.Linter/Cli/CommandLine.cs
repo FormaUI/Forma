@@ -21,9 +21,9 @@ public static class CommandLine
                         more than once. Matching is case-insensitive against the whole
                         path written with forward slashes, and '*' spans separators, so
                         '*/Fixtures/*' skips a folder wherever it sits.
-             --severity The lowest severity to report, 'error' or 'warning'. Defaults to
-                        'error', so a warning neither prints nor fails the run; the
-                        summary still says how many were left out.
+             --severity The lowest severity to report: 'error' or 'warning'. 'warning'
+                        includes both warnings and errors. Defaults to 'error'; omitted
+                        warnings do not fail the run but are still counted in the summary.
            """;
 
     /// <summary>Reads the arguments, reporting the reason rather than throwing when they do not make sense.</summary>

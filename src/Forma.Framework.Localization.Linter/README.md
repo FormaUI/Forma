@@ -26,9 +26,9 @@ Usage: locali --path <file-or-directory> [--report [<path>]] [--exclude <glob>]
              more than once. Matching is case-insensitive against the whole
              path written with forward slashes, and '*' spans separators, so
              '*/Fixtures/*' skips a folder wherever it sits.
-  --severity The lowest severity to report, 'error' or 'warning'. Defaults to
-             'error', so a warning neither prints nor fails the run; the
-             summary still says how many were left out.
+  --severity The lowest severity to report: 'error' or 'warning'. 'warning'
+             includes both warnings and errors. Defaults to 'error'; omitted
+             warnings do not fail the run but are still counted in the summary.
 ```
 
 `--path` accepts a `.json` file, a `.cs` or `.razor` file, a `.csproj`, a `.sln`/`.slnx`,
@@ -45,10 +45,12 @@ folder they live in leaves the rest of the tree checked:
 locali --path Forma.slnx --exclude "*/Fixtures/*"
 ```
 
-`--severity` sets the lowest severity a run reports. An error is something the runtime
-will get wrong; a warning is something worth changing that still loads. Only errors are
-reported by default. A diagnostic below the level is left out of the console, the JSON
-report, and the exit code alike, and the summary line counts what it left out:
+`--severity` sets the lowest severity a run reports; `warning` includes both warnings and
+errors, since `LintSeverity` is declared in ascending order and the comparison is
+`>=`. An error is something the runtime will get wrong; a warning is something worth
+changing that still loads. Only errors are reported by default. A diagnostic below the
+level is left out of the console, the JSON report, and the exit code alike, and the
+summary line counts what it left out:
 
 ```powershell
 locali --path Forma.slnx --exclude "*/Fixtures/*" --severity warning
