@@ -31,6 +31,7 @@ public static class LintCodes
             RazorNotAnalysed,
             UnreadValue,
             HoleShapedText,
+            MissingTranslation,
         ];
 
     /// <summary>The file declares a culture its own name does not give it.</summary>
@@ -92,6 +93,12 @@ public static class LintCodes
         "LOC0205",
         LintSeverity.Warning,
         "A plural expression omits 'other', so a count it does not name renders as nothing.");
+
+    /// <summary>A key written in source has no entry in one of its type's translation files.</summary>
+    public static LintCode MissingTranslation { get; } = new(
+        "LOC0209",
+        LintSeverity.Warning,
+        "A key written at a call site has no entry in a translation file its type already owns, so it renders untranslated.");
 
     /// <summary>The metadata entry omits a field the schema requires.</summary>
     public static LintCode MissingRequiredField { get; } = new(

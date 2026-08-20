@@ -23,6 +23,7 @@ public static class LintServiceTestFactory
             new StubProjectLoader(),
             new LocalizationFileLinter(SchemaLinterTestFactory.Create()),
             new SourceLinter(new SemanticCallSiteFinder(), new SyntacticCallSiteFinder(), SourceLinterTestFactory.Checkers()),
-            new ReachabilityLinter());
+            new ReachabilityLinter(),
+            new TranslationCoverageLinter());
     }
 }

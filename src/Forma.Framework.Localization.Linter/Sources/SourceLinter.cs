@@ -25,7 +25,7 @@ public sealed class SourceLinter(
     private readonly IEnumerable<ICallSiteRuleChecker> _checkers = checkers ?? throw new ArgumentNullException(nameof(checkers));
 
     /// <inheritdoc />
-    public IReadOnlyList<LintDiagnostic> Lint(
+    public SourceLintResult Lint(
         LoadedProject project,
         IReadOnlyCollection<string> files,
         CancellationToken cancellationToken = default)
@@ -46,15 +46,23 @@ public sealed class SourceLinter(
                 "The project carries Razor markup but no generated C# was found; build with EmitCompilerGeneratedFiles=true or its call sites go unchecked."));
         }
 
-        if (project.Compilation is { } compilation)
+        if (project.Compilation is not { } compilation)
         {
-            diagnostics.AddRange(Walk(compilation, files, cancellationToken));
+            return new SourceLintResult(diagnostics, []);
         }
 
-        return diagnostics;
+        var sites = Walk(compilation, files, cancellationToken);
+
+        // Each site parses its own key, so the rules run as wide as the walk that found them.
+        diagnostics.AddRange(sites
+            .AsParallel()
+            .WithCancellation(cancellationToken)
+            .SelectMany(Check));
+
+        return new SourceLintResult(diagnostics, sites);
     }
 
-    private IReadOnlyList<LintDiagnostic> Walk(Compilation compilation, IReadOnlyCollection<string> files, CancellationToken cancellationToken)
+    private IReadOnlyList<LocalizerCallSite> Walk(Compilation compilation, IReadOnlyCollection<string> files, CancellationToken cancellationToken)
     {
         var finder = _semantic.CanRead(compilation) ? (ILocalizerCallSiteFinder)_semantic : _syntactic;
 
@@ -64,7 +72,6 @@ public sealed class SourceLinter(
             .WithCancellation(cancellationToken)
             .SelectMany(tree => finder.Find(compilation, tree)
                 .Where(site => Wanted(site, files))
-                .SelectMany(Check)
                 .ToArray())];
     }
 

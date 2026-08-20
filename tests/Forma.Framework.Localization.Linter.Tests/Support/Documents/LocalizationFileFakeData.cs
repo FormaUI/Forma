@@ -20,6 +20,18 @@ public static class LocalizationFileFakeData
     /// <summary>A file that follows the schema for Hebrew but declares its metadata entry last.</summary>
     public static string TrailingMarker { get; } = WithTrailingMarker($"SchemaVersion: {LocalizationSchema.CurrentVersion}; Culture: he;");
 
+    /// <summary>A schema-following file for the culture named, carrying one translation.</summary>
+    /// <param name="culture">The culture the file declares and is named for.</param>
+    /// <param name="key">The key the translation is written under.</param>
+    /// <param name="translation">The translation itself.</param>
+    public static string ForCulture(string culture, string key, string translation)
+        => $$"""
+            {
+              "{{LocalizationSchema.Marker}}": "SchemaVersion: {{LocalizationSchema.CurrentVersion}}; Culture: {{culture}};",
+              "{{key}}": "{{translation}}"
+            }
+            """;
+
     /// <summary>A file whose metadata entry declares the fields given.</summary>
     /// <param name="marker">The fields the entry declares.</param>
     public static string WithMarker(string marker)

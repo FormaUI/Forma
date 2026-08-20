@@ -16,13 +16,15 @@ using Microsoft.Extensions.Options;
 /// <param name="localizationFileLinter">Checks one localization file.</param>
 /// <param name="sourcesLinter">Checks the keys written at call sites.</param>
 /// <param name="reachabilityLinter">Checks that a project's translation files can still be found by type.</param>
+/// <param name="coverageLinter">Checks that a project's keys are answered by the translation files it owns.</param>
 public sealed class LintService(
     IOptions<LinterOptions> options,
     ILintTargetResolver resolver,
     IProjectLoader loader,
     ILocalizationFileLinter localizationFileLinter,
     ISourceLinter sourcesLinter,
-    IReachabilityLinter reachabilityLinter) : ILintService
+    IReachabilityLinter reachabilityLinter,
+    ITranslationCoverageLinter coverageLinter) : ILintService
 {
     private readonly LinterOptions _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
     private readonly ILintTargetResolver _resolver = resolver ?? throw new ArgumentNullException(nameof(resolver));
@@ -30,6 +32,7 @@ public sealed class LintService(
     private readonly ILocalizationFileLinter _linter = localizationFileLinter ?? throw new ArgumentNullException(nameof(localizationFileLinter));
     private readonly ISourceLinter _sources = sourcesLinter ?? throw new ArgumentNullException(nameof(sourcesLinter));
     private readonly IReachabilityLinter _reachability = reachabilityLinter ?? throw new ArgumentNullException(nameof(reachabilityLinter));
+    private readonly ITranslationCoverageLinter _coverage = coverageLinter ?? throw new ArgumentNullException(nameof(coverageLinter));
 
     /// <inheritdoc />
     public async ValueTask<LintResult> RunAsync(CancellationToken cancellationToken = default)
@@ -80,8 +83,15 @@ public sealed class LintService(
 
         foreach (var project in await _loader.LoadAsync(target.Projects, cancellationToken).ConfigureAwait(false))
         {
-            diagnostics.AddRange(_sources.Lint(project, wanted, cancellationToken));
-            diagnostics.AddRange(_reachability.Lint(project, target.LocalizationFilesOf(project.Path)));
+            // Both rules over a project's translation files read the same resolution, so it is made once.
+            var owned = TranslationFiles.Resolve(project, target.LocalizationFilesOf(project.Path));
+            var sources = _sources.Lint(project, wanted, cancellationToken);
+
+            diagnostics.AddRange(sources.Diagnostics);
+            diagnostics.AddRange(_reachability.Lint(owned));
+            diagnostics.AddRange(await _coverage
+                .LintAsync(owned, sources.CallSites, cancellationToken)
+                .ConfigureAwait(false));
         }
 
         return diagnostics;

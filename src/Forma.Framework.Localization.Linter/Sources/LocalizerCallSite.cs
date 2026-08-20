@@ -9,10 +9,12 @@ using Microsoft.CodeAnalysis;
 /// <param name="Arguments">How the lookup supplies the values its holes read.</param>
 /// <param name="ValueCount">How many values the lookup supplies.</param>
 /// <param name="Names">The names the lookup gives its values, empty when it names none.</param>
+/// <param name="ResourceType">The type whose translations the lookup reads, or null where nothing bound it.</param>
 public sealed record LocalizerCallSite(
     string Key,
     FileLinePositionSpan Location,
     int KeyOffset,
     LocalizerArguments Arguments,
     int ValueCount,
-    IReadOnlyList<string> Names);
+    IReadOnlyList<string> Names,
+    INamedTypeSymbol? ResourceType = null);

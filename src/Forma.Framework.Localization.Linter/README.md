@@ -176,6 +176,35 @@ translation is legal. Reordering or dropping a name is legal.
 | LOC0206 | Warning | A project's Razor markup went unchecked | — |
 | LOC0207 | Error | A named value the key never reads | the hole renders as written, silently |
 | LOC0208 | Error | A key writes text shaped like a hole the runtime cannot read | renders as written, silently |
+| LOC0209 | Warning | A key has no entry in a translation file its type owns | renders untranslated, silently |
+
+LOC0209 catches the drift a new string opens. Adding `L["Details columns"]` to a component
+whose `he` and `es` files already exist leaves both files behind, and nothing else notices:
+falling back to the key is exactly what an absent entry is defined to do, so the string
+renders in English and every other rule stays green.
+
+The type is read from the receiver's `IStringLocale<T>`, so the rule needs the semantic
+path; a lookup through the unbound `IStringLocale` names no file to check against. Only
+files the type already owns are checked, because a component with no translations at all is
+unlocalized rather than under-translated. One diagnostic is reported per key per file, at
+the first call site writing it, so a key used in ten places reports twice and not twenty.
+
+Writing the key with a JSON `null` answers it:
+
+```json
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "{count}": null
+}
+```
+
+That is the runtime's own way of saying a key stays in the source language here, which
+`JsonResourceCache` reads as source text rather than a missing entry. A key that should not
+be translated — a bare number, a symbol, a proper noun — is declared, not omitted.
+
+A parent culture answers for its children, because `JsonStringLocale` walks a culture up to
+its parents when it looks a key up. A `Widget.es-419.json` carrying only what differs from
+`Widget.es.json` is complete, and only a key neither file declares is reported.
 
 All three ways of filling holes are checked. An interpolated key and a positional call
 name their values after the key's holes; a named call writes the names out, and those are
@@ -217,6 +246,9 @@ Nothing at the call site decides these, so there is nothing to judge:
 - **An overload nothing resolved.** Only the syntactic path reaches this, and only when
   the compilation did not bind the call. Build with the references in place and the
   semantic path takes over.
+- **A translation file the run did not name.** LOC0112 and LOC0209 both read the files a
+  project owns, so linting a lone `.razor` file checks its call sites and nothing else.
+  Point `--path` at the project, the solution, or a folder to get them.
 
 ## Layout
 
@@ -231,7 +263,7 @@ Nothing at the call site decides these, so there is nothing to judge:
 | `Rules/` | Rule contracts, rule contexts, shared hole-name reading |
 | `Rules/Files/` | Rules over a translation file |
 | `Rules/Sources/` | Rules over a call site |
-| `Sources/` | Finding call sites and reading their keys and arguments |
+| `Sources/` | Finding call sites, and the rules that read a project's translation files whole |
 
 ## Adding a rule
 

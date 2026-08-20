@@ -37,6 +37,7 @@ public sealed class SemanticCallSiteFinder : ILocalizerCallSiteFinder
     private static IEnumerable<LocalizerCallSite> Walk(Compilation compilation, SyntaxTree tree, INamedTypeSymbol contract)
     {
         var model = compilation.GetSemanticModel(tree);
+        var generic = compilation.GetTypeByMetadataName(LocalizerContract.GenericMetadataName);
 
         foreach (var node in tree.GetRoot().DescendantNodes())
         {
@@ -56,8 +57,27 @@ public sealed class SemanticCallSiteFinder : ILocalizerCallSiteFinder
 
             if (Owns(symbol, contract) && CallSiteReader.Read(tree, arguments, symbol, model) is { } site)
             {
-                yield return site;
+                yield return site with { ResourceType = Resource(model, node, generic) };
             }
         }
     }
+
+    // The indexer is declared on the unbound contract, so the type it translates is only on the receiver.
+    private static INamedTypeSymbol? Resource(SemanticModel model, SyntaxNode node, INamedTypeSymbol? generic)
+    {
+        if (generic is null || Receiver(node) is not { } receiver)
+        {
+            return null;
+        }
+
+        return LocalizerContract.ResourceOf(model.GetTypeInfo(receiver).Type, generic);
+    }
+
+    private static ExpressionSyntax? Receiver(SyntaxNode node)
+        => node switch
+        {
+            ElementAccessExpressionSyntax access => access.Expression,
+            InvocationExpressionSyntax { Expression: MemberAccessExpressionSyntax member } => member.Expression,
+            _ => null,
+        };
 }
