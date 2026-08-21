@@ -1469,18 +1469,20 @@
 
             // Act - a second press lands while the host is still fetching the first
             var explorer = cut.FindComponent<FormaExplorer>().Instance;
-var first = cut.InvokeAsync(explorer.LoadNextPageAsync);
-        cut.InvokeAsync(explorer.LoadNextPageAsync);
+            var first = cut.InvokeAsync(explorer.LoadNextPageAsync);
+            var second = cut.InvokeAsync(explorer.LoadNextPageAsync);
 
-            // Assert
-            Assert.Equal([2], pages);
+            // Assert - the guard turns the second press away, so it settles while the first is still parked
+            cut.WaitForState(() => second.IsCompleted);
+            cut.WaitForAssertion(() => Assert.Equal([2], pages));
 
             // Act
             pending.SetResult();
             cut.WaitForState(() => first.IsCompleted);
-            cut.InvokeAsync(explorer.LoadNextPageAsync);
+            var third = cut.InvokeAsync(explorer.LoadNextPageAsync);
 
             // Assert
+            cut.WaitForState(() => third.IsCompleted);
             Assert.Equal([2, 3], pages);
         }
 
