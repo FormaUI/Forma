@@ -6,6 +6,8 @@ using Forma.UI.Features.Composer.Documents;
 public sealed class ComposerHistory : IComposerHistory
 {
     private readonly int _maxCapacity;
+
+    // The top of the undo stack is the state the document currently holds, so undoing needs a second entry beneath it.
     private readonly List<(ComposerDocument Document, ComposerSelection? Selection)> _undoStack = [];
     private readonly List<(ComposerDocument Document, ComposerSelection? Selection)> _redoStack = [];
 
@@ -18,7 +20,7 @@ public sealed class ComposerHistory : IComposerHistory
 
     /// <inheritdoc />
     public bool CanUndo
-        => _undoStack.Count > 0;
+        => _undoStack.Count > 1;
 
     /// <inheritdoc />
     public bool CanRedo
@@ -46,41 +48,34 @@ public sealed class ComposerHistory : IComposerHistory
     }
 
     /// <inheritdoc />
-    public ComposerDocument? Undo(ComposerDocument current)
+    public ComposerDocument? Undo()
     {
-        ArgumentNullException.ThrowIfNull(current);
-
         if (!CanUndo)
         {
             return null;
         }
 
-        _redoStack.Add((current, null));
-
         var index = _undoStack.Count - 1;
-        var (previous, _) = _undoStack[index];
+        _redoStack.Add(_undoStack[index]);
         _undoStack.RemoveAt(index);
 
-        return previous;
+        return _undoStack[^1].Document;
     }
 
     /// <inheritdoc />
-    public ComposerDocument? Redo(ComposerDocument current)
+    public ComposerDocument? Redo()
     {
-        ArgumentNullException.ThrowIfNull(current);
-
         if (!CanRedo)
         {
             return null;
         }
 
-        _undoStack.Add((current, null));
-
         var index = _redoStack.Count - 1;
-        var (next, _) = _redoStack[index];
+        var next = _redoStack[index];
         _redoStack.RemoveAt(index);
+        _undoStack.Add(next);
 
-        return next;
+        return next.Document;
     }
 
     /// <inheritdoc />

@@ -1,0 +1,10 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "Editor Commands": "פקודות העורך",
+  "Editor Surface": "משטח עריכה",
+  "Plain Text": "טקסט פשוט",
+  "Plugin Commands": "פקודות תוספים",
+  "Undo": "בטל",
+  "Redo": "בצע שוב",
+  "Edit Content": "ערוך תוכן"
+}

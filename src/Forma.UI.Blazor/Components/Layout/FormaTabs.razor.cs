@@ -9,6 +9,15 @@ public partial class FormaTabs
 
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
 
+    /// <summary>The identifier of the selected tab, which hands the caller control of which tab is active.</summary>
+    [Parameter] public string? ActiveId { get; set; }
+
+    /// <summary>Callback invoked with the identifier of the tab the user picked.</summary>
+    [Parameter] public EventCallback<string> ActiveIdChanged { get; set; }
+
+    /// <summary>The accessible name of the tab strip.</summary>
+    [Parameter] public string? Label { get; set; }
+
     internal void RegisterTab(FormaTab tab)
     {
         ArgumentNullException.ThrowIfNull(tab);
@@ -32,11 +41,21 @@ public partial class FormaTabs
         StateHasChanged();
     }
 
-    internal bool IsActive(FormaTab tab) => tab == _activeTab;
+    internal bool IsActive(FormaTab tab)
+        => ActiveId is null ? tab == _activeTab : tab.TabId == ActiveId;
 
-    internal static string GetTabId(FormaTab tab) => $"tab-{tab.Id}";
+    internal static string GetTabId(FormaTab tab) => $"tab-{tab.TabId}";
 
-    internal static string GetPanelId(FormaTab tab) => $"panel-{tab.Id}";
+    internal static string GetPanelId(FormaTab tab) => $"panel-{tab.TabId}";
 
-    private void SetActiveTab(FormaTab tab) => _activeTab = tab;
+    // A controlled caller owns the selection, so it may reject the change rather than apply it.
+    private async Task SelectTabAsync(FormaTab tab)
+    {
+        if (ActiveId is null)
+        {
+            _activeTab = tab;
+        }
+
+        await ActiveIdChanged.InvokeAsync(tab.TabId);
+    }
 }

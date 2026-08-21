@@ -1,0 +1,11 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "An extensible authoring surface hosting rich text, Markdown, code, and page composition via plugins.": "משטח עריכה הניתן להרחבה המארח טקסט עשיר, מרקדאון, קוד ועיצוב דפים באמצעות תוספים.",
+  "Default": "ברירת מחדל",
+  "Disabled": "מושבת",
+  "Fixed Height": "גובה קבוע",
+  "Plugins": "תוספים",
+  "Every command is a plugin contribution. The composer's own sit in the built-in row; an editor either joins that row or declares one of its own; an external plugin either joins the plugin row or declares one of its own. Switch to Source to see all four rows.": "כל פקודה היא תרומה של תוסף. פקודות העורך עצמן יושבות בשורה המובנית; עורך יכול להצטרף לאותה שורה או להצהיר על שורה משלו; תוסף חיצוני יכול להצטרף לשורת התוספים או להצהיר על שורה משלו. עברו ל-Source כדי לראות את כל ארבע השורות.",
+  "Read-only": "קריאה בלבד",
+  "Without Toolbar": "ללא סרגל כלים"
+}

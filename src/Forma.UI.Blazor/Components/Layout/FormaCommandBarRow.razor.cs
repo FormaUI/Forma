@@ -34,6 +34,7 @@ public sealed partial class FormaCommandBarRow : ComponentBase, IAsyncDisposable
     private JsModule _module = default!;
     private DotNetObjectReference<FormaCommandBarRow>? _self;
     private ElementReference _track;
+    private bool _isObserving;
     private bool _canScrollBack;
     private bool _canScrollForward;
 
@@ -67,6 +68,7 @@ public sealed partial class FormaCommandBarRow : ComponentBase, IAsyncDisposable
         }
 
         _self = DotNetObjectReference.Create(this);
+        _isObserving = true;
 
         await _module.TryInvokeVoidAsync("observe", _track, _self);
     }
@@ -77,7 +79,12 @@ public sealed partial class FormaCommandBarRow : ComponentBase, IAsyncDisposable
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        await _module.TryInvokeVoidAsync("unobserve", _track);
+        // A prerendered row never observes, and issuing interop while statically rendered throws.
+        if (_isObserving)
+        {
+            await _module.TryInvokeVoidAsync("unobserve", _track);
+        }
+
         await _module.DisposeAsync();
 
         _self?.Dispose();

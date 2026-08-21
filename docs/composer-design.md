@@ -172,6 +172,8 @@ These are not plugins, because a plugin can be absent and these cannot:
 |---|---|---|
 | Undo / redo | `IComposerHistory` | One stack for the whole document, spanning editor switches — switching editor is itself an undoable step, so an author can revert a conversion. |
 | Selection | `ComposerSelection` | Snapshot of the caret and range, refreshed from the browser on `selectionchange`. |
+| Editing primitives | `ComposerText`, `ComposerEdit` | The operations every editor would otherwise reinvent against raw strings: the word under the caret, the selected text, replacing a range, mapping the lines a selection touches, replacing every occurrence. Pure functions returning a `ComposerEdit` — new content plus where the caret lands. |
+| Surface regions | §3.8 | Toolbar rows, the gutter and the status strip, each open to the same three contribution categories. |
 | Conversion | `IComposerDocumentConverter` | §5. |
 | Sanitisation | `IComposerHtmlSanitizer` | §6. Not optional. |
 | Asset loading | `IComposerAssetLoader` | §3.2. |
@@ -209,10 +211,33 @@ A host that only ever wants HTML registers the rich text plugin alone and reads 
 
 ---
 
+### 3.8 Surface regions
+
+Everything around the canvas is a **region**, and every region takes contributions from the same three categories. The category is not an enum — it falls out of who contributes and which region they name.
+
+| # | Category | Contributor | Default region when it names none |
+|---|---|---|---|
+| 1 | Composer general | the engine | the built-in toolbar row |
+| 2 | Editor specific | `IComposerEditorPlugin` | the built-in toolbar row |
+| 3 | External | any other `IComposerPlugin` | the plugin toolbar row |
+
+An editor therefore chooses between joining the shared row and standing on its own purely by setting `ComposerToolbarItem.Row`, and a plugin does the same. Both may declare rows of their own through `ToolbarRows`; declared rows render after the shared row they would otherwise have joined, and a row nothing fills is dropped. An item naming a row nobody declared falls back to its default rather than vanishing.
+
+| Region | Placement | State |
+|---|---|---|
+| Toolbar rows | above the canvas, stacked in a `FormaCommandBar` | built |
+| Gutter | inline-start of the canvas | planned — line numbers plus contributed line markers |
+| Status strip | block-end of the canvas | planned — contributed readouts such as Ln/Col, word count, language |
+
+Toolbar contributions are static lists, because a toolbar item's identity does not change. Gutter markers and status readouts are not: they move with the caret and the document. Those are **pushed** — a plugin acquires a handle from the engine, mutates it, and disposes it — rather than pulled by the engine on every render.
+
+That follows VS Code, where `window.createStatusBarItem` returns a `StatusBarItem` whose `text`, `tooltip` and `command` are mutable and which is disposed when done, and where gutter icons are decorations pushed through `setDecorations` against a disposable `TextEditorDecorationType`. Its API reference states the rule plainly: *"The VS Code API uses the dispose pattern for resources that are obtained from VS Code."* The pull shape appears there only for providers such as `NotebookCellStatusBarItemProvider`, which is not the editor status bar.
+
+---
+
 ## 4. Plugins
 
 ### 4.1 Editor plugins
-
 Each lives in its own directory, mirroring how `Explorer` earned a category of its own.
 
 | Directory | Plugin | Surface |
@@ -711,7 +736,8 @@ Every folder and its namespace stay in step, so `Plugins/` and `Dialogs/` are re
 Each phase ends buildable, tested and reviewable.
 
 1. **Capability model.** ◐ The two abstraction projects, every contract in §3 and §5–§7, the default sanitiser, the converter registry, and history are built. The asset loader is contract-only so far — `IComposerAssetLoader` has no implementation yet, because a JS-backed one needs `IJSRuntime` and so belongs in `Forma.UI.Blazor`, which places it with Phase 2's engine shell rather than here. This lands first precisely because the external-dependency question decides everything after it.
-2. **Engine shell.** `FormaComposer`, `FormaComposerToolbar`, the `ComposerDocument` binding of §3.7, the editor switcher, plugin discovery and availability probing, the selection bridge, and the debounced sync of §3.6. One trivial editor plugin proves the routing.
+2. **Engine shell.** ◐ `FormaComposer`, `FormaComposerToolbar`, the `ComposerDocument` binding of §3.7, plugin discovery and availability probing, and the debounced sync of §3.6 are built, along with the command spine, the key map, and the toolbar row model of §3.8. The editor switcher is a controlled `FormaTabs` strip above each surface's own toolbar rather than a segmented control inside it. Remaining: the selection bridge, and with it `ComposerText` — until the caret is reported, no caret-dependent command such as rename can be honest.
+2a. **Regions.** The gutter and status strip of §3.8, pushed through disposable handles.
 3. **Rich text editor and core formatting.** `RichTextEditorPlugin`, the canvas, the bubble menu, and the formatting, typography, paragraph, list and alignment/bidi plugins.
 4. **Markdown and code editors.** `MarkdownEditorPlugin`, `CodeEditorPlugin`, `Forma.UI.Features.Composer.Markdown`, the lossless-only HTML → Markdown guard, and the embedded Markdown and code blocks.
 5. **Media, tables and embeds.** Link, media, video, table, horizontal rule, emoji, special character, clipboard, preview, maximize, template and embed plugins.
@@ -736,6 +762,9 @@ Each phase ends buildable, tested and reviewable.
 | C7 | One designer plugin or several, given Coi drove seven targets through `OpenTemplate`'s numeric type? | One, varied by its options and the registered widget set. The palette is already extensible, so a second plugin would only re-register widgets. |
 | C8 | Who owns layout and theme? | Not the composer. `FormaLayout` and `FormaTheme` are library-wide components built first and composed afterwards; the designer ships template-only and nothing in phases 1–8 waits on them. Both want their own `COMPONENTS.md` entries. |
 | C9 | May a designer be placed on a designer canvas? | No. `PageDesignerPlugin` implements both `IComposerEditorPlugin` and `IComposerDesignerPlugin`, so the placeable set is "any editor plugin that is not also a designer plugin" — a type test, and a designer excludes itself. |
+| C10 | How does an editor choose between the shared toolbar row and one of its own? | By setting `ComposerToolbarItem.Row`, or leaving it null for its category's default row (§3.8). Both editors and external plugins declare rows through `ToolbarRows`, so there is one mechanism rather than a separate registration path per category. |
+| C11 | Are gutter markers and status readouts pushed or pulled? | Pushed, through a handle the plugin mutates and disposes. Toolbar items stay static lists. This matches VS Code's `createStatusBarItem` and decoration types, and the dispose pattern its API reference states as the general rule (§3.8). |
+| C12 | Where do the common editing operations live? | In the engine, as `ComposerText` returning `ComposerEdit` (§3.4). Word-at-caret, selected text, range replacement, per-line mapping and replace-all are needed by every editor and every plugin that touches text; leaving them out means each one reimplements them against raw strings. |
 
 ### 11.2 Open
 

@@ -14,11 +14,11 @@ public interface IComposerHistory
     /// <summary>Records a document state on the undo stack.</summary>
     void Record(ComposerDocument document, ComposerSelection? selection = null);
 
-    /// <summary>Returns the state preceding the current one, or null when none is available.</summary>
-    ComposerDocument? Undo(ComposerDocument current);
+    /// <summary>Steps back to the state preceding the current one, or returns null when none is available.</summary>
+    ComposerDocument? Undo();
 
-    /// <summary>Returns the state following the current one, or null when none is available.</summary>
-    ComposerDocument? Redo(ComposerDocument current);
+    /// <summary>Steps forward to the state following the current one, or returns null when none is available.</summary>
+    ComposerDocument? Redo();
 
     /// <summary>Discards every recorded state.</summary>
     void Clear();

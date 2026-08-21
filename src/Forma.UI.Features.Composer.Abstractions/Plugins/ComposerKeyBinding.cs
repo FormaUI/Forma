@@ -17,4 +17,19 @@ public sealed record ComposerKeyBinding
 
     /// <summary>Whether Shift is part of the combination.</summary>
     public bool Shift { get; init; }
+
+    /// <summary>The combination written for a tooltip, such as Ctrl+Shift+Z.</summary>
+    public string Display
+        => Write("Ctrl");
+
+    /// <summary>The combination written for aria-keyshortcuts, whose modifier names the specification fixes.</summary>
+    public string AriaKeyShortcuts
+        => Write("Control");
+
+    private string Write(string control)
+        => string.Concat(
+            Control ? control + "+" : null,
+            Alt ? "Alt+" : null,
+            Shift ? "Shift+" : null,
+            Key.Length == 1 ? Key.ToUpperInvariant() : Key);
 }

@@ -11,7 +11,7 @@ public sealed class ComposerHistoryTests
         => new(ComposerDocumentFormat.Html, content);
 
     [Fact]
-    public void Should_allow_undo_once_a_state_is_recorded()
+    public void Should_not_allow_undo_when_only_the_initial_state_is_recorded()
     {
         // Arrange
         var history = new ComposerHistory();
@@ -21,8 +21,22 @@ public sealed class ComposerHistoryTests
 
         // Assert
         Assert.Multiple(
-            () => Assert.True(history.CanUndo),
+            () => Assert.False(history.CanUndo),
             () => Assert.False(history.CanRedo));
+    }
+
+    [Fact]
+    public void Should_allow_undo_once_a_second_state_is_recorded()
+    {
+        // Arrange
+        var history = new ComposerHistory();
+        history.Record(Doc("v1"));
+
+        // Act
+        history.Record(Doc("v2"));
+
+        // Assert
+        Assert.True(history.CanUndo);
     }
 
     [Fact]
@@ -32,7 +46,7 @@ public sealed class ComposerHistoryTests
         var history = new ComposerHistory();
 
         // Act
-        var undone = history.Undo(Doc("v1"));
+        var undone = history.Undo();
 
         // Assert
         Assert.Null(undone);
@@ -47,10 +61,30 @@ public sealed class ComposerHistoryTests
         history.Record(Doc("v2"));
 
         // Act
-        var undone = history.Undo(Doc("v3"));
+        var undone = history.Undo();
 
         // Assert
-        Assert.Equal(Doc("v2"), undone);
+        Assert.Equal(Doc("v1"), undone);
+    }
+
+    [Fact]
+    public void Should_step_back_one_state_per_undo()
+    {
+        // Arrange
+        var history = new ComposerHistory();
+        history.Record(Doc("v1"));
+        history.Record(Doc("v2"));
+        history.Record(Doc("v3"));
+
+        // Act
+        var first = history.Undo();
+        var second = history.Undo();
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal(Doc("v2"), first),
+            () => Assert.Equal(Doc("v1"), second),
+            () => Assert.False(history.CanUndo));
     }
 
     [Fact]
@@ -59,9 +93,10 @@ public sealed class ComposerHistoryTests
         // Arrange
         var history = new ComposerHistory();
         history.Record(Doc("v1"));
+        history.Record(Doc("v2"));
 
         // Act
-        history.Undo(Doc("v2"));
+        history.Undo();
 
         // Assert
         Assert.True(history.CanRedo);
@@ -75,7 +110,7 @@ public sealed class ComposerHistoryTests
         history.Record(Doc("v1"));
 
         // Act
-        var redone = history.Redo(Doc("v2"));
+        var redone = history.Redo();
 
         // Assert
         Assert.Null(redone);
@@ -88,13 +123,13 @@ public sealed class ComposerHistoryTests
         var history = new ComposerHistory();
         history.Record(Doc("v1"));
         history.Record(Doc("v2"));
-        history.Undo(Doc("v3"));
+        history.Undo();
 
         // Act
-        var redone = history.Redo(Doc("v2"));
+        var redone = history.Redo();
 
         // Assert
-        Assert.Equal(Doc("v3"), redone);
+        Assert.Equal(Doc("v2"), redone);
     }
 
     [Fact]
@@ -103,7 +138,8 @@ public sealed class ComposerHistoryTests
         // Arrange
         var history = new ComposerHistory();
         history.Record(Doc("v1"));
-        history.Undo(Doc("v2"));
+        history.Record(Doc("v2"));
+        history.Undo();
 
         // Act
         history.Record(Doc("v3"));
@@ -119,7 +155,7 @@ public sealed class ComposerHistoryTests
         var history = new ComposerHistory();
         history.Record(Doc("v1"));
         history.Record(Doc("v2"));
-        history.Undo(Doc("v3"));
+        history.Undo();
 
         // Act
         history.Record(Doc("v1"));
@@ -138,13 +174,11 @@ public sealed class ComposerHistoryTests
         history.Record(Doc("v3"));
 
         // Act
-        var newest = history.Undo(Doc("v4"));
-        var oldest = history.Undo(Doc("v3"));
+        var undone = history.Undo();
 
         // Assert
         Assert.Multiple(
-            () => Assert.Equal(Doc("v3"), newest),
-            () => Assert.Equal(Doc("v2"), oldest),
+            () => Assert.Equal(Doc("v2"), undone),
             () => Assert.False(history.CanUndo));
     }
 
@@ -161,7 +195,8 @@ public sealed class ComposerHistoryTests
         // Arrange
         var history = new ComposerHistory();
         history.Record(Doc("v1"));
-        history.Undo(Doc("v2"));
+        history.Record(Doc("v2"));
+        history.Undo();
 
         // Act
         history.Clear();

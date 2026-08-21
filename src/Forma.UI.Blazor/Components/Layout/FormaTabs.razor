@@ -1,18 +1,18 @@
 <CascadingValue Value="this" IsFixed="true">
     <div class="forma-tabs">
-        <div class="forma-tab-list" role="tablist">
+        <div class="forma-tab-list" role="tablist" aria-label="@Label">
             @foreach (var tab in _tabs)
             {
-                var isActive = tab == _activeTab;
-                var tabId = $"tab-{tab.Id}";
-                var panelId = $"panel-{tab.Id}";
+                var isActive = IsActive(tab);
+                var tabId = FormaTabs.GetTabId(tab);
+                var panelId = FormaTabs.GetPanelId(tab);
 
                 <button class="forma-tab-button @(isActive ? "active" : "")"
                         role="tab"
                         id="@tabId"
                         aria-selected="@isActive.ToString().ToLowerInvariant()"
                         aria-controls="@panelId"
-                        @onclick="() => SetActiveTab(tab)">
+                        @onclick="() => SelectTabAsync(tab)">
                     @if (tab.Icon is { } icon)
                     {
                         <FormaGlyph Name="icon" />

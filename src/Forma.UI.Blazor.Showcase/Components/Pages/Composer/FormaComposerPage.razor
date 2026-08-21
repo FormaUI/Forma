@@ -1,0 +1,66 @@
+@page "/composer"
+@attribute [ShowcasePage("FormaComposer")]
+@rendermode InteractiveServer
+@using Forma.UI.Blazor.Components.Composer
+@using Forma.UI.Blazor.Components.Composer.PlainTextEditor
+@using Forma.UI.Features.Composer.Documents
+@using Forma.UI.Features.Composer.Plugins
+@inject IStringLocale<FormaComposerPage> L
+
+<h1>FormaComposer</h1>
+<p class="description">@L["An extensible authoring surface hosting rich text, Markdown, code, and page composition via plugins."]</p>
+
+<div class="demo-section">
+    <h2>@L["Default"]</h2>
+    <div class="demo-box">
+        <FormaComposer @bind-Value="_defaultDoc" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Disabled"]</h2>
+    <div class="demo-box">
+        <FormaComposer @bind-Value="_disabledDoc" Disabled="true" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Read-only"]</h2>
+    <div class="demo-box">
+        <FormaComposer @bind-Value="_readOnlyDoc" ReadOnly="true" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Without Toolbar"]</h2>
+    <div class="demo-box">
+        <FormaComposer @bind-Value="_noToolbarDoc" Options="_noToolbarOptions" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Fixed Height"]</h2>
+    <div class="demo-box">
+        <FormaComposer @bind-Value="_fixedHeightDoc" Options="_fixedHeightOptions" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Plugins"]</h2>
+    <p class="description">@L["Every command is a plugin contribution. The composer's own sit in the built-in row; an editor either joins that row or declares one of its own; an external plugin either joins the plugin row or declares one of its own. Switch to Source to see all four rows."]</p>
+    <div class="demo-box">
+        <FormaComposer @bind-Value="_pluginDoc" Plugins="_demoPlugins" />
+    </div>
+</div>
+
+@code {
+    private ComposerDocument _defaultDoc = new(ComposerDocumentFormat.PlainText, "Welcome to FormaComposer.\nEvery capability and editor arrives as a plugin.");
+    private ComposerDocument _disabledDoc = new(ComposerDocumentFormat.PlainText, "This composer instance is disabled.");
+    private ComposerDocument _readOnlyDoc = new(ComposerDocumentFormat.PlainText, "This composer instance is in a read-only state.");
+    private ComposerDocument _noToolbarDoc = new(ComposerDocumentFormat.PlainText, "Composer without top toolbar.");
+    private ComposerDocument _fixedHeightDoc = new(ComposerDocumentFormat.PlainText, "This composer cannot be dragged taller.");
+    private ComposerDocument _pluginDoc = new(ComposerDocumentFormat.PlainText, "pear\n\nApple\n\nbanana");
+    private readonly FormaComposerOptions _noToolbarOptions = new() { ShowToolbar = false };
+    private readonly FormaComposerOptions _fixedHeightOptions = new() { IsResizable = false };
+    private readonly IReadOnlyList<IComposerPlugin> _demoPlugins = [new PlainTextEditorPlugin(), new SourceEditorPlugin(), new TimestampPlugin(), new CleanupPlugin()];
+}

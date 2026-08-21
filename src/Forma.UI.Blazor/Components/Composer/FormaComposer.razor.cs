@@ -1,0 +1,351 @@
+namespace Forma.UI.Blazor.Components.Composer;
+
+using System.Diagnostics.CodeAnalysis;
+
+using Forma.UI.Blazor.Components.Composer.Assets;
+using Forma.UI.Blazor.Components.Composer.PlainTextEditor;
+using Forma.UI.Blazor.Interop;
+using Forma.UI.Features.Composer.Assets;
+using Forma.UI.Features.Composer.Documents;
+using Forma.UI.Features.Composer.Editing;
+using Forma.UI.Features.Composer.Plugins;
+using Forma.UI.Features.Composer.Sanitization;
+using Forma.UI.Features.Composer.Syntax;
+
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.JSInterop;
+
+/// <summary>An authoring surface hosting rich text, Markdown, code, or page composition via extensible plugins.</summary>
+public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncDisposable
+{
+    private const string ModulePath = "./_content/Forma.UI/Components/Composer/FormaComposer.razor.js";
+
+    private readonly string _generatedId = $"composer-{Guid.NewGuid():N}";
+    private readonly ComposerCommandRegistry _commands = new();
+    private readonly ComposerSelection _selection = ComposerSelection.Empty;
+
+    private ComposerPluginCatalog _catalog = default!;
+    private ComposerKeyMap _keyMap = ComposerKeyMap.Empty;
+    private ElementReference _composerElement;
+    private DotNetObjectReference<FormaComposer>? _dotNetRef;
+    private JsModule _module = default!;
+    private JsComposerAssetLoader _assetLoader = default!;
+    private IComposerHistory _history = default!;
+    private IComposerHtmlSanitizer _sanitizer = default!;
+    private ComposerContext _context = default!;
+    private IComposerEditorPlugin _activeEditor = default!;
+    private bool _isInitialized;
+    private bool _isJsStarted;
+
+    /// <summary>Options configuring toolbar display, editor switcher, and default editor.</summary>
+    [Parameter] public FormaComposerOptions Options { get; set; } = FormaComposerOptions.Default;
+
+    /// <summary>Plugins supplied directly to this instance in addition to any registered in dependency injection.</summary>
+    [Parameter] public IEnumerable<IComposerPlugin>? Plugins { get; set; }
+
+    /// <summary>The identifier of the active editor plugin.</summary>
+    [Parameter] public string? ActiveEditorId { get; set; }
+
+    /// <summary>Callback invoked when the active editor plugin changes.</summary>
+    [Parameter] public EventCallback<string> ActiveEditorIdChanged { get; set; }
+
+    /// <summary>The optional HTML element identifier.</summary>
+    [Parameter] public string? Id { get; set; }
+
+    /// <summary>Whether the composer is disabled and ignores user interaction.</summary>
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Whether the composer is in a read-only state.</summary>
+    [Parameter] public bool ReadOnly { get; set; }
+
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+    [Inject] private IServiceProvider Services { get; set; } = default!;
+
+    private string ElementId
+        => Id ?? _generatedId;
+
+    // A read-only composer offers no editing commands, so the toolbar would carry nothing actionable.
+    private bool ShowToolbar
+        => Options.ShowToolbar && !ReadOnly;
+
+    private bool ShowTabs
+        => Options.ShowEditorSwitcher && _catalog.Editors.Count > 1;
+
+    private string ComposerClass
+        => AdditionalAttributes.MergeClass(
+            "forma-composer",
+            CssClass,
+            Disabled ? "forma-composer-disabled" : null,
+            ReadOnly ? "forma-composer-readonly" : null,
+            Options.IsResizable && !Disabled ? "forma-composer-resizable" : null);
+
+    private ComposerDocument CurrentDocument
+        => Value ?? new ComposerDocument(ComposerDocumentFormat.Html, string.Empty);
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        _module = new JsModule(JS, ModulePath);
+        _assetLoader = new JsComposerAssetLoader(_module);
+        _dotNetRef = DotNetObjectReference.Create(this);
+
+        var injectedHistory = (IComposerHistory?)Services.GetService(typeof(IComposerHistory));
+        var injectedSanitizer = (IComposerHtmlSanitizer?)Services.GetService(typeof(IComposerHtmlSanitizer));
+
+        _history = injectedHistory ?? new ComposerHistory(Options.HistoryCapacity);
+        _sanitizer = injectedSanitizer ?? new DefaultHtmlSanitizer();
+
+        _commands.RegisterEngineCommand(ComposerCommands.Undo, HandleUndoAsync);
+        _commands.RegisterEngineCommand(ComposerCommands.Redo, HandleRedoAsync);
+
+        await LoadPluginsAsync();
+        RebuildContext();
+
+        _history.Record(CurrentDocument, _selection);
+        _isInitialized = true;
+    }
+
+    private async Task LoadPluginsAsync()
+    {
+        var injected = (IEnumerable<IComposerPlugin>?)Services.GetService(typeof(IEnumerable<IComposerPlugin>)) ?? [];
+        var candidates = (Plugins ?? []).Concat(injected);
+
+        _catalog = await ComposerPluginCatalog.CreateAsync(candidates, new PlainTextEditorPlugin());
+        _activeEditor = _catalog.Resolve(ActiveEditorId, Options.DefaultEditorId, CurrentDocument.Format);
+
+        _commands.RegisterPlugins(_catalog.All);
+        _keyMap = new ComposerKeyMap([DefaultKeyBindings.Instance, .. _catalog.All]);
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnParametersSetAsync()
+    {
+        ArgumentNullException.ThrowIfNull(Options);
+
+        if (_isInitialized)
+        {
+            if (ActiveEditorId is not null && ActiveEditorId != _activeEditor.Id)
+            {
+                await SwitchEditorAsync(ActiveEditorId);
+            }
+
+            RebuildContext();
+        }
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // The first render can precede plugin loading, so interop waits for the render that follows it.
+        if (_isJsStarted || !_isInitialized)
+        {
+            return;
+        }
+
+        _isJsStarted = true;
+
+        await _module.TryInvokeVoidAsync("initComposer", _composerElement, _dotNetRef, _keyMap.Bindings);
+        await _assetLoader.LoadAssetsAsync(_activeEditor.Assets);
+    }
+
+    /// <summary>Runs a composer command by name, whether the engine or a plugin owns it.</summary>
+    [JSInvokable]
+    public async Task ExecuteCommandAsync(string command)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(command);
+
+        if (Disabled || ReadOnly)
+        {
+            return;
+        }
+
+        await InvokeAsync(async () =>
+        {
+            if (await _commands.ExecuteAsync(command, _context) is ComposerCommandOutcome.Plugin)
+            {
+                RebuildContext();
+                StateHasChanged();
+            }
+        });
+    }
+
+    /// <summary>Switches the active editor plugin, converting the document format when needed.</summary>
+    public async Task SwitchEditorAsync(string targetEditorId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(targetEditorId);
+
+        var target = _catalog.Editors.FirstOrDefault(e => e.Id == targetEditorId);
+
+        if (target is null || target.Id == _activeEditor.Id)
+        {
+            return;
+        }
+
+        if (target.Format != CurrentDocument.Format && !TryConvertTo(target.Format))
+        {
+            return;
+        }
+
+        _activeEditor = target;
+
+        await _assetLoader.LoadAssetsAsync(target.Assets);
+
+        if (ActiveEditorIdChanged.HasDelegate)
+        {
+            await ActiveEditorIdChanged.InvokeAsync(target.Id);
+        }
+
+        RebuildContext();
+        StateHasChanged();
+    }
+
+    private bool TryConvertTo(ComposerDocumentFormat format)
+    {
+        var converters = (IEnumerable<IComposerDocumentConverter>?)Services.GetService(typeof(IEnumerable<IComposerDocumentConverter>)) ?? [];
+        var converter = converters.FirstOrDefault(c => c.Source == CurrentDocument.Format && c.Target == format);
+
+        if (converter is null)
+        {
+            return false;
+        }
+
+        var conversion = converter.Convert(CurrentDocument.Content);
+
+        if (!conversion.Succeeded)
+        {
+            return false;
+        }
+
+        var converted = new ComposerDocument(format, conversion.Content ?? string.Empty);
+        _history.Record(converted, _selection);
+        CurrentValue = converted;
+
+        return true;
+    }
+
+    private void RebuildContext()
+    {
+        var injectedHighlighter = (IComposerSyntaxHighlighter?)Services.GetService(typeof(IComposerSyntaxHighlighter));
+
+        _context = new ComposerContext(
+            _activeEditor.Id,
+            CurrentDocument,
+            _selection,
+            _history,
+            _sanitizer,
+            _assetLoader,
+            HandleDocumentChangedAsync,
+            HandleRequestRenderAsync,
+            injectedHighlighter)
+        {
+            IsDisabled = Disabled,
+            IsReadOnly = ReadOnly
+        };
+    }
+
+    private Task HandleDocumentChangedAsync(ComposerDocument document)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+
+        var sanitized = Sanitize(document);
+
+        _history.Record(sanitized, _selection);
+        CurrentValue = sanitized;
+        RebuildContext();
+        StateHasChanged();
+
+        return Task.CompletedTask;
+    }
+
+    private Task HandleRequestRenderAsync()
+    {
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    // Sanitisation is mandatory on every crossing to the host, and applies to markup rather than to a format that carries none.
+    private ComposerDocument Sanitize(ComposerDocument document)
+        => document.Format == ComposerDocumentFormat.Html
+            ? document with { Content = _sanitizer.Sanitize(document.Content) }
+            : document;
+
+    private Task HandleUndoAsync()
+    {
+        var undone = _history.Undo();
+
+        if (undone is not null)
+        {
+            CurrentValue = undone;
+            RebuildContext();
+            StateHasChanged();
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task HandleRedoAsync()
+    {
+        var redone = _history.Redo();
+
+        if (redone is not null)
+        {
+            CurrentValue = redone;
+            RebuildContext();
+            StateHasChanged();
+        }
+
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    protected override bool TryParseValueFromString(
+        string? value,
+        [MaybeNullWhen(false)] out ComposerDocument result,
+        [NotNullWhen(false)] out string? validationErrorMessage)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            result = new ComposerDocument(ComposerDocumentFormat.Html, string.Empty);
+            validationErrorMessage = null;
+            return true;
+        }
+
+        var newlineIndex = value.IndexOf('\n', StringComparison.Ordinal);
+
+        if (newlineIndex < 0)
+        {
+            result = new ComposerDocument(ComposerDocumentFormat.Html, value);
+            validationErrorMessage = null;
+            return true;
+        }
+
+        var formatId = value[..newlineIndex].Trim();
+        var content = value[(newlineIndex + 1)..];
+
+        if (string.IsNullOrWhiteSpace(formatId))
+        {
+            result = new ComposerDocument(ComposerDocumentFormat.Html, content);
+            validationErrorMessage = null;
+            return true;
+        }
+
+        result = new ComposerDocument(new ComposerDocumentFormat(formatId), content);
+        validationErrorMessage = null;
+        return true;
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        // A prerendered instance never starts interop, and issuing it while statically rendered throws.
+        if (_isJsStarted)
+        {
+            await _module.TryInvokeVoidAsync("disposeComposer", _composerElement);
+        }
+
+        _dotNetRef?.Dispose();
+        await _assetLoader.DisposeAsync();
+        await _module.DisposeAsync();
+    }
+}

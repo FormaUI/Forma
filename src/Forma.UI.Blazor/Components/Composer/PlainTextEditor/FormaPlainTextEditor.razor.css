@@ -1,0 +1,31 @@
+/* FormaPlainTextEditor — Plain text editing surface for FormaComposer */
+
+.forma-composer-plain-text-editor {
+    display: flex;
+    flex-direction: column;
+    inline-size: 100%;
+    block-size: 100%;
+    min-block-size: 12rem;
+}
+
+.forma-composer-plain-text-textarea {
+    box-sizing: border-box;
+    inline-size: 100%;
+    block-size: 100%;
+    min-block-size: 12rem;
+    padding: var(--space-3, 0.75rem);
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--forma-composer-color, var(--text-color, inherit));
+    font-family: var(--font-family-mono, monospace);
+    font-size: var(--font-size-sm, 0.875rem);
+    line-height: 1.5;
+
+    /* The composer frame carries the resize grip; the textarea always fills the canvas. */
+    resize: none;
+}
+
+.forma-composer-plain-text-textarea:focus-visible {
+    outline: none;
+}

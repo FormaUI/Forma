@@ -18,6 +18,8 @@
         <ProjectReference Include="..\Forma.Framework.Resources.Office\Forma.Framework.Resources.Office.csproj" />
         <ProjectReference Include="..\Forma.Framework.Resources.Markdown\Forma.Framework.Resources.Markdown.csproj" />
         <ProjectReference Include="..\Forma.UI.Features\Forma.UI.Features.csproj" />
+        <ProjectReference Include="..\Forma.UI.Features.Composer\Forma.UI.Features.Composer.csproj" />
+        <ProjectReference Include="..\Forma.UI.Features.Composer.Abstractions\Forma.UI.Features.Composer.Abstractions.csproj" />
         <ProjectReference Include="..\Forma.UI.Style\Forma.UI.Style.csproj" />
         <ProjectReference Include="..\Forma.Framework.Resources.Abstractions\Forma.Framework.Resources.Abstractions.csproj" />
         <ProjectReference Include="..\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />

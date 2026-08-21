@@ -1,9 +1,10 @@
 namespace Forma.UI.Features.Composer.Plugins;
 
 using Forma.UI.Features.Composer.Assets;
+using Forma.UI.Features.Composer.Editing;
 
 /// <summary>A capability contributed to the composer, whatever it is implemented in.</summary>
-public interface IComposerPlugin
+public interface IComposerPlugin : IComposerKeyBindingProvider
 {
     /// <summary>The unique identifier of the plugin.</summary>
     string Id { get; }
@@ -11,15 +12,22 @@ public interface IComposerPlugin
     /// <summary>Toolbar items contributed by this plugin.</summary>
     IReadOnlyList<ComposerToolbarItem> ToolbarItems { get; }
 
-    /// <summary>Key bindings contributed by this plugin.</summary>
-    IReadOnlyList<ComposerKeyBinding> KeyBindings { get; }
+    /// <summary>Command rows this plugin declares for its own items, or empty to use the row it defaults to.</summary>
+    IReadOnlyList<ComposerToolbarRow> ToolbarRows => [];
 
     /// <summary>Typed-input triggers contributed by this plugin.</summary>
     IReadOnlyList<ComposerInputTrigger> InputTriggers { get; }
+
+    /// <summary>The editors this plugin contributes to, or empty to contribute to every editor.</summary>
+    IReadOnlyList<string> SupportedEditorIds => [];
 
     /// <summary>Browser assets the plugin needs before it can run.</summary>
     IReadOnlyList<ComposerAsset> Assets { get; }
 
     /// <summary>Whether every dependency the plugin needs is present.</summary>
     ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>Runs one of the commands this plugin named, doing nothing when it names none.</summary>
+    ValueTask ExecuteAsync(string command, ComposerContext context, CancellationToken cancellationToken = default)
+        => ValueTask.CompletedTask;
 }

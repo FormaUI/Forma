@@ -1,0 +1,15 @@
+@namespace Forma.UI.Blazor.Components.Composer
+
+@if (ShowToolbar)
+{
+    <FormaComposerToolbar
+        Editor="Editor"
+        Plugins="Plugins"
+        Disabled="Disabled"
+        KeyMap="KeyMap"
+        OnCommand="OnCommand" />
+}
+
+<div class="forma-composer-canvas">
+    <DynamicComponent Type="Editor.EditorComponent" />
+</div>

@@ -17,14 +17,14 @@ public sealed record ComposerToolbarItem
     /// <summary>The toolbar group the item is listed under.</summary>
     public string? Group { get; init; }
 
+    /// <summary>The identifier of the row the item is laid out in, or null for its contributor's default row.</summary>
+    public string? Row { get; init; }
+
     /// <summary>The command invoked when the item is activated.</summary>
     public string? Command { get; init; }
 
     /// <summary>A component rendered in place of a standard toolbar button, or null.</summary>
     public Type? CustomComponent { get; init; }
-
-    /// <summary>The keyboard shortcut shown alongside the item, or null.</summary>
-    public string? Shortcut { get; init; }
 
     /// <summary>Whether the item reflects an on/off state rather than firing once.</summary>
     public bool IsToggle { get; init; }

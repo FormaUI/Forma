@@ -3,6 +3,9 @@ namespace Forma.UI.Style.Glyphs;
 /// <summary>A glyph the library draws for its own chrome.</summary>
 public enum Glyph
 {
+    /// <summary>Stacked lines flush to the start edge, for left alignment.</summary>
+    AlignLeft,
+
     /// <summary>A downward arrow.</summary>
     ArrowDown,
 
@@ -15,6 +18,12 @@ public enum Glyph
     /// <summary>A rightward arrow.</summary>
     ArrowRight,
 
+    /// <summary>Opposing horizontal arrows, for swapping or replacing.</summary>
+    ArrowRightArrowLeft,
+
+    /// <summary>Two arrows chasing in a circle, for refreshing.</summary>
+    ArrowsRotate,
+
     /// <summary>An upward arrow.</summary>
     ArrowUp,
 
@@ -24,68 +33,107 @@ public enum Glyph
     /// <summary>A crossed-out circle, for something refused.</summary>
     Ban,
 
+    /// <summary>A heavy letter B, for bold text.</summary>
+    Bold,
+
     /// <summary>A square divided into cells, for a tile grid.</summary>
     BorderAll,
 
     /// <summary>An open carton, for something being packed or handled.</summary>
     BoxOpen,
 
-    /// <summary>A shopping trolley, for an order.</summary>
+    /// <summary>An insect, for a defect.</summary>
+    Bug,
+
+    /// <summary>A shopping trolley.</summary>
     CartShopping,
 
-    /// <summary>A tick, for something done or selected.</summary>
+    /// <summary>A tick.</summary>
     Check,
 
     /// <summary>A downward chevron.</summary>
     ChevronDown,
 
+    /// <summary>A leftward chevron.</summary>
+    ChevronLeft,
+
     /// <summary>A rightward chevron.</summary>
     ChevronRight,
 
-    /// <summary>A tick in a circle, for something that succeeded.</summary>
+    /// <summary>An upward chevron.</summary>
+    ChevronUp,
+
+    /// <summary>A ticked circle.</summary>
     CircleCheck,
 
-    /// <summary>An exclamation mark in a circle, for a warning.</summary>
+    /// <summary>A filled dot inside a circle, for a marked point such as a breakpoint.</summary>
+    CircleDot,
+
+    /// <summary>An exclamation mark inside a circle.</summary>
     CircleExclamation,
 
-    /// <summary>A lower-case i in a circle, for information.</summary>
+    /// <summary>A letter i inside a circle.</summary>
     CircleInfo,
 
-    /// <summary>A cross in a circle, for something that failed.</summary>
+    /// <summary>A play triangle inside a circle.</summary>
+    CirclePlay,
+
+    /// <summary>A cross inside a circle.</summary>
     CircleXmark,
 
-    /// <summary>A clock face, for something pending.</summary>
+    /// <summary>A clock face.</summary>
     Clock,
 
     /// <summary>A cloud with an upward arrow, for uploading.</summary>
     CloudArrowUp,
 
-    /// <summary>A payment card, for billing.</summary>
+    /// <summary>Opposing angle brackets, for source code.</summary>
+    Code,
+
+    /// <summary>A speech bubble, for a remark.</summary>
+    Comment,
+
+    /// <summary>Two stacked sheets, for duplicating.</summary>
+    Copy,
+
+    /// <summary>A payment card.</summary>
     CreditCard,
 
-    /// <summary>Three dots in a row, for an overflow menu.</summary>
+    /// <summary>A downward arrow above a line, for downloading.</summary>
+    Download,
+
+    /// <summary>Three dots in a row, for more actions.</summary>
     Ellipsis,
 
-    /// <summary>Three stacked dots, for an overflow menu in a narrow column.</summary>
+    /// <summary>Three stacked dots, for more actions.</summary>
     EllipsisVertical,
 
-    /// <summary>An open eye, for previewing.</summary>
+    /// <summary>An open eye.</summary>
     Eye,
 
-    /// <summary>A struck-through eye, for something hidden.</summary>
+    /// <summary>A struck-through eye.</summary>
     EyeSlash,
 
-    /// <summary>A blank document.</summary>
+    /// <summary>A blank sheet.</summary>
     File,
 
-    /// <summary>A document with ruled lines.</summary>
+    /// <summary>A sheet marked with angle brackets, for a source file.</summary>
+    FileCode,
+
+    /// <summary>A sheet ruled with lines.</summary>
     FileLines,
 
-    /// <summary>A document with a zip fastener, for an archive.</summary>
+    /// <summary>A sheet with a zip, for an archive.</summary>
     FileZipper,
 
-    /// <summary>A strip of film, for video.</summary>
+    /// <summary>A strip of film.</summary>
     Film,
+
+    /// <summary>A funnel, for narrowing a set.</summary>
+    Filter,
+
+    /// <summary>A floppy disk, for saving.</summary>
+    FloppyDisk,
 
     /// <summary>A closed folder.</summary>
     Folder,
@@ -93,69 +141,153 @@ public enum Glyph
     /// <summary>An open folder.</summary>
     FolderOpen,
 
-    /// <summary>A folder with a plus, for creating one.</summary>
+    /// <summary>A folder with a plus, for adding one.</summary>
     FolderPlus,
 
-    /// <summary>A double arrow, for something skipped.</summary>
+    /// <summary>A letter A, for typeface or text.</summary>
+    Font,
+
+    /// <summary>A fast-forward pair of triangles.</summary>
     Forward,
 
-    /// <summary>A cog, for settings.</summary>
+    /// <summary>A cogwheel.</summary>
     Gear,
 
-    /// <summary>A half-run hourglass, for something waiting its turn.</summary>
+    /// <summary>A letter H, for a heading.</summary>
+    Heading,
+
+    /// <summary>An hourglass half run through.</summary>
     HourglassHalf,
 
-    /// <summary>A single picture.</summary>
+    /// <summary>A framed picture.</summary>
     Image,
 
-    /// <summary>Stacked pictures, for a gallery.</summary>
+    /// <summary>Two overlapping framed pictures.</summary>
     Images,
 
-    /// <summary>Rows of text, for a list view.</summary>
+    /// <summary>Lines pushed toward the end edge, for increasing indentation.</summary>
+    Indent,
+
+    /// <summary>A slanted letter I, for italic text.</summary>
+    Italic,
+
+    /// <summary>A keyboard.</summary>
+    Keyboard,
+
+    /// <summary>A light bulb, for a suggested action.</summary>
+    Lightbulb,
+
+    /// <summary>Two joined chain links.</summary>
+    Link,
+
+    /// <summary>Lines beside bullets.</summary>
     List,
 
-    /// <summary>A magnifying glass, for searching.</summary>
+    /// <summary>Lines beside numerals, for an ordered list.</summary>
+    ListOl,
+
+    /// <summary>Lines beside bullets, for an unordered list.</summary>
+    ListUl,
+
+    /// <summary>Crosshairs, for pinpointing a position.</summary>
+    LocationCrosshairs,
+
+    /// <summary>A magnifying glass.</summary>
     MagnifyingGlass,
 
-    /// <summary>A pair of quavers, for audio.</summary>
+    /// <summary>A minus sign.</summary>
+    Minus,
+
+    /// <summary>A pair of quavers.</summary>
     Music,
 
-    /// <summary>A pen, for renaming or editing.</summary>
+    /// <summary>Lines pulled toward the start edge, for decreasing indentation.</summary>
+    Outdent,
+
+    /// <summary>A painter's palette, for theming.</summary>
+    Palette,
+
+    /// <summary>A clipboard holding a sheet, for pasting.</summary>
+    Paste,
+
+    /// <summary>A pen nib.</summary>
     Pen,
 
-    /// <summary>A rightward triangle, for starting playback.</summary>
+    /// <summary>A pen over a square, for editing or renaming.</summary>
+    PenToSquare,
+
+    /// <summary>A play triangle.</summary>
     Play,
+
+    /// <summary>A plus sign.</summary>
+    Plus,
+
+    /// <summary>An opening quotation mark, for a quoted passage.</summary>
+    QuoteLeft,
+
+    /// <summary>An arrow entering a bracket, for going to a target.</summary>
+    RightToBracket,
 
     /// <summary>An anticlockwise arrow, for undoing.</summary>
     RotateLeft,
 
-    /// <summary>A clockwise arrow, for refreshing.</summary>
+    /// <summary>A clockwise arrow, for refreshing or redoing.</summary>
     RotateRight,
+
+    /// <summary>A pair of shears, for cutting.</summary>
+    Scissors,
+
+    /// <summary>A node branching into two, for a hierarchy.</summary>
+    Sitemap,
+
+    /// <summary>A ticked letter A, for checked spelling.</summary>
+    SpellCheck,
 
     /// <summary>A ticked square.</summary>
     SquareCheck,
 
-    /// <summary>A square with a minus, for collapsing.</summary>
+    /// <summary>A square holding a minus.</summary>
     SquareMinus,
 
-    /// <summary>A square with a plus, for expanding.</summary>
+    /// <summary>A square holding a plus.</summary>
     SquarePlus,
 
-    /// <summary>A table with rows, for a details view.</summary>
+    /// <summary>A grid of cells, for a table.</summary>
+    Table,
+
+    /// <summary>A table whose rows read as a list.</summary>
     TableList,
 
-    /// <summary>A bin, for deleting.</summary>
+    /// <summary>A prompt and cursor, for a terminal.</summary>
+    Terminal,
+
+    /// <summary>A letter A spanning arrows, for text width or wrapping.</summary>
+    TextWidth,
+
+    /// <summary>A waste bin.</summary>
     Trash,
 
-    /// <summary>An exclamation mark in a triangle, for a failure.</summary>
+    /// <summary>An exclamation mark inside a triangle.</summary>
     TriangleExclamation,
 
-    /// <summary>A delivery lorry, for something in transit.</summary>
+    /// <summary>A delivery lorry.</summary>
     Truck,
 
-    /// <summary>A group of figures, for people.</summary>
+    /// <summary>A letter U above a rule, for underlined text.</summary>
+    Underline,
+
+    /// <summary>An upward arrow above a line, for uploading.</summary>
+    Upload,
+
+    /// <summary>A pair of people.</summary>
     Users,
 
-    /// <summary>A cross, for dismissing.</summary>
+    /// <summary>A wand throwing sparkles, for an automatic fix or format.</summary>
+    WandMagicSparkles,
+
+    /// <summary>A spanner, for configuration or repair.</summary>
+    Wrench,
+
+    /// <summary>A cross.</summary>
     Xmark,
 }

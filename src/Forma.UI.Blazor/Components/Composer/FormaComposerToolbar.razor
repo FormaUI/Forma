@@ -1,0 +1,15 @@
+@namespace Forma.UI.Blazor.Components.Composer
+@inject IStringLocale<FormaComposer> L
+
+<FormaCommandBar Class="forma-composer-toolbar">
+    @foreach (var row in Layout.Rows)
+    {
+        <FormaComposerCommandRow
+            Label="@L[row.Label]"
+            Groups="row.Groups"
+            ShowHistory="row.IsBuiltIn"
+            Disabled="Disabled"
+            KeyMap="KeyMap"
+            OnCommand="OnCommand" />
+    }
+</FormaCommandBar>

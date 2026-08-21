@@ -1,0 +1,110 @@
+namespace Forma.UI.Features.Composer.Tests.Editing;
+
+using Forma.UI.Features.Composer.Editing;
+using Forma.UI.Features.Composer.Plugins;
+
+using Xunit;
+
+public sealed class ComposerKeyMapTests
+{
+    private sealed class Provider(params ComposerKeyBinding[] bindings) : IComposerKeyBindingProvider
+    {
+        public IReadOnlyList<ComposerKeyBinding> KeyBindings { get; } = bindings;
+    }
+
+    private static ComposerKeyBinding Binding(string key, string command, bool shift = false)
+        => new() { Key = key, Command = command, Control = true, Shift = shift };
+
+    [Fact]
+    public void Should_merge_bindings_from_every_provider()
+    {
+        // Arrange
+        var first = new Provider(Binding("b", "bold"));
+        var second = new Provider(Binding("i", "italic"));
+
+        // Act
+        var map = new ComposerKeyMap([first, second]);
+
+        // Assert
+        Assert.Equal(2, map.Bindings.Count);
+    }
+
+    [Fact]
+    public void Should_find_the_binding_a_command_answers_to()
+    {
+        // Arrange
+        var map = new ComposerKeyMap([new Provider(Binding("b", "bold"))]);
+
+        // Act
+        var binding = map.Find("bold");
+
+        // Assert
+        Assert.Equal("Ctrl+B", binding?.Display);
+    }
+
+    [Fact]
+    public void Should_let_the_earliest_provider_win_a_contested_command()
+    {
+        // Arrange
+        var engine = new Provider(Binding("z", "undo"));
+        var plugin = new Provider(Binding("u", "undo"));
+
+        // Act
+        var map = new ComposerKeyMap([engine, plugin]);
+
+        // Assert
+        Assert.Equal("Ctrl+Z", map.Find("undo")?.Display);
+    }
+
+    [Fact]
+    public void Should_return_null_for_an_unbound_command()
+    {
+        // Arrange
+        var map = new ComposerKeyMap([new Provider(Binding("b", "bold"))]);
+
+        // Act
+        var binding = map.Find("italic");
+
+        // Assert
+        Assert.Null(binding);
+    }
+
+    [Fact]
+    public void Should_bind_undo_and_redo_by_default()
+    {
+        // Arrange
+        var map = new ComposerKeyMap([DefaultKeyBindings.Instance]);
+
+        // Act
+        var undo = map.Find(ComposerCommands.Undo);
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal("Ctrl+Z", undo?.Display),
+            () => Assert.Equal("Control+Z", undo?.AriaKeyShortcuts),
+            () => Assert.Equal("Ctrl+Y", map.Find(ComposerCommands.Redo)?.Display));
+    }
+
+    [Fact]
+    public void Should_carry_every_default_chord_including_the_redo_alternative()
+    {
+        // Arrange
+        var map = new ComposerKeyMap([DefaultKeyBindings.Instance]);
+
+        // Act
+        var redoChords = map.Bindings.Where(b => b.Command == ComposerCommands.Redo).Select(b => b.Display);
+
+        // Assert
+        Assert.Equal(["Ctrl+Y", "Ctrl+Shift+Z"], redoChords);
+    }
+
+    [Fact]
+    public void Should_contribute_nothing_when_empty()
+    {
+        // Act
+        var map = ComposerKeyMap.Empty;
+
+        // Assert
+        Assert.Empty(map.Bindings);
+    }
+}

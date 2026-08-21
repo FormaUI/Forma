@@ -1,0 +1,11 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "An extensible authoring surface hosting rich text, Markdown, code, and page composition via plugins.": "Una superficie de creación extensible que aloja texto enriquecido, Markdown, código y composición de páginas mediante complementos.",
+  "Default": "Predeterminado",
+  "Disabled": "Deshabilitado",
+  "Fixed Height": "Altura Fija",
+  "Plugins": "Complementos",
+  "Every command is a plugin contribution. The composer's own sit in the built-in row; an editor either joins that row or declares one of its own; an external plugin either joins the plugin row or declares one of its own. Switch to Source to see all four rows.": "Cada comando es una aportación de un complemento. Los propios del editor ocupan la fila integrada; un editor puede sumarse a esa fila o declarar una propia; un complemento externo puede sumarse a la fila de complementos o declarar una propia. Cambie a Source para ver las cuatro filas.",
+  "Read-only": "Solo Lectura",
+  "Without Toolbar": "Sin Barra de Herramientas"
+}

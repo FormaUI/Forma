@@ -16,6 +16,7 @@ public sealed class ComposerContext
         IComposerHistory history,
         IComposerHtmlSanitizer sanitizer,
         IComposerAssetLoader assetLoader,
+        Func<ComposerDocument, Task> changeDocumentAsync,
         Func<Task> requestRenderAsync,
         IComposerSyntaxHighlighter? syntaxHighlighter = null)
     {
@@ -25,6 +26,7 @@ public sealed class ComposerContext
         ArgumentNullException.ThrowIfNull(history);
         ArgumentNullException.ThrowIfNull(sanitizer);
         ArgumentNullException.ThrowIfNull(assetLoader);
+        ArgumentNullException.ThrowIfNull(changeDocumentAsync);
         ArgumentNullException.ThrowIfNull(requestRenderAsync);
 
         ActiveEditorId = activeEditorId;
@@ -33,6 +35,7 @@ public sealed class ComposerContext
         History = history;
         Sanitizer = sanitizer;
         AssetLoader = assetLoader;
+        ChangeDocumentAsync = changeDocumentAsync;
         RequestRenderAsync = requestRenderAsync;
         SyntaxHighlighter = syntaxHighlighter;
     }
@@ -46,6 +49,12 @@ public sealed class ComposerContext
     /// <summary>The caret and range as the browser last reported them.</summary>
     public ComposerSelection Selection { get; }
 
+    /// <summary>Whether the composer takes no interaction at all, which a surface renders as a disabled control.</summary>
+    public bool IsDisabled { get; init; }
+
+    /// <summary>Whether the document may be read but not edited.</summary>
+    public bool IsReadOnly { get; init; }
+
     /// <summary>The undo and redo stack shared by every editor.</summary>
     public IComposerHistory History { get; }
 
@@ -57,6 +66,9 @@ public sealed class ComposerContext
 
     /// <summary>The registered highlighter, or null when code renders unhighlighted.</summary>
     public IComposerSyntaxHighlighter? SyntaxHighlighter { get; }
+
+    /// <summary>Reports a document the editing surface has changed, so the engine can record, sanitize and raise it.</summary>
+    public Func<ComposerDocument, Task> ChangeDocumentAsync { get; }
 
     /// <summary>Asks the composer shell to re-render.</summary>
     public Func<Task> RequestRenderAsync { get; }
