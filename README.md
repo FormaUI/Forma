@@ -29,16 +29,27 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 ```
 
-**2. Reference the stylesheets from your host `<head>`, in this order:**
+**2. Render Forma's document head from your host's `App.razor`:**
 
 ```razor
-<link rel="stylesheet" href="@Assets["_content/Forma.UI/forma-tokens.css"]" />
-<link rel="stylesheet" href="@Assets["_content/Forma.UI/forma-reset.css"]" />
-<link rel="stylesheet" href="@Assets["_content/Forma.UI/forma-base.css"]" />
-<link rel="stylesheet" href="@Assets["_content/Forma.UI/forma-input.css"]" />
+<head>
+    <FormaPageHeader Title="My App">
+        <link rel="stylesheet" href="@Assets["app.css"]" />
+        <link rel="stylesheet" href="@Assets["MyApp.styles.css"]" />
+    </FormaPageHeader>
+</head>
 ```
 
-Four layers, so a host takes only what it wants:
+It declares the character set, viewport, title and base address, links Forma's four stylesheets in
+cascade order, and closes with the framework's own `ResourcePreloader`, `ImportMap` and `HeadOutlet`
+— so a host adds none of those itself. A host's own head content goes in the child content, where
+its styles land after Forma's and win. `HeadOutlet` renders last, so a page's `PageTitle` still
+overrides the title set here.
+
+Set `PreloadAssets="false"` to leave out the runtime preloading, which only a WebAssembly render mode
+benefits from.
+
+The four layers, for a host that would rather link them itself:
 
 | Stylesheet | Contents | Take it when |
 |------------|----------|--------------|

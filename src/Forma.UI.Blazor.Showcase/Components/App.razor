@@ -1,22 +1,14 @@
 @using System.Globalization
+@using Forma.UI.Blazor.Components.Metadata
 
 <!DOCTYPE html>
 <html lang="@Lang" dir="@Dir">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Forma Component Showcase</title>
-    <base href="/" />
-    <link rel="stylesheet" href="@Assets["_content/Forma.UI/forma-tokens.css"]" />
-    <link rel="stylesheet" href="@Assets["_content/Forma.UI/forma-reset.css"]" />
-    <link rel="stylesheet" href="@Assets["_content/Forma.UI/forma-base.css"]" />
-    <link rel="stylesheet" href="@Assets["_content/Forma.UI/forma-input.css"]" />
-    <link rel="stylesheet" href="@Assets["app.css"]" />
-    <link rel="stylesheet" href="@Assets["Forma.UI.Blazor.Showcase.styles.css"]" />
-    <PageLocalization />
-    <ResourcePreloader />
-    <ImportMap />
-    <HeadOutlet />
+    <FormaPageHeader Title="Forma Component Showcase">
+        <link rel="stylesheet" href="@Assets["app.css"]" />
+        <link rel="stylesheet" href="@Assets["Forma.UI.Blazor.Showcase.styles.css"]" />
+        <PageLocalization />
+    </FormaPageHeader>
 </head>
 <body>
     <Routes />

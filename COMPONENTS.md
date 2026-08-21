@@ -30,6 +30,8 @@ Forma.UI.Blazor/Components/
 │   ├── ✅ FormaContextToolbar.razor / .razor.cs
 │   ├── ✅ FormaTabs.razor / .razor.cs
 │   └── ✅ FormaTab.razor / .razor.cs
+├── (1 / 1) Metadata/
+│   └── ✅ FormaPageHeader.razor / .razor.cs
 ├── (3 / 3) Feedback/
 │   ├── ✅ FormaModal.razor / .razor.cs / .razor.js
 │   ├── ✅ FormaModal.razor.css
@@ -855,6 +857,17 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Blazor approach** | The divider owns the interaction and the clamping; where the size is stored and how it is applied stays the caller's. `role="separator"` with `aria-orientation`, `aria-valuenow`, `aria-valuemin` and `aria-valuemax`, reachable by tab and driven by the arrow keys, `Home` and `End`. Pointer capture through a colocated module keeps the drag alive once the pointer leaves the divider's narrow hit area, and `OnResizingChanged` lets a host suppress text selection for the length of a drag |
 | **Units** | `PixelsPerUnit` converts a pointer's pixel travel into the caller's own unit, defaulting to `16` so a host sizing panes in rem needs no arithmetic of its own; a host working in pixels sets it to `1`. `Step` decides how far one arrow key travels, for a pane whose useful sizes are further apart than a single unit |
 | **Notes** | `aria-orientation` describes **the bar, not the axis it moves along** — a `Vertical` splitter is a vertical bar between side-by-side panes, dragged horizontally. Only the horizontal arrows resolve through `IsRightToLeft`, since a right-to-left layout puts the leading pane on the other side; `ArrowUp`, `ArrowDown`, `Home` and `End` are left alone. Focus thickens the grip rather than drawing an outline, which on something this thin renders as stray parallel lines, and the ring returns under forced colours where the fill is dropped |
+
+### 64. `FormaPageHeader` ✅
+
+| | |
+|---|---|
+| **Old pattern** | Each host hand-writing the same `<head>`: charset, viewport, base address, and Forma's stylesheets linked one by one in an order nothing enforced |
+| **Used in** | Every host's `App.razor`. The Showcase composes it, and any consuming application does the same |
+| **Parameters** | `string Title` (required, validated), `string BaseHref` (default `/`, validated), `bool PreloadAssets` (default `true`), `RenderFragment? ChildContent` |
+| **Blazor approach** | Plain markup into the document head, no interactivity. `@Assets` resolves each stylesheet, which fingerprints correctly from inside the library because the running host's asset manifest is what answers, not the assembly the markup was compiled into. `ChildContent` renders after Forma's stylesheets so a host's own land later and win the cascade, and the framework's `ResourcePreloader`, `ImportMap` and `HeadOutlet` close the head so no host repeats them |
+| **Ordering** | `HeadOutlet` renders last, so a page's own `PageTitle` and `HeadContent` override the title set above it — a host putting the outlet first would silently break `PageTitle`, which is the ordering this component exists to own. `ImportMap` matters to the library directly, since it is what fingerprints Forma's own colocated JS modules |
+| **Notes** | `PreloadAssets` covers the framework's `ResourcePreloader`, which only a WebAssembly render mode benefits from and which resolves an internal service that only the Razor Components hosting stack registers; it is switched off in bUnit, where that stack does not exist, and exercised through the Showcase instead. Not the page's visible title bar — that is `FormaPageTitle`, which took this name's place in `Layout` |
 
 ---
 
