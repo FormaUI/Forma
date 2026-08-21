@@ -74,9 +74,7 @@ public sealed partial class FormaDropDownMenu : ComponentBase, IAsyncDisposable
                 ? []
                 : new Dictionary<string, object>(AdditionalAttributes, StringComparer.Ordinal);
 
-            attributes["class"] = attributes.TryGetValue("class", out var hostClass)
-                ? $"forma-dropdown-menu-trigger {hostClass}"
-                : "forma-dropdown-menu-trigger";
+            attributes["class"] = AdditionalAttributes.MergeClass("forma-dropdown-menu-trigger");
 
             attributes["aria-haspopup"] = "menu";
             attributes["aria-expanded"] = _isOpen ? "true" : "false";

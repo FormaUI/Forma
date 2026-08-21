@@ -63,36 +63,10 @@ public sealed partial class FormaButton : ComponentBase
 
     // Host class is merged rather than splatted, so supplying one never drops the button's own styling.
     private string CssClass
-    {
-        get
-        {
-            var classes = new List<string>(6) { "forma-button", VariantClass };
-
-            if (Size is ButtonSize.Mini)
-            {
-                classes.Add("forma-button-mini");
-            }
-
-            if (IconOnly)
-            {
-                classes.Add("forma-button-icon");
-            }
-
-            if (Busy)
-            {
-                classes.Add("forma-button-busy");
-            }
-
-            var hostClass = AdditionalAttributes is not null && AdditionalAttributes.TryGetValue("class", out var value)
-                ? value?.ToString()
-                : null;
-
-            if (!string.IsNullOrWhiteSpace(hostClass))
-            {
-                classes.Add(hostClass);
-            }
-
-            return string.Join(' ', classes);
-        }
-    }
+        => AdditionalAttributes.MergeClass(
+            "forma-button",
+            VariantClass,
+            Size is ButtonSize.Mini ? "forma-button-mini" : null,
+            IconOnly ? "forma-button-icon" : null,
+            Busy ? "forma-button-busy" : null);
 }

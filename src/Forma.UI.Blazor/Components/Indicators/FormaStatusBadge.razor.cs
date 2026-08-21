@@ -39,15 +39,7 @@ public sealed partial class FormaStatusBadge : ComponentBase
     // Host class and style are merged rather than splatted, so supplying either
     // never drops the badge's own styling.
     private string CssClass
-    {
-        get
-        {
-            var hostClass = HostAttribute("class");
-            return string.IsNullOrWhiteSpace(hostClass)
-                ? "forma-status-badge"
-                : $"forma-status-badge {hostClass}";
-        }
-    }
+        => AdditionalAttributes.MergeClass("forma-status-badge");
 
     private string? InlineStyle
     {
@@ -66,7 +58,7 @@ public sealed partial class FormaStatusBadge : ComponentBase
                 declarations.Add($"--forma-status-badge-foreground-color: {foreground};");
             }
 
-            var hostStyle = HostAttribute("style");
+            var hostStyle = AdditionalAttributes.HostValue("style");
 
             if (!string.IsNullOrWhiteSpace(hostStyle))
             {
@@ -87,9 +79,4 @@ public sealed partial class FormaStatusBadge : ComponentBase
 
         return (background?.ToString(), foreground?.ToString());
     }
-
-    private string? HostAttribute(string name)
-        => AdditionalAttributes is not null && AdditionalAttributes.TryGetValue(name, out var value)
-            ? value?.ToString()
-            : null;
 }

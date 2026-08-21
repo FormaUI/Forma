@@ -186,15 +186,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     // Host class is merged rather than splatted, so supplying one never drops
     // the component's own class.
     private string CssClass
-    {
-        get
-        {
-            var hostClass = HostAttribute("class");
-            return string.IsNullOrWhiteSpace(hostClass)
-                ? "forma-data-grid"
-                : $"forma-data-grid {hostClass}";
-        }
-    }
+        => AdditionalAttributes.MergeClass("forma-data-grid");
 
     protected override void OnInitialized()
     {
@@ -550,11 +542,6 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     // QuickGrid raises this from its data-loading path, off the renderer's sync context.
     private void HandleTotalItemCountChanged(object? sender, int? totalItemCount)
         => _ = InvokeAsync(StateHasChanged);
-
-    private string? HostAttribute(string name)
-        => AdditionalAttributes is not null && AdditionalAttributes.TryGetValue(name, out var value)
-            ? value?.ToString()
-            : null;
 
     /// <summary>Gives the selection script an opaque handle for a row that survives while the row stays rendered.</summary>
     private sealed class RowTokenTable

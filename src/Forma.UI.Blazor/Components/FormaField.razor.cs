@@ -53,11 +53,7 @@ public sealed partial class FormaField : ComponentBase
             };
 
             // Merged rather than left to the splat, which the explicit class attribute would override.
-            var hostClass = AdditionalAttributes is not null && AdditionalAttributes.TryGetValue("class", out var value)
-                ? value?.ToString()
-                : null;
-
-            return string.IsNullOrWhiteSpace(hostClass) ? classes : $"{classes} {hostClass}";
+            return AdditionalAttributes.MergeClass(classes);
         }
     }
 

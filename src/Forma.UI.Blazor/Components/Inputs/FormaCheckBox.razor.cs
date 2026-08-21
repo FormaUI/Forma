@@ -47,16 +47,7 @@ public sealed partial class FormaCheckBox : ComponentBase, IAsyncDisposable
 
     // Host class is merged rather than splatted, so supplying one never drops the checkbox's own styling.
     private string CssClass
-    {
-        get
-        {
-            var hostClass = AdditionalAttributes is not null && AdditionalAttributes.TryGetValue("class", out var value)
-                ? value?.ToString()
-                : null;
-
-            return string.IsNullOrWhiteSpace(hostClass) ? "forma-checkbox" : $"forma-checkbox {hostClass}";
-        }
-    }
+        => AdditionalAttributes.MergeClass("forma-checkbox");
 
     protected override void OnInitialized()
         => _module = new JsModule(JS, ModulePath);

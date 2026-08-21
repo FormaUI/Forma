@@ -81,15 +81,11 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
     {
         get
         {
-            // Merged rather than left to the splat, which the explicit class attribute would override.
-            var hostClass = AdditionalAttributes is not null && AdditionalAttributes.TryGetValue("class", out var value)
-                ? value?.ToString()
-                : null;
-
             // A service that sizes its own player is left to do so rather than cropped to the frame's ratio.
-            var classes = Frame is HtmlPlayerFrame && !ShowFacade ? "forma-video-player forma-video-player-flow" : "forma-video-player";
+            var flow = Frame is HtmlPlayerFrame && !ShowFacade ? "forma-video-player-flow" : null;
 
-            return string.IsNullOrWhiteSpace(hostClass) ? classes : $"{classes} {hostClass}";
+            // Merged rather than left to the splat, which the explicit class attribute would override.
+            return AdditionalAttributes.MergeClass("forma-video-player", flow);
         }
     }
 

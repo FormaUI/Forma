@@ -59,20 +59,12 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
 
     // The host's accessible name wins, so a page carrying more than one pager can tell
     // its navigation landmarks apart.
-    private string NavLabel => HostAttribute("aria-label") ?? L["Pagination"].Value;
+    private string NavLabel => AdditionalAttributes.HostValue("aria-label") ?? L["Pagination"].Value;
 
     // Host class is merged rather than splatted, so supplying one never drops
     // the component's own class.
     private string CssClass
-    {
-        get
-        {
-            var hostClass = HostAttribute("class");
-            return string.IsNullOrWhiteSpace(hostClass)
-                ? "forma-pagination"
-                : $"forma-pagination {hostClass}";
-        }
-    }
+        => AdditionalAttributes.MergeClass("forma-pagination");
 
     protected override void OnInitialized()
         => _module = new JsModule(JS, ModulePath);
@@ -197,9 +189,4 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
 
         return await _module.TryInvokeAsync<string>("takePageEntry", _pageInputElement);
     }
-
-    private string? HostAttribute(string name)
-        => AdditionalAttributes is not null && AdditionalAttributes.TryGetValue(name, out var value)
-            ? value?.ToString()
-            : null;
 }
