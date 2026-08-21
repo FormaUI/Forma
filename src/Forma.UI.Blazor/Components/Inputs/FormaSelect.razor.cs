@@ -14,7 +14,6 @@ using Microsoft.JSInterop;
 /// <remarks>Bind <typeparamref name="TValue"/> to a nullable type (<c>int?</c>, <c>string</c>, <c>MyEnum?</c>) to allow no selection.</remarks>
 public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDisposable
 {
-    private const string PlacementModulePath = "./_content/Forma.UI/scripts/AnchoredPopup.js";
     private const string KeysModulePath = "./_content/Forma.UI/Components/Inputs/FormaSelect.razor.js";
 
     /// <summary>The options offered in the list.</summary>
@@ -40,22 +39,20 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
     private readonly string _popupId = $"sel-popup-{Guid.NewGuid():N}";
 
     private bool _isOpen;
-    private bool _placementAttached;
     private int _focusedIndex = -1;
     private ElementReference _anchorElement;
     private ElementReference _triggerElement;
     private ElementReference _popupElement;
     private ElementReference[] _optionElements = [];
-    private JsModule _placementModule = default!;
+    private AnchoredPopup _popup = default!;
     private JsModule _keysModule = default!;
-    private IJSObjectReference? _placement;
 
     private string TriggerText
         => FindSelectedOption()?.Label ?? Placeholder ?? L["Select an Option"];
 
     protected override void OnInitialized()
     {
-        _placementModule = new JsModule(JS, PlacementModulePath);
+        _popup = new AnchoredPopup(JS);
         _keysModule = new JsModule(JS, KeysModulePath);
     }
 
@@ -189,75 +186,18 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
         await _optionElements[_focusedIndex].FocusAsync();
     }
 
-    // The popup is rebuilt each time it opens, so each open gets its own placement instance
-    // bound to that element rather than reusing a stale one.
     protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (_isOpen == _placementAttached)
+        => await _popup.SyncAsync(_isOpen, _popupElement, _anchorElement, async () =>
         {
-            return;
-        }
-
-        try
-        {
-            if (_isOpen)
-            {
-                _placement = await _placementModule
-                    .InvokeAsync<IJSObjectReference>("AnchoredPopup.create", _popupElement, _anchorElement);
-
-                await _placement.InvokeVoidAsync("open");
-                await _keysModule.InvokeVoidAsync("attachNavigationKeys", _popupElement);
-                await FocusIndexAsync(_focusedIndex);
-            }
-            else
-            {
-                await ReleasePlacementAsync();
-            }
-
-            _placementAttached = _isOpen;
-        }
-        catch (JSDisconnectedException)
-        {
-            // Circuit disconnected — safe to ignore.
-        }
-        catch (JSException)
-        {
-            // Interop failed — safe to ignore.
-        }
-    }
+            await _keysModule.InvokeVoidAsync("attachNavigationKeys", _popupElement);
+            await FocusIndexAsync(_focusedIndex);
+        });
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        try
-        {
-            await ReleasePlacementAsync();
-        }
-        catch (JSDisconnectedException)
-        {
-            // Circuit disconnected — safe to ignore.
-        }
-        catch (JSException)
-        {
-            // Module never loaded — nothing to release.
-        }
-
-        await _placementModule.DisposeAsync();
+        await _popup.DisposeAsync();
         await _keysModule.DisposeAsync();
-    }
-
-    private async ValueTask ReleasePlacementAsync()
-    {
-        if (_placement is null)
-        {
-            return;
-        }
-
-        var placement = _placement;
-        _placement = null;
-
-        await placement.InvokeVoidAsync("close");
-        await placement.DisposeAsync();
     }
 
     protected override bool TryParseValueFromString(

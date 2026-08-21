@@ -10,8 +10,6 @@ using Microsoft.JSInterop;
 
 public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
 {
-    private const string ModulePath = "./_content/Forma.UI/scripts/AnchoredPopup.js";
-
     // The rolling windows the Last7Days and Last30Days presets cover, ending today.
     private const int ShortRangeDays = 7;
     private const int LongRangeDays = 30;
@@ -44,9 +42,7 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
     private readonly string _triggerId = $"dp-trigger-{Guid.NewGuid():N}";
     private ElementReference _anchorElement;
     private ElementReference _popupElement;
-    private JsModule _module = default!;
-    private bool _placementAttached;
-    private IJSObjectReference? _placement;
+    private AnchoredPopup _popup = default!;
     private DateOnly _leftMonth;
     private DateOnly _rightMonth;
     private DateOnly? _rangeStart;
@@ -145,75 +141,14 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
     // ── Lifecycle ────────────────────────────────────
 
     protected override void OnInitialized()
-        => _module = new JsModule(JS, ModulePath);
+        => _popup = new AnchoredPopup(JS);
 
-    // The popup element is rebuilt each time it opens, so each open gets its own placement
-    // instance bound to that element rather than reusing a stale one.
     protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (_isOpen == _placementAttached)
-        {
-            return;
-        }
-
-        try
-        {
-            if (_isOpen)
-            {
-                _placement = await _module
-                    .InvokeAsync<IJSObjectReference>("AnchoredPopup.create", _popupElement, _anchorElement);
-
-                await _placement.InvokeVoidAsync("open");
-            }
-            else
-            {
-                await ReleasePlacementAsync();
-            }
-
-            _placementAttached = _isOpen;
-        }
-        catch (JSDisconnectedException)
-        {
-            // Circuit disconnected — safe to ignore.
-        }
-        catch (JSException)
-        {
-            // Interop failed — safe to ignore.
-        }
-    }
+        => await _popup.SyncAsync(_isOpen, _popupElement, _anchorElement);
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
-    {
-        try
-        {
-            await ReleasePlacementAsync();
-        }
-        catch (JSDisconnectedException)
-        {
-            // Circuit disconnected — safe to ignore.
-        }
-        catch (JSException)
-        {
-            // Module never loaded — nothing to release.
-        }
-
-        await _module.DisposeAsync();
-    }
-
-    private async ValueTask ReleasePlacementAsync()
-    {
-        if (_placement is null)
-        {
-            return;
-        }
-
-        var placement = _placement;
-        _placement = null;
-
-        await placement.InvokeVoidAsync("close");
-        await placement.DisposeAsync();
-    }
+        => await _popup.DisposeAsync();
 
     protected override void OnParametersSet()
     {

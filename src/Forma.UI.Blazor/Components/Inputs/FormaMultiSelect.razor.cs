@@ -15,8 +15,6 @@ using Microsoft.JSInterop;
 public sealed partial class FormaMultiSelect<TValue> : InputBase<List<TValue>>, IAsyncDisposable
     where TValue : notnull
 {
-    private const string ModulePath = "./_content/Forma.UI/scripts/AnchoredPopup.js";
-
     /// <summary>The options offered in the dropdown.</summary>
     [Parameter, EditorRequired] public IReadOnlyList<SelectOption<TValue>> Options { get; set; } = default!;
 
@@ -46,14 +44,12 @@ public sealed partial class FormaMultiSelect<TValue> : InputBase<List<TValue>>, 
     private readonly string _popupId = $"ms-popup-{Guid.NewGuid():N}";
 
     private bool _isOpen;
-    private bool _placementAttached;
     private string _searchText = "";
     private ElementReference _anchorElement;
     private ElementReference _triggerElement;
     private ElementReference _searchElement;
     private ElementReference _popupElement;
-    private JsModule _module = default!;
-    private IJSObjectReference? _placement;
+    private AnchoredPopup _popup = default!;
 
     private List<TValue> SelectedValues
         => Value ?? [];
@@ -82,7 +78,7 @@ public sealed partial class FormaMultiSelect<TValue> : InputBase<List<TValue>>, 
     }
 
     protected override void OnInitialized()
-        => _module = new JsModule(JS, ModulePath);
+        => _popup = new AnchoredPopup(JS);
 
     protected override void OnParametersSet()
     {
@@ -142,74 +138,12 @@ public sealed partial class FormaMultiSelect<TValue> : InputBase<List<TValue>>, 
         _searchText = "";
     }
 
-    // The popup element is rebuilt each time it opens, so each open gets its own placement
-    // instance bound to that element rather than reusing a stale one.
     protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (_isOpen == _placementAttached)
-        {
-            return;
-        }
-
-        try
-        {
-            if (_isOpen)
-            {
-                _placement = await _module
-                    .InvokeAsync<IJSObjectReference>("AnchoredPopup.create", _popupElement, _anchorElement);
-
-                await _placement.InvokeVoidAsync("open");
-                await _searchElement.FocusAsync();
-            }
-            else
-            {
-                await ReleasePlacementAsync();
-            }
-
-            _placementAttached = _isOpen;
-        }
-        catch (JSDisconnectedException)
-        {
-            // Circuit disconnected — safe to ignore.
-        }
-        catch (JSException)
-        {
-            // Interop failed — safe to ignore.
-        }
-    }
+        => await _popup.SyncAsync(_isOpen, _popupElement, _anchorElement, () => _searchElement.FocusAsync());
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
-    {
-        try
-        {
-            await ReleasePlacementAsync();
-        }
-        catch (JSDisconnectedException)
-        {
-            // Circuit disconnected — safe to ignore.
-        }
-        catch (JSException)
-        {
-            // Module never loaded — nothing to release.
-        }
-
-        await _module.DisposeAsync();
-    }
-
-    private async ValueTask ReleasePlacementAsync()
-    {
-        if (_placement is null)
-        {
-            return;
-        }
-
-        var placement = _placement;
-        _placement = null;
-
-        await placement.InvokeVoidAsync("close");
-        await placement.DisposeAsync();
-    }
+        => await _popup.DisposeAsync();
 
     protected override bool TryParseValueFromString(
         string? value,
