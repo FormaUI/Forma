@@ -710,7 +710,7 @@ Every folder and its namespace stay in step, so `Plugins/` and `Dialogs/` are re
 
 Each phase ends buildable, tested and reviewable.
 
-1. **Capability model.** The two abstraction projects, every contract in §3 and §5–§7, the default sanitiser, the converter registry, the asset loader, and history. No UI. This lands first precisely because the external-dependency question decides everything after it.
+1. **Capability model.** ◐ The two abstraction projects, every contract in §3 and §5–§7, the default sanitiser, the converter registry, and history are built. The asset loader is contract-only so far — `IComposerAssetLoader` has no implementation yet, because a JS-backed one needs `IJSRuntime` and so belongs in `Forma.UI.Blazor`, which places it with Phase 2's engine shell rather than here. This lands first precisely because the external-dependency question decides everything after it.
 2. **Engine shell.** `FormaComposer`, `FormaComposerToolbar`, the `ComposerDocument` binding of §3.7, the editor switcher, plugin discovery and availability probing, the selection bridge, and the debounced sync of §3.6. One trivial editor plugin proves the routing.
 3. **Rich text editor and core formatting.** `RichTextEditorPlugin`, the canvas, the bubble menu, and the formatting, typography, paragraph, list and alignment/bidi plugins.
 4. **Markdown and code editors.** `MarkdownEditorPlugin`, `CodeEditorPlugin`, `Forma.UI.Features.Composer.Markdown`, the lossless-only HTML → Markdown guard, and the embedded Markdown and code blocks.
