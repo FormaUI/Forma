@@ -30,6 +30,12 @@ public sealed partial class FormaTextBox : InputBase<string?>
     /// <summary>Whether the text box is read-only.</summary>
     [Parameter] public bool ReadOnly { get; set; }
 
+    /// <summary>The kind of text the box holds, which decides how a browser validates and assists it.</summary>
+    [Parameter] public TextInputType Type { get; set; } = TextInputType.Text;
+
+    /// <summary>The fewest characters the box accepts before it counts as valid.</summary>
+    [Parameter] public int? MinLength { get; set; }
+
     /// <summary>The greatest number of characters the box will accept.</summary>
     [Parameter] public int? MaxLength { get; set; }
 
@@ -38,6 +44,15 @@ public sealed partial class FormaTextBox : InputBase<string?>
 
     /// <summary>The virtual keyboard to ask a touch device for.</summary>
     [Parameter] public TextInputMode? InputMode { get; set; }
+
+    /// <summary>What a touch keyboard's action key does, and how it is labelled.</summary>
+    [Parameter] public TextEnterKeyHint? EnterKeyHint { get; set; }
+
+    /// <summary>What a touch keyboard capitalizes automatically as text is typed.</summary>
+    [Parameter] public TextAutoCapitalize? AutoCapitalize { get; set; }
+
+    /// <summary>Whether the browser checks the spelling of the text.</summary>
+    [Parameter] public bool? SpellCheck { get; set; }
 
     /// <summary>The autofill hint given to the browser, such as <c>email</c> or <c>new-password</c>.</summary>
     [Parameter] public string? AutoComplete { get; set; }
@@ -59,6 +74,15 @@ public sealed partial class FormaTextBox : InputBase<string?>
     private string? EffectivePlaceholder
         => HasLabel ? " " : Placeholder;
 
+    private string TypeValue
+        => Type switch
+        {
+            TextInputType.Email => "email",
+            TextInputType.Tel => "tel",
+            TextInputType.Url => "url",
+            _ => "text",
+        };
+
     private string? InputModeValue
         => InputMode switch
         {
@@ -72,6 +96,32 @@ public sealed partial class FormaTextBox : InputBase<string?>
             TextInputMode.Url => "url",
             _ => null,
         };
+
+    private string? EnterKeyHintValue
+        => EnterKeyHint switch
+        {
+            TextEnterKeyHint.Enter => "enter",
+            TextEnterKeyHint.Done => "done",
+            TextEnterKeyHint.Go => "go",
+            TextEnterKeyHint.Next => "next",
+            TextEnterKeyHint.Previous => "previous",
+            TextEnterKeyHint.Search => "search",
+            TextEnterKeyHint.Send => "send",
+            _ => null,
+        };
+
+    private string? AutoCapitalizeValue
+        => AutoCapitalize switch
+        {
+            TextAutoCapitalize.None => "none",
+            TextAutoCapitalize.Sentences => "sentences",
+            TextAutoCapitalize.Words => "words",
+            TextAutoCapitalize.Characters => "characters",
+            _ => null,
+        };
+
+    private string? SpellCheckValue
+        => SpellCheck is { } spellCheck ? (spellCheck ? "true" : "false") : null;
 
     // Carries a caller's own style through, since the explicit attribute would otherwise replace it.
     // The width joins it only when bare; labelled, it sizes the field wrapper instead.
@@ -108,6 +158,25 @@ public sealed partial class FormaTextBox : InputBase<string?>
         }
 
         return supplied is null ? declaration : $"{supplied}; {declaration}";
+    }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (MinLength is { } minLength)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(minLength);
+        }
+
+        if (MaxLength is { } maxLength)
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(maxLength, 1);
+
+            if (MinLength is { } lowerBound)
+            {
+                ArgumentOutOfRangeException.ThrowIfGreaterThan(lowerBound, maxLength, nameof(MinLength));
+            }
+        }
     }
 
     private void HandleInput(ChangeEventArgs args)

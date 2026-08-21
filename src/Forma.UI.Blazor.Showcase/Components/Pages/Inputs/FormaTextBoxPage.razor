@@ -135,8 +135,45 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["The Kind of Text Held"]</h2>
+    <p class="description">@L["Type covers only the kinds a text box draws itself. A date, a number or a colour belongs to FormaInput, where the browser supplies the editing surface, so those types cannot be set here at all."]</p>
+    <div class="demo-box">
+        <div class="demo-stack">
+            <label for="text-box-plain">@L["Plain Text"]</label>
+            <FormaTextBox @bind-Value="_model.Plain" Id="text-box-plain" Type="TextInputType.Text" />
+
+            <label for="text-box-typed-email">@L["Email Address"]</label>
+            <FormaTextBox @bind-Value="_model.TypedEmail" Id="text-box-typed-email" Type="TextInputType.Email" AutoComplete="email" />
+
+            <label for="text-box-typed-tel">@L["Telephone Number"]</label>
+            <FormaTextBox @bind-Value="_model.TypedTel" Id="text-box-typed-tel" Type="TextInputType.Tel" AutoComplete="tel" />
+
+            <label for="text-box-typed-url">@L["Website Address"]</label>
+            <FormaTextBox @bind-Value="_model.TypedUrl" Id="text-box-typed-url" Type="TextInputType.Url" AutoComplete="url" />
+        </div>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Helping the Touch Keyboard"]</h2>
+    <p class="description">@L["EnterKeyHint labels the keyboard's action key, AutoCapitalize decides what it capitalizes on its own, and SpellCheck turns the red underline on or off. None of them change what the box accepts — they only make it pleasanter to fill on a phone."]</p>
+    <div class="demo-box">
+        <div class="demo-stack">
+            <label for="text-box-full-name">@L["Full Name"]</label>
+            <FormaTextBox @bind-Value="_model.FullName" Id="text-box-full-name" AutoCapitalize="TextAutoCapitalize.Words" AutoComplete="name" />
+
+            <label for="text-box-coupon">@L["Coupon Code"]</label>
+            <FormaTextBox @bind-Value="_model.Coupon" Id="text-box-coupon" AutoCapitalize="TextAutoCapitalize.Characters" SpellCheck="false" EnterKeyHint="TextEnterKeyHint.Done" />
+
+            <label for="text-box-message">@L["Message"]</label>
+            <FormaTextBox @bind-Value="_model.Message" Id="text-box-message" AutoCapitalize="TextAutoCapitalize.Sentences" SpellCheck="true" EnterKeyHint="TextEnterKeyHint.Send" />
+        </div>
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["Limiting What Is Accepted"]</h2>
-    <p class="description">@L["MaxLength stops the typing outright, so the box simply refuses the twelfth character. Pattern does not stop anything — it marks the value invalid when the form is submitted, which is why it needs a form and a message to be any use."]</p>
+    <p class="description">@L["MaxLength stops the typing outright, so the box simply refuses the twelfth character. MinLength and Pattern stop nothing — they mark the value invalid when the form is submitted, which is why they need a form and a message to be any use."]</p>
     <div class="demo-box">
         <EditForm Model="_patternModel" FormName="textbox-pattern" OnValidSubmit="HandlePatternSubmit" class="demo-stack">
             <DataAnnotationsValidator />
@@ -144,8 +181,10 @@
             <label for="text-box-code">@L["Product Code"]</label>
             <FormaTextBox @bind-Value="_patternModel.Code"
                           Id="text-box-code"
+                          MinLength="4"
                           MaxLength="12"
                           Pattern="[a-z0-9]+"
+                          SpellCheck="false"
                           Placeholder="@L["acme12"]" />
             <ValidationMessage For="@(() => _patternModel.Code)" />
 
@@ -233,6 +272,13 @@
         public string? Email { get; set; }
         public string? Quantity { get; set; }
         public string? Amount { get; set; }
+        public string? Plain { get; set; }
+        public string? TypedEmail { get; set; }
+        public string? TypedTel { get; set; }
+        public string? TypedUrl { get; set; }
+        public string? FullName { get; set; }
+        public string? Coupon { get; set; }
+        public string? Message { get; set; }
         public string? FullWidth { get; set; }
         public string? Year { get; set; }
         public string? Postcode { get; set; }

@@ -36,8 +36,12 @@
             Assert.Equal("text", cut.Find("input").GetAttribute("type"));
         }
 
-        [Fact]
-        public void Should_stay_a_text_type_when_a_caller_supplies_another()
+        [Theory]
+        [InlineData(TextInputType.Text, "text")]
+        [InlineData(TextInputType.Email, "email")]
+        [InlineData(TextInputType.Tel, "tel")]
+        [InlineData(TextInputType.Url, "url")]
+        public void Should_render_each_text_type(TextInputType type, string expected)
         {
             // Arrange
             using var ctx = new FormaTextBoxTests();
@@ -45,11 +49,11 @@
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaTextBox @bind-Value="model.Text" type="email" />
+                <FormaTextBox @bind-Value="model.Text" Type="type" />
             </FakeFormHost>);
 
             // Assert
-            Assert.Equal("text", cut.Find("input").GetAttribute("type"));
+            Assert.Equal(expected, cut.Find("input").GetAttribute("type"));
         }
 
         [Fact]
@@ -325,9 +329,13 @@
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaTextBox @bind-Value="model.Text"
+                              MinLength="3"
                               MaxLength="20"
                               Pattern="[a-z]+"
                               InputMode="TextInputMode.Email"
+                              EnterKeyHint="TextEnterKeyHint.Send"
+                              AutoCapitalize="TextAutoCapitalize.Words"
+                              SpellCheck="true"
                               AutoComplete="email" />
             </FakeFormHost>);
             var input = cut.Find("input");
@@ -335,9 +343,13 @@
             // Assert
             Assert.Multiple(() =>
             {
+                Assert.Equal("3", input.GetAttribute("minlength"));
                 Assert.Equal("20", input.GetAttribute("maxlength"));
                 Assert.Equal("[a-z]+", input.GetAttribute("pattern"));
                 Assert.Equal("email", input.GetAttribute("inputmode"));
+                Assert.Equal("send", input.GetAttribute("enterkeyhint"));
+                Assert.Equal("words", input.GetAttribute("autocapitalize"));
+                Assert.Equal("true", input.GetAttribute("spellcheck"));
                 Assert.Equal("email", input.GetAttribute("autocomplete"));
             });
         }
@@ -358,12 +370,80 @@
             // Assert
             Assert.Multiple(() =>
             {
+                Assert.False(input.HasAttribute("minlength"));
                 Assert.False(input.HasAttribute("maxlength"));
                 Assert.False(input.HasAttribute("pattern"));
                 Assert.False(input.HasAttribute("inputmode"));
+                Assert.False(input.HasAttribute("enterkeyhint"));
+                Assert.False(input.HasAttribute("autocapitalize"));
+                Assert.False(input.HasAttribute("spellcheck"));
                 Assert.False(input.HasAttribute("autocomplete"));
                 Assert.False(input.HasAttribute("style"));
             });
+        }
+
+        [Fact]
+        public void Should_reject_a_negative_minimum_length()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var act = () => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" MinLength="-1" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Throws<ArgumentOutOfRangeException>(act);
+        }
+
+        [Fact]
+        public void Should_reject_a_maximum_length_below_one()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var act = () => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" MaxLength="0" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Throws<ArgumentOutOfRangeException>(act);
+        }
+
+        [Fact]
+        public void Should_reject_a_minimum_length_above_the_maximum()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var act = () => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" MinLength="10" MaxLength="4" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Throws<ArgumentOutOfRangeException>(act);
+        }
+
+        [Fact]
+        public void Should_render_spellcheck_false_rather_than_omitting_it()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" SpellCheck="false" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("false", cut.Find("input").GetAttribute("spellcheck"));
         }
 
         [Fact]
