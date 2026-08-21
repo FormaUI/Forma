@@ -19,21 +19,12 @@
     pointer-events: none;
 }
 
+/* The box is drawn in forma-input.css; the padding here is the room the glyph and clear button need. */
 .forma-search-box {
-    inline-size: 100%;
     min-block-size: 2.125rem;
     padding-inline: 2rem;
     padding-block: 0.25rem;
     font-size: 0.875rem;
-    line-height: 1.5;
-    color: var(--forma-input-color, var(--text-color));
-    background-color: var(--forma-input-background-color, var(--input-background-color));
-    border: 1px solid var(--forma-input-border-color, var(--dark-border-color));
-    border-radius: 4px;
-    outline: none;
-    box-sizing: border-box;
-    touch-action: manipulation;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
 /* The placeholder is UI text, so an empty field follows the page rather than the value typed into it.
@@ -41,23 +32,6 @@
 .forma-search-box:placeholder-shown {
     direction: inherit;
     unicode-bidi: normal;
-}
-
-.forma-search-box::placeholder {
-    color: var(--forma-placeholder-color, var(--text-secondary-color));
-    opacity: 1;
-}
-
-.forma-search-box:focus {
-    border-color: var(--forma-input-focus-border-color, var(--focus-color));
-    box-shadow: 0 0 0 0.2rem var(--forma-input-focus-shadow-color, color-mix(in srgb, var(--focus-color) 25%, transparent));
-}
-
-@media (forced-colors: active) {
-    .forma-search-box:focus {
-        outline: 2px solid Highlight;
-        outline-offset: 1px;
-    }
 }
 
 .forma-search-box:disabled {

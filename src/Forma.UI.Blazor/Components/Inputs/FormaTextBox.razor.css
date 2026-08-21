@@ -1,45 +1,16 @@
 /* ============================================================
    FormaTextBox — CSS isolation
-   The bare box, sized to stand level with a button. At the large
-   size the element wears FormaField's .forma-field-input instead,
-   so that box is drawn once and only the states this component
-   adds are restated for it here.
+   The bare box, sized to stand level with a button. Once labelled
+   the element wears FormaField's .forma-field-input instead. The
+   box both share is drawn in forma-input.css; only the compact
+   sizing and the states this component adds are set here.
    ============================================================ */
 
 .forma-text-box {
-    display: block;
-    inline-size: 100%;
     min-block-size: 2.125rem;
     padding-block: 0.25rem;
     padding-inline: 0.75rem;
     font-size: 0.875rem;
-    line-height: 1.5;
-    color: var(--forma-input-color, var(--text-color));
-    background-color: var(--forma-input-background-color, var(--input-background-color));
-    border: 1px solid var(--forma-input-border-color, var(--dark-border-color));
-    border-radius: 4px;
-    outline: none;
-    box-sizing: border-box;
-    touch-action: manipulation;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-}
-
-.forma-text-box::placeholder {
-    color: var(--forma-placeholder-color, var(--text-secondary-color));
-    opacity: 1;
-}
-
-.forma-text-box:focus {
-    border-color: var(--forma-input-focus-border-color, var(--focus-color));
-    box-shadow: 0 0 0 0.2rem var(--forma-input-focus-shadow-color, color-mix(in srgb, var(--focus-color) 25%, transparent));
-}
-
-/* Forced colours drops the shadow and overrides the border, leaving no focus ring. */
-@media (forced-colors: active) {
-    .forma-text-box:focus {
-        outline: 2px solid Highlight;
-        outline-offset: 1px;
-    }
 }
 
 .forma-text-box:disabled {

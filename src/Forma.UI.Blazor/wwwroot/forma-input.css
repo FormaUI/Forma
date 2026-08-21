@@ -1,0 +1,47 @@
+/*
+    forma-input.css — The one definition of a Forma input box.
+
+    Loads after forma-base.css. Every surface listed here draws the same box;
+    each owning component sets only how its own differs, such as the padding it
+    needs for a floating label or a leading glyph.
+*/
+
+.forma-field-input,
+.forma-text-box,
+.forma-search-box {
+    display: block;
+    inline-size: 100%;
+    line-height: 1.5;
+    color: var(--forma-input-color, var(--text-color));
+    background-color: var(--forma-input-background-color, var(--input-background-color));
+    border: 1px solid var(--forma-input-border-color, var(--dark-border-color));
+    border-radius: 4px;
+    outline: none;
+    box-sizing: border-box;
+    touch-action: manipulation;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.forma-field-input::placeholder,
+.forma-text-box::placeholder,
+.forma-search-box::placeholder {
+    color: var(--forma-placeholder-color, var(--text-secondary-color));
+    opacity: 1;
+}
+
+.forma-field-input:focus,
+.forma-text-box:focus,
+.forma-search-box:focus {
+    border-color: var(--forma-input-focus-border-color, var(--focus-color));
+    box-shadow: 0 0 0 0.2rem var(--forma-input-focus-shadow-color, color-mix(in srgb, var(--focus-color) 25%, transparent));
+}
+
+/* Forced colours drops the shadow and overrides the border, leaving no focus ring. */
+@media (forced-colors: active) {
+    .forma-field-input:focus,
+    .forma-text-box:focus,
+    .forma-search-box:focus {
+        outline: 2px solid Highlight;
+        outline-offset: 1px;
+    }
+}
