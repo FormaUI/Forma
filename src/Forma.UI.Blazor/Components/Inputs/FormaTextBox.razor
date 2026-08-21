@@ -21,7 +21,8 @@
                 spellcheck="@SpellCheckValue"
                 autocomplete="@AutoComplete"
                 aria-required="@(Required ? "true" : null)"
-                @oninput="HandleInput" />;
+                @oninput="HandleInput"
+                @ref="_inputElement" />;
 }
 
 @if (HasLabel)

@@ -320,6 +320,82 @@
         }
 
         [Fact]
+        public void Should_hand_the_placeholder_over_to_the_floating_label()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" Label="Project" Placeholder="Ignored once labelled" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal(" ", cut.Find("input").GetAttribute("placeholder"));
+        }
+
+        [Fact]
+        public void Should_mark_the_input_required()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" Label="Project" Required="true" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("true", cut.Find("input").GetAttribute("aria-required"));
+                Assert.NotNull(cut.Find("span.forma-field-required"));
+            });
+        }
+
+        [Fact]
+        public void Should_leave_the_input_unrequired_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" Label="Project" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.False(cut.Find("input").HasAttribute("aria-required"));
+                Assert.Empty(cut.FindAll("span.forma-field-required"));
+            });
+        }
+
+        [Fact]
+        public void Should_mark_a_bare_input_required_without_any_chrome()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" Required="true" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("true", cut.Find("input").GetAttribute("aria-required"));
+                Assert.Empty(cut.FindAll(".forma-field"));
+            });
+        }
+
+        [Fact]
         public void Should_render_the_native_constraints_given()
         {
             // Arrange

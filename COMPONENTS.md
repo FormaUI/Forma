@@ -62,12 +62,14 @@ Forma.UI.Blazor/Components/
 │   ├── FormaPublishButton.razor
 │   ├── FormaViewButton.razor
 │   └── FormaExportButton.razor
-├── (11 / 12) Inputs/
+├── (11 / 11) Inputs/
 │   ├── SelectOption.cs
 │   ├── PasswordStrength.cs
-│   ├── TextBoxSize.cs
+│   ├── TextInputType.cs                        # enum: Text, Email, Tel, Url
+│   ├── TextInputMode.cs                        # enum: the virtual keyboard to raise
+│   ├── TextEnterKeyHint.cs                     # enum: what the keyboard's action key does
+│   ├── TextAutoCapitalize.cs                   # enum: what the keyboard capitalizes
 │   ├── ✅ FormaCheckBox.razor
-│   ├── ✅ FormaInput.razor
 │   ├── ✅ FormaTextBox.razor
 │   ├── ✅ FormaSearchBox.razor
 │   ├── ✅ FormaTextArea.razor
@@ -295,7 +297,7 @@ These components form the shell of a page. Build first.
 | | |
 |---|---|
 | **Old pattern** | `<label class="lblForm">` over a `.form-control`, floating on focus or value, with `<span class="mand">` for required and the error text below |
-| **Used in** | Chrome for every labelled form component — `FormaInput`, `FormaTextArea`, `FormaPasswordBox`, `FormaSelect`, `FormaMultiSelect`, `FormaDatePicker`, `FormaColorPicker`, `FormaSlider` and `FormaToggleSwitch` |
+| **Used in** | Chrome for every labelled form component — `FormaTextBox`, `FormaTextArea`, `FormaPasswordBox`, `FormaSelect`, `FormaMultiSelect`, `FormaDatePicker`, `FormaColorPicker`, `FormaSlider` and `FormaToggleSwitch` |
 | **Parameters** | `string? Label`, `string? TargetId`, `bool Required`, `bool Multiline`, `FieldLabelMode LabelMode`, `RenderFragment ChildContent` (the input element), `RenderFragment? Validation` |
 | **Blazor approach** | Renders the wrapper, label and validation slot, and styles the input element through `::deep .forma-field-input` — the one mechanism that reaches markup a *consuming* component rendered, since CSS isolation otherwise scopes each component's sheet to its own output. Non-generic: the consumer passes its own `<ValidationMessage For="...">` into `Validation` rather than the chrome taking a typed expression. `Multiline` anchors the label to the top, because an input element taller than one line has no vertical centre to sit against |
 | **Notes** | Exists so the floating label, border, focus ring and validation styling live in one file. Without it each labelled form component reimplements ~110 lines and they drift apart |
@@ -307,7 +309,7 @@ These components form the shell of a page. Build first.
 | **Old pattern** | `<asp:TextBox TextMode="MultiLine">` — the same `.form-control` class as a single-line field, plus `textarea { resize: vertical }` and a label offset (`.row textarea ~ label.lblForm { top: 13px }`) |
 | **Used in** | SEO head, meta description, store details — and in Épica, article excerpts and summaries |
 | **Parameters** | `@bind-Value`, `string Label`, `bool Required`, `int Rows` (default 3), `int? MaxLength`, `bool ShowCharacterCount` |
-| **Blazor approach** | `InputBase<string?>` rendering a `<textarea>` into `FormaField` with `Multiline`. Owns only the multi-line deltas — `resize: vertical` and a minimum height — so it cannot drift from `FormaInput`. No JS: autofill does not apply to a textarea |
+| **Blazor approach** | `InputBase<string?>` rendering a `<textarea>` into `FormaField` with `Multiline`. Owns only the multi-line deltas — `resize: vertical` and a minimum height — so it cannot drift from `FormaTextBox`. No JS: autofill does not apply to a textarea |
 | **Notes** | `ShowCharacterCount` floats a running count in the field's end corner, tracking the resizable edge from normal flow rather than absolute positioning. The count is isolated as `<bdi dir="ltr">` so an RTL line cannot render "5 / 280" as "280 / 5", and the glyphs are hidden from assistive technology in favour of a visually hidden sentence the field is described by |
 
 ### 9. `FormaStatusBadge` ✅
@@ -342,14 +344,13 @@ These components form the shell of a page. Build first.
 
 ## Tier 3 — Form Components
 
-### 12. `FormaInput` ✅
+### 12. `FormaInput` — removed, superseded by `FormaTextBox`
 
 | | |
 |---|---|
 | **Old pattern** | `<asp:TextBox>` + `<label class="lblForm">` positioned over input, animates up on focus/has-value. Validation error shown below. Optional mandatory indicator `<span class="mand">` |
 | **Used in** | category popup, user popup, filters, import, contact module, and all form pages |
-| **Parameters** | `@bind-Value`, `string Label`, `bool Required`, `string? Placeholder`, `string Type = "text"` |
-| **Blazor approach** | `InputBase<string?>` rendering an `<input>` into `FormaField`, which owns the floating label, required marker and validation message. Autofill is detected in a small module that adds `.has-value`, because an autofilled field does not fire `input` and `:placeholder-shown` alone would leave the label sitting over text |
+| **Now** | `FormaTextBox` with a `Label`. It renders the same `<input>` into the same `FormaField` and carries the same autofill detection, over a closed set of text types rather than a free-string one |
 
 ### 13. `FormaToggleSwitch` ✅
 
@@ -396,7 +397,7 @@ These components form the shell of a page. Build first.
 | **Old pattern** | `<asp:TextBox TextMode="Password">` + `<span onclick="TogglePass(this)" class="fas fa-eye-slash">` toggles between password/text |
 | **Used in** | user editor, settings (API keys), admin login |
 | **Parameters** | `@bind-Value`, `string Label`, `bool Required`, `bool ShowToggle = true`, `string AutoComplete = "current-password"`, `bool ShowStrengthMeter`, `Func<string, PasswordStrength>? StrengthEvaluator`, `bool ShowStrengthAdvice`, `Func<string, IEnumerable<string>>? StrengthAdvisor`, `IEnumerable<string?>? ForbiddenTerms` |
-| **Blazor approach** | Composes `FormaField` for the label, border and validation chrome. `InputBase<string?>` with a dynamic `type` toggled by a button click in C#; the value stays `dir="ltr"` regardless of page direction so a revealed password never reorders, with the gutter, alignment and Edge's own injected `::-ms-reveal` handled per direction in CSS. No JS beyond the existing autofill-detection module `FormaInput.razor.js` already uses |
+| **Blazor approach** | Composes `FormaField` for the label, border and validation chrome. `InputBase<string?>` with a dynamic `type` toggled by a button click in C#; the value stays `dir="ltr"` regardless of page direction so a revealed password never reorders, with the gutter, alignment and Edge's own injected `::-ms-reveal` handled per direction in CSS. No JS beyond the shared autofill-detection module |
 | **Notes** | The strength meter rates length (discounted for a repeating unit), case mix, digits and symbols into a five-step `PasswordStrength` enum, shown as filled segments plus a translated phrase — never colour alone. `ShowStrengthAdvice` lists the specific criteria a value still lacks, sharing its checks with the rater so the two cannot disagree. `ForbiddenTerms` rejects a password that draws on another field's value (email, phone) as a whole or by any alphanumeric fragment of at least four characters, through a `ValidationMessageStore` rather than a private error, so it participates in the form's own validation summary |
 
 ### 18. `FormaCurrencyInput`
@@ -519,7 +520,7 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Old pattern** | Card-based filter groups, each with a title and sortable option values inside. Add/remove groups and values, search, dropdown filter by group type |
 | **Used in** | filters popup |
 | **Parameters** | `@bind-Filters` (List<Filter>) |
-| **Blazor approach** | Interactive card grid. Each card is a filter group with `FormaSortableList` of values inside. Reuses `FormaInput` for inputs |
+| **Blazor approach** | Interactive card grid. Each card is a filter group with `FormaSortableList` of values inside. Reuses `FormaTextBox` for inputs |
 
 ### 29. `FormaExportButton`
 
@@ -807,11 +808,11 @@ These are more complex, possibly page-specific, but still benefit from being com
 | | |
 |---|---|
 | **Old pattern** | `<input type="text" class="form-control">` without floating labels or dedicated label wrappers |
-| **Used in** | Compact inline forms, inline grid filters, dialog fields, toolbars, search/filter rows |
-| **Parameters** | `@bind-Value`, `string? Id`, `string? Placeholder`, `string? Label`, `bool Required`, `TextBoxSize Size = Normal`, `bool Disabled`, `bool ReadOnly` |
-| **Blazor approach** | `InputBase<string?>` rendering a plain `<input>`, no JavaScript. At `Normal` it is bare, carrying `.forma-text-box` and nothing around it. At `Large` it renders that same input inside `FormaField` wearing `.forma-field-input`, so the label, the box and the validation slot come from the one component `FormaInput` and `FormaPasswordBox` already use rather than from a second set of rules imitating it |
-| **Sizes** | `Normal` stands level with a `FormaButton`, which is what a toolbar, a filter row or a grid cell needs, and takes no label \u2014 a labelled field is tall because it reserves room for a floating label, and this one has none to reserve. `Large` is the field: it wraps in `FormaField`, so `Label` and `Required` become meaningful there and only there, and setting `Label` at `Normal` throws rather than silently dropping it |
-| **Notes** | The type is pinned to `text`; a field needing `email`, `tel`, `url` or `search` is `FormaInput`'s job. At `Normal` it carries no label, so a caller names it through `Id` and a real `<label for>`, or through `aria-label` where no visible label belongs. `Placeholder` gives way to the floating label once one is set, since the two would otherwise sit on top of each other. The invalid border does not wait for `modified`, since submitting an untouched required field marks it invalid without ever marking it modified |
+| **Used in** | Every text field: labelled form fields, compact inline forms, inline grid filters, dialog fields, toolbars and filter rows |
+| **Parameters** | `@bind-Value`, `string? Id`, `string? Placeholder`, `string? Label`, `bool Required`, `bool Disabled`, `bool ReadOnly`, `TextInputType Type`, `int? MinLength`, `int? MaxLength`, `string? Pattern`, `TextInputMode? InputMode`, `TextEnterKeyHint? EnterKeyHint`, `TextAutoCapitalize? AutoCapitalize`, `bool? SpellCheck`, `string? AutoComplete`, `CssLength? Width` |
+| **Blazor approach** | `InputBase<string?>` rendering a plain `<input>`. Giving a `Label` is what decides the shape: without one it is bare, carrying `.forma-text-box`; with one it renders that same input inside `FormaField` wearing `.forma-field-input`, so the label, the box and the validation slot come from the one component `FormaPasswordBox` and `FormaTextArea` also use rather than from a second set of rules imitating it. The only JS is the shared autofill detection, initialised solely when labelled since it exists to keep that floating label floated |
+| **Types** | `Type` is a closed set covering what a text box draws itself: plain text, email, telephone and web address. A date, a number or a colour belongs to the component built for it, where the browser supplies the editing surface. Blazor matches parameters case-insensitively, so a raw `type` attribute binds to this parameter rather than reaching the element, and an unsupported type fails loudly instead of being silently dropped |
+| **Notes** | Bare, it carries no label, so a caller names it through `Id` and a real `<label for>`, or through `aria-label` where no visible label belongs. `Placeholder` gives way to the floating label once one is set, since the two would otherwise sit on top of each other. `Width` sizes the field wrapper when labelled and the input itself when bare, because the wrapper is what occupies the row. The invalid border does not wait for `modified`, since submitting an untouched required field marks it invalid without ever marking it modified |
 
 ### 60. `FormaSearchBox` ✅
 

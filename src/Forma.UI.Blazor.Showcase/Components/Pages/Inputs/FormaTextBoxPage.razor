@@ -83,10 +83,10 @@
 
 <div class="demo-section">
     <h2>@L["Beside a Labelled Field"]</h2>
-    <p class="description">@L["Once labelled it is the same FormaField that wraps FormaInput and FormaPasswordBox, so the label, the box and the validation message are drawn by one component rather than three that could drift."]</p>
+    <p class="description">@L["Once labelled it is the same FormaField that wraps FormaPasswordBox and FormaTextArea, so the label, the box and the validation message are drawn by one component rather than three that could drift."]</p>
     <div class="demo-box">
         <EditForm Model="_model" FormName="textbox-parity">
-            <FormaInput @bind-Value="_model.Title" Label="@L["Title"]" />
+            <FormaTextBox @bind-Value="_model.Title" Label="@L["Title"]" />
             <FormaTextBox @bind-Value="_model.Slug" Label="@L["Slug"]" />
         </EditForm>
     </div>
@@ -136,7 +136,7 @@
 
 <div class="demo-section">
     <h2>@L["The Kind of Text Held"]</h2>
-    <p class="description">@L["Type covers only the kinds a text box draws itself. A date, a number or a colour belongs to FormaInput, where the browser supplies the editing surface, so those types cannot be set here at all."]</p>
+    <p class="description">@L["Type covers only the kinds a text box draws itself. A date, a number or a colour belongs to the component built for it, where the browser supplies the editing surface, so those types cannot be set here at all."]</p>
     <div class="demo-box">
         <div class="demo-stack">
             <label for="text-box-plain">@L["Plain Text"]</label>

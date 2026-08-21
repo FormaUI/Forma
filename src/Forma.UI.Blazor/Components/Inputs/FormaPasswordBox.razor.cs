@@ -12,7 +12,7 @@ using Microsoft.JSInterop;
 /// <summary>A password field with a toggle that reveals the typed value.</summary>
 public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposable
 {
-    private const string ModulePath = "./_content/Forma.UI/Components/Inputs/FormaInput.razor.js";
+    private const string ModulePath = "./_content/Forma.UI/scripts/AutofillDetection.js";
 
     // The lengths the built-in rating scores a point at; the longer one is also what the advice asks for.
     private const int ScoredLength = 8;

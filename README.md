@@ -56,7 +56,7 @@ app.MapRazorComponents<App>()
     .AddAdditionalAssemblies(typeof(Forma.UI._Imports).Assembly);
 ```
 
-Components that use JS interop, such as `FormaModal` and `FormaInput`, need the Interactive Server
+Components that use JS interop, such as `FormaModal` and `FormaTextBox`, need the Interactive Server
 render mode.
 
 ## Components
@@ -64,7 +64,7 @@ render mode.
 - **Feedback** — `FormaModal`, `FormaConfirmDialog`, `FormaToastContainer`
   (backed by `IConfirmDialogService` / `IToastService`).
 - **Forms** — `FormaDatePicker` (single + range, non-Gregorian aware), `FormaColorPicker`,
-  `FormaInput`, `FormaTextArea`, `FormaPasswordBox`, `FormaToggleSwitch`,
+  `FormaTextBox`, `FormaTextArea`, `FormaPasswordBox`, `FormaToggleSwitch`,
   `FormaMultiSelect`, `FormaSelect`, `FormaButton`, `FormaCheckBox`.
 - **Data** — `FormaDataGrid`, `FormaPagination`, `FormaStatusBadge`.
 - **Files** — `FormaFilePicker`, `FormaFileUploader`, `FormaFileViewer`.

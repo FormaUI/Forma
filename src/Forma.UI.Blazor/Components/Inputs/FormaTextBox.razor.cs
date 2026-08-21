@@ -2,15 +2,24 @@ namespace Forma.UI.Blazor.Components.Inputs;
 
 using System.Diagnostics.CodeAnalysis;
 
+using Forma.UI.Blazor.Interop;
 using Forma.UI.Style.Css;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.JSInterop;
 
 /// <summary>A single-line text input, bare by default and wearing the shared field chrome once it is given a label.</summary>
-public sealed partial class FormaTextBox : InputBase<string?>
+public sealed partial class FormaTextBox : InputBase<string?>, IAsyncDisposable
 {
+    private const string ModulePath = "./_content/Forma.UI/scripts/AutofillDetection.js";
+
     private readonly string _generatedId = $"text-box-{Guid.NewGuid():N}";
+    private ElementReference _inputElement;
+    private JsModule _module = default!;
+    private bool _isWatchingAutofill;
+
+    [Inject] private IJSRuntime JS { get; set; } = default!;
 
     /// <summary>The optional HTML element identifier, and what a label points at. Generated when a label is present, since the label needs one.</summary>
     [Parameter] public string? Id { get; set; }
@@ -178,6 +187,27 @@ public sealed partial class FormaTextBox : InputBase<string?>
             }
         }
     }
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+        => _module = new JsModule(JS, ModulePath);
+
+    // Only the floating label needs it, since detection exists to keep that label floated
+    // over a value the browser filled without ever raising an input event. A label can
+    // arrive after the first render, so the flag rather than firstRender guards it.
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (HasLabel && !_isWatchingAutofill)
+        {
+            _isWatchingAutofill = true;
+            await _module.TryInvokeVoidAsync("initAutofillDetection", _inputElement);
+        }
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+        => await _module.DisposeAsync();
 
     private void HandleInput(ChangeEventArgs args)
         => CurrentValueAsString = args.Value?.ToString();

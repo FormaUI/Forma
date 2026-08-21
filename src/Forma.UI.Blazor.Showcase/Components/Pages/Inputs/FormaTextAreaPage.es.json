@@ -1,11 +1,11 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
-  "A multi-line field wearing the same chrome as FormaInput: the floating label, focus ring and validation styling all come from the shared FormaField.": "Un campo de varias líneas con la misma envoltura que FormaInput: la etiqueta flotante, el anillo de foco y el estilo de validación provienen del FormaField compartido.",
+  "A multi-line field wearing the same chrome as FormaTextBox: the floating label, focus ring and validation styling all come from the shared FormaField.": "Un campo de varias líneas con la misma envoltura que FormaTextBox: la etiqueta flotante, el anillo de foco y el estilo de validación provienen del FormaField compartido.",
   "Basic usage": "Uso básico",
   "Taller field": "Campo más alto",
   "Required and length-limited": "Obligatorio y con límite de longitud",
   "Disabled": "Deshabilitado",
-  "Beside a FormaInput": "Junto a un FormaInput",
+  "Beside a FormaTextBox": "Junto a un FormaTextBox",
   "Submit with the field empty to see the validation border and message.": "Envía con el campo vacío para ver el borde y el mensaje de validación.",
   "Both components share one stylesheet, so their borders, labels and focus rings cannot drift apart.": "Ambos componentes comparten una hoja de estilos, así que sus bordes, etiquetas y anillos de foco no pueden separarse.",
   "Notes": "Notas",
