@@ -224,22 +224,10 @@
 }
 
 .forma-explorer-dialog-input {
-    inline-size: 100%;
     min-block-size: 2.25rem;
     padding-inline: 0.75rem;
     padding-block: 0.35rem;
-    border: 1px solid var(--light-border-color);
-    border-radius: 6px;
-    background: var(--input-background-color);
-    color: var(--text-color);
     font-size: 0.875rem;
-    transition: border-color 0.15s ease;
-}
-
-.forma-explorer-dialog-input:focus-visible {
-    border-color: var(--focus-color);
-    outline: 2px solid var(--focus-color);
-    outline-offset: 1px;
 }
 
 /* --- Delete Message --- */

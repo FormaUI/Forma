@@ -8,26 +8,15 @@
 
 .forma-toolbar-search {
     flex: 1 1 200px;
-    padding: 6px 10px;
-    border: 1px solid var(--border-color, #dee2e6);
-    border-radius: 4px;
+    padding-block: 6px;
+    padding-inline: 10px;
     font-size: 0.875rem;
-    background-color: var(--forma-input-background-color, var(--input-background-color));
-    color: var(--text-color, #212529);
-    touch-action: manipulation;
 }
 
 /* The placeholder is UI text, so an empty field follows the page; dir="auto" would fall back to ltr and strand an RTL placeholder. */
 .forma-toolbar-search:placeholder-shown {
     direction: inherit;
     unicode-bidi: normal;
-}
-
-.forma-toolbar-search:focus-visible {
-    outline: 2px solid var(--focus-color, #86b7fe);
-    outline-offset: 1px;
-    border-color: var(--focus-color, #86b7fe);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus-color, #86b7fe) 25%, transparent);
 }
 
 .forma-toolbar-actions {

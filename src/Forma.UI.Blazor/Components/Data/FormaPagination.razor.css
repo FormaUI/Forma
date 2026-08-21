@@ -80,19 +80,8 @@
     inline-size: 5.5em;
     padding-block: 0.4em;
     padding-inline: 0.5em;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    background: #fff;
-    color: var(--text-color);
-    font-size: 0.9rem;
-    line-height: 1.2;
+    font-size: 0.875rem;
     text-align: center;
-    touch-action: manipulation;
-}
-
-.forma-pagination-jump-input:focus-visible {
-    outline: 2px solid var(--main-color);
-    outline-offset: 1px;
 }
 
 @media (pointer: coarse) {

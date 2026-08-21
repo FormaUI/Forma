@@ -8,7 +8,11 @@
 
 .forma-field-input,
 .forma-text-box,
-.forma-search-box {
+.forma-search-box,
+.forma-toolbar-search,
+.forma-pagination-jump-input,
+.forma-explorer-dialog-input,
+.forma-multi-select-search {
     display: block;
     inline-size: 100%;
     line-height: 1.5;
@@ -24,14 +28,22 @@
 
 .forma-field-input::placeholder,
 .forma-text-box::placeholder,
-.forma-search-box::placeholder {
+.forma-search-box::placeholder,
+.forma-toolbar-search::placeholder,
+.forma-pagination-jump-input::placeholder,
+.forma-explorer-dialog-input::placeholder,
+.forma-multi-select-search::placeholder {
     color: var(--forma-placeholder-color, var(--text-secondary-color));
     opacity: 1;
 }
 
 .forma-field-input:focus,
 .forma-text-box:focus,
-.forma-search-box:focus {
+.forma-search-box:focus,
+.forma-toolbar-search:focus,
+.forma-pagination-jump-input:focus,
+.forma-explorer-dialog-input:focus,
+.forma-multi-select-search:focus {
     border-color: var(--forma-input-focus-border-color, var(--focus-color));
     box-shadow: 0 0 0 0.2rem var(--forma-input-focus-shadow-color, color-mix(in srgb, var(--focus-color) 25%, transparent));
 }
@@ -40,7 +52,11 @@
 @media (forced-colors: active) {
     .forma-field-input:focus,
     .forma-text-box:focus,
-    .forma-search-box:focus {
+    .forma-search-box:focus,
+    .forma-toolbar-search:focus,
+    .forma-pagination-jump-input:focus,
+    .forma-explorer-dialog-input:focus,
+    .forma-multi-select-search:focus {
         outline: 2px solid Highlight;
         outline-offset: 1px;
     }

@@ -151,15 +151,7 @@
 .forma-multi-select-search {
     padding-block: 0.375rem;
     padding-inline: 0.5rem;
-    border: 1px solid var(--forma-input-border-color, var(--dark-border-color));
-    border-radius: 4px;
-    font: inherit;
-    font-size: 0.85rem;
-}
-
-.forma-multi-select-search:focus-visible {
-    outline: 2px solid var(--focus-color, #86b7fe);
-    outline-offset: 1px;
+    font-size: 0.875rem;
 }
 
 .forma-multi-select-options {
