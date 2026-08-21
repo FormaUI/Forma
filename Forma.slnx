@@ -9,6 +9,8 @@
     <Project Path="src\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
     <Project Path="src\Forma.UI.Features.Abstractions\Forma.UI.Features.Abstractions.csproj" />
     <Project Path="src\Forma.UI.Features\Forma.UI.Features.csproj" />
+    <Project Path="src\Forma.UI.Features.Composer.Abstractions\Forma.UI.Features.Composer.Abstractions.csproj" />
+    <Project Path="src\Forma.UI.Features.Composer\Forma.UI.Features.Composer.csproj" />
     <Project Path="src\Forma.UI.Blazor\Forma.UI.Blazor.csproj" />
     <Project Path="src\Forma.Framework.Resources.Office\Forma.Framework.Resources.Office.csproj" />
     <Project Path="src\Forma.Framework.Resources.Markdown\Forma.Framework.Resources.Markdown.csproj" />
@@ -20,6 +22,7 @@
     <Project Path="tests\Forma.UI.Style.Tests\Forma.UI.Style.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Resources.Tests\Forma.Framework.Resources.Tests.csproj" />
     <Project Path="tests\Forma.UI.Features.Tests\Forma.UI.Features.Tests.csproj" />
+    <Project Path="tests\Forma.UI.Features.Composer.Tests\Forma.UI.Features.Composer.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Resources.Office.Tests\Forma.Framework.Resources.Office.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Resources.Markdown.Tests\Forma.Framework.Resources.Markdown.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Localization.Tests\Forma.Framework.Localization.Tests.csproj" />

@@ -567,32 +567,45 @@ These are correctness requirements for every Forma component, and the composer i
 
 ```text
 src/Forma.UI.Features.Composer.Abstractions/
-├── IComposerPlugin.cs
-├── IComposerEditorPlugin.cs
-├── IComposerDesignerPlugin.cs
-├── ComposerWidget.cs
-├── ComposerWidgetTree.cs
-├── ComposerWidgetNode.cs
-├── ComposerToolbarItem.cs
-├── ComposerKeyBinding.cs
-├── ComposerInputTrigger.cs
-├── ComposerAsset.cs
-├── ComposerContext.cs
-├── ComposerSelection.cs
-├── IComposerHistory.cs
-├── IComposerAssetLoader.cs
-├── ComposerDocument.cs
-├── ComposerDocumentFormat.cs
-├── IComposerDocumentConverter.cs
-├── ComposerConversionResult.cs
-├── IComposerHtmlSanitizer.cs
-├── IComposerSyntaxHighlighter.cs
-└── ComposerSyntaxToken.cs
+├── Assets/                                # namespace …Composer.Assets
+│   ├── ComposerAsset.cs
+│   ├── ComposerAssetKind.cs
+│   ├── ComposerAssetLoading.cs
+│   └── IComposerAssetLoader.cs
+├── Documents/                             # namespace …Composer.Documents
+│   ├── ComposerDocument.cs
+│   ├── ComposerDocumentFormat.cs
+│   ├── IComposerDocumentConverter.cs
+│   └── ComposerConversionResult.cs
+├── Editing/                               # namespace …Composer.Editing
+│   ├── ComposerContext.cs
+│   ├── ComposerSelection.cs
+│   └── IComposerHistory.cs
+├── Plugins/                               # namespace …Composer.Plugins
+│   ├── IComposerPlugin.cs
+│   ├── IComposerEditorPlugin.cs
+│   ├── IComposerDesignerPlugin.cs
+│   ├── ComposerToolbarItem.cs
+│   ├── ComposerKeyBinding.cs
+│   └── ComposerInputTrigger.cs
+├── Sanitization/                          # namespace …Composer.Sanitization
+│   └── IComposerHtmlSanitizer.cs
+├── Syntax/                                # namespace …Composer.Syntax
+│   ├── IComposerSyntaxHighlighter.cs
+│   └── ComposerSyntaxToken.cs
+└── Widgets/                               # namespace …Composer.Widgets
+    ├── ComposerWidget.cs
+    ├── ComposerWidgetTree.cs
+    └── ComposerWidgetNode.cs
 
 src/Forma.UI.Features.Composer/
-├── DocumentConverterRegistry.cs
-├── DefaultHtmlSanitizer.cs
-└── ComposerHistory.cs
+├── Documents/
+│   └── DocumentConverterRegistry.cs
+├── Editing/
+│   └── ComposerHistory.cs
+└── Sanitization/
+    ├── DefaultHtmlSanitizer.cs
+    └── HtmlAllowList.cs               # the allowlist the sanitiser enforces
 
 src/Forma.UI.Blazor/Components/Composer/
 ├── FormaComposer.razor                    # engine shell, editor routing
@@ -686,6 +699,8 @@ src/Forma.UI.Blazor/Components/Composer/
 ```
 
 Every folder and its namespace stay in step, so `Plugins/` and `Dialogs/` are real namespace segments.
+
+**The two feature projects are foldered by concern rather than flat**, and the implementation mirrors the abstractions folder for folder — `Sanitization/` against `Sanitization/`, `Editing/` against `Editing/` — so an implementation sits under the same name as the contract it satisfies, and the test tree mirrors both.
 
 **Localization follows `FormaExplorer`:** every component under `Composer/`, including those in sub-namespaces, injects `IStringLocale<FormaComposer>` and shares the one `FormaComposer.he.json` / `FormaComposer.es.json` pair at the category root. Resources resolve by the localizer's **type** rather than by file location, so this works — and a per-component pair in a sub-namespace would silently fall back to English keys instead. This is the failure mode that has to be re-verified whenever a file moves.
 
