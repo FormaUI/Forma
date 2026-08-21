@@ -1,16 +1,16 @@
-@page "/page-header"
-@attribute [ShowcasePage("FormaPageHeader")]
+@page "/page-title"
+@attribute [ShowcasePage("FormaPageTitle")]
 @using Forma.UI.Blazor.Components.Interactive
 @using Forma.UI.Blazor.Components.Layout
-@inject IStringLocale<FormaPageHeaderPage> L
+@inject IStringLocale<FormaPageTitlePage> L
 
-<h1>FormaPageHeader</h1>
+<h1>FormaPageTitle</h1>
 <p class="description">@L["Page header with title, breadcrumb navigation, and optional action slot."]</p>
 
 <div class="demo-section">
     <h2>@L["Basic with Breadcrumbs"]</h2>
     <div class="demo-box">
-        <FormaPageHeader Title="@L["Orders"]"
+        <FormaPageTitle Title="@L["Orders"]"
                        Breadcrumbs="BasicBreadcrumbs" />
     </div>
 </div>
@@ -18,27 +18,27 @@
 <div class="demo-section">
     <h2>@L["Title Only"]</h2>
     <div class="demo-box">
-        <FormaPageHeader Title="@L["Dashboard"]" />
+        <FormaPageTitle Title="@L["Dashboard"]" />
     </div>
 </div>
 
 <div class="demo-section">
     <h2>@L["With Action Buttons"]</h2>
     <div class="demo-box">
-        <FormaPageHeader Title="@L["Products"]"
+        <FormaPageTitle Title="@L["Products"]"
                        Breadcrumbs="ProductsBreadcrumbs">
             <Actions>
                 <button class="button button-primary">@L["Add New"]</button>
                 <button class="button button-secondary">@L["Export"]</button>
             </Actions>
-        </FormaPageHeader>
+        </FormaPageTitle>
     </div>
 </div>
 
 <div class="demo-section">
     <h2>@L["Deep Breadcrumb Trail"]</h2>
     <div class="demo-box">
-        <FormaPageHeader Title="@L["Edit Product"]"
+        <FormaPageTitle Title="@L["Edit Product"]"
                        Breadcrumbs="DeepBreadcrumbs" />
     </div>
 </div>

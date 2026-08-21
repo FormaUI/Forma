@@ -1,8 +1,8 @@
 @using Forma.UI.Blazor.Components.Interactive
 
-<div class="forma-page-header">
+<div class="forma-page-title">
     <div>
-        <h1 class="forma-page-header-title">@Title</h1>
+        <h1 class="forma-page-title-heading">@Title</h1>
 
         @if (RenderedBreadcrumbs is { Count: > 0 })
         {
@@ -12,7 +12,7 @@
 
     @if (Actions is not null)
     {
-        <div class="forma-page-header-actions">
+        <div class="forma-page-title-actions">
             @Actions
         </div>
     }

@@ -71,7 +71,7 @@ render mode.
 - **Data** — `FormaDataGrid`, `FormaPagination`, `FormaStatusBadge`.
 - **Files** — `FormaFilePicker`, `FormaFileUploader`, `FormaFileViewer`.
 - **Interactive** — `FormaSortableList`, `FormaDropDownMenu`.
-- **Layout** — `FormaPageHeader`, `FormaTabs` (`FormaTab`), `FormaToolbar`, `FormaContextToolbar`.
+- **Layout** — `FormaPageTitle`, `FormaTabs` (`FormaTab`), `FormaToolbar`, `FormaContextToolbar`.
 - **Media** — `FormaVideoPlayer`.
 
 [`COMPONENTS.md`](COMPONENTS.md) describes each one's behaviour.

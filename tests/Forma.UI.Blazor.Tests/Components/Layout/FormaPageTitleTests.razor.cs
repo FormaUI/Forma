@@ -1,8 +1,8 @@
 namespace Forma.UI.Blazor.Tests.Components.Layout;
 
-public sealed partial class FormaPageHeaderTests
+public sealed partial class FormaPageTitleTests
 {
-    public FormaPageHeaderTests()
+    public FormaPageTitleTests()
     {
         Services.AddJsonLocalization();
     }

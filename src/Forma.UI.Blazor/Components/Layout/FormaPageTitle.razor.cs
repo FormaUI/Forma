@@ -4,7 +4,7 @@ using Forma.UI.Blazor.Components.Interactive;
 
 using Microsoft.AspNetCore.Components;
 
-public partial class FormaPageHeader
+public partial class FormaPageTitle
 {
     [Parameter, EditorRequired] public string Title { get; set; } = "";
     [Parameter] public IReadOnlyList<BreadcrumbItem<object?>>? Breadcrumbs { get; set; }

@@ -25,7 +25,7 @@ Forma.UI.Blazor/Components/
 │   ├── ✅ FormaCommandBarRow.razor / .razor.cs / .razor.css / .razor.js
 │   ├── ✅ FormaSplitter.razor / .razor.cs / .razor.css / .razor.js
 │   ├── SplitterOrientation.cs                 # enum: Vertical, Horizontal
-│   ├── ✅ FormaPageHeader.razor / .razor.cs
+│   ├── ✅ FormaPageTitle.razor / .razor.cs
 │   ├── ✅ FormaToolbar.razor / .razor.cs
 │   ├── ✅ FormaContextToolbar.razor / .razor.cs
 │   ├── ✅ FormaTabs.razor / .razor.cs
@@ -209,7 +209,7 @@ Forma.UI.Features/
 
 These components form the shell of a page. Build first.
 
-### 1. `FormaPageHeader` ✅
+### 1. `FormaPageTitle` ✅
 
 | | |
 |---|---|
@@ -828,11 +828,11 @@ These are more complex, possibly page-specific, but still benefit from being com
 
 | | |
 |---|---|
-| **Old pattern** | The hand-rolled breadcrumb section of `FormaExplorerAddressBar` — root icon, chevron separators, a per-segment dropdown of alternatives, and drop-target handlers, all written directly into that component. `FormaPageHeader`'s own plain `<ol>` of links predates it too |
-| **Used in** | Any trail of segments: a page header's site navigation as well as an explorer's folder path. `FormaExplorerAddressBar` and `FormaPageHeader` both compose it now rather than drawing their own |
+| **Old pattern** | The hand-rolled breadcrumb section of `FormaExplorerAddressBar` — root icon, chevron separators, a per-segment dropdown of alternatives, and drop-target handlers, all written directly into that component. `FormaPageTitle`'s own plain `<ol>` of links predates it too |
+| **Used in** | Any trail of segments: a page header's site navigation as well as an explorer's folder path. `FormaExplorerAddressBar` and `FormaPageTitle` both compose it now rather than drawing their own |
 | **Parameters** | `IReadOnlyList<BreadcrumbItem<TItem>> Items`, `Glyph? RootIcon`, `string? AriaLabel`, `EventCallback<TItem?> OnItemClick`, `EventCallback<TItem?> OnItemDrop`. `BreadcrumbItem<TItem>` (moved here from `Layout/`) carries `Label`, `Url?`, `Value?`, `IsCurrent`, and `Children?` for a segment's own dropdown |
 | **Blazor approach** | Generic over the value a click or drop reports back, the way `FormaDataGrid<TItem>` and `FormaSortableList<TItem>` already are, with a non-generic marker type so `IStringLocale` resolves independently of `TItem`. A segment with a `Url` renders a real `<a>`; one without renders a `<button>` when `OnItemClick` is wired, or falls back to static text when it is not — so a plain site breadcrumb never gains a false clickable affordance it does nothing with. A chevron beside a segment with `Children` opens a menu of alternatives, closing on a second click, a backdrop click, or Escape |
-| **Notes** | `aria-current="page"` is set from the caller-supplied `IsCurrent` rather than inferred from position, since a defensive comparison against the current value is more robust than assuming the last segment is always current. `FormaPageHeader` derives it itself — only the last crumb lacking a `Url` counts as current, not every non-linked one — which also means an intermediate category label no longer looks identical to the current page, since only the true current segment is bold. Chevron separators mirror through `:dir(rtl)`, matching the rest of the library's glyph-mirroring convention |
+| **Notes** | `aria-current="page"` is set from the caller-supplied `IsCurrent` rather than inferred from position, since a defensive comparison against the current value is more robust than assuming the last segment is always current. `FormaPageTitle` derives it itself — only the last crumb lacking a `Url` counts as current, not every non-linked one — which also means an intermediate category label no longer looks identical to the current page, since only the true current segment is bold. Chevron separators mirror through `:dir(rtl)`, matching the rest of the library's glyph-mirroring convention |
 
 ### 62. `FormaCommandBar` ✅
 
@@ -881,7 +881,7 @@ Components are ordered by dependency and reuse frequency:
 | Phase | Components | Rationale |
 |---|---|---|
 | **Phase 1** | `FormaModal` ✅, `FormaConfirmDialog` ✅, `FormaToast` ✅ | Infrastructure — everything depends on modals and notifications |
-| **Phase 2** | `FormaPageHeader` ✅, `FormaToolbar` ✅, `FormaTabs` ✅ | Layout — the shell of a page |
+| **Phase 2** | `FormaPageTitle` ✅, `FormaToolbar` ✅, `FormaTabs` ✅ | Layout — the shell of a page |
 | **Phase 3** | `FormaInput` ✅, `FormaToggleSwitch` ✅, `FormaPasswordBox` ✅, `FormaCurrencyInput`, `FormaSlider` ✅, `FormaDatePicker` ✅, `FormaSelect` ✅ | Form inputs — needed before building any edit forms |
 | **Phase 4** | `FormaDataGrid<TItem>` ✅, `FormaContextToolbar` ✅, `FormaStatusBadge` ✅, `FormaCapacityIndicator`, `FormaPagination` ✅ | Data display — needed for list pages |
 | **Phase 5** | `FormaSortableList<TItem>` ✅, `FormaMultiSelect`  ✅, `FormaCategorySelector`, `FormaDropDownMenu` ✅, `FormaColorPicker` ✅ | Interactive widgets — needed for editor pages |
