@@ -164,5 +164,85 @@ public sealed class DefaultHtmlSanitizerTests
             // Assert
             Assert.Equal("<p>2 < 3</p>", result);
         }
+
+        [Fact]
+        public void Should_normalize_the_case_of_a_tag_and_attribute()
+        {
+            // Act
+            var result = _sut.Sanitize("<P CLASS=\"lead\">Text</P>");
+
+            // Assert
+            Assert.Equal("<p class=\"lead\">Text</p>", result);
+        }
+
+        [Fact]
+        public void Should_drop_a_style_attribute_whose_declarations_are_all_disallowed()
+        {
+            // Act
+            var result = _sut.Sanitize("<span style=\"position: fixed; z-index: 99\">Text</span>");
+
+            // Assert
+            Assert.Equal("<span>Text</span>", result);
+        }
+
+        [Fact]
+        public void Should_keep_a_forma_custom_property()
+        {
+            // Act
+            var result = _sut.Sanitize("<span style=\"--forma-accent-color: red\">Text</span>");
+
+            // Assert
+            Assert.Contains("--forma-accent-color: red", result, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_discard_the_remainder_when_a_script_is_never_closed()
+        {
+            // Act
+            var result = _sut.Sanitize("<p>Safe</p><script>alert(1)");
+
+            // Assert
+            Assert.Equal("<p>Safe</p>", result);
+        }
+
+        [Fact]
+        public void Should_discard_a_comment_and_everything_inside_it()
+        {
+            // Act
+            var result = _sut.Sanitize("<p>a<!-- <script>evil()</script> -->b</p>");
+
+            // Assert
+            Assert.Equal("<p>ab</p>", result);
+        }
+
+        [Fact]
+        public void Should_discard_a_doctype()
+        {
+            // Act
+            var result = _sut.Sanitize("<!DOCTYPE html><p>a</p>");
+
+            // Assert
+            Assert.Equal("<p>a</p>", result);
+        }
+
+        [Fact]
+        public void Should_escape_markup_carried_inside_an_attribute_value()
+        {
+            // Act
+            var result = _sut.Sanitize("<p title=\"<script>evil()</script>\">Text</p>");
+
+            // Assert
+            Assert.Equal("<p title=\"&lt;script&gt;evil()&lt;/script&gt;\">Text</p>", result);
+        }
+
+        [Fact]
+        public void Should_keep_a_valueless_boolean_attribute()
+        {
+            // Act
+            var result = _sut.Sanitize("<video src=\"/v.mp4\" controls></video>");
+
+            // Assert
+            Assert.Equal("<video src=\"/v.mp4\" controls=\"\"></video>", result);
+        }
     }
 }

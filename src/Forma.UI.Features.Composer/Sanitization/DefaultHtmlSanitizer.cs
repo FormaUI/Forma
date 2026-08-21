@@ -1,11 +1,15 @@
 namespace Forma.UI.Features.Composer.Sanitization;
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
-using System.Text.RegularExpressions;
 
-/// <summary>Allowlist sanitizer covering the markup the built-in plugins produce, with no external dependency.</summary>
-public sealed partial class DefaultHtmlSanitizer : IComposerHtmlSanitizer
+/// <summary>
+/// Allowlist sanitizer covering the markup the built-in plugins produce, with no external dependency.
+/// Scans the document as spans in a single pass: an element, attribute or CSS declaration absent from
+/// <see cref="HtmlAllowList"/> is dropped, a discarded element such as <c>script</c> or <c>style</c> is
+/// removed together with its content, an event handler attribute and an unsafe URL scheme are rejected
+/// outright, and every kept attribute value is re-escaped rather than passed through verbatim.
+/// </summary>
+public sealed class DefaultHtmlSanitizer : IComposerHtmlSanitizer
 {
     /// <inheritdoc />
     public string Sanitize(string html)
@@ -15,67 +19,76 @@ public sealed partial class DefaultHtmlSanitizer : IComposerHtmlSanitizer
             return string.Empty;
         }
 
-        return SanitizeTags(StripDangerousBlocks(html));
-    }
-
-    // Removes the elements whose text content is itself dangerous, which dropping the tags alone would leave behind.
-    private static string StripDangerousBlocks(string input)
-    {
-        var cleaned = ScriptBlockRegex().Replace(input, string.Empty);
-        cleaned = StyleBlockRegex().Replace(cleaned, string.Empty);
-        cleaned = IframeBlockRegex().Replace(cleaned, string.Empty);
-        cleaned = ObjectBlockRegex().Replace(cleaned, string.Empty);
-        cleaned = EmbedTagRegex().Replace(cleaned, string.Empty);
-        cleaned = SvgBlockRegex().Replace(cleaned, string.Empty);
-        return HtmlCommentRegex().Replace(cleaned, string.Empty);
-    }
-
-    private static string SanitizeTags(string html)
-    {
+        var source = html.AsSpan();
         var output = new StringBuilder(html.Length);
         var index = 0;
 
-        while (index < html.Length)
+        while (index < source.Length)
         {
-            var open = html.IndexOf('<', index, StringComparison.Ordinal);
+            var open = source[index..].IndexOf('<');
 
             if (open < 0)
             {
-                output.Append(html, index, html.Length - index);
+                output.Append(source[index..]);
                 break;
             }
 
-            output.Append(html, index, open - index);
-
-            if (TryReadTag(html, open, out var tag, out var afterTag))
-            {
-                AppendTag(output, tag);
-                index = afterTag;
-            }
-            else
-            {
-                output.Append('<');
-                index = open + 1;
-            }
+            open += index;
+            output.Append(source[index..open]);
+            index = SanitizeMarkup(output, source, open);
         }
 
         return output.ToString();
     }
 
-    [SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase")]
-    private static bool TryReadTag(string html, int start, out HtmlTag tag, out int afterTag)
+    // Handles one '<' and returns where scanning resumes.
+    private static int SanitizeMarkup(StringBuilder output, ReadOnlySpan<char> source, int open)
+    {
+        var rest = source[open..];
+
+        if (rest.StartsWith("<!--", StringComparison.Ordinal))
+        {
+            var end = rest.IndexOf("-->", StringComparison.Ordinal);
+            return end < 0 ? source.Length : open + end + 3;
+        }
+
+        if (rest.StartsWith("<!", StringComparison.Ordinal) || rest.StartsWith("<?", StringComparison.Ordinal))
+        {
+            var end = rest.IndexOf('>');
+            return end < 0 ? source.Length : open + end + 1;
+        }
+
+        if (!TryReadTag(source, open, out var tag, out var afterTag))
+        {
+            output.Append('<');
+            return open + 1;
+        }
+
+        var name = source[tag.Name];
+
+        // Dropping only the tag would leave a script body or a style block behind as text.
+        if (!tag.IsClosing && HtmlAllowList.DiscardedLookup.Contains(name))
+        {
+            return SkipElementContent(source, afterTag, name);
+        }
+
+        AppendTag(output, source, tag);
+        return afterTag;
+    }
+
+    private static bool TryReadTag(ReadOnlySpan<char> source, int start, out HtmlTag tag, out int afterTag)
     {
         tag = default;
         afterTag = start;
 
         var position = start + 1;
 
-        if (position >= html.Length)
+        if (position >= source.Length)
         {
             return false;
         }
 
-        var isClosing = html[position] == '/';
+        var isClosing = source[position] == '/';
 
         if (isClosing)
         {
@@ -84,7 +97,7 @@ public sealed partial class DefaultHtmlSanitizer : IComposerHtmlSanitizer
 
         var nameStart = position;
 
-        while (position < html.Length && (char.IsAsciiLetterOrDigit(html[position]) || html[position] == '-'))
+        while (position < source.Length && (char.IsAsciiLetterOrDigit(source[position]) || source[position] == '-'))
         {
             position++;
         }
@@ -94,14 +107,14 @@ public sealed partial class DefaultHtmlSanitizer : IComposerHtmlSanitizer
             return false;
         }
 
-        var name = html[nameStart..position].ToLowerInvariant();
+        var nameRange = nameStart..position;
         var attributesStart = position;
         var quote = '\0';
 
         // A '>' inside a quoted value does not end the tag, so the scan tracks the quote it is in.
-        while (position < html.Length)
+        while (position < source.Length)
         {
-            var current = html[position];
+            var current = source[position];
 
             if (quote != '\0')
             {
@@ -122,126 +135,242 @@ public sealed partial class DefaultHtmlSanitizer : IComposerHtmlSanitizer
             position++;
         }
 
-        if (position >= html.Length)
+        if (position >= source.Length)
         {
             return false;
         }
 
-        var attributes = html[attributesStart..position].Trim();
-        var isSelfClosing = attributes.Length > 0 && attributes[^1] == '/';
+        var attributes = source[attributesStart..position];
+        var trimmed = attributes.TrimEnd();
+        var isSelfClosing = trimmed.Length > 0 && trimmed[^1] == '/';
+        var attributesEnd = attributesStart + (isSelfClosing ? trimmed.Length - 1 : attributes.Length);
 
-        if (isSelfClosing)
-        {
-            attributes = attributes[..^1].TrimEnd();
-        }
-
-        tag = new HtmlTag(isClosing, name, attributes, isSelfClosing);
+        tag = new HtmlTag(isClosing, nameRange, attributesStart..attributesEnd, isSelfClosing);
         afterTag = position + 1;
         return true;
     }
 
-    private static void AppendTag(StringBuilder output, HtmlTag tag)
+    private static int SkipElementContent(ReadOnlySpan<char> source, int from, ReadOnlySpan<char> name)
     {
-        if (!HtmlAllowList.Tags.Contains(tag.Name))
+        var index = from;
+
+        while (index < source.Length)
+        {
+            var marker = source[index..].IndexOf("</", StringComparison.Ordinal);
+
+            if (marker < 0)
+            {
+                return source.Length;
+            }
+
+            var nameStart = index + marker + 2;
+            var cursor = nameStart;
+
+            while (cursor < source.Length && (char.IsAsciiLetterOrDigit(source[cursor]) || source[cursor] == '-'))
+            {
+                cursor++;
+            }
+
+            if (source[nameStart..cursor].Equals(name, StringComparison.OrdinalIgnoreCase))
+            {
+                var end = source[cursor..].IndexOf('>');
+                return end < 0 ? source.Length : cursor + end + 1;
+            }
+
+            index = nameStart;
+        }
+
+        return source.Length;
+    }
+
+    private static void AppendTag(StringBuilder output, ReadOnlySpan<char> source, HtmlTag tag)
+    {
+        if (!HtmlAllowList.TagLookup.TryGetValue(source[tag.Name], out var name))
         {
             return;
         }
 
-        var isVoid = HtmlAllowList.VoidTags.Contains(tag.Name);
+        var isVoid = HtmlAllowList.VoidTagLookup.Contains(name);
 
         if (tag.IsClosing)
         {
             if (!isVoid)
             {
-                output.Append("</").Append(tag.Name).Append('>');
+                output.Append("</").Append(name).Append('>');
             }
 
             return;
         }
 
-        var attributes = SanitizeAttributes(tag.Name, tag.Attributes);
-
-        output.Append('<').Append(tag.Name);
-
-        if (attributes.Length > 0)
-        {
-            output.Append(' ').Append(attributes);
-        }
-
+        output.Append('<').Append(name);
+        AppendAttributes(output, name, source[tag.Attributes]);
         output.Append(tag.IsSelfClosing || isVoid ? " />" : ">");
     }
 
-    private static string SanitizeAttributes(string tagName, string rawAttributes)
+    private static void AppendAttributes(StringBuilder output, string tagName, ReadOnlySpan<char> raw)
     {
-        if (string.IsNullOrWhiteSpace(rawAttributes))
+        if (raw.IsWhiteSpace())
         {
-            return string.Empty;
+            return;
         }
 
-        var tagSpecific = HtmlAllowList.TagAttributes.GetValueOrDefault(tagName);
-        var result = new StringBuilder();
+        HashSet<string>.AlternateLookup<ReadOnlySpan<char>>? tagSpecific = null;
 
-        foreach (Match match in AttributeRegex().Matches(rawAttributes))
+        if (HtmlAllowList.TagAttributeLookup.TryGetValue(tagName, out var set))
         {
-            var name = match.Groups[1].Value;
+            tagSpecific = set.GetAlternateLookup<ReadOnlySpan<char>>();
+        }
 
-            // An event handler is script by definition, whatever the element.
-            if (name.StartsWith("on", StringComparison.OrdinalIgnoreCase))
+        var position = 0;
+
+        while (position < raw.Length)
+        {
+            while (position < raw.Length && (char.IsWhiteSpace(raw[position]) || raw[position] == '/'))
             {
+                position++;
+            }
+
+            var nameStart = position;
+
+            while (position < raw.Length && (char.IsAsciiLetterOrDigit(raw[position]) || raw[position] is '-' or '_' or ':'))
+            {
+                position++;
+            }
+
+            if (position == nameStart)
+            {
+                position++;
                 continue;
             }
 
-            var isAllowed = name.StartsWith("data-", StringComparison.OrdinalIgnoreCase)
-                            || HtmlAllowList.GlobalAttributes.Contains(name)
-                            || (tagSpecific is not null && tagSpecific.Contains(name));
+            var name = raw[nameStart..position];
 
-            if (!isAllowed)
+            while (position < raw.Length && char.IsWhiteSpace(raw[position]))
             {
-                continue;
+                position++;
             }
 
-            var value = match.Groups[2].Success ? match.Groups[2].Value
-                : match.Groups[3].Success ? match.Groups[3].Value
-                : match.Groups[4].Value;
+            var value = ReadOnlySpan<char>.Empty;
 
-            if (HtmlAllowList.UrlAttributes.Contains(name))
+            if (position < raw.Length && raw[position] == '=')
             {
-                if (!IsSafeUrl(value))
+                position++;
+
+                while (position < raw.Length && char.IsWhiteSpace(raw[position]))
                 {
-                    continue;
+                    position++;
+                }
+
+                if (position < raw.Length && raw[position] is '"' or '\'')
+                {
+                    var quote = raw[position++];
+                    var valueStart = position;
+
+                    while (position < raw.Length && raw[position] != quote)
+                    {
+                        position++;
+                    }
+
+                    value = raw[valueStart..position];
+
+                    if (position < raw.Length)
+                    {
+                        position++;
+                    }
+                }
+                else
+                {
+                    var valueStart = position;
+
+                    while (position < raw.Length && !char.IsWhiteSpace(raw[position]))
+                    {
+                        position++;
+                    }
+
+                    value = raw[valueStart..position];
                 }
             }
-            else if (name.Equals("style", StringComparison.OrdinalIgnoreCase))
-            {
-                value = SanitizeStyle(value);
 
-                if (value.Length == 0)
-                {
-                    continue;
-                }
-            }
-
-            if (result.Length > 0)
-            {
-                result.Append(' ');
-            }
-
-            result.Append(name).Append("=\"").Append(EscapeAttributeValue(value)).Append('"');
+            AppendAttribute(output, name, value, tagSpecific);
         }
-
-        return result.ToString();
     }
 
-    private static bool IsSafeUrl(string url)
+    private static void AppendAttribute(
+        StringBuilder output,
+        ReadOnlySpan<char> name,
+        ReadOnlySpan<char> value,
+        HashSet<string>.AlternateLookup<ReadOnlySpan<char>>? tagSpecific)
     {
-        if (string.IsNullOrWhiteSpace(url))
+        // An event handler is script by definition, whatever the element.
+        if (name.StartsWith("on", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        var isData = false;
+
+        if (!HtmlAllowList.GlobalAttributeLookup.TryGetValue(name, out var canonical)
+            && !(tagSpecific?.TryGetValue(name, out canonical) ?? false))
+        {
+            if (!name.StartsWith("data-", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            isData = true;
+        }
+
+        if (HtmlAllowList.UrlAttributeLookup.Contains(name))
+        {
+            if (!IsSafeUrl(value))
+            {
+                return;
+            }
+        }
+        else if (name.Equals("style", StringComparison.OrdinalIgnoreCase))
+        {
+            var checkpoint = output.Length;
+
+            output.Append(' ').Append(canonical!).Append("=\"");
+
+            if (!TryAppendStyle(output, value))
+            {
+                output.Length = checkpoint;
+                return;
+            }
+
+            output.Append('"');
+            return;
+        }
+
+        output.Append(' ');
+
+        if (isData)
+        {
+            output.Append(name);
+        }
+        else
+        {
+            output.Append(canonical!);
+        }
+
+        output.Append("=\"");
+        AppendEscaped(output, value);
+        output.Append('"');
+    }
+
+    private static bool IsSafeUrl(ReadOnlySpan<char> url)
+    {
+        var trimmed = url.Trim();
+
+        if (trimmed.IsEmpty)
         {
             return false;
         }
 
-        var trimmed = url.Trim();
-
-        if (trimmed[0] is '#' or '/' || trimmed.StartsWith("./", StringComparison.Ordinal) || trimmed.StartsWith("../", StringComparison.Ordinal))
+        if (trimmed[0] is '#' or '/'
+            || trimmed.StartsWith("./", StringComparison.Ordinal)
+            || trimmed.StartsWith("../", StringComparison.Ordinal))
         {
             return true;
         }
@@ -265,43 +394,58 @@ public sealed partial class DefaultHtmlSanitizer : IComposerHtmlSanitizer
         return false;
     }
 
-    private static string SanitizeStyle(string style)
+    private static bool TryAppendStyle(StringBuilder output, ReadOnlySpan<char> style)
     {
-        if (string.IsNullOrWhiteSpace(style))
-        {
-            return string.Empty;
-        }
+        var wrote = false;
 
-        var declarations = style.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        var safe = new List<string>(declarations.Length);
-
-        foreach (var declaration in declarations)
+        foreach (var range in style.Split(';'))
         {
-            if (IsDeniedDeclaration(declaration))
+            var declaration = style[range].Trim();
+
+            if (declaration.IsEmpty || IsDeniedDeclaration(declaration))
             {
                 continue;
             }
 
-            var colon = declaration.IndexOf(':', StringComparison.Ordinal);
+            var colon = declaration.IndexOf(':');
 
             if (colon <= 0)
             {
                 continue;
             }
 
-            var property = declaration[..colon].Trim();
+            var property = declaration[..colon].TrimEnd();
             var value = declaration[(colon + 1)..].Trim();
 
-            if (HtmlAllowList.StyleProperties.Contains(property) || property.StartsWith("--forma-", StringComparison.OrdinalIgnoreCase))
+            if (!HtmlAllowList.StylePropertyLookup.TryGetValue(property, out var canonical)
+                && !property.StartsWith("--forma-", StringComparison.OrdinalIgnoreCase))
             {
-                safe.Add($"{property}: {value}");
+                continue;
             }
+
+            if (wrote)
+            {
+                output.Append("; ");
+            }
+
+            if (canonical is null)
+            {
+                output.Append(property);
+            }
+            else
+            {
+                output.Append(canonical);
+            }
+
+            output.Append(": ");
+            AppendEscaped(output, value);
+            wrote = true;
         }
 
-        return string.Join("; ", safe);
+        return wrote;
     }
 
-    private static bool IsDeniedDeclaration(string declaration)
+    private static bool IsDeniedDeclaration(ReadOnlySpan<char> declaration)
     {
         foreach (var denied in HtmlAllowList.StyleDenyList)
         {
@@ -314,35 +458,31 @@ public sealed partial class DefaultHtmlSanitizer : IComposerHtmlSanitizer
         return false;
     }
 
-    private static string EscapeAttributeValue(string value)
-        => value.Replace("&", "&amp;", StringComparison.Ordinal)
-            .Replace("\"", "&quot;", StringComparison.Ordinal)
-            .Replace("<", "&lt;", StringComparison.Ordinal)
-            .Replace(">", "&gt;", StringComparison.Ordinal);
+    private static void AppendEscaped(StringBuilder output, ReadOnlySpan<char> value)
+    {
+        while (!value.IsEmpty)
+        {
+            var next = value.IndexOfAny(HtmlAllowList.EscapeTargets);
 
-    [GeneratedRegex(@"<script\b[^>]*>[\s\S]*?<\/script\s*>", RegexOptions.IgnoreCase)]
-    private static partial Regex ScriptBlockRegex();
+            if (next < 0)
+            {
+                output.Append(value);
+                return;
+            }
 
-    [GeneratedRegex(@"<style\b[^>]*>[\s\S]*?<\/style\s*>", RegexOptions.IgnoreCase)]
-    private static partial Regex StyleBlockRegex();
+            output.Append(value[..next]);
 
-    [GeneratedRegex(@"<iframe\b[^>]*>[\s\S]*?<\/iframe\s*>", RegexOptions.IgnoreCase)]
-    private static partial Regex IframeBlockRegex();
+            output.Append(value[next] switch
+            {
+                '&' => "&amp;",
+                '"' => "&quot;",
+                '<' => "&lt;",
+                _ => "&gt;"
+            });
 
-    [GeneratedRegex(@"<object\b[^>]*>[\s\S]*?<\/object\s*>", RegexOptions.IgnoreCase)]
-    private static partial Regex ObjectBlockRegex();
+            value = value[(next + 1)..];
+        }
+    }
 
-    [GeneratedRegex(@"<embed\b[^>]*>", RegexOptions.IgnoreCase)]
-    private static partial Regex EmbedTagRegex();
-
-    [GeneratedRegex(@"<svg\b[^>]*>[\s\S]*?<\/svg\s*>", RegexOptions.IgnoreCase)]
-    private static partial Regex SvgBlockRegex();
-
-    [GeneratedRegex(@"<!--[\s\S]*?-->")]
-    private static partial Regex HtmlCommentRegex();
-
-    [GeneratedRegex("""([a-zA-Z0-9\-_:]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?""")]
-    private static partial Regex AttributeRegex();
-
-    private readonly record struct HtmlTag(bool IsClosing, string Name, string Attributes, bool IsSelfClosing);
+    private readonly record struct HtmlTag(bool IsClosing, Range Name, Range Attributes, bool IsSelfClosing);
 }

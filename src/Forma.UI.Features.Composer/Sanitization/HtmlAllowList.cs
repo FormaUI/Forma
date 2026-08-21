@@ -1,6 +1,12 @@
 namespace Forma.UI.Features.Composer.Sanitization;
 
-/// <summary>The markup <see cref="DefaultHtmlSanitizer"/> permits.</summary>
+using System.Buffers;
+
+/// <summary>
+/// The markup <see cref="DefaultHtmlSanitizer"/> permits: the elements, attributes, inline style properties
+/// and URL schemes a document may carry, alongside the alternate lookups the sanitizer matches a sliced tag
+/// or attribute name against without first copying it to a string.
+/// </summary>
 internal static class HtmlAllowList
 {
     /// <summary>Elements a document may carry.</summary>
@@ -20,6 +26,12 @@ internal static class HtmlAllowList
     public static readonly HashSet<string> VoidTags = new(StringComparer.OrdinalIgnoreCase)
     {
         "img", "hr", "br", "source", "col", "wbr"
+    };
+
+    /// <summary>Elements dropped together with their content, whose text would otherwise survive as markup or script.</summary>
+    public static readonly HashSet<string> DiscardedWithContent = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "script", "style", "iframe", "object", "svg", "math", "noscript", "template", "applet", "frameset"
     };
 
     /// <summary>Attributes permitted on any allowed element.</summary>
@@ -80,4 +92,32 @@ internal static class HtmlAllowList
     [
         "url(", "javascript:", "expression(", "@import", "behavior:"
     ];
+
+    /// <summary>The characters an attribute value may not carry unescaped.</summary>
+    public static readonly SearchValues<char> EscapeTargets = SearchValues.Create("&\"<>");
+
+    // The alternate lookups match a sliced name without copying it to a string first, and hand back the
+    // allowlist's own spelling, so the output is normalized without a ToLowerInvariant per tag.
+
+    /// <summary>Matches an element name against <see cref="Tags"/> without allocating.</summary>
+    public static readonly HashSet<string>.AlternateLookup<ReadOnlySpan<char>> TagLookup = Tags.GetAlternateLookup<ReadOnlySpan<char>>();
+
+    /// <summary>Matches an element name against <see cref="VoidTags"/> without allocating.</summary>
+    public static readonly HashSet<string>.AlternateLookup<ReadOnlySpan<char>> VoidTagLookup = VoidTags.GetAlternateLookup<ReadOnlySpan<char>>();
+
+    /// <summary>Matches an element name against <see cref="DiscardedWithContent"/> without allocating.</summary>
+    public static readonly HashSet<string>.AlternateLookup<ReadOnlySpan<char>> DiscardedLookup = DiscardedWithContent.GetAlternateLookup<ReadOnlySpan<char>>();
+
+    /// <summary>Matches an attribute name against <see cref="GlobalAttributes"/> without allocating.</summary>
+    public static readonly HashSet<string>.AlternateLookup<ReadOnlySpan<char>> GlobalAttributeLookup = GlobalAttributes.GetAlternateLookup<ReadOnlySpan<char>>();
+
+    /// <summary>Matches a CSS property against <see cref="StyleProperties"/> without allocating.</summary>
+    public static readonly HashSet<string>.AlternateLookup<ReadOnlySpan<char>> StylePropertyLookup = StyleProperties.GetAlternateLookup<ReadOnlySpan<char>>();
+
+    /// <summary>Matches an attribute name against <see cref="UrlAttributes"/> without allocating.</summary>
+    public static readonly HashSet<string>.AlternateLookup<ReadOnlySpan<char>> UrlAttributeLookup = UrlAttributes.GetAlternateLookup<ReadOnlySpan<char>>();
+
+    /// <summary>Looks up an element's own attribute set without allocating.</summary>
+    public static readonly Dictionary<string, HashSet<string>>.AlternateLookup<ReadOnlySpan<char>> TagAttributeLookup =
+        TagAttributes.GetAlternateLookup<ReadOnlySpan<char>>();
 }
