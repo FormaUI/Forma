@@ -3,9 +3,9 @@ namespace Forma.UI.Blazor.Interop.Operations;
 using Microsoft.JSInterop;
 
 /// <summary>Loads a script, module, or stylesheet once per page.</summary>
-internal sealed class Assets(IJSRuntime js) : IAsyncDisposable
+internal sealed class Asset(IJSRuntime js) : IAsyncDisposable
 {
-    private readonly JsModule _module = new(js, "./_content/Forma.UI/scripts/operations/Assets.js");
+    private readonly JsModule _module = new(js, "./_content/Forma.UI/scripts/operations/Asset.js");
 
     /// <summary>Imports a JavaScript module, reporting whether it loaded.</summary>
     public ValueTask<bool> LoadModuleAsync(string url)

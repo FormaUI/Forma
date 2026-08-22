@@ -1,5 +1,5 @@
 /**
- * Assets — loading a script, module, or stylesheet once per page
+ * Asset — loading a script, module, or stylesheet once per page
  *
  * The promise is cached rather than the completion, so callers racing the first load
  * share it instead of each starting one. A failed load is forgotten so a later attempt

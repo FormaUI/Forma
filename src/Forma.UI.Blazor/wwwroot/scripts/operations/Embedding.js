@@ -2,7 +2,7 @@
  * Embedding — third-party embed scripts and the rescan they need
  */
 
-import { loadScript } from './Assets.js';
+import { loadScript } from './Asset.js';
 
 export async function activate(scriptUrl) {
     const isLoaded = await loadScript(scriptUrl);
