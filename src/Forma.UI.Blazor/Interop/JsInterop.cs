@@ -2,17 +2,17 @@ namespace Forma.UI.Blazor.Interop;
 
 using Microsoft.JSInterop;
 
-/// <summary>A JS behaviour attached to an element, whose disposal is its teardown.</summary>
-internal abstract class JsBehaviour(IJSRuntime js, string path) : IAsyncDisposable
+/// <summary>A JS module attached to an element, whose disposal is its teardown.</summary>
+internal abstract class JsInterop(IJSRuntime js, string path) : IAsyncDisposable
 {
     private readonly JsModule _module = new(js, path);
     private IJSObjectReference? _handle;
 
-    /// <summary>Whether the behaviour is currently attached.</summary>
+    /// <summary>Whether the module is currently attached.</summary>
     public bool IsAttached
         => _handle is not null;
 
-    /// <summary>Attaches the behaviour, releasing any previous attachment first, and reports whether it attached.</summary>
+    /// <summary>Attaches the module, releasing any previous attachment first, and reports whether it attached.</summary>
     protected async ValueTask<bool> AttachCoreAsync(params object?[] args)
     {
         await DetachAsync();

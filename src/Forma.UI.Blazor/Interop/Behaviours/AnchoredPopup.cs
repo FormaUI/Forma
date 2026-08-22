@@ -5,7 +5,7 @@ using Microsoft.JSInterop;
 
 /// <summary>A popup kept positioned against its anchor for as long as it is open.</summary>
 internal sealed class AnchoredPopup(IJSRuntime js)
-    : JsBehaviour(js, "./_content/Forma.UI/scripts/behaviours/AnchoredPopup.js")
+    : JsInterop(js, "./_content/Forma.UI/scripts/behaviours/AnchoredPopup.js")
 {
     private bool _isOpen;
 

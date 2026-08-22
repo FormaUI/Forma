@@ -5,7 +5,7 @@ using Microsoft.JSInterop;
 
 /// <summary>Opens and closes a native dialog as a modal.</summary>
 internal sealed class Modal(IJSRuntime js)
-    : JsBehaviour(js, "./_content/Forma.UI/scripts/components/Modal.js")
+    : JsInterop(js, "./_content/Forma.UI/scripts/components/Modal.js")
 {
     /// <summary>Attaches the modal to the dialog.</summary>
     public ValueTask<bool> AttachAsync(ElementReference dialog)

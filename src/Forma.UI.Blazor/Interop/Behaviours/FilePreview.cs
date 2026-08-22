@@ -5,7 +5,7 @@ using Microsoft.JSInterop;
 
 /// <summary>Thumbnails rendered from the browser's own File objects, held for a container of image elements.</summary>
 internal sealed class FilePreview(IJSRuntime js)
-    : JsBehaviour(js, "./_content/Forma.UI/scripts/behaviours/FilePreview.js")
+    : JsInterop(js, "./_content/Forma.UI/scripts/behaviours/FilePreview.js")
 {
     /// <summary>Attaches the preview to a container holding a file input and its preview images.</summary>
     public ValueTask<bool> AttachAsync(ElementReference container)

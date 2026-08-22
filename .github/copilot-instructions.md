@@ -254,12 +254,12 @@ export function capture(element, pointerId) {
 
 ### Reaching a script from C#
 
-- Do derive a behaviour wrapper from `JsBehaviour`, give it the module path, and expose a typed `AttachAsync`.
+- Do derive a behaviour wrapper from `JsInterop`, give it the module path, and expose a typed `AttachAsync`.
 - Do give an operation wrapper a `JsModule` field rather than deriving from it, so only its own typed methods can be called.
-- Do derive a component wrapper from `JsBehaviour` when its module attaches a surface, and give it a `JsModule` field when the module is operations alone.
+- Do derive a component wrapper from `JsInterop` when its module attaches a surface, and give it a `JsModule` field when the module is operations alone.
 - Do call an operation through `TryInvoke*`, so a dropped circuit leaves the call absent rather than throwing into a render.
 - Do name a wrapper after the module it owns, with no `Bridge`, `Helper`, or `Interop` suffix.
-- Do let `JsModule` and `JsBehaviour` handle importing, `JSException`, `JSDisconnectedException`, and disposal rather than repeating any of it.
+- Do let `JsModule` and `JsInterop` handle importing, `JSException`, `JSDisconnectedException`, and disposal rather than repeating any of it.
 - Do dispose the wrapper from the component's `DisposeAsync`.
 - Do import from `./_content/Forma.UI/scripts/{behaviours|operations|components}/{Name}.js`.
 - Do suppress CA1812 on a private record that exists only to receive a JS return shape, since nothing constructs it in C#.
