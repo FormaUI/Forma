@@ -194,15 +194,15 @@ Every script is one of two kinds, and the kind decides its shape and its home.
 | Behaviour | binds to an element, holds listeners or observers, needs teardown | `wwwroot/scripts/behaviours/{Capability}.js` | `Interop/Behaviours/{Capability}.cs`, when C# attaches it |
 | Operation | a stateless call against an element or a value | `wwwroot/scripts/operations/{Concern}.js` | `Interop/Operations/{Concern}.cs`, when C# calls it |
 
-- Do name a behaviour for what the target can do while it is attached: `DropZone`, `NavigationKeyGuard`, `OverflowWatcher`, `DragGesture`, `FocusTrap`, `InfiniteScroll`.
+- Do name a behaviour for what the target can do while it is attached: `DropZone`, `NavigationScrollGuard`, `ScrollBoundaryWatcher`, `DragGesture`, `FocusTrap`, `InfiniteScroll`.
 - Do settle that name by asking what `attach(target)` leaves the target able to do, and naming that.
-- Do name an operation module for the browser concern it serves: `TextSelection.js`, `PointerCapture.js`, `MediaPlayback.js`, `Clipboard.js`, `Assets.js`.
+- Do name an operation module for the browser concern it serves: `Text.js`, `Pointer.js`, `Playback.js`, `Clipboard.js`, `Assets.js`.
 - Do treat needing a component's name as proof the boundary is wrong, and split the script until the name comes free.
-- Do compose behaviours in JS, `FileDropZone` over `DropZone` and `SortableReorder` over `DragGesture`, so C# only ever holds the outermost one.
+- Do compose behaviours in JS, `FileDropZone` over `DropZone` and `ReorderInteraction` over `DragGesture`, so C# only ever holds the outermost one.
 - Do leave a behaviour no C# wrapper when only JS attaches it, as `DragGesture` has none; where a capability sits never depends on who consumes it.
 - Do read `wwwroot/scripts/behaviours/` before writing a new behaviour; capability names make the folder its own inventory.
 - Don't name a behaviour after the browser primitive implementing it: something holding no state and needing no teardown, such as pointer capture or asset loading, is an operation.
-- Don't name an operation module after the DOM type it receives; `MediaElement.js` accretes everything taking a `<video>`, where `MediaPlayback.js` and `Geometry.js` divide by what the calls are for.
+- Don't name an operation module after the DOM type it receives; `MediaElement.js` accretes everything taking a `<video>`, where `Playback.js` and `Geometry.js` divide by what the calls are for.
 - Don't name a script after the component that calls it, and don't place one beside a component. A consumer-shaped file hides the capabilities inside it, which is how the same key guard, pointer capture, and asset loader each came to be written twice.
 - Don't group unrelated capabilities in one file because one component happens to use both.
 
@@ -224,13 +224,14 @@ export function attach(target, options = {}) {
 ### Operation contract
 
 ```js
-export function read(input) {
-    return { start: input.selectionStart, end: input.selectionEnd };
+export function capture(element, pointerId) {
+    element.setPointerCapture(pointerId);
 }
 ```
 
 - Do export plain named functions, because an operation holds nothing and hands back no handle.
-- Do name an export for the action alone and let the module supply the subject, so `TextSelection.js` exports `read` rather than `readSelection` and `PointerCapture.js` exports `capture` rather than `capturePointer`.
+- Do name an export for the action and let the module supply the subject, so `Pointer.js` exports `capture` rather than `capturePointer`.
+- Do qualify an export where its module covers more than one thing, so `Text.js` exports `take` beside `readSelection` and `writeSelection`.
 - Don't reach for a class, private fields, an `AbortController`, or a `dispose`; needing any of them means a behaviour has been filed as an operation.
 
 ### Reaching a script from C#
