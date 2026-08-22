@@ -191,7 +191,7 @@ Every script is one of two kinds, and the kind decides its shape and its home.
 
 | Kind | What it is | Script | C# wrapper |
 |---|---|---|---|
-| Behaviour | binds to an element, holds listeners or observers, needs teardown | `wwwroot/scripts/behaviours/{Capability}.js` | `Interop/Behaviours/{Capability}.cs` |
+| Behaviour | binds to an element, holds listeners or observers, needs teardown | `wwwroot/scripts/behaviours/{Capability}.js` | `Interop/Behaviours/{Capability}.cs`, when C# attaches it |
 | Operation | a stateless call against an element or a value | `wwwroot/scripts/operations/{Concern}.js` | `Interop/Operations/{Concern}.cs`, when C# calls it |
 
 - Do name a behaviour for what the target can do while it is attached: `DropZone`, `NavigationKeyGuard`, `OverflowWatcher`, `DragGesture`, `FocusTrap`, `InfiniteScroll`.
@@ -199,6 +199,7 @@ Every script is one of two kinds, and the kind decides its shape and its home.
 - Do name an operation module for the browser concern it serves: `TextSelection.js`, `PointerCapture.js`, `MediaPlayback.js`, `Clipboard.js`, `Assets.js`.
 - Do treat needing a component's name as proof the boundary is wrong, and split the script until the name comes free.
 - Do compose behaviours in JS, `FileDropZone` over `DropZone` and `SortableReorder` over `DragGesture`, so C# only ever holds the outermost one.
+- Do leave a behaviour no C# wrapper when only JS attaches it, as `DragGesture` has none; where a capability sits never depends on who consumes it.
 - Do read `wwwroot/scripts/behaviours/` before writing a new behaviour; capability names make the folder its own inventory.
 - Don't name a behaviour after the browser primitive implementing it: something holding no state and needing no teardown, such as pointer capture or asset loading, is an operation.
 - Don't name an operation module after the DOM type it receives; `MediaElement.js` accretes everything taking a `<video>`, where `MediaPlayback.js` and `Geometry.js` divide by what the calls are for.
@@ -220,13 +221,29 @@ export function attach(target, options = {}) {
 - Don't key state by element in a `WeakMap`, on an element property, or in a module-level `Map`; the caller holds the handle.
 - Don't export a `detach`, `unobserve`, or `disconnect` counterpart; disposing the handle is the teardown.
 
+### Operation contract
+
+```js
+export function read(input) {
+    return { start: input.selectionStart, end: input.selectionEnd };
+}
+```
+
+- Do export plain named functions, because an operation holds nothing and hands back no handle.
+- Do name an export for the action alone and let the module supply the subject, so `TextSelection.js` exports `read` rather than `readSelection` and `PointerCapture.js` exports `capture` rather than `capturePointer`.
+- Don't reach for a class, private fields, an `AbortController`, or a `dispose`; needing any of them means a behaviour has been filed as an operation.
+
 ### Reaching a script from C#
 
 - Do derive a behaviour wrapper from `JsBehaviour`, give it the module path, and expose a typed `AttachAsync`.
-- Do reach an operation module through `JsModule`.
+- Do give an operation wrapper a `JsModule` field rather than deriving from it, so only its own typed methods can be called.
+- Do call an operation through `TryInvoke*`, so a dropped circuit leaves the call absent rather than throwing into a render.
+- Do name a wrapper after the module it owns, with no `Bridge`, `Helper`, or `Interop` suffix.
 - Do let `JsModule` and `JsBehaviour` handle importing, `JSException`, `JSDisconnectedException`, and disposal rather than repeating any of it.
 - Do dispose the wrapper from the component's `DisposeAsync`.
 - Do import from `./_content/Forma.UI/scripts/{behaviours|operations}/{Name}.js`.
+- Do suppress CA1812 on a private record that exists only to receive a JS return shape, since nothing constructs it in C#.
+- Don't make a wrapper static; `IJSRuntime` is scoped per circuit and the module reference has to be disposed with it.
 - Don't import a module by hand with `JS.InvokeAsync<IJSObjectReference>("import", …)`.
 - Don't repeat a module path across components; the wrapper owns it.
 
