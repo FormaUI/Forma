@@ -233,6 +233,8 @@ Toolbar contributions are static lists, because a toolbar item's identity does n
 
 That follows VS Code, where `window.createStatusBarItem` returns a `StatusBarItem` whose `text`, `tooltip` and `command` are mutable and which is disposed when done, and where gutter icons are decorations pushed through `setDecorations` against a disposable `TextEditorDecorationType`. Its API reference states the rule plainly: *"The VS Code API uses the dispose pattern for resources that are obtained from VS Code."* The pull shape appears there only for providers such as `NotebookCellStatusBarItemProvider`, which is not the editor status bar.
 
+Being pushed makes a status readout change often, which decides how it is announced. A live region covering the whole strip would speak every caret move, so the strip is not one; a persistent, visually hidden region sits beside it and carries only the items whose `IsAnnounced` is set. A readout such as Ln/Col stays silent and is read on demand, while an event worth interrupting for, such as a save confirmation, opts in. The region is rendered from the composer's first paint rather than with the first item, because a live region inserted already holding its text is not reliably announced.
+
 ---
 
 ## 4. Plugins

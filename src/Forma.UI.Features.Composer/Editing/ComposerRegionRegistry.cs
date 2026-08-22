@@ -51,6 +51,7 @@ public sealed class ComposerRegionRegistry : IComposerRegionRegistry
         private string _text = text;
         private string? _tooltip = tooltip;
         private string? _command = command;
+        private bool _isAnnounced;
         private bool _isDisposed;
 
         public string Text
@@ -96,6 +97,21 @@ public sealed class ComposerRegionRegistry : IComposerRegionRegistry
                 }
 
                 _command = value;
+                owner.RaiseChanged();
+            }
+        }
+
+        public bool IsAnnounced
+        {
+            get => _isAnnounced;
+            set
+            {
+                if (_isAnnounced == value)
+                {
+                    return;
+                }
+
+                _isAnnounced = value;
                 owner.RaiseChanged();
             }
         }

@@ -49,6 +49,35 @@ public sealed class ComposerRegionRegistryTests
     }
 
     [Fact]
+    public void Should_leave_a_status_item_unannounced_by_default()
+    {
+        // Arrange
+        var registry = new ComposerRegionRegistry();
+
+        // Act
+        var item = registry.CreateStatusItem("Ln 1, Col 1");
+
+        // Assert
+        Assert.False(item.IsAnnounced);
+    }
+
+    [Fact]
+    public void Should_raise_changed_when_a_status_item_opts_into_being_announced()
+    {
+        // Arrange
+        var registry = new ComposerRegionRegistry();
+        var item = registry.CreateStatusItem("Saved");
+        var raised = false;
+        registry.Changed += () => raised = true;
+
+        // Act
+        item.IsAnnounced = true;
+
+        // Assert
+        Assert.True(raised);
+    }
+
+    [Fact]
     public void Should_raise_changed_when_a_status_item_is_created()
     {
         // Arrange

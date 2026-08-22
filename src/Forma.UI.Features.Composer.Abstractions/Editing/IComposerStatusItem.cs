@@ -11,4 +11,7 @@ public interface IComposerStatusItem : IDisposable
 
     /// <summary>The command run when the item is activated, or null when it is not interactive.</summary>
     string? Command { get; set; }
+
+    /// <summary>Whether a screen reader announces this item's text as it changes; false for a readout that changes too often to be worth interrupting for.</summary>
+    bool IsAnnounced { get; set; }
 }

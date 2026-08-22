@@ -12,4 +12,9 @@ public sealed partial class FormaComposerStatusStrip : ComponentBase
 
     /// <summary>The shared composer context cascaded from the parent shell.</summary>
     [CascadingParameter] public ComposerContext? Context { get; set; }
+
+    private string AnnouncedText
+        => Context is null
+            ? string.Empty
+            : string.Join(", ", Context.Regions.StatusItems.Where(item => item.IsAnnounced).Select(item => item.Text));
 }

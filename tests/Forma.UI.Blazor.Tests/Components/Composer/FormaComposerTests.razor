@@ -119,6 +119,26 @@
             }
         }
 
+        // Pushes a status item that opts into being announced, unlike the frequently updating readout above.
+        private sealed class AnnouncingStatusPlugin : IComposerPlugin
+        {
+            public string Id => "announcing";
+            public IReadOnlyList<ComposerToolbarItem> ToolbarItems =>
+                [new() { Id = "save", Title = "Save", Icon = Glyph.File, Command = "demo.save" }];
+            public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
+            public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
+            public IReadOnlyList<ComposerAsset> Assets => [];
+            public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
+
+            public ValueTask ExecuteAsync(string command, ComposerContext context, CancellationToken cancellationToken = default)
+            {
+                var item = context.Regions.CreateStatusItem("Saved");
+                item.IsAnnounced = true;
+
+                return ValueTask.CompletedTask;
+            }
+        }
+
         [Fact]
         public void Should_render_composer_container_with_base_class()
         {
@@ -767,6 +787,52 @@
 
             // Assert
             cut.WaitForAssertion(() => Assert.Equal("2 words", cut.Find(".forma-composer-status-strip").TextContent.Trim()));
+        }
+
+        [Fact]
+        public void Should_keep_an_unannounced_status_item_out_of_the_live_region()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            IReadOnlyList<IComposerPlugin> plugins = [new StatusPushingPlugin()];
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+
+            // Act
+            cut.Find("button[aria-label='Word Count']").Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Empty(cut.Find(".forma-composer-status-announcer").TextContent.Trim()));
+        }
+
+        [Fact]
+        public void Should_announce_a_status_item_that_opts_in()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            IReadOnlyList<IComposerPlugin> plugins = [new AnnouncingStatusPlugin()];
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+
+            // Act
+            cut.Find("button[aria-label='Save']").Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal("Saved", cut.Find(".forma-composer-status-announcer").TextContent.Trim()));
+        }
+
+        [Fact]
+        public void Should_render_the_live_region_before_anything_is_pushed()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal("status", cut.Find(".forma-composer-status-announcer").GetAttribute("role")));
         }
     }
 }
