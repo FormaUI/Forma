@@ -110,7 +110,6 @@ Components/{Category}/
 ├── FormaX.razor          # markup only; @namespace first
 ├── FormaX.razor.cs       # all component logic
 ├── FormaX.razor.css      # isolated CSS with banner
-├── FormaX.razor.js       # only when interop is warranted
 ├── FormaX.he.json        # translations, when needed
 └── FormaX.es.json
 ```
@@ -118,7 +117,7 @@ Components/{Category}/
 - Do keep markup in `.razor`, logic in `.razor.cs`, and component styling in `.razor.css`.
 - Do give a component a category of its own, such as `Explorer`, when it is large enough to grow sub-components and supporting types of its own; the category then owns its folder and namespace.
 - Do place supporting types such as `ModalSize`, `BreadcrumbItem`, and `FormaIcon` beside the component that owns them.
-- Do add a colocated `.razor.js` only when HTML, CSS, and Blazor cannot provide the required behaviour.
+- Do put script a component needs in `wwwroot/scripts/`, never beside the component.
 - Do add the translation pair only when the component invents user-facing text.
 - Don't use `@code` blocks in library components.
 - Don't file such a component under a category naming its subject matter instead, the way `Files` would swallow `Explorer`.
@@ -180,20 +179,65 @@ JS-free is the default, not a prohibition.
 
 - Do prefer HTML, CSS, or Blazor when they provide the behaviour cleanly.
 - Do use interop when the platform exposes the needed behaviour only to script or when declarative techniques leave a real usability problem.
-- Do use only native modern browser APIs; keep each module small, colocated as `FormaX.razor.js`, and focused on one DOM responsibility.
 - Do keep behaviour in C# and use JS only for what the DOM cannot otherwise provide.
+- Do use only native modern browser APIs.
 - Do name JS parameters by role (`input`, `dialog`, `label`), not type (`inputEl`, `dialogElement`, `el`).
-- Do import the module on first render from `./_content/Forma.UI/Components/{Category}/FormaX.razor.js`.
-- Do catch `JSException` around every JS call because the circuit can drop mid-call.
-- Do dispose the module in `DisposeAsync` and catch `JSDisconnectedException`.
+- Don't contort a component or ship a worse experience merely to remain script-free.
+- Don't treat the amount of JS required as a reason to leave a rough edge unresolved.
+
+### Behaviours and operations
+
+Every script is one of two kinds, and the kind decides its shape and its home.
+
+| Kind | What it is | Script | C# wrapper |
+|---|---|---|---|
+| Behaviour | binds to an element, holds listeners or observers, needs teardown | `wwwroot/scripts/behaviours/{Capability}.js` | `Interop/Behaviours/{Capability}.cs` |
+| Operation | a stateless call against an element or a value | `wwwroot/scripts/operations/{Concern}.js` | `Interop/Operations/{Concern}.cs`, when C# calls it |
+
+- Do name a behaviour for what the target can do while it is attached: `DropZone`, `NavigationKeyGuard`, `OverflowWatcher`, `DragGesture`, `FocusTrap`, `InfiniteScroll`.
+- Do settle that name by asking what `attach(target)` leaves the target able to do, and naming that.
+- Do name an operation module for the browser concern it serves: `TextSelection.js`, `PointerCapture.js`, `MediaPlayback.js`, `Clipboard.js`, `Assets.js`.
+- Do treat needing a component's name as proof the boundary is wrong, and split the script until the name comes free.
+- Do compose behaviours in JS, `FileDropZone` over `DropZone` and `SortableReorder` over `DragGesture`, so C# only ever holds the outermost one.
+- Do read `wwwroot/scripts/behaviours/` before writing a new behaviour; capability names make the folder its own inventory.
+- Don't name a behaviour after the browser primitive implementing it: something holding no state and needing no teardown, such as pointer capture or asset loading, is an operation.
+- Don't name an operation module after the DOM type it receives; `MediaElement.js` accretes everything taking a `<video>`, where `MediaPlayback.js` and `Geometry.js` divide by what the calls are for.
+- Don't name a script after the component that calls it, and don't place one beside a component. A consumer-shaped file hides the capabilities inside it, which is how the same key guard, pointer capture, and asset loader each came to be written twice.
+- Don't group unrelated capabilities in one file because one component happens to use both.
+
+### Behaviour contract
+
+```js
+export function attach(target, options = {}) {
+    return new Capability(target, options);
+}
+```
+
+- Do export exactly one entry point, `attach(target, options)`, returning a handle with `dispose()`.
+- Do keep the handle's state in private `#fields` of a module-private class.
+- Do register every listener with an `AbortController` signal and abort it in `dispose()`.
+- Do take a class name as an option rather than hardcoding one, because CSS class names belong to the component.
+- Don't key state by element in a `WeakMap`, on an element property, or in a module-level `Map`; the caller holds the handle.
+- Don't export a `detach`, `unobserve`, or `disconnect` counterpart; disposing the handle is the teardown.
+
+### Reaching a script from C#
+
+- Do derive a behaviour wrapper from `JsBehaviour`, give it the module path, and expose a typed `AttachAsync`.
+- Do reach an operation module through `JsModule`.
+- Do let `JsModule` and `JsBehaviour` handle importing, `JSException`, `JSDisconnectedException`, and disposal rather than repeating any of it.
+- Do dispose the wrapper from the component's `DisposeAsync`.
+- Do import from `./_content/Forma.UI/scripts/{behaviours|operations}/{Name}.js`.
+- Don't import a module by hand with `JS.InvokeAsync<IJSObjectReference>("import", …)`.
+- Don't repeat a module path across components; the wrapper owns it.
+
+### External libraries
+
 - Don't use jQuery, npm packages, polyfills, or other external JS libraries. `FormaComposer` is the single carve-out, because an editor hosts capabilities — Markdown rendering, maths typesetting, syntax highlighting — that are solved problems nobody should reimplement.
 - Do confine every such library to its own satellite package, `Forma.UI.Features.Composer.{Capability}`, reached only through a plugin contract, so a host that does not want the capability never downloads it and the engine never depends on it.
 - Do keep those libraries in a supporting role: a capability renders, converts, or classifies. The editing surface, the selection, the undo stack, and the toolbar stay Forma's, in C#.
 - Do ship them as plain static assets under `_content/…`, loaded through the plugin's declared assets. A bundler, a build step, or an `npm install` is still out.
 - Do make a capability that is absent or fails to load degrade to absent, never to a control that throws when pressed.
 - Don't widen the carve-out past `FormaComposer`, and don't let a missing capability break the editor around it.
-- Don't contort a component or ship a worse experience merely to remain script-free.
-- Don't treat the amount of JS required as a reason to leave a rough edge unresolved.
 
 ## CSS
 
