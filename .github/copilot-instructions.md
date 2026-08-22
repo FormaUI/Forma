@@ -185,25 +185,37 @@ JS-free is the default, not a prohibition.
 - Don't contort a component or ship a worse experience merely to remain script-free.
 - Don't treat the amount of JS required as a reason to leave a rough edge unresolved.
 
-### Behaviours and operations
+### Behaviours, operations and components
 
-Every script is one of two kinds, and the kind decides its shape and its home.
+Every script is one of three kinds, and the kind decides its shape and its home.
+
+```text
+behaviours/  → reusable attached behaviour
+operations/  → reusable stateless operation
+components/  → interop owned by a specific Forma component
+```
 
 | Kind | What it is | Script | C# wrapper |
 |---|---|---|---|
 | Behaviour | binds to an element, holds listeners or observers, needs teardown | `wwwroot/scripts/behaviours/{Capability}.js` | `Interop/Behaviours/{Capability}.cs`, when C# attaches it |
 | Operation | a stateless call against an element or a value | `wwwroot/scripts/operations/{Concern}.js` | `Interop/Operations/{Concern}.cs`, when C# calls it |
+| Component | the whole browser side of one component, both kinds together | `wwwroot/scripts/components/{Component}.js` | `Interop/Components/{Component}.cs` |
 
+- Do put a script in `behaviours/` when it attaches to an element for a lifetime and is later torn down.
+- Do put a script in `operations/` when it is a stateless DOM operation, or a set of related ones.
+- Do put a script in `components/` when it owns the browser-side interop for one component and naturally holds both kinds; keep that interop together rather than splitting it by implementation shape.
+- Do name a component script after the component it supports with the `Forma` prefix dropped, so `FormaModal` is served by `components/Modal.js` and `FormaRichTextEditor` by `components/RichTextEditor.js`.
 - Do name a behaviour for what the target can do while it is attached: `DropZone`, `NavigationScrollGuard`, `ScrollBoundaryWatcher`, `DragGesture`, `FocusTrap`, `InfiniteScroll`.
 - Do settle that name by asking what `attach(target)` leaves the target able to do, and naming that.
 - Do name an operation module for the browser concern it serves: `Text.js`, `Pointer.js`, `Playback.js`, `Clipboard.js`, `Asset.js`.
-- Do treat needing a component's name as proof the boundary is wrong, and split the script until the name comes free.
+- Do lift a capability another component could want out into `behaviours/` or `operations/`, however it arrived; `components/` is for what only its own component wants.
 - Do compose behaviours in JS, `FileDropZone` over `DropZone` and `ReorderInteraction` over `DragGesture`, so C# only ever holds the outermost one.
 - Do leave a behaviour no C# wrapper when only JS attaches it, as `DragGesture` has none; where a capability sits never depends on who consumes it.
 - Do read `wwwroot/scripts/behaviours/` before writing a new behaviour; capability names make the folder its own inventory.
 - Don't name a behaviour after the browser primitive implementing it: something holding no state and needing no teardown, such as pointer capture or asset loading, is an operation.
 - Don't name an operation module after the DOM type it receives; `MediaElement.js` accretes everything taking a `<video>`, where `Playback.js` and `Geometry.js` divide by what the calls are for.
-- Don't name a script after the component that calls it, and don't place one beside a component. A consumer-shaped file hides the capabilities inside it, which is how the same key guard, pointer capture, and asset loader each came to be written twice.
+- Don't name a shared behaviour or operation after a component that calls it. A consumer-shaped file in those folders hides the capabilities inside it, which is how the same key guard, pointer capture, and asset loader each came to be written twice.
+- Don't place a script beside the component that uses it; a component's own interop belongs in `components/`, not in its folder.
 - Don't group unrelated capabilities in one file because one component happens to use both.
 
 ### Behaviour contract
@@ -234,15 +246,22 @@ export function capture(element, pointerId) {
 - Do qualify an export where its module covers more than one thing, so `Text.js` exports `take` beside `readSelection` and `writeSelection`.
 - Don't reach for a class, private fields, an `AbortController`, or a `dispose`; needing any of them means a behaviour has been filed as an operation.
 
+### Component contract
+
+- Do export `attach(target, options)` for the component's own surface when it has one, beside whatever operations it needs, so one module covers the component's whole browser side.
+- Do write each exported part to the contract above that fits it; the folder decides where the module lives, not how its parts are written.
+- Don't reimplement a shared behaviour or operation inside a component module; import it.
+
 ### Reaching a script from C#
 
 - Do derive a behaviour wrapper from `JsBehaviour`, give it the module path, and expose a typed `AttachAsync`.
 - Do give an operation wrapper a `JsModule` field rather than deriving from it, so only its own typed methods can be called.
+- Do derive a component wrapper from `JsBehaviour` when its module attaches a surface, and give it a `JsModule` field when the module is operations alone.
 - Do call an operation through `TryInvoke*`, so a dropped circuit leaves the call absent rather than throwing into a render.
 - Do name a wrapper after the module it owns, with no `Bridge`, `Helper`, or `Interop` suffix.
 - Do let `JsModule` and `JsBehaviour` handle importing, `JSException`, `JSDisconnectedException`, and disposal rather than repeating any of it.
 - Do dispose the wrapper from the component's `DisposeAsync`.
-- Do import from `./_content/Forma.UI/scripts/{behaviours|operations}/{Name}.js`.
+- Do import from `./_content/Forma.UI/scripts/{behaviours|operations|components}/{Name}.js`.
 - Do suppress CA1812 on a private record that exists only to receive a JS return shape, since nothing constructs it in C#.
 - Don't make a wrapper static; `IJSRuntime` is scoped per circuit and the module reference has to be disposed with it.
 - Don't import a module by hand with `JS.InvokeAsync<IJSObjectReference>("import", …)`.

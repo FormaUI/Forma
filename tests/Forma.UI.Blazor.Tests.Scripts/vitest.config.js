@@ -11,6 +11,7 @@ export default defineConfig({
         alias: {
             '#behaviours/': resolved(`${scripts}behaviours/`),
             '#operations/': resolved(`${scripts}operations/`),
+            '#components/': resolved(`${scripts}components/`),
             '#support/': resolved('./support/'),
         },
     },

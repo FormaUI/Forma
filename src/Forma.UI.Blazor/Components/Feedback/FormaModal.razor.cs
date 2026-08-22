@@ -3,7 +3,7 @@ namespace Forma.UI.Blazor.Components.Feedback;
 using System.Diagnostics.CodeAnalysis;
 
 using Forma.Framework.Localization;
-using Forma.UI.Blazor.Interop.Behaviours;
+using Forma.UI.Blazor.Interop.Components;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -11,7 +11,7 @@ using Microsoft.JSInterop;
 public sealed partial class FormaModal : IAsyncDisposable
 {
     private ElementReference _dialogRef;
-    private ModalControl _modal = default!;
+    private Modal _modal = default!;
     private bool _isOpen;
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
@@ -60,7 +60,7 @@ public sealed partial class FormaModal : IAsyncDisposable
         CancelText ?? (Options.ShowCancelAction && !Options.ShowConfirmAction ? L["Close"] : L["Cancel"]);
 
     protected override void OnInitialized()
-        => _modal = new ModalControl(JS);
+        => _modal = new Modal(JS);
 
     protected override void OnParametersSet()
         => ArgumentNullException.ThrowIfNull(Options);

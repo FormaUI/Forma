@@ -1,13 +1,13 @@
-namespace Forma.UI.Blazor.Interop.Behaviours;
+namespace Forma.UI.Blazor.Interop.Components;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>Opens and closes a native dialog as a modal.</summary>
-internal sealed class ModalControl(IJSRuntime js)
-    : JsBehaviour(js, "./_content/Forma.UI/scripts/behaviours/ModalControl.js")
+internal sealed class Modal(IJSRuntime js)
+    : JsBehaviour(js, "./_content/Forma.UI/scripts/components/Modal.js")
 {
-    /// <summary>Attaches control to the dialog.</summary>
+    /// <summary>Attaches the modal to the dialog.</summary>
     public ValueTask<bool> AttachAsync(ElementReference dialog)
         => AttachCoreAsync(dialog);
 
