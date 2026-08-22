@@ -5,7 +5,11 @@
   "Disabled": "Deshabilitado",
   "Fixed Height": "Altura Fija",
   "Plugins": "Complementos",
-  "Every command is a plugin contribution. The composer's own sit in the built-in row; an editor either joins that row or declares one of its own; an external plugin either joins the plugin row or declares one of its own. Switch to Source to see all four rows.": "Cada comando es una aportación de un complemento. Los propios del editor ocupan la fila integrada; un editor puede sumarse a esa fila o declarar una propia; un complemento externo puede sumarse a la fila de complementos o declarar una propia. Cambie a Source para ver las cuatro filas.",
+  "Every command is a plugin contribution. The composer's own sit in the built-in row; an editor either joins that row or declares one of its own; an external plugin either joins the plugin row or declares one of its own. Plain Text shows all four rows, while Source shows only its own, because both external plugins name the surface they apply to.": "Cada comando es una aportación de un complemento. Los propios del editor ocupan la fila integrada; un editor puede sumarse a esa fila o declarar una propia; un complemento externo puede sumarse a la fila de complementos o declarar una propia. Plain Text muestra las cuatro filas, mientras que Source solo muestra las suyas, porque ambos complementos externos indican la superficie a la que se aplican.",
   "Read-only": "Solo Lectura",
+  "Source Editor": "Editor de Código",
+  "An editor plugin bringing a surface of its own: lines numbered in a gutter, and a Rename Symbol command that replaces whole-word occurrences throughout the document. Press F2 or use the Refactor row.": "Un complemento de editor que aporta su propia superficie: líneas numeradas en un margen y un comando Renombrar Símbolo que sustituye las apariciones de palabra completa en todo el documento. Pulse F2 o use la fila Refactorizar.",
+  "Status Strip": "Barra de Estado",
+  "Word Count pushes a readout the plugin holds and mutates, shown beneath the canvas until the plugin disposes it. Press it again to take it back.": "Contar Palabras publica una lectura que el complemento conserva y modifica, mostrada bajo el lienzo hasta que el complemento la descarta. Pulse de nuevo para retirarla.",
   "Without Toolbar": "Sin Barra de Herramientas"
 }

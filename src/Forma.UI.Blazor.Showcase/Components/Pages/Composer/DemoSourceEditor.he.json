@@ -1,0 +1,13 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "Cancel": "ביטול",
+  "Current name": "השם הנוכחי",
+  "Edit Source": "עריכת קוד",
+  "New name": "השם החדש",
+  "No occurrence of \"{0}\" was found.": "לא נמצאה אף מופע של \"{0}\".",
+  "Rename": "שינוי שם",
+  "Rename Symbol": "שינוי שם סמל",
+  "Renamed {0} occurrences.": "שונו {0} מופעים.",
+  "Source": "קוד",
+  "The rename took too long and was abandoned.": "שינוי השם ארך זמן רב מדי ובוטל."
+}

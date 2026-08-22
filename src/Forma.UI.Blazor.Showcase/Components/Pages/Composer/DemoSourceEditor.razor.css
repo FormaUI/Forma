@@ -1,0 +1,96 @@
+/* DemoSourceEditor — source surface for the composer demo: a line-number gutter beside an unwrapped textarea */
+
+.demo-source-editor {
+    display: flex;
+    flex-direction: column;
+    inline-size: 100%;
+    block-size: 100%;
+    min-block-size: 12rem;
+}
+
+/* The gutter and the textarea scroll as one because this box owns the scrollbar, not the textarea. */
+.demo-source-body {
+    display: flex;
+    flex: 1;
+    overflow: auto;
+    font-family: var(--font-family-mono, monospace);
+    font-size: var(--font-size-sm, 0.875rem);
+    line-height: 1.5;
+}
+
+.demo-source-gutter {
+    flex-shrink: 0;
+    margin: 0;
+    padding: var(--space-3, 0.75rem) var(--space-2, 0.5rem);
+    border-inline-end: 1px solid var(--border-color, #d9dee5);
+    background: var(--surface-muted-color, #f5f6f8);
+    color: var(--text-muted-color, #6b7280);
+    text-align: end;
+    list-style: none;
+    user-select: none;
+}
+
+.demo-source-gutter li {
+    font-variant-numeric: tabular-nums;
+}
+
+.demo-source-textarea {
+    flex: 1;
+    box-sizing: border-box;
+    padding: var(--space-3, 0.75rem);
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--text-color, inherit);
+    font: inherit;
+
+    /* The gutter counts rows, so the textarea must never wrap one line onto two or scroll on its own. */
+    overflow: hidden;
+    resize: none;
+}
+
+.demo-source-textarea:focus-visible {
+    outline: none;
+}
+
+.demo-source-rename {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2, 0.5rem);
+    padding: var(--space-2, 0.5rem);
+    border-block-end: 1px solid var(--border-color, #d9dee5);
+    background: var(--surface-muted-color, #f5f6f8);
+}
+
+.demo-source-rename-field {
+    flex: 1;
+    min-inline-size: 6rem;
+    min-block-size: 1.75rem;
+    padding: var(--space-1, 0.25rem) var(--space-2, 0.5rem);
+    border: 1px solid var(--border-color, #d9dee5);
+    border-radius: var(--radius-sm, 0.25rem);
+    font-family: var(--font-family-mono, monospace);
+    font-size: var(--font-size-sm, 0.875rem);
+}
+
+.demo-source-rename-arrow {
+    color: var(--text-muted-color, #6b7280);
+}
+
+@media (pointer: coarse) {
+    .demo-source-rename-field {
+        min-block-size: 2.75rem;
+    }
+}
+
+.demo-source-announcer {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}

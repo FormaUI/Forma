@@ -9,10 +9,12 @@
         <div class="forma-composer-status-strip">
             @foreach (var item in Context.Regions.StatusItems)
             {
+                @* A readout is plugin-supplied text of unknown direction, isolated so a number cannot reorder against the page. *@
                 if (item.Command is { } command)
                 {
                     <button type="button"
                             class="forma-composer-status-item forma-composer-status-item-button"
+                            dir="auto"
                             title="@item.Tooltip"
                             @onclick="() => OnCommand.InvokeAsync(command)">
                         @item.Text
@@ -20,7 +22,7 @@
                 }
                 else
                 {
-                    <span class="forma-composer-status-item" title="@item.Tooltip">@item.Text</span>
+                    <span class="forma-composer-status-item" dir="auto" title="@item.Tooltip">@item.Text</span>
                 }
             }
         </div>

@@ -46,21 +46,60 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Plugins"]</h2>
-    <p class="description">@L["Every command is a plugin contribution. The composer's own sit in the built-in row; an editor either joins that row or declares one of its own; an external plugin either joins the plugin row or declares one of its own. Switch to Source to see all four rows."]</p>
+    <h2>@L["Source Editor"]</h2>
+    <p class="description">@L["An editor plugin bringing a surface of its own: lines numbered in a gutter, and a Rename Symbol command that replaces whole-word occurrences throughout the document. Press F2 or use the Refactor row."]</p>
     <div class="demo-box">
-        <FormaComposer @bind-Value="_pluginDoc" Plugins="_demoPlugins" />
+        <CascadingValue Value="_sourceOnlyPlugin" IsFixed="true">
+            <FormaComposer @bind-Value="_sourceDoc" Plugins="_sourcePlugins" />
+        </CascadingValue>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Status Strip"]</h2>
+    <p class="description">@L["Word Count pushes a readout the plugin holds and mutates, shown beneath the canvas until the plugin disposes it. Press it again to take it back."]</p>
+    <div class="demo-box">
+        <CascadingValue Value="_statusTextPlugin" IsFixed="true">
+            <FormaComposer @bind-Value="_statusDoc" Plugins="_statusPlugins" />
+        </CascadingValue>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Plugins"]</h2>
+    <p class="description">@L["Every command is a plugin contribution. The composer's own sit in the built-in row; an editor either joins that row or declares one of its own; an external plugin either joins the plugin row or declares one of its own. Plain Text shows all four rows, while Source shows only its own, because both external plugins name the surface they apply to."]</p>
+    <div class="demo-box">
+        <CascadingValue Value="_everythingSourcePlugin" IsFixed="true">
+            <CascadingValue Value="_everythingTextPlugin" IsFixed="true">
+                <FormaComposer @bind-Value="_pluginDoc" Plugins="_demoPlugins" />
+            </CascadingValue>
+        </CascadingValue>
     </div>
 </div>
 
 @code {
+    private readonly SourceEditorPlugin _sourceOnlyPlugin = new();
+    private readonly SourceEditorPlugin _everythingSourcePlugin = new();
+    private readonly TextEditorPlugin _statusTextPlugin = new();
+    private readonly TextEditorPlugin _everythingTextPlugin = new();
     private ComposerDocument _defaultDoc = new(ComposerDocumentFormat.PlainText, "Welcome to FormaComposer.\nEvery capability and editor arrives as a plugin.");
     private ComposerDocument _disabledDoc = new(ComposerDocumentFormat.PlainText, "This composer instance is disabled.");
     private ComposerDocument _readOnlyDoc = new(ComposerDocumentFormat.PlainText, "This composer instance is in a read-only state.");
     private ComposerDocument _noToolbarDoc = new(ComposerDocumentFormat.PlainText, "Composer without top toolbar.");
     private ComposerDocument _fixedHeightDoc = new(ComposerDocumentFormat.PlainText, "This composer cannot be dragged taller.");
+    private ComposerDocument _sourceDoc = new(ComposerDocumentFormat.PlainText, "function total(cart) {\n    let total = 0;\n\n    for (const line of cart) {\n        total += line.price;\n    }\n\n    return total;\n}");
+    private ComposerDocument _statusDoc = new(ComposerDocumentFormat.PlainText, "pear\napple\nbanana");
     private ComposerDocument _pluginDoc = new(ComposerDocumentFormat.PlainText, "pear\n\nApple\n\nbanana");
     private readonly FormaComposerOptions _noToolbarOptions = new() { ShowToolbar = false };
     private readonly FormaComposerOptions _fixedHeightOptions = new() { IsResizable = false };
-    private readonly IReadOnlyList<IComposerPlugin> _demoPlugins = [new PlainTextEditorPlugin(), new SourceEditorPlugin(), new TimestampPlugin(), new CleanupPlugin()];
+    private IReadOnlyList<IComposerPlugin> _statusPlugins = [];
+    private IReadOnlyList<IComposerPlugin> _sourcePlugins = [];
+    private IReadOnlyList<IComposerPlugin> _demoPlugins = [];
+
+    protected override void OnInitialized()
+    {
+        _statusPlugins = [_statusTextPlugin];
+        _sourcePlugins = [_sourceOnlyPlugin];
+        _demoPlugins = [_everythingTextPlugin, _everythingSourcePlugin, new TimestampPlugin(), new CleanupPlugin()];
+    }
 }

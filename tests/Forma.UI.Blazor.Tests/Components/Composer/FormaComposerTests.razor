@@ -757,6 +757,23 @@
             cut.WaitForAssertion(() => Assert.Equal("2 words", cut.Find(".forma-composer-status-strip").TextContent.Trim()));
         }
 
+        // A readout is plugin-supplied text of unknown direction, so it resolves and isolates its own.
+        [Fact]
+        public void Should_isolate_the_direction_of_a_status_item()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            IReadOnlyList<IComposerPlugin> plugins = [new StatusPushingPlugin()];
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+
+            // Act
+            cut.Find("button[aria-label='Word Count']").Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal("auto", cut.Find(".forma-composer-status-item").GetAttribute("dir")));
+        }
+
         [Fact]
         public void Should_omit_the_status_strip_when_nothing_has_been_pushed()
         {

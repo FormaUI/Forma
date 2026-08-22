@@ -9,19 +9,16 @@ using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Style.Glyphs;
 
-/// <summary>A source-oriented surface, numbering lines from the shared row and sorting them from a row of its own.</summary>
+/// <summary>A source-oriented surface, numbering its lines in a gutter and renaming a symbol from a row of its own.</summary>
 public sealed class SourceEditorPlugin : IComposerEditorPlugin
 {
-    /// <summary>The command prefixing every line with its position.</summary>
-    public const string NumberLinesCommand = "source.number-lines";
+    /// <summary>The command opening the rename bar over the editing surface.</summary>
+    public const string RenameCommand = "source.rename";
 
-    /// <summary>The command putting the lines in ascending order.</summary>
-    public const string SortAscendingCommand = "source.sort-ascending";
+    private const string RefactorRow = "source.refactor";
 
-    /// <summary>The command putting the lines in descending order.</summary>
-    public const string SortDescendingCommand = "source.sort-descending";
-
-    private const string SortingRow = "source.sorting";
+    /// <summary>Raised when the rename command asks the editing surface to open its rename bar.</summary>
+    public event Action? RenameRequested;
 
     /// <inheritdoc />
     public string Id => "source";
@@ -30,13 +27,88 @@ public sealed class SourceEditorPlugin : IComposerEditorPlugin
     public string Title => "Source";
 
     /// <inheritdoc />
+    public Glyph Icon => Glyph.Code;
+
+    /// <inheritdoc />
+    public ComposerDocumentFormat Format => ComposerDocumentFormat.PlainText;
+
+    /// <inheritdoc />
+    public Type EditorComponent => typeof(DemoSourceEditor);
+
+    /// <inheritdoc />
+    public IReadOnlyList<ComposerToolbarRow> ToolbarRows =>
+        [new() { Id = RefactorRow, Label = "Refactor" }];
+
+    /// <inheritdoc />
+    public IReadOnlyList<ComposerToolbarItem> ToolbarItems =>
+    [
+        new() { Id = "rename", Title = "Rename Symbol", Icon = Glyph.PenToSquare, Command = RenameCommand, Row = RefactorRow },
+    ];
+
+    /// <inheritdoc />
+    public IReadOnlyList<ComposerKeyBinding> KeyBindings =>
+        [new() { Key = "F2", Command = RenameCommand }];
+
+    /// <inheritdoc />
+    public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
+
+    /// <inheritdoc />
+    public IReadOnlyList<ComposerAsset> Assets => [];
+
+    /// <inheritdoc />
+    public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default)
+        => ValueTask.FromResult(true);
+
+    /// <inheritdoc />
+    public ValueTask ExecuteAsync(string command, ComposerContext context, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        if (command == RenameCommand)
+        {
+            RenameRequested?.Invoke();
+        }
+
+        return ValueTask.CompletedTask;
+    }
+}
+
+/// <summary>A prose-oriented surface, rewriting whole lines and reporting the document's size in the status strip.</summary>
+public sealed class TextEditorPlugin : IComposerEditorPlugin
+{
+    /// <summary>The identifier a plugin names to scope itself to this surface.</summary>
+    public const string EditorId = "text";
+
+    /// <summary>The command prefixing every line with its position.</summary>
+    public const string NumberLinesCommand = "text.number-lines";
+
+    /// <summary>The command putting the lines in ascending order.</summary>
+    public const string SortAscendingCommand = "text.sort-ascending";
+
+    /// <summary>The command putting the lines in descending order.</summary>
+    public const string SortDescendingCommand = "text.sort-descending";
+
+    /// <summary>The command showing or hiding the word count readout.</summary>
+    public const string WordCountCommand = "text.word-count";
+
+    private const string SortingRow = "text.sorting";
+
+    private IComposerStatusItem? _wordCount;
+
+    /// <inheritdoc />
+    public string Id => EditorId;
+
+    /// <inheritdoc />
+    public string Title => "Plain Text";
+
+    /// <inheritdoc />
     public Glyph Icon => Glyph.FileLines;
 
     /// <inheritdoc />
     public ComposerDocumentFormat Format => ComposerDocumentFormat.PlainText;
 
     /// <inheritdoc />
-    public Type EditorComponent => typeof(FormaPlainTextEditor);
+    public Type EditorComponent => typeof(DemoTextEditor);
 
     /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarRow> ToolbarRows =>
@@ -45,7 +117,8 @@ public sealed class SourceEditorPlugin : IComposerEditorPlugin
     /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> ToolbarItems =>
     [
-        new() { Id = "number-lines", Title = "Number Lines", Icon = Glyph.List, Command = NumberLinesCommand },
+        new() { Id = "number-lines", Title = "Number Lines", Icon = Glyph.ListOl, Command = NumberLinesCommand },
+        new() { Id = "word-count", Title = "Word Count", Icon = Glyph.TextWidth, Command = WordCountCommand },
         new() { Id = "sort-ascending", Title = "Sort A to Z", Icon = Glyph.ArrowDownAZ, Command = SortAscendingCommand, Row = SortingRow },
         new() { Id = "sort-descending", Title = "Sort Z to A", Icon = Glyph.ArrowUpZA, Command = SortDescendingCommand, Row = SortingRow },
     ];
@@ -68,6 +141,12 @@ public sealed class SourceEditorPlugin : IComposerEditorPlugin
     {
         ArgumentNullException.ThrowIfNull(context);
 
+        if (command == WordCountCommand)
+        {
+            ToggleWordCount(context);
+            return;
+        }
+
         var lines = context.Document.Content.Split('\n');
 
         var content = command switch
@@ -78,10 +157,45 @@ public sealed class SourceEditorPlugin : IComposerEditorPlugin
             _ => null,
         };
 
-        if (content is not null)
+        if (content is null)
         {
-            await context.ChangeDocumentAsync(context.Document with { Content = content }).ConfigureAwait(false);
+            return;
         }
+
+        await context.ChangeDocumentAsync(context.Document with { Content = content }).ConfigureAwait(false);
+    }
+
+    /// <summary>Brings the readout back in step with a document that has changed, whoever changed it.</summary>
+    public void RefreshReadout(string content)
+    {
+        ArgumentNullException.ThrowIfNull(content);
+
+        _wordCount?.Text = Describe(content);
+    }
+
+    private static string Describe(string content)
+    {
+        var words = content.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length;
+        var lines = content.Split('\n').Length;
+
+        return $"{Count(words, "word")}, {Count(lines, "line")}";
+
+        static string Count(int value, string noun)
+        {
+            return $"{value.ToString(CultureInfo.CurrentCulture)} {noun}{(value == 1 ? string.Empty : "s")}";
+        }
+    }
+
+    private void ToggleWordCount(ComposerContext context)
+    {
+        if (_wordCount is not null)
+        {
+            _wordCount.Dispose();
+            _wordCount = null;
+            return;
+        }
+
+        _wordCount = context.Regions.CreateStatusItem(Describe(context.Document.Content), "Words and lines in the document");
     }
 }
 
@@ -93,6 +207,9 @@ public sealed class TimestampPlugin : IComposerPlugin
 
     /// <inheritdoc />
     public string Id => "timestamp";
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> SupportedEditorIds => [TextEditorPlugin.EditorId];
 
     /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> ToolbarItems =>
@@ -142,6 +259,9 @@ public sealed class CleanupPlugin : IComposerPlugin
 
     /// <inheritdoc />
     public string Id => "cleanup";
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> SupportedEditorIds => [TextEditorPlugin.EditorId];
 
     /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarRow> ToolbarRows =>

@@ -5,7 +5,11 @@
   "Disabled": "מושבת",
   "Fixed Height": "גובה קבוע",
   "Plugins": "תוספים",
-  "Every command is a plugin contribution. The composer's own sit in the built-in row; an editor either joins that row or declares one of its own; an external plugin either joins the plugin row or declares one of its own. Switch to Source to see all four rows.": "כל פקודה היא תרומה של תוסף. פקודות העורך עצמן יושבות בשורה המובנית; עורך יכול להצטרף לאותה שורה או להצהיר על שורה משלו; תוסף חיצוני יכול להצטרף לשורת התוספים או להצהיר על שורה משלו. עברו ל-Source כדי לראות את כל ארבע השורות.",
+  "Every command is a plugin contribution. The composer's own sit in the built-in row; an editor either joins that row or declares one of its own; an external plugin either joins the plugin row or declares one of its own. Plain Text shows all four rows, while Source shows only its own, because both external plugins name the surface they apply to.": "כל פקודה היא תרומה של תוסף. פקודות העורך עצמן יושבות בשורה המובנית; עורך יכול להצטרף לאותה שורה או להצהיר על שורה משלו; תוסף חיצוני יכול להצטרף לשורת התוספים או להצהיר על שורה משלו. Plain Text מציג את כל ארבע השורות, ואילו Source מציג רק את שלו, משום ששני התוספים החיצוניים מציינים לאיזה משטח הם חלים.",
   "Read-only": "קריאה בלבד",
+  "Source Editor": "עורך קוד",
+  "An editor plugin bringing a surface of its own: lines numbered in a gutter, and a Rename Symbol command that replaces whole-word occurrences throughout the document. Press F2 or use the Refactor row.": "תוסף עורך המביא משטח משלו: שורות ממוספרות בשוליים, ופקודת שינוי שם סמל המחליפה מופעות של מילה שלמה בכל המסמך. הקישו F2 או השתמשו בשורת ריפאקטור.",
+  "Status Strip": "רצועת מצב",
+  "Word Count pushes a readout the plugin holds and mutates, shown beneath the canvas until the plugin disposes it. Press it again to take it back.": "ספירת מילים דוחפת נתון שהתוסף מחזיק ומשנה, המוצג מתחת למשטח עד שהתוסף משחרר אותו. הקישו שוב כדי להסיר אותו.",
   "Without Toolbar": "ללא סרגל כלים"
 }
