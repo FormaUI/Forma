@@ -16,8 +16,10 @@ public sealed class ComposerContext
         IComposerHistory history,
         IComposerHtmlSanitizer sanitizer,
         IComposerAssetLoader assetLoader,
+        IComposerRegionRegistry regions,
         Func<ComposerDocument, Task> changeDocumentAsync,
         Func<Task> requestRenderAsync,
+        Func<ComposerSelection, Task> reportSelectionAsync,
         IComposerSyntaxHighlighter? syntaxHighlighter = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(activeEditorId);
@@ -26,8 +28,10 @@ public sealed class ComposerContext
         ArgumentNullException.ThrowIfNull(history);
         ArgumentNullException.ThrowIfNull(sanitizer);
         ArgumentNullException.ThrowIfNull(assetLoader);
+        ArgumentNullException.ThrowIfNull(regions);
         ArgumentNullException.ThrowIfNull(changeDocumentAsync);
         ArgumentNullException.ThrowIfNull(requestRenderAsync);
+        ArgumentNullException.ThrowIfNull(reportSelectionAsync);
 
         ActiveEditorId = activeEditorId;
         Document = document;
@@ -35,8 +39,10 @@ public sealed class ComposerContext
         History = history;
         Sanitizer = sanitizer;
         AssetLoader = assetLoader;
+        Regions = regions;
         ChangeDocumentAsync = changeDocumentAsync;
         RequestRenderAsync = requestRenderAsync;
+        ReportSelectionAsync = reportSelectionAsync;
         SyntaxHighlighter = syntaxHighlighter;
     }
 
@@ -64,6 +70,9 @@ public sealed class ComposerContext
     /// <summary>The loader for the browser assets plugins declare.</summary>
     public IComposerAssetLoader AssetLoader { get; }
 
+    /// <summary>The status items and gutter markers plugins have pushed, shared by every editor.</summary>
+    public IComposerRegionRegistry Regions { get; }
+
     /// <summary>The registered highlighter, or null when code renders unhighlighted.</summary>
     public IComposerSyntaxHighlighter? SyntaxHighlighter { get; }
 
@@ -72,4 +81,7 @@ public sealed class ComposerContext
 
     /// <summary>Asks the composer shell to re-render.</summary>
     public Func<Task> RequestRenderAsync { get; }
+
+    /// <summary>Reports the caret or range an editing surface last observed, so the engine can share it with every plugin.</summary>
+    public Func<ComposerSelection, Task> ReportSelectionAsync { get; }
 }

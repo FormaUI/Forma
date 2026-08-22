@@ -1,11 +1,14 @@
 namespace Forma.UI.Blazor.Components.Composer.PlainTextEditor;
 
+using Forma.UI.Blazor.Interop;
 using Forma.UI.Features.Composer.Editing;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 
 /// <summary>Plain text editing surface for the composer engine.</summary>
-public sealed partial class FormaPlainTextEditor : ComponentBase, IDisposable
+public sealed partial class FormaPlainTextEditor : ComponentBase, IAsyncDisposable
 {
     // Keystrokes within this window commit as one state, so undo steps back a phrase rather than a character.
     private static readonly TimeSpan CommitDelay = TimeSpan.FromMilliseconds(400);
@@ -13,7 +16,12 @@ public sealed partial class FormaPlainTextEditor : ComponentBase, IDisposable
     /// <summary>The shared composer context cascaded from the parent shell.</summary>
     [CascadingParameter] public ComposerContext? Context { get; set; }
 
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+
+    private ElementReference _textareaElement;
+    private TextSelectionBridge _selectionBridge = default!;
     private CancellationTokenSource? _commitCts;
+    private CancellationTokenSource? _selectionCts;
     private string? _typedContent;
     private string? _committedContent;
 
@@ -26,6 +34,10 @@ public sealed partial class FormaPlainTextEditor : ComponentBase, IDisposable
 
     private bool IsReadOnly
         => Context?.IsReadOnly ?? false;
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+        => _selectionBridge = new TextSelectionBridge(JS);
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -73,6 +85,48 @@ public sealed partial class FormaPlainTextEditor : ComponentBase, IDisposable
         }
 
         await CommitAsync();
+        await ReportSelectionAsync();
+    }
+
+    private Task HandleClickAsync(MouseEventArgs e)
+        => ReportSelectionAsync();
+
+    // Coalesced the same way as the content commit, so holding an arrow key does not flood interop with one call per repeat.
+    private async Task HandleKeyUpAsync(KeyboardEventArgs e)
+    {
+        if (_selectionCts is not null)
+        {
+            await _selectionCts.CancelAsync();
+            _selectionCts.Dispose();
+        }
+
+        _selectionCts = new CancellationTokenSource();
+
+        try
+        {
+            await Task.Delay(CommitDelay, _selectionCts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        await ReportSelectionAsync();
+    }
+
+    private async Task ReportSelectionAsync()
+    {
+        if (Context is null)
+        {
+            return;
+        }
+
+        var selection = await _selectionBridge.ReadAsync(_textareaElement);
+
+        if (selection is not null)
+        {
+            await Context.ReportSelectionAsync(selection);
+        }
     }
 
     private async Task CommitAsync()
@@ -88,9 +142,20 @@ public sealed partial class FormaPlainTextEditor : ComponentBase, IDisposable
     }
 
     /// <inheritdoc />
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        _commitCts?.Cancel();
-        _commitCts?.Dispose();
+        if (_commitCts is not null)
+        {
+            await _commitCts.CancelAsync();
+            _commitCts.Dispose();
+        }
+
+        if (_selectionCts is not null)
+        {
+            await _selectionCts.CancelAsync();
+            _selectionCts.Dispose();
+        }
+
+        await _selectionBridge.DisposeAsync();
     }
 }

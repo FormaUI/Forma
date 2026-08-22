@@ -23,7 +23,8 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
 
     private readonly string _generatedId = $"composer-{Guid.NewGuid():N}";
     private readonly ComposerCommandRegistry _commands = new();
-    private readonly ComposerSelection _selection = ComposerSelection.Empty;
+    private readonly ComposerRegionRegistry _regions = new();
+    private ComposerSelection _selection = ComposerSelection.Empty;
 
     private ComposerPluginCatalog _catalog = default!;
     private ComposerKeyMap _keyMap = ComposerKeyMap.Empty;
@@ -98,6 +99,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
 
         _commands.RegisterEngineCommand(ComposerCommands.Undo, HandleUndoAsync);
         _commands.RegisterEngineCommand(ComposerCommands.Redo, HandleRedoAsync);
+        _regions.Changed += HandleRegionsChanged;
 
         await LoadPluginsAsync();
         RebuildContext();
@@ -235,8 +237,10 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
             _history,
             _sanitizer,
             _assetLoader,
+            _regions,
             HandleDocumentChangedAsync,
             HandleRequestRenderAsync,
+            HandleSelectionChangedAsync,
             injectedHighlighter)
         {
             IsDisabled = Disabled,
@@ -261,6 +265,26 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     private Task HandleRequestRenderAsync()
     {
         StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    // A status item or gutter marker changing does not touch the document, so only a re-render is needed.
+    private void HandleRegionsChanged()
+        => _ = InvokeAsync(StateHasChanged);
+
+    private Task HandleSelectionChangedAsync(ComposerSelection selection)
+    {
+        ArgumentNullException.ThrowIfNull(selection);
+
+        if (selection == _selection)
+        {
+            return Task.CompletedTask;
+        }
+
+        _selection = selection;
+        RebuildContext();
+        StateHasChanged();
+
         return Task.CompletedTask;
     }
 
@@ -338,6 +362,8 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
+        _regions.Changed -= HandleRegionsChanged;
+
         // A prerendered instance never starts interop, and issuing it while statically rendered throws.
         if (_isJsStarted)
         {

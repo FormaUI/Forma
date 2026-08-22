@@ -38,7 +38,7 @@ public sealed class ComposerCommandRegistryTests
 
     private static readonly NullAssetLoader AssetLoader = new();
 
-    private static ComposerContext Context()
+    private static ComposerContext CreateContext()
         => new(
             "editor",
             new ComposerDocument(ComposerDocumentFormat.PlainText, "text"),
@@ -46,11 +46,13 @@ public sealed class ComposerCommandRegistryTests
             new ComposerHistory(),
             new DefaultHtmlSanitizer(),
             AssetLoader,
+            new ComposerRegionRegistry(),
             _ => Task.CompletedTask,
-            () => Task.CompletedTask);
+            () => Task.CompletedTask,
+            _ => Task.CompletedTask);
 
     private static Task<ComposerCommandOutcome> ExecuteAsync(ComposerCommandRegistry registry, string command)
-        => registry.ExecuteAsync(command, Context(), TestContext.Current.CancellationToken);
+        => registry.ExecuteAsync(command, CreateContext(), TestContext.Current.CancellationToken);
 
     [Fact]
     public async Task Should_run_an_engine_command()

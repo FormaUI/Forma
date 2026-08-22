@@ -2,10 +2,13 @@
 @inject IStringLocale<FormaComposer> L
 
 <div class="forma-composer-plain-text-editor">
-    <textarea class="forma-composer-plain-text-textarea"
+    <textarea @ref="_textareaElement"
+              class="forma-composer-plain-text-textarea"
               value="@Content"
               @oninput="HandleInputAsync"
               @onchange="HandleChangeAsync"
+              @onclick="HandleClickAsync"
+              @onkeyup="HandleKeyUpAsync"
               placeholder="@L["Edit Content"]"
               aria-label="@L["Plain Text"]"
               disabled="@IsDisabled"

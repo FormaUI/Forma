@@ -1,0 +1,23 @@
+@namespace Forma.UI.Blazor.Components.Composer
+
+@if (Context is { Regions.StatusItems.Count: > 0 })
+{
+    <div class="forma-composer-status-strip" role="status">
+        @foreach (var item in Context.Regions.StatusItems)
+        {
+            if (item.Command is { } command)
+            {
+                <button type="button"
+                        class="forma-composer-status-item forma-composer-status-item-button"
+                        title="@item.Tooltip"
+                        @onclick="() => OnCommand.InvokeAsync(command)">
+                    @item.Text
+                </button>
+            }
+            else
+            {
+                <span class="forma-composer-status-item" title="@item.Tooltip">@item.Text</span>
+            }
+        }
+    </div>
+}

@@ -21,4 +21,30 @@ public sealed record ComposerSelection
 
     /// <summary>A selection standing for no caret at all.</summary>
     public static ComposerSelection Empty { get; } = new();
+
+    // The compiler-generated equality would compare ActiveStyles by reference, since HashSet<T> does not
+    // override Equals; two selections with the same styles by content would then never compare equal.
+    /// <inheritdoc />
+    public bool Equals(ComposerSelection? other)
+        => other is not null
+        && Start == other.Start
+        && End == other.End
+        && string.Equals(BlockType, other.BlockType, StringComparison.Ordinal)
+        && ActiveStyles.SetEquals(other.ActiveStyles);
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+    {
+        var hash = new HashCode();
+        hash.Add(Start);
+        hash.Add(End);
+        hash.Add(BlockType, StringComparer.Ordinal);
+
+        foreach (var style in ActiveStyles.Order(StringComparer.OrdinalIgnoreCase))
+        {
+            hash.Add(style, StringComparer.OrdinalIgnoreCase);
+        }
+
+        return hash.ToHashCode();
+    }
 }

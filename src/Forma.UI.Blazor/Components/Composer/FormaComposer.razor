@@ -34,5 +34,10 @@
                 KeyMap="_keyMap"
                 OnCommand="ExecuteCommandAsync" />
         }
+
+        @if (_isInitialized)
+        {
+            <FormaComposerStatusStrip OnCommand="ExecuteCommandAsync" />
+        }
     </div>
 </CascadingValue>
