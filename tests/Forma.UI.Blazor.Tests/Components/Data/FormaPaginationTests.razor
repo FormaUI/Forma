@@ -586,8 +586,8 @@
             using var ctx = new FormaPaginationTests();
             var received = new List<int>();
             ctx.JSInterop
-                .SetupModule("./_content/Forma.UI/Components/Data/FormaPagination.razor.js")
-                .Setup<string>("takePageEntry", _ => true)
+                .SetupModule("./_content/Forma.UI/scripts/operations/Text.js")
+                .Setup<string>("take", _ => true)
                 .SetResult("3");
             var cut = ctx.Render(
                 @<FormaPagination TotalItems="50" PageSize="10" CurrentPage="1"

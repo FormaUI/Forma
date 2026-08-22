@@ -101,7 +101,7 @@
         }
 
         <div class="forma-explorer-content">
-            <div class="forma-explorer-scroll @(_isQuerying ? "is-busy" : "")" id="@_scrollId" aria-busy="@(_isQuerying ? "true" : "false")">
+            <div class="forma-explorer-scroll @(_isQuerying ? "is-busy" : "")" @ref="_scrollElement" aria-busy="@(_isQuerying ? "true" : "false")">
                 @if (VisibleResources.Count == 0)
                 {
                     <div class="forma-explorer-empty" role="status">
@@ -142,7 +142,7 @@
 
                 @if (IsInfiniteScrolling && HasMorePages)
                 {
-                    <div class="forma-explorer-scroll-sentinel" id="@_sentinelId">
+                    <div class="forma-explorer-scroll-sentinel" @ref="_sentinelElement">
                         @if (Options.InfiniteScroll == ExplorerInfiniteScrollMode.Automatic)
                         {
                             @if (_isLoadingPage)
@@ -152,7 +152,7 @@
                         }
                         else
                         {
-                            <FormaButton Variant="ButtonVariant.Ghost" class="forma-explorer-load-more-button" OnClick="LoadNextPageAsync">
+                            <FormaButton Variant="ButtonVariant.Ghost" class="forma-explorer-load-more-button" OnClick="HandleReachedAsync">
                                 <span class="forma-explorer-load-more-icon" aria-hidden="true"><FormaGlyph Name="Glyph.ChevronDown" /></span>
                                 @L["Load More"]
                             </FormaButton>

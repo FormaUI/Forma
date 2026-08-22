@@ -2,7 +2,7 @@ namespace Forma.UI.Blazor.Components.Inputs;
 
 using System.Diagnostics.CodeAnalysis;
 
-using Forma.UI.Blazor.Interop;
+using Forma.UI.Blazor.Interop.Behaviours;
 using Forma.UI.Style.Css;
 
 using Microsoft.AspNetCore.Components;
@@ -12,11 +12,9 @@ using Microsoft.JSInterop;
 /// <summary>A single-line text input, bare by default and wearing the shared field chrome once it is given a label.</summary>
 public sealed partial class FormaTextBox : InputBase<string?>, IAsyncDisposable
 {
-    private const string ModulePath = "./_content/Forma.UI/scripts/AutofillDetection.js";
-
     private readonly string _generatedId = $"text-box-{Guid.NewGuid():N}";
     private ElementReference _inputElement;
-    private JsModule _module = default!;
+    private AutofillTracker _autofill = default!;
     private bool _isWatchingAutofill;
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
@@ -190,7 +188,7 @@ public sealed partial class FormaTextBox : InputBase<string?>, IAsyncDisposable
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _module = new JsModule(JS, ModulePath);
+        => _autofill = new AutofillTracker(JS);
 
     // Only the floating label needs it, since detection exists to keep that label floated
     // over a value the browser filled without ever raising an input event. A label can
@@ -200,14 +198,13 @@ public sealed partial class FormaTextBox : InputBase<string?>, IAsyncDisposable
     {
         if (HasLabel && !_isWatchingAutofill)
         {
-            _isWatchingAutofill = true;
-            await _module.TryInvokeVoidAsync("initAutofillDetection", _inputElement);
+            _isWatchingAutofill = await _autofill.AttachAsync(_inputElement);
         }
     }
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
-        => await _module.DisposeAsync();
+        => await _autofill.DisposeAsync();
 
     private void HandleInput(ChangeEventArgs args)
         => CurrentValueAsString = args.Value?.ToString();

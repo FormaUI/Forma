@@ -18,7 +18,7 @@
                                 ShowToolbar="ShowToolbar"
                                 Disabled="Disabled"
                                 KeyMap="_keyMap"
-                                OnCommand="ExecuteCommandAsync" />
+                                OnCommand="HandleCommandAsync" />
                         }
                     </FormaTab>
                 }
@@ -32,12 +32,12 @@
                 ShowToolbar="ShowToolbar"
                 Disabled="Disabled"
                 KeyMap="_keyMap"
-                OnCommand="ExecuteCommandAsync" />
+                OnCommand="HandleCommandAsync" />
         }
 
         @if (_isInitialized)
         {
-            <FormaComposerStatusStrip OnCommand="ExecuteCommandAsync" />
+            <FormaComposerStatusStrip OnCommand="HandleCommandAsync" />
         }
     </div>
 </CascadingValue>

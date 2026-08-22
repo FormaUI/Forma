@@ -3,7 +3,7 @@ namespace Forma.UI.Blazor.Components.Inputs;
 using System.Diagnostics.CodeAnalysis;
 
 using Forma.Framework.Localization;
-using Forma.UI.Blazor.Interop;
+using Forma.UI.Blazor.Interop.Behaviours;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -14,8 +14,6 @@ using Microsoft.JSInterop;
 /// <remarks>Bind <typeparamref name="TValue"/> to a nullable type (<c>int?</c>, <c>string</c>, <c>MyEnum?</c>) to allow no selection.</remarks>
 public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDisposable
 {
-    private const string KeysModulePath = "./_content/Forma.UI/Components/Inputs/FormaSelect.razor.js";
-
     /// <summary>The options offered in the list.</summary>
     [Parameter, EditorRequired] public IReadOnlyList<SelectOption<TValue>> Options { get; set; } = default!;
 
@@ -45,7 +43,7 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
     private ElementReference _popupElement;
     private ElementReference[] _optionElements = [];
     private AnchoredPopup _popup = default!;
-    private JsModule _keysModule = default!;
+    private NavigationScrollGuard _keyGuard = default!;
 
     private string TriggerText
         => FindSelectedOption()?.Label ?? Placeholder ?? L["Select an Option"];
@@ -53,7 +51,7 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
     protected override void OnInitialized()
     {
         _popup = new AnchoredPopup(JS);
-        _keysModule = new JsModule(JS, KeysModulePath);
+        _keyGuard = new NavigationScrollGuard(JS);
     }
 
     protected override void OnParametersSet()
@@ -189,7 +187,7 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
     protected override async Task OnAfterRenderAsync(bool firstRender)
         => await _popup.SyncAsync(_isOpen, _popupElement, _anchorElement, async () =>
         {
-            await _keysModule.InvokeVoidAsync("attachNavigationKeys", _popupElement);
+            await _keyGuard.AttachAsync(_popupElement);
             await FocusIndexAsync(_focusedIndex);
         });
 
@@ -197,7 +195,7 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
     public async ValueTask DisposeAsync()
     {
         await _popup.DisposeAsync();
-        await _keysModule.DisposeAsync();
+        await _keyGuard.DisposeAsync();
     }
 
     protected override bool TryParseValueFromString(

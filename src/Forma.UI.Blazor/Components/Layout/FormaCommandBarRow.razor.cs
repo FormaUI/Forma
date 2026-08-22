@@ -1,7 +1,8 @@
 namespace Forma.UI.Blazor.Components.Layout;
 
 using Forma.Framework.Localization;
-using Forma.UI.Blazor.Interop;
+using Forma.UI.Blazor.Interop.Behaviours;
+using Forma.UI.Blazor.Interop.Operations;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -9,8 +10,6 @@ using Microsoft.JSInterop;
 /// <summary>One row of commands, scrolling them behind arrow buttons when they outgrow the width available.</summary>
 public sealed partial class FormaCommandBarRow : ComponentBase, IAsyncDisposable
 {
-    private const string ModulePath = "./_content/Forma.UI/Components/Layout/FormaCommandBarRow.razor.js";
-
     /// <summary>The row's commands.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -31,19 +30,19 @@ public sealed partial class FormaCommandBarRow : ComponentBase, IAsyncDisposable
 
     [Inject] private IStringLocale<FormaCommandBarRow> L { get; set; } = default!;
 
-    private JsModule _module = default!;
+    private ScrollBoundaryWatcher _watcher = default!;
+    private Scroll _scroll = default!;
     private DotNetObjectReference<FormaCommandBarRow>? _self;
     private ElementReference _track;
-    private bool _isObserving;
     private bool _canScrollBack;
     private bool _canScrollForward;
 
     private string CssClass
         => string.IsNullOrWhiteSpace(Class) ? "forma-command-bar-row" : $"forma-command-bar-row {Class}";
 
-    /// <summary>Reports how far the row can still be scrolled in each direction; called from the observer when that changes.</summary>
+    /// <summary>Reports how far the row can still be scrolled in each direction; called from the watcher when that changes.</summary>
     [JSInvokable]
-    public Task ReportOverflowAsync(bool canScrollBack, bool canScrollForward)
+    public Task HandleOverflowAsync(bool canScrollBack, bool canScrollForward)
     {
         if (_canScrollBack == canScrollBack && _canScrollForward == canScrollForward)
         {
@@ -53,12 +52,15 @@ public sealed partial class FormaCommandBarRow : ComponentBase, IAsyncDisposable
         _canScrollBack = canScrollBack;
         _canScrollForward = canScrollForward;
 
-        // The observer fires off the renderer, so the rerender has to be marshalled back onto it.
+        // The watcher fires off the renderer, so the rerender has to be marshalled back onto it.
         return InvokeAsync(StateHasChanged);
     }
 
     protected override void OnInitialized()
-        => _module = new JsModule(JS, ModulePath);
+    {
+        _watcher = new ScrollBoundaryWatcher(JS);
+        _scroll = new Scroll(JS);
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -68,24 +70,18 @@ public sealed partial class FormaCommandBarRow : ComponentBase, IAsyncDisposable
         }
 
         _self = DotNetObjectReference.Create(this);
-        _isObserving = true;
 
-        await _module.TryInvokeVoidAsync("observe", _track, _self);
+        await _watcher.AttachAsync(_track, _self);
     }
 
     private async Task ScrollAsync(int direction)
-        => await _module.TryInvokeVoidAsync("scrollByPage", _track, direction);
+        => await _scroll.ByPageAsync(_track, direction);
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        // A prerendered row never observes, and issuing interop while statically rendered throws.
-        if (_isObserving)
-        {
-            await _module.TryInvokeVoidAsync("unobserve", _track);
-        }
-
-        await _module.DisposeAsync();
+        await _watcher.DisposeAsync();
+        await _scroll.DisposeAsync();
 
         _self?.Dispose();
     }

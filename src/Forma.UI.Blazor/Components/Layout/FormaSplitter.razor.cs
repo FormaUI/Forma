@@ -2,7 +2,7 @@ namespace Forma.UI.Blazor.Components.Layout;
 
 using System.Globalization;
 
-using Forma.UI.Blazor.Interop;
+using Forma.UI.Blazor.Interop.Operations;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -11,8 +11,6 @@ using Microsoft.JSInterop;
 /// <summary>A draggable divider between two panes, reporting the size the pane before it should take.</summary>
 public sealed partial class FormaSplitter : ComponentBase, IAsyncDisposable
 {
-    private const string ModulePath = "./_content/Forma.UI/Components/Layout/FormaSplitter.razor.js";
-
     /// <summary>The size of the pane the splitter governs, in whatever unit the caller works in.</summary>
     [Parameter] public double Value { get; set; }
 
@@ -49,7 +47,7 @@ public sealed partial class FormaSplitter : ComponentBase, IAsyncDisposable
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
-    private JsModule _module = default!;
+    private Pointer _pointer = default!;
     private ElementReference _element;
     private double _origin;
     private double _startValue;
@@ -79,7 +77,7 @@ public sealed partial class FormaSplitter : ComponentBase, IAsyncDisposable
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _module = new JsModule(JS, ModulePath);
+        => _pointer = new Pointer(JS);
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -96,7 +94,7 @@ public sealed partial class FormaSplitter : ComponentBase, IAsyncDisposable
         _startValue = Value;
 
         await OnResizingChanged.InvokeAsync(true);
-        await _module.TryInvokeVoidAsync("capturePointer", _element, args.PointerId);
+        await _pointer.CaptureAsync(_element, args.PointerId);
     }
 
     private async Task HandlePointerMoveAsync(PointerEventArgs args)
@@ -124,7 +122,7 @@ public sealed partial class FormaSplitter : ComponentBase, IAsyncDisposable
         _isResizing = false;
 
         await OnResizingChanged.InvokeAsync(false);
-        await _module.TryInvokeVoidAsync("releasePointer", _element, args.PointerId);
+        await _pointer.ReleaseAsync(_element, args.PointerId);
     }
 
     private async Task HandleKeyDownAsync(KeyboardEventArgs args)
@@ -167,5 +165,5 @@ public sealed partial class FormaSplitter : ComponentBase, IAsyncDisposable
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
-        => await _module.DisposeAsync();
+        => await _pointer.DisposeAsync();
 }

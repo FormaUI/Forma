@@ -3,7 +3,7 @@ namespace Forma.UI.Blazor.Components.Data;
 using System.Diagnostics.CodeAnalysis;
 
 using Forma.Framework.Localization;
-using Forma.UI.Blazor.Interop;
+using Forma.UI.Blazor.Interop.Behaviours;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -14,8 +14,6 @@ using Microsoft.JSInterop;
 public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisposable
     where TGridItem : notnull
 {
-    private const string ModulePath = "./_content/Forma.UI/Components/Data/FormaDataGrid.razor.js";
-
     private readonly PaginationState _pagination = new();
 
     // Row identity for the selection script: a token survives while its row stays
@@ -27,7 +25,8 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     private HashSet<TGridItem> _selectedSet = [];
     private QuickGrid<TGridItem>? _grid;
     private ElementReference _scrollerElement;
-    private JsModule _module = default!;
+    private SelectionInteraction _selection = default!;
+    private HeightReservation _height = default!;
     private DotNetObjectReference<FormaDataGrid<TGridItem>>? _selfReference;
     private bool _rowSelectionAttached;
     private SelectionBounds _bounds;
@@ -191,7 +190,8 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     protected override void OnInitialized()
     {
         _pagination.TotalItemCountChanged += HandleTotalItemCountChanged;
-        _module = new JsModule(JS, ModulePath);
+        _selection = new SelectionInteraction(JS);
+        _height = new HeightReservation(JS);
     }
 
     protected override void OnParametersSet()
@@ -343,14 +343,19 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
             // attach a second listener to the same scroller.
             _rowSelectionAttached = true;
             _selfReference ??= DotNetObjectReference.Create(this);
-            _rowSelectionAttached = await _module.TryInvokeVoidAsync("attachRowSelection", _scrollerElement, _selfReference);
+            _rowSelectionAttached = await _selection.AttachAsync(_scrollerElement, _selfReference);
         }
 
         // Virtualization sizes its own scroll range, and an unpaginated grid has no short
         // page to hold a height for.
         if (EnablePagination && !Virtualize)
         {
-            await _module.TryInvokeVoidAsync("reservePageHeight", _scrollerElement, PageSize);
+            if (!_height.IsAttached)
+            {
+                await _height.AttachAsync(_scrollerElement);
+            }
+
+            await _height.ReserveAsync(PageSize);
         }
     }
 
@@ -360,12 +365,8 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     {
         _pagination.TotalItemCountChanged -= HandleTotalItemCountChanged;
 
-        if (_rowSelectionAttached)
-        {
-            await _module.TryInvokeVoidAsync("detachRowSelection", _scrollerElement);
-        }
-
-        await _module.DisposeAsync();
+        await _selection.DisposeAsync();
+        await _height.DisposeAsync();
         _selfReference?.Dispose();
     }
 
@@ -481,7 +482,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
 
     /// <summary>Replaces or toggles the selection with a single row, invoked from the row-selection script.</summary>
     [JSInvokable]
-    public async Task HandleRowSelectAsync(int rowToken, bool additive)
+    public async Task HandleSelectAsync(int rowToken, bool additive)
     {
         if (!_rowTokens.TryGetItem(rowToken, out var item))
         {
@@ -505,7 +506,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
 
     /// <summary>Replaces or extends the selection with a contiguous range of rows, invoked from the row-selection script.</summary>
     [JSInvokable]
-    public async Task HandleRowRangeSelectAsync(int[] rowTokens, bool additive)
+    public async Task HandleRangeSelectAsync(int[] rowTokens, bool additive)
     {
         ArgumentNullException.ThrowIfNull(rowTokens);
 

@@ -1,7 +1,7 @@
 namespace Forma.UI.Blazor.Components.Files;
 
 using Forma.Framework.Localization;
-using Forma.UI.Blazor.Interop;
+using Forma.UI.Blazor.Interop.Behaviours;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -11,8 +11,6 @@ using Microsoft.JSInterop;
 public sealed partial class FormaImagePicker : ComponentBase, IAsyncDisposable
 {
     private const string ImageAccept = "image/*";
-
-    private const string ModulePath = "./_content/Forma.UI/Components/Files/FormaImagePicker.razor.js";
 
     /// <summary>Whether more than one image may be selected or dropped at once.</summary>
     [Parameter] public bool AllowMultipleFiles { get; set; } = true;
@@ -38,7 +36,7 @@ public sealed partial class FormaImagePicker : ComponentBase, IAsyncDisposable
 
     private ElementReference _container;
 
-    private JsModule _module = default!;
+    private FilePreview _preview = default!;
 
     private bool _previewPending;
 
@@ -48,14 +46,19 @@ public sealed partial class FormaImagePicker : ComponentBase, IAsyncDisposable
         => Prompt ?? L["Drop images here or click to browse"];
 
     protected override void OnInitialized()
-        => _module = new JsModule(JS, ModulePath);
+        => _preview = new FilePreview(JS);
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (firstRender)
+        {
+            await _preview.AttachAsync(_container);
+        }
+
         if (_previewPending)
         {
             _previewPending = false;
-            await _module.TryInvokeVoidAsync("preview", _container, _previews);
+            await _preview.ShowAsync(_previews);
         }
     }
 
@@ -77,5 +80,5 @@ public sealed partial class FormaImagePicker : ComponentBase, IAsyncDisposable
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
-        => await _module.DisposeAsync();
+        => await _preview.DisposeAsync();
 }

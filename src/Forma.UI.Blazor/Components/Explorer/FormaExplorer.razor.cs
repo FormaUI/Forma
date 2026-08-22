@@ -5,6 +5,7 @@ using System.Globalization;
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
 using Forma.UI.Blazor.Components.Feedback;
+using Forma.UI.Blazor.Interop.Behaviours;
 using Forma.UI.Style.Glyphs;
 
 using Microsoft.AspNetCore.Components;
@@ -180,11 +181,11 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable
 
     private bool _isResizingSidebar;
 
-    private IJSObjectReference? _sentinelModule;
+    private InfiniteScroll _infiniteScroll = default!;
 
-    private readonly string _sentinelId = $"forma-explorer-sentinel-{Guid.NewGuid():N}";
+    private ElementReference _sentinelElement;
 
-    private readonly string _scrollId = $"forma-explorer-scroll-{Guid.NewGuid():N}";
+    private ElementReference _scrollElement;
 
     private DotNetObjectReference<FormaExplorer>? _selfReference;
 
@@ -426,6 +427,8 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable
 
     protected override void OnInitialized()
     {
+        _infiniteScroll = new InfiniteScroll(JS);
+
         _context = new ExplorerContext(
             resource => { OpenPreview(resource); StateHasChanged(); return Task.CompletedTask; },
             NotifySelectionChangedAsync,
@@ -818,31 +821,10 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable
         => string.Create(CultureInfo.InvariantCulture, $"--forma-explorer-sidebar-size: {_sidebarWidth}rem");
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            try
-            {
-                _sentinelModule = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Forma.UI/Components/Explorer/FormaExplorer.razor.js");
-            }
-            catch (JSException)
-            {
-            }
-            catch (JSDisconnectedException)
-            {
-            }
-        }
-
-        await SyncSentinelAsync();
-    }
+        => await SyncSentinelAsync();
 
     private async Task SyncSentinelAsync()
     {
-        if (_sentinelModule is null)
-        {
-            return;
-        }
-
         // Only automatic scrolling watches the sentinel; the manual mode waits for the button to be pressed.
         var wantsSentinel = Options.InfiniteScroll == ExplorerInfiniteScrollMode.Automatic && HasMorePages;
 
@@ -851,33 +833,24 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable
             return;
         }
 
-        try
+        if (wantsSentinel)
         {
-            if (wantsSentinel)
-            {
-                _selfReference ??= DotNetObjectReference.Create(this);
+            _selfReference ??= DotNetObjectReference.Create(this);
 
-                await _sentinelModule.InvokeVoidAsync("observeSentinel", _sentinelId, _scrollId, _selfReference);
-            }
-            else
-            {
-                await _sentinelModule.InvokeVoidAsync("disconnectSentinel", _sentinelId);
-            }
+            _isSentinelObserved = await _infiniteScroll.AttachAsync(_sentinelElement, _selfReference, _scrollElement);
+        }
+        else
+        {
+            await _infiniteScroll.DetachAsync();
+            _isSentinelObserved = false;
+        }
 
-            _isSentinelObserved = wantsSentinel;
-            _isSentinelStale = false;
-        }
-        catch (JSException)
-        {
-        }
-        catch (JSDisconnectedException)
-        {
-        }
+        _isSentinelStale = false;
     }
 
     /// <summary>Appends the next page of media, as the reader scrolls toward the end of the current one.</summary>
     [JSInvokable]
-    public async Task LoadNextPageAsync()
+    public async Task HandleReachedAsync()
     {
         if (_isLoadingPage || !IsInfiniteScrolling || !HasMorePages)
         {
@@ -914,21 +887,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        if (_sentinelModule is not null)
-        {
-            try
-            {
-                if (_isSentinelObserved)
-                {
-                    await _sentinelModule.InvokeVoidAsync("disconnectSentinel", _sentinelId);
-                }
-
-                await _sentinelModule.DisposeAsync();
-            }
-            catch (JSDisconnectedException)
-            {
-            }
-        }
+        await _infiniteScroll.DisposeAsync();
 
         _selfReference?.Dispose();
         _queryCancellation?.Dispose();

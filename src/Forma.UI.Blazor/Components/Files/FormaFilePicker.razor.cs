@@ -1,7 +1,7 @@
 namespace Forma.UI.Blazor.Components.Files;
 
 using Forma.Framework.Localization;
-using Forma.UI.Blazor.Interop;
+using Forma.UI.Blazor.Interop.Behaviours;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -10,7 +10,7 @@ using Microsoft.JSInterop;
 /// <summary>A drop zone and file picker that validates a selection and hands the accepted files to the host.</summary>
 public sealed partial class FormaFilePicker : ComponentBase, IAsyncDisposable
 {
-    private const string ModulePath = "./_content/Forma.UI/Components/Files/FormaFilePicker.razor.js";
+    private const string DraggingClass = "forma-file-picker-dragging";
 
     /// <summary>HTML `accept` syntax (MIME types, wildcards, or extensions) a file must match; unset accepts anything.</summary>
     [Parameter] public string? Accept { get; set; }
@@ -43,7 +43,7 @@ public sealed partial class FormaFilePicker : ComponentBase, IAsyncDisposable
 
     private bool _isBusy;
 
-    private JsModule _module = default!;
+    private FileDropZone _fileDropZone = default!;
 
     private readonly List<RejectedFile> _rejections = [];
 
@@ -51,7 +51,7 @@ public sealed partial class FormaFilePicker : ComponentBase, IAsyncDisposable
         => Prompt ?? L["Drop files here or click to browse"];
 
     protected override void OnInitialized()
-        => _module = new JsModule(JS, ModulePath);
+        => _fileDropZone = new FileDropZone(JS);
 
     protected override void OnParametersSet()
     {
@@ -70,7 +70,7 @@ public sealed partial class FormaFilePicker : ComponentBase, IAsyncDisposable
     {
         if (!_attached)
         {
-            _attached = await _module.TryInvokeVoidAsync("attach", _dropZone);
+            _attached = await _fileDropZone.AttachAsync(_dropZone, DraggingClass);
         }
     }
 
@@ -179,5 +179,5 @@ public sealed partial class FormaFilePicker : ComponentBase, IAsyncDisposable
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
-        => await _module.DisposeAsync();
+        => await _fileDropZone.DisposeAsync();
 }

@@ -1,7 +1,7 @@
 namespace Forma.UI.Blazor.Components.Interactive;
 
 using Forma.UI.Blazor.Components.Buttons;
-using Forma.UI.Blazor.Interop;
+using Forma.UI.Blazor.Interop.Behaviours;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -10,8 +10,6 @@ using Microsoft.JSInterop;
 /// <summary>A trigger button that opens an anchored menu of commands.</summary>
 public sealed partial class FormaDropDownMenu : ComponentBase, IAsyncDisposable
 {
-    private const string KeysModulePath = "./_content/Forma.UI/Components/Interactive/FormaDropDownMenu.razor.js";
-
     /// <summary>Content rendered inside the trigger button.</summary>
     [Parameter, EditorRequired] public RenderFragment Trigger { get; set; } = default!;
 
@@ -40,12 +38,12 @@ public sealed partial class FormaDropDownMenu : ComponentBase, IAsyncDisposable
     private FormaButton _trigger = default!;
     private ElementReference _popupElement;
     private AnchoredPopup _popup = default!;
-    private JsModule _keysModule = default!;
+    private NavigationScrollGuard _keyGuard = default!;
 
     protected override void OnInitialized()
     {
         _popup = new AnchoredPopup(JS);
-        _keysModule = new JsModule(JS, KeysModulePath);
+        _keyGuard = new NavigationScrollGuard(JS);
     }
 
     internal void RegisterItem(FormaDropDownMenuItem item)
@@ -178,7 +176,7 @@ public sealed partial class FormaDropDownMenu : ComponentBase, IAsyncDisposable
     protected override async Task OnAfterRenderAsync(bool firstRender)
         => await _popup.SyncAsync(_isOpen, _popupElement, _anchorElement, async () =>
         {
-            await _keysModule.InvokeVoidAsync("attachNavigationKeys", _popupElement);
+            await _keyGuard.AttachAsync(_popupElement);
             await FocusIndexAsync(_openAtLastItem ? _items.Count - 1 : 0);
         });
 
@@ -186,6 +184,6 @@ public sealed partial class FormaDropDownMenu : ComponentBase, IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await _popup.DisposeAsync();
-        await _keysModule.DisposeAsync();
+        await _keyGuard.DisposeAsync();
     }
 }

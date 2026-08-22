@@ -1,6 +1,6 @@
 namespace Forma.UI.Blazor.Components.Inputs;
 
-using Forma.UI.Blazor.Interop;
+using Forma.UI.Blazor.Interop.Operations;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -9,8 +9,6 @@ using Microsoft.JSInterop;
 /// <summary>A styled checkbox with a script-driven indeterminate state, optionally leaving the checked state to the caller.</summary>
 public sealed partial class FormaCheckBox : ComponentBase, IAsyncDisposable
 {
-    private const string ModulePath = "./_content/Forma.UI/Components/Inputs/FormaCheckBox.razor.js";
-
     /// <summary>Whether the checkbox is checked.</summary>
     [Parameter] public bool Checked { get; set; }
 
@@ -39,7 +37,7 @@ public sealed partial class FormaCheckBox : ComponentBase, IAsyncDisposable
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
     private ElementReference _element;
-    private JsModule _module = default!;
+    private CheckBox _checkBox = default!;
 
     // Seeded to the element's own default, so a checkbox that is never indeterminate
     // — every row and option checkbox — never imports the module or calls into it.
@@ -50,7 +48,7 @@ public sealed partial class FormaCheckBox : ComponentBase, IAsyncDisposable
         => AdditionalAttributes.MergeClass("forma-checkbox");
 
     protected override void OnInitialized()
-        => _module = new JsModule(JS, ModulePath);
+        => _checkBox = new CheckBox(JS);
 
     private Task HandleChangeAsync(ChangeEventArgs args)
         => CheckedChanged.InvokeAsync(args.Value is true);
@@ -67,7 +65,7 @@ public sealed partial class FormaCheckBox : ComponentBase, IAsyncDisposable
             return;
         }
 
-        if (await _module.TryInvokeVoidAsync("setIndeterminate", _element, Indeterminate))
+        if (await _checkBox.SetIndeterminateAsync(_element, Indeterminate))
         {
             _indeterminateApplied = Indeterminate;
         }
@@ -75,5 +73,5 @@ public sealed partial class FormaCheckBox : ComponentBase, IAsyncDisposable
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
-        => await _module.DisposeAsync();
+        => await _checkBox.DisposeAsync();
 }

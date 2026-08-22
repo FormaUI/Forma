@@ -671,7 +671,7 @@
             var composer = cut.FindComponent<FormaComposer>().Instance;
 
             // Act
-            cut.InvokeAsync(() => composer.ExecuteCommandAsync(ComposerCommands.Undo));
+            cut.InvokeAsync(() => composer.HandleCommandAsync(ComposerCommands.Undo));
 
             // Assert
             cut.WaitForAssertion(() => Assert.Equal(original, model.Body.Content));
@@ -689,7 +689,7 @@
             var composer = cut.FindComponent<FormaComposer>().Instance;
 
             // Act
-            cut.InvokeAsync(() => composer.ExecuteCommandAsync("demo.shout"));
+            cut.InvokeAsync(() => composer.HandleCommandAsync("demo.shout"));
 
             // Assert
             Assert.Empty(plugin.Executed);

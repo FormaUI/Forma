@@ -352,8 +352,9 @@
                 </FormaSortableList>);
 
             // Assert
-            var invocation = Assert.Single(ctx.JSInterop.Invocations["attachSortable"]);
-            Assert.Equal(true, invocation.Arguments[2]);
+            var invocation = Assert.Single(ctx.JSInterop.Invocations["attach"]);
+            var options = invocation.Arguments[1]!;
+            Assert.Equal(true, options.GetType().GetProperty("dragFromItem")!.GetValue(options));
         }
 
         [Fact]

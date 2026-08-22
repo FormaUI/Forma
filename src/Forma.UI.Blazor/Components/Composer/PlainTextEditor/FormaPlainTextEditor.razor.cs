@@ -1,6 +1,6 @@
 namespace Forma.UI.Blazor.Components.Composer.PlainTextEditor;
 
-using Forma.UI.Blazor.Interop;
+using Forma.UI.Blazor.Interop.Operations;
 using Forma.UI.Features.Composer.Editing;
 
 using Microsoft.AspNetCore.Components;
@@ -19,7 +19,7 @@ public sealed partial class FormaPlainTextEditor : ComponentBase, IAsyncDisposab
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
     private ElementReference _textareaElement;
-    private TextSelectionBridge _selectionBridge = default!;
+    private Text _text = default!;
     private CancellationTokenSource? _commitCts;
     private CancellationTokenSource? _selectionCts;
     private string? _typedContent;
@@ -37,7 +37,7 @@ public sealed partial class FormaPlainTextEditor : ComponentBase, IAsyncDisposab
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _selectionBridge = new TextSelectionBridge(JS);
+        => _text = new Text(JS);
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -121,11 +121,11 @@ public sealed partial class FormaPlainTextEditor : ComponentBase, IAsyncDisposab
             return;
         }
 
-        var selection = await _selectionBridge.ReadAsync(_textareaElement);
+        var range = await _text.ReadSelectionAsync(_textareaElement);
 
-        if (selection is not null)
+        if (range is not null)
         {
-            await Context.ReportSelectionAsync(selection);
+            await Context.ReportSelectionAsync(new ComposerSelection { Start = range.Start, End = range.End });
         }
     }
 
@@ -156,6 +156,6 @@ public sealed partial class FormaPlainTextEditor : ComponentBase, IAsyncDisposab
             _selectionCts.Dispose();
         }
 
-        await _selectionBridge.DisposeAsync();
+        await _text.DisposeAsync();
     }
 }

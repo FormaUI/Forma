@@ -3,7 +3,7 @@ namespace Forma.UI.Blazor.Components.Inputs;
 using System.Globalization;
 
 using Forma.Framework.Localization;
-using Forma.UI.Blazor.Interop;
+using Forma.UI.Blazor.Interop.Behaviours;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;

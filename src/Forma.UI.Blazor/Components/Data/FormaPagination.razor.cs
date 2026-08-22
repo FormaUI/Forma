@@ -3,7 +3,8 @@ namespace Forma.UI.Blazor.Components.Data;
 using System.Globalization;
 
 using Forma.Framework.Localization;
-using Forma.UI.Blazor.Interop;
+using Forma.UI.Blazor.Interop.Behaviours;
+using Forma.UI.Blazor.Interop.Operations;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -14,12 +15,12 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
 {
     private const int BoundaryCount = 1;
     private const int SiblingCount = 1;
-    private const string ModulePath = "./_content/Forma.UI/Components/Data/FormaPagination.razor.js";
 
     private readonly string _pageInputId = $"forma-pagination-input-{Guid.NewGuid():N}";
 
     private ElementReference _pageInputElement;
-    private JsModule _module = default!;
+    private ImplicitSubmitGuard _submitGuard = default!;
+    private Text _text = default!;
     private bool _submitGuardAttached;
     private string? _pageInput;
 
@@ -67,7 +68,10 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
         => AdditionalAttributes.MergeClass("forma-pagination");
 
     protected override void OnInitialized()
-        => _module = new JsModule(JS, ModulePath);
+    {
+        _submitGuard = new ImplicitSubmitGuard(JS);
+        _text = new Text(JS);
+    }
 
     protected override void OnParametersSet()
     {
@@ -82,6 +86,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
         {
             // The box went away, so the listener went with it.
             _submitGuardAttached = false;
+            await _submitGuard.DetachAsync();
             return;
         }
 
@@ -90,12 +95,15 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
             return;
         }
 
-        _submitGuardAttached = await _module.TryInvokeVoidAsync("suppressImplicitSubmit", _pageInputElement);
+        _submitGuardAttached = await _submitGuard.AttachAsync(_pageInputElement);
     }
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
-        => await _module.DisposeAsync();
+    {
+        await _submitGuard.DisposeAsync();
+        await _text.DisposeAsync();
+    }
 
     // Windowed page-number layout (boundary pages + a sibling range around the
     // current page, with a null placeholder standing in for a collapsed gap).
@@ -187,6 +195,6 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
             return _pageInput;
         }
 
-        return await _module.TryInvokeAsync<string>("takePageEntry", _pageInputElement);
+        return await _text.TakeAsync(_pageInputElement);
     }
 }

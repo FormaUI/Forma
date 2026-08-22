@@ -1,7 +1,7 @@
 namespace Forma.UI.Blazor.Components.Interactive;
 
 using Forma.Framework.Localization;
-using Forma.UI.Blazor.Interop;
+using Forma.UI.Blazor.Interop.Behaviours;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -10,8 +10,6 @@ using Microsoft.JSInterop;
 public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisposable
     where TItem : notnull
 {
-    private const string ModulePath = "./_content/Forma.UI/Components/Interactive/FormaSortableList.razor.js";
-
     /// <summary>The items to display, in their current order.</summary>
     [Parameter, EditorRequired] public IReadOnlyList<TItem> Items { get; set; } = default!;
 
@@ -39,7 +37,7 @@ public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisp
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
     private ElementReference _element;
-    private JsModule _module = default!;
+    private ReorderInteraction _reorder = default!;
     private DotNetObjectReference<FormaSortableList<TItem>>? _selfReference;
     private bool _attached;
     private SortableDragFrom _attachedDragFrom;
@@ -47,7 +45,7 @@ public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisp
     private bool _announcementAlternate;
 
     protected override void OnInitialized()
-        => _module = new JsModule(JS, ModulePath);
+        => _reorder = new ReorderInteraction(JS);
 
     protected override void OnParametersSet()
     {
@@ -67,18 +65,12 @@ public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisp
 
         // Where a drag may start is decided when the listeners are bound, so a change of
         // mind has to rebind rather than leave the script answering for the old one.
-        if (_attached)
-        {
-            await _module.TryInvokeVoidAsync("detachSortable", _element);
-        }
-
         // Claimed before the await so a render arriving mid-call cannot re-enter and
         // attach a second listener to the same list.
         _attached = true;
         _attachedDragFrom = DragFrom;
         _selfReference ??= DotNetObjectReference.Create(this);
-        _attached = await _module.TryInvokeVoidAsync(
-            "attachSortable", _element, _selfReference, DragFrom == SortableDragFrom.Item);
+        _attached = await _reorder.AttachAsync(_element, _selfReference, DragFrom == SortableDragFrom.Item);
     }
 
     // The row-drag affordances are withheld while disabled, so a row that cannot be dragged
@@ -146,12 +138,7 @@ public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisp
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        if (_attached)
-        {
-            await _module.TryInvokeVoidAsync("detachSortable", _element);
-        }
-
-        await _module.DisposeAsync();
+        await _reorder.DisposeAsync();
         _selfReference?.Dispose();
     }
 }

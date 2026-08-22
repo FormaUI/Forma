@@ -345,6 +345,10 @@
         {
             // Arrange
             using var ctx = new FormaVideoPlayerTests();
+            ctx.JSInterop
+                .SetupModule("./_content/Forma.UI/scripts/operations/Embedding.js")
+                .Setup<bool>("activate", _ => true)
+                .SetResult(true);
             var source = "https://www.tiktok.com/@scout2015/video/6718335390845095173";
             var cut = ctx.Render(@<FormaVideoPlayer Source="@source" Title="A clip" DeferLoading="false" />);
 

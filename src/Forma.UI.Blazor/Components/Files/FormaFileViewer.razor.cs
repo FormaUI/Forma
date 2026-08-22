@@ -5,7 +5,8 @@ using System.Globalization;
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
 using Forma.UI.Blazor.Components.Files.Providers;
-using Forma.UI.Blazor.Interop;
+using Forma.UI.Blazor.Interop.Behaviours;
+using Forma.UI.Blazor.Interop.Operations;
 using Forma.UI.Blazor.Resources;
 
 using Microsoft.AspNetCore.Components;
@@ -15,7 +16,7 @@ using Microsoft.JSInterop;
 /// <summary>Renders whatever resource a source address resolves to, through the first provider that claims it.</summary>
 public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
 {
-    private const string ModulePath = "./_content/Forma.UI/Components/Files/FormaFileViewer.razor.js";
+    private const string ZoomedClass = "zoomed";
 
     private static readonly int[] ZoomSteps = [100, 150, 200, 300, 400];
 
@@ -44,7 +45,9 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
     /// <summary>Providers the host registered, tried before the browser's own handling.</summary>
     [Inject] private IEnumerable<IResourceProvider> RegisteredProviders { get; set; } = default!;
 
-    private JsModule _module = default!;
+    private PanGesture _pan = default!;
+
+    private Scroll _scroll = default!;
 
     private ElementReference _imageFrame;
 
@@ -76,7 +79,10 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
         => Resource?.Name ?? Source;
 
     protected override void OnInitialized()
-        => _module = new JsModule(JS, ModulePath);
+    {
+        _pan = new PanGesture(JS);
+        _scroll = new Scroll(JS);
+    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -146,13 +152,13 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
 
         if (!_dragAttached)
         {
-            _dragAttached = await _module.TryInvokeVoidAsync("attach", _imageFrame);
+            _dragAttached = await _pan.AttachAsync(_imageFrame, ZoomedClass);
         }
 
         if (_zoomChanged)
         {
             _zoomChanged = false;
-            await _module.TryInvokeVoidAsync("centerScroll", _imageFrame);
+            await _scroll.ToCenterAsync(_imageFrame);
         }
     }
 
@@ -228,6 +234,7 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
 
         _resolving?.Dispose();
 
-        await _module.DisposeAsync();
+        await _pan.DisposeAsync();
+        await _scroll.DisposeAsync();
     }
 }

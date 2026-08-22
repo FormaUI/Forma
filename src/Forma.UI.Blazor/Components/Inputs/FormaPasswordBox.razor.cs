@@ -3,7 +3,7 @@ namespace Forma.UI.Blazor.Components.Inputs;
 using System.Diagnostics.CodeAnalysis;
 
 using Forma.Framework.Localization;
-using Forma.UI.Blazor.Interop;
+using Forma.UI.Blazor.Interop.Behaviours;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -12,15 +12,13 @@ using Microsoft.JSInterop;
 /// <summary>A password field with a toggle that reveals the typed value.</summary>
 public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposable
 {
-    private const string ModulePath = "./_content/Forma.UI/scripts/AutofillDetection.js";
-
     // The lengths the built-in rating scores a point at; the longer one is also what the advice asks for.
     private const int ScoredLength = 8;
     private const int WellScoredLength = 12;
 
     private readonly string _inputId = $"fld-{Guid.NewGuid():N}";
     private ElementReference _inputRef;
-    private JsModule _module = default!;
+    private AutofillTracker _autofill = default!;
     private ValidationMessageStore _messages = default!;
     private IReadOnlyList<string> _advice = [];
     private bool _hasForbiddenTerm;
@@ -227,7 +225,7 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
 
     protected override void OnInitialized()
     {
-        _module = new JsModule(JS, ModulePath);
+        _autofill = new AutofillTracker(JS);
         _messages = new ValidationMessageStore(EditContext);
         EditContext.OnValidationRequested += HandleValidationRequested;
     }
@@ -331,7 +329,7 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
             return;
         }
 
-        await _module.TryInvokeVoidAsync("initAutofillDetection", _inputRef);
+        await _autofill.AttachAsync(_inputRef);
     }
 
     protected override void Dispose(bool disposing)
@@ -345,5 +343,5 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
     }
 
     public async ValueTask DisposeAsync()
-        => await _module.DisposeAsync();
+        => await _autofill.DisposeAsync();
 }

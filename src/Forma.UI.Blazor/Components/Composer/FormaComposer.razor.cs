@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 using Forma.UI.Blazor.Components.Composer.Assets;
 using Forma.UI.Blazor.Components.Composer.PlainTextEditor;
-using Forma.UI.Blazor.Interop;
+using Forma.UI.Blazor.Interop.Behaviours;
 using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Documents;
 using Forma.UI.Features.Composer.Editing;
@@ -19,8 +19,6 @@ using Microsoft.JSInterop;
 /// <summary>An authoring surface hosting rich text, Markdown, code, or page composition via extensible plugins.</summary>
 public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncDisposable
 {
-    private const string ModulePath = "./_content/Forma.UI/Components/Composer/FormaComposer.razor.js";
-
     private readonly string _generatedId = $"composer-{Guid.NewGuid():N}";
     private readonly ComposerCommandRegistry _commands = new();
     private readonly ComposerRegionRegistry _regions = new();
@@ -30,7 +28,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     private ComposerKeyMap _keyMap = ComposerKeyMap.Empty;
     private ElementReference _composerElement;
     private DotNetObjectReference<FormaComposer>? _dotNetRef;
-    private JsModule _module = default!;
+    private KeyBindings _keyBindings = default!;
     private JsComposerAssetLoader _assetLoader = default!;
     private IComposerHistory _history = default!;
     private IComposerHtmlSanitizer _sanitizer = default!;
@@ -87,8 +85,8 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
-        _module = new JsModule(JS, ModulePath);
-        _assetLoader = new JsComposerAssetLoader(_module);
+        _keyBindings = new KeyBindings(JS);
+        _assetLoader = new JsComposerAssetLoader(JS);
         _dotNetRef = DotNetObjectReference.Create(this);
 
         var injectedHistory = (IComposerHistory?)Services.GetService(typeof(IComposerHistory));
@@ -147,13 +145,13 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
 
         _isJsStarted = true;
 
-        await _module.TryInvokeVoidAsync("initComposer", _composerElement, _dotNetRef, _keyMap.Bindings);
+        await _keyBindings.AttachAsync(_composerElement, _dotNetRef!, _keyMap.Bindings);
         await _assetLoader.LoadAssetsAsync(_activeEditor.Assets);
     }
 
     /// <summary>Runs a composer command by name, whether the engine or a plugin owns it.</summary>
     [JSInvokable]
-    public async Task ExecuteCommandAsync(string command)
+    public async Task HandleCommandAsync(string command)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
 
@@ -364,14 +362,8 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     {
         _regions.Changed -= HandleRegionsChanged;
 
-        // A prerendered instance never starts interop, and issuing it while statically rendered throws.
-        if (_isJsStarted)
-        {
-            await _module.TryInvokeVoidAsync("disposeComposer", _composerElement);
-        }
-
         _dotNetRef?.Dispose();
         await _assetLoader.DisposeAsync();
-        await _module.DisposeAsync();
+        await _keyBindings.DisposeAsync();
     }
 }

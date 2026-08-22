@@ -46,7 +46,7 @@
                 </FormaCommandBarRow>);
 
             // Act
-            _ = cut.FindComponent<FormaCommandBarRow>().Instance.ReportOverflowAsync(canScrollBack: false, canScrollForward: true);
+            _ = cut.FindComponent<FormaCommandBarRow>().Instance.HandleOverflowAsync(canScrollBack: false, canScrollForward: true);
 
             // Assert
             cut.WaitForAssertion(() => Assert.Equal(2, cut.FindAll(".forma-command-bar-scroll").Count));
@@ -63,7 +63,7 @@
                 </FormaCommandBarRow>);
 
             // Act
-            _ = cut.FindComponent<FormaCommandBarRow>().Instance.ReportOverflowAsync(canScrollBack: false, canScrollForward: true);
+            _ = cut.FindComponent<FormaCommandBarRow>().Instance.HandleOverflowAsync(canScrollBack: false, canScrollForward: true);
 
             // Assert
             cut.WaitForAssertion(() =>
@@ -84,7 +84,7 @@
                 </FormaCommandBarRow>);
 
             // Act
-            _ = cut.FindComponent<FormaCommandBarRow>().Instance.ReportOverflowAsync(canScrollBack: true, canScrollForward: false);
+            _ = cut.FindComponent<FormaCommandBarRow>().Instance.HandleOverflowAsync(canScrollBack: true, canScrollForward: false);
 
             // Assert
             cut.WaitForAssertion(() =>
@@ -103,11 +103,11 @@
                 @<FormaCommandBarRow>
                     <button>Upload</button>
                 </FormaCommandBarRow>);
-            _ = cut.FindComponent<FormaCommandBarRow>().Instance.ReportOverflowAsync(canScrollBack: true, canScrollForward: true);
+            _ = cut.FindComponent<FormaCommandBarRow>().Instance.HandleOverflowAsync(canScrollBack: true, canScrollForward: true);
             cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".forma-command-bar-scroll")));
 
             // Act
-            _ = cut.FindComponent<FormaCommandBarRow>().Instance.ReportOverflowAsync(canScrollBack: false, canScrollForward: false);
+            _ = cut.FindComponent<FormaCommandBarRow>().Instance.HandleOverflowAsync(canScrollBack: false, canScrollForward: false);
 
             // Assert
             cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".forma-command-bar-scroll")));
@@ -124,7 +124,7 @@
                 </FormaCommandBarRow>);
 
             // Act
-            _ = cut.FindComponent<FormaCommandBarRow>().Instance.ReportOverflowAsync(canScrollBack: true, canScrollForward: true);
+            _ = cut.FindComponent<FormaCommandBarRow>().Instance.HandleOverflowAsync(canScrollBack: true, canScrollForward: true);
 
             // Assert
             cut.WaitForAssertion(() =>
@@ -145,7 +145,7 @@
                 </FormaCommandBarRow>);
 
             // Act
-            _ = cut.FindComponent<FormaCommandBarRow>().Instance.ReportOverflowAsync(canScrollBack: true, canScrollForward: true);
+            _ = cut.FindComponent<FormaCommandBarRow>().Instance.HandleOverflowAsync(canScrollBack: true, canScrollForward: true);
 
             // Assert
             cut.WaitForAssertion(() =>

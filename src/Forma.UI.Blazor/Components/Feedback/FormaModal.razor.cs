@@ -3,17 +3,15 @@ namespace Forma.UI.Blazor.Components.Feedback;
 using System.Diagnostics.CodeAnalysis;
 
 using Forma.Framework.Localization;
-using Forma.UI.Blazor.Interop;
+using Forma.UI.Blazor.Interop.Behaviours;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 public sealed partial class FormaModal : IAsyncDisposable
 {
-    private const string ModulePath = "./_content/Forma.UI/Components/Feedback/FormaModal.razor.js";
-
     private ElementReference _dialogRef;
-    private JsModule _module = default!;
+    private ModalControl _modal = default!;
     private bool _isOpen;
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
@@ -62,22 +60,27 @@ public sealed partial class FormaModal : IAsyncDisposable
         CancelText ?? (Options.ShowCancelAction && !Options.ShowConfirmAction ? L["Close"] : L["Cancel"]);
 
     protected override void OnInitialized()
-        => _module = new JsModule(JS, ModulePath);
+        => _modal = new ModalControl(JS);
 
     protected override void OnParametersSet()
         => ArgumentNullException.ThrowIfNull(Options);
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (firstRender)
+        {
+            await _modal.AttachAsync(_dialogRef);
+        }
+
         if (Opened && !_isOpen)
         {
             _isOpen = true;
-            await _module.TryInvokeVoidAsync("showModal", _dialogRef, Options.CloseOnBackdropClick);
+            await _modal.OpenAsync(Options.CloseOnBackdropClick);
         }
         else if (!Opened && _isOpen)
         {
             _isOpen = false;
-            await _module.TryInvokeVoidAsync("closeModal", _dialogRef);
+            await _modal.CloseAsync();
         }
     }
 
@@ -96,7 +99,7 @@ public sealed partial class FormaModal : IAsyncDisposable
 
     private async Task RequestCloseAsync()
     {
-        if (await _module.TryInvokeVoidAsync("closeModal", _dialogRef))
+        if (await _modal.CloseAsync())
         {
             return;
         }
@@ -137,5 +140,5 @@ public sealed partial class FormaModal : IAsyncDisposable
     }
 
     public async ValueTask DisposeAsync()
-        => await _module.DisposeAsync();
+        => await _modal.DisposeAsync();
 }

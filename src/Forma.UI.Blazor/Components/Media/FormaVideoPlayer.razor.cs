@@ -2,7 +2,7 @@ namespace Forma.UI.Blazor.Components.Media;
 
 using Forma.Framework.Localization;
 using Forma.UI.Blazor.Components.Media.Providers;
-using Forma.UI.Blazor.Interop;
+using Forma.UI.Blazor.Interop.Operations;
 using Forma.UI.Features.Media;
 
 using Microsoft.AspNetCore.Components;
@@ -11,8 +11,6 @@ using Microsoft.JSInterop;
 /// <summary>A player for a file the browser can fetch, or a video a hosting service embeds.</summary>
 public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
 {
-    private const string ModulePath = "./_content/Forma.UI/Components/Media/FormaVideoPlayer.razor.js";
-
     // Ordered: the file provider accepts any fetchable address, so it answers only once the services have declined.
     private static readonly IPlayerProvider[] Providers =
     [
@@ -57,7 +55,9 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
     /// <summary>Providers the host registered, tried before the services this library recognises.</summary>
     [Inject] private IEnumerable<IPlayerProvider> RegisteredProviders { get; set; } = default!;
 
-    private JsModule _module = default!;
+    private Playback _playback = default!;
+
+    private Embedding _embedding = default!;
 
     private readonly string _labelId = $"video-play-{Guid.NewGuid():N}";
 
@@ -90,7 +90,10 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
     }
 
     protected override void OnInitialized()
-        => _module = new JsModule(JS, ModulePath);
+    {
+        _playback = new Playback(JS);
+        _embedding = new Embedding(JS);
+    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -144,7 +147,7 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
     {
         if (Autoplay && !_autoplayMuted && Frame is NativePlayerFrame)
         {
-            _autoplayMuted = await _module.TryInvokeVoidAsync("mute", _video);
+            _autoplayMuted = await _playback.MuteAsync(_video);
         }
 
         // Keyed by address rather than script, because a new video needs the loaded script to scan again.
@@ -153,7 +156,7 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
             return;
         }
 
-        if (await _module.TryInvokeVoidAsync("activate", markup.ScriptUrl))
+        if (await _embedding.ActivateAsync(markup.ScriptUrl))
         {
             _activatedSource = markup.Source;
         }
@@ -164,5 +167,8 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
-        => await _module.DisposeAsync();
+    {
+        await _playback.DisposeAsync();
+        await _embedding.DisposeAsync();
+    }
 }
