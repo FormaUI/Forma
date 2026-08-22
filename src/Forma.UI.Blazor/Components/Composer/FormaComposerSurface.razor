@@ -11,5 +11,7 @@
 }
 
 <div class="forma-composer-canvas">
-    <DynamicComponent Type="Editor.EditorComponent" />
+    <CascadingValue Value="Editor" IsFixed="true">
+        <DynamicComponent Type="Editor.EditorComponent" />
+    </CascadingValue>
 </div>

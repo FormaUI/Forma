@@ -38,7 +38,7 @@ public sealed class ComposerToolbarLayout
 
         foreach (var plugin in external)
         {
-            Place(plugin.ToolbarItems, ComposerRows.Plugins);
+            Place(plugin.ToolbarItems, plugin.DefaultRow);
         }
 
         var rows = order
@@ -62,9 +62,17 @@ public sealed class ComposerToolbarLayout
     private static List<ComposerToolbarRow> Order(IComposerEditorPlugin editor, IEnumerable<IComposerPlugin> external)
     {
         var order = new List<ComposerToolbarRow> { new() { Id = ComposerRows.BuiltIn, Label = "Editor Commands" } };
-        var seen = new HashSet<string>(StringComparer.Ordinal) { ComposerRows.BuiltIn, ComposerRows.Plugins };
+        var seen = new HashSet<string>(StringComparer.Ordinal)
+        {
+            ComposerRows.BuiltIn,
+            ComposerRows.Formatting,
+            ComposerRows.Paragraph,
+            ComposerRows.Plugins,
+        };
 
         AddDeclared(editor.ToolbarRows);
+        order.Add(new() { Id = ComposerRows.Formatting, Label = "Text Formatting" });
+        order.Add(new() { Id = ComposerRows.Paragraph, Label = "Paragraph Formatting" });
         order.Add(new() { Id = ComposerRows.Plugins, Label = "Plugin Commands" });
 
         foreach (var plugin in external)

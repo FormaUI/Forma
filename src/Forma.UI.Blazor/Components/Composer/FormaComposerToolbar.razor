@@ -2,12 +2,39 @@
 @inject IStringLocale<FormaComposer> L
 
 <FormaCommandBar Class="forma-composer-toolbar">
-    @foreach (var row in Layout.Rows)
+    @foreach (var (bar, index) in Bars.Select((bar, index) => (bar, index)))
     {
         <FormaComposerCommandRow
-            Label="@L[row.Label]"
-            Groups="row.Groups"
-            ShowHistory="row.IsBuiltIn"
+            Label="@L[bar.Label]"
+            Groups="bar.Groups"
+            ShowHistory="index == 0"
+            Disabled="Disabled"
+            KeyMap="KeyMap"
+            OnCommand="OnCommand">
+            <TrailingContent>
+                @if (index == 0 && PluginGroups.Count > 0)
+                {
+                    <FormaButton Variant="ButtonVariant.Ghost"
+                                 Size="ButtonSize.Mini"
+                                 IconOnly="true"
+                                 Disabled="Disabled"
+                                 OnClick="TogglePlugins"
+                                 aria-expanded="@(_arePluginsShown ? "true" : "false")"
+                                 aria-controls="@_pluginsId"
+                                 aria-label="@L["Plugin Commands"]"
+                                 title="@L["Plugin Commands"]">
+                        <FormaGlyph Name="Glyph.EllipsisVertical" />
+                    </FormaButton>
+                }
+            </TrailingContent>
+        </FormaComposerCommandRow>
+    }
+
+    @if (PluginGroups.Count > 0 && _arePluginsShown)
+    {
+        <FormaComposerPluginsToolbar
+            Id="@_pluginsId"
+            Groups="PluginGroups"
             Disabled="Disabled"
             KeyMap="KeyMap"
             OnCommand="OnCommand" />

@@ -26,6 +26,9 @@ public sealed record ComposerToolbarItem
     /// <summary>A component rendered in place of a standard toolbar button, or null.</summary>
     public Type? CustomComponent { get; init; }
 
+    /// <summary>The options the item offers as a menu, or empty when the item is a plain command.</summary>
+    public IReadOnlyList<ComposerToolbarOption> Options { get; init; } = [];
+
     /// <summary>Whether the item reflects an on/off state rather than firing once.</summary>
     public bool IsToggle { get; init; }
 }

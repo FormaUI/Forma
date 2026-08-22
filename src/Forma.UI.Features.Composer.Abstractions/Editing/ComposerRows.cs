@@ -8,4 +8,10 @@ public static class ComposerRows
 
     /// <summary>The row carrying the unrouted commands of the plugins scoped to the active editor.</summary>
     public const string Plugins = "composer.plugins";
+
+    /// <summary>The row carrying the commands that style the content of the active editor.</summary>
+    public const string Formatting = "composer.formatting";
+
+    /// <summary>The row carrying the commands that arrange the blocks of the active editor.</summary>
+    public const string Paragraph = "composer.paragraph";
 }

@@ -13,6 +13,9 @@ public sealed partial class FormaCommandBarRow : ComponentBase, IAsyncDisposable
     /// <summary>The row's commands.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>Content pinned past the end of the track, staying put while the commands scroll.</summary>
+    [Parameter] public RenderFragment? TrailingContent { get; set; }
+
     /// <summary>Accessible name for the button scrolling toward the start.</summary>
     [Parameter] public string? ScrollBackLabel { get; set; }
 

@@ -3,8 +3,17 @@ namespace Forma.UI.Style.Glyphs;
 /// <summary>A glyph the library draws for its own chrome.</summary>
 public enum Glyph
 {
+    /// <summary>Stacked lines centred on a common axis, for centre alignment.</summary>
+    AlignCenter,
+
+    /// <summary>Stacked lines flush to both edges, for justified alignment.</summary>
+    AlignJustify,
+
     /// <summary>Stacked lines flush to the start edge, for left alignment.</summary>
     AlignLeft,
+
+    /// <summary>Stacked lines flush to the end edge, for right alignment.</summary>
+    AlignRight,
 
     /// <summary>A downward arrow.</summary>
     ArrowDown,
@@ -15,11 +24,17 @@ public enum Glyph
     /// <summary>A leftward arrow.</summary>
     ArrowLeft,
 
+    /// <summary>A long leftward arrow, for right-to-left reading order.</summary>
+    ArrowLeftLong,
+
     /// <summary>A rightward arrow.</summary>
     ArrowRight,
 
     /// <summary>Opposing horizontal arrows, for swapping or replacing.</summary>
     ArrowRightArrowLeft,
+
+    /// <summary>A long rightward arrow, for left-to-right reading order.</summary>
+    ArrowRightLong,
 
     /// <summary>Two arrows chasing in a circle, for refreshing.</summary>
     ArrowsRotate,
@@ -156,6 +171,9 @@ public enum Glyph
     /// <summary>A letter H, for a heading.</summary>
     Heading,
 
+    /// <summary>A marker pen, for highlighted text.</summary>
+    Highlighter,
+
     /// <summary>An hourglass half run through.</summary>
     HourglassHalf,
 
@@ -183,6 +201,9 @@ public enum Glyph
     /// <summary>Lines beside bullets.</summary>
     List,
 
+    /// <summary>Lines beside ticks, for a task list.</summary>
+    ListCheck,
+
     /// <summary>Lines beside numerals, for an ordered list.</summary>
     ListOl,
 
@@ -206,6 +227,9 @@ public enum Glyph
 
     /// <summary>A painter's palette, for theming.</summary>
     Palette,
+
+    /// <summary>A pilcrow, for a paragraph block.</summary>
+    Paragraph,
 
     /// <summary>A clipboard holding a sheet, for pasting.</summary>
     Paste,
@@ -252,6 +276,15 @@ public enum Glyph
     /// <summary>A square holding a plus.</summary>
     SquarePlus,
 
+    /// <summary>A letter S struck through, for struck-out text.</summary>
+    Strikethrough,
+
+    /// <summary>A letter with a character set below the baseline.</summary>
+    Subscript,
+
+    /// <summary>A letter with a character set above the baseline.</summary>
+    Superscript,
+
     /// <summary>A grid of cells, for a table.</summary>
     Table,
 
@@ -260,6 +293,12 @@ public enum Glyph
 
     /// <summary>A prompt and cursor, for a terminal.</summary>
     Terminal,
+
+    /// <summary>A letter A spanning vertical arrows, for line height.</summary>
+    TextHeight,
+
+    /// <summary>A letter A struck through, for clearing formatting.</summary>
+    TextSlash,
 
     /// <summary>A letter A spanning arrows, for text width or wrapping.</summary>
     TextWidth,

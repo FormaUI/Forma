@@ -1,0 +1,106 @@
+@inherits BunitContext
+
+@code {
+    public sealed class Component
+    {
+        private sealed class TestModel
+        {
+            public ComposerDocument Body { get; set; } = new(ComposerDocumentFormat.Html, "<p>Basic Content</p>");
+        }
+
+        [Fact]
+        public void Should_render_basic_rich_text_editor_with_toolbars()
+        {
+            // Arrange
+            using var ctx = new FormaBasicRichTextEditorTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaBasicRichTextEditor @bind-Value="model.Body" />
+            </FakeFormHost>);
+
+            // Assert
+            var canvas = cut.Find(".forma-composer-rich-text-canvas");
+            Assert.NotNull(canvas);
+            var toolbar = cut.Find(".forma-composer-toolbar");
+            Assert.NotEmpty(toolbar.QuerySelectorAll("button[aria-label='Bold']"));
+            Assert.NotEmpty(toolbar.QuerySelectorAll("button[aria-label='Italic']"));
+            Assert.NotEmpty(toolbar.QuerySelectorAll("button[aria-label='Underline']"));
+            Assert.NotEmpty(toolbar.QuerySelectorAll("button[aria-label='Block Style']"));
+            Assert.NotEmpty(toolbar.QuerySelectorAll("button[aria-label='Bulleted List']"));
+            Assert.NotEmpty(toolbar.QuerySelectorAll("button[aria-label='Align Left']"));
+        }
+
+        [Fact]
+        public void Should_split_the_commands_between_a_text_bar_and_a_paragraph_bar()
+        {
+            // Arrange
+            using var ctx = new FormaBasicRichTextEditorTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaBasicRichTextEditor @bind-Value="model.Body" />
+            </FakeFormHost>);
+
+            // Assert
+            var rows = cut.FindAll(".forma-composer-toolbar [role=toolbar]");
+            Assert.Equal(2, rows.Count);
+            Assert.NotEmpty(rows[0].QuerySelectorAll("button[aria-label='Block Style']"));
+            Assert.NotEmpty(rows[0].QuerySelectorAll("button[aria-label='Bold']"));
+            Assert.NotEmpty(rows[1].QuerySelectorAll("button[aria-label='Bulleted List']"));
+            Assert.NotEmpty(rows[1].QuerySelectorAll("button[aria-label='Align Left']"));
+        }
+
+        [Fact]
+        public void Should_offer_the_block_styles_as_menu_choices()
+        {
+            // Arrange
+            using var ctx = new FormaBasicRichTextEditorTests();
+            var model = new TestModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaBasicRichTextEditor @bind-Value="model.Body" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find(".forma-composer-toolbar button[aria-label='Block Style']").Click();
+
+            // Assert
+            var choices = cut.FindAll(".forma-dropdown-menu [role='menuitemradio']");
+            Assert.Equal(8, choices.Count);
+            Assert.Contains(choices, c => c.TextContent.Contains("Heading 1", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void Should_reach_the_editing_surface_when_a_toolbar_command_is_pressed()
+        {
+            // Arrange
+            using var ctx = new FormaBasicRichTextEditorTests();
+            var model = new TestModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaBasicRichTextEditor @bind-Value="model.Body" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find("button[aria-label='Bold']").Click();
+
+            // Assert
+            var invocation = Assert.Single(ctx.JSInterop.Invocations["exec"]);
+            Assert.Equal("bold", invocation.Arguments[0]);
+        }
+
+        [Fact]
+        public void Should_throw_when_the_editing_surface_has_no_cascaded_editor_plugin()
+        {
+            // Arrange
+            using var ctx = new FormaBasicRichTextEditorTests();
+
+            // Act
+            var render = () => ctx.Render(@<FormaRichTextEditor />);
+
+            // Assert
+            Assert.Throws<InvalidOperationException>(render);
+        }
+    }
+}

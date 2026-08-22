@@ -1,6 +1,7 @@
 namespace Forma.UI.Blazor.Components.Composer;
 
 using Forma.Framework.Localization;
+using Forma.UI.Blazor.Components.Buttons;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
 
@@ -9,6 +10,8 @@ using Microsoft.AspNetCore.Components;
 /// <summary>One row of composer commands, scrolling behind arrows when the commands outgrow the width.</summary>
 public sealed partial class FormaComposerCommandRow : ComponentBase
 {
+    private static readonly FormaButtonOptions MenuTriggerOptions =
+        new() { Variant = ButtonVariant.Ghost, Size = ButtonSize.Mini };
     /// <summary>The accessible name of the row.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
 
@@ -26,6 +29,9 @@ public sealed partial class FormaComposerCommandRow : ComponentBase
 
     /// <summary>Callback invoked with the command an action raised.</summary>
     [Parameter] public EventCallback<string> OnCommand { get; set; }
+
+    /// <summary>Content rendered after the command groups, such as an overflow menu.</summary>
+    [Parameter] public RenderFragment? TrailingContent { get; set; }
 
     /// <summary>The shared composer context cascaded from the parent shell.</summary>
     [CascadingParameter] public ComposerContext? Context { get; set; }
@@ -51,7 +57,19 @@ public sealed partial class FormaComposerCommandRow : ComponentBase
     }
 
     private bool IsItemActive(ComposerToolbarItem item)
-        => item.Command is not null && (Context?.Selection.ActiveStyles.Contains(item.Command) ?? false);
+        => Context?.Selection.ActiveStyles.Contains(item.Id) ?? false;
+
+    private bool IsChoiceActive(ComposerToolbarOption choice)
+        => Context?.Selection.ActiveStyles.Contains(choice.Id) ?? false;
+
+    private string GetActiveChoiceTitle(ComposerToolbarItem item)
+    {
+        var active = item.Options.FirstOrDefault(IsChoiceActive) ?? item.Options[0];
+        return L[active.Title].Value;
+    }
+
+    private string? GetActiveSwatch(ComposerToolbarItem item)
+        => (item.Options.FirstOrDefault(IsChoiceActive) ?? item.Options[0]).Swatch;
 
     private string GetItemTitle(ComposerToolbarItem item)
         => L[item.Title].Value;

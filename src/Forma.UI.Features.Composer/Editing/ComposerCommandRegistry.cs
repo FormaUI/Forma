@@ -36,6 +36,11 @@ public sealed class ComposerCommandRegistry
                 {
                     _pluginCommands[command] = plugin;
                 }
+
+                foreach (var option in item.Options)
+                {
+                    _pluginCommands[option.Command] = plugin;
+                }
             }
 
             foreach (var trigger in plugin.InputTriggers)

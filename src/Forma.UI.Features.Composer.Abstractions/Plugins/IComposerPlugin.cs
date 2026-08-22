@@ -15,6 +15,9 @@ public interface IComposerPlugin : IComposerKeyBindingProvider
     /// <summary>Command rows this plugin declares for its own items, or empty to use the row it defaults to.</summary>
     IReadOnlyList<ComposerToolbarRow> ToolbarRows => [];
 
+    /// <summary>The row this plugin's items land in when they name none of their own.</summary>
+    string DefaultRow => ComposerRows.Plugins;
+
     /// <summary>Typed-input triggers contributed by this plugin.</summary>
     IReadOnlyList<ComposerInputTrigger> InputTriggers { get; }
 

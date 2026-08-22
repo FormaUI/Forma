@@ -255,8 +255,6 @@ public sealed class CleanupPlugin : IComposerPlugin
     /// <summary>The command emptying the document.</summary>
     public const string ClearCommand = "demo.clear";
 
-    private const string CleanupRow = "demo.cleanup";
-
     /// <inheritdoc />
     public string Id => "cleanup";
 
@@ -264,14 +262,10 @@ public sealed class CleanupPlugin : IComposerPlugin
     public IReadOnlyList<string> SupportedEditorIds => [TextEditorPlugin.EditorId];
 
     /// <inheritdoc />
-    public IReadOnlyList<ComposerToolbarRow> ToolbarRows =>
-        [new() { Id = CleanupRow, Label = "Cleanup" }];
-
-    /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> ToolbarItems =>
     [
-        new() { Id = "remove-blank-lines", Title = "Remove Blank Lines", Icon = Glyph.SquareMinus, Command = RemoveBlankLinesCommand, Row = CleanupRow },
-        new() { Id = "clear", Title = "Clear", Icon = Glyph.Trash, Command = ClearCommand, Row = CleanupRow },
+        new() { Id = "remove-blank-lines", Title = "Remove Blank Lines", Icon = Glyph.SquareMinus, Command = RemoveBlankLinesCommand, Group = "cleanup" },
+        new() { Id = "clear", Title = "Clear", Icon = Glyph.Trash, Command = ClearCommand, Group = "cleanup" },
     ];
 
     /// <inheritdoc />

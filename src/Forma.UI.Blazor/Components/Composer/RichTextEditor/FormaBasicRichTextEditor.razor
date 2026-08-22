@@ -1,0 +1,9 @@
+@namespace Forma.UI.Blazor.Components.Composer.RichTextEditor
+@inherits InputBase<ComposerDocument>
+
+<FormaComposer @bind-Value="CurrentValue"
+               Plugins="_plugins"
+               Options="Options"
+               Disabled="Disabled"
+               ReadOnly="ReadOnly"
+               @attributes="AdditionalAttributes" />

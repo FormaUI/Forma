@@ -1,0 +1,34 @@
+@inherits BunitContext
+
+@code {
+    public sealed class Component
+    {
+        private sealed class TestModel
+        {
+            public ComposerDocument Body { get; set; } = new(ComposerDocumentFormat.Html, "<p>Lite Content</p>");
+        }
+
+        [Fact]
+        public void Should_render_lite_rich_text_editor_with_narrow_plugin_set()
+        {
+            // Arrange
+            using var ctx = new FormaLiteRichTextEditorTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaLiteRichTextEditor @bind-Value="model.Body" />
+            </FakeFormHost>);
+
+            // Assert
+            var canvas = cut.Find(".forma-composer-rich-text-canvas");
+            var toolbar = cut.Find(".forma-composer-toolbar");
+            Assert.NotNull(canvas);
+            Assert.NotEmpty(toolbar.QuerySelectorAll("button[aria-label='Bold']"));
+            Assert.NotEmpty(toolbar.QuerySelectorAll("button[aria-label='Italic']"));
+            Assert.NotEmpty(toolbar.QuerySelectorAll("button[aria-label='Align Left']"));
+            Assert.Empty(toolbar.QuerySelectorAll("button[aria-label='Heading 1']"));
+            Assert.Empty(toolbar.QuerySelectorAll("button[aria-label='Bulleted List']"));
+        }
+    }
+}

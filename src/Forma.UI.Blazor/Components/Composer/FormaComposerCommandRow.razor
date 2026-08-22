@@ -1,6 +1,6 @@
 @namespace Forma.UI.Blazor.Components.Composer
 
-<FormaCommandBarRow role="toolbar" aria-label="@Label">
+<FormaCommandBarRow role="toolbar" aria-label="@Label" TrailingContent="TrailingContent">
     @if (ShowHistory)
     {
         <div class="forma-composer-toolbar-group">
@@ -33,6 +33,43 @@
                 if (item.CustomComponent is not null)
                 {
                     <DynamicComponent Type="item.CustomComponent" />
+                }
+                else if (item.Options.Count > 0)
+                {
+                    <FormaDropDownMenu class="forma-composer-tool-menu"
+                                       TriggerOptions="MenuTriggerOptions"
+                                       disabled="@Disabled"
+                                       aria-label="@GetItemTitle(item)"
+                                       title="@GetTooltip(GetItemTitle(item), item.Command)">
+                        <Trigger>
+                            @if (item.Icon is { } menuIcon)
+                            {
+                                <FormaGlyph Name="menuIcon" />
+                            }
+                            @if (GetActiveSwatch(item) is { } activeSwatch)
+                            {
+                                <span class="forma-composer-tool-menu-bar" style="@($"background-color:{activeSwatch}")" aria-hidden="true"></span>
+                            }
+                            else
+                            {
+                                <span class="forma-composer-tool-menu-value">@GetActiveChoiceTitle(item)</span>
+                            }
+                            <FormaGlyph Name="Glyph.ChevronDown" Class="forma-composer-tool-menu-caret" />
+                        </Trigger>
+                        <ChildContent>
+                            @foreach (var choice in item.Options)
+                            {
+                                <FormaDropDownMenuItem IsSelected="@IsChoiceActive(choice)"
+                                                       OnClick="() => OnCommand.InvokeAsync(choice.Command)">
+                                    @if (choice.Swatch is { } swatch)
+                                    {
+                                        <span class="forma-composer-tool-swatch" style="@($"background-color:{swatch}")" aria-hidden="true"></span>
+                                    }
+                                    <span style="@choice.PreviewStyle">@L[choice.Title]</span>
+                                </FormaDropDownMenuItem>
+                            }
+                        </ChildContent>
+                    </FormaDropDownMenu>
                 }
                 else
                 {

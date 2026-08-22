@@ -3,6 +3,7 @@
 @rendermode InteractiveServer
 @using Forma.UI.Blazor.Components.Composer
 @using Forma.UI.Blazor.Components.Composer.PlainTextEditor
+@using Forma.UI.Blazor.Components.Composer.RichTextEditor
 @using Forma.UI.Features.Composer.Documents
 @using Forma.UI.Features.Composer.Plugins
 @inject IStringLocale<FormaComposerPage> L
@@ -46,6 +47,22 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["Basic Rich Text"]</h2>
+    <p class="description">@L["Standard rich text preset with formatting, typography, headings, lists, and alignment."]</p>
+    <div class="demo-box">
+        <FormaBasicRichTextEditor @bind-Value="_basicDoc" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Lite Rich Text"]</h2>
+    <p class="description">@L["Compact rich text preset with inline formatting, alignment, and basic typography."]</p>
+    <div class="demo-box">
+        <FormaLiteRichTextEditor @bind-Value="_liteDoc" />
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["Source Editor"]</h2>
     <p class="description">@L["An editor plugin bringing a surface of its own: lines numbered in a gutter, and a Rename Symbol command that replaces whole-word occurrences throughout the document. Press F2 or use the Refactor row."]</p>
     <div class="demo-box">
@@ -67,7 +84,7 @@
 
 <div class="demo-section">
     <h2>@L["Plugins"]</h2>
-    <p class="description">@L["Every command is a plugin contribution. The composer's own sit in the built-in row; an editor either joins that row or declares one of its own; an external plugin either joins the plugin row or declares one of its own. Plain Text shows all four rows, while Source shows only its own, because both external plugins name the surface they apply to."]</p>
+    <p class="description">@L["Every command is a plugin contribution. The composer's own sit in the built-in row; an editor either joins that row or declares one of its own; a plugin the host registered lands on the plugins bar ruled off beneath. Plain Text shows all three, while Source shows only its own, because both external plugins name the surface they apply to."]</p>
     <div class="demo-box">
         <CascadingValue Value="_everythingSourcePlugin" IsFixed="true">
             <CascadingValue Value="_everythingTextPlugin" IsFixed="true">
@@ -87,6 +104,8 @@
     private ComposerDocument _readOnlyDoc = new(ComposerDocumentFormat.PlainText, "This composer instance is in a read-only state.");
     private ComposerDocument _noToolbarDoc = new(ComposerDocumentFormat.PlainText, "Composer without top toolbar.");
     private ComposerDocument _fixedHeightDoc = new(ComposerDocumentFormat.PlainText, "This composer cannot be dragged taller.");
+    private ComposerDocument _basicDoc = new(ComposerDocumentFormat.Html, "<p>Welcome to <strong>FormaBasicRichTextEditor</strong>.</p><p>You can format text, create headings, add lists, and change alignment.</p>");
+    private ComposerDocument _liteDoc = new(ComposerDocumentFormat.Html, "<p>A lightweight <em>rich text editor</em> preset for short blurbs and tickers.</p>");
     private ComposerDocument _sourceDoc = new(ComposerDocumentFormat.PlainText, "function total(cart) {\n    let total = 0;\n\n    for (const line of cart) {\n        total += line.price;\n    }\n\n    return total;\n}");
     private ComposerDocument _statusDoc = new(ComposerDocumentFormat.PlainText, "pear\napple\nbanana");
     private ComposerDocument _pluginDoc = new(ComposerDocumentFormat.PlainText, "pear\n\nApple\n\nbanana");

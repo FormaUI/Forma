@@ -1,0 +1,98 @@
+/* FormaRichTextEditor — Visual rich text contenteditable editing surface */
+
+.forma-composer-rich-text-editor {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    inline-size: 100%;
+    block-size: 100%;
+    min-block-size: 12rem;
+}
+
+.forma-composer-rich-text-canvas {
+    box-sizing: border-box;
+    inline-size: 100%;
+    block-size: 100%;
+    min-block-size: 12rem;
+    padding: var(--space-4, 1rem);
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--forma-composer-color, var(--text-color, inherit));
+    font-family: var(--font-family-base, inherit);
+    font-size: var(--font-size-base, 1rem);
+    line-height: 1.6;
+    overflow-y: auto;
+    word-break: break-word;
+}
+
+.forma-composer-rich-text-canvas:focus-visible {
+    outline: none;
+}
+
+.forma-composer-rich-text-canvas h1,
+.forma-composer-rich-text-canvas h2,
+.forma-composer-rich-text-canvas h3,
+.forma-composer-rich-text-canvas h4,
+.forma-composer-rich-text-canvas h5,
+.forma-composer-rich-text-canvas h6 {
+    margin-block-start: var(--space-4, 1rem);
+    margin-block-end: var(--space-2, 0.5rem);
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.forma-composer-rich-text-canvas p {
+    margin-block-start: 0;
+    margin-block-end: var(--space-3, 0.75rem);
+}
+
+.forma-composer-rich-text-canvas .forma-composer-lead {
+    font-size: var(--font-size-lg, 1.125rem);
+    font-weight: 400;
+    line-height: 1.75;
+}
+
+.forma-composer-rich-text-canvas blockquote {
+    margin-inline-start: 0;
+    margin-inline-end: 0;
+    margin-block: var(--space-3, 0.75rem);
+    padding-inline-start: var(--space-3, 0.75rem);
+    border-inline-start: 3px solid var(--border-color, #d9dee5);
+    color: var(--text-secondary-color, #6b7280);
+    font-style: italic;
+}
+
+.forma-composer-rich-text-canvas code {
+    padding: 0.125rem 0.25rem;
+    font-family: var(--font-family-mono, monospace);
+    font-size: 0.875em;
+    background-color: var(--surface-muted-color, #f3f4f6);
+    border-radius: var(--radius-sm, 0.25rem);
+}
+
+.forma-composer-rich-text-canvas pre {
+    margin-block: var(--space-3, 0.75rem);
+    padding: var(--space-3, 0.75rem);
+    background-color: var(--surface-muted-color, #f3f4f6);
+    border-radius: var(--radius-md, 0.375rem);
+    overflow-x: auto;
+}
+
+.forma-composer-rich-text-canvas ul,
+.forma-composer-rich-text-canvas ol {
+    margin-block: var(--space-2, 0.5rem);
+    padding-inline-start: var(--space-4, 1.25rem);
+}
+
+.forma-composer-rich-text-announcer {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}

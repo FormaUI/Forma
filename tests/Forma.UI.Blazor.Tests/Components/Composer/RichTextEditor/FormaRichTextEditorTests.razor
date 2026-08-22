@@ -1,0 +1,73 @@
+@inherits BunitContext
+
+@code {
+    public sealed class Component
+    {
+        private sealed class TestModel
+        {
+            public ComposerDocument Body { get; set; } = new(ComposerDocumentFormat.Html, "<p>Initial Text</p>");
+        }
+
+        [Fact]
+        public void Should_render_contenteditable_canvas()
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="[new RichTextEditorPlugin()]" />);
+
+            // Assert
+            var canvas = cut.Find(".forma-composer-rich-text-canvas");
+            Assert.True(canvas.HasAttribute("contenteditable"));
+            Assert.Equal("textbox", canvas.GetAttribute("role"));
+        }
+
+        [Fact]
+        public void Should_disable_contenteditable_when_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Disabled="true" Plugins="[new RichTextEditorPlugin()]" />);
+
+            // Assert
+            var canvas = cut.Find(".forma-composer-rich-text-canvas");
+            Assert.Equal("false", canvas.GetAttribute("contenteditable"));
+        }
+
+        [Fact]
+        public void Should_make_contenteditable_readonly_when_readonly()
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" ReadOnly="true" Plugins="[new RichTextEditorPlugin()]" />);
+
+            // Assert
+            var canvas = cut.Find(".forma-composer-rich-text-canvas");
+            Assert.Equal("false", canvas.GetAttribute("contenteditable"));
+        }
+
+        [Fact]
+        public void Should_render_bubble_menu_when_active()
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="[new RichTextEditorPlugin()]" />);
+
+            // Assert
+            var menu = cut.Find(".forma-composer-bubble-menu");
+            Assert.NotNull(menu);
+            Assert.Equal("toolbar", menu.GetAttribute("role"));
+        }
+    }
+}

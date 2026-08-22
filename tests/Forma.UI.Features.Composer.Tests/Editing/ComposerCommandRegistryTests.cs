@@ -36,6 +36,31 @@ public sealed class ComposerCommandRegistryTests
         }
     }
 
+    private sealed class OptionPlugin(string id, string itemId, params string[] optionCommands) : IComposerPlugin
+    {
+        public string Id => id;
+        public List<string> Executed { get; } = [];
+        public IReadOnlyList<ComposerToolbarItem> ToolbarItems { get; } =
+        [
+            new()
+            {
+                Id = itemId,
+                Title = itemId,
+                Options = [.. optionCommands.Select(c => new ComposerToolbarOption { Id = c, Title = c, Command = c })],
+            },
+        ];
+        public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
+        public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
+        public IReadOnlyList<ComposerAsset> Assets => [];
+        public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
+
+        public ValueTask ExecuteAsync(string command, ComposerContext context, CancellationToken cancellationToken = default)
+        {
+            Executed.Add(command);
+            return ValueTask.CompletedTask;
+        }
+    }
+
     private static readonly NullAssetLoader AssetLoader = new();
 
     private static ComposerContext CreateContext()
@@ -55,9 +80,25 @@ public sealed class ComposerCommandRegistryTests
         => registry.ExecuteAsync(command, CreateContext(), TestContext.Current.CancellationToken);
 
     [Fact]
-    public async Task Should_run_an_engine_command()
+    public async Task Should_claim_a_command_a_toolbar_item_names_only_through_an_option()
     {
         // Arrange
+        var registry = new ComposerCommandRegistry();
+        var plugin = new OptionPlugin("typography", "text-color", "typography.text-color:#d32f2f");
+        registry.RegisterPlugins([plugin]);
+
+        // Act
+        var outcome = await ExecuteAsync(registry, "typography.text-color:#d32f2f");
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal(ComposerCommandOutcome.Plugin, outcome),
+            () => Assert.Equal(["typography.text-color:#d32f2f"], plugin.Executed));
+    }
+
+    [Fact]
+    public async Task Should_run_an_engine_command()
+    {        // Arrange
         var registry = new ComposerCommandRegistry();
         var ran = false;
         registry.RegisterEngineCommand("engine.go", () => { ran = true; return Task.CompletedTask; });
