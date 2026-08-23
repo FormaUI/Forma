@@ -3,87 +3,176 @@
 @code {
     public sealed class Component
     {
+        private static IReadOnlyList<FormaToolbarItem> Group(params FormaToolbarItem[] items)
+            => [new FormaToolbarGroup { Id = "group", Title = "Group", Items = items }];
+
         [Fact]
-        public void Should_render_an_item_as_a_button()
+        public void Should_render_a_command_as_a_button()
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            IReadOnlyList<FormaToolbarItem> items = [new() { Id = "bold", Title = "Bold", Command = "bold" }];
+            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
 
             // Act
-            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="items" />);
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
 
             // Assert
-            Assert.NotNull(cut.Find("button[aria-label=Bold]"));
+            Assert.Equal("Bold", cut.Find("button").TextContent);
         }
 
         [Fact]
-        public void Should_invoke_on_command_when_an_item_is_clicked()
+        public void Should_invoke_on_command_when_a_command_is_clicked()
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            IReadOnlyList<FormaToolbarItem> items = [new() { Id = "bold", Title = "Bold", Command = "format.bold" }];
+            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "format.bold" });
             string? invoked = null;
-            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="items" OnCommand="c => invoked = c" />);
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" OnCommand="c => invoked = c" />);
 
             // Act
-            cut.Find("button[aria-label=Bold]").Click();
+            cut.Find("button").Click();
 
             // Assert
             Assert.Equal("format.bold", invoked);
         }
 
         [Fact]
-        public void Should_separate_groups_with_their_own_wrapper()
+        public void Should_render_each_group_in_its_own_wrapper()
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            IReadOnlyList<FormaToolbarItem> items =
+            IReadOnlyList<FormaToolbarItem> groups =
             [
-                new() { Id = "bold", Title = "Bold", Command = "bold", Group = "inline" },
-                new() { Id = "italic", Title = "Italic", Command = "italic", Group = "inline" },
-                new() { Id = "align-left", Title = "Align Left", Command = "align-left", Group = "align" },
+                new FormaToolbarGroup
+                {
+                    Id = "inline",
+                    Title = "Inline Style",
+                    Items =
+                    [
+                        new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" },
+                        new FormaToolbarCommand { Id = "italic", Title = "Italic", Command = "italic" },
+                    ],
+                },
+                new FormaToolbarGroup
+                {
+                    Id = "align",
+                    Title = "Alignment",
+                    Items = [new FormaToolbarCommand { Id = "align-left", Title = "Align Left", Command = "align-left" }],
+                },
             ];
 
             // Act
-            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="items" />);
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
 
             // Assert
             Assert.Equal(2, cut.FindAll(".forma-toolbar-group").Count);
         }
 
         [Fact]
-        public void Should_mark_an_active_toggle_item_pressed()
+        public void Should_name_a_group_for_assistive_technology()
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            IReadOnlyList<FormaToolbarItem> items = [new() { Id = "bold", Title = "Bold", Command = "bold", IsToggle = true, IsActive = true }];
+            IReadOnlyList<FormaToolbarItem> groups =
+            [
+                new FormaToolbarGroup
+                {
+                    Id = "align",
+                    Title = "Alignment",
+                    Items = [new FormaToolbarCommand { Id = "align-left", Title = "Align Left", Command = "align-left" }],
+                },
+            ];
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
+
+            // Assert
+            var group = cut.Find(".forma-toolbar-group");
+            Assert.Multiple(
+                () => Assert.Equal("group", group.GetAttribute("role")),
+                () => Assert.Equal("Alignment", group.GetAttribute("aria-label")));
+        }
+
+        [Fact]
+        public void Should_render_an_ungrouped_item_without_group_semantics()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            IReadOnlyList<FormaToolbarItem> items = [new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" }];
 
             // Act
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="items" />);
 
             // Assert
-            var button = cut.Find("button[aria-label=Bold]");
+            Assert.Empty(cut.FindAll(".forma-toolbar-group"));
+            Assert.False(cut.Find(".forma-toolbar-loose").HasAttribute("role"));
+        }
+
+        [Fact]
+        public void Should_reject_a_group_nested_in_another_group()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var items = Group(new FormaToolbarGroup
+            {
+                Id = "nested",
+                Title = "Nested",
+                Items = [new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" }],
+            });
+
+            // Act
+            var act = () => ctx.Render(@<FormaToolbar Label="Formatting" Items="items" />);
+
+            // Assert
+            Assert.Throws<ArgumentException>(act);
+        }
+
+        [Fact]
+        public void Should_mark_an_active_toggle_pressed()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarToggle { Id = "bold", Title = "Bold", Command = "bold", IsActive = true });
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
+
+            // Assert
+            var button = cut.Find("button");
             Assert.Multiple(
                 () => Assert.Equal("true", button.GetAttribute("aria-pressed")),
                 () => Assert.Contains("forma-toolbar-button-active", button.ClassList));
         }
 
         [Fact]
-        public void Should_not_mark_an_inactive_toggle_item_pressed()
+        public void Should_not_mark_an_inactive_toggle_pressed()
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            IReadOnlyList<FormaToolbarItem> items = [new() { Id = "bold", Title = "Bold", Command = "bold", IsToggle = true, IsActive = false }];
+            var groups = Group(new FormaToolbarToggle { Id = "bold", Title = "Bold", Command = "bold", IsActive = false });
 
             // Act
-            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="items" />);
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
 
             // Assert
-            var button = cut.Find("button[aria-label=Bold]");
+            var button = cut.Find("button");
             Assert.Multiple(
                 () => Assert.Equal("false", button.GetAttribute("aria-pressed")),
                 () => Assert.DoesNotContain("forma-toolbar-button-active", button.ClassList));
+        }
+
+        [Fact]
+        public void Should_not_mark_a_plain_command_pressed()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
+
+            // Assert
+            Assert.False(cut.Find("button").HasAttribute("aria-pressed"));
         }
 
         [Fact]
@@ -91,36 +180,121 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            IReadOnlyList<FormaToolbarItem> items = [new() { Id = "bold", Title = "Bold", Command = "bold", ShortcutDisplay = "Ctrl+B" }];
+            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutDisplay = "Ctrl+B" });
 
             // Act
-            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="items" />);
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
 
             // Assert
-            Assert.Equal("Bold (Ctrl+B)", cut.Find("button[aria-label=Bold]").GetAttribute("title"));
+            Assert.Equal("Bold (Ctrl+B)", cut.Find("button").GetAttribute("title"));
         }
 
         [Fact]
-        public void Should_render_an_item_with_options_as_a_menu()
+        public void Should_prefer_the_tooltip_over_the_title_when_set()
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            IReadOnlyList<FormaToolbarItem> items =
-            [
-                new()
-                {
-                    Id = "align",
-                    Title = "Align",
-                    Options =
-                    [
-                        new() { Id = "left", Title = "Left", Command = "align.left", IsActive = true },
-                        new() { Id = "right", Title = "Right", Command = "align.right" },
-                    ],
-                },
-            ];
+            var groups = Group(new FormaToolbarCommand { Id = "count", Title = "Recount", Tooltip = "Count the words again", Command = "count" });
 
             // Act
-            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="items" />);
+            var cut = ctx.Render(@<FormaToolbar Label="Status" Items="groups" />);
+
+            // Assert
+            Assert.Equal("Count the words again", cut.Find("button").GetAttribute("title"));
+        }
+
+        [Fact]
+        public void Should_not_repeat_a_visible_label_as_a_tooltip()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCommand { Id = "add", Title = "Add New", Command = "add", Icon = Glyph.Plus });
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Library" Items="groups" ShowLabels="true" />);
+
+            // Assert
+            Assert.False(cut.Find("button").HasAttribute("title"));
+        }
+
+        [Fact]
+        public void Should_still_show_a_shortcut_tooltip_beside_a_visible_label()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCommand { Id = "add", Title = "Add New", Command = "add", Icon = Glyph.Plus, ShortcutDisplay = "Ctrl+N" });
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Library" Items="groups" ShowLabels="true" />);
+
+            // Assert
+            Assert.Equal("Add New (Ctrl+N)", cut.Find("button").GetAttribute("title"));
+        }
+
+        [Fact]
+        public void Should_render_a_readout_as_a_plain_span_showing_its_value()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarReadout { Id = "words", Title = "Word count", Value = "12 words" });
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Status" Items="groups" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll("button"));
+            Assert.Equal("12 words", cut.Find(".forma-toolbar-readout").TextContent);
+        }
+
+        [Fact]
+        public void Should_put_an_announced_readout_in_a_polite_live_region()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarReadout { Id = "words", Title = "Word count", Value = "12 words", IsAnnounced = true });
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Status" Items="groups" />);
+
+            // Assert
+            var readout = cut.Find(".forma-toolbar-readout");
+            Assert.Multiple(
+                () => Assert.Equal("status", readout.GetAttribute("role")),
+                () => Assert.Equal("polite", readout.GetAttribute("aria-live")));
+        }
+
+        [Fact]
+        public void Should_leave_an_unannounced_readout_outside_a_live_region()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarReadout { Id = "words", Title = "Word count", Value = "12 words" });
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Status" Items="groups" />);
+
+            // Assert
+            Assert.False(cut.Find(".forma-toolbar-readout").HasAttribute("aria-live"));
+        }
+
+        [Fact]
+        public void Should_render_a_menu_as_a_dropdown()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarMenu
+            {
+                Id = "align",
+                Title = "Align",
+                Options =
+                [
+                    new() { Id = "left", Title = "Left", Command = "align.left", IsActive = true },
+                    new() { Id = "right", Title = "Right", Command = "align.right" },
+                ],
+            });
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
 
             // Assert
             Assert.Equal("Left", cut.Find(".forma-toolbar-menu-value").TextContent);
@@ -131,21 +305,18 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            IReadOnlyList<FormaToolbarItem> items =
-            [
-                new()
-                {
-                    Id = "align",
-                    Title = "Align",
-                    Options =
-                    [
-                        new() { Id = "left", Title = "Left", Command = "align.left", IsActive = true },
-                        new() { Id = "right", Title = "Right", Command = "align.right" },
-                    ],
-                },
-            ];
+            var groups = Group(new FormaToolbarMenu
+            {
+                Id = "align",
+                Title = "Align",
+                Options =
+                [
+                    new() { Id = "left", Title = "Left", Command = "align.left", IsActive = true },
+                    new() { Id = "right", Title = "Right", Command = "align.right" },
+                ],
+            });
             string? invoked = null;
-            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="items" OnCommand="c => invoked = c" />);
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" OnCommand="c => invoked = c" />);
 
             // Act
             cut.Find(".forma-toolbar-menu.forma-dropdown-menu-trigger").Click();
@@ -160,36 +331,144 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            IReadOnlyList<FormaToolbarItem> items =
-            [
-                new()
-                {
-                    Id = "color",
-                    Title = "Color",
-                    Options = [new() { Id = "red", Title = "Red", Command = "color.red", IsActive = true, Swatch = "#d32f2f" }],
-                },
-            ];
+            var groups = Group(new FormaToolbarMenu
+            {
+                Id = "color",
+                Title = "Color",
+                Options = [new() { Id = "red", Title = "Red", Command = "color.red", IsActive = true, Swatch = "#d32f2f" }],
+            });
 
             // Act
-            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="items" />);
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
 
             // Assert
             Assert.Contains("background-color:#d32f2f", cut.Find(".forma-toolbar-menu-bar").GetAttribute("style"));
         }
 
         [Fact]
-        public void Should_render_a_custom_component_in_place_of_a_button()
+        public void Should_reject_a_menu_with_no_options()
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            IReadOnlyList<FormaToolbarItem> items = [new() { Id = "clock", Title = "Clock", CustomComponent = typeof(FormaGlyph) }];
+            var groups = Group(new FormaToolbarMenu { Id = "align", Title = "Align", Options = [] });
 
             // Act
-            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="items" />);
+            var act = () => ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
 
             // Assert
-            Assert.Empty(cut.FindAll("button[aria-label=Clock]"));
+            Assert.Throws<ArgumentException>(act);
+        }
+
+        [Fact]
+        public void Should_render_a_custom_item_in_place_of_a_button()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCustomItem { Id = "clock", Title = "Clock", Component = typeof(FormaGlyph) });
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll("button"));
             Assert.NotNull(cut.FindComponent<FormaGlyph>());
+        }
+
+        [Fact]
+        public void Should_pass_parameters_to_a_custom_item()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCustomItem
+            {
+                Id = "trash",
+                Title = "Delete",
+                Component = typeof(FormaGlyph),
+                Parameters = new Dictionary<string, object> { ["Name"] = Glyph.Trash, ["Class"] = "test-marker" },
+            });
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
+
+            // Assert
+            Assert.Contains("test-marker", cut.Find("svg").GetAttribute("class"));
+        }
+
+        [Fact]
+        public void Should_show_only_the_icon_when_an_item_has_one_and_show_labels_is_unset()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", Icon = Glyph.Bold });
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
+
+            // Assert
+            var button = cut.Find("button");
+            Assert.Multiple(
+                () => Assert.NotNull(button.QuerySelector("svg")),
+                () => Assert.Empty(button.QuerySelectorAll("span")),
+                () => Assert.Equal("Bold", button.GetAttribute("aria-label")));
+        }
+
+        [Fact]
+        public void Should_show_the_icon_and_label_together_when_show_labels_is_set()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", Icon = Glyph.Bold });
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" ShowLabels="true" />);
+
+            // Assert
+            var button = cut.Find("button");
+            Assert.Multiple(
+                () => Assert.NotNull(button.QuerySelector("svg")),
+                () => Assert.Equal("Bold", button.QuerySelector("span")?.TextContent));
+        }
+
+        [Fact]
+        public void Should_not_override_a_visible_label_with_an_aria_label()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", Icon = Glyph.Bold });
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" ShowLabels="true" />);
+
+            // Assert
+            Assert.False(cut.Find("button").HasAttribute("aria-label"));
+        }
+
+        [Fact]
+        public void Should_give_a_labelled_button_its_own_chrome()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCommand { Id = "add", Title = "Add New", Command = "add", Icon = Glyph.Plus });
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Library" Items="groups" ShowLabels="true" />);
+
+            // Assert
+            Assert.Contains("forma-toolbar-button-labelled", cut.Find("button").ClassList);
+        }
+
+        [Fact]
+        public void Should_leave_an_icon_only_button_flat()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", Icon = Glyph.Bold });
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
+
+            // Assert
+            Assert.DoesNotContain("forma-toolbar-button-labelled", cut.Find("button").ClassList);
         }
 
         [Fact]
@@ -197,13 +476,13 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            IReadOnlyList<FormaToolbarItem> items = [new() { Id = "bold", Title = "Bold", Command = "bold" }];
+            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
 
             // Act
-            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="items" Disabled="true" />);
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Disabled="true" />);
 
             // Assert
-            Assert.True(cut.Find("button[aria-label=Bold]").HasAttribute("disabled"));
+            Assert.True(cut.Find("button").HasAttribute("disabled"));
         }
 
         [Fact]
@@ -225,23 +504,30 @@
         }
 
         [Fact]
+        public void Should_reject_a_blank_label()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+
+            // Act
+            var act = () => ctx.Render(@<FormaToolbar Label=" " />);
+
+            // Assert
+            Assert.Throws<ArgumentException>(act);
+        }
+
+        [Fact]
         public void Should_keep_a_menu_with_its_own_item_when_an_earlier_item_is_removed()
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            FormaToolbarItem MenuItem(string id) => new()
-            {
-                Id = id,
-                Title = id,
-                Options = [new() { Id = $"{id}-only", Title = id, Command = $"{id}.pick", IsActive = true }],
-            };
-            IReadOnlyList<FormaToolbarItem> items = [MenuItem("first"), MenuItem("second")];
-            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="items" />);
+            var both = Group(MenuItem("first"), MenuItem("second"));
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="both" />);
             cut.FindAll(".forma-dropdown-menu-trigger")[1].Click();
 
             // Act
             cut.FindComponent<FormaToolbar>()
-               .Render(parameters => parameters.Add(p => p.Items, [MenuItem("second")]));
+               .Render(parameters => parameters.Add(p => p.Items, Group(MenuItem("second"))));
 
             // Assert
             var trigger = cut.Find(".forma-dropdown-menu-trigger");
@@ -250,17 +536,12 @@
                 () => Assert.Equal("true", trigger.GetAttribute("aria-expanded")));
         }
 
-        [Fact]
-        public void Should_require_a_label()
-        {
-            // Arrange
-            using var ctx = new FormaToolbarTests();
-
-            // Act
-            var render = () => ctx.Render(@<FormaToolbar Label="" />);
-
-            // Assert
-            Assert.Throws<ArgumentException>(render);
-        }
+        private static FormaToolbarItem MenuItem(string id)
+            => new FormaToolbarMenu
+            {
+                Id = id,
+                Title = id,
+                Options = [new() { Id = $"{id}-only", Title = id, Command = $"{id}.pick", IsActive = true }],
+            };
     }
 }

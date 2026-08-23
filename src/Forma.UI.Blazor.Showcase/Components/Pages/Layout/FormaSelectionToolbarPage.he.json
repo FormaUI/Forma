@@ -1,7 +1,9 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
-  "A bar that appears once one or more rows are selected, holding bulk actions and a clear-selection button. Pairs with FormaDataGrid's checked selection.": "סרגל שמופיע ברגע שנבחרה שורה אחת או יותר, ומכיל פעולות קבוצתיות וכפתור לניקוי הבחירה. משתלב עם הבחירה המסומנת של FormaDataGrid.",
+  "A toolbar for actions that apply to the current selection. It appears while one or more items are selected and can clear the selection when the work is done.": "סרגל כלים לפעולות החלות על הבחירה הנוכחית. הוא מופיע כל עוד פריט אחד או יותר נבחרים, ויכול לנקות את הבחירה עם סיום העבודה.",
   "Basic usage": "שימוש בסיסי",
+  "Last command": "פקודה אחרונה",
+  "Selection Actions": "פעולות בחירה",
   "Caption agreeing with the count": "כותרת המתאימה לכמות",
   "Step the count up. The caption is a plural construct, so a language with a dual reads differently at one, two, and more.": "העלו את הכמות. הכותרת היא מבנה רבים, כך ששפה עם צורת זוגי נקראת אחרת באחד, בשניים וביותר.",
   "Add one": "הוסף אחד",

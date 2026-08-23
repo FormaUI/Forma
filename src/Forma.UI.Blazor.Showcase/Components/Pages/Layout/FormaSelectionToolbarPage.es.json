@@ -1,7 +1,9 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
-  "A bar that appears once one or more rows are selected, holding bulk actions and a clear-selection button. Pairs with FormaDataGrid's checked selection.": "Una barra que aparece en cuanto se selecciona una o más filas, con acciones masivas y un botón para borrar la selección. Se combina con la selección marcada de FormaDataGrid.",
+  "A toolbar for actions that apply to the current selection. It appears while one or more items are selected and can clear the selection when the work is done.": "Una barra de herramientas para acciones que se aplican a la selección actual. Aparece mientras uno o más elementos están seleccionados y puede borrar la selección cuando termina el trabajo.",
   "Basic usage": "Uso básico",
+  "Last command": "Último comando",
+  "Selection Actions": "Acciones de Selección",
   "Caption agreeing with the count": "Título que concuerda con el recuento",
   "Step the count up. The caption is a plural construct, so a language with a dual reads differently at one, two, and more.": "Aumenta el recuento. El título es una construcción plural, así que un idioma con dual se lee distinto en uno, dos y más.",
   "Add one": "Añadir uno",

@@ -582,7 +582,7 @@ Without any highlighter registered, code blocks render as plain monospaced text.
 
 These are correctness requirements for every Forma component, and the composer is the hardest case in the library — a dense toolbar plus a `contenteditable` surface.
 
-- **Toolbar semantics:** `role="toolbar"` obliges arrow-key roving focus between its controls. Either implement it or use a plain button group, matching the decision already recorded for `FormaToolbar` and `FormaContextToolbar`. The editor switcher is a `radiogroup`, since it selects one of a set.
+- **Toolbar semantics:** `role="toolbar"` obliges arrow-key roving focus between its controls. Either implement it or use a plain button group, matching the decision already recorded for `FormaToolbar`. The editor switcher is a `radiogroup`, since it selects one of a set.
 - **Editing surface:** the `contenteditable` region is labelled, exposes `aria-multiline`, and announces the active block and formatting through a live region — a screen-reader user must be able to learn that the caret is inside a heading or a code block.
 - **Every state without colour:** an active toolbar toggle carries `aria-pressed` and a persistent non-colour mark, not a tint alone.
 - **Touch:** every control is at least 24×24 CSS px, and 44×44 under `@media (pointer: coarse)`. Every `:hover` rule sits inside `@media (hover: hover)`. The bubble menu is clamped to the viewport and reachable by tap; nothing essential hangs off hover.

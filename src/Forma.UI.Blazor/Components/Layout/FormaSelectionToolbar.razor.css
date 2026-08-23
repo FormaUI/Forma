@@ -1,9 +1,9 @@
 /* ============================================================
-   FormaContextToolbar — CSS isolation
+   FormaSelectionToolbar — CSS isolation
    Collapses to zero height until Count is greater than zero.
    ============================================================ */
 
-.forma-context-toolbar {
+.forma-selection-toolbar {
     display: grid;
     grid-template-rows: 0fr;
     margin-block-end: 0;
@@ -11,17 +11,17 @@
     transition: grid-template-rows 200ms ease, opacity 150ms ease, margin-block-end 200ms ease;
 }
 
-.forma-context-toolbar.is-active {
+.forma-selection-toolbar.is-active {
     grid-template-rows: 1fr;
     margin-block-end: 16px;
     opacity: 1;
 }
 
-.forma-context-toolbar-inner {
+.forma-selection-toolbar-inner {
     overflow: hidden;
 }
 
-.forma-context-toolbar-content {
+.forma-selection-toolbar-content {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -29,17 +29,17 @@
     padding: 8px 12px;
     border: 1px solid var(--border-color);
     border-radius: 6px;
-    background: var(--forma-context-toolbar-background-color, color-mix(in srgb, var(--main-color, #0d6efd) 8%, transparent));
+    background: var(--forma-selection-toolbar-background-color, color-mix(in srgb, var(--main-color, #0d6efd) 8%, transparent));
 }
 
-.forma-context-toolbar-caption {
+.forma-selection-toolbar-caption {
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--text-color);
     flex-shrink: 0;
 }
 
-.forma-context-toolbar-trailing {
+.forma-selection-toolbar-trailing {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -47,9 +47,7 @@
     margin-inline-start: auto;
 }
 
-.forma-context-toolbar-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+/* forma-selection-toolbar-items lands on FormaToolbar's own FormaCommandBar output, not this component's. */
+::deep .forma-selection-toolbar-items {
     flex-wrap: wrap;
 }

@@ -1,11 +1,12 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
-  "A flex container for search inputs, filters, and action buttons. Used across all list pages.": "מיכל גמיש לשדות חיפוש, מסננים וכפתורי פעולה. משמש בכל דפי הרשימה.",
+  "A search field and the actions that apply to the list it filters, in one row at the top of a list page.": "שדה חיפוש והפעולות החלות על הרשימה שהוא מסנן, בשורה אחת בראש דף רשימה.",
   "Search Only": "חיפוש בלבד",
-  "Actions Only": "פעולות בלבד",
   "Search with Actions": "חיפוש עם פעולות",
   "Search...": "חפש...",
   "Last search": "חיפוש אחרון",
+  "Last command": "פקודה אחרונה",
+  "List Actions": "פעולות רשימה",
   "Add New": "הוסף חדש",
   "Export": "ייצא"
 }

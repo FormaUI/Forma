@@ -1,11 +1,12 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
-  "A flex container for search inputs, filters, and action buttons. Used across all list pages.": "Un contenedor flexible para entradas de búsqueda, filtros y botones de acción. Se usa en todas las páginas de lista.",
+  "A search field and the actions that apply to the list it filters, in one row at the top of a list page.": "Un campo de búsqueda y las acciones que se aplican a la lista que filtra, en una sola fila en la parte superior de una página de lista.",
   "Search Only": "Solo búsqueda",
-  "Actions Only": "Solo acciones",
   "Search with Actions": "Búsqueda con acciones",
   "Search...": "Buscar...",
   "Last search": "Última búsqueda",
+  "Last command": "Último comando",
+  "List Actions": "Acciones de Lista",
   "Add New": "Agregar nuevo",
   "Export": "Exportar"
 }

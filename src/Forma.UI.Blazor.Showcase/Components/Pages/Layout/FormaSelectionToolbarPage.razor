@@ -1,0 +1,98 @@
+@page "/selection-toolbar"
+@attribute [ShowcasePage("FormaSelectionToolbar")]
+@rendermode InteractiveServer
+@using Forma.UI.Blazor.Components.Buttons
+@using Forma.UI.Blazor.Components.Layout
+@using Forma.UI.Style.Glyphs
+@using Microsoft.AspNetCore.Components.Web
+@inject IStringLocale<FormaSelectionToolbarPage> L
+
+<h1>FormaSelectionToolbar</h1>
+<p class="description">@L["A toolbar for actions that apply to the current selection. It appears while one or more items are selected and can clear the selection when the work is done."]</p>
+
+<div class="demo-section">
+    <h2>@L["Basic usage"]</h2>
+    <div class="demo-box">
+        <button class="button button-secondary" @onclick="() => _basicCount = _basicCount > 0 ? 0 : 3">
+            @L["Toggle selection"]
+        </button>
+        <FormaSelectionToolbar Count="_basicCount" Label="@L["Selection Actions"]" Items="_basicItems" OnCommand="HandleCommand" OnClear="() => _basicCount = 0" />
+        <p class="demo-output">@L["Last command"]: <code>@_lastCommand</code></p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Caption agreeing with the count"]</h2>
+    <p class="description">@L["Step the count up. The caption is a plural construct, so a language with a dual reads differently at one, two, and more."]</p>
+    <div class="demo-box">
+        <button class="button button-secondary" @onclick="() => _agreementCount = (_agreementCount + 1) % 4">
+            @L["Add one"]
+        </button>
+        <FormaSelectionToolbar Count="_agreementCount" Label="@L["Selection Actions"]" Items="_deleteOnly" OnCommand="HandleCommand" OnClear="() => _agreementCount = 0" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Without a clear button"]</h2>
+    <div class="demo-box">
+        <FormaSelectionToolbar Count="2" Label="@L["Selection Actions"]" Items="_deleteOnly" OnCommand="HandleCommand" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Several actions"]</h2>
+    <div class="demo-box">
+        <button class="button button-secondary" @onclick="() => _wideCount = _wideCount > 0 ? 0 : 4">
+            @L["Toggle selection"]
+        </button>
+        <FormaSelectionToolbar Count="_wideCount" Label="@L["Selection Actions"]" Items="_wideItems" OnCommand="HandleCommand" OnClear="() => _wideCount = 0" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Caller-supplied caption"]</h2>
+    <div class="demo-box">
+        <FormaSelectionToolbar Count="ModerationCount" Caption="@(L["[$ plural; one: # comment awaiting moderation; other: # comments awaiting moderation; $]", ModerationCount])" Label="@L["Selection Actions"]" Items="_publishOnly" OnCommand="HandleCommand" />
+    </div>
+</div>
+
+@code {
+    private const int ModerationCount = 7;
+
+    private int _basicCount;
+    private int _agreementCount = 1;
+    private int _wideCount = 4;
+    private string _lastCommand = "";
+
+    private IReadOnlyList<FormaToolbarItem> _basicItems =>
+    [
+        Delete, Publish,
+    ];
+
+    private IReadOnlyList<FormaToolbarItem> _deleteOnly =>
+    [
+        Delete,
+    ];
+
+    private IReadOnlyList<FormaToolbarItem> _publishOnly =>
+    [
+        Publish,
+    ];
+
+    private IReadOnlyList<FormaToolbarItem> _wideItems =>
+    [
+        Delete,
+        Publish,
+        new FormaToolbarCommand { Id = "unpublish", Title = L["Unpublish"], Icon = Glyph.EyeSlash, Command = "unpublish" },
+        new FormaToolbarCommand { Id = "export", Title = L["Export"], Icon = Glyph.Download, Command = "export" },
+    ];
+
+    private FormaToolbarItem Delete
+        => new FormaToolbarCommand { Id = "delete", Title = L["Delete"], Icon = Glyph.Trash, Command = "delete" };
+
+    private FormaToolbarItem Publish
+        => new FormaToolbarCommand { Id = "publish", Title = L["Publish"], Icon = Glyph.CloudArrowUp, Command = "publish" };
+
+    private void HandleCommand(string command)
+        => _lastCommand = command;
+}

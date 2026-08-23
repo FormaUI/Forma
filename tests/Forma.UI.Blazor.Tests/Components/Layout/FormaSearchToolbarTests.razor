@@ -10,78 +10,52 @@
             using var ctx = new FormaSearchToolbarTests();
 
             // Act
-            var cut = ctx.Render(@<FormaSearchToolbar />);
+            var cut = ctx.Render(@<FormaSearchToolbar OnSearch="Noop" SearchPlaceholder="Search..." />);
 
             // Assert
             cut.Find(".forma-search-toolbar");
         }
 
         [Fact]
-        public void Should_not_render_search_input_without_callback()
+        public void Should_always_render_the_search_field()
         {
             // Arrange
             using var ctx = new FormaSearchToolbarTests();
 
             // Act
-            var cut = ctx.Render(@<FormaSearchToolbar />);
-
-            // Assert
-            Assert.Empty(cut.FindAll("input"));
-        }
-
-        [Fact]
-        public void Should_not_render_actions_without_child_content()
-        {
-            // Arrange
-            using var ctx = new FormaSearchToolbarTests();
-
-            // Act
-            var cut = ctx.Render(@<FormaSearchToolbar />);
-
-            // Assert
-            Assert.Empty(cut.FindAll(".forma-search-toolbar-actions"));
-        }
-
-        [Fact]
-        public void Should_render_search_input_when_callback_provided()
-        {
-            // Arrange
-            using var ctx = new FormaSearchToolbarTests();
-
-            // Act
-            var cut = ctx.Render(
-                @<FormaSearchToolbar OnSearch="@((string _) => Task.CompletedTask)" />);
+            var cut = ctx.Render(@<FormaSearchToolbar OnSearch="Noop" SearchPlaceholder="Search..." />);
 
             // Assert
             cut.Find("input.forma-search-toolbar-search");
         }
 
         [Fact]
-        public void Should_set_placeholder_when_provided()
+        public void Should_name_the_search_field_with_its_placeholder()
         {
             // Arrange
             using var ctx = new FormaSearchToolbarTests();
 
             // Act
-            var cut = ctx.Render(
-                @<FormaSearchToolbar OnSearch="@((string _) => Task.CompletedTask)" SearchPlaceholder="Search..." />);
+            var cut = ctx.Render(@<FormaSearchToolbar OnSearch="Noop" SearchPlaceholder="Search..." />);
 
             // Assert
-            Assert.Equal("Search...", cut.Find("input").GetAttribute("placeholder"));
+            var input = cut.Find("input");
+            Assert.Multiple(
+                () => Assert.Equal("Search...", input.GetAttribute("placeholder")),
+                () => Assert.Equal("Search...", input.GetAttribute("aria-label")));
         }
 
         [Fact]
-        public void Should_not_set_placeholder_when_not_provided()
+        public void Should_not_render_actions_without_items()
         {
             // Arrange
             using var ctx = new FormaSearchToolbarTests();
 
             // Act
-            var cut = ctx.Render(
-                @<FormaSearchToolbar OnSearch="@((string _) => Task.CompletedTask)" />);
+            var cut = ctx.Render(@<FormaSearchToolbar OnSearch="Noop" SearchPlaceholder="Search..." />);
 
             // Assert
-            Assert.Null(cut.Find("input").GetAttribute("placeholder"));
+            Assert.Empty(cut.FindAll(".forma-search-toolbar-items"));
         }
 
         [Fact]
@@ -91,7 +65,7 @@
             using var ctx = new FormaSearchToolbarTests();
             var received = new List<string>();
             var cut = ctx.Render(
-                @<FormaSearchToolbar OnSearch="@((string v) => { received.Add(v); return Task.CompletedTask; })" SearchDelay="@TimeSpan.Zero" />);
+                @<FormaSearchToolbar OnSearch="@((string v) => { received.Add(v); return Task.CompletedTask; })" SearchPlaceholder="Search..." SearchDelay="@TimeSpan.Zero" />);
 
             // Act
             await cut.Find("input").TriggerEventAsync("oninput", new ChangeEventArgs { Value = "hello" });
@@ -106,36 +80,97 @@
         }
 
         [Fact]
-        public void Should_render_child_content()
+        public async Task Should_raise_only_the_last_value_when_typing_does_not_settle()
         {
             // Arrange
             using var ctx = new FormaSearchToolbarTests();
+            var received = new List<string>();
+            var cut = ctx.Render(
+                @<FormaSearchToolbar OnSearch="@((string v) => { received.Add(v); return Task.CompletedTask; })" SearchPlaceholder="Search..." SearchDelay="@TimeSpan.FromMilliseconds(40)" />);
+            var input = cut.Find("input");
 
             // Act
-            var cut = ctx.Render(
-                @<FormaSearchToolbar>
-                    <button id="test-button">Click</button>
-                </FormaSearchToolbar>);
+            var first = input.TriggerEventAsync("oninput", new ChangeEventArgs { Value = "h" });
+            var second = input.TriggerEventAsync("oninput", new ChangeEventArgs { Value = "he" });
+            var third = input.TriggerEventAsync("oninput", new ChangeEventArgs { Value = "hello" });
+            await Task.WhenAll(first, second, third);
+            await Task.Delay(200, Xunit.TestContext.Current.CancellationToken);
 
             // Assert
-            cut.Find("#test-button");
+            Assert.Equal(["hello"], received);
         }
 
         [Fact]
-        public void Should_render_both_search_and_child_content()
+        public void Should_render_actions_beside_the_search_field()
+        {
+            // Arrange
+            using var ctx = new FormaSearchToolbarTests();
+            IReadOnlyList<FormaToolbarItem> actions = [new FormaToolbarCommand { Id = "add", Title = "Add", Command = "add" }];
+
+            // Act
+            var cut = ctx.Render(@<FormaSearchToolbar OnSearch="Noop" SearchPlaceholder="Search..." Label="Actions" Items="actions" />);
+
+            // Assert
+            cut.Find("input.forma-search-toolbar-search");
+            Assert.Equal("Add", cut.Find(".forma-search-toolbar-items button").TextContent);
+        }
+
+        [Fact]
+        public void Should_invoke_on_command_when_an_action_is_clicked()
+        {
+            // Arrange
+            using var ctx = new FormaSearchToolbarTests();
+            IReadOnlyList<FormaToolbarItem> actions = [new FormaToolbarCommand { Id = "add", Title = "Add", Command = "add.new" }];
+            string? invoked = null;
+
+            // Act
+            var cut = ctx.Render(@<FormaSearchToolbar OnSearch="Noop" SearchPlaceholder="Search..." Label="Actions" Items="actions" OnCommand="c => invoked = c" />);
+            cut.Find(".forma-search-toolbar-items button").Click();
+
+            // Assert
+            Assert.Equal("add.new", invoked);
+        }
+
+        [Fact]
+        public void Should_require_a_label_when_actions_are_given()
+        {
+            // Arrange
+            using var ctx = new FormaSearchToolbarTests();
+            IReadOnlyList<FormaToolbarItem> actions = [new FormaToolbarCommand { Id = "add", Title = "Add", Command = "add" }];
+
+            // Act
+            var render = () => ctx.Render(@<FormaSearchToolbar OnSearch="Noop" SearchPlaceholder="Search..." Items="actions" />);
+
+            // Assert
+            Assert.Throws<ArgumentNullException>(render);
+        }
+
+        [Fact]
+        public void Should_require_a_search_handler()
         {
             // Arrange
             using var ctx = new FormaSearchToolbarTests();
 
             // Act
-            var cut = ctx.Render(
-                @<FormaSearchToolbar OnSearch="@((string _) => Task.CompletedTask)">
-                    <button>Add</button>
-                </FormaSearchToolbar>);
+            var render = () => ctx.Render<FormaSearchToolbar>(parameters => parameters
+                .Add(p => p.SearchPlaceholder, "Search..."));
 
             // Assert
-            cut.Find("input.forma-search-toolbar-search");
-            cut.Find(".forma-search-toolbar-actions");
+            Assert.Throws<ArgumentException>(render);
+        }
+
+        [Fact]
+        public void Should_require_a_search_placeholder()
+        {
+            // Arrange
+            using var ctx = new FormaSearchToolbarTests();
+
+            // Act
+            var render = () => ctx.Render<FormaSearchToolbar>(parameters => parameters
+                .Add(p => p.OnSearch, (string _) => { }));
+
+            // Assert
+            Assert.Throws<ArgumentNullException>(render);
         }
 
         [Fact]
@@ -144,9 +179,15 @@
             // Arrange
             using var ctx = new FormaSearchToolbarTests();
 
-            // Act & Assert
-            Assert.Throws<ArgumentOutOfRangeException>(() => ctx.Render(
-                @<FormaSearchToolbar SearchDelay="@TimeSpan.FromMilliseconds(-1)" />));
+            // Act
+            var render = () => ctx.Render(
+                @<FormaSearchToolbar OnSearch="Noop" SearchPlaceholder="Search..." SearchDelay="@TimeSpan.FromMilliseconds(-1)" />);
+
+            // Assert
+            Assert.Throws<ArgumentOutOfRangeException>(render);
         }
+
+        private static Task Noop(string value)
+            => Task.CompletedTask;
     }
 }

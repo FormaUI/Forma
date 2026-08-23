@@ -19,10 +19,8 @@
     unicode-bidi: normal;
 }
 
-.forma-search-toolbar-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+/* forma-search-toolbar-items lands on FormaToolbar's own FormaCommandBar output, not this component's. */
+::deep .forma-search-toolbar-items {
     flex-shrink: 0;
     margin-inline-start: auto;
 }

@@ -1,0 +1,269 @@
+@inherits BunitContext
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_make_the_buttons_inert_when_count_is_zero()
+        {
+            // Arrange
+            using var ctx = new FormaSelectionToolbarTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSelectionToolbar Count="0" OnClear="() => {}" />);
+
+            // Assert
+            Assert.True(cut.Find(".forma-selection-toolbar-trailing").HasAttribute("inert"));
+        }
+
+        [Fact]
+        public void Should_not_make_the_buttons_inert_when_count_is_positive()
+        {
+            // Arrange
+            using var ctx = new FormaSelectionToolbarTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSelectionToolbar Count="3" OnClear="() => {}" />);
+
+            // Assert
+            Assert.False(cut.Find(".forma-selection-toolbar-trailing").HasAttribute("inert"));
+        }
+
+        [Fact]
+        public void Should_keep_the_caption_outside_the_inert_buttons()
+        {
+            // Arrange
+            using var ctx = new FormaSelectionToolbarTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSelectionToolbar Count="0" OnClear="() => {}" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-selection-toolbar-trailing .forma-selection-toolbar-caption"));
+        }
+
+        [Fact]
+        public void Should_add_active_class_when_count_is_positive()
+        {
+            // Arrange
+            using var ctx = new FormaSelectionToolbarTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSelectionToolbar Count="1" />);
+
+            // Assert
+            Assert.Contains("is-active", cut.Find(".forma-selection-toolbar").ClassList);
+        }
+
+        [Fact]
+        public void Should_not_add_active_class_when_count_is_zero()
+        {
+            // Arrange
+            using var ctx = new FormaSelectionToolbarTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSelectionToolbar Count="0" />);
+
+            // Assert
+            Assert.DoesNotContain("is-active", cut.Find(".forma-selection-toolbar").ClassList);
+        }
+
+        [Fact]
+        public void Should_render_the_selected_count_in_the_caption()
+        {
+            // Arrange
+            using var ctx = new FormaSelectionToolbarTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSelectionToolbar Count="5" />);
+
+            // Assert
+            Assert.Equal("5 selected", cut.Find(".forma-selection-toolbar-caption").TextContent);
+        }
+
+        [Theory]
+        [InlineData(1, "נבחר אחד")]
+        [InlineData(2, "שניים נבחרו")]
+        [InlineData(5, "5 נבחרו")]
+        public void Should_agree_with_the_count_in_a_language_with_a_dual(int count, string expected)
+        {
+            // Arrange
+            using var culture = new CultureScope("he");
+            using var ctx = new FormaSelectionToolbarTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSelectionToolbar Count="count" />);
+
+            // Assert
+            Assert.Equal(expected, cut.Find(".forma-selection-toolbar-caption").TextContent);
+        }
+
+        [Theory]
+        [InlineData(1, "1 seleccionado")]
+        [InlineData(5, "5 seleccionados")]
+        public void Should_agree_with_the_count_in_spanish(int count, string expected)
+        {
+            // Arrange
+            using var culture = new CultureScope("es");
+            using var ctx = new FormaSelectionToolbarTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSelectionToolbar Count="count" />);
+
+            // Assert
+            Assert.Equal(expected, cut.Find(".forma-selection-toolbar-caption").TextContent);
+        }
+
+        [Fact]
+        public void Should_prefer_a_supplied_caption_over_the_count()
+        {
+            // Arrange
+            using var ctx = new FormaSelectionToolbarTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSelectionToolbar Count="5" Caption="3 rows filtered" />);
+
+            // Assert
+            Assert.Equal("3 rows filtered", cut.Find(".forma-selection-toolbar-caption").TextContent);
+        }
+
+        [Fact]
+        public void Should_render_an_empty_supplied_caption_rather_than_falling_back()
+        {
+            // Arrange
+            using var ctx = new FormaSelectionToolbarTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSelectionToolbar Count="5" Caption="" />);
+
+            // Assert
+            Assert.Equal("", cut.Find(".forma-selection-toolbar-caption").TextContent);
+        }
+
+        [Fact]
+        public void Should_mark_the_caption_as_a_polite_status_region()
+        {
+            // Arrange
+            using var ctx = new FormaSelectionToolbarTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSelectionToolbar Count="2" />);
+
+            // Assert
+            var caption = cut.Find(".forma-selection-toolbar-caption");
+            Assert.Equal("status", caption.GetAttribute("role"));
+            Assert.Equal("polite", caption.GetAttribute("aria-live"));
+        }
+
+        [Fact]
+        public void Should_not_render_actions_without_items()
+        {
+            // Arrange
+            using var ctx = new FormaSelectionToolbarTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSelectionToolbar Count="1" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-selection-toolbar-items"));
+        }
+
+        [Fact]
+        public void Should_render_items_as_actions()
+        {
+            // Arrange
+            using var ctx = new FormaSelectionToolbarTests();
+            IReadOnlyList<FormaToolbarItem> items = [new FormaToolbarCommand { Id = "delete", Title = "Delete", Command = "delete" }];
+
+            // Act
+            var cut = ctx.Render(@<FormaSelectionToolbar Count="2" Label="Selection Actions" Items="items" />);
+
+            // Assert
+            Assert.Equal("Delete", cut.Find(".forma-selection-toolbar-items button").TextContent);
+        }
+
+        [Fact]
+        public void Should_invoke_on_command_when_an_action_is_clicked()
+        {
+            // Arrange
+            using var ctx = new FormaSelectionToolbarTests();
+            IReadOnlyList<FormaToolbarItem> items = [new FormaToolbarCommand { Id = "delete", Title = "Delete", Command = "delete" }];
+            var command = "";
+
+            // Act
+            var cut = ctx.Render(@<FormaSelectionToolbar Count="2" Label="Selection Actions" Items="items" OnCommand="c => command = c" />);
+            cut.Find(".forma-selection-toolbar-items button").Click();
+
+            // Assert
+            Assert.Equal("delete", command);
+        }
+
+        [Fact]
+        public void Should_require_a_label_when_items_are_given()
+        {
+            // Arrange
+            using var ctx = new FormaSelectionToolbarTests();
+            IReadOnlyList<FormaToolbarItem> items = [new FormaToolbarCommand { Id = "delete", Title = "Delete", Command = "delete" }];
+
+            // Act
+            var act = () => ctx.Render(@<FormaSelectionToolbar Count="2" Items="items" />);
+
+            // Assert
+            Assert.Throws<ArgumentNullException>(act);
+        }
+
+        [Fact]
+        public void Should_not_render_a_clear_button_without_a_callback()
+        {
+            // Arrange
+            using var ctx = new FormaSelectionToolbarTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSelectionToolbar Count="1" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll("[aria-label='Clear Selection']"));
+        }
+
+        [Fact]
+        public void Should_render_a_clear_button_with_a_callback()
+        {
+            // Arrange
+            using var ctx = new FormaSelectionToolbarTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSelectionToolbar Count="1" OnClear="() => {}" />);
+
+            // Assert
+            cut.Find("[aria-label='Clear Selection']");
+        }
+
+        [Fact]
+        public void Should_invoke_on_clear_when_the_clear_button_is_clicked()
+        {
+            // Arrange
+            using var ctx = new FormaSelectionToolbarTests();
+            var cleared = false;
+            var cut = ctx.Render(@<FormaSelectionToolbar Count="1" OnClear="() => cleared = true" />);
+
+            // Act
+            cut.Find("[aria-label='Clear Selection']").Click();
+
+            // Assert
+            Assert.True(cleared);
+        }
+
+        [Fact]
+        public void Should_reject_a_negative_count()
+        {
+            // Arrange
+            using var ctx = new FormaSelectionToolbarTests();
+
+            // Act
+            var act = () => ctx.Render(@<FormaSelectionToolbar Count="-1" />);
+
+            // Assert
+            Assert.Throws<ArgumentOutOfRangeException>(act);
+        }
+    }
+}
