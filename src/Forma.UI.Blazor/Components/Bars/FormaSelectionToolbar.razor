@@ -1,0 +1,23 @@
+@namespace Forma.UI.Blazor.Components.Bars
+<div class="forma-selection-toolbar @(Count > 0 ? "is-active" : "")">
+    <div class="forma-selection-toolbar-inner">
+        <div class="forma-selection-toolbar-content">
+            <span class="forma-selection-toolbar-caption" role="status" aria-live="polite">@CaptionText</span>
+            @if (Items.Count > 0 || OnClear.HasDelegate)
+            {
+                @* Only the buttons go inert, so the caption's live region stays in the
+                   accessibility tree and is present before the count first changes. *@
+                <div class="forma-selection-toolbar-trailing" inert="@(Count == 0)">
+                    @if (Items.Count > 0)
+                    {
+                        <FormaToolbar Class="forma-selection-toolbar-items" Label="@Label" Items="Items" ShowLabels="true" OnCommand="OnCommand" />
+                    }
+                    @if (OnClear.HasDelegate)
+                    {
+                        <FormaCloseButton Label="@L["Clear Selection"]" OnClick="() => OnClear.InvokeAsync()" />
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>

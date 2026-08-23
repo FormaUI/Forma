@@ -1,0 +1,96 @@
+@namespace Forma.UI.Blazor.Components.Bars
+<FormaCommandBar role="toolbar"
+                 aria-label="@Label"
+                 Class="@Class"
+                 ScrollBackLabel="@ScrollBackLabel"
+                 ScrollForwardLabel="@ScrollForwardLabel"
+                 TrailingContent="TrailingContent">
+    @foreach (var row in Rows)
+    {
+        <div class="@(row.Group is null ? "forma-toolbar-loose" : "forma-toolbar-group")"
+             role="@(row.Group is null ? null : "group")"
+             aria-label="@row.Group?.Title"
+             @key="row.Key">
+            @foreach (var item in row.Items)
+            {
+                @switch (item)
+                {
+                    case FormaToolbarCustomItem custom:
+                        <DynamicComponent Type="custom.Component" Parameters="ToParameters(custom.Parameters)" @key="custom.Id" />
+                        break;
+
+                    case FormaToolbarMenu menu:
+                        <FormaDropDownMenu class="forma-toolbar-menu"
+                                           @key="menu.Id"
+                                           TriggerOptions="MenuTriggerOptions"
+                                           disabled="@Disabled"
+                                           aria-label="@menu.Title"
+                                           title="@GetTooltip(menu)">
+                            <Trigger>
+                                @if (menu.Icon is { } menuIcon)
+                                {
+                                    <FormaGlyph Name="menuIcon" />
+                                }
+                                @if (GetActiveOption(menu).Swatch is { } activeSwatch)
+                                {
+                                    <span class="forma-toolbar-menu-bar" style="@($"background-color:{activeSwatch}")" aria-hidden="true"></span>
+                                }
+                                else
+                                {
+                                    <span class="forma-toolbar-menu-value">@GetActiveOption(menu).Title</span>
+                                }
+                                <FormaGlyph Name="Glyph.ChevronDown" Class="forma-toolbar-menu-caret" />
+                            </Trigger>
+                            <ChildContent>
+                                @foreach (var option in menu.Options)
+                                {
+                                    <FormaDropDownMenuItem IsSelected="@option.IsActive"
+                                                           @key="option.Id"
+                                                           OnClick="() => OnCommand.InvokeAsync(option.Command)">
+                                        @if (option.Swatch is { } swatch)
+                                        {
+                                            <span class="forma-toolbar-swatch" style="@($"background-color:{swatch}")" aria-hidden="true"></span>
+                                        }
+                                        <span style="@option.PreviewStyle">@option.Title</span>
+                                    </FormaDropDownMenuItem>
+                                }
+                            </ChildContent>
+                        </FormaDropDownMenu>
+                        break;
+
+                    case FormaToolbarReadout readout:
+                        <span class="forma-toolbar-readout"
+                              @key="readout.Id"
+                              dir="auto"
+                              title="@GetTooltip(readout)"
+                              role="@(readout.IsAnnounced ? "status" : null)"
+                              aria-live="@(readout.IsAnnounced ? "polite" : null)">@readout.Value</span>
+                        break;
+
+                    case FormaToolbarAction action:
+                        var isToggleActive = action is FormaToolbarToggle { IsActive: true };
+                        var showsLabel = action.Icon is null || ShowLabels;
+                        <button type="button"
+                                @key="action.Id"
+                                class="forma-toolbar-button @(showsLabel ? "forma-toolbar-button-labelled" : null) @(isToggleActive ? "forma-toolbar-button-active" : null)"
+                                @onclick="() => OnCommand.InvokeAsync(action.Command)"
+                                disabled="@Disabled"
+                                aria-label="@(showsLabel ? null : action.Title)"
+                                aria-pressed="@(action is FormaToolbarToggle ? (isToggleActive ? "true" : "false") : null)"
+                                aria-keyshortcuts="@action.ShortcutAriaKeys"
+                                title="@GetActionTitle(action, showsLabel)">
+                            @if (action.Icon is { } icon)
+                            {
+                                <FormaGlyph Name="icon" />
+                            }
+                            @if (showsLabel)
+                            {
+                                <span>@action.Title</span>
+                            }
+                        </button>
+                        break;
+                }
+            }
+        </div>
+    }
+</FormaCommandBar>

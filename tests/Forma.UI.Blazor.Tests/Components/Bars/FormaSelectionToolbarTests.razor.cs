@@ -1,0 +1,10 @@
+namespace Forma.UI.Blazor.Tests.Components.Bars;
+
+public sealed partial class FormaSelectionToolbarTests
+{
+    public FormaSelectionToolbarTests()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        Services.AddJsonLocalization();
+    }
+}

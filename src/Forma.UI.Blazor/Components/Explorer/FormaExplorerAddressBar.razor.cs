@@ -2,7 +2,7 @@ namespace Forma.UI.Blazor.Components.Explorer;
 
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
-using Forma.UI.Blazor.Components.Interactive;
+using Forma.UI.Blazor.Components.Navigation;
 
 using Microsoft.AspNetCore.Components;
 

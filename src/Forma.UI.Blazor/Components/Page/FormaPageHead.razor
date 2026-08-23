@@ -1,0 +1,17 @@
+@namespace Forma.UI.Blazor.Components.Page
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>@Title</title>
+<base href="@BaseHref" />
+<link rel="stylesheet" href="@Assets["_content/Forma.UI/forma-tokens.css"]" />
+<link rel="stylesheet" href="@Assets["_content/Forma.UI/forma-reset.css"]" />
+<link rel="stylesheet" href="@Assets["_content/Forma.UI/forma-base.css"]" />
+<link rel="stylesheet" href="@Assets["_content/Forma.UI/forma-input.css"]" />
+@ChildContent
+@if (PreloadAssets)
+{
+    <ResourcePreloader />
+}
+<ImportMap />
+@* Last, so a page's own PageTitle and HeadContent override what is set above. *@
+<HeadOutlet />

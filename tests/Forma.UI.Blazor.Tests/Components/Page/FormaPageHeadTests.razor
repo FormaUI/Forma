@@ -1,0 +1,121 @@
+@inherits BunitContext
+@using Forma.UI.Blazor.Components.Page
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_the_title_given()
+        {
+            // Arrange
+            using var ctx = new FormaPageHeadTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaPageHead PreloadAssets="false" Title="Admin Console" />);
+
+            // Assert
+            Assert.Equal("Admin Console", cut.Find("title").TextContent);
+        }
+
+        [Fact]
+        public void Should_default_the_base_address_to_the_site_root()
+        {
+            // Arrange
+            using var ctx = new FormaPageHeadTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaPageHead PreloadAssets="false" Title="Admin Console" />);
+
+            // Assert
+            Assert.Equal("/", cut.Find("base").GetAttribute("href"));
+        }
+
+        [Fact]
+        public void Should_render_the_base_address_given()
+        {
+            // Arrange
+            using var ctx = new FormaPageHeadTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaPageHead PreloadAssets="false" Title="Admin Console" BaseHref="/admin/" />);
+
+            // Assert
+            Assert.Equal("/admin/", cut.Find("base").GetAttribute("href"));
+        }
+
+        [Fact]
+        public void Should_declare_the_character_set_and_viewport()
+        {
+            // Arrange
+            using var ctx = new FormaPageHeadTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaPageHead PreloadAssets="false" Title="Admin Console" />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("utf-8", cut.Find("meta[charset]").GetAttribute("charset"));
+                Assert.Equal("width=device-width, initial-scale=1.0", cut.Find("meta[name=viewport]").GetAttribute("content"));
+            });
+        }
+
+        [Fact]
+        public void Should_link_formas_stylesheets_in_cascade_order()
+        {
+            // Arrange
+            using var ctx = new FormaPageHeadTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaPageHead PreloadAssets="false" Title="Admin Console" />);
+            var hrefs = cut.FindAll("link[rel=stylesheet]").Select(link => link.GetAttribute("href") ?? "").ToArray();
+
+            // Assert
+            Assert.Equal(
+                ["_content/Forma.UI/forma-tokens.css", "_content/Forma.UI/forma-reset.css", "_content/Forma.UI/forma-base.css", "_content/Forma.UI/forma-input.css"],
+                hrefs);
+        }
+
+        [Fact]
+        public void Should_render_a_hosts_own_head_content_after_formas()
+        {
+            // Arrange
+            using var ctx = new FormaPageHeadTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaPageHead PreloadAssets="false" Title="Admin Console">
+                <link rel="stylesheet" href="app.css" />
+            </FormaPageHead>);
+            var hrefs = cut.FindAll("link[rel=stylesheet]").Select(link => link.GetAttribute("href") ?? "").ToArray();
+
+            // Assert
+            Assert.Equal("app.css", hrefs[^1]);
+        }
+
+        [Fact]
+        public void Should_reject_a_missing_title()
+        {
+            // Arrange
+            using var ctx = new FormaPageHeadTests();
+
+            // Act
+            var act = () => ctx.Render(@<FormaPageHead Title="   " />);
+
+            // Assert
+            Assert.Throws<ArgumentException>(act);
+        }
+
+        [Fact]
+        public void Should_reject_a_missing_base_address()
+        {
+            // Arrange
+            using var ctx = new FormaPageHeadTests();
+
+            // Act
+            var act = () => ctx.Render(@<FormaPageHead PreloadAssets="false" Title="Admin Console" BaseHref="" />);
+
+            // Assert
+            Assert.Throws<ArgumentException>(act);
+        }
+    }
+}

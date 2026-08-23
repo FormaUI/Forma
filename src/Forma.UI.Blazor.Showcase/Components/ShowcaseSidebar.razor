@@ -46,10 +46,21 @@
                 var tag = ns.Contains('.') ? ns[(ns.LastIndexOf('.') + 1)..] : ns;
                 return new ShowcasePage(x.Attr!.Title, tag, x.Route!);
             })
-            .OrderBy(p => p.Category)
-            .ThenBy(p => p.Title)
+            .OrderBy(p => CategoryRank(p.Category))
+            .ThenBy(p => p.Category, StringComparer.Ordinal)
+            .ThenBy(p => p.Title, StringComparer.Ordinal)
             .ToLookup(p => p.Category);
     }
+
+    // General leads as the library's own foundation, Features and Libraries group the composite demos, everything else follows alphabetically.
+    private static int CategoryRank(string category)
+        => category switch
+        {
+            "General" => 0,
+            "Features" => 1,
+            "Libraries" => 2,
+            _ => 3,
+        };
 
     private static string Label(CultureRoute route)
         => Labels.GetValueOrDefault(route.Token, route.Token);

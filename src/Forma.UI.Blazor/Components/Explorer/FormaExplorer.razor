@@ -1,9 +1,10 @@
 @namespace Forma.UI.Blazor.Components.Explorer
+@using Forma.UI.Blazor.Components.Bars
 @using Forma.UI.Blazor.Components.Buttons
-@using Forma.UI.Blazor.Components.Data
 @using Forma.UI.Blazor.Components.Feedback
 @using Forma.UI.Blazor.Components.Files
 @using Forma.UI.Blazor.Components.Layout
+@using Forma.UI.Blazor.Components.Navigation
 
 <CascadingValue Value="_context" IsFixed="false">
 <div class="forma-explorer @(Options.Resizable ? "is-resizable" : "") @(Options.AsDialog ? "is-dialog" : "")">

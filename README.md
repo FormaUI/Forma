@@ -33,10 +33,10 @@ builder.Services.AddRazorComponents()
 
 ```razor
 <head>
-    <FormaPageHeader Title="My App">
+    <FormaPageHead Title="My App">
         <link rel="stylesheet" href="@Assets["app.css"]" />
         <link rel="stylesheet" href="@Assets["MyApp.styles.css"]" />
-    </FormaPageHeader>
+    </FormaPageHead>
 </head>
 ```
 
@@ -74,15 +74,20 @@ render mode.
 
 ## Components
 
+- **Bars** — `FormaCommandArea`, `FormaCommandBar`, `FormaToolbar`, `FormaSearchToolbar`,
+  `FormaSelectionToolbar`.
 - **Feedback** — `FormaModal`, `FormaConfirmDialog`, `FormaToastContainer`
   (backed by `IConfirmDialogService` / `IToastService`).
 - **Forms** — `FormaDatePicker` (single + range, non-Gregorian aware), `FormaColorPicker`,
   `FormaTextBox`, `FormaTextArea`, `FormaPasswordBox`, `FormaToggleSwitch`,
   `FormaMultiSelect`, `FormaSelect`, `FormaButton`, `FormaCheckBox`.
-- **Data** — `FormaDataGrid`, `FormaPagination`, `FormaStatusBadge`.
+- **Collections** — `FormaDataGrid`, `FormaSortableList`.
 - **Files** — `FormaFilePicker`, `FormaFileUploader`, `FormaFileViewer`.
-- **Interactive** — `FormaSortableList`, `FormaDropDownMenu`.
-- **Layout** — `FormaPageTitle`, `FormaTabs` (`FormaTab`), `FormaCommandArea`, `FormaCommandBar`, `FormaToolbar`, `FormaSearchToolbar`, `FormaSelectionToolbar`.
+- **Layout** — `FormaSplitter`, `FormaTabs` (`FormaTab`).
+- **Menus** — `FormaDropDownMenu`.
+- **Navigation** — `FormaBreadcrumb`, `FormaPagination`.
+- **Page** — `FormaPageTitle`, `FormaPageHead`.
+- **Indicators** — `FormaStatusBadge`.
 - **Media** — `FormaVideoPlayer`.
 
 [`COMPONENTS.md`](COMPONENTS.md) describes each one's behaviour.

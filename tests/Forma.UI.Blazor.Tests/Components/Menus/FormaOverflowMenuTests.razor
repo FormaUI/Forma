@@ -1,0 +1,162 @@
+@inherits BunitContext
+@using Forma.UI.Blazor.Components.Buttons
+@using Forma.UI.Blazor.Components.Menus
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_throw_when_label_is_missing_or_whitespace()
+        {
+            // Arrange
+            using var ctx = new FormaOverflowMenuTests();
+
+            // Act & Assert
+            Assert.ThrowsAny<ArgumentException>(() => ctx.Render(
+                @<FormaOverflowMenu Label="">
+                    <FormaDropDownMenuItem>Print</FormaDropDownMenuItem>
+                </FormaOverflowMenu>));
+        }
+
+        [Fact]
+        public void Should_draw_a_horizontal_ellipsis_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaOverflowMenuTests();
+            var expected = ctx.Render(@<FormaGlyph Name="Glyph.Ellipsis" />).Find("path").GetAttribute("d");
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaOverflowMenu Label="Actions">
+                    <FormaDropDownMenuItem>Print</FormaDropDownMenuItem>
+                </FormaOverflowMenu>);
+
+            // Assert
+            Assert.Equal(expected, cut.Find("svg path").GetAttribute("d"));
+        }
+
+        [Fact]
+        public void Should_draw_a_vertical_ellipsis_when_orientation_is_vertical()
+        {
+            // Arrange
+            using var ctx = new FormaOverflowMenuTests();
+            var expected = ctx.Render(@<FormaGlyph Name="Glyph.EllipsisVertical" />).Find("path").GetAttribute("d");
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaOverflowMenu Label="Actions" Orientation="MenuOrientation.Vertical">
+                    <FormaDropDownMenuItem>Print</FormaDropDownMenuItem>
+                </FormaOverflowMenu>);
+
+            // Assert
+            Assert.Equal(expected, cut.Find("svg path").GetAttribute("d"));
+        }
+
+        [Fact]
+        public void Should_hide_the_glyph_from_assistive_technology()
+        {
+            // Arrange
+            using var ctx = new FormaOverflowMenuTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaOverflowMenu Label="Actions">
+                    <FormaDropDownMenuItem>Print</FormaDropDownMenuItem>
+                </FormaOverflowMenu>);
+
+            // Assert
+            Assert.Equal("true", cut.Find("svg").GetAttribute("aria-hidden"));
+        }
+
+        [Fact]
+        public void Should_set_aria_label_from_label_parameter()
+        {
+            // Arrange
+            using var ctx = new FormaOverflowMenuTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaOverflowMenu Label="Row actions">
+                    <FormaDropDownMenuItem>Print</FormaDropDownMenuItem>
+                </FormaOverflowMenu>);
+
+            // Assert
+            Assert.Equal("Row actions", cut.Find(".forma-dropdown-menu-trigger").GetAttribute("aria-label"));
+        }
+
+        [Fact]
+        public void Should_render_ghost_icon_only_button_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaOverflowMenuTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaOverflowMenu Label="Actions">
+                    <FormaDropDownMenuItem>Print</FormaDropDownMenuItem>
+                </FormaOverflowMenu>);
+
+            // Assert
+            var trigger = cut.Find(".forma-dropdown-menu-trigger");
+            Assert.Contains("forma-button-ghost", trigger.ClassList);
+            Assert.Contains("forma-button-icon", trigger.ClassList);
+        }
+
+        [Fact]
+        public void Should_forward_size_and_variant_to_trigger()
+        {
+            // Arrange
+            using var ctx = new FormaOverflowMenuTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaOverflowMenu Label="Actions" Size="ButtonSize.Mini" Variant="ButtonVariant.Secondary">
+                    <FormaDropDownMenuItem>Print</FormaDropDownMenuItem>
+                </FormaOverflowMenu>);
+
+            // Assert
+            var trigger = cut.Find(".forma-dropdown-menu-trigger");
+            Assert.Contains("forma-button-mini", trigger.ClassList);
+            Assert.Contains("forma-button-secondary", trigger.ClassList);
+        }
+
+        [Fact]
+        public void Should_open_popup_and_render_items_when_clicked()
+        {
+            // Arrange
+            using var ctx = new FormaOverflowMenuTests();
+            var cut = ctx.Render(
+                @<FormaOverflowMenu Label="Actions">
+                    <FormaDropDownMenuItem>Edit</FormaDropDownMenuItem>
+                    <FormaDropDownMenuItem>Delete</FormaDropDownMenuItem>
+                </FormaOverflowMenu>);
+
+            // Act
+            cut.Find(".forma-dropdown-menu-trigger").Click();
+
+            // Assert
+            var items = cut.FindAll(".forma-dropdown-menu-item");
+            Assert.Equal(2, items.Count);
+            Assert.Equal("Edit", items[0].TextContent.Trim());
+            Assert.Equal("Delete", items[1].TextContent.Trim());
+        }
+
+        [Fact]
+        public void Should_not_open_when_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaOverflowMenuTests();
+            var cut = ctx.Render(
+                @<FormaOverflowMenu Label="Actions" Disabled="true">
+                    <FormaDropDownMenuItem>Edit</FormaDropDownMenuItem>
+                </FormaOverflowMenu>);
+
+            // Act
+            var trigger = cut.Find(".forma-dropdown-menu-trigger");
+
+            // Assert
+            Assert.True(trigger.HasAttribute("disabled"));
+            Assert.Empty(cut.FindAll(".forma-dropdown-menu"));
+        }
+    }
+}

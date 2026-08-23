@@ -20,12 +20,9 @@ Forma.UI.Blazor/Components/
 ├── FormaGlyph.razor / .razor.cs / .razor.css  # draws a Forma.UI.Style.Glyphs.Glyph as inline SVG
 ├── ✅ FormaField.razor / .razor.cs / .razor.css
 ├── FieldLabelMode.cs                     # enum: Floating, Pinned, Above, Inline
-├── (8 / 8) Layout/
+├── (5 / 5) Bars/
 │   ├── ✅ FormaCommandArea.razor / .razor.cs / .razor.css
 │   ├── ✅ FormaCommandBar.razor / .razor.cs / .razor.css
-│   ├── ✅ FormaSplitter.razor / .razor.cs / .razor.css / .razor.js
-│   ├── SplitterOrientation.cs                 # enum: Vertical, Horizontal
-│   ├── ✅ FormaPageTitle.razor / .razor.cs
 │   ├── ✅ FormaSearchToolbar.razor / .razor.cs / .razor.css
 │   ├── ✅ FormaToolbar.razor / .razor.cs / .razor.css
 │   ├── FormaToolbarItem.cs                    # abstract base: Id, Title, Tooltip?, Icon?
@@ -37,11 +34,15 @@ Forma.UI.Blazor/Components/
 │   ├── FormaToolbarReadout.cs                 # non-interactive Value
 │   ├── FormaToolbarCustomItem.cs              # caller-supplied Component and Parameters
 │   ├── FormaToolbarOption.cs
-│   ├── ✅ FormaSelectionToolbar.razor / .razor.cs / .razor.css
+│   └── ✅ FormaSelectionToolbar.razor / .razor.cs / .razor.css
+├── (2 / 2) Layout/
+│   ├── ✅ FormaSplitter.razor / .razor.cs / .razor.css / .razor.js
+│   ├── SplitterOrientation.cs                 # enum: Vertical, Horizontal
 │   ├── ✅ FormaTabs.razor / .razor.cs
 │   └── ✅ FormaTab.razor / .razor.cs
-├── (1 / 1) Metadata/
-│   └── ✅ FormaPageHeader.razor / .razor.cs
+├── (2 / 2) Page/
+│   ├── ✅ FormaPageTitle.razor / .razor.cs
+│   └── ✅ FormaPageHead.razor / .razor.cs
 ├── (3 / 3) Feedback/
 │   ├── ✅ FormaModal.razor / .razor.cs / .razor.js
 │   ├── ✅ FormaModal.razor.css
@@ -50,9 +51,9 @@ Forma.UI.Blazor/Components/
 │   ├── ✅ FormaConfirmDialog.razor.css
 │   ├── ✅ FormaToastContainer.razor / .razor.cs
 │   └── ✅ FormaToastContainer.razor.css
-├── (2 / 2) Data/
+├── (2 / 2) Collections/
 │   ├── ✅ FormaDataGrid.razor
-│   └── ✅ FormaPagination.razor
+│   └── ✅ FormaSortableList.razor
 ├── (1 / 2) Indicators/
 │   ├── ✅ FormaStatusBadge.razor
 │   └── FormaCapacityIndicator.razor
@@ -74,7 +75,7 @@ Forma.UI.Blazor/Components/
 │   ├── FormaPublishButton.razor
 │   ├── FormaViewButton.razor
 │   └── FormaExportButton.razor
-├── (11 / 11) Inputs/
+├── (11 / 12) Inputs/
 │   ├── SelectOption.cs
 │   ├── PasswordStrength.cs
 │   ├── TextInputType.cs                        # enum: Text, Email, Tel, Url
@@ -93,18 +94,19 @@ Forma.UI.Blazor/Components/
 │   ├── ✅ FormaSelect.razor
 │   ├── ✅ FormaColorPicker.razor
 │   └── ✅ FormaMultiSelect.razor
-├── (2 / 6) Interactive/
+├── (2 / 3) Navigation/
 │   ├── BreadcrumbItem.cs                # generic record: Label, Url?, Value?, IsCurrent, Children?
 │   ├── ✅ FormaBreadcrumb.razor / .razor.cs / .razor.css
-│   ├── ✅ FormaSortableList.razor
 │   ├── FormaCategorySelector.razor
+│   └── ✅ FormaPagination.razor
+├── (3 / 4) Menus/
 │   ├── ✅ FormaDropDownMenu.razor
 │   ├── ✅ FormaDropDownMenuItem.razor
 │   ├── ✅ FormaDropDownMenuDivider.razor
-│   ├── FormaOverflowMenu.razor
+│   ├── ✅ FormaOverflowMenu.razor
 │   ├── FormaContextMenu.razor
 │   └── FormaSortMenu.razor
-├── (3 / 6) Files/
+├── (4 / 6) Files/
 │   ├── ✅ FormaFilePicker.razor / .razor.cs / .razor.css / .razor.js
 │   ├── RejectedFile.cs                   # record: Name + FileRejectionReason
 │   ├── FileRejectionReason.cs            # enum: DisallowedType, TooLarge, TooManyFiles
@@ -113,7 +115,7 @@ Forma.UI.Blazor/Components/
 │   ├── UploadState.cs                    # enum: Pending, Uploading, Completed, Failed, Skipped, RolledBack, Cancelled
 │   ├── UploadFailure.cs                  # record: Name + Error
 │   ├── UploadFileStream.cs               # counts bytes read to drive per-file progress
-│   ├── FormaImagePicker.razor
+│   ├── ✅ FormaImagePicker.razor
 │   ├── FormaMediaPicker.razor
 │   ├── FormaFileManager.razor
 │   └── ✅ FormaFileViewer.razor          # dispatches to Media/ for the type it recognises
@@ -678,7 +680,7 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Parameters** | `string Label` (required), `ButtonSize Size`, `bool Disabled`, `EventCallback<MouseEventArgs> OnClick`, `RenderFragment? ChildContent` |
 | **Blazor approach** | A wrapper over `FormaButton` supplying the plus glyph. The one of the set that is **not** always icon-only: a primary "add" is usually labelled in place ("New article"), so it takes optional `ChildContent` and drops `IconOnly` when given it, where the others stay square |
 
-### 45. `FormaOverflowMenu`
+### 45. `FormaOverflowMenu` ✅
 
 | | |
 |---|---|
@@ -843,7 +845,7 @@ These are more complex, possibly page-specific, but still benefit from being com
 |---|---|
 | **Old pattern** | The hand-rolled breadcrumb section of `FormaExplorerAddressBar` — root icon, chevron separators, a per-segment dropdown of alternatives, and drop-target handlers, all written directly into that component. `FormaPageTitle`'s own plain `<ol>` of links predates it too |
 | **Used in** | Any trail of segments: a page header's site navigation as well as an explorer's folder path. `FormaExplorerAddressBar` and `FormaPageTitle` both compose it now rather than drawing their own |
-| **Parameters** | `IReadOnlyList<BreadcrumbItem<TItem>> Items`, `Glyph? RootIcon`, `string? AriaLabel`, `EventCallback<TItem?> OnItemClick`, `EventCallback<TItem?> OnItemDrop`. `BreadcrumbItem<TItem>` (moved here from `Layout/`) carries `Label`, `Url?`, `Value?`, `IsCurrent`, and `Children?` for a segment's own dropdown |
+| **Parameters** | `IReadOnlyList<BreadcrumbItem<TItem>> Items`, `Glyph? RootIcon`, `string? AriaLabel`, `EventCallback<TItem?> OnItemClick`, `EventCallback<TItem?> OnItemDrop`. `BreadcrumbItem<TItem>` carries `Label`, `Url?`, `Value?`, `IsCurrent`, and `Children?` for a segment's own dropdown |
 | **Blazor approach** | Generic over the value a click or drop reports back, the way `FormaDataGrid<TItem>` and `FormaSortableList<TItem>` already are, with a non-generic marker type so `IStringLocale` resolves independently of `TItem`. A segment with a `Url` renders a real `<a>`; one without renders a `<button>` when `OnItemClick` is wired, or falls back to static text when it is not — so a plain site breadcrumb never gains a false clickable affordance it does nothing with. A chevron beside a segment with `Children` opens a menu of alternatives, closing on a second click, a backdrop click, or Escape |
 | **Notes** | `aria-current="page"` is set from the caller-supplied `IsCurrent` rather than inferred from position, since a defensive comparison against the current value is more robust than assuming the last segment is always current. `FormaPageTitle` derives it itself — only the last crumb lacking a `Url` counts as current, not every non-linked one — which also means an intermediate category label no longer looks identical to the current page, since only the true current segment is bold. Chevron separators mirror through `:dir(rtl)`, matching the rest of the library's glyph-mirroring convention |
 
@@ -869,7 +871,7 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Units** | `PixelsPerUnit` converts a pointer's pixel travel into the caller's own unit, defaulting to `16` so a host sizing panes in rem needs no arithmetic of its own; a host working in pixels sets it to `1`. `Step` decides how far one arrow key travels, for a pane whose useful sizes are further apart than a single unit |
 | **Notes** | `aria-orientation` describes **the bar, not the axis it moves along** — a `Vertical` splitter is a vertical bar between side-by-side panes, dragged horizontally. Only the horizontal arrows resolve through `IsRightToLeft`, since a right-to-left layout puts the leading pane on the other side; `ArrowUp`, `ArrowDown`, `Home` and `End` are left alone. Focus thickens the grip rather than drawing an outline, which on something this thin renders as stray parallel lines, and the ring returns under forced colours where the fill is dropped |
 
-### 64. `FormaPageHeader` ✅
+### 64. `FormaPageHead` ✅
 
 | | |
 |---|---|

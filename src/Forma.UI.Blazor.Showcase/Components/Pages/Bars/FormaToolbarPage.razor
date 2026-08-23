@@ -1,0 +1,263 @@
+@page "/toolbar"
+@attribute [ShowcasePage("FormaToolbar")]
+@rendermode InteractiveServer
+@using Forma.UI.Blazor.Components.Bars
+@inject IStringLocale<FormaToolbarPage> L
+
+<h1>FormaToolbar</h1>
+<p class="description">@L["A toolbar of grouped, item-driven commands, built on FormaCommandArea and FormaCommandBar. Each item is a record whose type decides how it renders."]</p>
+
+<div class="demo-section">
+    <h2>@L["Grouped Commands"]</h2>
+    <p class="description">@L["Each group is a FormaToolbarGroup, separated from the next by a rule."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaToolbar Label="@L["Formatting"]" Items="_formattingGroups" OnCommand="HandleCommand" />
+    </div>
+    <p class="demo-output">@L["Last command"]: <code>@_lastCommand</code></p>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Icon and Label Together"]</h2>
+    <p class="description">@L["ShowLabels draws each command as a full button carrying its icon and its label, for a toolbar of named actions rather than dense glyphs."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaToolbar Label="@L["Library Actions"]" Items="_labelledGroups" ShowLabels="true" OnCommand="HandleCommand" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Toggle State"]</h2>
+    <p class="description">@L["A FormaToolbarToggle reflects its own IsActive, drawn with an underline as well as colour so the state never rests on colour alone."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaToolbar Label="@L["Formatting"]" Items="_toggleGroups" OnCommand="HandleToggleCommand" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Menu of Choices"]</h2>
+    <p class="description">@L["A FormaToolbarMenu renders as a dropdown, showing the active option's title or a colour swatch."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaToolbar Label="@L["Typography"]" Items="_menuGroups" OnCommand="HandleMenuCommand" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Readout"]</h2>
+    <p class="description">@L["A FormaToolbarReadout shows a value without being interactive. Marked IsAnnounced, its changes are read out politely."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaToolbar Label="@L["Document Status"]" Items="_readoutGroups" OnCommand="HandleCommand" />
+    </div>
+    <p><button class="button button-secondary" @onclick="() => _wordCount += 12">@L["Add Words"]</button></p>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Custom Item"]</h2>
+    <p class="description">@L["A FormaToolbarCustomItem renders a component of the caller's choosing, with its own parameters, in place of a standard control."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaToolbar Label="@L["Publication"]" Items="_customGroups" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Keyboard Shortcuts"]</h2>
+    <p class="description">@L["An action's ShortcutDisplay appears in its tooltip alongside the label."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaToolbar Label="@L["Formatting"]" Items="_shortcutGroups" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Disabled"]</h2>
+    <p class="description">@L["Every control in the toolbar disables together."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaToolbar Label="@L["Formatting"]" Items="_formattingGroups" Disabled="true" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Content Pinned Past the Track"]</h2>
+    <p class="description">@L["Trailing content, such as an overflow toggle, stays put while the commands beside it scroll."]</p>
+    <div class="demo-box demo-box-flush demo-command-bar-narrow">
+        <FormaToolbar Label="@L["Formatting"]" Items="_manyGroups">
+            <TrailingContent>
+                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" IconOnly="true" aria-label="@L["More"]"><FormaGlyph Name="Glyph.EllipsisVertical" /></FormaButton>
+            </TrailingContent>
+        </FormaToolbar>
+    </div>
+</div>
+
+@code {
+    private string _lastCommand = "";
+    private bool _isBoldActive;
+    private int _wordCount = 12;
+
+    private IReadOnlyList<FormaToolbarItem> _formattingGroups =>
+    [
+        new FormaToolbarGroup
+        {
+            Id = "inline",
+            Title = L["Inline Style"],
+            Items =
+            [
+                new FormaToolbarCommand { Id = "bold", Title = L["Bold"], Icon = Glyph.Bold, Command = "format.bold" },
+                new FormaToolbarCommand { Id = "italic", Title = L["Italic"], Icon = Glyph.Italic, Command = "format.italic" },
+            ],
+        },
+        new FormaToolbarGroup
+        {
+            Id = "align",
+            Title = L["Alignment"],
+            Items =
+            [
+                new FormaToolbarCommand { Id = "align-left", Title = L["Align Left"], Icon = Glyph.AlignLeft, Command = "format.align-left" },
+                new FormaToolbarCommand { Id = "align-right", Title = L["Align Right"], Icon = Glyph.AlignRight, Command = "format.align-right" },
+            ],
+        },
+    ];
+
+    private IReadOnlyList<FormaToolbarItem> _labelledGroups =>
+    [
+        new FormaToolbarGroup
+        {
+            Id = "library",
+            Title = L["Library Actions"],
+            Items =
+            [
+                new FormaToolbarCommand { Id = "add", Title = L["Add New"], Icon = Glyph.Plus, Command = "library.add" },
+                new FormaToolbarCommand { Id = "upload", Title = L["Upload"], Icon = Glyph.Upload, Command = "library.upload" },
+                new FormaToolbarCommand { Id = "delete", Title = L["Delete"], Icon = Glyph.Trash, Command = "library.delete" },
+            ],
+        },
+    ];
+
+    private IReadOnlyList<FormaToolbarItem> _toggleGroups =>
+    [
+        new FormaToolbarGroup
+        {
+            Id = "inline",
+            Title = L["Inline Style"],
+            Items = [new FormaToolbarToggle { Id = "bold", Title = L["Bold"], Icon = Glyph.Bold, Command = "toggle.bold", IsActive = _isBoldActive }],
+        },
+    ];
+
+    private IReadOnlyList<FormaToolbarItem> _menuGroups =>
+    [
+        new FormaToolbarGroup
+        {
+            Id = "font",
+            Title = L["Font"],
+            Items =
+            [
+                new FormaToolbarMenu
+                {
+                    Id = "font-family",
+                    Title = L["Font Family"],
+                    Icon = Glyph.Font,
+                    Options =
+                    [
+                        new() { Id = "arial", Title = "Arial", Command = "typography.font-family:Arial", IsActive = true, PreviewStyle = "font-family:Arial" },
+                        new() { Id = "georgia", Title = "Georgia", Command = "typography.font-family:Georgia", PreviewStyle = "font-family:Georgia" },
+                    ],
+                },
+            ],
+        },
+        new FormaToolbarGroup
+        {
+            Id = "color",
+            Title = L["Colour"],
+            Items =
+            [
+                new FormaToolbarMenu
+                {
+                    Id = "text-color",
+                    Title = L["Text Color"],
+                    Icon = Glyph.Palette,
+                    Options =
+                    [
+                        new() { Id = "black", Title = L["Black"], Command = "typography.text-color:#000000", IsActive = true, Swatch = "#000000" },
+                        new() { Id = "red", Title = L["Red"], Command = "typography.text-color:#d32f2f", Swatch = "#d32f2f" },
+                    ],
+                },
+            ],
+        },
+    ];
+
+    private IReadOnlyList<FormaToolbarItem> _readoutGroups =>
+    [
+        new FormaToolbarGroup
+        {
+            Id = "counts",
+            Title = L["Counts"],
+            Items =
+            [
+                new FormaToolbarReadout { Id = "words", Title = L["Word count"], Value = L["[$ plural; one: # word; other: # words; $]", _wordCount], IsAnnounced = true },
+                new FormaToolbarReadout { Id = "saved", Title = L["Save state"], Value = L["Saved"] },
+            ],
+        },
+        new FormaToolbarGroup
+        {
+            Id = "actions",
+            Title = L["Actions"],
+            Items = [new FormaToolbarCommand { Id = "recount", Title = L["Recount"], Icon = Glyph.ArrowsRotate, Command = "document.recount" }],
+        },
+    ];
+
+    private IReadOnlyList<FormaToolbarItem> _customGroups =>
+    [
+        new FormaToolbarGroup
+        {
+            Id = "custom",
+            Title = L["Publication"],
+            Items =
+            [
+                new FormaToolbarCustomItem
+                {
+                    Id = "state",
+                    Title = L["Publication State"],
+                    Component = typeof(FormaStatusBadge),
+                    Parameters = new Dictionary<string, object> { ["Text"] = L["Draft"].ToString(), ["Marker"] = Glyph.Pen },
+                },
+            ],
+        },
+    ];
+
+    private IReadOnlyList<FormaToolbarItem> _shortcutGroups =>
+    [
+        new FormaToolbarGroup
+        {
+            Id = "inline",
+            Title = L["Inline Style"],
+            Items =
+            [
+                new FormaToolbarCommand { Id = "bold", Title = L["Bold"], Icon = Glyph.Bold, Command = "format.bold", ShortcutDisplay = "Ctrl+B", ShortcutAriaKeys = "Control+B" },
+                new FormaToolbarCommand { Id = "italic", Title = L["Italic"], Icon = Glyph.Italic, Command = "format.italic", ShortcutDisplay = "Ctrl+I", ShortcutAriaKeys = "Control+I" },
+            ],
+        },
+    ];
+
+    private IReadOnlyList<FormaToolbarItem> _manyGroups =>
+    [
+        new FormaToolbarGroup
+        {
+            Id = "many",
+            Title = L["Commands"],
+            Items =
+            [
+                .. Enumerable.Range(1, 10).Select(i => new FormaToolbarCommand
+                {
+                    Id = $"command-{i}",
+                    Title = $"{L["Command"]} {i}",
+                    Command = $"demo.command-{i}",
+                }),
+            ],
+        },
+    ];
+
+    private void HandleCommand(string command)
+        => _lastCommand = command;
+
+    private void HandleToggleCommand(string command)
+        => _isBoldActive = !_isBoldActive;
+
+    private void HandleMenuCommand(string command)
+        => _lastCommand = command;
+}
