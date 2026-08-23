@@ -1,4 +1,4 @@
-namespace Forma.UI.Blazor.Components.Bars;
+namespace Forma.UI.Features.Toolbar;
 
 /// <summary>A non-interactive value a <see cref="FormaToolbar"/> displays.</summary>
 public sealed record FormaToolbarReadout : FormaToolbarItem

@@ -20,7 +20,7 @@
             public Glyph Icon => Glyph.File;
             public ComposerDocumentFormat Format => ComposerDocumentFormat.Html;
             public Type EditorComponent => typeof(FormaPlainTextEditor);
-            public IReadOnlyList<ComposerToolbarItem> ToolbarItems => [];
+            public IReadOnlyList<ComposerToolbarItem> Items => [];
             public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
             public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
             public IReadOnlyList<ComposerAsset> Assets => [];
@@ -34,7 +34,29 @@
             public Glyph Icon => Glyph.File;
             public ComposerDocumentFormat Format => ComposerDocumentFormat.PlainText;
             public Type EditorComponent => typeof(FormaPlainTextEditor);
-            public IReadOnlyList<ComposerToolbarItem> ToolbarItems => [];
+            public IReadOnlyList<ComposerToolbarItem> Items => [];
+            public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
+            public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
+            public IReadOnlyList<ComposerAsset> Assets => [];
+            public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
+        }
+
+        // Proves a plugin-declared group's own title is localized, not only the items inside it.
+        private sealed class GroupedCommandPlugin : IComposerPlugin
+        {
+            public string Id => "grouped";
+            public IReadOnlyList<ComposerToolbarItem> Items =>
+            [
+                new(ComposerRows.Plugins,
+                [
+                    new FormaToolbarGroup
+                    {
+                        Id = "grouped-commands",
+                        Title = "Grouped Commands",
+                        Items = [new FormaToolbarCommand { Id = "shout", Title = "Shout", Icon = Glyph.File, Command = "demo.shout" }],
+                    },
+                ]),
+            ];
             public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
             public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
             public IReadOnlyList<ComposerAsset> Assets => [];
@@ -45,8 +67,8 @@
         {
             public string Id => "commands";
             public List<string> Executed { get; } = [];
-            public IReadOnlyList<ComposerToolbarItem> ToolbarItems =>
-                [new() { Id = "shout", Title = "Shout", Icon = Glyph.File, Command = "demo.shout" }];
+            public IReadOnlyList<ComposerToolbarItem> Items =>
+                [new(ComposerRows.Plugins, [new FormaToolbarCommand { Id = "shout", Title = "Shout", Icon = Glyph.File, Command = "demo.shout" }])];
             public IReadOnlyList<ComposerKeyBinding> KeyBindings =>
                 [new() { Key = "k", Command = "demo.shout", Control = true, Shift = true }];
             public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
@@ -63,14 +85,42 @@
         private sealed class ManyCommandsPlugin(int count) : IComposerPlugin
         {
             public string Id => "many";
-            public IReadOnlyList<ComposerToolbarItem> ToolbarItems =>
-                [.. Enumerable.Range(0, count).Select(i => new ComposerToolbarItem
+            public IReadOnlyList<ComposerToolbarItem> Items =>
+                [new(ComposerRows.Plugins, [.. Enumerable.Range(0, count).Select(i => new FormaToolbarCommand
                 {
                     Id = $"many-{i}",
                     Title = $"Command {i}",
                     Icon = Glyph.File,
                     Command = $"many.{i}",
-                })];
+                })])];
+            public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
+            public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
+            public IReadOnlyList<ComposerAsset> Assets => [];
+            public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
+        }
+
+        // Leads with a menu, so part of the inline limit is spent on a leaf that is not an action
+        // and the overflow index has to account for it.
+        private sealed class MenuThenCommandsPlugin(int count) : IComposerPlugin
+        {
+            public string Id => "menu-then-commands";
+            public IReadOnlyList<ComposerToolbarItem> Items =>
+                [new(ComposerRows.Plugins,
+                [
+                    new FormaToolbarMenu
+                    {
+                        Id = "picker",
+                        Title = "Picker",
+                        Options = [new() { Id = "one", Title = "One", Command = "pick.one" }],
+                    },
+                    .. Enumerable.Range(0, count).Select(i => new FormaToolbarCommand
+                    {
+                        Id = $"many-{i}",
+                        Title = $"Command {i}",
+                        Icon = Glyph.File,
+                        Command = $"many.{i}",
+                    }),
+                ])];
             public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
             public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
             public IReadOnlyList<ComposerAsset> Assets => [];
@@ -79,7 +129,7 @@
 
         private sealed class SlowPlugin : IComposerPlugin        {
             public string Id => "slow";
-            public IReadOnlyList<ComposerToolbarItem> ToolbarItems => [];
+            public IReadOnlyList<ComposerToolbarItem> Items => [];
             public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
             public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
             public IReadOnlyList<ComposerAsset> Assets => [];
@@ -95,8 +145,8 @@
         {
             public string Id => "scoped";
             public IReadOnlyList<string> SupportedEditorIds => ["dummy"];
-            public IReadOnlyList<ComposerToolbarItem> ToolbarItems =>
-                [new() { Id = "scoped", Title = "Scoped", Icon = Glyph.File, Command = "demo.scoped" }];
+            public IReadOnlyList<ComposerToolbarItem> Items =>
+                [new(ComposerRows.Plugins, [new FormaToolbarCommand { Id = "scoped", Title = "Scoped", Icon = Glyph.File, Command = "demo.scoped" }])];
             public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
             public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
             public IReadOnlyList<ComposerAsset> Assets => [];
@@ -110,8 +160,8 @@
             private IComposerStatusItem? _item;
 
             public string Id => "status";
-            public IReadOnlyList<ComposerToolbarItem> ToolbarItems =>
-                [new() { Id = "wordcount", Title = "Word Count", Icon = Glyph.File, Command = "demo.wordcount" }];
+            public IReadOnlyList<ComposerToolbarItem> Items =>
+                [new(ComposerRows.Plugins, [new FormaToolbarCommand { Id = "wordcount", Title = "Word Count", Icon = Glyph.File, Command = "demo.wordcount" }])];
             public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
             public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
             public IReadOnlyList<ComposerAsset> Assets => [];
@@ -139,8 +189,8 @@
         private sealed class AnnouncingStatusPlugin : IComposerPlugin
         {
             public string Id => "announcing";
-            public IReadOnlyList<ComposerToolbarItem> ToolbarItems =>
-                [new() { Id = "save", Title = "Save", Icon = Glyph.File, Command = "demo.save" }];
+            public IReadOnlyList<ComposerToolbarItem> Items =>
+                [new(ComposerRows.Plugins, [new FormaToolbarCommand { Id = "save", Title = "Save", Icon = Glyph.File, Command = "demo.save" }])];
             public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
             public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
             public IReadOnlyList<ComposerAsset> Assets => [];
@@ -407,6 +457,23 @@
         }
 
         [Fact]
+        public void Should_localize_a_plugin_declared_groups_own_title()
+        {
+            // Arrange
+            using var culture = new CultureFixture("he");
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            IReadOnlyList<IComposerPlugin> plugins = [new GroupedCommandPlugin()];
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.Find("button[aria-expanded]").Click();
+
+            // Assert
+            Assert.Equal("פקודות מקובצות", cut.Find(".forma-composer-plugins-row [role=group]").GetAttribute("aria-label"));
+        }
+
+        [Fact]
         public void Should_render_one_command_row_when_no_plugin_contributes_a_command()
         {
             // Arrange
@@ -480,8 +547,11 @@
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-composer-plugins-row"));
-            Assert.Equal("false", cut.Find("button[aria-label='Plugin Commands']").GetAttribute("aria-expanded"));
+            var wrapper = cut.Find(".forma-composer-plugins-row").ParentElement!.ParentElement!;
+            Assert.Multiple(
+                () => Assert.DoesNotContain("is-shown", wrapper.ClassList),
+                () => Assert.True(wrapper.HasAttribute("inert")),
+                () => Assert.Equal("false", cut.Find("button[aria-label='Plugin Commands']").GetAttribute("aria-expanded")));
         }
 
         [Fact]
@@ -493,13 +563,13 @@
             IReadOnlyList<IComposerPlugin> plugins = [new CommandPlugin()];
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
             cut.Find("button[aria-label='Plugin Commands']").Click();
-            Assert.NotEmpty(cut.FindAll(".forma-composer-plugins-row"));
+            Assert.Contains("is-shown", cut.Find(".forma-composer-plugins-row").ParentElement!.ParentElement!.ClassList);
 
             // Act
             cut.Find("button[aria-label='Plugin Commands']").Click();
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-composer-plugins-row"));
+            Assert.DoesNotContain("is-shown", cut.Find(".forma-composer-plugins-row").ParentElement!.ParentElement!.ClassList);
             Assert.Equal("false", cut.Find("button[aria-label='Plugin Commands']").GetAttribute("aria-expanded"));
         }
 
@@ -527,7 +597,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
-            var surplus = FormaComposerPluginsToolbar.InlineLimit + 3;
+            var surplus = FormaComposerPluginsBar.InlineLimit + 3;
             IReadOnlyList<IComposerPlugin> plugins = [new ManyCommandsPlugin(surplus)];
 
             // Act
@@ -537,9 +607,31 @@
             // Assert
             var pluginsBar = cut.Find(".forma-composer-plugins-row");
             Assert.Equal(
-                FormaComposerPluginsToolbar.InlineLimit,
-                pluginsBar.QuerySelectorAll(".forma-composer-tool-button").Length);
+                FormaComposerPluginsBar.InlineLimit,
+                pluginsBar.QuerySelectorAll(".forma-toolbar-button").Length);
             Assert.NotEmpty(cut.FindAll("button[aria-label='More Plugin Commands']"));
+        }
+
+        [Fact]
+        public void Should_lose_no_command_when_a_non_action_item_takes_part_of_the_inline_limit()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var surplus = FormaComposerPluginsBar.InlineLimit + 3;
+            IReadOnlyList<IComposerPlugin> plugins = [new MenuThenCommandsPlugin(surplus)];
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.Find("button[aria-label='Plugin Commands']").Click();
+            cut.Find("button[aria-label='More Plugin Commands']").Click();
+
+            // Assert
+            var shown = cut.Find(".forma-composer-plugins-row")
+                           .QuerySelectorAll(".forma-toolbar-button")
+                           .Select(button => button.GetAttribute("aria-label"));
+            var overflowed = cut.FindAll("[role=menuitem]").Select(item => item.TextContent.Trim());
+            Assert.Equal(surplus, shown.Concat(overflowed).Distinct().Count(name => name?.StartsWith("Command ", StringComparison.Ordinal) == true));
         }
 
         [Fact]
@@ -668,7 +760,7 @@
             cut.WaitForAssertion(() => Assert.Equal("abc", model.Body.Content), TimeSpan.FromSeconds(5));
 
             // Act
-            cut.Find("button[aria-label=Undo]").Click();
+            cut.InvokeAsync(() => cut.Find("button[aria-label=Undo]").Click());
 
             // Assert
             cut.WaitForAssertion(() => Assert.Equal(original, model.Body.Content));
@@ -866,7 +958,7 @@
             cut.Find("button[aria-label='Word Count']").Click();
 
             // Assert
-            cut.WaitForAssertion(() => Assert.Equal("2 words", cut.Find(".forma-composer-status-strip").TextContent.Trim()));
+            cut.WaitForAssertion(() => Assert.Equal("2 words", cut.Find(".forma-status-strip").TextContent.Trim()));
         }
 
         // A readout is plugin-supplied text of unknown direction, so it resolves and isolates its own.
@@ -884,7 +976,7 @@
             cut.Find("button[aria-label='Word Count']").Click();
 
             // Assert
-            cut.WaitForAssertion(() => Assert.Equal("auto", cut.Find(".forma-composer-status-item").GetAttribute("dir")));
+            cut.WaitForAssertion(() => Assert.Equal("auto", cut.Find(".forma-toolbar-readout").GetAttribute("dir")));
         }
 
         [Fact]
@@ -898,7 +990,7 @@
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-composer-status-strip"));
+            Assert.Empty(cut.FindAll(".forma-status-strip"));
         }
 
         [Fact]
@@ -911,13 +1003,13 @@
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
             cut.Find("button[aria-label='Plugin Commands']").Click();
             cut.Find("button[aria-label='Word Count']").Click();
-            cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".forma-composer-status-strip")));
+            cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".forma-status-strip")));
 
             // Act
             cut.FindAll("[role=tab]")[1].Click();
 
             // Assert
-            cut.WaitForAssertion(() => Assert.Equal("2 words", cut.Find(".forma-composer-status-strip").TextContent.Trim()));
+            cut.WaitForAssertion(() => Assert.Equal("2 words", cut.Find(".forma-status-strip").TextContent.Trim()));
         }
 
         [Fact]

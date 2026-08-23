@@ -5,6 +5,7 @@ using System.Globalization;
 using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
+using Forma.UI.Features.Toolbar;
 using Forma.UI.Style.Glyphs;
 
 /// <summary>Contributes font family, font size, text color, highlight color, and line height operations.</summary>
@@ -39,82 +40,93 @@ public sealed class TypographyPlugin(
     public IReadOnlyList<string> SupportedEditorIds => [RichTextEditorPlugin.EditorId];
 
     /// <inheritdoc />
-    public string DefaultRow => ComposerRows.Formatting;
+    public IReadOnlyList<ComposerToolbarRow> Rows => [];
 
     /// <inheritdoc />
-    public IReadOnlyList<ComposerToolbarRow> ToolbarRows => [];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerToolbarItem> ToolbarItems =>
+    public IReadOnlyList<ComposerToolbarItem> Items =>
     [
-        new()
-        {
-            Id = "font-family",
-            Title = "Font Family",
-            Icon = Glyph.Font,
-            Group = "typography",
-            Options = [.. Options.FontFamilies.Select(family => new ComposerToolbarOption
+        new(ComposerRows.Formatting,
+        [
+            new FormaToolbarGroup
             {
-                Id = $"font-family:{family}",
-                Title = family,
-                Command = $"{FontFamilyCommand}:{family}",
-                PreviewStyle = $"font-family:{family}",
-            })],
-        },
-        new()
-        {
-            Id = "font-size",
-            Title = "Font Size",
-            Icon = Glyph.TextHeight,
-            Group = "typography",
-            Options = [.. Options.FontSizes.Select(size => new ComposerToolbarOption
+                Id = "typography",
+                Title = "Typography",
+                Items =
+                [
+                    new FormaToolbarMenu
+                    {
+                        Id = "font-family",
+                        Title = "Font Family",
+                        Icon = Glyph.Font,
+                        Options = [.. Options.FontFamilies.Select(family => new FormaToolbarOption
+                        {
+                            Id = $"font-family:{family}",
+                            Title = family,
+                            Command = $"{FontFamilyCommand}:{family}",
+                            PreviewStyle = $"font-family:{family}",
+                        })],
+                    },
+                    new FormaToolbarMenu
+                    {
+                        Id = "font-size",
+                        Title = "Font Size",
+                        Icon = Glyph.TextHeight,
+                        Options = [.. Options.FontSizes.Select(size => new FormaToolbarOption
+                        {
+                            Id = $"font-size:{ToCssSize(size)}",
+                            Title = size,
+                            Command = $"{FontSizeCommand}:{ToCssSize(size)}",
+                        })],
+                    },
+                    new FormaToolbarMenu
+                    {
+                        Id = "line-height",
+                        Title = "Line Height",
+                        Icon = Glyph.TextWidth,
+                        Options = [.. Options.LineHeights.Select(height => new FormaToolbarOption
+                        {
+                            Id = $"line-height:{height}",
+                            Title = height,
+                            Command = $"{LineHeightCommand}:{height}",
+                        })],
+                    },
+                ],
+            },
+            new FormaToolbarGroup
             {
-                Id = $"font-size:{ToCssSize(size)}",
-                Title = size,
-                Command = $"{FontSizeCommand}:{ToCssSize(size)}",
-            })],
-        },
-        new()
-        {
-            Id = "line-height",
-            Title = "Line Height",
-            Icon = Glyph.TextWidth,
-            Group = "typography",
-            Options = [.. Options.LineHeights.Select(height => new ComposerToolbarOption
-            {
-                Id = $"line-height:{height}",
-                Title = height,
-                Command = $"{LineHeightCommand}:{height}",
-            })],
-        },
-        new()
-        {
-            Id = "text-color",
-            Title = "Text Color",
-            Icon = Glyph.Palette,
-            Group = "color",
-            Options = [.. Options.TextColors.Select(color => new ComposerToolbarOption
-            {
-                Id = $"text-color:{color}",
-                Title = color,
-                Command = $"{TextColorCommand}:{color}",
-                Swatch = color,
-            })],
-        },
-        new()
-        {
-            Id = "highlight-color",
-            Title = "Highlight Color",
-            Icon = Glyph.Highlighter,
-            Group = "color",
-            Options = [.. Options.HighlightColors.Select(color => new ComposerToolbarOption
-            {
-                Id = $"highlight-color:{color}",
-                Title = color,
-                Command = $"{HighlightColorCommand}:{color}",
-                Swatch = color,
-            })],
-        },
+                Id = "color",
+                Title = "Color",
+                Items =
+                [
+                    new FormaToolbarMenu
+                    {
+                        Id = "text-color",
+                        Title = "Text Color",
+                        Icon = Glyph.Palette,
+                        Options = [.. Options.TextColors.Select(color => new FormaToolbarOption
+                        {
+                            Id = $"text-color:{color}",
+                            Title = color,
+                            Command = $"{TextColorCommand}:{color}",
+                            Swatch = color,
+                        })],
+                    },
+                    new FormaToolbarMenu
+                    {
+                        Id = "highlight-color",
+                        Title = "Highlight Color",
+                        Icon = Glyph.Highlighter,
+                        Options = [.. Options.HighlightColors.Select(color => new FormaToolbarOption
+                        {
+                            Id = $"highlight-color:{color}",
+                            Title = color,
+                            Command = $"{HighlightColorCommand}:{color}",
+                            Swatch = color,
+                        })],
+                    },
+                ],
+            },
+        ]),
     ];
 
     /// <inheritdoc />

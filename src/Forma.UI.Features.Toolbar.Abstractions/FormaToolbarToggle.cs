@@ -1,4 +1,4 @@
-namespace Forma.UI.Blazor.Components.Bars;
+namespace Forma.UI.Features.Toolbar;
 
 /// <summary>A <see cref="FormaToolbarAction"/> that reflects an on/off state.</summary>
 public sealed record FormaToolbarToggle : FormaToolbarAction

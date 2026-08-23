@@ -7,6 +7,7 @@ using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Documents;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
+using Forma.UI.Features.Toolbar;
 using Forma.UI.Style.Glyphs;
 
 /// <summary>A source-oriented surface, numbering its lines in a gutter and renaming a symbol from a row of its own.</summary>
@@ -36,13 +37,13 @@ public sealed class SourceEditorPlugin : IComposerEditorPlugin
     public Type EditorComponent => typeof(DemoSourceEditor);
 
     /// <inheritdoc />
-    public IReadOnlyList<ComposerToolbarRow> ToolbarRows =>
+    public IReadOnlyList<ComposerToolbarRow> Rows =>
         [new() { Id = RefactorRow, Label = "Refactor" }];
 
     /// <inheritdoc />
-    public IReadOnlyList<ComposerToolbarItem> ToolbarItems =>
+    public IReadOnlyList<ComposerToolbarItem> Items =>
     [
-        new() { Id = "rename", Title = "Rename Symbol", Icon = Glyph.PenToSquare, Command = RenameCommand, Row = RefactorRow },
+        new(RefactorRow, [new FormaToolbarCommand { Id = "rename", Title = "Rename Symbol", Icon = Glyph.PenToSquare, Command = RenameCommand }]),
     ];
 
     /// <inheritdoc />
@@ -111,16 +112,22 @@ public sealed class TextEditorPlugin : IComposerEditorPlugin
     public Type EditorComponent => typeof(DemoTextEditor);
 
     /// <inheritdoc />
-    public IReadOnlyList<ComposerToolbarRow> ToolbarRows =>
+    public IReadOnlyList<ComposerToolbarRow> Rows =>
         [new() { Id = SortingRow, Label = "Sorting" }];
 
     /// <inheritdoc />
-    public IReadOnlyList<ComposerToolbarItem> ToolbarItems =>
+    public IReadOnlyList<ComposerToolbarItem> Items =>
     [
-        new() { Id = "number-lines", Title = "Number Lines", Icon = Glyph.ListOl, Command = NumberLinesCommand },
-        new() { Id = "word-count", Title = "Word Count", Icon = Glyph.TextWidth, Command = WordCountCommand },
-        new() { Id = "sort-ascending", Title = "Sort A to Z", Icon = Glyph.ArrowDownAZ, Command = SortAscendingCommand, Row = SortingRow },
-        new() { Id = "sort-descending", Title = "Sort Z to A", Icon = Glyph.ArrowUpZA, Command = SortDescendingCommand, Row = SortingRow },
+        new(ComposerRows.BuiltIn,
+        [
+            new FormaToolbarCommand { Id = "number-lines", Title = "Number Lines", Icon = Glyph.ListOl, Command = NumberLinesCommand },
+            new FormaToolbarCommand { Id = "word-count", Title = "Word Count", Icon = Glyph.TextWidth, Command = WordCountCommand },
+        ]),
+        new(SortingRow,
+        [
+            new FormaToolbarCommand { Id = "sort-ascending", Title = "Sort A to Z", Icon = Glyph.ArrowDownAZ, Command = SortAscendingCommand },
+            new FormaToolbarCommand { Id = "sort-descending", Title = "Sort Z to A", Icon = Glyph.ArrowUpZA, Command = SortDescendingCommand },
+        ]),
     ];
 
     /// <inheritdoc />
@@ -212,8 +219,8 @@ public sealed class TimestampPlugin : IComposerPlugin
     public IReadOnlyList<string> SupportedEditorIds => [TextEditorPlugin.EditorId];
 
     /// <inheritdoc />
-    public IReadOnlyList<ComposerToolbarItem> ToolbarItems =>
-        [new() { Id = "timestamp", Title = "Insert Timestamp", Icon = Glyph.Clock, Command = TimestampCommand }];
+    public IReadOnlyList<ComposerToolbarItem> Items =>
+        [new(ComposerRows.Plugins, [new FormaToolbarCommand { Id = "timestamp", Title = "Insert Timestamp", Icon = Glyph.Clock, Command = TimestampCommand }])];
 
     /// <inheritdoc />
     public IReadOnlyList<ComposerKeyBinding> KeyBindings =>
@@ -262,10 +269,21 @@ public sealed class CleanupPlugin : IComposerPlugin
     public IReadOnlyList<string> SupportedEditorIds => [TextEditorPlugin.EditorId];
 
     /// <inheritdoc />
-    public IReadOnlyList<ComposerToolbarItem> ToolbarItems =>
+    public IReadOnlyList<ComposerToolbarItem> Items =>
     [
-        new() { Id = "remove-blank-lines", Title = "Remove Blank Lines", Icon = Glyph.SquareMinus, Command = RemoveBlankLinesCommand, Group = "cleanup" },
-        new() { Id = "clear", Title = "Clear", Icon = Glyph.Trash, Command = ClearCommand, Group = "cleanup" },
+        new(ComposerRows.Plugins,
+        [
+            new FormaToolbarGroup
+            {
+                Id = "cleanup",
+                Title = "Cleanup",
+                Items =
+                [
+                    new FormaToolbarCommand { Id = "remove-blank-lines", Title = "Remove Blank Lines", Icon = Glyph.SquareMinus, Command = RemoveBlankLinesCommand },
+                    new FormaToolbarCommand { Id = "clear", Title = "Clear", Icon = Glyph.Trash, Command = ClearCommand },
+                ],
+            },
+        ]),
     ];
 
     /// <inheritdoc />

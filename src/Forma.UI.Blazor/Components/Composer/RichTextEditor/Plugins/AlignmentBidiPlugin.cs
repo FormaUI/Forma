@@ -3,6 +3,7 @@ namespace Forma.UI.Blazor.Components.Composer.RichTextEditor.Plugins;
 using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
+using Forma.UI.Features.Toolbar;
 using Forma.UI.Style.Glyphs;
 
 /// <summary>Contributes text alignment and paragraph direction operations.</summary>
@@ -35,20 +36,36 @@ public sealed class AlignmentBidiPlugin(RichTextEditorPlugin editor) : IComposer
     public IReadOnlyList<string> SupportedEditorIds => [RichTextEditorPlugin.EditorId];
 
     /// <inheritdoc />
-    public string DefaultRow => ComposerRows.Paragraph;
+    public IReadOnlyList<ComposerToolbarRow> Rows => [];
 
     /// <inheritdoc />
-    public IReadOnlyList<ComposerToolbarRow> ToolbarRows => [];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerToolbarItem> ToolbarItems =>
+    public IReadOnlyList<ComposerToolbarItem> Items =>
     [
-        new() { Id = "align-left", Title = "Align Left", Icon = Glyph.AlignLeft, Command = AlignLeftCommand, Group = "align", IsToggle = true },
-        new() { Id = "align-center", Title = "Align Center", Icon = Glyph.AlignCenter, Command = AlignCenterCommand, Group = "align", IsToggle = true },
-        new() { Id = "align-right", Title = "Align Right", Icon = Glyph.AlignRight, Command = AlignRightCommand, Group = "align", IsToggle = true },
-        new() { Id = "align-justify", Title = "Justify", Icon = Glyph.AlignJustify, Command = AlignJustifyCommand, Group = "align", IsToggle = true },
-        new() { Id = "dir-ltr", Title = "Left to Right", Icon = Glyph.ArrowRightLong, Command = DirectionLtrCommand, Group = "direction", IsToggle = true },
-        new() { Id = "dir-rtl", Title = "Right to Left", Icon = Glyph.ArrowLeftLong, Command = DirectionRtlCommand, Group = "direction", IsToggle = true },
+        new(ComposerRows.Paragraph,
+        [
+            new FormaToolbarGroup
+            {
+                Id = "alignment",
+                Title = "Alignment",
+                Items =
+                [
+                    new FormaToolbarToggle { Id = "align-left", Title = "Align Left", Icon = Glyph.AlignLeft, Command = AlignLeftCommand },
+                    new FormaToolbarToggle { Id = "align-center", Title = "Align Center", Icon = Glyph.AlignCenter, Command = AlignCenterCommand },
+                    new FormaToolbarToggle { Id = "align-right", Title = "Align Right", Icon = Glyph.AlignRight, Command = AlignRightCommand },
+                    new FormaToolbarToggle { Id = "align-justify", Title = "Justify", Icon = Glyph.AlignJustify, Command = AlignJustifyCommand },
+                ],
+            },
+            new FormaToolbarGroup
+            {
+                Id = "text-direction",
+                Title = "Text Direction",
+                Items =
+                [
+                    new FormaToolbarToggle { Id = "dir-ltr", Title = "Left to Right", Icon = Glyph.ArrowRightLong, Command = DirectionLtrCommand },
+                    new FormaToolbarToggle { Id = "dir-rtl", Title = "Right to Left", Icon = Glyph.ArrowLeftLong, Command = DirectionRtlCommand },
+                ],
+            },
+        ]),
     ];
 
     /// <inheritdoc />

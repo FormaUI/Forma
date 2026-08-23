@@ -70,6 +70,7 @@
                         <button type="button"
                                 @key="action.Id"
                                 class="forma-toolbar-button @(showsLabel ? "forma-toolbar-button-labelled" : null) @(isToggleActive ? "forma-toolbar-button-active" : null)"
+                                dir="auto"
                                 @onclick="() => OnCommand.InvokeAsync(action.Command)"
                                 disabled="@(Disabled || action.IsDisabled)"
                                 aria-label="@(showsLabel ? null : action.Title)"

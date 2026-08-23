@@ -4,27 +4,5 @@
 {
     <div class="forma-composer-status-announcer" role="status">@AnnouncedText</div>
 
-    @if (Context.Regions.StatusItems.Count > 0)
-    {
-        <div class="forma-composer-status-strip">
-            @foreach (var item in Context.Regions.StatusItems)
-            {
-                @* A readout is plugin-supplied text of unknown direction, isolated so a number cannot reorder against the page. *@
-                if (item.Command is { } command)
-                {
-                    <button type="button"
-                            class="forma-composer-status-item forma-composer-status-item-button"
-                            dir="auto"
-                            title="@item.Tooltip"
-                            @onclick="() => OnCommand.InvokeAsync(command)">
-                        @item.Text
-                    </button>
-                }
-                else
-                {
-                    <span class="forma-composer-status-item" dir="auto" title="@item.Tooltip">@item.Text</span>
-                }
-            }
-        </div>
-    }
+    <FormaStatusStrip Label="@L["Document Status"]" Items="Items" OnCommand="OnCommand" />
 }

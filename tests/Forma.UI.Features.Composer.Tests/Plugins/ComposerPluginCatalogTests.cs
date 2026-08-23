@@ -12,7 +12,7 @@ public sealed class ComposerPluginCatalogTests
     private sealed class FeaturePlugin(string id, bool isAvailable = true) : IComposerPlugin
     {
         public string Id => id;
-        public IReadOnlyList<ComposerToolbarItem> ToolbarItems => [];
+        public IReadOnlyList<ComposerToolbarItem> Items => [];
         public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
         public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
         public IReadOnlyList<ComposerAsset> Assets => [];
@@ -26,7 +26,7 @@ public sealed class ComposerPluginCatalogTests
         public Glyph Icon => Glyph.File;
         public ComposerDocumentFormat Format => format;
         public Type EditorComponent => typeof(EditorPlugin);
-        public IReadOnlyList<ComposerToolbarItem> ToolbarItems => [];
+        public IReadOnlyList<ComposerToolbarItem> Items => [];
         public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
         public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
         public IReadOnlyList<ComposerAsset> Assets => [];

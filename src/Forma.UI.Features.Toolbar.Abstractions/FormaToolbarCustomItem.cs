@@ -1,4 +1,4 @@
-namespace Forma.UI.Blazor.Components.Bars;
+namespace Forma.UI.Features.Toolbar;
 
 /// <summary>A <see cref="FormaToolbarItem"/> rendered by a caller-supplied component.</summary>
 public sealed record FormaToolbarCustomItem : FormaToolbarItem

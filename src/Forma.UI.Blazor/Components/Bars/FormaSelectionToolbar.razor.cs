@@ -1,6 +1,7 @@
 namespace Forma.UI.Blazor.Components.Bars;
 
 using Forma.Framework.Localization;
+using Forma.UI.Features.Toolbar;
 
 using Microsoft.AspNetCore.Components;
 

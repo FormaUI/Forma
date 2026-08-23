@@ -1,4 +1,4 @@
-namespace Forma.UI.Blazor.Components.Bars;
+namespace Forma.UI.Features.Toolbar;
 
 using Forma.UI.Style.Glyphs;
 

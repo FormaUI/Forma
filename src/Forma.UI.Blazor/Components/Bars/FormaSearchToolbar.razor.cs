@@ -1,5 +1,7 @@
 namespace Forma.UI.Blazor.Components.Bars;
 
+using Forma.UI.Features.Toolbar;
+
 using Microsoft.AspNetCore.Components;
 
 /// <summary>A search field and a row of toolbar items, for the top of a list page.</summary>

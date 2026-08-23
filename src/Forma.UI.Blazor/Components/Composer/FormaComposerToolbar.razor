@@ -4,15 +4,15 @@
 <FormaCommandArea Class="forma-composer-toolbar">
     @foreach (var (bar, index) in Bars.Select((bar, index) => (bar, index)))
     {
-        <FormaComposerCommandRow
+        <FormaComposerCommandBar
             Label="@L[bar.Label]"
-            Groups="bar.Groups"
+            Items="bar.Items"
             ShowHistory="index == 0"
             Disabled="Disabled"
             KeyMap="KeyMap"
             OnCommand="OnCommand">
             <TrailingContent>
-                @if (index == 0 && PluginGroups.Count > 0)
+                @if (index == 0 && PluginItems.Count > 0)
                 {
                     <FormaButton Variant="ButtonVariant.Ghost"
                                  Size="ButtonSize.Mini"
@@ -27,16 +27,18 @@
                     </FormaButton>
                 }
             </TrailingContent>
-        </FormaComposerCommandRow>
+        </FormaComposerCommandBar>
     }
 
-    @if (PluginGroups.Count > 0 && _arePluginsShown)
+    @if (PluginItems.Count > 0)
     {
-        <FormaComposerPluginsToolbar
+        <FormaComposerPluginsBar
             Id="@_pluginsId"
-            Groups="PluginGroups"
+            Items="PluginItems"
             Disabled="Disabled"
             KeyMap="KeyMap"
-            OnCommand="OnCommand" />
+            OnCommand="OnCommand"
+            Hidden="!_arePluginsShown"
+            Animated="true" />
     }
 </FormaCommandArea>

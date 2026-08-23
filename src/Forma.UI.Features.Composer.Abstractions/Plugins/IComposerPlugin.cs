@@ -9,14 +9,11 @@ public interface IComposerPlugin : IComposerKeyBindingProvider
     /// <summary>The unique identifier of the plugin.</summary>
     string Id { get; }
 
-    /// <summary>Toolbar items contributed by this plugin.</summary>
-    IReadOnlyList<ComposerToolbarItem> ToolbarItems { get; }
+    /// <summary>The items this plugin contributes, each naming the row it lands on.</summary>
+    IReadOnlyList<ComposerToolbarItem> Items { get; }
 
-    /// <summary>Command rows this plugin declares for its own items, or empty to use the row it defaults to.</summary>
-    IReadOnlyList<ComposerToolbarRow> ToolbarRows => [];
-
-    /// <summary>The row this plugin's items land in when they name none of their own.</summary>
-    string DefaultRow => ComposerRows.Plugins;
+    /// <summary>Command rows this plugin declares of its own, laid out after the rows the composer provides.</summary>
+    IReadOnlyList<ComposerToolbarRow> Rows => [];
 
     /// <summary>Typed-input triggers contributed by this plugin.</summary>
     IReadOnlyList<ComposerInputTrigger> InputTriggers { get; }

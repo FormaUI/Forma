@@ -1,4 +1,4 @@
-namespace Forma.UI.Blazor.Components.Bars;
+namespace Forma.UI.Features.Toolbar;
 
 /// <summary>A <see cref="FormaToolbarItem"/> presenting a menu of choices.</summary>
 public sealed record FormaToolbarMenu : FormaToolbarItem

@@ -41,7 +41,7 @@ public sealed class PlainTextEditorPlugin : IComposerEditorPlugin
         => "Plain Text";
 
     /// <inheritdoc />
-    public IReadOnlyList<ComposerToolbarItem> ToolbarItems
+    public IReadOnlyList<ComposerToolbarItem> Items
         => [];
 
     /// <inheritdoc />

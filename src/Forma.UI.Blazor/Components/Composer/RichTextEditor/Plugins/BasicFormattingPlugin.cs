@@ -3,6 +3,7 @@ namespace Forma.UI.Blazor.Components.Composer.RichTextEditor.Plugins;
 using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
+using Forma.UI.Features.Toolbar;
 using Forma.UI.Style.Glyphs;
 
 /// <summary>Contributes basic text formatting operations: bold, italic, underline, strikethrough, inline code, subscript, superscript, and clear formatting.</summary>
@@ -41,19 +42,35 @@ public sealed class BasicFormattingPlugin(RichTextEditorPlugin editor) : ICompos
     public IReadOnlyList<string> SupportedEditorIds => [RichTextEditorPlugin.EditorId];
 
     /// <inheritdoc />
-    public string DefaultRow => ComposerRows.Formatting;
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerToolbarItem> ToolbarItems =>
+    public IReadOnlyList<ComposerToolbarItem> Items =>
     [
-        new() { Id = "bold", Title = "Bold", Icon = Glyph.Bold, Command = BoldCommand, Group = "inline", IsToggle = true },
-        new() { Id = "italic", Title = "Italic", Icon = Glyph.Italic, Command = ItalicCommand, Group = "inline", IsToggle = true },
-        new() { Id = "underline", Title = "Underline", Icon = Glyph.Underline, Command = UnderlineCommand, Group = "inline", IsToggle = true },
-        new() { Id = "strike", Title = "Strikethrough", Icon = Glyph.Strikethrough, Command = StrikeCommand, Group = "inline", IsToggle = true },
-        new() { Id = "code", Title = "Code", Icon = Glyph.Code, Command = CodeCommand, Group = "script", IsToggle = true },
-        new() { Id = "subscript", Title = "Subscript", Icon = Glyph.Subscript, Command = SubscriptCommand, Group = "script", IsToggle = true },
-        new() { Id = "superscript", Title = "Superscript", Icon = Glyph.Superscript, Command = SuperscriptCommand, Group = "script", IsToggle = true },
-        new() { Id = "remove-format", Title = "Clear Formatting", Icon = Glyph.TextSlash, Command = RemoveFormatCommand, Group = "script" },
+        new(ComposerRows.Formatting,
+        [
+            new FormaToolbarGroup
+            {
+                Id = "inline-style",
+                Title = "Inline Style",
+                Items =
+                [
+                    new FormaToolbarToggle { Id = "bold", Title = "Bold", Icon = Glyph.Bold, Command = BoldCommand },
+                    new FormaToolbarToggle { Id = "italic", Title = "Italic", Icon = Glyph.Italic, Command = ItalicCommand },
+                    new FormaToolbarToggle { Id = "underline", Title = "Underline", Icon = Glyph.Underline, Command = UnderlineCommand },
+                    new FormaToolbarToggle { Id = "strike", Title = "Strikethrough", Icon = Glyph.Strikethrough, Command = StrikeCommand },
+                ],
+            },
+            new FormaToolbarGroup
+            {
+                Id = "text-effects",
+                Title = "Text Effects",
+                Items =
+                [
+                    new FormaToolbarToggle { Id = "code", Title = "Code", Icon = Glyph.Code, Command = CodeCommand },
+                    new FormaToolbarToggle { Id = "subscript", Title = "Subscript", Icon = Glyph.Subscript, Command = SubscriptCommand },
+                    new FormaToolbarToggle { Id = "superscript", Title = "Superscript", Icon = Glyph.Superscript, Command = SuperscriptCommand },
+                    new FormaToolbarCommand { Id = "remove-format", Title = "Clear Formatting", Icon = Glyph.TextSlash, Command = RemoveFormatCommand },
+                ],
+            },
+        ]),
     ];
 
     /// <inheritdoc />

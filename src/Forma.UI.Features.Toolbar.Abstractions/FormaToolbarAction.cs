@@ -1,4 +1,4 @@
-namespace Forma.UI.Blazor.Components.Bars;
+namespace Forma.UI.Features.Toolbar;
 
 /// <summary>A <see cref="FormaToolbarItem"/> that invokes a command when activated.</summary>
 public abstract record FormaToolbarAction : FormaToolbarItem

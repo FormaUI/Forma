@@ -42,5 +42,17 @@
   "Align Right": "יישור לימין",
   "Justify": "יישור לשני הצדדים",
   "Left to Right": "משמאל לימין",
-  "Right to Left": "מימין לשמאל"
+  "Right to Left": "מימין לשמאל",
+  "Inline Style": "סגנון מוטבע",
+  "Text Effects": "אפקטי טקסט",
+  "Alignment": "יישור",
+  "Text Direction": "כיוון טקסט",
+  "Lists": "רשימות",
+  "Indentation": "כניסה",
+  "Paragraph Style": "סגנון פסקה",
+  "Typography": "טיפוגרפיה",
+  "Color": "צבע",
+  "History": "היסטוריה",
+  "Document Status": "מצב המסמך",
+  "Grouped Commands": "פקודות מקובצות"
 }

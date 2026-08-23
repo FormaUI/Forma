@@ -1,0 +1,33 @@
+@namespace Forma.UI.Blazor.Components.Composer
+
+<FormaVisibility Hidden="Hidden" Animated="Animated">
+    <div class="forma-composer-plugins-row" id="@Id">
+        <FormaComposerCommandBar
+            Label="@L["Plugin Commands"]"
+            Items="Visible"
+            Disabled="Disabled"
+            KeyMap="KeyMap"
+            OnCommand="OnCommand">
+            <TrailingContent>
+                @if (Overflowing.Count > 0)
+                {
+                    <FormaOverflowMenu Orientation="MenuOrientation.Vertical"
+                                       Size="ButtonSize.Mini"
+                                       Disabled="Disabled"
+                                       Label="@L["More Plugin Commands"]">
+                        @foreach (var action in Overflowing)
+                        {
+                            <FormaDropDownMenuItem OnClick="() => OnCommand.InvokeAsync(action.Command)">
+                                @if (action.Icon is { } icon)
+                                {
+                                    <FormaGlyph Name="icon" />
+                                }
+                                <span>@GetItemTitle(action)</span>
+                            </FormaDropDownMenuItem>
+                        }
+                    </FormaOverflowMenu>
+                }
+            </TrailingContent>
+        </FormaComposerCommandBar>
+    </div>
+</FormaVisibility>

@@ -20,6 +20,21 @@
             Assert.Equal("Bold", cut.Find("button").TextContent);
         }
 
+        // A command's Title can be plugin- or host-supplied text of unknown direction, same as a readout.
+        [Fact]
+        public void Should_isolate_the_direction_of_a_command()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
+
+            // Assert
+            Assert.Equal("auto", cut.Find("button").GetAttribute("dir"));
+        }
+
         [Fact]
         public void Should_invoke_on_command_when_a_command_is_clicked()
         {

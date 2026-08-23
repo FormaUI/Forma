@@ -2,6 +2,7 @@ namespace Forma.UI.Blazor.Components.Composer;
 
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
+using Forma.UI.Features.Toolbar;
 
 using Microsoft.AspNetCore.Components;
 
@@ -37,14 +38,14 @@ public sealed partial class FormaComposerToolbar : ComponentBase
         {
             var bars = new List<ComposerToolbarRowLayout>();
 
-            foreach (var row in EditorRows.Where(row => row.Groups.Count > 0))
+            foreach (var row in EditorRows.Where(row => row.Items.Count > 0))
             {
-                var count = row.Groups.Sum(group => group.Count);
+                var count = CountLeaves(row.Items);
                 var last = bars.Count > 0 ? bars[^1] : null;
 
-                if (last is not null && last.Groups.Sum(group => group.Count) + count <= CommandsPerBar)
+                if (last is not null && CountLeaves(last.Items) + count <= CommandsPerBar)
                 {
-                    bars[^1] = last with { Groups = [.. last.Groups, .. row.Groups] };
+                    bars[^1] = last with { Items = [.. last.Items, .. row.Items] };
                 }
                 else
                 {
@@ -59,11 +60,15 @@ public sealed partial class FormaComposerToolbar : ComponentBase
     private IEnumerable<ComposerToolbarRowLayout> EditorRows
         => _layout.Rows.Where(row => row.Id != ComposerRows.Plugins);
 
-    private IReadOnlyList<IReadOnlyList<ComposerToolbarItem>> PluginGroups
-        => _layout.Rows.FirstOrDefault(row => row.Id == ComposerRows.Plugins)?.Groups ?? [];
+    private IReadOnlyList<FormaToolbarItem> PluginItems
+        => _layout.Rows.FirstOrDefault(row => row.Id == ComposerRows.Plugins)?.Items ?? [];
 
     private void TogglePlugins()
         => _arePluginsShown = !_arePluginsShown;
+
+    /// <summary>How many commands a row's items amount to, counting through a group rather than as one.</summary>
+    private static int CountLeaves(IEnumerable<FormaToolbarItem> items)
+        => items.Sum(item => item is FormaToolbarGroup group ? group.Items.Count : 1);
 
     /// <inheritdoc />
     protected override void OnParametersSet()

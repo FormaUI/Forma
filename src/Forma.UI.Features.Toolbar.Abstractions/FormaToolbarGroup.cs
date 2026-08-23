@@ -1,4 +1,4 @@
-namespace Forma.UI.Blazor.Components.Bars;
+namespace Forma.UI.Features.Toolbar;
 
 /// <summary>A named cluster of <see cref="FormaToolbarItem"/>s, separated from its neighbours by a rule.</summary>
 public sealed record FormaToolbarGroup : FormaToolbarItem

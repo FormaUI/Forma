@@ -1,6 +1,7 @@
 namespace Forma.UI.Features.Composer.Editing;
 
 using Forma.UI.Features.Composer.Plugins;
+using Forma.UI.Features.Toolbar;
 
 /// <summary>The commands one composer can run, and the layer that runs each of them.</summary>
 public sealed class ComposerCommandRegistry
@@ -30,16 +31,11 @@ public sealed class ComposerCommandRegistry
 
         foreach (var plugin in plugins)
         {
-            foreach (var item in plugin.ToolbarItems)
+            foreach (var entry in plugin.Items)
             {
-                if (item.Command is { } command)
+                foreach (var item in entry.Items)
                 {
-                    _pluginCommands[command] = plugin;
-                }
-
-                foreach (var option in item.Options)
-                {
-                    _pluginCommands[option.Command] = plugin;
+                    RegisterCommands(item, plugin);
                 }
             }
 
@@ -77,5 +73,32 @@ public sealed class ComposerCommandRegistry
         }
 
         return ComposerCommandOutcome.Unhandled;
+    }
+
+    /// <summary>Walks an item (and, for a group, its children) claiming whatever command each names.</summary>
+    private void RegisterCommands(FormaToolbarItem item, IComposerPlugin plugin)
+    {
+        switch (item)
+        {
+            case FormaToolbarGroup group:
+                foreach (var child in group.Items)
+                {
+                    RegisterCommands(child, plugin);
+                }
+
+                break;
+
+            case FormaToolbarMenu menu:
+                foreach (var option in menu.Options)
+                {
+                    _pluginCommands[option.Command] = plugin;
+                }
+
+                break;
+
+            case FormaToolbarAction action:
+                _pluginCommands[action.Command] = plugin;
+                break;
+        }
     }
 }

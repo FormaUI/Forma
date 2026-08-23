@@ -30,10 +30,10 @@ public sealed class RichTextEditorPlugin : IComposerEditorPlugin
     public Type EditorComponent => typeof(FormaRichTextEditor);
 
     /// <inheritdoc />
-    public IReadOnlyList<ComposerToolbarRow> ToolbarRows => [];
+    public IReadOnlyList<ComposerToolbarRow> Rows => [];
 
     /// <inheritdoc />
-    public IReadOnlyList<ComposerToolbarItem> ToolbarItems => [];
+    public IReadOnlyList<ComposerToolbarItem> Items => [];
 
     /// <inheritdoc />
     public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];

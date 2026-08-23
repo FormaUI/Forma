@@ -42,5 +42,17 @@
   "Align Right": "Alinear a la Derecha",
   "Justify": "Justificar",
   "Left to Right": "De Izquierda a Derecha",
-  "Right to Left": "De Derecha a Izquierda"
+  "Right to Left": "De Derecha a Izquierda",
+  "Inline Style": "Estilo en Línea",
+  "Text Effects": "Efectos de Texto",
+  "Alignment": "Alineación",
+  "Text Direction": "Dirección del Texto",
+  "Lists": "Listas",
+  "Indentation": "Sangría",
+  "Paragraph Style": "Estilo de Párrafo",
+  "Typography": "Tipografía",
+  "Color": "Color",
+  "History": "Historial",
+  "Document Status": "Estado del Documento",
+  "Grouped Commands": "Comandos Agrupados"
 }

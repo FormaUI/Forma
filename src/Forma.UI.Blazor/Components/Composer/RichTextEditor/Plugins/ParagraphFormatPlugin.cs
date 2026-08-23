@@ -3,6 +3,7 @@ namespace Forma.UI.Blazor.Components.Composer.RichTextEditor.Plugins;
 using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
+using Forma.UI.Features.Toolbar;
 using Forma.UI.Style.Glyphs;
 
 /// <summary>Contributes paragraph and block-level formatting operations: paragraph, headings 1–6, blockquote, and lead text.</summary>
@@ -44,33 +45,48 @@ public sealed class ParagraphFormatPlugin(RichTextEditorPlugin editor) : ICompos
     public IReadOnlyList<string> SupportedEditorIds => [RichTextEditorPlugin.EditorId];
 
     /// <inheritdoc />
-    public string DefaultRow => ComposerRows.Formatting;
+    public IReadOnlyList<ComposerToolbarRow> Rows => [];
 
     /// <inheritdoc />
-    public IReadOnlyList<ComposerToolbarRow> ToolbarRows => [];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerToolbarItem> ToolbarItems =>
+    public IReadOnlyList<ComposerToolbarItem> Items =>
     [
-        new()
-        {
-            Id = "block-style",
-            Title = "Block Style",
-            Icon = Glyph.Paragraph,
-            Group = "block",
-            Options =
-            [
-                new() { Id = "p", Title = "Normal", Command = ParagraphCommand },
-                new() { Id = "h1", Title = "Heading 1", Command = Heading1Command, PreviewStyle = "font-size:1.75rem;font-weight:700" },
-                new() { Id = "h2", Title = "Heading 2", Command = Heading2Command, PreviewStyle = "font-size:1.5rem;font-weight:700" },
-                new() { Id = "h3", Title = "Heading 3", Command = Heading3Command, PreviewStyle = "font-size:1.25rem;font-weight:600" },
-                new() { Id = "h4", Title = "Heading 4", Command = Heading4Command, PreviewStyle = "font-size:1.125rem;font-weight:600" },
-                new() { Id = "h5", Title = "Heading 5", Command = Heading5Command, PreviewStyle = "font-size:1rem;font-weight:600" },
-                new() { Id = "h6", Title = "Heading 6", Command = Heading6Command, PreviewStyle = "font-size:0.875rem;font-weight:600" },
-                new() { Id = "blockquote", Title = "Quote", Command = BlockquoteCommand, PreviewStyle = "font-style:italic" },
-            ],
-        },
-        new() { Id = "lead", Title = "Lead", Icon = Glyph.TextWidth, Command = LeadCommand, Row = ComposerRows.Paragraph, Group = "block", IsToggle = true },
+        new(ComposerRows.Formatting,
+        [
+            new FormaToolbarGroup
+            {
+                Id = "paragraph-style",
+                Title = "Paragraph Style",
+                Items =
+                [
+                    new FormaToolbarMenu
+                    {
+                        Id = "block-style",
+                        Title = "Block Style",
+                        Icon = Glyph.Paragraph,
+                        Options =
+                        [
+                            new() { Id = "p", Title = "Normal", Command = ParagraphCommand },
+                            new() { Id = "h1", Title = "Heading 1", Command = Heading1Command, PreviewStyle = "font-size:1.75rem;font-weight:700" },
+                            new() { Id = "h2", Title = "Heading 2", Command = Heading2Command, PreviewStyle = "font-size:1.5rem;font-weight:700" },
+                            new() { Id = "h3", Title = "Heading 3", Command = Heading3Command, PreviewStyle = "font-size:1.25rem;font-weight:600" },
+                            new() { Id = "h4", Title = "Heading 4", Command = Heading4Command, PreviewStyle = "font-size:1.125rem;font-weight:600" },
+                            new() { Id = "h5", Title = "Heading 5", Command = Heading5Command, PreviewStyle = "font-size:1rem;font-weight:600" },
+                            new() { Id = "h6", Title = "Heading 6", Command = Heading6Command, PreviewStyle = "font-size:0.875rem;font-weight:600" },
+                            new() { Id = "blockquote", Title = "Quote", Command = BlockquoteCommand, PreviewStyle = "font-style:italic" },
+                        ],
+                    },
+                ],
+            },
+        ]),
+        new(ComposerRows.Paragraph,
+        [
+            new FormaToolbarGroup
+            {
+                Id = "paragraph-style",
+                Title = "Paragraph Style",
+                Items = [new FormaToolbarToggle { Id = "lead", Title = "Lead", Icon = Glyph.TextWidth, Command = LeadCommand }],
+            },
+        ]),
     ];
 
     /// <inheritdoc />

@@ -11,6 +11,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Forma.UI.Style\Forma.UI.Style.csproj" />
+        <ProjectReference Include="..\Forma.UI.Features.Toolbar.Abstractions\Forma.UI.Features.Toolbar.Abstractions.csproj" />
     </ItemGroup>
 
 </Project>

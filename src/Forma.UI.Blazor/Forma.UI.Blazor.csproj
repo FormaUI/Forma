@@ -28,6 +28,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Forma.UI.Features.Abstractions\Forma.UI.Features.Abstractions.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.UI.Features.Toolbar.Abstractions\Forma.UI.Features.Toolbar.Abstractions.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.UI.Features.Composer.Abstractions\Forma.UI.Features.Composer.Abstractions.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.UI.Features.Composer\Forma.UI.Features.Composer.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.UI.Style\Forma.UI.Style.csproj" PrivateAssets="all" />

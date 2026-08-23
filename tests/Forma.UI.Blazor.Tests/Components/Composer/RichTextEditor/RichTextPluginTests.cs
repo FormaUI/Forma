@@ -5,11 +5,19 @@ using Forma.UI.Blazor.Components.Composer.RichTextEditor.Plugins;
 using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Documents;
 using Forma.UI.Features.Composer.Editing;
+using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Composer.Sanitization;
+using Forma.UI.Features.Toolbar;
 
 public sealed class RichTextPluginTests
 {
     private static readonly NullAssetLoader SharedAssetLoader = new();
+
+    private static FormaToolbarMenu FindMenu(IReadOnlyList<ComposerToolbarItem> items, string id)
+        => (FormaToolbarMenu)items.SelectMany(entry => entry.Items).SelectMany(Flatten).Single(item => item.Id == id);
+
+    private static IEnumerable<FormaToolbarItem> Flatten(FormaToolbarItem item)
+        => item is FormaToolbarGroup group ? group.Items.SelectMany(Flatten) : [item];
 
     private static ComposerContext CreateContext(string html = "<p>Test</p>")
     {
@@ -45,7 +53,7 @@ public sealed class RichTextPluginTests
         // Assert
         Assert.Equal("bold", requestedCommand);
         Assert.Equal("basic-formatting", plugin.Id);
-        Assert.NotEmpty(plugin.ToolbarItems);
+        Assert.NotEmpty(plugin.Items);
         Assert.NotEmpty(plugin.KeyBindings);
     }
 
@@ -155,7 +163,7 @@ public sealed class RichTextPluginTests
             new TypographyPluginOptions { FontSizeUnit = unit, FontSizes = [label] });
 
         // Act
-        var option = plugin.ToolbarItems.Single(item => item.Id == "font-size").Options.Single();
+        var option = FindMenu(plugin.Items, "font-size").Options.Single();
 
         // Assert
         Assert.Multiple(
@@ -171,7 +179,7 @@ public sealed class RichTextPluginTests
         var plugin = new TypographyPlugin(new RichTextEditorPlugin());
 
         // Act
-        var options = plugin.ToolbarItems.Single(item => item.Id == "font-size").Options;
+        var options = FindMenu(plugin.Items, "font-size").Options;
 
         // Assert
         Assert.All(options, option => Assert.EndsWith("rem", option.Command, StringComparison.Ordinal));

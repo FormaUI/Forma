@@ -3,6 +3,7 @@ namespace Forma.UI.Blazor.Components.Composer.RichTextEditor.Plugins;
 using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
+using Forma.UI.Features.Toolbar;
 using Forma.UI.Style.Glyphs;
 
 /// <summary>Contributes bulleted and numbered lists, indentation, and outdent operations.</summary>
@@ -29,15 +30,31 @@ public sealed class ListPlugin(RichTextEditorPlugin editor) : IComposerPlugin
     public IReadOnlyList<string> SupportedEditorIds => [RichTextEditorPlugin.EditorId];
 
     /// <inheritdoc />
-    public string DefaultRow => ComposerRows.Paragraph;
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerToolbarItem> ToolbarItems =>
+    public IReadOnlyList<ComposerToolbarItem> Items =>
     [
-        new() { Id = "bullet-list", Title = "Bulleted List", Icon = Glyph.ListUl, Command = BulletListCommand, Group = "list", IsToggle = true },
-        new() { Id = "ordered-list", Title = "Numbered List", Icon = Glyph.ListOl, Command = OrderedListCommand, Group = "list", IsToggle = true },
-        new() { Id = "indent", Title = "Indent", Icon = Glyph.Indent, Command = IndentCommand, Group = "indent" },
-        new() { Id = "outdent", Title = "Outdent", Icon = Glyph.Outdent, Command = OutdentCommand, Group = "indent" },
+        new(ComposerRows.Paragraph,
+        [
+            new FormaToolbarGroup
+            {
+                Id = "lists",
+                Title = "Lists",
+                Items =
+                [
+                    new FormaToolbarToggle { Id = "bullet-list", Title = "Bulleted List", Icon = Glyph.ListUl, Command = BulletListCommand },
+                    new FormaToolbarToggle { Id = "ordered-list", Title = "Numbered List", Icon = Glyph.ListOl, Command = OrderedListCommand },
+                ],
+            },
+            new FormaToolbarGroup
+            {
+                Id = "indentation",
+                Title = "Indentation",
+                Items =
+                [
+                    new FormaToolbarCommand { Id = "indent", Title = "Indent", Icon = Glyph.Indent, Command = IndentCommand },
+                    new FormaToolbarCommand { Id = "outdent", Title = "Outdent", Icon = Glyph.Outdent, Command = OutdentCommand },
+                ],
+            },
+        ]),
     ];
 
     /// <inheritdoc />

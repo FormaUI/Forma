@@ -1,5 +1,7 @@
 namespace Forma.UI.Blazor.Components.Bars;
 
+using Forma.UI.Features.Toolbar;
+
 using Microsoft.AspNetCore.Components;
 
 /// <summary>A quiet strip of status readouts and occasional commands, meant to sit beneath a canvas or at the foot of a panel.</summary>

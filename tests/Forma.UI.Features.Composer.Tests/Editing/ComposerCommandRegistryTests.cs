@@ -5,6 +5,7 @@ using Forma.UI.Features.Composer.Documents;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Composer.Sanitization;
+using Forma.UI.Features.Toolbar;
 
 using Xunit;
 
@@ -22,8 +23,8 @@ public sealed class ComposerCommandRegistryTests
     {
         public string Id => id;
         public List<string> Executed { get; } = [];
-        public IReadOnlyList<ComposerToolbarItem> ToolbarItems { get; } =
-            [.. commands.Select(c => new ComposerToolbarItem { Id = c, Title = c, Command = c })];
+        public IReadOnlyList<ComposerToolbarItem> Items { get; } =
+            [new(ComposerRows.Plugins, [.. commands.Select(c => new FormaToolbarCommand { Id = c, Title = c, Command = c })])];
         public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
         public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
         public IReadOnlyList<ComposerAsset> Assets => [];
@@ -40,14 +41,17 @@ public sealed class ComposerCommandRegistryTests
     {
         public string Id => id;
         public List<string> Executed { get; } = [];
-        public IReadOnlyList<ComposerToolbarItem> ToolbarItems { get; } =
+        public IReadOnlyList<ComposerToolbarItem> Items { get; } =
         [
-            new()
-            {
-                Id = itemId,
-                Title = itemId,
-                Options = [.. optionCommands.Select(c => new ComposerToolbarOption { Id = c, Title = c, Command = c })],
-            },
+            new(ComposerRows.Plugins,
+            [
+                new FormaToolbarMenu
+                {
+                    Id = itemId,
+                    Title = itemId,
+                    Options = [.. optionCommands.Select(c => new FormaToolbarOption { Id = c, Title = c, Command = c })],
+                },
+            ]),
         ];
         public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
         public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];

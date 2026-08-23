@@ -4,6 +4,7 @@ using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Documents;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
+using Forma.UI.Features.Toolbar;
 using Forma.UI.Style.Glyphs;
 
 using Xunit;
@@ -17,8 +18,8 @@ public sealed class ComposerToolbarLayoutTests
         public Glyph Icon => Glyph.File;
         public ComposerDocumentFormat Format => ComposerDocumentFormat.PlainText;
         public Type EditorComponent => typeof(Editor);
-        public IReadOnlyList<ComposerToolbarItem> ToolbarItems { get; init; } = [];
-        public IReadOnlyList<ComposerToolbarRow> ToolbarRows { get; init; } = [];
+        public IReadOnlyList<ComposerToolbarItem> Items { get; init; } = [];
+        public IReadOnlyList<ComposerToolbarRow> Rows { get; init; } = [];
         public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
         public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
         public IReadOnlyList<ComposerAsset> Assets => [];
@@ -28,8 +29,8 @@ public sealed class ComposerToolbarLayoutTests
     private sealed class Plugin : IComposerPlugin
     {
         public string Id { get; init; } = "plugin";
-        public IReadOnlyList<ComposerToolbarItem> ToolbarItems { get; init; } = [];
-        public IReadOnlyList<ComposerToolbarRow> ToolbarRows { get; init; } = [];
+        public IReadOnlyList<ComposerToolbarItem> Items { get; init; } = [];
+        public IReadOnlyList<ComposerToolbarRow> Rows { get; init; } = [];
         public IReadOnlyList<string> SupportedEditorIds { get; init; } = [];
         public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
         public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
@@ -37,11 +38,17 @@ public sealed class ComposerToolbarLayoutTests
         public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
     }
 
-    private static ComposerToolbarItem Item(string id, string? row = null)
-        => new() { Id = id, Title = id, Command = id, Row = row };
+    private static ComposerToolbarItem Row(string rowId, params FormaToolbarItem[] items)
+        => new(rowId, items);
+
+    private static FormaToolbarCommand Command(string id)
+        => new() { Id = id, Title = id, Command = id };
 
     private static IEnumerable<string> ItemIds(ComposerToolbarRowLayout row)
-        => row.Groups.SelectMany(g => g).Select(i => i.Id);
+        => row.Items.SelectMany(Flatten).Select(i => i.Id);
+
+    private static IEnumerable<FormaToolbarItem> Flatten(FormaToolbarItem item)
+        => item is FormaToolbarGroup group ? group.Items.SelectMany(Flatten) : [item];
 
     [Fact]
     public void Should_always_render_the_built_in_row_even_when_nothing_fills_it()
@@ -58,10 +65,10 @@ public sealed class ComposerToolbarLayoutTests
     }
 
     [Fact]
-    public void Should_put_the_editors_unrouted_commands_in_the_built_in_row()
+    public void Should_put_the_editors_commands_in_the_row_it_names()
     {
         // Arrange
-        var editor = new Editor { ToolbarItems = [Item("bold")] };
+        var editor = new Editor { Items = [Row(ComposerRows.BuiltIn, Command("bold"))] };
 
         // Act
         var layout = ComposerToolbarLayout.Create(editor, []);
@@ -71,11 +78,11 @@ public sealed class ComposerToolbarLayoutTests
     }
 
     [Fact]
-    public void Should_put_an_external_plugins_unrouted_commands_in_the_plugin_row()
+    public void Should_put_an_external_plugins_commands_in_the_row_it_names()
     {
         // Arrange
         var editor = new Editor();
-        var plugin = new Plugin { ToolbarItems = [Item("shout")] };
+        var plugin = new Plugin { Items = [Row(ComposerRows.Plugins, Command("shout"))] };
 
         // Act
         var layout = ComposerToolbarLayout.Create(editor, [plugin]);
@@ -92,8 +99,8 @@ public sealed class ComposerToolbarLayoutTests
         // Arrange
         var editor = new Editor
         {
-            ToolbarRows = [new() { Id = "format", Label = "Formatting" }],
-            ToolbarItems = [Item("bold", row: "format")],
+            Rows = [new() { Id = "format", Label = "Formatting" }],
+            Items = [Row("format", Command("bold"))],
         };
 
         // Act
@@ -111,8 +118,8 @@ public sealed class ComposerToolbarLayoutTests
         // Arrange
         var editor = new Editor
         {
-            ToolbarRows = [new() { Id = "format", Label = "Formatting" }],
-            ToolbarItems = [Item("save"), Item("bold", row: "format")],
+            Rows = [new() { Id = "format", Label = "Formatting" }],
+            Items = [Row(ComposerRows.BuiltIn, Command("save")), Row("format", Command("bold"))],
         };
 
         // Act
@@ -131,8 +138,8 @@ public sealed class ComposerToolbarLayoutTests
         var editor = new Editor();
         var plugin = new Plugin
         {
-            ToolbarRows = [new() { Id = "tables", Label = "Tables" }],
-            ToolbarItems = [Item("insert-table", row: "tables")],
+            Rows = [new() { Id = "tables", Label = "Tables" }],
+            Items = [Row("tables", Command("insert-table"))],
         };
 
         // Act
@@ -150,13 +157,13 @@ public sealed class ComposerToolbarLayoutTests
         // Arrange
         var editor = new Editor
         {
-            ToolbarRows = [new() { Id = "format", Label = "Formatting" }],
-            ToolbarItems = [Item("bold", row: "format")],
+            Rows = [new() { Id = "format", Label = "Formatting" }],
+            Items = [Row("format", Command("bold"))],
         };
         var plugin = new Plugin
         {
-            ToolbarRows = [new() { Id = "tables", Label = "Tables" }],
-            ToolbarItems = [Item("shout"), Item("insert-table", row: "tables")],
+            Rows = [new() { Id = "tables", Label = "Tables" }],
+            Items = [Row(ComposerRows.Plugins, Command("shout")), Row("tables", Command("insert-table"))],
         };
 
         // Act
@@ -170,7 +177,7 @@ public sealed class ComposerToolbarLayoutTests
     public void Should_drop_a_declared_row_nothing_fills()
     {
         // Arrange
-        var editor = new Editor { ToolbarRows = [new() { Id = "format", Label = "Formatting" }] };
+        var editor = new Editor { Rows = [new() { Id = "format", Label = "Formatting" }] };
 
         // Act
         var layout = ComposerToolbarLayout.Create(editor, []);
@@ -180,18 +187,18 @@ public sealed class ComposerToolbarLayoutTests
     }
 
     [Fact]
-    public void Should_fall_back_to_the_default_row_when_an_item_names_a_row_nobody_declared()
+    public void Should_fall_back_to_the_plugins_row_when_an_item_names_a_row_nobody_declared()
     {
         // Arrange
-        var editor = new Editor { ToolbarItems = [Item("bold", row: "nowhere")] };
+        var editor = new Editor { Items = [Row("nowhere", Command("bold"))] };
 
         // Act
         var layout = ComposerToolbarLayout.Create(editor, []);
 
         // Assert
         Assert.Multiple(
-            () => Assert.Equal([ComposerRows.BuiltIn], layout.Rows.Select(r => r.Id)),
-            () => Assert.Equal(["bold"], ItemIds(layout.Rows[0])));
+            () => Assert.Equal([ComposerRows.BuiltIn, ComposerRows.Plugins], layout.Rows.Select(r => r.Id)),
+            () => Assert.Equal(["bold"], ItemIds(layout.Rows[1])));
     }
 
     [Fact]
@@ -199,7 +206,7 @@ public sealed class ComposerToolbarLayoutTests
     {
         // Arrange
         var editor = new Editor { Id = "plain" };
-        var plugin = new Plugin { SupportedEditorIds = ["rich"], ToolbarItems = [Item("shout")] };
+        var plugin = new Plugin { SupportedEditorIds = ["rich"], Items = [Row(ComposerRows.Plugins, Command("shout"))] };
 
         // Act
         var layout = ComposerToolbarLayout.Create(editor, [plugin]);
@@ -213,8 +220,8 @@ public sealed class ComposerToolbarLayoutTests
     {
         // Arrange
         var editor = new Editor();
-        var first = new Plugin { Id = "a", ToolbarRows = [new() { Id = "shared", Label = "First" }], ToolbarItems = [Item("one", row: "shared")] };
-        var second = new Plugin { Id = "b", ToolbarRows = [new() { Id = "shared", Label = "Second" }], ToolbarItems = [Item("two", row: "shared")] };
+        var first = new Plugin { Id = "a", Rows = [new() { Id = "shared", Label = "First" }], Items = [Row("shared", Command("one"))] };
+        var second = new Plugin { Id = "b", Rows = [new() { Id = "shared", Label = "Second" }], Items = [Row("shared", Command("two"))] };
 
         // Act
         var layout = ComposerToolbarLayout.Create(editor, [first, second]);
@@ -224,25 +231,5 @@ public sealed class ComposerToolbarLayoutTests
         Assert.Multiple(
             () => Assert.Equal("First", shared.Label),
             () => Assert.Equal(["one", "two"], ItemIds(shared)));
-    }
-
-    [Fact]
-    public void Should_separate_commands_into_groups_within_a_row()
-    {
-        // Arrange
-        var editor = new Editor
-        {
-            ToolbarItems =
-            [
-                new() { Id = "bold", Title = "bold", Group = "text" },
-                new() { Id = "link", Title = "link", Group = "insert" },
-            ],
-        };
-
-        // Act
-        var layout = ComposerToolbarLayout.Create(editor, []);
-
-        // Assert
-        Assert.Equal(2, layout.Rows[0].Groups.Count);
     }
 }

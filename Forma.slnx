@@ -9,6 +9,7 @@
     <Project Path="src\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
     <Project Path="src\Forma.UI.Features.Abstractions\Forma.UI.Features.Abstractions.csproj" />
     <Project Path="src\Forma.UI.Features\Forma.UI.Features.csproj" />
+    <Project Path="src\Forma.UI.Features.Toolbar.Abstractions\Forma.UI.Features.Toolbar.Abstractions.csproj" />
     <Project Path="src\Forma.UI.Features.Composer.Abstractions\Forma.UI.Features.Composer.Abstractions.csproj" />
     <Project Path="src\Forma.UI.Features.Composer\Forma.UI.Features.Composer.csproj" />
     <Project Path="src\Forma.UI.Blazor\Forma.UI.Blazor.csproj" />
