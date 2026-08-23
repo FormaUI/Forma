@@ -1,0 +1,34 @@
+.forma-search-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-block-end: 16px;
+}
+
+.forma-search-toolbar-search {
+    flex: 1 1 200px;
+    padding-block: 6px;
+    padding-inline: 10px;
+    font-size: 0.875rem;
+}
+
+/* The placeholder is UI text, so an empty field follows the page; dir="auto" would fall back to ltr and strand an RTL placeholder. */
+.forma-search-toolbar-search:placeholder-shown {
+    direction: inherit;
+    unicode-bidi: normal;
+}
+
+.forma-search-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    margin-inline-start: auto;
+}
+
+@media (pointer: coarse) {
+    .forma-search-toolbar-search {
+        min-block-size: 2.75rem;
+    }
+}

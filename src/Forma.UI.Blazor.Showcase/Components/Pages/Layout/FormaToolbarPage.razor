@@ -5,49 +5,127 @@
 @inject IStringLocale<FormaToolbarPage> L
 
 <h1>FormaToolbar</h1>
-<p class="description">@L["A flex container for search inputs, filters, and action buttons. Used across all list pages."]</p>
+<p class="description">@L["A toolbar of grouped, item-driven commands, built on FormaCommandArea and FormaCommandBar. Items are plain data; the toolbar decides how each renders."]</p>
 
 <div class="demo-section">
-    <h2>@L["Search Only"]</h2>
-    <div class="demo-box">
-        <FormaToolbar OnSearch="HandleSearch1" SearchPlaceholder="@L["Search..."]" />
-        <p class="demo-output">@L["Last search"]: <code>@_lastSearch1</code></p>
+    <h2>@L["Grouped Commands"]</h2>
+    <p class="description">@L["Items sharing a Group cluster together, separated from the next group by a rule."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaToolbar Label="@L["Formatting"]" Items="_formattingItems" OnCommand="HandleCommand" />
+    </div>
+    <p class="demo-output">@L["Last command"]: <code>@_lastCommand</code></p>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Toggle State"]</h2>
+    <p class="description">@L["An item marked IsToggle reflects its own IsActive, drawn with an underline as well as colour so the state never rests on colour alone."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaToolbar Label="@L["Formatting"]" Items="_toggleItems" OnCommand="HandleToggleCommand" />
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["Actions Only"]</h2>
-    <div class="demo-box">
-        <FormaToolbar>
-            <button class="button button-primary">@L["Add New"]</button>
-            <button class="button button-secondary">@L["Export"]</button>
-        </FormaToolbar>
+    <h2>@L["Options as a Menu"]</h2>
+    <p class="description">@L["An item offering Options renders as a dropdown instead of a button, showing the active option's title or a colour swatch."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaToolbar Label="@L["Typography"]" Items="_menuItems" OnCommand="HandleMenuCommand" />
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["Search with Actions"]</h2>
-    <div class="demo-box">
-        <FormaToolbar OnSearch="HandleSearch3" SearchPlaceholder="@L["Search..."]">
-            <button class="button button-primary">@L["Add New"]</button>
+    <h2>@L["Keyboard Shortcuts"]</h2>
+    <p class="description">@L["An item's ShortcutDisplay appears in its tooltip alongside the label."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaToolbar Label="@L["Formatting"]" Items="_shortcutItems" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Disabled"]</h2>
+    <p class="description">@L["Every control in the toolbar disables together."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaToolbar Label="@L["Formatting"]" Items="_formattingItems" Disabled="true" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Content Pinned Past the Track"]</h2>
+    <p class="description">@L["Trailing content, such as an overflow toggle, stays put while the commands beside it scroll."]</p>
+    <div class="demo-box demo-box-flush demo-command-bar-narrow">
+        <FormaToolbar Label="@L["Formatting"]" Items="_manyItems">
+            <TrailingContent>
+                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" IconOnly="true" aria-label="@L["More"]"><FormaGlyph Name="Glyph.EllipsisVertical" /></FormaButton>
+            </TrailingContent>
         </FormaToolbar>
-        <p class="demo-output">@L["Last search"]: <code>@_lastSearch3</code></p>
     </div>
 </div>
 
 @code {
-    private string _lastSearch1 = "";
-    private string _lastSearch3 = "";
+    private string _lastCommand = "";
+    private bool _isBoldActive;
 
-    private Task HandleSearch1(string value)
-    {
-        _lastSearch1 = value;
-        return Task.CompletedTask;
-    }
+    private IReadOnlyList<FormaToolbarItem> _formattingItems =>
+    [
+        new() { Id = "bold", Title = L["Bold"], Icon = Glyph.Bold, Command = "format.bold", Group = "inline" },
+        new() { Id = "italic", Title = L["Italic"], Icon = Glyph.Italic, Command = "format.italic", Group = "inline" },
+        new() { Id = "align-left", Title = L["Align Left"], Icon = Glyph.AlignLeft, Command = "format.align-left", Group = "align" },
+        new() { Id = "align-right", Title = L["Align Right"], Icon = Glyph.AlignRight, Command = "format.align-right", Group = "align" },
+    ];
 
-    private Task HandleSearch3(string value)
-    {
-        _lastSearch3 = value;
-        return Task.CompletedTask;
-    }
+    private IReadOnlyList<FormaToolbarItem> _toggleItems =>
+    [
+        new() { Id = "bold", Title = L["Bold"], Icon = Glyph.Bold, Command = "toggle.bold", IsToggle = true, IsActive = _isBoldActive },
+    ];
+
+    private IReadOnlyList<FormaToolbarItem> _menuItems =>
+    [
+        new()
+        {
+            Id = "font-family",
+            Title = L["Font Family"],
+            Icon = Glyph.Font,
+            Options =
+            [
+                new() { Id = "arial", Title = "Arial", Command = "typography.font-family:Arial", IsActive = true, PreviewStyle = "font-family:Arial" },
+                new() { Id = "georgia", Title = "Georgia", Command = "typography.font-family:Georgia", PreviewStyle = "font-family:Georgia" },
+            ],
+        },
+        new()
+        {
+            Id = "text-color",
+            Title = L["Text Color"],
+            Icon = Glyph.Palette,
+            Group = "color",
+            Options =
+            [
+                new() { Id = "black", Title = L["Black"], Command = "typography.text-color:#000000", IsActive = true, Swatch = "#000000" },
+                new() { Id = "red", Title = L["Red"], Command = "typography.text-color:#d32f2f", Swatch = "#d32f2f" },
+            ],
+        },
+    ];
+
+    private IReadOnlyList<FormaToolbarItem> _shortcutItems =>
+    [
+        new() { Id = "bold", Title = L["Bold"], Icon = Glyph.Bold, Command = "format.bold", ShortcutDisplay = "Ctrl+B", ShortcutAriaKeys = "Control+B" },
+        new() { Id = "italic", Title = L["Italic"], Icon = Glyph.Italic, Command = "format.italic", ShortcutDisplay = "Ctrl+I", ShortcutAriaKeys = "Control+I" },
+    ];
+
+    private IReadOnlyList<FormaToolbarItem> _manyItems =>
+    [
+        .. Enumerable.Range(1, 10).Select(i => new FormaToolbarItem
+        {
+            Id = $"command-{i}",
+            Title = $"{L["Command"]} {i}",
+            Command = $"demo.command-{i}",
+        }),
+    ];
+
+    private void HandleCommand(string command)
+        => _lastCommand = command;
+
+    private void HandleToggleCommand(string command)
+        => _isBoldActive = !_isBoldActive;
+
+    private void HandleMenuCommand(string command)
+        => _lastCommand = command;
 }

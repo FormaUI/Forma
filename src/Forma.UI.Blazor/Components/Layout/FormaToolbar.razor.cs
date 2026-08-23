@@ -1,46 +1,64 @@
 namespace Forma.UI.Blazor.Components.Layout;
 
+using Forma.UI.Blazor.Components.Buttons;
+
 using Microsoft.AspNetCore.Components;
 
-public sealed partial class FormaToolbar : IDisposable
+/// <summary>A toolbar of grouped, item-driven commands, built on <see cref="FormaCommandArea"/> and <see cref="FormaCommandBar"/>.</summary>
+public sealed partial class FormaToolbar : ComponentBase
 {
-    private CancellationTokenSource? _cts;
+    private static readonly FormaButtonOptions MenuTriggerOptions =
+        new() { Variant = ButtonVariant.Ghost, Size = ButtonSize.Mini };
 
-    [Parameter] public RenderFragment? ChildContent { get; set; }
-    [Parameter] public EventCallback<string> OnSearch { get; set; }
-    [Parameter] public string? SearchPlaceholder { get; set; }
-    [Parameter] public TimeSpan SearchDelay { get; set; } = TimeSpan.FromMilliseconds(300);
+    /// <summary>The accessible name of the toolbar.</summary>
+    [Parameter, EditorRequired] public string Label { get; set; } = default!;
 
-    protected override void OnParametersSet() => ArgumentOutOfRangeException.ThrowIfLessThan(SearchDelay, TimeSpan.Zero);
+    /// <summary>The commands the toolbar renders, clustered by their own <see cref="FormaToolbarItem.Group"/>.</summary>
+    [Parameter] public IReadOnlyList<FormaToolbarItem> Items { get; set; } = [];
 
-    private async Task HandleSearchInput(ChangeEventArgs e)
+    /// <summary>Whether every control in the toolbar is disabled.</summary>
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Callback invoked with the command an item raised.</summary>
+    [Parameter] public EventCallback<string> OnCommand { get; set; }
+
+    /// <summary>Content pinned past the end of the track, staying put while the commands scroll.</summary>
+    [Parameter] public RenderFragment? TrailingContent { get; set; }
+
+    /// <summary>Accessible name for the button scrolling toward the start.</summary>
+    [Parameter] public string? ScrollBackLabel { get; set; }
+
+    /// <summary>Accessible name for the button scrolling toward the end.</summary>
+    [Parameter] public string? ScrollForwardLabel { get; set; }
+
+    /// <summary>Extra classes applied to the underlying <see cref="FormaCommandBar"/>.</summary>
+    [Parameter] public string? Class { get; set; }
+
+    private IReadOnlyList<IReadOnlyList<FormaToolbarItem>> Groups
+        => Items.Count == 0
+            ? []
+            : [.. Items.GroupBy(item => item.Group ?? string.Empty).Select(group => (IReadOnlyList<FormaToolbarItem>)[.. group])];
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+        => ArgumentException.ThrowIfNullOrWhiteSpace(Label);
+
+    private async Task HandleItemClickAsync(FormaToolbarItem item)
     {
-        if (_cts is not null)
+        if (item.Command is { } command)
         {
-            await _cts.CancelAsync();
-            _cts.Dispose();
+            await OnCommand.InvokeAsync(command);
         }
-
-        _cts = new CancellationTokenSource();
-        var token = _cts.Token;
-        var value = e.Value?.ToString() ?? "";
-
-        await Task.Delay(SearchDelay, token)
-                  .ContinueWith(t =>
-                  {
-                      if (t.IsCompletedSuccessfully)
-                      {
-                          return InvokeAsync(() => OnSearch.InvokeAsync(value));
-                      }
-
-                      return Task.CompletedTask;
-                  }, TaskScheduler.Default)
-                  .Unwrap();
     }
 
-    public void Dispose()
-    {
-        _cts?.Cancel();
-        _cts?.Dispose();
-    }
+    private static string GetActiveOptionTitle(FormaToolbarItem item)
+        => (item.Options.FirstOrDefault(option => option.IsActive) ?? item.Options[0]).Title;
+
+    private static string? GetActiveSwatch(FormaToolbarItem item)
+        => (item.Options.FirstOrDefault(option => option.IsActive) ?? item.Options[0]).Swatch;
+
+    private static string GetTooltip(FormaToolbarItem item)
+        => item.ShortcutDisplay is { } shortcut
+            ? $"{item.Title} ({shortcut})"
+            : item.Title;
 }

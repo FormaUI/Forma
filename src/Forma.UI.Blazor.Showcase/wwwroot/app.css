@@ -116,9 +116,9 @@ body {
     overflow: hidden;
 }
 
-.demo-command-bar-tinted {
-    --forma-command-bar-padding: 1.25rem;
-    --forma-command-bar-background-color: var(--hover-background-color);
+.demo-command-area-tinted {
+    --forma-command-area-padding: 1.25rem;
+    --forma-command-area-background-color: var(--hover-background-color);
 }
 
 /* Forces the overflow case without needing the window resized. */

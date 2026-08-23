@@ -1,15 +1,90 @@
 /* ============================================================
    FormaCommandBar — CSS isolation
-   The region alone: surface, the rule beneath it, and the stack
-   its rows sit in. What fills a row is the caller's.
+   A bar of commands on a scrolling track, flanked by arrows
+   that appear only once the commands outgrow the width.
    ============================================================ */
 
 .forma-command-bar {
     display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: var(--forma-command-bar-padding, 0.75rem);
-    background: var(--forma-command-bar-background-color, var(--modal-background-color));
-    border-block-end: 1px solid var(--border-color);
-    box-sizing: border-box;
+    align-items: center;
+    gap: 0.35rem;
+    min-inline-size: 0;
+}
+
+.forma-command-bar-track {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex: 1;
+    min-inline-size: 0;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    /* The arrows drive the track, so its own bar would only add a second control for the same thing. */
+    scrollbar-width: none;
+    /* Vertical panning stays with the page; the track claims the horizontal axis alone. */
+    touch-action: pan-y;
+}
+
+.forma-command-bar-track::-webkit-scrollbar {
+    display: none;
+}
+
+/* A row of buttons must not squash to fit; overflowing is what the arrows are for. */
+.forma-command-bar-track > * {
+    flex-shrink: 0;
+}
+
+.forma-command-bar-scroll {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    min-inline-size: 24px;
+    min-block-size: 24px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-muted-color);
+    font-size: 0.7rem;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+@media (hover: hover) {
+    .forma-command-bar-scroll:not(:disabled):hover {
+        background: var(--hover-background-color);
+        color: var(--main-color);
+    }
+}
+
+.forma-command-bar-scroll:focus-visible {
+    outline: 2px solid var(--focus-color);
+    outline-offset: 1px;
+}
+
+.forma-command-bar-scroll:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+/* The chevron is not bidi-mirrored, so each arrow is turned to point the way it scrolls. */
+.forma-command-bar-scroll-back {
+    rotate: 180deg;
+}
+
+.forma-command-bar-scroll-back:dir(rtl) {
+    rotate: 0deg;
+}
+
+.forma-command-bar-scroll-forward:dir(rtl) {
+    rotate: 180deg;
+}
+
+@media (pointer: coarse) {
+    .forma-command-bar-scroll {
+        min-inline-size: 2.75rem;
+        min-block-size: 2.75rem;
+    }
 }

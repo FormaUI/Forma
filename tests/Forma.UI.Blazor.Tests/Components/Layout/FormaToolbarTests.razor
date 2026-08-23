@@ -4,149 +4,263 @@
     public sealed class Component
     {
         [Fact]
-        public void Should_render_toolbar_container()
+        public void Should_render_an_item_as_a_button()
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
+            IReadOnlyList<FormaToolbarItem> items = [new() { Id = "bold", Title = "Bold", Command = "bold" }];
 
             // Act
-            var cut = ctx.Render(@<FormaToolbar />);
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="items" />);
 
             // Assert
-            cut.Find(".forma-toolbar");
+            Assert.NotNull(cut.Find("button[aria-label=Bold]"));
         }
 
         [Fact]
-        public void Should_not_render_search_input_without_callback()
+        public void Should_invoke_on_command_when_an_item_is_clicked()
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
+            IReadOnlyList<FormaToolbarItem> items = [new() { Id = "bold", Title = "Bold", Command = "format.bold" }];
+            string? invoked = null;
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="items" OnCommand="c => invoked = c" />);
 
             // Act
-            var cut = ctx.Render(@<FormaToolbar />);
+            cut.Find("button[aria-label=Bold]").Click();
 
             // Assert
-            Assert.Empty(cut.FindAll("input"));
+            Assert.Equal("format.bold", invoked);
         }
 
         [Fact]
-        public void Should_not_render_actions_without_child_content()
+        public void Should_separate_groups_with_their_own_wrapper()
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
+            IReadOnlyList<FormaToolbarItem> items =
+            [
+                new() { Id = "bold", Title = "Bold", Command = "bold", Group = "inline" },
+                new() { Id = "italic", Title = "Italic", Command = "italic", Group = "inline" },
+                new() { Id = "align-left", Title = "Align Left", Command = "align-left", Group = "align" },
+            ];
 
             // Act
-            var cut = ctx.Render(@<FormaToolbar />);
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="items" />);
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-toolbar-actions"));
+            Assert.Equal(2, cut.FindAll(".forma-toolbar-group").Count);
         }
 
         [Fact]
-        public void Should_render_search_input_when_callback_provided()
+        public void Should_mark_an_active_toggle_item_pressed()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            IReadOnlyList<FormaToolbarItem> items = [new() { Id = "bold", Title = "Bold", Command = "bold", IsToggle = true, IsActive = true }];
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="items" />);
+
+            // Assert
+            var button = cut.Find("button[aria-label=Bold]");
+            Assert.Multiple(
+                () => Assert.Equal("true", button.GetAttribute("aria-pressed")),
+                () => Assert.Contains("forma-toolbar-button-active", button.ClassList));
+        }
+
+        [Fact]
+        public void Should_not_mark_an_inactive_toggle_item_pressed()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            IReadOnlyList<FormaToolbarItem> items = [new() { Id = "bold", Title = "Bold", Command = "bold", IsToggle = true, IsActive = false }];
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="items" />);
+
+            // Assert
+            var button = cut.Find("button[aria-label=Bold]");
+            Assert.Multiple(
+                () => Assert.Equal("false", button.GetAttribute("aria-pressed")),
+                () => Assert.DoesNotContain("forma-toolbar-button-active", button.ClassList));
+        }
+
+        [Fact]
+        public void Should_show_the_shortcut_in_the_tooltip()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            IReadOnlyList<FormaToolbarItem> items = [new() { Id = "bold", Title = "Bold", Command = "bold", ShortcutDisplay = "Ctrl+B" }];
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="items" />);
+
+            // Assert
+            Assert.Equal("Bold (Ctrl+B)", cut.Find("button[aria-label=Bold]").GetAttribute("title"));
+        }
+
+        [Fact]
+        public void Should_render_an_item_with_options_as_a_menu()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            IReadOnlyList<FormaToolbarItem> items =
+            [
+                new()
+                {
+                    Id = "align",
+                    Title = "Align",
+                    Options =
+                    [
+                        new() { Id = "left", Title = "Left", Command = "align.left", IsActive = true },
+                        new() { Id = "right", Title = "Right", Command = "align.right" },
+                    ],
+                },
+            ];
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="items" />);
+
+            // Assert
+            Assert.Equal("Left", cut.Find(".forma-toolbar-menu-value").TextContent);
+        }
+
+        [Fact]
+        public void Should_invoke_on_command_when_an_option_is_picked()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            IReadOnlyList<FormaToolbarItem> items =
+            [
+                new()
+                {
+                    Id = "align",
+                    Title = "Align",
+                    Options =
+                    [
+                        new() { Id = "left", Title = "Left", Command = "align.left", IsActive = true },
+                        new() { Id = "right", Title = "Right", Command = "align.right" },
+                    ],
+                },
+            ];
+            string? invoked = null;
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="items" OnCommand="c => invoked = c" />);
+
+            // Act
+            cut.Find(".forma-toolbar-menu.forma-dropdown-menu-trigger").Click();
+            cut.FindAll(".forma-dropdown-menu-item")[1].Click();
+
+            // Assert
+            Assert.Equal("align.right", invoked);
+        }
+
+        [Fact]
+        public void Should_render_a_swatch_when_the_active_option_carries_one()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            IReadOnlyList<FormaToolbarItem> items =
+            [
+                new()
+                {
+                    Id = "color",
+                    Title = "Color",
+                    Options = [new() { Id = "red", Title = "Red", Command = "color.red", IsActive = true, Swatch = "#d32f2f" }],
+                },
+            ];
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="items" />);
+
+            // Assert
+            Assert.Contains("background-color:#d32f2f", cut.Find(".forma-toolbar-menu-bar").GetAttribute("style"));
+        }
+
+        [Fact]
+        public void Should_render_a_custom_component_in_place_of_a_button()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            IReadOnlyList<FormaToolbarItem> items = [new() { Id = "clock", Title = "Clock", CustomComponent = typeof(FormaGlyph) }];
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="items" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll("button[aria-label=Clock]"));
+            Assert.NotNull(cut.FindComponent<FormaGlyph>());
+        }
+
+        [Fact]
+        public void Should_disable_every_item_when_the_toolbar_is_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            IReadOnlyList<FormaToolbarItem> items = [new() { Id = "bold", Title = "Bold", Command = "bold" }];
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="items" Disabled="true" />);
+
+            // Assert
+            Assert.True(cut.Find("button[aria-label=Bold]").HasAttribute("disabled"));
+        }
+
+        [Fact]
+        public void Should_render_trailing_content_past_the_track()
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
 
             // Act
             var cut = ctx.Render(
-                @<FormaToolbar OnSearch="@((string _) => Task.CompletedTask)" />);
+                @<FormaToolbar Label="Formatting">
+                    <TrailingContent>
+                        <span class="pinned">Pinned</span>
+                    </TrailingContent>
+                </FormaToolbar>);
 
             // Assert
-            cut.Find("input.forma-toolbar-search");
+            Assert.NotNull(cut.Find(".pinned"));
         }
 
         [Fact]
-        public void Should_set_placeholder_when_provided()
+        public void Should_keep_a_menu_with_its_own_item_when_an_earlier_item_is_removed()
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-
-            // Act
-            var cut = ctx.Render(
-                @<FormaToolbar OnSearch="@((string _) => Task.CompletedTask)" SearchPlaceholder="Search..." />);
-
-            // Assert
-            Assert.Equal("Search...", cut.Find("input").GetAttribute("placeholder"));
-        }
-
-        [Fact]
-        public void Should_not_set_placeholder_when_not_provided()
-        {
-            // Arrange
-            using var ctx = new FormaToolbarTests();
-
-            // Act
-            var cut = ctx.Render(
-                @<FormaToolbar OnSearch="@((string _) => Task.CompletedTask)" />);
-
-            // Assert
-            Assert.Null(cut.Find("input").GetAttribute("placeholder"));
-        }
-
-        [Fact]
-        public async Task Should_invoke_callback_with_input_value()
-        {
-            // Arrange
-            using var ctx = new FormaToolbarTests();
-            var received = new List<string>();
-            var cut = ctx.Render(
-                @<FormaToolbar OnSearch="@((string v) => { received.Add(v); return Task.CompletedTask; })" SearchDelay="@TimeSpan.Zero" />);
-
-            // Act
-            await cut.Find("input").TriggerEventAsync("oninput", new ChangeEventArgs { Value = "hello" });
-            await Task.Delay(50, Xunit.TestContext.Current.CancellationToken);
-
-            // Assert
-            Assert.Multiple(() =>
+            FormaToolbarItem MenuItem(string id) => new()
             {
-                Assert.Single(received);
-                Assert.Equal("hello", received[0]);
-            });
+                Id = id,
+                Title = id,
+                Options = [new() { Id = $"{id}-only", Title = id, Command = $"{id}.pick", IsActive = true }],
+            };
+            IReadOnlyList<FormaToolbarItem> items = [MenuItem("first"), MenuItem("second")];
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="items" />);
+            cut.FindAll(".forma-dropdown-menu-trigger")[1].Click();
+
+            // Act
+            cut.FindComponent<FormaToolbar>()
+               .Render(parameters => parameters.Add(p => p.Items, [MenuItem("second")]));
+
+            // Assert
+            var trigger = cut.Find(".forma-dropdown-menu-trigger");
+            Assert.Multiple(
+                () => Assert.Equal("second", trigger.GetAttribute("aria-label")),
+                () => Assert.Equal("true", trigger.GetAttribute("aria-expanded")));
         }
 
         [Fact]
-        public void Should_render_child_content()
+        public void Should_require_a_label()
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
 
             // Act
-            var cut = ctx.Render(
-                @<FormaToolbar>
-                    <button id="test-button">Click</button>
-                </FormaToolbar>);
+            var render = () => ctx.Render(@<FormaToolbar Label="" />);
 
             // Assert
-            cut.Find("#test-button");
-        }
-
-        [Fact]
-        public void Should_render_both_search_and_child_content()
-        {
-            // Arrange
-            using var ctx = new FormaToolbarTests();
-
-            // Act
-            var cut = ctx.Render(
-                @<FormaToolbar OnSearch="@((string _) => Task.CompletedTask)">
-                    <button>Add</button>
-                </FormaToolbar>);
-
-            // Assert
-            cut.Find("input.forma-toolbar-search");
-            cut.Find(".forma-toolbar-actions");
-        }
-
-        [Fact]
-        public void Should_reject_negative_search_delay()
-        {
-            // Arrange
-            using var ctx = new FormaToolbarTests();
-
-            // Act & Assert
-            Assert.Throws<ArgumentOutOfRangeException>(() => ctx.Render(
-                @<FormaToolbar SearchDelay="@TimeSpan.FromMilliseconds(-1)" />));
+            Assert.Throws<ArgumentException>(render);
         }
     }
 }

@@ -7,7 +7,7 @@
 
 <CascadingValue Value="_context" IsFixed="false">
 <div class="forma-explorer @(Options.Resizable ? "is-resizable" : "") @(Options.AsDialog ? "is-dialog" : "")">
-<FormaCommandBar Class="forma-explorer-header">
+<FormaCommandArea Class="forma-explorer-header">
     <!-- Top Explorer Address Bar -->
     <FormaExplorerAddressBar Breadcrumbs="Breadcrumbs"
                             CanGoBack="CanGoBack"
@@ -42,7 +42,7 @@
                          OnToggleUpload="ToggleUpload"
                          OnToggleSelectMode="ToggleSelectModeAsync"
                          OnViewModeChanged="HandleViewModeChangedAsync" />
-</FormaCommandBar>
+</FormaCommandArea>
 
     <!-- Refusal notice; the region stays in the DOM so a message inserted into it is announced -->
     <div class="forma-explorer-rejection-region" role="alert">

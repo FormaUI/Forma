@@ -1,17 +1,82 @@
-<div class="forma-toolbar">
-    @if (OnSearch.HasDelegate)
+@namespace Forma.UI.Blazor.Components.Layout
+
+<FormaCommandBar role="toolbar"
+                 aria-label="@Label"
+                 Class="@Class"
+                 ScrollBackLabel="@ScrollBackLabel"
+                 ScrollForwardLabel="@ScrollForwardLabel"
+                 TrailingContent="TrailingContent">
+    @foreach (var group in Groups)
     {
-        <input class="forma-toolbar-search"
-               type="search"
-               dir="auto"
-               placeholder="@SearchPlaceholder"
-               aria-label="@SearchPlaceholder"
-               @oninput="HandleSearchInput" />
-    }
-    @if (ChildContent is not null)
-    {
-        <div class="forma-toolbar-actions">
-            @ChildContent
+        <div class="forma-toolbar-group" @key="group[0].Group ?? string.Empty">
+            @foreach (var item in group)
+            {
+                if (item.CustomComponent is not null)
+                {
+                    <DynamicComponent Type="item.CustomComponent" @key="item.Id" />
+                }
+                else if (item.Options.Count > 0)
+                {
+                    <FormaDropDownMenu class="forma-toolbar-menu"
+                                       @key="item.Id"
+                                       TriggerOptions="MenuTriggerOptions"
+                                       disabled="@Disabled"
+                                       aria-label="@item.Title"
+                                       title="@item.Title">
+                        <Trigger>
+                            @if (item.Icon is { } menuIcon)
+                            {
+                                <FormaGlyph Name="menuIcon" />
+                            }
+                            @if (GetActiveSwatch(item) is { } activeSwatch)
+                            {
+                                <span class="forma-toolbar-menu-bar" style="@($"background-color:{activeSwatch}")" aria-hidden="true"></span>
+                            }
+                            else
+                            {
+                                <span class="forma-toolbar-menu-value">@GetActiveOptionTitle(item)</span>
+                            }
+                            <FormaGlyph Name="Glyph.ChevronDown" Class="forma-toolbar-menu-caret" />
+                        </Trigger>
+                        <ChildContent>
+                            @foreach (var option in item.Options)
+                            {
+                                <FormaDropDownMenuItem IsSelected="@option.IsActive"
+                                                       @key="option.Id"
+                                                       OnClick="() => OnCommand.InvokeAsync(option.Command)">
+                                    @if (option.Swatch is { } swatch)
+                                    {
+                                        <span class="forma-toolbar-swatch" style="@($"background-color:{swatch}")" aria-hidden="true"></span>
+                                    }
+                                    <span style="@option.PreviewStyle">@option.Title</span>
+                                </FormaDropDownMenuItem>
+                            }
+                        </ChildContent>
+                    </FormaDropDownMenu>
+                }
+                else
+                {
+                    var isToggleActive = item.IsToggle && item.IsActive;
+                    <button type="button"
+                            @key="item.Id"
+                            class="forma-toolbar-button @(isToggleActive ? "forma-toolbar-button-active" : null)"
+                            @onclick="() => HandleItemClickAsync(item)"
+                            disabled="@Disabled"
+                            aria-label="@item.Title"
+                            aria-pressed="@(item.IsToggle ? (isToggleActive ? "true" : "false") : null)"
+                            aria-keyshortcuts="@item.ShortcutAriaKeys"
+                            title="@GetTooltip(item)">
+                        @if (item.Icon is { } icon)
+                        {
+                            <FormaGlyph Name="icon" />
+                        }
+                        else
+                        {
+                            <span>@item.Title</span>
+                        }
+                    </button>
+                }
+            }
         </div>
     }
-</div>
+</FormaCommandBar>

@@ -27,8 +27,8 @@
 /* The region belongs to FormaCommandBar, so it is reached through ::deep and retuned through its own
    knobs; the negative margins cancel the explorer's padding so the rule reaches both edges. */
 ::deep .forma-explorer-header {
-    --forma-command-bar-padding: var(--forma-explorer-padding);
-    --forma-command-bar-background-color: var(--forma-explorer-header-background-color, var(--modal-background-color));
+    --forma-command-area-padding: var(--forma-explorer-padding);
+    --forma-command-area-background-color: var(--forma-explorer-header-background-color, var(--modal-background-color));
     margin-block-start: calc(-1 * var(--forma-explorer-padding));
     margin-inline: calc(-1 * var(--forma-explorer-padding));
     border-start-start-radius: var(--forma-explorer-radius);

@@ -20,13 +20,16 @@ Forma.UI.Blazor/Components/
 ├── FormaGlyph.razor / .razor.cs / .razor.css  # draws a Forma.UI.Style.Glyphs.Glyph as inline SVG
 ├── ✅ FormaField.razor / .razor.cs / .razor.css
 ├── FieldLabelMode.cs                     # enum: Floating, Pinned, Above, Inline
-├── (6 / 6) Layout/
+├── (8 / 8) Layout/
+│   ├── ✅ FormaCommandArea.razor / .razor.cs / .razor.css
 │   ├── ✅ FormaCommandBar.razor / .razor.cs / .razor.css
-│   ├── ✅ FormaCommandBarRow.razor / .razor.cs / .razor.css / .razor.js
 │   ├── ✅ FormaSplitter.razor / .razor.cs / .razor.css / .razor.js
 │   ├── SplitterOrientation.cs                 # enum: Vertical, Horizontal
 │   ├── ✅ FormaPageTitle.razor / .razor.cs
-│   ├── ✅ FormaToolbar.razor / .razor.cs
+│   ├── ✅ FormaSearchToolbar.razor / .razor.cs / .razor.css
+│   ├── ✅ FormaToolbar.razor / .razor.cs / .razor.css
+│   ├── FormaToolbarItem.cs
+│   ├── FormaToolbarOption.cs
 │   ├── ✅ FormaContextToolbar.razor / .razor.cs
 │   ├── ✅ FormaTabs.razor / .razor.cs
 │   └── ✅ FormaTab.razor / .razor.cs
@@ -220,7 +223,7 @@ These components form the shell of a page. Build first.
 | **Parameters** | `string Title` (required, validated), `IReadOnlyList<BreadcrumbItem>? Breadcrumbs` (`BreadcrumbItem` record with `Label` + `Url?`, constructor-validated), `RenderFragment? Actions` |
 | **Blazor approach** | Pure Razor markup, no interactivity needed (static SSR). Code-behind in `.razor.cs` |
 
-### 2. `FormaToolbar` ✅
+### 2. `FormaSearchToolbar` ✅
 
 | | |
 |---|---|
@@ -228,6 +231,7 @@ These components form the shell of a page. Build first.
 | **Used in** | pages, products, orders, leads, comments, users, coupons, filters |
 | **Parameters** | `RenderFragment? ChildContent`, `EventCallback<string> OnSearch`, `string? SearchPlaceholder`, `TimeSpan SearchDelay` (default 300ms, validated ≥ 0) |
 | **Blazor approach** | Sealed `IDisposable` component with flex layout. Debounced search via `CancellationTokenSource` + `CancelAsync()` + `ContinueWith` pattern. Code-behind in `.razor.cs` |
+| **Notes** | Renamed from `FormaToolbar` once that name was needed for the generic, item-driven `FormaToolbar` (#64). Still its own standalone flex layout for now; rebuilding it atop `FormaToolbar` is tracked separately |
 
 ### 3. `FormaTabs` ✅
 
@@ -836,16 +840,16 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Blazor approach** | Generic over the value a click or drop reports back, the way `FormaDataGrid<TItem>` and `FormaSortableList<TItem>` already are, with a non-generic marker type so `IStringLocale` resolves independently of `TItem`. A segment with a `Url` renders a real `<a>`; one without renders a `<button>` when `OnItemClick` is wired, or falls back to static text when it is not — so a plain site breadcrumb never gains a false clickable affordance it does nothing with. A chevron beside a segment with `Children` opens a menu of alternatives, closing on a second click, a backdrop click, or Escape |
 | **Notes** | `aria-current="page"` is set from the caller-supplied `IsCurrent` rather than inferred from position, since a defensive comparison against the current value is more robust than assuming the last segment is always current. `FormaPageTitle` derives it itself — only the last crumb lacking a `Url` counts as current, not every non-linked one — which also means an intermediate category label no longer looks identical to the current page, since only the true current segment is bold. Chevron separators mirror through `:dir(rtl)`, matching the rest of the library's glyph-mirroring convention |
 
-### 62. `FormaCommandBar` ✅
+### 62. `FormaCommandArea` / `FormaCommandBar` ✅
 
 | | |
 |---|---|
-| **Old pattern** | The header region of `FormaExplorer` — the surface, the rule beneath it and the stacked rows — written into the explorer's own stylesheet |
+| **Old pattern** | The header region of `FormaExplorer` — the surface, the rule beneath it and the stacked bars — written into the explorer's own stylesheet |
 | **Used in** | The region above any page's content: an explorer header, a list page's action strip, an editor's publish bar. `FormaExplorer` composes it for its own header |
-| **Parameters** | `FormaCommandBar`: `RenderFragment? ChildContent`, `string? Class`, plus captured pass-through attributes. `FormaCommandBarRow`: `RenderFragment? ChildContent`, `string? ScrollBackLabel`, `string? ScrollForwardLabel`, `string? Class`, plus captured pass-through attributes |
-| **Blazor approach** | A pair, split by what each owns. The bar is the surface and the stack — a flex column carrying the background, the rule and the padding, holding as many rows as a caller writes into it. Each row lays its commands on a horizontally scrolling track and, once they outgrow the width, flanks them with an arrow at either end, each disabled at the edge it can no longer travel toward. Retune with `--forma-command-bar-padding` and `--forma-command-bar-background-color` |
-| **Why it needs JS** | Whether a row overflows is a measurement only the browser holds, so a colocated module reports it back rather than C# guessing. A `ResizeObserver` watches the track and each command, and a `MutationObserver` watches the track's child list — **commands can be added or removed without the track's own box changing, which no `ResizeObserver` reports**, so watching size alone leaves the arrows stale the moment a caller's commands change. Reports are coalesced to one a frame and sent only when the answer changes, so scrolling never floods the circuit. Adding the arrows narrows the track, which re-triggers the observer — the loop settles because the second measurement changes nothing |
-| **Notes** | **It dictates where things go, never what they are.** No selection state, no bulk actions, no count readout — an explorer's select-mode bar stays the explorer's business, and the bar itself owns no strings at all. Scroll offsets are read through `Math.abs` because a right-to-left row counts `scrollLeft` downwards from zero, and the chevrons are turned per direction since they are not bidi-mirrored. Reached from a host's stylesheet through `::deep`, since the element belongs to this component's scope rather than the caller's |
+| **Parameters** | `FormaCommandArea`: `RenderFragment? ChildContent`, `string? Class`, plus captured pass-through attributes. `FormaCommandBar`: `RenderFragment? ChildContent`, `RenderFragment? TrailingContent`, `string? ScrollBackLabel`, `string? ScrollForwardLabel`, `string? Class`, plus captured pass-through attributes |
+| **Blazor approach** | A pair, split by what each owns. The area is the surface and the stack — a flex column carrying the background, the rule and the padding, holding as many bars as a caller writes into it. Each bar lays its commands on a horizontally scrolling track and, once they outgrow the width, flanks them with an arrow at either end, each disabled at the edge it can no longer travel toward; `TrailingContent` pins content such as an overflow menu past the track, outside the scrolling region. Retune with `--forma-command-area-padding` and `--forma-command-area-background-color` |
+| **Why it needs JS** | Whether a bar overflows is a measurement only the browser holds, so a colocated module reports it back rather than C# guessing. A `ResizeObserver` watches the track and each command, and a `MutationObserver` watches the track's child list — **commands can be added or removed without the track's own box changing, which no `ResizeObserver` reports**, so watching size alone leaves the arrows stale the moment a caller's commands change. Reports are coalesced to one a frame and sent only when the answer changes, so scrolling never floods the circuit. Adding the arrows narrows the track, which re-triggers the observer — the loop settles because the second measurement changes nothing |
+| **Notes** | **It dictates where things go, never what they are.** No selection state, no bulk actions, no count readout — an explorer's select-mode bar stays the explorer's business, and the area itself owns no strings at all. Scroll offsets are read through `Math.abs` because a right-to-left bar counts `scrollLeft` downwards from zero, and the chevrons are turned per direction since they are not bidi-mirrored. Reached from a host's stylesheet through `::deep`, since the element belongs to this component's scope rather than the caller's |
 
 ### 63. `FormaSplitter` ✅
 
@@ -868,6 +872,16 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Blazor approach** | Plain markup into the document head, no interactivity. `@Assets` resolves each stylesheet, which fingerprints correctly from inside the library because the running host's asset manifest is what answers, not the assembly the markup was compiled into. `ChildContent` renders after Forma's stylesheets so a host's own land later and win the cascade, and the framework's `ResourcePreloader`, `ImportMap` and `HeadOutlet` close the head so no host repeats them |
 | **Ordering** | `HeadOutlet` renders last, so a page's own `PageTitle` and `HeadContent` override the title set above it — a host putting the outlet first would silently break `PageTitle`, which is the ordering this component exists to own. `ImportMap` matters to the library directly, since it is what fingerprints Forma's own colocated JS modules |
 | **Notes** | `PreloadAssets` covers the framework's `ResourcePreloader`, which only a WebAssembly render mode benefits from and which resolves an internal service that only the Razor Components hosting stack registers; it is switched off in bUnit, where that stack does not exist, and exercised through the Showcase instead. Not the page's visible title bar — that is `FormaPageTitle`, which took this name's place in `Layout` |
+
+### 65. `FormaToolbar` ✅
+
+| | |
+|---|---|
+| **Old pattern** | None — a new, generic addition rather than a Coi-derived one, extracted from `FormaComposer`'s own toolbar to give any host a grouped, item-driven command bar without pulling in the composer |
+| **Used in** | Anywhere a host needs a bar of commands driven by data rather than hand-written markup. Planned as the eventual base for `FormaComposer`'s own toolbar, `FormaSearchToolbar` and `FormaStatusStrip` |
+| **Parameters** | `string Label` (required, validated), `IReadOnlyList<FormaToolbarItem> Items`, `bool Disabled`, `EventCallback<string> OnCommand`, `RenderFragment? TrailingContent`, `string? ScrollBackLabel`, `string? ScrollForwardLabel`, `string? Class`. `FormaToolbarItem`: `Id`, `Title`, `Glyph? Icon`, `Group?`, `Command?`, `CustomComponent?`, `IReadOnlyList<FormaToolbarOption> Options`, `IsToggle`, `IsActive`, `ShortcutDisplay?`, `ShortcutAriaKeys?`. `FormaToolbarOption`: `Id`, `Title`, `Command`, `IsActive`, `PreviewStyle?`, `Swatch?` |
+| **Blazor approach** | Built on `FormaCommandArea` and `FormaCommandBar` rather than reinventing the scrolling track and overflow arrows. Items sharing a `Group` cluster together, separated from the next group by a rule; an item with `Options` renders as a `FormaDropDownMenu` instead of a button, showing the active option's title or a colour swatch on its trigger. A toggle item's `IsActive` state is drawn with an underline as well as colour so it never rests on colour alone |
+| **Notes** | Deliberately holds no plugin registry, no multi-row layout engine, and no undo/redo special-case — those stay `FormaComposer`'s own concern. A caller supplies one flat `Items` list per toolbar and recomputes `IsActive` itself; there is no external "active styles" lookup to consult. Titles are caller-supplied and rendered as given, so the host localizes them and the component owns no strings at all. Each item and option is keyed by its `Id` and each group by its own name, so a host adding or removing one never tears down a neighbour's open menu — keying a group by its first item's `Id` instead would, since that key moves the moment that item leaves |
 
 ---
 
@@ -894,7 +908,7 @@ Components are ordered by dependency and reuse frequency:
 | Phase | Components | Rationale |
 |---|---|---|
 | **Phase 1** | `FormaModal` ✅, `FormaConfirmDialog` ✅, `FormaToast` ✅ | Infrastructure — everything depends on modals and notifications |
-| **Phase 2** | `FormaPageTitle` ✅, `FormaToolbar` ✅, `FormaTabs` ✅ | Layout — the shell of a page |
+| **Phase 2** | `FormaPageTitle` ✅, `FormaSearchToolbar` ✅, `FormaTabs` ✅ | Layout — the shell of a page |
 | **Phase 3** | `FormaInput` ✅, `FormaToggleSwitch` ✅, `FormaPasswordBox` ✅, `FormaCurrencyInput`, `FormaSlider` ✅, `FormaDatePicker` ✅, `FormaSelect` ✅ | Form inputs — needed before building any edit forms |
 | **Phase 4** | `FormaDataGrid<TItem>` ✅, `FormaContextToolbar` ✅, `FormaStatusBadge` ✅, `FormaCapacityIndicator`, `FormaPagination` ✅ | Data display — needed for list pages |
 | **Phase 5** | `FormaSortableList<TItem>` ✅, `FormaMultiSelect`  ✅, `FormaCategorySelector`, `FormaDropDownMenu` ✅, `FormaColorPicker` ✅ | Interactive widgets — needed for editor pages |

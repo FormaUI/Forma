@@ -1,7 +1,7 @@
 @namespace Forma.UI.Blazor.Components.Composer
 @inject IStringLocale<FormaComposer> L
 
-<FormaCommandBar Class="forma-composer-toolbar">
+<FormaCommandArea Class="forma-composer-toolbar">
     @foreach (var (bar, index) in Bars.Select((bar, index) => (bar, index)))
     {
         <FormaComposerCommandRow
@@ -39,4 +39,4 @@
             KeyMap="KeyMap"
             OnCommand="OnCommand" />
     }
-</FormaCommandBar>
+</FormaCommandArea>

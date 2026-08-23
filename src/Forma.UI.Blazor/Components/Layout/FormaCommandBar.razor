@@ -1,5 +1,31 @@
 @namespace Forma.UI.Blazor.Components.Layout
 
 <div class="@CssClass" @attributes="AdditionalAttributes">
-    @ChildContent
+    @if (_canScrollBack || _canScrollForward)
+    {
+        <button type="button"
+                class="forma-command-bar-scroll forma-command-bar-scroll-back"
+                disabled="@(!_canScrollBack)"
+                aria-label="@(ScrollBackLabel ?? L["Scroll Commands Back"].Value)"
+                @onclick="() => ScrollAsync(-1)">
+            <FormaGlyph Name="Glyph.ChevronRight" />
+        </button>
+    }
+
+    <div class="forma-command-bar-track" @ref="_track">
+        @ChildContent
+    </div>
+
+    @if (_canScrollBack || _canScrollForward)
+    {
+        <button type="button"
+                class="forma-command-bar-scroll forma-command-bar-scroll-forward"
+                disabled="@(!_canScrollForward)"
+                aria-label="@(ScrollForwardLabel ?? L["Scroll Commands Forward"].Value)"
+                @onclick="() => ScrollAsync(1)">
+            <FormaGlyph Name="Glyph.ChevronRight" />
+        </button>
+    }
+
+    @TrailingContent
 </div>
