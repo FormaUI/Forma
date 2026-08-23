@@ -4,22 +4,28 @@ using Forma.UI.Style.Glyphs;
 
 using Microsoft.AspNetCore.Components;
 
+/// <summary>One tab within a <see cref="FormaTabs"/>, supplying both its header and its panel.</summary>
 public sealed partial class FormaTab : IDisposable
 {
     private readonly string _generatedId = Guid.NewGuid().ToString("N")[..8];
 
     [CascadingParameter] private FormaTabs Parent { get; set; } = default!;
 
+    /// <summary>The tab header's text.</summary>
     [Parameter, EditorRequired] public string Title { get; set; } = "";
+
+    /// <summary>A glyph shown before the title.</summary>
     [Parameter] public Glyph? Icon { get; set; }
 
     /// <summary>The identifier a controlled parent selects this tab by, generated when the caller supplies none.</summary>
     [Parameter] public string? Id { get; set; }
 
+    /// <summary>The tab's panel content.</summary>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
 
     internal string TabId => Id ?? _generatedId;
 
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         if (Parent is null)
@@ -30,7 +36,9 @@ public sealed partial class FormaTab : IDisposable
         Parent.RegisterTab(this);
     }
 
+    /// <inheritdoc />
     protected override void OnParametersSet() => ArgumentException.ThrowIfNullOrWhiteSpace(Title);
 
+    /// <inheritdoc />
     public void Dispose() => Parent.UnregisterTab(this);
 }

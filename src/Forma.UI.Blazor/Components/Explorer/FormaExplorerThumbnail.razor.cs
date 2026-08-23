@@ -32,6 +32,7 @@ public sealed partial class FormaExplorerThumbnail : ComponentBase
             _ => Glyph.FileLines
         };
 
+    /// <inheritdoc />
     protected override void OnParametersSet()
         => ArgumentNullException.ThrowIfNull(Resource);
 }

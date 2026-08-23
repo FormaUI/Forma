@@ -16,7 +16,7 @@ public sealed partial class FormaSelectionToolbar : ComponentBase
     /// <summary>The accessible name of the action toolbar; required only when Items is not empty.</summary>
     [Parameter] public string? Label { get; set; }
 
-    /// <summary>Action buttons shown while the toolbar is active.</summary>
+    /// <summary>Items shown while the toolbar is active.</summary>
     [Parameter] public IReadOnlyList<FormaToolbarItem> Items { get; set; } = [];
 
     /// <summary>Callback invoked with the command an action raised.</summary>
@@ -37,6 +37,7 @@ public sealed partial class FormaSelectionToolbar : ComponentBase
         }
     }
 
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         ArgumentOutOfRangeException.ThrowIfNegative(Count);

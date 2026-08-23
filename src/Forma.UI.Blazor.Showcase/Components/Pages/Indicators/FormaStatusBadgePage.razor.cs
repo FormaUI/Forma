@@ -24,6 +24,7 @@ public sealed partial class FormaStatusBadgePage : ComponentBase
     ];
 
     // A second application vocabulary, registered from the page to show the catalog API.
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         Catalog.Add(new("order-new", CssColor.FromRgba(73, 184, 124, 0.18), CssColor.FromHex(0x1c7430)) { Marker = Glyph.CartShopping });

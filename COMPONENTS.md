@@ -229,7 +229,7 @@ These components form the shell of a page. Build first.
 |---|---|
 | **Old pattern** | `<h1 class="page-title">` + `<ol class="breadcrumb">` + optional capacity label |
 | **Used in** | Every admin page (pages, products, orders, leads, comments, users, coupons, settings, design) |
-| **Parameters** | `string Title` (required, validated), `IReadOnlyList<BreadcrumbItem>? Breadcrumbs` (`BreadcrumbItem` record with `Label` + `Url?`, constructor-validated), `RenderFragment? Actions` |
+| **Parameters** | `string Title` (required, validated), `IReadOnlyList<BreadcrumbItem<object?>>? Breadcrumbs`, `RenderFragment? Actions`. The last crumb without a `Url` is marked as the current page |
 | **Blazor approach** | Pure Razor markup, no interactivity needed (static SSR). Code-behind in `.razor.cs` |
 
 ### 2. `FormaSearchToolbar` ✅
@@ -248,7 +248,7 @@ These components form the shell of a page. Build first.
 |---|---|
 | **Old pattern** | jQuery Tools Tabs: `<ul class="tabs"><li>` + `<div class="panes"><div class="panc">`. Click tab → show corresponding pane |
 | **Used in** | page editor (5 tabs), product editor (7 tabs), settings (5 tabs), store-settings (7 tabs), design (5 tabs) |
-| **Parameters** | `RenderFragment ChildContent` containing `FormaTab` children. Each `FormaTab` has `string Title` (required, validated), `Glyph? Icon` (drawn by `FormaGlyph`), `RenderFragment ChildContent` |
+| **Parameters** | `RenderFragment ChildContent` containing `FormaTab` children, `string? ActiveId` and `EventCallback<string> ActiveIdChanged` for caller-controlled selection, `string? Label`. Each `FormaTab` has `string Title` (required, validated), `Glyph? Icon` (drawn by `FormaGlyph`), `string? Id` (generated when omitted), `RenderFragment ChildContent` |
 | **Blazor approach** | Interactive component. `FormaTabs` provides `CascadingValue` of itself; `FormaTab` children register/unregister via `CascadingParameter`. WAI-ARIA `tablist`/`tab`/`tabpanel` roles, `aria-selected`, `aria-controls`. Show/hide panes with CSS `::deep`. No JS needed. Code-behind in `.razor.cs` |
 
 ### 4. `FormaModal` ✅
@@ -257,7 +257,7 @@ These components form the shell of a page. Build first.
 |---|---|
 | **Old pattern** | `Modal('#divId')` / `CloseModal()` — shows a `<div>` overlay with content from hidden divs. Stacking z-index, Escape key to close |
 | **Used in** | Every admin page — new page modal, help modals, notes modals, folder dialogs, invoice modals, options editor |
-| **Parameters** | `bool Opened`, `EventCallback OnClose`, `string? Title`, `ModalSize Size` (Small/Medium/Large/ExtraLarge/Full, default Medium), `RenderFragment? Body`, `RenderFragment? Footer`, `string? ConfirmText`, `string? CancelText`, `EventCallback OnConfirm`, `EventCallback OnCancel`, `FormaModalOptions Options` (`CloseOnBackdropClick`, `ShowCancelAction`, `ShowConfirmAction`, `CloseOnCancel`, `CloseOnConfirm` — all default `true`) |
+| **Parameters** | `bool Opened` (required), `EventCallback OnClose` (required), `string? Title`, `ModalSize Size` (Small/Medium/Large/ExtraLarge/Full, default Medium), `RenderFragment? Body`, `RenderFragment? Footer`, `string? ConfirmText`, `string? CancelText`, `EventCallback OnConfirm`, `EventCallback OnCancel`, `FormaModalOptions Options` (`CloseOnBackdropClick`, `ShowCancelAction`, `ShowConfirmAction`, `CloseOnCancel`, `CloseOnConfirm` — all default `true`) |
 | **Blazor approach** | Uses native `<dialog>` element with minimal JS interop (`FormaModal.razor.js`). Supports custom footer content, built-in localized footer actions, or both together. Uses logical CSS so footer/action alignment works in both RTL and LTR. Sealed `IAsyncDisposable` component with code-behind in `.razor.cs` |
 
 ### 5. `FormaConfirmDialog` ✅
@@ -351,7 +351,7 @@ These components form the shell of a page. Build first.
 |---|---|
 | **Old pattern** | Server-rendered page links: `<a class="page">1</a> <a class="page">2</a>...`, custom paging in code-behind with `PageSize`, `PageIndex`, total count |
 | **Used in** | All list pages, image library |
-| **Parameters** | Standalone, no knowledge of QuickGrid or any other component: `int TotalItems`, `int PageSize`, `int CurrentPage`, `EventCallback<int> OnPageChanged`, `FormaPaginationOptions Options` |
+| **Parameters** | Standalone, no knowledge of QuickGrid or any other component: `int TotalItems` (required), `int PageSize` (required), `int CurrentPage` (required), `EventCallback<int> OnPageChanged`, `FormaPaginationOptions Options`, plus captured pass-through attributes |
 | **Options** | Which parts are shown — page buttons, the page-number box, the Go button — travel together in a `FormaPaginationOptions` record rather than one parameter each. A host that composes the pager therefore forwards a single parameter, and a new option later costs the record plus this component and touches no host |
 | **Blazor approach** | A self-contained paginator, usable on its own (e.g. the image library) or composed into `FormaDataGrid`. Dependency direction is one-way: larger components adapt to `FormaPagination`, it never adapts to them |
 
@@ -373,7 +373,7 @@ These components form the shell of a page. Build first.
 |---|---|
 | **Old pattern** | jQuery Toggles plugin — styled checkbox as iOS-style toggle with on/off labels, CSS animated slider |
 | **Used in** | page editor (SEO, comments, password), product (active, featured), settings (multiple), store-settings (multiple), coupons (active), user (active), order (paid) |
-| **Parameters** | `@bind-Value` (bool), `string? OnLabel`, `string? OffLabel`, `bool Disabled` |
+| **Parameters** | `@bind-Value` (bool), `string? Label`, `string? OnLabel`, `string? OffLabel`, `bool Disabled` |
 | **Blazor approach** | Pure CSS toggle (hidden checkbox + styled `<label>` with `::before`/`::after` pseudo-elements for the sliding knob). No JS needed |
 
 ### 14. `FormaColorPicker` ✅
@@ -382,8 +382,8 @@ These components form the shell of a page. Build first.
 |---|---|
 | **Old pattern** | `tcp.js` custom color picker — click swatch → popup with gradient/hue selectors, hex input, opacity slider (`no-alpha` class disables) |
 | **Used in** | design (bg, primary, secondary, text, sidebar, link colors), settings (popup bg), store-settings (e-commerce accent), slider (bg, arrow, video filter), forms (text, button bg/text), product (badge) |
-| **Parameters** | `@bind-Value` (string hex), `bool ShowAlpha = false`, `string? Label` |
-| **Blazor approach** | Use native `<input type="color">` for the basic picker. For the full experience (hex input, swatch preview, optional alpha), build a small interactive component. Clicking the swatch opens a popup with the native color input + hex `InputText`. No external JS |
+| **Parameters** | `@bind-Value` (string hex), `string Label` (required, validated), `bool ShowAlpha` |
+| **Blazor approach** | `InputBase<string>` over a hex text field, with a native `<input type="color">` laid transparently over the swatch beside it — clicking the swatch opens the platform's own colour dialog with no popup of Forma's own. The hex field carries `dir="ltr"` so the value keeps its reading order in an RTL page, and `ShowAlpha` adds an alpha row and widens the field to `#RRGGBBAA`. No external JS |
 
 ### 15. `FormaDatePicker` ✅
 
@@ -391,9 +391,9 @@ These components form the shell of a page. Build first.
 |---|---|
 | **Old pattern** | EasePick CDN library with Hebrew locale, year dropdown, reset button, min-date lock |
 | **Used in** | coupons (start/end dates) |
-| **Parameters** | `@bind-Value` (DateOnly?), `DateOnly? MinDate`, `string? Label` |
-| **Popup placement** | The calendar is a `popover`, so it renders in the **top layer** and no scrolling or clipping ancestor can cut it off — it works inside a grid's scroll region, a modal body, or any `overflow: auto` box. The top layer keeps no layout tie to the trigger, so the shared `wwwroot/scripts/AnchoredPopup.js` module measures and applies the position: it hangs from the trigger's inline-start edge (mirrored in RTL), flips above when there is no room below, clamps into the viewport, and follows scroll and resize. One positioning path for every browser rather than a CSS/JS split. That module is deliberately component-agnostic — `FormaSelect`, `FormaMultiSelect` and `FormaDropDownMenu` are the same trigger-plus-anchored-panel shape and should import it rather than re-solve the clipping. `popover="manual"` keeps the existing backdrop as the dismissal mechanism, which also sidesteps the iOS 17–18.2 bug where a popover ignores a tap outside it |
-| **Blazor approach** | Use Blazor `InputDate` which renders native `<input type="date">`. Browser provides locale-aware calendar. For reset, add a clear button. For min-date, use `min` HTML attribute |
+| **Parameters** | `@bind-Value` (DateOnly?), `@bind-StartDate` / `@bind-EndDate` (DateOnly?), `string Label` (required, validated), `DateOnly? MinDate`, `DateOnly? MaxDate`, `bool ShowPresets` (default true), `EventCallback OnSelectionComplete`, `bool UseNonGregorianMonths`, `AdditionalAttributes` |
+| **Popup placement** | The calendar is a `popover`, so it renders in the **top layer** and no scrolling or clipping ancestor can cut it off — it works inside a grid's scroll region, a modal body, or any `overflow: auto` box. The top layer keeps no layout tie to the trigger, so the shared `wwwroot/scripts/behaviours/AnchoredPopup.js` behaviour measures and applies the position: it hangs from the trigger's inline-start edge (mirrored in RTL), flips above when there is no room below, clamps into the viewport, and follows scroll and resize. One positioning path for every browser rather than a CSS/JS split. That behaviour is deliberately component-agnostic, and `FormaSelect`, `FormaMultiSelect` and `FormaDropDownMenu` share it. `popover="manual"` keeps the existing backdrop as the dismissal mechanism, which also sidesteps the iOS 17–18.2 bug where a popover ignores a tap outside it |
+| **Blazor approach** | A bespoke calendar rather than `InputDate`, because a native `<input type="date">` offers no range selection, no presets, and no non-Gregorian months. A `<button>` trigger opens an anchored popover holding one calendar panel, or two side by side once `StartDateChanged` or `EndDateChanged` is bound, which is what puts the picker in range mode. Months come from `CultureInfo.CurrentCulture`, and `UseNonGregorianMonths` switches to the culture's own calendar — the Hebrew calendar under `he` — by cloning `DateTimeFormatInfo` onto it. `MinDate` greater than `MaxDate` throws from `OnParametersSet` |
 
 ### 16. `FormaSlider` ✅
 
@@ -430,7 +430,7 @@ These components form the shell of a page. Build first.
 |---|---|
 | **Old pattern** | `.multi-input` with `.tags` + `.multi-dropdown` list. `$('#el').multi()` plugin. Tags display selected items, click X to remove. Dropdown with checkboxes. Optional "add new" button |
 | **Used in** | page editor (categories), product editor (categories), coupons (categories) |
-| **Parameters** | `@bind-Value` (List<int>), `IEnumerable<SelectOption> Options`, `string Placeholder`, `bool AllowAdd = false`, `EventCallback<string> OnAddNew` |
+| **Parameters** | `@bind-Value` (`List<TValue>`), `IReadOnlyList<SelectOption<TValue>> Options` (required), `string Label` (required, validated), `bool Required`, `string? Placeholder`, `bool AllowAdd`, `EventCallback<string> OnAddNew`, `bool Disabled` |
 | **Blazor approach** | Interactive component. Clicked → show dropdown with checkboxes. Selected items shown as removable tags above/inside the input area. Search/filter within dropdown. No external JS |
 
 ### 20. `FormaSelect` ✅
@@ -439,7 +439,7 @@ These components form the shell of a page. Build first.
 |---|---|
 | **Old pattern** | JS replaces native `<select>` with styled div: `.custom-select > .cs-val` (display) + `.cs-options > .cs-option` (dropdown). Click to open, click option to select, click outside to close |
 | **Used in** | Multiple admin pages for styled dropdowns |
-| **Parameters** | `@bind-Value` (any `TValue`, nullable to allow no selection), `IReadOnlyList<SelectOption<TValue>> Options`, `string? Label`, `string? Placeholder`, `bool Required`, `bool Disabled` |
+| **Parameters** | `@bind-Value` (any `TValue`, nullable to allow no selection), `IReadOnlyList<SelectOption<TValue>> Options` (required), `string Label` (required, validated), `string? Placeholder`, `bool Required`, `bool Disabled` |
 | **Blazor approach** | A `<button>` trigger plus an anchored, keyboard-navigable listbox popup, sharing `AnchoredPopup.js` with `FormaDatePicker` and `FormaMultiSelect` so the list escapes any clipping ancestor. `InputBase<TValue>` directly, matching `InputDate<TValue>`/`InputNumber<TValue>` — the caller supplies a nullable `TValue` (`int?`, `string`, `MyEnum?`) when "nothing selected" needs representing, rather than the component forcing that shape itself |
 | **Notes** | Composes `FormaField` in `Pinned` mode, as `FormaMultiSelect` and `FormaDatePicker` do: the trigger always shows content of its own, so the label stays floated rather than sitting over it. Opens focused on the current selection, the way a native `<select>` does. The selected option is marked by a checkmark plus bold weight, not colour alone |
 
@@ -453,7 +453,7 @@ These components form the shell of a page. Build first.
 |---|---|
 | **Old pattern** | jQuery Dragsort / HTML5 sortable — drag items to reorder. On drop, serialize new order and POST to `sorting.asmx/Sort`. Used for menus, galleries, sliders, categories, product options, delivery methods, form fields, filters |
 | **Used in** | menu sort page, gallery module, slider editor, category module, product options, store-settings delivery, contact form builder, filters editor |
-| **Parameters** | `@bind-Items` (List<TItem>), `RenderFragment<TItem> ItemTemplate`, `string? DragHandleClass`, `EventCallback<List<TItem>> OnReorder` |
+| **Parameters** | `@bind-Items` (`IReadOnlyList<TItem>`, required), `RenderFragment<TItem> ItemTemplate` (required), `Func<TItem, object> ItemKey`, `SortableDragFrom DragFrom` (Handle/Item), `bool Disabled`, plus captured pass-through attributes |
 | **Blazor approach** | Uses native HTML5 Drag and Drop API (`draggable`, `@ondragstart`, `@ondragover`, `@ondrop`). Track drag source/target index, reorder the list in C#, re-render. Minimal JS interop (only if `preventDefault` is needed on `dragover`) |
 
 ### 22. `FormaImagePicker` ✅
@@ -491,7 +491,7 @@ These components form the shell of a page. Build first.
 |---|---|
 | **Old pattern** | `Info('divId', '#buttonId', 's')` → shows a `dropdown-menu dropdown-menu-arrow` positioned below a button. Click outside to close |
 | **Used in** | order detail (options: print, notes, invoice), and various action menus |
-| **Parameters** | `RenderFragment Trigger` (the trigger's content), `RenderFragment ChildContent` (menu items), `FormaButtonOptions TriggerOptions`. `FormaDropDownMenuItem` takes `string? Href`, `bool Disabled`, `EventCallback OnClick`; `FormaDropDownMenuDivider` takes none |
+| **Parameters** | `RenderFragment Trigger` (required — the trigger's content), `RenderFragment ChildContent` (required — menu items), `RenderFragment? HeaderContent`, `FormaButtonOptions TriggerOptions`. `FormaDropDownMenuItem` takes `string? Href`, `bool Disabled`, `EventCallback OnClick`; `FormaDropDownMenuDivider` takes none |
 | **Blazor approach** | The component renders its own trigger as a `FormaButton` rather than accepting a whole button from the caller, so it owns `aria-haspopup`, `aria-expanded` and `aria-controls` instead of hoping a supplied fragment carries them; a wrapper span gives the popup something to measure and catches the keydown that a component tag cannot. The panel is a `popover="manual"` in the top layer positioned by the shared `AnchoredPopup.js`, with a backdrop owning dismissal. Items register with the menu through a `CascadingValue`, as `FormaTab` does with `FormaTabs`, so arrow, Home and End navigation works over whatever the caller nested. A colocated `.razor.js` cancels only the four navigation keys, since Blazor fixes `preventDefault` at render time and a blanket one would also block Enter, Space and Tab |
 | **Notes** | An item's activation closes the menu and returns focus to the trigger, which needs an explicit `StateHasChanged` because the state being changed belongs to the parent, not the child whose handler ran. Which item to focus on open is resolved after the render that creates them — indexing the list beforehand reads an empty one |
 
@@ -570,7 +570,7 @@ These are more complex, possibly page-specific, but still benefit from being com
 |---|---|
 | **Old pattern** | `.btn`, `.btn-primary`, `.btn-sec`, `.btn-thrd`, `.btn-mini`, `.btn-load` (fa-3.6.5.css) — the shared button vocabulary every admin page's action bar, modal footer, and grid row built on top of |
 | **Used in** | Single source of truth for buttons across the library — `FormaDataGrid` row/inline-edit actions, and the retrofit target for `FormaModal`, `FormaConfirmDialog`, `FormaPagination`, and `FormaDatePicker` |
-| **Parameters** | `ButtonVariant Variant` (Secondary/Primary/Tertiary/Danger/Ghost, default Secondary), `ButtonSize Size` (Normal/Mini, default Normal), `ButtonType Type` (Button/Submit/Reset, default Button), `bool Busy`, `bool Disabled`, `EventCallback<MouseEventArgs> OnClick`, `RenderFragment? ChildContent` |
+| **Parameters** | `ButtonVariant Variant` (Secondary/Primary/Tertiary/Danger/Ghost, default Secondary), `ButtonSize Size` (Normal/Mini, default Normal), `ButtonType Type` (Button/Submit/Reset, default Button), `bool IconOnly`, `bool Busy`, `bool Disabled`, `EventCallback<MouseEventArgs> OnClick`, `RenderFragment? ChildContent`, plus captured pass-through attributes |
 | **Blazor approach** | Plain `<button>` with a computed CSS class per variant/size. `Busy` announces itself via `aria-busy`/`aria-disabled` and blocks the click handler instead of using the native `disabled` attribute, so a busy button stays focusable and keeps its place in the tab order. Sealed component with code-behind in `.razor.cs` |
 
 ### 33. `FormaCheckBox` ✅
@@ -626,7 +626,7 @@ These are more complex, possibly page-specific, but still benefit from being com
 |---|---|
 | **Old pattern** | The `×` dismiss control repeated across `admin/pops/*.aspx` modal headers and notification strips |
 | **Used in** | Single source of truth for dismiss controls — `FormaModal`'s header, `FormaToastContainer`'s toasts, `FormaSelectionToolbar`'s clear-selection control |
-| **Parameters** | `string Label` (required — the accessible name, which differs per use: close, dismiss, clear selection), `EventCallback<MouseEventArgs> OnClick`, `bool Disabled` |
+| **Parameters** | `string Label` (required — the accessible name, which differs per use: close, dismiss, clear selection), `ButtonSize Size`, `bool Disabled`, `EventCallback<MouseEventArgs> OnClick`, plus captured pass-through attributes |
 | **Blazor approach** | A thin wrapper over `<FormaButton Variant="Ghost" IconOnly>` supplying the one X glyph, so it owns no colours of its own and inherits the ghost variant's treatment and the icon-only square sizing. `Label` is required rather than defaulted because a wrong accessible name is worse than an obvious compile error, and the three call sites genuinely differ. Ships no `.razor.css` — every visual decision belongs to `FormaButton` |
 | **Notes** | Before this existed the three call sites had each reimplemented `.forma-button-ghost` verbatim and drifted: two drew a 14×14 SVG while the toast used the `&times;` entity, and the focus ring was `--focus-color` against `FormaButton`'s `--main-color`. Retinting for a saturated surface (the toast) goes through `--forma-button-ghost-*-color` knobs rather than a fork |
 
@@ -636,7 +636,7 @@ These are more complex, possibly page-specific, but still benefit from being com
 |---|---|
 | **Old pattern** | `<span onclick="TogglePass(this)" class="fas fa-eye-slash">` beside a password field — a clickable span, not a button |
 | **Used in** | Single source of truth for reveal controls — `FormaPasswordBox`'s toggle, and any later show/hide or preview affordance |
-| **Parameters** | `string Label` (required — the accessible name, which differs per use: show password, hide value, preview), `bool Revealed`, `ButtonSize Size`, `bool Disabled`, `EventCallback<MouseEventArgs> OnClick` |
+| **Parameters** | `string Label` (required — the accessible name, which differs per use: show password, hide value, preview), `bool Revealed`, `ButtonSize Size`, `bool Disabled`, `EventCallback<MouseEventArgs> OnClick`, plus captured pass-through attributes |
 | **Blazor approach** | A thin wrapper over `<FormaButton Variant="Ghost" IconOnly>` supplying one eye glyph whose strike-through path is the only thing that changes, so the two states cannot drift apart. Ships no `.razor.css` — every visual decision belongs to `FormaButton`. `Revealed` and `Label` are both caller-owned: the component never assumes it is guarding a password |
 | **Notes** | `FormaPasswordBox` had reimplemented the ghost variant by hand — its own muted colour, hover pair, focus ring and coarse-pointer square — which is the same drift that produced `FormaCloseButton`. Because the button element now belongs to `FormaButton`, CSS isolation puts it out of reach of the field's own stylesheet, so the field positions a wrapper span instead of the control |
 
@@ -687,7 +687,7 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Glyph** | An **ellipsis** — `⋯` horizontal in a toolbar, `⋮` vertical in a grid row, where a column is narrow and a row is tall |
 | **Old pattern** | `Info('divId', '#buttonId', 's')` opening a `dropdown-menu` from a row's options button |
 | **Used in** | Row actions once a row carries more than two, which is the threshold `FormaDropDownMenu` already names |
-| **Parameters** | `RenderFragment ChildContent` (the same `FormaDropDownMenuItem`/`Divider` children), `MenuOrientation Orientation`, `string Label` (required) |
+| **Parameters** | `RenderFragment ChildContent` (required — the same `FormaDropDownMenuItem`/`Divider` children), `RenderFragment? HeaderContent`, `MenuOrientation Orientation`, `string Label` (required), `ButtonSize Size`, `ButtonVariant Variant` (default Ghost), `bool Disabled`, plus captured pass-through attributes |
 | **Blazor approach** | A preset over `FormaDropDownMenu` (#24) supplying the ellipsis trigger and the accessible name, owning no popup, positioning or keyboard logic of its own. It exists so every row's overflow affordance is the same glyph and the same target size, not to add behaviour |
 
 ### 46. `FormaContextMenu`
@@ -835,7 +835,7 @@ These are more complex, possibly page-specific, but still benefit from being com
 |---|---|
 | **Old pattern** | The hand-rolled search box in `FormaExplorerAddressBar` — a magnifying glass glyph, a `type="search"` input, and a clear button, all written directly into that component |
 | **Used in** | General search and filter fields anywhere a caller wants a `type="search"` box rather than a plain `FormaTextBox`. Now the box `FormaExplorerAddressBar` composes rather than draws itself |
-| **Parameters** | `string Value`, `EventCallback<string> ValueChanged`, `EventCallback<string> OnSearch`, `TimeSpan? DebounceDelay`, `string? Placeholder`, `string? Id`, `bool Disabled`, `string? Class` |
+| **Parameters** | `string Value`, `EventCallback<string> ValueChanged`, `EventCallback<string> OnSearch`, `TimeSpan? DebounceDelay`, `string? Placeholder`, `string? Id`, `bool Disabled`, `string? Class`, plus captured pass-through attributes |
 | **Blazor approach** | A plain `Value`/`ValueChanged` pair rather than `InputBase<T>`, since a search field has no validation state to carry. `Value` updates on every keystroke; `OnSearch` reports the committed term — instantly when `DebounceDelay` is null, or once typing pauses for that long otherwise. Enter and the built-in clear button both bypass a pending debounce and report immediately. The clear button is `FormaCloseButton`, reused rather than redrawn, and disables alongside the field |
 | **Notes** | `dir="auto"` follows what is typed, with the placeholder falling back to the page's own direction so an RTL placeholder does not strand itself in an empty LTR-default field. Retrofitted into `FormaExplorerAddressBar`, which keeps its own wrapper for the expand-on-focus and breadcrumb-collapse behaviour and now leaves the box itself to this component |
 

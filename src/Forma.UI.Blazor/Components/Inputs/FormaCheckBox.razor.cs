@@ -47,6 +47,7 @@ public sealed partial class FormaCheckBox : ComponentBase, IAsyncDisposable
     private string CssClass
         => AdditionalAttributes.MergeClass("forma-checkbox");
 
+    /// <inheritdoc />
     protected override void OnInitialized()
         => _checkBox = new CheckBox(JS);
 
@@ -58,6 +59,7 @@ public sealed partial class FormaCheckBox : ComponentBase, IAsyncDisposable
 
     // "Some but not all" is an IDL-only property with no content attribute, so it can
     // only be set from script, and only once the element exists to set it on.
+    /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (_indeterminateApplied == Indeterminate)

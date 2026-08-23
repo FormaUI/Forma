@@ -43,6 +43,7 @@ public sealed partial class FormaDropDownMenuItem : IDisposable
     private string? AriaChecked
         => IsSelected is null ? null : IsSelected.Value ? "true" : "false";
 
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         if (Menu is null)
@@ -67,6 +68,7 @@ public sealed partial class FormaDropDownMenuItem : IDisposable
         await Menu.RequestActivateAsync();
     }
 
+    /// <inheritdoc />
     public void Dispose()
         => Menu.UnregisterItem(this);
 }

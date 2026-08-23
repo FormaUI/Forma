@@ -67,12 +67,14 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
     private string CssClass
         => AdditionalAttributes.MergeClass("forma-pagination");
 
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         _submitGuard = new ImplicitSubmitGuard(JS);
         _text = new Text(JS);
     }
 
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(Options);
@@ -80,6 +82,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(PageSize, 0);
     }
 
+    /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!ShowsInputBox)

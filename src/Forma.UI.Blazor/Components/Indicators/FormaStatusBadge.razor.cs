@@ -69,6 +69,7 @@ public sealed partial class FormaStatusBadge : ComponentBase
         }
     }
 
+    /// <inheritdoc />
     protected override void OnParametersSet() => ArgumentException.ThrowIfNullOrWhiteSpace(Text);
 
     private (string? Background, string? Foreground) ResolveColours()

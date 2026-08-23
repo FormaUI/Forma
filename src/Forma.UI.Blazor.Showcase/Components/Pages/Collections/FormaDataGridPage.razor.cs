@@ -60,6 +60,7 @@ public sealed partial class FormaDataGridPage : ComponentBase
 
     private FormaDataGrid<EditableEmployee>? _editGrid;
 
+    /// <inheritdoc />
     protected override void OnInitialized()
         => _limitsCaption = new CheckedSelectionCaption
         {

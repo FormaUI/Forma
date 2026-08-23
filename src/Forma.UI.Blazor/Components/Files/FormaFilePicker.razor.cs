@@ -50,9 +50,11 @@ public sealed partial class FormaFilePicker : ComponentBase, IAsyncDisposable
     private string EffectivePrompt
         => Prompt ?? L["Drop files here or click to browse"];
 
+    /// <inheritdoc />
     protected override void OnInitialized()
         => _fileDropZone = new FileDropZone(JS);
 
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         if (MaxFileSize is <= 0)
@@ -66,6 +68,7 @@ public sealed partial class FormaFilePicker : ComponentBase, IAsyncDisposable
         }
     }
 
+    /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!_attached)

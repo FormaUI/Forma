@@ -44,9 +44,11 @@ public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisp
     private string? _announcement;
     private bool _announcementAlternate;
 
+    /// <inheritdoc />
     protected override void OnInitialized()
         => _reorder = new ReorderInteraction(JS);
 
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(Items);
@@ -56,6 +58,7 @@ public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisp
 
     // A disabled list renders unfocusable, non-draggable handles, so there is nothing
     // for the script to listen for; skipped rather than attached and left idle.
+    /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (Disabled || (_attached && _attachedDragFrom == DragFrom))

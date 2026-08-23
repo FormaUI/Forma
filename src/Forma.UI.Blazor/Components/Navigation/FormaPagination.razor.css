@@ -1,8 +1,7 @@
 /* ============================================================
    FormaPagination — CSS isolation
-   Numbered page navigator. Static markup with click handlers,
-   no JavaScript. Logical properties throughout for RTL/LTR
-   parity — the browser mirrors the layout, not the code.
+   Numbered page navigator. Logical properties throughout for
+   RTL/LTR parity — the browser mirrors the layout, not the code.
    ============================================================ */
 
 .forma-pagination {

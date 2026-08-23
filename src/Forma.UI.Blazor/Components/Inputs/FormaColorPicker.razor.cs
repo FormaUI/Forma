@@ -8,6 +8,7 @@ using Forma.Framework.Localization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
+/// <summary>A colour field pairing a swatch trigger with a hex value, optionally including an alpha channel.</summary>
 public sealed partial class FormaColorPicker : InputBase<string>
 {
     private readonly string _id = $"color-{Guid.NewGuid():N}";
@@ -28,6 +29,7 @@ public sealed partial class FormaColorPicker : InputBase<string>
         ? (int)Math.Round(int.Parse(CurrentValueAsString.AsSpan(7, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture) / 255.0 * 100)
         : 100;
 
+    /// <inheritdoc />
     protected override void OnParametersSet()
         => ArgumentException.ThrowIfNullOrWhiteSpace(Label);
 
@@ -64,6 +66,7 @@ public sealed partial class FormaColorPicker : InputBase<string>
         CurrentValueAsString = $"{RgbHex}{alpha:X2}";
     }
 
+    /// <inheritdoc />
     protected override bool TryParseValueFromString(
         string? value,
         out string result,

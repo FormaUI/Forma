@@ -12,6 +12,7 @@ public sealed partial class FormaExplorerActionBar : ComponentBase
 
     [CascadingParameter] private ExplorerContext Context { get; set; } = default!;
 
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(Resource);

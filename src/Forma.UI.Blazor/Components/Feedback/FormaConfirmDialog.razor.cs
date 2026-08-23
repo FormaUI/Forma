@@ -4,6 +4,7 @@ using Forma.UI.Features.Feedback;
 
 using Microsoft.AspNetCore.Components;
 
+/// <summary>The host that renders confirmation requests raised through <see cref="IConfirmDialogService"/>.</summary>
 public sealed partial class FormaConfirmDialog : IDisposable
 {
     private static readonly FormaModalOptions ModalOptions =
@@ -14,6 +15,7 @@ public sealed partial class FormaConfirmDialog : IDisposable
 
     [Inject] private IConfirmDialogService ConfirmService { get; set; } = default!;
 
+    /// <inheritdoc />
     protected override void OnInitialized() => ConfirmService.Subscribe(HandleShowRequestedAsync);
 
     private Task HandleShowRequestedAsync()
@@ -44,5 +46,6 @@ public sealed partial class FormaConfirmDialog : IDisposable
         _request = null;
     }
 
+    /// <inheritdoc />
     public void Dispose() => ConfirmService.Unsubscribe(HandleShowRequestedAsync);
 }

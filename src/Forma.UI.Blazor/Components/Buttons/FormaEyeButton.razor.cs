@@ -25,6 +25,7 @@ public sealed partial class FormaEyeButton : ComponentBase
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
+    /// <inheritdoc />
     protected override void OnParametersSet()
         => ArgumentException.ThrowIfNullOrWhiteSpace(Label);
 }

@@ -89,12 +89,14 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
         }
     }
 
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         _playback = new Playback(JS);
         _embedding = new Embedding(JS);
     }
 
+    /// <inheritdoc />
     protected override async Task OnParametersSetAsync()
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(Source);
@@ -143,6 +145,7 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
         return null;
     }
 
+    /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (Autoplay && !_autoplayMuted && Frame is NativePlayerFrame)

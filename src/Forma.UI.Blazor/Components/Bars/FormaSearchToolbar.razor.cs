@@ -2,7 +2,7 @@ namespace Forma.UI.Blazor.Components.Bars;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>A search field and action buttons in one row, for the top of a list page.</summary>
+/// <summary>A search field and a row of toolbar items, for the top of a list page.</summary>
 public sealed partial class FormaSearchToolbar : IDisposable
 {
     private CancellationTokenSource? _cts;
@@ -10,7 +10,7 @@ public sealed partial class FormaSearchToolbar : IDisposable
     /// <summary>The accessible name of the action toolbar; required only when Items is not empty.</summary>
     [Parameter] public string? Label { get; set; }
 
-    /// <summary>The action buttons shown beside the search field.</summary>
+    /// <summary>The items shown beside the search field.</summary>
     [Parameter] public IReadOnlyList<FormaToolbarItem> Items { get; set; } = [];
 
     /// <summary>Callback invoked with the command an action raised.</summary>
@@ -25,6 +25,7 @@ public sealed partial class FormaSearchToolbar : IDisposable
     /// <summary>How long typing must settle before OnSearch is raised.</summary>
     [Parameter] public TimeSpan SearchDelay { get; set; } = TimeSpan.FromMilliseconds(300);
 
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(SearchDelay, TimeSpan.Zero);
@@ -68,6 +69,7 @@ public sealed partial class FormaSearchToolbar : IDisposable
         return _cts.Token;
     }
 
+    /// <inheritdoc />
     public void Dispose()
     {
         _cts?.Cancel();

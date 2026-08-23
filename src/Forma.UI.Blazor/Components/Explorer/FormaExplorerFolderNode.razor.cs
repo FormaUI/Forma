@@ -20,6 +20,7 @@ public sealed partial class FormaExplorerFolderNode : ComponentBase
 
     [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
 
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(Folder);

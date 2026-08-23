@@ -188,6 +188,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     private string CssClass
         => AdditionalAttributes.MergeClass("forma-data-grid");
 
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         _pagination.TotalItemCountChanged += HandleTotalItemCountChanged;
@@ -195,6 +196,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
         _height = new HeightReservation(JS);
     }
 
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(Columns);
@@ -260,6 +262,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
         _selectedSet = [.. SelectedItems];
     }
 
+    /// <inheritdoc />
     protected override async Task OnParametersSetAsync()
     {
         // Showing every row makes whichever page the grid was left on meaningless, so
@@ -336,6 +339,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     // Row-click/keyboard selection is delegated to script, since QuickGrid exposes no
     // row-level attribute or modifier-key hook. The header/row checkboxes' own
     // indeterminate state is handled internally by FormaCheckBox.
+    /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (EnableRowSelection && !_rowSelectionAttached)

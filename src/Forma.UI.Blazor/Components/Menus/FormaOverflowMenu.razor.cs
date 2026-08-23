@@ -40,6 +40,7 @@ public sealed partial class FormaOverflowMenu : ComponentBase
             Variant = Variant,
         };
 
+    /// <inheritdoc />
     protected override void OnParametersSet()
         => ArgumentException.ThrowIfNullOrWhiteSpace(Label);
 }

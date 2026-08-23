@@ -8,6 +8,7 @@ using Forma.UI.Blazor.Interop.Behaviours;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
+/// <summary>A calendar for picking a single date, or a date range when the range parameters are bound.</summary>
 public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
 {
     // The rolling windows the Last7Days and Last30Days presets cover, ending today.
@@ -15,22 +16,48 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
     private const int LongRangeDays = 30;
 
     // ── Single-date mode ─────────────────────────────
+
+    /// <summary>The selected date.</summary>
     [Parameter] public DateOnly? Value { get; set; }
+
+    /// <summary>Raised when the selected date changes.</summary>
     [Parameter] public EventCallback<DateOnly?> ValueChanged { get; set; }
 
     // ── Range mode ───────────────────────────────────
+
+    /// <summary>The first date of the selected range.</summary>
     [Parameter] public DateOnly? StartDate { get; set; }
+
+    /// <summary>Raised when the range's first date changes; binding it puts the picker in range mode.</summary>
     [Parameter] public EventCallback<DateOnly?> StartDateChanged { get; set; }
+
+    /// <summary>The last date of the selected range.</summary>
     [Parameter] public DateOnly? EndDate { get; set; }
+
+    /// <summary>Raised when the range's last date changes; binding it puts the picker in range mode.</summary>
     [Parameter] public EventCallback<DateOnly?> EndDateChanged { get; set; }
 
     // ── Common ───────────────────────────────────────
+
+    /// <summary>The field's label and accessible name.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
+
+    /// <summary>The earliest selectable date.</summary>
     [Parameter] public DateOnly? MinDate { get; set; }
+
+    /// <summary>The latest selectable date.</summary>
     [Parameter] public DateOnly? MaxDate { get; set; }
+
+    /// <summary>Whether the quick-range presets are offered.</summary>
     [Parameter] public bool ShowPresets { get; set; } = true;
+
+    /// <summary>Raised once a selection is complete: a date in single-date mode, both ends in range mode.</summary>
     [Parameter] public EventCallback OnSelectionComplete { get; set; }
+
+    /// <summary>Whether months come from the culture's non-Gregorian calendar, such as the Hebrew calendar for <c>he</c>.</summary>
     [Parameter] public bool UseNonGregorianMonths { get; set; }
+
+    /// <summary>Attributes applied to the trigger element.</summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
@@ -140,9 +167,11 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
 
     // ── Lifecycle ────────────────────────────────────
 
+    /// <inheritdoc />
     protected override void OnInitialized()
         => _popup = new AnchoredPopup(JS);
 
+    /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
         => await _popup.SyncAsync(_isOpen, _popupElement, _anchorElement);
 
@@ -150,6 +179,7 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
     public async ValueTask DisposeAsync()
         => await _popup.DisposeAsync();
 
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(Label);

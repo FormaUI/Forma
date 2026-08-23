@@ -41,6 +41,7 @@ public sealed partial class FormaSlider<TValue> : InputBase<TValue> where TValue
     private string? AriaValueText
         => Unit is null ? null : DisplayValue;
 
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(Label);
@@ -52,10 +53,12 @@ public sealed partial class FormaSlider<TValue> : InputBase<TValue> where TValue
     private static string FormatInvariant(TValue value)
         => value.ToString(null, CultureInfo.InvariantCulture);
 
+    /// <inheritdoc />
     protected override string? FormatValueAsString(TValue value)
         => FormatInvariant(value);
 
     // A range input is native and OS-constrained to a valid number, so parsing cannot fail in practice.
+    /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
     {
         result = TValue.TryParse(value, CultureInfo.InvariantCulture, out var parsed) ? parsed : Min;

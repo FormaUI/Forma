@@ -45,9 +45,11 @@ public sealed partial class FormaImagePicker : ComponentBase, IAsyncDisposable
     private string EffectivePrompt
         => Prompt ?? L["Drop images here or click to browse"];
 
+    /// <inheritdoc />
     protected override void OnInitialized()
         => _preview = new FilePreview(JS);
 
+    /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)

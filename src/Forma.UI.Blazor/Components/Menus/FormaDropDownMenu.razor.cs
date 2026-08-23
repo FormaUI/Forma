@@ -40,6 +40,7 @@ public sealed partial class FormaDropDownMenu : ComponentBase, IAsyncDisposable
     private AnchoredPopup _popup = default!;
     private NavigationScrollGuard _keyGuard = default!;
 
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         _popup = new AnchoredPopup(JS);
@@ -173,6 +174,7 @@ public sealed partial class FormaDropDownMenu : ComponentBase, IAsyncDisposable
         await _items[_focusedIndex].FocusAsync();
     }
 
+    /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
         => await _popup.SyncAsync(_isOpen, _popupElement, _anchorElement, async () =>
         {

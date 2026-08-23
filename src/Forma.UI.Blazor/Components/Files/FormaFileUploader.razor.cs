@@ -130,6 +130,7 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
         }
     }
 
+    /// <inheritdoc />
     protected override async Task OnParametersSetAsync()
     {
         ArgumentNullException.ThrowIfNull(Options);

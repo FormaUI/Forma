@@ -59,12 +59,14 @@ public sealed partial class FormaCommandBar : ComponentBase, IAsyncDisposable
         return InvokeAsync(StateHasChanged);
     }
 
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         _watcher = new ScrollBoundaryWatcher(JS);
         _scroll = new Scroll(JS);
     }
 
+    /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)

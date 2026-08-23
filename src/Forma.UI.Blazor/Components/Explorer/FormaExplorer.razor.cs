@@ -425,6 +425,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable
     private IReadOnlyList<FolderResourceInfo> SelectedFolders
         => _context.Selection.ResolveFolders();
 
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         _infiniteScroll = new InfiniteScroll(JS);
@@ -457,6 +458,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable
         SyncContext();
     }
 
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         if (Resources is null == ResourcesProvider is null)
@@ -490,6 +492,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable
         SyncContext();
     }
 
+    /// <inheritdoc />
     protected override async Task OnParametersSetAsync()
     {
         if (!IsProviderMode)
@@ -820,6 +823,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable
     private string SidebarSizeStyle
         => string.Create(CultureInfo.InvariantCulture, $"--forma-explorer-sidebar-size: {_sidebarWidth}rem");
 
+    /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
         => await SyncSentinelAsync();
 

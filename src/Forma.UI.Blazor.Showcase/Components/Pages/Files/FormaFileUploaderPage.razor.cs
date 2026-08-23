@@ -39,6 +39,7 @@ public sealed partial class FormaFileUploaderPage : ComponentBase
     private static string Limit(long bytes)
         => $"""<bdi dir="ltr">{ResourceFormatter.FromByteCount(bytes)}</bdi>""";
 
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         SetStore("auto");

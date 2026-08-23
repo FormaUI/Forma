@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
+/// <summary>An iOS-style switch for a boolean value.</summary>
 public sealed partial class FormaToggleSwitch : InputBase<bool>
 {
     private readonly string _id = $"toggle-{Guid.NewGuid():N}";
@@ -23,6 +24,7 @@ public sealed partial class FormaToggleSwitch : InputBase<bool>
 
     private void HandleChange(ChangeEventArgs e) => CurrentValue = e.Value is true;
 
+    /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, out bool result, [NotNullWhen(false)] out string? validationErrorMessage)
     {
         result = bool.TryParse(value, out var parsed) && parsed;

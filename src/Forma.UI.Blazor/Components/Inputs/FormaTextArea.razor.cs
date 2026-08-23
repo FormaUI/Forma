@@ -70,6 +70,7 @@ public sealed partial class FormaTextArea : InputBase<string?>
         }
     }
 
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(Label);
@@ -81,6 +82,7 @@ public sealed partial class FormaTextArea : InputBase<string?>
         }
     }
 
+    /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
     {
         result = value;

@@ -223,6 +223,7 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
             _ => L["Password strength: Weak"],
         };
 
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         _autofill = new AutofillTracker(JS);
@@ -230,6 +231,7 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
         EditContext.OnValidationRequested += HandleValidationRequested;
     }
 
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(Label);
@@ -315,6 +317,7 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
     private void ToggleReveal()
         => _isRevealed = !_isRevealed;
 
+    /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
     {
         result = value;
@@ -322,6 +325,7 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
         return true;
     }
 
+    /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
@@ -332,6 +336,7 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
         await _autofill.AttachAsync(_inputRef);
     }
 
+    /// <inheritdoc />
     protected override void Dispose(bool disposing)
     {
         if (disposing)
@@ -342,6 +347,7 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
         base.Dispose(disposing);
     }
 
+    /// <inheritdoc />
     public async ValueTask DisposeAsync()
         => await _autofill.DisposeAsync();
 }

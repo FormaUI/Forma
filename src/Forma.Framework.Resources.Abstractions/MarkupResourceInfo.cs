@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 [SuppressMessage("Design", "CA1054:URI parameters should not be strings")]
 public record MarkupResourceInfo : DocumentResourceInfo
 {
+    /// <summary>Creates a markup resource from its source address and its sanitised HTML.</summary>
     public MarkupResourceInfo(string source, string html)
         : base(source)
     {

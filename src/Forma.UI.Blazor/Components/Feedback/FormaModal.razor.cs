@@ -8,6 +8,7 @@ using Forma.UI.Blazor.Interop.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
+/// <summary>A dialog rendered in the browser's top layer, with an optional header, footer actions, and backdrop dismissal.</summary>
 public sealed partial class FormaModal : IAsyncDisposable
 {
     private ElementReference _dialogRef;
@@ -59,12 +60,15 @@ public sealed partial class FormaModal : IAsyncDisposable
     private string CancelLabel =>
         CancelText ?? (Options.ShowCancelAction && !Options.ShowConfirmAction ? L["Close"] : L["Cancel"]);
 
+    /// <inheritdoc />
     protected override void OnInitialized()
         => _modal = new Modal(JS);
 
+    /// <inheritdoc />
     protected override void OnParametersSet()
         => ArgumentNullException.ThrowIfNull(Options);
 
+    /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -139,6 +143,7 @@ public sealed partial class FormaModal : IAsyncDisposable
         }
     }
 
+    /// <inheritdoc />
     public async ValueTask DisposeAsync()
         => await _modal.DisposeAsync();
 }

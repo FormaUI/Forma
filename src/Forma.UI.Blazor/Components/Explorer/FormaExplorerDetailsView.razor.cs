@@ -31,6 +31,7 @@ public sealed partial class FormaExplorerDetailsView : ComponentBase
     private bool ShowsAdded
         => Context.Options.DetailsColumns.HasFlag(ExplorerDetailsColumns.Added);
 
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         if (Context is null)

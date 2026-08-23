@@ -78,12 +78,14 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
     private string DisplayName
         => Resource?.Name ?? Source;
 
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         _pan = new PanGesture(JS);
         _scroll = new Scroll(JS);
     }
 
+    /// <inheritdoc />
     protected override async Task OnParametersSetAsync()
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(Source);
@@ -143,6 +145,7 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
         return await BrowserProvider.GetResourceAsync(source, cancellationToken);
     }
 
+    /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (Resource is not ImageResourceInfo)

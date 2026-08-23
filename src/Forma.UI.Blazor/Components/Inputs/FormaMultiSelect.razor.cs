@@ -77,9 +77,11 @@ public sealed partial class FormaMultiSelect<TValue> : InputBase<List<TValue>>, 
         }
     }
 
+    /// <inheritdoc />
     protected override void OnInitialized()
         => _popup = new AnchoredPopup(JS);
 
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(Label);
@@ -138,6 +140,7 @@ public sealed partial class FormaMultiSelect<TValue> : InputBase<List<TValue>>, 
         _searchText = "";
     }
 
+    /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
         => await _popup.SyncAsync(_isOpen, _popupElement, _anchorElement, () => _searchElement.FocusAsync());
 
@@ -145,6 +148,7 @@ public sealed partial class FormaMultiSelect<TValue> : InputBase<List<TValue>>, 
     public async ValueTask DisposeAsync()
         => await _popup.DisposeAsync();
 
+    /// <inheritdoc />
     protected override bool TryParseValueFromString(
         string? value,
         out List<TValue> result,

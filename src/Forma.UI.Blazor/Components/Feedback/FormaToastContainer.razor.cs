@@ -6,6 +6,7 @@ using Forma.UI.Style.Glyphs;
 
 using Microsoft.AspNetCore.Components;
 
+/// <summary>The live region that renders and auto-dismisses toasts raised through <see cref="IToastService"/>.</summary>
 public sealed partial class FormaToastContainer : IDisposable
 {
     private readonly Dictionary<string, Timer> _timers = [];
@@ -14,6 +15,7 @@ public sealed partial class FormaToastContainer : IDisposable
 
     [Inject] private IStringLocale<FormaToastContainer> L { get; set; } = default!;
 
+    /// <inheritdoc />
     protected override void OnInitialized() => ToastService.Subscribe(HandleChangeAsync);
 
     private static Glyph MarkerFor(ToastType type)
@@ -77,6 +79,7 @@ public sealed partial class FormaToastContainer : IDisposable
         }
     }
 
+    /// <inheritdoc />
     public void Dispose()
     {
         ToastService.Unsubscribe(HandleChangeAsync);

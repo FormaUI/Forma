@@ -57,6 +57,7 @@ public sealed partial class FormaField : ComponentBase
         }
     }
 
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         if (HasLabel)

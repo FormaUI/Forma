@@ -6,7 +6,7 @@ using Forma.UI.Blazor.Interop.Behaviours;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>A toolbar of grouped, item-driven commands, built on <see cref="FormaCommandArea"/> and <see cref="FormaCommandBar"/>.</summary>
+/// <summary>A toolbar of grouped, item-driven commands, built on <see cref="FormaCommandBar"/>.</summary>
 public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
 {
     private static readonly FormaButtonOptions MenuTriggerOptions =

@@ -2,11 +2,13 @@ namespace Forma.UI.Blazor.Components.Layout;
 
 using Microsoft.AspNetCore.Components;
 
+/// <summary>A tabbed panel showing one <see cref="FormaTab"/> at a time.</summary>
 public partial class FormaTabs
 {
     private readonly List<FormaTab> _tabs = [];
     private FormaTab? _activeTab;
 
+    /// <summary>The <see cref="FormaTab"/> children this panel switches between.</summary>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
 
     /// <summary>The identifier of the selected tab, which hands the caller control of which tab is active.</summary>

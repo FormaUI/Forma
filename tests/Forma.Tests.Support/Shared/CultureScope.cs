@@ -12,6 +12,7 @@ public sealed class CultureScope : IDisposable
         CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(culture);
     }
 
+    /// <inheritdoc />
     public void Dispose()
         => CultureInfo.CurrentUICulture = _previous;
 }

@@ -77,6 +77,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
 
     [Inject] private IStringLocale<FormaExplorerPage> L { get; set; } = default!;
 
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         var seeded = new DateTimeOffset(2026, 3, 14, 9, 30, 0, TimeSpan.Zero);

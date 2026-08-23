@@ -12,6 +12,7 @@ public sealed partial class FormaExplorerThumbnailsView : ComponentBase
 
     [CascadingParameter] private ExplorerContext Context { get; set; } = default!;
 
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         if (Context is null)

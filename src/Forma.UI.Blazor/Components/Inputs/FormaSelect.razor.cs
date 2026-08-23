@@ -48,12 +48,14 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
     private string TriggerText
         => FindSelectedOption()?.Label ?? Placeholder ?? L["Select an Option"];
 
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         _popup = new AnchoredPopup(JS);
         _keyGuard = new NavigationScrollGuard(JS);
     }
 
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(Label);
@@ -184,6 +186,7 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
         await _optionElements[_focusedIndex].FocusAsync();
     }
 
+    /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
         => await _popup.SyncAsync(_isOpen, _popupElement, _anchorElement, async () =>
         {
@@ -198,6 +201,7 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
         await _keyGuard.DisposeAsync();
     }
 
+    /// <inheritdoc />
     protected override bool TryParseValueFromString(
         string? value,
         out TValue result,
