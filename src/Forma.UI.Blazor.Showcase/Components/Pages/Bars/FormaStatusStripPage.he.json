@@ -1,0 +1,21 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "A quiet strip of status readouts and occasional commands, meant to sit beneath a canvas or at the foot of a panel. Built on FormaToolbar, so a readout announces itself to a screen reader through the same role and a command runs through the same OnCommand.": "רצועה שקטה של תצוגות מצב ופקודות מזדמנות, המיועדת לשבת מתחת ללוח עבודה או בתחתית פאנל. בנוי על גבי FormaToolbar, כך שתצוגת מצב מכריזה על עצמה לקורא מסך דרך אותו תפקיד, ופקודה פועלת דרך אותו OnCommand.",
+  "Readouts": "תצוגות מצב",
+  "Document Status": "מצב המסמך",
+  "An announced readout": "תצוגת מצב מוכרזת",
+  "Press the button to change the count. A screen reader announces the new value because IsAnnounced is set.": "לחצו על הכפתור כדי לשנות את הכמות. קורא מסך מכריז על הערך החדש מכיוון ש-IsAnnounced מוגדר.",
+  "Type some words": "הקלידו כמה מילים",
+  "A command": "פקודה",
+  "Last command": "פקודה אחרונה",
+  "Disabled": "מושבת",
+  "Empty, hidden": "ריק, מוסתר",
+  "The default EmptyMode renders nothing at all while there are no items, rather than an empty bar.": "ברירת המחדל של EmptyMode לא מציגה דבר כל עוד אין פריטים, במקום להציג סרגל ריק.",
+  "Empty, shown": "ריק, מוצג",
+  "EmptyMode.Shown keeps the strip's chrome in the layout even with no items.": "EmptyMode.Shown שומר את מעטפת הרצועה בפריסה גם ללא פריטים.",
+  "Word Count": "ספירת מילים",
+  "{_wordCount} words": "{_wordCount} מילים",
+  "Save State": "מצב שמירה",
+  "Saved": "נשמר",
+  "Retry": "נסה שוב"
+}

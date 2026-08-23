@@ -1,0 +1,83 @@
+@page "/status-strip"
+@attribute [ShowcasePage("FormaStatusStrip")]
+@rendermode InteractiveServer
+@using Forma.UI.Blazor.Components.Bars
+@using Forma.UI.Style.Glyphs
+@inject IStringLocale<FormaStatusStripPage> L
+
+<h1>FormaStatusStrip</h1>
+<p class="description">@L["A quiet strip of status readouts and occasional commands, meant to sit beneath a canvas or at the foot of a panel. Built on FormaToolbar, so a readout announces itself to a screen reader through the same role and a command runs through the same OnCommand."]</p>
+
+<div class="demo-section">
+    <h2>@L["Readouts"]</h2>
+    <div class="demo-box">
+        <FormaStatusStrip Label="@L["Document Status"]" Items="_readoutItems" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["An announced readout"]</h2>
+    <p class="description">@L["Press the button to change the count. A screen reader announces the new value because IsAnnounced is set."]</p>
+    <div class="demo-box">
+        <button class="button button-secondary" @onclick="() => _wordCount += 17">
+            @L["Type some words"]
+        </button>
+        <FormaStatusStrip Label="@L["Document Status"]" Items="_announcedItems" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A command"]</h2>
+    <div class="demo-box">
+        <FormaStatusStrip Label="@L["Document Status"]" Items="_commandItems" OnCommand="HandleCommand" />
+        <p class="demo-output">@L["Last command"]: <code>@_lastCommand</code></p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Disabled"]</h2>
+    <div class="demo-box">
+        <FormaStatusStrip Label="@L["Document Status"]" Items="_commandItems" Disabled="true" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Empty, hidden"]</h2>
+    <p class="description">@L["The default EmptyMode renders nothing at all while there are no items, rather than an empty bar."]</p>
+    <div class="demo-box">
+        <FormaStatusStrip />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Empty, shown"]</h2>
+    <p class="description">@L["EmptyMode.Shown keeps the strip's chrome in the layout even with no items."]</p>
+    <div class="demo-box">
+        <FormaStatusStrip EmptyMode="StatusStripEmptyMode.Shown" />
+    </div>
+</div>
+
+@code {
+    private int _wordCount = 128;
+    private string _lastCommand = "";
+
+    private IReadOnlyList<FormaToolbarItem> _readoutItems =>
+    [
+        new FormaToolbarReadout { Id = "words", Title = L["Word Count"], Value = L[$"{_wordCount} words"] },
+        new FormaToolbarReadout { Id = "saved", Title = L["Save State"], Value = L["Saved"] },
+    ];
+
+    private IReadOnlyList<FormaToolbarItem> _announcedItems =>
+    [
+        new FormaToolbarReadout { Id = "words", Title = L["Word Count"], Value = L[$"{_wordCount} words"], IsAnnounced = true },
+    ];
+
+    private IReadOnlyList<FormaToolbarItem> _commandItems =>
+    [
+        new FormaToolbarReadout { Id = "words", Title = L["Word Count"], Value = L[$"{_wordCount} words"] },
+        new FormaToolbarCommand { Id = "retry", Title = L["Retry"], Icon = Glyph.RotateLeft, Command = "retry" },
+    ];
+
+    private void HandleCommand(string command)
+        => _lastCommand = command;
+}

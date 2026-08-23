@@ -1,0 +1,17 @@
+/* ============================================================
+   FormaStatusStrip — CSS isolation
+   A quiet strip of readouts and occasional commands, meant to
+   sit beneath a canvas or at the foot of a panel.
+   ============================================================ */
+
+.forma-status-strip {
+    padding-inline: 0.5rem;
+    min-block-size: 1.75rem;
+    background-color: var(--modal-background-color);
+    border-block-start: 1px solid var(--border-color);
+}
+
+/* Lands on FormaToolbar's own FormaCommandBar output, not this component's. */
+::deep .forma-status-strip-items {
+    flex-wrap: wrap;
+}

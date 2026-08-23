@@ -1,0 +1,11 @@
+@namespace Forma.UI.Blazor.Components.Bars
+
+@if (Items.Count > 0 || EmptyMode == StatusStripEmptyMode.Shown)
+{
+    <div class="forma-status-strip">
+        @if (Items.Count > 0)
+        {
+            <FormaToolbar Class="forma-status-strip-items" Label="@Label" Items="Items" Disabled="Disabled" OnCommand="OnCommand" />
+        }
+    </div>
+}

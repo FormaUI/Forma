@@ -1,0 +1,21 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "A quiet strip of status readouts and occasional commands, meant to sit beneath a canvas or at the foot of a panel. Built on FormaToolbar, so a readout announces itself to a screen reader through the same role and a command runs through the same OnCommand.": "Una franja discreta de indicadores de estado y comandos ocasionales, pensada para situarse debajo de un lienzo o al pie de un panel. Construida sobre FormaToolbar, de modo que un indicador se anuncia a un lector de pantalla mediante el mismo rol y un comando se ejecuta mediante el mismo OnCommand.",
+  "Readouts": "Indicadores",
+  "Document Status": "Estado del Documento",
+  "An announced readout": "Un indicador anunciado",
+  "Press the button to change the count. A screen reader announces the new value because IsAnnounced is set.": "Pulse el botón para cambiar el recuento. Un lector de pantalla anuncia el nuevo valor porque IsAnnounced está activado.",
+  "Type some words": "Escriba algunas palabras",
+  "A command": "Un comando",
+  "Last command": "Último comando",
+  "Disabled": "Deshabilitado",
+  "Empty, hidden": "Vacío, oculto",
+  "The default EmptyMode renders nothing at all while there are no items, rather than an empty bar.": "El EmptyMode predeterminado no muestra nada mientras no hay elementos, en lugar de mostrar una barra vacía.",
+  "Empty, shown": "Vacío, visible",
+  "EmptyMode.Shown keeps the strip's chrome in the layout even with no items.": "EmptyMode.Shown mantiene el marco de la franja en el diseño incluso sin elementos.",
+  "Word Count": "Recuento de Palabras",
+  "{_wordCount} words": "{_wordCount} palabras",
+  "Save State": "Estado de Guardado",
+  "Saved": "Guardado",
+  "Retry": "Reintentar"
+}

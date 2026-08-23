@@ -20,7 +20,7 @@ Forma.UI.Blazor/Components/
 ├── FormaGlyph.razor / .razor.cs / .razor.css  # draws a Forma.UI.Style.Glyphs.Glyph as inline SVG
 ├── ✅ FormaField.razor / .razor.cs / .razor.css
 ├── FieldLabelMode.cs                     # enum: Floating, Pinned, Above, Inline
-├── (5 / 5) Bars/
+├── (6 / 6) Bars/
 │   ├── ✅ FormaCommandArea.razor / .razor.cs / .razor.css
 │   ├── ✅ FormaCommandBar.razor / .razor.cs / .razor.css
 │   ├── ✅ FormaSearchToolbar.razor / .razor.cs / .razor.css
@@ -34,7 +34,8 @@ Forma.UI.Blazor/Components/
 │   ├── FormaToolbarReadout.cs                 # non-interactive Value
 │   ├── FormaToolbarCustomItem.cs              # caller-supplied Component and Parameters
 │   ├── FormaToolbarOption.cs
-│   └── ✅ FormaSelectionToolbar.razor / .razor.cs / .razor.css
+│   ├── ✅ FormaSelectionToolbar.razor / .razor.cs / .razor.css
+│   └── ✅ FormaStatusStrip.razor / .razor.cs / .razor.css
 ├── (2 / 2) Layout/
 │   ├── ✅ FormaSplitter.razor / .razor.cs / .razor.css / .razor.js
 │   ├── SplitterOrientation.cs                 # enum: Vertical, Horizontal
@@ -887,12 +888,22 @@ These are more complex, possibly page-specific, but still benefit from being com
 | | |
 |---|---|
 | **Old pattern** | None — a new, generic addition rather than a Coi-derived one, extracted from `FormaComposer`'s own toolbar to give any host a grouped, item-driven command bar without pulling in the composer |
-| **Used in** | Anywhere a host needs a bar of commands driven by data rather than hand-written markup. Already the base for `FormaSearchToolbar` and `FormaSelectionToolbar`; planned as the base for `FormaComposer`'s own toolbar and `FormaStatusStrip` |
+| **Used in** | Anywhere a host needs a bar of commands driven by data rather than hand-written markup. Already the base for `FormaSearchToolbar`, `FormaSelectionToolbar`, and `FormaStatusStrip`; planned as the base for `FormaComposer`'s own toolbar |
 | **Parameters** | `string Label` (required, validated), `IReadOnlyList<FormaToolbarItem> Items`, `bool Disabled`, `bool ShowLabels`, `ElementReference? Target`, `EventCallback<string> OnCommand`, `RenderFragment? TrailingContent`, `string? ScrollBackLabel`, `string? ScrollForwardLabel`, `string? Class` |
 | **Item model** | `FormaToolbarItem` is abstract — `Id`, `Title`, `Tooltip?`, `Icon?`, `IsDisabled` — and the subtype decides the rendering. `FormaToolbarGroup` adds `Items`; `FormaToolbarAction` adds `Command`, `ShortcutDisplay?`, `ShortcutAriaKeys?` and is specialized by `FormaToolbarCommand` (fires once) and `FormaToolbarToggle` (adds `IsActive`); `FormaToolbarMenu` adds `Options`; `FormaToolbarReadout` adds `Value` and `IsAnnounced`; `FormaToolbarCustomItem` adds `Component` and `Parameters?`. `FormaToolbarOption`: `Id`, `Title`, `Command`, `IsActive`, `PreviewStyle?`, `Swatch?` |
 | **Blazor approach** | Built on `FormaCommandArea` and `FormaCommandBar` rather than reinventing the scrolling track and overflow arrows. A `switch` over the item type does the dispatch, so each kind renders its own way: a group becomes a `role="group"` cluster named by its `Title` and separated from its neighbours by a rule, a menu becomes a `FormaDropDownMenu` showing the active option's title or a colour swatch, a readout becomes a plain span that gains `role="status"` when `IsAnnounced`, and a custom item becomes a `DynamicComponent`. A toggle's `IsActive` is drawn with an underline as well as colour so it never rests on colour alone. `ShowLabels` puts an icon and its label in the same button and gives it real chrome; an icon-only button stays flat so a dense row of glyphs is not all borders, and only then does it need an `aria-label`. An action's `ShortcutAriaKeys`, such as "Control+Shift+B", is parsed into a `KeyBinding` and attached through the shared `KeyBindings` JS behaviour once `Target` is set — shortcuts stay inert until then, since the toolbar never listens document-wide. A matched shortcut runs through the same `HandleCommandAsync` a click does, and is refused when the toolbar's own `Disabled` or the specific action's `IsDisabled` says so |
 | **Notes** | Making the group an item is what lets one `Items` list mix bare items and clusters, and lets a caller with nothing to group skip the ceremony — a bare item renders in a `display: contents` wrapper so it joins the track without inheriting a separator. Groups do not nest, and the guard says so rather than rendering something surprising. Deliberately holds no plugin registry, no multi-row layout engine, and no undo/redo special-case — those stay `FormaComposer`'s own concern. Titles are caller-supplied and rendered as given, so the host localizes them and the component owns no strings at all. A tooltip that would only repeat a visible label is dropped, so hovering a named button does not echo it back. Each item and option is keyed by its `Id` and each group by its own, so a host adding or removing one never tears down a neighbour's open menu — keying a group by its first item's `Id` instead would, since that key moves the moment that item leaves. `IsDisabled` lets one item stand down without disabling the whole toolbar, for a command that needs a selection or a state the others don't |
 | **Outstanding** | Sets `role="toolbar"` without the arrow-key roving focus an ARIA toolbar owes; the roles its children carry are correct, but keyboard navigation between them is still plain tab order |
+
+### 66. `FormaStatusStrip` ✅
+
+| | |
+|---|---|
+| **Old pattern** | None — extracted from `FormaComposerStatusStrip`'s shape into a generic component, so any host can show a quiet strip of readouts and commands without pulling in the composer. `FormaComposerStatusStrip` still exists and is not yet migrated onto it |
+| **Used in** | Planned to replace `FormaComposerStatusStrip` |
+| **Parameters** | `string? Label` (required once `Items` is non-empty), `IReadOnlyList<FormaToolbarItem> Items`, `bool Disabled`, `StatusStripEmptyMode EmptyMode` (`Hidden`/`Shown`, default `Hidden`), `EventCallback<string> OnCommand` |
+| **Blazor approach** | A thin wrapper around `FormaToolbar`: a `FormaToolbarReadout` for a value, a `FormaToolbarCommand` for something the strip lets a host trigger. `FormaToolbar` already gives a readout `role="status"`/`aria-live="polite"` when its `IsAnnounced` is set, so the strip needs no announcer of its own the way `FormaComposerStatusStrip` built by hand. `EmptyMode` decides whether an empty `Items` renders nothing at all (`Hidden`, the default) or keeps the strip's chrome in the layout as an empty bar (`Shown`); either way, no nested `FormaToolbar` is rendered while there is nothing for it to show, so `Label` stays optional in that case |
+| **Notes** | `Disabled` forwards straight to the inner `FormaToolbar`, unlike `FormaSearchToolbar` and `FormaSelectionToolbar`, which have no such state to disable |
 
 ---
 

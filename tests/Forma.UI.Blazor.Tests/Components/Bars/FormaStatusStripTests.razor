@@ -1,0 +1,118 @@
+@inherits BunitContext
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_nothing_without_items()
+        {
+            // Arrange
+            using var ctx = new FormaStatusStripTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaStatusStrip />);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-status-strip"));
+        }
+
+        [Fact]
+        public void Should_render_an_empty_bar_when_empty_mode_is_shown()
+        {
+            // Arrange
+            using var ctx = new FormaStatusStripTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaStatusStrip EmptyMode="StatusStripEmptyMode.Shown" />);
+
+            // Assert
+            cut.Find(".forma-status-strip");
+        }
+
+        [Fact]
+        public void Should_not_render_a_toolbar_in_the_empty_bar()
+        {
+            // Arrange
+            using var ctx = new FormaStatusStripTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaStatusStrip EmptyMode="StatusStripEmptyMode.Shown" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-status-strip-items"));
+        }
+
+        [Fact]
+        public void Should_render_the_strip_when_items_are_supplied()
+        {
+            // Arrange
+            using var ctx = new FormaStatusStripTests();
+            IReadOnlyList<FormaToolbarItem> items = [new FormaToolbarReadout { Id = "words", Title = "Words", Value = "128 words" }];
+
+            // Act
+            var cut = ctx.Render(@<FormaStatusStrip Label="Status" Items="items" />);
+
+            // Assert
+            cut.Find(".forma-status-strip");
+        }
+
+        [Fact]
+        public void Should_render_a_readouts_value()
+        {
+            // Arrange
+            using var ctx = new FormaStatusStripTests();
+            IReadOnlyList<FormaToolbarItem> items = [new FormaToolbarReadout { Id = "words", Title = "Words", Value = "128 words" }];
+
+            // Act
+            var cut = ctx.Render(@<FormaStatusStrip Label="Status" Items="items" />);
+
+            // Assert
+            Assert.Equal("128 words", cut.Find(".forma-toolbar-readout").TextContent);
+        }
+
+        [Fact]
+        public async Task Should_invoke_callback_with_a_commands_command()
+        {
+            // Arrange
+            using var ctx = new FormaStatusStripTests();
+            IReadOnlyList<FormaToolbarItem> items = [new FormaToolbarCommand { Id = "retry", Title = "Retry", Command = "status.retry" }];
+            string? received = null;
+            var cut = ctx.Render(
+                @<FormaStatusStrip Label="Status" Items="items" OnCommand="@((string c) => { received = c; return Task.CompletedTask; })" />);
+
+            // Act
+            await cut.Find("button").ClickAsync(new());
+
+            // Assert
+            Assert.Equal("status.retry", received);
+        }
+
+        [Fact]
+        public void Should_forward_disabled_to_its_items()
+        {
+            // Arrange
+            using var ctx = new FormaStatusStripTests();
+            IReadOnlyList<FormaToolbarItem> items = [new FormaToolbarCommand { Id = "retry", Title = "Retry", Command = "status.retry" }];
+
+            // Act
+            var cut = ctx.Render(@<FormaStatusStrip Label="Status" Items="items" Disabled="true" />);
+
+            // Assert
+            Assert.True(cut.Find("button").HasAttribute("disabled"));
+        }
+
+        [Fact]
+        public void Should_require_a_label_once_items_are_supplied()
+        {
+            // Arrange
+            using var ctx = new FormaStatusStripTests();
+            IReadOnlyList<FormaToolbarItem> items = [new FormaToolbarReadout { Id = "words", Title = "Words", Value = "128 words" }];
+
+            // Act
+            void Act() => ctx.Render(@<FormaStatusStrip Items="items" />);
+
+            // Assert
+            Assert.Throws<ArgumentNullException>(Act);
+        }
+    }
+}
