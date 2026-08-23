@@ -42,13 +42,18 @@ Coi's boxy gradient toggle becoming a token-driven iOS-style `FormaToggleSwitch`
 | `src/Forma.UI.Style` | Class library | Nothing — presentation vocabulary such as `CssColor` in `Css/` and `Glyph` in `Glyphs/` |
 | `src/Forma.Framework.Resources.Abstractions` | Class library | Nothing — resource contracts and value types such as `IResourceProvider` and `ResourceInfo` |
 | `src/Forma.Framework.Resources` | Class library | Nothing — writes resource measurements as text for a reader (`ResourceFormatter`) |
-| `src/Forma.Framework.Localization` | Class library | Nothing — JSON-backed `IStringLocalizer` |
+| `src/Forma.Framework.Localization.Abstractions` | Class library | Nothing — localization contracts and value types such as `IStringLocale`, `LocalizedText`, and the locale expression syntax |
+| `src/Forma.Framework.Localization` | Class library | `Forma.Framework.Localization.Abstractions` — the locale parser and plural engine |
+| `src/Forma.Framework.Localization.Json` | Class library | `Forma.Framework.Localization` — JSON-backed `IStringLocale` |
+| `src/Forma.Framework.Localization.Linter` | Tool | `Forma.Framework.Localization.Json` — the `locali` linter over translation files and `L[...]` call sites |
 | `src/Forma.UI.Features.Abstractions` | Class library | `Forma.UI.Style` — contracts, messages, enums |
 | `src/Forma.UI.Features` | Class library | `Forma.UI.Features.Abstractions` — implementations |
+| `src/Forma.UI.Features.Composer.Abstractions` | Class library | `Forma.UI.Style` — composer contracts, plugin model, document types |
+| `src/Forma.UI.Features.Composer` | Class library | `Forma.UI.Features.Composer.Abstractions` — the composer engine |
 | `src/Forma.Framework.Resources.Markdown` | Class library | `Forma.Framework.Resources.Abstractions` — Markdown conversion |
-| `src/Forma.Framework.Resources.Office` | Class library | `Forma.Framework.Resources.Abstractions` — Word, workbook, and presentation conversion |
-| `src/Forma.UI.Blazor` | Razor Class Library | `Forma.UI.Features.Abstractions`, `Forma.UI.Style`, `Forma.Framework.Resources.Abstractions`, `Forma.Framework.Resources` — packaged components |
-| `src/Forma.UI.Blazor.Showcase` | Web app | `Forma.UI.Blazor`, `Forma.UI.Features`, `Forma.UI.Style`, `Forma.Framework.Resources.Abstractions`, `Forma.Framework.Resources`, `Forma.Framework.Resources.Office`, `Forma.Framework.Resources.Markdown`, `Forma.Framework.Localization` — reference host and component showcase |
+| `src/Forma.Framework.Resources.Office` | Class library | `Forma.Framework.Resources.Abstractions`, `Forma.Framework.Localization.Abstractions` — Word, workbook, and presentation conversion |
+| `src/Forma.UI.Blazor` | Razor Class Library | `Forma.UI.Features.Abstractions`, `Forma.UI.Features.Composer`, `Forma.UI.Features.Composer.Abstractions`, `Forma.UI.Style`, `Forma.Framework.Resources.Abstractions`, `Forma.Framework.Resources`, `Forma.Framework.Localization.Abstractions` — packaged components |
+| `src/Forma.UI.Blazor.Showcase` | Web app | `Forma.UI.Blazor`, `Forma.UI.Features`, `Forma.UI.Features.Composer`, `Forma.UI.Features.Composer.Abstractions`, `Forma.UI.Style`, `Forma.Framework.Resources.Abstractions`, `Forma.Framework.Resources`, `Forma.Framework.Resources.Office`, `Forma.Framework.Resources.Markdown`, `Forma.Framework.Localization`, `Forma.Framework.Localization.Json` — reference host and component showcase |
 | `tests/{Assembly}.Tests` | Test project | The one assembly it is named after, plus what its tests use directly |
 | `tests/Forma.Tests.Support` | Class library | Shared test fakes, fixtures, and utilities in the `Forma.Tests.*` namespaces |
 
@@ -84,7 +89,7 @@ A project's references are part of its contract, because every consumer inherits
 - Do prefix component tags with `Forma`: `<FormaModal>`, `<FormaDataGrid>`.
 - Do prefix CSS classes with `forma-`: `.forma-toggle-switch-track`.
 - Do leave C# services, enums, and records unprefixed because namespaces disambiguate them: `ToastService`, `ModalSize`, `BreadcrumbItem`.
-- Do give a supporting type its owning folder's name as a prefix only where that reads well and adds meaning, as `ExplorerAction`, `ExplorerContext`, and `ExplorerSelection` do against `System.Action` and a bare `Context`; `Data/` needs no `DataXxx` and takes none.
+- Do give a supporting type its owning folder's name as a prefix only where that reads well and adds meaning, as `ExplorerAction`, `ExplorerContext`, and `ExplorerSelection` do against `System.Action` and a bare `Context`; `Collections/` needs no `CollectionsXxx` and takes none.
 - Do find a better name when a prefix is needed to disambiguate but reads badly.
 - Do call a thing Forma ships a **component**, and raw HTML an **element** — one word per concept. "Control" is Web Forms vocabulary inherited from Coi; keep it only in `aria-controls` and in descriptions of Coi's own markup.
 - Don't apply one naming convention indiscriminately across Razor tags, CSS classes, and C# types.
@@ -97,13 +102,27 @@ These rules govern prose that *describes a thing*. They do not apply to this fil
 - Do comment only when the code cannot express an important constraint, such as a necessary `!important`, a non-obvious `-webkit-` property, or an off-by-one invariant.
 - Do keep comments to one line whenever possible.
 - Do add a one-line XML `<summary>` describing what every public parameter and public type is.
+- Do put `/// <inheritdoc />` on every lifecycle override and interface implementation — `OnInitialized`, `OnParametersSet`, `OnAfterRenderAsync`, `Dispose`, `DisposeAsync`, `TryParseValueFromString`, `FormatValueAsString` — rather than restating what the base member already documents.
 - Do keep historical origin and usage mapping in the intentional *Old pattern* and *Used in* rows of `COMPONENTS.md`.
 - Don't document history, rejected alternatives, decision arguments, roadmap position, call sites, mirrors, or other cross-references.
 - Don't restate obvious code or pad files with unnecessary prose.
 
+### Keeping prose true as code changes
+
+A description is wrong the moment the thing it describes widens, and nothing in the build will say so. Re-read the prose around whatever you touch.
+
+- Do describe a member at the full breadth of its type, so a parameter typed `IReadOnlyList<FormaToolbarItem>` is "the items the toolbar renders", never "the action buttons" — that hierarchy also holds groups, menus, toggles, readouts, and custom items.
+- Do re-check a class-level summary naming what a component is built on whenever its markup changes; "built on `FormaCommandArea` and `FormaCommandBar`" survived long after the markup used only one of them.
+- Do drop a "no JavaScript" or "pure CSS" banner the moment the component gains interop, and keep it where it is still true.
+- Do rewrite a `COMPONENTS.md` **Parameters** row when a parameter is added, removed, renamed, or changes type or required-ness.
+- Do rewrite a **Blazor approach** row once the component is built, so it records what shipped rather than the plan; a row still reading "Use Blazor `InputDate`" for a bespoke calendar is worse than no row.
+- Do update a JS module path in prose when the script moves between `behaviours/`, `operations/`, and `components/`.
+- Do delete a sentence saying another component *should* adopt something once it has.
+- Don't trust a search for renamed identifiers to find this; the drift is in wording that still compiles and still reads plausibly.
+
 ## Component file layout
 
-Components live in `src/Forma.UI.Blazor/Components/{Category}/`, where `{Category}` is `Layout`, `Feedback`, `Buttons`, `Inputs`, `Data`, `Indicators`, `Interactive`, `Files`, `Media`, `Editors`, `Metadata`, or `Explorer`.
+Components live in `src/Forma.UI.Blazor/Components/{Category}/`, where `{Category}` is `Bars`, `Buttons`, `Collections`, `Composer`, `Explorer`, `Feedback`, `Files`, `Indicators`, `Inputs`, `Layout`, `Media`, `Menus`, `Navigation`, or `Page`.
 
 ```text
 Components/{Category}/
@@ -116,7 +135,7 @@ Components/{Category}/
 
 - Do keep markup in `.razor`, logic in `.razor.cs`, and component styling in `.razor.css`.
 - Do give a component a category of its own, such as `Explorer`, when it is large enough to grow sub-components and supporting types of its own; the category then owns its folder and namespace.
-- Do place supporting types such as `ModalSize`, `BreadcrumbItem`, and `FormaIcon` beside the component that owns them.
+- Do place supporting types such as `ModalSize`, `BreadcrumbItem`, and `SortableDragFrom` beside the component that owns them.
 - Do put script a component needs in `wwwroot/scripts/`, never beside the component.
 - Do add the translation pair only when the component invents user-facing text.
 - Don't use `@code` blocks in library components.
@@ -409,7 +428,7 @@ Every component must behave and look the same in both directions—mirrored, not
 
 ## Localization
 
-- Do inject `[Inject] private IStringLocalizer<FormaX> L { get; set; } = default!;` and read library-owned strings through `L["The English sentence"]`.
+- Do inject `[Inject] private IStringLocale<FormaX> L { get; set; } = default!;` and read library-owned strings through `L["The English sentence"]`.
 - Do ship `FormaX.he.json` and `FormaX.es.json` beside the component, keyed by that English source text; there is no neutral file, because an absent translation falls back to the key itself.
 - Do keep the file's name and folder in step with the type's, since the resource is resolved from the type's full name and the JSON's path must match it.
 - Do leave caller-supplied text such as `Title`, `Label`, and `ConfirmText` for the host to localize.
@@ -460,6 +479,15 @@ Every production assembly has exactly one test project named after it, so `Forma
 - Don't couple tests to implementation details or private fields.
 - Don't give a test project its own `Support/` folder or its own copy of a support type.
 
+### JavaScript tests
+
+`tests/Forma.UI.Blazor.Tests.Scripts` runs the `wwwroot/scripts/` modules under Vitest and happy-dom, mirroring the source layout in its own `behaviours/`, `operations/`, and `components/` folders.
+
+- Do add a `{Name}.test.js` beside its siblings whenever you add or change a behaviour, operation, or component module.
+- Do drive it with `npm test` from that folder; it is a separate runner and `dotnet test` does not reach it.
+- Do exercise `dispose()` in a behaviour's tests, since a leaked listener is exactly what the handle contract exists to prevent.
+- Don't read the no-npm rule as covering this project; that rule governs what the library ships to a browser, not the dev-time test runner.
+
 ## Showcase
 
 Every component requires `src/Forma.UI.Blazor.Showcase/Components/Pages/{Category}/FormaXPage.razor` and its translation pair. The Showcase exists to be looked at, so a state it never renders is a state nobody has ever reviewed.
@@ -468,7 +496,7 @@ Every component requires `src/Forma.UI.Blazor.Showcase/Components/Pages/{Categor
 @page "/x-component"
 @attribute [ShowcasePage("FormaX")]
 @rendermode InteractiveServer
-@inject IStringLocalizer<FormaXPage> L
+@inject IStringLocale<FormaXPage> L
 ```
 
 - Do structure the page as `<h1>` plus `<p class="description">`, followed by one `demo-section` containing `<h2>` and `demo-box` per scenario.
@@ -485,10 +513,19 @@ Every component requires `src/Forma.UI.Blazor.Showcase/Components/Pages/{Categor
 dotnet build Forma.slnx
 dotnet test Forma.slnx
 dotnet format Forma.slnx --verify-no-changes
+npm test --prefix tests/Forma.UI.Blazor.Tests.Scripts
 dotnet run --project src/Forma.UI.Blazor.Showcase
 ```
 
+No project sets `GenerateDocumentationFile`, so nothing reports an undocumented public member. Turn it on for one throwaway build to list them:
+
+```powershell
+dotnet build Forma.slnx -p:GenerateDocumentationFile=true --no-incremental -v:q -nologo |
+    Select-String CS1591
+```
+
 - Do require build, tests, and the format check to pass before offering a component for review.
+- Do run that `CS1591` sweep after adding or changing public API, and ignore the hits under `tests/`, which are test method names.
 - Do run the format check rather than trusting the build: it catches using-directive ordering and line endings that compilation ignores, and it does not read `.razor` files at all, so a misordered `@using` has to be caught by eye.
 - Do reopen `Forma.slnx` after adding a project; the C# extension rewrites it with a duplicate `<Folder>` entry and drops `<Configurations>`, which then fails the build with `MSB4025`.
 - Do stop a running Showcase process before rebuilding, because it holds its `bin` DLLs open and the copy fails with `MSB3027`.
