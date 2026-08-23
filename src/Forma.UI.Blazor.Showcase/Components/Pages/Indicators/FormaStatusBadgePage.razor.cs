@@ -20,7 +20,7 @@ public sealed partial class FormaStatusBadgePage : ComponentBase
         ("order-progress", L["Being handled"]),
         ("order-transit", L["On the way"]),
         ("order-done", L["Completed"]),
-        ("order-cancelled", L["Cancelled"])
+        ("order-cancelled", L["Canceled"])
     ];
 
     // A second application vocabulary, registered from the page to show the catalog API.

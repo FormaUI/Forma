@@ -69,7 +69,7 @@
 
             // Assert
             cut.WaitForAssertion(() => Assert.Equal(
-                ["Cancelled", "Cancelled"],
+                ["Canceled", "Canceled"],
                 cut.FindAll(".forma-file-uploader-state").Select(element => element.TextContent)));
         }
 

@@ -14,7 +14,7 @@
         <button class="button button-primary" @onclick="HandleBasicConfirm">@L["Delete Item"]</button>
         @if (_basicResult is not null)
         {
-            <p style="margin-top: 12px; color: var(--text-muted-color);">@L["Result:"] <strong>@(_basicResult.Value ? L["Confirmed"] : L["Cancelled"])</strong></p>
+            <p style="margin-top: 12px; color: var(--text-muted-color);">@L["Result:"] <strong>@(_basicResult.Value ? L["Confirmed"] : L["Canceled"])</strong></p>
         }
     </div>
 </div>
@@ -76,7 +76,7 @@
             L["Cancel"]);
         if (!first)
         {
-            _cascadeResult = L["Cancelled at first step"];
+            _cascadeResult = L["Canceled at first step"];
             return;
         }
 
@@ -86,6 +86,6 @@
             L["No"]);
         _cascadeResult = second
             ? L["Account deleted"]
-            : L["Cancelled at second step"];
+            : L["Canceled at second step"];
     }
 }

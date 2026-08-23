@@ -1,6 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
-  "A fluid 16:9 player. Give it any address and the player hands it to whichever provider recognises it, so a watch link, a share link and an embed link all work without saying which service they belong to.": "נגן גמיש ביחס 16:9. מסרו לו כל כתובת והנגן יעביר אותה לספק שמזהה אותה, כך שקישור צפייה, קישור שיתוף וקישור הטמעה פועלים בלי לציין לאיזה שירות הם שייכים.",
+  "A fluid 16:9 player. Give it any address and the player hands it to whichever provider recognizes it, so a watch link, a share link and an embed link all work without saying which service they belong to.": "נגן גמיש ביחס 16:9. מסרו לו כל כתובה והנגן יעביר אותה לספק שמזהה אותה, כך שקישור צפייה, קישור שיתוף וקישור הטמעה פועלים בלי לציין לאיזה שירות הם שייכים.",
   "YouTube": "יוטיוב",
   "Twitch": "טוויץ'",
   "Twitch demands the name of the page embedding it, which the player supplies from the address bar. A past broadcast, a live channel and a clip are three different addresses on two different hosts.": "טוויץ' דורשת את שם הדף שמטמיע אותה, והנגן מספק אותו משורת הכתובת. שידור קודם, ערוץ חי וקליפ הם שלוש כתובות שונות על שני מארחים שונים.",
@@ -27,7 +27,7 @@
   "A self-hosted video carries its own caption files. The English track is the default; open the player's caption menu to switch to Spanish.": "סרטון מאוחסן מקומית נושא את קבצי הכתוביות שלו. הרצועה האנגלית היא ברירת המחדל; פתח את תפריט הכתוביות של הנגן כדי לעבור לספרדית.",
   "A scheme the browser will never fetch leaves a notice in place of the player rather than an empty frame or a crash.": "סכמה שהדפדפן לעולם לא יביא, משאירה הודעה במקום הנגן ולא מסגרת ריקה או קריסה.",
   "An address only the host understands": "כתובת שרק המארח מבין",
-  "This page registers a provider that claims custom: addresses and resolves them against its own storage. A host's providers are tried before the services this library recognises, so one can teach the player an address shape the library never knew — or take over an address it would otherwise claim.": "דף זה רושם ספק התובע כתובות \u200ecustom:\u200e ומפענח אותן מול האחסון שלו. הספקים שהמארח רשם נבדקים לפני השירותים שהספרייה מכירה, כך שאפשר ללמד את הנגן צורת כתובת שהספרייה מעולם לא הכירה — או לקחת כתובת שהיא היתה תובעת אחרת.",
+  "This page registers a provider that claims custom: addresses and resolves them against its own storage. A host's providers are tried before the services this library recognizes, so one can teach the player an address shape the library never knew — or take over an address it would otherwise claim.": "דף זה רושם ספק התובע כתובות ‎custom:‎ ומפענח אותן מול האחסון שלו. הספקים שהמארח רשם נבדקים לפני השירותים שהספרייה מכירה, כך שאפשר ללמד את הנגן צורת כתובה שהספרייה מעולם לא הכירה — או לקחת כתובה שהיא היתה תובעת אחרת.",
   "In a narrow column": "בעמודה צרה",
   "The frame keeps its 16:9 shape at any width, so it fits a sidebar as readily as an article body.": "המסגרת שומרת על יחס 16:9 בכל רוחב, ולכן היא מתאימה לסרגל צד באותה מידה שהיא מתאימה לגוף הכתבה.",
   "Sample YouTube video": "סרטון יוטיוב לדוגמה",

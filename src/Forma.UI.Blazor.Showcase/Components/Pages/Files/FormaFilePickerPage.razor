@@ -39,7 +39,7 @@
 
 <div class="demo-section">
     <h2>@L["A size limit"]</h2>
-    <p class="description">@((MarkupString)L[$"Capped at {SizeMarkup} here; a larger file is declined before it is ever read."].Value)</p>
+    <p class="description">@((MarkupString)L["Capped at {SizeMarkup} here; a larger file is declined before it is ever read.", SizeMarkup].Value)</p>
     <div class="demo-box">
         <FormaFilePicker MaxFileSize="@MaxSizeBytes"
                          OnFilesSelected="@(files => HandleSelected("size", files))"

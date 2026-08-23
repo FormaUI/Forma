@@ -24,7 +24,7 @@
         @if (hasActions)
         {
             <div class="forma-explorer-folder-actions">
-                <FormaOverflowMenu Label="@L["Actions for {name}", ("name", Folder.Name)]"
+                <FormaOverflowMenu Label="@L["Actions for {Name}", ("Name", Folder.Name)]"
                                    Orientation="MenuOrientation.Vertical"
                                    Size="ButtonSize.Mini">
                     <HeaderContent>
@@ -61,7 +61,7 @@
         {
             <button type="button"
                     class="forma-explorer-folder-select @(selected ? "is-checked" : "")"
-                    aria-label="@(selected ? L["Deselect Folder \"{name}\"", ("name", Folder.Name)] : L["Select Folder \"{name}\"", ("name", Folder.Name)])"
+                    aria-label="@(selected ? L["Deselect Folder \"{Name}\"", ("Name", Folder.Name)] : L["Select Folder \"{Name}\"", ("Name", Folder.Name)])"
                     aria-pressed="@(selected ? "true" : "false")"
                     @onclick="() => Context.ToggleFolderSelectAsync(Folder)">
                 <FormaGlyph Name="Glyph.Check" />
@@ -72,7 +72,7 @@
         {
             <button type="button"
                     class="forma-explorer-folder-twisty @(expanded ? "is-expanded" : "")"
-                    aria-label="@(expanded ? L["Collapse {name}", ("name", Folder.Name)] : L["Expand {name}", ("name", Folder.Name)])"
+                    aria-label="@(expanded ? L["Collapse {Name}", ("Name", Folder.Name)] : L["Expand {Name}", ("Name", Folder.Name)])"
                     @onclick="() => Sidebar.ToggleExpanded(Folder.Source)">
                 <FormaGlyph Name="Glyph.ChevronRight" />
             </button>

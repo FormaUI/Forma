@@ -2,16 +2,16 @@
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "All Files": "Todos los Archivos",
   "Cancel": "Cancelar",
-  "Cancelled": "Cancelado",
+  "Canceled": "Cancelado",
   "Failed": "Falló",
   "Rolled Back": "Revertido",
   "Skipped": "Omitido",
   "Stored": "Guardado",
-  "Stored {stored} of {total}.": "Se guardaron {stored} de {total}.",
+  "Stored {Stored} of {Total}.": "Se guardaron {Stored} de {Total}.",
   "Upload": "Subir",
   "Uploading": "Subiendo",
-  "Uploading {started} of {total}.": "Subiendo {started} de {total}.",
+  "Uploading {Started} of {Total}.": "Subiendo {Started} de {Total}.",
   "Waiting": "En Espera",
-  "{sent} of {size}": "{sent} de {size}",
-  "{remaining} left": "quedan {remaining}"
+  "{Sent} of {Size}": "{Sent} de {Size}",
+  "{Remaining} left": "quedan {Remaining}"
 }

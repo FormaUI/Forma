@@ -2,16 +2,16 @@
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "All Files": "כל הקבצים",
   "Cancel": "ביטול",
-  "Cancelled": "בוטל",
+  "Canceled": "בוטל",
   "Failed": "נכשל",
   "Rolled Back": "בוטל והוסר",
   "Skipped": "דולג",
   "Stored": "נשמר",
-  "Stored {stored} of {total}.": "נשמרו {stored} מתוך {total}.",
+  "Stored {Stored} of {Total}.": "נשמרו {Stored} מתוך {Total}.",
   "Upload": "העלאה",
   "Uploading": "מעלה",
-  "Uploading {started} of {total}.": "מעלה {started} מתוך {total}.",
+  "Uploading {Started} of {Total}.": "מעלה {Started} מתוך {Total}.",
   "Waiting": "ממתין",
-  "{sent} of {size}": "{sent} מתוך {size}",
-  "{remaining} left": "נותרו {remaining}"
+  "{Sent} of {Size}": "{Sent} מתוך {Size}",
+  "{Remaining} left": "נותרו {Remaining}"
 }

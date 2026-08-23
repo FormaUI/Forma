@@ -8,7 +8,7 @@ using Forma.Framework.Localization;
 using OfficeIMO.Excel;
 
 /// <summary>Projects a workbook's used range into one table per sheet, since OfficeIMO ships no HTML converter for it.</summary>
-internal sealed class WorkbookConverter(IStringLocale localizer) : IOfficeConverter
+internal sealed class WorkbookConverter(IStringLocale locale) : IOfficeConverter
 {
     // A sheet addresses a million rows, so a runaway used range would otherwise produce unrenderable markup.
     private const int MaxColumns = 50;
@@ -84,7 +84,7 @@ internal sealed class WorkbookConverter(IStringLocale localizer) : IOfficeConver
             var columns = columnLimit - firstColumn + 1;
 
             markup.Append("<tr><td>")
-                .Append(WebUtility.HtmlEncode(localizer[$"Showing the first {rows} rows and {columns} columns."].Value))
+                .Append(WebUtility.HtmlEncode(locale["Showing the first {Rows} rows and {Columns} columns.", rows, columns].Value))
                 .Append("</td></tr>");
         }
 

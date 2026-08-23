@@ -1,6 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
-  "Slide {number}": "Diapositiva {number}",
-  "Showing the first {rows} rows and {columns} columns.": "Mostrando las primeras {rows} filas y las primeras {columns} columnas.",
+  "Slide {Number}": "Diapositiva {Number}",
+  "Showing the first {Rows} rows and {Columns} columns.": "Mostrando las primeras {Rows} filas y las primeras {Columns} columnas.",
   "Showing the first {MaxSlides} slides.": "Mostrando las primeras {MaxSlides} diapositivas."
 }

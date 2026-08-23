@@ -58,7 +58,7 @@
             else
             {
                 <object class="forma-file-viewer-document" type="@document.ContentType" data="@document.Source" aria-label="@DisplayName">
-                    <a href="@document.Source" target="_blank" rel="noopener noreferrer">@L[$"Open {DisplayName} in a new tab."]</a>
+                    <a href="@document.Source" target="_blank" rel="noopener noreferrer">@L["Open {DisplayName} in a new tab.", DisplayName]</a>
                 </object>
             }
         }
@@ -75,7 +75,7 @@
                 {
                     <p class="forma-file-viewer-unsupported-size"><bdi dir="auto">@DisplaySize</bdi></p>
                 }
-                <a class="forma-file-viewer-unsupported-download" href="@Source" download="@DisplayName">@L[$"Download {DisplayName}"]</a>
+                <a class="forma-file-viewer-unsupported-download" href="@Source" download="@DisplayName">@L["Download {DisplayName}", DisplayName]</a>
             </div>
         }
 

@@ -29,14 +29,7 @@ public sealed partial class FormaSelectionToolbar : ComponentBase
     [Inject] private IStringLocale<FormaSelectionToolbar> L { get; set; } = default!;
 
     private string CaptionText
-    {
-        get
-        {
-            var selected = Count;
-
-            return Caption ?? L[$"{selected} selected"];
-        }
-    }
+        => Caption ?? L["{Count} selected", Count];
 
     /// <inheritdoc />
     protected override void OnParametersSet()

@@ -10,7 +10,7 @@
   "The tertiary variant is the one built for repeated inline commands, such as the actions at the end of a table row.": "La variante terciaria es la pensada para comandos repetidos en línea, como las acciones al final de una fila de tabla.",
   "A busy button keeps its label, announces itself with aria-busy, and stops accepting clicks until the work finishes.": "Un botón ocupado conserva su etiqueta, se anuncia con aria-busy y deja de aceptar clics hasta que el trabajo termina.",
   "Submit and reset buttons drive the surrounding form without any click handler of their own. A native reset clears the inputs but leaves the bound model alone, so the value below is what the form still holds.": "Los botones de envío y restablecimiento controlan el formulario que los rodea sin ningún controlador de clic propio. Un restablecimiento nativo borra los campos pero no toca el modelo enlazado, así que el valor de abajo es lo que el formulario todavía conserva.",
-  "Bound value: {value}": "Valor enlazado: {value}",
+  "Bound value: {Value}": "Valor enlazado: {Value}",
   "(empty)": "(vacío)",
   "Primary": "Primario",
   "Secondary": "Secundario",
@@ -26,7 +26,7 @@
   "Saving…": "Guardando…",
   "Reset": "Restablecer",
   "Name": "Nombre",
-  "Last action: {action}": "Última acción: {action}",
+  "Last action: {Action}": "Última acción: {Action}",
   "none yet": "ninguna todavía",
   "Saved.": "Guardado.",
   "Not saved yet.": "Aún no guardado."

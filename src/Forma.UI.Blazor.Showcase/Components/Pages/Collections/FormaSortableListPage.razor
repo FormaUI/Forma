@@ -58,7 +58,7 @@
                 </div>
             </ItemTemplate>
         </FormaSortableList>
-        <p class="demo-note">@(_lastClicked is null ? L["Drag a row anywhere to reorder, or press Edit — it still clicks."] : L[$"Edit was clicked on {_lastClicked}, so the row did not take the press."])</p>
+        <p class="demo-note">@(_lastClicked is null ? L["Drag a row anywhere to reorder, or press Edit — it still clicks."] : L["Edit was clicked on {Name}, so the row did not take the press.", _lastClicked])</p>
     </div>
 </div>
 

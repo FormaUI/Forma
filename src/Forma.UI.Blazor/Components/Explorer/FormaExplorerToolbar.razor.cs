@@ -64,7 +64,7 @@ public sealed partial class FormaExplorerToolbar : ComponentBase
         new() { Variant = ButtonVariant.Ghost, Size = ButtonSize.Mini };
 
     private string SelectionAnnouncement
-        => SelectedCount > 0 ? L[$"{SelectedCount} selected"].Value : string.Empty;
+        => SelectedCount > 0 ? L["{SelectedCount} selected", SelectedCount].Value : string.Empty;
 
     private Glyph DirectionGlyph
         => GlyphFor(SortDirection);

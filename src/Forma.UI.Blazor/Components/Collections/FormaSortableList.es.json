@@ -1,5 +1,5 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
-  "Reorder item {position} of {total}. Drag, or use arrow keys to move.": "Reordenar elemento {position} de {total}. Arrastra, o usa las flechas para mover.",
-  "Moved to position {position} of {total}.": "Movido a la posición {position} de {total}."
+  "Reorder item {Position} of {Total}. Drag, or use arrow keys to move.": "Reordenar elemento {Position} de {Total}. Arrastra, o usa las flechas para mover.",
+  "Moved to position {Position} of {Total}.": "Movido a la posición {Position} de {Total}."
 }

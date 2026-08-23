@@ -10,12 +10,12 @@
   "Settings": "Configuración",
   "Users": "Usuarios",
   "Billing": "Facturación",
-  "Tab {number}": "Pestaña {number}",
+  "Tab {Number}": "Pestaña {Number}",
   "General settings and configuration.": "Configuración y opciones generales.",
   "Search engine optimization options.": "Opciones de optimización para motores de búsqueda.",
   "Image gallery and uploads.": "Galería de imágenes y cargas.",
   "System settings.": "Configuración del sistema.",
   "User management.": "Gestión de usuarios.",
   "Billing and payments.": "Facturación y pagos.",
-  "Content for tab {number}.": "Contenido de la pestaña {number}."
+  "Content for tab {Number}.": "Contenido de la pestaña {Number}."
 }

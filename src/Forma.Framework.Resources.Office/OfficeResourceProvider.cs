@@ -17,10 +17,10 @@ public sealed class OfficeResourceProvider : IResourceProvider
     private readonly HtmlSanitizer _sanitizer = CreateSanitizer();
 
     /// <summary>Creates the provider over the reader supplying document content.</summary>
-    public OfficeResourceProvider(IResourceContentReader reader, IStringLocale<OfficeResourceProvider> localizer)
+    public OfficeResourceProvider(IResourceContentReader reader, IStringLocale<OfficeResourceProvider> locale)
     {
         ArgumentNullException.ThrowIfNull(reader);
-        ArgumentNullException.ThrowIfNull(localizer);
+        ArgumentNullException.ThrowIfNull(locale);
 
         _reader = reader;
 
@@ -28,8 +28,8 @@ public sealed class OfficeResourceProvider : IResourceProvider
         _convertersByExtension = new IOfficeConverter[]
         {
             new WordConverter(),
-            new WorkbookConverter(localizer),
-            new PresentationConverter(localizer),
+            new WorkbookConverter(locale),
+            new PresentationConverter(locale),
         }.ToDictionary(converter => converter.Extension, StringComparer.OrdinalIgnoreCase);
     }
 

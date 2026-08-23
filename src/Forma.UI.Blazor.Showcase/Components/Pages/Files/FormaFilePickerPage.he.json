@@ -9,6 +9,6 @@
   "Capped at {SizeMarkup} here; a larger file is declined before it is ever read.": "מוגבל כאן ל-{SizeMarkup}; קובץ גדול יותר נדחה עוד לפני שהוא נקרא.",
   "A selection limit": "מגבלת בחירה",
   "Capped at two files per drop or pick; anything past the cap is declined rather than the whole selection.": "מוגבל לשני קבצים לכל גרירה או בחירה; כל מה שמעבר למגבלה נדחה במקום כל הבחירה.",
-  "{name} selected": "{name} נבחר",
-  "{name} declined ({reason})": "{name} נדחה ({reason})"
+  "{Name} selected": "{Name} נבחר",
+  "{Name} declined ({Reason})": "{Name} נדחה ({Reason})"
 }

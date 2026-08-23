@@ -77,18 +77,18 @@
 
     private IReadOnlyList<FormaToolbarItem> _readoutItems =>
     [
-        new FormaToolbarReadout { Id = "words", Title = L["Word Count"], Value = L[$"{_wordCount} words"] },
+        new FormaToolbarReadout { Id = "words", Title = L["Word Count"], Value = L["{Count} words", _wordCount] },
         new FormaToolbarReadout { Id = "saved", Title = L["Save State"], Value = L["Saved"] },
     ];
 
     private IReadOnlyList<FormaToolbarItem> _announcedItems =>
     [
-        new FormaToolbarReadout { Id = "words", Title = L["Word Count"], Value = L[$"{_wordCount} words"], IsAnnounced = true },
+        new FormaToolbarReadout { Id = "words", Title = L["Word Count"], Value = L["{Count} words", _wordCount], IsAnnounced = true },
     ];
 
     private IReadOnlyList<FormaToolbarItem> _commandItems =>
     [
-        new FormaToolbarReadout { Id = "words", Title = L["Word Count"], Value = L[$"{_wordCount} words"] },
+        new FormaToolbarReadout { Id = "words", Title = L["Word Count"], Value = L["{Count} words", _wordCount] },
         new FormaToolbarCommand { Id = "retry", Title = L["Retry"], Icon = Glyph.RotateLeft, Command = "retry" },
     ];
 

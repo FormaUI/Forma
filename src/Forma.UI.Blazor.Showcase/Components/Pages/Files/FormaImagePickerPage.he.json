@@ -9,6 +9,6 @@
   "The accept filter is pinned, so a non-image file is declined the same way FormaFilePicker declines one.": "מסנן הקבלה מנועל, כך שקובץ שאינו תמונה נדחה באותו אופן שבו FormaFilePicker דוחה קובץ כזה.",
   "A size cap": "מגבלת גודל",
   "MaxFileSize declines an image over 100 KB, so the host never receives it.": "MaxFileSize דוחה תמונה שגודלה מעל 100 קילובייט, כך שהמארח לעולם אינו מקבל אותה.",
-  "{name} selected": "{name} נבחר",
-  "{name} declined ({reason})": "{name} נדחה ({reason})"
+  "{Name} selected": "{Name} נבחר",
+  "{Name} declined ({Reason})": "{Name} נדחה ({Reason})"
 }

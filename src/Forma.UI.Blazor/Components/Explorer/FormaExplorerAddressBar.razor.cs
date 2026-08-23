@@ -116,7 +116,7 @@ public sealed partial class FormaExplorerAddressBar : ComponentBase
 
             if (CurrentFolder is not null)
             {
-                return L["Search {name}...", ("name", CurrentFolder.Name)].Value;
+                return L["Search {Name}...", ("Name", CurrentFolder.Name)].Value;
             }
 
             return L["Search media..."].Value;

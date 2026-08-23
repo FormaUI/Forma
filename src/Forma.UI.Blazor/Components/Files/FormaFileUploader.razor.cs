@@ -99,7 +99,7 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
             {
                 var remaining = ResourceFormatter.FromDuration(estimate);
 
-                return L[$"{remaining} left"];
+                return L["{Remaining} left", remaining];
             }
 
             return Options.ShowElapsed ? ResourceFormatter.FromDuration(SetElapsed) : string.Empty;
@@ -121,12 +121,12 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
             {
                 var started = _uploads.Count(upload => upload.State > UploadState.Pending);
 
-                return L[$"Uploading {started} of {total}."];
+                return L["Uploading {Started} of {Total}.", started, total];
             }
 
             var stored = _uploads.Count(upload => upload.State == UploadState.Completed);
 
-            return L[$"Stored {stored} of {total}."];
+            return L["Stored {Stored} of {Total}.", stored, total];
         }
     }
 
@@ -254,7 +254,7 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
         {
             var remaining = ResourceFormatter.FromDuration(estimate);
 
-            return L[$"{remaining} left"];
+            return L["{Remaining} left", remaining];
         }
 
         return Options.ShowElapsed ? ResourceFormatter.FromDuration(upload.Elapsed) : string.Empty;
@@ -271,7 +271,7 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
         var sent = ResourceFormatter.FromByteCount(transferred);
         var size = ResourceFormatter.FromByteCount(total);
 
-        return L[$"{sent} of {size}"];
+        return L["{Sent} of {Size}", sent, size];
     }
 
     // Measurements move with the clock rather than with progress, so a stalled transfer keeps counting.
@@ -420,7 +420,7 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
             UploadState.Failed => L["Failed"],
             UploadState.Skipped => L["Skipped"],
             UploadState.RolledBack => L["Rolled Back"],
-            UploadState.Cancelled => L["Cancelled"],
+            UploadState.Cancelled => L["Canceled"],
             UploadState.Uploading => L["Uploading"],
             _ => L["Waiting"]
         };

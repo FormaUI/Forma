@@ -12,5 +12,5 @@
   "The whole row starts a drag, not just the handle. Interactive elements inside a row keep their own press, and on touch the row is held briefly before it lifts so a swipe still scrolls.": "כל השורה מתחילה גרירה, לא רק הידית. פקדים בתוך שורה שומרים על הלחיצה שלהם, ובמגע יש להחזיק את השורה רגע לפני שהיא נרימת, כך שהחלקה עדיין גוללת.",
   "Edit": "ערוך",
   "Drag a row anywhere to reorder, or press Edit — it still clicks.": "גרור שורה מכל מקום כדי לסדר מחדש, או לחץ על ערוך — הוא עדיין נלחץ.",
-  "Edit was clicked on {_lastClicked}, so the row did not take the press.": "ערוך נלחץ על {_lastClicked}, כך שהשורה לא לקחה את הלחיצה."
+  "Edit was clicked on {Name}, so the row did not take the press.": "ערוך נלחץ על {Name}, כך שהשורה לא לקחה את הלחיצה."
 }

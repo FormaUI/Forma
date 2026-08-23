@@ -23,7 +23,7 @@
   "Falls back to a type glyph, the name, the size when one is known, and a download link rather than a broken preview.": "Recurre a un ícono de tipo, el nombre, el tamaño cuando se conoce y un enlace de descarga en vez de una vista previa rota.",
   "A caller-supplied fallback": "Una alternativa provista por quien la usa",
   "UnsupportedTemplate replaces the built-in fallback entirely, for a host that wants its own treatment.": "UnsupportedTemplate reemplaza por completo la alternativa integrada, para un anfitrión que quiere su propio tratamiento.",
-  "No preview for {context}.": "Sin vista previa para {context}.",
+  "No preview for {Context}.": "Sin vista previa para {Context}.",
   "Browsing a set": "Explorando un conjunto",
   "With Siblings supplied, the arrow keys and the on-screen controls step through the set — reversed under a right-to-left culture, since left and right then read as forward and back the other way.": "Con Siblings provisto, las flechas y los controles en pantalla recorren el conjunto — invertidos en una cultura de derecha a izquierda, ya que izquierda y derecha se leen entonces al revés."
 }

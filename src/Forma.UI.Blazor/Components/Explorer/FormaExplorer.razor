@@ -113,7 +113,7 @@
                         }
                         else if (!string.IsNullOrWhiteSpace(_searchQuery))
                         {
-                            <p>@L["No media matches \"{query}\"", ("query", _searchQuery)]</p>
+                            <p>@L["No media matches \"{Query}\"", ("Query", _searchQuery)]</p>
                         }
                         else if (CurrentFolder is not null)
                         {
@@ -167,11 +167,11 @@
                 <div class="forma-explorer-scroll-status" role="status">
                     @if (MatchingCount is { } total)
                     {
-                        @L["Showing {shown} of {total}", ("shown", VisibleResources.Count), ("total", total)]
+                        @L["Showing {Shown} of {Total}", ("Shown", VisibleResources.Count), ("Total", total)]
                     }
                     else
                     {
-                        @L["Showing {shown}", ("shown", VisibleResources.Count)]
+                        @L["Showing {Shown}", ("Shown", VisibleResources.Count)]
                     }
                 </div>
             }

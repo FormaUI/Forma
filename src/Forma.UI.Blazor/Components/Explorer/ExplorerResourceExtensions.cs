@@ -7,16 +7,16 @@ using Forma.Framework.Resources;
 internal static class ExplorerResourceExtensions
 {
     /// <summary>What the resource is, named for a reader in their own language.</summary>
-    internal static string KindLabel(this ResourceInfo resource, IStringLocale<FormaExplorer> localizer)
+    internal static string KindLabel(this ResourceInfo resource, IStringLocale<FormaExplorer> locale)
         => resource switch
         {
-            FolderResourceInfo => localizer["Folder"].Value,
-            ImageResourceInfo => localizer["Image"].Value,
-            VideoResourceInfo => localizer["Video"].Value,
-            AudioResourceInfo => localizer["Audio"].Value,
-            ArchiveResourceInfo => localizer["Archive"].Value,
-            DocumentResourceInfo => localizer["Document"].Value,
-            FileResourceInfo => localizer["File"].Value,
-            _ => localizer["Unknown"].Value,
+            FolderResourceInfo => locale["Folder"].Value,
+            ImageResourceInfo => locale["Image"].Value,
+            VideoResourceInfo => locale["Video"].Value,
+            AudioResourceInfo => locale["Audio"].Value,
+            ArchiveResourceInfo => locale["Archive"].Value,
+            DocumentResourceInfo => locale["Document"].Value,
+            FileResourceInfo => locale["File"].Value,
+            _ => locale["Unknown"].Value,
         };
 }

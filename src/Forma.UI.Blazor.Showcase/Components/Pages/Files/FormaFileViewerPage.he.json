@@ -23,7 +23,7 @@
   "Falls back to a type glyph, the name, the size when one is known, and a download link rather than a broken preview.": "נופל חזרה לסמל סוג, השם, הגודל כשהוא ידוע, וקישור הורדה במקום תצוגה מקדימה שבורה.",
   "A caller-supplied fallback": "חלופה שסופקה על ידי הקורא",
   "UnsupportedTemplate replaces the built-in fallback entirely, for a host that wants its own treatment.": "UnsupportedTemplate מחליף לגמרי את החלופה המובנית, עבור מארח שרוצה טיפול משלו.",
-  "No preview for {context}.": "אין תצוגה מקדימה עבור {context}.",
+  "No preview for {Context}.": "אין תצוגה מקדימה עבור {Context}.",
   "Browsing a set": "עיון בקבוצה",
   "With Siblings supplied, the arrow keys and the on-screen controls step through the set — reversed under a right-to-left culture, since left and right then read as forward and back the other way.": "כאשר סופק Siblings, מקשי החצים והפקדים על המסך עוברים בין פריטי הקבוצה — הפוך בתרבות מימין לשמאל, שכן שמאל וימין נקראים אז קדימה ואחורה בכיוון ההפוך."
 }

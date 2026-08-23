@@ -18,7 +18,7 @@
   "Hide Strip": "הסתר רצועה",
   "Show Strip": "הצג רצועה",
   "Word Count": "ספירת מילים",
-  "{_wordCount} words": "{_wordCount} מילים",
+  "{Count} words": "{Count} מילים",
   "Save State": "מצב שמירה",
   "Saved": "נשמר",
   "Retry": "נסה שוב"

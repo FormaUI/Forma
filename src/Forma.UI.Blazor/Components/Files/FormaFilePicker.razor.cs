@@ -173,9 +173,9 @@ public sealed partial class FormaFilePicker : ComponentBase, IAsyncDisposable
 
         return rejection.Reason switch
         {
-            FileRejectionReason.DisallowedType => L[$"\"{name}\" isn't an accepted file type."],
-            FileRejectionReason.TooLarge => L[$"\"{name}\" is too large."],
-            FileRejectionReason.TooManyFiles => L[$"\"{name}\" wasn't included \u2014 too many files at once."],
+            FileRejectionReason.DisallowedType => L["\"{Name}\" isn't an accepted file type.", name],
+            FileRejectionReason.TooLarge => L["\"{Name}\" is too large.", name],
+            FileRejectionReason.TooManyFiles => L["\"{Name}\" wasn't included \u2014 too many files at once.", name],
             _ => name
         };
     }

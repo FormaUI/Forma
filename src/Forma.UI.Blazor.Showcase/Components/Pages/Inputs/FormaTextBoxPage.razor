@@ -21,8 +21,8 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Bare or Labelled"]</h2>
-    <p class="description">@L["Giving a Label is what decides the shape. Without one the box stands bare and level with a button, which is what a toolbar or a grid cell wants. With one it wraps in the same FormaField the labelled inputs use, gaining the floating label and validation chrome rather than imitating them."]</p>
+    <h2>@L["Bare or Labeled"]</h2>
+    <p class="description">@L["Giving a Label is what decides the shape. Without one the box stands bare and level with a button, which is what a toolbar or a grid cell wants. With one it wraps in the same FormaField the labeled inputs use, gaining the floating label and validation chrome rather than imitating them."]</p>
     <div class="demo-box">
         <div class="demo-stack">
             <div class="demo-row">
@@ -30,7 +30,7 @@
                 <FormaButton Variant="ButtonVariant.Secondary">@L["Add"]</FormaButton>
             </div>
             <EditForm Model="_model" FormName="textbox-sizes">
-                <FormaTextBox @bind-Value="_model.LargeSize" Label="@L["Labelled, with a floating label"]" />
+                <FormaTextBox @bind-Value="_model.LargeSize" Label="@L["Labeled, with a floating label"]" />
             </EditForm>
         </div>
     </div>
@@ -82,8 +82,8 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Beside a Labelled Field"]</h2>
-    <p class="description">@L["Once labelled it is the same FormaField that wraps FormaPasswordBox and FormaTextArea, so the label, the box and the validation message are drawn by one component rather than three that could drift."]</p>
+    <h2>@L["Beside a Labeled Field"]</h2>
+    <p class="description">@L["Once labeled it is the same FormaField that wraps FormaPasswordBox and FormaTextArea, so the label, the box and the validation message are drawn by one component rather than three that could drift."]</p>
     <div class="demo-box">
         <EditForm Model="_model" FormName="textbox-parity">
             <FormaTextBox @bind-Value="_model.Title" Label="@L["Title"]" />
@@ -136,7 +136,7 @@
 
 <div class="demo-section">
     <h2>@L["The Kind of Text Held"]</h2>
-    <p class="description">@L["Type covers only the kinds a text box draws itself. A date, a number or a colour belongs to the component built for it, where the browser supplies the editing surface, so those types cannot be set here at all."]</p>
+    <p class="description">@L["Type covers only the kinds a text box draws itself. A date, a number or a color belongs to the component built for it, where the browser supplies the editing surface, so those types cannot be set here at all."]</p>
     <div class="demo-box">
         <div class="demo-stack">
             <label for="text-box-plain">@L["Plain Text"]</label>
@@ -216,7 +216,7 @@
             <p class="demo-note">@L["Half the space it is given:"]</p>
             <FormaTextBox @bind-Value="_model.Half" aria-label="@L["Half Width"]" Width="CssLength.FromPercent(50)" />
 
-            <p class="demo-note">@L["A labelled box takes a width just the same:"]</p>
+            <p class="demo-note">@L["A labeled box takes a width just the same:"]</p>
             <EditForm Model="_model" FormName="textbox-width">
                 <FormaTextBox @bind-Value="_model.ShortLabelled" Label="@L["Reference"]" Width="CssLength.FromRem(16)" />
             </EditForm>

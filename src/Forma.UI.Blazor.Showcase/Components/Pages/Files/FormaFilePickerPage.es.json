@@ -9,6 +9,6 @@
   "Capped at {SizeMarkup} here; a larger file is declined before it is ever read.": "Limitado a {SizeMarkup} aquí; un archivo más grande se rechaza antes de siquiera leerlo.",
   "A selection limit": "Un límite de selección",
   "Capped at two files per drop or pick; anything past the cap is declined rather than the whole selection.": "Limitado a dos archivos por selección; lo que supera el límite se rechaza en lugar de toda la selección.",
-  "{name} selected": "{name} seleccionado",
-  "{name} declined ({reason})": "{name} rechazado ({reason})"
+  "{Name} selected": "{Name} seleccionado",
+  "{Name} declined ({Reason})": "{Name} rechazado ({Reason})"
 }

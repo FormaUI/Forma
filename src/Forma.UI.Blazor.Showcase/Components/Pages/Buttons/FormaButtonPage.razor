@@ -39,7 +39,7 @@
                      OnClick="@(() => Record(L["Edit"]))">@L["Edit"]</FormaButton>
         <FormaButton Variant="ButtonVariant.Tertiary"
                      OnClick="@(() => Record(L["Delete"]))">@L["Delete"]</FormaButton>
-        <span class="demo-note">@L["Last action: {action}", ("action", _lastAction ?? L["none yet"].Value)]</span>
+        <span class="demo-note">@L["Last action: {Action}", ("Action", _lastAction ?? L["none yet"].Value)]</span>
     </div>
 </div>
 
@@ -80,7 +80,7 @@
             </div>
         </EditForm>
         <p class="demo-note">
-            @L["Bound value: {value}", ("value", string.IsNullOrEmpty(Model.Name) ? L["(empty)"].Value : Model.Name)]
+            @L["Bound value: {Value}", ("Value", string.IsNullOrEmpty(Model.Name) ? L["(empty)"].Value : Model.Name)]
         </p>
     </div>
 </div>

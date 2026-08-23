@@ -48,7 +48,7 @@
             @for (var index = 1; index <= ManyTabCount; index++)
             {
                 var number = index;
-                <FormaTab Title="@(L[$"Tab {number}"])"><p>@L[$"Content for tab {number}."]</p></FormaTab>
+                <FormaTab Title="@(L["Tab {Number}", number])"><p>@L["Content for tab {Number}.", number]</p></FormaTab>
             }
         </FormaTabs>
     </div>

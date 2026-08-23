@@ -18,7 +18,7 @@
   "Hide Strip": "Ocultar Franja",
   "Show Strip": "Mostrar Franja",
   "Word Count": "Recuento de Palabras",
-  "{_wordCount} words": "{_wordCount} palabras",
+  "{Count} words": "{Count} palabras",
   "Save State": "Estado de Guardado",
   "Saved": "Guardado",
   "Retry": "Reintentar"

@@ -5,7 +5,7 @@
   "Delete Item": "מחק פריט",
   "Result:": "תוצאה:",
   "Confirmed": "אושר",
-  "Cancelled": "בוטל",
+  "Canceled": "בוטל",
   "Custom Button Labels": "כפתורים מותאמים",
   "Discard Changes": "בטל שינויים",
   "Discarded": "נמחק",
@@ -18,10 +18,10 @@
   "You have unsaved changes. Discard them?": "יש שינויים שלא נשמרו. למחוק אותם?",
   "Keep Editing": "המשך עריכה",
   "Are you sure you want to delete the account?": "האם אתה בטוח שברצונך למחוק את החשבון?",
-  "Cancelled at first step": "בוטל בשלב הראשון",
+  "Canceled at first step": "בוטל בשלב הראשון",
   "This action is irreversible. Continue?": "פעולה זו בלתי הפיכה. להמשיך?",
   "Yes, Delete": "כן, מחק",
   "No": "לא",
   "Account deleted": "החשבון נמחק",
-  "Cancelled at second step": "בוטל בשלב השני"
+  "Canceled at second step": "בוטל בשלב השני"
 }

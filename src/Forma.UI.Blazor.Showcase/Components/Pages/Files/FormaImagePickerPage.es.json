@@ -9,6 +9,6 @@
   "The accept filter is pinned, so a non-image file is declined the same way FormaFilePicker declines one.": "El filtro de aceptación está fijado, así que un archivo que no es imagen se rechaza igual que lo haría FormaFilePicker.",
   "A size cap": "Un límite de tamaño",
   "MaxFileSize declines an image over 100 KB, so the host never receives it.": "MaxFileSize rechaza una imagen de más de 100 KB, así que el anfitrión nunca la recibe.",
-  "{name} selected": "{name} seleccionado",
-  "{name} declined ({reason})": "{name} rechazado ({reason})"
+  "{Name} selected": "{Name} seleccionado",
+  "{Name} declined ({Reason})": "{Name} rechazado ({Reason})"
 }

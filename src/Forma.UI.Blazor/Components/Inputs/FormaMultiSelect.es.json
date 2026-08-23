@@ -5,6 +5,6 @@
   "No options available yet": "Aún no hay opciones disponibles",
   "Add New": "Agregar Nuevo",
   "Select Options": "Seleccionar Opciones",
-  "{selected} selected": "[$ [selected] plural; one: # seleccionado; other: # seleccionados; $]",
-  "Remove {text}": "Quitar {text}"
+  "{Selected} selected": "[$ [Selected] plural; one: # seleccionado; other: # seleccionados; $]",
+  "Remove {Text}": "Quitar {Text}"
 }

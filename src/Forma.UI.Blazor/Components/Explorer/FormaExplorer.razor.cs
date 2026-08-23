@@ -288,7 +288,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable
             {
                 var name = _deletingResources[0].Name;
 
-                return L[$"Are you sure you want to delete \"{name}\"?"];
+                return L["Are you sure you want to delete \"{Name}\"?", name];
             }
 
             var count = _deletingResources.Count;
@@ -313,7 +313,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable
             {
                 var name = _deletingFolders[0].Name;
 
-                return L[$"Are you sure you want to delete folder \"{name}\"?"];
+                return L["Are you sure you want to delete folder \"{Name}\"?", name];
             }
 
             var count = _deletingFolders.Count;
@@ -437,13 +437,13 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable
             resource => _draggedResource = resource);
 
         _context.SelectLabel = resource => _context.Selection.IsSelected(resource)
-            ? L["Deselect {name}", ("name", resource.Name)].Value
-            : L["Select {name}", ("name", resource.Name)].Value;
+            ? L["Deselect {Name}", ("Name", resource.Name)].Value
+            : L["Select {Name}", ("Name", resource.Name)].Value;
         _context.ActivateLabel = resource => _context.Selection.IsSelectMode
             ? _context.SelectLabel(resource)
-            : L["Preview {name}", ("name", resource.Name)].Value;
+            : L["Preview {Name}", ("Name", resource.Name)].Value;
 
-        _context.ActionsLabel = resource => L["Actions for {name}", ("name", resource.Name)].Value;
+        _context.ActionsLabel = resource => L["Actions for {Name}", ("Name", resource.Name)].Value;
 
         _page = CurrentPage;
         _viewMode = ViewMode;
@@ -668,7 +668,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable
             await RejectAsync(
                 ExplorerRejectionReason.TotalBytes,
                 Constraints.MaxTotalBytes,
-                L["This explorer holds at most {size}.", ("size", ResourceFormatter.FromByteCount(Constraints.MaxTotalBytes))].Value);
+                L["This explorer holds at most {Size}.", ("Size", ResourceFormatter.FromByteCount(Constraints.MaxTotalBytes))].Value);
 
             return false;
         }
@@ -1215,7 +1215,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable
             await RejectAsync(
                 ExplorerRejectionReason.ResourceKind,
                 0,
-                L["\"{name}\" is not a kind of file this explorer accepts.", ("name", refused.Name)].Value);
+                L["\"{Name}\" is not a kind of file this explorer accepts.", ("Name", refused.Name)].Value);
 
             return;
         }

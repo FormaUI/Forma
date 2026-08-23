@@ -19,9 +19,9 @@
   "The list on its own": "La lista por sí sola",
   "ShowTotalMetrics and ShowSummary are switched off here, so nothing is reported beneath the files: no totals line and no status message. Each row still carries its own measurements.": "Aquí ShowTotalMetrics y ShowSummary están desactivados, así que no se informa nada bajo los archivos: ni línea de totales ni mensaje de estado. Cada fila conserva sus propias mediciones.",
   "A slow store, and cancelling it": "Un almacén lento, y cancelarlo",
-  "This store pauses between reads so the progress bar is watchable and the cancel action is reachable. Anything not yet stored when you cancel is marked cancelled.": "Este almacén pausa entre lecturas para que la barra de progreso se pueda observar y la acción de cancelar sea alcanzable. Todo lo que aún no se haya guardado al cancelar se marca como cancelado.",
-  "Stored at {source}": "Guardado en {source}",
-  "{name} was refused: {reason}": "{name} fue rechazado: {reason}",
+  "This store pauses between reads so the progress bar is watchable and the cancel action is reachable. Anything not yet stored when you cancel is marked canceled.": "Este almacén pausa entre lecturas para que la barra de progreso se pueda observar y la acción de cancelar sea alcanzable. Todo lo que aún no se haya guardado al cancelar se marca como cancelado.",
+  "Stored at {Source}": "Guardado en {Source}",
+  "{Name} was refused: {Reason}": "{Name} fue rechazado: {Reason}",
   "The store is holding nothing.": "El almacén no contiene nada.",
-  "The store is holding: {names}": "El almacén contiene: {names}"
+  "The store is holding: {Names}": "El almacén contiene: {Names}"
 }

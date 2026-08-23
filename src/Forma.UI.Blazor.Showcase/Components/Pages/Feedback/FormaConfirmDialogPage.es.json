@@ -5,7 +5,7 @@
   "Delete Item": "Eliminar elemento",
   "Result:": "Resultado:",
   "Confirmed": "Confirmado",
-  "Cancelled": "Cancelado",
+  "Canceled": "Cancelado",
   "Custom Button Labels": "Etiquetas de botón personalizadas",
   "Discard Changes": "Descartar cambios",
   "Discarded": "Descartado",
@@ -18,10 +18,10 @@
   "You have unsaved changes. Discard them?": "Tiene cambios sin guardar. ¿Descartarlos?",
   "Keep Editing": "Seguir editando",
   "Are you sure you want to delete the account?": "¿Está seguro de que desea eliminar la cuenta?",
-  "Cancelled at first step": "Cancelado en el primer paso",
+  "Canceled at first step": "Cancelado en el primer paso",
   "This action is irreversible. Continue?": "Esta acción es irreversible. ¿Continuar?",
   "Yes, Delete": "Sí, eliminar",
   "No": "No",
   "Account deleted": "Cuenta eliminada",
-  "Cancelled at second step": "Cancelado en el segundo paso"
+  "Canceled at second step": "Cancelado en el segundo paso"
 }

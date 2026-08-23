@@ -88,7 +88,7 @@ public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisp
         var position = index + 1;
         var total = Items.Count;
 
-        return L[$"Reorder item {position} of {total}. Drag, or use arrow keys to move."];
+        return L["Reorder item {Position} of {Total}. Drag, or use arrow keys to move.", position, total];
     }
 
     // sourceIndex and targetIndex are the two items' positions before either moves; removing
@@ -128,7 +128,7 @@ public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisp
         var position = newIndex + 1;
         var total = reordered.Count;
 
-        _announcement = L[$"Moved to position {position} of {total}."]
+        _announcement = L["Moved to position {Position} of {Total}.", position, total]
             + (_announcementAlternate ? "\u200B" : string.Empty);
 
         // Announced regardless of whether or when the host feeds the reordered list back,

@@ -73,7 +73,7 @@ public sealed partial class FormaMultiSelect<TValue> : InputBase<List<TValue>>, 
 
             return selected == 0
                 ? Placeholder ?? L["Select Options"]
-                : L[$"{selected} selected"];
+                : L["{Selected} selected", selected];
         }
     }
 
