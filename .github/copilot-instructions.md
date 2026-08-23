@@ -94,6 +94,34 @@ A project's references are part of its contract, because every consumer inherits
 - Do call a thing Forma ships a **component**, and raw HTML an **element** — one word per concept. "Control" is Web Forms vocabulary inherited from Coi; keep it only in `aria-controls` and in descriptions of Coi's own markup.
 - Don't apply one naming convention indiscriminately across Razor tags, CSS classes, and C# types.
 
+### Booleans, events, and callbacks
+
+- Do name a `[Parameter] public bool` bare and unprefixed when it configures the component's own rendering or behaviour: `Disabled`, `Busy`, `Opened`, `Required`, `ReadOnly`, `ShowLabels`, `EnablePagination`, `Virtualize`. One forwarding to a native HTML attribute belongs to the same family as `Class`, `Id`, and `Style`, and `Disabled` holds across all 21 of them without exception — never `IsDisabled`.
+- Do use the affirmative `Is`/`Has`/`Can` phrasing where the flag states a condition rather than configuring the component: on every plain data record (`FormaToolbarItem.IsDisabled`, `FormaToolbarToggle.IsActive`, `BreadcrumbItem.IsCurrent`, `ExplorerAction.IsDestructive`), and on the few parameters that only reflect something the host already worked out (`FormaExplorerAddressBar.CanGoBack`, `FormaDropDownMenuItem.IsSelected`).
+- Do prefix an `EventCallback` with `On` when it reports an action taken, with no bindable parameter of the same name behind it: `OnClick`, `OnCommand`, `OnDelete`, `OnRefresh`.
+- Do drop the `On` prefix entirely when an `EventCallback<T>` is paired with a same-named `[Parameter] T`, so `@bind-{Name}` can find it: `Value`/`ValueChanged`, `ActiveTabId`/`ActiveTabIdChanged`, `SelectedItems`/`SelectedItemsChanged`, `ViewMode`/`ViewModeChanged`.
+- Don't name a paired changed-callback `On{Name}Changed`; Blazor's binding convention looks for the bare `{Name}Changed`, so `@bind-{Name}` fails outright rather than falling back to the `On`-prefixed one.
+
+## Identifiers
+
+An identifier-shaped member is one of six different things, numbered below, and the name has to say which, because "Id" alone reads as a promise that whatever it names is literally this component's own HTML `id` attribute.
+
+1. Do reserve a component's own `Id` parameter for the verbatim value of its root or primary element's `id` attribute — a pass-through, like `Class` and `Style`: `FormaTextBox.Id`, `FormaComposer.Id`, `FormaComposerPluginsToolbar.Id`, `FormaSearchBox.Id`.
+   - Do add a private `_generatedId` and a computed `ElementId => Id ?? _generatedId` where the element needs an id even when the caller supplies none, as `FormaTextBox` and `FormaComposer` do for a label to point at; leave the parameter to stand alone where an absent id is simply absent.
+   - Do give a component a single private `_id` where the generated id belongs to its own primary element and no caller can override it: `FormaColorPicker`, `FormaPasswordBox`, `FormaSlider`, `FormaTextArea`, `FormaToggleSwitch`.
+   - Do name a generated id after the sub-element it identifies instead, however many there are, whenever it is not the component's own primary element: `_triggerId` and `_popupId` in `FormaSelect` and `FormaMultiSelect`, `_labelId` and `_noteId` in `FormaVideoPlayer`, and a lone `_popupId` in `FormaDropDownMenu` or `_pageInputId` in `FormaPagination`.
+   - Do say `ElementId` in the name of anything producing a DOM id that a `{Noun}Id` (2) of the same noun could be mistaken for, as `FormaTabs.GetTabElementId` must against `FormaTab.TabId`.
+   - Don't give a component two `_id`-shaped fields.
+2. Do name a component parameter `{Noun}Id` when it identifies which item among a set this is, or which one a caller is selecting, even where that value is not rendered anywhere verbatim: `FormaTab.TabId`, `FormaTabs.ActiveTabId`/`ActiveTabIdChanged`, `FormaComposer.ActiveEditorId`/`ActiveEditorIdChanged`.
+   - A bare `Id` here would misread as (1), the way `FormaTab.Id` once did before a controlled `FormaTabs` matched it against `ActiveId` and derived a *different*, prefixed DOM id from it.
+   - Do fall back to a private `_generatedId` where the caller may omit it, behind a computed member named for this kind rather than `ElementId`: `FormaTab.EffectiveTabId => TabId ?? _generatedId`.
+3. Do leave `Id` bare on a plain data record where the whole record IS the identified thing, the way a primary key column would be: `ExplorerAction.Id`, `FormaToolbarItem.Id`, `ComposerToolbarItem.Id`, `ToastMessage.Id`, `IComposerPlugin.Id`.
+   - The ambiguity between (1) and (2) is a components-only problem; a record has no DOM element to be confused with.
+4. Do name a parameter `TargetId` (or `{Purpose}Id`) when it names *another* element's id that this component points at, such as a `for` target: `FormaField.TargetId`.
+5. Do name a lookup or re-render key `{Noun}Key`, not `Id`, when it exists for Blazor's own benefit — `@key`, virtualization, or re-associating a re-rendered row with its prior state — rather than to name the domain item: `FormaDataGrid.ItemKey`, `FormaSortableList.ItemKey`.
+   - A key's `Func<T, object>` need not read any real identifier field on `T` at all.
+6. Do call a value `Token`, not `Id`, when its only job is correlating a rendered element with the JS side of an interop call, as `FormaDataGrid`'s row-selection `RowTokenTable` does; it is never a domain identity and a host never sees it.
+
 ## Comments and documentation
 
 These rules govern prose that *describes a thing*. They do not apply to this file, or to documents whose purpose is to teach judgment or record decisions.
