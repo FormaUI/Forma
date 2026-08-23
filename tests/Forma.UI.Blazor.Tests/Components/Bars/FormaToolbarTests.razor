@@ -543,5 +543,208 @@
                 Title = id,
                 Options = [new() { Id = $"{id}-only", Title = id, Command = $"{id}.pick", IsActive = true }],
             };
+
+        /// <summary>The bound key-combination lists from every "attach" call carrying one, distinguishing FormaToolbar's shortcut attachment from FormaCommandBar's own scroll-tracking attachment.</summary>
+        private static List<List<object>> KeyBindingAttachments(FormaToolbarTests ctx)
+            => [.. ctx.JSInterop.Invocations["attach"]
+                     .Select(invocation => invocation.Arguments[1]!.GetType().GetProperty("bindings")?.GetValue(invocation.Arguments[1]))
+                     .OfType<System.Collections.IEnumerable>()
+                     .Select(bindings => bindings.Cast<object>().ToList())];
+
+        [Fact]
+        public void Should_not_attach_shortcuts_without_a_target()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B" });
+
+            // Act
+            ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
+
+            // Assert
+            Assert.Empty(KeyBindingAttachments(ctx));
+        }
+
+        [Fact]
+        public void Should_not_attach_shortcuts_to_a_target_that_has_not_rendered()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B" });
+            var unrendered = new ElementReference();
+
+            // Act
+            ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Target="unrendered" />);
+
+            // Assert
+            Assert.Empty(KeyBindingAttachments(ctx));
+        }
+
+        [Fact]
+        public void Should_attach_once_the_target_becomes_available()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B" });
+            var unrendered = new ElementReference();
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Target="unrendered" />);
+
+            // Act
+            cut.FindComponent<FormaToolbar>()
+               .Render(parameters => parameters.Add(p => p.Target, new ElementReference("rendered-later")));
+
+            // Assert
+            Assert.Single(KeyBindingAttachments(ctx));
+        }
+
+        [Fact]
+        public void Should_reattach_when_the_target_changes_but_the_shortcuts_do_not()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B" });
+            var first = new ElementReference("first");
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Target="first" />);
+
+            // Act
+            cut.FindComponent<FormaToolbar>()
+               .Render(parameters => parameters.Add(p => p.Target, new ElementReference("second")));
+
+            // Assert
+            Assert.Equal(2, KeyBindingAttachments(ctx).Count);
+        }
+
+        [Fact]
+        public void Should_attach_a_parsed_shortcut_when_a_target_is_given()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+Shift+B" });
+            var target = new ElementReference("toolbar-target");
+
+            // Act
+            ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Target="target" />);
+
+            // Assert
+            var bindings = Assert.Single(KeyBindingAttachments(ctx));
+            var binding = Assert.Single(bindings);
+            Assert.Multiple(
+                () => Assert.Equal("B", binding.GetType().GetProperty("Key")!.GetValue(binding)),
+                () => Assert.Equal("bold", binding.GetType().GetProperty("Command")!.GetValue(binding)),
+                () => Assert.Equal(true, binding.GetType().GetProperty("Control")!.GetValue(binding)),
+                () => Assert.Equal(true, binding.GetType().GetProperty("Shift")!.GetValue(binding)),
+                () => Assert.Equal(false, binding.GetType().GetProperty("Alt")!.GetValue(binding)));
+        }
+
+        [Fact]
+        public void Should_ignore_an_action_with_no_shortcut()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(
+                new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B" },
+                new FormaToolbarCommand { Id = "italic", Title = "Italic", Command = "italic" });
+            var target = new ElementReference("toolbar-target");
+
+            // Act
+            ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Target="target" />);
+
+            // Assert
+            var bindings = Assert.Single(KeyBindingAttachments(ctx));
+            Assert.Single(bindings);
+        }
+
+        [Fact]
+        public void Should_invoke_on_command_when_a_shortcut_matches()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B" });
+            var target = new ElementReference("toolbar-target");
+            string? invoked = null;
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Target="target" OnCommand="c => invoked = c" />);
+            var toolbar = cut.FindComponent<FormaToolbar>().Instance;
+
+            // Act
+            cut.InvokeAsync(() => toolbar.HandleCommandAsync("bold"));
+
+            // Assert
+            Assert.Equal("bold", invoked);
+        }
+
+        [Fact]
+        public void Should_not_invoke_on_command_from_a_shortcut_when_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B" });
+            var target = new ElementReference("toolbar-target");
+            string? invoked = null;
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Target="target" Disabled="true" OnCommand="c => invoked = c" />);
+            var toolbar = cut.FindComponent<FormaToolbar>().Instance;
+
+            // Act
+            cut.InvokeAsync(() => toolbar.HandleCommandAsync("bold"));
+
+            // Assert
+            Assert.Null(invoked);
+        }
+
+        [Fact]
+        public void Should_disable_only_the_item_marked_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(
+                new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", IsDisabled = true },
+                new FormaToolbarCommand { Id = "italic", Title = "Italic", Command = "italic" });
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
+
+            // Assert
+            var buttons = cut.FindAll("button");
+            Assert.Multiple(
+                () => Assert.True(buttons[0].HasAttribute("disabled")),
+                () => Assert.False(buttons[1].HasAttribute("disabled")));
+        }
+
+        [Fact]
+        public void Should_disable_a_menu_trigger_marked_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarMenu
+            {
+                Id = "align",
+                Title = "Align",
+                IsDisabled = true,
+                Options = [new() { Id = "left", Title = "Left", Command = "align.left", IsActive = true }],
+            });
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
+
+            // Assert
+            Assert.True(cut.Find(".forma-dropdown-menu-trigger").HasAttribute("disabled"));
+        }
+
+        [Fact]
+        public void Should_not_invoke_on_command_from_a_shortcut_when_the_item_is_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B", IsDisabled = true });
+            var target = new ElementReference("toolbar-target");
+            string? invoked = null;
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Target="target" OnCommand="c => invoked = c" />);
+            var toolbar = cut.FindComponent<FormaToolbar>().Instance;
+
+            // Act
+            cut.InvokeAsync(() => toolbar.HandleCommandAsync("bold"));
+
+            // Assert
+            Assert.Null(invoked);
+        }
     }
 }

@@ -1,14 +1,21 @@
 namespace Forma.UI.Blazor.Components.Bars;
 
 using Forma.UI.Blazor.Components.Buttons;
+using Forma.UI.Blazor.Interop.Behaviours;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
 /// <summary>A toolbar of grouped, item-driven commands, built on <see cref="FormaCommandArea"/> and <see cref="FormaCommandBar"/>.</summary>
-public sealed partial class FormaToolbar : ComponentBase
+public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
 {
     private static readonly FormaButtonOptions MenuTriggerOptions =
         new() { Variant = ButtonVariant.Ghost, Size = ButtonSize.Mini };
+
+    private KeyBindings? _keyBindings;
+    private DotNetObjectReference<FormaToolbar>? _self;
+    private IReadOnlyList<KeyBinding> _attachedBindings = [];
+    private string? _attachedTargetId;
 
     /// <summary>The accessible name of the toolbar.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
@@ -25,6 +32,9 @@ public sealed partial class FormaToolbar : ComponentBase
     /// <summary>Callback invoked with the command an item raised.</summary>
     [Parameter] public EventCallback<string> OnCommand { get; set; }
 
+    /// <summary>The element a bound action's shortcut listens on while it or a descendant has focus. Shortcuts are inert until this is set — the toolbar never listens document-wide.</summary>
+    [Parameter] public ElementReference? Target { get; set; }
+
     /// <summary>Content pinned past the end of the track, staying put while the commands scroll.</summary>
     [Parameter] public RenderFragment? TrailingContent { get; set; }
 
@@ -36,6 +46,14 @@ public sealed partial class FormaToolbar : ComponentBase
 
     /// <summary>Extra classes applied to the underlying <see cref="FormaCommandBar"/>.</summary>
     [Parameter] public string? Class { get; set; }
+
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+
+    private IReadOnlyList<KeyBinding> Bindings
+        => [.. Items.SelectMany(Leaves)
+                    .OfType<FormaToolbarAction>()
+                    .Select(ParseBinding)
+                    .OfType<KeyBinding>()];
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -56,9 +74,108 @@ public sealed partial class FormaToolbar : ComponentBase
         }
     }
 
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // An unrendered @ref still arrives as a non-null ElementReference carrying no id, and attaching to it fails silently.
+        if (Target is not { Id.Length: > 0 } target)
+        {
+            await DetachAsync();
+
+            return;
+        }
+
+        var bindings = Bindings;
+
+        if (target.Id == _attachedTargetId && bindings.SequenceEqual(_attachedBindings))
+        {
+            return;
+        }
+
+        _keyBindings ??= new KeyBindings(JS);
+        _self ??= DotNetObjectReference.Create(this);
+
+        if (await _keyBindings.AttachAsync(target, _self, bindings))
+        {
+            _attachedBindings = bindings;
+            _attachedTargetId = target.Id;
+        }
+    }
+
+    /// <summary>Runs the command a shortcut matched, unless the toolbar or the matching action is disabled.</summary>
+    [JSInvokable]
+    public async Task HandleCommandAsync(string command)
+    {
+        if (Disabled)
+        {
+            return;
+        }
+
+        var action = Items.SelectMany(Leaves).OfType<FormaToolbarAction>().FirstOrDefault(a => a.Command == command);
+
+        if (action is { IsDisabled: true })
+        {
+            return;
+        }
+
+        await OnCommand.InvokeAsync(command);
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        if (_keyBindings is not null)
+        {
+            await _keyBindings.DisposeAsync();
+        }
+
+        _self?.Dispose();
+    }
+
+    /// <summary>Releases the current attachment, so a cleared target leaves no listener behind on the element it named.</summary>
+    private async Task DetachAsync()
+    {
+        if (_keyBindings is null || _attachedTargetId is null)
+        {
+            return;
+        }
+
+        _attachedBindings = [];
+        _attachedTargetId = null;
+
+        await _keyBindings.DetachAsync();
+    }
+
     /// <summary>Every item a top-level entry contributes, so a group is checked through its own contents.</summary>
     private static IEnumerable<FormaToolbarItem> Leaves(FormaToolbarItem item)
         => item is FormaToolbarGroup group ? group.Items : [item];
+
+    /// <summary>Parses an action's ShortcutAriaKeys, such as "Control+Shift+B", into a matchable binding, or null when it has none.</summary>
+    private static KeyBinding? ParseBinding(FormaToolbarAction action)
+    {
+        if (action.ShortcutAriaKeys is not { } shortcut)
+        {
+            return null;
+        }
+
+        var parts = shortcut.Split('+', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        if (parts.Length == 0)
+        {
+            return null;
+        }
+
+        var modifiers = parts[..^1];
+
+        return new KeyBinding
+        {
+            Key = parts[^1],
+            Command = action.Command,
+            Control = modifiers.Any(m => m.Equals("Control", StringComparison.OrdinalIgnoreCase) || m.Equals("Meta", StringComparison.OrdinalIgnoreCase)),
+            Alt = modifiers.Any(m => m.Equals("Alt", StringComparison.OrdinalIgnoreCase)),
+            Shift = modifiers.Any(m => m.Equals("Shift", StringComparison.OrdinalIgnoreCase)),
+        };
+    }
 
     private IEnumerable<Row> Rows
         => Items.Select(item => item is FormaToolbarGroup group

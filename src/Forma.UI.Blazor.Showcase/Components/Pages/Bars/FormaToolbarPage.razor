@@ -66,11 +66,37 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["Shortcuts That Fire"]</h2>
+    <p class="description">@L["Setting Target makes each action's ShortcutAriaKeys live while that element or a descendant holds focus, so the toolbar never listens document-wide. Click into the panel and press Ctrl+B or Ctrl+I."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaToolbar Label="@L["Formatting"]" Items="_shortcutGroups" Target="_shortcutSurface" OnCommand="HandleCommand" />
+        <div class="demo-shortcut-surface" @ref="_shortcutSurface" tabindex="0" role="group" aria-label="@L["Shortcut Surface"]">
+            @L["Focus here, then press Ctrl+B or Ctrl+I."]
+        </div>
+    </div>
+    <p class="demo-output">@L["Last command"]: <code>@_lastCommand</code></p>
+</div>
+
+<div class="demo-section">
     <h2>@L["Disabled"]</h2>
     <p class="description">@L["Every control in the toolbar disables together."]</p>
     <div class="demo-box demo-box-flush">
         <FormaToolbar Label="@L["Formatting"]" Items="_formattingGroups" Disabled="true" />
     </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["One Item Disabled"]</h2>
+    <p class="description">@L["An item's own IsDisabled stands it down while the rest of the toolbar stays live. Its shortcut is refused as well, not only its button."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaToolbar Label="@L["Library Actions"]" Items="_partlyDisabledGroups" ShowLabels="true" Target="_shortcutSurface" OnCommand="HandleCommand" />
+    </div>
+    <p>
+        <button class="button button-secondary" @onclick="() => _canDelete = !_canDelete">
+            @(_canDelete ? L["Disable Delete"] : L["Enable Delete"])
+        </button>
+    </p>
+    <p class="demo-output">@L["Last command"]: <code>@_lastCommand</code></p>
 </div>
 
 <div class="demo-section">
@@ -89,6 +115,17 @@
     private string _lastCommand = "";
     private bool _isBoldActive;
     private int _wordCount = 12;
+    private bool _canDelete = true;
+    private ElementReference _shortcutSurface;
+
+    // The @ref is only populated once the element has rendered, so the toolbars targeting it need one more render to receive it.
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            StateHasChanged();
+        }
+    }
 
     private IReadOnlyList<FormaToolbarItem> _formattingGroups =>
     [
@@ -230,6 +267,20 @@
             [
                 new FormaToolbarCommand { Id = "bold", Title = L["Bold"], Icon = Glyph.Bold, Command = "format.bold", ShortcutDisplay = "Ctrl+B", ShortcutAriaKeys = "Control+B" },
                 new FormaToolbarCommand { Id = "italic", Title = L["Italic"], Icon = Glyph.Italic, Command = "format.italic", ShortcutDisplay = "Ctrl+I", ShortcutAriaKeys = "Control+I" },
+            ],
+        },
+    ];
+
+    private IReadOnlyList<FormaToolbarItem> _partlyDisabledGroups =>
+    [
+        new FormaToolbarGroup
+        {
+            Id = "library",
+            Title = L["Library Actions"],
+            Items =
+            [
+                new FormaToolbarCommand { Id = "add", Title = L["Add New"], Icon = Glyph.Plus, Command = "library.add" },
+                new FormaToolbarCommand { Id = "delete", Title = L["Delete"], Icon = Glyph.Trash, Command = "library.delete", IsDisabled = !_canDelete, ShortcutDisplay = "Ctrl+D", ShortcutAriaKeys = "Control+D" },
             ],
         },
     ];

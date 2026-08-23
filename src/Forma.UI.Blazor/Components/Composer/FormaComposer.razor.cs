@@ -145,9 +145,12 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
 
         _isJsStarted = true;
 
-        await _keyBindings.AttachAsync(_composerElement, _dotNetRef!, _keyMap.Bindings);
+        await _keyBindings.AttachAsync(_composerElement, _dotNetRef!, ToKeyBindings(_keyMap.Bindings));
         await _assetLoader.LoadAssetsAsync(_activeEditor.Assets);
     }
+
+    private static IReadOnlyList<KeyBinding> ToKeyBindings(IReadOnlyList<ComposerKeyBinding> bindings)
+        => [.. bindings.Select(b => new KeyBinding { Key = b.Key, Command = b.Command, Control = b.Control, Alt = b.Alt, Shift = b.Shift })];
 
     /// <summary>Runs a composer command by name, whether the engine or a plugin owns it.</summary>
     [JSInvokable]

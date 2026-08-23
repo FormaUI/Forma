@@ -1,7 +1,5 @@
 namespace Forma.UI.Blazor.Interop.Behaviours;
 
-using Forma.UI.Features.Composer.Plugins;
-
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
@@ -10,7 +8,7 @@ internal sealed class KeyBindings(IJSRuntime js)
     : JsInterop(js, "./_content/Forma.UI/scripts/behaviours/KeyBindings.js")
 {
     /// <summary>Attaches the bindings, invoking <c>HandleCommandAsync</c> on <paramref name="owner"/> when one matches.</summary>
-    public ValueTask<bool> AttachAsync<TOwner>(ElementReference target, DotNetObjectReference<TOwner> owner, IReadOnlyList<ComposerKeyBinding> bindings)
+    public ValueTask<bool> AttachAsync<TOwner>(ElementReference target, DotNetObjectReference<TOwner> owner, IReadOnlyList<KeyBinding> bindings)
         where TOwner : class
         => AttachCoreAsync(target, new { owner, bindings });
 }

@@ -23,7 +23,7 @@
                         <FormaDropDownMenu class="forma-toolbar-menu"
                                            @key="menu.Id"
                                            TriggerOptions="MenuTriggerOptions"
-                                           disabled="@Disabled"
+                                           disabled="@(Disabled || menu.IsDisabled)"
                                            aria-label="@menu.Title"
                                            title="@GetTooltip(menu)">
                             <Trigger>
@@ -74,7 +74,7 @@
                                 @key="action.Id"
                                 class="forma-toolbar-button @(showsLabel ? "forma-toolbar-button-labelled" : null) @(isToggleActive ? "forma-toolbar-button-active" : null)"
                                 @onclick="() => OnCommand.InvokeAsync(action.Command)"
-                                disabled="@Disabled"
+                                disabled="@(Disabled || action.IsDisabled)"
                                 aria-label="@(showsLabel ? null : action.Title)"
                                 aria-pressed="@(action is FormaToolbarToggle ? (isToggleActive ? "true" : "false") : null)"
                                 aria-keyshortcuts="@action.ShortcutAriaKeys"
