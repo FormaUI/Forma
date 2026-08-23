@@ -57,9 +57,23 @@
     </div>
 </div>
 
+<div class="demo-section">
+    <h2>@L["Hidden"]</h2>
+    <p class="description">@L["Hidden is independent of EmptyMode — it hides the strip even while it holds items, keeping it mounted so its inner FormaToolbar loses no state."]</p>
+    <div class="demo-box">
+        <FormaStatusStrip Label="@L["Document Status"]" Items="_commandItems" OnCommand="HandleCommand" Hidden="@(!_showStrip)" Animated="true" />
+    </div>
+    <p>
+        <button class="button button-secondary" @onclick="() => _showStrip = !_showStrip">
+            @(_showStrip ? L["Hide Strip"] : L["Show Strip"])
+        </button>
+    </p>
+</div>
+
 @code {
     private int _wordCount = 128;
     private string _lastCommand = "";
+    private bool _showStrip = true;
 
     private IReadOnlyList<FormaToolbarItem> _readoutItems =>
     [

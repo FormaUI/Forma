@@ -30,6 +30,56 @@
         }
 
         [Fact]
+        public void Should_stay_inert_when_hidden_even_with_items()
+        {
+            // Arrange
+            using var ctx = new FormaStatusStripTests();
+            IReadOnlyList<FormaToolbarItem> items = [new FormaToolbarReadout { Id = "words", Title = "Words", Value = "128 words" }];
+
+            // Act
+            var cut = ctx.Render(@<FormaStatusStrip Label="Status" Items="items" Hidden="true" />);
+
+            // Assert
+            var wrapper = cut.Find(".forma-visibility");
+            Assert.Multiple(
+                () => Assert.DoesNotContain("is-shown", wrapper.ClassList),
+                () => Assert.True(wrapper.HasAttribute("inert")),
+                () => cut.Find(".forma-status-strip"));
+        }
+
+        [Fact]
+        public void Should_stay_shown_when_empty_mode_is_hidden_but_hidden_is_false()
+        {
+            // Arrange
+            using var ctx = new FormaStatusStripTests();
+            IReadOnlyList<FormaToolbarItem> items = [new FormaToolbarReadout { Id = "words", Title = "Words", Value = "128 words" }];
+
+            // Act
+            var cut = ctx.Render(@<FormaStatusStrip Label="Status" Items="items" EmptyMode="StatusStripEmptyMode.Hidden" />);
+
+            // Assert
+            Assert.Contains("is-shown", cut.Find(".forma-visibility").ClassList);
+        }
+
+        [Fact]
+        public void Should_collapse_at_the_strip_only_and_not_again_at_its_toolbar()
+        {
+            // Arrange
+            using var ctx = new FormaStatusStripTests();
+            IReadOnlyList<FormaToolbarItem> items = [new FormaToolbarReadout { Id = "words", Title = "Words", Value = "128 words" }];
+
+            // Act
+            var cut = ctx.Render(@<FormaStatusStrip Label="Status" Items="items" Hidden="true" Animated="true" />);
+
+            // Assert
+            var wrappers = cut.FindAll(".forma-visibility");
+            Assert.Multiple(
+                () => Assert.DoesNotContain("is-shown", wrappers[0].ClassList),
+                () => Assert.Contains("is-shown", wrappers[^1].ClassList),
+                () => Assert.DoesNotContain("is-animated", wrappers[^1].ClassList));
+        }
+
+        [Fact]
         public void Should_not_render_a_toolbar_in_the_empty_bar()
         {
             // Arrange

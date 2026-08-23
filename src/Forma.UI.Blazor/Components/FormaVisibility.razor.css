@@ -1,0 +1,23 @@
+/* ============================================================
+   FormaVisibility — CSS isolation
+   Collapses ChildContent to zero block size instead of unmounting it.
+   ============================================================ */
+
+.forma-visibility {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+}
+
+.forma-visibility.is-shown {
+    grid-template-rows: 1fr;
+    opacity: 1;
+}
+
+.forma-visibility.is-animated {
+    transition: grid-template-rows 200ms ease, opacity 150ms ease;
+}
+
+.forma-visibility-inner {
+    overflow: hidden;
+}

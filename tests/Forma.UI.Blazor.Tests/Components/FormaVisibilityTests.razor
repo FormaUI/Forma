@@ -1,0 +1,90 @@
+@inherits BunitContext
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_the_content()
+        {
+            // Arrange
+            using var ctx = new FormaVisibilityTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVisibility><span>Content</span></FormaVisibility>);
+
+            // Assert
+            Assert.Equal("Content", cut.Find("span").TextContent);
+        }
+
+        [Fact]
+        public void Should_be_shown_and_not_inert_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaVisibilityTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVisibility><span>Content</span></FormaVisibility>);
+
+            // Assert
+            var wrapper = cut.Find(".forma-visibility");
+            Assert.Multiple(
+                () => Assert.Contains("is-shown", wrapper.ClassList),
+                () => Assert.False(wrapper.HasAttribute("inert")));
+        }
+
+        [Fact]
+        public void Should_be_inert_and_not_shown_when_hidden()
+        {
+            // Arrange
+            using var ctx = new FormaVisibilityTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVisibility Hidden="true"><span>Content</span></FormaVisibility>);
+
+            // Assert
+            var wrapper = cut.Find(".forma-visibility");
+            Assert.Multiple(
+                () => Assert.DoesNotContain("is-shown", wrapper.ClassList),
+                () => Assert.True(wrapper.HasAttribute("inert")));
+        }
+
+        [Fact]
+        public void Should_not_animate_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaVisibilityTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVisibility><span>Content</span></FormaVisibility>);
+
+            // Assert
+            Assert.DoesNotContain("is-animated", cut.Find(".forma-visibility").ClassList);
+        }
+
+        [Fact]
+        public void Should_animate_when_requested()
+        {
+            // Arrange
+            using var ctx = new FormaVisibilityTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVisibility Animated="true"><span>Content</span></FormaVisibility>);
+
+            // Assert
+            Assert.Contains("is-animated", cut.Find(".forma-visibility").ClassList);
+        }
+
+        [Fact]
+        public void Should_still_render_the_content_while_hidden()
+        {
+            // Arrange
+            using var ctx = new FormaVisibilityTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVisibility Hidden="true"><span>Content</span></FormaVisibility>);
+
+            // Assert
+            cut.Find("span");
+        }
+    }
+}

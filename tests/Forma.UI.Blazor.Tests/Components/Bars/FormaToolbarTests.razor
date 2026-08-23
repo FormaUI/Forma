@@ -566,6 +566,103 @@
         }
 
         [Fact]
+        public void Should_not_attach_shortcuts_while_hidden()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B" });
+            var target = new ElementReference("toolbar-target");
+
+            // Act
+            ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Target="target" Hidden="true" />);
+
+            // Assert
+            Assert.Empty(KeyBindingAttachments(ctx));
+        }
+
+        [Fact]
+        public void Should_be_shown_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
+
+            // Assert
+            Assert.Contains("is-shown", cut.Find(".forma-visibility").ClassList);
+        }
+
+        [Fact]
+        public void Should_be_inert_when_hidden()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Hidden="true" />);
+
+            // Assert
+            var wrapper = cut.Find(".forma-visibility");
+            Assert.Multiple(
+                () => Assert.DoesNotContain("is-shown", wrapper.ClassList),
+                () => Assert.True(wrapper.HasAttribute("inert")));
+        }
+
+        [Fact]
+        public void Should_render_without_a_command_bar_when_not_scrollable()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Scrollable="false" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll(".forma-command-bar")),
+                () => Assert.Equal("toolbar", cut.Find(".forma-toolbar").GetAttribute("role")),
+                () => Assert.Equal("Formatting", cut.Find(".forma-toolbar").GetAttribute("aria-label")));
+        }
+
+        [Fact]
+        public void Should_still_collapse_when_hidden_and_not_scrollable()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Scrollable="false" Hidden="true" />);
+
+            // Assert
+            var wrapper = cut.Find(".forma-visibility");
+            Assert.Multiple(
+                () => Assert.DoesNotContain("is-shown", wrapper.ClassList),
+                () => Assert.True(wrapper.HasAttribute("inert")),
+                () => cut.Find(".forma-toolbar"));
+        }
+
+        [Fact]
+        public void Should_render_trailing_content_when_not_scrollable()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" });
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Scrollable="false">
+                                     <TrailingContent><span class="pinned">Pinned</span></TrailingContent>
+                                 </FormaToolbar>);
+
+            // Assert
+            Assert.Equal("Pinned", cut.Find(".forma-toolbar .pinned").TextContent);
+        }
+
+        [Fact]
         public void Should_not_attach_shortcuts_to_a_target_that_has_not_rendered()
         {
             // Arrange

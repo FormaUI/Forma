@@ -60,5 +60,12 @@
   "Content Pinned Past the Track": "תוכן מוצמד מעבר למסלול",
   "Trailing content, such as an overflow toggle, stays put while the commands beside it scroll.": "תוכן נגרר, כגון מתג גלישה, נשאר במקומו בזמן שהפקודות לצידו נגללות.",
   "More": "עוד",
+  "Hidden": "מוסתר",
+  "Not Scrollable": "ללא גלילה",
+  "With Scrollable off the toolbar renders its own row and lets the items wrap, carrying none of the command bar's observers or interop — for a toolbar whose items cannot outgrow the width.": "כש-Scrollable כבוי, סרגל הכלים מציג שורה משלו ומאפשר לפריטים לעבור לשורה הבאה, בלי לשאת אף אחד ממשקיפי סרגל הפקודות או מהקוד שלו — עבור סרגל שפריטיו אינם יכולים לחרוג מהרוחב.",
+  "Hidden keeps the toolbar mounted, so a plugin or favorites toolbar can be shown and hidden on demand — by a command elsewhere, say — without losing its attached shortcut listener each time.": "Hidden שומר את הסרגל מחובר, כך שסרגל תוספים או מועדפים ניתן להציג ולהסתיר לפי דרישה — למשל על ידי פקודה במקום אחר — בלי לאבד בכל פעם את מאזין קיצורי הדרך המחובר אליו.",
+  "Favorites": "מועדפים",
+  "Hide Favorites": "הסתר מועדפים",
+  "Show Favorites": "הצג מועדפים",
   "Command": "פקודה"
 }

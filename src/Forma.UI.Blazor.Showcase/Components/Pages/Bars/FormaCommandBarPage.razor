@@ -91,8 +91,28 @@
     </div>
 </div>
 
+<div class="demo-section">
+    <h2>@L["Hidden"]</h2>
+    <p class="description">@L["Toggling Hidden keeps the bar mounted, so a favorites or plugin bar can be shown and hidden on demand without losing its scroll position or re-attaching its JavaScript."]</p>
+    <div class="demo-box demo-box-flush demo-command-bar-narrow">
+        <FormaCommandArea>
+            <FormaCommandBar Hidden="@(!_showFavorites)" Animated="true">
+                @foreach (var command in ManyCommands)
+                {
+                    <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini">@command</FormaButton>
+                }
+            </FormaCommandBar>
+        </FormaCommandArea>
+    </div>
+    <div class="demo-row">
+        <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="() => _showFavorites = !_showFavorites">@(_showFavorites ? L["Hide Favorites Bar"] : L["Show Favorites Bar"])</FormaButton>
+    </div>
+</div>
+
 @code {
     private int _visibleCommands = 2;
+
+    private bool _showFavorites = true;
 
     private string[] ManyCommands =>
     [

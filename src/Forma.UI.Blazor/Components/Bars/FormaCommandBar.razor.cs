@@ -25,6 +25,12 @@ public sealed partial class FormaCommandBar : ComponentBase, IAsyncDisposable
     /// <summary>Extra classes applied alongside forma-command-bar.</summary>
     [Parameter] public string? Class { get; set; }
 
+    /// <summary>Hides the bar while keeping it mounted, so its scroll-boundary watcher and other JS-attached state survive across toggles.</summary>
+    [Parameter] public bool Hidden { get; set; }
+
+    /// <summary>Animates the transition between hidden and shown instead of snapping instantly.</summary>
+    [Parameter] public bool Animated { get; set; }
+
     /// <summary>Additional attributes applied to the bar element.</summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }

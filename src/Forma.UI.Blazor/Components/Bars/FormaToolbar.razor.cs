@@ -35,8 +35,11 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
     /// <summary>The element a bound action's shortcut listens on while it or a descendant has focus. Shortcuts are inert until this is set — the toolbar never listens document-wide.</summary>
     [Parameter] public ElementReference? Target { get; set; }
 
-    /// <summary>Content pinned past the end of the track, staying put while the commands scroll.</summary>
+    /// <summary>Content pinned past the end of the row, staying put while the commands scroll.</summary>
     [Parameter] public RenderFragment? TrailingContent { get; set; }
+
+    /// <summary>Lays the items on a <see cref="FormaCommandBar"/> that scrolls them behind arrows once they outgrow the width; they wrap instead when false.</summary>
+    [Parameter] public bool Scrollable { get; set; } = true;
 
     /// <summary>Accessible name for the button scrolling toward the start.</summary>
     [Parameter] public string? ScrollBackLabel { get; set; }
@@ -44,10 +47,19 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
     /// <summary>Accessible name for the button scrolling toward the end.</summary>
     [Parameter] public string? ScrollForwardLabel { get; set; }
 
-    /// <summary>Extra classes applied to the underlying <see cref="FormaCommandBar"/>.</summary>
+    /// <summary>Extra classes applied to the toolbar's root element.</summary>
     [Parameter] public string? Class { get; set; }
 
+    /// <summary>Hides the toolbar while keeping it mounted, so a bound <see cref="Target"/>'s shortcut listener survives across toggles.</summary>
+    [Parameter] public bool Hidden { get; set; }
+
+    /// <summary>Animates the transition between hidden and shown instead of snapping instantly.</summary>
+    [Parameter] public bool Animated { get; set; }
+
     [Inject] private IJSRuntime JS { get; set; } = default!;
+
+    private string CssClass
+        => string.IsNullOrWhiteSpace(Class) ? "forma-toolbar" : $"forma-toolbar {Class}";
 
     private IReadOnlyList<KeyBinding> Bindings
         => [.. Items.SelectMany(Leaves)
@@ -77,8 +89,9 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // Target is an element elsewhere, so hiding the toolbar does not stand its shortcuts down on its own.
         // An unrendered @ref still arrives as a non-null ElementReference carrying no id, and attaching to it fails silently.
-        if (Target is not { Id.Length: > 0 } target)
+        if (Hidden || Target is not { Id.Length: > 0 } target)
         {
             await DetachAsync();
 

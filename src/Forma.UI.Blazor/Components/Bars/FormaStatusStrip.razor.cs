@@ -20,6 +20,12 @@ public sealed partial class FormaStatusStrip : ComponentBase
     /// <summary>Whether the strip renders an empty bar or nothing at all while it has no items.</summary>
     [Parameter] public StatusStripEmptyMode EmptyMode { get; set; }
 
+    /// <summary>Hides the strip while keeping it mounted, independently of <see cref="EmptyMode"/> — which only ever concerns having no items.</summary>
+    [Parameter] public bool Hidden { get; set; }
+
+    /// <summary>Animates the transition between hidden and shown instead of snapping instantly.</summary>
+    [Parameter] public bool Animated { get; set; }
+
     /// <inheritdoc />
     protected override void OnParametersSet()
     {

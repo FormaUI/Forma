@@ -4,6 +4,64 @@
     public sealed class Component
     {
         [Fact]
+        public void Should_be_shown_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaCommandBarTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCommandBar />);
+
+            // Assert
+            var wrapper = cut.Find(".forma-visibility");
+            Assert.Multiple(
+                () => Assert.Contains("is-shown", wrapper.ClassList),
+                () => Assert.False(wrapper.HasAttribute("inert")));
+        }
+
+        [Fact]
+        public void Should_be_inert_and_not_shown_when_hidden()
+        {
+            // Arrange
+            using var ctx = new FormaCommandBarTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCommandBar Hidden="true" />);
+
+            // Assert
+            var wrapper = cut.Find(".forma-visibility");
+            Assert.Multiple(
+                () => Assert.DoesNotContain("is-shown", wrapper.ClassList),
+                () => Assert.True(wrapper.HasAttribute("inert")));
+        }
+
+        [Fact]
+        public void Should_not_animate_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaCommandBarTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCommandBar />);
+
+            // Assert
+            Assert.DoesNotContain("is-animated", cut.Find(".forma-visibility").ClassList);
+        }
+
+        [Fact]
+        public void Should_animate_when_requested()
+        {
+            // Arrange
+            using var ctx = new FormaCommandBarTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCommandBar Animated="true" />);
+
+            // Assert
+            Assert.Contains("is-animated", cut.Find(".forma-visibility").ClassList);
+        }
+
+        [Fact]
         public void Should_render_commands_on_the_track()
         {
             // Arrange
@@ -186,7 +244,7 @@
             var cut = ctx.Render(@<FormaCommandBar Class="demo-filters" />);
 
             // Assert
-            var classes = cut.Find("div").ClassList;
+            var classes = cut.Find(".forma-command-bar").ClassList;
             Assert.Multiple(() =>
             {
                 Assert.Contains("forma-command-bar", classes);

@@ -111,11 +111,33 @@
     </div>
 </div>
 
+<div class="demo-section">
+    <h2>@L["Hidden"]</h2>
+    <p class="description">@L["Hidden keeps the toolbar mounted, so a plugin or favorites toolbar can be shown and hidden on demand — by a command elsewhere, say — without losing its attached shortcut listener each time."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaToolbar Label="@L["Favorites"]" Items="_formattingGroups" ShowLabels="true" Hidden="@(!_showFavorites)" Animated="true" />
+    </div>
+    <p>
+        <button class="button button-secondary" @onclick="() => _showFavorites = !_showFavorites">
+            @(_showFavorites ? L["Hide Favorites"] : L["Show Favorites"])
+        </button>
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Not Scrollable"]</h2>
+    <p class="description">@L["With Scrollable off the toolbar renders its own row and lets the items wrap, carrying none of the command bar's observers or interop — for a toolbar whose items cannot outgrow the width."]</p>
+    <div class="demo-box demo-box-flush demo-command-bar-narrow">
+        <FormaToolbar Label="@L["Formatting"]" Items="_manyGroups" Scrollable="false" />
+    </div>
+</div>
+
 @code {
     private string _lastCommand = "";
     private bool _isBoldActive;
     private int _wordCount = 12;
     private bool _canDelete = true;
+    private bool _showFavorites = true;
     private ElementReference _shortcutSurface;
 
     // The @ref is only populated once the element has rendered, so the toolbars targeting it need one more render to receive it.

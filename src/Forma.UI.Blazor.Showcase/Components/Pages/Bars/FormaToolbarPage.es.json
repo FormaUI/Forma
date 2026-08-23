@@ -60,5 +60,12 @@
   "Content Pinned Past the Track": "Contenido Fijo Más Allá del Riel",
   "Trailing content, such as an overflow toggle, stays put while the commands beside it scroll.": "El contenido final, como un interruptor de desbordamiento, permanece fijo mientras los comandos a su lado se desplazan.",
   "More": "Más",
+  "Hidden": "Oculto",
+  "Not Scrollable": "Sin Desplazamiento",
+  "With Scrollable off the toolbar renders its own row and lets the items wrap, carrying none of the command bar's observers or interop — for a toolbar whose items cannot outgrow the width.": "Con Scrollable desactivado, la barra de herramientas muestra su propia fila y deja que los elementos pasen a la siguiente línea, sin arrastrar ninguno de los observadores ni la interoperabilidad de la barra de comandos: para una barra cuyos elementos no pueden superar el ancho.",
+  "Hidden keeps the toolbar mounted, so a plugin or favorites toolbar can be shown and hidden on demand — by a command elsewhere, say — without losing its attached shortcut listener each time.": "Hidden mantiene la barra de herramientas montada, de modo que una barra de complementos o favoritos se puede mostrar y ocultar bajo demanda —por un comando en otro lugar, por ejemplo— sin perder cada vez su escucha de atajos adjunta.",
+  "Favorites": "Favoritos",
+  "Hide Favorites": "Ocultar Favoritos",
+  "Show Favorites": "Mostrar Favoritos",
   "Command": "Comando"
 }

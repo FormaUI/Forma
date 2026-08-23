@@ -1,10 +1,7 @@
 @namespace Forma.UI.Blazor.Components.Bars
-<FormaCommandBar role="toolbar"
-                 aria-label="@Label"
-                 Class="@Class"
-                 ScrollBackLabel="@ScrollBackLabel"
-                 ScrollForwardLabel="@ScrollForwardLabel"
-                 TrailingContent="TrailingContent">
+@{
+    RenderFragment items =
+        @<text>
     @foreach (var row in Rows)
     {
         <div class="@(row.Group is null ? "forma-toolbar-loose" : "forma-toolbar-group")"
@@ -93,4 +90,26 @@
             }
         </div>
     }
-</FormaCommandBar>
+        </text>;
+}
+
+@if (Scrollable)
+{
+    <FormaCommandBar role="toolbar"
+                     aria-label="@Label"
+                     Class="@Class"
+                     Hidden="Hidden"
+                     Animated="Animated"
+                     ScrollBackLabel="@ScrollBackLabel"
+                     ScrollForwardLabel="@ScrollForwardLabel"
+                     TrailingContent="TrailingContent">@items</FormaCommandBar>
+}
+else
+{
+    <FormaVisibility Hidden="Hidden" Animated="Animated">
+        <div class="@CssClass" role="toolbar" aria-label="@Label">
+            @items
+            @TrailingContent
+        </div>
+    </FormaVisibility>
+}
