@@ -17,13 +17,14 @@ public sealed partial class FormaTab : IDisposable
     /// <summary>A glyph shown before the title.</summary>
     [Parameter] public Glyph? Icon { get; set; }
 
-    /// <summary>The identifier a controlled parent selects this tab by, generated when the caller supplies none.</summary>
-    [Parameter] public string? Id { get; set; }
+    /// <summary>The identifier a controlled parent selects this tab by. A generated one stands in while this is unset.</summary>
+    [Parameter] public string? TabId { get; set; }
 
     /// <summary>The tab's panel content.</summary>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
 
-    internal string TabId => Id ?? _generatedId;
+    /// <summary>The identifier actually in force, whether the caller supplied it or not.</summary>
+    internal string EffectiveTabId => TabId ?? _generatedId;
 
     /// <inheritdoc />
     protected override void OnInitialized()

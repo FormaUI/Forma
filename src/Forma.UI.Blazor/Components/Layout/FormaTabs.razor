@@ -4,14 +4,14 @@
             @foreach (var tab in _tabs)
             {
                 var isActive = IsActive(tab);
-                var tabId = FormaTabs.GetTabId(tab);
-                var panelId = FormaTabs.GetPanelId(tab);
+                var tabElementId = FormaTabs.GetTabElementId(tab);
+                var panelElementId = FormaTabs.GetPanelElementId(tab);
 
                 <button class="forma-tab-button @(isActive ? "active" : "")"
                         role="tab"
-                        id="@tabId"
+                        id="@tabElementId"
                         aria-selected="@isActive.ToString().ToLowerInvariant()"
-                        aria-controls="@panelId"
+                        aria-controls="@panelElementId"
                         @onclick="() => SelectTabAsync(tab)">
                     @if (tab.Icon is { } icon)
                     {

@@ -16,7 +16,7 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
     private const int ScoredLength = 8;
     private const int WellScoredLength = 12;
 
-    private readonly string _inputId = $"fld-{Guid.NewGuid():N}";
+    private readonly string _id = $"fld-{Guid.NewGuid():N}";
     private ElementReference _inputRef;
     private AutofillTracker _autofill = default!;
     private ValidationMessageStore _messages = default!;
@@ -153,7 +153,7 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
     }
 
     private string AdviceId
-        => $"{_inputId}-advice";
+        => $"{_id}-advice";
 
     // An explicit attribute overwrites one of the same name from AdditionalAttributes, so a
     // caller's own description has to be carried through rather than dropped.

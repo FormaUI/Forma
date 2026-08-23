@@ -2,12 +2,12 @@
 @typeparam TValue where TValue : struct, System.Numerics.INumber<TValue>
 @inherits InputBase<TValue>
 
-<FormaField Label="@Label" TargetId="@_inputId" LabelMode="FieldLabelMode.Above">
+<FormaField Label="@Label" TargetId="@_id" LabelMode="FieldLabelMode.Above">
     <ChildContent>
         @* Sits on the label's row, so the reading stays beside the name it belongs to. *@
         <span class="forma-slider-value" aria-hidden="true"><bdi dir="ltr">@DisplayValue</bdi></span>
         <input @attributes="AdditionalAttributes"
-               id="@_inputId"
+               id="@_id"
                type="range"
                class="forma-slider @CssClass"
                min="@FormatInvariant(Min)"

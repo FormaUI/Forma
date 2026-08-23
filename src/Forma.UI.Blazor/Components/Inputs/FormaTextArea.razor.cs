@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Components.Forms;
 /// <summary>A multi-line text field carrying the same chrome as FormaInput.</summary>
 public sealed partial class FormaTextArea : InputBase<string?>
 {
-    private readonly string _inputId = $"fld-{Guid.NewGuid():N}";
+    private readonly string _id = $"fld-{Guid.NewGuid():N}";
 
     [Inject] private IStringLocale<FormaTextArea> L { get; set; } = default!;
 
@@ -31,7 +31,7 @@ public sealed partial class FormaTextArea : InputBase<string?>
     [Parameter] public bool ShowCharacterCount { get; set; }
 
     private string CountId
-        => $"{_inputId}-count";
+        => $"{_id}-count";
 
     // UTF-16 code units, which is what the browser's own maxlength counts.
     private int CharacterCount

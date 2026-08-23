@@ -72,21 +72,21 @@
                     class="forma-explorer-view-button @(ViewMode == ExplorerViewMode.Thumbnails ? "is-active" : "")"
                     aria-label="@L["Thumbnails"]"
                     aria-pressed="@(ViewMode == ExplorerViewMode.Thumbnails ? "true" : "false")"
-                    @onclick="() => OnViewModeChanged.InvokeAsync(ExplorerViewMode.Thumbnails)">
+                    @onclick="() => ViewModeChanged.InvokeAsync(ExplorerViewMode.Thumbnails)">
                 <FormaGlyph Name="Glyph.BorderAll" />
             </button>
             <button type="button"
                     class="forma-explorer-view-button @(ViewMode == ExplorerViewMode.Details ? "is-active" : "")"
                     aria-label="@L["Details"]"
                     aria-pressed="@(ViewMode == ExplorerViewMode.Details ? "true" : "false")"
-                    @onclick="() => OnViewModeChanged.InvokeAsync(ExplorerViewMode.Details)">
+                    @onclick="() => ViewModeChanged.InvokeAsync(ExplorerViewMode.Details)">
                 <FormaGlyph Name="Glyph.TableList" />
             </button>
             <button type="button"
                     class="forma-explorer-view-button @(ViewMode == ExplorerViewMode.List ? "is-active" : "")"
                     aria-label="@L["List"]"
                     aria-pressed="@(ViewMode == ExplorerViewMode.List ? "true" : "false")"
-                    @onclick="() => OnViewModeChanged.InvokeAsync(ExplorerViewMode.List)">
+                    @onclick="() => ViewModeChanged.InvokeAsync(ExplorerViewMode.List)">
                 <FormaGlyph Name="Glyph.List" />
             </button>
         </div>
@@ -106,7 +106,7 @@
                     {
                         <FormaDropDownMenuItem IsSelected="@(SortField == field)"
                                                data-sort-field="@field"
-                                               OnClick="() => OnSortFieldChanged.InvokeAsync(field)">
+                                               OnClick="() => SortFieldChanged.InvokeAsync(field)">
                             <span>@SortFieldLabel(field)</span>
                         </FormaDropDownMenuItem>
                     }
@@ -117,7 +117,7 @@
                     {
                         <FormaDropDownMenuItem IsSelected="@(SortDirection == direction)"
                                                data-sort-direction="@direction"
-                                               OnClick="() => OnSortDirectionChanged.InvokeAsync(direction)">
+                                               OnClick="() => SortDirectionChanged.InvokeAsync(direction)">
                             <FormaGlyph Name="@GlyphFor(direction)" />
                             <span>@DirectionLabel(direction)</span>
                         </FormaDropDownMenuItem>

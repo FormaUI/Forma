@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Components.Forms;
 /// <summary>A bounded numeric input rendered as a native range slider, with its current value shown beside the label.</summary>
 public sealed partial class FormaSlider<TValue> : InputBase<TValue> where TValue : struct, INumber<TValue>
 {
-    private readonly string _inputId = $"fld-{Guid.NewGuid():N}";
+    private readonly string _id = $"fld-{Guid.NewGuid():N}";
 
     /// <summary>The label identifying the slider.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;

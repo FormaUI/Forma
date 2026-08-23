@@ -28,16 +28,16 @@ public sealed partial class FormaExplorerToolbar : ComponentBase
     [Parameter] public bool ShowNewFolder { get; set; } = true;
 
     /// <summary>Raised when the sort direction changes.</summary>
-    [Parameter] public EventCallback<ExplorerSortDirection> OnSortDirectionChanged { get; set; }
+    [Parameter] public EventCallback<ExplorerSortDirection> SortDirectionChanged { get; set; }
 
     /// <summary>Raised when the sort field changes.</summary>
-    [Parameter] public EventCallback<ExplorerSortField> OnSortFieldChanged { get; set; }
+    [Parameter] public EventCallback<ExplorerSortField> SortFieldChanged { get; set; }
 
     /// <summary>Raised when the upload panel is toggled.</summary>
     [Parameter] public EventCallback OnToggleUpload { get; set; }
 
     /// <summary>Raised when the active view mode changes.</summary>
-    [Parameter] public EventCallback<ExplorerViewMode> OnViewModeChanged { get; set; }
+    [Parameter] public EventCallback<ExplorerViewMode> ViewModeChanged { get; set; }
 
     /// <summary>Which operations the toolbar offers.</summary>
     [Parameter] public FormaExplorerFileOptions FileOptions { get; set; } = FormaExplorerFileOptions.Default;

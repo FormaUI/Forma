@@ -248,7 +248,7 @@ These components form the shell of a page. Build first.
 |---|---|
 | **Old pattern** | jQuery Tools Tabs: `<ul class="tabs"><li>` + `<div class="panes"><div class="panc">`. Click tab → show corresponding pane |
 | **Used in** | page editor (5 tabs), product editor (7 tabs), settings (5 tabs), store-settings (7 tabs), design (5 tabs) |
-| **Parameters** | `RenderFragment ChildContent` containing `FormaTab` children, `string? ActiveId` and `EventCallback<string> ActiveIdChanged` for caller-controlled selection, `string? Label`. Each `FormaTab` has `string Title` (required, validated), `Glyph? Icon` (drawn by `FormaGlyph`), `string? Id` (generated when omitted), `RenderFragment ChildContent` |
+| **Parameters** | `RenderFragment ChildContent` containing `FormaTab` children, `string? ActiveTabId` and `EventCallback<string> ActiveTabIdChanged` for caller-controlled selection, `string? Label`. Each `FormaTab` has `string Title` (required, validated), `Glyph? Icon` (drawn by `FormaGlyph`), `string? TabId` (generated when omitted), `RenderFragment ChildContent` |
 | **Blazor approach** | Interactive component. `FormaTabs` provides `CascadingValue` of itself; `FormaTab` children register/unregister via `CascadingParameter`. WAI-ARIA `tablist`/`tab`/`tabpanel` roles, `aria-selected`, `aria-controls`. Show/hide panes with CSS `::deep`. No JS needed. Code-behind in `.razor.cs` |
 
 ### 4. `FormaModal` ✅

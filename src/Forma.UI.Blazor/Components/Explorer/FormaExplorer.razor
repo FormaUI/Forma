@@ -38,11 +38,11 @@
                          OnDelete="() => OpenDeleteDialog()"
                          OnFolderCreate="() => OpenFolderDialogAsync(CurrentFolder)"
                          ShowNewFolder="@(!ShowsSidebar)"
-                         OnSortDirectionChanged="HandleSortDirectionChangedAsync"
-                         OnSortFieldChanged="HandleSortFieldChangedAsync"
+                         SortDirectionChanged="HandleSortDirectionChangedAsync"
+                         SortFieldChanged="HandleSortFieldChangedAsync"
                          OnToggleUpload="ToggleUpload"
                          OnToggleSelectMode="ToggleSelectModeAsync"
-                         OnViewModeChanged="HandleViewModeChangedAsync" />
+                         ViewModeChanged="HandleViewModeChangedAsync" />
 </FormaCommandArea>
 
     <!-- Refusal notice; the region stays in the DOM so a message inserted into it is announced -->
