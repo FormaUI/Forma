@@ -461,8 +461,23 @@ Every component must behave and look the same in both directions—mirrored, not
 - Do keep the file's name and folder in step with the type's, since the resource is resolved from the type's full name and the JSON's path must match it.
 - Do leave caller-supplied text such as `Title`, `Label`, and `ConfirmText` for the host to localize.
 - Do format dates and numbers with `CultureInfo.CurrentCulture` and use `TextInfo.IsRightToLeft` when direction changes behaviour.
+- Do use American English spelling for `en` localization.
 - Don't hardcode user-facing component strings.
 - Don't localize text supplied by the caller a second time inside the library.
+
+### Interpolation
+
+- Do pass localization interpolation values positionally; never bind localization holes to C# variable names.
+- Do treat hole names as part of the localized message, chosen for readability and meaning rather than to mirror identifiers in code.
+- Do name every localization hole in PascalCase.
+- Do choose hole names that make the message read naturally to translators.
+- Don't rename a localization hole merely because the corresponding variable, property, or parameter was renamed.
+
+For example:
+
+```csharp
+L["The {Amount} of {Files}", amount, files]
+```
 
 ### Capitalization
 
@@ -470,8 +485,8 @@ A string is a **label** when it names a thing the user acts on or reads as a hea
 
 - Do write labels in Title Case: `New Folder`, `Sort Ascending`, `Select an Option`, `All Media`.
 - Do capitalize the first and last word of a label, plus every noun, verb, adjective, adverb, and pronoun between them.
-- Do leave articles, coordinating conjunctions, and prepositions lowercase inside a label, so `Go to Page` and `Folders in {name}` keep their connectives down.
-- Do write prose in sentence case and punctuate it normally: `Drop files here or click to browse`, `"{name}" isn't an accepted file type.`
+- Do leave articles, coordinating conjunctions, and prepositions lowercase inside a label, so `Go to Page` and `Folders in {Folder}` keep their connectives down.
+- Do write prose in sentence case and punctuate it normally: `Drop files here or click to browse`, `"{Name}" isn't an accepted file type.`
 - Do apply the identical rule to every Latin-script language, capitalizing the same word positions the English label does: `All Media` is `Todos los Medios`, never `Todos Los Medios`, and `Sort By` is `Ordenar Por`.
 - Do leave a script without letter case alone, such as Hebrew.
 - Do treat Title Case as Forma's own typographic style rather than any language's orthographic standard: English prose would write `Select an option`, and most Latin-script languages sentence-case titles by convention, yet every label is Title Case because it reads better and keeps one rule across the product.
