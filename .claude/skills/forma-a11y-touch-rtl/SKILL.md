@@ -41,6 +41,7 @@ Opacity changes lightness while preserving shape, so it is too weak for anything
 
 - Do assert roles, `aria-*`, rendered state marks, and decorative hiding in bUnit alongside behavioural tests.
 - Do verify stylesheet-dependent states in a browser because bUnit cannot see CSS.
+- Do run that browser **visible** rather than headless, so the maintainer can watch what is being exercised.
 - Do inspect computed styles and screenshots in `he` and `en` or `es-419`.
 - Do desaturate or squint at the component; if two states become identical, add a second channel.
 - Don't consider accessibility complete based only on markup tests.

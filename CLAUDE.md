@@ -264,6 +264,8 @@ dotnet build Forma.slnx -p:GenerateDocumentationFile=true --no-incremental -v:q 
 - Do stop a running Showcase process before rebuilding, because it holds its `bin` DLLs open and the copy fails with `MSB3027`.
 - Do confirm the rebuild actually reached the app before drawing any conclusion from the browser: the Showcase runs a compiled binary with no hot reload, so verify the build succeeded and that `src/Forma.UI.Blazor.Showcase/bin/Debug/net11.0/Forma.UI.Blazor.dll` is newer than the sources you changed. A stale process silently serves the old code and every experiment against it is void.
 - Do inspect the component in all three cultures through the Showcase.
+- Do drive end-to-end browser checks in a **visible** window rather than a headless one, so the maintainer can watch what is actually being exercised; a headless run reports only what its script thought to assert, so a mis-scoped page and a genuine pass look alike.
+- Do slow such a run enough to be followed, and hold the final state on screen before closing.
 - Don't pipe the Showcase command's output into `Select-String`, `Select-Object`, or another filter; closing the pipeline terminates the server.
 - Don't present a component as complete while build, tests, accessibility, touch, or direction checks remain unresolved.
 
