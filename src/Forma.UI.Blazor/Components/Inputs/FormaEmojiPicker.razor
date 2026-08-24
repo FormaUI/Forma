@@ -1,0 +1,67 @@
+@namespace Forma.UI.Blazor.Components.Inputs
+
+<div class="@CssClass" id="@Id" @attributes="AdditionalAttributes">
+    @if (ShowGroupTabs)
+    {
+        <div class="forma-emoji-picker-tabs" role="tablist" aria-label="@L["Emoji Categories"]" aria-orientation="horizontal">
+            @foreach (var tab in Tabs)
+            {
+                var isActive = !IsSearching && tab.Id == ActiveGroupId;
+
+                <button @key="tab.Id"
+                        type="button"
+                        role="tab"
+                        id="@TabElementId(tab.Id)"
+                        class="forma-emoji-picker-tab"
+                        title="@tab.Title"
+                        aria-label="@tab.Title"
+                        aria-selected="@isActive.ToString().ToLowerInvariant()"
+                        aria-controls="@PanelElementId"
+                        tabindex="@(isActive ? "0" : "-1")"
+                        @onclick="() => SelectGroupAsync(tab.Id)"
+                        @onkeydown="OnTabKeyDownAsync">
+                    <FormaGlyph Name="tab.Icon" />
+                </button>
+            }
+        </div>
+    }
+
+    @if (ShowSearch)
+    {
+        <div class="forma-emoji-picker-search">
+            <FormaSearchBox Value="@_query" ValueChanged="OnQueryChangedAsync" Placeholder="@L["Search Emoji"]" DebounceDelay="SearchDebounce" />
+        </div>
+    }
+
+    <div class="forma-emoji-picker-panel"
+         id="@PanelElementId"
+         role="tabpanel"
+         aria-labelledby="@(IsSearching || !ShowGroupTabs ? null : TabElementId(ActiveGroupId))">
+
+        @if (Visible.Count == 0)
+        {
+            <p class="forma-emoji-picker-empty">@L["No emoji match \"{Query}\".", _query]</p>
+        }
+        else
+        {
+            <h3 class="forma-emoji-picker-heading">@HeadingText</h3>
+            <div class="forma-emoji-picker-grid" role="group" aria-label="@HeadingText">
+                @foreach (var emoji in Visible)
+                {
+                    <button @key="emoji.Character"
+                            type="button"
+                            class="forma-emoji-picker-emoji"
+                            title="@emoji.Name"
+                            aria-label="@emoji.Name"
+                            @onclick="() => SelectAsync(emoji)">
+                        <svg class="forma-emoji-picker-art" viewBox="0 0 36 36" aria-hidden="true" focusable="false">
+                            <use href="@SpriteHref(emoji)" />
+                        </svg>
+                    </button>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="forma-emoji-picker-announcer" role="status">@_announcement</div>
+</div>

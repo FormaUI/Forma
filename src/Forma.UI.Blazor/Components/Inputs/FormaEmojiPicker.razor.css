@@ -1,0 +1,149 @@
+/* FormaEmojiPicker — a tab strip over a scrolling emoji grid, built from CSS grid with no script. */
+
+.forma-emoji-picker {
+    display: flex;
+    flex-direction: column;
+    inline-size: min(22rem, calc(100vw - 1rem));
+    border: 1px solid var(--forma-emoji-picker-border-color, var(--border-color));
+    border-radius: var(--radius-md);
+    background: var(--forma-emoji-picker-background-color, var(--surface-color));
+    overflow: hidden;
+}
+
+.forma-emoji-picker-tabs {
+    display: flex;
+    gap: 0.125rem;
+    padding: 0.25rem;
+    border-block-end: 1px solid var(--forma-emoji-picker-border-color, var(--border-color));
+    overflow-x: auto;
+}
+
+.forma-emoji-picker-tab {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: 1.75rem;
+    min-block-size: 1.75rem;
+    padding: 0.25rem;
+    border: none;
+    border-block-end: 2px solid transparent;
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--forma-emoji-picker-tab-color, var(--muted-color));
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+/* The underline keeps the selected tab legible with colour removed. */
+.forma-emoji-picker-tab[aria-selected="true"] {
+    border-block-end-color: var(--forma-emoji-picker-tab-active-color, var(--main-color));
+    color: var(--forma-emoji-picker-tab-active-color, var(--main-color));
+}
+
+.forma-emoji-picker-tab:focus-visible {
+    outline: 2px solid var(--focus-color);
+    outline-offset: -2px;
+}
+
+.forma-emoji-picker-search {
+    padding: 0.375rem;
+}
+
+.forma-emoji-picker-panel {
+    padding-inline: 0.375rem;
+    padding-block-end: 0.375rem;
+    overflow-y: auto;
+    max-block-size: 17rem;
+}
+
+.forma-emoji-picker-heading {
+    position: sticky;
+    inset-block-start: 0;
+    margin: 0;
+    padding-block: 0.375rem 0.25rem;
+    background: var(--forma-emoji-picker-background-color, var(--surface-color));
+    color: var(--forma-emoji-picker-heading-color, var(--muted-color));
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    text-align: start;
+}
+
+.forma-emoji-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(2rem, 1fr));
+    gap: 0.125rem;
+}
+
+.forma-emoji-picker-emoji {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: 2rem;
+    min-block-size: 2rem;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: none;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.forma-emoji-picker-art {
+    inline-size: 1.5rem;
+    block-size: 1.5rem;
+    pointer-events: none;
+}
+
+.forma-emoji-picker-emoji:focus-visible {
+    outline: 2px solid var(--focus-color);
+    outline-offset: -2px;
+}
+
+.forma-emoji-picker-empty {
+    margin: 0;
+    padding-block: 1.5rem;
+    color: var(--forma-emoji-picker-heading-color, var(--muted-color));
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+.forma-emoji-picker-announcer {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+@media (hover: hover) {
+    .forma-emoji-picker-tab:hover {
+        background: var(--forma-emoji-picker-hover-background-color, var(--hover-color));
+    }
+
+    .forma-emoji-picker-emoji:hover {
+        background: var(--forma-emoji-picker-hover-background-color, var(--hover-color));
+    }
+}
+
+@media (pointer: coarse) {
+    .forma-emoji-picker-tab {
+        min-inline-size: 2.75rem;
+        min-block-size: 2.75rem;
+    }
+
+    .forma-emoji-picker-emoji {
+        min-inline-size: 2.75rem;
+        min-block-size: 2.75rem;
+    }
+
+    .forma-emoji-picker-grid {
+        grid-template-columns: repeat(auto-fill, minmax(2.75rem, 1fr));
+    }
+}

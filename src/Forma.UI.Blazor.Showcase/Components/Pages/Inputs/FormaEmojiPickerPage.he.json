@@ -1,0 +1,18 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "A categorized emoji palette over the full Unicode set, with a tab per category, keyword search, and recently used entries. The emoji themselves are drawn by the reader's own platform font.": "לוח אמוג'י מסודר בקטגוריות על פני מלוא ערכת Unicode, עם לשונית לכל קטגוריה, חיפוש לפי מילות מפתח ופריטים בשימוש לאחרונה. את האמוג'י עצמם מציירת גופן הפלטפורמה של הקורא.",
+  "Default": "ברירת מחדל",
+  "Every category is a tab, and every emoji carries its name as an accessible label. Type in the search box to match against names and keywords; search \"zzzz\" to see the no-match state.": "כל קטגוריה היא לשונית, וכל אמוג'י נושא את שמו כתווית נגישה. הקלידו בתיבת החיפוש כדי להתאים לשמות ולמילות מפתח; חפשו \"zzzz\" כדי לראות את מצב חוסר ההתאמה.",
+  "Nothing chosen yet.": "עדיין לא נבחר דבר.",
+  "Chose {Emoji}.": "נבחר {Emoji}.",
+  "Recently Used": "בשימוש לאחרונה",
+  "A host that persists the recent list gets an extra leading tab. Choose an emoji here and it moves to the front.": "מארח ששומר את רשימת האחרונים מקבל לשונית נוספת בראש. בחרו כאן אמוג'י והוא יעבור לראש הרשימה.",
+  "Recent: {Emoji}": "אחרונים: {Emoji}",
+  "Recent Limit": "מגבלת אחרונים",
+  "MaxRecent caps how many are kept. This one keeps three.": "‏MaxRecent מגביל כמה נשמרים. זה שומר שלושה.",
+  "Without Search": "ללא חיפוש",
+  "Without Category Tabs": "ללא לשוניות קטגוריה",
+  "Only the first category is reachable, so this suits a picker narrowed to one category.": "רק הקטגוריה הראשונה נגישה, ולכן זה מתאים לבורר המצומצם לקטגוריה אחת.",
+  "Catalogue": "קטלוג",
+  "{Count} emoji across {Groups} categories, from Unicode {Version}.": "{Count} אמוג'י ב-{Groups} קטגוריות, מ-Unicode {Version}."
+}

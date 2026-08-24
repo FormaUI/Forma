@@ -1,0 +1,1048 @@
+{
+  "version": "15.1",
+  "group": "activities",
+  "emoji": [
+    {
+      "c": "🎃",
+      "s": "1f383",
+      "n": "jack-o-lantern",
+      "k": [
+        "celebration",
+        "halloween",
+        "jack",
+        "jack-o-lantern",
+        "lantern",
+        "pumpkin"
+      ]
+    },
+    {
+      "c": "🎄",
+      "s": "1f384",
+      "n": "Christmas tree",
+      "k": [
+        "celebration",
+        "Christmas",
+        "tree"
+      ]
+    },
+    {
+      "c": "🎆",
+      "s": "1f386",
+      "n": "fireworks",
+      "k": [
+        "boom",
+        "celebration",
+        "entertainment",
+        "fireworks",
+        "yolo"
+      ]
+    },
+    {
+      "c": "🎇",
+      "s": "1f387",
+      "n": "sparkler",
+      "k": [
+        "boom",
+        "celebration",
+        "fireworks",
+        "sparkle",
+        "sparkler"
+      ]
+    },
+    {
+      "c": "🧨",
+      "s": "1f9e8",
+      "n": "firecracker",
+      "k": [
+        "dynamite",
+        "explosive",
+        "fire",
+        "firecracker",
+        "fireworks",
+        "light",
+        "pop",
+        "popping",
+        "spark"
+      ]
+    },
+    {
+      "c": "✨",
+      "s": "2728",
+      "n": "sparkles",
+      "k": [
+        "*",
+        "magic",
+        "sparkle",
+        "sparkles",
+        "star"
+      ]
+    },
+    {
+      "c": "🎈",
+      "s": "1f388",
+      "n": "balloon",
+      "k": [
+        "balloon",
+        "birthday",
+        "celebrate",
+        "celebration"
+      ]
+    },
+    {
+      "c": "🎉",
+      "s": "1f389",
+      "n": "party popper",
+      "k": [
+        "awesome",
+        "birthday",
+        "celebrate",
+        "celebration",
+        "excited",
+        "hooray",
+        "party",
+        "popper",
+        "tada",
+        "woohoo"
+      ]
+    },
+    {
+      "c": "🎊",
+      "s": "1f38a",
+      "n": "confetti ball",
+      "k": [
+        "ball",
+        "celebrate",
+        "celebration",
+        "confetti",
+        "party",
+        "woohoo"
+      ]
+    },
+    {
+      "c": "🎋",
+      "s": "1f38b",
+      "n": "tanabata tree",
+      "k": [
+        "banner",
+        "celebration",
+        "Japanese",
+        "tanabata",
+        "tree"
+      ]
+    },
+    {
+      "c": "🎍",
+      "s": "1f38d",
+      "n": "pine decoration",
+      "k": [
+        "bamboo",
+        "celebration",
+        "decoration",
+        "Japanese",
+        "pine",
+        "plant"
+      ]
+    },
+    {
+      "c": "🎎",
+      "s": "1f38e",
+      "n": "Japanese dolls",
+      "k": [
+        "celebration",
+        "doll",
+        "dolls",
+        "festival",
+        "Japanese"
+      ]
+    },
+    {
+      "c": "🎏",
+      "s": "1f38f",
+      "n": "carp streamer",
+      "k": [
+        "carp",
+        "celebration",
+        "streamer"
+      ]
+    },
+    {
+      "c": "🎐",
+      "s": "1f390",
+      "n": "wind chime",
+      "k": [
+        "bell",
+        "celebration",
+        "chime",
+        "wind"
+      ]
+    },
+    {
+      "c": "🎑",
+      "s": "1f391",
+      "n": "moon viewing ceremony",
+      "k": [
+        "celebration",
+        "ceremony",
+        "moon",
+        "viewing"
+      ]
+    },
+    {
+      "c": "🧧",
+      "s": "1f9e7",
+      "n": "red envelope",
+      "k": [
+        "envelope",
+        "gift",
+        "good",
+        "hóngbāo",
+        "lai",
+        "luck",
+        "money",
+        "red",
+        "see"
+      ]
+    },
+    {
+      "c": "🎀",
+      "s": "1f380",
+      "n": "ribbon",
+      "k": [
+        "celebration",
+        "ribbon"
+      ]
+    },
+    {
+      "c": "🎁",
+      "s": "1f381",
+      "n": "wrapped gift",
+      "k": [
+        "birthday",
+        "bow",
+        "box",
+        "celebration",
+        "christmas",
+        "gift",
+        "present",
+        "surprise",
+        "wrapped"
+      ]
+    },
+    {
+      "c": "🎗️",
+      "s": "1f397",
+      "n": "reminder ribbon",
+      "k": [
+        "celebration",
+        "reminder",
+        "ribbon"
+      ]
+    },
+    {
+      "c": "🎟️",
+      "s": "1f39f",
+      "n": "admission tickets",
+      "k": [
+        "admission",
+        "ticket",
+        "tickets"
+      ]
+    },
+    {
+      "c": "🎫",
+      "s": "1f3ab",
+      "n": "ticket",
+      "k": [
+        "admission",
+        "stub",
+        "ticket"
+      ]
+    },
+    {
+      "c": "🎖️",
+      "s": "1f396",
+      "n": "military medal",
+      "k": [
+        "award",
+        "celebration",
+        "medal",
+        "military"
+      ]
+    },
+    {
+      "c": "🏆",
+      "s": "1f3c6",
+      "n": "trophy",
+      "k": [
+        "champion",
+        "champs",
+        "prize",
+        "slay",
+        "sport",
+        "trophy",
+        "victory",
+        "win",
+        "winning"
+      ]
+    },
+    {
+      "c": "🏅",
+      "s": "1f3c5",
+      "n": "sports medal",
+      "k": [
+        "award",
+        "gold",
+        "medal",
+        "sports",
+        "winner"
+      ]
+    },
+    {
+      "c": "🥇",
+      "s": "1f947",
+      "n": "1st place medal",
+      "k": [
+        "1st",
+        "first",
+        "gold",
+        "medal",
+        "place"
+      ]
+    },
+    {
+      "c": "🥈",
+      "s": "1f948",
+      "n": "2nd place medal",
+      "k": [
+        "2nd",
+        "medal",
+        "place",
+        "second",
+        "silver"
+      ]
+    },
+    {
+      "c": "🥉",
+      "s": "1f949",
+      "n": "3rd place medal",
+      "k": [
+        "3rd",
+        "bronze",
+        "medal",
+        "place",
+        "third"
+      ]
+    },
+    {
+      "c": "⚽",
+      "s": "26bd",
+      "n": "soccer ball",
+      "k": [
+        "ball",
+        "football",
+        "futbol",
+        "soccer",
+        "sport"
+      ]
+    },
+    {
+      "c": "⚾",
+      "s": "26be",
+      "n": "baseball",
+      "k": [
+        "ball",
+        "baseball",
+        "sport"
+      ]
+    },
+    {
+      "c": "🥎",
+      "s": "1f94e",
+      "n": "softball",
+      "k": [
+        "ball",
+        "glove",
+        "softball",
+        "sports",
+        "underarm"
+      ]
+    },
+    {
+      "c": "🏀",
+      "s": "1f3c0",
+      "n": "basketball",
+      "k": [
+        "ball",
+        "basketball",
+        "hoop",
+        "sport"
+      ]
+    },
+    {
+      "c": "🏐",
+      "s": "1f3d0",
+      "n": "volleyball",
+      "k": [
+        "ball",
+        "game",
+        "volleyball"
+      ]
+    },
+    {
+      "c": "🏈",
+      "s": "1f3c8",
+      "n": "american football",
+      "k": [
+        "american",
+        "ball",
+        "bowl",
+        "football",
+        "sport",
+        "super"
+      ]
+    },
+    {
+      "c": "🏉",
+      "s": "1f3c9",
+      "n": "rugby football",
+      "k": [
+        "ball",
+        "football",
+        "rugby",
+        "sport"
+      ]
+    },
+    {
+      "c": "🎾",
+      "s": "1f3be",
+      "n": "tennis",
+      "k": [
+        "ball",
+        "racquet",
+        "sport",
+        "tennis"
+      ]
+    },
+    {
+      "c": "🥏",
+      "s": "1f94f",
+      "n": "flying disc",
+      "k": [
+        "disc",
+        "flying",
+        "ultimate"
+      ]
+    },
+    {
+      "c": "🎳",
+      "s": "1f3b3",
+      "n": "bowling",
+      "k": [
+        "ball",
+        "bowling",
+        "game",
+        "sport",
+        "strike"
+      ]
+    },
+    {
+      "c": "🏏",
+      "s": "1f3cf",
+      "n": "cricket game",
+      "k": [
+        "ball",
+        "bat",
+        "cricket",
+        "game"
+      ]
+    },
+    {
+      "c": "🏑",
+      "s": "1f3d1",
+      "n": "field hockey",
+      "k": [
+        "ball",
+        "field",
+        "game",
+        "hockey",
+        "stick"
+      ]
+    },
+    {
+      "c": "🏒",
+      "s": "1f3d2",
+      "n": "ice hockey",
+      "k": [
+        "game",
+        "hockey",
+        "ice",
+        "puck",
+        "stick"
+      ]
+    },
+    {
+      "c": "🥍",
+      "s": "1f94d",
+      "n": "lacrosse",
+      "k": [
+        "ball",
+        "goal",
+        "lacrosse",
+        "sports",
+        "stick"
+      ]
+    },
+    {
+      "c": "🏓",
+      "s": "1f3d3",
+      "n": "ping pong",
+      "k": [
+        "ball",
+        "bat",
+        "game",
+        "paddle",
+        "ping",
+        "pingpong",
+        "pong",
+        "table",
+        "tennis"
+      ]
+    },
+    {
+      "c": "🏸",
+      "s": "1f3f8",
+      "n": "badminton",
+      "k": [
+        "badminton",
+        "birdie",
+        "game",
+        "racquet",
+        "shuttlecock"
+      ]
+    },
+    {
+      "c": "🥊",
+      "s": "1f94a",
+      "n": "boxing glove",
+      "k": [
+        "boxing",
+        "glove"
+      ]
+    },
+    {
+      "c": "🥋",
+      "s": "1f94b",
+      "n": "martial arts uniform",
+      "k": [
+        "arts",
+        "judo",
+        "karate",
+        "martial",
+        "taekwondo",
+        "uniform"
+      ]
+    },
+    {
+      "c": "🥅",
+      "s": "1f945",
+      "n": "goal net",
+      "k": [
+        "goal",
+        "net"
+      ]
+    },
+    {
+      "c": "⛳",
+      "s": "26f3",
+      "n": "flag in hole",
+      "k": [
+        "flag",
+        "golf",
+        "hole",
+        "sport"
+      ]
+    },
+    {
+      "c": "⛸️",
+      "s": "26f8",
+      "n": "ice skate",
+      "k": [
+        "ice",
+        "skate",
+        "skating"
+      ]
+    },
+    {
+      "c": "🎣",
+      "s": "1f3a3",
+      "n": "fishing pole",
+      "k": [
+        "entertainment",
+        "fish",
+        "fishing",
+        "pole",
+        "sport"
+      ]
+    },
+    {
+      "c": "🤿",
+      "s": "1f93f",
+      "n": "diving mask",
+      "k": [
+        "diving",
+        "mask",
+        "scuba",
+        "snorkeling"
+      ]
+    },
+    {
+      "c": "🎽",
+      "s": "1f3bd",
+      "n": "running shirt",
+      "k": [
+        "athletics",
+        "running",
+        "sash",
+        "shirt"
+      ]
+    },
+    {
+      "c": "🎿",
+      "s": "1f3bf",
+      "n": "skis",
+      "k": [
+        "ski",
+        "skis",
+        "snow",
+        "sport"
+      ]
+    },
+    {
+      "c": "🛷",
+      "s": "1f6f7",
+      "n": "sled",
+      "k": [
+        "luge",
+        "sled",
+        "sledge",
+        "sleigh",
+        "snow",
+        "toboggan"
+      ]
+    },
+    {
+      "c": "🥌",
+      "s": "1f94c",
+      "n": "curling stone",
+      "k": [
+        "curling",
+        "game",
+        "rock",
+        "stone"
+      ]
+    },
+    {
+      "c": "🎯",
+      "s": "1f3af",
+      "n": "bullseye",
+      "k": [
+        "bull",
+        "bullseye",
+        "dart",
+        "direct",
+        "entertainment",
+        "game",
+        "hit",
+        "target"
+      ]
+    },
+    {
+      "c": "🪀",
+      "s": "1fa80",
+      "n": "yo-yo",
+      "k": [
+        "fluctuate",
+        "toy",
+        "yo-yo"
+      ]
+    },
+    {
+      "c": "🪁",
+      "s": "1fa81",
+      "n": "kite",
+      "k": [
+        "fly",
+        "kite",
+        "soar"
+      ]
+    },
+    {
+      "c": "🔫",
+      "s": "1f52b",
+      "n": "water pistol",
+      "k": [
+        "gun",
+        "handgun",
+        "pistol",
+        "revolver",
+        "tool",
+        "water",
+        "weapon"
+      ]
+    },
+    {
+      "c": "🎱",
+      "s": "1f3b1",
+      "n": "pool 8 ball",
+      "k": [
+        "8",
+        "8ball",
+        "ball",
+        "billiard",
+        "eight",
+        "game",
+        "pool"
+      ]
+    },
+    {
+      "c": "🔮",
+      "s": "1f52e",
+      "n": "crystal ball",
+      "k": [
+        "ball",
+        "crystal",
+        "fairy",
+        "fairytale",
+        "fantasy",
+        "fortune",
+        "future",
+        "magic",
+        "tale",
+        "tool"
+      ]
+    },
+    {
+      "c": "🪄",
+      "s": "1fa84",
+      "n": "magic wand",
+      "k": [
+        "magic",
+        "magician",
+        "wand",
+        "witch",
+        "wizard"
+      ]
+    },
+    {
+      "c": "🎮",
+      "s": "1f3ae",
+      "n": "video game",
+      "k": [
+        "controller",
+        "entertainment",
+        "game",
+        "video"
+      ]
+    },
+    {
+      "c": "🕹️",
+      "s": "1f579",
+      "n": "joystick",
+      "k": [
+        "game",
+        "joystick",
+        "video",
+        "videogame"
+      ]
+    },
+    {
+      "c": "🎰",
+      "s": "1f3b0",
+      "n": "slot machine",
+      "k": [
+        "casino",
+        "gamble",
+        "gambling",
+        "game",
+        "machine",
+        "slot",
+        "slots"
+      ]
+    },
+    {
+      "c": "🎲",
+      "s": "1f3b2",
+      "n": "game die",
+      "k": [
+        "dice",
+        "die",
+        "entertainment",
+        "game"
+      ]
+    },
+    {
+      "c": "🧩",
+      "s": "1f9e9",
+      "n": "puzzle piece",
+      "k": [
+        "clue",
+        "interlocking",
+        "jigsaw",
+        "piece",
+        "puzzle"
+      ]
+    },
+    {
+      "c": "🧸",
+      "s": "1f9f8",
+      "n": "teddy bear",
+      "k": [
+        "bear",
+        "plaything",
+        "plush",
+        "stuffed",
+        "teddy",
+        "toy"
+      ]
+    },
+    {
+      "c": "🪅",
+      "s": "1fa85",
+      "n": "piñata",
+      "k": [
+        "candy",
+        "celebrate",
+        "celebration",
+        "cinco",
+        "de",
+        "festive",
+        "mayo",
+        "party",
+        "pinada",
+        "pinata",
+        "piñata"
+      ]
+    },
+    {
+      "c": "🪩",
+      "s": "1faa9",
+      "n": "mirror ball",
+      "k": [
+        "ball",
+        "dance",
+        "disco",
+        "glitter",
+        "mirror",
+        "party"
+      ]
+    },
+    {
+      "c": "🪆",
+      "s": "1fa86",
+      "n": "nesting dolls",
+      "k": [
+        "babooshka",
+        "baboushka",
+        "babushka",
+        "doll",
+        "dolls",
+        "matryoshka",
+        "nesting",
+        "russia"
+      ]
+    },
+    {
+      "c": "♠️",
+      "s": "2660",
+      "n": "spade suit",
+      "k": [
+        "card",
+        "game",
+        "spade",
+        "suit"
+      ]
+    },
+    {
+      "c": "♥️",
+      "s": "2665",
+      "n": "heart suit",
+      "k": [
+        "card",
+        "emotion",
+        "game",
+        "heart",
+        "hearts",
+        "suit"
+      ]
+    },
+    {
+      "c": "♦️",
+      "s": "2666",
+      "n": "diamond suit",
+      "k": [
+        "card",
+        "diamond",
+        "game",
+        "suit"
+      ]
+    },
+    {
+      "c": "♣️",
+      "s": "2663",
+      "n": "club suit",
+      "k": [
+        "card",
+        "club",
+        "clubs",
+        "game",
+        "suit"
+      ]
+    },
+    {
+      "c": "♟️",
+      "s": "265f",
+      "n": "chess pawn",
+      "k": [
+        "chess",
+        "dupe",
+        "expendable",
+        "pawn"
+      ]
+    },
+    {
+      "c": "🃏",
+      "s": "1f0cf",
+      "n": "joker",
+      "k": [
+        "card",
+        "game",
+        "joker",
+        "wildcard"
+      ]
+    },
+    {
+      "c": "🀄",
+      "s": "1f004",
+      "n": "mahjong red dragon",
+      "k": [
+        "dragon",
+        "game",
+        "mahjong",
+        "red"
+      ]
+    },
+    {
+      "c": "🎴",
+      "s": "1f3b4",
+      "n": "flower playing cards",
+      "k": [
+        "card",
+        "cards",
+        "flower",
+        "game",
+        "Japanese",
+        "playing"
+      ]
+    },
+    {
+      "c": "🎭",
+      "s": "1f3ad",
+      "n": "performing arts",
+      "k": [
+        "actor",
+        "actress",
+        "art",
+        "arts",
+        "entertainment",
+        "mask",
+        "performing",
+        "theater",
+        "theatre",
+        "thespian"
+      ]
+    },
+    {
+      "c": "🖼️",
+      "s": "1f5bc",
+      "n": "framed picture",
+      "k": [
+        "art",
+        "frame",
+        "framed",
+        "museum",
+        "painting",
+        "picture"
+      ]
+    },
+    {
+      "c": "🎨",
+      "s": "1f3a8",
+      "n": "artist palette",
+      "k": [
+        "art",
+        "artist",
+        "artsy",
+        "arty",
+        "colorful",
+        "creative",
+        "entertainment",
+        "museum",
+        "painter",
+        "painting",
+        "palette"
+      ]
+    },
+    {
+      "c": "🧵",
+      "s": "1f9f5",
+      "n": "thread",
+      "k": [
+        "needle",
+        "sewing",
+        "spool",
+        "string",
+        "thread"
+      ]
+    },
+    {
+      "c": "🪡",
+      "s": "1faa1",
+      "n": "sewing needle",
+      "k": [
+        "embroidery",
+        "needle",
+        "sew",
+        "sewing",
+        "stitches",
+        "sutures",
+        "tailoring",
+        "thread"
+      ]
+    },
+    {
+      "c": "🧶",
+      "s": "1f9f6",
+      "n": "yarn",
+      "k": [
+        "ball",
+        "crochet",
+        "knit",
+        "yarn"
+      ]
+    },
+    {
+      "c": "🪢",
+      "s": "1faa2",
+      "n": "knot",
+      "k": [
+        "cord",
+        "knot",
+        "rope",
+        "tangled",
+        "tie",
+        "twine",
+        "twist"
+      ]
+    }
+  ]
+}

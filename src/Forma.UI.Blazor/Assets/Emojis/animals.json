@@ -1,0 +1,1882 @@
+{
+  "version": "15.1",
+  "group": "animals",
+  "emoji": [
+    {
+      "c": "🐵",
+      "s": "1f435",
+      "n": "monkey face",
+      "k": [
+        "animal",
+        "banana",
+        "face",
+        "monkey"
+      ]
+    },
+    {
+      "c": "🐒",
+      "s": "1f412",
+      "n": "monkey",
+      "k": [
+        "animal",
+        "banana",
+        "monkey"
+      ]
+    },
+    {
+      "c": "🦍",
+      "s": "1f98d",
+      "n": "gorilla",
+      "k": [
+        "animal",
+        "gorilla"
+      ]
+    },
+    {
+      "c": "🦧",
+      "s": "1f9a7",
+      "n": "orangutan",
+      "k": [
+        "animal",
+        "ape",
+        "monkey",
+        "orangutan"
+      ]
+    },
+    {
+      "c": "🐶",
+      "s": "1f436",
+      "n": "dog face",
+      "k": [
+        "adorbs",
+        "animal",
+        "dog",
+        "face",
+        "pet",
+        "puppies",
+        "puppy"
+      ]
+    },
+    {
+      "c": "🐕",
+      "s": "1f415",
+      "n": "dog",
+      "k": [
+        "animal",
+        "animals",
+        "dog",
+        "dogs",
+        "pet"
+      ]
+    },
+    {
+      "c": "🦮",
+      "s": "1f9ae",
+      "n": "guide dog",
+      "k": [
+        "accessibility",
+        "animal",
+        "blind",
+        "dog",
+        "guide"
+      ]
+    },
+    {
+      "c": "🐕‍🦺",
+      "s": "1f415-200d-1f9ba",
+      "n": "service dog",
+      "k": [
+        "accessibility",
+        "animal",
+        "assistance",
+        "dog",
+        "service"
+      ]
+    },
+    {
+      "c": "🐩",
+      "s": "1f429",
+      "n": "poodle",
+      "k": [
+        "animal",
+        "dog",
+        "fluffy",
+        "poodle"
+      ]
+    },
+    {
+      "c": "🐺",
+      "s": "1f43a",
+      "n": "wolf",
+      "k": [
+        "animal",
+        "face",
+        "wolf"
+      ]
+    },
+    {
+      "c": "🦊",
+      "s": "1f98a",
+      "n": "fox",
+      "k": [
+        "animal",
+        "face",
+        "fox"
+      ]
+    },
+    {
+      "c": "🦝",
+      "s": "1f99d",
+      "n": "raccoon",
+      "k": [
+        "animal",
+        "curious",
+        "raccoon",
+        "sly"
+      ]
+    },
+    {
+      "c": "🐱",
+      "s": "1f431",
+      "n": "cat face",
+      "k": [
+        "animal",
+        "cat",
+        "face",
+        "kitten",
+        "kitty",
+        "pet"
+      ]
+    },
+    {
+      "c": "🐈",
+      "s": "1f408",
+      "n": "cat",
+      "k": [
+        "animal",
+        "animals",
+        "cat",
+        "cats",
+        "kitten",
+        "pet"
+      ]
+    },
+    {
+      "c": "🐈‍⬛",
+      "s": "1f408-200d-2b1b",
+      "n": "black cat",
+      "k": [
+        "animal",
+        "black",
+        "cat",
+        "feline",
+        "halloween",
+        "meow",
+        "unlucky"
+      ]
+    },
+    {
+      "c": "🦁",
+      "s": "1f981",
+      "n": "lion",
+      "k": [
+        "alpha",
+        "animal",
+        "face",
+        "Leo",
+        "lion",
+        "mane",
+        "order",
+        "rawr",
+        "roar",
+        "safari",
+        "strong",
+        "zodiac"
+      ]
+    },
+    {
+      "c": "🐯",
+      "s": "1f42f",
+      "n": "tiger face",
+      "k": [
+        "animal",
+        "big",
+        "cat",
+        "face",
+        "predator",
+        "tiger"
+      ]
+    },
+    {
+      "c": "🐅",
+      "s": "1f405",
+      "n": "tiger",
+      "k": [
+        "animal",
+        "big",
+        "cat",
+        "predator",
+        "tiger",
+        "zoo"
+      ]
+    },
+    {
+      "c": "🐆",
+      "s": "1f406",
+      "n": "leopard",
+      "k": [
+        "animal",
+        "big",
+        "cat",
+        "leopard",
+        "predator",
+        "zoo"
+      ]
+    },
+    {
+      "c": "🐴",
+      "s": "1f434",
+      "n": "horse face",
+      "k": [
+        "animal",
+        "dressage",
+        "equine",
+        "face",
+        "farm",
+        "horse",
+        "horses"
+      ]
+    },
+    {
+      "c": "🫎",
+      "s": "1face",
+      "n": "moose",
+      "k": [
+        "alces",
+        "animal",
+        "antlers",
+        "elk",
+        "mammal",
+        "moose"
+      ]
+    },
+    {
+      "c": "🫏",
+      "s": "1facf",
+      "n": "donkey",
+      "k": [
+        "animal",
+        "ass",
+        "burro",
+        "donkey",
+        "hinny",
+        "mammal",
+        "mule",
+        "stubborn"
+      ]
+    },
+    {
+      "c": "🐎",
+      "s": "1f40e",
+      "n": "horse",
+      "k": [
+        "animal",
+        "equestrian",
+        "farm",
+        "horse",
+        "racehorse",
+        "racing"
+      ]
+    },
+    {
+      "c": "🦄",
+      "s": "1f984",
+      "n": "unicorn",
+      "k": [
+        "face",
+        "unicorn"
+      ]
+    },
+    {
+      "c": "🦓",
+      "s": "1f993",
+      "n": "zebra",
+      "k": [
+        "animal",
+        "stripe",
+        "zebra"
+      ]
+    },
+    {
+      "c": "🦌",
+      "s": "1f98c",
+      "n": "deer",
+      "k": [
+        "animal",
+        "deer"
+      ]
+    },
+    {
+      "c": "🦬",
+      "s": "1f9ac",
+      "n": "bison",
+      "k": [
+        "animal",
+        "bison",
+        "buffalo",
+        "herd",
+        "wisent"
+      ]
+    },
+    {
+      "c": "🐮",
+      "s": "1f42e",
+      "n": "cow face",
+      "k": [
+        "animal",
+        "cow",
+        "face",
+        "farm",
+        "milk",
+        "moo"
+      ]
+    },
+    {
+      "c": "🐂",
+      "s": "1f402",
+      "n": "ox",
+      "k": [
+        "animal",
+        "animals",
+        "bull",
+        "farm",
+        "ox",
+        "Taurus",
+        "zodiac"
+      ]
+    },
+    {
+      "c": "🐃",
+      "s": "1f403",
+      "n": "water buffalo",
+      "k": [
+        "animal",
+        "buffalo",
+        "water",
+        "zoo"
+      ]
+    },
+    {
+      "c": "🐄",
+      "s": "1f404",
+      "n": "cow",
+      "k": [
+        "animal",
+        "animals",
+        "cow",
+        "farm",
+        "milk",
+        "moo"
+      ]
+    },
+    {
+      "c": "🐷",
+      "s": "1f437",
+      "n": "pig face",
+      "k": [
+        "animal",
+        "bacon",
+        "face",
+        "farm",
+        "pig",
+        "pork"
+      ]
+    },
+    {
+      "c": "🐖",
+      "s": "1f416",
+      "n": "pig",
+      "k": [
+        "animal",
+        "bacon",
+        "farm",
+        "pig",
+        "pork",
+        "sow"
+      ]
+    },
+    {
+      "c": "🐗",
+      "s": "1f417",
+      "n": "boar",
+      "k": [
+        "animal",
+        "boar",
+        "pig"
+      ]
+    },
+    {
+      "c": "🐽",
+      "s": "1f43d",
+      "n": "pig nose",
+      "k": [
+        "animal",
+        "face",
+        "farm",
+        "nose",
+        "pig",
+        "smell",
+        "snout"
+      ]
+    },
+    {
+      "c": "🐏",
+      "s": "1f40f",
+      "n": "ram",
+      "k": [
+        "animal",
+        "Aries",
+        "horns",
+        "male",
+        "ram",
+        "sheep",
+        "zodiac",
+        "zoo"
+      ]
+    },
+    {
+      "c": "🐑",
+      "s": "1f411",
+      "n": "ewe",
+      "k": [
+        "animal",
+        "baa",
+        "ewe",
+        "farm",
+        "female",
+        "fluffy",
+        "lamb",
+        "sheep",
+        "wool"
+      ]
+    },
+    {
+      "c": "🐐",
+      "s": "1f410",
+      "n": "goat",
+      "k": [
+        "animal",
+        "Capricorn",
+        "farm",
+        "goat",
+        "milk",
+        "zodiac"
+      ]
+    },
+    {
+      "c": "🐪",
+      "s": "1f42a",
+      "n": "camel",
+      "k": [
+        "animal",
+        "camel",
+        "desert",
+        "dromedary",
+        "hump",
+        "one"
+      ]
+    },
+    {
+      "c": "🐫",
+      "s": "1f42b",
+      "n": "two-hump camel",
+      "k": [
+        "animal",
+        "bactrian",
+        "camel",
+        "desert",
+        "hump",
+        "two",
+        "two-hump"
+      ]
+    },
+    {
+      "c": "🦙",
+      "s": "1f999",
+      "n": "llama",
+      "k": [
+        "alpaca",
+        "animal",
+        "guanaco",
+        "llama",
+        "vicuña",
+        "wool"
+      ]
+    },
+    {
+      "c": "🦒",
+      "s": "1f992",
+      "n": "giraffe",
+      "k": [
+        "animal",
+        "giraffe",
+        "spots"
+      ]
+    },
+    {
+      "c": "🐘",
+      "s": "1f418",
+      "n": "elephant",
+      "k": [
+        "animal",
+        "elephant"
+      ]
+    },
+    {
+      "c": "🦣",
+      "s": "1f9a3",
+      "n": "mammoth",
+      "k": [
+        "animal",
+        "extinction",
+        "large",
+        "mammoth",
+        "tusk",
+        "wooly"
+      ]
+    },
+    {
+      "c": "🦏",
+      "s": "1f98f",
+      "n": "rhinoceros",
+      "k": [
+        "animal",
+        "rhinoceros"
+      ]
+    },
+    {
+      "c": "🦛",
+      "s": "1f99b",
+      "n": "hippopotamus",
+      "k": [
+        "animal",
+        "hippo",
+        "hippopotamus"
+      ]
+    },
+    {
+      "c": "🐭",
+      "s": "1f42d",
+      "n": "mouse face",
+      "k": [
+        "animal",
+        "face",
+        "mouse"
+      ]
+    },
+    {
+      "c": "🐁",
+      "s": "1f401",
+      "n": "mouse",
+      "k": [
+        "animal",
+        "animals",
+        "mouse"
+      ]
+    },
+    {
+      "c": "🐀",
+      "s": "1f400",
+      "n": "rat",
+      "k": [
+        "animal",
+        "rat"
+      ]
+    },
+    {
+      "c": "🐹",
+      "s": "1f439",
+      "n": "hamster",
+      "k": [
+        "animal",
+        "face",
+        "hamster",
+        "pet"
+      ]
+    },
+    {
+      "c": "🐰",
+      "s": "1f430",
+      "n": "rabbit face",
+      "k": [
+        "animal",
+        "bunny",
+        "face",
+        "pet",
+        "rabbit"
+      ]
+    },
+    {
+      "c": "🐇",
+      "s": "1f407",
+      "n": "rabbit",
+      "k": [
+        "animal",
+        "bunny",
+        "pet",
+        "rabbit"
+      ]
+    },
+    {
+      "c": "🐿️",
+      "s": "1f43f",
+      "n": "chipmunk",
+      "k": [
+        "animal",
+        "chipmunk",
+        "squirrel"
+      ]
+    },
+    {
+      "c": "🦫",
+      "s": "1f9ab",
+      "n": "beaver",
+      "k": [
+        "animal",
+        "beaver",
+        "dam",
+        "teeth"
+      ]
+    },
+    {
+      "c": "🦔",
+      "s": "1f994",
+      "n": "hedgehog",
+      "k": [
+        "animal",
+        "hedgehog",
+        "spiny"
+      ]
+    },
+    {
+      "c": "🦇",
+      "s": "1f987",
+      "n": "bat",
+      "k": [
+        "animal",
+        "bat",
+        "vampire"
+      ]
+    },
+    {
+      "c": "🐻",
+      "s": "1f43b",
+      "n": "bear",
+      "k": [
+        "animal",
+        "bear",
+        "face",
+        "grizzly",
+        "growl",
+        "honey"
+      ]
+    },
+    {
+      "c": "🐻‍❄️",
+      "s": "1f43b-200d-2744-fe0f",
+      "n": "polar bear",
+      "k": [
+        "animal",
+        "arctic",
+        "bear",
+        "polar",
+        "white"
+      ]
+    },
+    {
+      "c": "🐨",
+      "s": "1f428",
+      "n": "koala",
+      "k": [
+        "animal",
+        "australia",
+        "bear",
+        "down",
+        "face",
+        "koala",
+        "marsupial",
+        "under"
+      ]
+    },
+    {
+      "c": "🐼",
+      "s": "1f43c",
+      "n": "panda",
+      "k": [
+        "animal",
+        "bamboo",
+        "face",
+        "panda"
+      ]
+    },
+    {
+      "c": "🦥",
+      "s": "1f9a5",
+      "n": "sloth",
+      "k": [
+        "lazy",
+        "sloth",
+        "slow"
+      ]
+    },
+    {
+      "c": "🦦",
+      "s": "1f9a6",
+      "n": "otter",
+      "k": [
+        "animal",
+        "fishing",
+        "otter",
+        "playful"
+      ]
+    },
+    {
+      "c": "🦨",
+      "s": "1f9a8",
+      "n": "skunk",
+      "k": [
+        "animal",
+        "skunk",
+        "stink"
+      ]
+    },
+    {
+      "c": "🦘",
+      "s": "1f998",
+      "n": "kangaroo",
+      "k": [
+        "animal",
+        "joey",
+        "jump",
+        "kangaroo",
+        "marsupial"
+      ]
+    },
+    {
+      "c": "🦡",
+      "s": "1f9a1",
+      "n": "badger",
+      "k": [
+        "animal",
+        "badger",
+        "honey",
+        "pester"
+      ]
+    },
+    {
+      "c": "🐾",
+      "s": "1f43e",
+      "n": "paw prints",
+      "k": [
+        "feet",
+        "paw",
+        "paws",
+        "print",
+        "prints"
+      ]
+    },
+    {
+      "c": "🦃",
+      "s": "1f983",
+      "n": "turkey",
+      "k": [
+        "bird",
+        "gobble",
+        "thanksgiving",
+        "turkey"
+      ]
+    },
+    {
+      "c": "🐔",
+      "s": "1f414",
+      "n": "chicken",
+      "k": [
+        "animal",
+        "bird",
+        "chicken",
+        "ornithology"
+      ]
+    },
+    {
+      "c": "🐓",
+      "s": "1f413",
+      "n": "rooster",
+      "k": [
+        "animal",
+        "bird",
+        "ornithology",
+        "rooster"
+      ]
+    },
+    {
+      "c": "🐣",
+      "s": "1f423",
+      "n": "hatching chick",
+      "k": [
+        "animal",
+        "baby",
+        "bird",
+        "chick",
+        "egg",
+        "hatching"
+      ]
+    },
+    {
+      "c": "🐤",
+      "s": "1f424",
+      "n": "baby chick",
+      "k": [
+        "animal",
+        "baby",
+        "bird",
+        "chick",
+        "ornithology"
+      ]
+    },
+    {
+      "c": "🐥",
+      "s": "1f425",
+      "n": "front-facing baby chick",
+      "k": [
+        "animal",
+        "baby",
+        "bird",
+        "chick",
+        "front-facing",
+        "newborn",
+        "ornithology"
+      ]
+    },
+    {
+      "c": "🐦",
+      "s": "1f426",
+      "n": "bird",
+      "k": [
+        "animal",
+        "bird",
+        "ornithology"
+      ]
+    },
+    {
+      "c": "🐧",
+      "s": "1f427",
+      "n": "penguin",
+      "k": [
+        "animal",
+        "antarctica",
+        "bird",
+        "ornithology",
+        "penguin"
+      ]
+    },
+    {
+      "c": "🕊️",
+      "s": "1f54a",
+      "n": "dove",
+      "k": [
+        "bird",
+        "dove",
+        "fly",
+        "ornithology",
+        "peace"
+      ]
+    },
+    {
+      "c": "🦅",
+      "s": "1f985",
+      "n": "eagle",
+      "k": [
+        "animal",
+        "bird",
+        "eagle",
+        "ornithology"
+      ]
+    },
+    {
+      "c": "🦆",
+      "s": "1f986",
+      "n": "duck",
+      "k": [
+        "animal",
+        "bird",
+        "duck",
+        "ornithology"
+      ]
+    },
+    {
+      "c": "🦢",
+      "s": "1f9a2",
+      "n": "swan",
+      "k": [
+        "animal",
+        "bird",
+        "cygnet",
+        "duckling",
+        "ornithology",
+        "swan",
+        "ugly"
+      ]
+    },
+    {
+      "c": "🦉",
+      "s": "1f989",
+      "n": "owl",
+      "k": [
+        "animal",
+        "bird",
+        "ornithology",
+        "owl",
+        "wise"
+      ]
+    },
+    {
+      "c": "🦤",
+      "s": "1f9a4",
+      "n": "dodo",
+      "k": [
+        "animal",
+        "bird",
+        "dodo",
+        "extinction",
+        "large",
+        "ornithology"
+      ]
+    },
+    {
+      "c": "🪶",
+      "s": "1fab6",
+      "n": "feather",
+      "k": [
+        "bird",
+        "feather",
+        "flight",
+        "light",
+        "plumage"
+      ]
+    },
+    {
+      "c": "🦩",
+      "s": "1f9a9",
+      "n": "flamingo",
+      "k": [
+        "animal",
+        "bird",
+        "flamboyant",
+        "flamingo",
+        "ornithology",
+        "tropical"
+      ]
+    },
+    {
+      "c": "🦚",
+      "s": "1f99a",
+      "n": "peacock",
+      "k": [
+        "animal",
+        "bird",
+        "colorful",
+        "ornithology",
+        "ostentatious",
+        "peacock",
+        "peahen",
+        "pretty",
+        "proud"
+      ]
+    },
+    {
+      "c": "🦜",
+      "s": "1f99c",
+      "n": "parrot",
+      "k": [
+        "animal",
+        "bird",
+        "ornithology",
+        "parrot",
+        "pirate",
+        "talk"
+      ]
+    },
+    {
+      "c": "🪽",
+      "s": "1fabd",
+      "n": "wing",
+      "k": [
+        "angelic",
+        "ascend",
+        "aviation",
+        "bird",
+        "fly",
+        "flying",
+        "heavenly",
+        "mythology",
+        "soar",
+        "wing"
+      ]
+    },
+    {
+      "c": "🐦‍⬛",
+      "s": "1f426-200d-2b1b",
+      "n": "black bird",
+      "k": [
+        "animal",
+        "beak",
+        "bird",
+        "black",
+        "caw",
+        "corvid",
+        "crow",
+        "ornithology",
+        "raven",
+        "rook"
+      ]
+    },
+    {
+      "c": "🪿",
+      "s": "1fabf",
+      "n": "goose",
+      "k": [
+        "animal",
+        "bird",
+        "duck",
+        "flock",
+        "fowl",
+        "gaggle",
+        "gander",
+        "geese",
+        "goose",
+        "honk",
+        "ornithology",
+        "silly"
+      ]
+    },
+    {
+      "c": "🐦‍🔥",
+      "s": "1f426-200d-1f525",
+      "n": "phoenix",
+      "k": [
+        "ascend",
+        "ascension",
+        "emerge",
+        "fantasy",
+        "firebird",
+        "glory",
+        "immortal",
+        "phoenix",
+        "rebirth",
+        "reincarnation",
+        "reinvent",
+        "renewal",
+        "revival",
+        "revive",
+        "rise",
+        "transform"
+      ]
+    },
+    {
+      "c": "🐸",
+      "s": "1f438",
+      "n": "frog",
+      "k": [
+        "animal",
+        "face",
+        "frog"
+      ]
+    },
+    {
+      "c": "🐊",
+      "s": "1f40a",
+      "n": "crocodile",
+      "k": [
+        "animal",
+        "crocodile",
+        "zoo"
+      ]
+    },
+    {
+      "c": "🐢",
+      "s": "1f422",
+      "n": "turtle",
+      "k": [
+        "animal",
+        "terrapin",
+        "tortoise",
+        "turtle"
+      ]
+    },
+    {
+      "c": "🦎",
+      "s": "1f98e",
+      "n": "lizard",
+      "k": [
+        "animal",
+        "lizard",
+        "reptile"
+      ]
+    },
+    {
+      "c": "🐍",
+      "s": "1f40d",
+      "n": "snake",
+      "k": [
+        "animal",
+        "bearer",
+        "Ophiuchus",
+        "serpent",
+        "snake",
+        "zodiac"
+      ]
+    },
+    {
+      "c": "🐲",
+      "s": "1f432",
+      "n": "dragon face",
+      "k": [
+        "animal",
+        "dragon",
+        "face",
+        "fairy",
+        "fairytale",
+        "tale"
+      ]
+    },
+    {
+      "c": "🐉",
+      "s": "1f409",
+      "n": "dragon",
+      "k": [
+        "animal",
+        "dragon",
+        "fairy",
+        "fairytale",
+        "knights",
+        "tale"
+      ]
+    },
+    {
+      "c": "🦕",
+      "s": "1f995",
+      "n": "sauropod",
+      "k": [
+        "brachiosaurus",
+        "brontosaurus",
+        "dinosaur",
+        "diplodocus",
+        "sauropod"
+      ]
+    },
+    {
+      "c": "🦖",
+      "s": "1f996",
+      "n": "T-Rex",
+      "k": [
+        "dinosaur",
+        "Rex",
+        "T",
+        "T-Rex",
+        "Tyrannosaurus"
+      ]
+    },
+    {
+      "c": "🐳",
+      "s": "1f433",
+      "n": "spouting whale",
+      "k": [
+        "animal",
+        "beach",
+        "face",
+        "ocean",
+        "spouting",
+        "whale"
+      ]
+    },
+    {
+      "c": "🐋",
+      "s": "1f40b",
+      "n": "whale",
+      "k": [
+        "animal",
+        "beach",
+        "ocean",
+        "whale"
+      ]
+    },
+    {
+      "c": "🐬",
+      "s": "1f42c",
+      "n": "dolphin",
+      "k": [
+        "animal",
+        "beach",
+        "dolphin",
+        "flipper",
+        "ocean"
+      ]
+    },
+    {
+      "c": "🦭",
+      "s": "1f9ad",
+      "n": "seal",
+      "k": [
+        "animal",
+        "lion",
+        "ocean",
+        "sea",
+        "seal"
+      ]
+    },
+    {
+      "c": "🐟",
+      "s": "1f41f",
+      "n": "fish",
+      "k": [
+        "animal",
+        "dinner",
+        "fish",
+        "fishes",
+        "fishing",
+        "Pisces",
+        "zodiac"
+      ]
+    },
+    {
+      "c": "🐠",
+      "s": "1f420",
+      "n": "tropical fish",
+      "k": [
+        "animal",
+        "fish",
+        "fishes",
+        "tropical"
+      ]
+    },
+    {
+      "c": "🐡",
+      "s": "1f421",
+      "n": "blowfish",
+      "k": [
+        "animal",
+        "blowfish",
+        "fish"
+      ]
+    },
+    {
+      "c": "🦈",
+      "s": "1f988",
+      "n": "shark",
+      "k": [
+        "animal",
+        "fish",
+        "shark"
+      ]
+    },
+    {
+      "c": "🐙",
+      "s": "1f419",
+      "n": "octopus",
+      "k": [
+        "animal",
+        "creature",
+        "ocean",
+        "octopus"
+      ]
+    },
+    {
+      "c": "🐚",
+      "s": "1f41a",
+      "n": "spiral shell",
+      "k": [
+        "animal",
+        "beach",
+        "conch",
+        "sea",
+        "shell",
+        "spiral"
+      ]
+    },
+    {
+      "c": "🪸",
+      "s": "1fab8",
+      "n": "coral",
+      "k": [
+        "change",
+        "climate",
+        "coral",
+        "ocean",
+        "reef",
+        "sea"
+      ]
+    },
+    {
+      "c": "🪼",
+      "s": "1fabc",
+      "n": "jellyfish",
+      "k": [
+        "animal",
+        "aquarium",
+        "burn",
+        "invertebrate",
+        "jelly",
+        "jellyfish",
+        "life",
+        "marine",
+        "ocean",
+        "ouch",
+        "plankton",
+        "sea",
+        "sting",
+        "stinger",
+        "tentacles"
+      ]
+    },
+    {
+      "c": "🐌",
+      "s": "1f40c",
+      "n": "snail",
+      "k": [
+        "animal",
+        "escargot",
+        "garden",
+        "nature",
+        "slug",
+        "snail"
+      ]
+    },
+    {
+      "c": "🦋",
+      "s": "1f98b",
+      "n": "butterfly",
+      "k": [
+        "butterfly",
+        "insect",
+        "pretty"
+      ]
+    },
+    {
+      "c": "🐛",
+      "s": "1f41b",
+      "n": "bug",
+      "k": [
+        "animal",
+        "bug",
+        "garden",
+        "insect"
+      ]
+    },
+    {
+      "c": "🐜",
+      "s": "1f41c",
+      "n": "ant",
+      "k": [
+        "animal",
+        "ant",
+        "garden",
+        "insect"
+      ]
+    },
+    {
+      "c": "🐝",
+      "s": "1f41d",
+      "n": "honeybee",
+      "k": [
+        "animal",
+        "bee",
+        "bumblebee",
+        "honey",
+        "honeybee",
+        "insect",
+        "nature",
+        "spring"
+      ]
+    },
+    {
+      "c": "🪲",
+      "s": "1fab2",
+      "n": "beetle",
+      "k": [
+        "animal",
+        "beetle",
+        "bug",
+        "insect"
+      ]
+    },
+    {
+      "c": "🐞",
+      "s": "1f41e",
+      "n": "lady beetle",
+      "k": [
+        "animal",
+        "beetle",
+        "garden",
+        "insect",
+        "lady",
+        "ladybird",
+        "ladybug",
+        "nature"
+      ]
+    },
+    {
+      "c": "🦗",
+      "s": "1f997",
+      "n": "cricket",
+      "k": [
+        "animal",
+        "bug",
+        "cricket",
+        "grasshopper",
+        "insect",
+        "Orthoptera"
+      ]
+    },
+    {
+      "c": "🪳",
+      "s": "1fab3",
+      "n": "cockroach",
+      "k": [
+        "animal",
+        "cockroach",
+        "insect",
+        "pest",
+        "roach"
+      ]
+    },
+    {
+      "c": "🕷️",
+      "s": "1f577",
+      "n": "spider",
+      "k": [
+        "animal",
+        "insect",
+        "spider"
+      ]
+    },
+    {
+      "c": "🕸️",
+      "s": "1f578",
+      "n": "spider web",
+      "k": [
+        "spider",
+        "web"
+      ]
+    },
+    {
+      "c": "🦂",
+      "s": "1f982",
+      "n": "scorpion",
+      "k": [
+        "Scorpio",
+        "scorpion",
+        "Scorpius",
+        "zodiac"
+      ]
+    },
+    {
+      "c": "🦟",
+      "s": "1f99f",
+      "n": "mosquito",
+      "k": [
+        "bite",
+        "disease",
+        "fever",
+        "insect",
+        "malaria",
+        "mosquito",
+        "pest",
+        "virus"
+      ]
+    },
+    {
+      "c": "🪰",
+      "s": "1fab0",
+      "n": "fly",
+      "k": [
+        "animal",
+        "disease",
+        "fly",
+        "insect",
+        "maggot",
+        "pest",
+        "rotting"
+      ]
+    },
+    {
+      "c": "🪱",
+      "s": "1fab1",
+      "n": "worm",
+      "k": [
+        "animal",
+        "annelid",
+        "earthworm",
+        "parasite",
+        "worm"
+      ]
+    },
+    {
+      "c": "🦠",
+      "s": "1f9a0",
+      "n": "microbe",
+      "k": [
+        "amoeba",
+        "bacteria",
+        "microbe",
+        "science",
+        "virus"
+      ]
+    },
+    {
+      "c": "💐",
+      "s": "1f490",
+      "n": "bouquet",
+      "k": [
+        "anniversary",
+        "birthday",
+        "bouquet",
+        "date",
+        "flower",
+        "love",
+        "plant",
+        "romance"
+      ]
+    },
+    {
+      "c": "🌸",
+      "s": "1f338",
+      "n": "cherry blossom",
+      "k": [
+        "blossom",
+        "cherry",
+        "flower",
+        "plant",
+        "spring",
+        "springtime"
+      ]
+    },
+    {
+      "c": "💮",
+      "s": "1f4ae",
+      "n": "white flower",
+      "k": [
+        "flower",
+        "white"
+      ]
+    },
+    {
+      "c": "🪷",
+      "s": "1fab7",
+      "n": "lotus",
+      "k": [
+        "beauty",
+        "Buddhism",
+        "calm",
+        "flower",
+        "Hinduism",
+        "lotus",
+        "peace",
+        "purity",
+        "serenity"
+      ]
+    },
+    {
+      "c": "🏵️",
+      "s": "1f3f5",
+      "n": "rosette",
+      "k": [
+        "plant",
+        "rosette"
+      ]
+    },
+    {
+      "c": "🌹",
+      "s": "1f339",
+      "n": "rose",
+      "k": [
+        "beauty",
+        "elegant",
+        "flower",
+        "love",
+        "plant",
+        "red",
+        "rose",
+        "valentine"
+      ]
+    },
+    {
+      "c": "🥀",
+      "s": "1f940",
+      "n": "wilted flower",
+      "k": [
+        "dying",
+        "flower",
+        "wilted"
+      ]
+    },
+    {
+      "c": "🌺",
+      "s": "1f33a",
+      "n": "hibiscus",
+      "k": [
+        "flower",
+        "hibiscus",
+        "plant"
+      ]
+    },
+    {
+      "c": "🌻",
+      "s": "1f33b",
+      "n": "sunflower",
+      "k": [
+        "flower",
+        "outdoors",
+        "plant",
+        "sun",
+        "sunflower"
+      ]
+    },
+    {
+      "c": "🌼",
+      "s": "1f33c",
+      "n": "blossom",
+      "k": [
+        "blossom",
+        "buttercup",
+        "dandelion",
+        "flower",
+        "plant"
+      ]
+    },
+    {
+      "c": "🌷",
+      "s": "1f337",
+      "n": "tulip",
+      "k": [
+        "blossom",
+        "flower",
+        "growth",
+        "plant",
+        "tulip"
+      ]
+    },
+    {
+      "c": "🪻",
+      "s": "1fabb",
+      "n": "hyacinth",
+      "k": [
+        "bloom",
+        "bluebonnet",
+        "flower",
+        "hyacinth",
+        "indigo",
+        "lavender",
+        "lilac",
+        "lupine",
+        "plant",
+        "purple",
+        "shrub",
+        "snapdragon",
+        "spring",
+        "violet"
+      ]
+    },
+    {
+      "c": "🌱",
+      "s": "1f331",
+      "n": "seedling",
+      "k": [
+        "plant",
+        "sapling",
+        "seedling",
+        "sprout",
+        "young"
+      ]
+    },
+    {
+      "c": "🪴",
+      "s": "1fab4",
+      "n": "potted plant",
+      "k": [
+        "decor",
+        "grow",
+        "house",
+        "nurturing",
+        "plant",
+        "pot",
+        "potted"
+      ]
+    },
+    {
+      "c": "🌲",
+      "s": "1f332",
+      "n": "evergreen tree",
+      "k": [
+        "christmas",
+        "evergreen",
+        "forest",
+        "pine",
+        "tree"
+      ]
+    },
+    {
+      "c": "🌳",
+      "s": "1f333",
+      "n": "deciduous tree",
+      "k": [
+        "deciduous",
+        "forest",
+        "green",
+        "habitat",
+        "shedding",
+        "tree"
+      ]
+    },
+    {
+      "c": "🌴",
+      "s": "1f334",
+      "n": "palm tree",
+      "k": [
+        "beach",
+        "palm",
+        "plant",
+        "tree",
+        "tropical"
+      ]
+    },
+    {
+      "c": "🌵",
+      "s": "1f335",
+      "n": "cactus",
+      "k": [
+        "cactus",
+        "desert",
+        "drought",
+        "nature",
+        "plant"
+      ]
+    },
+    {
+      "c": "🌾",
+      "s": "1f33e",
+      "n": "sheaf of rice",
+      "k": [
+        "ear",
+        "grain",
+        "grains",
+        "plant",
+        "rice",
+        "sheaf"
+      ]
+    },
+    {
+      "c": "🌿",
+      "s": "1f33f",
+      "n": "herb",
+      "k": [
+        "herb",
+        "leaf",
+        "plant"
+      ]
+    },
+    {
+      "c": "☘️",
+      "s": "2618",
+      "n": "shamrock",
+      "k": [
+        "irish",
+        "plant",
+        "shamrock"
+      ]
+    },
+    {
+      "c": "🍀",
+      "s": "1f340",
+      "n": "four leaf clover",
+      "k": [
+        "4",
+        "clover",
+        "four",
+        "four-leaf",
+        "irish",
+        "leaf",
+        "lucky",
+        "plant"
+      ]
+    },
+    {
+      "c": "🍁",
+      "s": "1f341",
+      "n": "maple leaf",
+      "k": [
+        "falling",
+        "leaf",
+        "maple"
+      ]
+    },
+    {
+      "c": "🍂",
+      "s": "1f342",
+      "n": "fallen leaf",
+      "k": [
+        "autumn",
+        "fall",
+        "fallen",
+        "falling",
+        "leaf"
+      ]
+    },
+    {
+      "c": "🍃",
+      "s": "1f343",
+      "n": "leaf fluttering in wind",
+      "k": [
+        "blow",
+        "flutter",
+        "fluttering",
+        "leaf",
+        "wind"
+      ]
+    },
+    {
+      "c": "🪹",
+      "s": "1fab9",
+      "n": "empty nest",
+      "k": [
+        "branch",
+        "empty",
+        "home",
+        "nest",
+        "nesting"
+      ]
+    },
+    {
+      "c": "🪺",
+      "s": "1faba",
+      "n": "nest with eggs",
+      "k": [
+        "bird",
+        "branch",
+        "egg",
+        "eggs",
+        "nest",
+        "nesting"
+      ]
+    },
+    {
+      "c": "🍄",
+      "s": "1f344",
+      "n": "mushroom",
+      "k": [
+        "fungus",
+        "mushroom",
+        "toadstool"
+      ]
+    }
+  ]
+}

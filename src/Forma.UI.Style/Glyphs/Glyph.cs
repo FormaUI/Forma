@@ -105,6 +105,9 @@ public enum Glyph
     /// <summary>A clock face.</summary>
     Clock,
 
+    /// <summary>A clock with a counter-clockwise arrow, for recent items.</summary>
+    ClockRotateLeft,
+
     /// <summary>A cloud with an upward arrow, for uploading.</summary>
     CloudArrowUp,
 
@@ -135,6 +138,9 @@ public enum Glyph
     /// <summary>A struck-through eye.</summary>
     EyeSlash,
 
+    /// <summary>A smiling face.</summary>
+    FaceSmile,
+
     /// <summary>A blank sheet.</summary>
     File,
 
@@ -152,6 +158,9 @@ public enum Glyph
 
     /// <summary>A funnel, for narrowing a set.</summary>
     Filter,
+
+    /// <summary>A pennant on a pole.</summary>
+    Flag,
 
     /// <summary>A floppy disk, for saving.</summary>
     FloppyDisk,
@@ -171,11 +180,17 @@ public enum Glyph
     /// <summary>A fast-forward pair of triangles.</summary>
     Forward,
 
+    /// <summary>A football.</summary>
+    Futbol,
+
     /// <summary>A cogwheel.</summary>
     Gear,
 
     /// <summary>A letter H, for a heading.</summary>
     Heading,
+
+    /// <summary>A heart.</summary>
+    Heart,
 
     /// <summary>A marker pen, for highlighted text.</summary>
     Highlighter,
@@ -249,6 +264,9 @@ public enum Glyph
     /// <summary>A clipboard holding a sheet, for pasting.</summary>
     Paste,
 
+    /// <summary>An animal paw print.</summary>
+    Paw,
+
     /// <summary>A pen nib.</summary>
     Pen,
 
@@ -257,6 +275,9 @@ public enum Glyph
 
     /// <summary>A play triangle.</summary>
     Play,
+
+    /// <summary>An aeroplane.</summary>
+    Plane,
 
     /// <summary>A plus sign.</summary>
     Plus,
@@ -333,8 +354,14 @@ public enum Glyph
     /// <summary>An upward arrow above a line, for uploading.</summary>
     Upload,
 
+    /// <summary>A single person.</summary>
+    User,
+
     /// <summary>A pair of people.</summary>
     Users,
+
+    /// <summary>A fork and knife.</summary>
+    Utensils,
 
     /// <summary>A wand throwing sparkles, for an automatic fix or format.</summary>
     WandMagicSparkles,

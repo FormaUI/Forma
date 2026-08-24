@@ -39,6 +39,7 @@
 
     <ItemGroup>
         <EmbeddedResource Include="Components\**\*.json" />
+        <EmbeddedResource Include="Assets\**\*.json" />
     </ItemGroup>
 
 </Project>

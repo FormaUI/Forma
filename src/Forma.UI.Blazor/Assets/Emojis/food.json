@@ -1,0 +1,1698 @@
+{
+  "version": "15.1",
+  "group": "food",
+  "emoji": [
+    {
+      "c": "🍇",
+      "s": "1f347",
+      "n": "grapes",
+      "k": [
+        "Dionysus",
+        "fruit",
+        "grape",
+        "grapes"
+      ]
+    },
+    {
+      "c": "🍈",
+      "s": "1f348",
+      "n": "melon",
+      "k": [
+        "cantaloupe",
+        "fruit",
+        "melon"
+      ]
+    },
+    {
+      "c": "🍉",
+      "s": "1f349",
+      "n": "watermelon",
+      "k": [
+        "fruit",
+        "watermelon"
+      ]
+    },
+    {
+      "c": "🍊",
+      "s": "1f34a",
+      "n": "tangerine",
+      "k": [
+        "c",
+        "citrus",
+        "fruit",
+        "nectarine",
+        "orange",
+        "tangerine",
+        "vitamin"
+      ]
+    },
+    {
+      "c": "🍋",
+      "s": "1f34b",
+      "n": "lemon",
+      "k": [
+        "citrus",
+        "fruit",
+        "lemon",
+        "sour"
+      ]
+    },
+    {
+      "c": "🍋‍🟩",
+      "s": "1f34b-200d-1f7e9",
+      "n": "lime",
+      "k": [
+        "acidity",
+        "citrus",
+        "cocktail",
+        "fruit",
+        "garnish",
+        "key",
+        "lime",
+        "margarita",
+        "mojito",
+        "refreshing",
+        "salsa",
+        "sour",
+        "tangy",
+        "tequila",
+        "tropical",
+        "zest"
+      ]
+    },
+    {
+      "c": "🍌",
+      "s": "1f34c",
+      "n": "banana",
+      "k": [
+        "banana",
+        "fruit",
+        "potassium"
+      ]
+    },
+    {
+      "c": "🍍",
+      "s": "1f34d",
+      "n": "pineapple",
+      "k": [
+        "colada",
+        "fruit",
+        "pina",
+        "pineapple",
+        "tropical"
+      ]
+    },
+    {
+      "c": "🥭",
+      "s": "1f96d",
+      "n": "mango",
+      "k": [
+        "food",
+        "fruit",
+        "mango",
+        "tropical"
+      ]
+    },
+    {
+      "c": "🍎",
+      "s": "1f34e",
+      "n": "red apple",
+      "k": [
+        "apple",
+        "diet",
+        "food",
+        "fruit",
+        "health",
+        "red",
+        "ripe"
+      ]
+    },
+    {
+      "c": "🍏",
+      "s": "1f34f",
+      "n": "green apple",
+      "k": [
+        "apple",
+        "fruit",
+        "green"
+      ]
+    },
+    {
+      "c": "🍐",
+      "s": "1f350",
+      "n": "pear",
+      "k": [
+        "fruit",
+        "pear"
+      ]
+    },
+    {
+      "c": "🍑",
+      "s": "1f351",
+      "n": "peach",
+      "k": [
+        "fruit",
+        "peach"
+      ]
+    },
+    {
+      "c": "🍒",
+      "s": "1f352",
+      "n": "cherries",
+      "k": [
+        "berries",
+        "cherries",
+        "cherry",
+        "fruit",
+        "red"
+      ]
+    },
+    {
+      "c": "🍓",
+      "s": "1f353",
+      "n": "strawberry",
+      "k": [
+        "berry",
+        "fruit",
+        "strawberry"
+      ]
+    },
+    {
+      "c": "🫐",
+      "s": "1fad0",
+      "n": "blueberries",
+      "k": [
+        "berries",
+        "berry",
+        "bilberry",
+        "blue",
+        "blueberries",
+        "blueberry",
+        "food",
+        "fruit"
+      ]
+    },
+    {
+      "c": "🥝",
+      "s": "1f95d",
+      "n": "kiwi fruit",
+      "k": [
+        "food",
+        "fruit",
+        "kiwi"
+      ]
+    },
+    {
+      "c": "🍅",
+      "s": "1f345",
+      "n": "tomato",
+      "k": [
+        "food",
+        "fruit",
+        "tomato",
+        "vegetable"
+      ]
+    },
+    {
+      "c": "🫒",
+      "s": "1fad2",
+      "n": "olive",
+      "k": [
+        "food",
+        "olive"
+      ]
+    },
+    {
+      "c": "🥥",
+      "s": "1f965",
+      "n": "coconut",
+      "k": [
+        "coconut",
+        "colada",
+        "palm",
+        "piña"
+      ]
+    },
+    {
+      "c": "🥑",
+      "s": "1f951",
+      "n": "avocado",
+      "k": [
+        "avocado",
+        "food",
+        "fruit"
+      ]
+    },
+    {
+      "c": "🍆",
+      "s": "1f346",
+      "n": "eggplant",
+      "k": [
+        "aubergine",
+        "eggplant",
+        "vegetable"
+      ]
+    },
+    {
+      "c": "🥔",
+      "s": "1f954",
+      "n": "potato",
+      "k": [
+        "food",
+        "potato",
+        "vegetable"
+      ]
+    },
+    {
+      "c": "🥕",
+      "s": "1f955",
+      "n": "carrot",
+      "k": [
+        "carrot",
+        "food",
+        "vegetable"
+      ]
+    },
+    {
+      "c": "🌽",
+      "s": "1f33d",
+      "n": "ear of corn",
+      "k": [
+        "corn",
+        "crops",
+        "ear",
+        "farm",
+        "maize",
+        "maze"
+      ]
+    },
+    {
+      "c": "🌶️",
+      "s": "1f336",
+      "n": "hot pepper",
+      "k": [
+        "hot",
+        "pepper"
+      ]
+    },
+    {
+      "c": "🫑",
+      "s": "1fad1",
+      "n": "bell pepper",
+      "k": [
+        "bell",
+        "capsicum",
+        "food",
+        "pepper",
+        "vegetable"
+      ]
+    },
+    {
+      "c": "🥒",
+      "s": "1f952",
+      "n": "cucumber",
+      "k": [
+        "cucumber",
+        "food",
+        "pickle",
+        "vegetable"
+      ]
+    },
+    {
+      "c": "🥬",
+      "s": "1f96c",
+      "n": "leafy green",
+      "k": [
+        "bok",
+        "burgers",
+        "cabbage",
+        "choy",
+        "green",
+        "kale",
+        "leafy",
+        "lettuce",
+        "salad"
+      ]
+    },
+    {
+      "c": "🥦",
+      "s": "1f966",
+      "n": "broccoli",
+      "k": [
+        "broccoli",
+        "cabbage",
+        "wild"
+      ]
+    },
+    {
+      "c": "🧄",
+      "s": "1f9c4",
+      "n": "garlic",
+      "k": [
+        "flavoring",
+        "garlic"
+      ]
+    },
+    {
+      "c": "🧅",
+      "s": "1f9c5",
+      "n": "onion",
+      "k": [
+        "flavoring",
+        "onion"
+      ]
+    },
+    {
+      "c": "🥜",
+      "s": "1f95c",
+      "n": "peanuts",
+      "k": [
+        "food",
+        "nut",
+        "peanut",
+        "peanuts",
+        "vegetable"
+      ]
+    },
+    {
+      "c": "🫘",
+      "s": "1fad8",
+      "n": "beans",
+      "k": [
+        "beans",
+        "food",
+        "kidney",
+        "legume",
+        "small"
+      ]
+    },
+    {
+      "c": "🌰",
+      "s": "1f330",
+      "n": "chestnut",
+      "k": [
+        "almond",
+        "chestnut",
+        "plant"
+      ]
+    },
+    {
+      "c": "🫚",
+      "s": "1fada",
+      "n": "ginger root",
+      "k": [
+        "beer",
+        "ginger",
+        "health",
+        "herb",
+        "natural",
+        "root",
+        "spice"
+      ]
+    },
+    {
+      "c": "🫛",
+      "s": "1fadb",
+      "n": "pea pod",
+      "k": [
+        "beans",
+        "beanstalk",
+        "edamame",
+        "legume",
+        "pea",
+        "pod",
+        "soybean",
+        "vegetable",
+        "veggie"
+      ]
+    },
+    {
+      "c": "🍄‍🟫",
+      "s": "1f344-200d-1f7eb",
+      "n": "brown mushroom",
+      "k": [
+        "food",
+        "fungi",
+        "fungus",
+        "mushroom",
+        "nature",
+        "pizza",
+        "portobello",
+        "shiitake",
+        "shroom",
+        "spore",
+        "sprout",
+        "toppings",
+        "truffle",
+        "vegetable",
+        "vegetarian",
+        "veggie"
+      ]
+    },
+    {
+      "c": "🍞",
+      "s": "1f35e",
+      "n": "bread",
+      "k": [
+        "bread",
+        "carbs",
+        "food",
+        "grain",
+        "loaf",
+        "restaurant",
+        "toast",
+        "wheat"
+      ]
+    },
+    {
+      "c": "🥐",
+      "s": "1f950",
+      "n": "croissant",
+      "k": [
+        "bread",
+        "breakfast",
+        "crescent",
+        "croissant",
+        "food",
+        "french",
+        "roll"
+      ]
+    },
+    {
+      "c": "🥖",
+      "s": "1f956",
+      "n": "baguette bread",
+      "k": [
+        "baguette",
+        "bread",
+        "food",
+        "french"
+      ]
+    },
+    {
+      "c": "🫓",
+      "s": "1fad3",
+      "n": "flatbread",
+      "k": [
+        "arepa",
+        "bread",
+        "flatbread",
+        "food",
+        "gordita",
+        "lavash",
+        "naan",
+        "pita"
+      ]
+    },
+    {
+      "c": "🥨",
+      "s": "1f968",
+      "n": "pretzel",
+      "k": [
+        "convoluted",
+        "pretzel",
+        "twisted"
+      ]
+    },
+    {
+      "c": "🥯",
+      "s": "1f96f",
+      "n": "bagel",
+      "k": [
+        "bagel",
+        "bakery",
+        "bread",
+        "breakfast",
+        "schmear"
+      ]
+    },
+    {
+      "c": "🥞",
+      "s": "1f95e",
+      "n": "pancakes",
+      "k": [
+        "breakfast",
+        "crêpe",
+        "food",
+        "hotcake",
+        "pancake",
+        "pancakes"
+      ]
+    },
+    {
+      "c": "🧇",
+      "s": "1f9c7",
+      "n": "waffle",
+      "k": [
+        "breakfast",
+        "indecisive",
+        "iron",
+        "waffle"
+      ]
+    },
+    {
+      "c": "🧀",
+      "s": "1f9c0",
+      "n": "cheese wedge",
+      "k": [
+        "cheese",
+        "wedge"
+      ]
+    },
+    {
+      "c": "🍖",
+      "s": "1f356",
+      "n": "meat on bone",
+      "k": [
+        "bone",
+        "meat"
+      ]
+    },
+    {
+      "c": "🍗",
+      "s": "1f357",
+      "n": "poultry leg",
+      "k": [
+        "bone",
+        "chicken",
+        "drumstick",
+        "hungry",
+        "leg",
+        "poultry",
+        "turkey"
+      ]
+    },
+    {
+      "c": "🥩",
+      "s": "1f969",
+      "n": "cut of meat",
+      "k": [
+        "chop",
+        "cut",
+        "lambchop",
+        "meat",
+        "porkchop",
+        "red",
+        "steak"
+      ]
+    },
+    {
+      "c": "🥓",
+      "s": "1f953",
+      "n": "bacon",
+      "k": [
+        "bacon",
+        "breakfast",
+        "food",
+        "meat"
+      ]
+    },
+    {
+      "c": "🍔",
+      "s": "1f354",
+      "n": "hamburger",
+      "k": [
+        "burger",
+        "eat",
+        "fast",
+        "food",
+        "hamburger",
+        "hungry"
+      ]
+    },
+    {
+      "c": "🍟",
+      "s": "1f35f",
+      "n": "french fries",
+      "k": [
+        "fast",
+        "food",
+        "french",
+        "fries"
+      ]
+    },
+    {
+      "c": "🍕",
+      "s": "1f355",
+      "n": "pizza",
+      "k": [
+        "cheese",
+        "food",
+        "hungry",
+        "pepperoni",
+        "pizza",
+        "slice"
+      ]
+    },
+    {
+      "c": "🌭",
+      "s": "1f32d",
+      "n": "hot dog",
+      "k": [
+        "dog",
+        "frankfurter",
+        "hot",
+        "hotdog",
+        "sausage"
+      ]
+    },
+    {
+      "c": "🥪",
+      "s": "1f96a",
+      "n": "sandwich",
+      "k": [
+        "bread",
+        "sandwich"
+      ]
+    },
+    {
+      "c": "🌮",
+      "s": "1f32e",
+      "n": "taco",
+      "k": [
+        "mexican",
+        "taco"
+      ]
+    },
+    {
+      "c": "🌯",
+      "s": "1f32f",
+      "n": "burrito",
+      "k": [
+        "burrito",
+        "mexican",
+        "wrap"
+      ]
+    },
+    {
+      "c": "🫔",
+      "s": "1fad4",
+      "n": "tamale",
+      "k": [
+        "food",
+        "mexican",
+        "pamonha",
+        "tamale",
+        "wrapped"
+      ]
+    },
+    {
+      "c": "🥙",
+      "s": "1f959",
+      "n": "stuffed flatbread",
+      "k": [
+        "falafel",
+        "flatbread",
+        "food",
+        "gyro",
+        "kebab",
+        "stuffed"
+      ]
+    },
+    {
+      "c": "🧆",
+      "s": "1f9c6",
+      "n": "falafel",
+      "k": [
+        "chickpea",
+        "falafel",
+        "meatball"
+      ]
+    },
+    {
+      "c": "🥚",
+      "s": "1f95a",
+      "n": "egg",
+      "k": [
+        "breakfast",
+        "egg",
+        "food"
+      ]
+    },
+    {
+      "c": "🍳",
+      "s": "1f373",
+      "n": "cooking",
+      "k": [
+        "breakfast",
+        "cooking",
+        "easy",
+        "egg",
+        "fry",
+        "frying",
+        "over",
+        "pan",
+        "restaurant",
+        "side",
+        "sunny",
+        "up"
+      ]
+    },
+    {
+      "c": "🥘",
+      "s": "1f958",
+      "n": "shallow pan of food",
+      "k": [
+        "casserole",
+        "food",
+        "paella",
+        "pan",
+        "shallow"
+      ]
+    },
+    {
+      "c": "🍲",
+      "s": "1f372",
+      "n": "pot of food",
+      "k": [
+        "food",
+        "pot",
+        "soup",
+        "stew"
+      ]
+    },
+    {
+      "c": "🫕",
+      "s": "1fad5",
+      "n": "fondue",
+      "k": [
+        "cheese",
+        "chocolate",
+        "fondue",
+        "food",
+        "melted",
+        "pot",
+        "ski"
+      ]
+    },
+    {
+      "c": "🥣",
+      "s": "1f963",
+      "n": "bowl with spoon",
+      "k": [
+        "bowl",
+        "breakfast",
+        "cereal",
+        "congee",
+        "oatmeal",
+        "porridge",
+        "spoon"
+      ]
+    },
+    {
+      "c": "🥗",
+      "s": "1f957",
+      "n": "green salad",
+      "k": [
+        "food",
+        "green",
+        "salad"
+      ]
+    },
+    {
+      "c": "🍿",
+      "s": "1f37f",
+      "n": "popcorn",
+      "k": [
+        "corn",
+        "movie",
+        "pop",
+        "popcorn"
+      ]
+    },
+    {
+      "c": "🧈",
+      "s": "1f9c8",
+      "n": "butter",
+      "k": [
+        "butter",
+        "dairy"
+      ]
+    },
+    {
+      "c": "🧂",
+      "s": "1f9c2",
+      "n": "salt",
+      "k": [
+        "condiment",
+        "flavor",
+        "mad",
+        "salt",
+        "salty",
+        "shaker",
+        "taste",
+        "upset"
+      ]
+    },
+    {
+      "c": "🥫",
+      "s": "1f96b",
+      "n": "canned food",
+      "k": [
+        "can",
+        "canned",
+        "food"
+      ]
+    },
+    {
+      "c": "🍱",
+      "s": "1f371",
+      "n": "bento box",
+      "k": [
+        "bento",
+        "box",
+        "food"
+      ]
+    },
+    {
+      "c": "🍘",
+      "s": "1f358",
+      "n": "rice cracker",
+      "k": [
+        "cracker",
+        "food",
+        "rice"
+      ]
+    },
+    {
+      "c": "🍙",
+      "s": "1f359",
+      "n": "rice ball",
+      "k": [
+        "ball",
+        "food",
+        "Japanese",
+        "rice"
+      ]
+    },
+    {
+      "c": "🍚",
+      "s": "1f35a",
+      "n": "cooked rice",
+      "k": [
+        "cooked",
+        "food",
+        "rice"
+      ]
+    },
+    {
+      "c": "🍛",
+      "s": "1f35b",
+      "n": "curry rice",
+      "k": [
+        "curry",
+        "food",
+        "rice"
+      ]
+    },
+    {
+      "c": "🍜",
+      "s": "1f35c",
+      "n": "steaming bowl",
+      "k": [
+        "bowl",
+        "chopsticks",
+        "food",
+        "noodle",
+        "pho",
+        "ramen",
+        "soup",
+        "steaming"
+      ]
+    },
+    {
+      "c": "🍝",
+      "s": "1f35d",
+      "n": "spaghetti",
+      "k": [
+        "food",
+        "meatballs",
+        "pasta",
+        "restaurant",
+        "spaghetti"
+      ]
+    },
+    {
+      "c": "🍠",
+      "s": "1f360",
+      "n": "roasted sweet potato",
+      "k": [
+        "food",
+        "potato",
+        "roasted",
+        "sweet"
+      ]
+    },
+    {
+      "c": "🍢",
+      "s": "1f362",
+      "n": "oden",
+      "k": [
+        "food",
+        "kebab",
+        "oden",
+        "restaurant",
+        "seafood",
+        "skewer",
+        "stick"
+      ]
+    },
+    {
+      "c": "🍣",
+      "s": "1f363",
+      "n": "sushi",
+      "k": [
+        "food",
+        "sushi"
+      ]
+    },
+    {
+      "c": "🍤",
+      "s": "1f364",
+      "n": "fried shrimp",
+      "k": [
+        "fried",
+        "prawn",
+        "shrimp",
+        "tempura"
+      ]
+    },
+    {
+      "c": "🍥",
+      "s": "1f365",
+      "n": "fish cake with swirl",
+      "k": [
+        "cake",
+        "fish",
+        "food",
+        "pastry",
+        "restaurant",
+        "swirl"
+      ]
+    },
+    {
+      "c": "🥮",
+      "s": "1f96e",
+      "n": "moon cake",
+      "k": [
+        "autumn",
+        "cake",
+        "festival",
+        "moon",
+        "yuèbǐng"
+      ]
+    },
+    {
+      "c": "🍡",
+      "s": "1f361",
+      "n": "dango",
+      "k": [
+        "dango",
+        "dessert",
+        "Japanese",
+        "skewer",
+        "stick",
+        "sweet"
+      ]
+    },
+    {
+      "c": "🥟",
+      "s": "1f95f",
+      "n": "dumpling",
+      "k": [
+        "dumpling",
+        "empanada",
+        "gyōza",
+        "jiaozi",
+        "pierogi",
+        "potsticker"
+      ]
+    },
+    {
+      "c": "🥠",
+      "s": "1f960",
+      "n": "fortune cookie",
+      "k": [
+        "cookie",
+        "fortune",
+        "prophecy"
+      ]
+    },
+    {
+      "c": "🥡",
+      "s": "1f961",
+      "n": "takeout box",
+      "k": [
+        "box",
+        "chopsticks",
+        "delivery",
+        "food",
+        "oyster",
+        "pail",
+        "takeout"
+      ]
+    },
+    {
+      "c": "🦀",
+      "s": "1f980",
+      "n": "crab",
+      "k": [
+        "Cancer",
+        "crab",
+        "zodiac"
+      ]
+    },
+    {
+      "c": "🦞",
+      "s": "1f99e",
+      "n": "lobster",
+      "k": [
+        "animal",
+        "bisque",
+        "claws",
+        "lobster",
+        "seafood"
+      ]
+    },
+    {
+      "c": "🦐",
+      "s": "1f990",
+      "n": "shrimp",
+      "k": [
+        "food",
+        "shellfish",
+        "shrimp",
+        "small"
+      ]
+    },
+    {
+      "c": "🦑",
+      "s": "1f991",
+      "n": "squid",
+      "k": [
+        "animal",
+        "food",
+        "mollusk",
+        "squid"
+      ]
+    },
+    {
+      "c": "🦪",
+      "s": "1f9aa",
+      "n": "oyster",
+      "k": [
+        "diving",
+        "oyster",
+        "pearl"
+      ]
+    },
+    {
+      "c": "🍦",
+      "s": "1f366",
+      "n": "soft ice cream",
+      "k": [
+        "cream",
+        "dessert",
+        "food",
+        "ice",
+        "icecream",
+        "restaurant",
+        "serve",
+        "soft",
+        "sweet"
+      ]
+    },
+    {
+      "c": "🍧",
+      "s": "1f367",
+      "n": "shaved ice",
+      "k": [
+        "dessert",
+        "ice",
+        "restaurant",
+        "shaved",
+        "sweet"
+      ]
+    },
+    {
+      "c": "🍨",
+      "s": "1f368",
+      "n": "ice cream",
+      "k": [
+        "cream",
+        "dessert",
+        "food",
+        "ice",
+        "restaurant",
+        "sweet"
+      ]
+    },
+    {
+      "c": "🍩",
+      "s": "1f369",
+      "n": "doughnut",
+      "k": [
+        "breakfast",
+        "dessert",
+        "donut",
+        "doughnut",
+        "food",
+        "sweet"
+      ]
+    },
+    {
+      "c": "🍪",
+      "s": "1f36a",
+      "n": "cookie",
+      "k": [
+        "chip",
+        "chocolate",
+        "cookie",
+        "dessert",
+        "sweet"
+      ]
+    },
+    {
+      "c": "🎂",
+      "s": "1f382",
+      "n": "birthday cake",
+      "k": [
+        "bday",
+        "birthday",
+        "cake",
+        "celebration",
+        "dessert",
+        "happy",
+        "pastry",
+        "sweet"
+      ]
+    },
+    {
+      "c": "🍰",
+      "s": "1f370",
+      "n": "shortcake",
+      "k": [
+        "cake",
+        "dessert",
+        "pastry",
+        "shortcake",
+        "slice",
+        "sweet"
+      ]
+    },
+    {
+      "c": "🧁",
+      "s": "1f9c1",
+      "n": "cupcake",
+      "k": [
+        "bakery",
+        "cupcake",
+        "dessert",
+        "sprinkles",
+        "sugar",
+        "sweet",
+        "treat"
+      ]
+    },
+    {
+      "c": "🥧",
+      "s": "1f967",
+      "n": "pie",
+      "k": [
+        "apple",
+        "filling",
+        "fruit",
+        "meat",
+        "pastry",
+        "pie",
+        "pumpkin",
+        "slice"
+      ]
+    },
+    {
+      "c": "🍫",
+      "s": "1f36b",
+      "n": "chocolate bar",
+      "k": [
+        "bar",
+        "candy",
+        "chocolate",
+        "dessert",
+        "halloween",
+        "sweet",
+        "tooth"
+      ]
+    },
+    {
+      "c": "🍬",
+      "s": "1f36c",
+      "n": "candy",
+      "k": [
+        "candy",
+        "cavities",
+        "dessert",
+        "halloween",
+        "restaurant",
+        "sweet",
+        "tooth",
+        "wrapper"
+      ]
+    },
+    {
+      "c": "🍭",
+      "s": "1f36d",
+      "n": "lollipop",
+      "k": [
+        "candy",
+        "dessert",
+        "food",
+        "lollipop",
+        "restaurant",
+        "sweet"
+      ]
+    },
+    {
+      "c": "🍮",
+      "s": "1f36e",
+      "n": "custard",
+      "k": [
+        "custard",
+        "dessert",
+        "pudding",
+        "sweet"
+      ]
+    },
+    {
+      "c": "🍯",
+      "s": "1f36f",
+      "n": "honey pot",
+      "k": [
+        "barrel",
+        "bear",
+        "food",
+        "honey",
+        "honeypot",
+        "jar",
+        "pot",
+        "sweet"
+      ]
+    },
+    {
+      "c": "🍼",
+      "s": "1f37c",
+      "n": "baby bottle",
+      "k": [
+        "babies",
+        "baby",
+        "birth",
+        "born",
+        "bottle",
+        "drink",
+        "infant",
+        "milk",
+        "newborn"
+      ]
+    },
+    {
+      "c": "🥛",
+      "s": "1f95b",
+      "n": "glass of milk",
+      "k": [
+        "drink",
+        "glass",
+        "milk"
+      ]
+    },
+    {
+      "c": "☕",
+      "s": "2615",
+      "n": "hot beverage",
+      "k": [
+        "beverage",
+        "cafe",
+        "caffeine",
+        "chai",
+        "coffee",
+        "drink",
+        "hot",
+        "morning",
+        "steaming",
+        "tea"
+      ]
+    },
+    {
+      "c": "🫖",
+      "s": "1fad6",
+      "n": "teapot",
+      "k": [
+        "brew",
+        "drink",
+        "food",
+        "pot",
+        "tea",
+        "teapot"
+      ]
+    },
+    {
+      "c": "🍵",
+      "s": "1f375",
+      "n": "teacup without handle",
+      "k": [
+        "beverage",
+        "cup",
+        "drink",
+        "handle",
+        "oolong",
+        "tea",
+        "teacup"
+      ]
+    },
+    {
+      "c": "🍶",
+      "s": "1f376",
+      "n": "sake",
+      "k": [
+        "bar",
+        "beverage",
+        "bottle",
+        "cup",
+        "drink",
+        "restaurant",
+        "sake"
+      ]
+    },
+    {
+      "c": "🍾",
+      "s": "1f37e",
+      "n": "bottle with popping cork",
+      "k": [
+        "bar",
+        "bottle",
+        "cork",
+        "drink",
+        "popping"
+      ]
+    },
+    {
+      "c": "🍷",
+      "s": "1f377",
+      "n": "wine glass",
+      "k": [
+        "alcohol",
+        "bar",
+        "beverage",
+        "booze",
+        "club",
+        "drink",
+        "drinking",
+        "drinks",
+        "glass",
+        "restaurant",
+        "wine"
+      ]
+    },
+    {
+      "c": "🍸",
+      "s": "1f378",
+      "n": "cocktail glass",
+      "k": [
+        "alcohol",
+        "bar",
+        "booze",
+        "club",
+        "cocktail",
+        "drink",
+        "drinking",
+        "drinks",
+        "glass",
+        "mad",
+        "martini",
+        "men"
+      ]
+    },
+    {
+      "c": "🍹",
+      "s": "1f379",
+      "n": "tropical drink",
+      "k": [
+        "alcohol",
+        "bar",
+        "booze",
+        "club",
+        "cocktail",
+        "drink",
+        "drinking",
+        "drinks",
+        "drunk",
+        "mai",
+        "party",
+        "tai",
+        "tropical",
+        "tropics"
+      ]
+    },
+    {
+      "c": "🍺",
+      "s": "1f37a",
+      "n": "beer mug",
+      "k": [
+        "alcohol",
+        "ale",
+        "bar",
+        "beer",
+        "booze",
+        "drink",
+        "drinking",
+        "drinks",
+        "mug",
+        "octoberfest",
+        "oktoberfest",
+        "pint",
+        "stein",
+        "summer"
+      ]
+    },
+    {
+      "c": "🍻",
+      "s": "1f37b",
+      "n": "clinking beer mugs",
+      "k": [
+        "alcohol",
+        "bar",
+        "beer",
+        "booze",
+        "bottoms",
+        "cheers",
+        "clink",
+        "clinking",
+        "drinking",
+        "drinks",
+        "mugs"
+      ]
+    },
+    {
+      "c": "🥂",
+      "s": "1f942",
+      "n": "clinking glasses",
+      "k": [
+        "celebrate",
+        "clink",
+        "clinking",
+        "drink",
+        "glass",
+        "glasses"
+      ]
+    },
+    {
+      "c": "🥃",
+      "s": "1f943",
+      "n": "tumbler glass",
+      "k": [
+        "glass",
+        "liquor",
+        "scotch",
+        "shot",
+        "tumbler",
+        "whiskey",
+        "whisky"
+      ]
+    },
+    {
+      "c": "🫗",
+      "s": "1fad7",
+      "n": "pouring liquid",
+      "k": [
+        "accident",
+        "drink",
+        "empty",
+        "glass",
+        "liquid",
+        "oops",
+        "pour",
+        "pouring",
+        "spill",
+        "water"
+      ]
+    },
+    {
+      "c": "🥤",
+      "s": "1f964",
+      "n": "cup with straw",
+      "k": [
+        "cup",
+        "drink",
+        "juice",
+        "malt",
+        "soda",
+        "soft",
+        "straw",
+        "water"
+      ]
+    },
+    {
+      "c": "🧋",
+      "s": "1f9cb",
+      "n": "bubble tea",
+      "k": [
+        "boba",
+        "bubble",
+        "food",
+        "milk",
+        "pearl",
+        "tea"
+      ]
+    },
+    {
+      "c": "🧃",
+      "s": "1f9c3",
+      "n": "beverage box",
+      "k": [
+        "beverage",
+        "box",
+        "juice",
+        "straw",
+        "sweet"
+      ]
+    },
+    {
+      "c": "🧉",
+      "s": "1f9c9",
+      "n": "mate",
+      "k": [
+        "drink",
+        "mate"
+      ]
+    },
+    {
+      "c": "🧊",
+      "s": "1f9ca",
+      "n": "ice",
+      "k": [
+        "cold",
+        "cube",
+        "ice",
+        "iceberg"
+      ]
+    },
+    {
+      "c": "🥢",
+      "s": "1f962",
+      "n": "chopsticks",
+      "k": [
+        "chopsticks",
+        "hashi",
+        "jeotgarak",
+        "kuaizi"
+      ]
+    },
+    {
+      "c": "🍽️",
+      "s": "1f37d",
+      "n": "fork and knife with plate",
+      "k": [
+        "cooking",
+        "dinner",
+        "eat",
+        "fork",
+        "knife",
+        "plate"
+      ]
+    },
+    {
+      "c": "🍴",
+      "s": "1f374",
+      "n": "fork and knife",
+      "k": [
+        "breakfast",
+        "breaky",
+        "cooking",
+        "cutlery",
+        "delicious",
+        "dinner",
+        "eat",
+        "feed",
+        "food",
+        "fork",
+        "hungry",
+        "knife",
+        "lunch",
+        "restaurant",
+        "yum",
+        "yummy"
+      ]
+    },
+    {
+      "c": "🥄",
+      "s": "1f944",
+      "n": "spoon",
+      "k": [
+        "eat",
+        "spoon",
+        "tableware"
+      ]
+    },
+    {
+      "c": "🔪",
+      "s": "1f52a",
+      "n": "kitchen knife",
+      "k": [
+        "chef",
+        "cooking",
+        "hocho",
+        "kitchen",
+        "knife",
+        "tool",
+        "weapon"
+      ]
+    },
+    {
+      "c": "🫙",
+      "s": "1fad9",
+      "n": "jar",
+      "k": [
+        "condiment",
+        "container",
+        "empty",
+        "jar",
+        "nothing",
+        "sauce",
+        "store"
+      ]
+    },
+    {
+      "c": "🏺",
+      "s": "1f3fa",
+      "n": "amphora",
+      "k": [
+        "amphora",
+        "Aquarius",
+        "cooking",
+        "drink",
+        "jug",
+        "tool",
+        "weapon",
+        "zodiac"
+      ]
+    }
+  ]
+}

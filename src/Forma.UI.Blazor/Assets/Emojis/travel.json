@@ -1,0 +1,2568 @@
+{
+  "version": "15.1",
+  "group": "travel",
+  "emoji": [
+    {
+      "c": "🌍",
+      "s": "1f30d",
+      "n": "globe showing Europe-Africa",
+      "k": [
+        "Africa",
+        "earth",
+        "Europe",
+        "Europe-Africa",
+        "globe",
+        "showing",
+        "world"
+      ]
+    },
+    {
+      "c": "🌎",
+      "s": "1f30e",
+      "n": "globe showing Americas",
+      "k": [
+        "Americas",
+        "earth",
+        "globe",
+        "showing",
+        "world"
+      ]
+    },
+    {
+      "c": "🌏",
+      "s": "1f30f",
+      "n": "globe showing Asia-Australia",
+      "k": [
+        "Asia",
+        "Asia-Australia",
+        "Australia",
+        "earth",
+        "globe",
+        "showing",
+        "world"
+      ]
+    },
+    {
+      "c": "🌐",
+      "s": "1f310",
+      "n": "globe with meridians",
+      "k": [
+        "earth",
+        "globe",
+        "internet",
+        "meridians",
+        "web",
+        "world",
+        "worldwide"
+      ]
+    },
+    {
+      "c": "🗺️",
+      "s": "1f5fa",
+      "n": "world map",
+      "k": [
+        "map",
+        "world"
+      ]
+    },
+    {
+      "c": "🗾",
+      "s": "1f5fe",
+      "n": "map of Japan",
+      "k": [
+        "Japan",
+        "map"
+      ]
+    },
+    {
+      "c": "🧭",
+      "s": "1f9ed",
+      "n": "compass",
+      "k": [
+        "compass",
+        "direction",
+        "magnetic",
+        "navigation",
+        "orienteering"
+      ]
+    },
+    {
+      "c": "🏔️",
+      "s": "1f3d4",
+      "n": "snow-capped mountain",
+      "k": [
+        "cold",
+        "mountain",
+        "snow",
+        "snow-capped"
+      ]
+    },
+    {
+      "c": "⛰️",
+      "s": "26f0",
+      "n": "mountain",
+      "k": [
+        "mountain"
+      ]
+    },
+    {
+      "c": "🌋",
+      "s": "1f30b",
+      "n": "volcano",
+      "k": [
+        "eruption",
+        "mountain",
+        "nature",
+        "volcano"
+      ]
+    },
+    {
+      "c": "🗻",
+      "s": "1f5fb",
+      "n": "mount fuji",
+      "k": [
+        "fuji",
+        "mount",
+        "mountain",
+        "nature"
+      ]
+    },
+    {
+      "c": "🏕️",
+      "s": "1f3d5",
+      "n": "camping",
+      "k": [
+        "camping"
+      ]
+    },
+    {
+      "c": "🏖️",
+      "s": "1f3d6",
+      "n": "beach with umbrella",
+      "k": [
+        "beach",
+        "umbrella"
+      ]
+    },
+    {
+      "c": "🏜️",
+      "s": "1f3dc",
+      "n": "desert",
+      "k": [
+        "desert"
+      ]
+    },
+    {
+      "c": "🏝️",
+      "s": "1f3dd",
+      "n": "desert island",
+      "k": [
+        "desert",
+        "island"
+      ]
+    },
+    {
+      "c": "🏞️",
+      "s": "1f3de",
+      "n": "national park",
+      "k": [
+        "national",
+        "park"
+      ]
+    },
+    {
+      "c": "🏟️",
+      "s": "1f3df",
+      "n": "stadium",
+      "k": [
+        "stadium"
+      ]
+    },
+    {
+      "c": "🏛️",
+      "s": "1f3db",
+      "n": "classical building",
+      "k": [
+        "building",
+        "classical"
+      ]
+    },
+    {
+      "c": "🏗️",
+      "s": "1f3d7",
+      "n": "building construction",
+      "k": [
+        "building",
+        "construction",
+        "crane"
+      ]
+    },
+    {
+      "c": "🧱",
+      "s": "1f9f1",
+      "n": "brick",
+      "k": [
+        "brick",
+        "bricks",
+        "clay",
+        "mortar",
+        "wall"
+      ]
+    },
+    {
+      "c": "🪨",
+      "s": "1faa8",
+      "n": "rock",
+      "k": [
+        "boulder",
+        "heavy",
+        "rock",
+        "solid",
+        "stone",
+        "tough"
+      ]
+    },
+    {
+      "c": "🪵",
+      "s": "1fab5",
+      "n": "wood",
+      "k": [
+        "log",
+        "lumber",
+        "timber",
+        "wood"
+      ]
+    },
+    {
+      "c": "🛖",
+      "s": "1f6d6",
+      "n": "hut",
+      "k": [
+        "home",
+        "house",
+        "hut",
+        "roundhouse",
+        "shelter",
+        "yurt"
+      ]
+    },
+    {
+      "c": "🏘️",
+      "s": "1f3d8",
+      "n": "houses",
+      "k": [
+        "house",
+        "houses"
+      ]
+    },
+    {
+      "c": "🏚️",
+      "s": "1f3da",
+      "n": "derelict house",
+      "k": [
+        "derelict",
+        "home",
+        "house"
+      ]
+    },
+    {
+      "c": "🏠",
+      "s": "1f3e0",
+      "n": "house",
+      "k": [
+        "building",
+        "country",
+        "heart",
+        "home",
+        "house",
+        "ranch",
+        "settle",
+        "simple",
+        "suburban",
+        "suburbia",
+        "where"
+      ]
+    },
+    {
+      "c": "🏡",
+      "s": "1f3e1",
+      "n": "house with garden",
+      "k": [
+        "building",
+        "country",
+        "garden",
+        "heart",
+        "home",
+        "house",
+        "ranch",
+        "settle",
+        "simple",
+        "suburban",
+        "suburbia",
+        "where"
+      ]
+    },
+    {
+      "c": "🏢",
+      "s": "1f3e2",
+      "n": "office building",
+      "k": [
+        "building",
+        "city",
+        "cubical",
+        "job",
+        "office"
+      ]
+    },
+    {
+      "c": "🏣",
+      "s": "1f3e3",
+      "n": "Japanese post office",
+      "k": [
+        "building",
+        "Japanese",
+        "office",
+        "post"
+      ]
+    },
+    {
+      "c": "🏤",
+      "s": "1f3e4",
+      "n": "post office",
+      "k": [
+        "building",
+        "European",
+        "office",
+        "post"
+      ]
+    },
+    {
+      "c": "🏥",
+      "s": "1f3e5",
+      "n": "hospital",
+      "k": [
+        "building",
+        "doctor",
+        "hospital",
+        "medicine"
+      ]
+    },
+    {
+      "c": "🏦",
+      "s": "1f3e6",
+      "n": "bank",
+      "k": [
+        "bank",
+        "building"
+      ]
+    },
+    {
+      "c": "🏨",
+      "s": "1f3e8",
+      "n": "hotel",
+      "k": [
+        "building",
+        "hotel"
+      ]
+    },
+    {
+      "c": "🏩",
+      "s": "1f3e9",
+      "n": "love hotel",
+      "k": [
+        "building",
+        "hotel",
+        "love"
+      ]
+    },
+    {
+      "c": "🏪",
+      "s": "1f3ea",
+      "n": "convenience store",
+      "k": [
+        "24",
+        "building",
+        "convenience",
+        "hours",
+        "store"
+      ]
+    },
+    {
+      "c": "🏫",
+      "s": "1f3eb",
+      "n": "school",
+      "k": [
+        "building",
+        "school"
+      ]
+    },
+    {
+      "c": "🏬",
+      "s": "1f3ec",
+      "n": "department store",
+      "k": [
+        "building",
+        "department",
+        "store"
+      ]
+    },
+    {
+      "c": "🏭",
+      "s": "1f3ed",
+      "n": "factory",
+      "k": [
+        "building",
+        "factory"
+      ]
+    },
+    {
+      "c": "🏯",
+      "s": "1f3ef",
+      "n": "Japanese castle",
+      "k": [
+        "building",
+        "castle",
+        "Japanese"
+      ]
+    },
+    {
+      "c": "🏰",
+      "s": "1f3f0",
+      "n": "castle",
+      "k": [
+        "building",
+        "castle",
+        "European"
+      ]
+    },
+    {
+      "c": "💒",
+      "s": "1f492",
+      "n": "wedding",
+      "k": [
+        "chapel",
+        "hitched",
+        "nuptials",
+        "romance",
+        "wedding"
+      ]
+    },
+    {
+      "c": "🗼",
+      "s": "1f5fc",
+      "n": "Tokyo tower",
+      "k": [
+        "Tokyo",
+        "tower"
+      ]
+    },
+    {
+      "c": "🗽",
+      "s": "1f5fd",
+      "n": "Statue of Liberty",
+      "k": [
+        "liberty",
+        "Liberty",
+        "new",
+        "ny",
+        "nyc",
+        "statue",
+        "Statue",
+        "york"
+      ]
+    },
+    {
+      "c": "⛪",
+      "s": "26ea",
+      "n": "church",
+      "k": [
+        "bless",
+        "chapel",
+        "Christian",
+        "church",
+        "cross",
+        "religion"
+      ]
+    },
+    {
+      "c": "🕌",
+      "s": "1f54c",
+      "n": "mosque",
+      "k": [
+        "islam",
+        "masjid",
+        "mosque",
+        "Muslim",
+        "religion"
+      ]
+    },
+    {
+      "c": "🛕",
+      "s": "1f6d5",
+      "n": "hindu temple",
+      "k": [
+        "hindu",
+        "temple"
+      ]
+    },
+    {
+      "c": "🕍",
+      "s": "1f54d",
+      "n": "synagogue",
+      "k": [
+        "Jew",
+        "Jewish",
+        "judaism",
+        "religion",
+        "synagogue",
+        "temple"
+      ]
+    },
+    {
+      "c": "⛩️",
+      "s": "26e9",
+      "n": "shinto shrine",
+      "k": [
+        "religion",
+        "shinto",
+        "shrine"
+      ]
+    },
+    {
+      "c": "🕋",
+      "s": "1f54b",
+      "n": "kaaba",
+      "k": [
+        "hajj",
+        "islam",
+        "kaaba",
+        "Muslim",
+        "religion",
+        "umrah"
+      ]
+    },
+    {
+      "c": "⛲",
+      "s": "26f2",
+      "n": "fountain",
+      "k": [
+        "fountain"
+      ]
+    },
+    {
+      "c": "⛺",
+      "s": "26fa",
+      "n": "tent",
+      "k": [
+        "camping",
+        "tent"
+      ]
+    },
+    {
+      "c": "🌁",
+      "s": "1f301",
+      "n": "foggy",
+      "k": [
+        "fog",
+        "foggy"
+      ]
+    },
+    {
+      "c": "🌃",
+      "s": "1f303",
+      "n": "night with stars",
+      "k": [
+        "night",
+        "star",
+        "stars"
+      ]
+    },
+    {
+      "c": "🏙️",
+      "s": "1f3d9",
+      "n": "cityscape",
+      "k": [
+        "city",
+        "cityscape"
+      ]
+    },
+    {
+      "c": "🌄",
+      "s": "1f304",
+      "n": "sunrise over mountains",
+      "k": [
+        "morning",
+        "mountains",
+        "over",
+        "sun",
+        "sunrise"
+      ]
+    },
+    {
+      "c": "🌅",
+      "s": "1f305",
+      "n": "sunrise",
+      "k": [
+        "morning",
+        "nature",
+        "sun",
+        "sunrise"
+      ]
+    },
+    {
+      "c": "🌆",
+      "s": "1f306",
+      "n": "cityscape at dusk",
+      "k": [
+        "at",
+        "building",
+        "city",
+        "cityscape",
+        "dusk",
+        "evening",
+        "landscape",
+        "sun",
+        "sunset"
+      ]
+    },
+    {
+      "c": "🌇",
+      "s": "1f307",
+      "n": "sunset",
+      "k": [
+        "building",
+        "dusk",
+        "sun",
+        "sunset"
+      ]
+    },
+    {
+      "c": "🌉",
+      "s": "1f309",
+      "n": "bridge at night",
+      "k": [
+        "at",
+        "bridge",
+        "night"
+      ]
+    },
+    {
+      "c": "♨️",
+      "s": "2668",
+      "n": "hot springs",
+      "k": [
+        "hot",
+        "hotsprings",
+        "springs",
+        "steaming"
+      ]
+    },
+    {
+      "c": "🎠",
+      "s": "1f3a0",
+      "n": "carousel horse",
+      "k": [
+        "carousel",
+        "entertainment",
+        "horse"
+      ]
+    },
+    {
+      "c": "🛝",
+      "s": "1f6dd",
+      "n": "playground slide",
+      "k": [
+        "amusement",
+        "park",
+        "play",
+        "playground",
+        "playing",
+        "slide",
+        "sliding",
+        "theme"
+      ]
+    },
+    {
+      "c": "🎡",
+      "s": "1f3a1",
+      "n": "ferris wheel",
+      "k": [
+        "amusement",
+        "ferris",
+        "park",
+        "theme",
+        "wheel"
+      ]
+    },
+    {
+      "c": "🎢",
+      "s": "1f3a2",
+      "n": "roller coaster",
+      "k": [
+        "amusement",
+        "coaster",
+        "park",
+        "roller",
+        "theme"
+      ]
+    },
+    {
+      "c": "💈",
+      "s": "1f488",
+      "n": "barber pole",
+      "k": [
+        "barber",
+        "cut",
+        "fresh",
+        "haircut",
+        "pole",
+        "shave"
+      ]
+    },
+    {
+      "c": "🎪",
+      "s": "1f3aa",
+      "n": "circus tent",
+      "k": [
+        "circus",
+        "tent"
+      ]
+    },
+    {
+      "c": "🚂",
+      "s": "1f682",
+      "n": "locomotive",
+      "k": [
+        "caboose",
+        "engine",
+        "locomotive",
+        "railway",
+        "steam",
+        "train",
+        "trains",
+        "travel"
+      ]
+    },
+    {
+      "c": "🚃",
+      "s": "1f683",
+      "n": "railway car",
+      "k": [
+        "car",
+        "electric",
+        "railway",
+        "train",
+        "tram",
+        "travel",
+        "trolleybus"
+      ]
+    },
+    {
+      "c": "🚄",
+      "s": "1f684",
+      "n": "high-speed train",
+      "k": [
+        "high-speed",
+        "railway",
+        "shinkansen",
+        "speed",
+        "train"
+      ]
+    },
+    {
+      "c": "🚅",
+      "s": "1f685",
+      "n": "bullet train",
+      "k": [
+        "bullet",
+        "high-speed",
+        "nose",
+        "railway",
+        "shinkansen",
+        "speed",
+        "train",
+        "travel"
+      ]
+    },
+    {
+      "c": "🚆",
+      "s": "1f686",
+      "n": "train",
+      "k": [
+        "arrived",
+        "choo",
+        "railway",
+        "train"
+      ]
+    },
+    {
+      "c": "🚇",
+      "s": "1f687",
+      "n": "metro",
+      "k": [
+        "metro",
+        "subway",
+        "travel"
+      ]
+    },
+    {
+      "c": "🚈",
+      "s": "1f688",
+      "n": "light rail",
+      "k": [
+        "arrived",
+        "light",
+        "monorail",
+        "rail",
+        "railway"
+      ]
+    },
+    {
+      "c": "🚉",
+      "s": "1f689",
+      "n": "station",
+      "k": [
+        "railway",
+        "station",
+        "train"
+      ]
+    },
+    {
+      "c": "🚊",
+      "s": "1f68a",
+      "n": "tram",
+      "k": [
+        "tram",
+        "trolleybus"
+      ]
+    },
+    {
+      "c": "🚝",
+      "s": "1f69d",
+      "n": "monorail",
+      "k": [
+        "monorail",
+        "vehicle"
+      ]
+    },
+    {
+      "c": "🚞",
+      "s": "1f69e",
+      "n": "mountain railway",
+      "k": [
+        "car",
+        "mountain",
+        "railway",
+        "trip"
+      ]
+    },
+    {
+      "c": "🚋",
+      "s": "1f68b",
+      "n": "tram car",
+      "k": [
+        "bus",
+        "car",
+        "tram",
+        "trolley",
+        "trolleybus"
+      ]
+    },
+    {
+      "c": "🚌",
+      "s": "1f68c",
+      "n": "bus",
+      "k": [
+        "bus",
+        "school",
+        "vehicle"
+      ]
+    },
+    {
+      "c": "🚍",
+      "s": "1f68d",
+      "n": "oncoming bus",
+      "k": [
+        "bus",
+        "cars",
+        "oncoming"
+      ]
+    },
+    {
+      "c": "🚎",
+      "s": "1f68e",
+      "n": "trolleybus",
+      "k": [
+        "bus",
+        "tram",
+        "trolley",
+        "trolleybus"
+      ]
+    },
+    {
+      "c": "🚐",
+      "s": "1f690",
+      "n": "minibus",
+      "k": [
+        "bus",
+        "drive",
+        "minibus",
+        "van",
+        "vehicle"
+      ]
+    },
+    {
+      "c": "🚑",
+      "s": "1f691",
+      "n": "ambulance",
+      "k": [
+        "ambulance",
+        "emergency",
+        "vehicle"
+      ]
+    },
+    {
+      "c": "🚒",
+      "s": "1f692",
+      "n": "fire engine",
+      "k": [
+        "engine",
+        "fire",
+        "truck"
+      ]
+    },
+    {
+      "c": "🚓",
+      "s": "1f693",
+      "n": "police car",
+      "k": [
+        "5–0",
+        "car",
+        "cops",
+        "patrol",
+        "police"
+      ]
+    },
+    {
+      "c": "🚔",
+      "s": "1f694",
+      "n": "oncoming police car",
+      "k": [
+        "car",
+        "oncoming",
+        "police"
+      ]
+    },
+    {
+      "c": "🚕",
+      "s": "1f695",
+      "n": "taxi",
+      "k": [
+        "cab",
+        "cabbie",
+        "car",
+        "drive",
+        "taxi",
+        "vehicle",
+        "yellow"
+      ]
+    },
+    {
+      "c": "🚖",
+      "s": "1f696",
+      "n": "oncoming taxi",
+      "k": [
+        "cab",
+        "cabbie",
+        "cars",
+        "drove",
+        "hail",
+        "oncoming",
+        "taxi",
+        "yellow"
+      ]
+    },
+    {
+      "c": "🚗",
+      "s": "1f697",
+      "n": "automobile",
+      "k": [
+        "automobile",
+        "car",
+        "driving",
+        "vehicle"
+      ]
+    },
+    {
+      "c": "🚘",
+      "s": "1f698",
+      "n": "oncoming automobile",
+      "k": [
+        "automobile",
+        "car",
+        "cars",
+        "drove",
+        "oncoming",
+        "vehicle"
+      ]
+    },
+    {
+      "c": "🚙",
+      "s": "1f699",
+      "n": "sport utility vehicle",
+      "k": [
+        "car",
+        "drive",
+        "recreational",
+        "sport",
+        "sportutility",
+        "utility",
+        "vehicle"
+      ]
+    },
+    {
+      "c": "🛻",
+      "s": "1f6fb",
+      "n": "pickup truck",
+      "k": [
+        "automobile",
+        "car",
+        "flatbed",
+        "pick-up",
+        "pickup",
+        "transportation",
+        "truck"
+      ]
+    },
+    {
+      "c": "🚚",
+      "s": "1f69a",
+      "n": "delivery truck",
+      "k": [
+        "car",
+        "delivery",
+        "drive",
+        "truck",
+        "vehicle"
+      ]
+    },
+    {
+      "c": "🚛",
+      "s": "1f69b",
+      "n": "articulated lorry",
+      "k": [
+        "articulated",
+        "car",
+        "drive",
+        "lorry",
+        "move",
+        "semi",
+        "truck",
+        "vehicle"
+      ]
+    },
+    {
+      "c": "🚜",
+      "s": "1f69c",
+      "n": "tractor",
+      "k": [
+        "tractor",
+        "vehicle"
+      ]
+    },
+    {
+      "c": "🏎️",
+      "s": "1f3ce",
+      "n": "racing car",
+      "k": [
+        "car",
+        "racing",
+        "zoom"
+      ]
+    },
+    {
+      "c": "🏍️",
+      "s": "1f3cd",
+      "n": "motorcycle",
+      "k": [
+        "motorcycle",
+        "racing"
+      ]
+    },
+    {
+      "c": "🛵",
+      "s": "1f6f5",
+      "n": "motor scooter",
+      "k": [
+        "motor",
+        "scooter"
+      ]
+    },
+    {
+      "c": "🦽",
+      "s": "1f9bd",
+      "n": "manual wheelchair",
+      "k": [
+        "accessibility",
+        "manual",
+        "wheelchair"
+      ]
+    },
+    {
+      "c": "🦼",
+      "s": "1f9bc",
+      "n": "motorized wheelchair",
+      "k": [
+        "accessibility",
+        "motorized",
+        "wheelchair"
+      ]
+    },
+    {
+      "c": "🛺",
+      "s": "1f6fa",
+      "n": "auto rickshaw",
+      "k": [
+        "auto",
+        "rickshaw",
+        "tuk"
+      ]
+    },
+    {
+      "c": "🚲",
+      "s": "1f6b2",
+      "n": "bicycle",
+      "k": [
+        "bicycle",
+        "bike",
+        "class",
+        "cycle",
+        "cycling",
+        "cyclist",
+        "gang",
+        "ride",
+        "spin",
+        "spinning"
+      ]
+    },
+    {
+      "c": "🛴",
+      "s": "1f6f4",
+      "n": "kick scooter",
+      "k": [
+        "kick",
+        "scooter"
+      ]
+    },
+    {
+      "c": "🛹",
+      "s": "1f6f9",
+      "n": "skateboard",
+      "k": [
+        "board",
+        "skate",
+        "skateboard",
+        "skater",
+        "wheels"
+      ]
+    },
+    {
+      "c": "🛼",
+      "s": "1f6fc",
+      "n": "roller skate",
+      "k": [
+        "blades",
+        "roller",
+        "skate",
+        "skates",
+        "sport"
+      ]
+    },
+    {
+      "c": "🚏",
+      "s": "1f68f",
+      "n": "bus stop",
+      "k": [
+        "bus",
+        "busstop",
+        "stop"
+      ]
+    },
+    {
+      "c": "🛣️",
+      "s": "1f6e3",
+      "n": "motorway",
+      "k": [
+        "highway",
+        "motorway",
+        "road"
+      ]
+    },
+    {
+      "c": "🛤️",
+      "s": "1f6e4",
+      "n": "railway track",
+      "k": [
+        "railway",
+        "track",
+        "train"
+      ]
+    },
+    {
+      "c": "🛢️",
+      "s": "1f6e2",
+      "n": "oil drum",
+      "k": [
+        "drum",
+        "oil"
+      ]
+    },
+    {
+      "c": "⛽",
+      "s": "26fd",
+      "n": "fuel pump",
+      "k": [
+        "diesel",
+        "fuel",
+        "fuelpump",
+        "gas",
+        "gasoline",
+        "pump",
+        "station"
+      ]
+    },
+    {
+      "c": "🛞",
+      "s": "1f6de",
+      "n": "wheel",
+      "k": [
+        "car",
+        "circle",
+        "tire",
+        "turn",
+        "vehicle",
+        "wheel"
+      ]
+    },
+    {
+      "c": "🚨",
+      "s": "1f6a8",
+      "n": "police car light",
+      "k": [
+        "alarm",
+        "alert",
+        "beacon",
+        "car",
+        "emergency",
+        "light",
+        "police",
+        "revolving",
+        "siren"
+      ]
+    },
+    {
+      "c": "🚥",
+      "s": "1f6a5",
+      "n": "horizontal traffic light",
+      "k": [
+        "horizontal",
+        "intersection",
+        "light",
+        "signal",
+        "stop",
+        "stoplight",
+        "traffic"
+      ]
+    },
+    {
+      "c": "🚦",
+      "s": "1f6a6",
+      "n": "vertical traffic light",
+      "k": [
+        "drove",
+        "intersection",
+        "light",
+        "signal",
+        "stop",
+        "stoplight",
+        "traffic",
+        "vertical"
+      ]
+    },
+    {
+      "c": "🛑",
+      "s": "1f6d1",
+      "n": "stop sign",
+      "k": [
+        "octagonal",
+        "sign",
+        "stop"
+      ]
+    },
+    {
+      "c": "🚧",
+      "s": "1f6a7",
+      "n": "construction",
+      "k": [
+        "barrier",
+        "construction"
+      ]
+    },
+    {
+      "c": "⚓",
+      "s": "2693",
+      "n": "anchor",
+      "k": [
+        "anchor",
+        "ship",
+        "tool"
+      ]
+    },
+    {
+      "c": "🛟",
+      "s": "1f6df",
+      "n": "ring buoy",
+      "k": [
+        "buoy",
+        "float",
+        "life",
+        "lifesaver",
+        "preserver",
+        "rescue",
+        "ring",
+        "safety",
+        "save",
+        "saver",
+        "swim"
+      ]
+    },
+    {
+      "c": "⛵",
+      "s": "26f5",
+      "n": "sailboat",
+      "k": [
+        "boat",
+        "resort",
+        "sailboat",
+        "sailing",
+        "sea",
+        "yacht"
+      ]
+    },
+    {
+      "c": "🛶",
+      "s": "1f6f6",
+      "n": "canoe",
+      "k": [
+        "boat",
+        "canoe"
+      ]
+    },
+    {
+      "c": "🚤",
+      "s": "1f6a4",
+      "n": "speedboat",
+      "k": [
+        "billionaire",
+        "boat",
+        "lake",
+        "luxury",
+        "millionaire",
+        "speedboat",
+        "summer",
+        "travel"
+      ]
+    },
+    {
+      "c": "🛳️",
+      "s": "1f6f3",
+      "n": "passenger ship",
+      "k": [
+        "passenger",
+        "ship"
+      ]
+    },
+    {
+      "c": "⛴️",
+      "s": "26f4",
+      "n": "ferry",
+      "k": [
+        "boat",
+        "ferry",
+        "passenger"
+      ]
+    },
+    {
+      "c": "🛥️",
+      "s": "1f6e5",
+      "n": "motor boat",
+      "k": [
+        "boat",
+        "motor",
+        "motorboat"
+      ]
+    },
+    {
+      "c": "🚢",
+      "s": "1f6a2",
+      "n": "ship",
+      "k": [
+        "boat",
+        "passenger",
+        "ship",
+        "travel"
+      ]
+    },
+    {
+      "c": "✈️",
+      "s": "2708",
+      "n": "airplane",
+      "k": [
+        "aeroplane",
+        "airplane",
+        "fly",
+        "flying",
+        "jet",
+        "plane",
+        "travel"
+      ]
+    },
+    {
+      "c": "🛩️",
+      "s": "1f6e9",
+      "n": "small airplane",
+      "k": [
+        "aeroplane",
+        "airplane",
+        "plane",
+        "small"
+      ]
+    },
+    {
+      "c": "🛫",
+      "s": "1f6eb",
+      "n": "airplane departure",
+      "k": [
+        "aeroplane",
+        "airplane",
+        "check-in",
+        "departure",
+        "departures",
+        "plane"
+      ]
+    },
+    {
+      "c": "🛬",
+      "s": "1f6ec",
+      "n": "airplane arrival",
+      "k": [
+        "aeroplane",
+        "airplane",
+        "arrival",
+        "arrivals",
+        "arriving",
+        "landing",
+        "plane"
+      ]
+    },
+    {
+      "c": "🪂",
+      "s": "1fa82",
+      "n": "parachute",
+      "k": [
+        "hang-glide",
+        "parachute",
+        "parasail",
+        "skydive"
+      ]
+    },
+    {
+      "c": "💺",
+      "s": "1f4ba",
+      "n": "seat",
+      "k": [
+        "chair",
+        "seat"
+      ]
+    },
+    {
+      "c": "🚁",
+      "s": "1f681",
+      "n": "helicopter",
+      "k": [
+        "copter",
+        "helicopter",
+        "roflcopter",
+        "travel",
+        "vehicle"
+      ]
+    },
+    {
+      "c": "🚟",
+      "s": "1f69f",
+      "n": "suspension railway",
+      "k": [
+        "railway",
+        "suspension"
+      ]
+    },
+    {
+      "c": "🚠",
+      "s": "1f6a0",
+      "n": "mountain cableway",
+      "k": [
+        "cable",
+        "cableway",
+        "gondola",
+        "lift",
+        "mountain",
+        "ski"
+      ]
+    },
+    {
+      "c": "🚡",
+      "s": "1f6a1",
+      "n": "aerial tramway",
+      "k": [
+        "aerial",
+        "cable",
+        "car",
+        "gondola",
+        "ropeway",
+        "tramway"
+      ]
+    },
+    {
+      "c": "🛰️",
+      "s": "1f6f0",
+      "n": "satellite",
+      "k": [
+        "satellite",
+        "space"
+      ]
+    },
+    {
+      "c": "🚀",
+      "s": "1f680",
+      "n": "rocket",
+      "k": [
+        "launch",
+        "rocket",
+        "rockets",
+        "space",
+        "travel"
+      ]
+    },
+    {
+      "c": "🛸",
+      "s": "1f6f8",
+      "n": "flying saucer",
+      "k": [
+        "aliens",
+        "extra",
+        "flying",
+        "saucer",
+        "terrestrial",
+        "UFO"
+      ]
+    },
+    {
+      "c": "🛎️",
+      "s": "1f6ce",
+      "n": "bellhop bell",
+      "k": [
+        "bell",
+        "bellhop",
+        "hotel"
+      ]
+    },
+    {
+      "c": "🧳",
+      "s": "1f9f3",
+      "n": "luggage",
+      "k": [
+        "bag",
+        "luggage",
+        "packing",
+        "roller",
+        "suitcase",
+        "travel"
+      ]
+    },
+    {
+      "c": "⌛",
+      "s": "231b",
+      "n": "hourglass done",
+      "k": [
+        "done",
+        "hourglass",
+        "sand",
+        "time",
+        "timer"
+      ]
+    },
+    {
+      "c": "⏳",
+      "s": "23f3",
+      "n": "hourglass not done",
+      "k": [
+        "done",
+        "flowing",
+        "hourglass",
+        "hours",
+        "not",
+        "sand",
+        "timer",
+        "waiting",
+        "yolo"
+      ]
+    },
+    {
+      "c": "⌚",
+      "s": "231a",
+      "n": "watch",
+      "k": [
+        "clock",
+        "time",
+        "watch"
+      ]
+    },
+    {
+      "c": "⏰",
+      "s": "23f0",
+      "n": "alarm clock",
+      "k": [
+        "alarm",
+        "clock",
+        "hours",
+        "hrs",
+        "late",
+        "time",
+        "waiting"
+      ]
+    },
+    {
+      "c": "⏱️",
+      "s": "23f1",
+      "n": "stopwatch",
+      "k": [
+        "clock",
+        "stopwatch",
+        "time"
+      ]
+    },
+    {
+      "c": "⏲️",
+      "s": "23f2",
+      "n": "timer clock",
+      "k": [
+        "clock",
+        "timer"
+      ]
+    },
+    {
+      "c": "🕰️",
+      "s": "1f570",
+      "n": "mantelpiece clock",
+      "k": [
+        "clock",
+        "mantelpiece",
+        "time"
+      ]
+    },
+    {
+      "c": "🕛",
+      "s": "1f55b",
+      "n": "twelve o’clock",
+      "k": [
+        "12",
+        "12:00",
+        "clock",
+        "o’clock",
+        "time",
+        "twelve"
+      ]
+    },
+    {
+      "c": "🕧",
+      "s": "1f567",
+      "n": "twelve-thirty",
+      "k": [
+        "12",
+        "12:30",
+        "30",
+        "clock",
+        "thirty",
+        "time",
+        "twelve",
+        "twelve-thirty"
+      ]
+    },
+    {
+      "c": "🕐",
+      "s": "1f550",
+      "n": "one o’clock",
+      "k": [
+        "1",
+        "1:00",
+        "clock",
+        "o’clock",
+        "one",
+        "time"
+      ]
+    },
+    {
+      "c": "🕜",
+      "s": "1f55c",
+      "n": "one-thirty",
+      "k": [
+        "1",
+        "1:30",
+        "30",
+        "clock",
+        "one",
+        "one-thirty",
+        "thirty",
+        "time"
+      ]
+    },
+    {
+      "c": "🕑",
+      "s": "1f551",
+      "n": "two o’clock",
+      "k": [
+        "2",
+        "2:00",
+        "clock",
+        "o’clock",
+        "time",
+        "two"
+      ]
+    },
+    {
+      "c": "🕝",
+      "s": "1f55d",
+      "n": "two-thirty",
+      "k": [
+        "2",
+        "2:30",
+        "30",
+        "clock",
+        "thirty",
+        "time",
+        "two",
+        "two-thirty"
+      ]
+    },
+    {
+      "c": "🕒",
+      "s": "1f552",
+      "n": "three o’clock",
+      "k": [
+        "3",
+        "3:00",
+        "clock",
+        "o’clock",
+        "three",
+        "time"
+      ]
+    },
+    {
+      "c": "🕞",
+      "s": "1f55e",
+      "n": "three-thirty",
+      "k": [
+        "3",
+        "3:30",
+        "30",
+        "clock",
+        "thirty",
+        "three",
+        "three-thirty",
+        "time"
+      ]
+    },
+    {
+      "c": "🕓",
+      "s": "1f553",
+      "n": "four o’clock",
+      "k": [
+        "4",
+        "4:00",
+        "clock",
+        "four",
+        "o’clock",
+        "time"
+      ]
+    },
+    {
+      "c": "🕟",
+      "s": "1f55f",
+      "n": "four-thirty",
+      "k": [
+        "30",
+        "4",
+        "4:30",
+        "clock",
+        "four",
+        "four-thirty",
+        "thirty",
+        "time"
+      ]
+    },
+    {
+      "c": "🕔",
+      "s": "1f554",
+      "n": "five o’clock",
+      "k": [
+        "5",
+        "5:00",
+        "clock",
+        "five",
+        "o’clock",
+        "time"
+      ]
+    },
+    {
+      "c": "🕠",
+      "s": "1f560",
+      "n": "five-thirty",
+      "k": [
+        "30",
+        "5",
+        "5:30",
+        "clock",
+        "five",
+        "five-thirty",
+        "thirty",
+        "time"
+      ]
+    },
+    {
+      "c": "🕕",
+      "s": "1f555",
+      "n": "six o’clock",
+      "k": [
+        "6",
+        "6:00",
+        "clock",
+        "o’clock",
+        "six",
+        "time"
+      ]
+    },
+    {
+      "c": "🕡",
+      "s": "1f561",
+      "n": "six-thirty",
+      "k": [
+        "30",
+        "6",
+        "6:30",
+        "clock",
+        "six",
+        "six-thirty",
+        "thirty"
+      ]
+    },
+    {
+      "c": "🕖",
+      "s": "1f556",
+      "n": "seven o’clock",
+      "k": [
+        "0",
+        "7",
+        "7:00",
+        "clock",
+        "o’clock",
+        "seven"
+      ]
+    },
+    {
+      "c": "🕢",
+      "s": "1f562",
+      "n": "seven-thirty",
+      "k": [
+        "30",
+        "7",
+        "7:30",
+        "clock",
+        "seven",
+        "seven-thirty",
+        "thirty"
+      ]
+    },
+    {
+      "c": "🕗",
+      "s": "1f557",
+      "n": "eight o’clock",
+      "k": [
+        "8",
+        "8:00",
+        "clock",
+        "eight",
+        "o’clock",
+        "time"
+      ]
+    },
+    {
+      "c": "🕣",
+      "s": "1f563",
+      "n": "eight-thirty",
+      "k": [
+        "30",
+        "8",
+        "8:30",
+        "clock",
+        "eight",
+        "eight-thirty",
+        "thirty",
+        "time"
+      ]
+    },
+    {
+      "c": "🕘",
+      "s": "1f558",
+      "n": "nine o’clock",
+      "k": [
+        "9",
+        "9:00",
+        "clock",
+        "nine",
+        "o’clock",
+        "time"
+      ]
+    },
+    {
+      "c": "🕤",
+      "s": "1f564",
+      "n": "nine-thirty",
+      "k": [
+        "30",
+        "9",
+        "9:30",
+        "clock",
+        "nine",
+        "nine-thirty",
+        "thirty",
+        "time"
+      ]
+    },
+    {
+      "c": "🕙",
+      "s": "1f559",
+      "n": "ten o’clock",
+      "k": [
+        "0",
+        "10",
+        "10:00",
+        "clock",
+        "o’clock",
+        "ten"
+      ]
+    },
+    {
+      "c": "🕥",
+      "s": "1f565",
+      "n": "ten-thirty",
+      "k": [
+        "10",
+        "10:30",
+        "30",
+        "clock",
+        "ten",
+        "ten-thirty",
+        "thirty",
+        "time"
+      ]
+    },
+    {
+      "c": "🕚",
+      "s": "1f55a",
+      "n": "eleven o’clock",
+      "k": [
+        "11",
+        "11:00",
+        "clock",
+        "eleven",
+        "o’clock",
+        "time"
+      ]
+    },
+    {
+      "c": "🕦",
+      "s": "1f566",
+      "n": "eleven-thirty",
+      "k": [
+        "11",
+        "11:30",
+        "30",
+        "clock",
+        "eleven",
+        "eleven-thirty",
+        "thirty",
+        "time"
+      ]
+    },
+    {
+      "c": "🌑",
+      "s": "1f311",
+      "n": "new moon",
+      "k": [
+        "dark",
+        "moon",
+        "new",
+        "space"
+      ]
+    },
+    {
+      "c": "🌒",
+      "s": "1f312",
+      "n": "waxing crescent moon",
+      "k": [
+        "crescent",
+        "dreams",
+        "moon",
+        "space",
+        "waxing"
+      ]
+    },
+    {
+      "c": "🌓",
+      "s": "1f313",
+      "n": "first quarter moon",
+      "k": [
+        "first",
+        "moon",
+        "quarter",
+        "space"
+      ]
+    },
+    {
+      "c": "🌔",
+      "s": "1f314",
+      "n": "waxing gibbous moon",
+      "k": [
+        "gibbous",
+        "moon",
+        "space",
+        "waxing"
+      ]
+    },
+    {
+      "c": "🌕",
+      "s": "1f315",
+      "n": "full moon",
+      "k": [
+        "full",
+        "moon",
+        "space"
+      ]
+    },
+    {
+      "c": "🌖",
+      "s": "1f316",
+      "n": "waning gibbous moon",
+      "k": [
+        "gibbous",
+        "moon",
+        "space",
+        "waning"
+      ]
+    },
+    {
+      "c": "🌗",
+      "s": "1f317",
+      "n": "last quarter moon",
+      "k": [
+        "last",
+        "moon",
+        "quarter",
+        "space"
+      ]
+    },
+    {
+      "c": "🌘",
+      "s": "1f318",
+      "n": "waning crescent moon",
+      "k": [
+        "crescent",
+        "moon",
+        "space",
+        "waning"
+      ]
+    },
+    {
+      "c": "🌙",
+      "s": "1f319",
+      "n": "crescent moon",
+      "k": [
+        "crescent",
+        "moon",
+        "ramadan",
+        "space"
+      ]
+    },
+    {
+      "c": "🌚",
+      "s": "1f31a",
+      "n": "new moon face",
+      "k": [
+        "face",
+        "moon",
+        "new",
+        "space"
+      ]
+    },
+    {
+      "c": "🌛",
+      "s": "1f31b",
+      "n": "first quarter moon face",
+      "k": [
+        "face",
+        "first",
+        "moon",
+        "quarter",
+        "space"
+      ]
+    },
+    {
+      "c": "🌜",
+      "s": "1f31c",
+      "n": "last quarter moon face",
+      "k": [
+        "dreams",
+        "face",
+        "last",
+        "moon",
+        "quarter"
+      ]
+    },
+    {
+      "c": "🌡️",
+      "s": "1f321",
+      "n": "thermometer",
+      "k": [
+        "thermometer",
+        "weather"
+      ]
+    },
+    {
+      "c": "☀️",
+      "s": "2600",
+      "n": "sun",
+      "k": [
+        "bright",
+        "rays",
+        "space",
+        "sun",
+        "sunny",
+        "weather"
+      ]
+    },
+    {
+      "c": "🌝",
+      "s": "1f31d",
+      "n": "full moon face",
+      "k": [
+        "bright",
+        "face",
+        "full",
+        "moon"
+      ]
+    },
+    {
+      "c": "🌞",
+      "s": "1f31e",
+      "n": "sun with face",
+      "k": [
+        "beach",
+        "bright",
+        "day",
+        "face",
+        "heat",
+        "shine",
+        "sun",
+        "sunny",
+        "sunshine",
+        "weather"
+      ]
+    },
+    {
+      "c": "🪐",
+      "s": "1fa90",
+      "n": "ringed planet",
+      "k": [
+        "planet",
+        "ringed",
+        "saturn",
+        "saturnine"
+      ]
+    },
+    {
+      "c": "⭐",
+      "s": "2b50",
+      "n": "star",
+      "k": [
+        "astronomy",
+        "medium",
+        "star",
+        "stars",
+        "white"
+      ]
+    },
+    {
+      "c": "🌟",
+      "s": "1f31f",
+      "n": "glowing star",
+      "k": [
+        "glittery",
+        "glow",
+        "glowing",
+        "night",
+        "shining",
+        "sparkle",
+        "star",
+        "win"
+      ]
+    },
+    {
+      "c": "🌠",
+      "s": "1f320",
+      "n": "shooting star",
+      "k": [
+        "falling",
+        "night",
+        "shooting",
+        "space",
+        "star"
+      ]
+    },
+    {
+      "c": "🌌",
+      "s": "1f30c",
+      "n": "milky way",
+      "k": [
+        "milky",
+        "space",
+        "way"
+      ]
+    },
+    {
+      "c": "☁️",
+      "s": "2601",
+      "n": "cloud",
+      "k": [
+        "cloud",
+        "weather"
+      ]
+    },
+    {
+      "c": "⛅",
+      "s": "26c5",
+      "n": "sun behind cloud",
+      "k": [
+        "behind",
+        "cloud",
+        "cloudy",
+        "sun",
+        "weather"
+      ]
+    },
+    {
+      "c": "⛈️",
+      "s": "26c8",
+      "n": "cloud with lightning and rain",
+      "k": [
+        "cloud",
+        "lightning",
+        "rain",
+        "thunder",
+        "thunderstorm"
+      ]
+    },
+    {
+      "c": "🌤️",
+      "s": "1f324",
+      "n": "sun behind small cloud",
+      "k": [
+        "behind",
+        "cloud",
+        "sun",
+        "weather"
+      ]
+    },
+    {
+      "c": "🌥️",
+      "s": "1f325",
+      "n": "sun behind large cloud",
+      "k": [
+        "behind",
+        "cloud",
+        "sun",
+        "weather"
+      ]
+    },
+    {
+      "c": "🌦️",
+      "s": "1f326",
+      "n": "sun behind rain cloud",
+      "k": [
+        "behind",
+        "cloud",
+        "rain",
+        "sun",
+        "weather"
+      ]
+    },
+    {
+      "c": "🌧️",
+      "s": "1f327",
+      "n": "cloud with rain",
+      "k": [
+        "cloud",
+        "rain",
+        "weather"
+      ]
+    },
+    {
+      "c": "🌨️",
+      "s": "1f328",
+      "n": "cloud with snow",
+      "k": [
+        "cloud",
+        "cold",
+        "snow",
+        "weather"
+      ]
+    },
+    {
+      "c": "🌩️",
+      "s": "1f329",
+      "n": "cloud with lightning",
+      "k": [
+        "cloud",
+        "lightning",
+        "weather"
+      ]
+    },
+    {
+      "c": "🌪️",
+      "s": "1f32a",
+      "n": "tornado",
+      "k": [
+        "cloud",
+        "tornado",
+        "weather",
+        "whirlwind"
+      ]
+    },
+    {
+      "c": "🌫️",
+      "s": "1f32b",
+      "n": "fog",
+      "k": [
+        "cloud",
+        "fog",
+        "weather"
+      ]
+    },
+    {
+      "c": "🌬️",
+      "s": "1f32c",
+      "n": "wind face",
+      "k": [
+        "blow",
+        "cloud",
+        "face",
+        "wind"
+      ]
+    },
+    {
+      "c": "🌀",
+      "s": "1f300",
+      "n": "cyclone",
+      "k": [
+        "cyclone",
+        "dizzy",
+        "hurricane",
+        "twister",
+        "typhoon",
+        "weather"
+      ]
+    },
+    {
+      "c": "🌈",
+      "s": "1f308",
+      "n": "rainbow",
+      "k": [
+        "gay",
+        "genderqueer",
+        "glbt",
+        "glbtq",
+        "lesbian",
+        "lgbt",
+        "lgbtq",
+        "lgbtqia",
+        "nature",
+        "pride",
+        "queer",
+        "rain",
+        "rainbow",
+        "trans",
+        "transgender",
+        "weather"
+      ]
+    },
+    {
+      "c": "🌂",
+      "s": "1f302",
+      "n": "closed umbrella",
+      "k": [
+        "closed",
+        "clothing",
+        "rain",
+        "umbrella"
+      ]
+    },
+    {
+      "c": "☂️",
+      "s": "2602",
+      "n": "umbrella",
+      "k": [
+        "clothing",
+        "rain",
+        "umbrella"
+      ]
+    },
+    {
+      "c": "☔",
+      "s": "2614",
+      "n": "umbrella with rain drops",
+      "k": [
+        "clothing",
+        "drop",
+        "drops",
+        "rain",
+        "umbrella",
+        "weather"
+      ]
+    },
+    {
+      "c": "⛱️",
+      "s": "26f1",
+      "n": "umbrella on ground",
+      "k": [
+        "ground",
+        "rain",
+        "sun",
+        "umbrella"
+      ]
+    },
+    {
+      "c": "⚡",
+      "s": "26a1",
+      "n": "high voltage",
+      "k": [
+        "danger",
+        "electric",
+        "electricity",
+        "high",
+        "lightning",
+        "nature",
+        "thunder",
+        "thunderbolt",
+        "voltage",
+        "zap"
+      ]
+    },
+    {
+      "c": "❄️",
+      "s": "2744",
+      "n": "snowflake",
+      "k": [
+        "cold",
+        "snow",
+        "snowflake",
+        "weather"
+      ]
+    },
+    {
+      "c": "☃️",
+      "s": "2603",
+      "n": "snowman",
+      "k": [
+        "cold",
+        "man",
+        "snow",
+        "snowman"
+      ]
+    },
+    {
+      "c": "⛄",
+      "s": "26c4",
+      "n": "snowman without snow",
+      "k": [
+        "cold",
+        "man",
+        "snow",
+        "snowman"
+      ]
+    },
+    {
+      "c": "☄️",
+      "s": "2604",
+      "n": "comet",
+      "k": [
+        "comet",
+        "space"
+      ]
+    },
+    {
+      "c": "🔥",
+      "s": "1f525",
+      "n": "fire",
+      "k": [
+        "af",
+        "burn",
+        "fire",
+        "flame",
+        "hot",
+        "lit",
+        "litaf",
+        "tool"
+      ]
+    },
+    {
+      "c": "💧",
+      "s": "1f4a7",
+      "n": "droplet",
+      "k": [
+        "cold",
+        "comic",
+        "drop",
+        "droplet",
+        "nature",
+        "sad",
+        "sweat",
+        "tear",
+        "water",
+        "weather"
+      ]
+    },
+    {
+      "c": "🌊",
+      "s": "1f30a",
+      "n": "water wave",
+      "k": [
+        "nature",
+        "ocean",
+        "surf",
+        "surfer",
+        "surfing",
+        "water",
+        "wave"
+      ]
+    }
+  ]
+}

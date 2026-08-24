@@ -1,0 +1,3240 @@
+{
+  "version": "15.1",
+  "group": "objects",
+  "emoji": [
+    {
+      "c": "👓",
+      "s": "1f453",
+      "n": "glasses",
+      "k": [
+        "clothing",
+        "eye",
+        "eyeglasses",
+        "eyewear",
+        "glasses"
+      ]
+    },
+    {
+      "c": "🕶️",
+      "s": "1f576",
+      "n": "sunglasses",
+      "k": [
+        "dark",
+        "eye",
+        "eyewear",
+        "glasses",
+        "sunglasses"
+      ]
+    },
+    {
+      "c": "🥽",
+      "s": "1f97d",
+      "n": "goggles",
+      "k": [
+        "dive",
+        "eye",
+        "goggles",
+        "protection",
+        "scuba",
+        "swimming",
+        "welding"
+      ]
+    },
+    {
+      "c": "🥼",
+      "s": "1f97c",
+      "n": "lab coat",
+      "k": [
+        "clothes",
+        "coat",
+        "doctor",
+        "dr",
+        "experiment",
+        "jacket",
+        "lab",
+        "scientist",
+        "white"
+      ]
+    },
+    {
+      "c": "🦺",
+      "s": "1f9ba",
+      "n": "safety vest",
+      "k": [
+        "emergency",
+        "safety",
+        "vest"
+      ]
+    },
+    {
+      "c": "👔",
+      "s": "1f454",
+      "n": "necktie",
+      "k": [
+        "clothing",
+        "employed",
+        "necktie",
+        "serious",
+        "shirt",
+        "tie"
+      ]
+    },
+    {
+      "c": "👕",
+      "s": "1f455",
+      "n": "t-shirt",
+      "k": [
+        "blue",
+        "casual",
+        "clothes",
+        "clothing",
+        "collar",
+        "dressed",
+        "shirt",
+        "shopping",
+        "t-shirt",
+        "tshirt",
+        "weekend"
+      ]
+    },
+    {
+      "c": "👖",
+      "s": "1f456",
+      "n": "jeans",
+      "k": [
+        "blue",
+        "casual",
+        "clothes",
+        "clothing",
+        "denim",
+        "dressed",
+        "jeans",
+        "pants",
+        "shopping",
+        "trousers",
+        "weekend"
+      ]
+    },
+    {
+      "c": "🧣",
+      "s": "1f9e3",
+      "n": "scarf",
+      "k": [
+        "bundle",
+        "cold",
+        "neck",
+        "scarf",
+        "up"
+      ]
+    },
+    {
+      "c": "🧤",
+      "s": "1f9e4",
+      "n": "gloves",
+      "k": [
+        "gloves",
+        "hand"
+      ]
+    },
+    {
+      "c": "🧥",
+      "s": "1f9e5",
+      "n": "coat",
+      "k": [
+        "brr",
+        "bundle",
+        "coat",
+        "cold",
+        "jacket",
+        "up"
+      ]
+    },
+    {
+      "c": "🧦",
+      "s": "1f9e6",
+      "n": "socks",
+      "k": [
+        "socks",
+        "stocking"
+      ]
+    },
+    {
+      "c": "👗",
+      "s": "1f457",
+      "n": "dress",
+      "k": [
+        "clothes",
+        "clothing",
+        "dress",
+        "dressed",
+        "fancy",
+        "shopping"
+      ]
+    },
+    {
+      "c": "👘",
+      "s": "1f458",
+      "n": "kimono",
+      "k": [
+        "clothing",
+        "comfortable",
+        "kimono"
+      ]
+    },
+    {
+      "c": "🥻",
+      "s": "1f97b",
+      "n": "sari",
+      "k": [
+        "clothing",
+        "dress",
+        "sari"
+      ]
+    },
+    {
+      "c": "🩱",
+      "s": "1fa71",
+      "n": "one-piece swimsuit",
+      "k": [
+        "bathing",
+        "one-piece",
+        "suit",
+        "swimsuit"
+      ]
+    },
+    {
+      "c": "🩲",
+      "s": "1fa72",
+      "n": "briefs",
+      "k": [
+        "bathing",
+        "briefs",
+        "one-piece",
+        "suit",
+        "swimsuit",
+        "underwear"
+      ]
+    },
+    {
+      "c": "🩳",
+      "s": "1fa73",
+      "n": "shorts",
+      "k": [
+        "bathing",
+        "pants",
+        "shorts",
+        "suit",
+        "swimsuit",
+        "underwear"
+      ]
+    },
+    {
+      "c": "👙",
+      "s": "1f459",
+      "n": "bikini",
+      "k": [
+        "bathing",
+        "beach",
+        "bikini",
+        "clothing",
+        "pool",
+        "suit",
+        "swim"
+      ]
+    },
+    {
+      "c": "👚",
+      "s": "1f45a",
+      "n": "woman’s clothes",
+      "k": [
+        "blouse",
+        "clothes",
+        "clothing",
+        "collar",
+        "dress",
+        "dressed",
+        "lady",
+        "shirt",
+        "shopping",
+        "woman",
+        "woman’s"
+      ]
+    },
+    {
+      "c": "🪭",
+      "s": "1faad",
+      "n": "folding hand fan",
+      "k": [
+        "clack",
+        "clap",
+        "cool",
+        "cooling",
+        "dance",
+        "fan",
+        "flirt",
+        "flutter",
+        "folding",
+        "hand",
+        "hot",
+        "shy"
+      ]
+    },
+    {
+      "c": "👛",
+      "s": "1f45b",
+      "n": "purse",
+      "k": [
+        "clothes",
+        "clothing",
+        "coin",
+        "dress",
+        "fancy",
+        "handbag",
+        "purse",
+        "shopping"
+      ]
+    },
+    {
+      "c": "👜",
+      "s": "1f45c",
+      "n": "handbag",
+      "k": [
+        "bag",
+        "clothes",
+        "clothing",
+        "dress",
+        "handbag",
+        "lady",
+        "purse",
+        "shopping"
+      ]
+    },
+    {
+      "c": "👝",
+      "s": "1f45d",
+      "n": "clutch bag",
+      "k": [
+        "bag",
+        "clothes",
+        "clothing",
+        "clutch",
+        "dress",
+        "handbag",
+        "pouch",
+        "purse"
+      ]
+    },
+    {
+      "c": "🛍️",
+      "s": "1f6cd",
+      "n": "shopping bags",
+      "k": [
+        "bag",
+        "bags",
+        "hotel",
+        "shopping"
+      ]
+    },
+    {
+      "c": "🎒",
+      "s": "1f392",
+      "n": "backpack",
+      "k": [
+        "backpack",
+        "backpacking",
+        "bag",
+        "bookbag",
+        "education",
+        "rucksack",
+        "satchel",
+        "school"
+      ]
+    },
+    {
+      "c": "🩴",
+      "s": "1fa74",
+      "n": "thong sandal",
+      "k": [
+        "beach",
+        "flip",
+        "flop",
+        "sandal",
+        "sandals",
+        "shoe",
+        "thong",
+        "thongs",
+        "zōri"
+      ]
+    },
+    {
+      "c": "👞",
+      "s": "1f45e",
+      "n": "man’s shoe",
+      "k": [
+        "brown",
+        "clothes",
+        "clothing",
+        "feet",
+        "foot",
+        "kick",
+        "man",
+        "man’s",
+        "shoe",
+        "shoes",
+        "shopping"
+      ]
+    },
+    {
+      "c": "👟",
+      "s": "1f45f",
+      "n": "running shoe",
+      "k": [
+        "athletic",
+        "clothes",
+        "clothing",
+        "fast",
+        "kick",
+        "running",
+        "shoe",
+        "shoes",
+        "shopping",
+        "sneaker",
+        "tennis"
+      ]
+    },
+    {
+      "c": "🥾",
+      "s": "1f97e",
+      "n": "hiking boot",
+      "k": [
+        "backpacking",
+        "boot",
+        "brown",
+        "camping",
+        "hiking",
+        "outdoors",
+        "shoe"
+      ]
+    },
+    {
+      "c": "🥿",
+      "s": "1f97f",
+      "n": "flat shoe",
+      "k": [
+        "ballet",
+        "comfy",
+        "flat",
+        "flats",
+        "shoe",
+        "slip-on",
+        "slipper"
+      ]
+    },
+    {
+      "c": "👠",
+      "s": "1f460",
+      "n": "high-heeled shoe",
+      "k": [
+        "clothes",
+        "clothing",
+        "dress",
+        "fashion",
+        "heel",
+        "heels",
+        "high-heeled",
+        "shoe",
+        "shoes",
+        "shopping",
+        "stiletto",
+        "woman"
+      ]
+    },
+    {
+      "c": "👡",
+      "s": "1f461",
+      "n": "woman’s sandal",
+      "k": [
+        "clothing",
+        "sandal",
+        "shoe",
+        "woman",
+        "woman’s"
+      ]
+    },
+    {
+      "c": "🩰",
+      "s": "1fa70",
+      "n": "ballet shoes",
+      "k": [
+        "ballet",
+        "dance",
+        "shoes"
+      ]
+    },
+    {
+      "c": "👢",
+      "s": "1f462",
+      "n": "woman’s boot",
+      "k": [
+        "boot",
+        "clothes",
+        "clothing",
+        "dress",
+        "shoe",
+        "shoes",
+        "shopping",
+        "woman",
+        "woman’s"
+      ]
+    },
+    {
+      "c": "🪮",
+      "s": "1faae",
+      "n": "hair pick",
+      "k": [
+        "Afro",
+        "comb",
+        "groom",
+        "hair",
+        "pick"
+      ]
+    },
+    {
+      "c": "👑",
+      "s": "1f451",
+      "n": "crown",
+      "k": [
+        "clothing",
+        "crown",
+        "family",
+        "king",
+        "medieval",
+        "queen",
+        "royal",
+        "royalty",
+        "win"
+      ]
+    },
+    {
+      "c": "👒",
+      "s": "1f452",
+      "n": "woman’s hat",
+      "k": [
+        "clothes",
+        "clothing",
+        "garden",
+        "hat",
+        "hats",
+        "party",
+        "woman",
+        "woman’s"
+      ]
+    },
+    {
+      "c": "🎩",
+      "s": "1f3a9",
+      "n": "top hat",
+      "k": [
+        "clothes",
+        "clothing",
+        "fancy",
+        "formal",
+        "hat",
+        "magic",
+        "top",
+        "tophat"
+      ]
+    },
+    {
+      "c": "🎓",
+      "s": "1f393",
+      "n": "graduation cap",
+      "k": [
+        "cap",
+        "celebration",
+        "clothing",
+        "education",
+        "graduation",
+        "hat",
+        "scholar"
+      ]
+    },
+    {
+      "c": "🧢",
+      "s": "1f9e2",
+      "n": "billed cap",
+      "k": [
+        "baseball",
+        "bent",
+        "billed",
+        "cap",
+        "dad",
+        "hat"
+      ]
+    },
+    {
+      "c": "🪖",
+      "s": "1fa96",
+      "n": "military helmet",
+      "k": [
+        "army",
+        "helmet",
+        "military",
+        "soldier",
+        "war",
+        "warrior"
+      ]
+    },
+    {
+      "c": "⛑️",
+      "s": "26d1",
+      "n": "rescue worker’s helmet",
+      "k": [
+        "aid",
+        "cross",
+        "face",
+        "hat",
+        "helmet",
+        "rescue",
+        "worker’s"
+      ]
+    },
+    {
+      "c": "📿",
+      "s": "1f4ff",
+      "n": "prayer beads",
+      "k": [
+        "beads",
+        "clothing",
+        "necklace",
+        "prayer",
+        "religion"
+      ]
+    },
+    {
+      "c": "💄",
+      "s": "1f484",
+      "n": "lipstick",
+      "k": [
+        "cosmetics",
+        "date",
+        "lipstick",
+        "makeup"
+      ]
+    },
+    {
+      "c": "💍",
+      "s": "1f48d",
+      "n": "ring",
+      "k": [
+        "diamond",
+        "engaged",
+        "engagement",
+        "married",
+        "ring",
+        "romance",
+        "shiny",
+        "sparkling",
+        "wedding"
+      ]
+    },
+    {
+      "c": "💎",
+      "s": "1f48e",
+      "n": "gem stone",
+      "k": [
+        "diamond",
+        "engagement",
+        "gem",
+        "jewel",
+        "money",
+        "romance",
+        "stone",
+        "wedding"
+      ]
+    },
+    {
+      "c": "🔇",
+      "s": "1f507",
+      "n": "muted speaker",
+      "k": [
+        "mute",
+        "muted",
+        "quiet",
+        "silent",
+        "sound",
+        "speaker"
+      ]
+    },
+    {
+      "c": "🔈",
+      "s": "1f508",
+      "n": "speaker low volume",
+      "k": [
+        "low",
+        "soft",
+        "sound",
+        "speaker",
+        "volume"
+      ]
+    },
+    {
+      "c": "🔉",
+      "s": "1f509",
+      "n": "speaker medium volume",
+      "k": [
+        "medium",
+        "sound",
+        "speaker",
+        "volume"
+      ]
+    },
+    {
+      "c": "🔊",
+      "s": "1f50a",
+      "n": "speaker high volume",
+      "k": [
+        "high",
+        "loud",
+        "music",
+        "sound",
+        "speaker",
+        "volume"
+      ]
+    },
+    {
+      "c": "📢",
+      "s": "1f4e2",
+      "n": "loudspeaker",
+      "k": [
+        "address",
+        "communication",
+        "loud",
+        "loudspeaker",
+        "public",
+        "sound"
+      ]
+    },
+    {
+      "c": "📣",
+      "s": "1f4e3",
+      "n": "megaphone",
+      "k": [
+        "cheering",
+        "megaphone",
+        "sound"
+      ]
+    },
+    {
+      "c": "📯",
+      "s": "1f4ef",
+      "n": "postal horn",
+      "k": [
+        "horn",
+        "post",
+        "postal"
+      ]
+    },
+    {
+      "c": "🔔",
+      "s": "1f514",
+      "n": "bell",
+      "k": [
+        "bell",
+        "break",
+        "church",
+        "sound"
+      ]
+    },
+    {
+      "c": "🔕",
+      "s": "1f515",
+      "n": "bell with slash",
+      "k": [
+        "bell",
+        "forbidden",
+        "mute",
+        "no",
+        "not",
+        "prohibited",
+        "quiet",
+        "silent",
+        "slash",
+        "sound"
+      ]
+    },
+    {
+      "c": "🎼",
+      "s": "1f3bc",
+      "n": "musical score",
+      "k": [
+        "music",
+        "musical",
+        "note",
+        "score"
+      ]
+    },
+    {
+      "c": "🎵",
+      "s": "1f3b5",
+      "n": "musical note",
+      "k": [
+        "music",
+        "musical",
+        "note",
+        "sound"
+      ]
+    },
+    {
+      "c": "🎶",
+      "s": "1f3b6",
+      "n": "musical notes",
+      "k": [
+        "music",
+        "musical",
+        "note",
+        "notes",
+        "sound"
+      ]
+    },
+    {
+      "c": "🎙️",
+      "s": "1f399",
+      "n": "studio microphone",
+      "k": [
+        "mic",
+        "microphone",
+        "music",
+        "studio"
+      ]
+    },
+    {
+      "c": "🎚️",
+      "s": "1f39a",
+      "n": "level slider",
+      "k": [
+        "level",
+        "music",
+        "slider"
+      ]
+    },
+    {
+      "c": "🎛️",
+      "s": "1f39b",
+      "n": "control knobs",
+      "k": [
+        "control",
+        "knobs",
+        "music"
+      ]
+    },
+    {
+      "c": "🎤",
+      "s": "1f3a4",
+      "n": "microphone",
+      "k": [
+        "karaoke",
+        "mic",
+        "microphone",
+        "music",
+        "sing",
+        "sound"
+      ]
+    },
+    {
+      "c": "🎧",
+      "s": "1f3a7",
+      "n": "headphone",
+      "k": [
+        "earbud",
+        "headphone",
+        "sound"
+      ]
+    },
+    {
+      "c": "📻",
+      "s": "1f4fb",
+      "n": "radio",
+      "k": [
+        "entertainment",
+        "radio",
+        "tbt",
+        "video"
+      ]
+    },
+    {
+      "c": "🎷",
+      "s": "1f3b7",
+      "n": "saxophone",
+      "k": [
+        "instrument",
+        "music",
+        "sax",
+        "saxophone"
+      ]
+    },
+    {
+      "c": "🪗",
+      "s": "1fa97",
+      "n": "accordion",
+      "k": [
+        "accordion",
+        "box",
+        "concertina",
+        "instrument",
+        "music",
+        "squeeze",
+        "squeezebox"
+      ]
+    },
+    {
+      "c": "🎸",
+      "s": "1f3b8",
+      "n": "guitar",
+      "k": [
+        "guitar",
+        "instrument",
+        "music",
+        "strat"
+      ]
+    },
+    {
+      "c": "🎹",
+      "s": "1f3b9",
+      "n": "musical keyboard",
+      "k": [
+        "instrument",
+        "keyboard",
+        "music",
+        "musical",
+        "piano"
+      ]
+    },
+    {
+      "c": "🎺",
+      "s": "1f3ba",
+      "n": "trumpet",
+      "k": [
+        "instrument",
+        "music",
+        "trumpet"
+      ]
+    },
+    {
+      "c": "🎻",
+      "s": "1f3bb",
+      "n": "violin",
+      "k": [
+        "instrument",
+        "music",
+        "violin"
+      ]
+    },
+    {
+      "c": "🪕",
+      "s": "1fa95",
+      "n": "banjo",
+      "k": [
+        "banjo",
+        "music",
+        "stringed"
+      ]
+    },
+    {
+      "c": "🥁",
+      "s": "1f941",
+      "n": "drum",
+      "k": [
+        "drum",
+        "drumsticks",
+        "music"
+      ]
+    },
+    {
+      "c": "🪘",
+      "s": "1fa98",
+      "n": "long drum",
+      "k": [
+        "beat",
+        "conga",
+        "drum",
+        "instrument",
+        "long",
+        "rhythm"
+      ]
+    },
+    {
+      "c": "🪇",
+      "s": "1fa87",
+      "n": "maracas",
+      "k": [
+        "cha",
+        "dance",
+        "instrument",
+        "maracas",
+        "music",
+        "party",
+        "percussion",
+        "rattle",
+        "shake",
+        "shaker"
+      ]
+    },
+    {
+      "c": "🪈",
+      "s": "1fa88",
+      "n": "flute",
+      "k": [
+        "band",
+        "fife",
+        "flautist",
+        "flute",
+        "instrument",
+        "marching",
+        "music",
+        "orchestra",
+        "piccolo",
+        "pipe",
+        "recorder",
+        "woodwind"
+      ]
+    },
+    {
+      "c": "📱",
+      "s": "1f4f1",
+      "n": "mobile phone",
+      "k": [
+        "cell",
+        "communication",
+        "mobile",
+        "phone",
+        "telephone"
+      ]
+    },
+    {
+      "c": "📲",
+      "s": "1f4f2",
+      "n": "mobile phone with arrow",
+      "k": [
+        "arrow",
+        "build",
+        "call",
+        "cell",
+        "communication",
+        "mobile",
+        "phone",
+        "receive",
+        "telephone"
+      ]
+    },
+    {
+      "c": "☎️",
+      "s": "260e",
+      "n": "telephone",
+      "k": [
+        "phone",
+        "telephone"
+      ]
+    },
+    {
+      "c": "📞",
+      "s": "1f4de",
+      "n": "telephone receiver",
+      "k": [
+        "communication",
+        "phone",
+        "receiver",
+        "telephone",
+        "voip"
+      ]
+    },
+    {
+      "c": "📟",
+      "s": "1f4df",
+      "n": "pager",
+      "k": [
+        "communication",
+        "pager"
+      ]
+    },
+    {
+      "c": "📠",
+      "s": "1f4e0",
+      "n": "fax machine",
+      "k": [
+        "communication",
+        "fax",
+        "machine"
+      ]
+    },
+    {
+      "c": "🔋",
+      "s": "1f50b",
+      "n": "battery",
+      "k": [
+        "battery"
+      ]
+    },
+    {
+      "c": "🪫",
+      "s": "1faab",
+      "n": "low battery",
+      "k": [
+        "battery",
+        "drained",
+        "electronic",
+        "energy",
+        "low",
+        "power"
+      ]
+    },
+    {
+      "c": "🔌",
+      "s": "1f50c",
+      "n": "electric plug",
+      "k": [
+        "electric",
+        "electricity",
+        "plug"
+      ]
+    },
+    {
+      "c": "💻",
+      "s": "1f4bb",
+      "n": "laptop",
+      "k": [
+        "computer",
+        "laptop",
+        "office",
+        "pc",
+        "personal"
+      ]
+    },
+    {
+      "c": "🖥️",
+      "s": "1f5a5",
+      "n": "desktop computer",
+      "k": [
+        "computer",
+        "desktop",
+        "monitor"
+      ]
+    },
+    {
+      "c": "🖨️",
+      "s": "1f5a8",
+      "n": "printer",
+      "k": [
+        "computer",
+        "printer"
+      ]
+    },
+    {
+      "c": "⌨️",
+      "s": "2328",
+      "n": "keyboard",
+      "k": [
+        "computer",
+        "keyboard"
+      ]
+    },
+    {
+      "c": "🖱️",
+      "s": "1f5b1",
+      "n": "computer mouse",
+      "k": [
+        "computer",
+        "mouse"
+      ]
+    },
+    {
+      "c": "🖲️",
+      "s": "1f5b2",
+      "n": "trackball",
+      "k": [
+        "computer",
+        "trackball"
+      ]
+    },
+    {
+      "c": "💽",
+      "s": "1f4bd",
+      "n": "computer disk",
+      "k": [
+        "computer",
+        "disk",
+        "minidisk",
+        "optical"
+      ]
+    },
+    {
+      "c": "💾",
+      "s": "1f4be",
+      "n": "floppy disk",
+      "k": [
+        "computer",
+        "disk",
+        "floppy"
+      ]
+    },
+    {
+      "c": "💿",
+      "s": "1f4bf",
+      "n": "optical disk",
+      "k": [
+        "blu-ray",
+        "CD",
+        "computer",
+        "disk",
+        "dvd",
+        "optical"
+      ]
+    },
+    {
+      "c": "📀",
+      "s": "1f4c0",
+      "n": "dvd",
+      "k": [
+        "Blu-ray",
+        "cd",
+        "computer",
+        "disk",
+        "DVD",
+        "optical"
+      ]
+    },
+    {
+      "c": "🧮",
+      "s": "1f9ee",
+      "n": "abacus",
+      "k": [
+        "abacus",
+        "calculation",
+        "calculator"
+      ]
+    },
+    {
+      "c": "🎥",
+      "s": "1f3a5",
+      "n": "movie camera",
+      "k": [
+        "bollywood",
+        "camera",
+        "cinema",
+        "film",
+        "hollywood",
+        "movie",
+        "record"
+      ]
+    },
+    {
+      "c": "🎞️",
+      "s": "1f39e",
+      "n": "film frames",
+      "k": [
+        "cinema",
+        "film",
+        "frames",
+        "movie"
+      ]
+    },
+    {
+      "c": "📽️",
+      "s": "1f4fd",
+      "n": "film projector",
+      "k": [
+        "cinema",
+        "film",
+        "movie",
+        "projector",
+        "video"
+      ]
+    },
+    {
+      "c": "🎬",
+      "s": "1f3ac",
+      "n": "clapper board",
+      "k": [
+        "action",
+        "board",
+        "clapper",
+        "movie"
+      ]
+    },
+    {
+      "c": "📺",
+      "s": "1f4fa",
+      "n": "television",
+      "k": [
+        "television",
+        "tv",
+        "video"
+      ]
+    },
+    {
+      "c": "📷",
+      "s": "1f4f7",
+      "n": "camera",
+      "k": [
+        "camera",
+        "photo",
+        "selfie",
+        "snap",
+        "tbt",
+        "trip",
+        "video"
+      ]
+    },
+    {
+      "c": "📸",
+      "s": "1f4f8",
+      "n": "camera with flash",
+      "k": [
+        "camera",
+        "flash",
+        "video"
+      ]
+    },
+    {
+      "c": "📹",
+      "s": "1f4f9",
+      "n": "video camera",
+      "k": [
+        "camcorder",
+        "camera",
+        "tbt",
+        "video"
+      ]
+    },
+    {
+      "c": "📼",
+      "s": "1f4fc",
+      "n": "videocassette",
+      "k": [
+        "old",
+        "school",
+        "tape",
+        "vcr",
+        "vhs",
+        "video",
+        "videocassette"
+      ]
+    },
+    {
+      "c": "🔍",
+      "s": "1f50d",
+      "n": "magnifying glass tilted left",
+      "k": [
+        "glass",
+        "lab",
+        "left",
+        "left-pointing",
+        "magnifying",
+        "science",
+        "search",
+        "tilted",
+        "tool"
+      ]
+    },
+    {
+      "c": "🔎",
+      "s": "1f50e",
+      "n": "magnifying glass tilted right",
+      "k": [
+        "contact",
+        "glass",
+        "lab",
+        "magnifying",
+        "right",
+        "right-pointing",
+        "science",
+        "search",
+        "tilted",
+        "tool"
+      ]
+    },
+    {
+      "c": "🕯️",
+      "s": "1f56f",
+      "n": "candle",
+      "k": [
+        "candle",
+        "light"
+      ]
+    },
+    {
+      "c": "💡",
+      "s": "1f4a1",
+      "n": "light bulb",
+      "k": [
+        "bulb",
+        "comic",
+        "electric",
+        "idea",
+        "light"
+      ]
+    },
+    {
+      "c": "🔦",
+      "s": "1f526",
+      "n": "flashlight",
+      "k": [
+        "electric",
+        "flashlight",
+        "light",
+        "tool",
+        "torch"
+      ]
+    },
+    {
+      "c": "🏮",
+      "s": "1f3ee",
+      "n": "red paper lantern",
+      "k": [
+        "bar",
+        "lantern",
+        "light",
+        "paper",
+        "red",
+        "restaurant"
+      ]
+    },
+    {
+      "c": "🪔",
+      "s": "1fa94",
+      "n": "diya lamp",
+      "k": [
+        "diya",
+        "lamp",
+        "light",
+        "oil"
+      ]
+    },
+    {
+      "c": "📔",
+      "s": "1f4d4",
+      "n": "notebook with decorative cover",
+      "k": [
+        "book",
+        "cover",
+        "decorated",
+        "decorative",
+        "education",
+        "notebook",
+        "school",
+        "writing"
+      ]
+    },
+    {
+      "c": "📕",
+      "s": "1f4d5",
+      "n": "closed book",
+      "k": [
+        "book",
+        "closed",
+        "education"
+      ]
+    },
+    {
+      "c": "📖",
+      "s": "1f4d6",
+      "n": "open book",
+      "k": [
+        "book",
+        "education",
+        "fantasy",
+        "knowledge",
+        "library",
+        "novels",
+        "open",
+        "reading"
+      ]
+    },
+    {
+      "c": "📗",
+      "s": "1f4d7",
+      "n": "green book",
+      "k": [
+        "book",
+        "education",
+        "fantasy",
+        "green",
+        "library",
+        "reading"
+      ]
+    },
+    {
+      "c": "📘",
+      "s": "1f4d8",
+      "n": "blue book",
+      "k": [
+        "blue",
+        "book",
+        "education",
+        "fantasy",
+        "library",
+        "reading"
+      ]
+    },
+    {
+      "c": "📙",
+      "s": "1f4d9",
+      "n": "orange book",
+      "k": [
+        "book",
+        "education",
+        "fantasy",
+        "library",
+        "orange",
+        "reading"
+      ]
+    },
+    {
+      "c": "📚",
+      "s": "1f4da",
+      "n": "books",
+      "k": [
+        "book",
+        "books",
+        "education",
+        "fantasy",
+        "knowledge",
+        "library",
+        "novels",
+        "reading",
+        "school",
+        "study"
+      ]
+    },
+    {
+      "c": "📓",
+      "s": "1f4d3",
+      "n": "notebook",
+      "k": [
+        "notebook"
+      ]
+    },
+    {
+      "c": "📒",
+      "s": "1f4d2",
+      "n": "ledger",
+      "k": [
+        "ledger",
+        "notebook"
+      ]
+    },
+    {
+      "c": "📃",
+      "s": "1f4c3",
+      "n": "page with curl",
+      "k": [
+        "curl",
+        "document",
+        "page",
+        "paper"
+      ]
+    },
+    {
+      "c": "📜",
+      "s": "1f4dc",
+      "n": "scroll",
+      "k": [
+        "paper",
+        "scroll"
+      ]
+    },
+    {
+      "c": "📄",
+      "s": "1f4c4",
+      "n": "page facing up",
+      "k": [
+        "document",
+        "facing",
+        "page",
+        "paper",
+        "up"
+      ]
+    },
+    {
+      "c": "📰",
+      "s": "1f4f0",
+      "n": "newspaper",
+      "k": [
+        "communication",
+        "news",
+        "newspaper",
+        "paper"
+      ]
+    },
+    {
+      "c": "🗞️",
+      "s": "1f5de",
+      "n": "rolled-up newspaper",
+      "k": [
+        "news",
+        "newspaper",
+        "paper",
+        "rolled",
+        "rolled-up"
+      ]
+    },
+    {
+      "c": "📑",
+      "s": "1f4d1",
+      "n": "bookmark tabs",
+      "k": [
+        "bookmark",
+        "mark",
+        "marker",
+        "tabs"
+      ]
+    },
+    {
+      "c": "🔖",
+      "s": "1f516",
+      "n": "bookmark",
+      "k": [
+        "bookmark",
+        "mark"
+      ]
+    },
+    {
+      "c": "🏷️",
+      "s": "1f3f7",
+      "n": "label",
+      "k": [
+        "label",
+        "tag"
+      ]
+    },
+    {
+      "c": "💰",
+      "s": "1f4b0",
+      "n": "money bag",
+      "k": [
+        "bag",
+        "bank",
+        "bet",
+        "billion",
+        "cash",
+        "cost",
+        "dollar",
+        "gold",
+        "million",
+        "money",
+        "moneybag",
+        "paid",
+        "paying",
+        "pot",
+        "rich",
+        "win"
+      ]
+    },
+    {
+      "c": "🪙",
+      "s": "1fa99",
+      "n": "coin",
+      "k": [
+        "coin",
+        "dollar",
+        "euro",
+        "gold",
+        "metal",
+        "money",
+        "rich",
+        "silver",
+        "treasure"
+      ]
+    },
+    {
+      "c": "💴",
+      "s": "1f4b4",
+      "n": "yen banknote",
+      "k": [
+        "bank",
+        "banknote",
+        "bill",
+        "currency",
+        "money",
+        "note",
+        "yen"
+      ]
+    },
+    {
+      "c": "💵",
+      "s": "1f4b5",
+      "n": "dollar banknote",
+      "k": [
+        "bank",
+        "banknote",
+        "bill",
+        "currency",
+        "dollar",
+        "money",
+        "note"
+      ]
+    },
+    {
+      "c": "💶",
+      "s": "1f4b6",
+      "n": "euro banknote",
+      "k": [
+        "100",
+        "bank",
+        "banknote",
+        "bill",
+        "currency",
+        "euro",
+        "money",
+        "note",
+        "rich"
+      ]
+    },
+    {
+      "c": "💷",
+      "s": "1f4b7",
+      "n": "pound banknote",
+      "k": [
+        "bank",
+        "banknote",
+        "bill",
+        "billion",
+        "cash",
+        "currency",
+        "money",
+        "note",
+        "pound",
+        "pounds"
+      ]
+    },
+    {
+      "c": "💸",
+      "s": "1f4b8",
+      "n": "money with wings",
+      "k": [
+        "bank",
+        "banknote",
+        "bill",
+        "billion",
+        "cash",
+        "dollar",
+        "fly",
+        "million",
+        "money",
+        "note",
+        "pay",
+        "wings"
+      ]
+    },
+    {
+      "c": "💳",
+      "s": "1f4b3",
+      "n": "credit card",
+      "k": [
+        "bank",
+        "card",
+        "cash",
+        "charge",
+        "credit",
+        "money",
+        "pay"
+      ]
+    },
+    {
+      "c": "🧾",
+      "s": "1f9fe",
+      "n": "receipt",
+      "k": [
+        "accounting",
+        "bookkeeping",
+        "evidence",
+        "invoice",
+        "proof",
+        "receipt"
+      ]
+    },
+    {
+      "c": "💹",
+      "s": "1f4b9",
+      "n": "chart increasing with yen",
+      "k": [
+        "bank",
+        "chart",
+        "currency",
+        "graph",
+        "growth",
+        "increasing",
+        "market",
+        "money",
+        "rise",
+        "trend",
+        "upward",
+        "yen"
+      ]
+    },
+    {
+      "c": "✉️",
+      "s": "2709",
+      "n": "envelope",
+      "k": [
+        "e-mail",
+        "email",
+        "envelope",
+        "letter"
+      ]
+    },
+    {
+      "c": "📧",
+      "s": "1f4e7",
+      "n": "e-mail",
+      "k": [
+        "e-mail",
+        "email",
+        "letter",
+        "mail"
+      ]
+    },
+    {
+      "c": "📨",
+      "s": "1f4e8",
+      "n": "incoming envelope",
+      "k": [
+        "delivering",
+        "e-mail",
+        "email",
+        "envelope",
+        "incoming",
+        "letter",
+        "mail",
+        "receive",
+        "sent"
+      ]
+    },
+    {
+      "c": "📩",
+      "s": "1f4e9",
+      "n": "envelope with arrow",
+      "k": [
+        "arrow",
+        "communication",
+        "down",
+        "e-mail",
+        "email",
+        "envelope",
+        "letter",
+        "mail",
+        "outgoing",
+        "send",
+        "sent"
+      ]
+    },
+    {
+      "c": "📤",
+      "s": "1f4e4",
+      "n": "outbox tray",
+      "k": [
+        "box",
+        "email",
+        "letter",
+        "mail",
+        "outbox",
+        "sent",
+        "tray"
+      ]
+    },
+    {
+      "c": "📥",
+      "s": "1f4e5",
+      "n": "inbox tray",
+      "k": [
+        "box",
+        "email",
+        "inbox",
+        "letter",
+        "mail",
+        "receive",
+        "tray",
+        "zero"
+      ]
+    },
+    {
+      "c": "📦",
+      "s": "1f4e6",
+      "n": "package",
+      "k": [
+        "box",
+        "communication",
+        "delivery",
+        "package",
+        "parcel",
+        "shipping"
+      ]
+    },
+    {
+      "c": "📫",
+      "s": "1f4eb",
+      "n": "closed mailbox with raised flag",
+      "k": [
+        "closed",
+        "communication",
+        "flag",
+        "mail",
+        "mailbox",
+        "postbox",
+        "raised"
+      ]
+    },
+    {
+      "c": "📪",
+      "s": "1f4ea",
+      "n": "closed mailbox with lowered flag",
+      "k": [
+        "closed",
+        "flag",
+        "lowered",
+        "mail",
+        "mailbox",
+        "postbox"
+      ]
+    },
+    {
+      "c": "📬",
+      "s": "1f4ec",
+      "n": "open mailbox with raised flag",
+      "k": [
+        "flag",
+        "mail",
+        "mailbox",
+        "open",
+        "postbox",
+        "raised"
+      ]
+    },
+    {
+      "c": "📭",
+      "s": "1f4ed",
+      "n": "open mailbox with lowered flag",
+      "k": [
+        "flag",
+        "lowered",
+        "mail",
+        "mailbox",
+        "open",
+        "postbox"
+      ]
+    },
+    {
+      "c": "📮",
+      "s": "1f4ee",
+      "n": "postbox",
+      "k": [
+        "mail",
+        "mailbox",
+        "postbox"
+      ]
+    },
+    {
+      "c": "🗳️",
+      "s": "1f5f3",
+      "n": "ballot box with ballot",
+      "k": [
+        "ballot",
+        "box"
+      ]
+    },
+    {
+      "c": "✏️",
+      "s": "270f",
+      "n": "pencil",
+      "k": [
+        "pencil"
+      ]
+    },
+    {
+      "c": "✒️",
+      "s": "2712",
+      "n": "black nib",
+      "k": [
+        "black",
+        "nib",
+        "pen"
+      ]
+    },
+    {
+      "c": "🖋️",
+      "s": "1f58b",
+      "n": "fountain pen",
+      "k": [
+        "fountain",
+        "pen"
+      ]
+    },
+    {
+      "c": "🖊️",
+      "s": "1f58a",
+      "n": "pen",
+      "k": [
+        "ballpoint",
+        "pen"
+      ]
+    },
+    {
+      "c": "🖌️",
+      "s": "1f58c",
+      "n": "paintbrush",
+      "k": [
+        "paintbrush",
+        "painting"
+      ]
+    },
+    {
+      "c": "🖍️",
+      "s": "1f58d",
+      "n": "crayon",
+      "k": [
+        "crayon"
+      ]
+    },
+    {
+      "c": "📝",
+      "s": "1f4dd",
+      "n": "memo",
+      "k": [
+        "communication",
+        "media",
+        "memo",
+        "notes",
+        "pencil"
+      ]
+    },
+    {
+      "c": "💼",
+      "s": "1f4bc",
+      "n": "briefcase",
+      "k": [
+        "briefcase",
+        "office"
+      ]
+    },
+    {
+      "c": "📁",
+      "s": "1f4c1",
+      "n": "file folder",
+      "k": [
+        "file",
+        "folder"
+      ]
+    },
+    {
+      "c": "📂",
+      "s": "1f4c2",
+      "n": "open file folder",
+      "k": [
+        "file",
+        "folder",
+        "open"
+      ]
+    },
+    {
+      "c": "🗂️",
+      "s": "1f5c2",
+      "n": "card index dividers",
+      "k": [
+        "card",
+        "dividers",
+        "index"
+      ]
+    },
+    {
+      "c": "📅",
+      "s": "1f4c5",
+      "n": "calendar",
+      "k": [
+        "calendar",
+        "date"
+      ]
+    },
+    {
+      "c": "📆",
+      "s": "1f4c6",
+      "n": "tear-off calendar",
+      "k": [
+        "calendar",
+        "tear-off"
+      ]
+    },
+    {
+      "c": "🗒️",
+      "s": "1f5d2",
+      "n": "spiral notepad",
+      "k": [
+        "note",
+        "notepad",
+        "pad",
+        "spiral"
+      ]
+    },
+    {
+      "c": "🗓️",
+      "s": "1f5d3",
+      "n": "spiral calendar",
+      "k": [
+        "calendar",
+        "pad",
+        "spiral"
+      ]
+    },
+    {
+      "c": "📇",
+      "s": "1f4c7",
+      "n": "card index",
+      "k": [
+        "card",
+        "index",
+        "old",
+        "rolodex",
+        "school"
+      ]
+    },
+    {
+      "c": "📈",
+      "s": "1f4c8",
+      "n": "chart increasing",
+      "k": [
+        "chart",
+        "data",
+        "graph",
+        "growth",
+        "increasing",
+        "right",
+        "trend",
+        "up",
+        "upward"
+      ]
+    },
+    {
+      "c": "📉",
+      "s": "1f4c9",
+      "n": "chart decreasing",
+      "k": [
+        "chart",
+        "data",
+        "decreasing",
+        "down",
+        "downward",
+        "graph",
+        "negative",
+        "trend"
+      ]
+    },
+    {
+      "c": "📊",
+      "s": "1f4ca",
+      "n": "bar chart",
+      "k": [
+        "bar",
+        "chart",
+        "data",
+        "graph"
+      ]
+    },
+    {
+      "c": "📋",
+      "s": "1f4cb",
+      "n": "clipboard",
+      "k": [
+        "clipboard",
+        "do",
+        "list",
+        "notes"
+      ]
+    },
+    {
+      "c": "📌",
+      "s": "1f4cc",
+      "n": "pushpin",
+      "k": [
+        "collage",
+        "pin",
+        "pushpin"
+      ]
+    },
+    {
+      "c": "📍",
+      "s": "1f4cd",
+      "n": "round pushpin",
+      "k": [
+        "location",
+        "map",
+        "pin",
+        "pushpin",
+        "round"
+      ]
+    },
+    {
+      "c": "📎",
+      "s": "1f4ce",
+      "n": "paperclip",
+      "k": [
+        "paperclip"
+      ]
+    },
+    {
+      "c": "🖇️",
+      "s": "1f587",
+      "n": "linked paperclips",
+      "k": [
+        "link",
+        "linked",
+        "paperclip",
+        "paperclips"
+      ]
+    },
+    {
+      "c": "📏",
+      "s": "1f4cf",
+      "n": "straight ruler",
+      "k": [
+        "angle",
+        "edge",
+        "math",
+        "ruler",
+        "straight",
+        "straightedge"
+      ]
+    },
+    {
+      "c": "📐",
+      "s": "1f4d0",
+      "n": "triangular ruler",
+      "k": [
+        "angle",
+        "math",
+        "rule",
+        "ruler",
+        "set",
+        "slide",
+        "triangle",
+        "triangular"
+      ]
+    },
+    {
+      "c": "✂️",
+      "s": "2702",
+      "n": "scissors",
+      "k": [
+        "cut",
+        "cutting",
+        "paper",
+        "scissors",
+        "tool"
+      ]
+    },
+    {
+      "c": "🗃️",
+      "s": "1f5c3",
+      "n": "card file box",
+      "k": [
+        "box",
+        "card",
+        "file"
+      ]
+    },
+    {
+      "c": "🗄️",
+      "s": "1f5c4",
+      "n": "file cabinet",
+      "k": [
+        "cabinet",
+        "file",
+        "filing",
+        "paper"
+      ]
+    },
+    {
+      "c": "🗑️",
+      "s": "1f5d1",
+      "n": "wastebasket",
+      "k": [
+        "can",
+        "garbage",
+        "trash",
+        "waste",
+        "wastebasket"
+      ]
+    },
+    {
+      "c": "🔒",
+      "s": "1f512",
+      "n": "locked",
+      "k": [
+        "closed",
+        "lock",
+        "locked",
+        "private"
+      ]
+    },
+    {
+      "c": "🔓",
+      "s": "1f513",
+      "n": "unlocked",
+      "k": [
+        "cracked",
+        "lock",
+        "open",
+        "unlock",
+        "unlocked"
+      ]
+    },
+    {
+      "c": "🔏",
+      "s": "1f50f",
+      "n": "locked with pen",
+      "k": [
+        "ink",
+        "lock",
+        "locked",
+        "nib",
+        "pen",
+        "privacy"
+      ]
+    },
+    {
+      "c": "🔐",
+      "s": "1f510",
+      "n": "locked with key",
+      "k": [
+        "bike",
+        "closed",
+        "key",
+        "lock",
+        "locked",
+        "secure"
+      ]
+    },
+    {
+      "c": "🔑",
+      "s": "1f511",
+      "n": "key",
+      "k": [
+        "key",
+        "keys",
+        "lock",
+        "major",
+        "password",
+        "unlock"
+      ]
+    },
+    {
+      "c": "🗝️",
+      "s": "1f5dd",
+      "n": "old key",
+      "k": [
+        "clue",
+        "key",
+        "lock",
+        "old"
+      ]
+    },
+    {
+      "c": "🔨",
+      "s": "1f528",
+      "n": "hammer",
+      "k": [
+        "hammer",
+        "home",
+        "improvement",
+        "repairs",
+        "tool"
+      ]
+    },
+    {
+      "c": "🪓",
+      "s": "1fa93",
+      "n": "axe",
+      "k": [
+        "ax",
+        "axe",
+        "chop",
+        "hatchet",
+        "split",
+        "wood"
+      ]
+    },
+    {
+      "c": "⛏️",
+      "s": "26cf",
+      "n": "pick",
+      "k": [
+        "hammer",
+        "mining",
+        "pick",
+        "tool"
+      ]
+    },
+    {
+      "c": "⚒️",
+      "s": "2692",
+      "n": "hammer and pick",
+      "k": [
+        "hammer",
+        "pick",
+        "tool"
+      ]
+    },
+    {
+      "c": "🛠️",
+      "s": "1f6e0",
+      "n": "hammer and wrench",
+      "k": [
+        "hammer",
+        "spanner",
+        "tool",
+        "wrench"
+      ]
+    },
+    {
+      "c": "🗡️",
+      "s": "1f5e1",
+      "n": "dagger",
+      "k": [
+        "dagger",
+        "knife",
+        "weapon"
+      ]
+    },
+    {
+      "c": "⚔️",
+      "s": "2694",
+      "n": "crossed swords",
+      "k": [
+        "crossed",
+        "swords",
+        "weapon"
+      ]
+    },
+    {
+      "c": "💣",
+      "s": "1f4a3",
+      "n": "bomb",
+      "k": [
+        "bomb",
+        "boom",
+        "comic",
+        "dangerous",
+        "explosion",
+        "hot"
+      ]
+    },
+    {
+      "c": "🪃",
+      "s": "1fa83",
+      "n": "boomerang",
+      "k": [
+        "boomerang",
+        "rebound",
+        "repercussion",
+        "weapon"
+      ]
+    },
+    {
+      "c": "🏹",
+      "s": "1f3f9",
+      "n": "bow and arrow",
+      "k": [
+        "archer",
+        "archery",
+        "arrow",
+        "bow",
+        "Sagittarius",
+        "tool",
+        "weapon",
+        "zodiac"
+      ]
+    },
+    {
+      "c": "🛡️",
+      "s": "1f6e1",
+      "n": "shield",
+      "k": [
+        "shield",
+        "weapon"
+      ]
+    },
+    {
+      "c": "🪚",
+      "s": "1fa9a",
+      "n": "carpentry saw",
+      "k": [
+        "carpenter",
+        "carpentry",
+        "cut",
+        "lumber",
+        "saw",
+        "tool",
+        "trim"
+      ]
+    },
+    {
+      "c": "🔧",
+      "s": "1f527",
+      "n": "wrench",
+      "k": [
+        "home",
+        "improvement",
+        "spanner",
+        "tool",
+        "wrench"
+      ]
+    },
+    {
+      "c": "🪛",
+      "s": "1fa9b",
+      "n": "screwdriver",
+      "k": [
+        "flathead",
+        "handy",
+        "screw",
+        "screwdriver",
+        "tool"
+      ]
+    },
+    {
+      "c": "🔩",
+      "s": "1f529",
+      "n": "nut and bolt",
+      "k": [
+        "bolt",
+        "home",
+        "improvement",
+        "nut",
+        "tool"
+      ]
+    },
+    {
+      "c": "⚙️",
+      "s": "2699",
+      "n": "gear",
+      "k": [
+        "cog",
+        "cogwheel",
+        "gear",
+        "tool"
+      ]
+    },
+    {
+      "c": "🗜️",
+      "s": "1f5dc",
+      "n": "clamp",
+      "k": [
+        "clamp",
+        "compress",
+        "tool",
+        "vice"
+      ]
+    },
+    {
+      "c": "⚖️",
+      "s": "2696",
+      "n": "balance scale",
+      "k": [
+        "balance",
+        "justice",
+        "Libra",
+        "scale",
+        "scales",
+        "tool",
+        "weight",
+        "zodiac"
+      ]
+    },
+    {
+      "c": "🦯",
+      "s": "1f9af",
+      "n": "white cane",
+      "k": [
+        "accessibility",
+        "blind",
+        "cane",
+        "probing",
+        "white"
+      ]
+    },
+    {
+      "c": "🔗",
+      "s": "1f517",
+      "n": "link",
+      "k": [
+        "link",
+        "links"
+      ]
+    },
+    {
+      "c": "⛓️‍💥",
+      "s": "26d3-fe0f-200d-1f4a5",
+      "n": "broken chain",
+      "k": [
+        "break",
+        "breaking",
+        "broken",
+        "chain",
+        "cuffs",
+        "freedom"
+      ]
+    },
+    {
+      "c": "⛓️",
+      "s": "26d3",
+      "n": "chains",
+      "k": [
+        "chain",
+        "chains"
+      ]
+    },
+    {
+      "c": "🪝",
+      "s": "1fa9d",
+      "n": "hook",
+      "k": [
+        "catch",
+        "crook",
+        "curve",
+        "ensnare",
+        "hook",
+        "point",
+        "selling"
+      ]
+    },
+    {
+      "c": "🧰",
+      "s": "1f9f0",
+      "n": "toolbox",
+      "k": [
+        "box",
+        "chest",
+        "mechanic",
+        "red",
+        "tool",
+        "toolbox"
+      ]
+    },
+    {
+      "c": "🧲",
+      "s": "1f9f2",
+      "n": "magnet",
+      "k": [
+        "attraction",
+        "horseshoe",
+        "magnet",
+        "magnetic",
+        "negative",
+        "positive",
+        "shape",
+        "u"
+      ]
+    },
+    {
+      "c": "🪜",
+      "s": "1fa9c",
+      "n": "ladder",
+      "k": [
+        "climb",
+        "ladder",
+        "rung",
+        "step"
+      ]
+    },
+    {
+      "c": "⚗️",
+      "s": "2697",
+      "n": "alembic",
+      "k": [
+        "alembic",
+        "chemistry",
+        "tool"
+      ]
+    },
+    {
+      "c": "🧪",
+      "s": "1f9ea",
+      "n": "test tube",
+      "k": [
+        "chemist",
+        "chemistry",
+        "experiment",
+        "lab",
+        "science",
+        "test",
+        "tube"
+      ]
+    },
+    {
+      "c": "🧫",
+      "s": "1f9eb",
+      "n": "petri dish",
+      "k": [
+        "bacteria",
+        "biologist",
+        "biology",
+        "culture",
+        "dish",
+        "lab",
+        "petri"
+      ]
+    },
+    {
+      "c": "🧬",
+      "s": "1f9ec",
+      "n": "dna",
+      "k": [
+        "biologist",
+        "dna",
+        "evolution",
+        "gene",
+        "genetics",
+        "life"
+      ]
+    },
+    {
+      "c": "🔬",
+      "s": "1f52c",
+      "n": "microscope",
+      "k": [
+        "experiment",
+        "lab",
+        "microscope",
+        "science",
+        "tool"
+      ]
+    },
+    {
+      "c": "🔭",
+      "s": "1f52d",
+      "n": "telescope",
+      "k": [
+        "contact",
+        "extraterrestrial",
+        "science",
+        "telescope",
+        "tool"
+      ]
+    },
+    {
+      "c": "📡",
+      "s": "1f4e1",
+      "n": "satellite antenna",
+      "k": [
+        "aliens",
+        "antenna",
+        "contact",
+        "dish",
+        "satellite",
+        "science"
+      ]
+    },
+    {
+      "c": "💉",
+      "s": "1f489",
+      "n": "syringe",
+      "k": [
+        "doctor",
+        "flu",
+        "medicine",
+        "needle",
+        "shot",
+        "sick",
+        "syringe",
+        "tool",
+        "vaccination"
+      ]
+    },
+    {
+      "c": "🩸",
+      "s": "1fa78",
+      "n": "drop of blood",
+      "k": [
+        "bleed",
+        "blood",
+        "donation",
+        "drop",
+        "injury",
+        "medicine",
+        "menstruation"
+      ]
+    },
+    {
+      "c": "💊",
+      "s": "1f48a",
+      "n": "pill",
+      "k": [
+        "doctor",
+        "drugs",
+        "medicated",
+        "medicine",
+        "pill",
+        "pills",
+        "sick",
+        "vitamin"
+      ]
+    },
+    {
+      "c": "🩹",
+      "s": "1fa79",
+      "n": "adhesive bandage",
+      "k": [
+        "adhesive",
+        "bandage"
+      ]
+    },
+    {
+      "c": "🩼",
+      "s": "1fa7c",
+      "n": "crutch",
+      "k": [
+        "aid",
+        "cane",
+        "crutch",
+        "disability",
+        "help",
+        "hurt",
+        "injured",
+        "mobility",
+        "stick"
+      ]
+    },
+    {
+      "c": "🩺",
+      "s": "1fa7a",
+      "n": "stethoscope",
+      "k": [
+        "doctor",
+        "heart",
+        "medicine",
+        "stethoscope"
+      ]
+    },
+    {
+      "c": "🩻",
+      "s": "1fa7b",
+      "n": "x-ray",
+      "k": [
+        "bones",
+        "doctor",
+        "medical",
+        "skeleton",
+        "skull",
+        "x-ray",
+        "xray"
+      ]
+    },
+    {
+      "c": "🚪",
+      "s": "1f6aa",
+      "n": "door",
+      "k": [
+        "back",
+        "closet",
+        "door",
+        "front"
+      ]
+    },
+    {
+      "c": "🛗",
+      "s": "1f6d7",
+      "n": "elevator",
+      "k": [
+        "accessibility",
+        "elevator",
+        "hoist",
+        "lift"
+      ]
+    },
+    {
+      "c": "🪞",
+      "s": "1fa9e",
+      "n": "mirror",
+      "k": [
+        "makeup",
+        "mirror",
+        "reflection",
+        "reflector",
+        "speculum"
+      ]
+    },
+    {
+      "c": "🪟",
+      "s": "1fa9f",
+      "n": "window",
+      "k": [
+        "air",
+        "frame",
+        "fresh",
+        "opening",
+        "transparent",
+        "view",
+        "window"
+      ]
+    },
+    {
+      "c": "🛏️",
+      "s": "1f6cf",
+      "n": "bed",
+      "k": [
+        "bed",
+        "hotel",
+        "sleep"
+      ]
+    },
+    {
+      "c": "🛋️",
+      "s": "1f6cb",
+      "n": "couch and lamp",
+      "k": [
+        "couch",
+        "hotel",
+        "lamp"
+      ]
+    },
+    {
+      "c": "🪑",
+      "s": "1fa91",
+      "n": "chair",
+      "k": [
+        "chair",
+        "seat",
+        "sit"
+      ]
+    },
+    {
+      "c": "🚽",
+      "s": "1f6bd",
+      "n": "toilet",
+      "k": [
+        "bathroom",
+        "toilet"
+      ]
+    },
+    {
+      "c": "🪠",
+      "s": "1faa0",
+      "n": "plunger",
+      "k": [
+        "cup",
+        "force",
+        "plumber",
+        "plunger",
+        "poop",
+        "suction",
+        "toilet"
+      ]
+    },
+    {
+      "c": "🚿",
+      "s": "1f6bf",
+      "n": "shower",
+      "k": [
+        "shower",
+        "water"
+      ]
+    },
+    {
+      "c": "🛁",
+      "s": "1f6c1",
+      "n": "bathtub",
+      "k": [
+        "bath",
+        "bathtub"
+      ]
+    },
+    {
+      "c": "🪤",
+      "s": "1faa4",
+      "n": "mouse trap",
+      "k": [
+        "bait",
+        "cheese",
+        "lure",
+        "mouse",
+        "mousetrap",
+        "snare",
+        "trap"
+      ]
+    },
+    {
+      "c": "🪒",
+      "s": "1fa92",
+      "n": "razor",
+      "k": [
+        "razor",
+        "sharp",
+        "shave"
+      ]
+    },
+    {
+      "c": "🧴",
+      "s": "1f9f4",
+      "n": "lotion bottle",
+      "k": [
+        "bottle",
+        "lotion",
+        "moisturizer",
+        "shampoo",
+        "sunscreen"
+      ]
+    },
+    {
+      "c": "🧷",
+      "s": "1f9f7",
+      "n": "safety pin",
+      "k": [
+        "diaper",
+        "pin",
+        "punk",
+        "rock",
+        "safety"
+      ]
+    },
+    {
+      "c": "🧹",
+      "s": "1f9f9",
+      "n": "broom",
+      "k": [
+        "broom",
+        "cleaning",
+        "sweeping",
+        "witch"
+      ]
+    },
+    {
+      "c": "🧺",
+      "s": "1f9fa",
+      "n": "basket",
+      "k": [
+        "basket",
+        "farming",
+        "laundry",
+        "picnic"
+      ]
+    },
+    {
+      "c": "🧻",
+      "s": "1f9fb",
+      "n": "roll of paper",
+      "k": [
+        "paper",
+        "roll",
+        "toilet",
+        "towels"
+      ]
+    },
+    {
+      "c": "🪣",
+      "s": "1faa3",
+      "n": "bucket",
+      "k": [
+        "bucket",
+        "cask",
+        "pail",
+        "vat"
+      ]
+    },
+    {
+      "c": "🧼",
+      "s": "1f9fc",
+      "n": "soap",
+      "k": [
+        "bar",
+        "bathing",
+        "clean",
+        "cleaning",
+        "lather",
+        "soap",
+        "soapdish"
+      ]
+    },
+    {
+      "c": "🫧",
+      "s": "1fae7",
+      "n": "bubbles",
+      "k": [
+        "bubble",
+        "bubbles",
+        "burp",
+        "clean",
+        "floating",
+        "pearl",
+        "soap",
+        "underwater"
+      ]
+    },
+    {
+      "c": "🪥",
+      "s": "1faa5",
+      "n": "toothbrush",
+      "k": [
+        "bathroom",
+        "brush",
+        "clean",
+        "dental",
+        "hygiene",
+        "teeth",
+        "toiletry",
+        "toothbrush"
+      ]
+    },
+    {
+      "c": "🧽",
+      "s": "1f9fd",
+      "n": "sponge",
+      "k": [
+        "absorbing",
+        "cleaning",
+        "porous",
+        "soak",
+        "sponge"
+      ]
+    },
+    {
+      "c": "🧯",
+      "s": "1f9ef",
+      "n": "fire extinguisher",
+      "k": [
+        "extinguish",
+        "extinguisher",
+        "fire",
+        "quench"
+      ]
+    },
+    {
+      "c": "🛒",
+      "s": "1f6d2",
+      "n": "shopping cart",
+      "k": [
+        "cart",
+        "shopping",
+        "trolley"
+      ]
+    },
+    {
+      "c": "🚬",
+      "s": "1f6ac",
+      "n": "cigarette",
+      "k": [
+        "cigarette",
+        "smoking"
+      ]
+    },
+    {
+      "c": "⚰️",
+      "s": "26b0",
+      "n": "coffin",
+      "k": [
+        "coffin",
+        "dead",
+        "death",
+        "vampire"
+      ]
+    },
+    {
+      "c": "🪦",
+      "s": "1faa6",
+      "n": "headstone",
+      "k": [
+        "cemetery",
+        "dead",
+        "grave",
+        "graveyard",
+        "headstone",
+        "memorial",
+        "rip",
+        "tomb",
+        "tombstone"
+      ]
+    },
+    {
+      "c": "⚱️",
+      "s": "26b1",
+      "n": "funeral urn",
+      "k": [
+        "ashes",
+        "death",
+        "funeral",
+        "urn"
+      ]
+    },
+    {
+      "c": "🧿",
+      "s": "1f9ff",
+      "n": "nazar amulet",
+      "k": [
+        "amulet",
+        "bead",
+        "blue",
+        "charm",
+        "evil-eye",
+        "nazar",
+        "talisman"
+      ]
+    },
+    {
+      "c": "🪬",
+      "s": "1faac",
+      "n": "hamsa",
+      "k": [
+        "amulet",
+        "Fatima",
+        "fortune",
+        "guide",
+        "hamsa",
+        "hand",
+        "Mary",
+        "Miriam",
+        "palm",
+        "protect",
+        "protection"
+      ]
+    },
+    {
+      "c": "🗿",
+      "s": "1f5ff",
+      "n": "moai",
+      "k": [
+        "face",
+        "moai",
+        "moyai",
+        "statue",
+        "stoneface",
+        "travel"
+      ]
+    },
+    {
+      "c": "🪧",
+      "s": "1faa7",
+      "n": "placard",
+      "k": [
+        "card",
+        "demonstration",
+        "notice",
+        "picket",
+        "placard",
+        "plaque",
+        "protest",
+        "sign"
+      ]
+    },
+    {
+      "c": "🪪",
+      "s": "1faaa",
+      "n": "identification card",
+      "k": [
+        "card",
+        "credentials",
+        "document",
+        "ID",
+        "identification",
+        "license",
+        "security"
+      ]
+    }
+  ]
+}

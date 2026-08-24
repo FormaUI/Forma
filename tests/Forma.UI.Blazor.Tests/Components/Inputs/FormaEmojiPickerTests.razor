@@ -1,0 +1,300 @@
+@inherits BunitContext
+@using Microsoft.AspNetCore.Components.Web
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_a_tab_for_every_group()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaEmojiPicker />);
+
+            // Assert
+            Assert.Equal(EmojiCatalog.Groups.Count, cut.FindAll("[role='tab']").Count);
+        }
+
+        [Fact]
+        public void Should_select_the_first_group_until_one_is_chosen()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaEmojiPicker />);
+
+            // Assert
+            var tabs = cut.FindAll("[role='tab']");
+            Assert.Equal("true", tabs[0].GetAttribute("aria-selected"));
+            Assert.All(tabs.Skip(1), tab => Assert.Equal("false", tab.GetAttribute("aria-selected")));
+        }
+
+        [Fact]
+        public void Should_render_the_emoji_of_the_selected_group()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaEmojiPicker />);
+
+            // Assert
+            Assert.Equal(EmojiCatalog.InGroup("smileys").Count, cut.FindAll(".forma-emoji-picker-emoji").Count);
+        }
+
+        [Fact]
+        public void Should_show_another_group_when_its_tab_is_pressed()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+            var cut = ctx.Render(@<FormaEmojiPicker />);
+
+            // Act
+            cut.FindAll("[role='tab']")[2].Click();
+
+            // Assert
+            Assert.Equal(EmojiCatalog.InGroup("animals").Count, cut.FindAll(".forma-emoji-picker-emoji").Count);
+            Assert.Equal("true", cut.FindAll("[role='tab']")[2].GetAttribute("aria-selected"));
+        }
+
+        [Fact]
+        public void Should_name_every_emoji_button_and_hide_the_artwork_from_a_reader()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaEmojiPicker />);
+
+            // Assert
+            var first = cut.Find(".forma-emoji-picker-emoji");
+            Assert.False(string.IsNullOrWhiteSpace(first.GetAttribute("aria-label")));
+            Assert.Equal("true", first.QuerySelector("svg")!.GetAttribute("aria-hidden"));
+        }
+
+        [Fact]
+        public void Should_point_each_emoji_at_a_symbol_in_its_own_group_sprite()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaEmojiPicker />);
+
+            // Assert
+            var href = cut.Find(".forma-emoji-picker-emoji use").GetAttribute("href");
+            Assert.Equal($"_content/Forma.UI/emojis/smileys.svg#emoji-{EmojiCatalog.InGroup("smileys")[0].SpriteId}", href);
+        }
+
+        [Fact]
+        public void Should_report_the_chosen_emoji()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+            string? selected = null;
+            var cut = ctx.Render(@<FormaEmojiPicker OnSelect="value => selected = value" />);
+
+            // Act
+            cut.Find(".forma-emoji-picker-emoji").Click();
+
+            // Assert
+            Assert.Equal(EmojiCatalog.InGroup("smileys")[0].Character, selected);
+        }
+
+        [Fact]
+        public void Should_add_a_recent_tab_once_the_host_supplies_recent_emoji()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+            IReadOnlyList<string> recent = ["😀"];
+
+            // Act
+            var cut = ctx.Render(@<FormaEmojiPicker Recent="recent" />);
+
+            // Assert
+            Assert.Equal(EmojiCatalog.Groups.Count + 1, cut.FindAll("[role='tab']").Count);
+            Assert.Single(cut.FindAll(".forma-emoji-picker-emoji"));
+        }
+
+        [Fact]
+        public void Should_push_the_chosen_emoji_to_the_front_of_recent()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+            IReadOnlyList<string> recent = ["😂", "😊"];
+            IReadOnlyList<string>? updated = null;
+            var cut = ctx.Render(@<FormaEmojiPicker Recent="recent" RecentChanged="value => updated = value" />);
+
+            // Act
+            cut.FindAll("[role='tab']")[1].Click();
+            cut.Find(".forma-emoji-picker-emoji").Click();
+
+            // Assert
+            Assert.NotNull(updated);
+            Assert.Equal(EmojiCatalog.InGroup("smileys")[0].Character, updated[0]);
+        }
+
+        [Fact]
+        public void Should_not_repeat_an_emoji_already_in_recent()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+            var first = EmojiCatalog.InGroup("smileys")[0].Character;
+            IReadOnlyList<string> recent = ["😂", first];
+            IReadOnlyList<string>? updated = null;
+            var cut = ctx.Render(@<FormaEmojiPicker Recent="recent" RecentChanged="value => updated = value" />);
+
+            // Act
+            cut.FindAll("[role='tab']")[1].Click();
+            cut.Find(".forma-emoji-picker-emoji").Click();
+
+            // Assert
+            Assert.NotNull(updated);
+            Assert.Equal([first, "😂"], updated);
+        }
+
+        [Fact]
+        public void Should_keep_recent_within_its_limit()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+            IReadOnlyList<string> recent = ["😂", "😊"];
+            IReadOnlyList<string>? updated = null;
+            var cut = ctx.Render(@<FormaEmojiPicker Recent="recent" MaxRecent="2" RecentChanged="value => updated = value" />);
+
+            // Act
+            cut.FindAll("[role='tab']")[1].Click();
+            cut.Find(".forma-emoji-picker-emoji").Click();
+
+            // Assert
+            Assert.NotNull(updated);
+            Assert.Equal(2, updated.Count);
+        }
+
+        [Fact]
+        public void Should_reject_a_recent_limit_below_one()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+
+            // Assert
+            Assert.Throws<ArgumentOutOfRangeException>(() => ctx.Render(@<FormaEmojiPicker MaxRecent="0" />));
+        }
+
+        [Fact]
+        public void Should_omit_the_tab_strip_and_search_when_they_are_turned_off()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaEmojiPicker ShowGroupTabs="false" ShowSearch="false" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll("[role='tab']"));
+            Assert.Empty(cut.FindAll("input[type='search']"));
+        }
+
+        [Fact]
+        public void Should_apply_the_supplied_id_and_class()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaEmojiPicker Id="picker" Class="extra" />);
+
+            // Assert
+            var root = cut.Find(".forma-emoji-picker");
+            Assert.Equal("picker", root.GetAttribute("id"));
+            Assert.Contains("extra", root.GetAttribute("class"));
+        }
+
+        [Fact]
+        public void Should_point_each_tab_at_the_panel_it_controls()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaEmojiPicker Id="picker" />);
+
+            // Assert
+            Assert.All(cut.FindAll("[role='tab']"), tab => Assert.Equal("picker-panel", tab.GetAttribute("aria-controls")));
+            Assert.Equal("picker-panel", cut.Find("[role='tabpanel']").GetAttribute("id"));
+        }
+
+        [Fact]
+        public void Should_keep_only_the_selected_tab_in_the_tab_order()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaEmojiPicker />);
+
+            // Assert
+            var tabs = cut.FindAll("[role='tab']");
+            Assert.Equal("0", tabs[0].GetAttribute("tabindex"));
+            Assert.All(tabs.Skip(1), tab => Assert.Equal("-1", tab.GetAttribute("tabindex")));
+        }
+
+        [Fact]
+        public void Should_move_between_tabs_with_the_arrow_keys()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+            var cut = ctx.Render(@<FormaEmojiPicker />);
+
+            // Act
+            cut.FindAll("[role='tab']")[0].KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+
+            // Assert
+            Assert.Equal("true", cut.FindAll("[role='tab']")[1].GetAttribute("aria-selected"));
+        }
+
+        [Fact]
+        public void Should_jump_to_the_last_tab_with_the_end_key()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+            var cut = ctx.Render(@<FormaEmojiPicker />);
+
+            // Act
+            cut.FindAll("[role='tab']")[0].KeyDown(new KeyboardEventArgs { Key = "End" });
+
+            // Assert
+            var tabs = cut.FindAll("[role='tab']");
+            Assert.Equal("true", tabs[^1].GetAttribute("aria-selected"));
+        }
+
+        [Fact]
+        public void Should_start_with_an_empty_search_box()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaEmojiPicker />);
+
+            // Assert
+            Assert.Equal(string.Empty, cut.Find("input[type='search']").GetAttribute("value"));
+        }
+
+        [Fact]
+        public void Should_announce_the_result_count_through_a_live_region()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaEmojiPicker />);
+
+            // Assert
+            Assert.NotNull(cut.Find("[role='status']"));
+        }
+    }
+}

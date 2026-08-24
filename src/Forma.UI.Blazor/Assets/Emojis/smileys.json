@@ -1,0 +1,2841 @@
+{
+  "version": "15.1",
+  "group": "smileys",
+  "emoji": [
+    {
+      "c": "😀",
+      "s": "1f600",
+      "n": "grinning face",
+      "k": [
+        "cheerful",
+        "cheery",
+        "face",
+        "grin",
+        "grinning",
+        "happy",
+        "laugh",
+        "nice",
+        "smile",
+        "smiling",
+        "teeth"
+      ]
+    },
+    {
+      "c": "😃",
+      "s": "1f603",
+      "n": "grinning face with big eyes",
+      "k": [
+        "awesome",
+        "big",
+        "eyes",
+        "face",
+        "grin",
+        "grinning",
+        "happy",
+        "mouth",
+        "open",
+        "smile",
+        "smiling",
+        "teeth",
+        "yay"
+      ]
+    },
+    {
+      "c": "😄",
+      "s": "1f604",
+      "n": "grinning face with smiling eyes",
+      "k": [
+        "eye",
+        "eyes",
+        "face",
+        "grin",
+        "grinning",
+        "happy",
+        "laugh",
+        "lol",
+        "mouth",
+        "open",
+        "smile",
+        "smiling"
+      ]
+    },
+    {
+      "c": "😁",
+      "s": "1f601",
+      "n": "beaming face with smiling eyes",
+      "k": [
+        "beaming",
+        "eye",
+        "eyes",
+        "face",
+        "grin",
+        "grinning",
+        "happy",
+        "nice",
+        "smile",
+        "smiling",
+        "teeth"
+      ]
+    },
+    {
+      "c": "😆",
+      "s": "1f606",
+      "n": "grinning squinting face",
+      "k": [
+        "closed",
+        "eyes",
+        "face",
+        "grinning",
+        "haha",
+        "hahaha",
+        "happy",
+        "laugh",
+        "lol",
+        "mouth",
+        "open",
+        "rofl",
+        "smile",
+        "smiling",
+        "squinting"
+      ]
+    },
+    {
+      "c": "😅",
+      "s": "1f605",
+      "n": "grinning face with sweat",
+      "k": [
+        "cold",
+        "dejected",
+        "excited",
+        "face",
+        "grinning",
+        "mouth",
+        "nervous",
+        "open",
+        "smile",
+        "smiling",
+        "stress",
+        "stressed",
+        "sweat"
+      ]
+    },
+    {
+      "c": "🤣",
+      "s": "1f923",
+      "n": "rolling on the floor laughing",
+      "k": [
+        "crying",
+        "face",
+        "floor",
+        "funny",
+        "haha",
+        "happy",
+        "hehe",
+        "hilarious",
+        "joy",
+        "laugh",
+        "lmao",
+        "lol",
+        "rofl",
+        "roflmao",
+        "rolling",
+        "tear"
+      ]
+    },
+    {
+      "c": "😂",
+      "s": "1f602",
+      "n": "face with tears of joy",
+      "k": [
+        "crying",
+        "face",
+        "feels",
+        "funny",
+        "haha",
+        "happy",
+        "hehe",
+        "hilarious",
+        "joy",
+        "laugh",
+        "lmao",
+        "lol",
+        "rofl",
+        "roflmao",
+        "tear"
+      ]
+    },
+    {
+      "c": "🙂",
+      "s": "1f642",
+      "n": "slightly smiling face",
+      "k": [
+        "face",
+        "happy",
+        "slightly",
+        "smile",
+        "smiling"
+      ]
+    },
+    {
+      "c": "🙃",
+      "s": "1f643",
+      "n": "upside-down face",
+      "k": [
+        "face",
+        "hehe",
+        "smile",
+        "upside-down"
+      ]
+    },
+    {
+      "c": "🫠",
+      "s": "1fae0",
+      "n": "melting face",
+      "k": [
+        "disappear",
+        "dissolve",
+        "embarrassed",
+        "face",
+        "haha",
+        "heat",
+        "hot",
+        "liquid",
+        "lol",
+        "melt",
+        "melting",
+        "sarcasm",
+        "sarcastic"
+      ]
+    },
+    {
+      "c": "😉",
+      "s": "1f609",
+      "n": "winking face",
+      "k": [
+        "face",
+        "flirt",
+        "heartbreaker",
+        "sexy",
+        "slide",
+        "tease",
+        "wink",
+        "winking",
+        "winks"
+      ]
+    },
+    {
+      "c": "😊",
+      "s": "1f60a",
+      "n": "smiling face with smiling eyes",
+      "k": [
+        "blush",
+        "eye",
+        "eyes",
+        "face",
+        "glad",
+        "satisfied",
+        "smile",
+        "smiling"
+      ]
+    },
+    {
+      "c": "😇",
+      "s": "1f607",
+      "n": "smiling face with halo",
+      "k": [
+        "angel",
+        "angelic",
+        "angels",
+        "blessed",
+        "face",
+        "fairy",
+        "fairytale",
+        "fantasy",
+        "halo",
+        "happy",
+        "innocent",
+        "peaceful",
+        "smile",
+        "smiling",
+        "spirit",
+        "tale"
+      ]
+    },
+    {
+      "c": "🥰",
+      "s": "1f970",
+      "n": "smiling face with hearts",
+      "k": [
+        "3",
+        "adore",
+        "crush",
+        "face",
+        "heart",
+        "hearts",
+        "ily",
+        "love",
+        "romance",
+        "smile",
+        "smiling",
+        "you"
+      ]
+    },
+    {
+      "c": "😍",
+      "s": "1f60d",
+      "n": "smiling face with heart-eyes",
+      "k": [
+        "143",
+        "bae",
+        "eye",
+        "face",
+        "feels",
+        "heart-eyes",
+        "hearts",
+        "ily",
+        "kisses",
+        "love",
+        "romance",
+        "romantic",
+        "smile",
+        "xoxo"
+      ]
+    },
+    {
+      "c": "🤩",
+      "s": "1f929",
+      "n": "star-struck",
+      "k": [
+        "excited",
+        "eyes",
+        "face",
+        "grinning",
+        "smile",
+        "star",
+        "star-struck",
+        "starry-eyed",
+        "wow"
+      ]
+    },
+    {
+      "c": "😘",
+      "s": "1f618",
+      "n": "face blowing a kiss",
+      "k": [
+        "adorbs",
+        "bae",
+        "blowing",
+        "face",
+        "flirt",
+        "heart",
+        "ily",
+        "kiss",
+        "love",
+        "lover",
+        "miss",
+        "muah",
+        "romantic",
+        "smooch",
+        "xoxo",
+        "you"
+      ]
+    },
+    {
+      "c": "😗",
+      "s": "1f617",
+      "n": "kissing face",
+      "k": [
+        "143",
+        "date",
+        "dating",
+        "face",
+        "flirt",
+        "ily",
+        "kiss",
+        "love",
+        "smooch",
+        "smooches",
+        "xoxo",
+        "you"
+      ]
+    },
+    {
+      "c": "☺️",
+      "s": "263a",
+      "n": "smiling face",
+      "k": [
+        "face",
+        "happy",
+        "outlined",
+        "relaxed",
+        "smile",
+        "smiling"
+      ]
+    },
+    {
+      "c": "😚",
+      "s": "1f61a",
+      "n": "kissing face with closed eyes",
+      "k": [
+        "143",
+        "bae",
+        "blush",
+        "closed",
+        "date",
+        "dating",
+        "eye",
+        "eyes",
+        "face",
+        "flirt",
+        "ily",
+        "kisses",
+        "kissing",
+        "smooches",
+        "xoxo"
+      ]
+    },
+    {
+      "c": "😙",
+      "s": "1f619",
+      "n": "kissing face with smiling eyes",
+      "k": [
+        "143",
+        "closed",
+        "date",
+        "dating",
+        "eye",
+        "eyes",
+        "face",
+        "flirt",
+        "ily",
+        "kiss",
+        "kisses",
+        "kissing",
+        "love",
+        "night",
+        "smile",
+        "smiling"
+      ]
+    },
+    {
+      "c": "🥲",
+      "s": "1f972",
+      "n": "smiling face with tear",
+      "k": [
+        "face",
+        "glad",
+        "grateful",
+        "happy",
+        "joy",
+        "pain",
+        "proud",
+        "relieved",
+        "smile",
+        "smiley",
+        "smiling",
+        "tear",
+        "touched"
+      ]
+    },
+    {
+      "c": "😋",
+      "s": "1f60b",
+      "n": "face savoring food",
+      "k": [
+        "delicious",
+        "eat",
+        "face",
+        "food",
+        "full",
+        "hungry",
+        "savor",
+        "smile",
+        "smiling",
+        "tasty",
+        "um",
+        "yum",
+        "yummy"
+      ]
+    },
+    {
+      "c": "😛",
+      "s": "1f61b",
+      "n": "face with tongue",
+      "k": [
+        "awesome",
+        "cool",
+        "face",
+        "nice",
+        "party",
+        "stuck-out",
+        "sweet",
+        "tongue"
+      ]
+    },
+    {
+      "c": "😜",
+      "s": "1f61c",
+      "n": "winking face with tongue",
+      "k": [
+        "crazy",
+        "epic",
+        "eye",
+        "face",
+        "funny",
+        "joke",
+        "loopy",
+        "nutty",
+        "party",
+        "stuck-out",
+        "tongue",
+        "wacky",
+        "weirdo",
+        "wink",
+        "winking",
+        "yolo"
+      ]
+    },
+    {
+      "c": "🤪",
+      "s": "1f92a",
+      "n": "zany face",
+      "k": [
+        "crazy",
+        "eye",
+        "eyes",
+        "face",
+        "goofy",
+        "large",
+        "small",
+        "zany"
+      ]
+    },
+    {
+      "c": "😝",
+      "s": "1f61d",
+      "n": "squinting face with tongue",
+      "k": [
+        "closed",
+        "eye",
+        "eyes",
+        "face",
+        "gross",
+        "horrible",
+        "omg",
+        "squinting",
+        "stuck-out",
+        "taste",
+        "tongue",
+        "whatever",
+        "yolo"
+      ]
+    },
+    {
+      "c": "🤑",
+      "s": "1f911",
+      "n": "money-mouth face",
+      "k": [
+        "face",
+        "money",
+        "money-mouth",
+        "mouth",
+        "paid"
+      ]
+    },
+    {
+      "c": "🤗",
+      "s": "1f917",
+      "n": "smiling face with open hands",
+      "k": [
+        "face",
+        "hands",
+        "hug",
+        "hugging",
+        "open",
+        "smiling"
+      ]
+    },
+    {
+      "c": "🤭",
+      "s": "1f92d",
+      "n": "face with hand over mouth",
+      "k": [
+        "face",
+        "giggle",
+        "giggling",
+        "hand",
+        "mouth",
+        "oops",
+        "realization",
+        "secret",
+        "shock",
+        "sudden",
+        "surprise",
+        "whoops"
+      ]
+    },
+    {
+      "c": "🫢",
+      "s": "1fae2",
+      "n": "face with open eyes and hand over mouth",
+      "k": [
+        "amazement",
+        "awe",
+        "disbelief",
+        "embarrass",
+        "eyes",
+        "face",
+        "gasp",
+        "hand",
+        "mouth",
+        "omg",
+        "open",
+        "over",
+        "quiet",
+        "scared",
+        "shock",
+        "surprise"
+      ]
+    },
+    {
+      "c": "🫣",
+      "s": "1fae3",
+      "n": "face with peeking eye",
+      "k": [
+        "captivated",
+        "embarrass",
+        "eye",
+        "face",
+        "hide",
+        "hiding",
+        "peek",
+        "peeking",
+        "peep",
+        "scared",
+        "shy",
+        "stare"
+      ]
+    },
+    {
+      "c": "🤫",
+      "s": "1f92b",
+      "n": "shushing face",
+      "k": [
+        "face",
+        "quiet",
+        "shh",
+        "shush",
+        "shushing"
+      ]
+    },
+    {
+      "c": "🤔",
+      "s": "1f914",
+      "n": "thinking face",
+      "k": [
+        "chin",
+        "consider",
+        "face",
+        "hmm",
+        "ponder",
+        "pondering",
+        "thinking",
+        "wondering"
+      ]
+    },
+    {
+      "c": "🫡",
+      "s": "1fae1",
+      "n": "saluting face",
+      "k": [
+        "face",
+        "good",
+        "luck",
+        "ma’am",
+        "OK",
+        "respect",
+        "salute",
+        "saluting",
+        "sir",
+        "troops",
+        "yes"
+      ]
+    },
+    {
+      "c": "🤐",
+      "s": "1f910",
+      "n": "zipper-mouth face",
+      "k": [
+        "face",
+        "keep",
+        "mouth",
+        "quiet",
+        "secret",
+        "shut",
+        "zip",
+        "zipper",
+        "zipper-mouth"
+      ]
+    },
+    {
+      "c": "🤨",
+      "s": "1f928",
+      "n": "face with raised eyebrow",
+      "k": [
+        "disapproval",
+        "disbelief",
+        "distrust",
+        "emoji",
+        "eyebrow",
+        "face",
+        "hmm",
+        "mild",
+        "raised",
+        "skeptic",
+        "skeptical",
+        "skepticism",
+        "surprise",
+        "what"
+      ]
+    },
+    {
+      "c": "😐",
+      "s": "1f610",
+      "n": "neutral face",
+      "k": [
+        "awkward",
+        "blank",
+        "deadpan",
+        "expressionless",
+        "face",
+        "fine",
+        "jealous",
+        "meh",
+        "neutral",
+        "oh",
+        "shade",
+        "straight",
+        "unamused",
+        "unhappy",
+        "unimpressed",
+        "whatever"
+      ]
+    },
+    {
+      "c": "😑",
+      "s": "1f611",
+      "n": "expressionless face",
+      "k": [
+        "awkward",
+        "dead",
+        "expressionless",
+        "face",
+        "fine",
+        "inexpressive",
+        "jealous",
+        "meh",
+        "not",
+        "oh",
+        "omg",
+        "straight",
+        "uh",
+        "unhappy",
+        "unimpressed",
+        "whatever"
+      ]
+    },
+    {
+      "c": "😶",
+      "s": "1f636",
+      "n": "face without mouth",
+      "k": [
+        "awkward",
+        "blank",
+        "expressionless",
+        "face",
+        "mouth",
+        "mouthless",
+        "mute",
+        "quiet",
+        "secret",
+        "silence",
+        "silent",
+        "speechless"
+      ]
+    },
+    {
+      "c": "🫥",
+      "s": "1fae5",
+      "n": "dotted line face",
+      "k": [
+        "depressed",
+        "disappear",
+        "dotted",
+        "face",
+        "hidden",
+        "hide",
+        "introvert",
+        "invisible",
+        "line",
+        "meh",
+        "whatever",
+        "wtv"
+      ]
+    },
+    {
+      "c": "😶‍🌫️",
+      "s": "1f636-200d-1f32b-fe0f",
+      "n": "face in clouds",
+      "k": [
+        "absentminded",
+        "clouds",
+        "face",
+        "fog",
+        "head"
+      ]
+    },
+    {
+      "c": "😏",
+      "s": "1f60f",
+      "n": "smirking face",
+      "k": [
+        "boss",
+        "dapper",
+        "face",
+        "flirt",
+        "homie",
+        "kidding",
+        "leer",
+        "shade",
+        "slick",
+        "sly",
+        "smirk",
+        "smug",
+        "snicker",
+        "suave",
+        "suspicious",
+        "swag"
+      ]
+    },
+    {
+      "c": "😒",
+      "s": "1f612",
+      "n": "unamused face",
+      "k": [
+        "...",
+        "bored",
+        "face",
+        "fine",
+        "jealous",
+        "jel",
+        "jelly",
+        "pissed",
+        "smh",
+        "ugh",
+        "uhh",
+        "unamused",
+        "unhappy",
+        "weird",
+        "whatever"
+      ]
+    },
+    {
+      "c": "🙄",
+      "s": "1f644",
+      "n": "face with rolling eyes",
+      "k": [
+        "eyeroll",
+        "eyes",
+        "face",
+        "rolling",
+        "shade",
+        "ugh",
+        "whatever"
+      ]
+    },
+    {
+      "c": "😬",
+      "s": "1f62c",
+      "n": "grimacing face",
+      "k": [
+        "awk",
+        "awkward",
+        "dentist",
+        "face",
+        "grimace",
+        "grimacing",
+        "grinning",
+        "smile",
+        "smiling"
+      ]
+    },
+    {
+      "c": "😮‍💨",
+      "s": "1f62e-200d-1f4a8",
+      "n": "face exhaling",
+      "k": [
+        "blow",
+        "blowing",
+        "exhale",
+        "exhaling",
+        "exhausted",
+        "face",
+        "gasp",
+        "groan",
+        "relief",
+        "sigh",
+        "smiley",
+        "smoke",
+        "whisper",
+        "whistle"
+      ]
+    },
+    {
+      "c": "🤥",
+      "s": "1f925",
+      "n": "lying face",
+      "k": [
+        "face",
+        "liar",
+        "lie",
+        "lying",
+        "pinocchio"
+      ]
+    },
+    {
+      "c": "🫨",
+      "s": "1fae8",
+      "n": "shaking face",
+      "k": [
+        "crazy",
+        "daze",
+        "earthquake",
+        "face",
+        "omg",
+        "panic",
+        "shaking",
+        "shock",
+        "surprise",
+        "vibrate",
+        "whoa",
+        "wow"
+      ]
+    },
+    {
+      "c": "🙂‍↔️",
+      "s": "1f642-200d-2194-fe0f",
+      "n": "head shaking horizontally",
+      "k": [
+        "head",
+        "horizontally",
+        "no",
+        "shake",
+        "shaking"
+      ]
+    },
+    {
+      "c": "🙂‍↕️",
+      "s": "1f642-200d-2195-fe0f",
+      "n": "head shaking vertically",
+      "k": [
+        "head",
+        "nod",
+        "shaking",
+        "vertically",
+        "yes"
+      ]
+    },
+    {
+      "c": "😌",
+      "s": "1f60c",
+      "n": "relieved face",
+      "k": [
+        "calm",
+        "face",
+        "peace",
+        "relief",
+        "relieved",
+        "zen"
+      ]
+    },
+    {
+      "c": "😔",
+      "s": "1f614",
+      "n": "pensive face",
+      "k": [
+        "awful",
+        "bored",
+        "dejected",
+        "died",
+        "disappointed",
+        "face",
+        "losing",
+        "lost",
+        "pensive",
+        "sad",
+        "sucks"
+      ]
+    },
+    {
+      "c": "😪",
+      "s": "1f62a",
+      "n": "sleepy face",
+      "k": [
+        "crying",
+        "face",
+        "good",
+        "night",
+        "sad",
+        "sleep",
+        "sleeping",
+        "sleepy",
+        "tired"
+      ]
+    },
+    {
+      "c": "🤤",
+      "s": "1f924",
+      "n": "drooling face",
+      "k": [
+        "drooling",
+        "face"
+      ]
+    },
+    {
+      "c": "😴",
+      "s": "1f634",
+      "n": "sleeping face",
+      "k": [
+        "bed",
+        "bedtime",
+        "face",
+        "good",
+        "goodnight",
+        "nap",
+        "night",
+        "sleep",
+        "sleeping",
+        "tired",
+        "whatever",
+        "yawn",
+        "zzz"
+      ]
+    },
+    {
+      "c": "😷",
+      "s": "1f637",
+      "n": "face with medical mask",
+      "k": [
+        "cold",
+        "dentist",
+        "dermatologist",
+        "doctor",
+        "dr",
+        "face",
+        "germs",
+        "mask",
+        "medical",
+        "medicine",
+        "sick"
+      ]
+    },
+    {
+      "c": "🤒",
+      "s": "1f912",
+      "n": "face with thermometer",
+      "k": [
+        "face",
+        "ill",
+        "sick",
+        "thermometer"
+      ]
+    },
+    {
+      "c": "🤕",
+      "s": "1f915",
+      "n": "face with head-bandage",
+      "k": [
+        "bandage",
+        "face",
+        "head-bandage",
+        "hurt",
+        "injury",
+        "ouch"
+      ]
+    },
+    {
+      "c": "🤢",
+      "s": "1f922",
+      "n": "nauseated face",
+      "k": [
+        "face",
+        "gross",
+        "nasty",
+        "nauseated",
+        "sick",
+        "vomit"
+      ]
+    },
+    {
+      "c": "🤮",
+      "s": "1f92e",
+      "n": "face vomiting",
+      "k": [
+        "barf",
+        "ew",
+        "face",
+        "gross",
+        "puke",
+        "sick",
+        "spew",
+        "throw",
+        "up",
+        "vomit",
+        "vomiting"
+      ]
+    },
+    {
+      "c": "🤧",
+      "s": "1f927",
+      "n": "sneezing face",
+      "k": [
+        "face",
+        "fever",
+        "flu",
+        "gesundheit",
+        "sick",
+        "sneeze",
+        "sneezing"
+      ]
+    },
+    {
+      "c": "🥵",
+      "s": "1f975",
+      "n": "hot face",
+      "k": [
+        "dying",
+        "face",
+        "feverish",
+        "heat",
+        "hot",
+        "panting",
+        "red-faced",
+        "stroke",
+        "sweating",
+        "tongue"
+      ]
+    },
+    {
+      "c": "🥶",
+      "s": "1f976",
+      "n": "cold face",
+      "k": [
+        "blue",
+        "blue-faced",
+        "cold",
+        "face",
+        "freezing",
+        "frostbite",
+        "icicles",
+        "subzero",
+        "teeth"
+      ]
+    },
+    {
+      "c": "🥴",
+      "s": "1f974",
+      "n": "woozy face",
+      "k": [
+        "dizzy",
+        "drunk",
+        "eyes",
+        "face",
+        "intoxicated",
+        "mouth",
+        "tipsy",
+        "uneven",
+        "wavy",
+        "woozy"
+      ]
+    },
+    {
+      "c": "😵",
+      "s": "1f635",
+      "n": "face with crossed-out eyes",
+      "k": [
+        "crossed-out",
+        "dead",
+        "dizzy",
+        "eyes",
+        "face",
+        "feels",
+        "knocked",
+        "out",
+        "sick",
+        "tired"
+      ]
+    },
+    {
+      "c": "😵‍💫",
+      "s": "1f635-200d-1f4ab",
+      "n": "face with spiral eyes",
+      "k": [
+        "confused",
+        "dizzy",
+        "eyes",
+        "face",
+        "hypnotized",
+        "omg",
+        "smiley",
+        "spiral",
+        "trouble",
+        "whoa",
+        "woah",
+        "woozy"
+      ]
+    },
+    {
+      "c": "🤯",
+      "s": "1f92f",
+      "n": "exploding head",
+      "k": [
+        "blown",
+        "explode",
+        "exploding",
+        "head",
+        "mind",
+        "mindblown",
+        "no",
+        "shocked",
+        "way"
+      ]
+    },
+    {
+      "c": "🤠",
+      "s": "1f920",
+      "n": "cowboy hat face",
+      "k": [
+        "cowboy",
+        "cowgirl",
+        "face",
+        "hat"
+      ]
+    },
+    {
+      "c": "🥳",
+      "s": "1f973",
+      "n": "partying face",
+      "k": [
+        "bday",
+        "birthday",
+        "celebrate",
+        "celebration",
+        "excited",
+        "face",
+        "happy",
+        "hat",
+        "hooray",
+        "horn",
+        "party",
+        "partying"
+      ]
+    },
+    {
+      "c": "🥸",
+      "s": "1f978",
+      "n": "disguised face",
+      "k": [
+        "disguise",
+        "eyebrow",
+        "face",
+        "glasses",
+        "incognito",
+        "moustache",
+        "mustache",
+        "nose",
+        "person",
+        "spy",
+        "tache",
+        "tash"
+      ]
+    },
+    {
+      "c": "😎",
+      "s": "1f60e",
+      "n": "smiling face with sunglasses",
+      "k": [
+        "awesome",
+        "beach",
+        "bright",
+        "bro",
+        "chilling",
+        "cool",
+        "face",
+        "rad",
+        "relaxed",
+        "shades",
+        "slay",
+        "smile",
+        "style",
+        "sunglasses",
+        "swag",
+        "win"
+      ]
+    },
+    {
+      "c": "🤓",
+      "s": "1f913",
+      "n": "nerd face",
+      "k": [
+        "brainy",
+        "clever",
+        "expert",
+        "face",
+        "geek",
+        "gifted",
+        "glasses",
+        "intelligent",
+        "nerd",
+        "smart"
+      ]
+    },
+    {
+      "c": "🧐",
+      "s": "1f9d0",
+      "n": "face with monocle",
+      "k": [
+        "classy",
+        "face",
+        "fancy",
+        "monocle",
+        "rich",
+        "stuffy",
+        "wealthy"
+      ]
+    },
+    {
+      "c": "😕",
+      "s": "1f615",
+      "n": "confused face",
+      "k": [
+        "befuddled",
+        "confused",
+        "confusing",
+        "dunno",
+        "face",
+        "frown",
+        "hm",
+        "meh",
+        "not",
+        "sad",
+        "sorry",
+        "sure"
+      ]
+    },
+    {
+      "c": "🫤",
+      "s": "1fae4",
+      "n": "face with diagonal mouth",
+      "k": [
+        "confused",
+        "confusion",
+        "diagonal",
+        "disappointed",
+        "doubt",
+        "doubtful",
+        "face",
+        "frustrated",
+        "frustration",
+        "meh",
+        "mouth",
+        "skeptical",
+        "unsure",
+        "whatever",
+        "wtv"
+      ]
+    },
+    {
+      "c": "😟",
+      "s": "1f61f",
+      "n": "worried face",
+      "k": [
+        "anxious",
+        "butterflies",
+        "face",
+        "nerves",
+        "nervous",
+        "sad",
+        "stress",
+        "stressed",
+        "surprised",
+        "worried",
+        "worry"
+      ]
+    },
+    {
+      "c": "🙁",
+      "s": "1f641",
+      "n": "slightly frowning face",
+      "k": [
+        "face",
+        "frown",
+        "frowning",
+        "sad",
+        "slightly"
+      ]
+    },
+    {
+      "c": "☹️",
+      "s": "2639",
+      "n": "frowning face",
+      "k": [
+        "face",
+        "frown",
+        "frowning",
+        "sad"
+      ]
+    },
+    {
+      "c": "😮",
+      "s": "1f62e",
+      "n": "face with open mouth",
+      "k": [
+        "believe",
+        "face",
+        "forgot",
+        "mouth",
+        "omg",
+        "open",
+        "shocked",
+        "surprised",
+        "sympathy",
+        "unbelievable",
+        "unreal",
+        "whoa",
+        "wow",
+        "you"
+      ]
+    },
+    {
+      "c": "😯",
+      "s": "1f62f",
+      "n": "hushed face",
+      "k": [
+        "epic",
+        "face",
+        "hushed",
+        "omg",
+        "stunned",
+        "surprised",
+        "whoa",
+        "woah"
+      ]
+    },
+    {
+      "c": "😲",
+      "s": "1f632",
+      "n": "astonished face",
+      "k": [
+        "astonished",
+        "cost",
+        "face",
+        "no",
+        "omg",
+        "shocked",
+        "totally",
+        "way"
+      ]
+    },
+    {
+      "c": "😳",
+      "s": "1f633",
+      "n": "flushed face",
+      "k": [
+        "amazed",
+        "awkward",
+        "crazy",
+        "dazed",
+        "dead",
+        "disbelief",
+        "embarrassed",
+        "face",
+        "flushed",
+        "geez",
+        "heat",
+        "hot",
+        "impressed",
+        "jeez",
+        "what",
+        "wow"
+      ]
+    },
+    {
+      "c": "🥺",
+      "s": "1f97a",
+      "n": "pleading face",
+      "k": [
+        "begging",
+        "big",
+        "eyes",
+        "face",
+        "mercy",
+        "not",
+        "pleading",
+        "please",
+        "pretty",
+        "puppy",
+        "sad",
+        "why"
+      ]
+    },
+    {
+      "c": "🥹",
+      "s": "1f979",
+      "n": "face holding back tears",
+      "k": [
+        "admiration",
+        "aww",
+        "back",
+        "cry",
+        "embarrassed",
+        "face",
+        "feelings",
+        "grateful",
+        "gratitude",
+        "holding",
+        "joy",
+        "please",
+        "proud",
+        "resist",
+        "sad",
+        "tears"
+      ]
+    },
+    {
+      "c": "😦",
+      "s": "1f626",
+      "n": "frowning face with open mouth",
+      "k": [
+        "caught",
+        "face",
+        "frown",
+        "frowning",
+        "guard",
+        "mouth",
+        "open",
+        "scared",
+        "scary",
+        "surprise",
+        "what",
+        "wow"
+      ]
+    },
+    {
+      "c": "😧",
+      "s": "1f627",
+      "n": "anguished face",
+      "k": [
+        "anguished",
+        "face",
+        "forgot",
+        "scared",
+        "scary",
+        "stressed",
+        "surprise",
+        "unhappy",
+        "what",
+        "wow"
+      ]
+    },
+    {
+      "c": "😨",
+      "s": "1f628",
+      "n": "fearful face",
+      "k": [
+        "afraid",
+        "anxious",
+        "blame",
+        "face",
+        "fear",
+        "fearful",
+        "scared",
+        "worried"
+      ]
+    },
+    {
+      "c": "😰",
+      "s": "1f630",
+      "n": "anxious face with sweat",
+      "k": [
+        "anxious",
+        "blue",
+        "cold",
+        "eek",
+        "face",
+        "mouth",
+        "nervous",
+        "open",
+        "rushed",
+        "scared",
+        "sweat",
+        "yikes"
+      ]
+    },
+    {
+      "c": "😥",
+      "s": "1f625",
+      "n": "sad but relieved face",
+      "k": [
+        "anxious",
+        "call",
+        "close",
+        "complicated",
+        "disappointed",
+        "face",
+        "not",
+        "relieved",
+        "sad",
+        "sweat",
+        "time",
+        "whew"
+      ]
+    },
+    {
+      "c": "😢",
+      "s": "1f622",
+      "n": "crying face",
+      "k": [
+        "awful",
+        "cry",
+        "crying",
+        "face",
+        "feels",
+        "miss",
+        "sad",
+        "tear",
+        "triste",
+        "unhappy"
+      ]
+    },
+    {
+      "c": "😭",
+      "s": "1f62d",
+      "n": "loudly crying face",
+      "k": [
+        "bawling",
+        "cry",
+        "crying",
+        "face",
+        "loudly",
+        "sad",
+        "sob",
+        "tear",
+        "tears",
+        "unhappy"
+      ]
+    },
+    {
+      "c": "😱",
+      "s": "1f631",
+      "n": "face screaming in fear",
+      "k": [
+        "epic",
+        "face",
+        "fear",
+        "fearful",
+        "munch",
+        "scared",
+        "scream",
+        "screamer",
+        "screaming",
+        "shocked",
+        "surprised",
+        "woah"
+      ]
+    },
+    {
+      "c": "😖",
+      "s": "1f616",
+      "n": "confounded face",
+      "k": [
+        "annoyed",
+        "confounded",
+        "confused",
+        "cringe",
+        "distraught",
+        "face",
+        "feels",
+        "frustrated",
+        "mad",
+        "sad"
+      ]
+    },
+    {
+      "c": "😣",
+      "s": "1f623",
+      "n": "persevering face",
+      "k": [
+        "concentrate",
+        "concentration",
+        "face",
+        "focus",
+        "headache",
+        "persevere",
+        "persevering"
+      ]
+    },
+    {
+      "c": "😞",
+      "s": "1f61e",
+      "n": "disappointed face",
+      "k": [
+        "awful",
+        "blame",
+        "dejected",
+        "disappointed",
+        "face",
+        "fail",
+        "losing",
+        "sad",
+        "unhappy"
+      ]
+    },
+    {
+      "c": "😓",
+      "s": "1f613",
+      "n": "downcast face with sweat",
+      "k": [
+        "close",
+        "cold",
+        "downcast",
+        "face",
+        "feels",
+        "headache",
+        "nervous",
+        "sad",
+        "scared",
+        "sweat",
+        "yikes"
+      ]
+    },
+    {
+      "c": "😩",
+      "s": "1f629",
+      "n": "weary face",
+      "k": [
+        "crying",
+        "face",
+        "fail",
+        "feels",
+        "hungry",
+        "mad",
+        "nooo",
+        "sad",
+        "sleepy",
+        "tired",
+        "unhappy",
+        "weary"
+      ]
+    },
+    {
+      "c": "😫",
+      "s": "1f62b",
+      "n": "tired face",
+      "k": [
+        "cost",
+        "face",
+        "feels",
+        "nap",
+        "sad",
+        "sneeze",
+        "tired"
+      ]
+    },
+    {
+      "c": "🥱",
+      "s": "1f971",
+      "n": "yawning face",
+      "k": [
+        "bedtime",
+        "bored",
+        "face",
+        "goodnight",
+        "nap",
+        "night",
+        "sleep",
+        "sleepy",
+        "tired",
+        "whatever",
+        "yawn",
+        "yawning",
+        "zzz"
+      ]
+    },
+    {
+      "c": "😤",
+      "s": "1f624",
+      "n": "face with steam from nose",
+      "k": [
+        "anger",
+        "angry",
+        "face",
+        "feels",
+        "fume",
+        "fuming",
+        "furious",
+        "fury",
+        "mad",
+        "nose",
+        "steam",
+        "triumph",
+        "unhappy",
+        "won"
+      ]
+    },
+    {
+      "c": "😡",
+      "s": "1f621",
+      "n": "enraged face",
+      "k": [
+        "anger",
+        "angry",
+        "enraged",
+        "face",
+        "feels",
+        "mad",
+        "maddening",
+        "pouting",
+        "rage",
+        "red",
+        "shade",
+        "unhappy",
+        "upset"
+      ]
+    },
+    {
+      "c": "😠",
+      "s": "1f620",
+      "n": "angry face",
+      "k": [
+        "anger",
+        "angry",
+        "blame",
+        "face",
+        "feels",
+        "frustrated",
+        "mad",
+        "maddening",
+        "rage",
+        "shade",
+        "unhappy",
+        "upset"
+      ]
+    },
+    {
+      "c": "🤬",
+      "s": "1f92c",
+      "n": "face with symbols on mouth",
+      "k": [
+        "censor",
+        "cursing",
+        "cussing",
+        "face",
+        "mad",
+        "mouth",
+        "pissed",
+        "swearing",
+        "symbols"
+      ]
+    },
+    {
+      "c": "😈",
+      "s": "1f608",
+      "n": "smiling face with horns",
+      "k": [
+        "demon",
+        "devil",
+        "evil",
+        "face",
+        "fairy",
+        "fairytale",
+        "fantasy",
+        "horns",
+        "purple",
+        "shade",
+        "smile",
+        "smiling",
+        "tale"
+      ]
+    },
+    {
+      "c": "👿",
+      "s": "1f47f",
+      "n": "angry face with horns",
+      "k": [
+        "angry",
+        "demon",
+        "devil",
+        "evil",
+        "face",
+        "fairy",
+        "fairytale",
+        "fantasy",
+        "horns",
+        "imp",
+        "mischievous",
+        "purple",
+        "shade",
+        "tale"
+      ]
+    },
+    {
+      "c": "💀",
+      "s": "1f480",
+      "n": "skull",
+      "k": [
+        "body",
+        "dead",
+        "death",
+        "face",
+        "fairy",
+        "fairytale",
+        "i’m",
+        "lmao",
+        "monster",
+        "skull",
+        "tale",
+        "yolo"
+      ]
+    },
+    {
+      "c": "☠️",
+      "s": "2620",
+      "n": "skull and crossbones",
+      "k": [
+        "bone",
+        "crossbones",
+        "dead",
+        "death",
+        "face",
+        "monster",
+        "skull"
+      ]
+    },
+    {
+      "c": "💩",
+      "s": "1f4a9",
+      "n": "pile of poo",
+      "k": [
+        "bs",
+        "comic",
+        "doo",
+        "dung",
+        "face",
+        "fml",
+        "monster",
+        "pile",
+        "poo",
+        "poop",
+        "smelly",
+        "smh",
+        "stink",
+        "stinks",
+        "stinky",
+        "turd"
+      ]
+    },
+    {
+      "c": "🤡",
+      "s": "1f921",
+      "n": "clown face",
+      "k": [
+        "clown",
+        "face"
+      ]
+    },
+    {
+      "c": "👹",
+      "s": "1f479",
+      "n": "ogre",
+      "k": [
+        "creature",
+        "devil",
+        "face",
+        "fairy",
+        "fairytale",
+        "fantasy",
+        "mask",
+        "monster",
+        "ogre",
+        "scary",
+        "tale"
+      ]
+    },
+    {
+      "c": "👺",
+      "s": "1f47a",
+      "n": "goblin",
+      "k": [
+        "angry",
+        "creature",
+        "face",
+        "fairy",
+        "fairytale",
+        "fantasy",
+        "goblin",
+        "mask",
+        "mean",
+        "monster",
+        "tale"
+      ]
+    },
+    {
+      "c": "👻",
+      "s": "1f47b",
+      "n": "ghost",
+      "k": [
+        "boo",
+        "creature",
+        "excited",
+        "face",
+        "fairy",
+        "fairytale",
+        "fantasy",
+        "ghost",
+        "halloween",
+        "haunting",
+        "monster",
+        "scary",
+        "silly",
+        "tale"
+      ]
+    },
+    {
+      "c": "👽",
+      "s": "1f47d",
+      "n": "alien",
+      "k": [
+        "alien",
+        "creature",
+        "extraterrestrial",
+        "face",
+        "fairy",
+        "fairytale",
+        "fantasy",
+        "monster",
+        "space",
+        "tale",
+        "ufo"
+      ]
+    },
+    {
+      "c": "👾",
+      "s": "1f47e",
+      "n": "alien monster",
+      "k": [
+        "alien",
+        "creature",
+        "extraterrestrial",
+        "face",
+        "fairy",
+        "fairytale",
+        "fantasy",
+        "game",
+        "gamer",
+        "games",
+        "monster",
+        "pixelated",
+        "space",
+        "tale",
+        "ufo"
+      ]
+    },
+    {
+      "c": "🤖",
+      "s": "1f916",
+      "n": "robot",
+      "k": [
+        "face",
+        "monster",
+        "robot"
+      ]
+    },
+    {
+      "c": "😺",
+      "s": "1f63a",
+      "n": "grinning cat",
+      "k": [
+        "animal",
+        "cat",
+        "face",
+        "grinning",
+        "mouth",
+        "open",
+        "smile",
+        "smiling"
+      ]
+    },
+    {
+      "c": "😸",
+      "s": "1f638",
+      "n": "grinning cat with smiling eyes",
+      "k": [
+        "animal",
+        "cat",
+        "eye",
+        "eyes",
+        "face",
+        "grin",
+        "grinning",
+        "smile",
+        "smiling"
+      ]
+    },
+    {
+      "c": "😹",
+      "s": "1f639",
+      "n": "cat with tears of joy",
+      "k": [
+        "animal",
+        "cat",
+        "face",
+        "joy",
+        "laugh",
+        "laughing",
+        "lol",
+        "tear",
+        "tears"
+      ]
+    },
+    {
+      "c": "😻",
+      "s": "1f63b",
+      "n": "smiling cat with heart-eyes",
+      "k": [
+        "animal",
+        "cat",
+        "eye",
+        "face",
+        "heart",
+        "heart-eyes",
+        "love",
+        "smile",
+        "smiling"
+      ]
+    },
+    {
+      "c": "😼",
+      "s": "1f63c",
+      "n": "cat with wry smile",
+      "k": [
+        "animal",
+        "cat",
+        "face",
+        "ironic",
+        "smile",
+        "wry"
+      ]
+    },
+    {
+      "c": "😽",
+      "s": "1f63d",
+      "n": "kissing cat",
+      "k": [
+        "animal",
+        "cat",
+        "closed",
+        "eye",
+        "eyes",
+        "face",
+        "kiss",
+        "kissing"
+      ]
+    },
+    {
+      "c": "🙀",
+      "s": "1f640",
+      "n": "weary cat",
+      "k": [
+        "animal",
+        "cat",
+        "face",
+        "oh",
+        "surprised",
+        "weary"
+      ]
+    },
+    {
+      "c": "😿",
+      "s": "1f63f",
+      "n": "crying cat",
+      "k": [
+        "animal",
+        "cat",
+        "cry",
+        "crying",
+        "face",
+        "sad",
+        "tear"
+      ]
+    },
+    {
+      "c": "😾",
+      "s": "1f63e",
+      "n": "pouting cat",
+      "k": [
+        "animal",
+        "cat",
+        "face",
+        "pouting"
+      ]
+    },
+    {
+      "c": "🙈",
+      "s": "1f648",
+      "n": "see-no-evil monkey",
+      "k": [
+        "embarrassed",
+        "evil",
+        "face",
+        "forbidden",
+        "forgot",
+        "gesture",
+        "hide",
+        "monkey",
+        "no",
+        "omg",
+        "prohibited",
+        "scared",
+        "secret",
+        "smh",
+        "watch"
+      ]
+    },
+    {
+      "c": "🙉",
+      "s": "1f649",
+      "n": "hear-no-evil monkey",
+      "k": [
+        "animal",
+        "ears",
+        "evil",
+        "face",
+        "forbidden",
+        "gesture",
+        "hear",
+        "listen",
+        "monkey",
+        "no",
+        "not",
+        "prohibited",
+        "secret",
+        "shh",
+        "tmi"
+      ]
+    },
+    {
+      "c": "🙊",
+      "s": "1f64a",
+      "n": "speak-no-evil monkey",
+      "k": [
+        "animal",
+        "evil",
+        "face",
+        "forbidden",
+        "gesture",
+        "monkey",
+        "no",
+        "not",
+        "oops",
+        "prohibited",
+        "quiet",
+        "secret",
+        "speak",
+        "stealth"
+      ]
+    },
+    {
+      "c": "💌",
+      "s": "1f48c",
+      "n": "love letter",
+      "k": [
+        "heart",
+        "letter",
+        "love",
+        "mail",
+        "romance",
+        "valentine"
+      ]
+    },
+    {
+      "c": "💘",
+      "s": "1f498",
+      "n": "heart with arrow",
+      "k": [
+        "143",
+        "adorbs",
+        "arrow",
+        "cupid",
+        "date",
+        "emotion",
+        "heart",
+        "ily",
+        "love",
+        "romance",
+        "valentine"
+      ]
+    },
+    {
+      "c": "💝",
+      "s": "1f49d",
+      "n": "heart with ribbon",
+      "k": [
+        "143",
+        "anniversary",
+        "emotion",
+        "heart",
+        "ily",
+        "kisses",
+        "ribbon",
+        "valentine",
+        "xoxo"
+      ]
+    },
+    {
+      "c": "💖",
+      "s": "1f496",
+      "n": "sparkling heart",
+      "k": [
+        "143",
+        "emotion",
+        "excited",
+        "good",
+        "heart",
+        "ily",
+        "kisses",
+        "morning",
+        "night",
+        "sparkle",
+        "sparkling",
+        "xoxo"
+      ]
+    },
+    {
+      "c": "💗",
+      "s": "1f497",
+      "n": "growing heart",
+      "k": [
+        "143",
+        "emotion",
+        "excited",
+        "growing",
+        "heart",
+        "heartpulse",
+        "ily",
+        "kisses",
+        "muah",
+        "nervous",
+        "pulse",
+        "xoxo"
+      ]
+    },
+    {
+      "c": "💓",
+      "s": "1f493",
+      "n": "beating heart",
+      "k": [
+        "143",
+        "beating",
+        "cardio",
+        "emotion",
+        "heart",
+        "heartbeat",
+        "ily",
+        "love",
+        "pulsating",
+        "pulse"
+      ]
+    },
+    {
+      "c": "💞",
+      "s": "1f49e",
+      "n": "revolving hearts",
+      "k": [
+        "143",
+        "adorbs",
+        "anniversary",
+        "emotion",
+        "heart",
+        "hearts",
+        "revolving"
+      ]
+    },
+    {
+      "c": "💕",
+      "s": "1f495",
+      "n": "two hearts",
+      "k": [
+        "143",
+        "anniversary",
+        "date",
+        "dating",
+        "emotion",
+        "heart",
+        "hearts",
+        "ily",
+        "kisses",
+        "love",
+        "loving",
+        "two",
+        "xoxo"
+      ]
+    },
+    {
+      "c": "💟",
+      "s": "1f49f",
+      "n": "heart decoration",
+      "k": [
+        "143",
+        "decoration",
+        "emotion",
+        "heart",
+        "hearth",
+        "purple",
+        "white"
+      ]
+    },
+    {
+      "c": "❣️",
+      "s": "2763",
+      "n": "heart exclamation",
+      "k": [
+        "exclamation",
+        "heart",
+        "heavy",
+        "mark",
+        "punctuation"
+      ]
+    },
+    {
+      "c": "💔",
+      "s": "1f494",
+      "n": "broken heart",
+      "k": [
+        "break",
+        "broken",
+        "crushed",
+        "emotion",
+        "heart",
+        "heartbroken",
+        "lonely",
+        "sad"
+      ]
+    },
+    {
+      "c": "❤️‍🔥",
+      "s": "2764-fe0f-200d-1f525",
+      "n": "heart on fire",
+      "k": [
+        "burn",
+        "fire",
+        "heart",
+        "love",
+        "lust",
+        "sacred"
+      ]
+    },
+    {
+      "c": "❤️‍🩹",
+      "s": "2764-fe0f-200d-1fa79",
+      "n": "mending heart",
+      "k": [
+        "healthier",
+        "heart",
+        "improving",
+        "mending",
+        "recovering",
+        "recuperating",
+        "well"
+      ]
+    },
+    {
+      "c": "❤️",
+      "s": "2764",
+      "n": "red heart",
+      "k": [
+        "emotion",
+        "heart",
+        "love",
+        "red"
+      ]
+    },
+    {
+      "c": "🩷",
+      "s": "1fa77",
+      "n": "pink heart",
+      "k": [
+        "143",
+        "adorable",
+        "cute",
+        "emotion",
+        "heart",
+        "ily",
+        "like",
+        "love",
+        "pink",
+        "special",
+        "sweet"
+      ]
+    },
+    {
+      "c": "🧡",
+      "s": "1f9e1",
+      "n": "orange heart",
+      "k": [
+        "143",
+        "heart",
+        "orange"
+      ]
+    },
+    {
+      "c": "💛",
+      "s": "1f49b",
+      "n": "yellow heart",
+      "k": [
+        "143",
+        "cardiac",
+        "emotion",
+        "heart",
+        "ily",
+        "love",
+        "yellow"
+      ]
+    },
+    {
+      "c": "💚",
+      "s": "1f49a",
+      "n": "green heart",
+      "k": [
+        "143",
+        "emotion",
+        "green",
+        "heart",
+        "ily",
+        "love",
+        "romantic"
+      ]
+    },
+    {
+      "c": "💙",
+      "s": "1f499",
+      "n": "blue heart",
+      "k": [
+        "143",
+        "blue",
+        "emotion",
+        "heart",
+        "ily",
+        "love",
+        "romance"
+      ]
+    },
+    {
+      "c": "🩵",
+      "s": "1fa75",
+      "n": "light blue heart",
+      "k": [
+        "143",
+        "blue",
+        "cute",
+        "cyan",
+        "emotion",
+        "heart",
+        "ily",
+        "light",
+        "like",
+        "love",
+        "sky",
+        "special",
+        "teal"
+      ]
+    },
+    {
+      "c": "💜",
+      "s": "1f49c",
+      "n": "purple heart",
+      "k": [
+        "143",
+        "bestest",
+        "emotion",
+        "heart",
+        "ily",
+        "love",
+        "purple"
+      ]
+    },
+    {
+      "c": "🤎",
+      "s": "1f90e",
+      "n": "brown heart",
+      "k": [
+        "143",
+        "brown",
+        "heart"
+      ]
+    },
+    {
+      "c": "🖤",
+      "s": "1f5a4",
+      "n": "black heart",
+      "k": [
+        "black",
+        "evil",
+        "heart",
+        "wicked"
+      ]
+    },
+    {
+      "c": "🩶",
+      "s": "1fa76",
+      "n": "grey heart",
+      "k": [
+        "143",
+        "emotion",
+        "gray",
+        "grey",
+        "heart",
+        "ily",
+        "love",
+        "silver",
+        "slate",
+        "special"
+      ]
+    },
+    {
+      "c": "🤍",
+      "s": "1f90d",
+      "n": "white heart",
+      "k": [
+        "143",
+        "heart",
+        "white"
+      ]
+    },
+    {
+      "c": "💋",
+      "s": "1f48b",
+      "n": "kiss mark",
+      "k": [
+        "dating",
+        "emotion",
+        "heart",
+        "kiss",
+        "kissing",
+        "lips",
+        "mark",
+        "romance",
+        "sexy"
+      ]
+    },
+    {
+      "c": "💯",
+      "s": "1f4af",
+      "n": "hundred points",
+      "k": [
+        "100",
+        "a+",
+        "agree",
+        "clearly",
+        "definitely",
+        "faithful",
+        "fleek",
+        "full",
+        "hundred",
+        "keep",
+        "perfect",
+        "point",
+        "score",
+        "TRUE",
+        "truth",
+        "yup"
+      ]
+    },
+    {
+      "c": "💢",
+      "s": "1f4a2",
+      "n": "anger symbol",
+      "k": [
+        "anger",
+        "angry",
+        "comic",
+        "mad",
+        "symbol",
+        "upset"
+      ]
+    },
+    {
+      "c": "💥",
+      "s": "1f4a5",
+      "n": "collision",
+      "k": [
+        "bomb",
+        "boom",
+        "collide",
+        "collision",
+        "comic",
+        "explode"
+      ]
+    },
+    {
+      "c": "💫",
+      "s": "1f4ab",
+      "n": "dizzy",
+      "k": [
+        "comic",
+        "dizzy",
+        "shining",
+        "shooting",
+        "star",
+        "stars"
+      ]
+    },
+    {
+      "c": "💦",
+      "s": "1f4a6",
+      "n": "sweat droplets",
+      "k": [
+        "comic",
+        "drip",
+        "droplet",
+        "droplets",
+        "drops",
+        "splashing",
+        "squirt",
+        "sweat",
+        "water",
+        "wet",
+        "work",
+        "workout"
+      ]
+    },
+    {
+      "c": "💨",
+      "s": "1f4a8",
+      "n": "dashing away",
+      "k": [
+        "away",
+        "cloud",
+        "comic",
+        "dash",
+        "dashing",
+        "fart",
+        "fast",
+        "go",
+        "gone",
+        "gotta",
+        "running",
+        "smoke"
+      ]
+    },
+    {
+      "c": "🕳️",
+      "s": "1f573",
+      "n": "hole",
+      "k": [
+        "hole"
+      ]
+    },
+    {
+      "c": "💬",
+      "s": "1f4ac",
+      "n": "speech balloon",
+      "k": [
+        "balloon",
+        "bubble",
+        "comic",
+        "dialog",
+        "message",
+        "sms",
+        "speech",
+        "talk",
+        "text",
+        "typing"
+      ]
+    },
+    {
+      "c": "👁️‍🗨️",
+      "s": "1f441-fe0f-200d-1f5e8-fe0f",
+      "n": "eye in speech bubble",
+      "k": [
+        "balloon",
+        "bubble",
+        "eye",
+        "speech",
+        "witness"
+      ]
+    },
+    {
+      "c": "🗨️",
+      "s": "1f5e8",
+      "n": "left speech bubble",
+      "k": [
+        "balloon",
+        "bubble",
+        "dialog",
+        "left",
+        "speech"
+      ]
+    },
+    {
+      "c": "🗯️",
+      "s": "1f5ef",
+      "n": "right anger bubble",
+      "k": [
+        "anger",
+        "angry",
+        "balloon",
+        "bubble",
+        "mad",
+        "right"
+      ]
+    },
+    {
+      "c": "💭",
+      "s": "1f4ad",
+      "n": "thought balloon",
+      "k": [
+        "balloon",
+        "bubble",
+        "cartoon",
+        "cloud",
+        "comic",
+        "daydream",
+        "decisions",
+        "dream",
+        "idea",
+        "invent",
+        "invention",
+        "realize",
+        "think",
+        "thoughts",
+        "wonder"
+      ]
+    },
+    {
+      "c": "💤",
+      "s": "1f4a4",
+      "n": "ZZZ",
+      "k": [
+        "comic",
+        "good",
+        "goodnight",
+        "night",
+        "sleep",
+        "sleeping",
+        "sleepy",
+        "tired",
+        "zzz"
+      ]
+    }
+  ]
+}
