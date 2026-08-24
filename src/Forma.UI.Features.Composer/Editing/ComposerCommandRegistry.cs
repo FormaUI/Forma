@@ -8,6 +8,7 @@ public sealed class ComposerCommandRegistry
 {
     private readonly Dictionary<string, Func<Task>> _engineCommands = new(StringComparer.Ordinal);
     private readonly Dictionary<string, IComposerPlugin> _pluginCommands = new(StringComparer.Ordinal);
+    private readonly List<(string Prefix, IComposerPlugin Plugin)> _pluginCommandPrefixes = [];
 
     /// <summary>Every command name the registry can run.</summary>
     public IEnumerable<string> Commands
@@ -28,6 +29,7 @@ public sealed class ComposerCommandRegistry
         ArgumentNullException.ThrowIfNull(plugins);
 
         _pluginCommands.Clear();
+        _pluginCommandPrefixes.Clear();
 
         foreach (var plugin in plugins)
         {
@@ -47,6 +49,11 @@ public sealed class ComposerCommandRegistry
             foreach (var binding in plugin.KeyBindings)
             {
                 _pluginCommands[binding.Command] = plugin;
+            }
+
+            foreach (var prefix in plugin.CommandPrefixes)
+            {
+                _pluginCommandPrefixes.Add((prefix, plugin));
             }
         }
     }
@@ -70,6 +77,15 @@ public sealed class ComposerCommandRegistry
         {
             await plugin.ExecuteAsync(command, context, cancellationToken).ConfigureAwait(false);
             return ComposerCommandOutcome.Plugin;
+        }
+
+        foreach (var (prefix, prefixPlugin) in _pluginCommandPrefixes)
+        {
+            if (command.StartsWith(prefix, StringComparison.Ordinal))
+            {
+                await prefixPlugin.ExecuteAsync(command, context, cancellationToken).ConfigureAwait(false);
+                return ComposerCommandOutcome.Plugin;
+            }
         }
 
         return ComposerCommandOutcome.Unhandled;

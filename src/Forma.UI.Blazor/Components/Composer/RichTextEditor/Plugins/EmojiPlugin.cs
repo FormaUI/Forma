@@ -4,7 +4,6 @@ using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
-using Forma.UI.Style.Glyphs;
 
 /// <summary>Contributes emoji character insertion to the rich text editor.</summary>
 public sealed class EmojiPlugin(
@@ -16,7 +15,7 @@ public sealed class EmojiPlugin(
 
     private readonly RichTextEditorPlugin _editor = editor;
 
-    /// <summary>Options configuring available emojis.</summary>
+    /// <summary>Options configuring the emoji picker.</summary>
     public EmojiPluginOptions Options { get; } = options ?? EmojiPluginOptions.Default;
 
     /// <inheritdoc />
@@ -24,6 +23,9 @@ public sealed class EmojiPlugin(
 
     /// <inheritdoc />
     public IReadOnlyList<string> SupportedEditorIds => [RichTextEditorPlugin.EditorId];
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> CommandPrefixes => [InsertEmojiPrefix];
 
     /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> Items =>
@@ -36,17 +38,12 @@ public sealed class EmojiPlugin(
                 Title = "Insert",
                 Items =
                 [
-                    new FormaToolbarMenu
+                    new FormaToolbarCustomItem
                     {
                         Id = "emoji",
                         Title = "Emoji",
-                        Icon = Glyph.Comment,
-                        Options = [.. Options.Emojis.Select(e => new FormaToolbarOption
-                        {
-                            Id = $"emoji-{e}",
-                            Title = e,
-                            Command = $"{InsertEmojiPrefix}{e}",
-                        })],
+                        Component = typeof(FormaComposerEmojiButton),
+                        Parameters = new Dictionary<string, object> { ["MaxRecent"] = Options.MaxRecent },
                     },
                 ],
             },

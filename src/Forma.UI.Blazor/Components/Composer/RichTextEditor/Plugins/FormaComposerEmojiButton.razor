@@ -1,0 +1,27 @@
+@namespace Forma.UI.Blazor.Components.Composer.RichTextEditor.Plugins
+@using Forma.UI.Blazor.Components.Buttons
+@using Forma.UI.Blazor.Components.Inputs
+@using Forma.UI.Style.Glyphs
+
+<span class="forma-composer-emoji-anchor" @ref="_anchorElement">
+    <FormaButton Variant="ButtonVariant.Ghost"
+                 Size="ButtonSize.Mini"
+                 IconOnly="true"
+                 aria-label="@L["Emoji"]"
+                 aria-haspopup="true"
+                 aria-expanded="@_isOpen.ToString().ToLowerInvariant()"
+                 aria-controls="@(_isOpen ? _popupId : null)"
+                 title="@L["Emoji"]"
+                 OnClick="Toggle">
+        <FormaGlyph Name="Glyph.FaceSmile" />
+    </FormaButton>
+</span>
+
+@if (_isOpen)
+{
+    <div class="forma-composer-emoji-backdrop" @onclick="Close"></div>
+    @* Manual rather than auto: the backdrop above owns dismissal, matching FormaDatePicker's popup. *@
+    <div class="forma-composer-emoji-popup" id="@_popupId" popover="manual" @ref="_popupElement">
+        <FormaEmojiPicker OnSelect="HandleSelectAsync" @bind-Recent="_recent" MaxRecent="MaxRecent" />
+    </div>
+}

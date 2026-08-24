@@ -22,6 +22,7 @@ class AnchoredPopup {
     #popup;
     #anchor;
     #placement = null;
+    #resizeObserver = null;
 
     constructor(popup, { anchor }) {
         this.#popup = popup;
@@ -44,6 +45,11 @@ class AnchoredPopup {
         addEventListener('scroll', place, { capture: true, passive: true, signal: this.#placement.signal });
         addEventListener('resize', place, { passive: true, signal: this.#placement.signal });
 
+        // The popup's own content can grow after it opens — a progressively loaded picker, a
+        // search result count, a category switch — so its size alone must trigger repositioning.
+        this.#resizeObserver = new ResizeObserver(place);
+        this.#resizeObserver.observe(this.#popup);
+
         place();
     }
 
@@ -51,6 +57,8 @@ class AnchoredPopup {
     close() {
         this.#placement?.abort();
         this.#placement = null;
+        this.#resizeObserver?.disconnect();
+        this.#resizeObserver = null;
     }
 
     dispose() {

@@ -337,6 +337,20 @@ public sealed class RichTextPluginTests
     }
 
     [Fact]
+    public void EmojiPlugin_should_contribute_the_composer_emoji_button()
+    {
+        // Arrange
+        var plugin = new EmojiPlugin(new RichTextEditorPlugin(), new EmojiPluginOptions { MaxRecent = 12 });
+
+        // Act
+        var item = (FormaToolbarCustomItem)plugin.Items.SelectMany(entry => entry.Items).SelectMany(Flatten).Single(entry => entry.Id == "emoji");
+
+        // Assert
+        Assert.Equal(typeof(FormaComposerEmojiButton), item.Component);
+        Assert.Equal(12, item.Parameters?["MaxRecent"]);
+    }
+
+    [Fact]
     public async Task TablePlugin_should_dispatch_table_commands()
     {
         // Arrange

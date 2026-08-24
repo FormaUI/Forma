@@ -65,6 +65,24 @@ public sealed class ComposerCommandRegistryTests
         }
     }
 
+    private sealed class PrefixPlugin(string id, params string[] prefixes) : IComposerPlugin
+    {
+        public string Id => id;
+        public List<string> Executed { get; } = [];
+        public IReadOnlyList<ComposerToolbarItem> Items => [];
+        public IReadOnlyList<string> CommandPrefixes => prefixes;
+        public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
+        public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
+        public IReadOnlyList<ComposerAsset> Assets => [];
+        public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
+
+        public ValueTask ExecuteAsync(string command, ComposerContext context, CancellationToken cancellationToken = default)
+        {
+            Executed.Add(command);
+            return ValueTask.CompletedTask;
+        }
+    }
+
     private static readonly NullAssetLoader AssetLoader = new();
 
     private static ComposerContext CreateContext()
@@ -145,6 +163,59 @@ public sealed class ComposerCommandRegistryTests
 
         // Assert
         Assert.Equal(ComposerCommandOutcome.Unhandled, outcome);
+    }
+
+    [Fact]
+    public async Task Should_route_a_command_to_the_plugin_that_declared_its_prefix()
+    {
+        // Arrange
+        var plugin = new PrefixPlugin("emoji", "emoji.insert:");
+        var registry = new ComposerCommandRegistry();
+        registry.RegisterPlugins([plugin]);
+
+        // Act
+        var outcome = await ExecuteAsync(registry, "emoji.insert:\U0001F600");
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal(ComposerCommandOutcome.Plugin, outcome),
+            () => Assert.Equal(["emoji.insert:\U0001F600"], plugin.Executed));
+    }
+
+    [Fact]
+    public async Task Should_prefer_an_exact_command_over_a_prefix_match()
+    {
+        // Arrange
+        var exact = new RecordingPlugin("exact", "emoji.insert:reset");
+        var byPrefix = new PrefixPlugin("emoji", "emoji.insert:");
+        var registry = new ComposerCommandRegistry();
+        registry.RegisterPlugins([exact, byPrefix]);
+
+        // Act
+        var outcome = await ExecuteAsync(registry, "emoji.insert:reset");
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal(ComposerCommandOutcome.Plugin, outcome),
+            () => Assert.Equal(["emoji.insert:reset"], exact.Executed),
+            () => Assert.Empty(byPrefix.Executed));
+    }
+
+    [Fact]
+    public async Task Should_not_match_a_command_that_only_shares_a_prefixs_leading_characters()
+    {
+        // Arrange
+        var plugin = new PrefixPlugin("emoji", "emoji.insert:");
+        var registry = new ComposerCommandRegistry();
+        registry.RegisterPlugins([plugin]);
+
+        // Act
+        var outcome = await ExecuteAsync(registry, "emoji.insertion-point");
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal(ComposerCommandOutcome.Unhandled, outcome),
+            () => Assert.Empty(plugin.Executed));
     }
 
     [Fact]

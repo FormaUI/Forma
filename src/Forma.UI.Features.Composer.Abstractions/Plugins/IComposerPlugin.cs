@@ -21,6 +21,12 @@ public interface IComposerPlugin : IComposerKeyBindingProvider
     /// <summary>The editors this plugin contributes to, or empty to contribute to every editor.</summary>
     IReadOnlyList<string> SupportedEditorIds => [];
 
+    /// <summary>
+    /// Prefixes of commands this plugin owns whose full form is not enumerable ahead of time — such as one
+    /// per catalogue entry a picker offers — so the engine can route them without a per-value registration.
+    /// </summary>
+    IReadOnlyList<string> CommandPrefixes => [];
+
     /// <summary>Browser assets the plugin needs before it can run.</summary>
     IReadOnlyList<ComposerAsset> Assets { get; }
 
