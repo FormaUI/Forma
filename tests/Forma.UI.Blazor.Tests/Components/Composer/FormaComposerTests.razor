@@ -1,4 +1,5 @@
 @inherits BunitContext
+@using Forma.UI.Blazor.Components.Composer.Plugins
 
 @code {
     public sealed class Component
@@ -1080,6 +1081,32 @@
 
             // Assert 2
             cut.WaitForAssertion(() => Assert.DoesNotContain("forma-composer-maximized", cut.Find(".forma-composer").ClassList));
+        }
+
+        [Fact]
+        public void Should_relabel_the_maximize_button_to_minimize_while_maximized()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var plugins = new IComposerPlugin[] { new MaximizePlugin() };
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            var composer = cut.FindComponent<FormaComposer>().Instance;
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Maximize']")));
+
+            // Act
+            cut.InvokeAsync(() => composer.HandleCommandAsync(ComposerCommands.Maximize));
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Minimize']")));
+
+            // Act 2 (unmaximize)
+            cut.InvokeAsync(() => composer.HandleCommandAsync(ComposerCommands.Maximize));
+
+            // Assert 2
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Maximize']")));
         }
 
         [Fact]

@@ -114,6 +114,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     private Task HandleMaximizeAsync()
     {
         _isMaximized = !_isMaximized;
+        RebuildContext();
         StateHasChanged();
         return Task.CompletedTask;
     }
@@ -265,7 +266,8 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
             injectedHighlighter)
         {
             IsDisabled = Disabled,
-            IsReadOnly = ReadOnly
+            IsReadOnly = ReadOnly,
+            IsMaximized = _isMaximized
         };
     }
 

@@ -3,6 +3,7 @@ namespace Forma.UI.Blazor.Components.Bars;
 using Forma.UI.Blazor.Components.Buttons;
 using Forma.UI.Blazor.Interop.Behaviours;
 using Forma.UI.Features.Toolbar;
+using Forma.UI.Style.Glyphs;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -201,19 +202,27 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
 
     private static string GetTooltip(FormaToolbarItem item)
     {
-        var label = item.Tooltip ?? item.Title;
+        var label = item.Tooltip ?? (item is FormaToolbarAction action ? EffectiveTitle(action) : item.Title);
 
         return item is FormaToolbarAction { ShortcutDisplay: { } shortcut }
             ? $"{label} ({shortcut})"
             : label;
     }
 
+    /// <summary>The label an action currently shows: a toggle's <see cref="FormaToolbarToggle.AlternateTitle"/> while it is on, otherwise its own title.</summary>
+    private static string EffectiveTitle(FormaToolbarAction action)
+        => action is FormaToolbarToggle { IsActive: true, AlternateTitle: { } alternateTitle } ? alternateTitle : action.Title;
+
+    /// <summary>The icon an action currently shows: a toggle's <see cref="FormaToolbarToggle.AlternateIcon"/> while it is on, otherwise its own icon.</summary>
+    private static Glyph? EffectiveIcon(FormaToolbarAction action)
+        => action is FormaToolbarToggle { IsActive: true, AlternateIcon: { } alternateIcon } ? alternateIcon : action.Icon;
+
     /// <summary>The hover text for an action, or null when its visible label already says the same thing.</summary>
     private static string? GetActionTitle(FormaToolbarAction action, bool showsLabel)
     {
         var tooltip = GetTooltip(action);
 
-        return showsLabel && tooltip == action.Title ? null : tooltip;
+        return showsLabel && tooltip == EffectiveTitle(action) ? null : tooltip;
     }
 
     private static Dictionary<string, object>? ToParameters(IReadOnlyDictionary<string, object>? parameters)

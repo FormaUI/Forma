@@ -67,23 +67,25 @@
                     case FormaToolbarAction action:
                         var isToggleActive = action is FormaToolbarToggle { IsActive: true };
                         var showsLabel = action.Icon is null || ShowLabels;
+                        var effectiveTitle = EffectiveTitle(action);
+                        var effectiveIcon = EffectiveIcon(action);
                         <button type="button"
                                 @key="action.Id"
                                 class="forma-toolbar-button @(showsLabel ? "forma-toolbar-button-labelled" : null) @(isToggleActive ? "forma-toolbar-button-active" : null)"
                                 dir="auto"
                                 @onclick="() => OnCommand.InvokeAsync(action.Command)"
                                 disabled="@(Disabled || action.IsDisabled)"
-                                aria-label="@(showsLabel ? null : action.Title)"
+                                aria-label="@(showsLabel ? null : effectiveTitle)"
                                 aria-pressed="@(action is FormaToolbarToggle ? (isToggleActive ? "true" : "false") : null)"
                                 aria-keyshortcuts="@action.ShortcutAriaKeys"
                                 title="@GetActionTitle(action, showsLabel)">
-                            @if (action.Icon is { } icon)
+                            @if (effectiveIcon is { } icon)
                             {
                                 <FormaGlyph Name="icon" />
                             }
                             @if (showsLabel)
                             {
-                                <span>@action.Title</span>
+                                <span>@effectiveTitle</span>
                             }
                         </button>
                         break;

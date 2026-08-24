@@ -216,6 +216,12 @@ public enum Glyph
     /// <summary>A magnifying glass.</summary>
     MagnifyingGlass,
 
+    /// <summary>Arrows pointing outward to the four corners, for entering a full-viewport state.</summary>
+    Maximize,
+
+    /// <summary>Arrows pointing inward from the four corners, for leaving a full-viewport state.</summary>
+    Minimize,
+
     /// <summary>A minus sign.</summary>
     Minus,
 

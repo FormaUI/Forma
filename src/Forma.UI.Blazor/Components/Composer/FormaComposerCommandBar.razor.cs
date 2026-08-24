@@ -97,6 +97,7 @@ public sealed partial class FormaComposerCommandBar : ComponentBase
         FormaToolbarToggle toggle => toggle with
         {
             Title = L[toggle.Title],
+            AlternateTitle = toggle.AlternateTitle is { } activeTitle ? L[activeTitle] : null,
             IsActive = IsItemActive(toggle),
             ShortcutDisplay = KeyMap.Find(toggle.Command)?.Display,
             ShortcutAriaKeys = KeyMap.Find(toggle.Command)?.AriaKeyShortcuts,
@@ -117,7 +118,10 @@ public sealed partial class FormaComposerCommandBar : ComponentBase
         => option with { Title = L[option.Title], IsActive = IsChoiceActive(option) };
 
     private bool IsItemActive(FormaToolbarItem item)
-        => Context?.Selection.ActiveStyles.Contains(item.Id) ?? false;
+        // Maximize is engine-owned chrome state, not a text style, so it does not come from the selection.
+        => item is FormaToolbarToggle { Command: ComposerCommands.Maximize }
+            ? Context?.IsMaximized ?? false
+            : Context?.Selection.ActiveStyles.Contains(item.Id) ?? false;
 
     private bool IsChoiceActive(FormaToolbarOption option)
         => Context?.Selection.ActiveStyles.Contains(option.Id) ?? false;

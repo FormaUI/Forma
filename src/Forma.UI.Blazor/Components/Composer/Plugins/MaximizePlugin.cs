@@ -29,11 +29,13 @@ public sealed class MaximizePlugin : IComposerPlugin
                 Title = "View",
                 Items =
                 [
-                    new FormaToolbarCommand
+                    new FormaToolbarToggle
                     {
                         Id = "maximize",
                         Title = "Maximize",
-                        Icon = Glyph.BorderAll,
+                        AlternateTitle = "Minimize",
+                        Icon = Glyph.Maximize,
+                        AlternateIcon = Glyph.Minimize,
                         Command = MaximizeCommand,
                     },
                 ],
