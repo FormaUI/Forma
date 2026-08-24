@@ -1059,5 +1059,49 @@
             // Assert
             cut.WaitForAssertion(() => Assert.Equal("status", cut.Find(".forma-composer-status-announcer").GetAttribute("role")));
         }
+
+        [Fact]
+        public void Should_toggle_maximized_class_when_maximize_command_is_handled()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
+            var composer = cut.FindComponent<FormaComposer>().Instance;
+
+            // Act
+            cut.InvokeAsync(() => composer.HandleCommandAsync(ComposerCommands.Maximize));
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Contains("forma-composer-maximized", cut.Find(".forma-composer").ClassList));
+
+            // Act 2 (unmaximize)
+            cut.InvokeAsync(() => composer.HandleCommandAsync(ComposerCommands.Maximize));
+
+            // Assert 2
+            cut.WaitForAssertion(() => Assert.DoesNotContain("forma-composer-maximized", cut.Find(".forma-composer").ClassList));
+        }
+
+        [Fact]
+        public void Should_open_preview_modal_when_preview_command_is_handled()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new HtmlModel { Body = new ComposerDocument(ComposerDocumentFormat.Html, "<p>Preview me</p>") };
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
+            var composer = cut.FindComponent<FormaComposer>().Instance;
+
+            // Act
+            cut.InvokeAsync(() => composer.HandleCommandAsync(ComposerCommands.Preview));
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Contains("Preview me", cut.Find(".forma-composer-preview-body").TextContent));
+
+            // Act 2 (close)
+            cut.InvokeAsync(() => composer.HandleCommandAsync(ComposerCommands.Preview));
+
+            // Assert 2
+            cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".forma-composer-preview-body")));
+        }
     }
 }

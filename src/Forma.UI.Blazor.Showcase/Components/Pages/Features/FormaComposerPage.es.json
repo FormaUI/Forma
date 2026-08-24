@@ -1,12 +1,12 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "An extensible authoring surface hosting rich text, Markdown, code, and page composition via plugins.": "Una superficie de creación extensible que aloja texto enriquecido, Markdown, código y composición de páginas mediante complementos.",
-  "Basic Rich Text": "Texto Enriquecido Básico",
+  "Standard Rich Text": "Texto Enriquecido Estándar",
   "Compact rich text preset with inline formatting, alignment, and basic typography.": "Preajuste compacto de texto enriquecido con formato en línea, alineación y tipografía básica.",
   "Default": "Predeterminado",
   "Disabled": "Deshabilitado",
   "Fixed Height": "Altura Fija",
-  "Lite Rich Text": "Texto Enriquecido Ligero",
+  "Compact Rich Text": "Texto Enriquecido Compacto",
   "Plugins": "Complementos",
   "Every command is a plugin contribution. The composer's own sit in the built-in row; an editor either joins that row or declares one of its own; a plugin the host registered lands on the plugins bar ruled off beneath. Plain Text shows all three, while Source shows only its own, because both external plugins name the surface they apply to.": "Cada comando es una aportación de un complemento. Los propios del editor ocupan la fila integrada; un editor puede sumarse a esa fila o declarar una propia; un complemento registrado por el anfitrión aterriza en la barra de complementos separada debajo. Plain Text muestra las tres, mientras que Source solo muestra las suyas, porque ambos complementos externos indican la superficie a la que se aplican.",
   "Read-only": "Solo Lectura",
@@ -15,5 +15,7 @@
   "Standard rich text preset with formatting, typography, headings, lists, and alignment.": "Preajuste estándar de texto enriquecido con formato, tipografía, encabezados, listas y alineación.",
   "Status Strip": "Barra de Estado",
   "Word Count pushes a readout the plugin holds and mutates, shown beneath the canvas until the plugin disposes it. Press it again to take it back.": "Contar Palabras publica una lectura que el complemento conserva y modifica, mostrada bajo el lienzo hasta que el complemento la descarta. Pulse de nuevo para retirarla.",
-  "Without Toolbar": "Sin Barra de Herramientas"
+  "Without Toolbar": "Sin Barra de Herramientas",
+  "View Commands": "Comandos de Vista",
+  "Preview and Maximize apply to whichever editor is active, so both are engine commands rather than rich text plugins. Press Preview for a read-only rendering of the document, and Maximize to fill the viewport; press either again to return.": "Vista Previa y Maximizar se aplican al editor activo, sea cual sea, por lo que ambos son comandos del motor y no complementos de texto enriquecido. Pulse Vista Previa para ver una representación de solo lectura del documento, y Maximizar para ocupar toda la ventana; pulse cualquiera de los dos de nuevo para volver."
 }

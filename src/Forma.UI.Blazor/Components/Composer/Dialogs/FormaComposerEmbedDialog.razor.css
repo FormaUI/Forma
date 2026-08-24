@@ -1,0 +1,7 @@
+/* FormaComposerEmbedDialog — Embed placeholder modal */
+
+.forma-composer-dialog-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3, 0.75rem);
+}

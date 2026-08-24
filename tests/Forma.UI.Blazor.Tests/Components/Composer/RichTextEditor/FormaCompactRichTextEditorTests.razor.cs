@@ -2,9 +2,9 @@ namespace Forma.UI.Blazor.Tests.Components.Composer.RichTextEditor;
 
 using Forma.Framework.Localization;
 
-public sealed partial class FormaLiteRichTextEditorTests
+public sealed partial class FormaCompactRichTextEditorTests
 {
-    public FormaLiteRichTextEditorTests()
+    public FormaCompactRichTextEditorTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddJsonLocalization();

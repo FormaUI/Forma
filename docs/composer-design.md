@@ -430,12 +430,21 @@ That also settles a naming worry this document carried earlier: `PageDesignerPlu
 | `CodeBlockPlugin` | Embedded code block with language picker and highlighting | — |
 | `MarkdownBlockPlugin` | Embedded Markdown block, toggling between source and rendered | — |
 | `MathPlugin` | Inline `$…$` and block `$$…$$`, rendered by a registered math capability | — |
-| `PreviewPlugin` | Read-only rendered preview of the document | Preview |
-| `MaximizePlugin` | Full-viewport editing | Maximize |
 | `TemplatePlugin` | Host-supplied document templates | Templates |
 | `EmbedPlugin` | Declarative host-resolved embeds (forms, widgets) | `qform`, safely |
 
 Clipboard note: browsers do not grant programmatic cut/copy/paste without user activation, and the native shortcuts already work. `ClipboardPlugin` therefore contributes paste *transformation* and the explicit "paste as plain text" and "paste from Word" entries, not reimplementations of `Ctrl+C`.
+
+### 4.3a Engine-agnostic plugins
+
+`MaximizePlugin` and `PreviewPlugin` are not rich text features: full-viewport editing and a rendered preview are useful to any editor, so both declare `SupportedEditorIds` empty and take no dependency on `RichTextEditorPlugin`. They live at `Composer/Plugins/`, one level up from the editor-specific ones.
+
+| Plugin | Covers | Coi origin |
+|---|---|---|
+| `MaximizePlugin` | Full-viewport editing | Maximize |
+| `PreviewPlugin` | Read-only rendered preview of the document | Preview |
+
+Both commands are also registered as **engine** commands (`ComposerCommands.Maximize`, `ComposerCommands.Preview`) on `FormaComposer` itself, which owns the maximized/preview state because it, not any one editor, renders the chrome that changes. `ComposerCommandRegistry.ExecuteAsync` resolves an engine command before ever consulting a plugin, so each plugin's `ExecuteAsync` is unreachable by design — the plugin exists only to contribute the toolbar entry that names the engine's own command.
 
 ### 4.4 Plugin options
 
@@ -448,8 +457,8 @@ Three components differing only in which plugins they register, each with its ow
 | Component | Plugin set | Replaces |
 |---|---|---|
 | `FormaComposer` | Everything registered | Coi `Website` |
-| `FormaBasicRichTextEditor` | Formatting, typography, paragraph, lists, alignment/bidi, link, media, table, horizontal rule | Coi `Basic` |
-| `FormaLiteRichTextEditor` | Formatting, alignment/bidi, link, font and size only | Coi `Mini` |
+| `FormaStandardRichTextEditor` | Formatting, typography, paragraph, lists, alignment/bidi, link, media, table, horizontal rule | Coi `Basic` |
+| `FormaCompactRichTextEditor` | Formatting, alignment/bidi, link, font and size only | Coi `Mini` |
 
 The two presets live in `RichTextEditor/` beside the editor they present, not at the category root: each is a rich text surface with a narrower plugin set, so they belong with `FormaRichTextEditor` rather than with the engine. `FormaComposer` stays at the root because it is the engine, and it presents whatever is registered rather than any one editor.
 
@@ -646,43 +655,47 @@ src/Forma.UI.Blazor/Components/Composer/
 ├── FormaComposerToolbar.razor.cs
 ├── FormaComposerToolbar.razor.css
 │
+├── Dialogs/                                # namespace …Composer.Dialogs — plain-data dialogs, shared by any editor
+│   ├── FormaComposerLinkDialog.razor
+│   ├── FormaComposerTableDialog.razor
+│   ├── FormaComposerVideoDialog.razor
+│   ├── FormaComposerMediaDialog.razor
+│   └── FormaComposerEmbedDialog.razor
+│
+├── Plugins/                                # namespace …Composer.Plugins — apply to any editor
+│   ├── MaximizePlugin.cs
+│   └── PreviewPlugin.cs
+│
 ├── RichTextEditor/
 │   ├── RichTextEditorPlugin.cs
 │   ├── FormaRichTextEditor.razor          # contenteditable canvas
 │   ├── FormaRichTextEditor.razor.cs
 │   ├── FormaRichTextEditor.razor.css
 │   ├── FormaRichTextEditor.razor.js       # owns the surface and the selection
-│   ├── FormaBasicRichTextEditor.razor     # preset: Coi Basic
-│   ├── FormaLiteRichTextEditor.razor      # preset: Coi Mini
+│   ├── FormaStandardRichTextEditor.razor  # preset: Coi Basic
+│   ├── FormaCompactRichTextEditor.razor   # preset: Coi Mini
 │   ├── FormaRichTextBubbleMenu.razor
 │   ├── FormaRichTextBubbleMenu.razor.cs
 │   ├── FormaRichTextBubbleMenu.razor.css
-│   ├── Plugins/                           # namespace …Composer.RichTextEditor.Plugins
-│   │   ├── BasicFormattingPlugin.cs
-│   │   ├── TypographyPlugin.cs
-│   │   ├── ParagraphFormatPlugin.cs
-│   │   ├── ListPlugin.cs
-│   │   ├── AlignmentBidiPlugin.cs
-│   │   ├── LinkPlugin.cs
-│   │   ├── MediaPlugin.cs
-│   │   ├── VideoPlugin.cs
-│   │   ├── TablePlugin.cs
-│   │   ├── HorizontalRulePlugin.cs
-│   │   ├── EmojiPlugin.cs
-│   │   ├── SpecialCharacterPlugin.cs
-│   │   ├── ClipboardPlugin.cs
-│   │   ├── CodeBlockPlugin.cs
-│   │   ├── MarkdownBlockPlugin.cs
-│   │   ├── MathPlugin.cs
-│   │   ├── PreviewPlugin.cs
-│   │   ├── MaximizePlugin.cs
-│   │   ├── TemplatePlugin.cs
-│   │   └── EmbedPlugin.cs
-│   └── Dialogs/                           # namespace …Composer.RichTextEditor.Dialogs
-│       ├── FormaRichTextLinkDialog.razor
-│       ├── FormaRichTextTableDialog.razor
-│       ├── FormaRichTextVideoDialog.razor
-│       └── FormaRichTextEmbedDialog.razor
+│   └── Plugins/                           # namespace …Composer.RichTextEditor.Plugins
+│       ├── BasicFormattingPlugin.cs
+│       ├── TypographyPlugin.cs
+│       ├── ParagraphFormatPlugin.cs
+│       ├── ListPlugin.cs
+│       ├── AlignmentBidiPlugin.cs
+│       ├── LinkPlugin.cs
+│       ├── MediaPlugin.cs
+│       ├── VideoPlugin.cs
+│       ├── TablePlugin.cs
+│       ├── HorizontalRulePlugin.cs
+│       ├── EmojiPlugin.cs
+│       ├── SpecialCharacterPlugin.cs
+│       ├── ClipboardPlugin.cs
+│       ├── CodeBlockPlugin.cs
+│       ├── MarkdownBlockPlugin.cs
+│       ├── MathPlugin.cs
+│       ├── TemplatePlugin.cs
+│       └── EmbedPlugin.cs
 │
 ├── MarkdownEditor/
 │   ├── MarkdownEditorPlugin.cs
@@ -740,9 +753,9 @@ Each phase ends buildable, tested and reviewable.
 1. **Capability model.** ✅ The two abstraction projects, every contract in §3 and §5–§7, the default sanitiser, the converter registry, and history are built, and `IComposerAssetLoader` has the JS-backed implementation it was missing. That one sits in `Forma.UI.Blazor` rather than here, because it needs `IJSRuntime`, which places it with Phase 2's engine shell. This lands first precisely because the external-dependency question decides everything after it.
 2. **Engine shell.** ✅ `FormaComposer`, `FormaComposerToolbar`, the `ComposerDocument` binding of §3.7, plugin discovery and availability probing, the selection bridge, `ComposerText`, and the debounced sync of §3.6 are built, along with the command spine, the key map, and the toolbar row model of §3.8. The editor switcher is a controlled `FormaTabs` strip above each surface's own toolbar rather than a segmented control inside it. The selection bridge is the shared `Text` operation, not welded into any one editor plugin, so a future textarea-based surface reuses it rather than reimplementing it; a contenteditable surface will need its own, because the DOM APIs genuinely differ, but through the same generic `ComposerContext.ReportSelectionAsync` seam.
 2a. **Regions.** ◐ The status strip of §3.8 is built: `IComposerRegionRegistry` pushes `IComposerStatusItem` handles that any plugin creates and disposes, cascaded on `ComposerContext.Regions` so no editor is a special case. `FormaComposerStatusStrip` renders it once per composer, beneath whichever surface is active. The gutter's contract (`IComposerGutterMarker`) is built and tested the same way; its visual rendering waits on a line-oriented surface, since pixel-aligning a marker beside a wrapping `<textarea>` needs font-metric mirroring that would itself become a one-off hack rather than a real capability.
-3. **Rich text editor and core formatting.** `RichTextEditorPlugin`, the canvas, the bubble menu, and the formatting, typography, paragraph, list and alignment/bidi plugins.
+3. **Rich text editor and core formatting.** ✅ `RichTextEditorPlugin`, the canvas, the bubble menu, and the formatting, typography, paragraph, list and alignment/bidi plugins.
 4. **Markdown and code editors.** `MarkdownEditorPlugin`, `CodeEditorPlugin`, `Forma.UI.Features.Composer.Markdown`, the lossless-only HTML → Markdown guard, and the embedded Markdown and code blocks.
-5. **Media, tables and embeds.** Link, media, video, table, horizontal rule, emoji, special character, clipboard, preview, maximize, template and embed plugins.
+5. **Media, tables and embeds.** ✅ Link, media, video, table, horizontal rule, emoji, special character, clipboard, template and embed plugins, each contributing a toolbar entry and driving the canvas through the rich text surface; the five data-collecting dialogs sit in `Composer/Dialogs/` rather than under the editor, because nothing in them is contenteditable-specific. Preview and maximize landed as **engine** commands on `FormaComposer` (§4.3a) rather than rich text plugins, since both change chrome the engine owns rather than the document any one editor holds.
 6. **Satellite capabilities.** `Forma.UI.Features.Composer.TextMate`, `.KaTeX`, `.HtmlSanitizer`, and the highlighting and math plugins that consume them.
 7. **Page designer.** `PageDesignerPlugin`, the palette, canvas, per-widget chrome and settings panel, `IComposerDesignerPlugin` with the built-in palette, `ComposerWidgetTree` with its renderer, pointer-based drag with a keyboard equivalent, and the text widget hosting `FormaRichTextEditor`. It lands last because it composes everything above it — a designer without a working rich text editor inside its text widget is not the component Coi had.
 8. **Accessibility, touch, direction, tests and Showcase.** §8 verified in a real browser, `he` and `es-419` checked, bUnit tests under `tests/Forma.UI.Blazor.Tests/Components/Composer/` mirroring the source tree, and a Showcase page at `/composer` rendering every state each plugin can enter.

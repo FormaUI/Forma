@@ -100,6 +100,16 @@ public sealed class DefaultHtmlSanitizerTests
         }
 
         [Fact]
+        public void Should_keep_the_name_attribute_on_an_anchor_because_it_is_how_a_named_anchor_is_addressed()
+        {
+            // Act
+            var result = _sut.Sanitize("<a id=\"section-1\" name=\"section-1\"></a>");
+
+            // Assert
+            Assert.Equal("<a id=\"section-1\" name=\"section-1\"></a>", result);
+        }
+
+        [Fact]
         public void Should_drop_the_closing_tag_of_a_void_element()
         {
             // Act

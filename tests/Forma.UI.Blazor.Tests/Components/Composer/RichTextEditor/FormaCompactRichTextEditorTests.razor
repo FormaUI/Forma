@@ -5,19 +5,19 @@
     {
         private sealed class TestModel
         {
-            public ComposerDocument Body { get; set; } = new(ComposerDocumentFormat.Html, "<p>Lite Content</p>");
+            public ComposerDocument Body { get; set; } = new(ComposerDocumentFormat.Html, "<p>Compact Content</p>");
         }
 
         [Fact]
-        public void Should_render_lite_rich_text_editor_with_narrow_plugin_set()
+        public void Should_render_compact_rich_text_editor_with_narrow_plugin_set()
         {
             // Arrange
-            using var ctx = new FormaLiteRichTextEditorTests();
+            using var ctx = new FormaCompactRichTextEditorTests();
             var model = new TestModel();
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaLiteRichTextEditor @bind-Value="model.Body" />
+                <FormaCompactRichTextEditor @bind-Value="model.Body" />
             </FakeFormHost>);
 
             // Assert

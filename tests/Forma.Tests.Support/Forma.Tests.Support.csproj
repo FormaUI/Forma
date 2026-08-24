@@ -15,6 +15,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Forma.UI.Features.Abstractions\Forma.UI.Features.Abstractions.csproj" />
+        <ProjectReference Include="..\..\src\Forma.UI.Features.Composer.Abstractions\Forma.UI.Features.Composer.Abstractions.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Localization.Abstractions\Forma.Framework.Localization.Abstractions.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Resources.Abstractions\Forma.Framework.Resources.Abstractions.csproj" />
     </ItemGroup>

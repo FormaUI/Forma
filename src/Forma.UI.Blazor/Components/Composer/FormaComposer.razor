@@ -1,4 +1,5 @@
 @namespace Forma.UI.Blazor.Components.Composer
+@using Forma.UI.Blazor.Components.Feedback
 @inherits InputBase<ComposerDocument>
 @inject IStringLocale<FormaComposer> L
 
@@ -40,4 +41,27 @@
             <FormaComposerStatusStrip OnCommand="HandleCommandAsync" />
         }
     </div>
+
+    @if (_isPreviewOpen)
+    {
+        <FormaModal Opened="_isPreviewOpen"
+                    Title="@L["Document Preview"]"
+                    Size="ModalSize.Large"
+                    OnClose="() => _isPreviewOpen = false"
+                    ConfirmText="@L["Close"]"
+                    OnConfirm="() => _isPreviewOpen = false">
+            <Body>
+                <div class="forma-composer-preview-body">
+                    @if (CurrentDocument.Format == ComposerDocumentFormat.Html)
+                    {
+                        @((MarkupString)CurrentDocument.Content)
+                    }
+                    else
+                    {
+                        <pre>@CurrentDocument.Content</pre>
+                    }
+                </div>
+            </Body>
+        </FormaModal>
+    }
 </CascadingValue>

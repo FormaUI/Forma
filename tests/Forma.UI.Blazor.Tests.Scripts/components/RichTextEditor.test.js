@@ -189,6 +189,140 @@ describe('RichTextEditor', () => {
         expect(editor.querySelector('p').style.lineHeight).toBe('');
     });
 
+    it('inserts horizontal rule', () => {
+        const handle = attach(editor, { owner });
+
+        handle.exec('insertHorizontalRule');
+        expect(document.execCommand).toHaveBeenCalledWith('insertHorizontalRule', false, null);
+    });
+
+    it('inserts link with href, target and title', () => {
+        const handle = attach(editor, { owner });
+
+        handle.exec('createLink', {
+            href: 'https://example.com',
+            text: 'Example Site',
+            title: 'Visit Example',
+            openInNewTab: true,
+        });
+
+        const link = editor.querySelector('a');
+        expect(link).not.toBeNull();
+        expect(link.getAttribute('href')).toBe('https://example.com');
+        expect(link.getAttribute('target')).toBe('_blank');
+        expect(link.getAttribute('title')).toBe('Visit Example');
+        expect(link.textContent).toBe('Example Site');
+    });
+
+    it('inserts anchor with id and name', () => {
+        const handle = attach(editor, { owner });
+
+        handle.exec('createLink', {
+            isAnchor: true,
+            anchorName: 'section-1',
+        });
+
+        const anchor = editor.querySelector('a[name="section-1"]');
+        expect(anchor).not.toBeNull();
+        expect(anchor.getAttribute('id')).toBe('section-1');
+    });
+
+    it('wraps the selected text when anchoring rather than inserting an empty anchor', () => {
+        editor.innerHTML = '<p>Stage report</p>';
+        const handle = attach(editor, { owner });
+
+        const range = document.createRange();
+        range.selectNodeContents(editor.querySelector('p'));
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        handle.exec('createLink', { isAnchor: true, anchorName: 'stage' });
+
+        const anchor = editor.querySelector('a[name="stage"]');
+        expect(anchor).not.toBeNull();
+        expect(anchor.textContent).toBe('Stage report');
+    });
+
+    it('reports the saved selection text so a dialog can prefill from it', () => {
+        editor.innerHTML = '<p>Stage report</p>';
+        const handle = attach(editor, { owner });
+
+        const range = document.createRange();
+        range.selectNodeContents(editor.querySelector('p'));
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        document.dispatchEvent(new Event('selectionchange'));
+
+        expect(handle.getSelectionText()).toBe('Stage report');
+    });
+
+    it('anchors the text a dialog was opened against even after the caret collapses', () => {
+        editor.innerHTML = '<p>Stage report</p>';
+        const handle = attach(editor, { owner });
+
+        const range = document.createRange();
+        range.selectNodeContents(editor.querySelector('p'));
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        document.dispatchEvent(new Event('selectionchange'));
+
+        // Opening the dialog freezes the range; closing it collapses the live caret.
+        handle.getSelectionText();
+        selection.collapseToEnd();
+        document.dispatchEvent(new Event('selectionchange'));
+
+        handle.exec('createLink', { isAnchor: true, anchorName: 'stage' });
+
+        const anchor = editor.querySelector('a[name="stage"]');
+        expect(anchor).not.toBeNull();
+        expect(anchor.textContent).toBe('Stage report');
+    });
+
+    it('inserts table with rows, columns and header', () => {
+        const handle = attach(editor, { owner });
+
+        handle.exec('insertTable', {
+            rows: 3,
+            columns: 2,
+            includeHeader: true,
+            caption: 'Results',
+        });
+
+        const table = editor.querySelector('table');
+        expect(table).not.toBeNull();
+        expect(table.querySelector('caption').textContent).toBe('Results');
+        expect(table.querySelectorAll('thead th').length).toBe(2);
+        expect(table.querySelectorAll('tbody tr').length).toBe(2);
+    });
+
+    it('inserts media and video embeds', () => {
+        const handle = attach(editor, { owner });
+
+        handle.exec('insertMedia', {
+            source: '/media/photo.jpg',
+            altText: 'A photo',
+            caption: 'Photo caption',
+            alignment: 'center',
+        });
+
+        const figure = editor.querySelector('figure.forma-composer-media');
+        expect(figure).not.toBeNull();
+        expect(figure.querySelector('img').getAttribute('src')).toBe('/media/photo.jpg');
+        expect(figure.querySelector('figcaption').textContent).toBe('Photo caption');
+
+        handle.exec('insertVideo', {
+            source: 'https://youtube.com/watch?v=123',
+            title: 'Race Highlights',
+        });
+
+        const video = editor.querySelector('.forma-composer-video');
+        expect(video).not.toBeNull();
+        expect(video.getAttribute('data-video-url')).toBe('https://youtube.com/watch?v=123');
+    });
+
     it('stops reporting after disposal', () => {
         const handle = attach(editor, { owner, debounceDelay: 300 });
 

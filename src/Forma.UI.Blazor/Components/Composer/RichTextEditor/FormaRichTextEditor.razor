@@ -1,5 +1,5 @@
 @namespace Forma.UI.Blazor.Components.Composer.RichTextEditor
-@inject IStringLocale<FormaRichTextEditor> L
+@using Forma.UI.Blazor.Components.Composer.Dialogs
 
 <div class="forma-composer-rich-text-editor">
     <div @ref="_editorElement"
@@ -19,4 +19,45 @@
     }
 
     <div class="forma-composer-rich-text-announcer" role="status" aria-live="polite">@_blockAnnouncement</div>
+
+    @if (_isAttached)
+    {
+        @if (_isLinkDialogOpen)
+        {
+            <FormaComposerLinkDialog Opened="_isLinkDialogOpen"
+                                     IsAnchor="_isLinkAnchorMode"
+                                     InitialText="@_selectedText"
+                                     OnInsert="HandleLinkInsertedAsync"
+                                     OnCancel="() => _isLinkDialogOpen = false" />
+        }
+
+        @if (_isTableDialogOpen)
+        {
+            <FormaComposerTableDialog Opened="_isTableDialogOpen"
+                                      OnInsert="HandleTableInsertedAsync"
+                                      OnCancel="() => _isTableDialogOpen = false" />
+        }
+
+        @if (_isVideoDialogOpen)
+        {
+            <FormaComposerVideoDialog Opened="_isVideoDialogOpen"
+                                      OnInsert="HandleVideoInsertedAsync"
+                                      OnCancel="() => _isVideoDialogOpen = false" />
+        }
+
+        @if (_isMediaDialogOpen)
+        {
+            <FormaComposerMediaDialog Opened="_isMediaDialogOpen"
+                                      OnInsert="HandleMediaInsertedAsync"
+                                      OnCancel="() => _isMediaDialogOpen = false" />
+        }
+
+        @if (_isEmbedDialogOpen)
+        {
+            <FormaComposerEmbedDialog Opened="_isEmbedDialogOpen"
+                                      OnInsert="HandleEmbedInsertedAsync"
+                                      OnCancel="() => _isEmbedDialogOpen = false" />
+        }
+    }
 </div>
+

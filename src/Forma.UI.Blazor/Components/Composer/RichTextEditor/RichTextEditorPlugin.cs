@@ -14,6 +14,21 @@ public sealed class RichTextEditorPlugin : IComposerEditorPlugin
     /// <summary>Raised when a plugin requests execution of a rich text command on the active surface.</summary>
     public event Action<string, object?>? CommandRequested;
 
+    /// <summary>Raised when a plugin requests opening the link or anchor dialog.</summary>
+    public event Action<bool>? LinkDialogRequested;
+
+    /// <summary>Raised when a plugin requests opening the table creation dialog.</summary>
+    public event Action? TableDialogRequested;
+
+    /// <summary>Raised when a plugin requests opening the video embed dialog.</summary>
+    public event Action? VideoDialogRequested;
+
+    /// <summary>Raised when a plugin requests opening the media insertion dialog.</summary>
+    public event Action? MediaDialogRequested;
+
+    /// <summary>Raised when a plugin requests opening the embed dialog.</summary>
+    public event Action? EmbedDialogRequested;
+
     /// <inheritdoc />
     public string Id => EditorId;
 
@@ -54,4 +69,24 @@ public sealed class RichTextEditorPlugin : IComposerEditorPlugin
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
         CommandRequested?.Invoke(command, value);
     }
+
+    /// <summary>Requests opening the link or anchor dialog.</summary>
+    public void RequestLinkDialog(bool isAnchor = false)
+        => LinkDialogRequested?.Invoke(isAnchor);
+
+    /// <summary>Requests opening the table creation dialog.</summary>
+    public void RequestTableDialog()
+        => TableDialogRequested?.Invoke();
+
+    /// <summary>Requests opening the video embed dialog.</summary>
+    public void RequestVideoDialog()
+        => VideoDialogRequested?.Invoke();
+
+    /// <summary>Requests opening the media insertion dialog.</summary>
+    public void RequestMediaDialog()
+        => MediaDialogRequested?.Invoke();
+
+    /// <summary>Requests opening the embed insertion dialog.</summary>
+    public void RequestEmbedDialog()
+        => EmbedDialogRequested?.Invoke();
 }

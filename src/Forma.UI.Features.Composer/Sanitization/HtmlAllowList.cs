@@ -43,7 +43,7 @@ internal static class HtmlAllowList
     /// <summary>Attributes permitted only on the element that names them.</summary>
     public static readonly Dictionary<string, HashSet<string>> TagAttributes = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["a"] = new(StringComparer.OrdinalIgnoreCase) { "href", "target", "rel", "download" },
+        ["a"] = new(StringComparer.OrdinalIgnoreCase) { "href", "target", "rel", "download", "name" },
         ["img"] = new(StringComparer.OrdinalIgnoreCase) { "src", "alt", "width", "height", "loading" },
         ["video"] = new(StringComparer.OrdinalIgnoreCase) { "src", "poster", "controls", "autoplay", "loop", "muted", "preload", "width", "height" },
         ["audio"] = new(StringComparer.OrdinalIgnoreCase) { "src", "controls", "autoplay", "loop", "muted", "preload" },

@@ -44,6 +44,9 @@ public sealed class ComposerToolbarLayoutTests
     private static FormaToolbarCommand Command(string id)
         => new() { Id = id, Title = id, Command = id };
 
+    private static FormaToolbarGroup Group(string id, params FormaToolbarItem[] items)
+        => new() { Id = id, Title = id, Items = items };
+
     private static IEnumerable<string> ItemIds(ComposerToolbarRowLayout row)
         => row.Items.SelectMany(Flatten).Select(i => i.Id);
 
@@ -231,5 +234,37 @@ public sealed class ComposerToolbarLayoutTests
         Assert.Multiple(
             () => Assert.Equal("First", shared.Label),
             () => Assert.Equal(["one", "two"], ItemIds(shared)));
+    }
+
+    [Fact]
+    public void Should_fold_two_plugins_contributions_into_one_group_when_both_name_it()
+    {
+        // Arrange
+        var editor = new Editor();
+        var first = new Plugin { Id = "a", Items = [Row(ComposerRows.BuiltIn, Group("view", Command("preview")))] };
+        var second = new Plugin { Id = "b", Items = [Row(ComposerRows.BuiltIn, Group("view", Command("maximize")))] };
+
+        // Act
+        var layout = ComposerToolbarLayout.Create(editor, [first, second]);
+
+        // Assert
+        var group = Assert.IsType<FormaToolbarGroup>(Assert.Single(layout.Rows[0].Items));
+        Assert.Multiple(
+            () => Assert.Equal("view", group.Id),
+            () => Assert.Equal(["preview", "maximize"], group.Items.Select(i => i.Id)));
+    }
+
+    [Fact]
+    public void Should_keep_groups_apart_when_they_name_different_clusters()
+    {
+        // Arrange
+        var editor = new Editor();
+        var plugin = new Plugin { Items = [Row(ComposerRows.BuiltIn, Group("view", Command("preview")), Group("insert", Command("rule")))] };
+
+        // Act
+        var layout = ComposerToolbarLayout.Create(editor, [plugin]);
+
+        // Assert
+        Assert.Equal(["view", "insert"], layout.Rows[0].Items.Select(i => i.Id));
     }
 }

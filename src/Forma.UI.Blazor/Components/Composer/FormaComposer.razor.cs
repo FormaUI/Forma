@@ -36,6 +36,8 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     private IComposerEditorPlugin _activeEditor = default!;
     private bool _isInitialized;
     private bool _isJsStarted;
+    private bool _isMaximized;
+    private bool _isPreviewOpen;
 
     /// <summary>Options configuring toolbar display, editor switcher, and default editor.</summary>
     [Parameter] public FormaComposerOptions Options { get; set; } = FormaComposerOptions.Default;
@@ -77,7 +79,8 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
             CssClass,
             Disabled ? "forma-composer-disabled" : null,
             ReadOnly ? "forma-composer-readonly" : null,
-            Options.IsResizable && !Disabled ? "forma-composer-resizable" : null);
+            Options.IsResizable && !Disabled ? "forma-composer-resizable" : null,
+            _isMaximized ? "forma-composer-maximized" : null);
 
     private ComposerDocument CurrentDocument
         => Value ?? new ComposerDocument(ComposerDocumentFormat.Html, string.Empty);
@@ -97,6 +100,8 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
 
         _commands.RegisterEngineCommand(ComposerCommands.Undo, HandleUndoAsync);
         _commands.RegisterEngineCommand(ComposerCommands.Redo, HandleRedoAsync);
+        _commands.RegisterEngineCommand(ComposerCommands.Maximize, HandleMaximizeAsync);
+        _commands.RegisterEngineCommand(ComposerCommands.Preview, HandlePreviewAsync);
         _regions.Changed += HandleRegionsChanged;
 
         await LoadPluginsAsync();
@@ -104,6 +109,20 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
 
         _history.Record(CurrentDocument, _selection);
         _isInitialized = true;
+    }
+
+    private Task HandleMaximizeAsync()
+    {
+        _isMaximized = !_isMaximized;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task HandlePreviewAsync()
+    {
+        _isPreviewOpen = !_isPreviewOpen;
+        StateHasChanged();
+        return Task.CompletedTask;
     }
 
     private async Task LoadPluginsAsync()
@@ -242,6 +261,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
             HandleDocumentChangedAsync,
             HandleRequestRenderAsync,
             HandleSelectionChangedAsync,
+            HandleCommandAsync,
             injectedHighlighter)
         {
             IsDisabled = Disabled,

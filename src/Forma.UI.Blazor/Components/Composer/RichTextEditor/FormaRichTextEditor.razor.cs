@@ -3,6 +3,7 @@ namespace Forma.UI.Blazor.Components.Composer.RichTextEditor;
 using System.Globalization;
 
 using Forma.Framework.Localization;
+using Forma.UI.Blazor.Components.Composer.Dialogs;
 using Forma.UI.Blazor.Interop.Components;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
@@ -20,6 +21,7 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
     [CascadingParameter] public IComposerEditorPlugin? Editor { get; set; }
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
+    [Inject] private IStringLocale<FormaComposer> L { get; set; } = default!;
 
     private ElementReference _editorElement;
     private DotNetObjectReference<FormaRichTextEditor>? _dotNetRef;
@@ -27,6 +29,14 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
     private string? _committedContent;
     private string _blockAnnouncement = string.Empty;
     private bool _isAttached;
+
+    private bool _isLinkDialogOpen;
+    private bool _isLinkAnchorMode;
+    private bool _isTableDialogOpen;
+    private bool _isVideoDialogOpen;
+    private bool _isMediaDialogOpen;
+    private bool _isEmbedDialogOpen;
+    private string? _selectedText;
 
     private RichTextEditorPlugin _plugin = default!;
 
@@ -49,6 +59,11 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
             ?? throw new InvalidOperationException($"{nameof(FormaRichTextEditor)} requires a cascaded {nameof(RichTextEditorPlugin)}.");
 
         _plugin.CommandRequested += HandlePluginCommand;
+        _plugin.LinkDialogRequested += HandleLinkDialogRequested;
+        _plugin.TableDialogRequested += HandleTableDialogRequested;
+        _plugin.VideoDialogRequested += HandleVideoDialogRequested;
+        _plugin.MediaDialogRequested += HandleMediaDialogRequested;
+        _plugin.EmbedDialogRequested += HandleEmbedDialogRequested;
     }
 
     /// <inheritdoc />
@@ -128,31 +143,103 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
             return;
         }
 
-        _plugin.RequestCommand(command);
+        // These are plugin command names, so they route through the engine registry rather than straight at the surface.
+        _ = Context.ExecuteCommandAsync(command);
+    }
+
+    private void HandleLinkDialogRequested(bool isAnchor)
+    {
+        _isLinkAnchorMode = isAnchor;
+
+        _ = InvokeAsync(async () =>
+        {
+            _selectedText = await _interop.GetSelectionTextAsync();
+            _isLinkDialogOpen = true;
+            StateHasChanged();
+        });
+    }
+
+    private void HandleTableDialogRequested()
+    {
+        _isTableDialogOpen = true;
+        StateHasChanged();
+    }
+
+    private void HandleVideoDialogRequested()
+    {
+        _isVideoDialogOpen = true;
+        StateHasChanged();
+    }
+
+    private void HandleMediaDialogRequested()
+    {
+        _isMediaDialogOpen = true;
+        StateHasChanged();
+    }
+
+    private void HandleEmbedDialogRequested()
+    {
+        _isEmbedDialogOpen = true;
+        StateHasChanged();
+    }
+
+    private async Task HandleLinkInsertedAsync(LinkDialogResult result)
+    {
+        _isLinkDialogOpen = false;
+        await ExecCommandAsync("createLink", result);
+    }
+
+    private async Task HandleTableInsertedAsync(TableDialogResult result)
+    {
+        _isTableDialogOpen = false;
+        await ExecCommandAsync("insertTable", result);
+    }
+
+    private async Task HandleVideoInsertedAsync(VideoDialogResult result)
+    {
+        _isVideoDialogOpen = false;
+        await ExecCommandAsync("insertVideo", result);
+    }
+
+    private async Task HandleMediaInsertedAsync(MediaDialogResult result)
+    {
+        _isMediaDialogOpen = false;
+        await ExecCommandAsync("insertMedia", result);
+    }
+
+    private async Task HandleEmbedInsertedAsync(EmbedDialogResult result)
+    {
+        _isEmbedDialogOpen = false;
+        await ExecCommandAsync("insertEmbed", result);
+    }
+
+    private async Task ExecCommandAsync(string command, object? value = null)
+    {
+        if (Context is null || IsDisabled || IsReadOnly)
+        {
+            return;
+        }
+
+        var result = await _interop.ExecAsync(command, value);
+        if (result is not null)
+        {
+            var sanitized = Context.Sanitizer.Sanitize(result.Html);
+            _committedContent = sanitized;
+
+            await Context.ChangeDocumentAsync(Context.Document with { Content = sanitized });
+
+            if (result.Selection is not null)
+            {
+                await HandleSelectionChangedAsync(result.Selection);
+            }
+        }
     }
 
     private void HandlePluginCommand(string command, object? value)
     {
         _ = InvokeAsync(async () =>
         {
-            if (Context is null || IsDisabled || IsReadOnly)
-            {
-                return;
-            }
-
-            var result = await _interop.ExecAsync(command, value);
-            if (result is not null)
-            {
-                var sanitized = Context.Sanitizer.Sanitize(result.Html);
-                _committedContent = sanitized;
-
-                await Context.ChangeDocumentAsync(Context.Document with { Content = sanitized });
-
-                if (result.Selection is not null)
-                {
-                    await HandleSelectionChangedAsync(result.Selection);
-                }
-            }
+            await ExecCommandAsync(command, value);
         });
     }
 
@@ -181,7 +268,15 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
     public async ValueTask DisposeAsync()
     {
         // The surface throws from OnInitialized without a cascaded plugin, and is disposed all the same.
-        _plugin?.CommandRequested -= HandlePluginCommand;
+        if (_plugin is not null)
+        {
+            _plugin.CommandRequested -= HandlePluginCommand;
+            _plugin.LinkDialogRequested -= HandleLinkDialogRequested;
+            _plugin.TableDialogRequested -= HandleTableDialogRequested;
+            _plugin.VideoDialogRequested -= HandleVideoDialogRequested;
+            _plugin.MediaDialogRequested -= HandleMediaDialogRequested;
+            _plugin.EmbedDialogRequested -= HandleEmbedDialogRequested;
+        }
 
         _dotNetRef?.Dispose();
         await _interop.DisposeAsync();

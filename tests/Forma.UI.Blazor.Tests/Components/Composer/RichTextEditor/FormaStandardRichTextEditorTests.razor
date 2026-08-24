@@ -5,19 +5,19 @@
     {
         private sealed class TestModel
         {
-            public ComposerDocument Body { get; set; } = new(ComposerDocumentFormat.Html, "<p>Basic Content</p>");
+            public ComposerDocument Body { get; set; } = new(ComposerDocumentFormat.Html, "<p>Standard Content</p>");
         }
 
         [Fact]
-        public void Should_render_basic_rich_text_editor_with_toolbars()
+        public void Should_render_standard_rich_text_editor_with_toolbars()
         {
             // Arrange
-            using var ctx = new FormaBasicRichTextEditorTests();
+            using var ctx = new FormaStandardRichTextEditorTests();
             var model = new TestModel();
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaBasicRichTextEditor @bind-Value="model.Body" />
+                <FormaStandardRichTextEditor @bind-Value="model.Body" />
             </FakeFormHost>);
 
             // Assert
@@ -36,12 +36,12 @@
         public void Should_split_the_commands_between_a_text_bar_and_a_paragraph_bar()
         {
             // Arrange
-            using var ctx = new FormaBasicRichTextEditorTests();
+            using var ctx = new FormaStandardRichTextEditorTests();
             var model = new TestModel();
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaBasicRichTextEditor @bind-Value="model.Body" />
+                <FormaStandardRichTextEditor @bind-Value="model.Body" />
             </FakeFormHost>);
 
             // Assert
@@ -57,10 +57,10 @@
         public void Should_offer_the_block_styles_as_menu_choices()
         {
             // Arrange
-            using var ctx = new FormaBasicRichTextEditorTests();
+            using var ctx = new FormaStandardRichTextEditorTests();
             var model = new TestModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaBasicRichTextEditor @bind-Value="model.Body" />
+                <FormaStandardRichTextEditor @bind-Value="model.Body" />
             </FakeFormHost>);
 
             // Act
@@ -76,10 +76,10 @@
         public void Should_reach_the_editing_surface_when_a_toolbar_command_is_pressed()
         {
             // Arrange
-            using var ctx = new FormaBasicRichTextEditorTests();
+            using var ctx = new FormaStandardRichTextEditorTests();
             var model = new TestModel();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaBasicRichTextEditor @bind-Value="model.Body" />
+                <FormaStandardRichTextEditor @bind-Value="model.Body" />
             </FakeFormHost>);
 
             // Act
@@ -91,10 +91,32 @@
         }
 
         [Fact]
+        public void Should_translate_a_plugin_command_raised_by_the_bubble_menu_into_a_surface_command()
+        {
+            // Arrange
+            using var ctx = new FormaStandardRichTextEditorTests();
+            var model = new TestModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaStandardRichTextEditor @bind-Value="model.Body" />
+            </FakeFormHost>);
+            var surface = cut.FindComponent<FormaRichTextEditor>().Instance;
+
+            // Act
+            cut.InvokeAsync(() => surface.HandleCommand(BasicFormattingPlugin.BoldCommand));
+
+            // Assert
+            cut.WaitForAssertion(() =>
+            {
+                var invocation = Assert.Single(ctx.JSInterop.Invocations["exec"]);
+                Assert.Equal("bold", invocation.Arguments[0]);
+            });
+        }
+
+        [Fact]
         public void Should_throw_when_the_editing_surface_has_no_cascaded_editor_plugin()
         {
             // Arrange
-            using var ctx = new FormaBasicRichTextEditorTests();
+            using var ctx = new FormaStandardRichTextEditorTests();
 
             // Act
             var render = () => ctx.Render(@<FormaRichTextEditor />);

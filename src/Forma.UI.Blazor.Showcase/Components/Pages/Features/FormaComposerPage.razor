@@ -3,6 +3,7 @@
 @rendermode InteractiveServer
 @using Forma.UI.Blazor.Components.Composer
 @using Forma.UI.Blazor.Components.Composer.PlainTextEditor
+@using Forma.UI.Blazor.Components.Composer.Plugins
 @using Forma.UI.Blazor.Components.Composer.RichTextEditor
 @using Forma.UI.Features.Composer.Documents
 @using Forma.UI.Features.Composer.Plugins
@@ -47,18 +48,18 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Basic Rich Text"]</h2>
+    <h2>@L["Standard Rich Text"]</h2>
     <p class="description">@L["Standard rich text preset with formatting, typography, headings, lists, and alignment."]</p>
     <div class="demo-box">
-        <FormaBasicRichTextEditor @bind-Value="_basicDoc" />
+        <FormaStandardRichTextEditor @bind-Value="_standardDoc" />
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["Lite Rich Text"]</h2>
+    <h2>@L["Compact Rich Text"]</h2>
     <p class="description">@L["Compact rich text preset with inline formatting, alignment, and basic typography."]</p>
     <div class="demo-box">
-        <FormaLiteRichTextEditor @bind-Value="_liteDoc" />
+        <FormaCompactRichTextEditor @bind-Value="_compactDoc" />
     </div>
 </div>
 
@@ -94,6 +95,14 @@
     </div>
 </div>
 
+<div class="demo-section">
+    <h2>@L["View Commands"]</h2>
+    <p class="description">@L["Preview and Maximize apply to whichever editor is active, so both are engine commands rather than rich text plugins. Press Preview for a read-only rendering of the document, and Maximize to fill the viewport; press either again to return."]</p>
+    <div class="demo-box">
+        <FormaComposer @bind-Value="_viewDoc" Plugins="_viewPlugins" />
+    </div>
+</div>
+
 @code {
     private readonly SourceEditorPlugin _sourceOnlyPlugin = new();
     private readonly SourceEditorPlugin _everythingSourcePlugin = new();
@@ -104,21 +113,24 @@
     private ComposerDocument _readOnlyDoc = new(ComposerDocumentFormat.PlainText, "This composer instance is in a read-only state.");
     private ComposerDocument _noToolbarDoc = new(ComposerDocumentFormat.PlainText, "Composer without top toolbar.");
     private ComposerDocument _fixedHeightDoc = new(ComposerDocumentFormat.PlainText, "This composer cannot be dragged taller.");
-    private ComposerDocument _basicDoc = new(ComposerDocumentFormat.Html, "<p>Welcome to <strong>FormaBasicRichTextEditor</strong>.</p><p>You can format text, create headings, add lists, and change alignment.</p>");
-    private ComposerDocument _liteDoc = new(ComposerDocumentFormat.Html, "<p>A lightweight <em>rich text editor</em> preset for short blurbs and tickers.</p>");
+    private ComposerDocument _standardDoc = new(ComposerDocumentFormat.Html, "<p>Welcome to <strong>FormaStandardRichTextEditor</strong>.</p><p>You can format text, create headings, add lists, and change alignment.</p>");
+    private ComposerDocument _compactDoc = new(ComposerDocumentFormat.Html, "<p>A lightweight <em>rich text editor</em> preset for short blurbs and tickers.</p>");
     private ComposerDocument _sourceDoc = new(ComposerDocumentFormat.PlainText, "function total(cart) {\n    let total = 0;\n\n    for (const line of cart) {\n        total += line.price;\n    }\n\n    return total;\n}");
     private ComposerDocument _statusDoc = new(ComposerDocumentFormat.PlainText, "pear\napple\nbanana");
     private ComposerDocument _pluginDoc = new(ComposerDocumentFormat.PlainText, "pear\n\nApple\n\nbanana");
+    private ComposerDocument _viewDoc = new(ComposerDocumentFormat.Html, "<p>Press <strong>Preview</strong> to read this as rendered output, or <strong>Maximize</strong> to fill the viewport.</p>");
     private readonly FormaComposerOptions _noToolbarOptions = new() { ShowToolbar = false };
     private readonly FormaComposerOptions _fixedHeightOptions = new() { IsResizable = false };
     private IReadOnlyList<IComposerPlugin> _statusPlugins = [];
     private IReadOnlyList<IComposerPlugin> _sourcePlugins = [];
     private IReadOnlyList<IComposerPlugin> _demoPlugins = [];
+    private IReadOnlyList<IComposerPlugin> _viewPlugins = [];
 
     protected override void OnInitialized()
     {
         _statusPlugins = [_statusTextPlugin];
         _sourcePlugins = [_sourceOnlyPlugin];
         _demoPlugins = [_everythingTextPlugin, _everythingSourcePlugin, new TimestampPlugin(), new CleanupPlugin()];
+        _viewPlugins = [new RichTextEditorPlugin(), new MaximizePlugin(), new PreviewPlugin()];
     }
 }

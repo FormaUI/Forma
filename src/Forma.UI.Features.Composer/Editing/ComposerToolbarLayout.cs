@@ -43,7 +43,7 @@ public sealed class ComposerToolbarLayout
         }
 
         var rows = order
-            .Select(r => new ComposerToolbarRowLayout(r.Id, r.Label, r.Id == ComposerRows.BuiltIn, items[r.Id]))
+            .Select(r => new ComposerToolbarRowLayout(r.Id, r.Label, r.Id == ComposerRows.BuiltIn, Coalesce(items[r.Id])))
             .Where(r => r.IsBuiltIn || r.Items.Count > 0)
             .ToList();
 
@@ -58,6 +58,36 @@ public sealed class ComposerToolbarLayout
                 items[row].AddRange(entry.Items);
             }
         }
+    }
+
+    /// <summary>Folds groups sharing an identifier into the first of them, so one named cluster holds every contribution to it.</summary>
+    private static List<FormaToolbarItem> Coalesce(List<FormaToolbarItem> placed)
+    {
+        var merged = new List<FormaToolbarItem>(placed.Count);
+        var groupIndexes = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        foreach (var item in placed)
+        {
+            if (item is not FormaToolbarGroup group)
+            {
+                merged.Add(item);
+
+                continue;
+            }
+
+            if (groupIndexes.TryGetValue(group.Id, out var index))
+            {
+                var existing = (FormaToolbarGroup)merged[index];
+                merged[index] = existing with { Items = [.. existing.Items, .. group.Items] };
+
+                continue;
+            }
+
+            groupIndexes[group.Id] = merged.Count;
+            merged.Add(group);
+        }
+
+        return merged;
     }
 
     private static List<ComposerToolbarRow> Order(IComposerEditorPlugin editor, IEnumerable<IComposerPlugin> external)

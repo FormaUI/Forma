@@ -1,8 +1,8 @@
 namespace Forma.UI.Blazor.Tests.Components.Composer.RichTextEditor;
 
+using Forma.Tests.Composer;
 using Forma.UI.Blazor.Components.Composer.RichTextEditor;
 using Forma.UI.Blazor.Components.Composer.RichTextEditor.Plugins;
-using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Documents;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
@@ -34,6 +34,7 @@ public sealed class RichTextPluginTests
             regions,
             _ => Task.CompletedTask,
             () => Task.CompletedTask,
+            _ => Task.CompletedTask,
             _ => Task.CompletedTask);
     }
 
@@ -185,18 +186,221 @@ public sealed class RichTextPluginTests
         Assert.All(options, option => Assert.EndsWith("rem", option.Command, StringComparison.Ordinal));
     }
 
-    private sealed class NullAssetLoader : IComposerAssetLoader
+    [Fact]
+    public async Task LinkPlugin_should_dispatch_link_and_anchor_requests()
     {
-        public ValueTask LoadAssetAsync(ComposerAsset asset, CancellationToken cancellationToken = default)
-            => ValueTask.CompletedTask;
+        // Arrange
+        var editor = new RichTextEditorPlugin();
+        var plugin = new LinkPlugin(editor);
+        var context = CreateContext();
+        bool? isAnchorRequested = null;
+        string? requestedCommand = null;
 
-        public ValueTask LoadAssetsAsync(IEnumerable<ComposerAsset> assets, CancellationToken cancellationToken = default)
-            => ValueTask.CompletedTask;
+        editor.LinkDialogRequested += isAnchor => isAnchorRequested = isAnchor;
+        editor.CommandRequested += (cmd, _) => requestedCommand = cmd;
 
-        public bool IsAssetLoaded(ComposerAsset asset)
-            => true;
+        // Act
+        await plugin.ExecuteAsync(LinkPlugin.InsertLinkCommand, context, TestContext.Current.CancellationToken);
+        Assert.False(isAnchorRequested);
 
-        public ValueTask DisposeAsync()
-            => ValueTask.CompletedTask;
+        await plugin.ExecuteAsync(LinkPlugin.AnchorCommand, context, TestContext.Current.CancellationToken);
+        Assert.True(isAnchorRequested);
+
+        await plugin.ExecuteAsync(LinkPlugin.UnlinkCommand, context, TestContext.Current.CancellationToken);
+        Assert.Equal("unlink", requestedCommand);
+        Assert.Equal("link", plugin.Id);
+        Assert.NotEmpty(plugin.KeyBindings);
+    }
+
+    [Fact]
+    public async Task HorizontalRulePlugin_should_dispatch_rule_command()
+    {
+        // Arrange
+        var editor = new RichTextEditorPlugin();
+        var plugin = new HorizontalRulePlugin(editor);
+        var context = CreateContext();
+        string? requestedCommand = null;
+        editor.CommandRequested += (cmd, _) => requestedCommand = cmd;
+
+        // Act
+        await plugin.ExecuteAsync(HorizontalRulePlugin.InsertRuleCommand, context, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal("insertHorizontalRule", requestedCommand);
+        Assert.Equal("horizontal-rule", plugin.Id);
+    }
+
+    [Fact]
+    public async Task ClipboardPlugin_should_dispatch_clipboard_commands()
+    {
+        // Arrange
+        var editor = new RichTextEditorPlugin();
+        var plugin = new ClipboardPlugin(editor);
+        var context = CreateContext();
+        string? requestedCommand = null;
+        editor.CommandRequested += (cmd, _) => requestedCommand = cmd;
+
+        // Act & Assert
+        await plugin.ExecuteAsync(ClipboardPlugin.SelectAllCommand, context, TestContext.Current.CancellationToken);
+        Assert.Equal("selectAll", requestedCommand);
+
+        await plugin.ExecuteAsync(ClipboardPlugin.PasteTextCommand, context, TestContext.Current.CancellationToken);
+        Assert.Equal("pasteText", requestedCommand);
+
+        await plugin.ExecuteAsync(ClipboardPlugin.PasteWordCommand, context, TestContext.Current.CancellationToken);
+        Assert.Equal("pasteWord", requestedCommand);
+        Assert.Equal("clipboard", plugin.Id);
+    }
+
+    [Fact]
+    public async Task SpecialCharacterPlugin_should_dispatch_character_insert()
+    {
+        // Arrange
+        var editor = new RichTextEditorPlugin();
+        var plugin = new SpecialCharacterPlugin(editor);
+        var context = CreateContext();
+        string? requestedCommand = null;
+        object? requestedValue = null;
+        editor.CommandRequested += (cmd, val) =>
+        {
+            requestedCommand = cmd;
+            requestedValue = val;
+        };
+
+        // Act
+        await plugin.ExecuteAsync($"{SpecialCharacterPlugin.InsertCharacterPrefix}©", context, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal("insertText", requestedCommand);
+        Assert.Equal("©", requestedValue);
+        Assert.Equal("special-character", plugin.Id);
+    }
+
+    [Fact]
+    public async Task EmojiPlugin_should_dispatch_emoji_insert()
+    {
+        // Arrange
+        var editor = new RichTextEditorPlugin();
+        var plugin = new EmojiPlugin(editor);
+        var context = CreateContext();
+        string? requestedCommand = null;
+        object? requestedValue = null;
+        editor.CommandRequested += (cmd, val) =>
+        {
+            requestedCommand = cmd;
+            requestedValue = val;
+        };
+
+        // Act
+        await plugin.ExecuteAsync($"{EmojiPlugin.InsertEmojiPrefix}🎉", context, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal("insertText", requestedCommand);
+        Assert.Equal("🎉", requestedValue);
+        Assert.Equal("emoji", plugin.Id);
+    }
+
+    [Fact]
+    public async Task TablePlugin_should_dispatch_table_commands()
+    {
+        // Arrange
+        var editor = new RichTextEditorPlugin();
+        var plugin = new TablePlugin(editor);
+        var context = CreateContext();
+        var tableDialogRequested = false;
+        string? requestedCommand = null;
+
+        editor.TableDialogRequested += () => tableDialogRequested = true;
+        editor.CommandRequested += (cmd, _) => requestedCommand = cmd;
+
+        // Act & Assert
+        await plugin.ExecuteAsync(TablePlugin.InsertTableCommand, context, TestContext.Current.CancellationToken);
+        Assert.True(tableDialogRequested);
+
+        await plugin.ExecuteAsync(TablePlugin.AddRowBeforeCommand, context, TestContext.Current.CancellationToken);
+        Assert.Equal("tableAddRowBefore", requestedCommand);
+
+        await plugin.ExecuteAsync(TablePlugin.DeleteTableCommand, context, TestContext.Current.CancellationToken);
+        Assert.Equal("tableDelete", requestedCommand);
+        Assert.Equal("table", plugin.Id);
+    }
+
+    [Fact]
+    public async Task MediaPlugin_should_dispatch_media_request()
+    {
+        // Arrange
+        var editor = new RichTextEditorPlugin();
+        var plugin = new MediaPlugin(editor);
+        var context = CreateContext();
+        var mediaDialogRequested = false;
+        editor.MediaDialogRequested += () => mediaDialogRequested = true;
+
+        // Act
+        await plugin.ExecuteAsync(MediaPlugin.InsertMediaCommand, context, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.True(mediaDialogRequested);
+        Assert.Equal("media", plugin.Id);
+    }
+
+    [Fact]
+    public async Task VideoPlugin_should_dispatch_video_request()
+    {
+        // Arrange
+        var editor = new RichTextEditorPlugin();
+        var plugin = new VideoPlugin(editor);
+        var context = CreateContext();
+        var videoDialogRequested = false;
+        editor.VideoDialogRequested += () => videoDialogRequested = true;
+
+        // Act
+        await plugin.ExecuteAsync(VideoPlugin.InsertVideoCommand, context, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.True(videoDialogRequested);
+        Assert.Equal("video", plugin.Id);
+    }
+
+    [Fact]
+    public async Task TemplatePlugin_should_dispatch_template_insert()
+    {
+        // Arrange
+        var editor = new RichTextEditorPlugin();
+        var template = new ComposerTemplate("sample", "Sample", "Sample description", "<p>Sample</p>");
+        var plugin = new TemplatePlugin(editor, new TemplatePluginOptions { Templates = [template] });
+        var context = CreateContext();
+        string? requestedCommand = null;
+        object? requestedValue = null;
+        editor.CommandRequested += (cmd, val) =>
+        {
+            requestedCommand = cmd;
+            requestedValue = val;
+        };
+
+        // Act
+        await plugin.ExecuteAsync($"{TemplatePlugin.InsertTemplatePrefix}sample", context, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal("insertHtml", requestedCommand);
+        Assert.Equal("<p>Sample</p>", requestedValue);
+        Assert.Equal("template", plugin.Id);
+    }
+
+    [Fact]
+    public async Task EmbedPlugin_should_dispatch_embed_request()
+    {
+        // Arrange
+        var editor = new RichTextEditorPlugin();
+        var plugin = new EmbedPlugin(editor);
+        var context = CreateContext();
+        var embedDialogRequested = false;
+        editor.EmbedDialogRequested += () => embedDialogRequested = true;
+
+        // Act
+        await plugin.ExecuteAsync(EmbedPlugin.InsertEmbedCommand, context, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.True(embedDialogRequested);
+        Assert.Equal("embed", plugin.Id);
     }
 }

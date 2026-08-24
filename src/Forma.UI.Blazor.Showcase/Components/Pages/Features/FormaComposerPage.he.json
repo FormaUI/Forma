@@ -1,12 +1,12 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "An extensible authoring surface hosting rich text, Markdown, code, and page composition via plugins.": "משטח עריכה הניתן להרחבה המארח טקסט עשיר, מרקדאון, קוד ועיצוב דפים באמצעות תוספים.",
-  "Basic Rich Text": "טקסט עשיר בסיסי",
+  "Standard Rich Text": "טקסט עשיר סטנדרטי",
   "Compact rich text preset with inline formatting, alignment, and basic typography.": "תבנית טקסט עשיר קומפקטית עם עיצוב תווי, יישור וטיפוגרפיה בסיסית.",
   "Default": "ברירת מחדל",
   "Disabled": "מושבת",
   "Fixed Height": "גובה קבוע",
-  "Lite Rich Text": "טקסט עשיר קל",
+  "Compact Rich Text": "טקסט עשיר קומפקטי",
   "Plugins": "תוספים",
   "Every command is a plugin contribution. The composer's own sit in the built-in row; an editor either joins that row or declares one of its own; a plugin the host registered lands on the plugins bar ruled off beneath. Plain Text shows all three, while Source shows only its own, because both external plugins name the surface they apply to.": "כל פקודה היא תרומה של תוסף. פקודות העורך עצמן יושבות בשורה המובנית; עורך יכול להצטרף לאותה שורה או להצהיר על שורה משלו; תוסף שהמארח רישם נוחת על סרגל התוספים המופרד מתחת. Plain Text מציג את כל השלושה, ואילו Source מציג רק את שלו, משום ששני התוספים החיצוניים מציינים לאיזה משטח הם חלים.",
   "Read-only": "קריאה בלבד",
@@ -15,5 +15,7 @@
   "Standard rich text preset with formatting, typography, headings, lists, and alignment.": "תבנית טקסט עשיר סטנדרטית עם עיצוב, טיפוגרפיה, כותרות, רשימות ויישור.",
   "Status Strip": "רצועת מצב",
   "Word Count pushes a readout the plugin holds and mutates, shown beneath the canvas until the plugin disposes it. Press it again to take it back.": "ספירת מילים דוחפת נתון שהתוסף מחזיק ומשנה, המוצג מתחת למשטח עד שהתוסף משחרר אותו. הקישו שוב כדי להסיר אותו.",
-  "Without Toolbar": "ללא סרגל כלים"
+  "Without Toolbar": "ללא סרגל כלים",
+  "View Commands": "פקודות תצוגה",
+  "Preview and Maximize apply to whichever editor is active, so both are engine commands rather than rich text plugins. Press Preview for a read-only rendering of the document, and Maximize to fill the viewport; press either again to return.": "תצוגה מקדימה והגדלה חלות על כל עורך פעיל, ולכן שניהם פקודות מנוע ולא תוספי טקסט עשיר. הקישו תצוגה מקדימה לקבלת תצוגה לקריאה בלבד של המסמך, והגדלה כדי למלא את חלון התצוגה; הקישו שוב על אחד מהם כדי לחזור."
 }

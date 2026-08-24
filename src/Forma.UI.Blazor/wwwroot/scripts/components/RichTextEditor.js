@@ -15,6 +15,21 @@ function toCssHex(value) {
         : value;
 }
 
+function escapeAttr(str) {
+    return (str ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('"', '&quot;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;');
+}
+
+function escapeHtml(str) {
+    return (str ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;');
+}
+
 /** The largest execCommand size step, and the keyword it writes, used to find what a sizing pass just wrapped. */
 const FontSizeMarkStep = '7';
 const FontSizeMark = 'xxx-large';
@@ -27,6 +42,8 @@ class RichTextEditor {
     #controller = new AbortController();
     #isDisposed = false;
     #lastHtml = null;
+    #savedRange = null;
+    #dialogRange = null;
 
     constructor(target, { owner, debounceDelay = 400 }) {
         this.#target = target;
@@ -64,6 +81,14 @@ class RichTextEditor {
 
     getHtml() {
         return this.#target.innerHTML;
+    }
+
+    /** The text of the last selection made inside the canvas, which outlives the focus a dialog takes away. */
+    getSelectionText() {
+        // Closing a dialog returns a collapsed caret to the canvas, which would overwrite the saved range, so the range is frozen here and consumed by the insert that follows.
+        this.#dialogRange = this.#savedRange ? this.#savedRange.cloneRange() : null;
+
+        return this.#dialogRange && !this.#dialogRange.collapsed ? this.#dialogRange.toString() : '';
     }
 
     exec(command, value = null) {
@@ -126,6 +151,90 @@ class RichTextEditor {
 
             case 'dir':
                 this.#setDirection(value);
+                break;
+
+            case 'insertHorizontalRule':
+                document.execCommand('insertHorizontalRule', false, null);
+                break;
+
+            case 'createLink':
+                this.#createLink(value);
+                break;
+
+            case 'unlink':
+                document.execCommand('unlink', false, null);
+                break;
+
+            case 'selectAll':
+                document.execCommand('selectAll', false, null);
+                break;
+
+            case 'insertText':
+                this.#insertText(value);
+                break;
+
+            case 'insertHtml':
+                this.#insertHtml(value);
+                break;
+
+            case 'insertTable':
+                this.#insertTable(value);
+                break;
+
+            case 'tableAddRowBefore':
+                this.#tableAddRow(true);
+                break;
+
+            case 'tableAddRowAfter':
+                this.#tableAddRow(false);
+                break;
+
+            case 'tableDeleteRow':
+                this.#tableDeleteRow();
+                break;
+
+            case 'tableAddColBefore':
+                this.#tableAddCol(true);
+                break;
+
+            case 'tableAddColAfter':
+                this.#tableAddCol(false);
+                break;
+
+            case 'tableDeleteCol':
+                this.#tableDeleteCol();
+                break;
+
+            case 'tableToggleHeader':
+                this.#tableToggleHeader();
+                break;
+
+            case 'tableDelete':
+                this.#tableDelete();
+                break;
+
+            case 'insertMedia':
+                this.#insertMedia(value);
+                break;
+
+            case 'insertVideo':
+                this.#insertVideo(value);
+                break;
+
+            case 'insertEmbed':
+                this.#insertEmbed(value);
+                break;
+
+            case 'replaceContent':
+                this.#replaceContent(value);
+                break;
+
+            case 'pasteText':
+                this.#pasteText();
+                break;
+
+            case 'pasteWord':
+                this.#pasteWord();
                 break;
         }
 
@@ -278,6 +387,7 @@ class RichTextEditor {
         const element = anchor?.nodeType === Node.TEXT_NODE ? anchor.parentElement : anchor;
 
         if (element && this.#target.contains(element)) {
+            this.#saveSelection();
             this.#reportSelection();
         }
     }
@@ -287,9 +397,372 @@ class RichTextEditor {
             return;
         }
 
+        this.#saveSelection();
         const snapshot = this.#getSelectionSnapshot();
         if (snapshot) {
             this.#owner?.invokeMethodAsync('HandleSelectionChangedAsync', snapshot);
+        }
+    }
+
+    #saveSelection() {
+        const selection = window.getSelection();
+        if (selection && selection.rangeCount > 0) {
+            const range = selection.getRangeAt(0);
+            let anchor = selection.anchorNode;
+            if (anchor && anchor.nodeType === Node.TEXT_NODE) {
+                anchor = anchor.parentElement;
+            }
+            if (anchor && this.#target.contains(anchor)) {
+                this.#savedRange = range.cloneRange();
+            }
+        }
+    }
+
+    /** The range an insert will land on, without consuming it, so a caller can read the text it is about to replace. */
+    #peekRange() {
+        return this.#dialogRange ?? this.#savedRange;
+    }
+
+    #restoreSelection() {
+        const range = this.#dialogRange ?? this.#savedRange;
+        this.#dialogRange = null;
+
+        if (!range) {
+            return;
+        }
+        const selection = window.getSelection();
+        if (selection) {
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+    }
+
+    #insertHtml(html) {
+        this.#restoreSelection();
+        const selection = window.getSelection();
+        const hasValidRange = selection
+            && selection.rangeCount > 0
+            && (selection.getRangeAt(0).commonAncestorContainer === this.#target
+                || this.#target.contains(selection.getRangeAt(0).commonAncestorContainer));
+
+        if (!hasValidRange) {
+            const template = document.createElement('template');
+            template.innerHTML = html;
+            this.#target.appendChild(template.content);
+            this.#saveSelection();
+            return;
+        }
+
+        const range = selection.getRangeAt(0);
+        range.deleteContents();
+        const template = document.createElement('template');
+        template.innerHTML = html;
+        const fragment = template.content;
+        const lastNode = fragment.lastChild;
+        range.insertNode(fragment);
+        if (lastNode) {
+            range.setStartAfter(lastNode);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+        this.#saveSelection();
+    }
+
+    #insertText(text) {
+        this.#restoreSelection();
+        document.execCommand('insertText', false, text);
+        this.#saveSelection();
+    }
+
+    #createLink(data) {
+        if (!data) {
+            return;
+        }
+
+        if (typeof data === 'string') {
+            this.#restoreSelection();
+            document.execCommand('createLink', false, data);
+            return;
+        }
+
+        const { href, Href, text, Text, title, Title, openInNewTab, OpenInNewTab, isAnchor, IsAnchor, anchorName, AnchorName } = data;
+        const effectiveIsAnchor = isAnchor ?? IsAnchor ?? false;
+        const effectiveAnchor = anchorName ?? AnchorName ?? '';
+
+        if (effectiveIsAnchor && effectiveAnchor) {
+            const anchorAttrs = `id="${escapeAttr(effectiveAnchor)}" name="${escapeAttr(effectiveAnchor)}"`;
+            const anchoredRange = this.#peekRange();
+            const anchoredText = anchoredRange && !anchoredRange.collapsed ? anchoredRange.toString() : '';
+
+            this.#insertHtml(anchoredText
+                ? `<a ${anchorAttrs}>${escapeHtml(anchoredText)}</a>`
+                : `<a ${anchorAttrs}></a>`);
+            return;
+        }
+
+        const effectiveHref = href ?? Href ?? '';
+        if (!effectiveHref) {
+            return;
+        }
+
+        const linkRange = this.#peekRange();
+        const selectedText = linkRange && !linkRange.collapsed ? linkRange.toString() : '';
+        const effectiveText = text ?? Text ?? selectedText ?? effectiveHref;
+        const effectiveTitle = title ?? Title ?? '';
+        const effectiveNewTab = openInNewTab ?? OpenInNewTab ?? false;
+
+        const targetAttr = effectiveNewTab ? ' target="_blank" rel="noopener noreferrer"' : '';
+        const titleAttr = effectiveTitle ? ` title="${escapeAttr(effectiveTitle)}"` : '';
+
+        this.#insertHtml(`<a href="${escapeAttr(effectiveHref)}"${targetAttr}${titleAttr}>${escapeHtml(effectiveText)}</a>`);
+    }
+
+    #insertTable(data = {}) {
+        const rows = Math.max(1, data.rows ?? data.Rows ?? 3);
+        const cols = Math.max(1, data.columns ?? data.Columns ?? 3);
+        const includeHeader = data.includeHeader ?? data.IncludeHeader ?? true;
+        const caption = data.caption ?? data.Caption ?? '';
+
+        let html = '<table class="forma-composer-table">';
+        if (caption) {
+            html += `<caption>${escapeHtml(caption)}</caption>`;
+        }
+        if (includeHeader) {
+            html += '<thead><tr>';
+            for (let c = 0; c < cols; c++) {
+                html += '<th>&nbsp;</th>';
+            }
+            html += '</tr></thead>';
+        }
+        html += '<tbody>';
+        const bodyRows = includeHeader ? rows - 1 : rows;
+        for (let r = 0; r < Math.max(1, bodyRows); r++) {
+            html += '<tr>';
+            for (let c = 0; c < cols; c++) {
+                html += '<td>&nbsp;</td>';
+            }
+            html += '</tr>';
+        }
+        html += '</tbody></table><p>&nbsp;</p>';
+
+        this.#insertHtml(html);
+    }
+
+    #getClosestTableElement(selector) {
+        this.#restoreSelection();
+        const selection = window.getSelection();
+        let node = (selection && selection.rangeCount > 0) ? selection.anchorNode : null;
+        if (node && node.nodeType === Node.TEXT_NODE) {
+            node = node.parentElement;
+        }
+        if (node && this.#target.contains(node)) {
+            return node.closest(selector);
+        }
+        return null;
+    }
+
+    #tableAddRow(before) {
+        const tr = this.#getClosestTableElement('tr');
+        if (!tr) {
+            return;
+        }
+        const colCount = tr.children.length;
+        const newTr = document.createElement('tr');
+        for (let i = 0; i < colCount; i++) {
+            const td = document.createElement('td');
+            td.innerHTML = '&nbsp;';
+            newTr.appendChild(td);
+        }
+        if (before) {
+            tr.before(newTr);
+        } else {
+            tr.after(newTr);
+        }
+    }
+
+    #tableDeleteRow() {
+        const tr = this.#getClosestTableElement('tr');
+        if (!tr) {
+            return;
+        }
+        const table = tr.closest('table');
+        const rowCount = table?.querySelectorAll('tr').length ?? 0;
+        if (rowCount <= 1) {
+            table?.remove();
+        } else {
+            tr.remove();
+        }
+    }
+
+    #tableAddCol(before) {
+        const cell = this.#getClosestTableElement('td, th');
+        if (!cell) {
+            return;
+        }
+        const cellIndex = Array.from(cell.parentElement.children).indexOf(cell);
+        const table = cell.closest('table');
+        if (!table) {
+            return;
+        }
+
+        for (const tr of table.querySelectorAll('tr')) {
+            const isHeader = tr.parentElement?.tagName.toLowerCase() === 'thead';
+            const newCell = document.createElement(isHeader ? 'th' : 'td');
+            newCell.innerHTML = '&nbsp;';
+            const targetCell = tr.children[cellIndex];
+            if (targetCell) {
+                if (before) {
+                    targetCell.before(newCell);
+                } else {
+                    targetCell.after(newCell);
+                }
+            } else {
+                tr.appendChild(newCell);
+            }
+        }
+    }
+
+    #tableDeleteCol() {
+        const cell = this.#getClosestTableElement('td, th');
+        if (!cell) {
+            return;
+        }
+        const cellIndex = Array.from(cell.parentElement.children).indexOf(cell);
+        const table = cell.closest('table');
+        if (!table) {
+            return;
+        }
+
+        const rows = table.querySelectorAll('tr');
+        const firstRowColCount = rows[0]?.children.length ?? 0;
+        if (firstRowColCount <= 1) {
+            table.remove();
+            return;
+        }
+
+        for (const tr of rows) {
+            if (tr.children[cellIndex]) {
+                tr.children[cellIndex].remove();
+            }
+        }
+    }
+
+    #tableToggleHeader() {
+        const table = this.#getClosestTableElement('table');
+        if (!table) {
+            return;
+        }
+        const thead = table.querySelector('thead');
+        if (thead) {
+            const headerRow = thead.querySelector('tr');
+            if (headerRow) {
+                const tbody = table.querySelector('tbody') ?? table;
+                for (const th of Array.from(headerRow.querySelectorAll('th'))) {
+                    const td = document.createElement('td');
+                    td.innerHTML = th.innerHTML;
+                    th.replaceWith(td);
+                }
+                tbody.prepend(headerRow);
+            }
+            thead.remove();
+        } else {
+            const firstRow = table.querySelector('tr');
+            if (firstRow) {
+                const newThead = document.createElement('thead');
+                for (const td of Array.from(firstRow.querySelectorAll('td, th'))) {
+                    const th = document.createElement('th');
+                    th.innerHTML = td.innerHTML;
+                    td.replaceWith(th);
+                }
+                newThead.appendChild(firstRow);
+                table.prepend(newThead);
+            }
+        }
+    }
+
+    #tableDelete() {
+        const table = this.#getClosestTableElement('table');
+        table?.remove();
+    }
+
+    #insertMedia(data = {}) {
+        this.#restoreSelection();
+        const src = data.source ?? data.Source ?? '';
+        const alt = data.altText ?? data.AltText ?? '';
+        const caption = data.caption ?? data.Caption ?? '';
+        const alignment = data.alignment ?? data.Alignment ?? '';
+
+        if (!src) {
+            return;
+        }
+
+        const alignClass = alignment ? ` forma-media-align-${alignment.toLowerCase()}` : '';
+
+        if (caption) {
+            this.#insertHtml(`<figure class="forma-composer-media${alignClass}"><img src="${escapeAttr(src)}" alt="${escapeAttr(alt)}" /><figcaption>${escapeHtml(caption)}</figcaption></figure><p>&nbsp;</p>`);
+        } else {
+            this.#insertHtml(`<p><img src="${escapeAttr(src)}" alt="${escapeAttr(alt)}" class="forma-composer-media-img${alignClass}" /></p>`);
+        }
+    }
+
+    #insertVideo(data = {}) {
+        this.#restoreSelection();
+        const url = data.source ?? data.Source ?? data.url ?? data.Url ?? '';
+        const title = data.title ?? data.Title ?? '';
+        const autoplay = data.autoplay ?? data.Autoplay ?? false;
+
+        if (!url) {
+            return;
+        }
+
+        const titleAttr = title ? ` data-video-title="${escapeAttr(title)}"` : '';
+        const autoplayAttr = autoplay ? ' data-autoplay="true"' : '';
+
+        this.#insertHtml(`<div class="forma-composer-video" data-video-url="${escapeAttr(url)}"${titleAttr}${autoplayAttr}><p><a href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(title || url)}</a></p></div><p>&nbsp;</p>`);
+    }
+
+    #insertEmbed(data = {}) {
+        this.#restoreSelection();
+        const type = data.embedType ?? data.EmbedType ?? '';
+        const id = data.identifier ?? data.Identifier ?? '';
+        const settings = data.settings ?? data.Settings ?? '';
+
+        if (!type && !id) {
+            return;
+        }
+
+        const settingsAttr = settings ? ` data-settings="${escapeAttr(settings)}"` : '';
+        this.#insertHtml(`<div class="forma-composer-embed" data-embed-type="${escapeAttr(type)}" data-embed-id="${escapeAttr(id)}"${settingsAttr}>[Embed: ${escapeHtml(type || id)}]</div><p>&nbsp;</p>`);
+    }
+
+    #replaceContent(html) {
+        this.#target.innerHTML = html ?? '';
+    }
+
+    #pasteText() {
+        if (navigator.clipboard?.readText) {
+            navigator.clipboard.readText().then(text => {
+                if (text) {
+                    this.#insertText(text);
+                    this.#flushContent();
+                }
+            }).catch(() => {});
+        }
+    }
+
+    #pasteWord() {
+        if (navigator.clipboard?.readText) {
+            navigator.clipboard.readText().then(text => {
+                if (text) {
+                    const cleaned = text
+                        .replace(/<!--[\s\S]*?-->/gi, '')
+                        .replace(/<o:p>[\s\S]*?<\/o:p>/gi, '')
+                        .replace(/style="[^"]*mso-[^"]*"/gi, '');
+                    this.#insertHtml(cleaned);
+                    this.#flushContent();
+                }
+            }).catch(() => {});
         }
     }
 

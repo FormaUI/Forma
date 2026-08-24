@@ -78,6 +78,7 @@ public sealed class ComposerCommandRegistryTests
             new ComposerRegionRegistry(),
             _ => Task.CompletedTask,
             () => Task.CompletedTask,
+            _ => Task.CompletedTask,
             _ => Task.CompletedTask);
 
     private static Task<ComposerCommandOutcome> ExecuteAsync(ComposerCommandRegistry registry, string command)

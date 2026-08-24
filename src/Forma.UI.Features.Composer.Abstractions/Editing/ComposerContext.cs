@@ -20,6 +20,7 @@ public sealed class ComposerContext
         Func<ComposerDocument, Task> changeDocumentAsync,
         Func<Task> requestRenderAsync,
         Func<ComposerSelection, Task> reportSelectionAsync,
+        Func<string, Task> executeCommandAsync,
         IComposerSyntaxHighlighter? syntaxHighlighter = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(activeEditorId);
@@ -32,6 +33,7 @@ public sealed class ComposerContext
         ArgumentNullException.ThrowIfNull(changeDocumentAsync);
         ArgumentNullException.ThrowIfNull(requestRenderAsync);
         ArgumentNullException.ThrowIfNull(reportSelectionAsync);
+        ArgumentNullException.ThrowIfNull(executeCommandAsync);
 
         ActiveEditorId = activeEditorId;
         Document = document;
@@ -43,6 +45,7 @@ public sealed class ComposerContext
         ChangeDocumentAsync = changeDocumentAsync;
         RequestRenderAsync = requestRenderAsync;
         ReportSelectionAsync = reportSelectionAsync;
+        ExecuteCommandAsync = executeCommandAsync;
         SyntaxHighlighter = syntaxHighlighter;
     }
 
@@ -84,4 +87,7 @@ public sealed class ComposerContext
 
     /// <summary>Reports the caret or range an editing surface last observed, so the engine can share it with every plugin.</summary>
     public Func<ComposerSelection, Task> ReportSelectionAsync { get; }
+
+    /// <summary>Runs a named command through the engine, which resolves it against the engine's own commands and then the registered plugins.</summary>
+    public Func<string, Task> ExecuteCommandAsync { get; }
 }

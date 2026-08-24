@@ -22,6 +22,10 @@ internal sealed class RichTextEditor(IJSRuntime js)
     public ValueTask<string?> GetHtmlAsync()
         => InvokeAsync<string>("getHtml");
 
+    /// <summary>Gets the text of the last selection made inside the canvas.</summary>
+    public ValueTask<string?> GetSelectionTextAsync()
+        => InvokeAsync<string>("getSelectionText");
+
     /// <summary>Executes a rich text formatting command on the active selection.</summary>
     public ValueTask<RichTextCommandResult?> ExecAsync(string command, object? value = null)
         => InvokeAsync<RichTextCommandResult>("exec", command, value);

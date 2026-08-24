@@ -8,4 +8,10 @@ public static class ComposerCommands
 
     /// <summary>Steps the document forward to the following recorded state.</summary>
     public const string Redo = "composer.redo";
+
+    /// <summary>Toggles full-viewport maximized editing mode.</summary>
+    public const string Maximize = "view.maximize";
+
+    /// <summary>Toggles a read-only rendered preview of the document.</summary>
+    public const string Preview = "view.preview";
 }

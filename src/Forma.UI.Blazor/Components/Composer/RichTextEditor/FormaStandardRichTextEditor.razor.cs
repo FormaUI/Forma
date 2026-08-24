@@ -9,8 +9,8 @@ using Forma.UI.Features.Composer.Plugins;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
-/// <summary>Lite rich text editor preset providing basic formatting, alignment, and typography.</summary>
-public sealed partial class FormaLiteRichTextEditor : InputBase<ComposerDocument>
+/// <summary>Standard rich text editor preset providing core formatting, typography, paragraph blocks, lists, and alignment.</summary>
+public sealed partial class FormaStandardRichTextEditor : InputBase<ComposerDocument>
 {
     private readonly RichTextEditorPlugin _editorPlugin = new();
     private readonly IReadOnlyList<IComposerPlugin> _plugins;
@@ -24,15 +24,21 @@ public sealed partial class FormaLiteRichTextEditor : InputBase<ComposerDocument
     /// <summary>Whether the editor is in a read-only state.</summary>
     [Parameter] public bool ReadOnly { get; set; }
 
-    /// <summary>Constructs a lite rich text editor preset with its pre-configured plugin set.</summary>
-    public FormaLiteRichTextEditor()
+    /// <summary>Constructs a standard rich text editor preset with its pre-configured plugin set.</summary>
+    public FormaStandardRichTextEditor()
     {
         _plugins =
         [
             _editorPlugin,
+            new ParagraphFormatPlugin(_editorPlugin),
             new TypographyPlugin(_editorPlugin),
             new BasicFormattingPlugin(_editorPlugin),
+            new ListPlugin(_editorPlugin),
             new AlignmentBidiPlugin(_editorPlugin),
+            new LinkPlugin(_editorPlugin),
+            new MediaPlugin(_editorPlugin),
+            new TablePlugin(_editorPlugin),
+            new HorizontalRulePlugin(_editorPlugin),
         ];
     }
 
