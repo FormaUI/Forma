@@ -63,6 +63,7 @@ dialog.forma-modal::backdrop {
     justify-content: space-between;
     padding: 14px 20px;
     border-bottom: 1px solid var(--border-color);
+    background: var(--forma-modal-chrome-background-color, var(--modal-background-color));
     flex-shrink: 0;
 }
 
@@ -76,6 +77,7 @@ dialog.forma-modal::backdrop {
 /* ── Body ── */
 .forma-modal-body {
     padding: 20px;
+    background: var(--forma-modal-background-color, var(--input-background-color));
     overflow-y: auto;
     flex: 1 1 auto;
 }
@@ -91,6 +93,7 @@ dialog.forma-modal::backdrop {
     gap: 8px;
     padding: 14px 20px;
     border-top: 1px solid var(--border-color);
+    background: var(--forma-modal-chrome-background-color, var(--modal-background-color));
     flex-shrink: 0;
 }
 
