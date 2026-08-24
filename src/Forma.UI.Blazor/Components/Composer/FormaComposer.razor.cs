@@ -2,8 +2,10 @@ namespace Forma.UI.Blazor.Components.Composer;
 
 using System.Diagnostics.CodeAnalysis;
 
+using Forma.Framework.Resources;
 using Forma.UI.Blazor.Components.Composer.Assets;
 using Forma.UI.Blazor.Components.Composer.PlainTextEditor;
+using Forma.UI.Blazor.Components.Composer.Plugins;
 using Forma.UI.Blazor.Interop.Behaviours;
 using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Documents;
@@ -38,6 +40,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     private bool _isJsStarted;
     private bool _isMaximized;
     private bool _isPreviewOpen;
+    private bool _isAttachOpen;
 
     /// <summary>Options configuring toolbar display, editor switcher, and default editor.</summary>
     [Parameter] public FormaComposerOptions Options { get; set; } = FormaComposerOptions.Default;
@@ -102,6 +105,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
         _commands.RegisterEngineCommand(ComposerCommands.Redo, HandleRedoAsync);
         _commands.RegisterEngineCommand(ComposerCommands.Maximize, HandleMaximizeAsync);
         _commands.RegisterEngineCommand(ComposerCommands.Preview, HandlePreviewAsync);
+        _commands.RegisterEngineCommand(ComposerCommands.Attach, HandleAttachAsync);
         _regions.Changed += HandleRegionsChanged;
 
         await LoadPluginsAsync();
@@ -124,6 +128,26 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
         _isPreviewOpen = !_isPreviewOpen;
         StateHasChanged();
         return Task.CompletedTask;
+    }
+
+    private Task HandleAttachAsync()
+    {
+        _isAttachOpen = true;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    // Attaching is the engine's to run, so the gates come from whichever plugin contributed the command.
+    private FileUploadPluginOptions AttachOptions
+        => _catalog.FeaturePlugins.OfType<FileUploadPlugin>().FirstOrDefault()?.Options ?? FileUploadPluginOptions.Default;
+    private async Task HandleAttachedAsync(IReadOnlyList<ResourceInfo> attached)
+    {
+        _isAttachOpen = false;
+
+        // The dialog reports everything it has uploaded so far, so what it hands back replaces rather than adds to itself.
+        var kept = CurrentDocument.Attachments.Where(held => !attached.Contains(held)).ToList();
+
+        await HandleDocumentChangedAsync(CurrentDocument with { Attachments = [.. kept, .. attached] });
     }
 
     private async Task LoadPluginsAsync()

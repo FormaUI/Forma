@@ -1,0 +1,35 @@
+@namespace Forma.UI.Blazor.Components.Composer
+@using Forma.UI.Blazor.Components.Buttons
+
+<section class="forma-composer-attachments" aria-labelledby="@_headingId">
+    <h2 id="@_headingId" class="forma-composer-attachments-heading">
+        <FormaGlyph Name="Glyph.File" />
+        @L["{Count} attached", Attachments.Count]
+        <span class="forma-composer-attachments-total">@TotalSize</span>
+    </h2>
+
+    <ul class="forma-composer-attachments-list">
+        @foreach (var attachment in Attachments)
+        {
+            <li class="forma-composer-attachment">
+                <a class="forma-composer-attachment-name"
+                   href="@attachment.Source"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   dir="auto">@attachment.Name</a>
+
+                @if (attachment.Size is { } size)
+                {
+                    <span class="forma-composer-attachment-size" dir="auto">@ResourceFormatter.FromByteCount(size)</span>
+                }
+
+                @if (CanRemove)
+                {
+                    <FormaCloseButton class="forma-composer-attachment-remove"
+                                      Label="@L["Remove {Name}", attachment.Name]"
+                                      OnClick="() => RemoveAsync(attachment)" />
+                }
+            </li>
+        }
+    </ul>
+</section>

@@ -29,6 +29,7 @@
 
     <!-- Action & View Toolbar -->
     <FormaExplorerToolbar IsSelectMode="_context.Selection.IsSelectMode"
+                         CanLeaveSelectMode="@(!Options.SelectOnOpen)"
                          FileOptions="FileOptions"
                          SelectedCount="_context.Selection.Count"
                          SortDirection="_sortDirection"

@@ -1,0 +1,26 @@
+/* FormaComposerExplorerDialog — Stored files browser modal */
+
+.forma-composer-dialog-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* The explorer fills whatever the modal gives it and scrolls inside, so the notice below it stays reachable. */
+.forma-composer-explorer-library {
+    block-size: min(55vh, 26rem);
+    display: flex;
+    flex-direction: column;
+}
+
+.forma-composer-dialog-notice {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--text-secondary-color);
+}
+
+.forma-composer-dialog-error {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--forma-composer-dialog-error-color, var(--danger-color));
+}

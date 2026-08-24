@@ -5,6 +5,7 @@
 <FormaModal Opened="Opened"
             Title="@L["Insert Video"]"
             Size="ModalSize.Medium"
+            Options="StayOpenOnConfirm"
             OnClose="OnCancel"
             OnConfirm="HandleConfirmAsync"
             ConfirmText="@L["Insert"]"
@@ -19,6 +20,15 @@
                         @L["Autoplay"]
                     </FormaCheckBox>
                 </div>
+
+                @if (_showSourceRequired)
+                {
+                    <p class="forma-composer-dialog-error" role="alert">@L["Enter the address of the video before inserting."]</p>
+                }
+                else if (_showSourceUnusable)
+                {
+                    <p class="forma-composer-dialog-error" role="alert">@L["A video address has to start with http:// or https://."]</p>
+                }
             </div>
         </EditForm>
     </Body>

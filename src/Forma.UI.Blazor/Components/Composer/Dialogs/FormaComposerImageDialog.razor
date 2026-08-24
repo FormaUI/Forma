@@ -5,6 +5,7 @@
 <FormaModal Opened="Opened"
             Title="@L["Insert Image"]"
             Size="ModalSize.Medium"
+            Options="StayOpenOnConfirm"
             OnClose="OnCancel"
             OnConfirm="HandleConfirmAsync"
             ConfirmText="@L["Insert"]"
@@ -15,9 +16,11 @@
                 <FormaTextBox @bind-Value="_source" Label="@L["Source"]" Required="true" />
                 <FormaTextBox @bind-Value="_altText" Label="@L["Alt Text"]" />
                 <FormaTextBox @bind-Value="_caption" Label="@L["Caption"]" />
-                <FormaSelect @bind-Value="_alignment"
-                             Label="@L["Alignment"]"
-                             Options="_alignmentOptions" />
+
+                @if (_showSourceRequired)
+                {
+                    <p class="forma-composer-dialog-error" role="alert">@L["Enter the address of the image before inserting."]</p>
+                }
             </div>
         </EditForm>
     </Body>

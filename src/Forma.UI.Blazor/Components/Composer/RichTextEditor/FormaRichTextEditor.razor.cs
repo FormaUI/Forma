@@ -4,6 +4,7 @@ using System.Globalization;
 
 using Forma.Framework.Localization;
 using Forma.UI.Blazor.Components.Composer.Dialogs;
+using Forma.UI.Blazor.Components.Composer.RichTextEditor.Plugins;
 using Forma.UI.Blazor.Interop.Components;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
@@ -34,7 +35,9 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
     private bool _isLinkAnchorMode;
     private bool _isTableDialogOpen;
     private bool _isVideoDialogOpen;
-    private bool _isMediaDialogOpen;
+    private bool _isImageDialogOpen;
+    private bool _isExplorerDialogOpen;
+    private ExplorerPluginOptions _explorerOptions = ExplorerPluginOptions.Default;
     private bool _isEmbedDialogOpen;
     private string? _selectedText;
 
@@ -62,7 +65,8 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
         _plugin.LinkDialogRequested += HandleLinkDialogRequested;
         _plugin.TableDialogRequested += HandleTableDialogRequested;
         _plugin.VideoDialogRequested += HandleVideoDialogRequested;
-        _plugin.MediaDialogRequested += HandleMediaDialogRequested;
+        _plugin.ImageDialogRequested += HandleImageDialogRequested;
+        _plugin.ExplorerDialogRequested += HandleExplorerDialogRequested;
         _plugin.EmbedDialogRequested += HandleEmbedDialogRequested;
     }
 
@@ -171,9 +175,16 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
         StateHasChanged();
     }
 
-    private void HandleMediaDialogRequested()
+    private void HandleImageDialogRequested()
     {
-        _isMediaDialogOpen = true;
+        _isImageDialogOpen = true;
+        StateHasChanged();
+    }
+
+    private void HandleExplorerDialogRequested(ExplorerPluginOptions options)
+    {
+        _explorerOptions = options;
+        _isExplorerDialogOpen = true;
         StateHasChanged();
     }
 
@@ -201,10 +212,16 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
         await ExecCommandAsync("insertVideo", result);
     }
 
-    private async Task HandleMediaInsertedAsync(MediaDialogResult result)
+    private async Task HandleImageInsertedAsync(ImageDialogResult result)
     {
-        _isMediaDialogOpen = false;
-        await ExecCommandAsync("insertMedia", result);
+        _isImageDialogOpen = false;
+        await ExecCommandAsync("insertImage", result);
+    }
+
+    private async Task HandleResourceInsertedAsync(ResourceDialogResult result)
+    {
+        _isExplorerDialogOpen = false;
+        await ExecCommandAsync("insertResource", result);
     }
 
     private async Task HandleEmbedInsertedAsync(EmbedDialogResult result)
@@ -274,7 +291,8 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
             _plugin.LinkDialogRequested -= HandleLinkDialogRequested;
             _plugin.TableDialogRequested -= HandleTableDialogRequested;
             _plugin.VideoDialogRequested -= HandleVideoDialogRequested;
-            _plugin.MediaDialogRequested -= HandleMediaDialogRequested;
+            _plugin.ImageDialogRequested -= HandleImageDialogRequested;
+            _plugin.ExplorerDialogRequested -= HandleExplorerDialogRequested;
             _plugin.EmbedDialogRequested -= HandleEmbedDialogRequested;
         }
 

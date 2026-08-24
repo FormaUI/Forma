@@ -220,8 +220,12 @@ class RichTextEditor {
                 this.#tableDelete();
                 break;
 
-            case 'insertMedia':
-                this.#insertMedia(value);
+            case 'insertImage':
+                this.#insertImage(value);
+                break;
+
+            case 'insertResource':
+                this.#insertResource(value);
                 break;
 
             case 'insertVideo':
@@ -713,24 +717,52 @@ class RichTextEditor {
         table?.remove();
     }
 
-    #insertMedia(data = {}) {
+    #insertImage(data = {}) {
         this.#restoreSelection();
         const src = data.source ?? data.Source ?? '';
         const alt = data.altText ?? data.AltText ?? '';
         const caption = data.caption ?? data.Caption ?? '';
-        const alignment = data.alignment ?? data.Alignment ?? '';
 
         if (!src) {
             return;
         }
 
-        const alignClass = alignment ? ` forma-media-align-${alignment.toLowerCase()}` : '';
-
         if (caption) {
-            this.#insertHtml(`<figure class="forma-composer-media${alignClass}"><img src="${escapeAttr(src)}" alt="${escapeAttr(alt)}" /><figcaption>${escapeHtml(caption)}</figcaption></figure><p>&nbsp;</p>`);
+            this.#insertHtml(`<figure class="forma-composer-image"><img src="${escapeAttr(src)}" alt="${escapeAttr(alt)}" /><figcaption>${escapeHtml(caption)}</figcaption></figure><p>&nbsp;</p>`);
         } else {
-            this.#insertHtml(`<p><img src="${escapeAttr(src)}" alt="${escapeAttr(alt)}" class="forma-composer-media-img${alignClass}" /></p>`);
+            this.#insertHtml(`<p><img class="forma-composer-image" src="${escapeAttr(src)}" alt="${escapeAttr(alt)}" /></p>`);
         }
+    }
+
+    #insertResource(data = {}) {
+        this.#restoreSelection();
+        const src = data.source ?? data.Source ?? '';
+        const name = data.name ?? data.Name ?? '';
+        const kind = (data.kind ?? data.Kind ?? 'file').toLowerCase();
+        const embed = data.embed ?? data.Embed ?? false;
+        const link = data.link ?? data.Link ?? false;
+
+        if (!src) {
+            return;
+        }
+
+        const address = escapeAttr(src);
+        const parts = [];
+
+        if (embed && kind === 'image') {
+            parts.push(`<img class="forma-composer-image" src="${address}" alt="${escapeAttr(name)}" />`);
+        } else if (embed && kind === 'video') {
+            parts.push(`<video class="forma-composer-resource" src="${address}" controls></video>`);
+        } else if (embed && kind === 'audio') {
+            parts.push(`<audio class="forma-composer-resource" src="${address}" controls></audio>`);
+        }
+
+        // A file the browser cannot render, or one nothing above claimed, still has to arrive as something.
+        if (link || parts.length === 0) {
+            parts.push(`<a href="${address}" target="_blank" rel="noopener noreferrer">${escapeHtml(name || src)}</a>`);
+        }
+
+        this.#insertHtml(`<p>${parts.join(' ')}</p>`);
     }
 
     #insertVideo(data = {}) {

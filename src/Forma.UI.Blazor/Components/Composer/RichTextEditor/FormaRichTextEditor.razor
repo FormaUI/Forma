@@ -45,11 +45,19 @@
                                       OnCancel="() => _isVideoDialogOpen = false" />
         }
 
-        @if (_isMediaDialogOpen)
+        @if (_isImageDialogOpen)
         {
-            <FormaComposerMediaDialog Opened="_isMediaDialogOpen"
-                                      OnInsert="HandleMediaInsertedAsync"
-                                      OnCancel="() => _isMediaDialogOpen = false" />
+            <FormaComposerImageDialog Opened="_isImageDialogOpen"
+                                      OnInsert="HandleImageInsertedAsync"
+                                      OnCancel="() => _isImageDialogOpen = false" />
+        }
+
+        @if (_isExplorerDialogOpen)
+        {
+            <FormaComposerExplorerDialog Opened="_isExplorerDialogOpen"
+                                         Options="_explorerOptions"
+                                         OnInsert="HandleResourceInsertedAsync"
+                                         OnCancel="() => _isExplorerDialogOpen = false" />
         }
 
         @if (_isEmbedDialogOpen)

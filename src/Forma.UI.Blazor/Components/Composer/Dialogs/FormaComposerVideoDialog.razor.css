@@ -9,3 +9,9 @@
 .forma-composer-dialog-checkbox {
     margin-block-start: 0.5rem;
 }
+
+.forma-composer-dialog-error {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--forma-composer-dialog-error-color, var(--danger-color));
+}

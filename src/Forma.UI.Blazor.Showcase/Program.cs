@@ -3,8 +3,10 @@ using Forma.Framework.Localization.Json;
 using Forma.Framework.Resources;
 using Forma.Framework.Resources.Markdown;
 using Forma.Framework.Resources.Office;
+using Forma.UI.Blazor.Components.Explorer;
 using Forma.UI.Blazor.Globalization;
 using Forma.UI.Blazor.Showcase;
+using Forma.UI.Blazor.Showcase.Features.Media;
 using Forma.UI.Blazor.Showcase.Features.Upload;
 using Forma.UI.Features.Feedback;
 using Forma.UI.Features.Indicators;
@@ -21,6 +23,10 @@ builder.Services.AddScoped<IResourceContentReader, WebRootContentReader>();
 builder.Services.AddScoped<IResourceProvider, OfficeResourceProvider>();
 builder.Services.AddScoped<IResourceProvider, MarkdownResourceProvider>();
 builder.Services.AddScoped<IPlayerProvider, CustomPlayerProvider>();
+
+// What the composer's image dialog browses and uploads into; without these it offers an address alone.
+builder.Services.AddScoped<IExplorerResourcesProvider>(_ => new ShowcaseImageLibrary());
+builder.Services.AddScoped<IFileStore, DefaultFileStore>();
 
 // The statuses this application defines for itself — the library ships none.
 builder.Services.AddSingleton<IStatusBadgeCatalog>(new StatusBadgeCatalog(

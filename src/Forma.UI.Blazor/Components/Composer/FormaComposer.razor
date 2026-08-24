@@ -1,4 +1,5 @@
 @namespace Forma.UI.Blazor.Components.Composer
+@using Forma.UI.Blazor.Components.Composer.Dialogs
 @using Forma.UI.Blazor.Components.Feedback
 @inherits InputBase<ComposerDocument>
 @inject IStringLocale<FormaComposer> L
@@ -38,9 +39,22 @@
 
         @if (_isInitialized)
         {
+            @if (CurrentDocument.Attachments.Count > 0)
+            {
+                <FormaComposerAttachments />
+            }
+
             <FormaComposerStatusStrip OnCommand="HandleCommandAsync" />
         }
     </div>
+
+    @if (_isAttachOpen)
+    {
+        <FormaComposerFileUploadDialog Opened="_isAttachOpen"
+                                       Options="AttachOptions"
+                                       OnAttach="HandleAttachedAsync"
+                                       OnCancel="() => _isAttachOpen = false" />
+    }
 
     @if (_isPreviewOpen)
     {

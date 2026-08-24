@@ -1,7 +1,0 @@
-/* FormaComposerMediaDialog — Media image insertion modal */
-
-.forma-composer-dialog-form {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}

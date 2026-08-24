@@ -391,17 +391,16 @@ describe('RichTextEditor', () => {
         expect(table.querySelectorAll('tbody tr').length).toBe(2);
     });
 
-    it('inserts media and video embeds', () => {
+    it('inserts images and video embeds', () => {
         const handle = attach(editor, { owner });
 
-        handle.exec('insertMedia', {
+        handle.exec('insertImage', {
             source: '/media/photo.jpg',
             altText: 'A photo',
             caption: 'Photo caption',
-            alignment: 'center',
         });
 
-        const figure = editor.querySelector('figure.forma-composer-media');
+        const figure = editor.querySelector('figure.forma-composer-image');
         expect(figure).not.toBeNull();
         expect(figure.querySelector('img').getAttribute('src')).toBe('/media/photo.jpg');
         expect(figure.querySelector('figcaption').textContent).toBe('Photo caption');
@@ -414,6 +413,60 @@ describe('RichTextEditor', () => {
         const video = editor.querySelector('.forma-composer-video');
         expect(video).not.toBeNull();
         expect(video.getAttribute('data-video-url')).toBe('https://youtube.com/watch?v=123');
+    });
+
+    it('inserts an uncaptioned image without a figure', () => {
+        const handle = attach(editor, { owner });
+
+        handle.exec('insertImage', {
+            source: '/media/plain.jpg',
+            altText: 'Plain',
+        });
+
+        expect(editor.querySelector('figure')).toBeNull();
+
+        const image = editor.querySelector('img.forma-composer-image');
+        expect(image).not.toBeNull();
+        expect(image.getAttribute('alt')).toBe('Plain');
+    });
+
+    it('carries autoplay onto the video placeholder only when asked for', () => {
+        const handle = attach(editor, { owner });
+
+        handle.exec('insertVideo', { source: 'https://vimeo.com/1', title: 'Quiet' });
+        expect(editor.querySelector('.forma-composer-video').hasAttribute('data-autoplay')).toBe(false);
+
+        handle.exec('insertVideo', { source: 'https://vimeo.com/2', title: 'Loud', autoplay: true });
+        const placeholders = editor.querySelectorAll('.forma-composer-video');
+        const loud = [...placeholders].find(node => node.getAttribute('data-video-title') === 'Loud');
+        expect(loud.getAttribute('data-autoplay')).toBe('true');
+    });
+
+    it('renders a chosen resource according to what was asked of it', () => {
+        const handle = attach(editor, { owner });
+
+        handle.exec('insertResource', { source: '/media/a.png', name: 'a.png', kind: 'image', embed: true, link: false });
+        expect(editor.querySelector('img.forma-composer-image').getAttribute('src')).toBe('/media/a.png');
+        expect(editor.querySelector('a')).toBeNull();
+
+        editor.innerHTML = '';
+        handle.exec('insertResource', { source: '/media/b.mp4', name: 'b.mp4', kind: 'video', embed: true, link: true });
+        expect(editor.querySelector('video').getAttribute('src')).toBe('/media/b.mp4');
+        expect(editor.querySelector('a').textContent).toBe('b.mp4');
+
+        editor.innerHTML = '';
+        handle.exec('insertResource', { source: '/media/c.wav', name: 'c.wav', kind: 'audio', embed: true, link: false });
+        expect(editor.querySelector('audio').getAttribute('src')).toBe('/media/c.wav');
+    });
+
+    it('links a resource the browser cannot render even when embedding was asked for', () => {
+        const handle = attach(editor, { owner });
+
+        handle.exec('insertResource', { source: '/media/report.pdf', name: 'report.pdf', kind: 'file', embed: true, link: false });
+
+        expect(editor.querySelector('img')).toBeNull();
+        expect(editor.querySelector('video')).toBeNull();
+        expect(editor.querySelector('a').getAttribute('href')).toBe('/media/report.pdf');
     });
 
     it('stops reporting after disposal', () => {

@@ -1,5 +1,6 @@
 namespace Forma.UI.Blazor.Components.Composer.RichTextEditor;
 
+using Forma.UI.Blazor.Components.Composer.RichTextEditor.Plugins;
 using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Documents;
 using Forma.UI.Features.Composer.Plugins;
@@ -23,8 +24,11 @@ public sealed class RichTextEditorPlugin : IComposerEditorPlugin
     /// <summary>Raised when a plugin requests opening the video embed dialog.</summary>
     public event Action? VideoDialogRequested;
 
-    /// <summary>Raised when a plugin requests opening the media insertion dialog.</summary>
-    public event Action? MediaDialogRequested;
+    /// <summary>Raised when a plugin requests opening the image insertion dialog.</summary>
+    public event Action? ImageDialogRequested;
+
+    /// <summary>Raised when a plugin requests opening the stored files dialog, carrying what it browses and inserts.</summary>
+    public event Action<ExplorerPluginOptions>? ExplorerDialogRequested;
 
     /// <summary>Raised when a plugin requests opening the embed dialog.</summary>
     public event Action? EmbedDialogRequested;
@@ -82,9 +86,16 @@ public sealed class RichTextEditorPlugin : IComposerEditorPlugin
     public void RequestVideoDialog()
         => VideoDialogRequested?.Invoke();
 
-    /// <summary>Requests opening the media insertion dialog.</summary>
-    public void RequestMediaDialog()
-        => MediaDialogRequested?.Invoke();
+    /// <summary>Requests opening the image insertion dialog.</summary>
+    public void RequestImageDialog()
+        => ImageDialogRequested?.Invoke();
+
+    /// <summary>Requests opening the stored files dialog.</summary>
+    public void RequestExplorerDialog(ExplorerPluginOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        ExplorerDialogRequested?.Invoke(options);
+    }
 
     /// <summary>Requests opening the embed insertion dialog.</summary>
     public void RequestEmbedDialog()

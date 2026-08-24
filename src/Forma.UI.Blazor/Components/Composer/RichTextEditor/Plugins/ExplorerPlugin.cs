@@ -6,21 +6,21 @@ using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
 using Forma.UI.Style.Glyphs;
 
-/// <summary>Contributes image and media insertion to the rich text editor.</summary>
-public sealed class MediaPlugin(
+/// <summary>Contributes browsing the host's stored files, and inserting whichever one is chosen.</summary>
+public sealed class ExplorerPlugin(
     RichTextEditorPlugin editor,
-    MediaPluginOptions? options = null) : IComposerPlugin
+    ExplorerPluginOptions? options = null) : IComposerPlugin
 {
-    /// <summary>The command opening the insert image dialog.</summary>
-    public const string InsertMediaCommand = "media.insert";
+    /// <summary>The command opening the stored files dialog.</summary>
+    public const string BrowseCommand = "explorer.browse";
 
     private readonly RichTextEditorPlugin _editor = editor;
 
-    /// <summary>Options configuring media capabilities.</summary>
-    public MediaPluginOptions Options { get; } = options ?? MediaPluginOptions.Default;
+    /// <summary>Options configuring what is browsed, taken in, and inserted.</summary>
+    public ExplorerPluginOptions Options { get; } = options ?? ExplorerPluginOptions.Default;
 
     /// <inheritdoc />
-    public string Id => "media";
+    public string Id => "explorer";
 
     /// <inheritdoc />
     public IReadOnlyList<string> SupportedEditorIds => [RichTextEditorPlugin.EditorId];
@@ -38,10 +38,10 @@ public sealed class MediaPlugin(
                 [
                     new FormaToolbarCommand
                     {
-                        Id = "media-insert",
-                        Title = "Insert Image",
-                        Icon = Glyph.Image,
-                        Command = InsertMediaCommand,
+                        Id = "explorer-browse",
+                        Title = "Browse Files",
+                        Icon = Glyph.Folder,
+                        Command = BrowseCommand,
                     },
                 ],
             },
@@ -67,9 +67,9 @@ public sealed class MediaPlugin(
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
         ArgumentNullException.ThrowIfNull(context);
 
-        if (command == InsertMediaCommand)
+        if (command == BrowseCommand)
         {
-            _editor.RequestMediaDialog();
+            _editor.RequestExplorerDialog(Options);
         }
 
         return ValueTask.CompletedTask;

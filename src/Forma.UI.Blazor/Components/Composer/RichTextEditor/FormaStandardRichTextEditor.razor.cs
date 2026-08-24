@@ -36,7 +36,7 @@ public sealed partial class FormaStandardRichTextEditor : InputBase<ComposerDocu
             new ListPlugin(_editorPlugin),
             new AlignmentBidiPlugin(_editorPlugin),
             new LinkPlugin(_editorPlugin),
-            new MediaPlugin(_editorPlugin),
+            new ImagePlugin(_editorPlugin),
             new TablePlugin(_editorPlugin),
             new HorizontalRulePlugin(_editorPlugin),
         ];

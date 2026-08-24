@@ -1,0 +1,50 @@
+@namespace Forma.UI.Blazor.Components.Composer.Dialogs
+@using Forma.UI.Blazor.Components.Feedback
+@using Forma.UI.Blazor.Components.Files
+
+<FormaModal Opened="Opened"
+            Title="@L["Attach Files"]"
+            Size="ModalSize.Medium"
+            Options="StayOpenOnConfirm"
+            OnClose="HandleCancelAsync"
+            OnConfirm="HandleConfirmAsync"
+            ConfirmText="@L["Done"]"
+            CancelText="@L["Cancel"]">
+    <Body>
+        <div class="forma-composer-dialog-form">
+            @if (_store is null)
+            {
+                <p class="forma-composer-dialog-notice" role="status">@L["Files cannot be attached, because this application registered nowhere to keep them."]</p>
+            }
+            else
+            {
+                <FormaFilePicker Accept="@Options.Accept"
+                                 MaxFileSize="Options.MaxFileSize"
+                                 MaxSelectedFiles="Options.MaxFiles"
+                                 AllowMultipleFiles="@(Options.MaxFiles != 1)"
+                                 OnFilesSelected="HandleFilesSelectedAsync"
+                                 OnFilesRejected="HandleFilesRejected" />
+
+                @if (_files.Count > 0)
+                {
+                    <FormaFileUploader @ref="_uploader"
+                                       Files="_files"
+                                       Store="_store"
+                                       Options="UploaderOptions"
+                                       OnCompleted="HandleCompleted"
+                                       OnFailed="HandleFailed" />
+                }
+
+                @if (_rejected.Count > 0)
+                {
+                    <ul class="forma-composer-dialog-error" role="alert">
+                        @foreach (var rejection in _rejected)
+                        {
+                            <li>@rejection</li>
+                        }
+                    </ul>
+                }
+            }
+        </div>
+    </Body>
+</FormaModal>

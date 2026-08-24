@@ -12,6 +12,9 @@ public sealed partial class FormaExplorerToolbar : ComponentBase
     /// <summary>Whether the explorer is in selection mode.</summary>
     [Parameter] public bool IsSelectMode { get; set; }
 
+    /// <summary>Whether selection mode can be turned off, which a caller that opened purely to choose does not offer.</summary>
+    [Parameter] public bool CanLeaveSelectMode { get; set; } = true;
+
     /// <summary>Raised when selection mode is toggled.</summary>
     [Parameter] public EventCallback OnToggleSelectMode { get; set; }
 

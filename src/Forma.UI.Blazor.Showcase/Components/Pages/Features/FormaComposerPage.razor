@@ -112,6 +112,22 @@
     </div>
 </div>
 
+<div class="demo-section">
+    <h2>@L["Images and Stored Pictures"]</h2>
+    <p class="description">@L["Insert Image takes an address and nothing else. Browse Files opens the stored library beside it, limited here to pictures, and renders whichever one is chosen where the caret sits."]</p>
+    <div class="demo-box">
+        <FormaComposer @bind-Value="_imagesOnlyDoc" Plugins="_imagesOnlyPlugins" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Any File, Browsed or Attached"]</h2>
+    <p class="description">@L["Browse Files lists every stored file here rather than pictures alone, inserting what the browser can render together with a link to it, and everything else as a link. Attach Files uploads from this device instead, and what arrives is carried beside the document the way an email carries its attachments."]</p>
+    <div class="demo-box">
+        <FormaComposer @bind-Value="_anyFileDoc" Plugins="_anyFilePlugins" />
+    </div>
+</div>
+
 @code {
     private readonly SourceEditorPlugin _sourceOnlyPlugin = new();
     private readonly SourceEditorPlugin _everythingSourcePlugin = new();
@@ -129,6 +145,8 @@
     private ComposerDocument _pluginDoc = new(ComposerDocumentFormat.PlainText, "pear\n\nApple\n\nbanana");
     private ComposerDocument _viewDoc = new(ComposerDocumentFormat.Html, "<p>Press <strong>Preview</strong> to read this as rendered output, or <strong>Maximize</strong> to fill the viewport.</p>");
     private ComposerDocument _everyPluginDoc = new(ComposerDocumentFormat.Html, "<p>Every rich text plugin the library ships is registered here.</p>");
+    private ComposerDocument _imagesOnlyDoc = new(ComposerDocumentFormat.Html, "<p>Insert an image by address, or browse the pictures already stored.</p>");
+    private ComposerDocument _anyFileDoc = new(ComposerDocumentFormat.Html, "<p>Browse any stored file, or attach one from this device.</p>");
     private readonly FormaComposerOptions _noToolbarOptions = new() { ShowToolbar = false };
     private readonly FormaComposerOptions _fixedHeightOptions = new() { IsResizable = false };
     private IReadOnlyList<IComposerPlugin> _statusPlugins = [];
@@ -136,6 +154,8 @@
     private IReadOnlyList<IComposerPlugin> _demoPlugins = [];
     private IReadOnlyList<IComposerPlugin> _viewPlugins = [];
     private IReadOnlyList<IComposerPlugin> _everyRichTextPlugin = [];
+    private IReadOnlyList<IComposerPlugin> _imagesOnlyPlugins = [];
+    private IReadOnlyList<IComposerPlugin> _anyFilePlugins = [];
 
     protected override void OnInitialized()
     {
@@ -154,7 +174,7 @@
             new ListPlugin(richText),
             new AlignmentBidiPlugin(richText),
             new LinkPlugin(richText),
-            new MediaPlugin(richText),
+            new ImagePlugin(richText),
             new VideoPlugin(richText),
             new EmbedPlugin(richText),
             new TablePlugin(richText),
@@ -165,6 +185,29 @@
             new ClipboardPlugin(richText),
             new MaximizePlugin(),
             new PreviewPlugin(),
+        ];
+
+        var richFiles = new RichTextEditorPlugin();
+        _imagesOnlyPlugins =
+        [
+            richFiles,
+            new BasicFormattingPlugin(richFiles),
+            new ImagePlugin(richFiles),
+            new ExplorerPlugin(richFiles, new ExplorerPluginOptions
+            {
+                AcceptedResourceKinds = "contentType:image",
+                AcceptedUploadKinds = "globs:*.png;*.jpg;*.svg",
+                InsertMode = MediaInsertMode.Embed,
+            }),
+        ];
+
+        var richAnything = new RichTextEditorPlugin();
+        _anyFilePlugins =
+        [
+            richAnything,
+            new BasicFormattingPlugin(richAnything),
+            new ExplorerPlugin(richAnything, new ExplorerPluginOptions { AllowUpload = false, InsertMode = MediaInsertMode.Both }),
+            new FileUploadPlugin(new FileUploadPluginOptions { MaxFileSize = 5 * 1024 * 1024 }),
         ];
     }
 }

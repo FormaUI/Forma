@@ -70,7 +70,7 @@ The composer's contracts do **not** live in `Forma.UI.Features.Abstractions`. A 
 
 | Project | Namespace | References |
 |---|---|---|
-| `Forma.UI.Features.Composer.Abstractions` | `Forma.UI.Features.Composer` | `Forma.UI.Style` |
+| `Forma.UI.Features.Composer.Abstractions` | `Forma.UI.Features.Composer` | `Forma.UI.Style`, `Forma.Framework.Resources.Abstractions` |
 | `Forma.UI.Features.Composer` | `Forma.UI.Features.Composer` | `Forma.UI.Features.Composer.Abstractions` |
 | `Forma.UI.Features.Composer.Markdown` | `Forma.UI.Features.Composer.Markdown` | `.Abstractions` + Markdig |
 | `Forma.UI.Features.Composer.TextMate` | `Forma.UI.Features.Composer.TextMate` | `.Abstractions` + TextMateSharp |
@@ -420,8 +420,8 @@ That also settles a naming worry this document carried earlier: `PageDesignerPlu
 | `ListPlugin` | Bulleted, numbered, task list with live checkboxes, indent, outdent | NumberedList, BulletedList |
 | `AlignmentBidiPlugin` | Align start/center/end/justify, direction LTR/RTL | Justify*, BidiRtl, BidiLtr |
 | `LinkPlugin` | Link, unlink, anchor, auto-linking | Link, Unlink, Anchor |
-| `MediaPlugin` | Stored media through `FormaExplorer`; uploads through `FormaFilePicker` + `FormaFileUploader`; alt text, caption, alignment | `imagelibrary`, Image |
-| `VideoPlugin` | Embeds rendered by `FormaVideoPlayer` | `youtube` |
+| `ImagePlugin` | Stored media through `FormaExplorer`, which carries `FormaFilePicker` + `FormaFileUploader` in its own toolbar; alt text and caption | `imagelibrary`, Image |
+| `VideoPlugin` | A placeholder the host resolves through `FormaVideoPlayer`, since the sanitizer discards an `iframe` | `youtube` |
 | `TablePlugin` | Insert grid, row/column add and remove, header toggle, delete | Table, tabletools |
 | `HorizontalRulePlugin` | Thematic break | HorizontalRule |
 | `EmojiPlugin` | Emoji picker with search | `smiley` (image sprites → Unicode) |
@@ -448,7 +448,7 @@ Both commands are also registered as **engine** commands (`ComposerCommands.Maxi
 
 ### 4.4 Plugin options
 
-Options follow the repository's existing convention — a `sealed record` with `init` properties and a `Default`, per plugin, named for it: `TypographyPluginOptions` chooses which sizes and families are offered, `TablePluginOptions` caps dimensions, `MediaPluginOptions` gates upload against library-only. A plugin with a single flag keeps a plain property instead.
+Options follow the repository's existing convention — a `sealed record` with `init` properties and a `Default`, per plugin, named for it: `TypographyPluginOptions` chooses which sizes and families are offered, `TablePluginOptions` caps dimensions, `ImagePluginOptions` gates upload against library-only. A plugin with a single flag keeps a plain property instead.
 
 ### 4.5 Presets are components, not subclasses
 
@@ -457,7 +457,7 @@ Three components differing only in which plugins they register, each with its ow
 | Component | Plugin set | Replaces |
 |---|---|---|
 | `FormaComposer` | Everything registered | Coi `Website` |
-| `FormaStandardRichTextEditor` | Formatting, typography, paragraph, lists, alignment/bidi, link, media, table, horizontal rule | Coi `Basic` |
+| `FormaStandardRichTextEditor` | Formatting, typography, paragraph, lists, alignment/bidi, link, image, table, horizontal rule | Coi `Basic` |
 | `FormaCompactRichTextEditor` | Formatting, alignment/bidi, link, font and size only | Coi `Mini` |
 
 The two presets live in `RichTextEditor/` beside the editor they present, not at the category root: each is a rich text surface with a narrower plugin set, so they belong with `FormaRichTextEditor` rather than with the engine. `FormaComposer` stays at the root because it is the engine, and it presents whatever is registered rather than any one editor.
@@ -659,7 +659,7 @@ src/Forma.UI.Blazor/Components/Composer/
 │   ├── FormaComposerLinkDialog.razor
 │   ├── FormaComposerTableDialog.razor
 │   ├── FormaComposerVideoDialog.razor
-│   ├── FormaComposerMediaDialog.razor
+│   ├── FormaComposerImageDialog.razor
 │   └── FormaComposerEmbedDialog.razor
 │
 ├── Plugins/                                # namespace …Composer.Plugins — apply to any editor
@@ -684,7 +684,7 @@ src/Forma.UI.Blazor/Components/Composer/
 │       ├── ListPlugin.cs
 │       ├── AlignmentBidiPlugin.cs
 │       ├── LinkPlugin.cs
-│       ├── MediaPlugin.cs
+│       ├── ImagePlugin.cs
 │       ├── VideoPlugin.cs
 │       ├── TablePlugin.cs
 │       ├── HorizontalRulePlugin.cs
@@ -755,7 +755,7 @@ Each phase ends buildable, tested and reviewable.
 2a. **Regions.** ◐ The status strip of §3.8 is built: `IComposerRegionRegistry` pushes `IComposerStatusItem` handles that any plugin creates and disposes, cascaded on `ComposerContext.Regions` so no editor is a special case. `FormaComposerStatusStrip` renders it once per composer, beneath whichever surface is active. The gutter's contract (`IComposerGutterMarker`) is built and tested the same way; its visual rendering waits on a line-oriented surface, since pixel-aligning a marker beside a wrapping `<textarea>` needs font-metric mirroring that would itself become a one-off hack rather than a real capability.
 3. **Rich text editor and core formatting.** ✅ `RichTextEditorPlugin`, the canvas, the bubble menu, and the formatting, typography, paragraph, list and alignment/bidi plugins.
 4. **Markdown and code editors.** `MarkdownEditorPlugin`, `CodeEditorPlugin`, `Forma.UI.Features.Composer.Markdown`, the lossless-only HTML → Markdown guard, and the embedded Markdown and code blocks.
-5. **Media, tables and embeds.** ✅ Link, media, video, table, horizontal rule, emoji, special character, clipboard, template and embed plugins, each contributing a toolbar entry and driving the canvas through the rich text surface; the five data-collecting dialogs sit in `Composer/Dialogs/` rather than under the editor, because nothing in them is contenteditable-specific. Preview and maximize landed as **engine** commands on `FormaComposer` (§4.3a) rather than rich text plugins, since both change chrome the engine owns rather than the document any one editor holds.
+5. **Media, tables and embeds.** ✅ Link, image, video, table, horizontal rule, emoji, special character, clipboard, template and embed plugins, each contributing a toolbar entry and driving the canvas through the rich text surface; the five data-collecting dialogs sit in `Composer/Dialogs/` rather than under the editor, because nothing in them is contenteditable-specific. `ImagePlugin` chooses from stored media through an embedded `FormaExplorer`, opened already selecting and gated by `ImagePluginOptions`, falling back to an address alone when the host registered no `IExplorerResourcesProvider` or `IFileStore`. `VideoPlugin` stores a placeholder rather than an embed, because `iframe` is discarded by the sanitizer, and the dialog refuses an address the document could not keep. Preview and maximize landed as **engine** commands on `FormaComposer` (§4.3a) rather than rich text plugins, since both change chrome the engine owns rather than the document any one editor holds.
 6. **Satellite capabilities.** `Forma.UI.Features.Composer.TextMate`, `.KaTeX`, `.HtmlSanitizer`, and the highlighting and math plugins that consume them.
 7. **Page designer.** `PageDesignerPlugin`, the palette, canvas, per-widget chrome and settings panel, `IComposerDesignerPlugin` with the built-in palette, `ComposerWidgetTree` with its renderer, pointer-based drag with a keyboard equivalent, and the text widget hosting `FormaRichTextEditor`. It lands last because it composes everything above it — a designer without a working rich text editor inside its text widget is not the component Coi had.
 8. **Accessibility, touch, direction, tests and Showcase.** §8 verified in a real browser, `he` and `es-419` checked, bUnit tests under `tests/Forma.UI.Blazor.Tests/Components/Composer/` mirroring the source tree, and a Showcase page at `/composer` rendering every state each plugin can enter.

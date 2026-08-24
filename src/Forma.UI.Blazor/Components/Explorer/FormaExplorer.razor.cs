@@ -455,6 +455,9 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable
         _syncedSortField = SortField;
         _syncedSortDirection = SortDirection;
 
+        // Seeded once, so leaving selection mode afterwards is the reader's to decide.
+        _context.Selection.IsSelectMode = Options.SelectOnOpen;
+
         SyncContext();
     }
 

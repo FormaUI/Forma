@@ -9,6 +9,9 @@ public sealed record FormaExplorerOptions
     /// <summary>Whether the explorer is presented as dialog content, without a frame of its own.</summary>
     public bool AsDialog { get; init; }
 
+    /// <summary>Whether the explorer opens already selecting, so a caller whose whole purpose is choosing needs no first press of Select.</summary>
+    public bool SelectOnOpen { get; init; }
+
     /// <summary>Whether the reader can resize the explorer.</summary>
     public bool Resizable { get; init; }
 

@@ -14,4 +14,7 @@ public static class ComposerCommands
 
     /// <summary>Toggles a read-only rendered preview of the document.</summary>
     public const string Preview = "view.preview";
+
+    /// <summary>Opens the dialog that uploads files and attaches them to the document.</summary>
+    public const string Attach = "attachment.upload";
 }

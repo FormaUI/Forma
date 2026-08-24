@@ -376,21 +376,78 @@ public sealed class RichTextPluginTests
     }
 
     [Fact]
-    public async Task MediaPlugin_should_dispatch_media_request()
+    public async Task ImagePlugin_should_dispatch_image_request()
     {
         // Arrange
         var editor = new RichTextEditorPlugin();
-        var plugin = new MediaPlugin(editor);
+        var plugin = new ImagePlugin(editor);
         var context = CreateContext();
-        var mediaDialogRequested = false;
-        editor.MediaDialogRequested += () => mediaDialogRequested = true;
+        var requested = false;
+        editor.ImageDialogRequested += () => requested = true;
 
         // Act
-        await plugin.ExecuteAsync(MediaPlugin.InsertMediaCommand, context, TestContext.Current.CancellationToken);
+        await plugin.ExecuteAsync(ImagePlugin.InsertImageCommand, context, TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.True(mediaDialogRequested);
-        Assert.Equal("media", plugin.Id);
+        Assert.True(requested);
+        Assert.Equal("image", plugin.Id);
+    }
+
+    [Fact]
+    public async Task ExplorerPlugin_should_dispatch_browse_request()
+    {
+        // Arrange
+        var editor = new RichTextEditorPlugin();
+        var plugin = new ExplorerPlugin(editor);
+        var context = CreateContext();
+        ExplorerPluginOptions? requestedOptions = null;
+        editor.ExplorerDialogRequested += options => requestedOptions = options;
+
+        // Act
+        await plugin.ExecuteAsync(ExplorerPlugin.BrowseCommand, context, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Same(plugin.Options, requestedOptions);
+        Assert.Equal("explorer", plugin.Id);
+    }
+
+    [Fact]
+    public async Task ExplorerPlugin_should_carry_the_limits_the_host_set()
+    {
+        // Arrange
+        var editor = new RichTextEditorPlugin();
+        var plugin = new ExplorerPlugin(editor, new ExplorerPluginOptions
+        {
+            AcceptedResourceKinds = "contentType:image",
+            AcceptedUploadKinds = "globs:*.png",
+            AllowUpload = false,
+            InsertMode = MediaInsertMode.Both,
+        });
+        var context = CreateContext();
+        ExplorerPluginOptions? requestedOptions = null;
+        editor.ExplorerDialogRequested += options => requestedOptions = options;
+
+        // Act
+        await plugin.ExecuteAsync(ExplorerPlugin.BrowseCommand, context, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.NotNull(requestedOptions);
+        Assert.Equal("contentType:image", requestedOptions.AcceptedResourceKinds);
+        Assert.Equal("globs:*.png", requestedOptions.AcceptedUploadKinds);
+        Assert.False(requestedOptions.AllowUpload);
+        Assert.Equal(MediaInsertMode.Both, requestedOptions.InsertMode);
+    }
+
+    [Fact]
+    public void ExplorerPlugin_should_default_to_embedding_everything_it_can()
+    {
+        // Arrange & Act
+        var plugin = new ExplorerPlugin(new RichTextEditorPlugin());
+
+        // Assert
+        Assert.Null(plugin.Options.AcceptedResourceKinds);
+        Assert.True(plugin.Options.AllowUpload);
+        Assert.Equal(MediaInsertMode.Embed, plugin.Options.InsertMode);
     }
 
     [Fact]

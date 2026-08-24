@@ -78,8 +78,10 @@ public sealed partial class FormaModal : IAsyncDisposable
 
         if (Opened && !_isOpen)
         {
-            _isOpen = true;
-            await _modal.OpenAsync(Options.CloseOnBackdropClick);
+            // Content that renders again while the attach round-trip is still in flight brings a
+            // second pass through here, and a call made before the module answered never ran. Only
+            // a call that did run counts as open, so the pass that follows it opens the dialog.
+            _isOpen = await _modal.OpenAsync(Options.CloseOnBackdropClick);
         }
         else if (!Opened && _isOpen)
         {

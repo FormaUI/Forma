@@ -24,31 +24,37 @@
 
             <div class="forma-explorer-selection-status">
                 <span class="forma-explorer-selection-label">@L["{SelectedCount} selected", SelectedCount]</span>
-                <FormaCloseButton class="forma-explorer-exit-select-button"
-                                  Label="@L["Leave Selection Mode"]"
-                                  OnClick="OnToggleSelectMode" />
+                @if (CanLeaveSelectMode)
+                {
+                    <FormaCloseButton class="forma-explorer-exit-select-button"
+                                      Label="@L["Leave Selection Mode"]"
+                                      OnClick="OnToggleSelectMode" />
+                }
             </div>
         </div>
     }
     else
     {
     <div class="forma-explorer-toolbar-left">
-        <FormaButton Variant="@(IsSelectMode ? ButtonVariant.Primary : ButtonVariant.Ghost)"
-                     Size="ButtonSize.Mini"
-                     class="forma-explorer-select-mode-button"
-                     aria-pressed="@(IsSelectMode ? "true" : "false")"
-                     OnClick="OnToggleSelectMode">
-            @if (IsSelectMode)
-            {
-                <FormaGlyph Name="Glyph.Xmark" />
-                @L["Cancel"]
-            }
-            else
-            {
-                <FormaGlyph Name="Glyph.SquareCheck" />
-                @L["Select"]
-            }
-        </FormaButton>
+        @if (CanLeaveSelectMode)
+        {
+            <FormaButton Variant="@(IsSelectMode ? ButtonVariant.Primary : ButtonVariant.Ghost)"
+                         Size="ButtonSize.Mini"
+                         class="forma-explorer-select-mode-button"
+                         aria-pressed="@(IsSelectMode ? "true" : "false")"
+                         OnClick="OnToggleSelectMode">
+                @if (IsSelectMode)
+                {
+                    <FormaGlyph Name="Glyph.Xmark" />
+                    @L["Cancel"]
+                }
+                else
+                {
+                    <FormaGlyph Name="Glyph.SquareCheck" />
+                    @L["Select"]
+                }
+            </FormaButton>
+        }
         @if (FileOptions.AllowFolderCreate && ShowNewFolder)
         {
             <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-explorer-new-folder-button" OnClick="OnFolderCreate">
