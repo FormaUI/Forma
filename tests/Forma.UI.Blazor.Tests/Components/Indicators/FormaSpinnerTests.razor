@@ -1,0 +1,91 @@
+@inherits BunitContext
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_announce_itself_through_a_status_role()
+        {
+            // Arrange
+            using var ctx = new FormaSpinnerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSpinner Label="Loading" />);
+
+            // Assert
+            Assert.Equal("status", cut.Find(".forma-spinner").GetAttribute("role"));
+        }
+
+        [Fact]
+        public void Should_hide_the_ring_from_assistive_technology()
+        {
+            // Arrange
+            using var ctx = new FormaSpinnerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSpinner Label="Loading" />);
+
+            // Assert
+            Assert.Equal("true", cut.Find(".forma-spinner-ring").GetAttribute("aria-hidden"));
+        }
+
+        [Fact]
+        public void Should_keep_the_label_in_the_accessibility_tree_even_when_visually_hidden()
+        {
+            // Arrange
+            using var ctx = new FormaSpinnerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSpinner Label="Loading emoji" />);
+
+            // Assert
+            var label = cut.Find(".forma-spinner-label");
+            Assert.Equal("Loading emoji", label.TextContent);
+            Assert.Contains("forma-spinner-visually-hidden", label.ClassList);
+        }
+
+        [Fact]
+        public void Should_show_the_label_visibly_when_requested()
+        {
+            // Arrange
+            using var ctx = new FormaSpinnerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSpinner Label="Loading" ShowLabel="true" />);
+
+            // Assert
+            Assert.DoesNotContain("forma-spinner-visually-hidden", cut.Find(".forma-spinner-label").ClassList);
+        }
+
+        [Theory]
+        [InlineData(SpinnerSize.Small, "forma-spinner-small")]
+        [InlineData(SpinnerSize.Medium, "forma-spinner-medium")]
+        [InlineData(SpinnerSize.Large, "forma-spinner-large")]
+        public void Should_apply_the_requested_size(SpinnerSize size, string expectedClass)
+        {
+            // Arrange
+            using var ctx = new FormaSpinnerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSpinner Label="Loading" Size="size" />);
+
+            // Assert
+            Assert.Contains(expectedClass, cut.Find(".forma-spinner").ClassList);
+        }
+
+        [Fact]
+        public void Should_apply_the_supplied_id_and_class()
+        {
+            // Arrange
+            using var ctx = new FormaSpinnerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaSpinner Label="Loading" Id="spinner" Class="extra" />);
+
+            // Assert
+            var root = cut.Find(".forma-spinner");
+            Assert.Equal("spinner", root.GetAttribute("id"));
+            Assert.Contains("extra", root.GetAttribute("class"));
+        }
+    }
+}

@@ -77,6 +77,20 @@
     gap: 0.125rem;
 }
 
+.forma-emoji-picker-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    block-size: 8rem;
+}
+
+.forma-emoji-picker-sentinel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-block: 0.75rem;
+}
+
 .forma-emoji-picker-emoji {
     display: inline-flex;
     align-items: center;

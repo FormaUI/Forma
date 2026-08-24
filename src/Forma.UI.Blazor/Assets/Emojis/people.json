@@ -1,6 +1,7 @@
 {
   "version": "15.1",
   "group": "people",
+  "chunkSize": 60,
   "emoji": [
     {
       "c": "👋",

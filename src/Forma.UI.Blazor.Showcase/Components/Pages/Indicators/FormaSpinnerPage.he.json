@@ -1,0 +1,14 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "An indeterminate ring announcing that something is loading. Its Label is the accessible name and is required, since no default text can say what the caller is waiting for.": "טבעת בלתי קצובה המכריזה שמשהו נטען. ה-Label שלה הוא השם הנגיש והוא חובה, מכיוון שאין טקסט ברירת מחדל שיכול לומר למה ממתינים.",
+  "Default": "ברירת מחדל",
+  "The label stays in the accessibility tree even though only the ring is visible.": "התווית נשארת בעץ הנגישות למרות שרק הטבעת נראית.",
+  "Loading": "טוען",
+  "Sizes": "גדלים",
+  "Visible Label": "תווית גלויה",
+  "ShowLabel renders the accessible name as text beside the ring, for a surface with nothing else explaining the wait.": "ShowLabel מציג את השם הנגיש כטקסט לצד הטבעת, עבור משטח שאינו מסביר את ההמתנה בדרך אחרת.",
+  "Loading results": "טוען תוצאות",
+  "In a Grid Cell": "בתא רשת",
+  "A small spinner standing in for content that has not arrived yet, such as one image in a gallery.": "מחוון קטן המייצג תוכן שטרם הגיע, כגון תמונה אחת בגלריה.",
+  "Loading image": "טוען תמונה"
+}

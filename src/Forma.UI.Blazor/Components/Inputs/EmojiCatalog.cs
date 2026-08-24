@@ -102,10 +102,11 @@ public static class EmojiCatalog
 
         return
         [
-            .. raw.Emoji.Select(entry => new Emoji
+            .. raw.Emoji.Select((entry, position) => new Emoji
             {
                 Character = entry.C,
                 SpriteId = entry.S,
+                ChunkIndex = position / raw.ChunkSize,
                 Name = entry.N,
                 Keywords = entry.K,
                 GroupId = groupId,
@@ -118,6 +119,7 @@ public static class EmojiCatalog
 internal sealed record RawCatalogue(
     [property: JsonPropertyName("version")] string Version,
     [property: JsonPropertyName("group")] string Group,
+    [property: JsonPropertyName("chunkSize")] int ChunkSize,
     [property: JsonPropertyName("emoji")] IReadOnlyList<RawEmoji> Emoji);
 
 /// <summary>One catalogue entry as scripts/fetch-emoji.ps1 writes it.</summary>

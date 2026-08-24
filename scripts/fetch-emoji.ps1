@@ -148,37 +148,46 @@ foreach ($folder in @($catalogueFolder, $spriteFolder)) {
     }
 }
 
-# One catalogue and one sprite per category, so the picker reads only the category it is showing.
+# One catalogue per category, and a sprite per chunk of it, so scrolling fetches only what it reaches.
+$chunkSize = 60
 $spriteSizes = [ordered]@{}
 $catalogueSizes = [ordered]@{}
+$chunkCounts = [ordered]@{}
 
 foreach ($groupId in $groupIds.Values) {
     $members = @($entries | Where-Object { $_.g -eq $groupId })
-    $symbols = [System.Text.StringBuilder]::new()
+    $chunkCount = [math]::Ceiling($members.Count / $chunkSize)
+    $chunkCounts[$groupId] = $chunkCount
+    $spriteSizes[$groupId] = 0
 
-    foreach ($entry in $members) {
-        $markup = $drawings[$entry.s]
-        $viewBox = [regex]::Match($markup, 'viewBox="([^"]+)"').Groups[1].Value
-        $inner = [regex]::Match($markup, '(?s)<svg[^>]*>(.*)</svg>').Groups[1].Value.Trim()
+    for ($chunk = 0; $chunk -lt $chunkCount; $chunk++) {
+        $symbols = [System.Text.StringBuilder]::new()
 
-        # A sprite shares one document, so gradient and clip ids have to be unique across all of it.
-        foreach ($id in ([regex]::Matches($inner, '\sid="([^"]+)"') | ForEach-Object { $_.Groups[1].Value })) {
-            $escaped = [regex]::Escape($id)
-            $inner = $inner -replace "(\s(?:xlink:)?href=`"#|url\(#|\sid=`")$escaped\b", "`${1}$($entry.s)-$id"
+        foreach ($entry in ($members | Select-Object -Skip ($chunk * $chunkSize) -First $chunkSize)) {
+            $markup = $drawings[$entry.s]
+            $viewBox = [regex]::Match($markup, 'viewBox="([^"]+)"').Groups[1].Value
+            $inner = [regex]::Match($markup, '(?s)<svg[^>]*>(.*)</svg>').Groups[1].Value.Trim()
+
+            # A sprite shares one document, so gradient and clip ids have to be unique across all of it.
+            foreach ($id in ([regex]::Matches($inner, '\sid="([^"]+)"') | ForEach-Object { $_.Groups[1].Value })) {
+                $escaped = [regex]::Escape($id)
+                $inner = $inner -replace "(\s(?:xlink:)?href=`"#|url\(#|\sid=`")$escaped\b", "`${1}$($entry.s)-$id"
+            }
+
+            [void]$symbols.AppendLine("    <symbol id=`"emoji-$($entry.s)`" viewBox=`"$viewBox`">$inner</symbol>")
         }
 
-        [void]$symbols.AppendLine("    <symbol id=`"emoji-$($entry.s)`" viewBox=`"$viewBox`">$inner</symbol>")
+        $sprite = "<svg xmlns=`"http://www.w3.org/2000/svg`" xmlns:xlink=`"http://www.w3.org/1999/xlink`">`n$($symbols.ToString())</svg>`n"
+        $spriteTarget = Join-Path $spriteFolder "$groupId-$chunk.svg"
+        [System.IO.File]::WriteAllText($spriteTarget, $sprite, $utf8)
+        $spriteSizes[$groupId] += (Get-Item $spriteTarget).Length
     }
 
-    $sprite = "<svg xmlns=`"http://www.w3.org/2000/svg`" xmlns:xlink=`"http://www.w3.org/1999/xlink`">`n$($symbols.ToString())</svg>`n"
-    $spriteTarget = Join-Path $spriteFolder "$groupId.svg"
-    [System.IO.File]::WriteAllText($spriteTarget, $sprite, $utf8)
-    $spriteSizes[$groupId] = (Get-Item $spriteTarget).Length
-
     $catalogue = [PSCustomObject]@{
-        version = $emojiVersion
-        group   = $groupId
-        emoji   = @($members | Select-Object -Property c, s, n, k)
+        version   = $emojiVersion
+        group     = $groupId
+        chunkSize = $chunkSize
+        emoji     = @($members | Select-Object -Property c, s, n, k)
     }
 
     $catalogueTarget = Join-Path $catalogueFolder "$groupId.json"
@@ -187,10 +196,12 @@ foreach ($groupId in $groupIds.Values) {
 }
 
 Write-Host ''
-Write-Host ("Wrote {0} emoji across {1} categories" -f $entries.Count, $groupIds.Count)
-Write-Host ('{0,-11} {1,10} {2,10}' -f 'category', 'json', 'sprite')
+Write-Host ("Wrote {0} emoji across {1} categories in chunks of {2}" -f $entries.Count, $groupIds.Count, $chunkSize)
+Write-Host ('{0,-11} {1,8} {2,8} {3,10} {4,10}' -f 'category', 'json', 'chunks', 'sprite', 'per chunk')
 foreach ($groupId in $spriteSizes.Keys) {
-    Write-Host ("  {0,-11} {1,7:N0} KB {2,7:N0} KB" -f $groupId, ($catalogueSizes[$groupId] / 1KB), ($spriteSizes[$groupId] / 1KB))
+    $chunks = $chunkCounts[$groupId]
+    Write-Host ("  {0,-11} {1,5:N0} KB {2,8} {3,7:N0} KB {4,7:N0} KB" -f `
+            $groupId, ($catalogueSizes[$groupId] / 1KB), $chunks, ($spriteSizes[$groupId] / 1KB), ($spriteSizes[$groupId] / $chunks / 1KB))
 }
 Write-Host ("Catalogues in {0}" -f $catalogueFolder)
 Write-Host ("Artwork    in {0}" -f $spriteFolder)

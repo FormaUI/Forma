@@ -50,3 +50,53 @@ export function loadStyle(url) {
         document.head.appendChild(link);
     }));
 }
+
+const SPRITE_TIMEOUT_MS = 15000;
+const SPRITE_HOST_ID = 'forma-sprite-definitions';
+const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+
+function spriteHost() {
+    const existing = document.getElementById(SPRITE_HOST_ID);
+
+    if (existing) {
+        return existing;
+    }
+
+    const host = document.createElementNS(SVG_NAMESPACE, 'svg');
+    host.setAttribute('id', SPRITE_HOST_ID);
+    host.setAttribute('aria-hidden', 'true');
+    host.setAttribute('focusable', 'false');
+    host.style.cssText = 'position:absolute;inline-size:0;block-size:0;overflow:hidden';
+    document.body.appendChild(host);
+
+    return host;
+}
+
+/**
+ * Adopts an SVG sprite's symbols into the document so a local `<use href="#id">` resolves without
+ * another request. A cross-document `<use>` fetches and parses the sprite itself, which lands after
+ * the render that referenced it — this makes the symbols present before anything points at them.
+ */
+export function loadSprite(url, timeoutMs = SPRITE_TIMEOUT_MS) {
+    return once('sprite', url, async () => {
+        const response = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
+
+        if (!response.ok) {
+            throw new Error(url);
+        }
+
+        const parsed = new DOMParser().parseFromString(await response.text(), 'image/svg+xml');
+
+        if (parsed.querySelector('parsererror')) {
+            throw new Error(url);
+        }
+
+        const host = spriteHost();
+
+        for (const symbol of parsed.querySelectorAll('symbol')) {
+            if (!document.getElementById(symbol.id)) {
+                host.appendChild(document.importNode(symbol, true));
+            }
+        }
+    });
+}

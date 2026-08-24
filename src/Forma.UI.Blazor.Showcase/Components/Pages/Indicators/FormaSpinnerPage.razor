@@ -1,0 +1,45 @@
+@page "/spinner"
+@attribute [ShowcasePage("FormaSpinner")]
+@using Forma.UI.Blazor.Components.Indicators
+@inject IStringLocale<FormaSpinnerPage> L
+
+<h1>FormaSpinner</h1>
+<p class="description">@L["An indeterminate ring announcing that something is loading. Its Label is the accessible name and is required, since no default text can say what the caller is waiting for."]</p>
+
+<div class="demo-section">
+    <h2>@L["Default"]</h2>
+    <p class="description">@L["The label stays in the accessibility tree even though only the ring is visible."]</p>
+    <div class="demo-box">
+        <FormaSpinner Label="@L["Loading"]" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Sizes"]</h2>
+    <div class="demo-box" style="display: flex; align-items: center; gap: 16px;">
+        <FormaSpinner Label="@L["Loading"]" Size="SpinnerSize.Small" />
+        <FormaSpinner Label="@L["Loading"]" Size="SpinnerSize.Medium" />
+        <FormaSpinner Label="@L["Loading"]" Size="SpinnerSize.Large" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Visible Label"]</h2>
+    <p class="description">@L["ShowLabel renders the accessible name as text beside the ring, for a surface with nothing else explaining the wait."]</p>
+    <div class="demo-box">
+        <FormaSpinner Label="@L["Loading results"]" ShowLabel="true" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["In a Grid Cell"]</h2>
+    <p class="description">@L["A small spinner standing in for content that has not arrived yet, such as one image in a gallery."]</p>
+    <div class="demo-box" style="display: flex; gap: 8px;">
+        @for (var i = 0; i < 6; i++)
+        {
+            <div style="display: flex; align-items: center; justify-content: center; inline-size: 2.5rem; block-size: 2.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                <FormaSpinner Label="@L["Loading image"]" Size="SpinnerSize.Small" />
+            </div>
+        }
+    </div>
+</div>

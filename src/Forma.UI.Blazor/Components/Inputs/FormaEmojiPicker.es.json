@@ -14,5 +14,7 @@
   "Symbols": "Símbolos",
   "Flags": "Banderas",
   "No emoji match \"{Query}\".": "Ningún emoji coincide con «{Query}».",
+  "Loading {Category}": "Cargando {Category}",
+  "Loading More Emoji": "Cargando Más Emojis",
   "{Count} emoji found.": "{Count, plural, one {Se encontró # emoji.} other {Se encontraron # emojis.}}"
 }

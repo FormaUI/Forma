@@ -138,4 +138,108 @@ describe('Asset', () => {
             await expect(assets.loadModule('/lib/absent.js')).resolves.toBe(false);
         });
     });
+
+    describe('loadSprite', () => {
+        const sprite = '<svg xmlns="http://www.w3.org/2000/svg">'
+            + '<symbol id="emoji-1f600" viewBox="0 0 36 36"><circle cx="18" cy="18" r="18" /></symbol>'
+            + '<symbol id="emoji-1f603" viewBox="0 0 36 36"><circle cx="18" cy="18" r="18" /></symbol>'
+            + '</svg>';
+
+        const respondWith = markup => global.fetch.mockResolvedValue({ ok: true, text: () => Promise.resolve(markup) });
+
+        beforeEach(() => {
+            global.fetch = vi.fn();
+            document.getElementById('forma-sprite-definitions')?.remove();
+        });
+
+        it('adopts the sprite symbols into the document', async () => {
+            respondWith(sprite);
+
+            await assets.loadSprite('/emojis/smileys.svg');
+
+            expect(document.getElementById('emoji-1f600')).not.toBeNull();
+            expect(document.getElementById('emoji-1f603')).not.toBeNull();
+        });
+
+        it('hides the definitions host from assistive technology and from layout', async () => {
+            respondWith(sprite);
+
+            await assets.loadSprite('/emojis/smileys.svg');
+
+            const host = document.getElementById('forma-sprite-definitions');
+            expect(host.getAttribute('aria-hidden')).toBe('true');
+            expect(host.style.position).toBe('absolute');
+        });
+
+        it('keeps one host however many sprites arrive', async () => {
+            respondWith(sprite);
+            await assets.loadSprite('/emojis/smileys.svg');
+
+            respondWith('<svg xmlns="http://www.w3.org/2000/svg"><symbol id="emoji-1f347" viewBox="0 0 36 36" /></svg>');
+            await assets.loadSprite('/emojis/food.svg');
+
+            expect(document.querySelectorAll('#forma-sprite-definitions')).toHaveLength(1);
+            expect(document.getElementById('emoji-1f347')).not.toBeNull();
+        });
+
+        it('reports success once the symbols are in place', async () => {
+            respondWith(sprite);
+
+            await expect(assets.loadSprite('/emojis/smileys.svg')).resolves.toBe(true);
+        });
+
+        it('reports failure rather than rejecting when the response is not ok', async () => {
+            global.fetch.mockResolvedValue({ ok: false });
+
+            await expect(assets.loadSprite('/emojis/missing.svg')).resolves.toBe(false);
+        });
+
+        it('reports failure rather than rejecting when the request itself fails', async () => {
+            global.fetch.mockRejectedValue(new TypeError('Network error'));
+
+            await expect(assets.loadSprite('/emojis/missing.svg')).resolves.toBe(false);
+        });
+
+        it('reports failure rather than adopting a malformed sprite', async () => {
+            respondWith('<svg><unclosed>');
+
+            await expect(assets.loadSprite('/emojis/broken.svg')).resolves.toBe(false);
+        });
+
+        it('fetches once however many callers ask for the same url', async () => {
+            respondWith(sprite);
+
+            await Promise.all([assets.loadSprite('/emojis/smileys.svg'), assets.loadSprite('/emojis/smileys.svg')]);
+
+            expect(global.fetch).toHaveBeenCalledTimes(1);
+            expect(document.querySelectorAll('#emoji-1f600')).toHaveLength(1);
+        });
+
+        // A stalled connection would otherwise never settle, hanging every later caller on the cached promise.
+        it('abandons a request that never settles', async () => {
+            global.fetch.mockImplementation((_, options) => new Promise((_resolve, reject) => {
+                // Without an abort signal there is nothing to cut this short, so the test times out.
+                options.signal?.addEventListener('abort', () => reject(new DOMException('Aborted', 'TimeoutError')));
+            }));
+
+            await expect(assets.loadSprite('/emojis/stalled.svg', 20)).resolves.toBe(false);
+        }, 1000);
+
+        it('gives the request an abort signal', async () => {
+            respondWith(sprite);
+
+            await assets.loadSprite('/emojis/smileys.svg');
+
+            expect(global.fetch.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal);
+        });
+
+        // A failed load is forgotten, so a later attempt can retry rather than replaying the failure.
+        it('retries after a failure', async () => {
+            global.fetch.mockResolvedValueOnce({ ok: false });
+            await expect(assets.loadSprite('/emojis/flaky.svg')).resolves.toBe(false);
+
+            respondWith(sprite);
+            await expect(assets.loadSprite('/emojis/flaky.svg')).resolves.toBe(true);
+        });
+    });
 });

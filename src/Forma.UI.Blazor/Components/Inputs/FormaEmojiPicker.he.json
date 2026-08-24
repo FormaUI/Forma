@@ -14,5 +14,7 @@
   "Symbols": "סמלים",
   "Flags": "דגלים",
   "No emoji match \"{Query}\".": "אין אמוג'י התואם ל\"{Query}\".",
+  "Loading {Category}": "טוען {Category}",
+  "Loading More Emoji": "טוען עוד אמוג'י",
   "{Count} emoji found.": "{Count, plural, one {נמצא אמוג'י אחד.} two {נמצאו # אמוג'י.} other {נמצאו # אמוג'י.}}"
 }

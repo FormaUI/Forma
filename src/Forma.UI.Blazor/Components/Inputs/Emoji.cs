@@ -6,8 +6,11 @@ public sealed record Emoji
     /// <summary>The emoji character itself.</summary>
     public required string Character { get; init; }
 
-    /// <summary>The hyphenated code points identifying this emoji's symbol within its group's sprite.</summary>
+    /// <summary>The hyphenated code points identifying this emoji's symbol within its sprite.</summary>
     public required string SpriteId { get; init; }
+
+    /// <summary>Which of its category's sprite chunks carries this emoji's symbol.</summary>
+    public required int ChunkIndex { get; init; }
 
     /// <summary>The emoji's English name.</summary>
     public required string Name { get; init; }

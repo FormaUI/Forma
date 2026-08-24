@@ -19,6 +19,10 @@ internal sealed class Asset(IJSRuntime js) : IAsyncDisposable
     public ValueTask<bool> LoadStyleAsync(string url)
         => _module.TryInvokeAsync<bool>("loadStyle", url);
 
+    /// <summary>Adopts an SVG sprite's symbols into the document, reporting whether they arrived.</summary>
+    public ValueTask<bool> LoadSpriteAsync(string url)
+        => _module.TryInvokeAsync<bool>("loadSprite", url);
+
     /// <inheritdoc />
     public ValueTask DisposeAsync()
         => _module.DisposeAsync();

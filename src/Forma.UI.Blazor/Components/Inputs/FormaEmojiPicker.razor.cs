@@ -3,21 +3,33 @@ namespace Forma.UI.Blazor.Components.Inputs;
 using System.Globalization;
 
 using Forma.Framework.Localization;
+using Forma.UI.Blazor.Components.Indicators;
+using Forma.UI.Blazor.Interop.Behaviours;
+using Forma.UI.Blazor.Interop.Operations;
 using Forma.UI.Style.Glyphs;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 
 /// <summary>A categorized emoji palette with search, recently used entries, and a tab per category.</summary>
-public sealed partial class FormaEmojiPicker : ComponentBase
+public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
 {
     /// <summary>The identifier of the tab holding recently chosen emoji.</summary>
     public const string RecentGroupId = "recent";
 
     private readonly string _generatedId = $"emoji-picker-{Guid.NewGuid():N}";
+    private readonly HashSet<string> _loadedChunks = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _loadingChunks = new(StringComparer.Ordinal);
     private string _query = string.Empty;
     private string? _activeGroupId;
     private string _announcement = string.Empty;
+    private Asset? _asset;
+    private InfiniteScroll? _sentinelWatcher;
+    private DotNetObjectReference<FormaEmojiPicker>? _selfRef;
+    private ElementReference _sentinelElement;
+    private ElementReference _panelElement;
+    private bool _isSentinelWatched;
 
     /// <summary>Raised with the chosen emoji character.</summary>
     [Parameter] public EventCallback<string> OnSelect { get; set; }
@@ -51,6 +63,8 @@ public sealed partial class FormaEmojiPicker : ComponentBase
 
     [Inject] private IStringLocale<FormaEmojiPicker> L { get; set; } = default!;
 
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+
     private string CssClass
         => string.IsNullOrWhiteSpace(Class) ? "forma-emoji-picker" : $"forma-emoji-picker {Class}";
 
@@ -77,6 +91,17 @@ public sealed partial class FormaEmojiPicker : ComponentBase
             ? L["Search Results"]
             : Tabs.FirstOrDefault(tab => tab.Id == ActiveGroupId)?.Title ?? string.Empty;
 
+    // The chunks the visible emoji need, in the order they are rendered, so a prefix of this is what has loaded.
+    private IReadOnlyList<string> RequiredChunks
+        => [.. Visible.Select(ChunkKey).Distinct(StringComparer.Ordinal)];
+
+    // Cells stop at the first chunk still missing, so nothing renders ahead of its own artwork.
+    private IReadOnlyList<Emoji> Loadable
+        => [.. Visible.TakeWhile(emoji => _loadedChunks.Contains(ChunkKey(emoji)))];
+
+    private bool HasMoreToLoad
+        => Loadable.Count < Visible.Count;
+
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
@@ -89,11 +114,98 @@ public sealed partial class FormaEmojiPicker : ComponentBase
         }
     }
 
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadNextChunkAsync();
+        }
+
+        await WatchSentinelAsync();
+    }
+
+    /// <summary>Loads the next sprite chunk as the sentinel below the loaded cells comes into view.</summary>
+    [JSInvokable]
+    public async Task HandleReachedAsync()
+        => await LoadNextChunkAsync();
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        if (_sentinelWatcher is not null)
+        {
+            await _sentinelWatcher.DisposeAsync();
+        }
+
+        if (_asset is not null)
+        {
+            await _asset.DisposeAsync();
+        }
+
+        _selfRef?.Dispose();
+    }
+
     private string TabElementId(string groupId)
         => $"{ElementId}-tab-{groupId}";
 
+    // The symbols are adopted into the document, so the reference is local and paints on this render.
     private static string SpriteHref(Emoji emoji)
-        => $"{EmojiCatalog.SpriteBasePath}/{emoji.GroupId}.svg#emoji-{emoji.SpriteId}";
+        => $"#emoji-{emoji.SpriteId}";
+
+    private static string ChunkKey(Emoji emoji)
+        => $"{emoji.GroupId}-{emoji.ChunkIndex}";
+
+    private async Task WatchSentinelAsync()
+    {
+        if (_isSentinelWatched || !HasMoreToLoad)
+        {
+            return;
+        }
+
+        _isSentinelWatched = true;
+        _selfRef ??= DotNetObjectReference.Create(this);
+        _sentinelWatcher ??= new InfiniteScroll(JS);
+        await _sentinelWatcher.AttachAsync(_sentinelElement, _selfRef, _panelElement);
+    }
+
+    private async Task LoadNextChunkAsync()
+    {
+        var next = RequiredChunks.FirstOrDefault(chunk => !_loadedChunks.Contains(chunk));
+
+        if (next is null || !_loadingChunks.Add(next))
+        {
+            return;
+        }
+
+        try
+        {
+            await (_asset ??= new Asset(JS)).LoadSpriteAsync($"{EmojiCatalog.SpriteBasePath}/{next}.svg");
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            // Artwork is decorative, so a chunk that will not load must not take the surface down with it.
+        }
+        finally
+        {
+            // A chunk that failed still counts as settled: empty cells beat a spinner that never clears.
+            _loadingChunks.Remove(next);
+            _loadedChunks.Add(next);
+            StateHasChanged();
+        }
+    }
+
+    private async Task ResetChunkWindowAsync()
+    {
+        if (_sentinelWatcher is not null)
+        {
+            await _sentinelWatcher.DisposeAsync();
+            _sentinelWatcher = null;
+        }
+
+        _isSentinelWatched = false;
+        await LoadNextChunkAsync();
+    }
 
     private IReadOnlyList<Emoji> RecentEmoji()
     {
@@ -109,14 +221,14 @@ public sealed partial class FormaEmojiPicker : ComponentBase
             ? L["{Count} emoji found.", Visible.Count]
             : string.Empty;
 
-        await Task.CompletedTask;
+        await ResetChunkWindowAsync();
     }
 
     private async Task SelectGroupAsync(string groupId)
     {
         _activeGroupId = groupId;
         _query = string.Empty;
-        await Task.CompletedTask;
+        await ResetChunkWindowAsync();
     }
 
     private async Task SelectAsync(Emoji emoji)
