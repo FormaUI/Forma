@@ -32,6 +32,27 @@
     outline: none;
 }
 
+/* Each block resolves its own base direction from its first strong character, so an English
+   paragraph reads left-to-right inside an RTL admin and a Hebrew one right-to-left beside it.
+   Skipping [dir] leaves a direction the author set through the bidi plugin in charge, which
+   plaintext would otherwise override. */
+.forma-composer-rich-text-canvas ::deep p:not([dir]),
+.forma-composer-rich-text-canvas ::deep h1:not([dir]),
+.forma-composer-rich-text-canvas ::deep h2:not([dir]),
+.forma-composer-rich-text-canvas ::deep h3:not([dir]),
+.forma-composer-rich-text-canvas ::deep h4:not([dir]),
+.forma-composer-rich-text-canvas ::deep h5:not([dir]),
+.forma-composer-rich-text-canvas ::deep h6:not([dir]),
+.forma-composer-rich-text-canvas ::deep li:not([dir]),
+.forma-composer-rich-text-canvas ::deep blockquote:not([dir]),
+.forma-composer-rich-text-canvas ::deep pre:not([dir]),
+.forma-composer-rich-text-canvas ::deep td:not([dir]),
+.forma-composer-rich-text-canvas ::deep th:not([dir]),
+.forma-composer-rich-text-canvas ::deep caption:not([dir]),
+.forma-composer-rich-text-canvas ::deep figcaption:not([dir]) {
+    unicode-bidi: plaintext;
+}
+
 .forma-composer-rich-text-canvas ::deep h1,
 .forma-composer-rich-text-canvas ::deep h2,
 .forma-composer-rich-text-canvas ::deep h3,
