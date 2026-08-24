@@ -5,6 +5,7 @@
 @using Forma.UI.Blazor.Components.Composer.PlainTextEditor
 @using Forma.UI.Blazor.Components.Composer.Plugins
 @using Forma.UI.Blazor.Components.Composer.RichTextEditor
+@using Forma.UI.Blazor.Components.Composer.RichTextEditor.Plugins
 @using Forma.UI.Features.Composer.Documents
 @using Forma.UI.Features.Composer.Plugins
 @inject IStringLocale<FormaComposerPage> L
@@ -103,6 +104,14 @@
     </div>
 </div>
 
+<div class="demo-section">
+    <h2>@L["Every Rich Text Plugin"]</h2>
+    <p class="description">@L["The standard preset carries the plugins most documents need. This surface registers every rich text plugin the library ships, including the ones a host opts into: video, embed, template, emoji, special character, and clipboard."]</p>
+    <div class="demo-box">
+        <FormaComposer @bind-Value="_everyPluginDoc" Plugins="_everyRichTextPlugin" />
+    </div>
+</div>
+
 @code {
     private readonly SourceEditorPlugin _sourceOnlyPlugin = new();
     private readonly SourceEditorPlugin _everythingSourcePlugin = new();
@@ -119,12 +128,14 @@
     private ComposerDocument _statusDoc = new(ComposerDocumentFormat.PlainText, "pear\napple\nbanana");
     private ComposerDocument _pluginDoc = new(ComposerDocumentFormat.PlainText, "pear\n\nApple\n\nbanana");
     private ComposerDocument _viewDoc = new(ComposerDocumentFormat.Html, "<p>Press <strong>Preview</strong> to read this as rendered output, or <strong>Maximize</strong> to fill the viewport.</p>");
+    private ComposerDocument _everyPluginDoc = new(ComposerDocumentFormat.Html, "<p>Every rich text plugin the library ships is registered here.</p>");
     private readonly FormaComposerOptions _noToolbarOptions = new() { ShowToolbar = false };
     private readonly FormaComposerOptions _fixedHeightOptions = new() { IsResizable = false };
     private IReadOnlyList<IComposerPlugin> _statusPlugins = [];
     private IReadOnlyList<IComposerPlugin> _sourcePlugins = [];
     private IReadOnlyList<IComposerPlugin> _demoPlugins = [];
     private IReadOnlyList<IComposerPlugin> _viewPlugins = [];
+    private IReadOnlyList<IComposerPlugin> _everyRichTextPlugin = [];
 
     protected override void OnInitialized()
     {
@@ -132,5 +143,28 @@
         _sourcePlugins = [_sourceOnlyPlugin];
         _demoPlugins = [_everythingTextPlugin, _everythingSourcePlugin, new TimestampPlugin(), new CleanupPlugin()];
         _viewPlugins = [new RichTextEditorPlugin(), new MaximizePlugin(), new PreviewPlugin()];
+
+        var richText = new RichTextEditorPlugin();
+        _everyRichTextPlugin =
+        [
+            richText,
+            new ParagraphFormatPlugin(richText),
+            new TypographyPlugin(richText),
+            new BasicFormattingPlugin(richText),
+            new ListPlugin(richText),
+            new AlignmentBidiPlugin(richText),
+            new LinkPlugin(richText),
+            new MediaPlugin(richText),
+            new VideoPlugin(richText),
+            new EmbedPlugin(richText),
+            new TablePlugin(richText),
+            new HorizontalRulePlugin(richText),
+            new TemplatePlugin(richText),
+            new EmojiPlugin(richText),
+            new SpecialCharacterPlugin(richText),
+            new ClipboardPlugin(richText),
+            new MaximizePlugin(),
+            new PreviewPlugin(),
+        ];
     }
 }

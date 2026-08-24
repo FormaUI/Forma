@@ -6,17 +6,20 @@ using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
 using Forma.UI.Style.Glyphs;
 
-/// <summary>Contributes hyperlink and anchor creation, editing, and removal operations to the rich text editor.</summary>
+/// <summary>Contributes hyperlink and anchor creation and removal to the rich text editor.</summary>
 public sealed class LinkPlugin(RichTextEditorPlugin editor) : IComposerPlugin
 {
-    /// <summary>The command opening the insert or edit link dialog.</summary>
-    public const string InsertLinkCommand = "link.insert";
+    /// <summary>The command adding a hyperlink, or removing the one the caret sits in.</summary>
+    public const string ToggleLinkCommand = "link.toggle";
 
-    /// <summary>The command removing the hyperlink from the active selection.</summary>
-    public const string UnlinkCommand = "link.unlink";
+    /// <summary>The command adding a named anchor, or removing the one the caret sits in.</summary>
+    public const string ToggleAnchorCommand = "link.toggle-anchor";
 
-    /// <summary>The command opening the insert anchor dialog.</summary>
-    public const string AnchorCommand = "link.anchor";
+    /// <summary>The active style reported while the caret sits inside a hyperlink.</summary>
+    public const string LinkStyle = "link";
+
+    /// <summary>The active style reported while the caret sits inside a named anchor.</summary>
+    public const string AnchorStyle = "anchor";
 
     private readonly RichTextEditorPlugin _editor = editor;
 
@@ -37,28 +40,25 @@ public sealed class LinkPlugin(RichTextEditorPlugin editor) : IComposerPlugin
                 Title = "Links",
                 Items =
                 [
-                    new FormaToolbarCommand
+                    new FormaToolbarToggle
                     {
-                        Id = "link",
+                        Id = LinkStyle,
                         Title = "Insert Link",
+                        AlternateTitle = "Remove Link",
                         Icon = Glyph.Link,
-                        Command = InsertLinkCommand,
+                        AlternateIcon = Glyph.LinkSlash,
+                        Command = ToggleLinkCommand,
                         ShortcutDisplay = "Ctrl+K",
                         ShortcutAriaKeys = "Control+k",
                     },
-                    new FormaToolbarCommand
+                    new FormaToolbarToggle
                     {
-                        Id = "unlink",
-                        Title = "Remove Link",
-                        Icon = Glyph.Link,
-                        Command = UnlinkCommand,
-                    },
-                    new FormaToolbarCommand
-                    {
-                        Id = "anchor",
+                        Id = AnchorStyle,
                         Title = "Insert Anchor",
-                        Icon = Glyph.LocationCrosshairs,
-                        Command = AnchorCommand,
+                        AlternateTitle = "Remove Anchor",
+                        Icon = Glyph.Anchor,
+                        AlternateIcon = Glyph.AnchorCircleXmark,
+                        Command = ToggleAnchorCommand,
                     },
                 ],
             },
@@ -68,7 +68,7 @@ public sealed class LinkPlugin(RichTextEditorPlugin editor) : IComposerPlugin
     /// <inheritdoc />
     public IReadOnlyList<ComposerKeyBinding> KeyBindings =>
     [
-        new() { Key = "k", Command = InsertLinkCommand, Control = true },
+        new() { Key = "k", Command = ToggleLinkCommand, Control = true },
     ];
 
     /// <inheritdoc />
@@ -89,16 +89,20 @@ public sealed class LinkPlugin(RichTextEditorPlugin editor) : IComposerPlugin
 
         switch (command)
         {
-            case InsertLinkCommand:
+            case ToggleLinkCommand when context.Selection.ActiveStyles.Contains(LinkStyle):
+                _editor.RequestCommand("unlink");
+                break;
+
+            case ToggleLinkCommand:
                 _editor.RequestLinkDialog(isAnchor: false);
                 break;
 
-            case AnchorCommand:
-                _editor.RequestLinkDialog(isAnchor: true);
+            case ToggleAnchorCommand when context.Selection.ActiveStyles.Contains(AnchorStyle):
+                _editor.RequestCommand("removeAnchor");
                 break;
 
-            case UnlinkCommand:
-                _editor.RequestCommand("unlink");
+            case ToggleAnchorCommand:
+                _editor.RequestLinkDialog(isAnchor: true);
                 break;
         }
 

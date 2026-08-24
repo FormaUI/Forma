@@ -10,9 +10,7 @@ public sealed partial class FormaComposerLinkDialog : ComponentBase
     [Inject] private IStringLocale<FormaComposer> L { get; set; } = default!;
 
     private string? _href;
-    private string? _text;
-    private string? _title;
-    private string? _anchorName;
+    private string? _name;
     private bool _openInNewTab;
 
     /// <summary>Whether the dialog is currently visible.</summary>
@@ -39,16 +37,15 @@ public sealed partial class FormaComposerLinkDialog : ComponentBase
         if (Opened)
         {
             _href = InitialHref;
-            _text = InitialText;
 
-            // The selected text names the anchor, so an author marking a heading does not retype it.
-            _anchorName ??= InitialText;
+            // The selected text names the link or anchor, so an author marking a phrase does not retype it.
+            _name ??= InitialText;
         }
     }
 
     private async Task HandleConfirmAsync()
     {
-        if (IsAnchor && string.IsNullOrWhiteSpace(_anchorName))
+        if (IsAnchor && string.IsNullOrWhiteSpace(_name))
         {
             return;
         }
@@ -59,12 +56,10 @@ public sealed partial class FormaComposerLinkDialog : ComponentBase
         }
 
         var result = new LinkDialogResult(
-            _href ?? string.Empty,
-            _text,
-            _title,
-            _openInNewTab,
             IsAnchor,
-            _anchorName);
+            _name ?? string.Empty,
+            _href ?? string.Empty,
+            _openInNewTab);
 
         await OnInsert.InvokeAsync(result);
     }

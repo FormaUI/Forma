@@ -8,6 +8,11 @@ describe('RichTextEditor', () => {
     /** @type {ReturnType<typeof fakeOwner>} */
     let owner;
 
+    function stubClipboard(clipboard) {
+        Object.defineProperty(navigator, 'clipboard', { value: clipboard, configurable: true });
+        return clipboard;
+    }
+
     beforeEach(() => {
         vi.useFakeTimers();
         document.body.innerHTML = '<div id="editor" contenteditable="true"><p>Hello world</p></div>';
@@ -156,6 +161,27 @@ describe('RichTextEditor', () => {
         expect(selection.activeStyles).toContain('text-color:#d32f2f');
     });
 
+    it('reports link and anchor as active styles so the toolbar can offer removal', () => {
+        editor.innerHTML = '<p><a href="https://example.com">Site</a><a id="stage" name="stage">Stage</a></p>';
+        const handle = attach(editor, { owner });
+        const [link, anchor] = editor.querySelectorAll('a');
+        const selected = window.getSelection();
+
+        const linkRange = document.createRange();
+        linkRange.selectNodeContents(link);
+        selected.removeAllRanges();
+        selected.addRange(linkRange);
+
+        expect(handle.exec('bold').selection.activeStyles).toContain('link');
+
+        const anchorRange = document.createRange();
+        anchorRange.selectNodeContents(anchor);
+        selected.removeAllRanges();
+        selected.addRange(anchorRange);
+
+        expect(handle.exec('bold').selection.activeStyles).toContain('anchor');
+    });
+
     it('toggles lead paragraph class', () => {
         const handle = attach(editor, { owner });
 
@@ -196,13 +222,12 @@ describe('RichTextEditor', () => {
         expect(document.execCommand).toHaveBeenCalledWith('insertHorizontalRule', false, null);
     });
 
-    it('inserts link with href, target and title', () => {
+    it('inserts link with href and target', () => {
         const handle = attach(editor, { owner });
 
         handle.exec('createLink', {
             href: 'https://example.com',
-            text: 'Example Site',
-            title: 'Visit Example',
+            name: 'Example Site',
             openInNewTab: true,
         });
 
@@ -210,8 +235,15 @@ describe('RichTextEditor', () => {
         expect(link).not.toBeNull();
         expect(link.getAttribute('href')).toBe('https://example.com');
         expect(link.getAttribute('target')).toBe('_blank');
-        expect(link.getAttribute('title')).toBe('Visit Example');
         expect(link.textContent).toBe('Example Site');
+    });
+
+    it('falls back to the href when no name is supplied', () => {
+        const handle = attach(editor, { owner });
+
+        handle.exec('createLink', { href: 'https://example.com' });
+
+        expect(editor.querySelector('a').textContent).toBe('https://example.com');
     });
 
     it('inserts anchor with id and name', () => {
@@ -219,7 +251,7 @@ describe('RichTextEditor', () => {
 
         handle.exec('createLink', {
             isAnchor: true,
-            anchorName: 'section-1',
+            name: 'section-1',
         });
 
         const anchor = editor.querySelector('a[name="section-1"]');
@@ -237,11 +269,26 @@ describe('RichTextEditor', () => {
         selection.removeAllRanges();
         selection.addRange(range);
 
-        handle.exec('createLink', { isAnchor: true, anchorName: 'stage' });
+        handle.exec('createLink', { isAnchor: true, name: 'stage' });
 
         const anchor = editor.querySelector('a[name="stage"]');
         expect(anchor).not.toBeNull();
         expect(anchor.textContent).toBe('Stage report');
+    });
+
+    it('uses the selected text as the link name when the dialog leaves it blank', () => {
+        editor.innerHTML = '<p>Stage report</p>';
+        const handle = attach(editor, { owner });
+
+        const range = document.createRange();
+        range.selectNodeContents(editor.querySelector('p'));
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        handle.exec('createLink', { href: 'https://example.com' });
+
+        expect(editor.querySelector('a').textContent).toBe('Stage report');
     });
 
     it('reports the saved selection text so a dialog can prefill from it', () => {
@@ -274,11 +321,57 @@ describe('RichTextEditor', () => {
         selection.collapseToEnd();
         document.dispatchEvent(new Event('selectionchange'));
 
-        handle.exec('createLink', { isAnchor: true, anchorName: 'stage' });
+        handle.exec('createLink', { isAnchor: true, name: 'stage' });
 
         const anchor = editor.querySelector('a[name="stage"]');
         expect(anchor).not.toBeNull();
         expect(anchor.textContent).toBe('Stage report');
+    });
+
+    it('removes an anchor while keeping the text it wrapped', () => {
+        editor.innerHTML = '<p><a id="stage" name="stage">Stage report</a></p>';
+        const handle = attach(editor, { owner });
+
+        const range = document.createRange();
+        range.selectNodeContents(editor.querySelector('a'));
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        handle.exec('removeAnchor');
+
+        expect(editor.querySelector('a')).toBeNull();
+        expect(editor.textContent).toBe('Stage report');
+    });
+
+    it('keeps the formatting when pasting from a word processor', async () => {
+        const html = '<p class="MsoNormal" style="mso-layout:none">Word junk <b>Bold bit</b></p>';
+        stubClipboard({
+            read: vi.fn(() => Promise.resolve([{
+                types: ['text/plain', 'text/html'],
+                getType: () => Promise.resolve(new Blob([html], { type: 'text/html' })),
+            }])),
+            readText: vi.fn(() => Promise.resolve('Word junk Bold bit')),
+        });
+        const handle = attach(editor, { owner });
+
+        handle.exec('pasteWord');
+        await vi.waitFor(() => expect(editor.querySelector('b')).not.toBeNull());
+
+        expect(editor.textContent).toContain('Bold bit');
+        expect(editor.innerHTML).not.toContain('mso-');
+        expect(editor.innerHTML).not.toContain('MsoNormal');
+    });
+
+    it('falls back to plain text when the clipboard carries no markup', async () => {
+        const clipboard = stubClipboard({
+            read: vi.fn(() => Promise.resolve([{ types: ['text/plain'], getType: () => Promise.resolve(new Blob([''])) }])),
+            readText: vi.fn(() => Promise.resolve('Plain only')),
+        });
+        const handle = attach(editor, { owner });
+
+        handle.exec('pasteWord');
+        await vi.waitFor(() => expect(clipboard.readText).toHaveBeenCalled());
     });
 
     it('inserts table with rows, columns and header', () => {

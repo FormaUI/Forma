@@ -15,6 +15,12 @@ public enum Glyph
     /// <summary>Stacked lines flush to the end edge, for right alignment.</summary>
     AlignRight,
 
+    /// <summary>A ship's anchor, for a named position in a document.</summary>
+    Anchor,
+
+    /// <summary>A ship's anchor with a crossed circle, for removing a named position.</summary>
+    AnchorCircleXmark,
+
     /// <summary>A downward arrow.</summary>
     ArrowDown,
 
@@ -197,6 +203,9 @@ public enum Glyph
 
     /// <summary>Two joined chain links.</summary>
     Link,
+
+    /// <summary>Two chain links struck through, for removing a link.</summary>
+    LinkSlash,
 
     /// <summary>Lines beside bullets.</summary>
     List,

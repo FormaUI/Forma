@@ -17,5 +17,7 @@
   "Word Count pushes a readout the plugin holds and mutates, shown beneath the canvas until the plugin disposes it. Press it again to take it back.": "ספירת מילים דוחפת נתון שהתוסף מחזיק ומשנה, המוצג מתחת למשטח עד שהתוסף משחרר אותו. הקישו שוב כדי להסיר אותו.",
   "Without Toolbar": "ללא סרגל כלים",
   "View Commands": "פקודות תצוגה",
-  "Preview and Maximize apply to whichever editor is active, so both are engine commands rather than rich text plugins. Press Preview for a read-only rendering of the document, and Maximize to fill the viewport; press either again to return.": "תצוגה מקדימה והגדלה חלות על כל עורך פעיל, ולכן שניהם פקודות מנוע ולא תוספי טקסט עשיר. הקישו תצוגה מקדימה לקבלת תצוגה לקריאה בלבד של המסמך, והגדלה כדי למלא את חלון התצוגה; הקישו שוב על אחד מהם כדי לחזור."
+  "Preview and Maximize apply to whichever editor is active, so both are engine commands rather than rich text plugins. Press Preview for a read-only rendering of the document, and Maximize to fill the viewport; press either again to return.": "תצוגה מקדימה והגדלה חלות על כל עורך פעיל, ולכן שניהם פקודות מנוע ולא תוספי טקסט עשיר. הקישו תצוגה מקדימה לקבלת תצוגה לקריאה בלבד של המסמך, והגדלה כדי למלא את חלון התצוגה; הקישו שוב על אחד מהם כדי לחזור.",
+  "Every Rich Text Plugin": "כל תוספי הטקסט העשיר",
+  "The standard preset carries the plugins most documents need. This surface registers every rich text plugin the library ships, including the ones a host opts into: video, embed, template, emoji, special character, and clipboard.": "הערכה הסטנדרטית כוללת את התוספים שרוב המסמכים זקוקים להם. משטח זה רושם את כל תוספי הטקסט העשיר שהספרייה מספקת, כולל אלה שהמארח בוחר להוסיף: וידאו, הטמעה, תבנית, אמוג'י, תו מיוחד ולוח גזירים."
 }

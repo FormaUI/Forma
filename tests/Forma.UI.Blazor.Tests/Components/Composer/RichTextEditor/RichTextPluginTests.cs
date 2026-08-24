@@ -19,15 +19,19 @@ public sealed class RichTextPluginTests
     private static IEnumerable<FormaToolbarItem> Flatten(FormaToolbarItem item)
         => item is FormaToolbarGroup group ? group.Items.SelectMany(Flatten) : [item];
 
-    private static ComposerContext CreateContext(string html = "<p>Test</p>")
+    private static ComposerContext CreateContext(string html = "<p>Test</p>", params string[] activeStyles)
     {
         var doc = new ComposerDocument(ComposerDocumentFormat.Html, html);
         var history = new ComposerHistory();
         var regions = new ComposerRegionRegistry();
+        var selection = activeStyles.Length == 0
+            ? ComposerSelection.Empty
+            : new ComposerSelection { ActiveStyles = new HashSet<string>(activeStyles, StringComparer.OrdinalIgnoreCase) };
+
         return new ComposerContext(
             "rich-text",
             doc,
-            ComposerSelection.Empty,
+            selection,
             history,
             new DefaultHtmlSanitizer(),
             SharedAssetLoader,
@@ -187,29 +191,61 @@ public sealed class RichTextPluginTests
     }
 
     [Fact]
-    public async Task LinkPlugin_should_dispatch_link_and_anchor_requests()
+    public async Task LinkPlugin_should_open_a_dialog_when_the_caret_is_not_already_on_one()
     {
         // Arrange
         var editor = new RichTextEditorPlugin();
         var plugin = new LinkPlugin(editor);
         var context = CreateContext();
         bool? isAnchorRequested = null;
-        string? requestedCommand = null;
 
         editor.LinkDialogRequested += isAnchor => isAnchorRequested = isAnchor;
+
+        // Act
+        await plugin.ExecuteAsync(LinkPlugin.ToggleLinkCommand, context, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.False(isAnchorRequested);
+
+        // Act
+        await plugin.ExecuteAsync(LinkPlugin.ToggleAnchorCommand, context, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.True(isAnchorRequested);
+        Assert.Equal("link", plugin.Id);
+        Assert.NotEmpty(plugin.KeyBindings);
+    }
+
+    [Fact]
+    public async Task LinkPlugin_should_remove_rather_than_add_when_the_caret_is_already_on_one()
+    {
+        // Arrange
+        var editor = new RichTextEditorPlugin();
+        var plugin = new LinkPlugin(editor);
+        var dialogRequested = false;
+        string? requestedCommand = null;
+
+        editor.LinkDialogRequested += _ => dialogRequested = true;
         editor.CommandRequested += (cmd, _) => requestedCommand = cmd;
 
         // Act
-        await plugin.ExecuteAsync(LinkPlugin.InsertLinkCommand, context, TestContext.Current.CancellationToken);
-        Assert.False(isAnchorRequested);
+        await plugin.ExecuteAsync(
+            LinkPlugin.ToggleLinkCommand,
+            CreateContext(activeStyles: LinkPlugin.LinkStyle),
+            TestContext.Current.CancellationToken);
 
-        await plugin.ExecuteAsync(LinkPlugin.AnchorCommand, context, TestContext.Current.CancellationToken);
-        Assert.True(isAnchorRequested);
-
-        await plugin.ExecuteAsync(LinkPlugin.UnlinkCommand, context, TestContext.Current.CancellationToken);
+        // Assert
         Assert.Equal("unlink", requestedCommand);
-        Assert.Equal("link", plugin.Id);
-        Assert.NotEmpty(plugin.KeyBindings);
+
+        // Act
+        await plugin.ExecuteAsync(
+            LinkPlugin.ToggleAnchorCommand,
+            CreateContext(activeStyles: LinkPlugin.AnchorStyle),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal("removeAnchor", requestedCommand);
+        Assert.False(dialogRequested);
     }
 
     [Fact]

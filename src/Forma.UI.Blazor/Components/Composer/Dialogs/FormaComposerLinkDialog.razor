@@ -14,13 +14,12 @@
             <div class="forma-composer-dialog-form">
                 @if (IsAnchor)
                 {
-                    <FormaTextBox @bind-Value="_anchorName" Label="@L["Anchor Name"]" Required="true" />
+                    <FormaTextBox @bind-Value="_name" Label="@L["Anchor Name"]" Required="true" />
                 }
                 else
                 {
                     <FormaTextBox @bind-Value="_href" Label="@L["URL"]" Required="true" />
-                    <FormaTextBox @bind-Value="_text" Label="@L["Text"]" />
-                    <FormaTextBox @bind-Value="_title" Label="@L["Title"]" />
+                    <FormaTextBox @bind-Value="_name" Label="@L["Name"]" />
                     <div class="forma-composer-dialog-checkbox">
                         <FormaCheckBox Checked="_openInNewTab" CheckedChanged="v => _openInNewTab = v">
                             @L["Open in New Tab"]

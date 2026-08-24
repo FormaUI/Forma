@@ -2,6 +2,8 @@
  * RichTextEditor — visual contenteditable canvas and formatting operations
  */
 
+import { sanitize } from '../operations/Html.js';
+
 export function attach(target, options = {}) {
     return new RichTextEditor(target, options);
 }
@@ -162,7 +164,12 @@ class RichTextEditor {
                 break;
 
             case 'unlink':
+                this.#restoreSelection();
                 document.execCommand('unlink', false, null);
+                break;
+
+            case 'removeAnchor':
+                this.#removeAnchor();
                 break;
 
             case 'selectAll':
@@ -423,6 +430,28 @@ class RichTextEditor {
         return this.#dialogRange ?? this.#savedRange;
     }
 
+    /** The nearest matching ancestor, but only while it stays inside the canvas. */
+    #closestWithin(node, selector) {
+        const found = node?.closest(selector);
+
+        return found && this.#target.contains(found) ? found : null;
+    }
+
+    /** Unwraps the anchor around the caret, keeping whatever text it held. */
+    #removeAnchor() {
+        this.#restoreSelection();
+        const selection = window.getSelection();
+        const node = selection?.anchorNode;
+        const anchor = this.#closestWithin(node?.nodeType === Node.TEXT_NODE ? node.parentElement : node, 'a[name]');
+
+        if (!anchor) {
+            return;
+        }
+
+        anchor.replaceWith(...anchor.childNodes);
+        this.#saveSelection();
+    }
+
     #restoreSelection() {
         const range = this.#dialogRange ?? this.#savedRange;
         this.#dialogRange = null;
@@ -486,17 +515,21 @@ class RichTextEditor {
             return;
         }
 
-        const { href, Href, text, Text, title, Title, openInNewTab, OpenInNewTab, isAnchor, IsAnchor, anchorName, AnchorName } = data;
+        const { name, Name, href, Href, openInNewTab, OpenInNewTab, isAnchor, IsAnchor } = data;
         const effectiveIsAnchor = isAnchor ?? IsAnchor ?? false;
-        const effectiveAnchor = anchorName ?? AnchorName ?? '';
+        const effectiveName = name ?? Name ?? '';
+        const range = this.#peekRange();
+        const selectedText = range && !range.collapsed ? range.toString() : '';
 
-        if (effectiveIsAnchor && effectiveAnchor) {
-            const anchorAttrs = `id="${escapeAttr(effectiveAnchor)}" name="${escapeAttr(effectiveAnchor)}"`;
-            const anchoredRange = this.#peekRange();
-            const anchoredText = anchoredRange && !anchoredRange.collapsed ? anchoredRange.toString() : '';
+        if (effectiveIsAnchor) {
+            if (!effectiveName) {
+                return;
+            }
 
-            this.#insertHtml(anchoredText
-                ? `<a ${anchorAttrs}>${escapeHtml(anchoredText)}</a>`
+            const anchorAttrs = `id="${escapeAttr(effectiveName)}" name="${escapeAttr(effectiveName)}"`;
+
+            this.#insertHtml(selectedText
+                ? `<a ${anchorAttrs}>${escapeHtml(selectedText)}</a>`
                 : `<a ${anchorAttrs}></a>`);
             return;
         }
@@ -506,16 +539,10 @@ class RichTextEditor {
             return;
         }
 
-        const linkRange = this.#peekRange();
-        const selectedText = linkRange && !linkRange.collapsed ? linkRange.toString() : '';
-        const effectiveText = text ?? Text ?? selectedText ?? effectiveHref;
-        const effectiveTitle = title ?? Title ?? '';
-        const effectiveNewTab = openInNewTab ?? OpenInNewTab ?? false;
+        const effectiveText = effectiveName || selectedText || effectiveHref;
+        const targetAttr = (openInNewTab ?? OpenInNewTab ?? false) ? ' target="_blank" rel="noopener noreferrer"' : '';
 
-        const targetAttr = effectiveNewTab ? ' target="_blank" rel="noopener noreferrer"' : '';
-        const titleAttr = effectiveTitle ? ` title="${escapeAttr(effectiveTitle)}"` : '';
-
-        this.#insertHtml(`<a href="${escapeAttr(effectiveHref)}"${targetAttr}${titleAttr}>${escapeHtml(effectiveText)}</a>`);
+        this.#insertHtml(`<a href="${escapeAttr(effectiveHref)}"${targetAttr}>${escapeHtml(effectiveText)}</a>`);
     }
 
     #insertTable(data = {}) {
@@ -741,29 +768,38 @@ class RichTextEditor {
     }
 
     #pasteText() {
-        if (navigator.clipboard?.readText) {
-            navigator.clipboard.readText().then(text => {
-                if (text) {
-                    this.#insertText(text);
-                    this.#flushContent();
-                }
-            }).catch(() => {});
+        if (!navigator.clipboard?.readText) {
+            return;
         }
+
+        navigator.clipboard.readText().then(text => {
+            if (text) {
+                this.#restoreSelection();
+                this.#insertText(text);
+                this.#flushContent();
+            }
+        }).catch(() => { });
     }
 
     #pasteWord() {
-        if (navigator.clipboard?.readText) {
-            navigator.clipboard.readText().then(text => {
-                if (text) {
-                    const cleaned = text
-                        .replace(/<!--[\s\S]*?-->/gi, '')
-                        .replace(/<o:p>[\s\S]*?<\/o:p>/gi, '')
-                        .replace(/style="[^"]*mso-[^"]*"/gi, '');
-                    this.#insertHtml(cleaned);
-                    this.#flushContent();
-                }
-            }).catch(() => {});
+        if (!navigator.clipboard?.read) {
+            this.#pasteText();
+            return;
         }
+
+        navigator.clipboard.read().then(async items => {
+            for (const item of items) {
+                if (item.types.includes('text/html')) {
+                    const html = await (await item.getType('text/html')).text();
+                    this.#restoreSelection();
+                    this.#insertHtml(sanitize(html));
+                    this.#flushContent();
+                    return;
+                }
+            }
+
+            this.#pasteText();
+        }).catch(() => { });
     }
 
     #getSelectionSnapshot() {
@@ -814,6 +850,14 @@ class RichTextEditor {
 
         if (anchor.closest('code')) {
             activeStyles.push('code');
+        }
+
+        if (this.#closestWithin(anchor, 'a[href]')) {
+            activeStyles.push('link');
+        }
+
+        if (this.#closestWithin(anchor, 'a[name]')) {
+            activeStyles.push('anchor');
         }
 
         if (block?.classList.contains('forma-composer-lead')) {
