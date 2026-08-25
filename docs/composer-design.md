@@ -553,7 +553,7 @@ public interface IComposerHtmlSanitizer
 
 - Forma ships a **default allowlist sanitiser** in `Forma.UI.Features.Composer` with no external dependency, covering the element and attribute set the built-in plugins can produce.
 - A host may replace it — `Forma.UI.Features.Composer.HtmlSanitizer` wraps Ganss.Xss for hosts wanting a hardened, widely-reviewed implementation, and any registration overrides the default.
-- A host wanting only different *rules* rather than a different implementation supplies an `IHtmlMarkupPolicy` to `ComposerHtmlSanitizer` instead, wrapping `ComposerHtmlMarkupPolicy.Default` to widen or narrow what it permits. Event handler attributes are refused by the sanitiser itself, so no policy can re-admit them.
+- A host wanting only different *rules* rather than a different implementation supplies an `IMarkupPolicy` to `ComposerHtmlSanitizer` instead, wrapping `ComposerMarkupPolicy.Default` to widen or narrow what it permits. Event handler attributes are refused by the sanitiser itself, so no policy can re-admit them.
 - Sanitisation runs at **four** points, and none is optional: content loaded into the composer, content pasted in, content leaving the code editor, and content raised to the host. In a widget tree that means every node's `Content` (§4.2); the settings JSON is never sanitised as markup.
 - The composer's guarantee stops at the browser. **The host must sanitise server-side on save regardless**, because a client-side editor cannot be trusted by the endpoint receiving its output.
 
@@ -642,7 +642,7 @@ src/Forma.UI.Features.Composer/
 │   └── ComposerHistory.cs
 └── Sanitization/
     ├── ComposerHtmlSanitizer.cs
-    └── ComposerHtmlMarkupPolicy.cs    # the markup policy the sanitiser applies
+    └── ComposerMarkupPolicy.cs    # the markup policy the sanitiser applies
 
 src/Forma.UI.Blazor/Components/Composer/
 ├── FormaComposer.razor                    # engine shell, editor routing

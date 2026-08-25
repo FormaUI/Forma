@@ -4,11 +4,11 @@ using Forma.UI.Features.Composer.Sanitization;
 
 using Xunit;
 
-public sealed class ComposerHtmlMarkupPolicyTests
+public sealed class ComposerMarkupPolicyTests
 {
     public sealed class Allows
     {
-        private readonly ComposerHtmlMarkupPolicy _sut = ComposerHtmlMarkupPolicy.Default;
+        private readonly ComposerMarkupPolicy _sut = ComposerMarkupPolicy.Default;
 
         [Theory]
         [InlineData("p")]
@@ -191,7 +191,7 @@ public sealed class ComposerHtmlMarkupPolicyTests
     public sealed class AgainstTheSanitizer
     {
         // A host widens or narrows the rules by wrapping the default rather than restating it.
-        private sealed class WrappingPolicy(IHtmlMarkupPolicy inner, HtmlSubject about, string name, bool answer) : IHtmlMarkupPolicy
+        private sealed class WrappingPolicy(IMarkupPolicy inner, HtmlSubject about, string name, bool answer) : IMarkupPolicy
         {
             public bool Allows(HtmlSubject subject, ReadOnlySpan<char> value, ReadOnlySpan<char> owner, out string? canonical)
             {
@@ -210,7 +210,7 @@ public sealed class ComposerHtmlMarkupPolicyTests
         public void Should_keep_an_element_a_widened_policy_permits()
         {
             // Arrange
-            var policy = new WrappingPolicy(ComposerHtmlMarkupPolicy.Default, HtmlSubject.Element, "marquee", answer: true);
+            var policy = new WrappingPolicy(ComposerMarkupPolicy.Default, HtmlSubject.Element, "marquee", answer: true);
             var sut = new ComposerHtmlSanitizer(policy);
 
             // Act
@@ -224,7 +224,7 @@ public sealed class ComposerHtmlMarkupPolicyTests
         public void Should_drop_an_element_a_narrowed_policy_refuses()
         {
             // Arrange
-            var policy = new WrappingPolicy(ComposerHtmlMarkupPolicy.Default, HtmlSubject.Element, "strong", answer: false);
+            var policy = new WrappingPolicy(ComposerMarkupPolicy.Default, HtmlSubject.Element, "strong", answer: false);
             var sut = new ComposerHtmlSanitizer(policy);
 
             // Act
@@ -238,7 +238,7 @@ public sealed class ComposerHtmlMarkupPolicyTests
         public void Should_reject_an_event_handler_whatever_the_policy_says()
         {
             // Arrange
-            var policy = new WrappingPolicy(ComposerHtmlMarkupPolicy.Default, HtmlSubject.Attribute, "onclick", answer: true);
+            var policy = new WrappingPolicy(ComposerMarkupPolicy.Default, HtmlSubject.Attribute, "onclick", answer: true);
             var sut = new ComposerHtmlSanitizer(policy);
 
             // Act

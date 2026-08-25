@@ -1,10 +1,10 @@
 namespace Forma.UI.Features.Composer.Sanitization;
 
 /// <summary>The markup the built-in plugins produce, and nothing else.</summary>
-public sealed class ComposerHtmlMarkupPolicy : IHtmlMarkupPolicy
+public sealed class ComposerMarkupPolicy : IMarkupPolicy
 {
     /// <summary>The policy a sanitizer applies when a host names none.</summary>
-    public static ComposerHtmlMarkupPolicy Default { get; } = new();
+    public static ComposerMarkupPolicy Default { get; } = new();
 
     private static readonly HashSet<string> Tags = new(StringComparer.OrdinalIgnoreCase)
     {

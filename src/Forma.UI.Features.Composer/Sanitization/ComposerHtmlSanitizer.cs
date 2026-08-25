@@ -6,7 +6,7 @@ using System.Text;
 /// <summary>
 /// Allowlist sanitizer covering the markup the built-in plugins produce, with no external dependency.
 /// Scans the document as spans in a single pass: an element, attribute or CSS declaration the
-/// <see cref="IHtmlMarkupPolicy"/> refuses is dropped, an element such as <c>script</c> or <c>style</c> is
+/// <see cref="IMarkupPolicy"/> refuses is dropped, an element such as <c>script</c> or <c>style</c> is
 /// removed together with its content, an event handler attribute and an unsafe URL scheme are rejected
 /// outright, and every kept attribute value is re-escaped rather than passed through verbatim.
 /// </summary>
@@ -32,20 +32,21 @@ public sealed class ComposerHtmlSanitizer : IComposerHtmlSanitizer
     private static readonly HashSet<string>.AlternateLookup<ReadOnlySpan<char>> VoidTagLookup = VoidTags.GetAlternateLookup<ReadOnlySpan<char>>();
     private static readonly HashSet<string>.AlternateLookup<ReadOnlySpan<char>> UrlAttributeLookup = UrlAttributes.GetAlternateLookup<ReadOnlySpan<char>>();
 
-    private readonly IHtmlMarkupPolicy _policy;
+    /// <inheritdoc />
+    public IMarkupPolicy MarkupPolicy { get; }
 
     /// <summary>Creates a sanitizer applying the markup policy the built-in plugins produce.</summary>
     public ComposerHtmlSanitizer()
-        : this(ComposerHtmlMarkupPolicy.Default)
+        : this(ComposerMarkupPolicy.Default)
     {
     }
 
     /// <summary>Creates a sanitizer applying the given markup policy.</summary>
-    public ComposerHtmlSanitizer(IHtmlMarkupPolicy policy)
+    public ComposerHtmlSanitizer(IMarkupPolicy policy)
     {
         ArgumentNullException.ThrowIfNull(policy);
 
-        _policy = policy;
+        MarkupPolicy = policy;
     }
 
     /// <inheritdoc />
@@ -104,7 +105,7 @@ public sealed class ComposerHtmlSanitizer : IComposerHtmlSanitizer
         var name = source[tag.Name];
 
         // Dropping only the tag would leave a script body or a style block behind as text.
-        if (!tag.IsClosing && !_policy.Allows(HtmlSubject.ElementContent, name, default, out _))
+        if (!tag.IsClosing && !MarkupPolicy.Allows(HtmlSubject.ElementContent, name, default, out _))
         {
             return SkipElementContent(source, afterTag, name);
         }
@@ -224,7 +225,7 @@ public sealed class ComposerHtmlSanitizer : IComposerHtmlSanitizer
     {
         var raw = source[tag.Name];
 
-        if (!_policy.Allows(HtmlSubject.Element, raw, default, out var canonical))
+        if (!MarkupPolicy.Allows(HtmlSubject.Element, raw, default, out var canonical))
         {
             return;
         }
@@ -341,14 +342,14 @@ public sealed class ComposerHtmlSanitizer : IComposerHtmlSanitizer
             return;
         }
 
-        if (!_policy.Allows(HtmlSubject.Attribute, name, tagName, out var canonical))
+        if (!MarkupPolicy.Allows(HtmlSubject.Attribute, name, tagName, out var canonical))
         {
             return;
         }
 
         if (UrlAttributeLookup.Contains(name))
         {
-            if (!_policy.Allows(HtmlSubject.Url, value, default, out _))
+            if (!MarkupPolicy.Allows(HtmlSubject.Url, value, default, out _))
             {
                 return;
             }
@@ -399,7 +400,7 @@ public sealed class ComposerHtmlSanitizer : IComposerHtmlSanitizer
         {
             var declaration = style[range].Trim();
 
-            if (declaration.IsEmpty || !_policy.Allows(HtmlSubject.StyleDeclaration, declaration, default, out _))
+            if (declaration.IsEmpty || !MarkupPolicy.Allows(HtmlSubject.StyleDeclaration, declaration, default, out _))
             {
                 continue;
             }
@@ -414,7 +415,7 @@ public sealed class ComposerHtmlSanitizer : IComposerHtmlSanitizer
             var property = declaration[..colon].TrimEnd();
             var value = declaration[(colon + 1)..].Trim();
 
-            if (!_policy.Allows(HtmlSubject.StyleProperty, property, default, out var canonical))
+            if (!MarkupPolicy.Allows(HtmlSubject.StyleProperty, property, default, out var canonical))
             {
                 continue;
             }

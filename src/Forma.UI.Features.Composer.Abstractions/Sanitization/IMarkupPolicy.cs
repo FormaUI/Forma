@@ -1,7 +1,7 @@
 namespace Forma.UI.Features.Composer.Sanitization;
 
 /// <summary>The markup a document may carry.</summary>
-public interface IHtmlMarkupPolicy
+public interface IMarkupPolicy
 {
     /// <summary>Whether the subject is permitted, yielding the spelling the policy writes it with, or null to keep the one given.</summary>
     /// <param name="subject">What is being asked about.</param>
