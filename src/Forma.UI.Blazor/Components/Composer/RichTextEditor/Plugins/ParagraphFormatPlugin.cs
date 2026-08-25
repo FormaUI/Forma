@@ -84,7 +84,7 @@ public sealed class ParagraphFormatPlugin(RichTextEditorPlugin editor) : ICompos
             {
                 Id = "paragraph-style",
                 Title = "Paragraph Style",
-                Items = [new FormaToolbarToggle { Id = "lead", Title = "Lead", Icon = Glyph.TextWidth, Command = LeadCommand }],
+                Items = [new FormaToolbarToggle { Id = "lead", Title = "Lead", Icon = Glyph.QuoteLeft, Command = LeadCommand }],
             },
         ]),
     ];

@@ -54,6 +54,9 @@ public enum Glyph
     /// <summary>A crossed-out circle, for something refused.</summary>
     Ban,
 
+    /// <summary>Stacked horizontal bars, standing for a table's rows.</summary>
+    Bars,
+
     /// <summary>A heavy letter B, for bold text.</summary>
     Bold,
 
@@ -326,6 +329,13 @@ public enum Glyph
 
     /// <summary>A table whose rows read as a list.</summary>
     TableList,
+
+    /// <summary>A grid of cells, standing for a table as a whole.</summary>
+    TableCells,
+
+    /// <summary>A pane divided top to bottom, standing for a table's columns.</summary>
+    TableColumns,
+
 
     /// <summary>A prompt and cursor, for a terminal.</summary>
     Terminal,

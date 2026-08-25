@@ -26,10 +26,14 @@ public sealed partial class FormaExplorerThumbnail : ComponentBase
         => Resource switch
         {
             FolderResourceInfo => Glyph.Folder,
+            ImageResourceInfo => Glyph.Image,
             VideoResourceInfo => Glyph.Film,
             AudioResourceInfo => Glyph.Music,
             ArchiveResourceInfo => Glyph.FileZipper,
-            _ => Glyph.FileLines
+            DocumentResourceInfo => Glyph.FileLines,
+
+            // Anything the library does not recognize says so, rather than passing itself off as a document.
+            _ => Glyph.File
         };
 
     /// <inheritdoc />

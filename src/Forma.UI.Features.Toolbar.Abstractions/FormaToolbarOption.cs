@@ -1,5 +1,7 @@
 namespace Forma.UI.Features.Toolbar;
 
+using Forma.UI.Style.Glyphs;
+
 /// <summary>One option inside a <see cref="FormaToolbarItem"/>'s menu.</summary>
 public sealed record FormaToolbarOption
 {
@@ -8,6 +10,9 @@ public sealed record FormaToolbarOption
 
     /// <summary>The option's label and accessible name, localized by the host.</summary>
     public required string Title { get; init; }
+
+    /// <summary>The icon shown beside the option, or null when its title stands alone.</summary>
+    public Glyph? Icon { get; init; }
 
     /// <summary>The command invoked when the option is picked.</summary>
     public required string Command { get; init; }

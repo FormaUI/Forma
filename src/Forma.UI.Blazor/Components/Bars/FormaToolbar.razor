@@ -48,6 +48,10 @@
                                         {
                                             <span class="forma-toolbar-swatch" style="@($"background-color:{swatch}")" aria-hidden="true"></span>
                                         }
+                                        @if (option.Icon is { } optionIcon)
+                                        {
+                                            <span class="forma-toolbar-option-icon" aria-hidden="true"><FormaGlyph Name="optionIcon" /></span>
+                                        }
                                         <span style="@option.PreviewStyle">@option.Title</span>
                                     </FormaDropDownMenuItem>
                                 }

@@ -40,7 +40,7 @@ public sealed class SpecialCharacterPlugin(
                     {
                         Id = "special-character",
                         Title = "Special Character",
-                        Icon = Glyph.Font,
+                        Icon = Glyph.Keyboard,
                         Options = [.. Options.Characters.Select(c => new FormaToolbarOption
                         {
                             Id = $"char-{c}",
