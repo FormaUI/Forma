@@ -17,6 +17,9 @@ public abstract record FormaToolbarItem
     /// <summary>The icon shown for the item, or null when its title stands alone.</summary>
     public Glyph? Icon { get; init; }
 
+    /// <summary>How the icon is drawn.</summary>
+    public GlyphStyle IconStyle { get; init; } = GlyphStyle.Regular;
+
     /// <summary>Whether this item alone is disabled, regardless of the toolbar's own <c>Disabled</c>.</summary>
     public bool IsDisabled { get; init; }
 }

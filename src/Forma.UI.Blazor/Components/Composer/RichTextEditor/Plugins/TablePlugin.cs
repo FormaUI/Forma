@@ -68,13 +68,13 @@ public sealed class TablePlugin(
                         Options =
                         [
                             new FormaToolbarOption { Id = "table-insert", Title = "Insert Table...", Icon = Glyph.TableCells, Command = InsertTableCommand },
-                            new FormaToolbarOption { Id = "table-row-before", Title = "Add Row Above", Icon = Glyph.ArrowUp, Command = AddRowBeforeCommand },
-                            new FormaToolbarOption { Id = "table-row-after", Title = "Add Row Below", Icon = Glyph.ArrowDown, Command = AddRowAfterCommand },
+                            new FormaToolbarOption { Id = "table-row-before", Title = "Add Row Above", Icon = Glyph.RowsPlusTop, Command = AddRowBeforeCommand },
+                            new FormaToolbarOption { Id = "table-row-after", Title = "Add Row Below", Icon = Glyph.RowsPlusBottom, Command = AddRowAfterCommand },
                             new FormaToolbarOption { Id = "table-row-delete", Title = "Delete Row", Icon = Glyph.Bars, Command = DeleteRowCommand },
-                            new FormaToolbarOption { Id = "table-col-before", Title = "Add Column Left", Icon = Glyph.ArrowLeft, Command = AddColBeforeCommand },
-                            new FormaToolbarOption { Id = "table-col-after", Title = "Add Column Right", Icon = Glyph.ArrowRight, Command = AddColAfterCommand },
+                            new FormaToolbarOption { Id = "table-col-before", Title = "Add Column Left", Icon = Glyph.ColumnsPlusLeft, Command = AddColBeforeCommand },
+                            new FormaToolbarOption { Id = "table-col-after", Title = "Add Column Right", Icon = Glyph.ColumnsPlusRight, Command = AddColAfterCommand },
                             new FormaToolbarOption { Id = "table-col-delete", Title = "Delete Column", Icon = Glyph.TableColumns, Command = DeleteColCommand },
-                            new FormaToolbarOption { Id = "table-toggle-header", Title = "Toggle Header Row", Icon = Glyph.TableList, Command = ToggleHeaderCommand },
+                            new FormaToolbarOption { Id = "table-toggle-header", Title = "Toggle Header Row", Icon = Glyph.Bars, Command = ToggleHeaderCommand },
                             new FormaToolbarOption { Id = "table-delete", Title = "Delete Table", Icon = Glyph.Trash, Command = DeleteTableCommand },
                         ],
                     },

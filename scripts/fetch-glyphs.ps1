@@ -1,155 +1,173 @@
 $ErrorActionPreference = 'Stop'
 
-# Regenerates FormaGlyph.razor.cs from the Font Awesome Free source SVGs.
+# Regenerates FormaGlyph.razor.cs from the Phosphor Icons source SVGs.
+# Each glyph is fetched in every style the library draws.
 
 $map = [ordered]@{
-    AlignCenter          = 'solid/align-center'
-    AlignJustify         = 'solid/align-justify'
-    AlignLeft            = 'solid/align-left'
-    AlignRight           = 'solid/align-right'
-    Anchor               = 'solid/anchor'
-    AnchorCircleXmark    = 'solid/anchor-circle-xmark'
-    ArrowDown            = 'solid/arrow-down'
-    ArrowDownAZ          = 'solid/arrow-down-a-z'
-    ArrowLeft            = 'solid/arrow-left'
-    ArrowLeftLong        = 'solid/arrow-left-long'
-    ArrowRight           = 'solid/arrow-right'
-    ArrowRightArrowLeft  = 'solid/arrow-right-arrow-left'
-    ArrowRightLong       = 'solid/arrow-right-long'
-    ArrowsRotate         = 'solid/arrows-rotate'
-    ArrowUp              = 'solid/arrow-up'
-    ArrowUpZA            = 'solid/arrow-up-z-a'
-    Ban                  = 'solid/ban'
-    Bars                 = 'solid/bars'
-    Bold                 = 'solid/bold'
-    BorderAll            = 'solid/border-all'
-    BoxOpen              = 'solid/box-open'
-    Bug                  = 'solid/bug'
-    CartShopping         = 'solid/cart-shopping'
-    Check                = 'solid/check'
-    ChevronDown          = 'solid/chevron-down'
-    ChevronLeft          = 'solid/chevron-left'
-    ChevronRight         = 'solid/chevron-right'
-    ChevronUp            = 'solid/chevron-up'
-    CircleCheck          = 'solid/circle-check'
-    CircleDot            = 'solid/circle-dot'
-    CircleExclamation    = 'solid/circle-exclamation'
-    CircleInfo           = 'solid/circle-info'
-    CirclePlay           = 'solid/circle-play'
-    CircleXmark          = 'solid/circle-xmark'
-    Clock                = 'regular/clock'
-    ClockRotateLeft      = 'solid/clock-rotate-left'
-    CloudArrowUp         = 'solid/cloud-arrow-up'
-    Code                 = 'solid/code'
-    Comment              = 'solid/comment'
-    Copy                 = 'solid/copy'
-    CreditCard           = 'solid/credit-card'
-    Download             = 'solid/download'
-    Ellipsis             = 'solid/ellipsis'
-    EllipsisVertical     = 'solid/ellipsis-vertical'
-    Eye                  = 'solid/eye'
-    EyeSlash             = 'solid/eye-slash'
-    FaceSmile            = 'solid/face-smile'
-    File                 = 'solid/file'
-    FileCode             = 'solid/file-code'
-    FileLines            = 'solid/file-lines'
-    FileZipper           = 'solid/file-zipper'
-    Film                 = 'solid/film'
-    Filter               = 'solid/filter'
-    Flag                 = 'solid/flag'
-    FloppyDisk           = 'solid/floppy-disk'
-    Folder               = 'solid/folder'
-    FolderOpen           = 'solid/folder-open'
-    FolderPlus           = 'solid/folder-plus'
-    Font                 = 'solid/font'
-    Forward              = 'solid/forward'
-    Futbol               = 'solid/futbol'
-    Gear                 = 'solid/gear'
-    Heading              = 'solid/heading'
-    Heart                = 'solid/heart'
-    HourglassHalf        = 'solid/hourglass-half'
-    Highlighter          = 'solid/highlighter'
-    Image                = 'solid/image'
-    Images               = 'solid/images'
-    Indent               = 'solid/indent'
-    Italic               = 'solid/italic'
-    Keyboard             = 'solid/keyboard'
-    Lightbulb            = 'solid/lightbulb'
-    Link                 = 'solid/link'
-    LinkSlash            = 'solid/link-slash'
-    List                 = 'solid/list'
-    ListCheck            = 'solid/list-check'
-    ListOl               = 'solid/list-ol'
-    ListUl               = 'solid/list-ul'
-    LocationCrosshairs   = 'solid/location-crosshairs'
-    MagnifyingGlass      = 'solid/magnifying-glass'
-    Maximize             = 'solid/maximize'
-    Minimize             = 'solid/minimize'
-    Minus                = 'solid/minus'
-    Music                = 'solid/music'
-    Outdent              = 'solid/outdent'
-    Palette              = 'solid/palette'
-    Paragraph            = 'solid/paragraph'
-    Paste                = 'solid/paste'
-    Paw                  = 'solid/paw'
-    Pen                  = 'solid/pen'
-    PenToSquare          = 'solid/pen-to-square'
-    Play                 = 'solid/play'
-    Plane                = 'solid/plane'
-    Plus                 = 'solid/plus'
-    QuoteLeft            = 'solid/quote-left'
-    RightToBracket       = 'solid/right-to-bracket'
-    RotateLeft           = 'solid/rotate-left'
-    RotateRight          = 'solid/rotate-right'
-    Scissors             = 'solid/scissors'
-    Sitemap              = 'solid/sitemap'
-    SpellCheck           = 'solid/spell-check'
-    SquareCheck          = 'solid/square-check'
-    SquareMinus          = 'solid/square-minus'
-    SquarePlus           = 'solid/square-plus'
-    Strikethrough        = 'solid/strikethrough'
-    Subscript            = 'solid/subscript'
-    Superscript          = 'solid/superscript'
-    Table                = 'solid/table'
-    TableCells           = 'solid/table-cells'
-    TableColumns         = 'solid/table-columns'
-    TableList            = 'solid/table-list'
-    Terminal             = 'solid/terminal'
-    TextHeight           = 'solid/text-height'
-    TextSlash            = 'solid/text-slash'
-    TextWidth            = 'solid/text-width'
-    Trash                = 'solid/trash'
-    TriangleExclamation  = 'solid/triangle-exclamation'
-    Truck                = 'solid/truck'
-    Underline            = 'solid/underline'
-    Upload               = 'solid/upload'
-    User                 = 'solid/user'
-    Users                = 'solid/users'
-    Utensils             = 'solid/utensils'
-    WandMagicSparkles    = 'solid/wand-magic-sparkles'
-    Wrench               = 'solid/wrench'
-    Xmark                = 'solid/xmark'
+    AlignCenter         = 'text-align-center'
+    AlignJustify        = 'text-align-justify'
+    AlignLeft           = 'text-align-left'
+    AlignRight          = 'text-align-right'
+    Anchor              = 'anchor-simple'
+    AnchorCircleXmark   = 'minus-circle'
+    ArrowDown           = 'arrow-down'
+    ArrowDownAZ         = 'sort-ascending'
+    ArrowLeft           = 'arrow-left'
+    ArrowLeftLong       = 'arrow-line-left'
+    ArrowRight          = 'arrow-right'
+    ArrowRightArrowLeft = 'arrows-left-right'
+    ArrowRightLong      = 'arrow-line-right'
+    ArrowsRotate        = 'arrows-clockwise'
+    ArrowUp             = 'arrow-up'
+    ArrowUpZA           = 'sort-descending'
+    Ban                 = 'prohibit'
+    Bars                = 'rows'
+    Bold                = 'text-b'
+    BorderAll           = 'grid-nine'
+    BoxOpen             = 'package'
+    Bug                 = 'bug'
+    CartShopping        = 'shopping-cart'
+    Check               = 'check'
+    ChevronDown         = 'caret-down'
+    ChevronLeft         = 'caret-left'
+    ChevronRight        = 'caret-right'
+    ChevronUp           = 'caret-up'
+    CircleCheck         = 'check-circle'
+    CircleDot           = 'radio-button'
+    CircleExclamation   = 'warning-circle'
+    CircleInfo          = 'info'
+    CirclePlay          = 'play-circle'
+    CircleXmark         = 'x-circle'
+    Clock               = 'clock'
+    ClockRotateLeft     = 'clock-counter-clockwise'
+    CloudArrowUp        = 'cloud-arrow-up'
+    Code                = 'code'
+    Comment             = 'chat-circle'
+    ColumnsPlusLeft     = 'columns-plus-left'
+    ColumnsPlusRight    = 'columns-plus-right'
+    Copy                = 'copy'
+    CreditCard          = 'credit-card'
+    Download            = 'download-simple'
+    Ellipsis            = 'dots-three'
+    EllipsisVertical    = 'dots-three-vertical'
+    Eye                 = 'eye'
+    EyeSlash            = 'eye-slash'
+    FaceSmile           = 'smiley'
+    File                = 'file'
+    FileCode            = 'file-code'
+    FileLines           = 'file-text'
+    FileZipper          = 'file-zip'
+    Film                = 'film-strip'
+    Filter              = 'funnel'
+    Flag                = 'flag'
+    FloppyDisk          = 'floppy-disk'
+    Folder              = 'folder'
+    FolderOpen          = 'folder-open'
+    FolderPlus          = 'folder-plus'
+    Font                = 'text-aa'
+    Forward             = 'fast-forward'
+    Futbol              = 'soccer-ball'
+    Gear                = 'gear'
+    Heading             = 'text-h'
+    Heart               = 'heart'
+    Highlighter         = 'highlighter'
+    HourglassHalf       = 'hourglass'
+    Image               = 'image'
+    Images              = 'images'
+    Indent              = 'text-indent'
+    Italic              = 'text-italic'
+    Keyboard            = 'keyboard'
+    Lightbulb           = 'lightbulb'
+    Link                = 'link'
+    LinkSimpleBreak     = 'link-simple-break'
+    LinkSlash           = 'link-break'
+    List                = 'list'
+    ListCheck           = 'list-checks'
+    ListOl              = 'list-numbers'
+    ListUl              = 'list-bullets'
+    LocationCrosshairs  = 'crosshair'
+    MagnifyingGlass     = 'magnifying-glass'
+    Maximize            = 'arrows-out'
+    Minimize            = 'arrows-in'
+    Minus               = 'minus'
+    Music               = 'music-note'
+    Outdent             = 'text-outdent'
+    Palette             = 'palette'
+    Paragraph           = 'paragraph'
+    Paste               = 'clipboard-text'
+    Paw                 = 'paw-print'
+    Pen                 = 'pencil-simple'
+    PenToSquare         = 'note-pencil'
+    Plane               = 'airplane'
+    Play                = 'play'
+    Plus                = 'plus'
+    QuoteLeft           = 'quotes'
+    RightToBracket      = 'sign-in'
+    RotateLeft          = 'arrow-counter-clockwise'
+    RotateRight         = 'arrow-clockwise'
+    RowsPlusBottom      = 'rows-plus-bottom'
+    RowsPlusTop         = 'rows-plus-top'
+    Scissors            = 'scissors'
+    Sitemap             = 'tree-structure'
+    SpellCheck          = 'check-fat'
+    SquareCheck         = 'check-square'
+    SquareMinus         = 'minus-square'
+    SquarePlus          = 'plus-square'
+    Strikethrough       = 'text-strikethrough'
+    Subscript           = 'text-subscript'
+    Superscript         = 'text-superscript'
+    Table               = 'table'
+    TableCells          = 'grid-four'
+    TableColumns        = 'columns'
+    TableList           = 'list-dashes'
+    Terminal            = 'terminal-window'
+    TextHeight          = 'text-t'
+    TextSlash           = 'text-t-slash'
+    TextWidth           = 'arrows-vertical'
+    Trash               = 'trash'
+    TriangleExclamation = 'warning'
+    Truck               = 'truck'
+    Underline           = 'text-underline'
+    Upload              = 'upload-simple'
+    User                = 'user'
+    Users               = 'users'
+    Utensils            = 'fork-knife'
+    WandMagicSparkles   = 'magic-wand'
+    Wrench              = 'wrench'
+    Xmark               = 'x'
 }
 
-$arms = New-Object System.Collections.Generic.List[string]
-
-foreach ($name in $map.Keys) {
-    $slug = $map[$name]
-    $url = "https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/svgs/$slug.svg"
-    $svg = (Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 30).Content
-
-    if ($svg -notmatch 'viewBox="([^"]+)"') { throw "no viewBox for $slug" }
-    $viewBox = $Matches[1]
-
-    $paths = [regex]::Matches($svg, '<path[^>]*\sd="([^"]+)"')
-    if ($paths.Count -ne 1) { throw "expected 1 path for $slug but found $($paths.Count)" }
-    $d = $paths[0].Groups[1].Value
-
-    $arms.Add("            Glyph.$name => (`"$viewBox`", `"$d`"),")
-    Write-Host ("{0,-20} {1}" -f $name, $slug)
+# What Phosphor appends to a slug for each style; regular carries no suffix.
+$styles = [ordered]@{
+    Regular = ''
+    Fill    = '-fill'
 }
 
-$body = $arms -join "`n"
+$ViewBox = '0 0 256 256'
+$arms = [ordered]@{}
+
+foreach ($style in $styles.Keys) {
+    $suffix = $styles[$style]
+    $folder = $style.ToLowerInvariant()
+    $lines = New-Object System.Collections.Generic.List[string]
+
+    foreach ($name in $map.Keys) {
+        $slug = $map[$name]
+        $url = "https://raw.githubusercontent.com/phosphor-icons/core/main/assets/$folder/$slug$suffix.svg"
+        $svg = (Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 30).Content
+
+        if ($svg -notmatch 'viewBox="([^"]+)"') { throw "no viewBox for $slug ($style)" }
+        if ($Matches[1] -ne $ViewBox) { throw "unexpected viewBox '$($Matches[1])' for $slug ($style)" }
+
+        $paths = [regex]::Matches($svg, '<path[^>]*\sd="([^"]+)"[^>]*>')
+        if ($paths.Count -ne 1) { throw "expected 1 path for $slug ($style) but found $($paths.Count)" }
+
+        $lines.Add("            Glyph.$name => `"$($paths[0].Groups[1].Value)`",")
+    }
+
+    $arms[$style] = $lines -join "`n"
+    Write-Host ("{0,-8} {1} glyphs" -f $style, $lines.Count)
+}
 
 $file = @"
 namespace Forma.UI.Blazor.Components;
@@ -164,22 +182,39 @@ public sealed partial class FormaGlyph : ComponentBase
     /// <summary>Which glyph to draw.</summary>
     [Parameter, EditorRequired] public Glyph Name { get; set; }
 
+    /// <summary>How the glyph is drawn.</summary>
+    [Parameter] public GlyphStyle Style { get; set; } = GlyphStyle.Regular;
+
     /// <summary>Extra classes applied to the SVG element.</summary>
     [Parameter] public string? Class { get; set; }
 
     private string CssClass
         => string.IsNullOrWhiteSpace(Class) ? "forma-glyph" : `$"forma-glyph {Class}";
 
-    private string ViewBox => Art.ViewBox;
+    private static string ViewBox => "$ViewBox";
 
-    private string PathData => Art.PathData;
+    private string PathData => Art;
 
-    // Artwork from Font Awesome Free 6 (CC BY 4.0); regenerate with scripts/fetch-glyphs.ps1.
-    private (string ViewBox, string PathData) Art
-        => Name switch
+    // Artwork from Phosphor Icons (MIT); regenerate with scripts/fetch-glyphs.ps1.
+    private string Art
+        => Style switch
         {
-$body
-            _ => ("0 0 512 512", string.Empty)
+            GlyphStyle.Fill => Filled(Name),
+            _ => Regular(Name),
+        };
+
+    private static string Regular(Glyph name)
+        => name switch
+        {
+$($arms['Regular'])
+            _ => string.Empty
+        };
+
+    private static string Filled(Glyph name)
+        => name switch
+        {
+$($arms['Fill'])
+            _ => string.Empty
         };
 }
 "@
@@ -187,4 +222,4 @@ $body
 $target = Join-Path $PSScriptRoot '..' 'src' 'Forma.UI.Blazor' 'Components' 'FormaGlyph.razor.cs'
 $normalized = ($file -replace "`r`n", "`n").TrimEnd("`n") + "`n"
 [System.IO.File]::WriteAllText($target, $normalized, (New-Object System.Text.UTF8Encoding $false))
-Write-Host "`nWrote $($arms.Count) glyphs to $target"
+Write-Host "`nWrote $($map.Count) glyphs in $($styles.Count) styles to $target"

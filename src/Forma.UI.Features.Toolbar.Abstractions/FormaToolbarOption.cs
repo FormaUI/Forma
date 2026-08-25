@@ -14,6 +14,9 @@ public sealed record FormaToolbarOption
     /// <summary>The icon shown beside the option, or null when its title stands alone.</summary>
     public Glyph? Icon { get; init; }
 
+    /// <summary>How the icon is drawn.</summary>
+    public GlyphStyle IconStyle { get; init; } = GlyphStyle.Regular;
+
     /// <summary>The command invoked when the option is picked.</summary>
     public required string Command { get; init; }
 

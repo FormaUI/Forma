@@ -168,8 +168,11 @@ The showcase serves an interactive page per component, in English, Hebrew, and S
 
 ## Icons
 
-`FormaGlyph` draws the `Glyph` set as inline SVG, so a host loads no icon font. The artwork is
-[Font Awesome Free 6](https://fontawesome.com) and is used under
-[CC BY 4.0](https://fontawesome.com/license/free); regenerate it with `scripts/fetch-glyphs.ps1`.
+`FormaGlyph` draws the `Glyph` set as inline SVG, so a host loads no icon font. Every glyph is
+drawn in two styles — regular and fill — chosen through `FormaGlyph.Style`.
+
+The artwork is [Phosphor Icons](https://phosphoricons.com), used under the MIT licence reproduced
+in [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md), which ships inside the package. Regenerate
+it with `scripts/fetch-glyphs.ps1`.
 
 Contributor conventions live in [`.github/copilot-instructions.md`](.github/copilot-instructions.md).

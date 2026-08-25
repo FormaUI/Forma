@@ -121,6 +121,12 @@ public enum Glyph
     Comment,
 
     /// <summary>Two stacked sheets, for duplicating.</summary>
+    /// <summary>Columns with one added to the left.</summary>
+    ColumnsPlusLeft,
+
+    /// <summary>Columns with one added to the right.</summary>
+    ColumnsPlusRight,
+
     Copy,
 
     /// <summary>A payment card.</summary>
@@ -225,6 +231,9 @@ public enum Glyph
     /// <summary>Two chain links struck through, for removing a link.</summary>
     LinkSlash,
 
+    /// <summary>A broken chain of the simpler kind, for removing a named anchor.</summary>
+    LinkSimpleBreak,
+
     /// <summary>Lines beside bullets.</summary>
     List,
 
@@ -298,6 +307,12 @@ public enum Glyph
     RotateRight,
 
     /// <summary>A pair of shears, for cutting.</summary>
+    /// <summary>Rows with one added below.</summary>
+    RowsPlusBottom,
+
+    /// <summary>Rows with one added above.</summary>
+    RowsPlusTop,
+
     Scissors,
 
     /// <summary>A node branching into two, for a hierarchy.</summary>
