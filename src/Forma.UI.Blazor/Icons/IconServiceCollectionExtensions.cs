@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 /// <summary>Registers the artwork <see cref="Components.FormaIcon" /> draws.</summary>
-public static class IconServiceCollectionExtensions
+public static class ServiceCollectionExtensions
 {
     /// <summary>Registers the artwork this library ships, unless a host has already registered its own.</summary>
     /// <param name="services">The collection to register into.</param>
