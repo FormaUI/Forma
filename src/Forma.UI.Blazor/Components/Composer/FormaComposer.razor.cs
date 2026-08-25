@@ -99,7 +99,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
         var injectedSanitizer = (IComposerHtmlSanitizer?)Services.GetService(typeof(IComposerHtmlSanitizer));
 
         _history = injectedHistory ?? new ComposerHistory(Options.HistoryCapacity);
-        _sanitizer = injectedSanitizer ?? new DefaultHtmlSanitizer();
+        _sanitizer = injectedSanitizer ?? new ComposerHtmlSanitizer();
 
         _commands.RegisterEngineCommand(ComposerCommands.Undo, HandleUndoAsync);
         _commands.RegisterEngineCommand(ComposerCommands.Redo, HandleRedoAsync);

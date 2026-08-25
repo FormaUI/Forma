@@ -20,7 +20,7 @@ public sealed class ComposerPluginTests
             doc,
             ComposerSelection.Empty,
             history,
-            new DefaultHtmlSanitizer(),
+            new ComposerHtmlSanitizer(),
             SharedAssetLoader,
             regions,
             _ => Task.CompletedTask,

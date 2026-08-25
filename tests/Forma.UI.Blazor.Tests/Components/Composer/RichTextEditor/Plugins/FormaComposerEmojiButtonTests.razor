@@ -14,7 +14,7 @@
                 new ComposerDocument(ComposerDocumentFormat.Html, "<p>Test</p>"),
                 ComposerSelection.Empty,
                 new ComposerHistory(),
-                new DefaultHtmlSanitizer(),
+                new ComposerHtmlSanitizer(),
                 new NullAssetLoader(),
                 new ComposerRegionRegistry(),
                 _ => Task.CompletedTask,

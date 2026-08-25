@@ -1,16 +1,53 @@
 namespace Forma.UI.Features.Composer.Sanitization;
 
+using System.Buffers;
 using System.Text;
 
 /// <summary>
 /// Allowlist sanitizer covering the markup the built-in plugins produce, with no external dependency.
-/// Scans the document as spans in a single pass: an element, attribute or CSS declaration absent from
-/// <see cref="HtmlAllowList"/> is dropped, a discarded element such as <c>script</c> or <c>style</c> is
+/// Scans the document as spans in a single pass: an element, attribute or CSS declaration the
+/// <see cref="IHtmlMarkupPolicy"/> refuses is dropped, an element such as <c>script</c> or <c>style</c> is
 /// removed together with its content, an event handler attribute and an unsafe URL scheme are rejected
 /// outright, and every kept attribute value is re-escaped rather than passed through verbatim.
 /// </summary>
-public sealed class DefaultHtmlSanitizer : IComposerHtmlSanitizer
+public sealed class ComposerHtmlSanitizer : IComposerHtmlSanitizer
 {
+    // These are facts about HTML rather than choices a policy makes, so no host redefines them.
+
+    /// <summary>Elements that carry no closing tag.</summary>
+    private static readonly HashSet<string> VoidTags = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "img", "hr", "br", "source", "col", "wbr"
+    };
+
+    /// <summary>Attributes whose value is an address, checked before the attribute is kept.</summary>
+    private static readonly HashSet<string> UrlAttributes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "href", "src", "poster"
+    };
+
+    /// <summary>The characters an attribute value may not carry unescaped.</summary>
+    private static readonly SearchValues<char> EscapeTargets = SearchValues.Create("&\"<>");
+
+    private static readonly HashSet<string>.AlternateLookup<ReadOnlySpan<char>> VoidTagLookup = VoidTags.GetAlternateLookup<ReadOnlySpan<char>>();
+    private static readonly HashSet<string>.AlternateLookup<ReadOnlySpan<char>> UrlAttributeLookup = UrlAttributes.GetAlternateLookup<ReadOnlySpan<char>>();
+
+    private readonly IHtmlMarkupPolicy _policy;
+
+    /// <summary>Creates a sanitizer applying the markup policy the built-in plugins produce.</summary>
+    public ComposerHtmlSanitizer()
+        : this(ComposerHtmlMarkupPolicy.Default)
+    {
+    }
+
+    /// <summary>Creates a sanitizer applying the given markup policy.</summary>
+    public ComposerHtmlSanitizer(IHtmlMarkupPolicy policy)
+    {
+        ArgumentNullException.ThrowIfNull(policy);
+
+        _policy = policy;
+    }
+
     /// <inheritdoc />
     public string Sanitize(string html)
     {
@@ -42,7 +79,7 @@ public sealed class DefaultHtmlSanitizer : IComposerHtmlSanitizer
     }
 
     // Handles one '<' and returns where scanning resumes.
-    private static int SanitizeMarkup(StringBuilder output, ReadOnlySpan<char> source, int open)
+    private int SanitizeMarkup(StringBuilder output, ReadOnlySpan<char> source, int open)
     {
         var rest = source[open..];
 
@@ -67,7 +104,7 @@ public sealed class DefaultHtmlSanitizer : IComposerHtmlSanitizer
         var name = source[tag.Name];
 
         // Dropping only the tag would leave a script body or a style block behind as text.
-        if (!tag.IsClosing && HtmlAllowList.DiscardedLookup.Contains(name))
+        if (!tag.IsClosing && !_policy.Allows(HtmlSubject.ElementContent, name, default, out _))
         {
             return SkipElementContent(source, afterTag, name);
         }
@@ -183,14 +220,18 @@ public sealed class DefaultHtmlSanitizer : IComposerHtmlSanitizer
         return source.Length;
     }
 
-    private static void AppendTag(StringBuilder output, ReadOnlySpan<char> source, HtmlTag tag)
+    private void AppendTag(StringBuilder output, ReadOnlySpan<char> source, HtmlTag tag)
     {
-        if (!HtmlAllowList.TagLookup.TryGetValue(source[tag.Name], out var name))
+        var raw = source[tag.Name];
+
+        if (!_policy.Allows(HtmlSubject.Element, raw, default, out var canonical))
         {
             return;
         }
 
-        var isVoid = HtmlAllowList.VoidTagLookup.Contains(name);
+        // A policy that normalizes nothing leaves the element written the way the document spelled it.
+        var name = canonical is null ? raw : canonical.AsSpan();
+        var isVoid = VoidTagLookup.Contains(name);
 
         if (tag.IsClosing)
         {
@@ -207,18 +248,11 @@ public sealed class DefaultHtmlSanitizer : IComposerHtmlSanitizer
         output.Append(tag.IsSelfClosing || isVoid ? " />" : ">");
     }
 
-    private static void AppendAttributes(StringBuilder output, string tagName, ReadOnlySpan<char> raw)
+    private void AppendAttributes(StringBuilder output, ReadOnlySpan<char> tagName, ReadOnlySpan<char> raw)
     {
         if (raw.IsWhiteSpace())
         {
             return;
-        }
-
-        HashSet<string>.AlternateLookup<ReadOnlySpan<char>>? tagSpecific = null;
-
-        if (HtmlAllowList.TagAttributeLookup.TryGetValue(tagName, out var set))
-        {
-            tagSpecific = set.GetAlternateLookup<ReadOnlySpan<char>>();
         }
 
         var position = 0;
@@ -291,38 +325,30 @@ public sealed class DefaultHtmlSanitizer : IComposerHtmlSanitizer
                 }
             }
 
-            AppendAttribute(output, name, value, tagSpecific);
+            AppendAttribute(output, tagName, name, value);
         }
     }
 
-    private static void AppendAttribute(
+    private void AppendAttribute(
         StringBuilder output,
+        ReadOnlySpan<char> tagName,
         ReadOnlySpan<char> name,
-        ReadOnlySpan<char> value,
-        HashSet<string>.AlternateLookup<ReadOnlySpan<char>>? tagSpecific)
+        ReadOnlySpan<char> value)
     {
-        // An event handler is script by definition, whatever the element.
+        // An event handler is script by definition, whatever the element and whatever a policy would say.
         if (name.StartsWith("on", StringComparison.OrdinalIgnoreCase))
         {
             return;
         }
 
-        var isData = false;
-
-        if (!HtmlAllowList.GlobalAttributeLookup.TryGetValue(name, out var canonical)
-            && !(tagSpecific?.TryGetValue(name, out canonical) ?? false))
+        if (!_policy.Allows(HtmlSubject.Attribute, name, tagName, out var canonical))
         {
-            if (!name.StartsWith("data-", StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
-            isData = true;
+            return;
         }
 
-        if (HtmlAllowList.UrlAttributeLookup.Contains(name))
+        if (UrlAttributeLookup.Contains(name))
         {
-            if (!IsSafeUrl(value))
+            if (!_policy.Allows(HtmlSubject.Url, value, default, out _))
             {
                 return;
             }
@@ -331,7 +357,9 @@ public sealed class DefaultHtmlSanitizer : IComposerHtmlSanitizer
         {
             var checkpoint = output.Length;
 
-            output.Append(' ').Append(canonical!).Append("=\"");
+            output.Append(' ');
+            AppendName(output, name, canonical);
+            output.Append("=\"");
 
             if (!TryAppendStyle(output, value))
             {
@@ -344,57 +372,26 @@ public sealed class DefaultHtmlSanitizer : IComposerHtmlSanitizer
         }
 
         output.Append(' ');
-
-        if (isData)
-        {
-            output.Append(name);
-        }
-        else
-        {
-            output.Append(canonical!);
-        }
-
+        AppendName(output, name, canonical);
         output.Append("=\"");
         AppendEscaped(output, value);
         output.Append('"');
     }
 
-    private static bool IsSafeUrl(ReadOnlySpan<char> url)
+    // A policy that normalizes nothing leaves the name written the way the document spelled it.
+    private static void AppendName(StringBuilder output, ReadOnlySpan<char> name, string? canonical)
     {
-        var trimmed = url.Trim();
-
-        if (trimmed.IsEmpty)
+        if (canonical is null)
         {
-            return false;
+            output.Append(name);
         }
-
-        if (trimmed[0] is '#' or '/'
-            || trimmed.StartsWith("./", StringComparison.Ordinal)
-            || trimmed.StartsWith("../", StringComparison.Ordinal))
+        else
         {
-            return true;
+            output.Append(canonical);
         }
-
-        foreach (var scheme in HtmlAllowList.UrlSchemes)
-        {
-            if (trimmed.StartsWith(scheme, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-        }
-
-        foreach (var prefix in HtmlAllowList.DataUrlPrefixes)
-        {
-            if (trimmed.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
-    private static bool TryAppendStyle(StringBuilder output, ReadOnlySpan<char> style)
+    private bool TryAppendStyle(StringBuilder output, ReadOnlySpan<char> style)
     {
         var wrote = false;
 
@@ -402,7 +399,7 @@ public sealed class DefaultHtmlSanitizer : IComposerHtmlSanitizer
         {
             var declaration = style[range].Trim();
 
-            if (declaration.IsEmpty || IsDeniedDeclaration(declaration))
+            if (declaration.IsEmpty || !_policy.Allows(HtmlSubject.StyleDeclaration, declaration, default, out _))
             {
                 continue;
             }
@@ -417,8 +414,7 @@ public sealed class DefaultHtmlSanitizer : IComposerHtmlSanitizer
             var property = declaration[..colon].TrimEnd();
             var value = declaration[(colon + 1)..].Trim();
 
-            if (!HtmlAllowList.StylePropertyLookup.TryGetValue(property, out var canonical)
-                && !property.StartsWith("--forma-", StringComparison.OrdinalIgnoreCase))
+            if (!_policy.Allows(HtmlSubject.StyleProperty, property, default, out var canonical))
             {
                 continue;
             }
@@ -428,15 +424,7 @@ public sealed class DefaultHtmlSanitizer : IComposerHtmlSanitizer
                 output.Append("; ");
             }
 
-            if (canonical is null)
-            {
-                output.Append(property);
-            }
-            else
-            {
-                output.Append(canonical);
-            }
-
+            AppendName(output, property, canonical);
             output.Append(": ");
             AppendEscaped(output, value);
             wrote = true;
@@ -445,24 +433,11 @@ public sealed class DefaultHtmlSanitizer : IComposerHtmlSanitizer
         return wrote;
     }
 
-    private static bool IsDeniedDeclaration(ReadOnlySpan<char> declaration)
-    {
-        foreach (var denied in HtmlAllowList.StyleDenyList)
-        {
-            if (declaration.Contains(denied, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     private static void AppendEscaped(StringBuilder output, ReadOnlySpan<char> value)
     {
         while (!value.IsEmpty)
         {
-            var next = value.IndexOfAny(HtmlAllowList.EscapeTargets);
+            var next = value.IndexOfAny(EscapeTargets);
 
             if (next < 0)
             {

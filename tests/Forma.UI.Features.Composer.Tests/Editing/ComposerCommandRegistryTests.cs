@@ -91,7 +91,7 @@ public sealed class ComposerCommandRegistryTests
             new ComposerDocument(ComposerDocumentFormat.PlainText, "text"),
             ComposerSelection.Empty,
             new ComposerHistory(),
-            new DefaultHtmlSanitizer(),
+            new ComposerHtmlSanitizer(),
             AssetLoader,
             new ComposerRegionRegistry(),
             _ => Task.CompletedTask,

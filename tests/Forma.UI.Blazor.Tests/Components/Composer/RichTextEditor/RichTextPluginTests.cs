@@ -33,7 +33,7 @@ public sealed class RichTextPluginTests
             doc,
             selection,
             history,
-            new DefaultHtmlSanitizer(),
+            new ComposerHtmlSanitizer(),
             SharedAssetLoader,
             regions,
             _ => Task.CompletedTask,

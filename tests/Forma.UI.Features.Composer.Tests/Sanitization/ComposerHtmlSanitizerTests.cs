@@ -4,11 +4,11 @@ using Forma.UI.Features.Composer.Sanitization;
 
 using Xunit;
 
-public sealed class DefaultHtmlSanitizerTests
+public sealed class ComposerHtmlSanitizerTests
 {
     public sealed class Sanitize
     {
-        private readonly DefaultHtmlSanitizer _sut = new();
+        private readonly ComposerHtmlSanitizer _sut = new();
 
         [Theory]
         [InlineData(null)]
