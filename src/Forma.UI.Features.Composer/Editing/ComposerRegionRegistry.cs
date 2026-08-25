@@ -1,6 +1,6 @@
 namespace Forma.UI.Features.Composer.Editing;
 
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 /// <summary>The composer's own registry of pushed status items and gutter markers.</summary>
 public sealed class ComposerRegionRegistry : IComposerRegionRegistry
@@ -32,11 +32,11 @@ public sealed class ComposerRegionRegistry : IComposerRegionRegistry
     }
 
     /// <inheritdoc />
-    public IComposerGutterMarker CreateGutterMarker(int line, Glyph glyph, string? tooltip = null, string? command = null)
+    public IComposerGutterMarker CreateGutterMarker(int line, Icon icon, string? tooltip = null, string? command = null)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(line);
 
-        var marker = new GutterMarker(this, line, glyph, tooltip, command);
+        var marker = new GutterMarker(this, line, icon, tooltip, command);
         _gutterMarkers.Add(marker);
         RaiseChanged();
 
@@ -129,10 +129,10 @@ public sealed class ComposerRegionRegistry : IComposerRegionRegistry
         }
     }
 
-    private sealed class GutterMarker(ComposerRegionRegistry owner, int line, Glyph glyph, string? tooltip, string? command) : IComposerGutterMarker
+    private sealed class GutterMarker(ComposerRegionRegistry owner, int line, Icon icon, string? tooltip, string? command) : IComposerGutterMarker
     {
         private int _line = line;
-        private Glyph _glyph = glyph;
+        private Icon _icon = icon;
         private string? _tooltip = tooltip;
         private string? _command = command;
         private bool _isDisposed;
@@ -154,17 +154,17 @@ public sealed class ComposerRegionRegistry : IComposerRegionRegistry
             }
         }
 
-        public Glyph Glyph
+        public Icon Icon
         {
-            get => _glyph;
+            get => _icon;
             set
             {
-                if (_glyph == value)
+                if (_icon == value)
                 {
                     return;
                 }
 
-                _glyph = value;
+                _icon = value;
                 owner.RaiseChanged();
             }
         }

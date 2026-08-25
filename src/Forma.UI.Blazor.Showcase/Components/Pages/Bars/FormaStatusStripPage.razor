@@ -2,7 +2,7 @@
 @attribute [ShowcasePage("FormaStatusStrip")]
 @rendermode InteractiveServer
 @using Forma.UI.Blazor.Components.Bars
-@using Forma.UI.Style.Glyphs
+@using Forma.UI.Style.Icons
 @inject IStringLocale<FormaStatusStripPage> L
 
 <h1>FormaStatusStrip</h1>
@@ -89,7 +89,7 @@
     private IReadOnlyList<FormaToolbarItem> _commandItems =>
     [
         new FormaToolbarReadout { Id = "words", Title = L["Word Count"], Value = L["{Count} words", _wordCount] },
-        new FormaToolbarCommand { Id = "retry", Title = L["Retry"], Icon = Glyph.RotateLeft, Command = "retry" },
+        new FormaToolbarCommand { Id = "retry", Title = L["Retry"], Icon = Glyph.Undo, Command = "retry" },
     ];
 
     private void HandleCommand(string command)

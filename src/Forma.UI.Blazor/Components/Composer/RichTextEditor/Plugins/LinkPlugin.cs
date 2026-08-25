@@ -4,7 +4,7 @@ using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 /// <summary>Contributes hyperlink and anchor creation and removal to the rich text editor.</summary>
 public sealed class LinkPlugin(RichTextEditorPlugin editor) : IComposerPlugin
@@ -59,7 +59,7 @@ public sealed class LinkPlugin(RichTextEditorPlugin editor) : IComposerPlugin
                     {
                         Id = "link-remove",
                         Title = "Remove Link",
-                        Icon = Glyph.LinkSlash,
+                        Icon = Glyph.RemoveLink,
                         Command = RemoveLinkCommand,
                         RequiresState = LinkStyle,
                     },
@@ -74,7 +74,7 @@ public sealed class LinkPlugin(RichTextEditorPlugin editor) : IComposerPlugin
                     {
                         Id = "anchor-remove",
                         Title = "Remove Anchor",
-                        Icon = Glyph.AnchorCircleXmark,
+                        Icon = Glyph.RemoveAnchor,
                         Command = RemoveAnchorCommand,
                         RequiresState = AnchorStyle,
                     },

@@ -168,11 +168,17 @@ The showcase serves an interactive page per component, in English, Hebrew, and S
 
 ## Icons
 
-`FormaGlyph` draws the `Glyph` set as inline SVG, so a host loads no icon font. Every glyph is
-drawn in two styles — regular and fill — chosen through `FormaGlyph.Style`.
+`FormaIcon` draws an `Icon` as inline SVG, so a host loads no icon font. An `Icon` pairs a `Glyph`
+— named for what it means rather than for the set it is drawn from — with a `GlyphStyle`, either an
+outline or a solid shape. A bare glyph converts to an icon, so `Glyph.Save` and
+`Icon.Filled(Glyph.Save)` are both accepted wherever an icon is asked for.
+
+Artwork is resolved through `IIconProvider`, so a host can draw its own set instead. Register the
+one this library ships with `services.AddFormaIcons()`.
 
 The artwork is [Phosphor Icons](https://phosphoricons.com), used under the MIT licence reproduced
 in [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md), which ships inside the package. Regenerate
-it with `scripts/fetch-glyphs.ps1`.
+it with `scripts/fetch-glyphs.ps1`, which reads the glyph-to-Phosphor map in `assets/phosphor.json`
+and writes the artwork to `src/Forma.UI.Blazor/Assets/glyphs.json`.
 
 Contributor conventions live in [`.github/copilot-instructions.md`](.github/copilot-instructions.md).

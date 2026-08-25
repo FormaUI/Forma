@@ -1,5 +1,4 @@
-@inherits BunitContext
-
+@inherits FormaBunitContext
 @code {
     public sealed class Component
     {
@@ -470,14 +469,20 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var groups = Group(new FormaToolbarCustomItem { Id = "clock", Title = "Clock", Component = typeof(FormaGlyph) });
+            var groups = Group(new FormaToolbarCustomItem
+            {
+                Id = "clock",
+                Title = "Clock",
+                Component = typeof(FormaIcon),
+                Parameters = new Dictionary<string, object> { ["Icon"] = new Icon(Glyph.Clock) },
+            });
 
             // Act
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
 
             // Assert
             Assert.Empty(cut.FindAll("button"));
-            Assert.NotNull(cut.FindComponent<FormaGlyph>());
+            Assert.NotNull(cut.FindComponent<FormaIcon>());
         }
 
         [Fact]
@@ -489,8 +494,8 @@
             {
                 Id = "trash",
                 Title = "Delete",
-                Component = typeof(FormaGlyph),
-                Parameters = new Dictionary<string, object> { ["Name"] = Glyph.Trash, ["Class"] = "test-marker" },
+                Component = typeof(FormaIcon),
+                Parameters = new Dictionary<string, object> { ["Icon"] = new Icon(Glyph.Delete), ["Class"] = "test-marker" },
             });
 
             // Act

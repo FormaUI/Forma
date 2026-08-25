@@ -13,7 +13,7 @@
                         class="forma-explorer-sidebar-tool forma-explorer-new-folder-tool"
                         aria-label="@L["New Folder"]"
                         @onclick="() => CreateFolderAsync(null)">
-                    <FormaGlyph Name="Glyph.FolderPlus" />
+                    <FormaIcon Icon="Glyph.FolderAdd" />
                 </button>
             }
             <button type="button"
@@ -21,7 +21,7 @@
                     disabled="@(!HasExpandableFolders)"
                     aria-label="@(IsFullyCollapsed ? L["Expand All Folders"] : L["Collapse All Folders"])"
                     @onclick="ToggleAll">
-                <FormaGlyph Name="@(IsFullyCollapsed ? Glyph.SquarePlus : Glyph.SquareMinus)" />
+                <FormaIcon Icon="@(IsFullyCollapsed ? Glyph.PlusSquare : Glyph.MinusSquare)" />
             </button>
         </div>
     </div>
@@ -37,7 +37,7 @@
                 <button type="button"
                         class="forma-explorer-folder-target"
                         @onclick="() => SelectFolderAsync(null)">
-                    <span class="forma-explorer-folder-icon" aria-hidden="true"><FormaGlyph Name="@(CurrentFolder is null ? Glyph.FolderOpen : Glyph.Folder)" /></span>
+                    <span class="forma-explorer-folder-icon" aria-hidden="true"><FormaIcon Icon="@(CurrentFolder is null ? Glyph.FolderOpen : Glyph.Folder)" /></span>
                     <span class="forma-explorer-folder-name">@L["All Media"]</span>
                 </button>
                 <span class="forma-explorer-folder-count">@TotalCount</span>

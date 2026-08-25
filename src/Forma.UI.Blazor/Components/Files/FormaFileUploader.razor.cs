@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -186,10 +186,10 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
         => state switch
         {
             UploadState.Completed => Glyph.Check,
-            UploadState.Failed => Glyph.TriangleExclamation,
-            UploadState.Skipped => Glyph.Forward,
-            UploadState.RolledBack => Glyph.RotateLeft,
-            UploadState.Cancelled => Glyph.Ban,
+            UploadState.Failed => Glyph.Warning,
+            UploadState.Skipped => Glyph.FastForward,
+            UploadState.RolledBack => Glyph.Undo,
+            UploadState.Cancelled => Glyph.Prohibited,
             UploadState.Uploading => Glyph.ArrowUp,
             _ => Glyph.Clock
         };

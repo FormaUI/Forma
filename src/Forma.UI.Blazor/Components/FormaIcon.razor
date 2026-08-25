@@ -1,0 +1,10 @@
+@namespace Forma.UI.Blazor.Components
+
+<svg class="@CssClass"
+     viewBox="@_artwork.ViewBox"
+     fill="currentColor"
+     aria-hidden="true"
+     focusable="false">@foreach (var path in _artwork.Paths)
+                      {
+                          <path d="@path.Data" opacity="@Fade(path)" />
+                      }</svg>

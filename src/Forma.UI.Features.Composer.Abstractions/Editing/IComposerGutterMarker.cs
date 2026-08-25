@@ -1,6 +1,6 @@
 namespace Forma.UI.Features.Composer.Editing;
 
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 /// <summary>A live marker a plugin has pushed to the composer's gutter, mutable for as long as it is held.</summary>
 public interface IComposerGutterMarker : IDisposable
@@ -8,8 +8,8 @@ public interface IComposerGutterMarker : IDisposable
     /// <summary>The zero-based line the marker sits beside.</summary>
     int Line { get; set; }
 
-    /// <summary>The glyph drawn for this marker.</summary>
-    Glyph Glyph { get; set; }
+    /// <summary>The icon drawn for this marker.</summary>
+    Icon Icon { get; set; }
 
     /// <summary>The tooltip shown on hover, or null for none.</summary>
     string? Tooltip { get; set; }

@@ -8,27 +8,27 @@
                 disabled="@(!CanGoBack)"
                 aria-label="@L["Back"]"
                 @onclick="OnBack">
-            <span class="forma-explorer-nav-arrow" aria-hidden="true"><FormaGlyph Name="Glyph.ArrowLeft" /></span>
+            <span class="forma-explorer-nav-arrow" aria-hidden="true"><FormaIcon Icon="Glyph.ArrowLeft" /></span>
         </button>
         <button type="button"
                 class="forma-explorer-nav-button"
                 disabled="@(!CanGoForward)"
                 aria-label="@L["Forward"]"
                 @onclick="OnForward">
-            <span class="forma-explorer-nav-arrow" aria-hidden="true"><FormaGlyph Name="Glyph.ArrowRight" /></span>
+            <span class="forma-explorer-nav-arrow" aria-hidden="true"><FormaIcon Icon="Glyph.ArrowRight" /></span>
         </button>
         <button type="button"
                 class="forma-explorer-nav-button"
                 disabled="@(!CanGoUp)"
                 aria-label="@L["Up to Parent Folder"]"
                 @onclick="OnUp">
-            <FormaGlyph Name="Glyph.ArrowUp" />
+            <FormaIcon Icon="Glyph.ArrowUp" />
         </button>
         <button type="button"
                 class="forma-explorer-nav-button"
                 aria-label="@L["Refresh"]"
                 @onclick="OnRefresh">
-            <FormaGlyph Name="Glyph.RotateRight" />
+            <FormaIcon Icon="Glyph.Redo" />
         </button>
     </div>
 

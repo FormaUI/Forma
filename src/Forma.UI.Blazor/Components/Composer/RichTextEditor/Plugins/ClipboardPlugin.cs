@@ -4,7 +4,7 @@ using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 /// <summary>Contributes clipboard and selection commands to the rich text editor.</summary>
 public sealed class ClipboardPlugin(RichTextEditorPlugin editor) : IComposerPlugin
@@ -41,7 +41,7 @@ public sealed class ClipboardPlugin(RichTextEditorPlugin editor) : IComposerPlug
                     {
                         Id = "select-all",
                         Title = "Select All",
-                        Icon = Glyph.SquareCheck,
+                        Icon = Glyph.CheckSquare,
                         Command = SelectAllCommand,
                         ShortcutDisplay = "Ctrl+A",
                         ShortcutAriaKeys = "Control+a",
@@ -57,7 +57,7 @@ public sealed class ClipboardPlugin(RichTextEditorPlugin editor) : IComposerPlug
                     {
                         Id = "paste-word",
                         Title = "Paste from Word",
-                        Icon = Glyph.FileLines,
+                        Icon = Glyph.FileText,
                         Command = PasteWordCommand,
                     },
                 ],

@@ -3,7 +3,7 @@ namespace Forma.UI.Features.Composer.Tests.Plugins;
 using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Documents;
 using Forma.UI.Features.Composer.Plugins;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 using Xunit;
 
@@ -23,7 +23,7 @@ public sealed class ComposerPluginCatalogTests
     {
         public string Id => id;
         public string Title => id;
-        public Glyph Icon => Glyph.File;
+        public Icon Icon => Glyph.File;
         public ComposerDocumentFormat Format => format;
         public Type EditorComponent => typeof(EditorPlugin);
         public IReadOnlyList<ComposerToolbarItem> Items => [];

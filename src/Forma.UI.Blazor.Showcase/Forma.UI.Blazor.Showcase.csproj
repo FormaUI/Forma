@@ -20,7 +20,8 @@
         <ProjectReference Include="..\Forma.UI.Features\Forma.UI.Features.csproj" />
         <ProjectReference Include="..\Forma.UI.Features.Composer\Forma.UI.Features.Composer.csproj" />
         <ProjectReference Include="..\Forma.UI.Features.Composer.Abstractions\Forma.UI.Features.Composer.Abstractions.csproj" />
-        <ProjectReference Include="..\Forma.UI.Style\Forma.UI.Style.csproj" />
+        <ProjectReference Include="..\Forma.UI.Style.Css\Forma.UI.Style.Css.csproj" />
+        <ProjectReference Include="..\Forma.UI.Style.Icons\Forma.UI.Style.Icons.csproj" />
         <ProjectReference Include="..\Forma.Framework.Resources.Abstractions\Forma.Framework.Resources.Abstractions.csproj" />
         <ProjectReference Include="..\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
         <ProjectReference Include="..\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />

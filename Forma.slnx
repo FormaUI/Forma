@@ -4,7 +4,8 @@
     <Project Path="src\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
     <Project Path="src\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />
     <Project Path="src\Forma.Framework.Localization.Linter\Forma.Framework.Localization.Linter.csproj" />
-    <Project Path="src\Forma.UI.Style\Forma.UI.Style.csproj" />
+    <Project Path="src\Forma.UI.Style.Css\Forma.UI.Style.Css.csproj" />
+    <Project Path="src\Forma.UI.Style.Icons\Forma.UI.Style.Icons.csproj" />
     <Project Path="src\Forma.Framework.Resources.Abstractions\Forma.Framework.Resources.Abstractions.csproj" />
     <Project Path="src\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
     <Project Path="src\Forma.UI.Features.Abstractions\Forma.UI.Features.Abstractions.csproj" />
@@ -20,7 +21,8 @@
     <!-- Tests -->
     <Project Path="tests\Forma.Tests.Support\Forma.Tests.Support.csproj" />
     <Project Path="tests\Forma.UI.Blazor.Tests\Forma.UI.Blazor.Tests.csproj" />
-    <Project Path="tests\Forma.UI.Style.Tests\Forma.UI.Style.Tests.csproj" />
+    <Project Path="tests\Forma.UI.Style.Css.Tests\Forma.UI.Style.Css.Tests.csproj" />
+    <Project Path="tests\Forma.UI.Style.Icons.Tests\Forma.UI.Style.Icons.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Resources.Tests\Forma.Framework.Resources.Tests.csproj" />
     <Project Path="tests\Forma.UI.Features.Tests\Forma.UI.Features.Tests.csproj" />
     <Project Path="tests\Forma.UI.Features.Composer.Tests\Forma.UI.Features.Composer.Tests.csproj" />

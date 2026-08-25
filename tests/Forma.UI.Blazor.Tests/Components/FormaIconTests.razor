@@ -1,0 +1,134 @@
+@inherits FormaBunitContext
+@code {
+    public sealed class Component
+    {
+        private static IEnumerable<Glyph> Drawable
+            => Enum.GetValues<Glyph>().Where(glyph => glyph is not Glyph.None);
+
+        [Fact]
+        public void Should_draw_every_glyph_in_the_set()
+        {
+            // Arrange
+            using var ctx = new FormaIconTests();
+
+            // Act & Assert
+            foreach (var glyph in Drawable)
+            {
+                var cut = ctx.Render(@<FormaIcon Icon="glyph" />);
+
+                Assert.False(
+                    string.IsNullOrWhiteSpace(cut.Find("svg path").GetAttribute("d")),
+                    $"{glyph} drew nothing; it is missing from Assets/glyphs.json.");
+            }
+        }
+
+        [Fact]
+        public void Should_draw_every_glyph_in_every_style()
+        {
+            // Arrange
+            using var ctx = new FormaIconTests();
+
+            // Act & Assert
+            foreach (var glyph in Drawable)
+            {
+                foreach (var style in Enum.GetValues<GlyphStyle>())
+                {
+                    var icon = new Icon(glyph, style);
+                    var cut = ctx.Render(@<FormaIcon Icon="icon" />);
+
+                    Assert.False(
+                        string.IsNullOrWhiteSpace(cut.Find("svg path").GetAttribute("d")),
+                        $"{glyph} drew nothing at {style}.");
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_draw_a_different_shape_for_each_glyph()
+        {
+            // Arrange
+            using var ctx = new FormaIconTests();
+            var shapes = new HashSet<string>(StringComparer.Ordinal);
+
+            // Act & Assert
+            foreach (var glyph in Drawable)
+            {
+                var cut = ctx.Render(@<FormaIcon Icon="glyph" />);
+
+                Assert.True(
+                    shapes.Add(cut.Find("svg").InnerHtml),
+                    $"{glyph} draws the same shape as an earlier glyph.");
+            }
+        }
+
+        [Fact]
+        public void Should_draw_a_filled_glyph_differently_from_its_regular()
+        {
+            // Arrange
+            using var ctx = new FormaIconTests();
+            var regular = new Icon(Glyph.Heart);
+            var filled = Icon.Filled(Glyph.Heart);
+
+            // Act
+            var drawnRegular = ctx.Render(@<FormaIcon Icon="regular" />).Find("svg path").GetAttribute("d");
+            var drawnFilled = ctx.Render(@<FormaIcon Icon="filled" />).Find("svg path").GetAttribute("d");
+
+            // Assert
+            Assert.NotEqual(drawnRegular, drawnFilled);
+        }
+
+        [Fact]
+        public void Should_hide_itself_from_assistive_technology()
+        {
+            // Arrange
+            using var ctx = new FormaIconTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaIcon Icon="Glyph.Check" />);
+
+            // Assert
+            var svg = cut.Find("svg");
+            Assert.Equal("true", svg.GetAttribute("aria-hidden"));
+            Assert.Equal("false", svg.GetAttribute("focusable"));
+        }
+
+        [Fact]
+        public void Should_fill_itself_with_the_current_text_colour()
+        {
+            // Arrange
+            using var ctx = new FormaIconTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaIcon Icon="Glyph.Delete" />);
+
+            // Assert
+            Assert.Equal("currentColor", cut.Find("svg").GetAttribute("fill"));
+        }
+
+        [Fact]
+        public void Should_render_the_supplied_class_beside_its_own()
+        {
+            // Arrange
+            using var ctx = new FormaIconTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaIcon Icon="Glyph.Folder" Class="my-icon" />);
+
+            // Assert
+            var svg = cut.Find("svg");
+            Assert.Contains("forma-icon", svg.ClassName, StringComparison.Ordinal);
+            Assert.Contains("my-icon", svg.ClassName, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_refuse_to_draw_the_absent_glyph()
+        {
+            // Arrange
+            using var ctx = new FormaIconTests();
+
+            // Act & Assert
+            Assert.Throws<ArgumentOutOfRangeException>(
+                () => ctx.Render(@<FormaIcon Icon="Glyph.None" />));
+        }
+    }
+}

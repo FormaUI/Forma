@@ -3,7 +3,7 @@
 @rendermode InteractiveServer
 @using Forma.UI.Blazor.Components.Buttons
 @using Forma.UI.Blazor.Components.Bars
-@using Forma.UI.Style.Glyphs
+@using Forma.UI.Style.Icons
 @using Microsoft.AspNetCore.Components.Web
 @inject IStringLocale<FormaSelectionToolbarPage> L
 
@@ -88,10 +88,10 @@
     ];
 
     private FormaToolbarItem Delete
-        => new FormaToolbarCommand { Id = "delete", Title = L["Delete"], Icon = Glyph.Trash, Command = "delete" };
+        => new FormaToolbarCommand { Id = "delete", Title = L["Delete"], Icon = Glyph.Delete, Command = "delete" };
 
     private FormaToolbarItem Publish
-        => new FormaToolbarCommand { Id = "publish", Title = L["Publish"], Icon = Glyph.CloudArrowUp, Command = "publish" };
+        => new FormaToolbarCommand { Id = "publish", Title = L["Publish"], Icon = Glyph.CloudUpload, Command = "publish" };
 
     private void HandleCommand(string command)
         => _lastCommand = command;

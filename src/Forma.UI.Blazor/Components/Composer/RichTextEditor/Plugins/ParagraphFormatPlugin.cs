@@ -4,7 +4,7 @@ using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 /// <summary>Contributes paragraph and block-level formatting operations: paragraph, headings 1–6, blockquote, and lead text.</summary>
 public sealed class ParagraphFormatPlugin(RichTextEditorPlugin editor) : IComposerPlugin
@@ -84,7 +84,7 @@ public sealed class ParagraphFormatPlugin(RichTextEditorPlugin editor) : ICompos
             {
                 Id = "paragraph-style",
                 Title = "Paragraph Style",
-                Items = [new FormaToolbarToggle { Id = "lead", Title = "Lead", Icon = Glyph.QuoteLeft, Command = LeadCommand }],
+                Items = [new FormaToolbarToggle { Id = "lead", Title = "Lead", Icon = Glyph.Quote, Command = LeadCommand }],
             },
         ]),
     ];

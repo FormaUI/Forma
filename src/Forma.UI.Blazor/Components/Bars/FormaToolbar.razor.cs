@@ -3,7 +3,7 @@ namespace Forma.UI.Blazor.Components.Bars;
 using Forma.UI.Blazor.Components.Buttons;
 using Forma.UI.Blazor.Interop.Behaviours;
 using Forma.UI.Features.Toolbar;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -229,7 +229,7 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
         => action is FormaToolbarToggle { AlternateTitle: { } alternateTitle } && IsToggleActive(action) ? alternateTitle : action.Title;
 
     /// <summary>The icon an action currently shows: a toggle's <see cref="FormaToolbarToggle.AlternateIcon"/> while it is on, otherwise its own icon.</summary>
-    private Glyph? EffectiveIcon(FormaToolbarAction action)
+    private Icon? EffectiveIcon(FormaToolbarAction action)
         => action is FormaToolbarToggle { AlternateIcon: { } alternateIcon } && IsToggleActive(action) ? alternateIcon : action.Icon;
 
     /// <summary>The hover text for an action, or null when its visible label already says the same thing.</summary>

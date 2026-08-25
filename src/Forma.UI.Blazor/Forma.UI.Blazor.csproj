@@ -36,15 +36,19 @@
         <ProjectReference Include="..\Forma.UI.Features.Toolbar.Abstractions\Forma.UI.Features.Toolbar.Abstractions.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.UI.Features.Composer.Abstractions\Forma.UI.Features.Composer.Abstractions.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.UI.Features.Composer\Forma.UI.Features.Composer.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.UI.Style\Forma.UI.Style.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.UI.Style.Css\Forma.UI.Style.Css.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.UI.Style.Icons\Forma.UI.Style.Icons.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Localization.Abstractions\Forma.Framework.Localization.Abstractions.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Resources.Abstractions\Forma.Framework.Resources.Abstractions.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Resources\Forma.Framework.Resources.csproj" PrivateAssets="all" />
     </ItemGroup>
 
+    <!-- These ship embedded in the assembly, so packing them again as content only duplicates them. -->
     <ItemGroup>
         <EmbeddedResource Include="Components\**\*.json" />
         <EmbeddedResource Include="Assets\**\*.json" />
+        <Content Remove="Components\**\*.json" />
+        <Content Remove="Assets\**\*.json" />
     </ItemGroup>
 
 </Project>

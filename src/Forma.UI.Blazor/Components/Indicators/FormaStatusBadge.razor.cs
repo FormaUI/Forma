@@ -2,7 +2,7 @@ namespace Forma.UI.Blazor.Components.Indicators;
 
 using Forma.UI.Features.Indicators;
 using Forma.UI.Style.Css;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 using Microsoft.AspNetCore.Components;
 
@@ -22,7 +22,7 @@ public sealed partial class FormaStatusBadge : ComponentBase
     [Parameter] public CssColor? Foreground { get; set; }
 
     /// <summary>Glyph shown before the text, so the status reads without colour.</summary>
-    [Parameter] public Glyph? Marker { get; set; }
+    [Parameter] public Icon? Marker { get; set; }
 
     /// <summary>Additional attributes applied to the badge element.</summary>
     [Parameter(CaptureUnmatchedValues = true)]
@@ -33,7 +33,7 @@ public sealed partial class FormaStatusBadge : ComponentBase
     private StatusBadgeStyle? Registered
         => string.IsNullOrWhiteSpace(Status) ? null : Catalog.Find(Status);
 
-    private Glyph? ResolvedMarker
+    private Icon? ResolvedMarker
         => Marker ?? Registered?.Marker;
 
     // Host class and style are merged rather than splatted, so supplying either

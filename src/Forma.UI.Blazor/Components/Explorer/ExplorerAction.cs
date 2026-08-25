@@ -1,7 +1,7 @@
 namespace Forma.UI.Blazor.Components.Explorer;
 
 using Forma.Framework.Resources;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 /// <summary>One operation an explorer offers on a single media resource.</summary>
 public sealed record ExplorerAction
@@ -10,7 +10,7 @@ public sealed record ExplorerAction
     public required string Id { get; init; }
 
     /// <summary>The glyph rendered inside the action's button.</summary>
-    public required Glyph Icon { get; init; }
+    public required Icon Icon { get; init; }
 
     /// <summary>Produces the localized, resource-independent label shown for the action.</summary>
     public required Func<string> Text { get; init; }

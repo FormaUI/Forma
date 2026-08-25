@@ -1,11 +1,11 @@
-namespace Forma.UI.Style.Glyphs;
+namespace Forma.UI.Style.Icons;
 
 /// <summary>How a <see cref="Glyph"/> is drawn.</summary>
 public enum GlyphStyle
 {
     /// <summary>An outline, and the style most chrome is drawn at.</summary>
-    Regular,
+    Regular = 0,
 
     /// <summary>A solid shape, for a mark that has to hold its own against surrounding text.</summary>
-    Fill,
+    Filled,
 }

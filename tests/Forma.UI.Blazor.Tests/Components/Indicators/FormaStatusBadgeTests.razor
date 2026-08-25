@@ -1,4 +1,4 @@
-@inherits BunitContext
+@inherits FormaBunitContext
 @using Forma.UI.Style.Css
 
 @code {
@@ -24,7 +24,7 @@
         {
             // Arrange
             using var ctx = new FormaStatusBadgeTests();
-            var expected = ctx.Render(@<FormaGlyph Name="Glyph.Check" />).Find("path").GetAttribute("d");
+            var expected = ctx.Render(@<FormaIcon Icon="Glyph.Check" />).Find("path").GetAttribute("d");
 
             // Act
             var cut = ctx.Render(@<FormaStatusBadge Text="Published" Marker="Glyph.Check" />);

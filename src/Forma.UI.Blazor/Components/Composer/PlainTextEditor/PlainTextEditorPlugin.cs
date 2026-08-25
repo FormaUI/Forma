@@ -3,7 +3,7 @@ namespace Forma.UI.Blazor.Components.Composer.PlainTextEditor;
 using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Documents;
 using Forma.UI.Features.Composer.Plugins;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 /// <summary>Proof-of-routing and fallback editor plugin providing a plain text editing surface.</summary>
 public sealed class PlainTextEditorPlugin : IComposerEditorPlugin
@@ -21,8 +21,8 @@ public sealed class PlainTextEditorPlugin : IComposerEditorPlugin
         => ComposerDocumentFormat.PlainText;
 
     /// <inheritdoc />
-    public Glyph Icon
-        => Glyph.FileLines;
+    public Icon Icon
+        => Glyph.FileText;
 
     /// <inheritdoc />
     public string Id

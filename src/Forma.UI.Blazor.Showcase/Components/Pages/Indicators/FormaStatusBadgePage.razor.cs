@@ -4,7 +4,7 @@ using Forma.Framework.Localization;
 using Forma.UI.Blazor.Components.Indicators;
 using Forma.UI.Features.Indicators;
 using Forma.UI.Style.Css;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 using Microsoft.AspNetCore.Components;
 
@@ -27,10 +27,10 @@ public sealed partial class FormaStatusBadgePage : ComponentBase
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        Catalog.Add(new("order-new", CssColor.FromRgba(73, 184, 124, 0.18), CssColor.FromHex(0x1c7430)) { Marker = Glyph.CartShopping });
-        Catalog.Add(new("order-progress", CssColor.FromRgba(116, 122, 242, 0.18), CssColor.FromHex(0x4b50c4)) { Marker = Glyph.BoxOpen });
+        Catalog.Add(new("order-new", CssColor.FromRgba(73, 184, 124, 0.18), CssColor.FromHex(0x1c7430)) { Marker = Glyph.ShoppingCart });
+        Catalog.Add(new("order-progress", CssColor.FromRgba(116, 122, 242, 0.18), CssColor.FromHex(0x4b50c4)) { Marker = Glyph.Package });
         Catalog.Add(new("order-transit", CssColor.FromRgba(255, 121, 121, 0.22), CssColor.FromHex(0xb23c3c)) { Marker = Glyph.Truck });
-        Catalog.Add(new("order-done", CssColor.FromRgba(22, 168, 255, 0.16), CssColor.FromHex(0x0b6ea8)) { Marker = Glyph.CircleCheck });
-        Catalog.Add(new("order-cancelled", CssColor.FromRgba(125, 137, 156, 0.20), CssColor.FromHex(0x5a6675)) { Marker = Glyph.Ban });
+        Catalog.Add(new("order-done", CssColor.FromRgba(22, 168, 255, 0.16), CssColor.FromHex(0x0b6ea8)) { Marker = Glyph.CheckCircle });
+        Catalog.Add(new("order-cancelled", CssColor.FromRgba(125, 137, 156, 0.20), CssColor.FromHex(0x5a6675)) { Marker = Glyph.Prohibited });
     }
 }

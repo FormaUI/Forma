@@ -92,7 +92,7 @@
 }
 
 /* Keeps labels aligned when only some items carry a glyph. */
-::deep .forma-dropdown-menu-item .forma-glyph {
+::deep .forma-dropdown-menu-item .forma-icon {
     inline-size: 1em;
     color: var(--text-muted-color, #889097);
 }
@@ -119,7 +119,7 @@
         background: var(--hover-background-color, rgba(98, 105, 118, 0.06));
     }
 
-    ::deep .forma-dropdown-menu-item:hover:not(:disabled) .forma-glyph {
+    ::deep .forma-dropdown-menu-item:hover:not(:disabled) .forma-icon {
         color: inherit;
     }
 
@@ -134,7 +134,7 @@
     color: var(--forma-dropdown-menu-destructive-color, var(--danger-color));
 }
 
-::deep .forma-dropdown-menu-item:focus-visible .forma-glyph {
+::deep .forma-dropdown-menu-item:focus-visible .forma-icon {
     color: inherit;
 }
 

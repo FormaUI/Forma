@@ -1,6 +1,6 @@
 namespace Forma.UI.Blazor.Components.Inputs;
 
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 /// <summary>One category of emoji, as the picker's tab strip presents it.</summary>
 public sealed record EmojiGroup
@@ -12,5 +12,5 @@ public sealed record EmojiGroup
     public required string Title { get; init; }
 
     /// <summary>The glyph standing for this group on the tab strip.</summary>
-    public required Glyph Icon { get; init; }
+    public required Icon Icon { get; init; }
 }

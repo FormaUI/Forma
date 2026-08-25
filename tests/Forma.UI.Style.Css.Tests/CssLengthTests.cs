@@ -1,4 +1,4 @@
-namespace Forma.UI.Style.Tests.Css;
+namespace Forma.UI.Style.Css.Tests;
 
 using Forma.Tests.Shared;
 using Forma.UI.Style.Css;

@@ -1,5 +1,4 @@
-@inherits BunitContext
-
+@inherits FormaBunitContext
 @code {
     public sealed class Component
     {
@@ -63,14 +62,14 @@
             // Act
             var cut = ctx.Render(
                 @<FormaTabs>
-                    <FormaTab Title="Settings" Icon="Glyph.Gear">Content</FormaTab>
+                    <FormaTab Title="Settings" Icon="Glyph.Settings">Content</FormaTab>
                 </FormaTabs>);
             var icon = cut.Find(".forma-tab-button svg");
 
             // Assert
             Assert.Multiple(() =>
             {
-                Assert.Contains("forma-glyph", (IEnumerable<string>)icon.ClassList);
+                Assert.Contains("forma-icon", (IEnumerable<string>)icon.ClassList);
                 Assert.Equal("true", icon.GetAttribute("aria-hidden"));
                 Assert.False(string.IsNullOrWhiteSpace(cut.Find(".forma-tab-button svg path").GetAttribute("d")));
             });

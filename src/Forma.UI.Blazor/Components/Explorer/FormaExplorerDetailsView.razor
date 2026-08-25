@@ -15,7 +15,7 @@
                     <span>@L["Name"]</span>
                     @if (Context.SortField == ExplorerSortField.Name)
                     {
-                        <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaGlyph Name="@(Context.SortDirection == ExplorerSortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
+                        <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaIcon Icon="@(Context.SortDirection == ExplorerSortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
                     }
                 </th>
                 @if (ShowsKind)
@@ -26,7 +26,7 @@
                         <span>@L["Type"]</span>
                         @if (Context.SortField == ExplorerSortField.Kind)
                         {
-                            <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaGlyph Name="@(Context.SortDirection == ExplorerSortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
+                            <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaIcon Icon="@(Context.SortDirection == ExplorerSortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
                         }
                     </th>
                 }
@@ -38,7 +38,7 @@
                         <span>@L["Size"]</span>
                         @if (Context.SortField == ExplorerSortField.Size)
                         {
-                            <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaGlyph Name="@(Context.SortDirection == ExplorerSortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
+                            <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaIcon Icon="@(Context.SortDirection == ExplorerSortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
                         }
                     </th>
                 }
@@ -50,7 +50,7 @@
                         <span>@L["Modified"]</span>
                         @if (Context.SortField == ExplorerSortField.DateModified)
                         {
-                            <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaGlyph Name="@(Context.SortDirection == ExplorerSortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
+                            <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaIcon Icon="@(Context.SortDirection == ExplorerSortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
                         }
                     </th>
                 }
@@ -62,7 +62,7 @@
                         <span>@L["Added"]</span>
                         @if (Context.SortField == ExplorerSortField.DateAdded)
                         {
-                            <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaGlyph Name="@(Context.SortDirection == ExplorerSortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
+                            <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaIcon Icon="@(Context.SortDirection == ExplorerSortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
                         }
                     </th>
                 }
@@ -84,7 +84,7 @@
                                     aria-label="@Context.SelectLabel(resource)"
                                     aria-pressed="@(selected ? "true" : "false")"
                                     @onclick="() => Context.ToggleSelectAsync(resource)">
-                                <FormaGlyph Name="Glyph.Check" />
+                                <FormaIcon Icon="Glyph.Check" />
                             </button>
                         }
                         else

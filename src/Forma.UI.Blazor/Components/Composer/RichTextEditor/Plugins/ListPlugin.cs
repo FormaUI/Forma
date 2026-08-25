@@ -4,7 +4,7 @@ using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 /// <summary>Contributes bulleted and numbered lists, indentation, and outdent operations.</summary>
 public sealed class ListPlugin(RichTextEditorPlugin editor) : IComposerPlugin
@@ -40,8 +40,8 @@ public sealed class ListPlugin(RichTextEditorPlugin editor) : IComposerPlugin
                 Title = "Lists",
                 Items =
                 [
-                    new FormaToolbarToggle { Id = "bullet-list", Title = "Bulleted List", Icon = Glyph.ListUl, Command = BulletListCommand },
-                    new FormaToolbarToggle { Id = "ordered-list", Title = "Numbered List", Icon = Glyph.ListOl, Command = OrderedListCommand },
+                    new FormaToolbarToggle { Id = "bullet-list", Title = "Bulleted List", Icon = Glyph.BulletList, Command = BulletListCommand },
+                    new FormaToolbarToggle { Id = "ordered-list", Title = "Numbered List", Icon = Glyph.NumberedList, Command = OrderedListCommand },
                 ],
             },
             new FormaToolbarGroup

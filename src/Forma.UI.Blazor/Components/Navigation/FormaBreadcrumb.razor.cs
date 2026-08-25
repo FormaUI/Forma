@@ -1,7 +1,7 @@
 namespace Forma.UI.Blazor.Components.Navigation;
 
 using Forma.Framework.Localization;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -13,7 +13,7 @@ public sealed partial class FormaBreadcrumb<TItem> : ComponentBase
     [Parameter, EditorRequired] public IReadOnlyList<BreadcrumbItem<TItem>> Items { get; set; } = [];
 
     /// <summary>An icon drawn before the first segment.</summary>
-    [Parameter] public Glyph? RootIcon { get; set; }
+    [Parameter] public Icon? RootIcon { get; set; }
 
     /// <summary>Accessible name for the trail. Defaults to a localized "Breadcrumb".</summary>
     [Parameter] public string? AriaLabel { get; set; }

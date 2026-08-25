@@ -6,7 +6,7 @@ using Forma.Framework.Localization;
 using Forma.UI.Blazor.Components.Indicators;
 using Forma.UI.Blazor.Interop.Behaviours;
 using Forma.UI.Blazor.Interop.Operations;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -77,7 +77,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     private IReadOnlyList<EmojiGroup> Tabs
         => Recent.Count == 0
             ? EmojiCatalog.Groups
-            : [new EmojiGroup { Id = RecentGroupId, Title = L["Recently Used"], Icon = Glyph.ClockRotateLeft }, .. EmojiCatalog.Groups];
+            : [new EmojiGroup { Id = RecentGroupId, Title = L["Recently Used"], Icon = Glyph.History }, .. EmojiCatalog.Groups];
 
     private string ActiveGroupId => _activeGroupId ?? Tabs[0].Id;
 

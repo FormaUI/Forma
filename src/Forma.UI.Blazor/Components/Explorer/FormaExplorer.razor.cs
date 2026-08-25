@@ -6,7 +6,7 @@ using Forma.Framework.Localization;
 using Forma.Framework.Resources;
 using Forma.UI.Blazor.Components.Feedback;
 using Forma.UI.Blazor.Interop.Behaviours;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -782,7 +782,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable
             actions.Add(new ExplorerAction
             {
                 Id = "delete",
-                Icon = Glyph.Trash,
+                Icon = Glyph.Delete,
                 Text = () => L["Delete"].Value,
                 Invoke = resource => { OpenDeleteDialog(resource); StateHasChanged(); return Task.CompletedTask; },
                 IsDestructive = true

@@ -4,7 +4,7 @@ using Forma.UI.Blazor.Components.Composer.RichTextEditor.Plugins;
 using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Documents;
 using Forma.UI.Features.Composer.Plugins;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 /// <summary>Rich text visual authoring surface for FormaComposer.</summary>
 public sealed class RichTextEditorPlugin : IComposerEditorPlugin
@@ -40,7 +40,7 @@ public sealed class RichTextEditorPlugin : IComposerEditorPlugin
     public string Title => "Rich Text";
 
     /// <inheritdoc />
-    public Glyph Icon => Glyph.PenToSquare;
+    public Icon Icon => Glyph.Edit;
 
     /// <inheritdoc />
     public ComposerDocumentFormat Format => ComposerDocumentFormat.Html;

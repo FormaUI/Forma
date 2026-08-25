@@ -1,5 +1,4 @@
-@inherits BunitContext
-
+@inherits FormaBunitContext
 @code {
     public sealed class Component
     {
@@ -49,7 +48,7 @@
         {
             // Arrange
             using var ctx = new FormaEyeButtonTests();
-            var expected = ctx.Render(@<FormaGlyph Name="Glyph.EyeSlash" />).Find("path").GetAttribute("d");
+            var expected = ctx.Render(@<FormaIcon Icon="Glyph.EyeSlash" />).Find("path").GetAttribute("d");
 
             // Act
             var cut = ctx.Render(@<FormaEyeButton Label="Show Password" Revealed="false" />);
@@ -63,7 +62,7 @@
         {
             // Arrange
             using var ctx = new FormaEyeButtonTests();
-            var expected = ctx.Render(@<FormaGlyph Name="Glyph.Eye" />).Find("path").GetAttribute("d");
+            var expected = ctx.Render(@<FormaIcon Icon="Glyph.Eye" />).Find("path").GetAttribute("d");
 
             // Act
             var cut = ctx.Render(@<FormaEyeButton Label="Hide Password" Revealed="true" />);

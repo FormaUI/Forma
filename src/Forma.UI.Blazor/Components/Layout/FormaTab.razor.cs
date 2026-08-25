@@ -1,6 +1,6 @@
 namespace Forma.UI.Blazor.Components.Layout;
 
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 using Microsoft.AspNetCore.Components;
 
@@ -15,7 +15,7 @@ public sealed partial class FormaTab : IDisposable
     [Parameter, EditorRequired] public string Title { get; set; } = "";
 
     /// <summary>A glyph shown before the title.</summary>
-    [Parameter] public Glyph? Icon { get; set; }
+    [Parameter] public Icon? Icon { get; set; }
 
     /// <summary>The identifier a controlled parent selects this tab by. A generated one stands in while this is unset.</summary>
     [Parameter] public string? TabId { get; set; }

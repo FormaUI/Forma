@@ -1,7 +1,7 @@
 namespace Forma.UI.Features.Indicators;
 
 using Forma.UI.Style.Css;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 /// <summary>A named status badge and the colours it renders with.</summary>
 public sealed record StatusBadgeStyle
@@ -22,8 +22,8 @@ public sealed record StatusBadgeStyle
     /// <summary>Text colour of the badge.</summary>
     public CssColor Foreground { get; }
 
-    /// <summary>Glyph shown before the text, so the status reads without colour.</summary>
-    public Glyph? Marker { get; init; }
+    /// <summary>Icon shown before the text, so the status reads without colour.</summary>
+    public Icon? Marker { get; init; }
 
     /// <summary>Name the badge is referenced by.</summary>
     public string Name { get; }

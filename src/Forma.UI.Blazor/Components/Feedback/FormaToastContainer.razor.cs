@@ -2,7 +2,7 @@ namespace Forma.UI.Blazor.Components.Feedback;
 
 using Forma.Framework.Localization;
 using Forma.UI.Features.Feedback;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 using Microsoft.AspNetCore.Components;
 
@@ -21,10 +21,10 @@ public sealed partial class FormaToastContainer : IDisposable
     private static Glyph MarkerFor(ToastType type)
         => type switch
         {
-            ToastType.Success => Glyph.CircleCheck,
-            ToastType.Error => Glyph.CircleXmark,
-            ToastType.Warning => Glyph.TriangleExclamation,
-            _ => Glyph.CircleInfo
+            ToastType.Success => Glyph.CheckCircle,
+            ToastType.Error => Glyph.CloseCircle,
+            ToastType.Warning => Glyph.Warning,
+            _ => Glyph.Information
         };
 
     private Task HandleChangeAsync()

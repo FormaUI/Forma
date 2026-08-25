@@ -105,7 +105,7 @@
     <div class="demo-box demo-box-flush demo-command-bar-narrow">
         <FormaToolbar Label="@L["Formatting"]" Items="_manyGroups">
             <TrailingContent>
-                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" IconOnly="true" aria-label="@L["More"]"><FormaGlyph Name="Glyph.EllipsisVertical" /></FormaButton>
+                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" IconOnly="true" aria-label="@L["More"]"><FormaIcon Icon="Glyph.MoreVertical" /></FormaButton>
             </TrailingContent>
         </FormaToolbar>
     </div>
@@ -183,7 +183,7 @@
             [
                 new FormaToolbarCommand { Id = "add", Title = L["Add New"], Icon = Glyph.Plus, Command = "library.add" },
                 new FormaToolbarCommand { Id = "upload", Title = L["Upload"], Icon = Glyph.Upload, Command = "library.upload" },
-                new FormaToolbarCommand { Id = "delete", Title = L["Delete"], Icon = Glyph.Trash, Command = "library.delete" },
+                new FormaToolbarCommand { Id = "delete", Title = L["Delete"], Icon = Glyph.Delete, Command = "library.delete" },
             ],
         },
     ];
@@ -256,7 +256,7 @@
         {
             Id = "actions",
             Title = L["Actions"],
-            Items = [new FormaToolbarCommand { Id = "recount", Title = L["Recount"], Icon = Glyph.ArrowsRotate, Command = "document.recount" }],
+            Items = [new FormaToolbarCommand { Id = "recount", Title = L["Recount"], Icon = Glyph.Refresh, Command = "document.recount" }],
         },
     ];
 
@@ -302,7 +302,7 @@
             Items =
             [
                 new FormaToolbarCommand { Id = "add", Title = L["Add New"], Icon = Glyph.Plus, Command = "library.add" },
-                new FormaToolbarCommand { Id = "delete", Title = L["Delete"], Icon = Glyph.Trash, Command = "library.delete", IsDisabled = !_canDelete, ShortcutDisplay = "Ctrl+D", ShortcutAriaKeys = "Control+D" },
+                new FormaToolbarCommand { Id = "delete", Title = L["Delete"], Icon = Glyph.Delete, Command = "library.delete", IsDisabled = !_canDelete, ShortcutDisplay = "Ctrl+D", ShortcutAriaKeys = "Control+D" },
             ],
         },
     ];

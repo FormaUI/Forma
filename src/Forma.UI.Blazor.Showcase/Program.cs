@@ -5,6 +5,7 @@ using Forma.Framework.Resources.Markdown;
 using Forma.Framework.Resources.Office;
 using Forma.UI.Blazor.Components.Explorer;
 using Forma.UI.Blazor.Globalization;
+using Forma.UI.Blazor.Icons;
 using Forma.UI.Blazor.Showcase;
 using Forma.UI.Blazor.Showcase.Features.Media;
 using Forma.UI.Blazor.Showcase.Features.Upload;
@@ -12,10 +13,11 @@ using Forma.UI.Features.Feedback;
 using Forma.UI.Features.Indicators;
 using Forma.UI.Features.Media;
 using Forma.UI.Style.Css;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddJsonLocalization();
+builder.Services.AddFormaIcons();
 builder.Services.AddSingleton(new SandboxAssets(builder.Environment.ContentRootPath));
 builder.Services.AddScoped<IConfirmDialogService, ConfirmDialogService>();
 builder.Services.AddScoped<IToastService, ToastService>();
@@ -33,9 +35,9 @@ builder.Services.AddSingleton<IStatusBadgeCatalog>(new StatusBadgeCatalog(
 [
     new("draft", CssColor.FromRgba(98, 105, 118, 0.12), CssColor.FromHex(0x2c384a)) { Marker = Glyph.Pen },
     new("scheduled", CssColor.FromRgba(48, 127, 221, 0.14), CssColor.FromHex(0x1c5fa8)) { Marker = Glyph.Clock },
-    new("published", CssColor.FromRgba(40, 167, 69, 0.14), CssColor.FromHex(0x1c7430)) { Marker = Glyph.CircleCheck },
-    new("pending", CssColor.FromRgba(255, 193, 7, 0.20), CssColor.FromHex(0x8a6100)) { Marker = Glyph.HourglassHalf },
-    new("rejected", CssColor.FromRgba(214, 57, 57, 0.14), CssColor.FromHex(0xa32222)) { Marker = Glyph.CircleXmark }
+    new("published", CssColor.FromRgba(40, 167, 69, 0.14), CssColor.FromHex(0x1c7430)) { Marker = Glyph.CheckCircle },
+    new("pending", CssColor.FromRgba(255, 193, 7, 0.20), CssColor.FromHex(0x8a6100)) { Marker = Glyph.Hourglass },
+    new("rejected", CssColor.FromRgba(214, 57, 57, 0.14), CssColor.FromHex(0xa32222)) { Marker = Glyph.CloseCircle }
 ]));
 
 builder.Services.AddCultureRouting(new CultureRouterOptions

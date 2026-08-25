@@ -2,7 +2,7 @@ namespace Forma.UI.Blazor.Components.Explorer;
 
 using Forma.Framework.Localization;
 using Forma.UI.Blazor.Components.Buttons;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 using Microsoft.AspNetCore.Components;
 
@@ -73,7 +73,7 @@ public sealed partial class FormaExplorerToolbar : ComponentBase
         => GlyphFor(SortDirection);
 
     private static Glyph GlyphFor(ExplorerSortDirection direction)
-        => direction == ExplorerSortDirection.Ascending ? Glyph.ArrowDownAZ : Glyph.ArrowUpZA;
+        => direction == ExplorerSortDirection.Ascending ? Glyph.SortAscending : Glyph.SortDescending;
 
     private string SortFieldLabel(ExplorerSortField field)
         => field switch

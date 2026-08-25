@@ -4,7 +4,7 @@ using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 /// <summary>Contributes text alignment and paragraph direction operations.</summary>
 public sealed class AlignmentBidiPlugin(RichTextEditorPlugin editor) : IComposerPlugin
@@ -61,8 +61,8 @@ public sealed class AlignmentBidiPlugin(RichTextEditorPlugin editor) : IComposer
                 Title = "Text Direction",
                 Items =
                 [
-                    new FormaToolbarToggle { Id = "dir-ltr", Title = "Left to Right", Icon = Glyph.ArrowRightLong, Command = DirectionLtrCommand },
-                    new FormaToolbarToggle { Id = "dir-rtl", Title = "Right to Left", Icon = Glyph.ArrowLeftLong, Command = DirectionRtlCommand },
+                    new FormaToolbarToggle { Id = "dir-ltr", Title = "Left to Right", Icon = Glyph.TextDirectionLtr, Command = DirectionLtrCommand },
+                    new FormaToolbarToggle { Id = "dir-rtl", Title = "Right to Left", Icon = Glyph.TextDirectionRtl, Command = DirectionRtlCommand },
                 ],
             },
         ]),

@@ -5,7 +5,7 @@
                    aria-label="@Label"
                    disabled="@(Disabled ? true : null)">
     <Trigger>
-        <FormaGlyph Name="@(Orientation == MenuOrientation.Vertical ? Glyph.EllipsisVertical : Glyph.Ellipsis)" />
+        <FormaIcon Icon="@(Orientation == MenuOrientation.Vertical ? Glyph.MoreVertical : Glyph.More)" />
     </Trigger>
     <ChildContent>
         @ChildContent

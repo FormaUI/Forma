@@ -8,7 +8,7 @@ using Forma.UI.Features.Composer.Documents;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 /// <summary>A source-oriented surface, numbering its lines in a gutter and renaming a symbol from a row of its own.</summary>
 public sealed class SourceEditorPlugin : IComposerEditorPlugin
@@ -28,7 +28,7 @@ public sealed class SourceEditorPlugin : IComposerEditorPlugin
     public string Title => "Source";
 
     /// <inheritdoc />
-    public Glyph Icon => Glyph.Code;
+    public Icon Icon => Glyph.Code;
 
     /// <inheritdoc />
     public ComposerDocumentFormat Format => ComposerDocumentFormat.PlainText;
@@ -43,7 +43,7 @@ public sealed class SourceEditorPlugin : IComposerEditorPlugin
     /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> Items =>
     [
-        new(RefactorRow, [new FormaToolbarCommand { Id = "rename", Title = "Rename Symbol", Icon = Glyph.PenToSquare, Command = RenameCommand }]),
+        new(RefactorRow, [new FormaToolbarCommand { Id = "rename", Title = "Rename Symbol", Icon = Glyph.Edit, Command = RenameCommand }]),
     ];
 
     /// <inheritdoc />
@@ -103,7 +103,7 @@ public sealed class TextEditorPlugin : IComposerEditorPlugin
     public string Title => "Plain Text";
 
     /// <inheritdoc />
-    public Glyph Icon => Glyph.FileLines;
+    public Icon Icon => Glyph.FileText;
 
     /// <inheritdoc />
     public ComposerDocumentFormat Format => ComposerDocumentFormat.PlainText;
@@ -120,13 +120,13 @@ public sealed class TextEditorPlugin : IComposerEditorPlugin
     [
         new(ComposerRows.BuiltIn,
         [
-            new FormaToolbarCommand { Id = "number-lines", Title = "Number Lines", Icon = Glyph.ListOl, Command = NumberLinesCommand },
-            new FormaToolbarCommand { Id = "word-count", Title = "Word Count", Icon = Glyph.TextWidth, Command = WordCountCommand },
+            new FormaToolbarCommand { Id = "number-lines", Title = "Number Lines", Icon = Glyph.NumberedList, Command = NumberLinesCommand },
+            new FormaToolbarCommand { Id = "word-count", Title = "Word Count", Icon = Glyph.LineHeight, Command = WordCountCommand },
         ]),
         new(SortingRow,
         [
-            new FormaToolbarCommand { Id = "sort-ascending", Title = "Sort A to Z", Icon = Glyph.ArrowDownAZ, Command = SortAscendingCommand },
-            new FormaToolbarCommand { Id = "sort-descending", Title = "Sort Z to A", Icon = Glyph.ArrowUpZA, Command = SortDescendingCommand },
+            new FormaToolbarCommand { Id = "sort-ascending", Title = "Sort A to Z", Icon = Glyph.SortAscending, Command = SortAscendingCommand },
+            new FormaToolbarCommand { Id = "sort-descending", Title = "Sort Z to A", Icon = Glyph.SortDescending, Command = SortDescendingCommand },
         ]),
     ];
 
@@ -279,8 +279,8 @@ public sealed class CleanupPlugin : IComposerPlugin
                 Title = "Cleanup",
                 Items =
                 [
-                    new FormaToolbarCommand { Id = "remove-blank-lines", Title = "Remove Blank Lines", Icon = Glyph.SquareMinus, Command = RemoveBlankLinesCommand },
-                    new FormaToolbarCommand { Id = "clear", Title = "Clear", Icon = Glyph.Trash, Command = ClearCommand },
+                    new FormaToolbarCommand { Id = "remove-blank-lines", Title = "Remove Blank Lines", Icon = Glyph.MinusSquare, Command = RemoveBlankLinesCommand },
+                    new FormaToolbarCommand { Id = "clear", Title = "Clear", Icon = Glyph.Delete, Command = ClearCommand },
                 ],
             },
         ]),

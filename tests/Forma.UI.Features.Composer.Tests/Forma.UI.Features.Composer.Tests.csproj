@@ -20,7 +20,7 @@
         <ProjectReference Include="..\..\src\Forma.UI.Features.Toolbar.Abstractions\Forma.UI.Features.Toolbar.Abstractions.csproj" />
         <ProjectReference Include="..\..\src\Forma.UI.Features.Composer.Abstractions\Forma.UI.Features.Composer.Abstractions.csproj" />
         <ProjectReference Include="..\..\src\Forma.UI.Features.Composer\Forma.UI.Features.Composer.csproj" />
-        <ProjectReference Include="..\..\src\Forma.UI.Style\Forma.UI.Style.csproj" />
+        <ProjectReference Include="..\..\src\Forma.UI.Style.Icons\Forma.UI.Style.Icons.csproj" />
     </ItemGroup>
 
 </Project>

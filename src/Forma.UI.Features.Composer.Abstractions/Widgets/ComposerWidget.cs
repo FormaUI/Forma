@@ -1,6 +1,6 @@
 namespace Forma.UI.Features.Composer.Widgets;
 
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 /// <summary>Describes a widget available to a designer.</summary>
 public sealed record ComposerWidget
@@ -15,7 +15,7 @@ public sealed record ComposerWidget
     public required string Category { get; init; }
 
     /// <summary>The icon shown in the palette.</summary>
-    public Glyph Icon { get; init; }
+    public Icon Icon { get; init; }
 
     /// <summary>The component rendering the widget on the canvas.</summary>
     public required Type Component { get; init; }

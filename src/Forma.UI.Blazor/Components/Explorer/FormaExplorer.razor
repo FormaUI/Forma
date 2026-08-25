@@ -51,7 +51,7 @@
         @if (_rejectionMessage is { Length: > 0 } rejection)
         {
             <div class="forma-explorer-rejection">
-                <span class="forma-explorer-rejection-icon" aria-hidden="true"><FormaGlyph Name="Glyph.CircleExclamation" /></span>
+                <span class="forma-explorer-rejection-icon" aria-hidden="true"><FormaIcon Icon="Glyph.Error" /></span>
                 <span class="forma-explorer-rejection-text">@rejection</span>
                 <FormaCloseButton Label="@L["Dismiss"]" OnClick="() => _rejectionMessage = null" />
             </div>
@@ -107,7 +107,7 @@
                 @if (VisibleResources.Count == 0)
                 {
                     <div class="forma-explorer-empty" role="status">
-                        <span class="forma-explorer-empty-icon" aria-hidden="true"><FormaGlyph Name="Glyph.Images" /></span>
+                        <span class="forma-explorer-empty-icon" aria-hidden="true"><FormaIcon Icon="Glyph.Images" /></span>
                         @if (_isQuerying)
                         {
                             <p>@L["Loading media"]</p>
@@ -155,7 +155,7 @@
                         else
                         {
                             <FormaButton Variant="ButtonVariant.Ghost" class="forma-explorer-load-more-button" OnClick="HandleReachedAsync">
-                                <span class="forma-explorer-load-more-icon" aria-hidden="true"><FormaGlyph Name="Glyph.ChevronDown" /></span>
+                                <span class="forma-explorer-load-more-icon" aria-hidden="true"><FormaIcon Icon="Glyph.ChevronDown" /></span>
                                 @L["Load More"]
                             </FormaButton>
                         }

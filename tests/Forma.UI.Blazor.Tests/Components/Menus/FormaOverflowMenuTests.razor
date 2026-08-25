@@ -1,4 +1,4 @@
-@inherits BunitContext
+@inherits FormaBunitContext
 @using Forma.UI.Blazor.Components.Buttons
 @using Forma.UI.Blazor.Components.Menus
 
@@ -23,7 +23,7 @@
         {
             // Arrange
             using var ctx = new FormaOverflowMenuTests();
-            var expected = ctx.Render(@<FormaGlyph Name="Glyph.Ellipsis" />).Find("path").GetAttribute("d");
+            var expected = ctx.Render(@<FormaIcon Icon="Glyph.More" />).Find("path").GetAttribute("d");
 
             // Act
             var cut = ctx.Render(
@@ -40,7 +40,7 @@
         {
             // Arrange
             using var ctx = new FormaOverflowMenuTests();
-            var expected = ctx.Render(@<FormaGlyph Name="Glyph.EllipsisVertical" />).Find("path").GetAttribute("d");
+            var expected = ctx.Render(@<FormaIcon Icon="Glyph.MoreVertical" />).Find("path").GetAttribute("d");
 
             // Act
             var cut = ctx.Render(

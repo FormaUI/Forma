@@ -1,6 +1,6 @@
 namespace Forma.UI.Features.Composer.Editing;
 
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 /// <summary>The status items and gutter markers plugins have pushed, shared across whichever editor is active.</summary>
 /// <remarks>Every member must be called from the composer's own dispatcher thread; a plugin updating a handle from a timer or background continuation must first marshal onto it.</remarks>
@@ -19,5 +19,5 @@ public interface IComposerRegionRegistry
     IComposerStatusItem CreateStatusItem(string text, string? tooltip = null, string? command = null);
 
     /// <summary>Pushes a gutter marker, returning the handle that keeps it visible until disposed.</summary>
-    IComposerGutterMarker CreateGutterMarker(int line, Glyph glyph, string? tooltip = null, string? command = null);
+    IComposerGutterMarker CreateGutterMarker(int line, Icon icon, string? tooltip = null, string? command = null);
 }

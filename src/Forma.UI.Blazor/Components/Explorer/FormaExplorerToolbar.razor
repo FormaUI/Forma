@@ -12,12 +12,12 @@
                 @if (FileOptions.AllowDelete)
                 {
                     <FormaButton Variant="ButtonVariant.Danger" Size="ButtonSize.Mini" class="forma-explorer-delete-button" OnClick="OnDelete">
-                        <FormaGlyph Name="Glyph.Trash" />
+                        <FormaIcon Icon="Glyph.Delete" />
                         @L["Delete"]
                     </FormaButton>
                 }
                 <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-explorer-clear-button" OnClick="OnClearSelection">
-                    <FormaGlyph Name="Glyph.SquareMinus" />
+                    <FormaIcon Icon="Glyph.MinusSquare" />
                     @L["Clear"]
                 </FormaButton>
             </div>
@@ -45,12 +45,12 @@
                          OnClick="OnToggleSelectMode">
                 @if (IsSelectMode)
                 {
-                    <FormaGlyph Name="Glyph.Xmark" />
+                    <FormaIcon Icon="Glyph.Close" />
                     @L["Cancel"]
                 }
                 else
                 {
-                    <FormaGlyph Name="Glyph.SquareCheck" />
+                    <FormaIcon Icon="Glyph.CheckSquare" />
                     @L["Select"]
                 }
             </FormaButton>
@@ -58,14 +58,14 @@
         @if (FileOptions.AllowFolderCreate && ShowNewFolder)
         {
             <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-explorer-new-folder-button" OnClick="OnFolderCreate">
-                <FormaGlyph Name="Glyph.FolderPlus" />
+                <FormaIcon Icon="Glyph.FolderAdd" />
                 @L["New Folder"]
             </FormaButton>
         }
         @if (FileOptions.AllowUpload)
         {
             <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-explorer-upload-button" OnClick="OnToggleUpload">
-                <FormaGlyph Name="Glyph.CloudArrowUp" />
+                <FormaIcon Icon="Glyph.CloudUpload" />
                 @L["Upload"]
             </FormaButton>
         }
@@ -79,21 +79,21 @@
                     aria-label="@L["Thumbnails"]"
                     aria-pressed="@(ViewMode == ExplorerViewMode.Thumbnails ? "true" : "false")"
                     @onclick="() => ViewModeChanged.InvokeAsync(ExplorerViewMode.Thumbnails)">
-                <FormaGlyph Name="Glyph.BorderAll" />
+                <FormaIcon Icon="Glyph.GridView" />
             </button>
             <button type="button"
                     class="forma-explorer-view-button @(ViewMode == ExplorerViewMode.Details ? "is-active" : "")"
                     aria-label="@L["Details"]"
                     aria-pressed="@(ViewMode == ExplorerViewMode.Details ? "true" : "false")"
                     @onclick="() => ViewModeChanged.InvokeAsync(ExplorerViewMode.Details)">
-                <FormaGlyph Name="Glyph.TableList" />
+                <FormaIcon Icon="Glyph.ListView" />
             </button>
             <button type="button"
                     class="forma-explorer-view-button @(ViewMode == ExplorerViewMode.List ? "is-active" : "")"
                     aria-label="@L["List"]"
                     aria-pressed="@(ViewMode == ExplorerViewMode.List ? "true" : "false")"
                     @onclick="() => ViewModeChanged.InvokeAsync(ExplorerViewMode.List)">
-                <FormaGlyph Name="Glyph.List" />
+                <FormaIcon Icon="Glyph.List" />
             </button>
         </div>
 
@@ -102,9 +102,9 @@
                            TriggerOptions="SortTriggerOptions"
                            aria-label="@L["Sort By"]">
             <Trigger>
-                <FormaGlyph Name="@DirectionGlyph" />
+                <FormaIcon Icon="@DirectionGlyph" />
                 <span class="forma-explorer-sort-trigger-text">@SortFieldLabel(SortField)</span>
-                <span class="forma-explorer-sort-trigger-caret" aria-hidden="true"><FormaGlyph Name="Glyph.ChevronDown" /></span>
+                <span class="forma-explorer-sort-trigger-caret" aria-hidden="true"><FormaIcon Icon="Glyph.ChevronDown" /></span>
             </Trigger>
             <ChildContent>
                 <div role="group" aria-label="@L["Sort By"]">
@@ -124,7 +124,7 @@
                         <FormaDropDownMenuItem IsSelected="@(SortDirection == direction)"
                                                data-sort-direction="@direction"
                                                OnClick="() => SortDirectionChanged.InvokeAsync(direction)">
-                            <FormaGlyph Name="@GlyphFor(direction)" />
+                            <FormaIcon Icon="@GlyphFor(direction)" />
                             <span>@DirectionLabel(direction)</span>
                         </FormaDropDownMenuItem>
                     }

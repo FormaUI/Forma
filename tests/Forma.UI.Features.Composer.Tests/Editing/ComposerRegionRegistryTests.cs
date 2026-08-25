@@ -1,7 +1,7 @@
 namespace Forma.UI.Features.Composer.Tests.Editing;
 
 using Forma.UI.Features.Composer.Editing;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 using Xunit;
 
@@ -148,13 +148,13 @@ public sealed class ComposerRegionRegistryTests
         var registry = new ComposerRegionRegistry();
 
         // Act
-        registry.CreateGutterMarker(3, Glyph.CircleDot);
+        registry.CreateGutterMarker(3, Glyph.RadioButton);
 
         // Assert
         var marker = Assert.Single(registry.GutterMarkers);
         Assert.Multiple(
             () => Assert.Equal(3, marker.Line),
-            () => Assert.Equal(Glyph.CircleDot, marker.Glyph));
+            () => Assert.Equal(Glyph.RadioButton, marker.Icon));
     }
 
     [Fact]
@@ -162,7 +162,7 @@ public sealed class ComposerRegionRegistryTests
     {
         // Arrange
         var registry = new ComposerRegionRegistry();
-        var marker = registry.CreateGutterMarker(3, Glyph.CircleDot);
+        var marker = registry.CreateGutterMarker(3, Glyph.RadioButton);
 
         // Act
         marker.Dispose();
@@ -178,7 +178,7 @@ public sealed class ComposerRegionRegistryTests
         var registry = new ComposerRegionRegistry();
 
         // Act & Assert
-        Assert.Throws<ArgumentOutOfRangeException>(() => registry.CreateGutterMarker(-1, Glyph.CircleDot));
+        Assert.Throws<ArgumentOutOfRangeException>(() => registry.CreateGutterMarker(-1, Glyph.RadioButton));
     }
 
     [Fact]

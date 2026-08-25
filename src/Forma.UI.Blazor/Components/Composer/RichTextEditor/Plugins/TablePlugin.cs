@@ -4,7 +4,7 @@ using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 /// <summary>Contributes HTML table insertion and cell, row, and column manipulation commands to the rich text editor.</summary>
 public sealed class TablePlugin(
@@ -67,15 +67,15 @@ public sealed class TablePlugin(
                         Icon = Glyph.Table,
                         Options =
                         [
-                            new FormaToolbarOption { Id = "table-insert", Title = "Insert Table...", Icon = Glyph.TableCells, Command = InsertTableCommand },
-                            new FormaToolbarOption { Id = "table-row-before", Title = "Add Row Above", Icon = Glyph.RowsPlusTop, Command = AddRowBeforeCommand },
-                            new FormaToolbarOption { Id = "table-row-after", Title = "Add Row Below", Icon = Glyph.RowsPlusBottom, Command = AddRowAfterCommand },
-                            new FormaToolbarOption { Id = "table-row-delete", Title = "Delete Row", Icon = Glyph.Bars, Command = DeleteRowCommand },
-                            new FormaToolbarOption { Id = "table-col-before", Title = "Add Column Left", Icon = Glyph.ColumnsPlusLeft, Command = AddColBeforeCommand },
-                            new FormaToolbarOption { Id = "table-col-after", Title = "Add Column Right", Icon = Glyph.ColumnsPlusRight, Command = AddColAfterCommand },
-                            new FormaToolbarOption { Id = "table-col-delete", Title = "Delete Column", Icon = Glyph.TableColumns, Command = DeleteColCommand },
-                            new FormaToolbarOption { Id = "table-toggle-header", Title = "Toggle Header Row", Icon = Glyph.Bars, Command = ToggleHeaderCommand },
-                            new FormaToolbarOption { Id = "table-delete", Title = "Delete Table", Icon = Glyph.Trash, Command = DeleteTableCommand },
+                            new FormaToolbarOption { Id = "table-insert", Title = "Insert Table...", Icon = Glyph.Table, Command = InsertTableCommand },
+                            new FormaToolbarOption { Id = "table-row-before", Title = "Add Row Above", Icon = Glyph.AddRowAbove, Command = AddRowBeforeCommand },
+                            new FormaToolbarOption { Id = "table-row-after", Title = "Add Row Below", Icon = Glyph.AddRowBelow, Command = AddRowAfterCommand },
+                            new FormaToolbarOption { Id = "table-row-delete", Title = "Delete Row", Icon = Glyph.Rows, Command = DeleteRowCommand },
+                            new FormaToolbarOption { Id = "table-col-before", Title = "Add Column Left", Icon = Glyph.AddColumnLeft, Command = AddColBeforeCommand },
+                            new FormaToolbarOption { Id = "table-col-after", Title = "Add Column Right", Icon = Glyph.AddColumnRight, Command = AddColAfterCommand },
+                            new FormaToolbarOption { Id = "table-col-delete", Title = "Delete Column", Icon = Glyph.Columns, Command = DeleteColCommand },
+                            new FormaToolbarOption { Id = "table-toggle-header", Title = "Toggle Header Row", Icon = Glyph.Rows, Command = ToggleHeaderCommand },
+                            new FormaToolbarOption { Id = "table-delete", Title = "Delete Table", Icon = Glyph.Delete, Command = DeleteTableCommand },
                         ],
                     },
                 ],

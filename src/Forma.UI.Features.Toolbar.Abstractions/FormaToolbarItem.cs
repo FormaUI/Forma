@@ -1,6 +1,6 @@
 namespace Forma.UI.Features.Toolbar;
 
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 /// <summary>An item a <see cref="FormaToolbar"/> renders.</summary>
 public abstract record FormaToolbarItem
@@ -15,10 +15,7 @@ public abstract record FormaToolbarItem
     public string? Tooltip { get; init; }
 
     /// <summary>The icon shown for the item, or null when its title stands alone.</summary>
-    public Glyph? Icon { get; init; }
-
-    /// <summary>How the icon is drawn.</summary>
-    public GlyphStyle IconStyle { get; init; } = GlyphStyle.Regular;
+    public Icon? Icon { get; init; }
 
     /// <summary>Whether this item alone is disabled, regardless of the toolbar's own <c>Disabled</c>.</summary>
     public bool IsDisabled { get; init; }

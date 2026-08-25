@@ -5,7 +5,7 @@ because that artwork ships inside the package rather than being fetched at run t
 
 ## Phosphor Icons
 
-The glyphs `FormaGlyph` draws come from [Phosphor Icons](https://phosphoricons.com), regenerated
+The glyphs `FormaIcon` draws come from [Phosphor Icons](https://phosphoricons.com), regenerated
 by `scripts/fetch-glyphs.ps1`. No Phosphor source is redistributed; only the path data for the
 glyphs this library draws.
 

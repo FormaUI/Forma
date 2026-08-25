@@ -4,7 +4,7 @@ using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 /// <summary>Contributes declarative host-resolved embed placeholder insertion to the rich text editor.</summary>
 public sealed class EmbedPlugin(RichTextEditorPlugin editor) : IComposerPlugin
@@ -35,7 +35,7 @@ public sealed class EmbedPlugin(RichTextEditorPlugin editor) : IComposerPlugin
                     {
                         Id = "embed-insert",
                         Title = "Insert Embed",
-                        Icon = Glyph.Sitemap,
+                        Icon = Glyph.TreeStructure,
                         Command = InsertEmbedCommand,
                     },
                 ],

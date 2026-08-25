@@ -15,7 +15,7 @@
                         @onclick="() => SelectTabAsync(tab)">
                     @if (tab.Icon is { } icon)
                     {
-                        <FormaGlyph Name="icon" />
+                        <FormaIcon Icon="icon" />
                     }
                     @tab.Title
                 </button>

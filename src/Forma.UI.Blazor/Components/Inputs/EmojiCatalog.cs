@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 /// <summary>The emoji the picker offers, and the search over them.</summary>
 public static class EmojiCatalog
@@ -22,12 +22,12 @@ public static class EmojiCatalog
 
     private static readonly (string Id, string Title, Glyph Icon)[] GroupSource =
     [
-        ("smileys", "Smileys & Emotion", Glyph.FaceSmile),
+        ("smileys", "Smileys & Emotion", Glyph.Emoji),
         ("people", "People & Body", Glyph.User),
-        ("animals", "Animals & Nature", Glyph.Paw),
-        ("food", "Food & Drink", Glyph.Utensils),
-        ("activities", "Activities", Glyph.Futbol),
-        ("travel", "Travel & Places", Glyph.Plane),
+        ("animals", "Animals & Nature", Glyph.PawPrint),
+        ("food", "Food & Drink", Glyph.ForkKnife),
+        ("activities", "Activities", Glyph.SoccerBall),
+        ("travel", "Travel & Places", Glyph.Airplane),
         ("objects", "Objects", Glyph.Lightbulb),
         ("symbols", "Symbols", Glyph.Heart),
         ("flags", "Flags", Glyph.Flag),

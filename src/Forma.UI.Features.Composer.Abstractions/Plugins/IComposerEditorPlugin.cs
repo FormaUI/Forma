@@ -1,7 +1,7 @@
 namespace Forma.UI.Features.Composer.Plugins;
 
 using Forma.UI.Features.Composer.Documents;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 /// <summary>Provides an authoring surface such as rich text, Markdown, or code.</summary>
 public interface IComposerEditorPlugin : IComposerPlugin
@@ -10,7 +10,7 @@ public interface IComposerEditorPlugin : IComposerPlugin
     string Title { get; }
 
     /// <summary>The icon associated with the editor.</summary>
-    Glyph Icon { get; }
+    Icon Icon { get; }
 
     /// <summary>The document format the editor reads and writes.</summary>
     ComposerDocumentFormat Format { get; }

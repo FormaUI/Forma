@@ -3,7 +3,7 @@
     {
         <div class="forma-toast forma-toast-@toast.Type.ToString().ToLowerInvariant()"
              @key="toast.Id">
-            <span class="forma-toast-marker" aria-hidden="true"><FormaGlyph Name="MarkerFor(toast.Type)" /></span>
+            <span class="forma-toast-marker" aria-hidden="true"><FormaIcon Icon="MarkerFor(toast.Type)" /></span>
             <span class="forma-toast-message">@toast.Message</span>
             <FormaCloseButton Size="ButtonSize.Mini"
                               Label="@L["Dismiss"]"

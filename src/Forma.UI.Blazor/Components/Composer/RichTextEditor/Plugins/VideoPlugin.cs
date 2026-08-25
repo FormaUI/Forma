@@ -4,7 +4,7 @@ using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 /// <summary>Contributes video embed insertion to the rich text editor.</summary>
 public sealed class VideoPlugin(RichTextEditorPlugin editor) : IComposerPlugin
@@ -35,7 +35,7 @@ public sealed class VideoPlugin(RichTextEditorPlugin editor) : IComposerPlugin
                     {
                         Id = "video-insert",
                         Title = "Insert Video",
-                        Icon = Glyph.Film,
+                        Icon = Glyph.Video,
                         Command = InsertVideoCommand,
                     },
                 ],

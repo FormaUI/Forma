@@ -15,14 +15,14 @@
     <div class="demo-box demo-box-flush">
         <FormaCommandArea>
             <FormaCommandBar>
-                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" IconOnly="true" aria-label="@L["Back"]"><FormaGlyph Name="Glyph.ArrowLeft" /></FormaButton>
-                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" IconOnly="true" aria-label="@L["Up"]"><FormaGlyph Name="Glyph.ArrowUp" /></FormaButton>
+                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" IconOnly="true" aria-label="@L["Back"]"><FormaIcon Icon="Glyph.ArrowLeft" /></FormaButton>
+                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" IconOnly="true" aria-label="@L["Up"]"><FormaIcon Icon="Glyph.ArrowUp" /></FormaButton>
                 <FormaSearchBox Value="@_query" ValueChanged="v => _query = v" Placeholder="@L["Search media..."]" aria-label="@L["Search media..."]" />
             </FormaCommandBar>
             <FormaCommandBar>
-                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini"><FormaGlyph Name="Glyph.SquareCheck" /> @L["Select"]</FormaButton>
-                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini"><FormaGlyph Name="Glyph.CloudArrowUp" /> @L["Upload"]</FormaButton>
-                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini"><FormaGlyph Name="Glyph.FolderPlus" /> @L["New Folder"]</FormaButton>
+                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini"><FormaIcon Icon="Glyph.CheckSquare" /> @L["Select"]</FormaButton>
+                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini"><FormaIcon Icon="Glyph.CloudUpload" /> @L["Upload"]</FormaButton>
+                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini"><FormaIcon Icon="Glyph.FolderAdd" /> @L["New Folder"]</FormaButton>
             </FormaCommandBar>
         </FormaCommandArea>
     </div>

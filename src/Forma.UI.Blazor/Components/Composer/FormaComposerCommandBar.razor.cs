@@ -3,7 +3,7 @@ namespace Forma.UI.Blazor.Components.Composer;
 using Forma.Framework.Localization;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Toolbar;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 using Microsoft.AspNetCore.Components;
 
@@ -57,8 +57,8 @@ public sealed partial class FormaComposerCommandBar : ComponentBase
                     Title = L["History"],
                     Items =
                     [
-                        BuildHistoryCommand("undo", "Undo", Glyph.RotateLeft, ComposerCommands.Undo, isDisabled: !CanUndo),
-                        BuildHistoryCommand("redo", "Redo", Glyph.RotateRight, ComposerCommands.Redo, isDisabled: !CanRedo),
+                        BuildHistoryCommand("undo", "Undo", Glyph.Undo, ComposerCommands.Undo, isDisabled: !CanUndo),
+                        BuildHistoryCommand("redo", "Redo", Glyph.Redo, ComposerCommands.Redo, isDisabled: !CanRedo),
                     ],
                 });
             }

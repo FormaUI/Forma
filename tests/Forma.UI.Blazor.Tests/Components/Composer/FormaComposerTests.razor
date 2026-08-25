@@ -1,4 +1,4 @@
-@inherits BunitContext
+@inherits FormaBunitContext
 @using Forma.UI.Blazor.Components.Composer.Plugins
 
 @code {
@@ -18,7 +18,7 @@
         {
             public string Id => "html";
             public string Title => "Dummy";
-            public Glyph Icon => Glyph.File;
+            public Icon Icon => Glyph.File;
             public ComposerDocumentFormat Format => ComposerDocumentFormat.Html;
             public Type EditorComponent => typeof(FormaPlainTextEditor);
             public IReadOnlyList<ComposerToolbarItem> Items => [];
@@ -32,7 +32,7 @@
         {
             public string Id => "dummy";
             public string Title => "Dummy";
-            public Glyph Icon => Glyph.File;
+            public Icon Icon => Glyph.File;
             public ComposerDocumentFormat Format => ComposerDocumentFormat.PlainText;
             public Type EditorComponent => typeof(FormaPlainTextEditor);
             public IReadOnlyList<ComposerToolbarItem> Items => [];

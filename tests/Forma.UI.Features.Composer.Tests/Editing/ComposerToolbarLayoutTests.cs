@@ -5,7 +5,7 @@ using Forma.UI.Features.Composer.Documents;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 using Xunit;
 
@@ -15,7 +15,7 @@ public sealed class ComposerToolbarLayoutTests
     {
         public string Id { get; init; } = "editor";
         public string Title => Id;
-        public Glyph Icon => Glyph.File;
+        public Icon Icon => Glyph.File;
         public ComposerDocumentFormat Format => ComposerDocumentFormat.PlainText;
         public Type EditorComponent => typeof(Editor);
         public IReadOnlyList<ComposerToolbarItem> Items { get; init; } = [];

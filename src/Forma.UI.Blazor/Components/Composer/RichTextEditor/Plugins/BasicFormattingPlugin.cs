@@ -4,7 +4,7 @@ using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 /// <summary>Contributes basic text formatting operations: bold, italic, underline, strikethrough, inline code, subscript, superscript, and clear formatting.</summary>
 public sealed class BasicFormattingPlugin(RichTextEditorPlugin editor) : IComposerPlugin
@@ -67,7 +67,7 @@ public sealed class BasicFormattingPlugin(RichTextEditorPlugin editor) : ICompos
                     new FormaToolbarToggle { Id = "code", Title = "Code", Icon = Glyph.Code, Command = CodeCommand },
                     new FormaToolbarToggle { Id = "subscript", Title = "Subscript", Icon = Glyph.Subscript, Command = SubscriptCommand },
                     new FormaToolbarToggle { Id = "superscript", Title = "Superscript", Icon = Glyph.Superscript, Command = SuperscriptCommand },
-                    new FormaToolbarCommand { Id = "remove-format", Title = "Clear Formatting", Icon = Glyph.TextSlash, Command = RemoveFormatCommand },
+                    new FormaToolbarCommand { Id = "remove-format", Title = "Clear Formatting", Icon = Glyph.ClearFormatting, Command = RemoveFormatCommand },
                 ],
             },
         ]),

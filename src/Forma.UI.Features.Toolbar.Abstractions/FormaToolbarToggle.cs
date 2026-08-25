@@ -1,6 +1,6 @@
 namespace Forma.UI.Features.Toolbar;
 
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 /// <summary>A <see cref="FormaToolbarAction"/> that reflects an on/off state.</summary>
 public sealed record FormaToolbarToggle : FormaToolbarAction
@@ -12,5 +12,5 @@ public sealed record FormaToolbarToggle : FormaToolbarAction
     public string? AlternateTitle { get; init; }
 
     /// <summary>The alternate icon shown while on, or null to keep <see cref="FormaToolbarItem.Icon"/> unchanged.</summary>
-    public Glyph? AlternateIcon { get; init; }
+    public Icon? AlternateIcon { get; init; }
 }

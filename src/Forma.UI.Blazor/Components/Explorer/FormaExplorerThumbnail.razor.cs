@@ -1,7 +1,7 @@
 namespace Forma.UI.Blazor.Components.Explorer;
 
 using Forma.Framework.Resources;
-using Forma.UI.Style.Glyphs;
+using Forma.UI.Style.Icons;
 
 using Microsoft.AspNetCore.Components;
 
@@ -27,10 +27,10 @@ public sealed partial class FormaExplorerThumbnail : ComponentBase
         {
             FolderResourceInfo => Glyph.Folder,
             ImageResourceInfo => Glyph.Image,
-            VideoResourceInfo => Glyph.Film,
-            AudioResourceInfo => Glyph.Music,
-            ArchiveResourceInfo => Glyph.FileZipper,
-            DocumentResourceInfo => Glyph.FileLines,
+            VideoResourceInfo => Glyph.Video,
+            AudioResourceInfo => Glyph.Audio,
+            ArchiveResourceInfo => Glyph.FileArchive,
+            DocumentResourceInfo => Glyph.FileText,
 
             // Anything the library does not recognize says so, rather than passing itself off as a document.
             _ => Glyph.File

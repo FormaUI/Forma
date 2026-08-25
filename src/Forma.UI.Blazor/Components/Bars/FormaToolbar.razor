@@ -26,7 +26,7 @@
                             <Trigger>
                                 @if (menu.Icon is { } menuIcon)
                                 {
-                                    <FormaGlyph Name="menuIcon" Style="menu.IconStyle" />
+                                    <FormaIcon Icon="menuIcon" />
                                 }
                                 @if (GetActiveOption(menu).Swatch is { } activeSwatch)
                                 {
@@ -36,7 +36,7 @@
                                 {
                                     <span class="forma-toolbar-menu-value">@GetActiveOption(menu).Title</span>
                                 }
-                                <FormaGlyph Name="Glyph.ChevronDown" Class="forma-toolbar-menu-caret" />
+                                <FormaIcon Icon="Glyph.ChevronDown" Class="forma-toolbar-menu-caret" />
                             </Trigger>
                             <ChildContent>
                                 @foreach (var option in menu.Options)
@@ -50,7 +50,7 @@
                                         }
                                         @if (option.Icon is { } optionIcon)
                                         {
-                                            <span class="forma-toolbar-option-icon" aria-hidden="true"><FormaGlyph Name="optionIcon" Style="option.IconStyle" /></span>
+                                            <span class="forma-toolbar-option-icon" aria-hidden="true"><FormaIcon Icon="optionIcon" /></span>
                                         }
                                         <span style="@option.PreviewStyle">@option.Title</span>
                                     </FormaDropDownMenuItem>
@@ -85,7 +85,7 @@
                                 title="@GetActionTitle(action, showsLabel)">
                             @if (effectiveIcon is { } icon)
                             {
-                                <FormaGlyph Name="icon" Style="action.IconStyle" />
+                                <FormaIcon Icon="icon" />
                             }
                             @if (showsLabel)
                             {
