@@ -1,20 +1,15 @@
 namespace Forma.UI.Blazor.Components.Composer.Dialogs;
 
-using Forma.Framework.Localization;
+using Forma.UI.Features.Composer.Sanitization;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>Dialog for inserting and editing links and anchors.</summary>
-public sealed partial class FormaComposerLinkDialog : ComponentBase
+public sealed partial class FormaComposerLinkDialog : ComposerDialogBase
 {
-    [Inject] private IStringLocale<FormaComposer> L { get; set; } = default!;
-
     private string? _href;
     private string? _name;
     private bool _openInNewTab;
-
-    /// <summary>Whether the dialog is currently visible.</summary>
-    [Parameter] public bool Opened { get; set; }
 
     /// <summary>Whether the dialog is configuring a named anchor rather than a hyperlink.</summary>
     [Parameter] public bool IsAnchor { get; set; }
@@ -27,9 +22,6 @@ public sealed partial class FormaComposerLinkDialog : ComponentBase
 
     /// <summary>Callback invoked when link details are confirmed.</summary>
     [Parameter] public EventCallback<LinkDialogResult> OnInsert { get; set; }
-
-    /// <summary>Callback invoked when the dialog is dismissed without saving.</summary>
-    [Parameter] public EventCallback OnCancel { get; set; }
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -45,22 +37,39 @@ public sealed partial class FormaComposerLinkDialog : ComponentBase
 
     private async Task HandleConfirmAsync()
     {
-        if (IsAnchor && string.IsNullOrWhiteSpace(_name))
+        Messages.Clear();
+
+        if (IsAnchor)
         {
+            if (string.IsNullOrWhiteSpace(_name))
+            {
+                Messages.Add(L["Enter a name for the anchor before inserting."].Value);
+
+                return;
+            }
+
+            await OnInsert.InvokeAsync(new LinkDialogResult(IsAnchor: true, _name, string.Empty, _openInNewTab));
+
             return;
         }
 
-        if (!IsAnchor && string.IsNullOrWhiteSpace(_href))
+        if (string.IsNullOrWhiteSpace(_href))
         {
+            Messages.Add(L["Enter the address of the link before inserting."].Value);
+
             return;
         }
 
-        var result = new LinkDialogResult(
-            IsAnchor,
-            _name ?? string.Empty,
-            _href ?? string.Empty,
-            _openInNewTab);
+        var href = _href.Trim();
 
-        await OnInsert.InvokeAsync(result);
+        // Accepting what the sanitizer would strip would leave the author with a link that silently vanished.
+        if (!MarkupPolicy.Allows(HtmlSubject.Url, href, default, out _))
+        {
+            Messages.Add(L["An address has to be a web address, a mail or telephone link, a path within this site, or an inline picture."].Value);
+
+            return;
+        }
+
+        await OnInsert.InvokeAsync(new LinkDialogResult(IsAnchor: false, _name ?? string.Empty, href, _openInNewTab));
     }
 }

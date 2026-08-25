@@ -1,41 +1,40 @@
 namespace Forma.UI.Blazor.Components.Composer.Dialogs;
 
-using Forma.Framework.Localization;
-using Forma.UI.Blazor.Components.Feedback;
+using Forma.UI.Features.Composer.Sanitization;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>Dialog for inserting an image by address.</summary>
-public sealed partial class FormaComposerImageDialog : ComponentBase
+public sealed partial class FormaComposerImageDialog : ComposerDialogBase
 {
-    // Confirming has to be able to fail, so the modal is not allowed to close itself before the address is judged.
-    private static readonly FormaModalOptions StayOpenOnConfirm = new() { CloseOnConfirm = false };
-
-    [Inject] private IStringLocale<FormaComposer> L { get; set; } = default!;
-
     private string? _source;
     private string? _altText;
     private string? _caption;
-    private bool _showSourceRequired;
-
-    /// <summary>Whether the dialog is currently visible.</summary>
-    [Parameter] public bool Opened { get; set; }
 
     /// <summary>Callback invoked when image details are confirmed.</summary>
     [Parameter] public EventCallback<ImageDialogResult> OnInsert { get; set; }
 
-    /// <summary>Callback invoked when the dialog is dismissed.</summary>
-    [Parameter] public EventCallback OnCancel { get; set; }
-
     private async Task HandleConfirmAsync()
     {
+        Messages.Clear();
+
         if (string.IsNullOrWhiteSpace(_source))
         {
-            _showSourceRequired = true;
+            Messages.Add(L["Enter the address of the image before inserting."].Value);
 
             return;
         }
 
-        await OnInsert.InvokeAsync(new ImageDialogResult(_source.Trim(), _altText, _caption));
+        var source = _source.Trim();
+
+        // Accepting what the sanitizer would strip would leave the author with a picture that silently vanished.
+        if (!MarkupPolicy.Allows(HtmlSubject.Url, source, default, out _))
+        {
+            Messages.Add(L["An address has to be a web address, a mail or telephone link, a path within this site, or an inline picture."].Value);
+
+            return;
+        }
+
+        await OnInsert.InvokeAsync(new ImageDialogResult(source, _altText, _caption));
     }
 }

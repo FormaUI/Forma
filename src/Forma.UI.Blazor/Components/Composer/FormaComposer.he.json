@@ -129,5 +129,10 @@
   "Rich Text Document": "מסמך טקסט מעוצב",
   "Blockquote": "ציטוט",
   "Code Block": "בלוק קוד",
-  "Paragraph": "פסקה"
+  "Paragraph": "פסקה",
+  "Enter a name for the anchor before inserting.": "הזן שם לעוגן לפני ההוספה.",
+  "Enter the address of the link before inserting.": "הזן את כתובת הקישור לפני ההוספה.",
+  "An address has to be a web address, a mail or telephone link, a path within this site, or an inline picture.": "כתובת חייבת להיות כתובת אינטרנט, קישור לדואר או לטלפון, נתיב בתוך האתר הזה או תמונה מוטבעת.",
+  "Enter the embed type before inserting.": "הזן את סוג ההטמעה לפני ההוספה.",
+  "Enter the identifier before inserting.": "הזן את המזהה לפני ההוספה."
 }

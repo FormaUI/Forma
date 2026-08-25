@@ -1,32 +1,16 @@
 namespace Forma.UI.Blazor.Components.Composer.Dialogs;
 
-using Forma.Framework.Localization;
-using Forma.UI.Blazor.Components.Feedback;
-
 using Microsoft.AspNetCore.Components;
 
 /// <summary>Dialog for configuring and inserting video embeds.</summary>
-public sealed partial class FormaComposerVideoDialog : ComponentBase
+public sealed partial class FormaComposerVideoDialog : ComposerDialogBase
 {
-    // Confirming has to be able to fail, so the modal is not allowed to close itself before the address is judged.
-    private static readonly FormaModalOptions StayOpenOnConfirm = new() { CloseOnConfirm = false };
-
-    [Inject] private IStringLocale<FormaComposer> L { get; set; } = default!;
-
     private string? _source;
     private string? _title;
     private bool _autoplay;
-    private bool _showSourceRequired;
-    private bool _showSourceUnusable;
-
-    /// <summary>Whether the dialog is currently visible.</summary>
-    [Parameter] public bool Opened { get; set; }
 
     /// <summary>Callback invoked when video embed details are confirmed.</summary>
     [Parameter] public EventCallback<VideoDialogResult> OnInsert { get; set; }
-
-    /// <summary>Callback invoked when the dialog is dismissed.</summary>
-    [Parameter] public EventCallback OnCancel { get; set; }
 
     // The document keeps only an http or https address, because the sanitizer drops every other scheme
     // and the author would be left with a placeholder pointing nowhere.
@@ -36,12 +20,11 @@ public sealed partial class FormaComposerVideoDialog : ComponentBase
 
     private async Task HandleConfirmAsync()
     {
-        _showSourceRequired = false;
-        _showSourceUnusable = false;
+        Messages.Clear();
 
         if (string.IsNullOrWhiteSpace(_source))
         {
-            _showSourceRequired = true;
+            Messages.Add(L["Enter the address of the video before inserting."].Value);
 
             return;
         }
@@ -50,7 +33,7 @@ public sealed partial class FormaComposerVideoDialog : ComponentBase
 
         if (!IsPlayable(source))
         {
-            _showSourceUnusable = true;
+            Messages.Add(L["A video address has to start with http:// or https://."].Value);
 
             return;
         }

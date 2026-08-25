@@ -1,35 +1,19 @@
 @namespace Forma.UI.Blazor.Components.Composer.Dialogs
 @using Forma.UI.Blazor.Components.Feedback
 @using Forma.UI.Blazor.Components.Inputs
+@inherits ComposerDialogBase
 
-<FormaModal Opened="Opened"
-            Title="@L["Insert Video"]"
-            Size="ModalSize.Medium"
-            Options="StayOpenOnConfirm"
-            OnClose="OnCancel"
-            OnConfirm="HandleConfirmAsync"
-            ConfirmText="@L["Insert"]"
-            CancelText="@L["Cancel"]">
-    <Body>
-        <EditForm Model="this">
-            <div class="forma-composer-dialog-form">
-                <FormaTextBox @bind-Value="_source" Label="@L["Video URL"]" Required="true" />
-                <FormaTextBox @bind-Value="_title" Label="@L["Title"]" />
-                <div class="forma-composer-dialog-checkbox">
-                    <FormaCheckBox Checked="_autoplay" CheckedChanged="v => _autoplay = v">
-                        @L["Autoplay"]
-                    </FormaCheckBox>
-                </div>
-
-                @if (_showSourceRequired)
-                {
-                    <p class="forma-composer-dialog-error" role="alert">@L["Enter the address of the video before inserting."]</p>
-                }
-                else if (_showSourceUnusable)
-                {
-                    <p class="forma-composer-dialog-error" role="alert">@L["A video address has to start with http:// or https://."]</p>
-                }
-            </div>
-        </EditForm>
-    </Body>
-</FormaModal>
+<FormaComposerDialog Opened="Opened"
+                     Title="@L["Insert Video"]"
+                     Size="ModalSize.Medium"
+                     Messages="Messages"
+                     OnConfirm="HandleConfirmAsync"
+                     OnCancel="OnCancel">
+    <FormaTextBox @bind-Value="_source" Label="@L["Video URL"]" Required="true" />
+    <FormaTextBox @bind-Value="_title" Label="@L["Title"]" />
+    <div class="forma-composer-dialog-checkbox">
+        <FormaCheckBox Checked="_autoplay" CheckedChanged="v => _autoplay = v">
+            @L["Autoplay"]
+        </FormaCheckBox>
+    </div>
+</FormaComposerDialog>

@@ -1,35 +1,37 @@
 namespace Forma.UI.Blazor.Components.Composer.Dialogs;
 
-using Forma.Framework.Localization;
-
 using Microsoft.AspNetCore.Components;
 
 /// <summary>Dialog for inserting declarative embed placeholders.</summary>
-public sealed partial class FormaComposerEmbedDialog : ComponentBase
+public sealed partial class FormaComposerEmbedDialog : ComposerDialogBase
 {
-    [Inject] private IStringLocale<FormaComposer> L { get; set; } = default!;
-
     private string? _embedType;
     private string? _identifier;
     private string? _settings;
 
-    /// <summary>Whether the dialog is currently visible.</summary>
-    [Parameter] public bool Opened { get; set; }
-
     /// <summary>Callback invoked when embed details are confirmed.</summary>
     [Parameter] public EventCallback<EmbedDialogResult> OnInsert { get; set; }
 
-    /// <summary>Callback invoked when the dialog is dismissed.</summary>
-    [Parameter] public EventCallback OnCancel { get; set; }
-
     private async Task HandleConfirmAsync()
     {
-        if (string.IsNullOrWhiteSpace(_embedType) || string.IsNullOrWhiteSpace(_identifier))
+        Messages.Clear();
+
+        // Both are named at once, so an author filling one is not sent back for the other.
+        if (string.IsNullOrWhiteSpace(_embedType))
+        {
+            Messages.Add(L["Enter the embed type before inserting."].Value);
+        }
+
+        if (string.IsNullOrWhiteSpace(_identifier))
+        {
+            Messages.Add(L["Enter the identifier before inserting."].Value);
+        }
+
+        if (Messages.Count > 0)
         {
             return;
         }
 
-        var result = new EmbedDialogResult(_embedType, _identifier, _settings);
-        await OnInsert.InvokeAsync(result);
+        await OnInsert.InvokeAsync(new EmbedDialogResult(_embedType!.Trim(), _identifier!.Trim(), _settings));
     }
 }

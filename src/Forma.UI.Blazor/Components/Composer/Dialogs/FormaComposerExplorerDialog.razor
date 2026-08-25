@@ -1,40 +1,27 @@
 @namespace Forma.UI.Blazor.Components.Composer.Dialogs
 @using Forma.UI.Blazor.Components.Explorer
 @using Forma.UI.Blazor.Components.Feedback
+@inherits ComposerDialogBase
 
-<FormaModal Opened="Opened"
-            Title="@L["Browse Files"]"
-            Size="ModalSize.Large"
-            Options="StayOpenOnConfirm"
-            OnClose="OnCancel"
-            OnConfirm="HandleConfirmAsync"
-            ConfirmText="@L["Insert"]"
-            CancelText="@L["Cancel"]">
-    <Body>
-        <div class="forma-composer-dialog-form">
-            @if (_resources is null)
-            {
-                <p class="forma-composer-dialog-notice" role="status">@L["No stored files are available, because this application registered nowhere to browse."]</p>
-            }
-            else
-            {
-                <div class="forma-composer-explorer-library">
-                    <FormaExplorer ResourcesProvider="_resources"
-                                   Store="_store"
-                                   MaxSelection="1"
-                                   Selected="_selected"
-                                   SelectedChanged="HandleSelectedChanged"
-                                   Options="LibraryOptions"
-                                   FileOptions="LibraryFileOptions"
-                                   Constraints="UploadConstraints"
-                                   SearchPlaceholder="@L["Search files"]" />
-                </div>
-
-                @if (_showSelectionRequired)
-                {
-                    <p class="forma-composer-dialog-error" role="alert">@L["Choose a file before inserting."]</p>
-                }
-            }
+<FormaComposerDialog Opened="Opened"
+                     Title="@L["Browse Files"]"
+                     Size="ModalSize.Large"
+                     Notice="@(_resources is null ? L["No stored files are available, because this application registered nowhere to browse."].Value : null)"
+                     Messages="Messages"
+                     OnConfirm="HandleConfirmAsync"
+                     OnCancel="OnCancel">
+    @if (_resources is not null)
+    {
+        <div class="forma-composer-explorer-library">
+            <FormaExplorer ResourcesProvider="_resources"
+                           Store="_store"
+                           MaxSelection="1"
+                           Selected="_selected"
+                           SelectedChanged="HandleSelectedChanged"
+                           Options="LibraryOptions"
+                           FileOptions="LibraryFileOptions"
+                           Constraints="UploadConstraints"
+                           SearchPlaceholder="@L["Search files"]" />
         </div>
-    </Body>
-</FormaModal>
+    }
+</FormaComposerDialog>

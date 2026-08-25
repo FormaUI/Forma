@@ -1,34 +1,21 @@
 namespace Forma.UI.Blazor.Components.Composer.Dialogs;
 
-using Forma.Framework.Localization;
 using Forma.Framework.Resources;
 using Forma.UI.Blazor.Components.Composer.RichTextEditor.Plugins;
 using Forma.UI.Blazor.Components.Explorer;
-using Forma.UI.Blazor.Components.Feedback;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>Dialog for choosing one of the host's stored files and inserting it.</summary>
-public sealed partial class FormaComposerExplorerDialog : ComponentBase
+public sealed partial class FormaComposerExplorerDialog : ComposerDialogBase
 {
-    // Confirming has to be able to fail, so the modal is not allowed to close itself before a choice is judged.
-    private static readonly FormaModalOptions StayOpenOnConfirm = new() { CloseOnConfirm = false };
-
     private static readonly FormaExplorerOptions Library = new() { AsDialog = true, ShowFolderMenu = false, SelectOnOpen = true };
-
-    /// <summary>Whether the dialog is currently visible.</summary>
-    [Parameter] public bool Opened { get; set; }
 
     /// <summary>What the dialog browses, takes in, and inserts.</summary>
     [Parameter] public ExplorerPluginOptions Options { get; set; } = ExplorerPluginOptions.Default;
 
     /// <summary>Callback invoked when a file is chosen.</summary>
     [Parameter] public EventCallback<ResourceDialogResult> OnInsert { get; set; }
-
-    /// <summary>Callback invoked when the dialog is dismissed.</summary>
-    [Parameter] public EventCallback OnCancel { get; set; }
-
-    [Inject] private IStringLocale<FormaComposer> L { get; set; } = default!;
 
     [Inject] private IServiceProvider Services { get; set; } = default!;
 
@@ -38,7 +25,6 @@ public sealed partial class FormaComposerExplorerDialog : ComponentBase
     private FormaExplorerConstraints _constraints = FormaExplorerConstraints.None;
     private ExplorerPluginOptions? _syncedOptions;
     private IReadOnlyList<ResourceInfo> _selected = [];
-    private bool _showSelectionRequired;
 
     private static FormaExplorerOptions LibraryOptions
         => Library;
@@ -93,15 +79,17 @@ public sealed partial class FormaComposerExplorerDialog : ComponentBase
 
         if (selected.Count > 0)
         {
-            _showSelectionRequired = false;
+            Messages.Clear();
         }
     }
 
     private async Task HandleConfirmAsync()
     {
+        Messages.Clear();
+
         if (_selected.Count == 0)
         {
-            _showSelectionRequired = true;
+            Messages.Add(L["Choose a file before inserting."].Value);
 
             return;
         }

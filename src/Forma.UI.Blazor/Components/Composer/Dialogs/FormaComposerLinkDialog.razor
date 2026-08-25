@@ -1,32 +1,26 @@
 @namespace Forma.UI.Blazor.Components.Composer.Dialogs
 @using Forma.UI.Blazor.Components.Feedback
 @using Forma.UI.Blazor.Components.Inputs
+@inherits ComposerDialogBase
 
-<FormaModal Opened="Opened"
-            Title="@(IsAnchor ? L["Insert Anchor"] : L["Insert Link"])"
-            Size="ModalSize.Small"
-            OnClose="OnCancel"
-            OnConfirm="HandleConfirmAsync"
-            ConfirmText="@L["Insert"]"
-            CancelText="@L["Cancel"]">
-    <Body>
-        <EditForm Model="this">
-            <div class="forma-composer-dialog-form">
-                @if (IsAnchor)
-                {
-                    <FormaTextBox @bind-Value="_name" Label="@L["Anchor Name"]" Required="true" />
-                }
-                else
-                {
-                    <FormaTextBox @bind-Value="_href" Label="@L["URL"]" Required="true" />
-                    <FormaTextBox @bind-Value="_name" Label="@L["Name"]" />
-                    <div class="forma-composer-dialog-checkbox">
-                        <FormaCheckBox Checked="_openInNewTab" CheckedChanged="v => _openInNewTab = v">
-                            @L["Open in New Tab"]
-                        </FormaCheckBox>
-                    </div>
-                }
-            </div>
-        </EditForm>
-    </Body>
-</FormaModal>
+<FormaComposerDialog Opened="Opened"
+                     Title="@(IsAnchor ? L["Insert Anchor"] : L["Insert Link"])"
+                     Size="ModalSize.Small"
+                     Messages="Messages"
+                     OnConfirm="HandleConfirmAsync"
+                     OnCancel="OnCancel">
+    @if (IsAnchor)
+    {
+        <FormaTextBox @bind-Value="_name" Label="@L["Anchor Name"]" Required="true" />
+    }
+    else
+    {
+        <FormaTextBox @bind-Value="_href" Label="@L["URL"]" Required="true" />
+        <FormaTextBox @bind-Value="_name" Label="@L["Name"]" />
+        <div class="forma-composer-dialog-checkbox">
+            <FormaCheckBox Checked="_openInNewTab" CheckedChanged="v => _openInNewTab = v">
+                @L["Open in New Tab"]
+            </FormaCheckBox>
+        </div>
+    }
+</FormaComposerDialog>
