@@ -1,8 +1,8 @@
 namespace Forma.UI.Blazor.Components.Feedback;
 
 using Forma.Framework.Localization;
+using Forma.UI.Design.Icons;
 using Forma.UI.Features.Feedback;
-using Forma.UI.Style.Icons;
 
 using Microsoft.AspNetCore.Components;
 

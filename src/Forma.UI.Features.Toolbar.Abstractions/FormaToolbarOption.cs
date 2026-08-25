@@ -1,6 +1,6 @@
 namespace Forma.UI.Features.Toolbar;
 
-using Forma.UI.Style.Icons;
+using Forma.UI.Design.Icons;
 
 /// <summary>One option inside a <see cref="FormaToolbarItem"/>'s menu.</summary>
 public sealed record FormaToolbarOption

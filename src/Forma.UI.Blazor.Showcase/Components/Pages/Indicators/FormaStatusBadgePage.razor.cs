@@ -2,9 +2,9 @@ namespace Forma.UI.Blazor.Showcase.Components.Pages.Indicators;
 
 using Forma.Framework.Localization;
 using Forma.UI.Blazor.Components.Indicators;
+using Forma.UI.Design.Css;
+using Forma.UI.Design.Icons;
 using Forma.UI.Features.Indicators;
-using Forma.UI.Style.Css;
-using Forma.UI.Style.Icons;
 
 using Microsoft.AspNetCore.Components;
 

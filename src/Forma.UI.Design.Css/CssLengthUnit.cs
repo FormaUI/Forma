@@ -1,4 +1,4 @@
-namespace Forma.UI.Style.Css;
+namespace Forma.UI.Design.Css;
 
 /// <summary>The unit a <see cref="CssLength"/> is measured in.</summary>
 public enum CssLengthUnit

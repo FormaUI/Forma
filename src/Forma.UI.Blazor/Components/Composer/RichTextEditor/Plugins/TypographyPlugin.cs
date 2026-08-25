@@ -2,11 +2,11 @@ namespace Forma.UI.Blazor.Components.Composer.RichTextEditor.Plugins;
 
 using System.Globalization;
 
+using Forma.UI.Design.Icons;
 using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
-using Forma.UI.Style.Icons;
 
 /// <summary>Contributes font family, font size, text color, highlight color, and line height operations.</summary>
 public sealed class TypographyPlugin(

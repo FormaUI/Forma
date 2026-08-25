@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <IsPackable>false</IsPackable>
-        <RootNamespace>Forma.UI.Style.Css</RootNamespace>
+        <RootNamespace>Forma.UI.Design.Css</RootNamespace>
     </PropertyGroup>
 
 </Project>

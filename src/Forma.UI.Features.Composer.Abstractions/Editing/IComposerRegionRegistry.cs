@@ -1,6 +1,6 @@
 namespace Forma.UI.Features.Composer.Editing;
 
-using Forma.UI.Style.Icons;
+using Forma.UI.Design.Icons;
 
 /// <summary>The status items and gutter markers plugins have pushed, shared across whichever editor is active.</summary>
 /// <remarks>Every member must be called from the composer's own dispatcher thread; a plugin updating a handle from a timer or background continuation must first marshal onto it.</remarks>

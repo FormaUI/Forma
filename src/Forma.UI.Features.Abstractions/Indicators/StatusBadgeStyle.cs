@@ -1,7 +1,7 @@
 namespace Forma.UI.Features.Indicators;
 
-using Forma.UI.Style.Css;
-using Forma.UI.Style.Icons;
+using Forma.UI.Design.Css;
+using Forma.UI.Design.Icons;
 
 /// <summary>A named status badge and the colours it renders with.</summary>
 public sealed record StatusBadgeStyle

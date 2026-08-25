@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-using Forma.UI.Style.Icons;
+using Forma.UI.Design.Icons;
 
 /// <summary>The emoji the picker offers, and the search over them.</summary>
 public static class EmojiCatalog

@@ -6,7 +6,7 @@ using Forma.Framework.Localization;
 using Forma.UI.Blazor.Components.Indicators;
 using Forma.UI.Blazor.Interop.Behaviours;
 using Forma.UI.Blazor.Interop.Operations;
-using Forma.UI.Style.Icons;
+using Forma.UI.Design.Icons;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;

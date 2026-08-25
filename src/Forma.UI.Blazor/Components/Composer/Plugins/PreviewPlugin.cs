@@ -1,10 +1,10 @@
 namespace Forma.UI.Blazor.Components.Composer.Plugins;
 
+using Forma.UI.Design.Icons;
 using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
-using Forma.UI.Style.Icons;
 
 /// <summary>Contributes a read-only rendered document preview to the composer toolbar, for any editor.</summary>
 public sealed class PreviewPlugin : IComposerPlugin

@@ -1,6 +1,6 @@
 namespace Forma.UI.Features.Composer.Editing;
 
-using Forma.UI.Style.Icons;
+using Forma.UI.Design.Icons;
 
 /// <summary>A live marker a plugin has pushed to the composer's gutter, mutable for as long as it is held.</summary>
 public interface IComposerGutterMarker : IDisposable

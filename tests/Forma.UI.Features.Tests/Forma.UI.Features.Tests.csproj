@@ -19,7 +19,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\Forma.UI.Features.Abstractions\Forma.UI.Features.Abstractions.csproj" />
         <ProjectReference Include="..\..\src\Forma.UI.Features\Forma.UI.Features.csproj" />
-        <ProjectReference Include="..\..\src\Forma.UI.Style.Css\Forma.UI.Style.Css.csproj" />
+        <ProjectReference Include="..\..\src\Forma.UI.Design.Css\Forma.UI.Design.Css.csproj" />
     </ItemGroup>
 
 </Project>

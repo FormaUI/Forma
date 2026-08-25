@@ -1,7 +1,7 @@
 namespace Forma.UI.Features.Tests.Indicators;
 
+using Forma.UI.Design.Css;
 using Forma.UI.Features.Indicators;
-using Forma.UI.Style.Css;
 
 using Xunit;
 

@@ -1,4 +1,4 @@
-namespace Forma.UI.Style.Icons;
+namespace Forma.UI.Design.Icons;
 
 /// <summary>Provides artwork for semantic icons.</summary>
 public interface IIconProvider

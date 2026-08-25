@@ -1,6 +1,6 @@
 namespace Forma.UI.Blazor.Components.Layout;
 
-using Forma.UI.Style.Icons;
+using Forma.UI.Design.Icons;
 
 using Microsoft.AspNetCore.Components;
 

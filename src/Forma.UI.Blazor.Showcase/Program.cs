@@ -9,11 +9,11 @@ using Forma.UI.Blazor.Icons;
 using Forma.UI.Blazor.Showcase;
 using Forma.UI.Blazor.Showcase.Features.Media;
 using Forma.UI.Blazor.Showcase.Features.Upload;
+using Forma.UI.Design.Css;
+using Forma.UI.Design.Icons;
 using Forma.UI.Features.Feedback;
 using Forma.UI.Features.Indicators;
 using Forma.UI.Features.Media;
-using Forma.UI.Style.Css;
-using Forma.UI.Style.Icons;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddJsonLocalization();

@@ -1,7 +1,7 @@
 namespace Forma.UI.Features.Composer.Tests.Editing;
 
+using Forma.UI.Design.Icons;
 using Forma.UI.Features.Composer.Editing;
-using Forma.UI.Style.Icons;
 
 using Xunit;
 

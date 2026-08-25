@@ -1,6 +1,6 @@
 namespace Forma.UI.Blazor.Components.Inputs;
 
-using Forma.UI.Style.Icons;
+using Forma.UI.Design.Icons;
 
 /// <summary>One category of emoji, as the picker's tab strip presents it.</summary>
 public sealed record EmojiGroup

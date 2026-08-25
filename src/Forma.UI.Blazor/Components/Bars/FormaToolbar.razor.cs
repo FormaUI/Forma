@@ -2,8 +2,8 @@ namespace Forma.UI.Blazor.Components.Bars;
 
 using Forma.UI.Blazor.Components.Buttons;
 using Forma.UI.Blazor.Interop.Behaviours;
+using Forma.UI.Design.Icons;
 using Forma.UI.Features.Toolbar;
-using Forma.UI.Style.Icons;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;

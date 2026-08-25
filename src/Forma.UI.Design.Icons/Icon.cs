@@ -1,4 +1,4 @@
-namespace Forma.UI.Style.Icons;
+namespace Forma.UI.Design.Icons;
 
 /// <summary>A semantic glyph together with its requested visual style.</summary>
 /// <param name="Glyph">The glyph to draw.</param>

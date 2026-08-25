@@ -2,7 +2,7 @@ namespace Forma.UI.Blazor.Components.Explorer;
 
 using Forma.Framework.Localization;
 using Forma.UI.Blazor.Components.Buttons;
-using Forma.UI.Style.Icons;
+using Forma.UI.Design.Icons;
 
 using Microsoft.AspNetCore.Components;
 

@@ -1,7 +1,7 @@
 namespace Forma.UI.Features.Composer.Plugins;
 
+using Forma.UI.Design.Icons;
 using Forma.UI.Features.Composer.Documents;
-using Forma.UI.Style.Icons;
 
 /// <summary>Provides an authoring surface such as rich text, Markdown, or code.</summary>
 public interface IComposerEditorPlugin : IComposerPlugin

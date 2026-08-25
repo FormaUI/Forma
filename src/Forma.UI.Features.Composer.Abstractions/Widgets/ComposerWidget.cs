@@ -1,6 +1,6 @@
 namespace Forma.UI.Features.Composer.Widgets;
 
-using Forma.UI.Style.Icons;
+using Forma.UI.Design.Icons;
 
 /// <summary>Describes a widget available to a designer.</summary>
 public sealed record ComposerWidget

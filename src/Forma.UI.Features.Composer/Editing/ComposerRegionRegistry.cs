@@ -1,6 +1,6 @@
 namespace Forma.UI.Features.Composer.Editing;
 
-using Forma.UI.Style.Icons;
+using Forma.UI.Design.Icons;
 
 /// <summary>The composer's own registry of pushed status items and gutter markers.</summary>
 public sealed class ComposerRegionRegistry : IComposerRegionRegistry

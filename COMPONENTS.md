@@ -17,7 +17,7 @@
 
 ```
 Forma.UI.Blazor/Components/
-├── FormaIcon.razor / .razor.cs / .razor.css  # draws a Forma.UI.Style.Icons.Icon as inline SVG
+├── FormaIcon.razor / .razor.cs / .razor.css  # draws a Forma.UI.Design.Icons.Icon as inline SVG
 ├── ✅ FormaField.razor / .razor.cs / .razor.css
 ├── ✅ FormaVisibility.razor / .razor.cs / .razor.css  # collapses content to nothing without unmounting it
 ├── FieldLabelMode.cs                     # enum: Floating, Pinned, Above, Inline
@@ -169,11 +169,12 @@ Forma.UI.Blazor/Components/
 ```
 
 ```
-Forma.UI.Style/
-├── Css/
-│   └── CssColor.cs
-└── Glyphs/
-    └── Glyph.cs
+Forma.UI.Design.Css/
+└── CssColor.cs
+
+Forma.UI.Design.Icons/
+├── Glyph.cs
+└── Icon.cs
 
 Forma.Framework.Resources.Abstractions/
 ├── IResourceContentReader.cs

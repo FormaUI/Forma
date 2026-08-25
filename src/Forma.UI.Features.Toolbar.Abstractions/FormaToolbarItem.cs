@@ -1,6 +1,6 @@
 namespace Forma.UI.Features.Toolbar;
 
-using Forma.UI.Style.Icons;
+using Forma.UI.Design.Icons;
 
 /// <summary>An item a <see cref="FormaToolbar"/> renders.</summary>
 public abstract record FormaToolbarItem

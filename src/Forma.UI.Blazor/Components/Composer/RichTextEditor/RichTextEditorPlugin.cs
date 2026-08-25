@@ -1,10 +1,10 @@
 namespace Forma.UI.Blazor.Components.Composer.RichTextEditor;
 
 using Forma.UI.Blazor.Components.Composer.RichTextEditor.Plugins;
+using Forma.UI.Design.Icons;
 using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Documents;
 using Forma.UI.Features.Composer.Plugins;
-using Forma.UI.Style.Icons;
 
 /// <summary>Rich text visual authoring surface for FormaComposer.</summary>
 public sealed class RichTextEditorPlugin : IComposerEditorPlugin

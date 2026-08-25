@@ -1,6 +1,6 @@
 namespace Forma.UI.Blazor.Icons;
 
-using Forma.UI.Style.Icons;
+using Forma.UI.Design.Icons;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;

@@ -1,6 +1,6 @@
 namespace Forma.UI.Features.Toolbar;
 
-using Forma.UI.Style.Icons;
+using Forma.UI.Design.Icons;
 
 /// <summary>A <see cref="FormaToolbarAction"/> that reflects an on/off state.</summary>
 public sealed record FormaToolbarToggle : FormaToolbarAction

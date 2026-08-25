@@ -10,8 +10,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Forma.UI.Style.Css\Forma.UI.Style.Css.csproj" />
-        <ProjectReference Include="..\Forma.UI.Style.Icons\Forma.UI.Style.Icons.csproj" />
+        <ProjectReference Include="..\Forma.UI.Design.Css\Forma.UI.Design.Css.csproj" />
+        <ProjectReference Include="..\Forma.UI.Design.Icons\Forma.UI.Design.Icons.csproj" />
     </ItemGroup>
 
 </Project>

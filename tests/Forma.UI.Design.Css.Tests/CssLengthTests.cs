@@ -1,7 +1,7 @@
-namespace Forma.UI.Style.Css.Tests;
+namespace Forma.UI.Design.Css.Tests;
 
 using Forma.Tests.Shared;
-using Forma.UI.Style.Css;
+using Forma.UI.Design.Css;
 
 using Xunit;
 

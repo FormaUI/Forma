@@ -1,9 +1,9 @@
 namespace Forma.UI.Features.Composer.Tests.Plugins;
 
+using Forma.UI.Design.Icons;
 using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Documents;
 using Forma.UI.Features.Composer.Plugins;
-using Forma.UI.Style.Icons;
 
 using Xunit;
 

@@ -1,10 +1,10 @@
 namespace Forma.UI.Blazor.Components.Composer.RichTextEditor.Plugins;
 
+using Forma.UI.Design.Icons;
 using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
-using Forma.UI.Style.Icons;
 
 /// <summary>Contributes predefined document template insertion to the rich text editor.</summary>
 public sealed class TemplatePlugin(

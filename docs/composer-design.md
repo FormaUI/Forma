@@ -70,7 +70,7 @@ The composer's contracts do **not** live in `Forma.UI.Features.Abstractions`. A 
 
 | Project | Namespace | References |
 |---|---|---|
-| `Forma.UI.Features.Composer.Abstractions` | `Forma.UI.Features.Composer` | `Forma.UI.Style`, `Forma.Framework.Resources.Abstractions` |
+| `Forma.UI.Features.Composer.Abstractions` | `Forma.UI.Features.Composer` | `Forma.UI.Design.Icons`, `Forma.Framework.Resources.Abstractions` |
 | `Forma.UI.Features.Composer` | `Forma.UI.Features.Composer` | `Forma.UI.Features.Composer.Abstractions` |
 | `Forma.UI.Features.Composer.Markdown` | `Forma.UI.Features.Composer.Markdown` | `.Abstractions` + Markdig |
 | `Forma.UI.Features.Composer.TextMate` | `Forma.UI.Features.Composer.TextMate` | `.Abstractions` + TextMateSharp |

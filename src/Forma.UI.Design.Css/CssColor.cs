@@ -1,4 +1,4 @@
-namespace Forma.UI.Style.Css;
+namespace Forma.UI.Design.Css;
 
 using System.Globalization;
 

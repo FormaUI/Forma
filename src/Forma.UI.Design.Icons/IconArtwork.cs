@@ -1,4 +1,4 @@
-namespace Forma.UI.Style.Icons;
+namespace Forma.UI.Design.Icons;
 
 /// <summary>The SVG artwork used to render an icon.</summary>
 /// <param name="ViewBox">The SVG coordinate system the paths are drawn in.</param>

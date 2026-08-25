@@ -1,4 +1,4 @@
-namespace Forma.UI.Style.Icons;
+namespace Forma.UI.Design.Icons;
 
 /// <summary>How a <see cref="Glyph"/> is drawn.</summary>
 public enum GlyphStyle

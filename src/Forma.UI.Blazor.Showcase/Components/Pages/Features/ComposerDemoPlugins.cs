@@ -3,12 +3,12 @@ namespace Forma.UI.Blazor.Showcase.Components.Pages.Features;
 using System.Globalization;
 
 using Forma.UI.Blazor.Components.Composer.PlainTextEditor;
+using Forma.UI.Design.Icons;
 using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Documents;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
-using Forma.UI.Style.Icons;
 
 /// <summary>A source-oriented surface, numbering its lines in a gutter and renaming a symbol from a row of its own.</summary>
 public sealed class SourceEditorPlugin : IComposerEditorPlugin

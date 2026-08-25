@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-using Forma.UI.Style.Icons;
+using Forma.UI.Design.Icons;
 
 /// <summary>Provides the artwork this library ships, read from its embedded glyph set.</summary>
 public sealed class DefaultIconProvider : IIconProvider

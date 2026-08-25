@@ -39,33 +39,34 @@ Coi's boxy gradient toggle becoming a token-driven iOS-style `FormaToggleSwitch`
 
 | Project | Kind | May reference |
 |---------|------|---------------|
-| `src/Forma.UI.Style` | Class library | Nothing — presentation vocabulary such as `CssColor` in `Css/` and `Glyph` in `Glyphs/` |
+| `src/Forma.UI.Design.Css` | Class library | Nothing — CSS vocabulary such as `CssColor` and `CssLength` |
+| `src/Forma.UI.Design.Icons` | Class library | Nothing — icon vocabulary such as `Glyph`, `Icon`, and `IIconProvider` |
 | `src/Forma.Framework.Resources.Abstractions` | Class library | Nothing — resource contracts and value types such as `IResourceProvider` and `ResourceInfo` |
 | `src/Forma.Framework.Resources` | Class library | Nothing — writes resource measurements as text for a reader (`ResourceFormatter`) |
 | `src/Forma.Framework.Localization.Abstractions` | Class library | Nothing — localization contracts and value types such as `IStringLocale`, `LocalizedText`, and the locale expression syntax |
 | `src/Forma.Framework.Localization` | Class library | `Forma.Framework.Localization.Abstractions` — the locale parser and plural engine |
 | `src/Forma.Framework.Localization.Json` | Class library | `Forma.Framework.Localization` — JSON-backed `IStringLocale` |
 | `src/Forma.Framework.Localization.Linter` | Tool | `Forma.Framework.Localization.Json` — the `locali` linter over translation files and `L[...]` call sites |
-| `src/Forma.UI.Features.Abstractions` | Class library | `Forma.UI.Style` — contracts, messages, enums |
+| `src/Forma.UI.Features.Abstractions` | Class library | `Forma.UI.Design.Css`, `Forma.UI.Design.Icons` — contracts, messages, enums |
 | `src/Forma.UI.Features` | Class library | `Forma.UI.Features.Abstractions` — implementations |
-| `src/Forma.UI.Features.Composer.Abstractions` | Class library | `Forma.UI.Style` — composer contracts, plugin model, document types |
+| `src/Forma.UI.Features.Composer.Abstractions` | Class library | `Forma.UI.Design.Icons` — composer contracts, plugin model, document types |
 | `src/Forma.UI.Features.Composer` | Class library | `Forma.UI.Features.Composer.Abstractions` — the composer engine |
 | `src/Forma.Framework.Resources.Markdown` | Class library | `Forma.Framework.Resources.Abstractions` — Markdown conversion |
 | `src/Forma.Framework.Resources.Office` | Class library | `Forma.Framework.Resources.Abstractions`, `Forma.Framework.Localization.Abstractions` — Word, workbook, and presentation conversion |
-| `src/Forma.UI.Blazor` | Razor Class Library | `Forma.UI.Features.Abstractions`, `Forma.UI.Features.Composer`, `Forma.UI.Features.Composer.Abstractions`, `Forma.UI.Style`, `Forma.Framework.Resources.Abstractions`, `Forma.Framework.Resources`, `Forma.Framework.Localization.Abstractions` — packaged components |
-| `src/Forma.UI.Blazor.Showcase` | Web app | `Forma.UI.Blazor`, `Forma.UI.Features`, `Forma.UI.Features.Composer`, `Forma.UI.Features.Composer.Abstractions`, `Forma.UI.Style`, `Forma.Framework.Resources.Abstractions`, `Forma.Framework.Resources`, `Forma.Framework.Resources.Office`, `Forma.Framework.Resources.Markdown`, `Forma.Framework.Localization`, `Forma.Framework.Localization.Json` — reference host and component showcase |
+| `src/Forma.UI.Blazor` | Razor Class Library | `Forma.UI.Features.Abstractions`, `Forma.UI.Features.Composer`, `Forma.UI.Features.Composer.Abstractions`, `Forma.UI.Design.Css`, `Forma.UI.Design.Icons`, `Forma.Framework.Resources.Abstractions`, `Forma.Framework.Resources`, `Forma.Framework.Localization.Abstractions` — packaged components |
+| `src/Forma.UI.Blazor.Showcase` | Web app | `Forma.UI.Blazor`, `Forma.UI.Features`, `Forma.UI.Features.Composer`, `Forma.UI.Features.Composer.Abstractions`, `Forma.UI.Design.Css`, `Forma.UI.Design.Icons`, `Forma.Framework.Resources.Abstractions`, `Forma.Framework.Resources`, `Forma.Framework.Resources.Office`, `Forma.Framework.Resources.Markdown`, `Forma.Framework.Localization`, `Forma.Framework.Localization.Json` — reference host and component showcase |
 | `tests/{Assembly}.Tests` | Test project | The one assembly it is named after, plus what its tests use directly |
 | `tests/Forma.Tests.Support` | Class library | Shared test fakes, fixtures, and utilities in the `Forma.Tests.*` namespaces |
 
 - Do split the family by audience: `Forma.UI.*` is one product serving the component library, while each `Forma.Framework.*` assembly stands alone — `Forma.Framework.Resources.Office` depends on `Forma.Framework.Resources.Abstractions` alone, never on anything in `Forma.UI`.
-- Do put a horizontal concern no single vertical feature owns into `Forma.UI.Style` when only the UI needs it, and into `Forma.Framework.Resources.Abstractions` when a consumer outside the UI needs it too.
+- Do put a horizontal concern no single vertical feature owns into the matching `Forma.UI.Design.*` project when only the UI needs it, and into `Forma.Framework.Resources.Abstractions` when a consumer outside the UI needs it too.
 - Do decide by ownership, not by how many assemblies consume it: a contract a single feature owns stays with that feature in `Forma.UI.Features.Abstractions` no matter how many projects reference it, such as `IToastService` in `Feedback`.
-- Do keep a folder and its namespace in step, so `Forma.UI.Style/Css/` holds `Forma.UI.Style.Css` and `Forma.UI.Features.Abstractions/Feedback/` holds `Forma.UI.Features.Feedback` — the namespace is the product root plus the folder path, with the `.Abstractions` suffix dropped.
+- Do keep a folder and its namespace in step, so `Forma.UI.Blazor/Icons/` holds `Forma.UI.Blazor.Icons` and `Forma.UI.Features.Abstractions/Feedback/` holds `Forma.UI.Features.Feedback` — the namespace is the product root plus the folder path, with the `.Abstractions` suffix dropped.
 
 - Do make components depend on abstractions such as `IToastService`; let the host choose implementations through DI.
 - Do represent colours and other CSS values with typed values such as `CssColor.FromRgba(...)` and `CssColor.FromHex(...)`.
 - Do share the `Forma.UI.Features` namespace across `Forma.UI.Features` and `Forma.UI.Features.Abstractions` — the assembly name carries the split, not the namespace (matches `Microsoft.Extensions.DependencyInjection` / `.Abstractions`).
-- Do give every project outside such a pair a namespace equal to its assembly name, so `Forma.UI.Blazor` holds `Forma.UI.Blazor.*` and `Forma.UI.Style` holds `Forma.UI.Style.*`.
+- Do give every project outside such a pair a namespace equal to its assembly name, so `Forma.UI.Blazor` holds `Forma.UI.Blazor.*` and `Forma.UI.Design.Icons` holds `Forma.UI.Design.Icons.*`.
 - Do keep these identities distinct: assembly and namespace `Forma.UI.Blazor`, package ID `2Site.Forma.UI.Blazor`, static asset base path `_content/Forma.UI`.
 - Do keep `Forma.UI.Blazor` the only packable project; every other project sets `IsPackable=false`, and the ones it references ship inside its package through `PrivateAssets="all"`.
 - Don't reference `Forma.UI.Features` from `Forma.UI.Blazor`; it takes `Forma.UI.Features.Abstractions`, and the two names differ only by suffix so the reference is easy to get wrong.
@@ -505,7 +506,7 @@ A string is a **label** when it names a thing the user acts on or reads as a hea
 
 ## Tests (bUnit + xUnit v3)
 
-Every production assembly has exactly one test project named after it, so `Forma.UI.Style` is tested by `tests/Forma.UI.Style.Tests` and never from another project. An `.Abstractions` assembly is the exception: it shares its sibling's namespace, so it shares its sibling's test project too — `Forma.UI.Features.Abstractions` is tested from `tests/Forma.UI.Features.Tests`. Mirror source paths within it, so component tests live under `tests/Forma.UI.Blazor.Tests/Components/{Category}/` with `FormaXTests.razor` and `FormaXTests.razor.cs`.
+Every production assembly has exactly one test project named after it, so `Forma.UI.Design.Icons` is tested by `tests/Forma.UI.Design.Icons.Tests` and never from another project. An `.Abstractions` assembly is the exception: it shares its sibling's namespace, so it shares its sibling's test project too — `Forma.UI.Features.Abstractions` is tested from `tests/Forma.UI.Features.Tests`. Mirror source paths within it, so component tests live under `tests/Forma.UI.Blazor.Tests/Components/{Category}/` with `FormaXTests.razor` and `FormaXTests.razor.cs`.
 
 - Do keep `.razor.cs` to `public sealed partial class FormaXTests;`.
 - Do start `.razor` with `@inherits BunitContext` and place `[Fact]` methods in a nested `public sealed class Component`.

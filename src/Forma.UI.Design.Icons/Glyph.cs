@@ -1,4 +1,4 @@
-namespace Forma.UI.Style.Icons;
+namespace Forma.UI.Design.Icons;
 
 /// <summary>A mark the library draws, named for what it means rather than for the set it is drawn from.</summary>
 public enum Glyph

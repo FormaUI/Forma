@@ -1,7 +1,7 @@
 namespace Forma.UI.Blazor.Components.Navigation;
 
 using Forma.Framework.Localization;
-using Forma.UI.Style.Icons;
+using Forma.UI.Design.Icons;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;

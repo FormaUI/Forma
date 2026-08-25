@@ -1,6 +1,6 @@
-namespace Forma.UI.Style.Icons.Tests;
+namespace Forma.UI.Design.Icons.Tests;
 
-using Forma.UI.Style.Icons;
+using Forma.UI.Design.Icons;
 
 using Xunit;
 

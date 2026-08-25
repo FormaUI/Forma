@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
-using Forma.UI.Style.Icons;
+using Forma.UI.Design.Icons;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;

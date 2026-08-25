@@ -1,4 +1,4 @@
-namespace Forma.UI.Style.Icons;
+namespace Forma.UI.Design.Icons;
 
 /// <summary>One path composing SVG icon artwork.</summary>
 public sealed record IconPath
