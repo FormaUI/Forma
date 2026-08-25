@@ -160,6 +160,97 @@
         }
 
         [Fact]
+        public void Should_mark_a_toggle_pressed_when_the_surface_reports_its_id_active()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarToggle { Id = "bold", Title = "Bold", Command = "bold" });
+            var states = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "bold" };
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" ActiveStates="states" />);
+
+            // Assert
+            Assert.Equal("true", cut.Find("button").GetAttribute("aria-pressed"));
+        }
+
+        [Fact]
+        public void Should_show_a_toggle_its_alternate_title_when_the_surface_reports_it_active()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarToggle
+            {
+                Id = "link",
+                Title = "Insert Link",
+                AlternateTitle = "Remove Link",
+                Command = "link",
+            });
+            var states = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "link" };
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" ShowLabels="true" ActiveStates="states" />);
+
+            // Assert
+            Assert.Contains("Remove Link", cut.Find("button").TextContent, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_disable_an_action_until_the_state_it_needs_is_active()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCommand
+            {
+                Id = "link-remove",
+                Title = "Remove Link",
+                Command = "link.remove",
+                RequiresState = "link",
+            });
+
+            // Act
+            var without = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
+
+            // Assert
+            Assert.True(without.Find("button").HasAttribute("disabled"));
+        }
+
+        [Fact]
+        public void Should_enable_an_action_once_the_state_it_needs_is_active()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCommand
+            {
+                Id = "link-remove",
+                Title = "Remove Link",
+                Command = "link.remove",
+                RequiresState = "link",
+            });
+            var states = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "link" };
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" ActiveStates="states" />);
+
+            // Assert
+            Assert.False(cut.Find("button").HasAttribute("disabled"));
+        }
+
+        [Fact]
+        public void Should_leave_an_action_naming_no_state_always_available()
+        {
+            // Arrange
+            using var ctx = new FormaToolbarTests();
+            var groups = Group(new FormaToolbarCommand { Id = "link-insert", Title = "Insert Link", Command = "link.insert" });
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
+
+            // Assert
+            Assert.False(cut.Find("button").HasAttribute("disabled"));
+        }
+
+        [Fact]
         public void Should_not_mark_an_inactive_toggle_pressed()
         {
             // Arrange

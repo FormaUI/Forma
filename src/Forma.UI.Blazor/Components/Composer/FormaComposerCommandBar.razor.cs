@@ -98,14 +98,12 @@ public sealed partial class FormaComposerCommandBar : ComponentBase
         {
             Title = L[toggle.Title],
             AlternateTitle = toggle.AlternateTitle is { } activeTitle ? L[activeTitle] : null,
-            IsActive = IsItemActive(toggle),
             ShortcutDisplay = KeyMap.Find(toggle.Command)?.Display,
             ShortcutAriaKeys = KeyMap.Find(toggle.Command)?.AriaKeyShortcuts,
         },
         FormaToolbarCommand command => command with
         {
             Title = L[command.Title],
-            IsDisabled = command.IsDisabled || !IsStateAvailable(command),
             ShortcutDisplay = KeyMap.Find(command.Command)?.Display,
             ShortcutAriaKeys = KeyMap.Find(command.Command)?.AriaKeyShortcuts,
         },
@@ -116,18 +114,30 @@ public sealed partial class FormaComposerCommandBar : ComponentBase
     };
 
     private FormaToolbarOption PatchOption(FormaToolbarOption option)
-        => option with { Title = L[option.Title], IsActive = IsChoiceActive(option) };
+        => option with { Title = L[option.Title] };
 
-    private bool IsItemActive(FormaToolbarItem item)
-        // Maximize is engine-owned chrome state, not a text style, so it does not come from the selection.
-        => item is FormaToolbarToggle { Command: ComposerCommands.Maximize }
-            ? Context?.IsMaximized ?? false
-            : Context?.Selection.ActiveStyles.Contains(item.Id) ?? false;
+    // The maximize toggle's own id, since the engine reports that state rather than the selection.
+    private const string MaximizeToggleId = "maximize";
 
-    private bool IsChoiceActive(FormaToolbarOption option)
-        => Context?.Selection.ActiveStyles.Contains(option.Id) ?? false;
+    /// <summary>What the toolbar treats as active: the styles the selection reports, plus the engine's own chrome state.</summary>
+    private IReadOnlySet<string> ActiveStates
+    {
+        get
+        {
+            var states = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-    // An action naming a state it needs stays unavailable until the selection reports that state.
-    private bool IsStateAvailable(FormaToolbarAction action)
-        => action.RequiresState is not { } state || (Context?.Selection.ActiveStyles.Contains(state) ?? false);
+            if (Context?.Selection.ActiveStyles is { } styles)
+            {
+                states.UnionWith(styles);
+            }
+
+            // Maximize is engine-owned chrome rather than a text style, so the selection never reports it.
+            if (Context?.IsMaximized ?? false)
+            {
+                states.Add(MaximizeToggleId);
+            }
+
+            return states;
+        }
+    }
 }

@@ -41,7 +41,7 @@
                             <ChildContent>
                                 @foreach (var option in menu.Options)
                                 {
-                                    <FormaDropDownMenuItem IsSelected="@option.IsActive"
+                                    <FormaDropDownMenuItem IsSelected="@IsOptionActive(option)"
                                                            @key="option.Id"
                                                            OnClick="() => OnCommand.InvokeAsync(option.Command)">
                                         @if (option.Swatch is { } swatch)
@@ -65,7 +65,7 @@
                         break;
 
                     case FormaToolbarAction action:
-                        var isToggleActive = action is FormaToolbarToggle { IsActive: true };
+                        var isToggleActive = IsToggleActive(action);
                         var showsLabel = action.Icon is null || ShowLabels;
                         var effectiveTitle = EffectiveTitle(action);
                         var effectiveIcon = EffectiveIcon(action);
@@ -74,7 +74,7 @@
                                 class="forma-toolbar-button @(showsLabel ? "forma-toolbar-button-labelled" : null) @(isToggleActive ? "forma-toolbar-button-active" : null)"
                                 dir="auto"
                                 @onclick="() => OnCommand.InvokeAsync(action.Command)"
-                                disabled="@(Disabled || action.IsDisabled)"
+                                disabled="@(Disabled || IsUnavailable(action))"
                                 aria-label="@(showsLabel ? null : effectiveTitle)"
                                 aria-pressed="@(action is FormaToolbarToggle ? (isToggleActive ? "true" : "false") : null)"
                                 aria-keyshortcuts="@action.ShortcutAriaKeys"

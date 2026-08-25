@@ -58,6 +58,9 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
     /// <summary>Animates the transition between hidden and shown instead of snapping instantly.</summary>
     [Parameter] public bool Animated { get; set; }
 
+    /// <summary>The states the surface currently reports, by item id, which drive toggle state and action availability.</summary>
+    [Parameter] public IReadOnlySet<string> ActiveStates { get; set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
     private string CssClass
@@ -128,7 +131,7 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
 
         var action = Items.SelectMany(Leaves).OfType<FormaToolbarAction>().FirstOrDefault(a => a.Command == command);
 
-        if (action is { IsDisabled: true })
+        if (action is null || IsUnavailable(action))
         {
             return;
         }
@@ -197,10 +200,22 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
             ? new Row(group.Id, group, group.Items)
             : new Row(item.Id, null, [item]));
 
-    private static FormaToolbarOption GetActiveOption(FormaToolbarMenu menu)
-        => menu.Options.FirstOrDefault(option => option.IsActive) ?? menu.Options[0];
+    private FormaToolbarOption GetActiveOption(FormaToolbarMenu menu)
+        => menu.Options.FirstOrDefault(IsOptionActive) ?? menu.Options[0];
 
-    private static string GetTooltip(FormaToolbarItem item)
+    /// <summary>Whether a toggle is on, because it says so itself or because the surface reports its id active.</summary>
+    private bool IsToggleActive(FormaToolbarAction action)
+        => action is FormaToolbarToggle toggle && (toggle.IsActive || ActiveStates.Contains(toggle.Id));
+
+    /// <summary>Whether a menu option is the chosen one, by its own say-so or because the surface reports its id active.</summary>
+    private bool IsOptionActive(FormaToolbarOption option)
+        => option.IsActive || ActiveStates.Contains(option.Id);
+
+    /// <summary>Whether an action cannot be run, because it is disabled outright or the state it needs is absent.</summary>
+    private bool IsUnavailable(FormaToolbarAction action)
+        => action.IsDisabled || (action.RequiresState is { } state && !ActiveStates.Contains(state));
+
+    private string GetTooltip(FormaToolbarItem item)
     {
         var label = item.Tooltip ?? (item is FormaToolbarAction action ? EffectiveTitle(action) : item.Title);
 
@@ -210,15 +225,15 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>The label an action currently shows: a toggle's <see cref="FormaToolbarToggle.AlternateTitle"/> while it is on, otherwise its own title.</summary>
-    private static string EffectiveTitle(FormaToolbarAction action)
-        => action is FormaToolbarToggle { IsActive: true, AlternateTitle: { } alternateTitle } ? alternateTitle : action.Title;
+    private string EffectiveTitle(FormaToolbarAction action)
+        => action is FormaToolbarToggle { AlternateTitle: { } alternateTitle } && IsToggleActive(action) ? alternateTitle : action.Title;
 
     /// <summary>The icon an action currently shows: a toggle's <see cref="FormaToolbarToggle.AlternateIcon"/> while it is on, otherwise its own icon.</summary>
-    private static Glyph? EffectiveIcon(FormaToolbarAction action)
-        => action is FormaToolbarToggle { IsActive: true, AlternateIcon: { } alternateIcon } ? alternateIcon : action.Icon;
+    private Glyph? EffectiveIcon(FormaToolbarAction action)
+        => action is FormaToolbarToggle { AlternateIcon: { } alternateIcon } && IsToggleActive(action) ? alternateIcon : action.Icon;
 
     /// <summary>The hover text for an action, or null when its visible label already says the same thing.</summary>
-    private static string? GetActionTitle(FormaToolbarAction action, bool showsLabel)
+    private string? GetActionTitle(FormaToolbarAction action, bool showsLabel)
     {
         var tooltip = GetTooltip(action);
 
