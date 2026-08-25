@@ -168,59 +168,6 @@ Forma.UI.Blazor/Components/
     └── FormaFilterEditor.razor
 ```
 
-```
-Forma.UI.Design.Css/
-└── CssColor.cs
-
-Forma.UI.Design.Icons/
-├── Glyph.cs
-└── Icon.cs
-
-Forma.Framework.Resources.Abstractions/
-├── IResourceContentReader.cs
-├── IResourceProvider.cs 
-├── IFileStore.cs
-├── IVisualResource.cs
-├── ITimedResource.cs
-├── FileContent.cs
-├── ResourceInfo.cs
-├── FolderResourceInfo.cs
-├── FileResourceInfo.cs
-├── ImageResourceInfo.cs
-├── VideoResourceInfo.cs
-├── AudioResourceInfo.cs
-├── DocumentResourceInfo.cs
-├── ArchiveResourceInfo.cs
-└── MarkupResourceInfo.cs
-
-Forma.Framework.Resources/
-└── ResourceFormatter.cs
-
-Forma.UI.Features.Abstractions/
-├── INotifyStateChanged.cs
-├── Feedback/
-│   ├── IToastService.cs
-│   ├── IConfirmDialogService.cs
-│   ├── ToastMessage.cs
-│   ├── ToastType.cs
-│   └── ConfirmDialogRequest.cs
-├── Indicators/
-│   ├── IStatusBadgeCatalog.cs
-│   └── StatusBadgeStyle.cs
-└── Media/
-    ├── IPlayerProvider.cs
-    ├── PlayerFrame.cs
-    └── PlayerOptions.cs
-
-Forma.UI.Features/
-├── StateNotifier.cs
-├── Feedback/
-│   ├── ToastService.cs
-│   └── ConfirmDialogService.cs
-└── Indicators/
-    └── StatusBadgeCatalog.cs
-```
-
 ---
 
 ## Tier 1 — Core Layout & Infrastructure

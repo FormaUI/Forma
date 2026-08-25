@@ -40,8 +40,8 @@ builder.Services.AddRazorComponents()
 </head>
 ```
 
-It declares the character set, viewport, title and base address, links Forma's four stylesheets in
-cascade order, and closes with the framework's own `ResourcePreloader`, `ImportMap` and `HeadOutlet`
+It declares the character set, viewport, title and base address, links Forma's stylesheets in cascade
+order, and closes with the framework's own `ResourcePreloader`, `ImportMap` and `HeadOutlet`
 — so a host adds none of those itself. A host's own head content goes in the child content, where
 its styles land after Forma's and win. `HeadOutlet` renders last, so a page's `PageTitle` still
 overrides the title set here.
@@ -49,7 +49,7 @@ overrides the title set here.
 Set `PreloadAssets="false"` to leave out the runtime preloading, which only a WebAssembly render mode
 benefits from.
 
-The four layers, for a host that would rather link them itself:
+The layers, for a host that would rather link them itself:
 
 | Stylesheet | Contents | Take it when |
 |------------|----------|--------------|
@@ -66,7 +66,7 @@ focus, and link shades follow.
 ```csharp
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
-    .AddAdditionalAssemblies(typeof(Forma.UI._Imports).Assembly);
+    .AddAdditionalAssemblies(typeof(Forma.UI.Blazor._Imports).Assembly);
 ```
 
 Components that use JS interop, such as `FormaModal` and `FormaTextBox`, need the Interactive Server
@@ -74,23 +74,9 @@ render mode.
 
 ## Components
 
-- **Bars** — `FormaCommandArea`, `FormaCommandBar`, `FormaToolbar`, `FormaSearchToolbar`,
-  `FormaSelectionToolbar`.
-- **Feedback** — `FormaModal`, `FormaConfirmDialog`, `FormaToastContainer`
-  (backed by `IConfirmDialogService` / `IToastService`).
-- **Forms** — `FormaDatePicker` (single + range, non-Gregorian aware), `FormaColorPicker`,
-  `FormaTextBox`, `FormaTextArea`, `FormaPasswordBox`, `FormaToggleSwitch`,
-  `FormaMultiSelect`, `FormaSelect`, `FormaButton`, `FormaCheckBox`.
-- **Collections** — `FormaDataGrid`, `FormaSortableList`.
-- **Files** — `FormaFilePicker`, `FormaFileUploader`, `FormaFileViewer`.
-- **Layout** — `FormaSplitter`, `FormaTabs` (`FormaTab`).
-- **Menus** — `FormaDropDownMenu`.
-- **Navigation** — `FormaBreadcrumb`, `FormaPagination`.
-- **Page** — `FormaPageTitle`, `FormaPageHead`.
-- **Indicators** — `FormaStatusBadge`.
-- **Media** — `FormaVideoPlayer`.
-
-[`COMPONENTS.md`](COMPONENTS.md) describes each one's behaviour.
+The library covers the admin-app staples — form inputs and pickers, modals and toasts, data
+grids, toolbars, tabs, file intake, a file explorer, and the `FormaComposer` authoring surface.
+[`COMPONENTS.md`](COMPONENTS.md) is the inventory, describing each component's behaviour.
 
 `FormaStatusBadge` needs a catalog of the statuses **your** application defines — the library ships
 none:
@@ -181,4 +167,4 @@ in [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md), which ships inside the pa
 it with `scripts/fetch-glyphs.ps1`, which reads the glyph-to-Phosphor map in `assets/phosphor.json`
 and writes the artwork to `src/Forma.UI.Blazor/Assets/glyphs.json`.
 
-Contributor conventions live in [`.github/copilot-instructions.md`](.github/copilot-instructions.md).
+Contributor conventions live in [`CLAUDE.md`](CLAUDE.md).

@@ -25,4 +25,4 @@ Reaching across categories for chrome is not a new pattern here. `FormaExplorer`
 
 ## Next step
 
-Nothing to build yet. When implementation starts: confirm the Files/Collections layout against reference images, settle Favourites and Categories above, then follow the usual per-component workflow from `.github/copilot-instructions.md` — a `COMPONENTS.md` entry, and a fuller design document here if the component earns one.
+Nothing to build yet. When implementation starts: confirm the Files/Collections layout against reference images, settle Favourites and Categories above, then follow the usual per-component workflow from `CLAUDE.md` — a `COMPONENTS.md` entry, and a fuller design document here if the component earns one.

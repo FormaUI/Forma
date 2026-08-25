@@ -18,7 +18,7 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 ## Source of truth
 
 - Do use [COMPONENTS.md](COMPONENTS.md) for the component inventory, build order, and completion status.
-- Do use [README.md](README.md) for solution layout, packaging identities, and host consumption.
+- Do use [README.md](README.md) for host consumption — install, service registration, stylesheets, and localization from the consumer's side.
 - Do use [docs/composer-design.md](docs/composer-design.md) for `FormaComposer`'s architecture, plugin model, assemblies, and phases.
 - Do put a component's own design document in `docs/` when it is large enough to own a plan, and treat it as authoritative for that component over the inventory's summary row.
 - Do read `.editorconfig` before writing C#; it is the authority on style, and the root file and `src/Forma.UI.Blazor/.editorconfig` differ deliberately.
@@ -27,27 +27,6 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 - Don't invent scope, status, packaging, or style rules when an authoritative file defines them.
 
 ## Solution structure
-
-| Project | Kind | May reference |
-|---------|------|---------------|
-| `src/Forma.UI.Design.Css` | Class library | Nothing — CSS vocabulary such as `CssColor` and `CssLength` |
-| `src/Forma.UI.Design.Icons` | Class library | Nothing — icon vocabulary such as `Glyph`, `Icon`, and `IIconProvider` |
-| `src/Forma.Framework.Resources.Abstractions` | Class library | Nothing — resource contracts and value types such as `IResourceProvider` and `ResourceInfo` |
-| `src/Forma.Framework.Resources` | Class library | Nothing — writes resource measurements as text for a reader (`ResourceFormatter`) |
-| `src/Forma.Framework.Localization.Abstractions` | Class library | Nothing — localization contracts and value types such as `IStringLocale`, `LocalizedText`, and the locale expression syntax |
-| `src/Forma.Framework.Localization` | Class library | `Forma.Framework.Localization.Abstractions` — the locale parser and plural engine |
-| `src/Forma.Framework.Localization.Json` | Class library | `Forma.Framework.Localization` — JSON-backed `IStringLocale` |
-| `src/Forma.Framework.Localization.Linter` | Tool | `Forma.Framework.Localization.Json` — the `locali` linter over translation files and `L[...]` call sites |
-| `src/Forma.UI.Features.Abstractions` | Class library | `Forma.UI.Design.Css`, `Forma.UI.Design.Icons` — contracts, messages, enums |
-| `src/Forma.UI.Features` | Class library | `Forma.UI.Features.Abstractions` — implementations |
-| `src/Forma.UI.Features.Composer.Abstractions` | Class library | `Forma.UI.Design.Icons` — composer contracts, plugin model, document types |
-| `src/Forma.UI.Features.Composer` | Class library | `Forma.UI.Features.Composer.Abstractions` — the composer engine |
-| `src/Forma.Framework.Resources.Markdown` | Class library | `Forma.Framework.Resources.Abstractions` — Markdown conversion |
-| `src/Forma.Framework.Resources.Office` | Class library | `Forma.Framework.Resources.Abstractions`, `Forma.Framework.Localization.Abstractions` — Word, workbook, and presentation conversion |
-| `src/Forma.UI.Blazor` | Razor Class Library | `Forma.UI.Features.Abstractions`, `Forma.UI.Features.Composer`, `Forma.UI.Features.Composer.Abstractions`, `Forma.UI.Design.Css`, `Forma.UI.Design.Icons`, `Forma.Framework.Resources.Abstractions`, `Forma.Framework.Resources`, `Forma.Framework.Localization.Abstractions` — packaged components |
-| `src/Forma.UI.Blazor.Showcase` | Web app | `Forma.UI.Blazor`, `Forma.UI.Features`, `Forma.UI.Features.Composer`, `Forma.UI.Features.Composer.Abstractions`, `Forma.UI.Design.Css`, `Forma.UI.Design.Icons`, `Forma.Framework.Resources.Abstractions`, `Forma.Framework.Resources`, `Forma.Framework.Resources.Office`, `Forma.Framework.Resources.Markdown`, `Forma.Framework.Localization`, `Forma.Framework.Localization.Json` — reference host and component showcase |
-| `tests/{Assembly}.Tests` | Test project | The one assembly it is named after, plus what its tests use directly |
-| `tests/Forma.Tests.Support` | Class library | Shared test fakes, fixtures, and utilities in the `Forma.Tests.*` namespaces |
 
 - Do split the family by audience: `Forma.UI.*` is one product serving the component library, while each `Forma.Framework.*` assembly stands alone — `Forma.Framework.Resources.Office` depends on `Forma.Framework.Resources.Abstractions` alone, never on anything in `Forma.UI`.
 - Do put a horizontal concern no single vertical feature owns into the matching `Forma.UI.Design.*` project when only the UI needs it, and into `Forma.Framework.Resources.Abstractions` when a consumer outside the UI needs it too.
@@ -70,7 +49,7 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 A project's references are part of its contract, because every consumer inherits them.
 
 - Do reference the narrowest package that supplies what the code uses, preferring the `.Abstractions` half when only contracts are needed.
-- Do confine `<FrameworkReference Include="Microsoft.AspNetCore.App" />` to the projects that genuinely compile against ASP.NET Core: `Forma.UI.Blazor`, and `Forma.Tests.Support` for the Razor host component it ships.
+- Do confine `<FrameworkReference Include="Microsoft.AspNetCore.App" />` to projects that genuinely compile against ASP.NET Core.
 - Do give every project its own reference for what it uses directly, test projects included, rather than relying on one arriving transitively.
 - Do let the build settle it: NU1510 marks a package the framework already supplies, and an unresolved type marks one that is genuinely missing.
 - Don't reach for a shared framework to obtain a handful of types; `Forma.Framework.Localization` needs `Microsoft.Extensions.Localization.Abstractions` alone.
@@ -88,7 +67,7 @@ A project's references are part of its contract, because every consumer inherits
 
 ### Booleans, events, and callbacks
 
-- Do name a `[Parameter] public bool` bare and unprefixed when it configures the component's own rendering or behaviour: `Disabled`, `Busy`, `Opened`, `Required`, `ReadOnly`, `ShowLabels`, `EnablePagination`, `Virtualize`. One forwarding to a native HTML attribute belongs to the same family as `Class`, `Id`, and `Style`, and `Disabled` holds across all 21 of them without exception — never `IsDisabled`.
+- Do name a `[Parameter] public bool` bare and unprefixed when it configures the component's own rendering or behaviour: `Disabled`, `Busy`, `Opened`, `Required`, `ReadOnly`, `ShowLabels`, `EnablePagination`, `Virtualize`. One forwarding to a native HTML attribute belongs to the same family as `Class`, `Id`, and `Style`, and `Disabled` holds across every component without exception — never `IsDisabled`.
 - Do use the affirmative `Is`/`Has`/`Can` phrasing where the flag states a condition rather than configuring the component: on every plain data record (`FormaToolbarItem.IsDisabled`, `FormaToolbarToggle.IsActive`, `BreadcrumbItem.IsCurrent`, `ExplorerAction.IsDestructive`), and on the few parameters that only reflect something the host already worked out (`FormaExplorerAddressBar.CanGoBack`, `FormaDropDownMenuItem.IsSelected`).
 - Do prefix an `EventCallback` with `On` when it reports an action taken, with no bindable parameter of the same name behind it: `OnClick`, `OnCommand`, `OnDelete`, `OnRefresh`.
 - Do drop the `On` prefix entirely when an `EventCallback<T>` is paired with a same-named `[Parameter] T`, so `@bind-{Name}` can find it: `Value`/`ValueChanged`, `ActiveTabId`/`ActiveTabIdChanged`, `SelectedItems`/`SelectedItemsChanged`, `ViewMode`/`ViewModeChanged`.
@@ -142,7 +121,7 @@ A description is wrong the moment the thing it describes widens, and nothing in 
 
 ## Component file layout
 
-Components live in `src/Forma.UI.Blazor/Components/{Category}/`, where `{Category}` is `Bars`, `Buttons`, `Collections`, `Composer`, `Explorer`, `Feedback`, `Files`, `Indicators`, `Inputs`, `Layout`, `Media`, `Menus`, `Navigation`, or `Page`.
+Components live in `src/Forma.UI.Blazor/Components/{Category}/`, where `{Category}` names a UI role such as `Bars`, `Feedback`, `Inputs`, or `Navigation`.
 
 ```text
 Components/{Category}/
