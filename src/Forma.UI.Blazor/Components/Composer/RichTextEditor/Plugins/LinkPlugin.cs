@@ -9,16 +9,22 @@ using Forma.UI.Style.Glyphs;
 /// <summary>Contributes hyperlink and anchor creation and removal to the rich text editor.</summary>
 public sealed class LinkPlugin(RichTextEditorPlugin editor) : IComposerPlugin
 {
-    /// <summary>The command adding a hyperlink, or removing the one the caret sits in.</summary>
-    public const string ToggleLinkCommand = "link.toggle";
+    /// <summary>The command adding a hyperlink, or retargeting whichever ones the selection covers.</summary>
+    public const string InsertLinkCommand = "link.insert";
 
-    /// <summary>The command adding a named anchor, or removing the one the caret sits in.</summary>
-    public const string ToggleAnchorCommand = "link.toggle-anchor";
+    /// <summary>The command removing every hyperlink the selection touches.</summary>
+    public const string RemoveLinkCommand = "link.remove";
 
-    /// <summary>The active style reported while the caret sits inside a hyperlink.</summary>
+    /// <summary>The command adding a named anchor.</summary>
+    public const string InsertAnchorCommand = "link.insert-anchor";
+
+    /// <summary>The command removing every named anchor the selection touches.</summary>
+    public const string RemoveAnchorCommand = "link.remove-anchor";
+
+    /// <summary>The active style reported while the selection sits inside or overlaps a hyperlink.</summary>
     public const string LinkStyle = "link";
 
-    /// <summary>The active style reported while the caret sits inside a named anchor.</summary>
+    /// <summary>The active style reported while the selection sits inside or overlaps a named anchor.</summary>
     public const string AnchorStyle = "anchor";
 
     private readonly RichTextEditorPlugin _editor = editor;
@@ -40,25 +46,37 @@ public sealed class LinkPlugin(RichTextEditorPlugin editor) : IComposerPlugin
                 Title = "Links",
                 Items =
                 [
-                    new FormaToolbarToggle
+                    new FormaToolbarCommand
                     {
-                        Id = LinkStyle,
+                        Id = "link-insert",
                         Title = "Insert Link",
-                        AlternateTitle = "Remove Link",
                         Icon = Glyph.Link,
-                        AlternateIcon = Glyph.LinkSlash,
-                        Command = ToggleLinkCommand,
+                        Command = InsertLinkCommand,
                         ShortcutDisplay = "Ctrl+K",
                         ShortcutAriaKeys = "Control+k",
                     },
-                    new FormaToolbarToggle
+                    new FormaToolbarCommand
                     {
-                        Id = AnchorStyle,
+                        Id = "link-remove",
+                        Title = "Remove Link",
+                        Icon = Glyph.LinkSlash,
+                        Command = RemoveLinkCommand,
+                        RequiresState = LinkStyle,
+                    },
+                    new FormaToolbarCommand
+                    {
+                        Id = "anchor-insert",
                         Title = "Insert Anchor",
-                        AlternateTitle = "Remove Anchor",
                         Icon = Glyph.Anchor,
-                        AlternateIcon = Glyph.AnchorCircleXmark,
-                        Command = ToggleAnchorCommand,
+                        Command = InsertAnchorCommand,
+                    },
+                    new FormaToolbarCommand
+                    {
+                        Id = "anchor-remove",
+                        Title = "Remove Anchor",
+                        Icon = Glyph.AnchorCircleXmark,
+                        Command = RemoveAnchorCommand,
+                        RequiresState = AnchorStyle,
                     },
                 ],
             },
@@ -68,7 +86,7 @@ public sealed class LinkPlugin(RichTextEditorPlugin editor) : IComposerPlugin
     /// <inheritdoc />
     public IReadOnlyList<ComposerKeyBinding> KeyBindings =>
     [
-        new() { Key = "k", Command = ToggleLinkCommand, Control = true },
+        new() { Key = "k", Command = InsertLinkCommand, Control = true },
     ];
 
     /// <inheritdoc />
@@ -89,20 +107,20 @@ public sealed class LinkPlugin(RichTextEditorPlugin editor) : IComposerPlugin
 
         switch (command)
         {
-            case ToggleLinkCommand when context.Selection.ActiveStyles.Contains(LinkStyle):
-                _editor.RequestCommand("unlink");
-                break;
-
-            case ToggleLinkCommand:
+            case InsertLinkCommand:
                 _editor.RequestLinkDialog(isAnchor: false);
                 break;
 
-            case ToggleAnchorCommand when context.Selection.ActiveStyles.Contains(AnchorStyle):
-                _editor.RequestCommand("removeAnchor");
+            case RemoveLinkCommand:
+                _editor.RequestCommand("unlink");
                 break;
 
-            case ToggleAnchorCommand:
+            case InsertAnchorCommand:
                 _editor.RequestLinkDialog(isAnchor: true);
+                break;
+
+            case RemoveAnchorCommand:
+                _editor.RequestCommand("removeAnchor");
                 break;
         }
 

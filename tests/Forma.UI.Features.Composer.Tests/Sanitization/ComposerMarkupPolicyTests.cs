@@ -168,6 +168,12 @@ public sealed class ComposerMarkupPolicyTests
         [InlineData("just some text")]
         [InlineData("")]
         [InlineData("   ")]
+        [InlineData("http://")]
+        [InlineData("https://")]
+        [InlineData("mailto:")]
+        [InlineData("tel:")]
+        [InlineData("#")]
+        [InlineData("data:image/png")]
         public void Should_refuse_an_address_the_document_may_not_carry(string address)
         {
             // Act

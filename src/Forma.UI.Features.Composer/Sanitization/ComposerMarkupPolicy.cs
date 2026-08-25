@@ -151,8 +151,14 @@ public sealed class ComposerMarkupPolicy : IMarkupPolicy
             return false;
         }
 
-        // A fragment or a path resolves against whatever origin the document is served from, so it names no scheme to judge.
-        if (trimmed[0] is '#' or '/'
+        // A bare '#' names no fragment, so it addresses nothing.
+        if (trimmed[0] == '#')
+        {
+            return trimmed.Length > 1;
+        }
+
+        // A path resolves against whatever origin the document is served from, so it names no scheme to judge.
+        if (trimmed[0] == '/'
             || trimmed.StartsWith("./", StringComparison.Ordinal)
             || trimmed.StartsWith("../", StringComparison.Ordinal))
         {
@@ -163,7 +169,8 @@ public sealed class ComposerMarkupPolicy : IMarkupPolicy
         {
             if (trimmed.StartsWith(scheme, StringComparison.OrdinalIgnoreCase))
             {
-                return true;
+                // A scheme with nothing behind it points nowhere, so "http://" is refused as firmly as "http".
+                return trimmed.Length > scheme.Length;
             }
         }
 
@@ -171,7 +178,8 @@ public sealed class ComposerMarkupPolicy : IMarkupPolicy
         {
             if (trimmed.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             {
-                return true;
+                // The bytes follow a comma; without one the URL declares a type and carries no picture.
+                return trimmed.IndexOf(',') > 0;
             }
         }
 

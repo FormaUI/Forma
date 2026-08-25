@@ -151,6 +151,33 @@
     align-items: center;
 }
 
+/* A link is underlined as well as coloured, because colour alone leaves the state unreadable without it.
+   Hover darkens rather than lightens: --link-hover-color resolves to a tint of white that measures
+   about 2.4:1 on this canvas, so the resting colour's sibling is used and the underline thickens too. */
+.forma-composer-rich-text-canvas ::deep a[href] {
+    color: var(--forma-composer-link-color, var(--link-color));
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+}
+
+@media (hover: hover) {
+    .forma-composer-rich-text-canvas ::deep a[href]:hover {
+        color: var(--forma-composer-link-hover-color, var(--main-color));
+        text-decoration-thickness: 0.125em;
+    }
+
+    .forma-composer-rich-text-canvas ::deep a[name]:hover {
+        border-block-end-color: var(--forma-composer-link-hover-color, var(--main-color));
+    }
+}
+
+.forma-composer-rich-text-canvas ::deep a[href]:focus-visible,
+.forma-composer-rich-text-canvas ::deep a[name]:focus-visible {
+    outline: 2px solid var(--focus-color, #86b7fe);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm, 0.25rem);
+}
+
 /* A named anchor carries no visible text of its own, so without this it is a zero-size box the author cannot see, select or remove. */
 .forma-composer-rich-text-canvas ::deep a[name]:empty {
     display: inline-block;

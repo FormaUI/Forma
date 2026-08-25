@@ -33,6 +33,7 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
 
     private bool _isLinkDialogOpen;
     private bool _isLinkAnchorMode;
+    private string? _linkHref;
     private bool _isTableDialogOpen;
     private bool _isVideoDialogOpen;
     private bool _isImageDialogOpen;
@@ -157,7 +158,12 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
 
         _ = InvokeAsync(async () =>
         {
-            _selectedText = await _interop.GetSelectionTextAsync();
+            var target = await _interop.BeginLinkDialogAsync(isAnchor);
+
+            _selectedText = target?.Text;
+
+            // One link is being retargeted, so its address comes back; several share none, and the author names it.
+            _linkHref = target?.Count == 1 ? target.Href : null;
             _isLinkDialogOpen = true;
             StateHasChanged();
         });

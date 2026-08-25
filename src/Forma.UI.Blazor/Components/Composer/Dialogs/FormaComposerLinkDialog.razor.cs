@@ -10,6 +10,7 @@ public sealed partial class FormaComposerLinkDialog : ComposerDialogBase
     private string? _href;
     private string? _name;
     private bool _openInNewTab;
+    private bool _seeded;
 
     /// <summary>Whether the dialog is configuring a named anchor rather than a hyperlink.</summary>
     [Parameter] public bool IsAnchor { get; set; }
@@ -26,13 +27,17 @@ public sealed partial class FormaComposerLinkDialog : ComposerDialogBase
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        if (Opened)
+        // Only the first opening seeds the fields; a later render would otherwise overwrite what was typed.
+        if (!Opened || _seeded)
         {
-            _href = InitialHref;
-
-            // The selected text names the link or anchor, so an author marking a phrase does not retype it.
-            _name ??= InitialText;
+            return;
         }
+
+        _seeded = true;
+
+        // An address comes back only when one link is being retargeted, and the selected text names it.
+        _href = InitialHref;
+        _name = InitialText;
     }
 
     private async Task HandleConfirmAsync()

@@ -202,13 +202,13 @@ public sealed class RichTextPluginTests
         editor.LinkDialogRequested += isAnchor => isAnchorRequested = isAnchor;
 
         // Act
-        await plugin.ExecuteAsync(LinkPlugin.ToggleLinkCommand, context, TestContext.Current.CancellationToken);
+        await plugin.ExecuteAsync(LinkPlugin.InsertLinkCommand, context, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(isAnchorRequested);
 
         // Act
-        await plugin.ExecuteAsync(LinkPlugin.ToggleAnchorCommand, context, TestContext.Current.CancellationToken);
+        await plugin.ExecuteAsync(LinkPlugin.InsertAnchorCommand, context, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(isAnchorRequested);
@@ -217,7 +217,7 @@ public sealed class RichTextPluginTests
     }
 
     [Fact]
-    public async Task LinkPlugin_should_remove_rather_than_add_when_the_caret_is_already_on_one()
+    public async Task LinkPlugin_should_remove_through_its_own_command_rather_than_a_toggle()
     {
         // Arrange
         var editor = new RichTextEditorPlugin();
@@ -230,7 +230,7 @@ public sealed class RichTextPluginTests
 
         // Act
         await plugin.ExecuteAsync(
-            LinkPlugin.ToggleLinkCommand,
+            LinkPlugin.RemoveLinkCommand,
             CreateContext(activeStyles: LinkPlugin.LinkStyle),
             TestContext.Current.CancellationToken);
 
@@ -239,7 +239,7 @@ public sealed class RichTextPluginTests
 
         // Act
         await plugin.ExecuteAsync(
-            LinkPlugin.ToggleAnchorCommand,
+            LinkPlugin.RemoveAnchorCommand,
             CreateContext(activeStyles: LinkPlugin.AnchorStyle),
             TestContext.Current.CancellationToken);
 

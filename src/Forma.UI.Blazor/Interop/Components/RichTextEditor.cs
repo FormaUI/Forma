@@ -26,6 +26,10 @@ internal sealed class RichTextEditor(IJSRuntime js)
     public ValueTask<string?> GetSelectionTextAsync()
         => InvokeAsync<string>("getSelectionText");
 
+    /// <summary>Freezes the selection a link dialog will act on, and reports what it covers.</summary>
+    public ValueTask<RichTextLinkTargetDto?> BeginLinkDialogAsync(bool isAnchor)
+        => InvokeAsync<RichTextLinkTargetDto>("beginLinkDialog", isAnchor ? "a[name]" : "a[href]");
+
     /// <summary>Executes a rich text formatting command on the active selection.</summary>
     public ValueTask<RichTextCommandResult?> ExecAsync(string command, object? value = null)
         => InvokeAsync<RichTextCommandResult>("exec", command, value);
@@ -34,6 +38,10 @@ internal sealed class RichTextEditor(IJSRuntime js)
 /// <summary>The result of executing a rich text command.</summary>
 [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Constructed by JSON deserialization from JS interop.")]
 public sealed record RichTextCommandResult(string Html, RichTextSelectionDto? Selection);
+
+/// <summary>What a link dialog is about to act on: the text covered, and the one address behind it when there is exactly one.</summary>
+[SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Constructed by JSON deserialization from JS interop.")]
+public sealed record RichTextLinkTargetDto(string Text, string? Href, int Count);
 
 /// <summary>A selection snapshot reported by the rich text editor.</summary>
 [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Constructed by JSON deserialization from JS interop.")]

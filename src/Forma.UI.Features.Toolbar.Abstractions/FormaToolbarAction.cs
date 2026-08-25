@@ -11,4 +11,7 @@ public abstract record FormaToolbarAction : FormaToolbarItem
 
     /// <summary>The shortcut in `aria-keyshortcuts` notation, such as "Control+B", or null.</summary>
     public string? ShortcutAriaKeys { get; init; }
+
+    /// <summary>The state the surface must report before this action can run, or null when it is always available.</summary>
+    public string? RequiresState { get; init; }
 }

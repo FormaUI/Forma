@@ -26,6 +26,7 @@
         {
             <FormaComposerLinkDialog Opened="_isLinkDialogOpen"
                                      IsAnchor="_isLinkAnchorMode"
+                                     InitialHref="@_linkHref"
                                      InitialText="@_selectedText"
                                      OnInsert="HandleLinkInsertedAsync"
                                      OnCancel="() => _isLinkDialogOpen = false" />

@@ -105,6 +105,7 @@ public sealed partial class FormaComposerCommandBar : ComponentBase
         FormaToolbarCommand command => command with
         {
             Title = L[command.Title],
+            IsDisabled = command.IsDisabled || !IsStateAvailable(command),
             ShortcutDisplay = KeyMap.Find(command.Command)?.Display,
             ShortcutAriaKeys = KeyMap.Find(command.Command)?.AriaKeyShortcuts,
         },
@@ -125,4 +126,8 @@ public sealed partial class FormaComposerCommandBar : ComponentBase
 
     private bool IsChoiceActive(FormaToolbarOption option)
         => Context?.Selection.ActiveStyles.Contains(option.Id) ?? false;
+
+    // An action naming a state it needs stays unavailable until the selection reports that state.
+    private bool IsStateAvailable(FormaToolbarAction action)
+        => action.RequiresState is not { } state || (Context?.Selection.ActiveStyles.Contains(state) ?? false);
 }

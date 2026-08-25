@@ -481,4 +481,151 @@ describe('RichTextEditor', () => {
         expect(owner.invokeMethodAsync).not.toHaveBeenCalled();
         expect(handle.exec('bold')).toBeNull();
     });
+
+    describe('unlink', () => {
+        function selectWithin(startNode, startOffset, endNode, endOffset) {
+            const range = document.createRange();
+            range.setStart(startNode, startOffset);
+            range.setEnd(endNode, endOffset);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            return range;
+        }
+
+        it('removes the link the caret sits inside without any selection', () => {
+            editor.innerHTML = '<p>I have two <a href="https://a.test">first</a> and <a href="https://b.test">second</a> links</p>';
+            const handle = attach(editor, { owner });
+            const inside = editor.querySelectorAll('a')[0].firstChild;
+
+            selectWithin(inside, 2, inside, 2);
+            handle.exec('unlink');
+
+            const remaining = [...editor.querySelectorAll('a')].map(a => a.getAttribute('href'));
+            expect(remaining).toEqual(['https://b.test']);
+            expect(editor.textContent).toContain('first');
+        });
+
+        it('removes every link a loose selection touches', () => {
+            editor.innerHTML = '<p>two <a href="https://a.test">first</a> and <a href="https://b.test">second</a> links</p>';
+            const handle = attach(editor, { owner });
+            const paragraph = editor.querySelector('p');
+
+            // Starts inside the leading text and ends inside the trailing text, covering neither link exactly.
+            selectWithin(paragraph.firstChild, 1, paragraph.lastChild, 2);
+            handle.exec('unlink');
+
+            expect(editor.querySelectorAll('a')).toHaveLength(0);
+            expect(editor.textContent).toContain('first');
+            expect(editor.textContent).toContain('second');
+        });
+
+        it('leaves every link alone when the caret is outside them all', () => {
+            editor.innerHTML = '<p>plain <a href="https://a.test">link</a> here</p>';
+            const handle = attach(editor, { owner });
+            const trailing = editor.querySelector('p').lastChild;
+
+            selectWithin(trailing, 1, trailing, 1);
+            handle.exec('unlink');
+
+            expect(editor.querySelectorAll('a')).toHaveLength(1);
+        });
+
+        it('removes the named anchor the caret sits inside', () => {
+            editor.innerHTML = '<p>see <a name="results">the results</a> below</p>';
+            const handle = attach(editor, { owner });
+            const inside = editor.querySelector('a').firstChild;
+
+            selectWithin(inside, 3, inside, 3);
+            handle.exec('removeAnchor');
+
+            expect(editor.querySelectorAll('a')).toHaveLength(0);
+            expect(editor.textContent).toContain('the results');
+        });
+
+        it('reports a link the selection merely overlaps, so the toggle offers removal', () => {
+            editor.innerHTML = '<p>two <a href="https://a.test">first</a> and <a href="https://b.test">second</a> links</p>';
+            const handle = attach(editor, { owner });
+            const paragraph = editor.querySelector('p');
+
+            // Begins in plain text ahead of the first link and ends in plain text after the second.
+            selectWithin(paragraph.firstChild, 1, paragraph.lastChild, 2);
+            const { selection } = handle.exec('insertText', '');
+
+            expect(selection.activeStyles).toContain('link');
+        });
+
+        it('reports no link when the selection touches none', () => {
+            editor.innerHTML = '<p>plain text only</p>';
+            const handle = attach(editor, { owner });
+            const text = editor.querySelector('p').firstChild;
+
+            selectWithin(text, 1, text, 4);
+            const { selection } = handle.exec('insertText', '');
+
+            expect(selection.activeStyles).not.toContain('link');
+        });
+
+        it('offers the address back when the selection touches exactly one link', () => {
+            editor.innerHTML = '<p>text <a href="https://a.test">library ships is</a> more</p>';
+            const handle = attach(editor, { owner });
+            const par = editor.querySelector('p');
+            const texts = [];
+            const walker = document.createTreeWalker(par, NodeFilter.SHOW_TEXT);
+            while (walker.nextNode()) texts.push(walker.currentNode);
+
+            // Starts in the text ahead of the link and ends inside it, covering it only partly.
+            selectWithin(texts[0], 2, texts[1], 7);
+            const target = handle.beginLinkDialog();
+
+            expect(target.count).toBe(1);
+            expect(target.href).toBe('https://a.test');
+            expect(target.text).toContain('library');
+        });
+
+        it('offers no address when the selection touches several links', () => {
+            editor.innerHTML = '<p>a <a href="https://a.test">one</a> and <a href="https://b.test">two</a> b</p>';
+            const handle = attach(editor, { owner });
+            const par = editor.querySelector('p');
+            const texts = [];
+            const walker = document.createTreeWalker(par, NodeFilter.SHOW_TEXT);
+            while (walker.nextNode()) texts.push(walker.currentNode);
+
+            selectWithin(texts[0], 0, texts[texts.length - 1], 1);
+            const target = handle.beginLinkDialog();
+
+            expect(target.count).toBe(2);
+            expect(target.href).toBeNull();
+            expect(target.text).toContain('one');
+            expect(target.text).toContain('two');
+        });
+
+        it('replaces every link the selection covered with the new one', () => {
+            editor.innerHTML = '<p>a <a href="https://a.test">one</a> and <a href="https://b.test">two</a> b</p>';
+            const handle = attach(editor, { owner });
+            const par = editor.querySelector('p');
+            const texts = [];
+            const walker = document.createTreeWalker(par, NodeFilter.SHOW_TEXT);
+            while (walker.nextNode()) texts.push(walker.currentNode);
+
+            selectWithin(texts[0], 0, texts[texts.length - 1], 1);
+            handle.beginLinkDialog();
+            handle.exec('createLink', { href: 'https://new.test', name: 'everything' });
+
+            const hrefs = [...editor.querySelectorAll('a')].map(a => a.getAttribute('href'));
+            expect(hrefs).toEqual(['https://new.test']);
+        });
+
+        it('does not remove a named anchor when unlinking a hyperlink', () => {
+            editor.innerHTML = '<p>see <a name="results">the results</a> below</p>';
+            const handle = attach(editor, { owner });
+            const inside = editor.querySelector('a').firstChild;
+
+            selectWithin(inside, 3, inside, 3);
+            handle.exec('unlink');
+
+            expect(editor.querySelectorAll('a[name]')).toHaveLength(1);
+        });
+    });
+
 });

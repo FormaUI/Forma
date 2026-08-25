@@ -93,6 +93,28 @@ class RichTextEditor {
         return this.#dialogRange && !this.#dialogRange.collapsed ? this.#dialogRange.toString() : '';
     }
 
+    /**
+     * What the link dialog is about to act on: the text it covers, and the address of the single link
+     * it touches. Several links share no one address, so that field is left for the author to fill.
+     */
+    beginLinkDialog(selector = 'a[href]') {
+        this.#dialogRange = this.#savedRange ? this.#savedRange.cloneRange() : null;
+
+        if (!this.#dialogRange) {
+            return { text: '', href: null, count: 0 };
+        }
+
+        const selected = this.#dialogRange.collapsed ? '' : this.#dialogRange.toString();
+        const touched = this.#anchorsTouching(this.#dialogRange, selector);
+        const single = touched.length === 1 ? touched[0] : null;
+
+        return {
+            text: selected || (single ? single.textContent : ''),
+            href: single ? single.getAttribute(selector === 'a[name]' ? 'name' : 'href') : null,
+            count: touched.length,
+        };
+    }
+
     exec(command, value = null) {
         if (this.#isDisposed) {
             return null;
@@ -164,12 +186,11 @@ class RichTextEditor {
                 break;
 
             case 'unlink':
-                this.#restoreSelection();
-                document.execCommand('unlink', false, null);
+                this.#unwrapAnchors('a[href]');
                 break;
 
             case 'removeAnchor':
-                this.#removeAnchor();
+                this.#unwrapAnchors('a[name]');
                 break;
 
             case 'selectAll':
@@ -441,19 +462,78 @@ class RichTextEditor {
         return found && this.#target.contains(found) ? found : null;
     }
 
-    /** Unwraps the anchor around the caret, keeping whatever text it held. */
-    #removeAnchor() {
-        this.#restoreSelection();
-        const selection = window.getSelection();
-        const node = selection?.anchorNode;
-        const anchor = this.#closestWithin(node?.nodeType === Node.TEXT_NODE ? node.parentElement : node, 'a[name]');
+    /**
+     * Whether the selection touches a matching anchor, by sitting inside one or by overlapping any of them.
+     * A selection reaching across two links starts in plain text, so asking only where it begins would
+     * report no link and offer to insert one rather than remove what is already there.
+     */
+    #touchesAnchor(range, selector) {
+        const node = range.startContainer;
 
-        if (!anchor) {
+        if (this.#closestWithin(node.nodeType === Node.TEXT_NODE ? node.parentElement : node, selector)) {
+            return true;
+        }
+
+        if (range.collapsed) {
+            return false;
+        }
+
+        for (const candidate of this.#target.querySelectorAll(selector)) {
+            if (range.intersectsNode(candidate)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Unwraps every matching anchor the selection touches, keeping whatever text each held.
+     * A caret inside one is enough, and a selection merely overlapping several clears all of them,
+     * so an author never has to select a link exactly to remove it.
+     */
+    #unwrapAnchors(selector) {
+        this.#restoreSelection();
+
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) {
             return;
         }
 
-        anchor.replaceWith(...anchor.childNodes);
+        if (this.#unwrapTouching(selection.getRangeAt(0), selector) === 0) {
+            return;
+        }
+
+        // Unwrapping leaves the text split where the anchor used to start and end.
+        this.#target.normalize();
         this.#saveSelection();
+    }
+
+    /** The matching anchors a range sits inside or overlaps, in document order. */
+    #anchorsTouching(range, selector) {
+        if (range.collapsed) {
+            const node = range.startContainer;
+            const found = this.#closestWithin(node.nodeType === Node.TEXT_NODE ? node.parentElement : node, selector);
+
+            return found ? [found] : [];
+        }
+
+        return [...this.#target.querySelectorAll(selector)].filter(candidate => range.intersectsNode(candidate));
+    }
+
+    /**
+     * Unwraps the matching anchors a range touches and reports how many went.
+     * The text nodes move rather than die, so the range still covers the same text afterwards and a
+     * caller may go on to wrap it; normalizing here would merge them and lose the range's offsets.
+     */
+    #unwrapTouching(range, selector) {
+        const targets = this.#anchorsTouching(range, selector);
+
+        for (const target of targets) {
+            target.replaceWith(...target.childNodes);
+        }
+
+        return targets.length;
     }
 
     #restoreSelection() {
@@ -541,6 +621,12 @@ class RichTextEditor {
         const effectiveHref = href ?? Href ?? '';
         if (!effectiveHref) {
             return;
+        }
+
+        // Whatever the selection already covered becomes one link, so the links it replaces go first.
+        // Their text nodes survive the unwrapping, which leaves the range covering the same words.
+        if (range && !range.collapsed) {
+            this.#unwrapTouching(range, 'a[href]');
         }
 
         const effectiveText = effectiveName || selectedText || effectiveHref;
@@ -884,11 +970,11 @@ class RichTextEditor {
             activeStyles.push('code');
         }
 
-        if (this.#closestWithin(anchor, 'a[href]')) {
+        if (this.#touchesAnchor(range, 'a[href]')) {
             activeStyles.push('link');
         }
 
-        if (this.#closestWithin(anchor, 'a[name]')) {
+        if (this.#touchesAnchor(range, 'a[name]')) {
             activeStyles.push('anchor');
         }
 
