@@ -43,7 +43,6 @@
         <ProjectReference Include="..\Forma.UI.Design.Emojis\Forma.UI.Design.Emojis.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Localization.Abstractions\Forma.Framework.Localization.Abstractions.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Resources.Abstractions\Forma.Framework.Resources.Abstractions.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework.Resources\Forma.Framework.Resources.csproj" PrivateAssets="all" />
     </ItemGroup>
 
     <!-- These ship embedded in the assembly, so packing them again as content only duplicates them. -->

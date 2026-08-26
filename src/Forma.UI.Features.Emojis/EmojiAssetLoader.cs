@@ -1,4 +1,4 @@
-namespace Forma.UI.Blazor.Design.Emojis;
+namespace Forma.UI.Features.Emojis;
 
 using System.Collections.Concurrent;
 using System.Reflection;
@@ -11,7 +11,7 @@ using Forma.UI.Design.Emojis;
 internal static class EmojiAssetLoader
 {
     /// <summary>The path each category's sprite sheet is served from.</summary>
-    public const string SpriteBasePath = "_content/Forma.UI/emojis";
+    public const string SpriteBasePath = "_content/Forma.UI.Emojis";
 
     /// <summary>The categories, in the order the picker presents them.</summary>
     public static readonly IReadOnlyList<EmojiGroup> Groups =
@@ -27,7 +27,7 @@ internal static class EmojiAssetLoader
         new() { Id = "flags", Title = "Flags" },
     ];
 
-    private const string ResourceFolder = "Forma.UI.Blazor.Assets.Emojis";
+    private const string ResourceFolder = "Forma.UI.Features.Emojis.Assets";
 
     private static readonly ConcurrentDictionary<string, IReadOnlyList<EmojiAsset>> Loaded = new(StringComparer.Ordinal);
 

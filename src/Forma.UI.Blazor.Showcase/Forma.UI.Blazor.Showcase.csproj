@@ -18,6 +18,7 @@
         <ProjectReference Include="..\Forma.Framework.Resources.Office\Forma.Framework.Resources.Office.csproj" />
         <ProjectReference Include="..\Forma.Framework.Resources.Markdown\Forma.Framework.Resources.Markdown.csproj" />
         <ProjectReference Include="..\Forma.UI.Features.Feedback\Forma.UI.Features.Feedback.csproj" />
+        <ProjectReference Include="..\Forma.UI.Features.Feedback.Abstractions\Forma.UI.Features.Feedback.Abstractions.csproj" />
         <ProjectReference Include="..\Forma.UI.Features.Media.Abstractions\Forma.UI.Features.Media.Abstractions.csproj" />
         <ProjectReference Include="..\Forma.UI.Features.Explorer.Abstractions\Forma.UI.Features.Explorer.Abstractions.csproj" />
         <ProjectReference Include="..\Forma.UI.Features.Composer\Forma.UI.Features.Composer.csproj" />
@@ -25,7 +26,8 @@
         <ProjectReference Include="..\Forma.UI.Design.Css\Forma.UI.Design.Css.csproj" />
         <ProjectReference Include="..\Forma.UI.Design.Icons\Forma.UI.Design.Icons.csproj" />
         <ProjectReference Include="..\Forma.Framework.Resources.Abstractions\Forma.Framework.Resources.Abstractions.csproj" />
-        <ProjectReference Include="..\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
+        <ProjectReference Include="..\Forma.UI.Features.Icons\Forma.UI.Features.Icons.csproj" />
+        <ProjectReference Include="..\Forma.UI.Features.Emojis\Forma.UI.Features.Emojis.csproj" />
         <ProjectReference Include="..\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
         <ProjectReference Include="..\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />
     </ItemGroup>

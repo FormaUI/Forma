@@ -32,7 +32,7 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 - Do put a horizontal concern no single vertical feature owns into the matching `Forma.UI.Design.*` project when only the UI needs it, and into `Forma.Framework.Resources.Abstractions` when a consumer outside the UI needs it too.
 - Do give each feature its own assembly pair, `Forma.UI.Features.{Feature}` and `Forma.UI.Features.{Feature}.Abstractions`, and leave the pair's implementation half out entirely when the feature is contracts alone.
 - Do decide by ownership, not by how many assemblies consume it: a contract a single feature owns stays with that feature no matter how many projects reference it, such as `IToastService` in `Feedback`.
-- Do keep a folder and its namespace in step, so `Forma.UI.Blazor/Design/Icons/` holds `Forma.UI.Blazor.Design.Icons` and `Forma.UI.Features.Feedback.Abstractions/` holds `Forma.UI.Features.Feedback` — the namespace is the product root plus the folder path, with the `.Abstractions` suffix dropped.
+- Do keep a folder and its namespace in step, so `Forma.UI.Blazor/Components/Design/` holds `Forma.UI.Blazor.Components.Design` and `Forma.UI.Features.Feedback.Abstractions/` holds `Forma.UI.Features.Feedback` — the namespace is the product root plus the folder path, with the `.Abstractions` suffix dropped.
 
 - Do make components depend on abstractions such as `IToastService`; let the host choose implementations through DI.
 - Do represent colours and other CSS values with typed values such as `CssColor.FromRgba(...)` and `CssColor.FromHex(...)`.
@@ -40,10 +40,14 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 - Do keep the namespace under `Forma.UI.Features.{Concern}` whatever assembly ships it, so moving a concern between assemblies never rewrites a `using`.
 - Do give every project outside such a pair a namespace equal to its assembly name, so `Forma.UI.Blazor` holds `Forma.UI.Blazor.*` and `Forma.UI.Design.Icons` holds `Forma.UI.Design.Icons.*`.
 - Do keep these identities distinct: assembly and namespace `Forma.UI.Blazor`, package ID `2Site.Forma.UI.Blazor`, static asset base path `_content/Forma.UI`.
-- Do keep `Forma.UI.Blazor` the only packable project; every other project sets `IsPackable=false`, and the ones it references ship inside its package through `PrivateAssets="all"`.
-- Don't reference a feature's implementation half from `Forma.UI.Blazor`; it takes the `.Abstractions` half, and the two names differ only by suffix so the reference is easy to get wrong.
+- Do keep `Forma.UI.Blazor` free of every implementation: it references contract projects alone, so a host takes the components without inheriting a default it did not ask for.
+- Do let each feature implementation ship as its own package carrying its own assets, with the contracts it needs travelling inside it through `PrivateAssets="all"`.
+- Do give a feature implementation a `ServiceCollectionExtensions` at its project root, registering with `TryAdd` so a host that registered its own first still wins, and name the method for what lands in the container — `AddFormaIcons()` adds icons, while a feature whose defaults are services is `AddFormaFeedbackServices()`.
+- Do let a component whose contract is unregistered fall back to what it can draw unaided rather than failing, as `FormaIcon` does with the reader's own fonts; a contract carrying data nobody can synthesise, such as an emoji catalog, instead leaves the component in its empty state.
+- Don't reference a feature's implementation half from `Forma.UI.Blazor`; it takes the contracts, and an implementation and its contracts differ only by suffix so the reference is easy to get wrong.
 - Don't represent typed CSS values as arbitrary strings.
-- Don't give any other project a `PackageId`, and don't set `AssemblyName` where it would only repeat the project name.
+- Don't set `AssemblyName` where it would only repeat the project name, and don't give a contract project a `PackageId`; contracts ship inside whichever package needs them.
+- Don't reach for a default implementation from inside `Forma.UI.Blazor`; if a component cannot be written against the contract alone, the contract is wrong.
 - Don't rename or conflate these identities; `_content/Forma.UI` is pinned and hardcoded by markup and JS, and deliberately does not track the namespace.
 
 ## Dependencies
@@ -238,7 +242,7 @@ A component whose sub-components only work inside it still has to hand them stat
 - Do compose `StateNotifier` for `Func<Task>` subscribers, validate arguments, and put an optional `CancellationToken` last.
 - Do subscribe from the component in `OnInitialized` and unsubscribe in `Dispose`.
 - Do let the host register services explicitly, such as `AddScoped<IXService, XService>()`.
-- Don't ship an `AddForma...` registration extension from the library.
+- Don't ship an `AddForma...` registration extension from `Forma.UI.Blazor`; a feature package's registrar at its own root is where one belongs.
 - Don't make the packaged component project depend on service implementations.
 
 ## Build and verification

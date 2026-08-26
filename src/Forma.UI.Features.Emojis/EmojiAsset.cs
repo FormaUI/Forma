@@ -1,4 +1,4 @@
-namespace Forma.UI.Blazor.Design.Emojis;
+namespace Forma.UI.Features.Emojis;
 
 using Forma.UI.Design.Emojis;
 

@@ -1,4 +1,4 @@
-namespace Forma.UI.Blazor.Design.Icons;
+namespace Forma.UI.Features.Icons;
 
 using System.Collections.Frozen;
 using System.Reflection;
@@ -10,7 +10,7 @@ using Forma.UI.Design.Icons;
 /// <summary>Provides the artwork this library ships, read from its embedded glyph set.</summary>
 public sealed class DefaultIconProvider : IIconProvider
 {
-    private const string ResourceName = "Forma.UI.Blazor.Assets.glyphs.json";
+    private const string ResourceName = "Forma.UI.Features.Icons.Assets.glyphs.json";
 
     private static readonly Lazy<FrozenDictionary<Glyph, IconArtwork[]>> Set = new(Load);
 
@@ -61,7 +61,7 @@ public sealed class DefaultIconProvider : IIconProvider
             {
                 if (Enum.TryParse<GlyphStyle>(styleName, ignoreCase: true, out var style))
                 {
-                    styles[(int)style] = new IconArtwork(
+                    styles[(int)style] = IconArtwork.Vector(
                         raw.ViewBox,
                         [.. paths.Select(path => new IconPath { Data = path.D, Opacity = path.O ?? 1 })]);
                 }

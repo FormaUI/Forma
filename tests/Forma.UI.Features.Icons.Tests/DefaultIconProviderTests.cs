@@ -1,10 +1,11 @@
-namespace Forma.UI.Blazor.Tests.Design.Icons;
+namespace Forma.UI.Features.Icons.Tests;
 
 using System.Collections.Generic;
 using System.Linq;
 
-using Forma.UI.Blazor.Design.Icons;
 using Forma.UI.Design.Icons;
+
+using Xunit;
 
 public sealed class DefaultIconProviderTests
 {
@@ -22,12 +23,12 @@ public sealed class DefaultIconProviderTests
         {
             foreach (var style in Enum.GetValues<GlyphStyle>())
             {
-                var artwork = provider.GetArtwork(new Icon(glyph, style));
+                var vector = Assert.IsType<IconVector>(provider.GetArtwork(new Icon(glyph, style)));
 
                 Assert.Multiple(
-                    () => Assert.Equal("0 0 256 256", artwork.ViewBox),
-                    () => Assert.NotEmpty(artwork.Paths),
-                    () => Assert.All(artwork.Paths, path => Assert.False(string.IsNullOrWhiteSpace(path.Data))));
+                    () => Assert.Equal("0 0 256 256", vector.ViewBox),
+                    () => Assert.NotEmpty(vector.Paths),
+                    () => Assert.All(vector.Paths, path => Assert.False(string.IsNullOrWhiteSpace(path.Data))));
             }
         }
     }
@@ -49,8 +50,8 @@ public sealed class DefaultIconProviderTests
         var provider = new DefaultIconProvider();
 
         // Act
-        var regular = provider.GetArtwork(new Icon(Glyph.Heart));
-        var filled = provider.GetArtwork(Icon.Filled(Glyph.Heart));
+        var regular = Assert.IsType<IconVector>(provider.GetArtwork(new Icon(Glyph.Heart)));
+        var filled = Assert.IsType<IconVector>(provider.GetArtwork(Icon.Filled(Glyph.Heart)));
 
         // Assert
         Assert.NotEqual(regular.Paths[0].Data, filled.Paths[0].Data);
@@ -63,7 +64,7 @@ public sealed class DefaultIconProviderTests
         var provider = new DefaultIconProvider();
 
         // Act
-        var artwork = provider.GetArtwork(new Icon(Glyph.Delete));
+        var artwork = Assert.IsType<IconVector>(provider.GetArtwork(new Icon(Glyph.Delete)));
 
         // Assert
         Assert.All(artwork.Paths, path => Assert.Equal(1, path.Opacity));

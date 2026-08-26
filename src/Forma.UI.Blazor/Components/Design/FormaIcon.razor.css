@@ -13,3 +13,8 @@
     vertical-align: -0.125em;
     overflow: visible;
 }
+
+/* A character glyph would otherwise inherit the caller's line-height and sit low in its 1em box. */
+.forma-icon-character {
+    line-height: 1;
+}

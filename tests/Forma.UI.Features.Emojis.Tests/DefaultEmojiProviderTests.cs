@@ -1,7 +1,8 @@
-namespace Forma.UI.Blazor.Tests.Design.Emojis;
+namespace Forma.UI.Features.Emojis.Tests;
 
-using Forma.UI.Blazor.Design.Emojis;
 using Forma.UI.Design.Emojis;
+
+using Xunit;
 
 public sealed class DefaultEmojiProviderTests
 {
@@ -17,7 +18,7 @@ public sealed class DefaultEmojiProviderTests
         // Assert
         var sprite = Assert.IsType<EmojiSprite>(artwork);
         Assert.Matches("^emoji-[0-9a-f]+(-[0-9a-f]+)*$", sprite.Symbol);
-        Assert.Matches("^_content/Forma.UI/emojis/smileys-\\d+\\.svg$", sprite.Sheet);
+        Assert.Matches("^_content/Forma.UI.Emojis/smileys-\\d+\\.svg$", sprite.Sheet);
     }
 
     [Fact]

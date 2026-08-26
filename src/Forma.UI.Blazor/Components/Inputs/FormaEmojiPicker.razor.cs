@@ -4,6 +4,7 @@ using System.Globalization;
 
 using Forma.Framework.Localization;
 using Forma.UI.Blazor.Components.Feedback;
+using Forma.UI.Blazor.Design;
 using Forma.UI.Blazor.Interop.Behaviours;
 using Forma.UI.Blazor.Interop.Operations;
 using Forma.UI.Design.Emojis;
@@ -97,9 +98,14 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
 
     [Inject] private IStringLocale<FormaEmojiPicker> L { get; set; } = default!;
 
-    [Inject] private IEmojiCatalog Catalog { get; set; } = default!;
+    [Inject] private IServiceProvider Services { get; set; } = default!;
 
-    [Inject] private IEmojiProvider Provider { get; set; } = default!;
+    // A catalog is data, so nothing can stand in for it; the picker shows its empty state instead.
+    private IEmojiCatalog? Catalog
+        => (IEmojiCatalog?)Services.GetService(typeof(IEmojiCatalog));
+
+    private IEmojiProvider Provider
+        => (IEmojiProvider?)Services.GetService(typeof(IEmojiProvider)) ?? UnicodeEmojiProvider.Default;
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
@@ -120,9 +126,10 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     private string ActiveGroupId => _activeGroupId ?? Tabs[0].Id;
 
     private IReadOnlyList<EmojiInfo> Visible
-        => IsSearching ? Catalog.Find(_query)
+        => Catalog is not { } catalog ? []
+            : IsSearching ? catalog.Find(_query)
             : ActiveGroupId == RecentGroupId ? RecentEmoji()
-            : Catalog.TryFindByGroupId(ActiveGroupId, out var emojis) ? emojis : [];
+            : catalog.TryFindByGroupId(ActiveGroupId, out var emojis) ? emojis : [];
 
     private string HeadingText
         => IsSearching
@@ -246,7 +253,9 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     }
 
     private IReadOnlyList<EmojiInfo> RecentEmoji()
-        => [.. Recent.Select(character => Catalog.TryGetByEmoji(character, out var info) ? info : null).OfType<EmojiInfo>()];
+        => Catalog is not { } catalog
+            ? []
+            : [.. Recent.Select(character => catalog.TryGetByEmoji(character, out var info) ? info : null).OfType<EmojiInfo>()];
 
     private async Task OnQueryChangedAsync(string query)
     {

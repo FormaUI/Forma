@@ -23,8 +23,7 @@ using Forma.UI.Features.Feedback;
 using Forma.Framework.Localization.Json;
 
 builder.Services.AddJsonLocalization();
-builder.Services.AddScoped<IConfirmDialogService, ConfirmDialogService>();
-builder.Services.AddScoped<IToastService, ToastService>();
+builder.Services.AddFormaFeedbackServices();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 ```
@@ -159,12 +158,36 @@ The showcase serves an interactive page per component, in English, Hebrew, and S
 outline or a solid shape. A bare glyph converts to an icon, so `Glyph.Save` and
 `Icon.Filled(Glyph.Save)` are both accepted wherever an icon is asked for.
 
-Artwork is resolved through `IIconProvider`, so a host can draw its own set instead. Register the
-one this library ships with `services.AddFormaIcons()`.
+Artwork is resolved through `IIconProvider`, so a host can draw its own set instead. With none
+registered, `FormaIcon` draws the glyphs the reader's own fonts can depict and nothing at all for
+the rest, so a host that wants no artwork package still renders. To draw the full set:
+
+```
+dotnet add package 2Site.Forma.UI.Features.Icons
+```
+
+```csharp
+builder.Services.AddFormaIcons();
+```
 
 The artwork is [Phosphor Icons](https://phosphoricons.com), used under the MIT licence reproduced
-in [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md), which ships inside the package. Regenerate
+in [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md), which ships inside that package. Regenerate
 it with `scripts/fetch-glyphs.ps1`, which reads the glyph-to-Phosphor map in `assets/phosphor.json`
-and writes the artwork to `src/Forma.UI.Blazor/Assets/glyphs.json`.
+and writes the artwork to `src/Forma.UI.Features.Icons/Assets/glyphs.json`.
+
+## Emoji
+
+`FormaEmoji` draws an emoji through `IEmojiProvider`, and `FormaEmojiPicker` browses the set an
+`IEmojiCatalog` describes. With neither registered, `FormaEmoji` falls back to the reader's own
+platform font and the picker shows its empty state, because a catalog is data nothing can stand in
+for. To draw the bundled artwork and browse the bundled catalog:
+
+```
+dotnet add package 2Site.Forma.UI.Features.Emojis
+```
+
+```csharp
+builder.Services.AddFormaEmojis();
+```
 
 Contributor conventions live in [`CLAUDE.md`](CLAUDE.md).

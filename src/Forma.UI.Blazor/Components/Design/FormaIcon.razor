@@ -1,10 +1,17 @@
 @namespace Forma.UI.Blazor.Components.Design
 
-<svg class="@CssClass"
-     viewBox="@_artwork.ViewBox"
-     fill="currentColor"
-     aria-hidden="true"
-     focusable="false">@foreach (var path in _artwork.Paths)
-                      {
-                          <path d="@path.Data" opacity="@Fade(path)" />
-                      }</svg>
+@if (_artwork is IconVector vector)
+{
+    <svg class="@CssClass"
+         viewBox="@vector.ViewBox"
+         fill="currentColor"
+         aria-hidden="true"
+         focusable="false">@foreach (var path in vector.Paths)
+                           {
+                               <path d="@path.Data" opacity="@Fade(path)" />
+                           }</svg>
+}
+else if (_artwork is IconCharacter character)
+{
+    <span class="@CssClass forma-icon-character" aria-hidden="true">@character.Text</span>
+}

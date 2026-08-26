@@ -2,6 +2,7 @@ namespace Forma.UI.Blazor.Components.Design;
 
 using System.Globalization;
 
+using Forma.UI.Blazor.Design;
 using Forma.UI.Design.Icons;
 
 using Microsoft.AspNetCore.Components;
@@ -17,7 +18,11 @@ public sealed partial class FormaIcon : ComponentBase
     /// <summary>Extra classes applied to the SVG element.</summary>
     [Parameter] public string? Class { get; set; }
 
-    [Inject] private IIconProvider Provider { get; set; } = default!;
+    [Inject] private IServiceProvider Services { get; set; } = default!;
+
+    // Absent registration is a host that wants no artwork package, not a fault; the reader's own fonts stand in.
+    private IIconProvider Provider
+        => (IIconProvider?)Services.GetService(typeof(IIconProvider)) ?? UnicodeIconProvider.Default;
 
     private string CssClass
         => string.IsNullOrWhiteSpace(Class) ? "forma-icon" : $"forma-icon {Class}";

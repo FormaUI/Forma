@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <RootNamespace>Forma.UI.Features.Emojis</RootNamespace>
+        <PackageId>2Site.Forma.UI.Features.Emojis</PackageId>
+        <StaticWebAssetBasePath>_content/Forma.UI.Emojis</StaticWebAssetBasePath>
+        <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeReferencedProjectsInPackage</TargetsForTfmSpecificBuildOutput>
+    </PropertyGroup>
+
+    <!-- The emoji artwork ships in this package, so its notice travels with it. -->
+    <ItemGroup>
+        <None Include="..\..\THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="\" Visible="false" />
+    </ItemGroup>
+
+    <!-- The referenced projects ship inside this package rather than as packages of their own. -->
+    <Target Name="IncludeReferencedProjectsInPackage" DependsOnTargets="ResolveReferences">
+        <ItemGroup>
+            <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.ReferenceSourceTarget)' == 'ProjectReference'" />
+        </ItemGroup>
+    </Target>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.UI.Design.Emojis\Forma.UI.Design.Emojis.csproj" PrivateAssets="all" />
+    </ItemGroup>
+
+    <!-- Embedded in the assembly, so packing it again as content only duplicates it. -->
+    <ItemGroup>
+        <EmbeddedResource Include="Assets\**\*.json" />
+        <Content Remove="Assets\**\*.json" />
+    </ItemGroup>
+
+</Project>

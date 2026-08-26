@@ -1,7 +1,7 @@
 namespace Forma.UI.Blazor.Tests;
 
-using Forma.UI.Blazor.Design.Emojis;
-using Forma.UI.Blazor.Design.Icons;
+using Forma.UI.Features.Emojis;
+using Forma.UI.Features.Icons;
 
 /// <summary>A bUnit context with the services every Forma component expects already registered.</summary>
 public abstract class FormaBunitContext : BunitContext

@@ -1,5 +1,6 @@
 namespace Forma.UI.Blazor.Components.Design;
 
+using Forma.UI.Blazor.Design;
 using Forma.UI.Design.Emojis;
 
 using Microsoft.AspNetCore.Components;
@@ -18,7 +19,11 @@ public sealed partial class FormaEmoji : ComponentBase
     /// <summary>Extra classes applied to the root element.</summary>
     [Parameter] public string? Class { get; set; }
 
-    [Inject] private IEmojiProvider Provider { get; set; } = default!;
+    [Inject] private IServiceProvider Services { get; set; } = default!;
+
+    // Absent registration is a host that wants no artwork package, not a fault; the reader's own fonts stand in.
+    private IEmojiProvider Provider
+        => (IEmojiProvider?)Services.GetService(typeof(IEmojiProvider)) ?? UnicodeEmojiProvider.Default;
 
     private string CssClass
         => string.IsNullOrWhiteSpace(Class) ? "forma-emoji" : $"forma-emoji {Class}";

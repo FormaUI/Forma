@@ -139,8 +139,8 @@ if ($missing.Count -gt 0) {
 }
 
 $utf8 = New-Object System.Text.UTF8Encoding $false
-$catalogueFolder = Join-Path $PSScriptRoot '..' 'src' 'Forma.UI.Blazor' 'Assets' 'Emojis'
-$spriteFolder = Join-Path $PSScriptRoot '..' 'src' 'Forma.UI.Blazor' 'wwwroot' 'emojis'
+$catalogueFolder = Join-Path $PSScriptRoot '..' 'src' 'Forma.UI.Features.Emojis' 'Assets'
+$spriteFolder = Join-Path $PSScriptRoot '..' 'src' 'Forma.UI.Features.Emojis' 'wwwroot'
 
 foreach ($folder in @($catalogueFolder, $spriteFolder)) {
     if (-not (Test-Path -LiteralPath $folder)) {
