@@ -82,12 +82,57 @@ describe('RichTextEditor', () => {
         expect(result.html).toBe('<p>Hello world</p>');
     });
 
-    it('executes formatBlock with angle brackets', () => {
+    it('converts the block the caret sits in', () => {
         const handle = attach(editor, { owner });
+        const text = editor.querySelector('p').firstChild;
+        const range = document.createRange();
+        range.setStart(text, 2);
+        range.collapse(true);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
 
         handle.exec('formatBlock', 'h1');
 
-        expect(document.execCommand).toHaveBeenCalledWith('formatBlock', false, '<h1>');
+        expect(editor.innerHTML).toBe('<h1>Hello world</h1>');
+    });
+
+    it('converts every block a selection spans, leaving nested ones to their innermost', () => {
+        editor.innerHTML = '<p>first</p><blockquote><p>second</p></blockquote><p>third</p>';
+        const handle = attach(editor, { owner });
+        const range = document.createRange();
+        range.setStart(editor.querySelector('p').firstChild, 1);
+        range.setEnd(editor.querySelectorAll('p')[2].firstChild, 3);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        handle.exec('formatBlock', 'h2');
+
+        expect(editor.innerHTML).toBe('<h2>first</h2><blockquote><h2>second</h2></blockquote><h2>third</h2>');
+    });
+
+    it('aligns the block the caret sits in', () => {
+        const handle = attach(editor, { owner });
+        const text = editor.querySelector('p').firstChild;
+        const range = document.createRange();
+        range.setStart(text, 2);
+        range.collapse(true);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        handle.exec('justifyCenter');
+
+        expect(editor.querySelector('p').style.textAlign).toBe('center');
+    });
+
+    it('selects the whole canvas', () => {
+        const handle = attach(editor, { owner });
+
+        handle.exec('selectAll');
+
+        expect(window.getSelection().toString()).toBe('Hello world');
     });
 
     // Without CSS styling the browser emits <font>, which the sanitizer drops on the round trip.
@@ -215,11 +260,19 @@ describe('RichTextEditor', () => {
         expect(editor.querySelector('p').style.lineHeight).toBe('');
     });
 
-    it('inserts horizontal rule', () => {
+    it('inserts a horizontal rule between the split halves of the block', () => {
         const handle = attach(editor, { owner });
+        const text = editor.querySelector('p').firstChild;
+        const range = document.createRange();
+        range.setStart(text, 5);
+        range.collapse(true);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
 
         handle.exec('insertHorizontalRule');
-        expect(document.execCommand).toHaveBeenCalledWith('insertHorizontalRule', false, null);
+
+        expect(editor.innerHTML).toBe('<p>Hello</p><hr><p> world</p>');
     });
 
     it('inserts link with href and target', () => {
@@ -625,6 +678,91 @@ describe('RichTextEditor', () => {
             handle.exec('unlink');
 
             expect(editor.querySelectorAll('a[name]')).toHaveLength(1);
+        });
+    });
+
+    describe('text insertion', () => {
+        function selectWithin(startNode, startOffset, endNode, endOffset) {
+            const range = document.createRange();
+            range.setStart(startNode, startOffset);
+            range.setEnd(endNode, endOffset);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            return range;
+        }
+
+        it('inserts at the saved caret after focus has moved to a toolbar control', () => {
+            const handle = attach(editor, { owner });
+            const text = editor.querySelector('p').firstChild;
+
+            // The caret sits after "Hello", the editor saves it on click, then the selection leaves the canvas.
+            selectWithin(text, 5, text, 5);
+            editor.dispatchEvent(new Event('click', { bubbles: true }));
+            window.getSelection().removeAllRanges();
+
+            handle.exec('insertText', '\u{1F600}');
+
+            expect(editor.textContent).toBe('Hello\u{1F600} world');
+        });
+
+        it('replaces the saved selection, as typing over it would', () => {
+            const handle = attach(editor, { owner });
+            const text = editor.querySelector('p').firstChild;
+
+            selectWithin(text, 0, text, 5);
+            editor.dispatchEvent(new Event('click', { bubbles: true }));
+            window.getSelection().removeAllRanges();
+
+            handle.exec('insertText', '\u{1F600}');
+
+            expect(editor.textContent).toBe('\u{1F600} world');
+        });
+
+        it('lands consecutive inserts side by side', () => {
+            const handle = attach(editor, { owner });
+            const text = editor.querySelector('p').firstChild;
+
+            selectWithin(text, 5, text, 5);
+            editor.dispatchEvent(new Event('click', { bubbles: true }));
+
+            handle.exec('insertText', '\u{1F600}');
+            handle.exec('insertText', '\u{1F98E}');
+
+            expect(editor.textContent).toBe('Hello\u{1F600}\u{1F98E} world');
+        });
+
+        it('appends at the end when no selection was ever made in the canvas', () => {
+            const handle = attach(editor, { owner });
+
+            window.getSelection().removeAllRanges();
+            handle.exec('insertText', '\u{1F600}');
+
+            expect(editor.textContent).toBe('Hello world\u{1F600}');
+        });
+
+        it('does not restore a selection that new content has detached', () => {
+            const handle = attach(editor, { owner });
+            const text = editor.querySelector('p').firstChild;
+
+            selectWithin(text, 0, text, 5);
+            editor.dispatchEvent(new Event('click', { bubbles: true }));
+
+            // The host pushes fresh content, detaching every node the saved range pointed into.
+            handle.setHtml('<p>Replaced content</p>');
+            window.getSelection().removeAllRanges();
+
+            handle.exec('insertText', '\u{1F600}');
+
+            expect(editor.textContent).toBe('Replaced content\u{1F600}');
+        });
+
+        it('leaves the content alone when there is nothing to insert', () => {
+            const handle = attach(editor, { owner });
+
+            handle.exec('insertText', '');
+
+            expect(editor.textContent).toBe('Hello world');
         });
     });
 

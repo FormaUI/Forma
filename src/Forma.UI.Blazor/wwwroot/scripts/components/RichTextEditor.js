@@ -36,6 +36,9 @@ function escapeHtml(str) {
 const FontSizeMarkStep = '7';
 const FontSizeMark = 'xxx-large';
 
+/** The elements a caret treats as its enclosing block. */
+const BlockSelector = 'p, h1, h2, h3, h4, h5, h6, blockquote, pre, li, div';
+
 class RichTextEditor {
     #target;
     #owner;
@@ -78,6 +81,9 @@ class RichTextEditor {
         if (this.#target.innerHTML !== html) {
             this.#target.innerHTML = html;
             this.#lastHtml = html;
+            // The rewrite detached every node the saved ranges pointed into, so restoring one would land the next edit somewhere unrelated.
+            this.#savedRange = null;
+            this.#dialogRange = null;
         }
     }
 
@@ -123,6 +129,8 @@ class RichTextEditor {
         this.#target.focus();
 
         switch (command) {
+            // Still on execCommand: toggling a mark across a part-formatted range, list building, and
+            // indenting are an editing engine of their own, kept here until one is written or adopted.
             case 'bold':
             case 'italic':
             case 'underline':
@@ -134,15 +142,27 @@ class RichTextEditor {
             case 'insertOrderedList':
             case 'indent':
             case 'outdent':
-            case 'justifyLeft':
-            case 'justifyCenter':
-            case 'justifyRight':
-            case 'justifyFull':
                 document.execCommand(command, false, null);
                 break;
 
+            case 'justifyLeft':
+                this.#setAlignment('left');
+                break;
+
+            case 'justifyCenter':
+                this.#setAlignment('center');
+                break;
+
+            case 'justifyRight':
+                this.#setAlignment('right');
+                break;
+
+            case 'justifyFull':
+                this.#setAlignment('justify');
+                break;
+
             case 'formatBlock':
-                document.execCommand('formatBlock', false, value?.startsWith('<') ? value : `<${value}>`);
+                this.#formatBlock(value);
                 break;
 
             case 'fontName':
@@ -178,7 +198,7 @@ class RichTextEditor {
                 break;
 
             case 'insertHorizontalRule':
-                document.execCommand('insertHorizontalRule', false, null);
+                this.#insertHorizontalRule();
                 break;
 
             case 'createLink':
@@ -193,9 +213,17 @@ class RichTextEditor {
                 this.#unwrapAnchors('a[name]');
                 break;
 
-            case 'selectAll':
-                document.execCommand('selectAll', false, null);
+            case 'selectAll': {
+                const everything = document.createRange();
+                everything.selectNodeContents(this.#target);
+                const selection = window.getSelection();
+                if (selection) {
+                    selection.removeAllRanges();
+                    selection.addRange(everything);
+                    this.#saveSelection();
+                }
                 break;
+            }
 
             case 'insertText':
                 this.#insertText(value);
@@ -370,10 +398,123 @@ class RichTextEditor {
         }
 
         if (node && this.#target.contains(node) && node !== this.#target) {
-            return node.closest('p, h1, h2, h3, h4, h5, h6, blockquote, pre, li, div') ?? node;
+            return node.closest(BlockSelector) ?? node;
         }
 
         return this.#target.querySelector('p, h1, h2, h3, h4, h5, h6, blockquote, pre, li, div') ?? this.#target;
+    }
+
+    /** The innermost blocks the selection touches, so a command lands where typing would. */
+    #blocksInRange() {
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) {
+            return [];
+        }
+
+        const range = selection.getRangeAt(0);
+
+        if (range.collapsed) {
+            const block = this.#getClosestBlock();
+            return block && block !== this.#target && block.matches?.(BlockSelector) ? [block] : [];
+        }
+
+        const touched = [...this.#target.querySelectorAll(BlockSelector)]
+            .filter(block => range.intersectsNode(block));
+
+        return touched.filter(block => !touched.some(other => other !== block && block.contains(other)));
+    }
+
+    #formatBlock(value) {
+        const name = String(value ?? 'p').replace(/[<>]/g, '').toLowerCase();
+        // A list item keeps its tag; converting it would tear the list apart.
+        const blocks = this.#blocksInRange().filter(block => block.tagName !== 'LI');
+        let last = null;
+
+        for (const block of blocks) {
+            if (block.tagName.toLowerCase() === name) {
+                continue;
+            }
+
+            const replacement = document.createElement(name);
+            if (block.dir) {
+                replacement.dir = block.dir;
+            }
+            while (block.firstChild) {
+                replacement.appendChild(block.firstChild);
+            }
+            block.replaceWith(replacement);
+            last = replacement;
+        }
+
+        // Converting an empty block detaches the node the caret sat on, so the caret moves into the replacement.
+        const selection = window.getSelection();
+        if (last && selection && (!selection.anchorNode || !selection.anchorNode.isConnected)) {
+            const caret = document.createRange();
+            caret.selectNodeContents(last);
+            caret.collapse(false);
+            selection.removeAllRanges();
+            selection.addRange(caret);
+        }
+
+        this.#saveSelection();
+    }
+
+    #setAlignment(value) {
+        for (const block of this.#blocksInRange()) {
+            block.style.textAlign = value;
+        }
+
+        this.#saveSelection();
+    }
+
+    #insertHorizontalRule() {
+        this.#restoreSelection();
+        const selection = window.getSelection();
+        const rule = document.createElement('hr');
+
+        if (!selection || selection.rangeCount === 0) {
+            this.#target.appendChild(rule);
+            return;
+        }
+
+        const range = selection.getRangeAt(0);
+        range.deleteContents();
+
+        let node = range.startContainer;
+        if (node.nodeType === Node.TEXT_NODE) {
+            node = node.parentElement;
+        }
+        const block = node && node !== this.#target && this.#target.contains(node)
+            ? node.closest(BlockSelector)
+            : null;
+
+        if (!block || !this.#target.contains(block)) {
+            range.insertNode(rule);
+            this.#saveSelection();
+            return;
+        }
+
+        // The block splits at the caret, so the rule stands between the halves rather than nesting inside one.
+        const tail = document.createRange();
+        tail.setStart(range.startContainer, range.startOffset);
+        tail.setEnd(block, block.childNodes.length);
+
+        const following = block.cloneNode(false);
+        following.appendChild(tail.extractContents());
+        if (!following.hasChildNodes()) {
+            following.appendChild(document.createElement('br'));
+        }
+        if (!block.hasChildNodes()) {
+            block.appendChild(document.createElement('br'));
+        }
+        block.after(rule, following);
+
+        const caret = document.createRange();
+        caret.setStart(following, 0);
+        caret.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(caret);
+        this.#saveSelection();
     }
 
     #handleInput() {
@@ -582,20 +723,39 @@ class RichTextEditor {
         this.#saveSelection();
     }
 
+    // Inserted by hand rather than through execCommand, which silently does nothing when a toolbar control holds the focus.
     #insertText(text) {
+        if (!text) {
+            return;
+        }
+
         this.#restoreSelection();
-        document.execCommand('insertText', false, text);
+        const selection = window.getSelection();
+        const hasValidRange = selection
+            && selection.rangeCount > 0
+            && (selection.getRangeAt(0).commonAncestorContainer === this.#target
+                || this.#target.contains(selection.getRangeAt(0).commonAncestorContainer));
+
+        const node = document.createTextNode(text);
+
+        if (!hasValidRange) {
+            this.#target.appendChild(node);
+            this.#saveSelection();
+            return;
+        }
+
+        const range = selection.getRangeAt(0);
+        range.deleteContents();
+        range.insertNode(node);
+        range.setStartAfter(node);
+        range.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(range);
         this.#saveSelection();
     }
 
     #createLink(data) {
         if (!data) {
-            return;
-        }
-
-        if (typeof data === 'string') {
-            this.#restoreSelection();
-            document.execCommand('createLink', false, data);
             return;
         }
 
@@ -941,28 +1101,36 @@ class RichTextEditor {
         const blockType = block ? block.tagName.toLowerCase() : 'p';
 
         const activeStyles = [];
-        const commands = [
-            ['bold', 'bold'],
-            ['italic', 'italic'],
-            ['underline', 'underline'],
-            ['strikeThrough', 'strike'],
-            ['subscript', 'subscript'],
-            ['superscript', 'superscript'],
-            ['insertUnorderedList', 'bullet-list'],
-            ['insertOrderedList', 'ordered-list'],
-            ['justifyLeft', 'align-left'],
-            ['justifyCenter', 'align-center'],
-            ['justifyRight', 'align-right'],
-            ['justifyFull', 'align-justify'],
+
+        // Read from the markup itself rather than queryCommandState, which is deprecated and inconsistent across engines.
+        const marks = [
+            ['b, strong', 'bold'],
+            ['i, em', 'italic'],
+            ['u', 'underline'],
+            ['s, strike, del', 'strike'],
+            ['sub', 'subscript'],
+            ['sup', 'superscript'],
         ];
 
-        for (const [cmd, name] of commands) {
-            try {
-                if (document.queryCommandState(cmd)) {
-                    activeStyles.push(name);
-                }
-            } catch {
-                // queryCommandState may be unsupported in some headless DOMs.
+        for (const [selector, name] of marks) {
+            if (this.#closestWithin(anchor, selector)) {
+                activeStyles.push(name);
+            }
+        }
+
+        const list = this.#closestWithin(anchor, 'ul, ol');
+        if (list) {
+            activeStyles.push(list.tagName === 'OL' ? 'ordered-list' : 'bullet-list');
+        }
+
+        if (block) {
+            const style = window.getComputedStyle(block);
+            const alignment = style.textAlign === 'start' ? (style.direction === 'rtl' ? 'right' : 'left')
+                : style.textAlign === 'end' ? (style.direction === 'rtl' ? 'left' : 'right')
+                : style.textAlign;
+            const alignmentStyles = { left: 'align-left', center: 'align-center', right: 'align-right', justify: 'align-justify' };
+            if (alignmentStyles[alignment]) {
+                activeStyles.push(alignmentStyles[alignment]);
             }
         }
 
