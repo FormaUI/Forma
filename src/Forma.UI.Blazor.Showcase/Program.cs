@@ -13,7 +13,7 @@ using Forma.UI.Blazor.Showcase.Features.Upload;
 using Forma.UI.Design.Css;
 using Forma.UI.Design.Icons;
 using Forma.UI.Features.Feedback;
-using Forma.UI.Features.Indicators;
+using Forma.UI.Features.Feedback;
 using Forma.UI.Features.Media;
 
 var builder = WebApplication.CreateBuilder(args);

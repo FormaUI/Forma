@@ -5,7 +5,7 @@ description: Forma's test standard — the one-test-project-per-assembly rule an
 
 # Tests (bUnit + xUnit v3)
 
-Every production assembly has exactly one test project named after it, so `Forma.UI.Design.Icons` is tested by `tests/Forma.UI.Design.Icons.Tests` and never from another project. An `.Abstractions` assembly is the exception: it shares its sibling's namespace, so it shares its sibling's test project too — `Forma.UI.Features.Abstractions` is tested from `tests/Forma.UI.Features.Tests`. Mirror source paths within it, so component tests live under `tests/Forma.UI.Blazor.Tests/Components/{Category}/` with `FormaXTests.razor` and `FormaXTests.razor.cs`.
+Every production assembly has exactly one test project named after it, so `Forma.UI.Design.Icons` is tested by `tests/Forma.UI.Design.Icons.Tests` and never from another project. An `.Abstractions` assembly is the exception: it shares its sibling's namespace, so it shares its sibling's test project too — `Forma.UI.Features.Feedback.Abstractions` is tested from `tests/Forma.UI.Features.Feedback.Tests`. Mirror source paths within it, so component tests live under `tests/Forma.UI.Blazor.Tests/Components/{Category}/` with `FormaXTests.razor` and `FormaXTests.razor.cs`.
 
 - Do keep `.razor.cs` to `public sealed partial class FormaXTests;`.
 - Do start `.razor` with `@inherits BunitContext` and place `[Fact]` methods in a nested `public sealed class Component`.

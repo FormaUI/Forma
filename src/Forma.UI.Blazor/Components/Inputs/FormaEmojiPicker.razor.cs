@@ -3,7 +3,7 @@ namespace Forma.UI.Blazor.Components.Inputs;
 using System.Globalization;
 
 using Forma.Framework.Localization;
-using Forma.UI.Blazor.Components.Indicators;
+using Forma.UI.Blazor.Components.Feedback;
 using Forma.UI.Blazor.Interop.Behaviours;
 using Forma.UI.Blazor.Interop.Operations;
 using Forma.UI.Design.Emojis;

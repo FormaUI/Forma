@@ -30,16 +30,18 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 
 - Do split the family by audience: `Forma.UI.*` is one product serving the component library, while each `Forma.Framework.*` assembly stands alone — `Forma.Framework.Resources.Office` depends on `Forma.Framework.Resources.Abstractions` alone, never on anything in `Forma.UI`.
 - Do put a horizontal concern no single vertical feature owns into the matching `Forma.UI.Design.*` project when only the UI needs it, and into `Forma.Framework.Resources.Abstractions` when a consumer outside the UI needs it too.
-- Do decide by ownership, not by how many assemblies consume it: a contract a single feature owns stays with that feature in `Forma.UI.Features.Abstractions` no matter how many projects reference it, such as `IToastService` in `Feedback`.
-- Do keep a folder and its namespace in step, so `Forma.UI.Blazor/Design/Icons/` holds `Forma.UI.Blazor.Design.Icons` and `Forma.UI.Features.Abstractions/Feedback/` holds `Forma.UI.Features.Feedback` — the namespace is the product root plus the folder path, with the `.Abstractions` suffix dropped.
+- Do give each feature its own assembly pair, `Forma.UI.Features.{Feature}` and `Forma.UI.Features.{Feature}.Abstractions`, and leave the pair's implementation half out entirely when the feature is contracts alone.
+- Do decide by ownership, not by how many assemblies consume it: a contract a single feature owns stays with that feature no matter how many projects reference it, such as `IToastService` in `Feedback`.
+- Do keep a folder and its namespace in step, so `Forma.UI.Blazor/Design/Icons/` holds `Forma.UI.Blazor.Design.Icons` and `Forma.UI.Features.Feedback.Abstractions/` holds `Forma.UI.Features.Feedback` — the namespace is the product root plus the folder path, with the `.Abstractions` suffix dropped.
 
 - Do make components depend on abstractions such as `IToastService`; let the host choose implementations through DI.
 - Do represent colours and other CSS values with typed values such as `CssColor.FromRgba(...)` and `CssColor.FromHex(...)`.
-- Do share the `Forma.UI.Features` namespace across `Forma.UI.Features` and `Forma.UI.Features.Abstractions` — the assembly name carries the split, not the namespace (matches `Microsoft.Extensions.DependencyInjection` / `.Abstractions`).
+- Do share one namespace across a feature's assembly pair — the assembly name carries the split, not the namespace (matches `Microsoft.Extensions.DependencyInjection` / `.Abstractions`), and a feature assembly may hold more than one namespace where the concerns genuinely belong together.
+- Do keep the namespace under `Forma.UI.Features.{Concern}` whatever assembly ships it, so moving a concern between assemblies never rewrites a `using`.
 - Do give every project outside such a pair a namespace equal to its assembly name, so `Forma.UI.Blazor` holds `Forma.UI.Blazor.*` and `Forma.UI.Design.Icons` holds `Forma.UI.Design.Icons.*`.
 - Do keep these identities distinct: assembly and namespace `Forma.UI.Blazor`, package ID `2Site.Forma.UI.Blazor`, static asset base path `_content/Forma.UI`.
 - Do keep `Forma.UI.Blazor` the only packable project; every other project sets `IsPackable=false`, and the ones it references ship inside its package through `PrivateAssets="all"`.
-- Don't reference `Forma.UI.Features` from `Forma.UI.Blazor`; it takes `Forma.UI.Features.Abstractions`, and the two names differ only by suffix so the reference is easy to get wrong.
+- Don't reference a feature's implementation half from `Forma.UI.Blazor`; it takes the `.Abstractions` half, and the two names differ only by suffix so the reference is easy to get wrong.
 - Don't represent typed CSS values as arbitrary strings.
 - Don't give any other project a `PackageId`, and don't set `AssemblyName` where it would only repeat the project name.
 - Don't rename or conflate these identities; `_content/Forma.UI` is pinned and hardcoded by markup and JS, and deliberately does not track the namespace.
@@ -161,7 +163,7 @@ Components/{Category}/
 - Do generate element IDs as `$"prefix-{Guid.NewGuid():N}"` so multiple instances can coexist.
 - Don't place component logic in markup.
 - Don't use `.ConfigureAwait(false)` in `Forma.UI.Blazor` components; leaving the synchronization context means state touched after an await has to be marshalled back through `InvokeAsync`. `src/Forma.UI.Blazor/.editorconfig` sets `CA2007` to `none`, so nothing will flag it for you.
-- Don't omit `.ConfigureAwait(false)` from awaited service code in `Forma.UI.Features`, which runs off the renderer and where the root `.editorconfig` sets `CA2007` to `error`.
+- Don't omit `.ConfigureAwait(false)` from awaited service code in a `Forma.UI.Features.*` project, which runs off the renderer and where the root `.editorconfig` sets `CA2007` to `error`.
 
 ## Options records
 
@@ -212,9 +214,9 @@ Components/{Category}/
 
 ## Services
 
-- Do place contracts in `Forma.UI.Features.Abstractions/{Category}/IXService.cs`.
+- Do place contracts in `Forma.UI.Features.{Feature}.Abstractions/{Category}/IXService.cs`.
 - Do extend `INotifyStateChanged` when a component must rerender after service state changes.
-- Do place sealed implementations in `Forma.UI.Features/{Category}/XService.cs`.
+- Do place sealed implementations in `Forma.UI.Features.{Feature}/{Category}/XService.cs`.
 - Do compose `StateNotifier` for `Func<Task>` subscribers, validate arguments, and put an optional `CancellationToken` last.
 - Do subscribe from the component in `OnInitialized` and unsubscribe in `Dispose`.
 - Do let the host register services explicitly, such as `AddScoped<IXService, XService>()`.
