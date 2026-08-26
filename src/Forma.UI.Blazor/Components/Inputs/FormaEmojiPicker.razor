@@ -21,7 +21,7 @@
                         tabindex="@(isActive ? "0" : "-1")"
                         @onclick="() => SelectGroupAsync(tab.Id)"
                         @onkeydown="OnTabKeyDownAsync">
-                    <FormaIcon Icon="tab.Icon" />
+                    <FormaIcon Icon="TabIcon(tab.Id)" />
                 </button>
             }
         </div>
@@ -55,17 +55,15 @@
         {
             <h3 class="forma-emoji-picker-heading">@HeadingText</h3>
             <div class="forma-emoji-picker-grid" role="group" aria-label="@HeadingText">
-                @foreach (var emoji in Loadable)
+                @foreach (var info in Loadable)
                 {
-                    <button @key="emoji.Character"
+                    <button @key="info.Emoji.Character"
                             type="button"
                             class="forma-emoji-picker-emoji"
-                            title="@emoji.Name"
-                            aria-label="@emoji.Name"
-                            @onclick="() => SelectAsync(emoji)">
-                        <svg class="forma-emoji-picker-art" viewBox="0 0 36 36" aria-hidden="true" focusable="false">
-                            <use href="@SpriteHref(emoji)" />
-                        </svg>
+                            title="@info.Name"
+                            aria-label="@info.Name"
+                            @onclick="() => SelectAsync(info)">
+                        <FormaEmoji Emoji="info.Emoji" />
                     </button>
                 }
             </div>

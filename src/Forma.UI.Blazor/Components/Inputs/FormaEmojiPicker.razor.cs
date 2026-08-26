@@ -6,6 +6,7 @@ using Forma.Framework.Localization;
 using Forma.UI.Blazor.Components.Indicators;
 using Forma.UI.Blazor.Interop.Behaviours;
 using Forma.UI.Blazor.Interop.Operations;
+using Forma.UI.Design.Emojis;
 using Forma.UI.Design.Icons;
 
 using Microsoft.AspNetCore.Components;
@@ -18,9 +19,39 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     /// <summary>The identifier of the tab holding recently chosen emoji.</summary>
     public const string RecentGroupId = "recent";
 
+    // The nine standard categories, matching what DefaultEmojiCatalog groups its entries under.
+    // A host supplying a different IEmojiCatalog also supplies matching Groups, since browsing and
+    // data are two halves of one decision.
+    private static readonly EmojiGroup[] DefaultGroups =
+    [
+        new() { Id = "smileys", Title = "Smileys & Emotion" },
+        new() { Id = "people", Title = "People & Body" },
+        new() { Id = "animals", Title = "Animals & Nature" },
+        new() { Id = "food", Title = "Food & Drink" },
+        new() { Id = "activities", Title = "Activities" },
+        new() { Id = "travel", Title = "Travel & Places" },
+        new() { Id = "objects", Title = "Objects" },
+        new() { Id = "symbols", Title = "Symbols" },
+        new() { Id = "flags", Title = "Flags" },
+    ];
+
+    private static readonly Dictionary<string, Glyph> TabGlyphs = new(StringComparer.Ordinal)
+    {
+        ["smileys"] = Glyph.Emoji,
+        ["people"] = Glyph.User,
+        ["animals"] = Glyph.PawPrint,
+        ["food"] = Glyph.ForkKnife,
+        ["activities"] = Glyph.SoccerBall,
+        ["travel"] = Glyph.Airplane,
+        ["objects"] = Glyph.Lightbulb,
+        ["symbols"] = Glyph.Heart,
+        ["flags"] = Glyph.Flag,
+        [RecentGroupId] = Glyph.History,
+    };
+
     private readonly string _generatedId = $"emoji-picker-{Guid.NewGuid():N}";
-    private readonly HashSet<string> _loadedChunks = new(StringComparer.Ordinal);
-    private readonly HashSet<string> _loadingChunks = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _loadedSheets = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _loadingSheets = new(StringComparer.Ordinal);
     private string _query = string.Empty;
     private string? _activeGroupId;
     private string _announcement = string.Empty;
@@ -49,6 +80,9 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     /// <summary>Whether the category tab strip is shown.</summary>
     [Parameter] public bool ShowGroupTabs { get; set; } = true;
 
+    /// <summary>The categories the tab strip offers, defaulting to the nine standard ones.</summary>
+    [Parameter] public IReadOnlyList<EmojiGroup> Groups { get; set; } = DefaultGroups;
+
     /// <summary>How long typing pauses before the search runs.</summary>
     [Parameter] public TimeSpan? SearchDebounce { get; set; } = TimeSpan.FromMilliseconds(200);
 
@@ -63,6 +97,10 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
 
     [Inject] private IStringLocale<FormaEmojiPicker> L { get; set; } = default!;
 
+    [Inject] private IEmojiCatalog Catalog { get; set; } = default!;
+
+    [Inject] private IEmojiProvider Provider { get; set; } = default!;
+
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
     private string CssClass
@@ -76,28 +114,29 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
 
     private IReadOnlyList<EmojiGroup> Tabs
         => Recent.Count == 0
-            ? EmojiCatalog.Groups
-            : [new EmojiGroup { Id = RecentGroupId, Title = L["Recently Used"], Icon = Glyph.History }, .. EmojiCatalog.Groups];
+            ? Groups
+            : [new EmojiGroup { Id = RecentGroupId, Title = L["Recently Used"] }, .. Groups];
 
     private string ActiveGroupId => _activeGroupId ?? Tabs[0].Id;
 
-    private IReadOnlyList<Emoji> Visible
-        => IsSearching ? EmojiCatalog.Search(_query)
+    private IReadOnlyList<EmojiInfo> Visible
+        => IsSearching ? Catalog.Find(_query)
             : ActiveGroupId == RecentGroupId ? RecentEmoji()
-            : EmojiCatalog.InGroup(ActiveGroupId);
+            : Catalog.TryFindByGroupId(ActiveGroupId, out var emojis) ? emojis : [];
 
     private string HeadingText
         => IsSearching
             ? L["Search Results"]
             : Tabs.FirstOrDefault(tab => tab.Id == ActiveGroupId)?.Title ?? string.Empty;
 
-    // The chunks the visible emoji need, in the order they are rendered, so a prefix of this is what has loaded.
-    private IReadOnlyList<string> RequiredChunks
-        => [.. Visible.Select(ChunkKey).Distinct(StringComparer.Ordinal)];
+    // The sheets the visible emoji need, in the order they are rendered, so a prefix of this is what has loaded.
+    // An emoji whose artwork carries no sheet — native or an image — needs nothing awaited.
+    private IReadOnlyList<string> RequiredSheets
+        => [.. Visible.Select(Sheet).OfType<string>().Distinct(StringComparer.Ordinal)];
 
-    // Cells stop at the first chunk still missing, so nothing renders ahead of its own artwork.
-    private IReadOnlyList<Emoji> Loadable
-        => [.. Visible.TakeWhile(emoji => _loadedChunks.Contains(ChunkKey(emoji)))];
+    // Cells stop at the first sheet still missing, so nothing renders ahead of its own artwork.
+    private IReadOnlyList<EmojiInfo> Loadable
+        => [.. Visible.TakeWhile(info => Sheet(info) is not { } sheet || _loadedSheets.Contains(sheet))];
 
     private bool HasMoreToLoad
         => Loadable.Count < Visible.Count;
@@ -119,16 +158,16 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     {
         if (firstRender)
         {
-            await LoadNextChunkAsync();
+            await LoadNextSheetAsync();
         }
 
         await WatchSentinelAsync();
     }
 
-    /// <summary>Loads the next sprite chunk as the sentinel below the loaded cells comes into view.</summary>
+    /// <summary>Loads the next sprite sheet as the sentinel below the loaded cells comes into view.</summary>
     [JSInvokable]
     public async Task HandleReachedAsync()
-        => await LoadNextChunkAsync();
+        => await LoadNextSheetAsync();
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
@@ -149,12 +188,11 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     private string TabElementId(string groupId)
         => $"{ElementId}-tab-{groupId}";
 
-    // The symbols are adopted into the document, so the reference is local and paints on this render.
-    private static string SpriteHref(Emoji emoji)
-        => $"#emoji-{emoji.SpriteId}";
+    private static Icon TabIcon(string groupId)
+        => TabGlyphs.TryGetValue(groupId, out var glyph) ? glyph : Glyph.Emoji;
 
-    private static string ChunkKey(Emoji emoji)
-        => $"{emoji.GroupId}-{emoji.ChunkIndex}";
+    private string? Sheet(EmojiInfo info)
+        => Provider.GetArtwork(info.Emoji) is EmojiSprite sprite ? sprite.Sheet : null;
 
     private async Task WatchSentinelAsync()
     {
@@ -169,28 +207,28 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
         await _sentinelWatcher.AttachAsync(_sentinelElement, _selfRef, _panelElement);
     }
 
-    private async Task LoadNextChunkAsync()
+    private async Task LoadNextSheetAsync()
     {
-        var next = RequiredChunks.FirstOrDefault(chunk => !_loadedChunks.Contains(chunk));
+        var next = RequiredSheets.FirstOrDefault(sheet => !_loadedSheets.Contains(sheet));
 
-        if (next is null || !_loadingChunks.Add(next))
+        if (next is null || !_loadingSheets.Add(next))
         {
             return;
         }
 
         try
         {
-            await (_asset ??= new Asset(JS)).LoadSpriteAsync($"{EmojiCatalog.SpriteBasePath}/{next}.svg");
+            await (_asset ??= new Asset(JS)).LoadSpriteAsync(next);
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
-            // Artwork is decorative, so a chunk that will not load must not take the surface down with it.
+            // Artwork is decorative, so a sheet that will not load must not take the surface down with it.
         }
         finally
         {
-            // A chunk that failed still counts as settled: empty cells beat a spinner that never clears.
-            _loadingChunks.Remove(next);
-            _loadedChunks.Add(next);
+            // A sheet that failed still counts as settled: empty cells beat a spinner that never clears.
+            _loadingSheets.Remove(next);
+            _loadedSheets.Add(next);
             StateHasChanged();
         }
     }
@@ -204,15 +242,11 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
         }
 
         _isSentinelWatched = false;
-        await LoadNextChunkAsync();
+        await LoadNextSheetAsync();
     }
 
-    private IReadOnlyList<Emoji> RecentEmoji()
-    {
-        var byCharacter = EmojiCatalog.All.ToDictionary(emoji => emoji.Character, StringComparer.Ordinal);
-
-        return [.. Recent.Select(character => byCharacter.GetValueOrDefault(character)).OfType<Emoji>()];
-    }
+    private IReadOnlyList<EmojiInfo> RecentEmoji()
+        => [.. Recent.Select(character => Catalog.TryGetByEmoji(character, out var info) ? info : null).OfType<EmojiInfo>()];
 
     private async Task OnQueryChangedAsync(string query)
     {
@@ -231,12 +265,12 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
         await ResetChunkWindowAsync();
     }
 
-    private async Task SelectAsync(Emoji emoji)
+    private async Task SelectAsync(EmojiInfo info)
     {
-        await OnSelect.InvokeAsync(emoji.Character);
+        await OnSelect.InvokeAsync(info.Emoji.Character);
 
-        var updated = new List<string> { emoji.Character };
-        updated.AddRange(Recent.Where(character => !string.Equals(character, emoji.Character, StringComparison.Ordinal)));
+        var updated = new List<string> { info.Emoji.Character };
+        updated.AddRange(Recent.Where(character => !string.Equals(character, info.Emoji.Character, StringComparison.Ordinal)));
 
         if (updated.Count > MaxRecent)
         {

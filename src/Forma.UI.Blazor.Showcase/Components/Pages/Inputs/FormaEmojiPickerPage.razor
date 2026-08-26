@@ -5,7 +5,7 @@
 @inject IStringLocale<FormaEmojiPickerPage> L
 
 <h1>FormaEmojiPicker</h1>
-<p class="description">@L["A categorized emoji palette over the full Unicode set, with a tab per category, keyword search, and recently used entries. The emoji themselves are drawn by the reader's own platform font."]</p>
+<p class="description">@L["A categorized emoji palette over the full Unicode set, with a tab per category, keyword search, and recently used entries. Artwork is resolved through IEmojiProvider, drawn from Forma's own sprites by default and falling back to the reader's platform font for anything the shipped set does not cover."]</p>
 
 <div class="demo-section">
     <h2>@L["Default"]</h2>
@@ -46,13 +46,6 @@
     <p class="description">@L["Only the first category is reachable, so this suits a picker narrowed to one category."]</p>
     <div class="demo-box">
         <FormaEmojiPicker ShowGroupTabs="false" />
-    </div>
-</div>
-
-<div class="demo-section">
-    <h2>@L["Catalogue"]</h2>
-    <div class="demo-box">
-        <p>@L["{Count} emoji across {Groups} categories, from Unicode {Version}.", EmojiCatalog.All.Count, EmojiCatalog.Groups.Count, EmojiCatalog.Version]</p>
     </div>
 </div>
 

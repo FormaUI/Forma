@@ -26,6 +26,7 @@
         <ProjectReference Include="..\..\src\Forma.UI.Features.Composer.Abstractions\Forma.UI.Features.Composer.Abstractions.csproj" />
         <ProjectReference Include="..\..\src\Forma.UI.Design.Css\Forma.UI.Design.Css.csproj" />
         <ProjectReference Include="..\..\src\Forma.UI.Design.Icons\Forma.UI.Design.Icons.csproj" />
+        <ProjectReference Include="..\..\src\Forma.UI.Design.Emojis\Forma.UI.Design.Emojis.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Resources.Abstractions\Forma.Framework.Resources.Abstractions.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />
         <ProjectReference Include="..\Forma.Tests.Support\Forma.Tests.Support.csproj" />

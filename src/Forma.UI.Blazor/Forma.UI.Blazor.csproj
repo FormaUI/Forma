@@ -38,6 +38,7 @@
         <ProjectReference Include="..\Forma.UI.Features.Composer\Forma.UI.Features.Composer.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.UI.Design.Css\Forma.UI.Design.Css.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.UI.Design.Icons\Forma.UI.Design.Icons.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.UI.Design.Emojis\Forma.UI.Design.Emojis.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Localization.Abstractions\Forma.Framework.Localization.Abstractions.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Resources.Abstractions\Forma.Framework.Resources.Abstractions.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Resources\Forma.Framework.Resources.csproj" PrivateAssets="all" />

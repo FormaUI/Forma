@@ -1,0 +1,91 @@
+@inherits FormaBunitContext
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_draw_a_known_emoji_from_a_sprite()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiTests();
+            Emoji emoji = "😀";
+
+            // Act
+            var cut = ctx.Render(@<FormaEmoji Emoji="emoji" />);
+
+            // Assert
+            Assert.False(string.IsNullOrWhiteSpace(cut.Find("svg use").GetAttribute("href")));
+        }
+
+        [Fact]
+        public void Should_draw_an_unknown_emoji_as_its_own_character()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiTests();
+            Emoji emoji = "🛸👾🫠🫠🫠🫠🫠";
+
+            // Act
+            var cut = ctx.Render(@<FormaEmoji Emoji="emoji" />);
+
+            // Assert
+            Assert.Equal("🛸👾🫠🫠🫠🫠🫠", cut.Find("span").TextContent);
+        }
+
+        [Fact]
+        public void Should_hide_itself_from_assistive_technology_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiTests();
+            Emoji emoji = "😀";
+
+            // Act
+            var cut = ctx.Render(@<FormaEmoji Emoji="emoji" />);
+
+            // Assert
+            Assert.Equal("true", cut.Find("svg").GetAttribute("aria-hidden"));
+        }
+
+        [Fact]
+        public void Should_announce_the_supplied_label()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiTests();
+            Emoji emoji = "😀";
+
+            // Act
+            var cut = ctx.Render(@<FormaEmoji Emoji="emoji" Label="Grinning face" />);
+
+            // Assert
+            var svg = cut.Find("svg");
+            Assert.Equal("img", svg.GetAttribute("role"));
+            Assert.Equal("Grinning face", svg.GetAttribute("aria-label"));
+            Assert.Null(svg.GetAttribute("aria-hidden"));
+        }
+
+        [Fact]
+        public void Should_render_the_supplied_class_beside_its_own()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiTests();
+            Emoji emoji = "😀";
+
+            // Act
+            var cut = ctx.Render(@<FormaEmoji Emoji="emoji" Class="my-emoji" />);
+
+            // Assert
+            var svg = cut.Find("svg");
+            Assert.Contains("forma-emoji", svg.ClassName, StringComparison.Ordinal);
+            Assert.Contains("my-emoji", svg.ClassName, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_refuse_to_draw_the_absent_emoji()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiTests();
+
+            // Act & Assert
+            Assert.Throws<ArgumentOutOfRangeException>(
+                () => ctx.Render(@<FormaEmoji Emoji="default" />));
+        }
+    }
+}

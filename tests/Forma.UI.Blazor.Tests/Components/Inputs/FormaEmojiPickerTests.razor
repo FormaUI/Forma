@@ -1,9 +1,14 @@
 @inherits FormaBunitContext
+@using Forma.UI.Blazor.Emojis
 @using Microsoft.AspNetCore.Components.Web
+@using Microsoft.Extensions.DependencyInjection
 
 @code {
     public sealed class Component
     {
+        // The picker's own default tab count: nine standard categories.
+        private const int GroupCount = 9;
+
         [Fact]
         public void Should_show_a_single_spinner_in_place_of_a_still_loading_category()
         {
@@ -30,13 +35,15 @@
         {
             // Arrange
             using var ctx = new FormaEmojiPickerTests();
+            var catalog = ctx.Services.GetRequiredService<IEmojiCatalog>();
+            catalog.TryFindByGroupId("smileys", out var smileys);
 
             // Act
             var cut = ctx.Render(@<FormaEmojiPicker />);
 
             // Assert — the category is larger than one chunk, so only its opening run renders.
             var rendered = cut.FindAll(".forma-emoji-picker-emoji").Count;
-            Assert.InRange(rendered, 1, EmojiCatalog.InGroup("smileys").Count - 1);
+            Assert.InRange(rendered, 1, smileys.Count - 1);
             Assert.All(cut.FindAll(".forma-emoji-picker-emoji use"), use => Assert.StartsWith("#emoji-", use.GetAttribute("href")));
         }
 
@@ -95,7 +102,7 @@
             var cut = ctx.Render(@<FormaEmojiPicker />);
 
             // Assert
-            Assert.Equal(EmojiCatalog.Groups.Count, cut.FindAll("[role='tab']").Count);
+            Assert.Equal(GroupCount, cut.FindAll("[role='tab']").Count);
         }
 
         [Fact]
@@ -118,6 +125,8 @@
         {
             // Arrange
             using var ctx = new FormaEmojiPickerTests();
+            var catalog = ctx.Services.GetRequiredService<IEmojiCatalog>();
+            catalog.TryFindByGroupId("smileys", out var smileys);
 
             // Act
             var cut = ctx.Render(@<FormaEmojiPicker />);
@@ -125,7 +134,7 @@
             // Assert
             var rendered = cut.FindAll(".forma-emoji-picker-emoji");
             Assert.NotEmpty(rendered);
-            Assert.Equal(EmojiCatalog.InGroup("smileys")[0].Name, rendered[0].GetAttribute("aria-label"));
+            Assert.Equal(smileys[0].Name, rendered[0].GetAttribute("aria-label"));
         }
 
         [Fact]
@@ -133,6 +142,8 @@
         {
             // Arrange
             using var ctx = new FormaEmojiPickerTests();
+            var catalog = ctx.Services.GetRequiredService<IEmojiCatalog>();
+            catalog.TryFindByGroupId("animals", out var animals);
             var cut = ctx.Render(@<FormaEmojiPicker />);
 
             // Act
@@ -141,7 +152,7 @@
             // Assert
             var rendered = cut.FindAll(".forma-emoji-picker-emoji");
             Assert.NotEmpty(rendered);
-            Assert.Equal(EmojiCatalog.InGroup("animals")[0].Name, rendered[0].GetAttribute("aria-label"));
+            Assert.Equal(animals[0].Name, rendered[0].GetAttribute("aria-label"));
             Assert.Equal("true", cut.FindAll("[role='tab']")[2].GetAttribute("aria-selected"));
         }
 
@@ -165,13 +176,17 @@
         {
             // Arrange
             using var ctx = new FormaEmojiPickerTests();
+            var catalog = ctx.Services.GetRequiredService<IEmojiCatalog>();
+            var provider = ctx.Services.GetRequiredService<IEmojiProvider>();
+            catalog.TryFindByGroupId("smileys", out var smileys);
+            var sprite = Assert.IsType<EmojiSprite>(provider.GetArtwork(smileys[0].Emoji));
 
             // Act
             var cut = ctx.Render(@<FormaEmojiPicker />);
 
             // Assert
             var href = cut.Find(".forma-emoji-picker-emoji use").GetAttribute("href");
-            Assert.Equal($"#emoji-{EmojiCatalog.InGroup("smileys")[0].SpriteId}", href);
+            Assert.Equal($"#{sprite.Symbol}", href);
         }
 
         [Fact]
@@ -179,6 +194,8 @@
         {
             // Arrange
             using var ctx = new FormaEmojiPickerTests();
+            var catalog = ctx.Services.GetRequiredService<IEmojiCatalog>();
+            catalog.TryFindByGroupId("smileys", out var smileys);
             string? selected = null;
             var cut = ctx.Render(@<FormaEmojiPicker OnSelect="value => selected = value" />);
 
@@ -186,7 +203,7 @@
             cut.Find(".forma-emoji-picker-emoji").Click();
 
             // Assert
-            Assert.Equal(EmojiCatalog.InGroup("smileys")[0].Character, selected);
+            Assert.Equal(smileys[0].Emoji.Character, selected);
         }
 
         [Fact]
@@ -200,7 +217,7 @@
             var cut = ctx.Render(@<FormaEmojiPicker Recent="recent" />);
 
             // Assert
-            Assert.Equal(EmojiCatalog.Groups.Count + 1, cut.FindAll("[role='tab']").Count);
+            Assert.Equal(GroupCount + 1, cut.FindAll("[role='tab']").Count);
             Assert.Single(cut.FindAll(".forma-emoji-picker-emoji"));
         }
 
@@ -209,6 +226,8 @@
         {
             // Arrange
             using var ctx = new FormaEmojiPickerTests();
+            var catalog = ctx.Services.GetRequiredService<IEmojiCatalog>();
+            catalog.TryFindByGroupId("smileys", out var smileys);
             IReadOnlyList<string> recent = ["😂", "😊"];
             IReadOnlyList<string>? updated = null;
             var cut = ctx.Render(@<FormaEmojiPicker Recent="recent" RecentChanged="value => updated = value" />);
@@ -219,7 +238,7 @@
 
             // Assert
             Assert.NotNull(updated);
-            Assert.Equal(EmojiCatalog.InGroup("smileys")[0].Character, updated[0]);
+            Assert.Equal(smileys[0].Emoji.Character, updated[0]);
         }
 
         [Fact]
@@ -227,7 +246,9 @@
         {
             // Arrange
             using var ctx = new FormaEmojiPickerTests();
-            var first = EmojiCatalog.InGroup("smileys")[0].Character;
+            var catalog = ctx.Services.GetRequiredService<IEmojiCatalog>();
+            catalog.TryFindByGroupId("smileys", out var smileys);
+            var first = smileys[0].Emoji.Character;
             IReadOnlyList<string> recent = ["😂", first];
             IReadOnlyList<string>? updated = null;
             var cut = ctx.Render(@<FormaEmojiPicker Recent="recent" RecentChanged="value => updated = value" />);
