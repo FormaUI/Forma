@@ -17,7 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Forma.UI.Features.Explorer.Abstractions\Forma.UI.Features.Explorer.Abstractions.csproj" />
+        <ProjectReference Include="..\..\src\Forma.UI.Features.Explorer\Forma.UI.Features.Explorer.csproj" />
     </ItemGroup>
 
 </Project>

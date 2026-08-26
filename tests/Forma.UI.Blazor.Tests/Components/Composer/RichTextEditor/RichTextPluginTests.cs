@@ -6,7 +6,7 @@ using Forma.UI.Blazor.Components.Composer.RichTextEditor.Plugins;
 using Forma.UI.Features.Composer.Documents;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
-using Forma.UI.Features.Composer.Sanitization;
+using Forma.UI.Features.Sanitization;
 using Forma.UI.Features.Toolbar;
 
 public sealed class RichTextPluginTests
@@ -33,7 +33,7 @@ public sealed class RichTextPluginTests
             doc,
             selection,
             history,
-            new ComposerHtmlSanitizer(),
+            new AllowlistHtmlSanitizer(),
             SharedAssetLoader,
             regions,
             _ => Task.CompletedTask,

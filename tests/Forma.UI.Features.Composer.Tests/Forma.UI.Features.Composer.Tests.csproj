@@ -17,9 +17,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Forma.UI.Features.Toolbar.Abstractions\Forma.UI.Features.Toolbar.Abstractions.csproj" />
-        <ProjectReference Include="..\..\src\Forma.UI.Features.Composer.Abstractions\Forma.UI.Features.Composer.Abstractions.csproj" />
+        <ProjectReference Include="..\..\src\Forma.UI.Features.Toolbar\Forma.UI.Features.Toolbar.csproj" />
         <ProjectReference Include="..\..\src\Forma.UI.Features.Composer\Forma.UI.Features.Composer.csproj" />
+        <ProjectReference Include="..\..\src\Forma.UI.Features.Sanitization\Forma.UI.Features.Sanitization.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Sanitization.Abstractions\Forma.Framework.Sanitization.Abstractions.csproj" />
         <ProjectReference Include="..\..\src\Forma.UI.Design.Icons\Forma.UI.Design.Icons.csproj" />
     </ItemGroup>
 

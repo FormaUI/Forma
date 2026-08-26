@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
 using Forma.UI.Design.Icons;
+using Forma.UI.Features.Files;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -29,7 +30,7 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
     [Parameter] public EventCallback<UploadFailure> OnFailed { get; set; }
 
     /// <summary>How the set runs and which transfer measurements are shown beside each file.</summary>
-    [Parameter] public FormaFileUploaderOptions Options { get; set; } = FormaFileUploaderOptions.Default;
+    [Parameter] public FileUploaderOptions Options { get; set; } = FileUploaderOptions.Default;
 
     /// <summary>Where the bytes are written; defaults to the store the host registered.</summary>
     [Parameter] public IFileStore? Store { get; set; }

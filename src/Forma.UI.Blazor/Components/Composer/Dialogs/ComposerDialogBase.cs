@@ -1,8 +1,9 @@
 namespace Forma.UI.Blazor.Components.Composer.Dialogs;
 
 using Forma.Framework.Localization;
+using Forma.Framework.Sanitization;
 using Forma.UI.Features.Composer.Editing;
-using Forma.UI.Features.Composer.Sanitization;
+using Forma.UI.Features.Sanitization;
 
 using Microsoft.AspNetCore.Components;
 
@@ -26,5 +27,5 @@ public abstract class ComposerDialogBase : ComponentBase
     // A dialog standing outside a composer has no host rules to answer to, so it judges an address the way the engine would.
     /// <summary>The markup the document may carry, from the host's sanitizer where there is one.</summary>
     private protected IMarkupPolicy MarkupPolicy
-        => Context?.Sanitizer.MarkupPolicy ?? ComposerMarkupPolicy.Default;
+        => Context?.Sanitizer.MarkupPolicy ?? RichContentMarkupPolicy.Default;
 }

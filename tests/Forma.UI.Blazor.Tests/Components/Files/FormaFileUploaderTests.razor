@@ -3,6 +3,7 @@
 @using Forma.Tests.Files
 @using Forma.Tests.Resources
 @using Forma.UI.Blazor.Components.Files
+@using Forma.UI.Features.Files
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.Extensions.DependencyInjection
 
@@ -94,7 +95,7 @@
             // Arrange
             using var ctx = new FormaFileUploaderTests();
             var store = new FakeFileStore();
-            var options = new FormaFileUploaderOptions { ShowByteCount = true };
+            var options = new FileUploaderOptions { ShowByteCount = true };
             IReadOnlyList<IBrowserFile> files = [new FakeBrowserFile("one.txt", new string('a', 2048))];
 
             // Act
@@ -110,7 +111,7 @@
             // Arrange
             using var ctx = new FormaFileUploaderTests();
             var store = new FakeFileStore();
-            var options = new FormaFileUploaderOptions { ShowByteCount = true, ShowTotalMetrics = true };
+            var options = new FileUploaderOptions { ShowByteCount = true, ShowTotalMetrics = true };
             IReadOnlyList<IBrowserFile> files = [new FakeBrowserFile("one.txt", new string('a', 2048))];
 
             // Act
@@ -126,7 +127,7 @@
             // Arrange
             using var ctx = new FormaFileUploaderTests();
             var store = new FakeFileStore();
-            var options = new FormaFileUploaderOptions { ShowByteCount = true, ShowTotalMetrics = true };
+            var options = new FileUploaderOptions { ShowByteCount = true, ShowTotalMetrics = true };
             IReadOnlyList<IBrowserFile> files =
             [
                 new FakeBrowserFile("one.txt", new string('a', 1024)),
@@ -150,7 +151,7 @@
             // Arrange
             using var ctx = new FormaFileUploaderTests();
             var store = new FakeFileStore();
-            var options = new FormaFileUploaderOptions { ShowByteCount = true, ShowTotalMetrics = false };
+            var options = new FileUploaderOptions { ShowByteCount = true, ShowTotalMetrics = false };
             IReadOnlyList<IBrowserFile> files =
             [
                 new FakeBrowserFile("one.txt", new string('a', 1024)),
@@ -170,7 +171,7 @@
             // Arrange
             using var ctx = new FormaFileUploaderTests();
             var store = new FakeFileStore();
-            var options = new FormaFileUploaderOptions { ShowSummary = false };
+            var options = new FileUploaderOptions { ShowSummary = false };
             IReadOnlyList<IBrowserFile> files = [new FakeBrowserFile("one.txt", "first")];
 
             // Act
@@ -186,7 +187,7 @@
             // Arrange
             using var ctx = new FormaFileUploaderTests();
             var store = new FakeFileStore();
-            var options = new FormaFileUploaderOptions { ShowByteCount = true };
+            var options = new FileUploaderOptions { ShowByteCount = true };
             IReadOnlyList<IBrowserFile> files =
             [
                 new FakeBrowserFile("one.txt", "first"),
@@ -275,7 +276,7 @@
             IReadOnlyList<IBrowserFile> files = [new FakeBrowserFile("cover.jpg", "bytes")];
 
             // Act
-            var cut = ctx.Render(@<FormaFileUploader Store="store" Files="files" Options="@(new FormaFileUploaderOptions { AutoStart = false })" />);
+            var cut = ctx.Render(@<FormaFileUploader Store="store" Files="files" Options="@(new FileUploaderOptions { AutoStart = false })" />);
 
             // Assert
             Assert.Multiple(() =>
@@ -293,7 +294,7 @@
             using var ctx = new FormaFileUploaderTests();
             var store = new FakeFileStore();
             IReadOnlyList<IBrowserFile> files = [new FakeBrowserFile("cover.jpg", "bytes")];
-            var cut = ctx.Render(@<FormaFileUploader Store="store" Files="files" Options="@(new FormaFileUploaderOptions { AutoStart = false })" />);
+            var cut = ctx.Render(@<FormaFileUploader Store="store" Files="files" Options="@(new FileUploaderOptions { AutoStart = false })" />);
 
             // Act
             cut.Find("button").Click();
@@ -311,7 +312,7 @@
             IReadOnlyList<IBrowserFile> files = [new FakeBrowserFile("cover.jpg", "bytes")];
 
             // Act
-            var cut = ctx.Render(@<FormaFileUploader Store="store" Files="files" Options="@(new FormaFileUploaderOptions { AutoStart = false })" />);
+            var cut = ctx.Render(@<FormaFileUploader Store="store" Files="files" Options="@(new FileUploaderOptions { AutoStart = false })" />);
 
             // Assert
             Assert.Equal("cover.jpg", cut.Find("progress").GetAttribute("aria-label"));
@@ -354,7 +355,7 @@
             ];
 
             // Act
-            var cut = ctx.Render(@<FormaFileUploader Store="store" Files="files" Options="@(new FormaFileUploaderOptions { StopOnFailure = true })" />);
+            var cut = ctx.Render(@<FormaFileUploader Store="store" Files="files" Options="@(new FileUploaderOptions { StopOnFailure = true })" />);
 
             // Assert
             Assert.Multiple(() =>
@@ -378,7 +379,7 @@
             ];
 
             // Act
-            var cut = ctx.Render(@<FormaFileUploader Store="store" Files="files" Options="@(new FormaFileUploaderOptions { RollbackOnFailure = true })" />);
+            var cut = ctx.Render(@<FormaFileUploader Store="store" Files="files" Options="@(new FileUploaderOptions { RollbackOnFailure = true })" />);
 
             // Assert
             Assert.Multiple(() =>
@@ -406,7 +407,7 @@
             // Act
             ctx.Render(@<FormaFileUploader Store="store"
                                        Files="files"
-                                       Options="@(new FormaFileUploaderOptions { RollbackOnFailure = true })"
+                                       Options="@(new FileUploaderOptions { RollbackOnFailure = true })"
                                        OnCompleted="@(_ => { completed = true; return Task.CompletedTask; })" />);
 
             // Assert
@@ -429,7 +430,7 @@
             // Act
             var cut = ctx.Render(@<FormaFileUploader Store="store"
                                                  Files="files"
-                                                 Options="@(new FormaFileUploaderOptions { RollbackOnFailure = true })"
+                                                 Options="@(new FileUploaderOptions { RollbackOnFailure = true })"
                                                  OnFailed="@(failure => { failures.Add(failure); return Task.CompletedTask; })" />);
 
             // Assert

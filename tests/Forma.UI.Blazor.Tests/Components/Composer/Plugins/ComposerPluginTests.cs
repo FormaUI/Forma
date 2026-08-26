@@ -4,7 +4,7 @@ using Forma.Tests.Composer;
 using Forma.UI.Blazor.Components.Composer.Plugins;
 using Forma.UI.Features.Composer.Documents;
 using Forma.UI.Features.Composer.Editing;
-using Forma.UI.Features.Composer.Sanitization;
+using Forma.UI.Features.Sanitization;
 
 public sealed class ComposerPluginTests
 {
@@ -20,7 +20,7 @@ public sealed class ComposerPluginTests
             doc,
             ComposerSelection.Empty,
             history,
-            new ComposerHtmlSanitizer(),
+            new AllowlistHtmlSanitizer(),
             SharedAssetLoader,
             regions,
             _ => Task.CompletedTask,

@@ -3,6 +3,7 @@ namespace Forma.UI.Blazor.Components.Composer;
 using System.Diagnostics.CodeAnalysis;
 
 using Forma.Framework.Resources;
+using Forma.Framework.Sanitization;
 using Forma.UI.Blazor.Components.Composer.Assets;
 using Forma.UI.Blazor.Components.Composer.PlainTextEditor;
 using Forma.UI.Blazor.Components.Composer.Plugins;
@@ -11,8 +12,8 @@ using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Documents;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
-using Forma.UI.Features.Composer.Sanitization;
 using Forma.UI.Features.Composer.Syntax;
+using Forma.UI.Features.Sanitization;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -33,7 +34,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     private KeyBindings _keyBindings = default!;
     private JsComposerAssetLoader _assetLoader = default!;
     private IComposerHistory _history = default!;
-    private IComposerHtmlSanitizer _sanitizer = default!;
+    private IHtmlSanitizer _sanitizer = default!;
     private ComposerContext _context = default!;
     private IComposerEditorPlugin _activeEditor = default!;
     private bool _isInitialized;
@@ -96,10 +97,10 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
         _dotNetRef = DotNetObjectReference.Create(this);
 
         var injectedHistory = (IComposerHistory?)Services.GetService(typeof(IComposerHistory));
-        var injectedSanitizer = (IComposerHtmlSanitizer?)Services.GetService(typeof(IComposerHtmlSanitizer));
+        var injectedSanitizer = (IHtmlSanitizer?)Services.GetService(typeof(IHtmlSanitizer));
 
         _history = injectedHistory ?? new ComposerHistory(Options.HistoryCapacity);
-        _sanitizer = injectedSanitizer ?? new ComposerHtmlSanitizer();
+        _sanitizer = injectedSanitizer ?? new AllowlistHtmlSanitizer();
 
         _commands.RegisterEngineCommand(ComposerCommands.Undo, HandleUndoAsync);
         _commands.RegisterEngineCommand(ComposerCommands.Redo, HandleRedoAsync);

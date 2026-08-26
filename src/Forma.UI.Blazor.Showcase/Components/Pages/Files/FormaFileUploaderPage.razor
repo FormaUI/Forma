@@ -2,6 +2,7 @@
 @attribute [ShowcasePage("FormaFileUploader")]
 @rendermode InteractiveServer
 @using Forma.UI.Blazor.Components.Files
+@using Forma.UI.Features.Files
 
 <h1>FormaFileUploader</h1>
 <p class="description">@L["The half that moves the bytes. A picker chooses files off the device; this stores each one through an IFileStore the host supplies, showing progress per file and leaving the destination entirely to the application."]</p>
@@ -31,7 +32,7 @@
         <FormaFilePicker OnFilesSelected="@(files => Accept("manual", files))" />
         <FormaFileUploader Store="@Store("manual")"
                        Files="@Selected("manual")"
-                       Options="@(new FormaFileUploaderOptions { AutoStart = false })"
+                       Options="@(new FileUploaderOptions { AutoStart = false })"
                        OnCompleted="@(resources => Complete("manual", resources))" />
         <ul class="demo-log">
             @foreach (var line in Log("manual"))
@@ -68,7 +69,7 @@
         <FormaFilePicker OnFilesSelected="@(files => Accept("stop", files))" />
         <FormaFileUploader Store="@Store("stop")"
                        Files="@Selected("stop")"
-                       Options="@(new FormaFileUploaderOptions { StopOnFailure = true })"
+                       Options="@(new FileUploaderOptions { StopOnFailure = true })"
                        OnCompleted="@(resources => Complete("stop", resources))"
                        OnFailed="@(failure => Fail("stop", failure))" />
         <p class="demo-note">@Holding(Store("stop"))</p>
@@ -88,7 +89,7 @@
         <FormaFilePicker OnFilesSelected="@(files => Accept("rollback", files))" />
         <FormaFileUploader Store="@Store("rollback")"
                        Files="@Selected("rollback")"
-                       Options="@(new FormaFileUploaderOptions { RollbackOnFailure = true })"
+                       Options="@(new FileUploaderOptions { RollbackOnFailure = true })"
                        OnCompleted="@(resources => Complete("rollback", resources))"
                        OnFailed="@(failure => Fail("rollback", failure))" />
         <p class="demo-note">@Holding(Store("rollback"))</p>
@@ -107,13 +108,13 @@
     <p><code><bdi dir="ltr">@Sandbox.AssetDisplayPath</bdi></code></p>
     <p class="description">@L["Every new selection clears the upload directory before its first file is written:"]</p>
     <p><code><bdi dir="ltr">@Sandbox.UploadDisplayPath</bdi></code></p>
-    <p class="description">@L["Every measurement is switched on here through FormaFileUploaderOptions, so each file and the set as a whole report bytes, elapsed time, speed, and the time remaining."]</p>
+    <p class="description">@L["Every measurement is switched on here through FileUploaderOptions, so each file and the set as a whole report bytes, elapsed time, speed, and the time remaining."]</p>
     <div class="demo-box">
         <FormaFilePicker Prompt="@L["Pick sandbox files of any size"]"
                          OnFilesSelected="@(files => Accept("disk", files))" />
         <FormaFileUploader Store="@Store("disk")"
                        Files="@Selected("disk")"
-                       Options="FormaFileUploaderOptions.Detailed"
+                       Options="FileUploaderOptions.Detailed"
                        OnCompleted="@(resources => Complete("disk", resources))"
                        OnFailed="@(failure => Fail("disk", failure))" />
         <p class="demo-note">@Holding(Store("disk"))</p>
@@ -133,7 +134,7 @@
         <FormaFilePicker OnFilesSelected="@(files => Accept("bare", files))" />
         <FormaFileUploader Store="@Store("bare")"
                        Files="@Selected("bare")"
-                       Options="@(new FormaFileUploaderOptions { ShowByteCount = true, ShowElapsed = true, ShowTransferRate = true, ShowTotalMetrics = false, ShowSummary = false })"
+                       Options="@(new FileUploaderOptions { ShowByteCount = true, ShowElapsed = true, ShowTransferRate = true, ShowTotalMetrics = false, ShowSummary = false })"
                        OnCompleted="@(resources => Complete("bare", resources))"
                        OnFailed="@(failure => Fail("bare", failure))" />
         <p class="demo-note">@Holding(Store("bare"))</p>

@@ -1,6 +1,6 @@
 namespace Forma.UI.Blazor.Components.Composer.Dialogs;
 
-using Forma.UI.Features.Composer.Sanitization;
+using Forma.Framework.Sanitization;
 
 using Microsoft.AspNetCore.Components;
 

@@ -1,11 +1,11 @@
 ---
 name: forma-tests
-description: Forma's test standard — the one-test-project-per-assembly rule and where an .Abstractions assembly is tested, the bUnit + xUnit v3 file shape (FormaXTests.razor with a nested Component class), naming and Arrange/Act/Assert conventions, rendering InputBase components in FakeFormHost, where shared fakes live in Forma.Tests.Support, and the separate Vitest runner for wwwroot/scripts modules. Use when writing or changing any test, adding a test fake, or testing a JS behaviour, operation, or component module.
+description: Forma's test standard — the one-test-project-per-assembly rule and where a split assembly's contracts are tested, the bUnit + xUnit v3 file shape (FormaXTests.razor with a nested Component class), naming and Arrange/Act/Assert conventions, rendering InputBase components in FakeFormHost, where shared fakes live in Forma.Tests.Support, and the separate Vitest runner for wwwroot/scripts modules. Use when writing or changing any test, adding a test fake, or testing a JS behaviour, operation, or component module.
 ---
 
 # Tests (bUnit + xUnit v3)
 
-Every production assembly has exactly one test project named after it, so `Forma.UI.Design.Icons` is tested by `tests/Forma.UI.Design.Icons.Tests` and never from another project. An `.Abstractions` assembly is the exception: it shares its sibling's namespace, so it shares its sibling's test project too — `Forma.UI.Features.Feedback.Abstractions` is tested from `tests/Forma.UI.Features.Feedback.Tests`. Mirror source paths within it, so component tests live under `tests/Forma.UI.Blazor.Tests/Components/{Category}/` with `FormaXTests.razor` and `FormaXTests.razor.cs`.
+Every production assembly has exactly one test project named after it, so `Forma.UI.Design.Icons` is tested by `tests/Forma.UI.Design.Icons.Tests` and never from another project. An `.Abstractions` assembly is the exception: it shares its sibling's namespace, so it shares its sibling's test project too. Mirror source paths within it, so component tests live under `tests/Forma.UI.Blazor.Tests/Components/{Category}/` with `FormaXTests.razor` and `FormaXTests.razor.cs`.
 
 - Do keep `.razor.cs` to `public sealed partial class FormaXTests;`.
 - Do start `.razor` with `@inherits BunitContext` and place `[Fact]` methods in a nested `public sealed class Component`.

@@ -3,6 +3,7 @@ namespace Forma.UI.Blazor.Components.Composer.Dialogs;
 using Forma.Framework.Resources;
 using Forma.UI.Blazor.Components.Composer.Plugins;
 using Forma.UI.Blazor.Components.Files;
+using Forma.UI.Features.Files;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -11,7 +12,7 @@ using Microsoft.AspNetCore.Components.Forms;
 public sealed partial class FormaComposerFileUploadDialog : ComposerDialogBase
 {
     // Every measurement on, because a reader watching an upload wants to know how much is left.
-    private static readonly FormaFileUploaderOptions Detailed = FormaFileUploaderOptions.Detailed;
+    private static readonly FileUploaderOptions Detailed = FileUploaderOptions.Detailed;
 
     /// <summary>Which files may be attached.</summary>
     [Parameter] public FileUploadPluginOptions Options { get; set; } = FileUploadPluginOptions.Default;
@@ -26,7 +27,7 @@ public sealed partial class FormaComposerFileUploadDialog : ComposerDialogBase
     private IReadOnlyList<IBrowserFile> _files = [];
     private readonly List<ResourceInfo> _uploaded = [];
 
-    private static FormaFileUploaderOptions UploaderOptions
+    private static FileUploaderOptions UploaderOptions
         => Detailed;
 
     /// <inheritdoc />

@@ -4,7 +4,7 @@ using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Documents;
 using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
-using Forma.UI.Features.Composer.Sanitization;
+using Forma.UI.Features.Sanitization;
 using Forma.UI.Features.Toolbar;
 
 using Xunit;
@@ -91,7 +91,7 @@ public sealed class ComposerCommandRegistryTests
             new ComposerDocument(ComposerDocumentFormat.PlainText, "text"),
             ComposerSelection.Empty,
             new ComposerHistory(),
-            new ComposerHtmlSanitizer(),
+            new AllowlistHtmlSanitizer(),
             AssetLoader,
             new ComposerRegionRegistry(),
             _ => Task.CompletedTask,

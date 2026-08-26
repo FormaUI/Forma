@@ -66,23 +66,23 @@ Two Coi behaviours are deliberately **not** reproduced as-authored:
 
 ## 2. Assembly layout
 
-The composer's contracts do **not** live in `Forma.UI.Features.Abstractions`. A host that wants the composer should not inherit the toast, confirm-dialog and status-badge contracts along with it, so the composer gets its own pair, following the same convention: the assembly name carries the split, the namespace does not.
+The composer is one assembly, `Forma.UI.Features.Composer`, carrying its contracts and the engine that implements them. The components cannot render a composer without that engine, so splitting the two would only add a reference to get wrong. A capability resting on an external dependency is the exception, and ships as a satellite package a host adds deliberately.
 
 | Project | Namespace | References |
 |---|---|---|
-| `Forma.UI.Features.Composer.Abstractions` | `Forma.UI.Features.Composer` | `Forma.UI.Design.Icons`, `Forma.Framework.Resources.Abstractions` |
-| `Forma.UI.Features.Composer` | `Forma.UI.Features.Composer` | `Forma.UI.Features.Composer.Abstractions` |
-| `Forma.UI.Features.Composer.Markdown` | `Forma.UI.Features.Composer.Markdown` | `.Abstractions` + Markdig |
-| `Forma.UI.Features.Composer.TextMate` | `Forma.UI.Features.Composer.TextMate` | `.Abstractions` + TextMateSharp |
-| `Forma.UI.Features.Composer.KaTeX` | `Forma.UI.Features.Composer.KaTeX` | `.Abstractions` + KaTeX browser assets |
-| `Forma.UI.Features.Composer.HtmlSanitizer` | `Forma.UI.Features.Composer.HtmlSanitizer` | `.Abstractions` + HtmlSanitizer (Ganss.Xss) |
-| `Forma.UI.Blazor` | `Forma.UI.Blazor.Components.Composer` | adds `Forma.UI.Features.Composer.Abstractions` |
+| `Forma.UI.Features.Composer` | `Forma.UI.Features.Composer` | `Forma.UI.Design.Icons`, `Forma.UI.Features.Toolbar`, `Forma.Framework.Resources.Abstractions`, `Forma.Framework.Sanitization.Abstractions` |
+| `Forma.UI.Features.Composer.Markdown` | `Forma.UI.Features.Composer.Markdown` | the composer + Markdig |
+| `Forma.UI.Features.Composer.TextMate` | `Forma.UI.Features.Composer.TextMate` | the composer + TextMateSharp |
+| `Forma.UI.Features.Composer.KaTeX` | `Forma.UI.Features.Composer.KaTeX` | the composer + KaTeX browser assets |
+| `Forma.UI.Blazor` | `Forma.UI.Blazor.Components.Composer` | adds `Forma.UI.Features.Composer` |
 
-**The abstractions project must not take `FrameworkReference Microsoft.AspNetCore.App`.** The repository confines that to `Forma.UI.Blazor` and `Forma.Tests.Support`, so no contract may mention `RenderFragment`, `EventCallback` or `ComponentBase`. Editor plugins therefore surface a `Type` and the composer hosts it in `<DynamicComponent>`; a plugin that needs custom toolbar markup supplies a `Type` too. This is a constraint on the design, not an inconvenience — it keeps every contract testable from a plain class library.
+Sanitization is not the composer's own concern. Anything holding markup to a policy needs it, so the contract sits in `Forma.Framework.Sanitization.Abstractions` and the allowlist implementation in `Forma.UI.Features.Sanitization`; a host replacing it with a hardened library registers its own `IHtmlSanitizer` and the composer takes it.
 
-**Every public type in `Forma.UI.Features.Composer.Abstractions` carries the prefix** — `IComposer*` for contracts, `Composer*` for types. The namespace would disambiguate on its own, but a host sees these names in its DI registrations and its `using` list, where `IComposerHtmlSanitizer` beside `Ganss.Xss.IHtmlSanitizer` needs no alias and `ComposerDocumentFormat` cannot be mistaken for a framework type. The prefix is the convention for this assembly rather than a special case for the one collision that prompted it.
+**The composer project must not take `FrameworkReference Microsoft.AspNetCore.App`.** The repository confines that to `Forma.UI.Blazor` and `Forma.Tests.Support`, so no contract may mention `RenderFragment`, `EventCallback` or `ComponentBase`. Editor plugins therefore surface a `Type` and the composer hosts it in `<DynamicComponent>`; a plugin that needs custom toolbar markup supplies a `Type` too. This is a constraint on the design, not an inconvenience — it keeps every contract testable from a plain class library.
 
-`Forma.UI.Blazor` stays the only packable project; each satellite is packable in its own right so a host takes only the capabilities it wants.
+**Every public type the composer owns carries the prefix** — `IComposer*` for contracts, `Composer*` for types. The namespace would disambiguate on its own, but a host sees these names in its DI registrations and its `using` list, where `ComposerDocumentFormat` cannot be mistaken for a framework type. The prefix is the convention for this assembly rather than a special case for the one collision that prompted it. It stops at the assembly boundary: a contract that is not the composer's own, such as `IHtmlSanitizer`, is named for what it does.
+
+The composer ships inside the components' own package, because a host installing the library gets a working composer. Each satellite is packable in its own right, so a host takes only the capabilities it wants.
 
 ---
 
@@ -175,14 +175,14 @@ These are not plugins, because a plugin can be absent and these cannot:
 | Editing primitives | `ComposerText`, `ComposerEdit` | The operations every editor would otherwise reinvent against raw strings: the word under the caret, the selected text, replacing a range, mapping the lines a selection touches, replacing every occurrence. Pure functions returning a `ComposerEdit` — new content plus where the caret lands. |
 | Surface regions | §3.8 | Toolbar rows, the gutter and the status strip, each open to the same three contribution categories. |
 | Conversion | `IComposerDocumentConverter` | §5. |
-| Sanitisation | `IComposerHtmlSanitizer` | §6. Not optional. |
+| Sanitisation | `IHtmlSanitizer` | §6. Not optional. |
 | Asset loading | `IComposerAssetLoader` | §3.2. |
 | Clipboard normalisation | engine | Paste is intercepted, sanitised and normalised before it reaches any plugin. |
 | Syntax highlighting | `IComposerSyntaxHighlighter` | §7. |
 
 ### 3.5 Shared state
 
-`ComposerContext` is cascaded to every plugin component: the active editor plugin id, the document, the selection snapshot, the engine services above, and a `Func<Task>` to request a re-render. It carries no Blazor types, so it lives in the abstractions project with everything else.
+`ComposerContext` is cascaded to every plugin component: the active editor plugin id, the document, the selection snapshot, the engine services above, and a `Func<Task>` to request a re-render. It carries no Blazor types, so it lives in the composer assembly with everything else.
 
 ### 3.6 Where the editing surface actually lives
 
@@ -366,7 +366,7 @@ The engine never deserialises `Settings`. It hands the `JsonElement` to the widg
 
 Those token widgets carry no content and barely any settings, because *what* they render is fixed and the value comes from whichever product the page is displaying. One template renders ten thousand products. Coi approximated this with `{TOPMENU}`-style tokens substituted into an HTML string.
 
-**HTML is output, not storage.** `FormaWidgetRenderer` walks the tree emitting a `<DynamicComponent>` per widget — the same walk the canvas performs, minus `FormaWidgetFrame` — so it works under static SSR and needs no `HtmlRenderer`. A host wanting an HTML *string*, for an email, an API or a cache, calls an opt-in service; that is the only path needing `HtmlRenderer`, and it lives in `Forma.UI.Blazor` because the abstractions project may not reference ASP.NET Core.
+**HTML is output, not storage.** `FormaWidgetRenderer` walks the tree emitting a `<DynamicComponent>` per widget — the same walk the canvas performs, minus `FormaWidgetFrame` — so it works under static SSR and needs no `HtmlRenderer`. A host wanting an HTML *string*, for an email, an API or a cache, calls an opt-in service; that is the only path needing `HtmlRenderer`, and it lives in `Forma.UI.Blazor` because the composer project may not reference ASP.NET Core.
 
 This is why the tree wins over Coi's saved HTML. Coi froze rendering decisions at save time — `<img src="/media/8842.jpg">`, `style="width:60%"` — so a new image format, a CDN move or a theme change could not reach an already-saved page, and a widget dropped from the palette left stale markup rendering silently instead of a visible "no longer available". Storing `mediaId: 8842` and `raceId: 42` keeps the author's *intent* and decides the markup at render time. Coi's approach also never escaped the tree: recovering a widget's identity and settings from HTML requires `data-widget` and `data-settings` attributes, which is the same JSON in a worse container, read back with an HTML parser the tree does not need.
 
@@ -544,16 +544,19 @@ An editor that accepts HTML, offers a code editor over raw markup, and pastes fr
 
 ```csharp
 /// <summary>Removes markup a document may not carry.</summary>
-public interface IComposerHtmlSanitizer
+public interface IHtmlSanitizer
 {
+    /// <summary>The markup a document sanitized by this instance may carry.</summary>
+    IMarkupPolicy MarkupPolicy { get; }
+
     /// <summary>Returns the content with disallowed markup removed.</summary>
     string Sanitize(string html);
 }
 ```
 
-- Forma ships a **default allowlist sanitiser** in `Forma.UI.Features.Composer` with no external dependency, covering the element and attribute set the built-in plugins can produce.
-- A host may replace it — `Forma.UI.Features.Composer.HtmlSanitizer` wraps Ganss.Xss for hosts wanting a hardened, widely-reviewed implementation, and any registration overrides the default.
-- A host wanting only different *rules* rather than a different implementation supplies an `IMarkupPolicy` to `ComposerHtmlSanitizer` instead, wrapping `ComposerMarkupPolicy.Default` to widen or narrow what it permits. Event handler attributes are refused by the sanitiser itself, so no policy can re-admit them.
+- Forma ships `AllowlistHtmlSanitizer` in `Forma.UI.Features.Sanitization` with no external dependency, covering the element and attribute set the built-in plugins can produce. The composer builds one for itself when a host has registered none, so a composer is never unsanitised.
+- A host may replace it — a satellite wrapping Ganss.Xss suits a host wanting a hardened, widely-reviewed implementation, and any registration overrides the default.
+- A host wanting only different *rules* rather than a different implementation supplies an `IMarkupPolicy` to the sanitiser instead, wrapping `RichContentMarkupPolicy.Default` to widen or narrow what it permits. Event handler attributes are refused by the sanitiser itself, so no policy can re-admit them.
 - Sanitisation runs at **four** points, and none is optional: content loaded into the composer, content pasted in, content leaving the code editor, and content raised to the host. In a widget tree that means every node's `Content` (§4.2); the settings JSON is never sanitised as markup.
 - The composer's guarantee stops at the browser. **The host must sanitise server-side on save regardless**, because a client-side editor cannot be trusted by the endpoint receiving its output.
 
@@ -603,7 +606,17 @@ These are correctness requirements for every Forma component, and the composer i
 ## 9. File layout
 
 ```text
-src/Forma.UI.Features.Composer.Abstractions/
+src/Forma.Framework.Sanitization.Abstractions/
+├── HtmlSubject.cs
+├── IHtmlSanitizer.cs
+└── IMarkupPolicy.cs
+
+src/Forma.UI.Features.Sanitization/
+├── AllowlistHtmlSanitizer.cs
+├── RichContentMarkupPolicy.cs             # the markup policy the sanitiser applies
+└── ServiceCollectionExtensions.cs
+
+src/Forma.UI.Features.Composer/
 ├── Assets/                                # namespace …Composer.Assets
 │   ├── ComposerAsset.cs
 │   ├── ComposerAssetKind.cs
@@ -614,9 +627,12 @@ src/Forma.UI.Features.Composer.Abstractions/
 │   ├── ComposerDocumentFormat.cs
 │   ├── IComposerDocumentConverter.cs
 │   └── ComposerConversionResult.cs
+├── Documents/
+│   └── DocumentConverterRegistry.cs
 ├── Editing/                               # namespace …Composer.Editing
 │   ├── ComposerContext.cs
 │   ├── ComposerSelection.cs
+│   ├── ComposerHistory.cs
 │   └── IComposerHistory.cs
 ├── Plugins/                               # namespace …Composer.Plugins
 │   ├── IComposerPlugin.cs
@@ -625,8 +641,6 @@ src/Forma.UI.Features.Composer.Abstractions/
 │   ├── ComposerToolbarItem.cs
 │   ├── ComposerKeyBinding.cs
 │   └── ComposerInputTrigger.cs
-├── Sanitization/                          # namespace …Composer.Sanitization
-│   └── IComposerHtmlSanitizer.cs
 ├── Syntax/                                # namespace …Composer.Syntax
 │   ├── IComposerSyntaxHighlighter.cs
 │   └── ComposerSyntaxToken.cs
@@ -634,15 +648,6 @@ src/Forma.UI.Features.Composer.Abstractions/
     ├── ComposerWidget.cs
     ├── ComposerWidgetTree.cs
     └── ComposerWidgetNode.cs
-
-src/Forma.UI.Features.Composer/
-├── Documents/
-│   └── DocumentConverterRegistry.cs
-├── Editing/
-│   └── ComposerHistory.cs
-└── Sanitization/
-    ├── ComposerHtmlSanitizer.cs
-    └── ComposerMarkupPolicy.cs    # the markup policy the sanitiser applies
 
 src/Forma.UI.Blazor/Components/Composer/
 ├── FormaComposer.razor                    # engine shell, editor routing
@@ -770,7 +775,7 @@ Each phase ends buildable, tested and reviewable.
 | # | Question | Answer |
 |---|---|---|
 | C1 | Which external libraries may the composer bundle? | Any, provided all five conditions in §3.3 hold. The rule is a standing carve-out by category, not a named list, so Markdig, TextMateSharp and KaTeX all qualify without a per-library approval. |
-| C2 | How are the abstractions named, given `Ganss.Xss.IHtmlSanitizer` may be in a host's scope? | Everything in `Forma.UI.Features.Composer.Abstractions` carries the prefix: `IComposer*` for contracts, `Composer*` for types. That settles the collision as a side effect of a convention rather than a special case, and a host can register both sanitisers without an alias. |
+| C2 | How are the composer's contracts named, given `Ganss.Xss.IHtmlSanitizer` may be in a host's scope? | Everything the composer owns carries the prefix: `IComposer*` for contracts, `Composer*` for types. Sanitization is not among them — it is a framework concern named for what it does, so a host registering both sanitisers aliases one of the two. |
 | C3 | Should there be a plain-text editor plugin, or is plain text only ever a conversion target? | Conversion target only. `ComposerDocumentFormat.PlainText` exists; no surface ships with it. Nobody has asked for one, and adding it later is a plugin, not a change. |
 | C4 | What does `@bind-Value` carry when the active editor's format is not the bound format? | A `ComposerDocument` — the content together with the format it is written in (§3.7). A bare string would force every document through HTML and rewrite a Markdown author's source on each round-trip. The format is a string-keyed value rather than an enum, so a new format costs the library nothing. |
 | C5 | Are `TemplatePlugin`'s templates host-supplied or does Forma ship a set? | Host-supplied. A template is editorial content and Forma has no editorial opinion. |

@@ -17,7 +17,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Forma.UI.Features.Feedback.Abstractions\Forma.UI.Features.Feedback.Abstractions.csproj" />
         <ProjectReference Include="..\..\src\Forma.UI.Features.Feedback\Forma.UI.Features.Feedback.csproj" />
         <ProjectReference Include="..\..\src\Forma.UI.Design.Css\Forma.UI.Design.Css.csproj" />
     </ItemGroup>

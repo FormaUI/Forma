@@ -5,20 +5,13 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
-        <PackageId>2Site.Forma.UI.Features.Feedback</PackageId>
+        <IsPackable>false</IsPackable>
         <RootNamespace>Forma.UI.Features.Feedback</RootNamespace>
-        <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeReferencedProjectsInPackage</TargetsForTfmSpecificBuildOutput>
     </PropertyGroup>
 
-    <!-- The referenced projects ship inside this package rather than as packages of their own. -->
-    <Target Name="IncludeReferencedProjectsInPackage" DependsOnTargets="ResolveReferences">
-        <ItemGroup>
-            <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.ReferenceSourceTarget)' == 'ProjectReference'" />
-        </ItemGroup>
-    </Target>
-
     <ItemGroup>
-        <ProjectReference Include="..\Forma.UI.Features.Feedback.Abstractions\Forma.UI.Features.Feedback.Abstractions.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.UI.Design.Css\Forma.UI.Design.Css.csproj" />
+        <ProjectReference Include="..\Forma.UI.Design.Icons\Forma.UI.Design.Icons.csproj" />
     </ItemGroup>
 
 </Project>

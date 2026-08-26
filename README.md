@@ -19,14 +19,18 @@ The host owns its own `App.razor` and `Routes.razor`; the package ships componen
 **1. Register services:**
 
 ```csharp
-using Forma.UI.Features.Feedback;
 using Forma.Framework.Localization.Json;
+using Forma.UI.Blazor;
 
 builder.Services.AddJsonLocalization();
-builder.Services.AddFormaFeedbackServices();
+builder.Services.AddFormaUI();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 ```
+
+`AddFormaUI()` registers everything the components need to work — toasts, confirmation dialogs, and the
+sanitizer the composer holds content to. Each lands only if nothing is registered for it already, so
+registering your own implementation before that call replaces it and leaves the rest untouched.
 
 **2. Render Forma's document head from your host's `App.razor`:**
 

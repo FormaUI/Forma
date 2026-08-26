@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 using Forma.Framework.Resources;
 using Forma.UI.Blazor.Components.Files;
+using Forma.UI.Features.Files;
 
 using Microsoft.AspNetCore.Hosting;
 

@@ -4,6 +4,7 @@ using Forma.Framework.Localization;
 using Forma.Framework.Resources;
 using Forma.UI.Blazor.Components.Files;
 using Forma.UI.Blazor.Showcase.Features.Upload;
+using Forma.UI.Features.Files;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
