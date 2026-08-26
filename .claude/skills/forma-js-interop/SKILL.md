@@ -11,7 +11,9 @@ JS-free is the default, not a prohibition.
 - Do use interop when the platform exposes the needed behaviour only to script or when declarative techniques leave a real usability problem.
 - Do keep behaviour in C# and use JS only for what the DOM cannot otherwise provide.
 - Do use only native modern browser APIs.
+- Do write every script in strict mode: a script is an ES module, which is strict by construction, and anything that ever stops being one opens with `'use strict'`.
 - Do name JS parameters by role (`input`, `dialog`, `label`), not type (`inputEl`, `dialogElement`, `el`).
+- Don't use a deprecated platform or language feature — `document.execCommand`, `queryCommandState`, `queryCommandValue`, and everything on MDN's deprecated JavaScript list; when one is found in reach of a change, replace it as part of that change rather than leaving it.
 - Don't contort a component or ship a worse experience merely to remain script-free.
 - Don't treat the amount of JS required as a reason to leave a rough edge unresolved.
 
@@ -35,6 +37,9 @@ components/  → interop owned by a specific Forma component
 - Do put a script in `operations/` when it is a stateless DOM operation, or a set of related ones.
 - Do put a script in `components/` when it owns the browser-side interop for one component and naturally holds both kinds; keep that interop together rather than splitting it by implementation shape.
 - Do name a component script after the component it supports with the `Forma` prefix dropped, so `FormaModal` is served by `components/Modal.js` and `FormaRichTextEditor` by `components/RichTextEditor.js`.
+- Do split a component script that has grown past one concern into `components/{Name}/*.mjs` modules behind a `components/{Name}.js` entry point; the entry keeps its path, so no wrapper changes, and it composes the modules rather than re-exporting them.
+- Do shape each such module as one concept expressed as a class — a formatter, a memory, an inspector — taking its collaborators once in the constructor, with `#`-private mechanics; not a bag of exported functions threaded the same context parameter.
+- Do give a family of pure helpers a named class with static members rather than loose exports, so a caller imports the concept, not stray functions.
 - Do name a behaviour for what the target can do while it is attached: `DropZone`, `NavigationScrollGuard`, `ScrollBoundaryWatcher`, `DragGesture`, `FocusTrap`, `InfiniteScroll`.
 - Do settle that name by asking what `attach(target)` leaves the target able to do, and naming that.
 - Do name an operation module for the browser concern it serves: `Text.js`, `Pointer.js`, `Playback.js`, `Clipboard.js`, `Asset.js`.

@@ -18,22 +18,6 @@ describe('RichTextEditor', () => {
         document.body.innerHTML = '<div id="editor" contenteditable="true"><p>Hello world</p></div>';
         editor = document.querySelector('#editor');
         owner = fakeOwner();
-
-        // Polyfill document.execCommand in happy-dom for testing
-        document.execCommand = vi.fn((command, showUi, value) => {
-            if (command === 'formatBlock' && value) {
-                const tag = value.replace(/[<>]/g, '');
-                const p = editor.querySelector('p');
-                if (p) {
-                    const block = document.createElement(tag);
-                    block.innerHTML = p.innerHTML;
-                    p.replaceWith(block);
-                }
-            }
-            return true;
-        });
-
-        document.queryCommandState = vi.fn(command => command === 'bold');
     });
 
     afterEach(() => {
@@ -74,12 +58,16 @@ describe('RichTextEditor', () => {
 
     it('executes formatting commands and returns the updated state', () => {
         const handle = attach(editor, { owner });
+        const range = document.createRange();
+        range.selectNodeContents(editor.querySelector('p'));
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
 
         const result = handle.exec('bold');
 
-        expect(document.execCommand).toHaveBeenCalledWith('bold', false, null);
         expect(result).not.toBeNull();
-        expect(result.html).toBe('<p>Hello world</p>');
+        expect(result.html).toBe('<p><b>Hello world</b></p>');
     });
 
     it('converts the block the caret sits in', () => {
@@ -135,32 +123,33 @@ describe('RichTextEditor', () => {
         expect(window.getSelection().toString()).toBe('Hello world');
     });
 
-    // Without CSS styling the browser emits <font>, which the sanitizer drops on the round trip.
     it.each([
-        ['foreColor', '#d32f2f'],
-        ['hiliteColor', '#ffff00'],
-        ['fontName', 'Georgia'],
-    ])('turns CSS styling on around %s and off again', (command, value) => {
+        ['foreColor', 'color', '#d32f2f'],
+        ['hiliteColor', 'background-color', '#ffff00'],
+        ['fontName', 'font-family', 'Georgia'],
+    ])('writes %s as an inline style over the selection', (command, property, value) => {
         const handle = attach(editor, { owner });
+        const range = document.createRange();
+        range.selectNodeContents(editor.querySelector('p'));
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
 
         handle.exec(command, value);
 
-        const calls = document.execCommand.mock.calls;
-        const index = calls.findIndex(call => call[0] === command);
-
-        expect(calls[index - 1]).toEqual(['styleWithCSS', false, true]);
-        expect(calls[index]).toEqual([command, false, value]);
-        expect(calls[index + 1]).toEqual(['styleWithCSS', false, false]);
+        const span = editor.querySelector('span');
+        expect(span).not.toBeNull();
+        expect(span.style.getPropertyValue(property)).toBe(value);
+        expect(span.textContent).toBe('Hello world');
     });
 
-    it('writes the font size exactly as the caller expressed it', () => {        document.execCommand = vi.fn((command, showUi, value) => {
-            if (command === 'fontSize') {
-                const p = editor.querySelector('p');
-                p.innerHTML = `<span style="font-size: xxx-large;">${p.innerHTML}</span>`;
-            }
-            return true;
-        });
+    it('writes the font size exactly as the caller expressed it', () => {
         const handle = attach(editor, { owner });
+        const range = document.createRange();
+        range.selectNodeContents(editor.querySelector('p'));
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
 
         handle.exec('fontSize', '1.5rem');
 
@@ -168,14 +157,13 @@ describe('RichTextEditor', () => {
     });
 
     it('unwraps the span when a font size is cleared', () => {
-        document.execCommand = vi.fn((command, showUi, value) => {
-            if (command === 'fontSize') {
-                const p = editor.querySelector('p');
-                p.innerHTML = `<span style="font-size: xxx-large;">${p.innerHTML}</span>`;
-            }
-            return true;
-        });
+        editor.innerHTML = '<p><span style="font-size: 1.5rem;">Hello world</span></p>';
         const handle = attach(editor, { owner });
+        const range = document.createRange();
+        range.selectNodeContents(editor.querySelector('p'));
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
 
         handle.exec('fontSize', null);
 
@@ -183,20 +171,26 @@ describe('RichTextEditor', () => {
         expect(editor.querySelector('p').innerHTML).toBe('Hello world');
     });
 
-    it('leaves CSS styling off for commands with semantic markup of their own', () => {
+    it('writes semantic markup for bold rather than a styled span', () => {
         const handle = attach(editor, { owner });
+        const range = document.createRange();
+        range.selectNodeContents(editor.querySelector('p'));
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
 
         handle.exec('bold');
 
-        expect(document.execCommand).not.toHaveBeenCalledWith('styleWithCSS', false, true);
+        expect(editor.querySelector('b')).not.toBeNull();
+        expect(editor.querySelector('span')).toBeNull();
     });
 
     it('reports colours as hex so they match the toolbar options', () => {
-        document.queryCommandValue = vi.fn(command => (command === 'foreColor' ? 'rgb(211, 47, 47)' : ''));
+        editor.innerHTML = '<p><span style="color: rgb(211, 47, 47);">Hello world</span></p>';
         const handle = attach(editor, { owner });
 
         const range = document.createRange();
-        range.selectNodeContents(editor.querySelector('p'));
+        range.selectNodeContents(editor.querySelector('span').firstChild);
         const selected = window.getSelection();
         selected.removeAllRanges();
         selected.addRange(range);
@@ -763,6 +757,202 @@ describe('RichTextEditor', () => {
             handle.exec('insertText', '');
 
             expect(editor.textContent).toBe('Hello world');
+        });
+    });
+
+    describe('inline formatting engine', () => {
+        function select(startNode, startOffset, endNode, endOffset) {
+            const range = document.createRange();
+            range.setStart(startNode, startOffset);
+            range.setEnd(endNode, endOffset);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            return range;
+        }
+
+        it('marks only the covered part of a word', () => {
+            const handle = attach(editor, { owner });
+            const text = editor.querySelector('p').firstChild;
+
+            select(text, 0, text, 5);
+            handle.exec('bold');
+
+            expect(editor.querySelector('p').innerHTML).toBe('<b>Hello</b> world');
+        });
+
+        it('removes the mark again when toggled over the same selection', () => {
+            const handle = attach(editor, { owner });
+            const text = editor.querySelector('p').firstChild;
+
+            select(text, 0, text, 5);
+            handle.exec('bold');
+            handle.exec('bold');
+
+            expect(editor.querySelector('b')).toBeNull();
+            expect(editor.textContent).toBe('Hello world');
+        });
+
+        it('unmarks just the selected middle of a marked run', () => {
+            editor.innerHTML = '<p><b>Hello world</b></p>';
+            const handle = attach(editor, { owner });
+            const text = editor.querySelector('b').firstChild;
+
+            select(text, 2, text, 8);
+            handle.exec('bold');
+
+            const html = editor.querySelector('p').innerHTML;
+            expect(html).toBe('<b>He</b>llo wo<b>rld</b>');
+        });
+
+        it('extends a mark over a selection that is only partly marked', () => {
+            editor.innerHTML = '<p><b>Hello</b> world</p>';
+            const handle = attach(editor, { owner });
+            const bold = editor.querySelector('b').firstChild;
+            const tail = editor.querySelector('p').lastChild;
+
+            select(bold, 0, tail, 6);
+            handle.exec('bold');
+
+            expect(editor.querySelectorAll('b')).toHaveLength(1);
+            expect(editor.querySelector('b').textContent).toBe('Hello world');
+        });
+
+        it('marks each paragraph of a cross-block selection without wrapping the blocks', () => {
+            editor.innerHTML = '<p>first</p><p>second</p>';
+            const handle = attach(editor, { owner });
+            const [one, two] = editor.querySelectorAll('p');
+
+            select(one.firstChild, 0, two.firstChild, 6);
+            handle.exec('italic');
+
+            expect(editor.innerHTML).toBe('<p><i>first</i></p><p><i>second</i></p>');
+        });
+
+        it('arms a mark at the caret so the next typed text carries it', () => {
+            const handle = attach(editor, { owner });
+            const text = editor.querySelector('p').firstChild;
+
+            select(text, 5, text, 5);
+            handle.exec('bold');
+
+            const armed = editor.querySelector('b');
+            expect(armed).not.toBeNull();
+            expect(window.getSelection().anchorNode.parentElement).toBe(armed);
+        });
+
+        it('keeps armed markers out of the reported content', () => {
+            const handle = attach(editor, { owner });
+            const text = editor.querySelector('p').firstChild;
+
+            select(text, 5, text, 5);
+            const { html } = handle.exec('bold');
+
+            expect(html).toBe('<p>Hello world</p>');
+        });
+
+        it('dissolves an armed mark nothing was typed into when focus leaves', () => {
+            const handle = attach(editor, { owner });
+            const text = editor.querySelector('p').firstChild;
+
+            select(text, 5, text, 5);
+            handle.exec('bold');
+            editor.dispatchEvent(new Event('blur', { bubbles: true }));
+
+            expect(editor.querySelector('b')).toBeNull();
+        });
+
+        it('strips marks and styles together, leaving links standing', () => {
+            editor.innerHTML = '<p><b>bold</b> <span style="color: red;">red</span> <a href="https://a.test">link</a></p>';
+            const handle = attach(editor, { owner });
+            const paragraph = editor.querySelector('p');
+
+            select(paragraph.firstChild ?? paragraph, 0, paragraph.lastChild, paragraph.lastChild.childNodes.length);
+            const range = document.createRange();
+            range.selectNodeContents(paragraph);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            handle.exec('removeFormat');
+
+            expect(editor.querySelector('b')).toBeNull();
+            expect(editor.querySelector('span')).toBeNull();
+            expect(editor.querySelector('a')).not.toBeNull();
+            expect(editor.textContent).toBe('bold red link');
+        });
+    });
+
+    describe('list engine', () => {
+        function selectContents(node) {
+            const range = document.createRange();
+            range.selectNodeContents(node);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+
+        it('turns adjacent paragraphs into one list', () => {
+            editor.innerHTML = '<p>one</p><p>two</p>';
+            const handle = attach(editor, { owner });
+
+            selectContents(editor);
+            handle.exec('insertUnorderedList');
+
+            expect(editor.innerHTML).toBe('<ul><li>one</li><li>two</li></ul>');
+        });
+
+        it('dissolves a list back into paragraphs when toggled again', () => {
+            editor.innerHTML = '<ul><li>one</li><li>two</li></ul>';
+            const handle = attach(editor, { owner });
+
+            selectContents(editor);
+            handle.exec('insertUnorderedList');
+
+            expect(editor.innerHTML).toBe('<p>one</p><p>two</p>');
+        });
+
+        it('re-types a whole list into the other kind', () => {
+            editor.innerHTML = '<ul><li>one</li><li>two</li></ul>';
+            const handle = attach(editor, { owner });
+
+            selectContents(editor);
+            handle.exec('insertOrderedList');
+
+            expect(editor.innerHTML).toBe('<ol><li>one</li><li>two</li></ol>');
+        });
+
+        it('nests an item under its predecessor on indent', () => {
+            editor.innerHTML = '<ul><li>one</li><li>two</li></ul>';
+            const handle = attach(editor, { owner });
+            const second = editor.querySelectorAll('li')[1];
+
+            selectContents(second.firstChild);
+            handle.exec('indent');
+
+            expect(editor.innerHTML).toBe('<ul><li>one<ul><li>two</li></ul></li></ul>');
+        });
+
+        it('lifts a nested item back out on outdent', () => {
+            editor.innerHTML = '<ul><li>one<ul><li>two</li></ul></li></ul>';
+            const handle = attach(editor, { owner });
+            const nested = editor.querySelector('ul ul li');
+
+            selectContents(nested.firstChild);
+            handle.exec('outdent');
+
+            expect(editor.innerHTML).toBe('<ul><li>one</li><li>two</li></ul>');
+        });
+
+        it('indents a paragraph by a reading-direction-aware margin', () => {
+            const handle = attach(editor, { owner });
+            const paragraph = editor.querySelector('p');
+
+            selectContents(paragraph.firstChild);
+            handle.exec('indent');
+            expect(paragraph.style.marginInlineStart).toBe('40px');
+
+            handle.exec('outdent');
+            expect(paragraph.style.marginInlineStart).toBe('');
         });
     });
 
