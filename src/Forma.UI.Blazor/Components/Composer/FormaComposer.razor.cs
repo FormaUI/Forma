@@ -159,7 +159,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
         _activeEditor = _catalog.Resolve(ActiveEditorId, Options.DefaultEditorId, CurrentDocument.Format);
 
         _commands.RegisterPlugins(_catalog.All);
-        _keyMap = new ComposerKeyMap([DefaultKeyBindings.Instance, .. _catalog.All]);
+        _keyMap = new ComposerKeyMap([ComposerKeyBindingSource.Default, .. _catalog.All]);
     }
 
     /// <inheritdoc />

@@ -4,7 +4,7 @@ using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Editing;
 
 /// <summary>A capability contributed to the composer, whatever it is implemented in.</summary>
-public interface IComposerPlugin : IComposerKeyBindingProvider
+public interface IComposerPlugin : IComposerKeyBindingSource
 {
     /// <summary>The unique identifier of the plugin.</summary>
     string Id { get; }

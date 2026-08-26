@@ -9,13 +9,13 @@ public sealed class ComposerKeyMap
     private readonly List<ComposerKeyBinding> _bindings = [];
 
     /// <summary>Merges the bindings of the given sources, letting the earliest source win a contested command.</summary>
-    public ComposerKeyMap(IEnumerable<IComposerKeyBindingProvider> providers)
+    public ComposerKeyMap(IEnumerable<IComposerKeyBindingSource> sources)
     {
-        ArgumentNullException.ThrowIfNull(providers);
+        ArgumentNullException.ThrowIfNull(sources);
 
-        foreach (var provider in providers)
+        foreach (var source in sources)
         {
-            foreach (var binding in provider.KeyBindings)
+            foreach (var binding in source.KeyBindings)
             {
                 _bindings.Add(binding);
                 _byCommand.TryAdd(binding.Command, binding);

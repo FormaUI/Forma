@@ -3,10 +3,10 @@ namespace Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
 
 /// <summary>The key bindings the composer engine ships for the commands it handles itself.</summary>
-public sealed class DefaultKeyBindings : IComposerKeyBindingProvider
+public sealed class ComposerKeyBindingSource : IComposerKeyBindingSource
 {
-    /// <summary>The shared instance of the engine's bindings.</summary>
-    public static DefaultKeyBindings Instance { get; } = new();
+    /// <summary>The shared source of the engine's own bindings.</summary>
+    public static ComposerKeyBindingSource Default { get; } = new();
 
     /// <inheritdoc />
     public IReadOnlyList<ComposerKeyBinding> KeyBindings { get; } =

@@ -7,7 +7,7 @@ using Xunit;
 
 public sealed class ComposerKeyMapTests
 {
-    private sealed class Provider(params ComposerKeyBinding[] bindings) : IComposerKeyBindingProvider
+    private sealed class Source(params ComposerKeyBinding[] bindings) : IComposerKeyBindingSource
     {
         public IReadOnlyList<ComposerKeyBinding> KeyBindings { get; } = bindings;
     }
@@ -19,8 +19,8 @@ public sealed class ComposerKeyMapTests
     public void Should_merge_bindings_from_every_provider()
     {
         // Arrange
-        var first = new Provider(Binding("b", "bold"));
-        var second = new Provider(Binding("i", "italic"));
+        var first = new Source(Binding("b", "bold"));
+        var second = new Source(Binding("i", "italic"));
 
         // Act
         var map = new ComposerKeyMap([first, second]);
@@ -33,7 +33,7 @@ public sealed class ComposerKeyMapTests
     public void Should_find_the_binding_a_command_answers_to()
     {
         // Arrange
-        var map = new ComposerKeyMap([new Provider(Binding("b", "bold"))]);
+        var map = new ComposerKeyMap([new Source(Binding("b", "bold"))]);
 
         // Act
         var binding = map.Find("bold");
@@ -46,8 +46,8 @@ public sealed class ComposerKeyMapTests
     public void Should_let_the_earliest_provider_win_a_contested_command()
     {
         // Arrange
-        var engine = new Provider(Binding("z", "undo"));
-        var plugin = new Provider(Binding("u", "undo"));
+        var engine = new Source(Binding("z", "undo"));
+        var plugin = new Source(Binding("u", "undo"));
 
         // Act
         var map = new ComposerKeyMap([engine, plugin]);
@@ -60,7 +60,7 @@ public sealed class ComposerKeyMapTests
     public void Should_return_null_for_an_unbound_command()
     {
         // Arrange
-        var map = new ComposerKeyMap([new Provider(Binding("b", "bold"))]);
+        var map = new ComposerKeyMap([new Source(Binding("b", "bold"))]);
 
         // Act
         var binding = map.Find("italic");
@@ -73,7 +73,7 @@ public sealed class ComposerKeyMapTests
     public void Should_bind_undo_and_redo_by_default()
     {
         // Arrange
-        var map = new ComposerKeyMap([DefaultKeyBindings.Instance]);
+        var map = new ComposerKeyMap([ComposerKeyBindingSource.Default]);
 
         // Act
         var undo = map.Find(ComposerCommands.Undo);
@@ -89,7 +89,7 @@ public sealed class ComposerKeyMapTests
     public void Should_carry_every_default_chord_including_the_redo_alternative()
     {
         // Arrange
-        var map = new ComposerKeyMap([DefaultKeyBindings.Instance]);
+        var map = new ComposerKeyMap([ComposerKeyBindingSource.Default]);
 
         // Act
         var redoChords = map.Bindings.Where(b => b.Command == ComposerCommands.Redo).Select(b => b.Display);
