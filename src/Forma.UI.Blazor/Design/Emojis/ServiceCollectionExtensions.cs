@@ -5,7 +5,7 @@ using Forma.UI.Design.Emojis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-/// <summary>Registers the emoji <see cref="Components.FormaEmoji" /> draws and <see cref="Components.Inputs.FormaEmojiPicker" /> offers.</summary>
+/// <summary>Registers the emoji <see cref="Components.Design.FormaEmoji" /> draws and <see cref="Components.Inputs.FormaEmojiPicker" /> offers.</summary>
 public static class ServiceCollectionExtensions
 {
     /// <summary>Registers the emoji this library ships, unless a host has already registered its own.</summary>

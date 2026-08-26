@@ -1,4 +1,4 @@
-namespace Forma.UI.Blazor.Components;
+namespace Forma.UI.Blazor.Components.Design;
 
 using System.Globalization;
 

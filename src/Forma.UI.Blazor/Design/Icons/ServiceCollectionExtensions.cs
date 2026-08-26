@@ -5,7 +5,7 @@ using Forma.UI.Design.Icons;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-/// <summary>Registers the artwork <see cref="Components.FormaIcon" /> draws.</summary>
+/// <summary>Registers the artwork <see cref="Components.Design.FormaIcon" /> draws.</summary>
 public static class ServiceCollectionExtensions
 {
     /// <summary>Registers the artwork this library ships, unless a host has already registered its own.</summary>

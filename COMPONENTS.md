@@ -17,10 +17,12 @@
 
 ```
 Forma.UI.Blazor/Components/
-├── FormaIcon.razor / .razor.cs / .razor.css  # draws a Forma.UI.Design.Icons.Icon as inline SVG
 ├── ✅ FormaField.razor / .razor.cs / .razor.css
 ├── ✅ FormaVisibility.razor / .razor.cs / .razor.css  # collapses content to nothing without unmounting it
 ├── FieldLabelMode.cs                     # enum: Floating, Pinned, Above, Inline
+├── (2 / 2) Design/
+│   ├── ✅ FormaIcon.razor / .razor.cs / .razor.css   # draws a Forma.UI.Design.Icons.Icon as inline SVG
+│   └── ✅ FormaEmoji.razor / .razor.cs / .razor.css  # draws a Forma.UI.Design.Emojis.Emoji from a host's provider
 ├── (6 / 6) Bars/
 │   ├── ✅ FormaCommandArea.razor / .razor.cs / .razor.css
 │   ├── ✅ FormaCommandBar.razor / .razor.cs / .razor.css
@@ -45,20 +47,21 @@ Forma.UI.Blazor/Components/
 ├── (2 / 2) Page/
 │   ├── ✅ FormaPageTitle.razor / .razor.cs
 │   └── ✅ FormaPageHead.razor / .razor.cs
-├── (3 / 3) Feedback/
+├── (5 / 6) Feedback/
 │   ├── ✅ FormaModal.razor / .razor.cs / .razor.js
 │   ├── ✅ FormaModal.razor.css
 │   ├── ModalSize.cs
 │   ├── ✅ FormaConfirmDialog.razor / .razor.cs
 │   ├── ✅ FormaConfirmDialog.razor.css
 │   ├── ✅ FormaToastContainer.razor / .razor.cs
-│   └── ✅ FormaToastContainer.razor.css
+│   ├── ✅ FormaToastContainer.razor.css
+│   ├── ✅ FormaSpinner.razor / .razor.cs / .razor.css
+│   ├── SpinnerSize.cs
+│   ├── ✅ FormaStatusBadge.razor
+│   └── FormaCapacityIndicator.razor
 ├── (2 / 2) Collections/
 │   ├── ✅ FormaDataGrid.razor
 │   └── ✅ FormaSortableList.razor
-├── (1 / 2) Indicators/
-│   ├── ✅ FormaStatusBadge.razor
-│   └── FormaCapacityIndicator.razor
 ├── (3 / 13) Buttons/
 │   ├── ButtonSize.cs
 │   ├── ButtonType.cs
