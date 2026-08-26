@@ -1,6 +1,6 @@
-namespace Forma.UI.Blazor.Tests.Emojis;
+namespace Forma.UI.Blazor.Tests.Design.Emojis;
 
-using Forma.UI.Blazor.Emojis;
+using Forma.UI.Blazor.Design.Emojis;
 using Forma.UI.Design.Emojis;
 
 public sealed class DefaultEmojiCatalogTests

@@ -31,7 +31,7 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 - Do split the family by audience: `Forma.UI.*` is one product serving the component library, while each `Forma.Framework.*` assembly stands alone — `Forma.Framework.Resources.Office` depends on `Forma.Framework.Resources.Abstractions` alone, never on anything in `Forma.UI`.
 - Do put a horizontal concern no single vertical feature owns into the matching `Forma.UI.Design.*` project when only the UI needs it, and into `Forma.Framework.Resources.Abstractions` when a consumer outside the UI needs it too.
 - Do decide by ownership, not by how many assemblies consume it: a contract a single feature owns stays with that feature in `Forma.UI.Features.Abstractions` no matter how many projects reference it, such as `IToastService` in `Feedback`.
-- Do keep a folder and its namespace in step, so `Forma.UI.Blazor/Icons/` holds `Forma.UI.Blazor.Icons` and `Forma.UI.Features.Abstractions/Feedback/` holds `Forma.UI.Features.Feedback` — the namespace is the product root plus the folder path, with the `.Abstractions` suffix dropped.
+- Do keep a folder and its namespace in step, so `Forma.UI.Blazor/Design/Icons/` holds `Forma.UI.Blazor.Design.Icons` and `Forma.UI.Features.Abstractions/Feedback/` holds `Forma.UI.Features.Feedback` — the namespace is the product root plus the folder path, with the `.Abstractions` suffix dropped.
 
 - Do make components depend on abstractions such as `IToastService`; let the host choose implementations through DI.
 - Do represent colours and other CSS values with typed values such as `CssColor.FromRgba(...)` and `CssColor.FromHex(...)`.

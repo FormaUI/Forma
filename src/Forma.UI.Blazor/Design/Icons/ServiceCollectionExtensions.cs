@@ -1,4 +1,4 @@
-namespace Forma.UI.Blazor.Icons;
+namespace Forma.UI.Blazor.Design.Icons;
 
 using Forma.UI.Design.Icons;
 

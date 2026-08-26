@@ -1,9 +1,9 @@
-namespace Forma.UI.Blazor.Tests.Icons;
+namespace Forma.UI.Blazor.Tests.Design.Icons;
 
 using System.Collections.Generic;
 using System.Linq;
 
-using Forma.UI.Blazor.Icons;
+using Forma.UI.Blazor.Design.Icons;
 using Forma.UI.Design.Icons;
 
 public sealed class DefaultIconProviderTests
