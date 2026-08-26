@@ -8,11 +8,13 @@
         <RootNamespace>Forma.UI.Features.Emojis.Twemoji</RootNamespace>
         <PackageId>2Site.Forma.UI.Features.Emojis.Twemoji</PackageId>
         <StaticWebAssetBasePath>_content/Forma.UI.Emojis.Twemoji</StaticWebAssetBasePath>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeReferencedProjectsInPackage</TargetsForTfmSpecificBuildOutput>
     </PropertyGroup>
 
     <!-- The emoji artwork ships in this package, so its notice travels with it. -->
     <ItemGroup>
+        <None Include="README.md" Pack="true" PackagePath="\" />
         <None Include="..\..\THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="\" Visible="false" />
     </ItemGroup>
 

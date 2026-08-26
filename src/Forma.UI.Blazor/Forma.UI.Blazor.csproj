@@ -8,12 +8,12 @@
         <RootNamespace>Forma.UI.Blazor</RootNamespace>
         <PackageId>2Site.Forma.UI.Blazor</PackageId>
         <StaticWebAssetBasePath>_content/Forma.UI</StaticWebAssetBasePath>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeReferencedProjectsInPackage</TargetsForTfmSpecificBuildOutput>
     </PropertyGroup>
 
-    <!-- The glyph artwork is embedded rather than fetched, so its notice travels with the package. -->
     <ItemGroup>
-        <None Include="..\..\THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="\" Visible="false" />
+        <None Include="..\..\README.md" Pack="true" PackagePath="\" Visible="false" />
     </ItemGroup>
 
     <!-- The referenced projects ship inside this package rather than as packages of their own. -->

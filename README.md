@@ -1,18 +1,20 @@
 # Forma.UI.Blazor
 
-A reusable Blazor component library — modals, toasts, pickers, tabs, data grids, and form inputs.
-Localized, RTL-ready, and JS-free apart from what the DOM cannot do without script.
+A reusable Blazor component library — modals, toasts, pickers, tabs, data grids, form inputs, a
+file explorer, and the `FormaComposer` authoring surface. Localized, RTL-ready, and JS-free apart
+from what the DOM cannot do without script.
 
 **.NET 11 · Interactive Server components.**
+
+Everything a host needs ships in one package; optional artwork packs are separate and opt-in.
+The host owns its own `App.razor` and `Routes.razor`; the package ships components, styles, and JS.
+`src/Forma.UI.Blazor.Showcase` is a complete working host to copy from.
 
 ## Install
 
 ```pwsh
 dotnet add package 2Site.Forma.UI.Blazor
 ```
-
-The host owns its own `App.razor` and `Routes.razor`; the package ships components, styles, and JS.
-`src/Forma.UI.Blazor.Showcase` is a complete working host to copy from.
 
 ## Quick start
 
@@ -28,9 +30,10 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 ```
 
-`AddFormaUI()` registers everything the components need to work — toasts, confirmation dialogs, and the
-sanitizer the composer holds content to. Each lands only if nothing is registered for it already, so
-registering your own implementation before that call replaces it and leaves the rest untouched.
+`AddFormaUI()` registers everything the components need to work — toasts, confirmation dialogs, and
+the sanitizer the composer holds content to. Each lands only if nothing is registered for it
+already, so registering your own implementation before that call replaces it and leaves the rest
+untouched.
 
 **2. Render Forma's document head from your host's `App.razor`:**
 
@@ -51,18 +54,6 @@ overrides the title set here.
 
 Set `PreloadAssets="false"` to leave out the runtime preloading, which only a WebAssembly render mode
 benefits from.
-
-The layers, for a host that would rather link them itself:
-
-| Stylesheet | Contents | Take it when |
-|------------|----------|--------------|
-| `forma-tokens.css` | Custom properties only, no selectors | Always — components read these |
-| `forma-reset.css` | Box sizing, form-element font inheritance, reduced motion | Unless your app already normalizes |
-| `forma-base.css` | Body typography and link colours | You want Forma's look; skip it if you have your own |
-| `forma-input.css` | The input box every field draws — border, radius, colours, focus ring | Whenever you use any Forma input |
-
-Retheming is one token: override `--main-color` in a stylesheet loaded after Forma's, and the hover,
-focus, and link shades follow.
 
 **3. Include the library assembly when mapping components:**
 
@@ -95,6 +86,60 @@ builder.Services.AddSingleton<IStatusBadgeCatalog>(new StatusBadgeCatalog(
 ```razor
 <FormaStatusBadge Text="Published" Status="published" />
 ```
+
+## Styling and theming
+
+`FormaPageHead` links the stylesheets for you. The layers, for a host that would rather link them
+itself:
+
+| Stylesheet | Contents | Take it when |
+|------------|----------|--------------|
+| `forma-tokens.css` | Custom properties only, no selectors | Always — components read these |
+| `forma-reset.css` | Box sizing, form-element font inheritance, reduced motion | Unless your app already normalizes |
+| `forma-base.css` | Body typography and link colours | You want Forma's look; skip it if you have your own |
+| `forma-input.css` | The input box every field draws — border, radius, colours, focus ring | Whenever you use any Forma input |
+
+Retheming is one token: override `--main-color` in a stylesheet loaded after Forma's, and the hover,
+focus, and link shades follow.
+
+## Icons
+
+`FormaIcon` draws an `Icon` as inline SVG, so a host loads no icon font. An `Icon` pairs a `Glyph`
+— named for what it means rather than for the set it is drawn from — with a `GlyphStyle`, either an
+outline or a solid shape. A bare glyph converts to an icon, so `Glyph.Save` and
+`Icon.Filled(Glyph.Save)` are both accepted wherever an icon is asked for.
+
+Artwork is resolved through `IIconProvider`, so a host can draw its own set instead. With none
+registered, `FormaIcon` draws the glyphs the reader's own fonts can depict and nothing at all for
+the rest, so a host that wants no artwork package still renders. To draw the full set, add the
+[Phosphor artwork pack](src/Forma.UI.Features.Icons.Phosphor/README.md):
+
+```pwsh
+dotnet add package 2Site.Forma.UI.Features.Icons.Phosphor
+```
+
+```csharp
+builder.Services.AddFormaPhosphorPack();
+```
+
+## Emoji
+
+`FormaEmoji` draws an emoji through `IEmojiProvider`, and `FormaEmojiPicker` browses the set an
+`IEmojiCatalog` describes. With neither registered, `FormaEmoji` falls back to the reader's own
+platform font and the picker shows its empty state, because a catalog is data nothing can stand in
+for. To draw the bundled artwork and browse the bundled catalog, add the
+[Twemoji artwork pack](src/Forma.UI.Features.Emojis.Twemoji/README.md):
+
+```pwsh
+dotnet add package 2Site.Forma.UI.Features.Emojis.Twemoji
+```
+
+```csharp
+builder.Services.AddFormaTwemojiPack();
+```
+
+Each artwork pack's own README covers what it registers, the artwork it ships, its license and
+attribution, and how to regenerate it.
 
 ## Localization
 
@@ -145,58 +190,29 @@ unprefixed and redirects `/en/page` to `/page`.
 A registered token always names a culture, so no page route may reuse one, and a URL naming a culture
 in two consecutive segments such as `/he/en/page` is answered with `400 Bad Request`.
 
-## Build, test, and run
+## Contributing
 
 ```pwsh
 dotnet build Forma.slnx
 dotnet test Forma.slnx
+dotnet format Forma.slnx --verify-no-changes
+npm test --prefix tests/Forma.UI.Blazor.Tests.Scripts
 dotnet run --project src/Forma.UI.Blazor.Showcase
 ```
 
-The showcase serves an interactive page per component, in English, Hebrew, and Spanish.
+All four checks must pass before a change is offered for review. The Showcase serves an interactive
+page per component, in English, Hebrew, and Spanish — every state a component can enter is rendered
+there, and reviewing a component means looking at it in all three cultures.
 
-## Icons
+Where to read before working:
 
-`FormaIcon` draws an `Icon` as inline SVG, so a host loads no icon font. An `Icon` pairs a `Glyph`
-— named for what it means rather than for the set it is drawn from — with a `GlyphStyle`, either an
-outline or a solid shape. A bare glyph converts to an icon, so `Glyph.Save` and
-`Icon.Filled(Glyph.Save)` are both accepted wherever an icon is asked for.
-
-Artwork is resolved through `IIconProvider`, so a host can draw its own set instead. With none
-registered, `FormaIcon` draws the glyphs the reader's own fonts can depict and nothing at all for
-the rest, so a host that wants no artwork package still renders. To draw the full set:
-
-```
-dotnet add package 2Site.Forma.UI.Features.Icons.Phosphor
-```
-
-```csharp
-builder.Services.AddFormaPhosphorPack();
-```
-
-The artwork is [Phosphor Icons](https://phosphoricons.com), used under the MIT licence reproduced
-in [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md), which ships inside that package. Regenerate
-it with `scripts/fetch-glyphs.ps1`, which reads the glyph-to-Phosphor map in `assets/phosphor.json`
-and writes the artwork to `src/Forma.UI.Features.Icons.Phosphor/Assets/glyphs.json`.
-
-## Emoji
-
-`FormaEmoji` draws an emoji through `IEmojiProvider`, and `FormaEmojiPicker` browses the set an
-`IEmojiCatalog` describes. With neither registered, `FormaEmoji` falls back to the reader's own
-platform font and the picker shows its empty state, because a catalog is data nothing can stand in
-for. To draw the bundled artwork and browse the bundled catalog:
-
-```
-dotnet add package 2Site.Forma.UI.Features.Emojis.Twemoji
-```
-
-```csharp
-builder.Services.AddFormaTwemojiPack();
-```
-
-The artwork is [Twemoji](https://github.com/jdecked/twemoji), used under CC-BY 4.0 with the
-attribution reproduced in [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md), which ships inside
-that package, and the search keywords come from [Unicode CLDR](https://cldr.unicode.org).
-Regenerate both with `scripts/fetch-emoji.ps1`.
-
-Contributor conventions live in [`CLAUDE.md`](CLAUDE.md).
+- [`CLAUDE.md`](CLAUDE.md) — the conventions: solution structure, naming, component authoring,
+  CSS, services, and the working agreement. Its `.claude/skills/` guides carry the detailed
+  standards for tests, localization, accessibility, JS interop, and Showcase pages.
+- [`COMPONENTS.md`](COMPONENTS.md) — the component inventory, each component's design notes, and
+  the build order. Work goes one component at a time, delivered whole: component, tests, and
+  Showcase page.
+- [`docs/`](docs/) — design documents for components large enough to own a plan;
+  [`docs/composer-design.md`](docs/composer-design.md) is authoritative for `FormaComposer`.
+- Per-project READMEs — the localization projects and the artwork packs each document their own
+  contract, format, or artwork pipeline.
