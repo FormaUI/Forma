@@ -1,9 +1,9 @@
-namespace Forma.UI.Blazor.Components.Explorer;
+namespace Forma.UI.Features.Explorer;
 
 using Forma.Framework.Resources;
 
 /// <summary>The folder list indexed for lookup, so browsing does not rescan it for every node it draws.</summary>
-internal sealed class ExplorerFolderTree
+public sealed class ExplorerFolderTree
 {
     private static readonly List<FolderResourceInfo> NoChildren = [];
 

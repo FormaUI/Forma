@@ -1,5 +1,4 @@
-namespace Forma.UI.Blazor.Components.Explorer;
-
+namespace Forma.UI.Features.Explorer;
 /// <summary>Answers an explorer with one window of media at a time, for collections too large to hold.</summary>
 public interface IExplorerResourcesProvider
 {

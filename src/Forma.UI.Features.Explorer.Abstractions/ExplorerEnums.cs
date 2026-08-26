@@ -1,4 +1,4 @@
-namespace Forma.UI.Blazor.Components.Explorer;
+namespace Forma.UI.Features.Explorer;
 
 /// <summary>Specifies the presentation mode for media in the explorer.</summary>
 public enum ExplorerViewMode
@@ -11,25 +11,6 @@ public enum ExplorerViewMode
 
     /// <summary>A compact multi-column list view.</summary>
     List
-}
-
-/// <summary>Specifies the field by which explorer resources are ordered.</summary>
-public enum ExplorerSortField
-{
-    /// <summary>Sort by file name.</summary>
-    Name,
-
-    /// <summary>Sort by byte size.</summary>
-    Size,
-
-    /// <summary>Sort by resource kind/type.</summary>
-    Kind,
-
-    /// <summary>Sort by when the resource was taken in.</summary>
-    DateAdded,
-
-    /// <summary>Sort by when the resource last changed.</summary>
-    DateModified
 }
 
 /// <summary>Specifies whether an explorer appends pages as the reader scrolls, and how.</summary>
@@ -63,16 +44,6 @@ public enum ExplorerDetailsColumns
 
     /// <summary>The taken in column.</summary>
     Added = 8
-}
-
-/// <summary>Specifies the sort direction for explorer resources.</summary>
-public enum ExplorerSortDirection
-{
-    /// <summary>Ascending order (A-Z, oldest first, smallest first).</summary>
-    Ascending,
-
-    /// <summary>Descending order (Z-A, newest first, largest first).</summary>
-    Descending
 }
 
 /// <summary>Specifies how large a media thumbnail renders.</summary>

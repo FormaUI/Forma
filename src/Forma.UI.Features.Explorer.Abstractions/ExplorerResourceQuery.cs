@@ -1,4 +1,4 @@
-namespace Forma.UI.Blazor.Components.Explorer;
+namespace Forma.UI.Features.Explorer;
 
 /// <summary>The window of media an explorer is asking for, described by the state the explorer itself owns.</summary>
 /// <param name="Skip">How many matching resources to pass over before the window begins.</param>

@@ -3,13 +3,14 @@ namespace Forma.UI.Blazor.Components.Composer.Dialogs;
 using Forma.Framework.Resources;
 using Forma.UI.Blazor.Components.Composer.RichTextEditor.Plugins;
 using Forma.UI.Blazor.Components.Explorer;
+using Forma.UI.Features.Explorer;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>Dialog for choosing one of the host's stored files and inserting it.</summary>
 public sealed partial class FormaComposerExplorerDialog : ComposerDialogBase
 {
-    private static readonly FormaExplorerOptions Library = new() { AsDialog = true, ShowFolderMenu = false, SelectOnOpen = true };
+    private static readonly ExplorerOptions Library = new() { AsDialog = true, ShowFolderMenu = false, SelectOnOpen = true };
 
     /// <summary>What the dialog browses, takes in, and inserts.</summary>
     [Parameter] public ExplorerPluginOptions Options { get; set; } = ExplorerPluginOptions.Default;
@@ -21,18 +22,18 @@ public sealed partial class FormaComposerExplorerDialog : ComposerDialogBase
 
     private IExplorerResourcesProvider? _resources;
     private IFileStore? _store;
-    private FormaExplorerFileOptions _fileOptions = FormaExplorerFileOptions.ReadOnly;
-    private FormaExplorerConstraints _constraints = FormaExplorerConstraints.None;
+    private ExplorerFileOptions _fileOptions = ExplorerFileOptions.ReadOnly;
+    private ExplorerConstraints _constraints = ExplorerConstraints.None;
     private ExplorerPluginOptions? _syncedOptions;
     private IReadOnlyList<ResourceInfo> _selected = [];
 
-    private static FormaExplorerOptions LibraryOptions
+    private static ExplorerOptions LibraryOptions
         => Library;
 
-    private FormaExplorerFileOptions LibraryFileOptions
+    private ExplorerFileOptions LibraryFileOptions
         => _fileOptions;
 
-    private FormaExplorerConstraints UploadConstraints
+    private ExplorerConstraints UploadConstraints
         => _constraints;
 
     /// <inheritdoc />
@@ -58,7 +59,7 @@ public sealed partial class FormaComposerExplorerDialog : ComposerDialogBase
                 ? new FilteredResources(provider, filter)
                 : provider;
 
-        _fileOptions = FormaExplorerFileOptions.ReadOnly with { AllowUpload = Options.AllowUpload && _store is not null };
+        _fileOptions = ExplorerFileOptions.ReadOnly with { AllowUpload = Options.AllowUpload && _store is not null };
 
         // What may be added falls back to what is listed, so a caller naming one kind is not asked to name it twice.
         _constraints = new() { AcceptedResourceKinds = Options.AcceptedUploadKinds ?? Options.AcceptedResourceKinds };

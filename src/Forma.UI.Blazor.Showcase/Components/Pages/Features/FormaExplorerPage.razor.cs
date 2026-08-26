@@ -3,6 +3,7 @@ namespace Forma.UI.Blazor.Showcase.Components.Pages.Features;
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
 using Forma.UI.Blazor.Components.Explorer;
+using Forma.UI.Features.Explorer;
 
 using Microsoft.AspNetCore.Components;
 
@@ -16,7 +17,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
             => store.GetPageAsync(folder(), query, cancellationToken);
     }
 
-    private readonly FormaExplorerFileOptions _fixedFolderOptions = new()
+    private readonly ExplorerFileOptions _fixedFolderOptions = new()
     {
         AllowFolderCreate = false,
         AllowFolderDelete = false,
@@ -149,7 +150,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
     private SampleMediaStore Store(IReadOnlyList<SampleResource> resources)
         => new(resources, TimeSpan.FromMilliseconds(180)) { Queried = () => InvokeAsync(StateHasChanged) };
 
-    private static readonly FormaExplorerConstraints _demoConstraints = new()
+    private static readonly ExplorerConstraints _demoConstraints = new()
     {
         AcceptedResourceKinds = "contentType:image",
         MaxFolderDepth = 2,

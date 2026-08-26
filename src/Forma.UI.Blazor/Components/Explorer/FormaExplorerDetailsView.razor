@@ -1,7 +1,8 @@
 @namespace Forma.UI.Blazor.Components.Explorer
+@using Forma.UI.Features.Explorer
 
 @{
-    var selecting = Context.Selection.IsSelectMode && !Context.Selection.HasFolders;
+    var selecting = View.Selection.IsSelectMode && !View.Selection.HasFolders;
 }
 
 <div class="forma-explorer-details-wrapper">
@@ -9,60 +10,60 @@
         <thead>
             <tr>
                 <th class="forma-explorer-column-actions"><span class="forma-explorer-visually-hidden">@(selecting ? L["Select"] : L["Actions"])</span></th>
-                <th class="forma-explorer-column-name @(Context.SortField == ExplorerSortField.Name ? "is-sorted" : "")"
+                <th class="forma-explorer-column-name @(View.SortField == ExplorerSortField.Name ? "is-sorted" : "")"
                     aria-sort="@SortState(ExplorerSortField.Name)"
-                    @onclick="() => Context.SortByAsync(ExplorerSortField.Name)">
+                    @onclick="() => Interaction.SortByAsync(ExplorerSortField.Name)">
                     <span>@L["Name"]</span>
-                    @if (Context.SortField == ExplorerSortField.Name)
+                    @if (View.SortField == ExplorerSortField.Name)
                     {
-                        <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaIcon Icon="@(Context.SortDirection == ExplorerSortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
+                        <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaIcon Icon="@(View.SortDirection == ExplorerSortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
                     }
                 </th>
                 @if (ShowsKind)
                 {
-                    <th class="forma-explorer-column-kind @(Context.SortField == ExplorerSortField.Kind ? "is-sorted" : "")"
+                    <th class="forma-explorer-column-kind @(View.SortField == ExplorerSortField.Kind ? "is-sorted" : "")"
                         aria-sort="@SortState(ExplorerSortField.Kind)"
-                        @onclick="() => Context.SortByAsync(ExplorerSortField.Kind)">
+                        @onclick="() => Interaction.SortByAsync(ExplorerSortField.Kind)">
                         <span>@L["Type"]</span>
-                        @if (Context.SortField == ExplorerSortField.Kind)
+                        @if (View.SortField == ExplorerSortField.Kind)
                         {
-                            <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaIcon Icon="@(Context.SortDirection == ExplorerSortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
+                            <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaIcon Icon="@(View.SortDirection == ExplorerSortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
                         }
                     </th>
                 }
                 @if (ShowsSize)
                 {
-                    <th class="forma-explorer-column-size @(Context.SortField == ExplorerSortField.Size ? "is-sorted" : "")"
+                    <th class="forma-explorer-column-size @(View.SortField == ExplorerSortField.Size ? "is-sorted" : "")"
                         aria-sort="@SortState(ExplorerSortField.Size)"
-                        @onclick="() => Context.SortByAsync(ExplorerSortField.Size)">
+                        @onclick="() => Interaction.SortByAsync(ExplorerSortField.Size)">
                         <span>@L["Size"]</span>
-                        @if (Context.SortField == ExplorerSortField.Size)
+                        @if (View.SortField == ExplorerSortField.Size)
                         {
-                            <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaIcon Icon="@(Context.SortDirection == ExplorerSortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
+                            <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaIcon Icon="@(View.SortDirection == ExplorerSortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
                         }
                     </th>
                 }
                 @if (ShowsModified)
                 {
-                    <th class="forma-explorer-column-modified @(Context.SortField == ExplorerSortField.DateModified ? "is-sorted" : "")"
+                    <th class="forma-explorer-column-modified @(View.SortField == ExplorerSortField.DateModified ? "is-sorted" : "")"
                         aria-sort="@SortState(ExplorerSortField.DateModified)"
-                        @onclick="() => Context.SortByAsync(ExplorerSortField.DateModified)">
+                        @onclick="() => Interaction.SortByAsync(ExplorerSortField.DateModified)">
                         <span>@L["Modified"]</span>
-                        @if (Context.SortField == ExplorerSortField.DateModified)
+                        @if (View.SortField == ExplorerSortField.DateModified)
                         {
-                            <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaIcon Icon="@(Context.SortDirection == ExplorerSortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
+                            <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaIcon Icon="@(View.SortDirection == ExplorerSortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
                         }
                     </th>
                 }
                 @if (ShowsAdded)
                 {
-                    <th class="forma-explorer-column-added @(Context.SortField == ExplorerSortField.DateAdded ? "is-sorted" : "")"
+                    <th class="forma-explorer-column-added @(View.SortField == ExplorerSortField.DateAdded ? "is-sorted" : "")"
                         aria-sort="@SortState(ExplorerSortField.DateAdded)"
-                        @onclick="() => Context.SortByAsync(ExplorerSortField.DateAdded)">
+                        @onclick="() => Interaction.SortByAsync(ExplorerSortField.DateAdded)">
                         <span>@L["Added"]</span>
-                        @if (Context.SortField == ExplorerSortField.DateAdded)
+                        @if (View.SortField == ExplorerSortField.DateAdded)
                         {
-                            <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaIcon Icon="@(Context.SortDirection == ExplorerSortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
+                            <span class="forma-explorer-sort-arrow" aria-hidden="true"><FormaIcon Icon="@(View.SortDirection == ExplorerSortDirection.Ascending ? Glyph.ArrowUp : Glyph.ArrowDown)" /></span>
                         }
                     </th>
                 }
@@ -71,19 +72,19 @@
         <tbody>
             @foreach (var resource in Resources)
             {
-                var selected = Context.Selection.IsSelected(resource);
+                var selected = View.Selection.IsSelected(resource);
 
                 <tr class="forma-explorer-details-row @(selected ? "is-selected" : "")"
                     draggable="true"
-                    @ondragstart="() => Context.BeginDrag(resource)">
+                    @ondragstart="() => Interaction.BeginDrag(resource)">
                     <td class="forma-explorer-cell-actions">
                         @if (selecting)
                         {
                             <button type="button"
                                     class="forma-explorer-table-select @(selected ? "is-checked" : "")"
-                                    aria-label="@Context.SelectLabel(resource)"
+                                    aria-label="@resource.SelectLabel(L, View.Selection)"
                                     aria-pressed="@(selected ? "true" : "false")"
-                                    @onclick="() => Context.ToggleSelectAsync(resource)">
+                                    @onclick="() => Interaction.ToggleSelectAsync(resource)">
                                 <FormaIcon Icon="Glyph.Check" />
                             </button>
                         }
@@ -95,8 +96,8 @@
                     <td class="forma-explorer-cell-name">
                         <button type="button"
                                 class="forma-explorer-name-wrapper"
-                                aria-label="@Context.ActivateLabel(resource)"
-                                @onclick="() => Context.ActivateAsync(resource)">
+                                aria-label="@resource.ActivateLabel(L, View.Selection)"
+                                @onclick="() => Interaction.ActivateAsync(resource)">
                             <FormaExplorerThumbnail Resource="resource" Size="ExplorerThumbnailSize.Cell" />
                             <span class="forma-explorer-details-name-text" title="@resource.Name">@resource.Name</span>
                         </button>

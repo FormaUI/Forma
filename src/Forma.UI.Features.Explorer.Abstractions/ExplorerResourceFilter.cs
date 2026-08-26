@@ -1,4 +1,4 @@
-namespace Forma.UI.Blazor.Components.Explorer;
+namespace Forma.UI.Features.Explorer;
 
 using System.IO.Enumeration;
 
@@ -9,7 +9,7 @@ using Forma.Framework.Resources;
 /// Written either as <c>globs:*.jpg;*.pdf</c> or as <c>contentType:image;video</c>. A content type
 /// matches a resource's own media type, and failing that the kind its type stands for.
 /// </remarks>
-internal sealed class ExplorerResourceFilter
+public sealed class ExplorerResourceFilter
 {
     private const string ContentTypePrefix = "contentType:";
 

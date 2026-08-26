@@ -37,6 +37,7 @@
         <ProjectReference Include="..\Forma.UI.Features.Toolbar.Abstractions\Forma.UI.Features.Toolbar.Abstractions.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.UI.Features.Composer.Abstractions\Forma.UI.Features.Composer.Abstractions.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.UI.Features.Composer\Forma.UI.Features.Composer.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.UI.Features.Explorer.Abstractions\Forma.UI.Features.Explorer.Abstractions.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.UI.Design.Css\Forma.UI.Design.Css.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.UI.Design.Icons\Forma.UI.Design.Icons.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.UI.Design.Emojis\Forma.UI.Design.Emojis.csproj" PrivateAssets="all" />

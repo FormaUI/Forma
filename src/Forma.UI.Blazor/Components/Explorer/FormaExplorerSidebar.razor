@@ -1,7 +1,9 @@
 @namespace Forma.UI.Blazor.Components.Explorer
 @using Forma.UI.Blazor.Components.Layout
+@using Forma.UI.Features.Explorer
 
-<CascadingValue Value="this" IsFixed="true">
+<CascadingValue Value="(IExplorerSidebarView)this" IsFixed="true">
+<CascadingValue Value="(IExplorerSidebarInteraction)this" IsFixed="true">
 <aside class="forma-explorer-sidebar" aria-labelledby="@_titleId">
     <div class="forma-explorer-sidebar-toolbar">
         <span class="forma-explorer-sidebar-title" id="@_titleId">@L["Folders"]</span>
@@ -32,7 +34,7 @@
                  style="--forma-explorer-folder-depth: 0"
                  @ondragover="HandleDragOver"
                  @ondragover:preventDefault="true"
-                 @ondrop="() => HandleDropOnFolderAsync(null)">
+                 @ondrop="() => DropOnFolderAsync(null)">
                 <span class="forma-explorer-folder-twisty is-empty" aria-hidden="true"></span>
                 <button type="button"
                         class="forma-explorer-folder-target"
@@ -58,4 +60,5 @@
                    Max="MaxTreeHeight"
                    Label="@L["Resize Folder List"]" />
 </aside>
+</CascadingValue>
 </CascadingValue>

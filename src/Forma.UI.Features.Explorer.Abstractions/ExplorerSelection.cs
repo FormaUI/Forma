@@ -1,9 +1,9 @@
-namespace Forma.UI.Blazor.Components.Explorer;
+namespace Forma.UI.Features.Explorer;
 
 using Forma.Framework.Resources;
 
-/// <summary>The media resources an explorer has selected, and whether it is currently in selection mode.</summary>
-public sealed class ExplorerSelection
+/// <summary>The media resources an explorer has selected, and the rules deciding what a further choice does to them.</summary>
+public sealed class ExplorerSelection : IExplorerSelectionView
 {
     // The selection outlives the window a provider-backed explorer holds, so it keeps the resources rather than keys into a list it may no longer have.
     private readonly Dictionary<string, ResourceInfo> _resources = new(StringComparer.Ordinal);
@@ -14,25 +14,25 @@ public sealed class ExplorerSelection
 
     private IReadOnlyList<FolderResourceInfo>? _resolvedFolders;
 
-    /// <summary>Whether the explorer shows selection controls instead of activating previews.</summary>
-    public bool IsSelectMode { get; internal set; }
+    /// <inheritdoc />
+    public bool IsSelectMode { get; set; }
 
     /// <summary>How many resources may be selected at once; zero for unlimited.</summary>
-    public int MaxSelection { get; internal set; }
+    public int MaxSelection { get; set; }
 
-    /// <summary>How many media resources and folders are selected together.</summary>
+    /// <inheritdoc />
     public int Count
         => _resources.Count + _folders.Count;
 
-    /// <summary>Whether any media resource is selected.</summary>
+    /// <inheritdoc />
     public bool HasResources
         => _resources.Count > 0;
 
-    /// <summary>Whether any folder is selected.</summary>
+    /// <inheritdoc />
     public bool HasFolders
         => _folders.Count > 0;
 
-    /// <summary>Whether the resource is selected.</summary>
+    /// <inheritdoc />
     public bool IsSelected(ResourceInfo resource)
     {
         ArgumentNullException.ThrowIfNull(resource);
@@ -40,7 +40,7 @@ public sealed class ExplorerSelection
         return _resources.ContainsKey(resource.Source);
     }
 
-    /// <summary>Whether the folder is selected.</summary>
+    /// <inheritdoc />
     public bool IsFolderSelected(FolderResourceInfo folder)
     {
         ArgumentNullException.ThrowIfNull(folder);
@@ -56,8 +56,10 @@ public sealed class ExplorerSelection
     public IReadOnlyList<ResourceInfo> Resolve()
         => _resolvedResources ??= [.. _resources.Values];
 
-    internal void Toggle(ResourceInfo resource)
+    public void Toggle(ResourceInfo resource)
     {
+        ArgumentNullException.ThrowIfNull(resource);
+
         Invalidate();
 
         // Media and folders are deleted through different contracts, so only one kind is ever selected at a time.
@@ -79,8 +81,10 @@ public sealed class ExplorerSelection
         }
     }
 
-    internal void ToggleFolder(FolderResourceInfo folder)
+    public void ToggleFolder(FolderResourceInfo folder)
     {
+        ArgumentNullException.ThrowIfNull(folder);
+
         Invalidate();
         _resources.Clear();
 
@@ -90,21 +94,25 @@ public sealed class ExplorerSelection
         }
     }
 
-    internal void Remove(ResourceInfo resource)
+    public void Remove(ResourceInfo resource)
     {
+        ArgumentNullException.ThrowIfNull(resource);
+
         Invalidate();
         _resources.Remove(resource.Source);
     }
 
-    internal void Clear()
+    public void Clear()
     {
         Invalidate();
         _resources.Clear();
         _folders.Clear();
     }
 
-    internal void Replace(IEnumerable<ResourceInfo> resources)
+    public void Replace(IEnumerable<ResourceInfo> resources)
     {
+        ArgumentNullException.ThrowIfNull(resources);
+
         Invalidate();
         _resources.Clear();
         _folders.Clear();

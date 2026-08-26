@@ -1,7 +1,7 @@
 namespace Forma.UI.Blazor.Showcase.Features.Media;
 
 using Forma.Framework.Resources;
-using Forma.UI.Blazor.Components.Explorer;
+using Forma.UI.Features.Explorer;
 
 /// <summary>The stored images the composer's insert dialog browses in this application.</summary>
 internal sealed class ShowcaseImageLibrary : IExplorerResourcesProvider

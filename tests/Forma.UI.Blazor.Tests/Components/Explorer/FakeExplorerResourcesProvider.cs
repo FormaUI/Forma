@@ -1,7 +1,7 @@
 namespace Forma.UI.Blazor.Tests.Components.Explorer;
 
 using Forma.Framework.Resources;
-using Forma.UI.Blazor.Components.Explorer;
+using Forma.UI.Features.Explorer;
 
 /// <summary>An in-memory provider that records the queries it was asked, for tests about what an explorer fetches.</summary>
 public sealed class FakeExplorerResourcesProvider(IReadOnlyList<ResourceInfo> resources) : IExplorerResourcesProvider

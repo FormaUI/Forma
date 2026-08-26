@@ -5,8 +5,10 @@
 @using Forma.UI.Blazor.Components.Files
 @using Forma.UI.Blazor.Components.Layout
 @using Forma.UI.Blazor.Components.Navigation
+@using Forma.UI.Features.Explorer
 
-<CascadingValue Value="_context" IsFixed="false">
+<CascadingValue Value="(IExplorerView)this" IsFixed="true">
+<CascadingValue Value="(IExplorerInteraction)this" IsFixed="true">
 <div class="forma-explorer @(Options.Resizable ? "is-resizable" : "") @(Options.AsDialog ? "is-dialog" : "")">
 <FormaCommandArea Class="forma-explorer-header">
     <!-- Top Explorer Address Bar -->
@@ -15,7 +17,7 @@
                             CanGoForward="CanGoForward"
                             CanGoUp="CanGoUp"
                             CurrentFolder="CurrentFolder"
-                            Folders="Folders ?? []"
+                            FolderTree="FolderTree"
                             ShowFolderMenu="Options.ShowFolderMenu"
                             Placeholder="@SearchPlaceholder"
                             SearchQuery="@_searchQuery"
@@ -28,10 +30,10 @@
                             OnSearchQueryChanged="HandleSearchQueryChangedAsync" />
 
     <!-- Action & View Toolbar -->
-    <FormaExplorerToolbar IsSelectMode="_context.Selection.IsSelectMode"
+    <FormaExplorerToolbar IsSelectMode="_selection.IsSelectMode"
                          CanLeaveSelectMode="@(!Options.SelectOnOpen)"
                          FileOptions="FileOptions"
-                         SelectedCount="_context.Selection.Count"
+                         SelectedCount="_selection.Count"
                          SortDirection="_sortDirection"
                          SortField="_sortField"
                          ViewMode="_viewMode"
@@ -84,6 +86,7 @@
             <FormaExplorerSidebar CurrentFolder="CurrentFolder"
                                  FileOptions="FileOptions"
                                  Folders="Folders"
+                                 FolderTree="FolderTree"
                                  TotalCount="TotalCount ?? Resources?.Count ?? MatchingCount ?? 0"
                                  OnFolderDelete="OpenFolderDeleteDialog"
                                  OnFolderDragStart="folder => _draggedFolder = folder"
@@ -336,4 +339,5 @@
         </FormaModal>
     }
 </div>
+</CascadingValue>
 </CascadingValue>

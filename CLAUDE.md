@@ -62,7 +62,8 @@ A project's references are part of its contract, because every consumer inherits
 - Do prefix component tags with `Forma`: `<FormaModal>`, `<FormaDataGrid>`.
 - Do prefix CSS classes with `forma-`: `.forma-toggle-switch-track`.
 - Do leave C# services, enums, and records unprefixed because namespaces disambiguate them: `ToastService`, `ModalSize`, `BreadcrumbItem`.
-- Do give a supporting type its owning folder's name as a prefix only where that reads well and adds meaning, as `ExplorerAction`, `ExplorerContext`, and `ExplorerSelection` do against `System.Action` and a bare `Context`; `Collections/` needs no `CollectionsXxx` and takes none.
+- Do give a supporting type its owning feature's name as a prefix only where that reads well and adds meaning, as `ExplorerAction` and `ExplorerSelection` do against `System.Action` and a bare `Selection`; `Collections/` needs no `CollectionsXxx` and takes none.
+- Don't carry the `Forma` component prefix on a type that is not a component, which is why a feature's options record is `ExplorerOptions` rather than `FormaExplorerOptions`.
 - Do find a better name when a prefix is needed to disambiguate but reads badly.
 - Do call a thing Forma ships a **component**, and raw HTML an **element** — one word per concept. "Control" is Web Forms vocabulary inherited from Coi; keep it only in `aria-controls` and in descriptions of Coi's own markup.
 - Don't apply one naming convention indiscriminately across Razor tags, CSS classes, and C# types.
@@ -143,6 +144,23 @@ Components/{Category}/
 - Don't use `@code` blocks in library components.
 - Don't file such a component under a category naming its subject matter instead, the way `Files` would swallow `Explorer`.
 - Don't put component-specific styles in global stylesheets or scatter supporting types into unrelated shared folders.
+
+## View and interaction
+
+A component whose sub-components only work inside it still has to hand them state and let them act on it. Split that contract in two, naming both halves for the **subject** the contract describes rather than for its place in a hierarchy, because the split is worth making wherever reading and acting want separating and the subject is not always a parent.
+
+- Do declare `I{Subject}View` for everything a consumer reads and `I{Subject}Interaction` for everything a consumer invokes.
+- Do have the subject implement both itself, so a member returns the field or parameter the subject already owns and there is nothing to copy and nothing to keep in step.
+- Do implement the members explicitly, which keeps a public component from growing public surface for an internal contract.
+- Do route every member that changes state through one private helper on the subject that changes it and then reports it, so a call site cannot do the one without the other.
+- Do put the pair with the feature the subject belongs to rather than beside the component implementing it, so the component folder holds components and the vocabulary they speak lives in `Forma.UI.Features.{Feature}.Abstractions`.
+- Do give the pair the visibility its assembly implies: `internal` while it sits beside its only implementer, `public` once it ships from a feature's `.Abstractions` half.
+- Do let a consumer talk to its immediate subject alone, and have a subject that is itself a consumer re-expose what its own consumers need.
+- Do let a consumer resolve its own localization through `IStringLocale<T>`.
+- Do cascade the two interfaces as two values where the consumers are Blazor children, and prefer a plain `[Parameter]` wherever the child is reachable directly in the subject's markup.
+- Don't mirror the subject's parameters onto a separate object, which drifts the moment a parameter is added and no test can catch it.
+- Don't pass label factories or other closures over the subject as data; they are indirection for something the consumer can resolve itself.
+- Don't reach past the immediate subject to the one behind it.
 
 ## Component authoring
 

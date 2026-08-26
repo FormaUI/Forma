@@ -1,13 +1,13 @@
-namespace Forma.UI.Blazor.Components.Explorer;
+namespace Forma.UI.Features.Explorer;
 
 /// <summary>Which operations a <see cref="FormaExplorer"/> offers on the media and folders it lists.</summary>
-public sealed record FormaExplorerFileOptions
+public sealed record ExplorerFileOptions
 {
     /// <summary>Every operation offered.</summary>
-    public static FormaExplorerFileOptions Default { get; } = new();
+    public static ExplorerFileOptions Default { get; } = new();
 
     /// <summary>Browsing and selection alone, with nothing that changes what is stored.</summary>
-    public static FormaExplorerFileOptions ReadOnly { get; } = new()
+    public static ExplorerFileOptions ReadOnly { get; } = new()
     {
         AllowDelete = false,
         AllowRename = false,

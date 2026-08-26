@@ -4,6 +4,7 @@ using System.Globalization;
 
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
+using Forma.UI.Features.Explorer;
 
 using Microsoft.AspNetCore.Components;
 
@@ -13,28 +14,30 @@ public sealed partial class FormaExplorerDetailsView : ComponentBase
     /// <summary>The collection of media resources to display.</summary>
     [Parameter] public IReadOnlyList<ResourceInfo> Resources { get; set; } = [];
 
-    [CascadingParameter] private ExplorerContext Context { get; set; } = default!;
+    [CascadingParameter] private IExplorerView View { get; set; } = default!;
+
+    [CascadingParameter] private IExplorerInteraction Interaction { get; set; } = default!;
 
     [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
 
     private const string Placeholder = "—";
 
     private bool ShowsKind
-        => Context.Options.DetailsColumns.HasFlag(ExplorerDetailsColumns.Kind);
+        => View.Options.DetailsColumns.HasFlag(ExplorerDetailsColumns.Kind);
 
     private bool ShowsSize
-        => Context.Options.DetailsColumns.HasFlag(ExplorerDetailsColumns.Size);
+        => View.Options.DetailsColumns.HasFlag(ExplorerDetailsColumns.Size);
 
     private bool ShowsModified
-        => Context.Options.DetailsColumns.HasFlag(ExplorerDetailsColumns.Modified);
+        => View.Options.DetailsColumns.HasFlag(ExplorerDetailsColumns.Modified);
 
     private bool ShowsAdded
-        => Context.Options.DetailsColumns.HasFlag(ExplorerDetailsColumns.Added);
+        => View.Options.DetailsColumns.HasFlag(ExplorerDetailsColumns.Added);
 
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        if (Context is null)
+        if (View is null || Interaction is null)
         {
             throw new InvalidOperationException($"{nameof(FormaExplorerDetailsView)} must be rendered inside a {nameof(FormaExplorer)}.");
         }
@@ -45,11 +48,11 @@ public sealed partial class FormaExplorerDetailsView : ComponentBase
 
     private string SortState(ExplorerSortField field)
     {
-        if (Context.SortField != field)
+        if (View.SortField != field)
         {
             return "none";
         }
 
-        return Context.SortDirection == ExplorerSortDirection.Ascending ? "ascending" : "descending";
+        return View.SortDirection == ExplorerSortDirection.Ascending ? "ascending" : "descending";
     }
 }

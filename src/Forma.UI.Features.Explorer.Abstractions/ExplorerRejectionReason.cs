@@ -1,4 +1,4 @@
-namespace Forma.UI.Blazor.Components.Explorer;
+namespace Forma.UI.Features.Explorer;
 
 /// <summary>Why an explorer refused to accept a resource.</summary>
 public enum ExplorerRejectionReason

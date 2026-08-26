@@ -1,4 +1,4 @@
-namespace Forma.UI.Blazor.Components.Explorer;
+namespace Forma.UI.Features.Explorer;
 
 using Forma.Framework.Resources;
 using Forma.UI.Design.Icons;

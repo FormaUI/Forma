@@ -2,6 +2,7 @@
 @attribute [ShowcasePage("FormaExplorer")]
 @rendermode InteractiveServer
 @using Forma.UI.Blazor.Components.Explorer
+@using Forma.UI.Features.Explorer
 
 <h1>FormaExplorer</h1>
 <p class="description">@L["A manager for media already on the server, in the shape of a resource explorer: a dense thumbnail grid, folders, selection, pagination, upload, and enlargement through FormaFileViewer."]</p>
@@ -67,19 +68,19 @@
         </fieldset>
         <FormaExplorer Resources="_allMedia"
                       ViewMode="ExplorerViewMode.Details"
-                      Options="@(new FormaExplorerOptions { DetailsColumns = _detailsColumns, ShowSidebar = false })" />
+                      Options="@(new ExplorerOptions { DetailsColumns = _detailsColumns, ShowSidebar = false })" />
     </div>
 </div>
 
 <div class="demo-section">
     <h2>@L["Read-only explorer"]</h2>
-    <p class="description">@L["With FormaExplorerFileOptions.ReadOnly, browsing and selection remain while upload, rename, delete, and every folder action disappear."]</p>
+    <p class="description">@L["With ExplorerFileOptions.ReadOnly, browsing and selection remain while upload, rename, delete, and every folder action disappear."]</p>
     <div class="demo-box">
         <FormaExplorer ResourcesProvider="@(ProviderFor("readonly"))"
                       Folders="_sampleFolders"
                       CurrentFolder="@(CurrentFolderFor("readonly"))"
                       TotalCount="_allMedia.Count"
-                      FileOptions="FormaExplorerFileOptions.ReadOnly"
+                      FileOptions="ExplorerFileOptions.ReadOnly"
                       OnFolderChanged="@(folder => HandleFolderChangedAsync("readonly", folder))"
                       SelectedChanged="@(resources => HandleSelectedAsync("readonly", resources))" />
         <ul class="demo-log">
@@ -141,7 +142,7 @@
                       Folders="_sampleFolders"
                       CurrentFolder="@(CurrentFolderFor("nosidebar"))"
                       TotalCount="_allMedia.Count"
-                      Options="@(new FormaExplorerOptions { ShowSidebar = false })"
+                      Options="@(new ExplorerOptions { ShowSidebar = false })"
                       OnFolderChanged="@(folder => HandleFolderChangedAsync("nosidebar", folder))" />
     </div>
 </div>
@@ -154,7 +155,7 @@
                       Folders="_sampleFolders"
                       CurrentFolder="@(CurrentFolderFor("nomenu"))"
                       TotalCount="_allMedia.Count"
-                      Options="@(new FormaExplorerOptions { ShowFolderMenu = false })"
+                      Options="@(new ExplorerOptions { ShowFolderMenu = false })"
                       OnFolderChanged="@(folder => HandleFolderChangedAsync("nomenu", folder))" />
     </div>
 </div>
@@ -193,7 +194,7 @@
     <h2>@L["Infinite scrolling explorer"]</h2>
     <p class="description">@L["ExplorerInfiniteScrollMode.Manual appends the next page as the reader nears the end, and offers a button for anyone not using a pointer. The media scrolls inside the panel, so the toolbar and folder tree stay put."]</p>
     <div class="demo-box">
-        <FormaExplorer ResourcesProvider="@(ProviderFor("infinite"))" PageSize="24" Options="@(new FormaExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Manual })" />
+        <FormaExplorer ResourcesProvider="@(ProviderFor("infinite"))" PageSize="24" Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Manual })" />
     </div>
 </div>
 
@@ -203,6 +204,6 @@
     <div class="demo-box">
         <FormaExplorer ResourcesProvider="@(ProviderFor("infinite"))"
                       PageSize="24"
-                      Options="@(new FormaExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Automatic })" />
+                      Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Automatic })" />
     </div>
 </div>

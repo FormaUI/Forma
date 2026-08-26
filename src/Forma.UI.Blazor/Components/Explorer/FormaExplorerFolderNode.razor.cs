@@ -2,6 +2,7 @@ namespace Forma.UI.Blazor.Components.Explorer;
 
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
+using Forma.UI.Features.Explorer;
 
 using Microsoft.AspNetCore.Components;
 
@@ -14,9 +15,9 @@ public sealed partial class FormaExplorerFolderNode : ComponentBase
     /// <summary>How many levels below the root this node sits, driving its indent.</summary>
     [Parameter] public int Depth { get; set; }
 
-    [CascadingParameter] private FormaExplorerSidebar Sidebar { get; set; } = default!;
+    [CascadingParameter] private IExplorerSidebarView Sidebar { get; set; } = default!;
 
-    [CascadingParameter] private ExplorerContext Context { get; set; } = default!;
+    [CascadingParameter] private IExplorerSidebarInteraction Interaction { get; set; } = default!;
 
     [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
 
@@ -26,7 +27,7 @@ public sealed partial class FormaExplorerFolderNode : ComponentBase
         ArgumentNullException.ThrowIfNull(Folder);
         ArgumentOutOfRangeException.ThrowIfNegative(Depth);
 
-        if (Sidebar is null)
+        if (Sidebar is null || Interaction is null)
         {
             throw new InvalidOperationException($"{nameof(FormaExplorerFolderNode)} must be rendered inside a {nameof(FormaExplorerSidebar)}.");
         }

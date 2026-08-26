@@ -3,6 +3,7 @@ namespace Forma.UI.Blazor.Components.Explorer;
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
 using Forma.UI.Blazor.Components.Navigation;
+using Forma.UI.Features.Explorer;
 
 using Microsoft.AspNetCore.Components;
 
@@ -24,10 +25,8 @@ public sealed partial class FormaExplorerAddressBar : ComponentBase
     /// <summary>The currently active folder, or null for root.</summary>
     [Parameter] public FolderResourceInfo? CurrentFolder { get; set; }
 
-    /// <summary>Every known folder, used to list a breadcrumb level's children.</summary>
-    [Parameter] public IReadOnlyList<FolderResourceInfo> Folders { get; set; } = [];
-
-    [CascadingParameter] private ExplorerContext Context { get; set; } = default!;
+    /// <summary>Every known folder indexed, used to list a breadcrumb level's children.</summary>
+    [Parameter] public ExplorerFolderTree FolderTree { get; set; } = ExplorerFolderTree.Empty;
 
     /// <summary>Raised when the back button is clicked.</summary>
     [Parameter] public EventCallback OnBack { get; set; }
@@ -103,7 +102,7 @@ public sealed partial class FormaExplorerAddressBar : ComponentBase
     }
 
     private IReadOnlyList<FolderResourceInfo> ChildrenOf(string? parent)
-        => Context.Folders.ChildrenOf(parent);
+        => FolderTree.ChildrenOf(parent);
 
     private string SearchPlaceholder
     {

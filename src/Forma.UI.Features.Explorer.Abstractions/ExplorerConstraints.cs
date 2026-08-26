@@ -1,10 +1,10 @@
-namespace Forma.UI.Blazor.Components.Explorer;
+namespace Forma.UI.Features.Explorer;
 
-/// <summary>What a <see cref="FormaExplorer"/> refuses, each ceiling unlimited when left at zero. Every member pairs with a <see cref="ExplorerRejectionReason"/>.</summary>
-public sealed record FormaExplorerConstraints
+/// <summary>What an explorer refuses, each ceiling unlimited when left at zero. Every member pairs with a <see cref="ExplorerRejectionReason"/>.</summary>
+public sealed record ExplorerConstraints
 {
     /// <summary>Nothing refused.</summary>
-    public static FormaExplorerConstraints None { get; } = new();
+    public static ExplorerConstraints None { get; } = new();
 
     /// <summary>Which resources may be added, as <c>globs:*.jpg;*.pdf</c> or <c>contentType:image;video</c>; anything when null.</summary>
     public string? AcceptedResourceKinds { get; init; }

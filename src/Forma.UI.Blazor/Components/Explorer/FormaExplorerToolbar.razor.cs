@@ -3,6 +3,7 @@ namespace Forma.UI.Blazor.Components.Explorer;
 using Forma.Framework.Localization;
 using Forma.UI.Blazor.Components.Buttons;
 using Forma.UI.Design.Icons;
+using Forma.UI.Features.Explorer;
 
 using Microsoft.AspNetCore.Components;
 
@@ -43,7 +44,7 @@ public sealed partial class FormaExplorerToolbar : ComponentBase
     [Parameter] public EventCallback<ExplorerViewMode> ViewModeChanged { get; set; }
 
     /// <summary>Which operations the toolbar offers.</summary>
-    [Parameter] public FormaExplorerFileOptions FileOptions { get; set; } = FormaExplorerFileOptions.Default;
+    [Parameter] public ExplorerFileOptions FileOptions { get; set; } = ExplorerFileOptions.Default;
 
     /// <summary>Number of currently selected resources.</summary>
     [Parameter] public int SelectedCount { get; set; }

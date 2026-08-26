@@ -3,7 +3,6 @@ using Forma.Framework.Localization.Json;
 using Forma.Framework.Resources;
 using Forma.Framework.Resources.Markdown;
 using Forma.Framework.Resources.Office;
-using Forma.UI.Blazor.Components.Explorer;
 using Forma.UI.Blazor.Design.Emojis;
 using Forma.UI.Blazor.Design.Icons;
 using Forma.UI.Blazor.Globalization;
@@ -12,6 +11,7 @@ using Forma.UI.Blazor.Showcase.Features.Media;
 using Forma.UI.Blazor.Showcase.Features.Upload;
 using Forma.UI.Design.Css;
 using Forma.UI.Design.Icons;
+using Forma.UI.Features.Explorer;
 using Forma.UI.Features.Feedback;
 using Forma.UI.Features.Media;
 

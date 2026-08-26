@@ -22,6 +22,7 @@
         <ProjectReference Include="..\..\src\Forma.UI.Blazor\Forma.UI.Blazor.csproj" />
         <ProjectReference Include="..\..\src\Forma.UI.Features.Feedback\Forma.UI.Features.Feedback.csproj" />
         <ProjectReference Include="..\..\src\Forma.UI.Features.Toolbar.Abstractions\Forma.UI.Features.Toolbar.Abstractions.csproj" />
+        <ProjectReference Include="..\..\src\Forma.UI.Features.Explorer.Abstractions\Forma.UI.Features.Explorer.Abstractions.csproj" />
         <ProjectReference Include="..\..\src\Forma.UI.Features.Composer\Forma.UI.Features.Composer.csproj" />
         <ProjectReference Include="..\..\src\Forma.UI.Features.Composer.Abstractions\Forma.UI.Features.Composer.Abstractions.csproj" />
         <ProjectReference Include="..\..\src\Forma.UI.Design.Css\Forma.UI.Design.Css.csproj" />

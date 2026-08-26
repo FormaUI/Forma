@@ -1,10 +1,10 @@
-namespace Forma.UI.Blazor.Components.Explorer;
+namespace Forma.UI.Features.Explorer;
 
 /// <summary>How a <see cref="FormaExplorer"/> presents itself: which surfaces it shows, and how it moves through a collection.</summary>
-public sealed record FormaExplorerOptions
+public sealed record ExplorerOptions
 {
     /// <summary>The standard presentation.</summary>
-    public static FormaExplorerOptions Default { get; } = new();
+    public static ExplorerOptions Default { get; } = new();
 
     /// <summary>Whether the explorer is presented as dialog content, without a frame of its own.</summary>
     public bool AsDialog { get; init; }

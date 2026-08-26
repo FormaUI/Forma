@@ -3,6 +3,7 @@
 @using Forma.UI.Blazor.Components.Buttons
 @using Forma.UI.Blazor.Components.Explorer
 @using Forma.UI.Blazor.Components.Files
+@using Forma.UI.Features.Explorer
 
 @code {
     public sealed class Component
@@ -31,7 +32,7 @@
                 new DocumentResourceInfo("https://example.com/notes.pdf"),
                 new AudioResourceInfo("https://example.com/theme.wav")
             ];
-            var constraints = new FormaExplorerConstraints { AcceptedResourceKinds = "globs:*.jpg;*.pdf" };
+            var constraints = new ExplorerConstraints { AcceptedResourceKinds = "globs:*.jpg;*.pdf" };
 
             // Act
             var cut = ctx.Render(@<FormaExplorer Resources="resources" Constraints="constraints" />);
@@ -52,7 +53,7 @@
                 new VideoResourceInfo("https://example.com/clip.mp4") { ContentType = "video/mp4" },
                 new DocumentResourceInfo("https://example.com/notes.pdf") { ContentType = "application/pdf" }
             ];
-            var constraints = new FormaExplorerConstraints { AcceptedResourceKinds = "contentType:image;video" };
+            var constraints = new ExplorerConstraints { AcceptedResourceKinds = "contentType:image;video" };
 
             // Act
             var cut = ctx.Render(@<FormaExplorer Resources="resources" Constraints="constraints" />);
@@ -72,7 +73,7 @@
                 new ImageResourceInfo("https://example.com/photo-01.jpg"),
                 new ImageResourceInfo("https://example.com/render-01.jpg")
             ];
-            var constraints = new FormaExplorerConstraints { AcceptedResourceKinds = "globs:photo-*.jpg" };
+            var constraints = new ExplorerConstraints { AcceptedResourceKinds = "globs:photo-*.jpg" };
 
             // Act
             var cut = ctx.Render(@<FormaExplorer Resources="resources" Constraints="constraints" />);
@@ -88,7 +89,7 @@
             // Arrange
             using var ctx = new FormaExplorerTests();
             IReadOnlyList<FolderResourceInfo> folders = [new("races") { Name = "Races" }];
-            var constraints = new FormaExplorerConstraints { MaxFolderRootCount = 1 };
+            var constraints = new ExplorerConstraints { MaxFolderRootCount = 1 };
             ExplorerRejection? rejection = null;
             ExplorerFolderCreateRequest? created = null;
 
@@ -119,7 +120,7 @@
                 new("races") { Name = "Races" },
                 new("2026") { Name = "2026", Parent = "races" }
             ];
-            var constraints = new FormaExplorerConstraints { MaxSubfolderCount = 1 };
+            var constraints = new ExplorerConstraints { MaxSubfolderCount = 1 };
             ExplorerRejection? rejection = null;
 
             var cut = ctx.Render(@<FormaExplorer Resources="[]"
@@ -142,7 +143,7 @@
             // Arrange
             using var ctx = new FormaExplorerTests();
             IReadOnlyList<FolderResourceInfo> folders = [new("races") { Name = "Races" }];
-            var constraints = new FormaExplorerConstraints { MaxFolderDepth = 1 };
+            var constraints = new ExplorerConstraints { MaxFolderDepth = 1 };
             ExplorerRejection? rejection = null;
 
             var cut = ctx.Render(@<FormaExplorer Resources="[]"
@@ -411,7 +412,7 @@
             // Arrange
             using var ctx = new FormaExplorerTests();
             IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/a.jpg") { Size = 10, CreatedAt = DateTimeOffset.UnixEpoch }];
-            var options = new FormaExplorerOptions { DetailsColumns = ExplorerDetailsColumns.Added };
+            var options = new ExplorerOptions { DetailsColumns = ExplorerDetailsColumns.Added };
 
             // Act
             var cut = ctx.Render(@<FormaExplorer Resources="resources" Options="options" ViewMode="ExplorerViewMode.Details" />);
@@ -729,7 +730,7 @@
             // Arrange
             using var ctx = new FormaExplorerTests();
             IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
-            var options = new FormaExplorerFileOptions { AllowRename = false, AllowDelete = false };
+            var options = new ExplorerFileOptions { AllowRename = false, AllowDelete = false };
 
             // Act
             var cut = ctx.Render(@<FormaExplorer Resources="resources" FileOptions="options" />);
@@ -747,7 +748,7 @@
             // Arrange
             using var ctx = new FormaExplorerTests();
             var folder = new FolderResourceInfo("races") { Name = "Races" };
-            var options = new FormaExplorerFileOptions { AllowUpload = false, AllowFolderCreate = false };
+            var options = new ExplorerFileOptions { AllowUpload = false, AllowFolderCreate = false };
 
             // Act
             var cut = ctx.Render(@<FormaExplorer Resources="[]" Folders="[folder]" FileOptions="options" />);
@@ -764,7 +765,7 @@
             // Arrange
             using var ctx = new FormaExplorerTests();
             IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
-            var options = new FormaExplorerFileOptions { AllowDelete = false };
+            var options = new ExplorerFileOptions { AllowDelete = false };
             var cut = ctx.Render(@<FormaExplorer Resources="resources" FileOptions="options" />);
 
             // Act
@@ -782,7 +783,7 @@
             // Arrange
             using var ctx = new FormaExplorerTests();
             var folder = new FolderResourceInfo("races") { Name = "Races" };
-            var options = new FormaExplorerFileOptions { AllowFolderRename = false, AllowFolderDelete = false, AllowFolderCreate = false };
+            var options = new ExplorerFileOptions { AllowFolderRename = false, AllowFolderDelete = false, AllowFolderCreate = false };
 
             // Act
             var cut = ctx.Render(@<FormaExplorer Resources="[]" Folders="[folder]" FileOptions="options" />);
@@ -801,7 +802,7 @@
             var folder = new FolderResourceInfo("races") { Name = "Races" };
 
             // Act
-            var cut = ctx.Render(@<FormaExplorer Resources="resources" Folders="[folder]" FileOptions="FormaExplorerFileOptions.ReadOnly" />);
+            var cut = ctx.Render(@<FormaExplorer Resources="resources" Folders="[folder]" FileOptions="ExplorerFileOptions.ReadOnly" />);
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-explorer-new-folder-button"));
@@ -822,7 +823,7 @@
             var folder = new FolderResourceInfo("races") { Name = "Races" };
 
             // Act
-            var cut = ctx.Render(@<FormaExplorer Resources="resources" Folders="[folder]" FileOptions="FormaExplorerFileOptions.Default" />);
+            var cut = ctx.Render(@<FormaExplorer Resources="resources" Folders="[folder]" FileOptions="ExplorerFileOptions.Default" />);
 
             // Assert
             cut.Find(".forma-explorer-action-bar .forma-dropdown-menu-trigger").Click();
@@ -847,7 +848,7 @@
 
             // Act
             var withoutFolders = ctx.Render(@<FormaExplorer Resources="[]" />);
-            var hiddenSidebar = ctx.Render(@<FormaExplorer Resources="[]" Folders="[folder]" Options="@(new FormaExplorerOptions { ShowSidebar = false })" />);
+            var hiddenSidebar = ctx.Render(@<FormaExplorer Resources="[]" Folders="[folder]" Options="@(new ExplorerOptions { ShowSidebar = false })" />);
 
             // Assert
             Assert.Single(withoutFolders.FindAll(".forma-explorer-new-folder-button"));
@@ -1085,7 +1086,7 @@
             var folder = new FolderResourceInfo("races") { Name = "Races" };
 
             // Act
-            var cut = ctx.Render(@<FormaExplorer Resources="[]" Folders="[folder]" Options="@(new FormaExplorerOptions { ShowSidebar = false })" />);
+            var cut = ctx.Render(@<FormaExplorer Resources="[]" Folders="[folder]" Options="@(new ExplorerOptions { ShowSidebar = false })" />);
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-explorer-sidebar"));
@@ -1101,7 +1102,7 @@
             var folder = new FolderResourceInfo("races") { Name = "Races" };
 
             // Act
-            var cut = ctx.Render(@<FormaExplorer Resources="[]" Folders="[folder]" Options="@(new FormaExplorerOptions { ShowFolderMenu = false })" />);
+            var cut = ctx.Render(@<FormaExplorer Resources="[]" Folders="[folder]" Options="@(new ExplorerOptions { ShowFolderMenu = false })" />);
 
             // Assert
             Assert.NotNull(cut.Find(".forma-explorer-sidebar"));
@@ -1384,7 +1385,7 @@
                 new ImageResourceInfo("https://example.com/b.jpg"),
                 new ImageResourceInfo("https://example.com/c.jpg")
             ];
-            var cut = ctx.Render(@<FormaExplorer Resources="resources" PageSize="2" Options="@(new FormaExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Manual })" />);
+            var cut = ctx.Render(@<FormaExplorer Resources="resources" PageSize="2" Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Manual })" />);
             Assert.Empty(cut.FindAll(".forma-explorer-pagination"));
             Assert.Equal(2, cut.FindAll(".forma-explorer-item").Count);
 
@@ -1409,7 +1410,7 @@
             ];
 
             // Act
-            var cut = ctx.Render(@<FormaExplorer Resources="resources" PageSize="2" Options="@(new FormaExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Manual })" />);
+            var cut = ctx.Render(@<FormaExplorer Resources="resources" PageSize="2" Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Manual })" />);
 
             // Assert
             var status = cut.Find(".forma-explorer-scroll-status");
@@ -1438,7 +1439,7 @@
             // Act
             var cut = ctx.Render(@<FormaExplorer Resources="resources"
                                                 PageSize="2"
-                                                Options="@(new FormaExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Automatic })" />);
+                                                Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Automatic })" />);
 
             // Assert
             Assert.NotNull(cut.Find(".forma-explorer-scroll-sentinel"));
@@ -1464,7 +1465,7 @@
             var pages = new List<int>();
             var cut = ctx.Render(@<FormaExplorer Resources="resources"
                                                 PageSize="2"
-                                                Options="@(new FormaExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Manual })"
+                                                Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Manual })"
                                                 OnPageChanged="@(page => { pages.Add(page); return pending.Task; })" />);
 
             // Act - a second press lands while the host is still fetching the first
@@ -1546,7 +1547,7 @@
                 .Select(i => new ImageResourceInfo($"https://example.com/{i:D4}.jpg"))]);
             var cut = ctx.Render(@<FormaExplorer ResourcesProvider="provider"
                                                 PageSize="10"
-                                                Options="@(new FormaExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Manual })" />);
+                                                Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Manual })" />);
             Assert.Equal(10, cut.FindAll(".forma-explorer-item").Count);
 
             // Act
@@ -1685,6 +1686,116 @@
         {
             cut.Find(".forma-explorer-sort-trigger").Click();
             cut.Find($"[data-sort-field='{field}']").Click();
+        }
+    }
+
+    // Every path that changes the selection has to report it, and the one path that adopts what the
+    // host already holds has to stay quiet, or a bound caller drifts out of step with what is on screen.
+    public sealed class SelectionReporting
+    {
+        private static readonly IReadOnlyList<ResourceInfo> Two =
+        [
+            new ImageResourceInfo("https://example.com/item1.jpg"),
+            new ImageResourceInfo("https://example.com/item2.jpg")
+        ];
+
+        [Fact]
+        public void Should_report_once_when_a_resource_is_selected()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            var reports = new List<IReadOnlyList<ResourceInfo>>();
+            var cut = ctx.Render(@<FormaExplorer Resources="Two"
+                                                SelectedChanged="@(items => { reports.Add(items); return Task.CompletedTask; })" />);
+            cut.Find(".forma-explorer-select-mode-button").Click();
+
+            // Act
+            cut.FindAll(".forma-explorer-item-open")[0].Click();
+
+            // Assert
+            Assert.Equal("item1.jpg", Assert.Single(Assert.Single(reports)).Name);
+        }
+
+        [Fact]
+        public void Should_report_the_emptied_selection_when_leaving_selection_mode()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            var reports = new List<IReadOnlyList<ResourceInfo>>();
+            var cut = ctx.Render(@<FormaExplorer Resources="Two"
+                                                SelectedChanged="@(items => { reports.Add(items); return Task.CompletedTask; })" />);
+            cut.Find(".forma-explorer-select-mode-button").Click();
+            cut.FindAll(".forma-explorer-item-open")[0].Click();
+
+            // Act
+            // Once anything is selected the toolbar gives way to the selection bar, which carries the exit.
+            cut.Find(".forma-explorer-exit-select-button").Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(2, reports.Count),
+                () => Assert.Empty(reports[^1]));
+        }
+
+        [Fact]
+        public void Should_report_when_a_folder_is_selected()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<FolderResourceInfo> folders = [new("/photos")];
+            var reports = new List<IReadOnlyList<ResourceInfo>>();
+            var cut = ctx.Render(@<FormaExplorer Resources="Two"
+                                                Folders="folders"
+                                                SelectedChanged="@(items => { reports.Add(items); return Task.CompletedTask; })" />);
+            cut.Find(".forma-explorer-select-mode-button").Click();
+
+            // Act
+            cut.Find(".forma-explorer-folder-select").Click();
+
+            // Assert
+            // Folders never join the reported resources, but the host still has to hear the selection moved.
+            Assert.Multiple(
+                () => Assert.Single(reports),
+                () => Assert.Empty(reports[0]));
+        }
+
+        [Fact]
+        public void Should_report_the_emptied_selection_when_the_clear_action_runs()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            var reports = new List<IReadOnlyList<ResourceInfo>>();
+            var cut = ctx.Render(@<FormaExplorer Resources="Two"
+                                                SelectedChanged="@(items => { reports.Add(items); return Task.CompletedTask; })" />);
+            cut.Find(".forma-explorer-select-mode-button").Click();
+            cut.FindAll(".forma-explorer-item-open")[0].Click();
+
+            // Act
+            cut.Find(".forma-explorer-clear-button").Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(2, reports.Count),
+                () => Assert.Empty(reports[^1]));
+        }
+
+        [Fact]
+        public void Should_stay_quiet_when_adopting_what_the_host_supplied()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            var reports = new List<IReadOnlyList<ResourceInfo>>();
+            IReadOnlyList<ResourceInfo> selected = [Two[0]];
+            var cut = ctx.Render(@<FormaExplorer Resources="Two"
+                                                Selected="selected"
+                                                SelectedChanged="@(items => { reports.Add(items); return Task.CompletedTask; })" />);
+            var explorer = cut.FindComponent<FormaExplorer>();
+
+            // Act
+            explorer.Render(parameters => parameters.Add(p => p.Selected, new List<ResourceInfo> { Two[1] }));
+
+            // Assert
+            Assert.Empty(reports);
         }
     }
 }

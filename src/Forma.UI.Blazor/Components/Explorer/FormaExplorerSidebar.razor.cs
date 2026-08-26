@@ -4,12 +4,13 @@ using System.Globalization;
 
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
+using Forma.UI.Features.Explorer;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 /// <summary>Folders tree navigation sidebar with drag-and-drop target support for a media explorer.</summary>
-public sealed partial class FormaExplorerSidebar : ComponentBase
+public sealed partial class FormaExplorerSidebar : ComponentBase, IExplorerSidebarView, IExplorerSidebarInteraction
 {
     /// <summary>The currently active folder, or null for all media.</summary>
     [Parameter] public FolderResourceInfo? CurrentFolder { get; set; }
@@ -17,7 +18,12 @@ public sealed partial class FormaExplorerSidebar : ComponentBase
     /// <summary>List of available explorer folders.</summary>
     [Parameter] public IReadOnlyList<FolderResourceInfo> Folders { get; set; } = [];
 
-    [CascadingParameter] private ExplorerContext Context { get; set; } = default!;
+    /// <summary>Every known folder indexed, so a node does not rescan the list to find its children.</summary>
+    [Parameter] public ExplorerFolderTree FolderTree { get; set; } = ExplorerFolderTree.Empty;
+
+    [CascadingParameter] private IExplorerView Explorer { get; set; } = default!;
+
+    [CascadingParameter] private IExplorerInteraction ExplorerInteraction { get; set; } = default!;
 
     /// <summary>Raised when a folder is deleted.</summary>
     [Parameter] public EventCallback<FolderResourceInfo> OnFolderDelete { get; set; }
@@ -38,7 +44,7 @@ public sealed partial class FormaExplorerSidebar : ComponentBase
     [Parameter] public EventCallback<FolderResourceInfo?> OnFolderCreate { get; set; }
 
     /// <summary>Which folder operations the sidebar offers.</summary>
-    [Parameter] public FormaExplorerFileOptions FileOptions { get; set; } = FormaExplorerFileOptions.Default;
+    [Parameter] public ExplorerFileOptions FileOptions { get; set; } = ExplorerFileOptions.Default;
 
     /// <summary>Total count of all resources across the explorer.</summary>
     [Parameter] public int TotalCount { get; set; }
@@ -54,7 +60,7 @@ public sealed partial class FormaExplorerSidebar : ComponentBase
     private readonly string _titleId = $"forma-explorer-folders-{Guid.NewGuid():N}";
 
     private IEnumerable<FolderResourceInfo> ExpandableFolders
-        => Context.Folders.Expandable();
+        => FolderTree.Expandable();
 
     private bool HasExpandableFolders
         => ExpandableFolders.Any();
@@ -98,17 +104,31 @@ public sealed partial class FormaExplorerSidebar : ComponentBase
     internal static void HandleDragOver(DragEventArgs e)
         => e.DataTransfer.DropEffect = "move";
 
-    internal IReadOnlyList<FolderResourceInfo> ChildrenOf(string? parent)
-        => Context.Folders.ChildrenOf(parent);
+    private IReadOnlyList<FolderResourceInfo> ChildrenOf(string? parent)
+        => FolderTree.ChildrenOf(parent);
 
-    internal bool IsCurrent(FolderResourceInfo folder)
+    private Task SelectFolderAsync(FolderResourceInfo? folder)
+        => OnFolderSelected.InvokeAsync(folder);
+
+    private Task CreateFolderAsync(FolderResourceInfo? parent)
+        => OnFolderCreate.InvokeAsync(parent);
+
+    private Task DropOnFolderAsync(FolderResourceInfo? folder)
+        => OnFolderDrop.InvokeAsync(folder);
+
+    IExplorerSelectionView IExplorerSidebarView.Selection => Explorer.Selection;
+
+    IReadOnlyList<FolderResourceInfo> IExplorerSidebarView.ChildrenOf(string? parent)
+        => ChildrenOf(parent);
+
+    bool IExplorerSidebarView.IsCurrent(FolderResourceInfo folder)
         => CurrentFolder?.Source == folder.Source;
 
     // Folders start expanded so a nested tree is discoverable without a first click.
-    internal bool IsExpanded(string folderSource)
+    bool IExplorerSidebarView.IsExpanded(string folderSource)
         => !_collapsed.Contains(folderSource);
 
-    internal void ToggleExpanded(string folderSource)
+    void IExplorerSidebarInteraction.ToggleExpanded(string folderSource)
     {
         if (!_collapsed.Remove(folderSource))
         {
@@ -119,21 +139,24 @@ public sealed partial class FormaExplorerSidebar : ComponentBase
         StateHasChanged();
     }
 
-    internal Task SelectFolderAsync(FolderResourceInfo? folder)
-        => OnFolderSelected.InvokeAsync(folder);
+    Task IExplorerSidebarInteraction.SelectFolderAsync(FolderResourceInfo? folder)
+        => SelectFolderAsync(folder);
 
-    internal Task RenameFolderAsync(FolderResourceInfo folder)
+    Task IExplorerSidebarInteraction.RenameFolderAsync(FolderResourceInfo folder)
         => OnFolderRename.InvokeAsync(folder);
 
-    internal Task DeleteFolderAsync(FolderResourceInfo folder)
+    Task IExplorerSidebarInteraction.DeleteFolderAsync(FolderResourceInfo folder)
         => OnFolderDelete.InvokeAsync(folder);
 
-    internal Task CreateFolderAsync(FolderResourceInfo? parent)
-        => OnFolderCreate.InvokeAsync(parent);
+    Task IExplorerSidebarInteraction.CreateFolderAsync(FolderResourceInfo? parent)
+        => CreateFolderAsync(parent);
 
-    internal Task HandleDropOnFolderAsync(FolderResourceInfo? folder)
-        => OnFolderDrop.InvokeAsync(folder);
+    Task IExplorerSidebarInteraction.DropOnFolderAsync(FolderResourceInfo? folder)
+        => DropOnFolderAsync(folder);
 
-    internal Task HandleFolderDragStartAsync(FolderResourceInfo folder)
+    Task IExplorerSidebarInteraction.BeginFolderDragAsync(FolderResourceInfo folder)
         => OnFolderDragStart.InvokeAsync(folder);
+
+    Task IExplorerSidebarInteraction.ToggleFolderSelectAsync(FolderResourceInfo folder)
+        => ExplorerInteraction.ToggleFolderSelectAsync(folder);
 }

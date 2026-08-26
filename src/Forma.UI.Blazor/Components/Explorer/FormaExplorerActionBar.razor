@@ -3,14 +3,14 @@
 @using Forma.UI.Blazor.Components.Menus
 
 <div class="forma-explorer-action-bar">
-    <FormaOverflowMenu Label="@Context.ActionsLabel(Resource)"
+    <FormaOverflowMenu Label="@Resource.ActionsLabel(L)"
                        Orientation="MenuOrientation.Vertical"
                        Size="ButtonSize.Mini">
         <HeaderContent>
             <span title="@Resource.Name">@Resource.Name</span>
         </HeaderContent>
         <ChildContent>
-            @foreach (var action in Context.Actions)
+            @foreach (var action in View.Actions)
             {
                 <FormaDropDownMenuItem IsDestructive="action.IsDestructive"
                                        data-action="@action.Id"

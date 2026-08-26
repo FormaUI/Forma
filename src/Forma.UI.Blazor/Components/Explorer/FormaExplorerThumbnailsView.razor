@@ -1,23 +1,24 @@
 @namespace Forma.UI.Blazor.Components.Explorer
+@using Forma.UI.Features.Explorer
 
 <div class="forma-explorer-grid" role="list">
     @foreach (var resource in Resources)
     {
-        var selected = Context.Selection.IsSelected(resource);
-        var selecting = Context.Selection.IsSelectMode && !Context.Selection.HasFolders;
+        var selected = View.Selection.IsSelected(resource);
+        var selecting = View.Selection.IsSelectMode && !View.Selection.HasFolders;
 
         <div class="forma-explorer-item @(selected ? "is-selected" : "")"
              role="listitem"
              draggable="true"
-             @ondragstart="() => Context.BeginDrag(resource)">
+             @ondragstart="() => Interaction.BeginDrag(resource)">
             <div class="forma-explorer-thumbnail-wrapper">
                 <FormaExplorerThumbnail Resource="resource" Size="ExplorerThumbnailSize.Tile" />
 
                 <button type="button"
                         class="forma-explorer-item-open"
-                        aria-label="@Context.ActivateLabel(resource)"
-                        aria-pressed="@(Context.Selection.IsSelectMode ? (selected ? "true" : "false") : null)"
-                        @onclick="() => Context.ActivateAsync(resource)"></button>
+                        aria-label="@resource.ActivateLabel(L, View.Selection)"
+                        aria-pressed="@(View.Selection.IsSelectMode ? (selected ? "true" : "false") : null)"
+                        @onclick="() => Interaction.ActivateAsync(resource)"></button>
 
                 <span class="forma-explorer-item-lead">
                     @if (selecting)
