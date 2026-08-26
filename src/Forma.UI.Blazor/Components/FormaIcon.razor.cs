@@ -24,7 +24,7 @@ public sealed partial class FormaIcon : ComponentBase
 
     /// <inheritdoc />
     protected override void OnParametersSet()
-        => _artwork = Provider.GetIcon(Icon);
+        => _artwork = Provider.GetArtwork(Icon);
 
     private static string? Fade(IconPath path)
         => path.Opacity < 1 ? path.Opacity.ToString("0.###", CultureInfo.InvariantCulture) : null;

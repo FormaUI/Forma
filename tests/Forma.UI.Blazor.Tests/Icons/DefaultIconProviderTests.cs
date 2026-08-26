@@ -22,7 +22,7 @@ public sealed class DefaultIconProviderTests
         {
             foreach (var style in Enum.GetValues<GlyphStyle>())
             {
-                var artwork = provider.GetIcon(new Icon(glyph, style));
+                var artwork = provider.GetArtwork(new Icon(glyph, style));
 
                 Assert.Multiple(
                     () => Assert.Equal("0 0 256 256", artwork.ViewBox),
@@ -39,7 +39,7 @@ public sealed class DefaultIconProviderTests
         var provider = new DefaultIconProvider();
 
         // Act & Assert
-        Assert.Throws<ArgumentOutOfRangeException>(() => provider.GetIcon(default));
+        Assert.Throws<ArgumentOutOfRangeException>(() => provider.GetArtwork(default));
     }
 
     [Fact]
@@ -49,8 +49,8 @@ public sealed class DefaultIconProviderTests
         var provider = new DefaultIconProvider();
 
         // Act
-        var regular = provider.GetIcon(new Icon(Glyph.Heart));
-        var filled = provider.GetIcon(Icon.Filled(Glyph.Heart));
+        var regular = provider.GetArtwork(new Icon(Glyph.Heart));
+        var filled = provider.GetArtwork(Icon.Filled(Glyph.Heart));
 
         // Assert
         Assert.NotEqual(regular.Paths[0].Data, filled.Paths[0].Data);
@@ -63,7 +63,7 @@ public sealed class DefaultIconProviderTests
         var provider = new DefaultIconProvider();
 
         // Act
-        var artwork = provider.GetIcon(new Icon(Glyph.Delete));
+        var artwork = provider.GetArtwork(new Icon(Glyph.Delete));
 
         // Assert
         Assert.All(artwork.Paths, path => Assert.Equal(1, path.Opacity));

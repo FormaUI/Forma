@@ -15,7 +15,7 @@ public sealed class DefaultIconProvider : IIconProvider
     private static readonly Lazy<FrozenDictionary<Glyph, IconArtwork[]>> Set = new(Load);
 
     /// <inheritdoc />
-    public IconArtwork GetIcon(Icon icon)
+    public IconArtwork GetArtwork(Icon icon)
     {
         if (icon.Glyph is Glyph.None)
         {
