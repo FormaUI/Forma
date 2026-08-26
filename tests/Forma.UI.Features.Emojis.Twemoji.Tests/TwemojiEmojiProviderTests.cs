@@ -1,16 +1,16 @@
-namespace Forma.UI.Features.Emojis.Tests;
+namespace Forma.UI.Features.Emojis.Twemoji.Tests;
 
 using Forma.UI.Design.Emojis;
 
 using Xunit;
 
-public sealed class DefaultEmojiProviderTests
+public sealed class TwemojiEmojiProviderTests
 {
     [Fact]
     public void Should_draw_a_known_emoji_from_a_sprite()
     {
         // Arrange
-        var provider = new DefaultEmojiProvider();
+        var provider = new TwemojiEmojiProvider();
 
         // Act
         var artwork = provider.GetArtwork("😀");
@@ -18,14 +18,14 @@ public sealed class DefaultEmojiProviderTests
         // Assert
         var sprite = Assert.IsType<EmojiSprite>(artwork);
         Assert.Matches("^emoji-[0-9a-f]+(-[0-9a-f]+)*$", sprite.Symbol);
-        Assert.Matches("^_content/Forma.UI.Emojis/smileys-\\d+\\.svg$", sprite.Sheet);
+        Assert.Matches("^_content/Forma.UI.Emojis.Twemoji/smileys-\\d+\\.svg$", sprite.Sheet);
     }
 
     [Fact]
     public void Should_draw_an_unknown_emoji_from_the_platform_font()
     {
         // Arrange
-        var provider = new DefaultEmojiProvider();
+        var provider = new TwemojiEmojiProvider();
 
         // Act
         var artwork = provider.GetArtwork("🛸👾🫠🫠🫠🫠🫠");
@@ -38,7 +38,7 @@ public sealed class DefaultEmojiProviderTests
     public void Should_refuse_the_absent_emoji()
     {
         // Arrange
-        var provider = new DefaultEmojiProvider();
+        var provider = new TwemojiEmojiProvider();
 
         // Act & Assert
         Assert.Throws<ArgumentOutOfRangeException>(() => provider.GetArtwork(default));

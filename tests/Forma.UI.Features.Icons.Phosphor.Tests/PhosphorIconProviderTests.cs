@@ -1,4 +1,4 @@
-namespace Forma.UI.Features.Icons.Tests;
+namespace Forma.UI.Features.Icons.Phosphor.Tests;
 
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,7 @@ using Forma.UI.Design.Icons;
 
 using Xunit;
 
-public sealed class DefaultIconProviderTests
+public sealed class PhosphorIconProviderTests
 {
     private static IEnumerable<Glyph> Drawable
         => Enum.GetValues<Glyph>().Where(glyph => glyph is not Glyph.None);
@@ -16,7 +16,7 @@ public sealed class DefaultIconProviderTests
     public void Should_carry_artwork_for_every_glyph_in_every_style()
     {
         // Arrange
-        var provider = new DefaultIconProvider();
+        var provider = new PhosphorIconProvider();
 
         // Act & Assert
         foreach (var glyph in Drawable)
@@ -37,7 +37,7 @@ public sealed class DefaultIconProviderTests
     public void Should_refuse_the_absent_glyph()
     {
         // Arrange
-        var provider = new DefaultIconProvider();
+        var provider = new PhosphorIconProvider();
 
         // Act & Assert
         Assert.Throws<ArgumentOutOfRangeException>(() => provider.GetArtwork(default));
@@ -47,7 +47,7 @@ public sealed class DefaultIconProviderTests
     public void Should_draw_a_filled_glyph_differently_from_its_regular()
     {
         // Arrange
-        var provider = new DefaultIconProvider();
+        var provider = new PhosphorIconProvider();
 
         // Act
         var regular = Assert.IsType<IconVector>(provider.GetArtwork(new Icon(Glyph.Heart)));
@@ -61,7 +61,7 @@ public sealed class DefaultIconProviderTests
     public void Should_draw_every_path_fully_opaque_by_default()
     {
         // Arrange
-        var provider = new DefaultIconProvider();
+        var provider = new PhosphorIconProvider();
 
         // Act
         var artwork = Assert.IsType<IconVector>(provider.GetArtwork(new Icon(Glyph.Delete)));

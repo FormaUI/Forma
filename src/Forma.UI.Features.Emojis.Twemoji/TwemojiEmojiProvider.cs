@@ -1,9 +1,9 @@
-namespace Forma.UI.Features.Emojis;
+namespace Forma.UI.Features.Emojis.Twemoji;
 
 using Forma.UI.Design.Emojis;
 
-/// <summary>Provides the artwork this library ships, drawing an emoji from its embedded sprite sheets.</summary>
-public sealed class DefaultEmojiProvider : IEmojiProvider
+/// <summary>Provides the Twemoji artwork this package ships, drawing an emoji from its embedded sprite sheets.</summary>
+public sealed class TwemojiEmojiProvider : IEmojiProvider
 {
     private readonly Lazy<IReadOnlyDictionary<string, EmojiAsset>> _byCharacter = new(BuildIndex);
 

@@ -1,4 +1,4 @@
-namespace Forma.UI.Features.Emojis;
+namespace Forma.UI.Features.Emojis.Twemoji;
 
 using Forma.UI.Design.Emojis;
 
@@ -11,12 +11,12 @@ public static class ServiceCollectionExtensions
     /// <summary>Registers the emoji this package ships, unless a host has already registered its own.</summary>
     /// <param name="services">The collection to register into.</param>
     /// <returns>The same collection, for chaining.</returns>
-    public static IServiceCollection AddFormaEmojis(this IServiceCollection services)
+    public static IServiceCollection AddFormaTwemojiPack(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.TryAddSingleton<IEmojiProvider, DefaultEmojiProvider>();
-        services.TryAddSingleton<IEmojiCatalog, DefaultEmojiCatalog>();
+        services.TryAddSingleton<IEmojiProvider, TwemojiEmojiProvider>();
+        services.TryAddSingleton<IEmojiCatalog, TwemojiEmojiCatalog>();
 
         return services;
     }

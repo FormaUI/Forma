@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <IsPackable>false</IsPackable>
-        <RootNamespace>Forma.UI.Features.Emojis.Tests</RootNamespace>
+        <RootNamespace>Forma.UI.Features.Emojis.Twemoji.Tests</RootNamespace>
         <NoWarn>CA1707</NoWarn>
     </PropertyGroup>
 
@@ -17,7 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Forma.UI.Features.Emojis\Forma.UI.Features.Emojis.csproj" />
+        <ProjectReference Include="..\..\src\Forma.UI.Features.Emojis.Twemoji\Forma.UI.Features.Emojis.Twemoji.csproj" />
         <ProjectReference Include="..\..\src\Forma.UI.Design.Emojis\Forma.UI.Design.Emojis.csproj" />
     </ItemGroup>
 

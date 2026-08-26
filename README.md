@@ -163,17 +163,17 @@ registered, `FormaIcon` draws the glyphs the reader's own fonts can depict and n
 the rest, so a host that wants no artwork package still renders. To draw the full set:
 
 ```
-dotnet add package 2Site.Forma.UI.Features.Icons
+dotnet add package 2Site.Forma.UI.Features.Icons.Phosphor
 ```
 
 ```csharp
-builder.Services.AddFormaIcons();
+builder.Services.AddFormaPhosphorPack();
 ```
 
 The artwork is [Phosphor Icons](https://phosphoricons.com), used under the MIT licence reproduced
 in [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md), which ships inside that package. Regenerate
 it with `scripts/fetch-glyphs.ps1`, which reads the glyph-to-Phosphor map in `assets/phosphor.json`
-and writes the artwork to `src/Forma.UI.Features.Icons/Assets/glyphs.json`.
+and writes the artwork to `src/Forma.UI.Features.Icons.Phosphor/Assets/glyphs.json`.
 
 ## Emoji
 
@@ -183,11 +183,16 @@ platform font and the picker shows its empty state, because a catalog is data no
 for. To draw the bundled artwork and browse the bundled catalog:
 
 ```
-dotnet add package 2Site.Forma.UI.Features.Emojis
+dotnet add package 2Site.Forma.UI.Features.Emojis.Twemoji
 ```
 
 ```csharp
-builder.Services.AddFormaEmojis();
+builder.Services.AddFormaTwemojiPack();
 ```
+
+The artwork is [Twemoji](https://github.com/jdecked/twemoji), used under CC-BY 4.0 with the
+attribution reproduced in [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md), which ships inside
+that package, and the search keywords come from [Unicode CLDR](https://cldr.unicode.org).
+Regenerate both with `scripts/fetch-emoji.ps1`.
 
 Contributor conventions live in [`CLAUDE.md`](CLAUDE.md).

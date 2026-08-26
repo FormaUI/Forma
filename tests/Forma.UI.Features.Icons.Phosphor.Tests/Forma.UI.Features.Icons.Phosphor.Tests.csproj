@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <IsPackable>false</IsPackable>
-        <RootNamespace>Forma.UI.Features.Icons.Tests</RootNamespace>
+        <RootNamespace>Forma.UI.Features.Icons.Phosphor.Tests</RootNamespace>
         <NoWarn>CA1707</NoWarn>
     </PropertyGroup>
 
@@ -17,7 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Forma.UI.Features.Icons\Forma.UI.Features.Icons.csproj" />
+        <ProjectReference Include="..\..\src\Forma.UI.Features.Icons.Phosphor\Forma.UI.Features.Icons.Phosphor.csproj" />
         <ProjectReference Include="..\..\src\Forma.UI.Design.Icons\Forma.UI.Design.Icons.csproj" />
     </ItemGroup>
 

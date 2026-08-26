@@ -1,4 +1,4 @@
-namespace Forma.UI.Features.Emojis;
+namespace Forma.UI.Features.Emojis.Twemoji;
 
 using Forma.UI.Design.Emojis;
 

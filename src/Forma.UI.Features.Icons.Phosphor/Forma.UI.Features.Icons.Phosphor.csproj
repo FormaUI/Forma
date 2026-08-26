@@ -5,8 +5,8 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
-        <RootNamespace>Forma.UI.Features.Icons</RootNamespace>
-        <PackageId>2Site.Forma.UI.Features.Icons</PackageId>
+        <RootNamespace>Forma.UI.Features.Icons.Phosphor</RootNamespace>
+        <PackageId>2Site.Forma.UI.Features.Icons.Phosphor</PackageId>
         <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeReferencedProjectsInPackage</TargetsForTfmSpecificBuildOutput>
     </PropertyGroup>
 

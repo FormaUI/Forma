@@ -1,4 +1,4 @@
-namespace Forma.UI.Features.Icons;
+namespace Forma.UI.Features.Icons.Phosphor;
 
 using System.Collections.Frozen;
 using System.Reflection;
@@ -7,10 +7,10 @@ using System.Text.Json.Serialization;
 
 using Forma.UI.Design.Icons;
 
-/// <summary>Provides the artwork this library ships, read from its embedded glyph set.</summary>
-public sealed class DefaultIconProvider : IIconProvider
+/// <summary>Provides the Phosphor artwork this package ships, read from its embedded glyph set.</summary>
+public sealed class PhosphorIconProvider : IIconProvider
 {
-    private const string ResourceName = "Forma.UI.Features.Icons.Assets.glyphs.json";
+    private const string ResourceName = "Forma.UI.Features.Icons.Phosphor.Assets.glyphs.json";
 
     private static readonly Lazy<FrozenDictionary<Glyph, IconArtwork[]>> Set = new(Load);
 
@@ -39,7 +39,7 @@ public sealed class DefaultIconProvider : IIconProvider
 
     private static FrozenDictionary<Glyph, IconArtwork[]> Load()
     {
-        using var stream = typeof(DefaultIconProvider).GetTypeInfo().Assembly.GetManifestResourceStream(ResourceName)
+        using var stream = typeof(PhosphorIconProvider).GetTypeInfo().Assembly.GetManifestResourceStream(ResourceName)
             ?? throw new InvalidOperationException($"The glyph resource '{ResourceName}' is missing; regenerate it with scripts/fetch-glyphs.ps1.");
 
         var raw = JsonSerializer.Deserialize(stream, GlyphSetJsonContext.Default.RawGlyphSet)

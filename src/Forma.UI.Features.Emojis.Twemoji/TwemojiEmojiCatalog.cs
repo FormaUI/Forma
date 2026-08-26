@@ -1,11 +1,11 @@
-namespace Forma.UI.Features.Emojis;
+namespace Forma.UI.Features.Emojis.Twemoji;
 
 using System.Diagnostics.CodeAnalysis;
 
 using Forma.UI.Design.Emojis;
 
-/// <summary>Reads the emoji this library ships, grouped by category and searchable by name and keyword.</summary>
-public sealed class DefaultEmojiCatalog : IEmojiCatalog
+/// <summary>Reads the emoji this package ships, grouped by category and searchable by name and keyword.</summary>
+public sealed class TwemojiEmojiCatalog : IEmojiCatalog
 {
     private readonly Lazy<IReadOnlyDictionary<string, EmojiInfo>> _byCharacter = new(BuildIndex);
 

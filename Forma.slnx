@@ -7,8 +7,8 @@
     <Project Path="src\Forma.UI.Design.Css\Forma.UI.Design.Css.csproj" />
     <Project Path="src\Forma.UI.Design.Icons\Forma.UI.Design.Icons.csproj" />
     <Project Path="src\Forma.UI.Design.Emojis\Forma.UI.Design.Emojis.csproj" />
-    <Project Path="src\Forma.UI.Features.Icons\Forma.UI.Features.Icons.csproj" />
-    <Project Path="src\Forma.UI.Features.Emojis\Forma.UI.Features.Emojis.csproj" />
+    <Project Path="src\Forma.UI.Features.Icons.Phosphor\Forma.UI.Features.Icons.Phosphor.csproj" />
+    <Project Path="src\Forma.UI.Features.Emojis.Twemoji\Forma.UI.Features.Emojis.Twemoji.csproj" />
     <Project Path="src\Forma.Framework.Resources.Abstractions\Forma.Framework.Resources.Abstractions.csproj" />
     <Project Path="src\Forma.UI.Features.Feedback.Abstractions\Forma.UI.Features.Feedback.Abstractions.csproj" />
     <Project Path="src\Forma.UI.Features.Feedback\Forma.UI.Features.Feedback.csproj" />
@@ -32,8 +32,8 @@
     <Project Path="tests\Forma.UI.Features.Feedback.Tests\Forma.UI.Features.Feedback.Tests.csproj" />
     <Project Path="tests\Forma.UI.Features.Composer.Tests\Forma.UI.Features.Composer.Tests.csproj" />
     <Project Path="tests\Forma.UI.Features.Explorer.Tests\Forma.UI.Features.Explorer.Tests.csproj" />
-    <Project Path="tests\Forma.UI.Features.Icons.Tests\Forma.UI.Features.Icons.Tests.csproj" />
-    <Project Path="tests\Forma.UI.Features.Emojis.Tests\Forma.UI.Features.Emojis.Tests.csproj" />
+    <Project Path="tests\Forma.UI.Features.Icons.Phosphor.Tests\Forma.UI.Features.Icons.Phosphor.Tests.csproj" />
+    <Project Path="tests\Forma.UI.Features.Emojis.Twemoji.Tests\Forma.UI.Features.Emojis.Twemoji.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Resources.Office.Tests\Forma.Framework.Resources.Office.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Resources.Markdown.Tests\Forma.Framework.Resources.Markdown.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Localization.Tests\Forma.Framework.Localization.Tests.csproj" />

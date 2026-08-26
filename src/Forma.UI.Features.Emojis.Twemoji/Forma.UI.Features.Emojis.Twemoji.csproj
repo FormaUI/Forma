@@ -5,9 +5,9 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
-        <RootNamespace>Forma.UI.Features.Emojis</RootNamespace>
-        <PackageId>2Site.Forma.UI.Features.Emojis</PackageId>
-        <StaticWebAssetBasePath>_content/Forma.UI.Emojis</StaticWebAssetBasePath>
+        <RootNamespace>Forma.UI.Features.Emojis.Twemoji</RootNamespace>
+        <PackageId>2Site.Forma.UI.Features.Emojis.Twemoji</PackageId>
+        <StaticWebAssetBasePath>_content/Forma.UI.Emojis.Twemoji</StaticWebAssetBasePath>
         <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeReferencedProjectsInPackage</TargetsForTfmSpecificBuildOutput>
     </PropertyGroup>
 

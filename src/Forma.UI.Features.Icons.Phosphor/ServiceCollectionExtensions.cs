@@ -1,4 +1,4 @@
-namespace Forma.UI.Features.Icons;
+namespace Forma.UI.Features.Icons.Phosphor;
 
 using Forma.UI.Design.Icons;
 
@@ -11,11 +11,11 @@ public static class ServiceCollectionExtensions
     /// <summary>Registers the glyph artwork this package ships, unless a host has already registered its own.</summary>
     /// <param name="services">The collection to register into.</param>
     /// <returns>The same collection, for chaining.</returns>
-    public static IServiceCollection AddFormaIcons(this IServiceCollection services)
+    public static IServiceCollection AddFormaPhosphorPack(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.TryAddSingleton<IIconProvider, DefaultIconProvider>();
+        services.TryAddSingleton<IIconProvider, PhosphorIconProvider>();
 
         return services;
     }

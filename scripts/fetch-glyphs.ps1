@@ -5,12 +5,12 @@ $ErrorActionPreference = 'Stop'
 #
 #   assets/phosphor.json                     Forma glyph -> upstream Phosphor name (hand-maintained)
 #   src/Forma.UI.Design.Icons/Glyph.cs        the glyph set (hand-maintained)
-#   src/Forma.UI.Features.Icons/Assets/glyphs.json   the artwork (generated, this script writes it)
+#   src/Forma.UI.Features.Icons.Phosphor/Assets/glyphs.json   the artwork (generated, this script writes it)
 
 $root = Split-Path -Parent $PSScriptRoot
 $mapPath = Join-Path $root 'assets' 'phosphor.json'
 $enumPath = Join-Path $root 'src' 'Forma.UI.Design.Icons' 'Glyph.cs'
-$target = Join-Path $root 'src' 'Forma.UI.Features.Icons' 'Assets' 'glyphs.json'
+$target = Join-Path $root 'src' 'Forma.UI.Features.Icons.Phosphor' 'Assets' 'glyphs.json'
 
 # Where Phosphor keeps each style, and what it appends to a slug there.
 $styles = [ordered]@{

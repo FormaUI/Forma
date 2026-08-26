@@ -1,10 +1,10 @@
-namespace Forma.UI.Features.Emojis.Tests;
+namespace Forma.UI.Features.Emojis.Twemoji.Tests;
 
 using Forma.UI.Design.Emojis;
 
 using Xunit;
 
-public sealed class DefaultEmojiCatalogTests
+public sealed class TwemojiEmojiCatalogTests
 {
     private static readonly string[] GroupIds =
         ["smileys", "people", "animals", "food", "activities", "travel", "objects", "symbols", "flags"];
@@ -13,7 +13,7 @@ public sealed class DefaultEmojiCatalogTests
     public void Should_load_every_category()
     {
         // Arrange
-        var catalog = new DefaultEmojiCatalog();
+        var catalog = new TwemojiEmojiCatalog();
 
         // Assert
         Assert.All(GroupIds, groupId =>
@@ -27,7 +27,7 @@ public sealed class DefaultEmojiCatalogTests
     public void Should_refuse_a_group_it_does_not_hold()
     {
         // Arrange
-        var catalog = new DefaultEmojiCatalog();
+        var catalog = new TwemojiEmojiCatalog();
 
         // Act
         var found = catalog.TryFindByGroupId("nonexistent", out var emojis);
@@ -42,7 +42,7 @@ public sealed class DefaultEmojiCatalogTests
     public void Should_place_every_emoji_in_the_group_it_was_asked_for()
     {
         // Arrange
-        var catalog = new DefaultEmojiCatalog();
+        var catalog = new TwemojiEmojiCatalog();
 
         // Act
         catalog.TryFindByGroupId("smileys", out var smileys);
@@ -56,7 +56,7 @@ public sealed class DefaultEmojiCatalogTests
     public void Should_give_every_emoji_a_name_and_search_keywords()
     {
         // Arrange
-        var catalog = new DefaultEmojiCatalog();
+        var catalog = new TwemojiEmojiCatalog();
 
         // Assert
         Assert.All(GroupIds, groupId =>
@@ -75,7 +75,7 @@ public sealed class DefaultEmojiCatalogTests
     public void Should_find_a_known_emoji_by_its_character()
     {
         // Arrange
-        var catalog = new DefaultEmojiCatalog();
+        var catalog = new TwemojiEmojiCatalog();
 
         // Act
         var found = catalog.TryGetByEmoji("😀", out var info);
@@ -90,7 +90,7 @@ public sealed class DefaultEmojiCatalogTests
     public void Should_refuse_an_emoji_it_does_not_hold()
     {
         // Arrange
-        var catalog = new DefaultEmojiCatalog();
+        var catalog = new TwemojiEmojiCatalog();
 
         // Act
         var found = catalog.TryGetByEmoji("🛸👾🫠🫠🫠🫠🫠", out var info);
@@ -105,7 +105,7 @@ public sealed class DefaultEmojiCatalogTests
     public void Should_match_a_search_against_keywords_rather_than_the_name_alone()
     {
         // Arrange
-        var catalog = new DefaultEmojiCatalog();
+        var catalog = new TwemojiEmojiCatalog();
 
         // Act
         var results = catalog.Find("grin");
@@ -118,7 +118,7 @@ public sealed class DefaultEmojiCatalogTests
     public void Should_match_a_word_rather_than_any_substring()
     {
         // Arrange
-        var catalog = new DefaultEmojiCatalog();
+        var catalog = new TwemojiEmojiCatalog();
 
         // Act
         var results = catalog.Find("cat");
@@ -132,7 +132,7 @@ public sealed class DefaultEmojiCatalogTests
     public void Should_match_a_word_that_is_not_the_first()
     {
         // Arrange
-        var catalog = new DefaultEmojiCatalog();
+        var catalog = new TwemojiEmojiCatalog();
 
         // Act
         var results = catalog.Find("face");
@@ -145,7 +145,7 @@ public sealed class DefaultEmojiCatalogTests
     public void Should_require_every_term_to_match()
     {
         // Arrange
-        var catalog = new DefaultEmojiCatalog();
+        var catalog = new TwemojiEmojiCatalog();
 
         // Act
         var both = catalog.Find("flag colombia");
@@ -163,7 +163,7 @@ public sealed class DefaultEmojiCatalogTests
     public void Should_return_nothing_for_an_empty_query(string? query)
     {
         // Arrange
-        var catalog = new DefaultEmojiCatalog();
+        var catalog = new TwemojiEmojiCatalog();
 
         // Act & Assert
         Assert.Empty(catalog.Find(query!));
@@ -173,7 +173,7 @@ public sealed class DefaultEmojiCatalogTests
     public void Should_carry_no_skin_tone_variants()
     {
         // Arrange
-        var catalog = new DefaultEmojiCatalog();
+        var catalog = new TwemojiEmojiCatalog();
 
         // Assert
         Assert.All(GroupIds, groupId =>
