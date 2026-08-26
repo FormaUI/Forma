@@ -2,7 +2,7 @@ namespace Forma.UI.Blazor.Emojis;
 
 using Forma.UI.Design.Emojis;
 
-/// <summary>One emoji as the embedded catalogue holds it, carrying what both the default catalogue and provider need.</summary>
+/// <summary>One emoji as the embedded catalog holds it, carrying what both the default catalog and provider need.</summary>
 internal sealed record EmojiAsset
 {
     /// <summary>The emoji itself.</summary>

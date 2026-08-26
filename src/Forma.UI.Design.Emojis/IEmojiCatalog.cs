@@ -13,7 +13,7 @@ public interface IEmojiCatalog
 
     /// <summary>Finds an emoji by the character sequence that is it.</summary>
     /// <param name="emoji">The emoji to look up.</param>
-    /// <param name="info">The emoji's catalogue entry, when known.</param>
+    /// <param name="info">The emoji's catalog entry, when known.</param>
     /// <returns>Whether the emoji is known.</returns>
     bool TryGetByEmoji(Emoji emoji, [MaybeNullWhen(false)] out EmojiInfo info);
 

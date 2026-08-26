@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 
 using Forma.UI.Design.Emojis;
 
-/// <summary>Reads the emoji catalogue this library embeds, shared by the default catalogue and provider.</summary>
+/// <summary>Reads the emoji catalog this library embeds, shared by the default catalog and provider.</summary>
 internal static class EmojiAssetLoader
 {
     /// <summary>The path each category's sprite sheet is served from.</summary>
@@ -31,7 +31,7 @@ internal static class EmojiAssetLoader
 
     private static readonly ConcurrentDictionary<string, IReadOnlyList<EmojiAsset>> Loaded = new(StringComparer.Ordinal);
 
-    /// <summary>Whether a group of this identifier exists in the catalogue.</summary>
+    /// <summary>Whether a group of this identifier exists in the catalog.</summary>
     public static bool IsKnownGroup(string groupId)
         => Groups.Any(group => string.Equals(group.Id, groupId, StringComparison.Ordinal));
 
@@ -39,7 +39,7 @@ internal static class EmojiAssetLoader
     public static IReadOnlyList<EmojiAsset> InGroup(string groupId)
         => IsKnownGroup(groupId) ? Loaded.GetOrAdd(groupId, Load) : [];
 
-    /// <summary>Every emoji in the catalogue, which reads every category.</summary>
+    /// <summary>Every emoji in the catalog, which reads every category.</summary>
     public static IReadOnlyList<EmojiAsset> All()
         => [.. Groups.SelectMany(group => InGroup(group.Id))];
 
@@ -48,10 +48,10 @@ internal static class EmojiAssetLoader
         var resourceName = $"{ResourceFolder}.{groupId}.json";
 
         using var stream = typeof(EmojiAssetLoader).GetTypeInfo().Assembly.GetManifestResourceStream(resourceName)
-            ?? throw new InvalidOperationException($"The emoji catalogue resource '{resourceName}' is missing; regenerate it with scripts/fetch-emoji.ps1.");
+            ?? throw new InvalidOperationException($"The emoji catalog resource '{resourceName}' is missing; regenerate it with scripts/fetch-emoji.ps1.");
 
-        var raw = JsonSerializer.Deserialize(stream, EmojiCatalogueJsonContext.Default.RawCatalogue)
-            ?? throw new InvalidOperationException($"The emoji catalogue resource '{resourceName}' could not be read.");
+        var raw = JsonSerializer.Deserialize(stream, EmojiCatalogJsonContext.Default.RawCatalog)
+            ?? throw new InvalidOperationException($"The emoji catalog resource '{resourceName}' could not be read.");
 
         return
         [
@@ -68,19 +68,19 @@ internal static class EmojiAssetLoader
     }
 }
 
-/// <summary>One category's catalogue as scripts/fetch-emoji.ps1 writes it.</summary>
-internal sealed record RawCatalogue(
+/// <summary>One category's catalog as scripts/fetch-emoji.ps1 writes it.</summary>
+internal sealed record RawCatalog(
     [property: JsonPropertyName("version")] string Version,
     [property: JsonPropertyName("group")] string Group,
     [property: JsonPropertyName("chunkSize")] int ChunkSize,
     [property: JsonPropertyName("emoji")] IReadOnlyList<RawEmoji> Emoji);
 
-/// <summary>One catalogue entry as scripts/fetch-emoji.ps1 writes it.</summary>
+/// <summary>One catalog entry as scripts/fetch-emoji.ps1 writes it.</summary>
 internal sealed record RawEmoji(
     [property: JsonPropertyName("c")] string C,
     [property: JsonPropertyName("s")] string S,
     [property: JsonPropertyName("n")] string N,
     [property: JsonPropertyName("k")] IReadOnlyList<string> K);
 
-[JsonSerializable(typeof(RawCatalogue))]
-internal sealed partial class EmojiCatalogueJsonContext : JsonSerializerContext;
+[JsonSerializable(typeof(RawCatalog))]
+internal sealed partial class EmojiCatalogJsonContext : JsonSerializerContext;

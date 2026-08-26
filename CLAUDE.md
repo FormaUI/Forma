@@ -98,6 +98,7 @@ An identifier-shaped member is one of six different things, numbered below, and 
 These rules govern prose that *describes a thing*. They do not apply to this file, or to documents whose purpose is to teach judgment or record decisions.
 
 - Do state only what a thing is or does in XML docs, CSS banners, inline comments, and README files.
+- Do use US English spelling in documentation and comments — color, license, catalog — with one deliberate exception: behaviour keeps its British spelling.
 - Do comment only when the code cannot express an important constraint, such as a necessary `!important`, a non-obvious `-webkit-` property, or an off-by-one invariant.
 - Do keep comments to one line whenever possible.
 - Do add a one-line XML `<summary>` describing what every public parameter and public type is.

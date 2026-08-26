@@ -1,5 +1,5 @@
 /**
- * Markup — text made safe for markup, and colour spellings normalized for it.
+ * Markup — text made safe for markup, and color spellings normalized for it.
  */
 
 /** Escapes text for the markup context it lands in. */
@@ -22,9 +22,9 @@ export class Escape {
     }
 }
 
-/** Colour value spellings. */
+/** Color value spellings. */
 export class CssColor {
-    /** Converts an rgb() or rgba() colour to #rrggbb, leaving any other notation alone. */
+    /** Converts an rgb() or rgba() color to #rrggbb, leaving any other notation alone. */
     static toHex(value) {
         const parts = /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/.exec(value);
 

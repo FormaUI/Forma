@@ -185,7 +185,7 @@ describe('RichTextEditor', () => {
         expect(editor.querySelector('span')).toBeNull();
     });
 
-    it('reports colours as hex so they match the toolbar options', () => {
+    it('reports colors as hex so they match the toolbar options', () => {
         editor.innerHTML = '<p><span style="color: rgb(211, 47, 47);">Hello world</span></p>';
         const handle = attach(editor, { owner });
 

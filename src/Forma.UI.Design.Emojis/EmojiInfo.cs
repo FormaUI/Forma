@@ -1,6 +1,6 @@
 namespace Forma.UI.Design.Emojis;
 
-/// <summary>One emoji in a catalogue, with the terms a search matches it by.</summary>
+/// <summary>One emoji in a catalog, with the terms a search matches it by.</summary>
 public sealed record EmojiInfo
 {
     /// <summary>The emoji itself.</summary>
