@@ -19,7 +19,7 @@ public sealed partial class FormaComposerLinkDialog : ComposerDialogBase
 
     /// <inheritdoc />
     // An address is carried only when one link is being retargeted; several share none, and the author names it.
-    private protected override void Seed()
+    private protected override void OnOpen()
         => (_href, _name, _openInNewTab) = Reopened<LinkDialogResult>() is { } link
             ? (link.Href, link.Name, link.OpenInNewTab)
             : (null, null, false);

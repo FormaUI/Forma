@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Components;
 /// <summary>What every composer dialog carries: its open state, its dismissal, and the rules a document is held to.</summary>
 public abstract class ComposerDialogBase : ComponentBase
 {
-    private bool _seeded;
+    private bool _hasOpened;
 
     /// <summary>Whether the dialog is currently visible.</summary>
     [Parameter] public bool Opened { get; set; }
@@ -45,19 +45,19 @@ public abstract class ComposerDialogBase : ComponentBase
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        // Only the first opening seeds the fields; a later render would otherwise overwrite what was typed.
-        if (!Opened || _seeded)
+        // Only the first opening fills the fields; a later render would otherwise overwrite what was typed.
+        if (!Opened || _hasOpened)
         {
             return;
         }
 
-        _seeded = true;
+        _hasOpened = true;
 
-        Seed();
+        OnOpen();
     }
 
-    /// <summary>Fills the fields from whatever the dialog reopened on, which a dialog collecting something new leaves alone.</summary>
-    private protected virtual void Seed()
+    /// <summary>Called as the dialog opens, to fill its fields from whatever it reopened on.</summary>
+    private protected virtual void OnOpen()
     {
     }
 

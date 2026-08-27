@@ -13,7 +13,7 @@ public sealed partial class FormaComposerVideoDialog : ComposerDialogBase
     [Parameter] public EventCallback<VideoDialogResult> OnInsert { get; set; }
 
     /// <inheritdoc />
-    private protected override void Seed()
+    private protected override void OnOpen()
         => (_source, _title, _autoplay) = Reopened<VideoDialogResult>() is { } video
             ? (video.Source, video.Title, video.Autoplay)
             : (null, null, false);

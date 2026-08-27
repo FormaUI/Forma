@@ -15,7 +15,7 @@ public sealed partial class FormaComposerImageDialog : ComposerDialogBase
     [Parameter] public EventCallback<ImageDialogResult> OnInsert { get; set; }
 
     /// <inheritdoc />
-    private protected override void Seed()
+    private protected override void OnOpen()
         => (_source, _altText, _caption) = Reopened<ImageDialogResult>() is { } image
             ? (image.Source, image.AltText, image.Caption)
             : (null, null, null);

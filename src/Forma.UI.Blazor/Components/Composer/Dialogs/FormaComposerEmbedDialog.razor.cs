@@ -13,7 +13,7 @@ public sealed partial class FormaComposerEmbedDialog : ComposerDialogBase
     [Parameter] public EventCallback<EmbedDialogResult> OnInsert { get; set; }
 
     /// <inheritdoc />
-    private protected override void Seed()
+    private protected override void OnOpen()
         => (_embedType, _identifier, _settings) = Reopened<EmbedDialogResult>() is { } embed
             ? (embed.EmbedType, embed.Identifier, embed.Settings)
             : (null, null, null);
