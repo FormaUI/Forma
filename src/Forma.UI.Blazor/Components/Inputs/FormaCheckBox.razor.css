@@ -6,8 +6,8 @@
    ============================================================ */
 
 .forma-checkbox {
-    inline-size: 16px;
-    block-size: 16px;
+    inline-size: 1rem;
+    block-size: 1rem;
     flex-shrink: 0;
     margin: 0;
     accent-color: var(--main-color, #0d6efd);
@@ -29,7 +29,7 @@
 .forma-checkbox-label {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-2);
     cursor: pointer;
 }
 

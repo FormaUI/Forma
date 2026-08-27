@@ -250,6 +250,33 @@ A component whose sub-components only work inside it still has to hand them stat
 - Don't set `font-family` on form elements.
 - Don't use motion as the only channel communicating state.
 
+### One scale for size and space
+
+Every measurement a component makes comes from one scale, so a child agrees with its parent and one component agrees with the next. The scale is the 4px grid that Material, Apple's guidelines and Bootstrap all build on, expressed in rem so it follows the reader's font size; nothing about it is Forma's invention, and nothing outside it is a component's to invent.
+
+- Do take every gap, padding and margin from the spacing tokens, and give each step one job: `--space-1` (0.25rem) between a glyph and its label inside one control, `--space-2` (0.5rem) between controls in a row and as a control's block padding, `--space-3` (0.75rem) as a control's inline padding and between groups in a row, `--space-4` (1rem) between blocks and as a panel's padding, `--space-5` (1.5rem) and `--space-6` (2rem) between sections.
+- Do take every text size from the type tokens — `--font-size-xs` for a caption or a badge, `--font-size-sm` for a control's label and dense data, `--font-size-base` for prose and inputs, `--font-size-lg` for a section or dialog heading, `--font-size-xl` for a page title, `--font-size-2xl` for a display figure — and line height from `--line-height-prose` (1.5) or `--line-height-control` (1.25).
+- Do take every corner from the radius tokens: `--radius-sm` on a control, `--radius-md` on a card, popup or panel, `--radius-lg` on a dialog or toast, `--radius-pill` on a badge or a chip; `50%` stays for a genuine circle.
+- Do keep `em` for what must scale with the text it sits in — a glyph inline with text, sub- and superscript, the typography of authored content — and `px` for a hairline, a focus ring, a shadow offset and a 1–2px optical nudge against a border; everything else is a token.
+- Do size a glyph in `em` inside text and from the icon tokens as a standalone icon — `--icon-size-sm` in a dense row, `--icon-size-md` on a button, `--icon-size-lg` leading a panel or a cell, `--icon-size-display` as an empty state's or a drop zone's figure — and keep a control's target at the 24×24 floor and 44×44 under a coarse pointer, which is what the standard and both platform guidelines specify.
+- Do derive a width threshold from the content it guards and say so beside it — the widths of the items that must fit, added up — rather than from a device; a tier is arithmetic, not a guess.
+- Don't write a bare `rem`, `em` or `px` for spacing, type or radius in a component; a value not on the scale is either a token that is missing, which is added, or a mistake.
+- Don't reach for `overflow: auto` to make a row or a table fit; sideways scrolling inside a page is the last resort after packing, hiding by priority and stacking, and a table drops its least important columns before it scrolls.
+
+### Responsive by design
+
+A component is handed a width, never a device: it sits in a phone's full column, a tablet's half, a desktop's dialog or a sidebar's sliver, and must fit whatever it is given rather than a viewport it assumed.
+
+- Do size in `rem` for spacing, radii and type so a reader's own font size carries through, and keep `px` for a hairline, a focus ring, a shadow, and the 24×24 and 44×44 target minimums the standard defines in CSS pixels.
+- Do adapt to the component's own width with a `@container` query, and reserve `@media` for facts about the reader — hover, pointer, motion, forced colours — or the viewport as a whole; a component inside a narrow pane is narrow whatever the window is.
+- Do choose how a row gives way when it cannot fit, and make it the design rather than the accident: a bar of commands scrolls behind arrows, a pager hides the pages it cannot show, a two-column layout stacks. Wrapping onto a second line is a choice too, and rarely the right one for a control row.
+- Do pack before you stack: a grid of tiles or cells shrinks them to keep several across a narrow column, and a pager keeps as many pages as fit, because one column of full-size items is a long scroll that shows less, not a layout that adapted.
+- Do let a flex item shrink: an input has an intrinsic width, and a flex child defaults to `min-inline-size: auto`, so either pushes its parent wider than the page unless told `min-inline-size: 0`.
+- Do give a wheel or a gesture to the nearest thing that can answer it; a popup inside a scrolling bar takes the wheel before the bar does.
+- Do check every component at a phone's width and a tablet's before review, in a real browser and by looking, because a page can pass a width measurement while wrapping, clipping, or hiding what a reader needs.
+- Don't size a component against `100vw`; the viewport is not the space it was given.
+- Don't set a fixed `inline-size` on a control row or a floor wider than a phone; `min(…, 100%)` keeps a floor without pushing the page.
+
 ## Services
 
 - Do place a contract and the sealed implementation shipped with it in `Forma.UI.Features.{Feature}/{Category}/`, `IXService.cs` beside `XService.cs`.

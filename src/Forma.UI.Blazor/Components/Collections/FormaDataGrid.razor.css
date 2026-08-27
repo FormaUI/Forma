@@ -12,7 +12,7 @@
 .forma-data-grid {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: var(--space-3);
     max-block-size: 100%;
     min-block-size: 0;
 }
@@ -45,15 +45,15 @@
    FormaButton to breathe against a neighbouring row or the sticky header.
    The selection column keeps its own narrow, centred box. */
 ::deep .forma-data-grid-scroller th:not(.forma-data-grid-select-column) {
-    padding-block: 0.6rem;
-    padding-inline: 0.75rem;
+    padding-block: var(--space-2);
+    padding-inline: var(--space-3);
 }
 
 /* Mirrors QuickGrid's own `.quickgrid[theme=default] > tbody > tr > td` shape to
    outrank the padding it sets there. */
 ::deep .forma-data-grid-scroller .quickgrid > tbody > tr > td:not(.forma-data-grid-select-column) {
-    padding-block: 0.6rem;
-    padding-inline: 0.75rem;
+    padding-block: var(--space-2);
+    padding-inline: var(--space-3);
 }
 
 /* QuickGrid indents a column title inside its cell, so every heading sat inboard of
@@ -66,7 +66,7 @@
 }
 
 ::deep .forma-data-grid-scroller .quickgrid .col-title {
-    padding-block: 0.1rem;
+    padding-block: var(--space-1);
     padding-inline: 0;
 }
 
@@ -83,7 +83,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 12px;
+    gap: var(--space-3);
 }
 
 /* An auto margin rather than space-between, so the status still sits at the inline
@@ -91,21 +91,21 @@
 .forma-data-grid-status {
     margin-inline-start: auto;
     color: var(--text-muted-color, #626976);
-    font-size: 0.875rem;
+    font-size: var(--font-size-sm);
 }
 
 /* The selection column keeps the same gutter and leading edge as every other column, so
    its box starts on the line the values beside it start on. */
 ::deep .forma-data-grid-select-column {
     inline-size: 3rem;
-    padding-inline: 0.75rem;
+    padding-inline: var(--space-3);
     text-align: start;
 }
 
 /* Matched against QuickGrid's own body-cell shape, which is specific enough to keep its
    asymmetric padding otherwise and leave the box off that line. */
 ::deep .forma-data-grid-scroller .quickgrid > tbody > tr > td.forma-data-grid-select-column {
-    padding-inline: 0.75rem;
+    padding-inline: var(--space-3);
     text-align: start;
 }
 

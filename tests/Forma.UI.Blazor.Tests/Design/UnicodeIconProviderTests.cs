@@ -13,7 +13,8 @@ public sealed class UnicodeIconProviderTests
     private static readonly Glyph[] EmojiCapable =
     [
         Glyph.Airplane, Glyph.Anchor, Glyph.CheckCircle, Glyph.CheckSquare, Glyph.Cut, Glyph.Emoji, Glyph.Error,
-        Glyph.Heart, Glyph.Hourglass, Glyph.Information, Glyph.Keyboard, Glyph.Play, Glyph.Settings, Glyph.Warning,
+        Glyph.FastForward, Glyph.Heart, Glyph.Hourglass, Glyph.Information, Glyph.Keyboard, Glyph.Link, Glyph.Play,
+        Glyph.Settings, Glyph.SoccerBall, Glyph.TaskList, Glyph.Warning,
     ];
 
     [Fact]

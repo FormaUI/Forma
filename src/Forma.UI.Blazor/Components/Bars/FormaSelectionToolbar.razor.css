@@ -13,7 +13,7 @@
 
 .forma-selection-toolbar.is-active {
     grid-template-rows: 1fr;
-    margin-block-end: 16px;
+    margin-block-end: var(--space-4);
     opacity: 1;
 }
 
@@ -24,16 +24,16 @@
 .forma-selection-toolbar-content {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-2);
     flex-wrap: wrap;
-    padding: 8px 12px;
+    padding: var(--space-2) var(--space-3);
     border: 1px solid var(--border-color);
-    border-radius: 6px;
+    border-radius: var(--radius-md);
     background: var(--forma-selection-toolbar-background-color, color-mix(in srgb, var(--main-color, #0d6efd) 8%, transparent));
 }
 
 .forma-selection-toolbar-caption {
-    font-size: 0.875rem;
+    font-size: var(--font-size-sm);
     font-weight: 600;
     color: var(--text-color);
     flex-shrink: 0;
@@ -41,13 +41,17 @@
 
 .forma-selection-toolbar-trailing {
     display: flex;
+    flex: 1 1 auto;
     align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--space-2);
+    min-inline-size: 0;
     margin-inline-start: auto;
 }
 
-/* forma-selection-toolbar-items lands on FormaToolbar's own FormaCommandBar output, not this component's. */
+/* forma-selection-toolbar-items lands on FormaToolbar's own FormaCommandBar output, not this component's;
+   left free to shrink, its arrows take over once the actions outgrow the row. */
 ::deep .forma-selection-toolbar-items {
-    flex-wrap: wrap;
+    flex: 0 1 auto;
+    min-inline-size: 0;
 }

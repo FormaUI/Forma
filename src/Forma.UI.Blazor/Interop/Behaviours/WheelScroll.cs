@@ -7,7 +7,7 @@ using Microsoft.JSInterop;
 internal sealed class WheelScroll(IJSRuntime js)
     : JsInterop(js, "./_content/Forma.UI/scripts/behaviours/WheelScroll.js")
 {
-    /// <summary>Attaches to the track, which then answers a wheel turn until it reaches either end.</summary>
-    public ValueTask<bool> AttachAsync(ElementReference track)
-        => AttachCoreAsync(track);
+    /// <summary>Attaches to the bar, whose track then answers a wheel turn anywhere over it until it reaches either end.</summary>
+    public ValueTask<bool> AttachAsync(ElementReference bar, ElementReference track)
+        => AttachCoreAsync(bar, new { track });
 }

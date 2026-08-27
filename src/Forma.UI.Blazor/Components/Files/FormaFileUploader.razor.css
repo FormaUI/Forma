@@ -22,16 +22,16 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: var(--space-2);
 }
 
 .forma-file-uploader-item,
 .forma-file-uploader-totals {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-2);
     margin: 0;
-    font-size: 0.85rem;
+    font-size: var(--font-size-sm);
 }
 
 .forma-file-uploader-mark {
@@ -61,14 +61,14 @@
 .forma-file-uploader-size,
 .forma-file-uploader-rate,
 .forma-file-uploader-time {
-    font-size: 0.75rem;
+    font-size: var(--font-size-xs);
     color: var(--text-muted-color);
 }
 
 /* Each wraps a <bdi>, which takes its direction from its own content; the layout has to sit on the
    wrapper, which inherits the page's, or a logical property resolves against the wrong direction. */
 .forma-file-uploader-size {
-    margin-inline-start: 0.35rem;
+    margin-inline-start: var(--space-1);
 }
 
 .forma-file-uploader-rate,
@@ -106,8 +106,8 @@
 }
 
 .forma-file-uploader-totals {
-    margin-block-start: 0.5rem;
-    padding-block-start: 0.4rem;
+    margin-block-start: var(--space-2);
+    padding-block-start: var(--space-2);
     border-block-start: 1px solid var(--border-color);
 }
 
@@ -118,18 +118,18 @@
 
 .forma-file-uploader-summary {
     margin: 0;
-    font-size: 0.85rem;
+    font-size: var(--font-size-sm);
     color: var(--text-muted-color);
 }
 /* The spacing sits on the filled state so the always-present live region occupies nothing while it is empty. */
 .forma-file-uploader-summary:not(:empty) {
-    margin-block-start: 0.75rem;
+    margin-block-start: var(--space-3);
 }
 
 .forma-file-uploader-actions:not(:empty) {
     display: flex;
-    gap: 0.5rem;
-    margin-block-start: 0.75rem;
+    gap: var(--space-2);
+    margin-block-start: var(--space-3);
 }
 
 @media (max-width: 45rem) {

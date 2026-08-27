@@ -6,14 +6,15 @@
 /* No divider or trailing space of its own: the header region around it owns both. */
 .forma-explorer-address-bar {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-2);
 }
 
 .forma-explorer-nav-buttons {
     display: flex;
     align-items: center;
-    gap: 0.2rem;
+    gap: var(--space-1);
     flex-shrink: 0;
 }
 
@@ -26,11 +27,11 @@
     min-inline-size: 24px;
     min-block-size: 24px;
     border: none;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     background: transparent;
     color: var(--text-color);
     cursor: pointer;
-    font-size: 0.8rem;
+    font-size: var(--font-size-xs);
     touch-action: manipulation;
     transition: background-color 0.15s ease, color 0.15s ease;
 }
@@ -70,10 +71,10 @@
     min-block-size: 2.25rem;
     display: flex;
     align-items: center;
-    gap: 0.35rem;
-    padding-inline: 0.6rem;
+    gap: var(--space-1);
+    padding-inline: var(--space-3);
     border: 1px solid var(--forma-explorer-field-border-color, var(--border-color));
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     background: var(--input-background-color);
     transition: flex 0.25s ease, max-inline-size 0.25s ease, opacity 0.2s ease, padding 0.25s ease, border-color 0.2s ease;
 }
@@ -83,7 +84,7 @@
     display: flex;
     align-items: center;
     inline-size: 16rem;
-    min-inline-size: 10rem;
+    min-inline-size: min(10rem, 100%);
     transition: flex 0.25s ease, inline-size 0.25s ease, max-inline-size 0.25s ease;
 }
 

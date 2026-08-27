@@ -6,7 +6,7 @@
 /* ── Dialog reset ── */
 dialog.forma-modal {
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     padding: 0;
     max-height: 90vh;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
@@ -61,7 +61,7 @@ dialog.forma-modal::backdrop {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 20px;
+    padding: var(--space-3) var(--space-5);
     border-bottom: 1px solid var(--border-color);
     background: var(--forma-modal-chrome-background-color, var(--modal-background-color));
     flex-shrink: 0;
@@ -69,29 +69,29 @@ dialog.forma-modal::backdrop {
 
 .forma-modal-header h5 {
     margin: 0;
-    font-size: 1.05rem;
+    font-size: var(--font-size-lg);
     font-weight: 600;
-    line-height: 1.4;
+    line-height: var(--line-height-prose);
 }
 
 /* ── Body ── */
 .forma-modal-body {
-    padding: 20px;
+    padding: var(--space-5);
     background: var(--forma-modal-background-color, var(--input-background-color));
     overflow-y: auto;
     flex: 1 1 auto;
 }
 
 .forma-modal-body.no-header {
-    padding-top: 24px;
+    padding-top: var(--space-5);
 }
 
 /* ── Footer ── */
 .forma-modal-footer {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 14px 20px;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-5);
     border-top: 1px solid var(--border-color);
     background: var(--forma-modal-chrome-background-color, var(--modal-background-color));
     flex-shrink: 0;
@@ -110,6 +110,6 @@ dialog.forma-modal::backdrop {
 .forma-modal-footer-actions {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-2);
     margin-inline-start: auto;
 }

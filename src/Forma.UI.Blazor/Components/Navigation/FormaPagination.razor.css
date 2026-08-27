@@ -8,16 +8,46 @@
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 16px;
+    gap: var(--space-4);
+    /* Whether the jump control's label fits is decided by the width the pager was given, not the viewport's. */
+    container-type: inline-size;
+    /* A contained box has no intrinsic width to offer a flex row, so in one it takes the room left instead. */
+    flex: 1 1 auto;
+    min-inline-size: 0;
 }
 
+/* One row, edge to edge: Previous at the start, Next at the end, the pages packed together in the middle. */
 .forma-pagination-list {
     display: flex;
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
+    justify-content: center;
     align-items: center;
-    gap: 4px;
+    gap: var(--space-1);
+    /* Room for the steps and the current page; a row too narrow for that and the jump control wraps the jump beneath. */
+    min-inline-size: 12rem;
     margin: 0;
     padding: 0;
     list-style: none;
+    /* Which pages fit is decided by the room the list itself has, which a jump control beside it reduces. */
+    container-type: inline-size;
+}
+
+/* A step or a page keeps its width and its label on one line; the tiers decide what fits, not the buttons. */
+.forma-pagination-list > li {
+    flex-shrink: 0;
+}
+
+::deep .forma-pagination-link {
+    white-space: nowrap;
+}
+
+.forma-pagination-list > li:first-child {
+    margin-inline-end: auto;
+}
+
+.forma-pagination-list > li:last-child {
+    margin-inline-start: auto;
 }
 
 /* The repeated class raises specificity above FormaButton's own variant rules, so
@@ -28,15 +58,15 @@
     align-items: center;
     justify-content: center;
     min-width: 2.25em;
-    padding-block: 0.4em;
-    padding-inline: 0.65em;
+    padding-block: var(--space-2);
+    padding-inline: var(--space-3);
     border: 1px solid var(--border-color);
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     background: #fff;
     color: var(--text-color);
-    font-size: 0.9rem;
+    font-size: var(--font-size-sm);
     font-weight: inherit;
-    line-height: 1.2;
+    line-height: var(--line-height-control);
 }
 
 @media (hover: hover) {
@@ -67,19 +97,19 @@
 .forma-pagination-jump {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-2);
 }
 
 .forma-pagination-jump-label {
     color: var(--text-muted-color);
-    font-size: 0.9rem;
+    font-size: var(--font-size-sm);
 }
 
 .forma-pagination-jump-input {
     inline-size: 5.5em;
-    padding-block: 0.4em;
-    padding-inline: 0.5em;
-    font-size: 0.875rem;
+    padding-block: var(--space-2);
+    padding-inline: var(--space-3);
+    font-size: var(--font-size-sm);
     text-align: center;
 }
 
@@ -90,5 +120,62 @@
 
     .forma-pagination-jump-input {
         min-block-size: 2.75rem;
+    }
+}
+
+/* Fewer pages show as the pager narrows: every page, then the current page with two neighbours,
+   then one, then the current page alone. Previous and Next stay whatever the width. Every rule
+   carries the same :not() pair, so the tiers are decided by source order rather than specificity. */
+@container (max-width: 28rem) {
+    .forma-pagination-list > li:not(:first-child):not(:last-child) {
+        display: none;
+    }
+
+    /* A gap marker beside the current page says nothing a narrow pager has room for, so a neighbour is
+       brought back only when it is a page. */
+    .forma-pagination-list > li:not(:first-child):not(:last-child):has(> .forma-pagination-current),
+    .forma-pagination-list > li:not(:first-child):not(:last-child):not(:has(> .forma-pagination-ellipsis)):has(+ li > .forma-pagination-current),
+    .forma-pagination-list > li:has(> .forma-pagination-current) + li:not(:first-child):not(:last-child):not(:has(> .forma-pagination-ellipsis)),
+    .forma-pagination-list > li:not(:first-child):not(:last-child):not(:has(> .forma-pagination-ellipsis)):has(+ li + li > .forma-pagination-current),
+    .forma-pagination-list > li:has(> .forma-pagination-current) + li + li:not(:first-child):not(:last-child):not(:has(> .forma-pagination-ellipsis)) {
+        display: revert;
+    }
+}
+
+@container (max-width: 22rem) {
+    .forma-pagination-list > li:not(:first-child):not(:last-child):has(+ li + li > .forma-pagination-current),
+    .forma-pagination-list > li:has(> .forma-pagination-current) + li + li:not(:first-child):not(:last-child) {
+        display: none;
+    }
+}
+
+@container (max-width: 17rem) {
+    .forma-pagination-list > li:not(:first-child):not(:last-child):has(+ li > .forma-pagination-current),
+    .forma-pagination-list > li:has(> .forma-pagination-current) + li:not(:first-child):not(:last-child) {
+        display: none;
+    }
+}
+/* The jump control keeps its place beside Next; on a narrow pager its label is heard but not seen,
+   and the box narrows, so the row still holds the steps, the pages that fit, and the jump. A jump
+   standing alone keeps its label, because nothing else says what the box is for. */
+.forma-pagination-jump {
+    flex: 0 0 auto;
+}
+
+@container (max-width: 36rem) {
+    .forma-pagination:has(> .forma-pagination-list) .forma-pagination-jump-label {
+        position: absolute;
+        inline-size: 1px;
+        block-size: 1px;
+        margin: -1px;
+        padding: 0;
+        border: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    .forma-pagination:has(> .forma-pagination-list) .forma-pagination-jump-input {
+        inline-size: 4em;
     }
 }

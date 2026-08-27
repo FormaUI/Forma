@@ -8,7 +8,7 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 0.75rem;
+    gap: var(--space-3);
     min-block-size: 2.5rem;
 }
 
@@ -27,8 +27,8 @@
 }
 
 .forma-explorer-selection-status ::deep .forma-explorer-exit-select-button svg {
-    inline-size: 11px;
-    block-size: 11px;
+    inline-size: 0.6875rem;
+    block-size: 0.6875rem;
 }
 
 .forma-explorer-visually-hidden {
@@ -46,7 +46,7 @@
 .forma-explorer-toolbar-left {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-2);
 }
 
 /* The selection bar takes the whole toolbar row at the same height, so entering selection never moves the content below. */
@@ -58,27 +58,27 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 0.5rem;
+    gap: var(--space-2);
     background: var(--hover-background-color);
-    padding-inline: 0.5rem;
+    padding-inline: var(--space-2);
     padding-block: 0;
-    border-radius: 6px;
+    border-radius: var(--radius-md);
 }
 
 .forma-explorer-selection-actions {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-2);
 }
 
 .forma-explorer-selection-status {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-2);
 }
 
 .forma-explorer-selection-label {
-    font-size: 0.875rem;
+    font-size: var(--font-size-sm);
     font-weight: 600;
     color: var(--text-color);
 }
@@ -86,14 +86,14 @@
 .forma-explorer-toolbar-right {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--space-3);
 }
 
 /* View Mode Buttons */
 .forma-explorer-view-modes {
     display: flex;
     align-items: center;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     overflow: hidden;
 }
 
@@ -107,11 +107,11 @@
     min-inline-size: 24px;
     min-block-size: 24px;
     border: none;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     background: transparent;
     color: var(--text-muted-color);
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: var(--font-size-sm);
     touch-action: manipulation;
     transition: background-color 0.15s ease, color 0.15s ease;
 }
@@ -137,10 +137,10 @@
 .forma-explorer-view-button.is-active::after {
     content: "";
     position: absolute;
-    inset-block-end: 0.25rem;
+    inset-block-end: var(--space-1);
     inline-size: 1rem;
-    block-size: 2px;
-    border-radius: 1px;
+    block-size: 0.125rem;
+    border-radius: var(--radius-sm);
     background: currentColor;
 }
 
@@ -160,10 +160,10 @@
 }
 
 .forma-explorer-sort-trigger-text {
-    font-size: 0.875rem;
+    font-size: var(--font-size-sm);
 }
 
 .forma-explorer-sort-trigger-caret {
-    font-size: 0.65rem;
+    font-size: var(--font-size-xs);
     color: var(--text-muted-color);
 }

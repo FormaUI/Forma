@@ -7,7 +7,7 @@
 .forma-image-picker {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: var(--space-3);
 }
 
 .forma-image-picker-previews {
@@ -16,14 +16,14 @@
     padding: 0;
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: var(--space-3);
 }
 
 .forma-image-picker-preview {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.35rem;
+    gap: var(--space-1);
     inline-size: 5rem;
 }
 
@@ -34,9 +34,9 @@
     justify-content: center;
     inline-size: 5rem;
     block-size: 5rem;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     border: 1px solid var(--light-border-color);
-    font-size: 1.75rem;
+    font-size: var(--icon-size-display);
     color: var(--text-muted-color);
 }
 
@@ -65,6 +65,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 0.8rem;
+    font-size: var(--font-size-xs);
     color: var(--text-muted-color);
 }

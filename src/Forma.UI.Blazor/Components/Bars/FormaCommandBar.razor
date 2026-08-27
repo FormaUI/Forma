@@ -1,6 +1,6 @@
 @namespace Forma.UI.Blazor.Components.Bars
 <FormaVisibility Hidden="Hidden" Animated="Animated">
-    <div class="@CssClass" @attributes="AdditionalAttributes">
+    <div class="@CssClass" @attributes="AdditionalAttributes" @ref="_barElement">
         @if (_canScrollBack || _canScrollForward)
         {
             <button type="button"

@@ -10,7 +10,7 @@
         <h2>@L["Every glyph"]</h2>
         <p class="description">@L["The package draws the whole set, so nothing here falls back to a character."]</p>
         <div class="demo-box">
-            <ul class="glyph-grid">
+            <ul class="glyph-grid glyph-grid-named">
                 @foreach (var glyph in Drawable)
                 {
                     <li>
@@ -26,7 +26,7 @@
         <h2>@L["Variants"]</h2>
         <p class="description">@L["Phosphor draws the two variants as an outline and a solid shape, so every glyph differs between the columns."]</p>
         <div class="demo-box">
-            <ul class="glyph-grid">
+            <ul class="glyph-grid glyph-grid-named">
                 @foreach (var glyph in Drawable)
                 {
                     <li>

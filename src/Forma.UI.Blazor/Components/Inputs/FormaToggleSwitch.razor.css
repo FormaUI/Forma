@@ -8,7 +8,7 @@
 .forma-toggle-switch-wrapper {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-2);
 }
 
 /* ---------- label (the click target) ---------- */
@@ -41,7 +41,7 @@
     width: 3rem;
     height: 1.5rem;
     background-color: var(--forma-toggle-switch-off-background-color, #adb5bd);
-    border-radius: 1.5rem;
+    border-radius: var(--radius-pill);
     transition: background-color 0.2s ease;
 }
 
@@ -60,7 +60,7 @@
     inset-block-start: 50%;
     inset-inline-end: 0.4375rem;
     transform: translateY(-50%);
-    font-size: 0.75rem;
+    font-size: var(--font-size-xs);
     line-height: 1;
     color: var(--forma-toggle-switch-off-mark-color, rgba(0, 0, 0, 0.6));
 }
@@ -90,7 +90,7 @@
 
 /* ---------- labels ---------- */
 .forma-toggle-switch-label {
-    font-size: 0.875rem;
+    font-size: var(--font-size-sm);
     color: var(--forma-toggle-switch-label-color, #6c757d);
     user-select: none;
 }
@@ -98,6 +98,6 @@
 /* Padding rather than a taller track, so the knob geometry is untouched. */
 @media (pointer: coarse) {
     .forma-toggle-switch {
-        padding-block: 0.625rem;
+        padding-block: calc((44px - 1.5rem) / 2);
     }
 }

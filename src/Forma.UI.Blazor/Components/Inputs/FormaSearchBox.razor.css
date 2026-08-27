@@ -13,18 +13,21 @@
 
 .forma-search-box-icon {
     position: absolute;
-    inset-inline-start: 0.65rem;
-    font-size: 0.8rem;
+    inset-inline-start: var(--space-3);
+    font-size: var(--font-size-xs);
     color: var(--text-muted-color);
     pointer-events: none;
 }
 
 /* The box is drawn in forma-input.css; the padding here is the room the glyph and clear button need. */
 .forma-search-box {
+    /* An input is sized from its size attribute unless told otherwise, which is wider than a phone. */
+    inline-size: 100%;
+    min-inline-size: 0;
     min-block-size: 2.125rem;
-    padding-inline: 2rem;
-    padding-block: 0.25rem;
-    font-size: 0.875rem;
+    padding-inline: calc(var(--space-2) + 1.25rem + var(--space-1));
+    padding-block: var(--space-1);
+    font-size: var(--font-size-sm);
 }
 
 /* The placeholder is UI text, so an empty field follows the page rather than the value typed into it.
@@ -47,7 +50,7 @@
 
 .forma-search-box-clear {
     position: absolute;
-    inset-inline-end: 0.35rem;
+    inset-inline-end: var(--space-2);
 }
 
 @media (pointer: coarse) {

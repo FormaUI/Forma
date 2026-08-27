@@ -16,14 +16,14 @@
     inline-size: 100%;
     block-size: 100%;
     min-block-size: 12rem;
-    padding: var(--space-4, 1rem);
+    padding: var(--space-4);
     border: none;
     outline: none;
     background: transparent;
     color: var(--forma-composer-color, var(--text-color, inherit));
     font-family: var(--font-family-base, inherit);
-    font-size: var(--font-size-base, 1rem);
-    line-height: 1.6;
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-prose);
     overflow-y: auto;
     word-break: break-word;
 }
@@ -59,19 +59,19 @@
 .forma-composer-rich-text-canvas ::deep h4,
 .forma-composer-rich-text-canvas ::deep h5,
 .forma-composer-rich-text-canvas ::deep h6 {
-    margin-block-start: var(--space-4, 1rem);
-    margin-block-end: var(--space-2, 0.5rem);
+    margin-block-start: var(--space-4);
+    margin-block-end: var(--space-2);
     font-weight: 600;
     line-height: 1.25;
 }
 
 .forma-composer-rich-text-canvas ::deep p {
     margin-block-start: 0;
-    margin-block-end: var(--space-3, 0.75rem);
+    margin-block-end: var(--space-3);
 }
 
 .forma-composer-rich-text-canvas ::deep .forma-composer-lead {
-    font-size: var(--font-size-lg, 1.125rem);
+    font-size: var(--font-size-lg);
     font-weight: 400;
     line-height: 1.75;
 }
@@ -79,8 +79,8 @@
 .forma-composer-rich-text-canvas ::deep blockquote {
     margin-inline-start: 0;
     margin-inline-end: 0;
-    margin-block: var(--space-3, 0.75rem);
-    padding-inline-start: var(--space-3, 0.75rem);
+    margin-block: var(--space-3);
+    padding-inline-start: var(--space-3);
     border-inline-start: 3px solid var(--border-color, #d9dee5);
     color: var(--text-secondary-color, #6b7280);
     font-style: italic;
@@ -91,25 +91,26 @@
     font-family: var(--font-family-mono, monospace);
     font-size: 0.875em;
     background-color: var(--muted-background-color, #f3f4f6);
-    border-radius: var(--radius-sm, 0.25rem);
+    border-radius: var(--radius-sm);
 }
 
 .forma-composer-rich-text-canvas ::deep pre {
-    margin-block: var(--space-3, 0.75rem);
-    padding: var(--space-3, 0.75rem);
+    margin-block: var(--space-3);
+    padding: var(--space-3);
     background-color: var(--muted-background-color, #f3f4f6);
-    border-radius: var(--radius-md, 0.375rem);
+    border-radius: var(--radius-md);
     overflow-x: auto;
 }
 
 .forma-composer-rich-text-canvas ::deep ul,
 .forma-composer-rich-text-canvas ::deep ol {
-    margin-block: var(--space-2, 0.5rem);
-    padding-inline-start: var(--space-4, 1.25rem);
+    margin-block: var(--space-2);
+    /* A list is indented past its own markers rather than by the shared spacing step. */
+    padding-inline-start: 1.25rem;
 }
 
 .forma-composer-rich-text-canvas ::deep hr {
-    margin-block: var(--space-4, 1rem);
+    margin-block: var(--space-4);
     border: none;
     border-block-start: 1px solid var(--border-color, #d9dee5);
 }
@@ -117,15 +118,15 @@
 .forma-composer-rich-text-canvas ::deep table,
 .forma-composer-rich-text-canvas ::deep .forma-composer-table {
     inline-size: 100%;
-    margin-block: var(--space-3, 0.75rem);
+    margin-block: var(--space-3);
     border-collapse: collapse;
     border: 1px solid var(--border-color, #d9dee5);
 }
 
 .forma-composer-rich-text-canvas ::deep table th,
 .forma-composer-rich-text-canvas ::deep table td {
-    padding-inline: var(--space-3, 0.75rem);
-    padding-block: var(--space-2, 0.5rem);
+    padding-inline: var(--space-3);
+    padding-block: var(--space-2);
     border: 1px solid var(--border-color, #d9dee5);
     text-align: start;
     vertical-align: top;
@@ -137,14 +138,14 @@
 }
 
 .forma-composer-rich-text-canvas ::deep table caption {
-    margin-block-end: var(--space-1, 0.25rem);
+    margin-block-end: var(--space-1);
     font-weight: 600;
     text-align: start;
     color: var(--text-secondary-color, #6b7280);
 }
 
 .forma-composer-rich-text-canvas ::deep figure.forma-composer-image {
-    margin-block: var(--space-3, 0.75rem);
+    margin-block: var(--space-3);
     margin-inline: 0;
     display: flex;
     flex-direction: column;
@@ -177,22 +178,22 @@
 .forma-composer-rich-text-canvas ::deep a[name]:focus-visible {
     outline: 2px solid var(--focus-color, #86b7fe);
     outline-offset: 2px;
-    border-radius: var(--radius-sm, 0.25rem);
+    border-radius: var(--radius-sm);
 }
 
 /* A named anchor carries no visible text of its own, so without this it is a zero-size box the author cannot see, select or remove. */
 .forma-composer-rich-text-canvas ::deep a[name]:empty {
     display: inline-block;
-    margin-inline: 0.125rem;
-    padding-inline: var(--space-1, 0.25rem);
+    margin-inline: var(--space-1);
+    padding-inline: var(--space-1);
     vertical-align: baseline;
     font-family: var(--font-family-mono, monospace);
-    font-size: var(--font-size-sm, 0.875rem);
-    line-height: 1.4;
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-prose);
     color: var(--text-secondary-color, #6b7280);
     background-color: var(--muted-background-color, #f3f4f6);
     border: 1px dashed var(--border-color, #d9dee5);
-    border-radius: var(--radius-sm, 0.25rem);
+    border-radius: var(--radius-sm);
     user-select: none;
 }
 
@@ -216,12 +217,12 @@
 .forma-composer-rich-text-canvas ::deep img.forma-composer-image {
     max-inline-size: 100%;
     block-size: auto;
-    border-radius: var(--radius-sm, 0.25rem);
+    border-radius: var(--radius-sm);
 }
 
 .forma-composer-rich-text-canvas ::deep figure.forma-composer-image figcaption {
-    margin-block-start: var(--space-1, 0.25rem);
-    font-size: var(--font-size-sm, 0.875rem);
+    margin-block-start: var(--space-1);
+    font-size: var(--font-size-sm);
     color: var(--text-secondary-color, #6b7280);
     font-style: italic;
     text-align: center;
@@ -232,12 +233,12 @@
 .forma-composer-rich-text-canvas ::deep .forma-composer-video {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin-block: 0.75rem;
-    padding: 0.75rem;
+    gap: var(--space-2);
+    margin-block: var(--space-3);
+    padding: var(--space-3);
     background-color: var(--forma-composer-video-background-color, var(--modal-background-color));
     border: 1px solid var(--forma-composer-video-border-color, var(--light-border-color));
-    border-radius: 0.375rem;
+    border-radius: var(--radius-md);
 }
 
 /* Play reads the same in both directions, so the triangle is deliberately left unmirrored.
@@ -251,7 +252,7 @@
     justify-content: center;
     inline-size: 2rem;
     block-size: 2rem;
-    font-size: 0.75rem;
+    font-size: var(--font-size-xs);
     color: var(--forma-composer-video-badge-foreground-color, var(--input-background-color));
     background-color: var(--forma-composer-video-badge-color, var(--main-color));
     border-radius: 50%;
@@ -262,13 +263,13 @@
 }
 
 .forma-composer-rich-text-canvas ::deep .forma-composer-embed {
-    margin-block: var(--space-3, 0.75rem);
-    padding: var(--space-3, 0.75rem);
+    margin-block: var(--space-3);
+    padding: var(--space-3);
     background-color: var(--muted-background-color, #f3f4f6);
     border: 1px dashed var(--border-color, #d9dee5);
-    border-radius: var(--radius-md, 0.375rem);
+    border-radius: var(--radius-md);
     font-family: var(--font-family-mono, monospace);
-    font-size: var(--font-size-sm, 0.875rem);
+    font-size: var(--font-size-sm);
 }
 
 .forma-composer-rich-text-announcer {

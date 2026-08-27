@@ -3,17 +3,18 @@
 .forma-emoji-picker {
     display: flex;
     flex-direction: column;
-    inline-size: min(22rem, calc(100vw - 1rem));
+    inline-size: 22rem;
+    max-inline-size: 100%;
     border: 1px solid var(--forma-emoji-picker-border-color, var(--border-color));
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     background: var(--forma-emoji-picker-background-color, var(--input-background-color));
     overflow: hidden;
 }
 
 .forma-emoji-picker-tabs {
     display: flex;
-    gap: 0.125rem;
-    padding: 0.25rem;
+    gap: var(--space-1);
+    padding: var(--space-1);
     border-block-end: 1px solid var(--forma-emoji-picker-border-color, var(--border-color));
     overflow-x: auto;
 }
@@ -25,10 +26,10 @@
     justify-content: center;
     min-inline-size: 1.75rem;
     min-block-size: 1.75rem;
-    padding: 0.25rem;
+    padding: var(--space-1);
     border: none;
     border-block-end: 2px solid transparent;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     background: none;
     color: var(--forma-emoji-picker-tab-color, var(--text-muted-color));
     cursor: pointer;
@@ -47,12 +48,12 @@
 }
 
 .forma-emoji-picker-search {
-    padding: 0.375rem;
+    padding: var(--space-2);
 }
 
 .forma-emoji-picker-panel {
-    padding-inline: 0.375rem;
-    padding-block-end: 0.375rem;
+    padding-inline: var(--space-2);
+    padding-block-end: var(--space-2);
     overflow-y: auto;
     max-block-size: 17rem;
 }
@@ -61,10 +62,10 @@
     position: sticky;
     inset-block-start: 0;
     margin: 0;
-    padding-block: 0.375rem 0.25rem;
+    padding-block: var(--space-2) var(--space-1);
     background: var(--forma-emoji-picker-background-color, var(--input-background-color));
     color: var(--forma-emoji-picker-heading-color, var(--text-muted-color));
-    font-size: 0.75rem;
+    font-size: var(--font-size-xs);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -74,7 +75,7 @@
 .forma-emoji-picker-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(2rem, 1fr));
-    gap: 0.125rem;
+    gap: var(--space-1);
 }
 
 .forma-emoji-picker-loading {
@@ -88,7 +89,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding-block: 0.75rem;
+    padding-block: var(--space-3);
 }
 
 .forma-emoji-picker-emoji {
@@ -99,11 +100,11 @@
     min-block-size: 2rem;
     padding: 0;
     border: none;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     background: none;
     cursor: pointer;
     touch-action: manipulation;
-    font-size: 1.5rem;
+    font-size: var(--icon-size-lg);
 }
 
 .forma-emoji-picker-emoji:focus-visible {
@@ -113,9 +114,9 @@
 
 .forma-emoji-picker-empty {
     margin: 0;
-    padding-block: 1.5rem;
+    padding-block: var(--space-5);
     color: var(--forma-emoji-picker-heading-color, var(--text-muted-color));
-    font-size: 0.875rem;
+    font-size: var(--font-size-sm);
     text-align: center;
 }
 

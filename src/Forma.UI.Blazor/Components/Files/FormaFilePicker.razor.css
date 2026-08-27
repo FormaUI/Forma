@@ -16,10 +16,10 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    padding: 2rem 1rem;
+    gap: var(--space-2);
+    padding: var(--space-6) var(--space-4);
     border: 2px dashed var(--light-border-color);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     color: var(--text-muted-color);
     text-align: center;
     cursor: pointer;
@@ -67,12 +67,12 @@
 }
 
 .forma-file-picker-icon {
-    font-size: 1.75rem;
+    font-size: var(--icon-size-display);
 }
 
 .forma-file-picker-prompt {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: var(--font-size-sm);
 }
 
 .forma-file-picker-rejections {
@@ -81,12 +81,12 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: var(--space-2);
     color: var(--danger-color);
-    font-size: 0.85rem;
+    font-size: var(--font-size-sm);
 }
 
 /* The spacing sits on the first item so the always-present live region occupies nothing while it is empty. */
 .forma-file-picker-rejections > li:first-child {
-    margin-block-start: 0.75rem;
+    margin-block-start: var(--space-3);
 }

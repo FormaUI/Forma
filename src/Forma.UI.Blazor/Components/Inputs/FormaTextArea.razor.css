@@ -6,15 +6,19 @@
    ============================================================ */
 
 .forma-textarea {
+    /* The counter strip: the count's own line plus the space that keeps it off the last line of text. */
+    --forma-textarea-count-block-size: var(--space-4);
+    --forma-textarea-count-strip: calc(var(--forma-textarea-count-block-size) + var(--space-2) + var(--space-1));
     resize: vertical;
-    min-block-size: calc(1.5em + 2.75rem);
+    /* One line of text inside the field's box, plus the line the field was sized to show. */
+    min-block-size: calc(var(--line-height-prose) * 1em + var(--forma-field-padding-block-start) + var(--forma-field-padding-block-end) + var(--space-4));
 }
 
 /* Keeps typed text from ending underneath the counter, without spending the lines the
    field was sized to show: the minimum grows by the strip, less the padding it replaces. */
 .forma-textarea-counting {
-    padding-block-end: 1.75rem;
-    min-block-size: calc(1.5em + 2.75rem - 0.375rem + 1.75rem);
+    padding-block-end: var(--forma-textarea-count-strip);
+    min-block-size: calc(var(--line-height-prose) * 1em + var(--forma-field-padding-block-start) + var(--space-4) + var(--forma-textarea-count-strip));
 }
 
 .forma-textarea-count {
@@ -22,20 +26,20 @@
     z-index: 1;
     display: flex;
     justify-content: flex-end;
-    block-size: 1rem;
+    block-size: var(--forma-textarea-count-block-size);
     /* Lifted over the field's last line, giving back below the flow height it costs. */
-    margin-block: -1.5rem 0.5rem;
+    margin-block: calc(-1 * var(--forma-textarea-count-block-size) - var(--space-2)) var(--space-2);
     /* Clears the resize grip, which sits in the same corner. */
-    margin-inline-end: 1.125rem;
-    font-size: 0.75rem;
-    line-height: 1rem;
+    margin-inline-end: var(--space-4);
+    font-size: var(--font-size-xs);
+    line-height: var(--forma-textarea-count-block-size);
     pointer-events: none;
 }
 
 /* Opaque, because a scrolled value passes behind it. */
 .forma-textarea-count bdi {
-    padding-inline: 0.25rem;
-    border-radius: 3px;
+    padding-inline: var(--space-1);
+    border-radius: var(--radius-sm);
     background: var(--forma-input-background-color, var(--input-background-color));
     color: var(--forma-textarea-count-color, var(--text-color));
 }

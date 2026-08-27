@@ -31,6 +31,9 @@ public sealed partial class FormaCommandBar : ComponentBase, IAsyncDisposable
     /// <summary>Animates the transition between hidden and shown instead of snapping instantly.</summary>
     [Parameter] public bool Animated { get; set; }
 
+    /// <summary>Scrolls the commands with a wheel turned anywhere over the bar, keeping the turn from the page while the pointer stays there.</summary>
+    [Parameter] public bool WheelScrollOnHover { get; set; } = true;
+
     /// <summary>Additional attributes applied to the bar element.</summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
@@ -43,6 +46,7 @@ public sealed partial class FormaCommandBar : ComponentBase, IAsyncDisposable
     private WheelScroll _wheelScroll = default!;
     private Scroll _scroll = default!;
     private DotNetObjectReference<FormaCommandBar>? _selfReference;
+    private ElementReference _barElement;
     private ElementReference _trackElement;
     private bool _canScrollBack;
     private bool _canScrollForward;
@@ -86,8 +90,11 @@ public sealed partial class FormaCommandBar : ComponentBase, IAsyncDisposable
 
         await _boundaryWatcher.AttachAsync(_trackElement, _selfReference);
 
-        // A wheel reports vertically alone, so its turn is read as movement along the track.
-        await _wheelScroll.AttachAsync(_trackElement);
+        // A wheel reports vertically alone, so its turn anywhere over the bar is read as movement along the track.
+        if (WheelScrollOnHover)
+        {
+            await _wheelScroll.AttachAsync(_barElement, _trackElement);
+        }
     }
 
     private async Task ScrollAsync(int direction)

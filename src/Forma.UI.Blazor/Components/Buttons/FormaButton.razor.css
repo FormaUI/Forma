@@ -10,15 +10,15 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.4rem;
-    padding-block: 0.4rem;
-    padding-inline: 0.85rem;
+    gap: var(--space-1);
+    padding-block: var(--space-2);
+    padding-inline: var(--space-3);
     font-family: inherit;
-    font-size: 0.875rem;
+    font-size: var(--font-size-sm);
     font-weight: 500;
-    line-height: 1.4;
+    line-height: var(--line-height-control);
     border: 1px solid transparent;
-    border-radius: var(--forma-button-radius, 8px);
+    border-radius: var(--forma-button-radius, var(--radius-lg));
     cursor: pointer;
     transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
 }
@@ -75,9 +75,9 @@
 }
 
 .forma-button-tertiary {
-    padding-block: 0.2rem;
-    padding-inline: 0.6rem;
-    font-size: 0.8rem;
+    padding-block: var(--space-1);
+    padding-inline: var(--space-3);
+    font-size: var(--font-size-xs);
     font-weight: 400;
     background-color: transparent;
     border-color: var(--light-border-color);
@@ -135,22 +135,22 @@
 
 /* ---------- size ---------- */
 .forma-button-mini {
-    padding-block: 0.25rem;
-    padding-inline: 0.7rem;
-    font-size: 0.8125rem;
+    padding-block: var(--space-1);
+    padding-inline: var(--space-3);
+    font-size: var(--font-size-xs);
 }
 
 /* ---------- icon only ---------- */
 .forma-button-icon {
     padding: 0;
-    inline-size: 30px;
-    block-size: 30px;
+    inline-size: 1.875rem;
+    block-size: 1.875rem;
     flex-shrink: 0;
 }
 
 .forma-button-icon.forma-button-mini {
-    inline-size: 24px;
-    block-size: 24px;
+    inline-size: 1.5rem;
+    block-size: 1.5rem;
 }
 
 /* The glyph belongs to the calling component's markup, so ::deep is what reaches it. Sizing it

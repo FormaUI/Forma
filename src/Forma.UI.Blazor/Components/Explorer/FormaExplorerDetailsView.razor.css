@@ -5,21 +5,54 @@
 
 .forma-explorer-details-wrapper {
     inline-size: 100%;
-    overflow-x: auto;
-    scrollbar-width: thin;
+}
+
+/* The table gives up columns by priority as the explorer narrows, so it never scrolls sideways.
+   Each threshold is the sum of what remains: name 12rem, kind 6rem, size 6rem, a date 8rem each,
+   the actions column 3rem, and 1.5rem of cell padding per column. */
+@container (max-width: 48rem) {
+    .forma-explorer-column-added,
+    .forma-explorer-cell-added {
+        display: none;
+    }
+}
+
+@container (max-width: 40rem) {
+    .forma-explorer-column-modified,
+    .forma-explorer-cell-modified {
+        display: none;
+    }
+}
+
+@container (max-width: 32rem) {
+    .forma-explorer-column-size,
+    .forma-explorer-cell-size {
+        display: none;
+    }
+}
+
+@container (max-width: 26rem) {
+    .forma-explorer-column-kind,
+    .forma-explorer-cell-kind {
+        display: none;
+    }
+
+    .forma-explorer-column-name {
+        min-inline-size: 0;
+    }
 }
 
 .forma-explorer-details-table {
     min-inline-size: 100%;
     border-collapse: collapse;
-    font-size: 0.875rem;
+    font-size: var(--font-size-sm);
     text-align: start;
 }
 
 .forma-explorer-details-table th,
 .forma-explorer-details-table td {
-    padding-inline: 0.75rem;
-    padding-block: 0.5rem;
+    padding-inline: var(--space-3);
+    padding-block: var(--space-2);
     border-block-end: 1px solid var(--light-border-color);
     white-space: nowrap;
 }
@@ -73,8 +106,8 @@
 }
 
 .forma-explorer-sort-arrow {
-    font-size: 0.75rem;
-    margin-inline-start: 0.35rem;
+    font-size: var(--font-size-xs);
+    margin-inline-start: var(--space-1);
     color: var(--main-color);
 }
 
@@ -106,7 +139,7 @@
     min-inline-size: 24px;
     min-block-size: 24px;
     flex-shrink: 0;
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
     border: 1px solid var(--dark-border-color);
     background: var(--input-background-color);
     color: transparent;
@@ -124,7 +157,7 @@
 .forma-explorer-name-wrapper {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: var(--space-2);
     inline-size: 100%;
     min-block-size: 2.25rem;
     padding: 0;

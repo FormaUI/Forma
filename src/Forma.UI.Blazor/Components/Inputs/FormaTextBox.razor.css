@@ -8,9 +8,9 @@
 
 .forma-text-box {
     min-block-size: 2.125rem;
-    padding-block: 0.25rem;
-    padding-inline: 0.75rem;
-    font-size: 0.875rem;
+    padding-block: var(--space-1);
+    padding-inline: var(--space-3);
+    font-size: var(--font-size-sm);
 }
 
 .forma-text-box:disabled {

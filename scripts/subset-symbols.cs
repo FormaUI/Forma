@@ -88,7 +88,7 @@ newLoca[kept.Length] = (uint)newGlyf.Length;
 var writer = new SfntWriter();
 writer.Add("glyf", newGlyf.ToArray());
 writer.Add("loca", SfntWriter.LongLoca(newLoca));
-writer.Add("cmap", SfntWriter.CmapFormat4(required.ToDictionary(value => value, value => toNew[cmap[value]])));
+writer.Add("cmap", SfntWriter.CmapFormat12(required.ToDictionary(value => value, value => toNew[cmap[value]])));
 writer.Add("hmtx", font.SubsetHmtx(kept));
 writer.Add("hhea", font.PatchedHhea(kept.Length));
 writer.Add("maxp", font.PatchedMaxp(kept.Length));
@@ -387,94 +387,46 @@ internal sealed class SfntWriter
         return result;
     }
 
-    public static byte[] CmapFormat4(Dictionary<int, int> map)
+    /// <summary>A full-repertoire cmap: one group per run of consecutive code points mapped to consecutive glyphs.</summary>
+    public static byte[] CmapFormat12(Dictionary<int, int> map)
     {
-        var codes = map.Keys.Order().ToArray();
-        var segments = new List<(int Start, int End)>();
+        var groups = new List<(int Start, int End, int Glyph)>();
 
-        foreach (var code in codes)
+        foreach (var code in map.Keys.Order())
         {
-            if (segments.Count > 0 && segments[^1].End == code - 1)
+            var glyph = map[code];
+
+            if (groups.Count > 0 && groups[^1].End == code - 1 && groups[^1].Glyph + (code - groups[^1].Start) == glyph)
             {
-                segments[^1] = (segments[^1].Start, code);
+                groups[^1] = (groups[^1].Start, code, groups[^1].Glyph);
             }
             else
             {
-                segments.Add((code, code));
+                groups.Add((code, code, glyph));
             }
         }
 
-        segments.Add((0xFFFF, 0xFFFF));
-
-        var count = segments.Count;
-        var glyphIds = new List<ushort>();
-        var subtable = new MemoryStream();
-        using var writer = new BinaryWriter(subtable);
-
-        void U16(int value)
-        {
-            writer.Write(BinaryPrimitives.ReverseEndianness((ushort)value));
-        }
-
-        var search = 1;
-        while (search * 2 <= count)
-        {
-            search *= 2;
-        }
-
-        U16(4);
-        U16(16 + (count * 8) + (map.Count * 2)); // length, glyph ids follow the four segment arrays
-        U16(0);
-        U16(count * 2);
-        U16(search * 2);
-        U16(int.Log2(search));
-        U16((count - search) * 2);
-
-        foreach (var (_, end) in segments)
-        {
-            U16(end);
-        }
-
-        U16(0);
-
-        foreach (var (start, _) in segments)
-        {
-            U16(start);
-        }
-
-        for (var index = 0; index < count; index++)
-        {
-            U16(index == count - 1 ? 1 : 0); // the final segment maps 0xFFFF to glyph 0 through its delta
-        }
-
-        for (var index = 0; index < count; index++)
-        {
-            if (index == count - 1)
-            {
-                U16(0);
-                continue;
-            }
-
-            U16((glyphIds.Count + count - index) * 2);
-
-            for (var code = segments[index].Start; code <= segments[index].End; code++)
-            {
-                glyphIds.Add((ushort)map[code]);
-            }
-        }
-
-        foreach (var glyph in glyphIds)
-        {
-            U16(glyph);
-        }
-
-        var body = subtable.ToArray();
-        var table = new byte[12 + body.Length];
+        var length = 16 + (groups.Count * 12);
+        var table = new byte[12 + length];
         BinaryPrimitives.WriteUInt16BigEndian(table.AsSpan(2), 1);  // one subtable
         BinaryPrimitives.WriteUInt16BigEndian(table.AsSpan(4), 3);  // Windows
-        BinaryPrimitives.WriteUInt16BigEndian(table.AsSpan(6), 1);  // BMP
+        BinaryPrimitives.WriteUInt16BigEndian(table.AsSpan(6), 10); // full Unicode repertoire
         BinaryPrimitives.WriteUInt32BigEndian(table.AsSpan(8), 12);
-        body.CopyTo(table, 12);
+
+        var at = 12;
+        BinaryPrimitives.WriteUInt16BigEndian(table.AsSpan(at), 12);
+        BinaryPrimitives.WriteUInt32BigEndian(table.AsSpan(at + 4), (uint)length);
+        BinaryPrimitives.WriteUInt32BigEndian(table.AsSpan(at + 12), (uint)groups.Count);
+        at += 16;
+
+        foreach (var (start, end, glyph) in groups)
+        {
+            BinaryPrimitives.WriteUInt32BigEndian(table.AsSpan(at), (uint)start);
+            BinaryPrimitives.WriteUInt32BigEndian(table.AsSpan(at + 4), (uint)end);
+            BinaryPrimitives.WriteUInt32BigEndian(table.AsSpan(at + 8), (uint)glyph);
+            at += 12;
+        }
+
         return table;
     }
 

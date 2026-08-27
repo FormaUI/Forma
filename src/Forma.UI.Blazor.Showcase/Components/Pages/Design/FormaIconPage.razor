@@ -11,7 +11,7 @@
         <h2>@L["Every glyph"]</h2>
         <p class="description">@L["A glyph with no honest character draws nothing, because a meaningless box in a toolbar reads worse than an empty one."]</p>
         <div class="demo-box">
-            <ul class="glyph-grid">
+            <ul class="glyph-grid glyph-grid-named">
                 @foreach (var glyph in Drawable)
                 {
                     <li>
@@ -27,7 +27,7 @@
         <h2>@L["Variants"]</h2>
         <p class="description">@L["Both variants carry the same character here, drawn in the bundled font's regular and heavier cut, so a glyph the font draws only one way looks the same in both columns."]</p>
         <div class="demo-box">
-            <ul class="glyph-grid">
+            <ul class="glyph-grid glyph-grid-named">
                 @foreach (var glyph in Drawable)
                 {
                     <li>

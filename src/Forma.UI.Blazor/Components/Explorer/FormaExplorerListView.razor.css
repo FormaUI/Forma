@@ -6,17 +6,17 @@
 .forma-explorer-list {
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: var(--space-2);
 }
 
 .forma-explorer-list-item {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding-inline: 0.75rem;
-    padding-block: 0.4rem;
+    gap: var(--space-3);
+    padding-inline: var(--space-3);
+    padding-block: var(--space-2);
     border: 1px solid var(--light-border-color);
-    border-radius: 6px;
+    border-radius: var(--radius-md);
     background: var(--input-background-color);
     cursor: grab;
     transition: background-color 0.15s ease, border-color 0.15s ease;
@@ -45,7 +45,7 @@
     block-size: var(--forma-explorer-check-size);
     min-inline-size: 24px;
     min-block-size: 24px;
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
     border: 1px solid var(--dark-border-color);
     background: var(--input-background-color);
     color: transparent;
@@ -75,7 +75,7 @@
     flex: 1;
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: var(--space-4);
     overflow: hidden;
     cursor: pointer;
 }
@@ -84,7 +84,7 @@
     flex: 1;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--space-3);
     min-inline-size: 0;
     min-block-size: 2.5rem;
     padding: 0;
@@ -99,7 +99,7 @@
 
 /* Isolated but not self-directed: deriving direction from the name would align a Latin one against the reading direction. */
 .forma-explorer-list-name {
-    font-size: 0.875rem;
+    font-size: var(--font-size-sm);
     font-weight: 500;
     color: var(--text-color);
     unicode-bidi: isolate;
@@ -114,7 +114,7 @@
 }
 
 .forma-explorer-list-size {
-    font-size: 0.75rem;
+    font-size: var(--font-size-xs);
     color: var(--text-muted-color);
     flex-shrink: 0;
 }

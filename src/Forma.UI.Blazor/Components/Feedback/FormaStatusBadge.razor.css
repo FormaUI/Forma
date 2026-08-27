@@ -10,17 +10,17 @@
 
 .forma-status-badge {
     display: inline-block;
-    padding-block: 0.25em;
-    padding-inline: 0.65em;
-    border-radius: 999px;
-    font-size: 0.8125rem;
+    padding-block: var(--space-1);
+    padding-inline: var(--space-2);
+    border-radius: var(--radius-pill);
+    font-size: var(--font-size-xs);
     font-weight: 600;
-    line-height: 1.45;
+    line-height: var(--line-height-prose);
     white-space: nowrap;
     background-color: var(--forma-status-badge-background-color, rgba(98, 105, 118, 0.12));
     color: var(--forma-status-badge-foreground-color, var(--text-color, #2c384a));
 }
 
 .forma-status-badge-marker {
-    margin-inline-end: 0.35em;
+    margin-inline-end: var(--space-1);
 }
