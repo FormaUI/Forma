@@ -152,22 +152,24 @@
 }
 
 /* A link is underlined as well as coloured, because colour alone leaves the state unreadable without it.
-   Hover darkens rather than lightens: --link-hover-color resolves to a tint of white that measures
-   about 2.4:1 on this canvas, so the resting colour's sibling is used and the underline thickens too. */
+   The underline is set away from the baseline and skips the ink of a descender, which a rule sitting
+   tight under the text would otherwise cut through. */
 .forma-composer-rich-text-canvas ::deep a[href] {
     color: var(--forma-composer-link-color, var(--link-color));
     text-decoration: underline;
-    text-underline-offset: 0.15em;
+    text-decoration-thickness: 0.0625em;
+    text-decoration-skip-ink: auto;
+    text-underline-offset: 0.22em;
 }
 
 @media (hover: hover) {
     .forma-composer-rich-text-canvas ::deep a[href]:hover {
-        color: var(--forma-composer-link-hover-color, var(--main-color));
-        text-decoration-thickness: 0.125em;
+        color: var(--forma-composer-link-hover-color, var(--link-hover-color));
+        text-decoration-thickness: 0.1em;
     }
 
     .forma-composer-rich-text-canvas ::deep a[name]:hover {
-        border-block-end-color: var(--forma-composer-link-hover-color, var(--main-color));
+        border-block-end-color: var(--forma-composer-link-hover-color, var(--link-hover-color));
     }
 }
 
