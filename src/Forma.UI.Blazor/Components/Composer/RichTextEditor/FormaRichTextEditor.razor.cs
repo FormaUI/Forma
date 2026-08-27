@@ -34,6 +34,9 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
     private bool _isLinkDialogOpen;
     private bool _isLinkAnchorMode;
     private string? _linkHref;
+    private ImageDialogResult? _reopenedImage;
+    private VideoDialogResult? _reopenedVideo;
+    private EmbedDialogResult? _reopenedEmbed;
     private bool _isTableDialogOpen;
     private bool _isVideoDialogOpen;
     private bool _isImageDialogOpen;
@@ -138,6 +141,45 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
         await Context.ReportSelectionAsync(selection);
     }
 
+    /// <summary>Callback invoked from JS when the author double-clicks an image already in the document.</summary>
+    /// <param name="image">What that image already holds.</param>
+    [JSInvokable]
+    public Task HandleImageActivatedAsync(ImageDialogResult image)
+        => ReopenAsync(() => (_reopenedImage, _isImageDialogOpen) = (image, true));
+
+    /// <summary>Callback invoked from JS when the author double-clicks a video already in the document.</summary>
+    /// <param name="video">What that video already holds.</param>
+    [JSInvokable]
+    public Task HandleVideoActivatedAsync(VideoDialogResult video)
+        => ReopenAsync(() => (_reopenedVideo, _isVideoDialogOpen) = (video, true));
+
+    /// <summary>Callback invoked from JS when the author double-clicks an embed already in the document.</summary>
+    /// <param name="embed">What that embed already holds.</param>
+    [JSInvokable]
+    public Task HandleEmbedActivatedAsync(EmbedDialogResult embed)
+        => ReopenAsync(() => (_reopenedEmbed, _isEmbedDialogOpen) = (embed, true));
+
+    /// <summary>Callback invoked from JS when the author double-clicks a link or a named anchor.</summary>
+    /// <param name="isAnchor">Whether it is a named anchor rather than a hyperlink.</param>
+    [JSInvokable]
+    public Task HandleLinkActivatedAsync(bool isAnchor)
+        // A link dialog reads its own fields back off the canvas, so nothing is carried across from here.
+        => ReopenAsync(() => HandleLinkDialogRequested(isAnchor));
+
+    // The canvas has already selected the element whole, so confirming replaces it rather than adding another.
+    private Task ReopenAsync(Action open)
+    {
+        if (Context is null || IsDisabled || IsReadOnly)
+        {
+            return Task.CompletedTask;
+        }
+
+        open();
+        StateHasChanged();
+
+        return Task.CompletedTask;
+    }
+
     /// <summary>Handles commands raised directly by UI elements like the bubble menu.</summary>
     public void HandleCommand(string command)
     {
@@ -177,12 +219,15 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
 
     private void HandleVideoDialogRequested()
     {
+        // Asked for from the toolbar, so nothing is being reopened and the fields start empty.
+        _reopenedVideo = null;
         _isVideoDialogOpen = true;
         StateHasChanged();
     }
 
     private void HandleImageDialogRequested()
     {
+        _reopenedImage = null;
         _isImageDialogOpen = true;
         StateHasChanged();
     }
@@ -196,6 +241,7 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
 
     private void HandleEmbedDialogRequested()
     {
+        _reopenedEmbed = null;
         _isEmbedDialogOpen = true;
         StateHasChanged();
     }

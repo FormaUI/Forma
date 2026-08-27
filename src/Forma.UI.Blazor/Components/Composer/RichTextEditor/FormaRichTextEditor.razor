@@ -42,6 +42,7 @@
         @if (_isVideoDialogOpen)
         {
             <FormaComposerVideoDialog Opened="_isVideoDialogOpen"
+                                      Reopening="_reopenedVideo"
                                       OnInsert="HandleVideoInsertedAsync"
                                       OnCancel="() => _isVideoDialogOpen = false" />
         }
@@ -49,6 +50,7 @@
         @if (_isImageDialogOpen)
         {
             <FormaComposerImageDialog Opened="_isImageDialogOpen"
+                                      Reopening="_reopenedImage"
                                       OnInsert="HandleImageInsertedAsync"
                                       OnCancel="() => _isImageDialogOpen = false" />
         }
@@ -64,6 +66,7 @@
         @if (_isEmbedDialogOpen)
         {
             <FormaComposerEmbedDialog Opened="_isEmbedDialogOpen"
+                                      Reopening="_reopenedEmbed"
                                       OnInsert="HandleEmbedInsertedAsync"
                                       OnCancel="() => _isEmbedDialogOpen = false" />
         }

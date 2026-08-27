@@ -956,4 +956,86 @@ describe('RichTextEditor', () => {
         });
     });
 
+    describe('reopening what a dialog built', () => {
+        function doubleClick(node) {
+            node.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, cancelable: true }));
+        }
+
+        it('reports an image with what it already holds', () => {
+            editor.innerHTML = '<figure class="forma-composer-image"><img src="/cat.png" alt="A cat" /><figcaption>Tiddles</figcaption></figure>';
+            attach(editor, { owner });
+
+            doubleClick(editor.querySelector('img'));
+
+            expect(owner.invokeMethodAsync).toHaveBeenCalledWith('HandleImageActivatedAsync', {
+                source: '/cat.png',
+                altText: 'A cat',
+                caption: 'Tiddles',
+            });
+        });
+
+        it('reports a video with what it already holds', () => {
+            editor.innerHTML = '<div class="forma-composer-video" data-video-url="https://example.com/v" data-video-title="Clip" data-autoplay="true"><p>Clip</p></div>';
+            attach(editor, { owner });
+
+            doubleClick(editor.querySelector('.forma-composer-video p'));
+
+            expect(owner.invokeMethodAsync).toHaveBeenCalledWith('HandleVideoActivatedAsync', {
+                source: 'https://example.com/v',
+                title: 'Clip',
+                autoplay: true,
+            });
+        });
+
+        it('reports an embed with what it already holds', () => {
+            editor.innerHTML = '<div class="forma-composer-embed" data-embed-type="form" data-embed-id="42" data-settings="wide">[Embed: form]</div>';
+            attach(editor, { owner });
+
+            doubleClick(editor.querySelector('.forma-composer-embed'));
+
+            expect(owner.invokeMethodAsync).toHaveBeenCalledWith('HandleEmbedActivatedAsync', {
+                embedType: 'form',
+                identifier: '42',
+                settings: 'wide',
+            });
+        });
+
+        it('reports a link so its own dialog reopens on it', () => {
+            editor.innerHTML = '<p>Read <a href="https://example.com">the notice</a> first.</p>';
+            attach(editor, { owner });
+
+            doubleClick(editor.querySelector('a[href]'));
+
+            expect(owner.invokeMethodAsync).toHaveBeenCalledWith('HandleLinkActivatedAsync', false);
+        });
+
+        it('replaces the element rather than adding a second, even after a dialog took the caret', () => {
+            editor.innerHTML = '<p>before</p><figure class="forma-composer-image"><img src="/cat.png" alt="A cat" /></figure>';
+            const handle = attach(editor, { owner });
+
+            doubleClick(editor.querySelector('img'));
+
+            // What closing a dialog does: hands the canvas a collapsed caret somewhere else entirely.
+            const elsewhere = document.createRange();
+            elsewhere.selectNodeContents(editor.querySelector('p').firstChild);
+            elsewhere.collapse(true);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(elsewhere);
+
+            handle.exec('insertHtml', '<figure class="forma-composer-image"><img src="/dog.png" alt="A dog" /></figure>');
+
+            expect(editor.querySelectorAll('img')).toHaveLength(1);
+            expect(editor.querySelector('img').getAttribute('src')).toBe('/dog.png');
+        });
+
+        it('says nothing about plain text, which no dialog built', () => {
+            attach(editor, { owner });
+
+            doubleClick(editor.querySelector('p'));
+
+            expect(owner.invokeMethodAsync).not.toHaveBeenCalledWith('HandleImageActivatedAsync', expect.anything());
+        });
+    });
+
 });

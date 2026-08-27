@@ -4,7 +4,7 @@
 @inherits ComposerDialogBase
 
 <FormaComposerDialog Opened="Opened"
-                     Title="@L["Insert Embed"]"
+                     Title="@(IsReopened ? L["Edit Embed"] : L["Insert Embed"])"
                      Size="ModalSize.Medium"
                      Messages="Messages"
                      OnConfirm="HandleConfirmAsync"

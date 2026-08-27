@@ -4,7 +4,7 @@
 @inherits ComposerDialogBase
 
 <FormaComposerDialog Opened="Opened"
-                     Title="@L["Insert Video"]"
+                     Title="@(IsReopened ? L["Edit Video"] : L["Insert Video"])"
                      Size="ModalSize.Medium"
                      Messages="Messages"
                      OnConfirm="HandleConfirmAsync"

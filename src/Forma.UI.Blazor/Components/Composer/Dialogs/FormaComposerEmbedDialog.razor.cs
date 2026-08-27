@@ -8,9 +8,31 @@ public sealed partial class FormaComposerEmbedDialog : ComposerDialogBase
     private string? _embedType;
     private string? _identifier;
     private string? _settings;
+    private bool _seeded;
+
+    /// <summary>The embed being reopened, or null when a new one is being inserted.</summary>
+    [Parameter] public EmbedDialogResult? Reopening { get; set; }
 
     /// <summary>Callback invoked when embed details are confirmed.</summary>
     [Parameter] public EventCallback<EmbedDialogResult> OnInsert { get; set; }
+
+    /// <summary>Whether the dialog reopened on something already in the document, rather than inserting anew.</summary>
+    private bool IsReopened => Reopening is not null;
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        // Only the first opening seeds the fields; a later render would otherwise overwrite what was typed.
+        if (!Opened || _seeded)
+        {
+            return;
+        }
+
+        _seeded = true;
+        _embedType = Reopening?.EmbedType;
+        _identifier = Reopening?.Identifier;
+        _settings = Reopening?.Settings;
+    }
 
     private async Task HandleConfirmAsync()
     {

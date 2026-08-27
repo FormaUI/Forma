@@ -81,4 +81,47 @@ export class MediaMarkup {
 
         return `<div class="forma-composer-embed" data-embed-type="${Escape.attribute(type)}" data-embed-id="${Escape.attribute(id)}"${settingsAttr}>[Embed: ${Escape.html(type || id)}]</div><p>&nbsp;</p>`;
     }
+
+    /** What each kind is recognised by. A figure is tried before a bare picture, because closest()
+        stops at the element itself and would otherwise lose the caption wrapped around it. */
+    static Kinds = [
+        { kind: 'image', selector: 'figure.forma-composer-image' },
+        { kind: 'image', selector: 'img' },
+        { kind: 'video', selector: '.forma-composer-video' },
+        { kind: 'embed', selector: '.forma-composer-embed' },
+        { kind: 'anchor', selector: 'a[name]' },
+        { kind: 'link', selector: 'a[href]' },
+    ];
+
+    /** Reads back what a built element holds, so the dialog reopening on it starts where the author left off. */
+    static read(kind, element) {
+        switch (kind) {
+            case 'image': {
+                const picture = element.matches('img') ? element : element.querySelector('img');
+
+                return {
+                    source: picture?.getAttribute('src') ?? '',
+                    altText: picture?.getAttribute('alt') ?? '',
+                    caption: element.querySelector('figcaption')?.textContent ?? '',
+                };
+            }
+
+            case 'video':
+                return {
+                    source: element.getAttribute('data-video-url') ?? '',
+                    title: element.getAttribute('data-video-title') ?? '',
+                    autoplay: element.getAttribute('data-autoplay') === 'true',
+                };
+
+            case 'embed':
+                return {
+                    embedType: element.getAttribute('data-embed-type') ?? '',
+                    identifier: element.getAttribute('data-embed-id') ?? '',
+                    settings: element.getAttribute('data-settings') ?? '',
+                };
+
+            default:
+                return {};
+        }
+    }
 }

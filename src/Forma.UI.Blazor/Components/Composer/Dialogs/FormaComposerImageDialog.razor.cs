@@ -10,9 +10,31 @@ public sealed partial class FormaComposerImageDialog : ComposerDialogBase
     private string? _source;
     private string? _altText;
     private string? _caption;
+    private bool _seeded;
+
+    /// <summary>The image being reopened, or null when a new one is being inserted.</summary>
+    [Parameter] public ImageDialogResult? Reopening { get; set; }
 
     /// <summary>Callback invoked when image details are confirmed.</summary>
     [Parameter] public EventCallback<ImageDialogResult> OnInsert { get; set; }
+
+    /// <summary>Whether the dialog reopened on something already in the document, rather than inserting anew.</summary>
+    private bool IsReopened => Reopening is not null;
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        // Only the first opening seeds the fields; a later render would otherwise overwrite what was typed.
+        if (!Opened || _seeded)
+        {
+            return;
+        }
+
+        _seeded = true;
+        _source = Reopening?.Source;
+        _altText = Reopening?.AltText;
+        _caption = Reopening?.Caption;
+    }
 
     private async Task HandleConfirmAsync()
     {

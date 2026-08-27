@@ -20,6 +20,13 @@ export function attach(target, options = {}) {
 }
 
 class RichTextEditor {
+    /** Which callback each reopened kind reports to, since each carries fields of its own. */
+    static #Activations = {
+        image: 'HandleImageActivatedAsync',
+        video: 'HandleVideoActivatedAsync',
+        embed: 'HandleEmbedActivatedAsync',
+    };
+
     #canvas;
     #memory;
     #inline;
@@ -58,8 +65,46 @@ class RichTextEditor {
         target.addEventListener('blur', () => this.#handleBlur(), { signal });
         target.addEventListener('click', () => this.#reportSelection(), { signal });
         target.addEventListener('keyup', () => this.#reportSelection(), { signal });
+        target.addEventListener('dblclick', event => this.#handleDoubleClick(event), { signal });
 
         document.addEventListener('selectionchange', () => this.#handleSelectionChange(), { signal });
+    }
+
+    /**
+     * Opens whatever the author double-clicked in the dialog that built it. The element is selected
+     * whole first, so confirming the dialog replaces it rather than inserting a second one beside it.
+     */
+    #handleDoubleClick(event) {
+        const from = Canvas.elementOf(event.target);
+
+        if (!from || !this.#canvas.contains(from)) {
+            return;
+        }
+
+        const found = MediaMarkup.Kinds
+            .map(({ kind, selector }) => ({ kind, element: from.closest(selector) }))
+            .find(({ element }) => element && this.#canvas.contains(element));
+
+        if (!found) {
+            return;
+        }
+
+        // Suppresses the word-selection a double-click would otherwise leave behind.
+        event.preventDefault();
+        this.#canvas.selectNode(found.element);
+        this.#memory.save();
+
+        // Frozen because the dialog about to open returns a collapsed caret when it closes, which
+        // would otherwise overwrite the element-wide selection the replacement depends on.
+        this.#memory.freeze();
+
+        if (found.kind === 'link' || found.kind === 'anchor') {
+            this.#owner?.invokeMethodAsync('HandleLinkActivatedAsync', found.kind === 'anchor');
+
+            return;
+        }
+
+        this.#owner?.invokeMethodAsync(RichTextEditor.#Activations[found.kind], MediaMarkup.read(found.kind, found.element));
     }
 
     dispose() {

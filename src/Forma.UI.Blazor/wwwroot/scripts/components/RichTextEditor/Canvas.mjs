@@ -144,6 +144,19 @@ export class Canvas {
         selection.addRange(range);
     }
 
+    /** Selects a whole node, so what replaces the selection replaces that node entirely. */
+    selectNode(node) {
+        const selection = window.getSelection();
+        if (!selection || !this.contains(node)) {
+            return;
+        }
+
+        const range = document.createRange();
+        range.selectNode(node);
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
+
     /** Selects the whole canvas. */
     selectAll() {
         const selection = window.getSelection();

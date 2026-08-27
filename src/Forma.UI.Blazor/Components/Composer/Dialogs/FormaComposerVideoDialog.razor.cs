@@ -8,9 +8,31 @@ public sealed partial class FormaComposerVideoDialog : ComposerDialogBase
     private string? _source;
     private string? _title;
     private bool _autoplay;
+    private bool _seeded;
+
+    /// <summary>The video being reopened, or null when a new one is being inserted.</summary>
+    [Parameter] public VideoDialogResult? Reopening { get; set; }
 
     /// <summary>Callback invoked when video embed details are confirmed.</summary>
     [Parameter] public EventCallback<VideoDialogResult> OnInsert { get; set; }
+
+    /// <summary>Whether the dialog reopened on something already in the document, rather than inserting anew.</summary>
+    private bool IsReopened => Reopening is not null;
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        // Only the first opening seeds the fields; a later render would otherwise overwrite what was typed.
+        if (!Opened || _seeded)
+        {
+            return;
+        }
+
+        _seeded = true;
+        _source = Reopening?.Source;
+        _title = Reopening?.Title;
+        _autoplay = Reopening?.Autoplay ?? false;
+    }
 
     // The document keeps only an http or https address, because the sanitizer drops every other scheme
     // and the author would be left with a placeholder pointing nowhere.
