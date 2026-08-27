@@ -106,25 +106,15 @@ focus, and link shades follow.
 
 `FormaIcon` draws an `Icon` as inline SVG. An `Icon` pairs a `Glyph` — named for what it means
 rather than for the set it is drawn from — with a `GlyphVariant`, the provider's primary or
-alternate representation; Phosphor draws the two as an outline and a solid shape. A bare glyph
-converts to an icon, so `Glyph.Save` and `Icon.Alternate(Glyph.Save)` are both accepted wherever
-an icon is asked for.
+alternate representation; the library's own set draws the two as an outline and a solid shape. A
+bare glyph converts to an icon, so `Glyph.Save` and `Icon.Alternate(Glyph.Save)` are both accepted
+wherever an icon is asked for.
 
-Artwork is resolved through `IIconProvider`, so a host can draw its own set instead. With none
-registered, `FormaIcon` draws the mapped glyphs as Unicode characters through `Forma Unicode
-Symbols`, a few-kilobyte font subsetted from JuliaMono that the library bundles — fetched only
-when the fallback actually renders — and nothing at all for a glyph no character depicts, so a
-host that wants no artwork package still renders consistently. To draw the full set as
-purpose-drawn artwork, add the
-[Phosphor artwork pack](src/Forma.UI.Features.Icons.Phosphor/README.md):
-
-```pwsh
-dotnet add package 2Site.Forma.UI.Features.Icons.Phosphor
-```
-
-```csharp
-builder.Services.AddFormaPhosphorPack();
-```
+The artwork for every glyph ships inside the library, drawn to
+[its own specification](docs/glyph-artwork-spec.md), so a host registers nothing and loads no icon
+font. Artwork is resolved through `IIconProvider`; a host that wants a different set registers its
+own provider, and a subtree or a single icon can name one through a cascading value or the
+`Provider` parameter.
 
 ## Emoji
 
@@ -142,7 +132,7 @@ dotnet add package 2Site.Forma.UI.Features.Emojis.Twemoji
 builder.Services.AddFormaTwemojiPack();
 ```
 
-Each artwork pack's own README covers what it registers, the artwork it ships, its license and
+The artwork pack's own README covers what it registers, the artwork it ships, its license and
 attribution, and how to regenerate it.
 
 ## Localization

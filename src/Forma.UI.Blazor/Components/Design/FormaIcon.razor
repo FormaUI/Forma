@@ -8,10 +8,13 @@
          aria-hidden="true"
          focusable="false">@foreach (var path in vector.Paths)
                            {
-                               <path d="@path.Data" opacity="@Fade(path)" />
+                               if (path.StrokeWidth > 0)
+                               {
+                                   <path d="@path.Data" fill="none" stroke="currentColor" stroke-width="@Width(path)" stroke-linecap="round" stroke-linejoin="round" opacity="@Fade(path)" />
+                               }
+                               else
+                               {
+                                   <path d="@path.Data" fill-rule="evenodd" opacity="@Fade(path)" />
+                               }
                            }</svg>
-}
-else if (_artwork is IconCharacter character)
-{
-    <span class="@CssClass" aria-hidden="true">@character.Text</span>
 }

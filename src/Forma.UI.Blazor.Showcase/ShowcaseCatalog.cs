@@ -14,8 +14,8 @@ public sealed record ShowcasePage(string Component, string Title, string Categor
 
 /// <summary>The pages the showcase serves, read once from the routed components in this assembly.</summary>
 /// <remarks>
-/// A page named <c>FormaIconPage.Phosphor.razor</c> demonstrates the same component as
-/// <c>FormaIconPage.razor</c> through a different package, and joins that page's tab strip by
+/// A page named <c>FormaEmojiPage.Twemoji.razor</c> demonstrates the same component as
+/// <c>FormaEmojiPage.razor</c> through a different package, and joins that page's tab strip by
 /// virtue of its name. Adding such a file is all it takes to add a tab.
 /// </remarks>
 public static class ShowcaseCatalog
@@ -74,8 +74,8 @@ public static class ShowcaseCatalog
 
         foreach (var (type, route) in routed)
         {
-            // Razor compiles a dot in a file name to an underscore, so FormaIconPage.Phosphor.razor arrives here
-            // as FormaIconPage_Phosphor and splits back into the page it varies and the variant it demonstrates.
+            // Razor compiles a dot in a file name to an underscore, so FormaEmojiPage.Twemoji.razor arrives here
+            // as FormaEmojiPage_Twemoji and splits back into the page it varies and the variant it demonstrates.
             var separator = type.Name.IndexOf('_', StringComparison.Ordinal);
             var component = separator < 0 ? type.Name : type.Name[..separator];
             var variant = separator < 0 ? DefaultVariant : type.Name[(separator + 1)..];

@@ -48,7 +48,7 @@ internal static class EmojiAssetLoader
         var resourceName = $"{ResourceFolder}.{groupId}.json";
 
         using var stream = typeof(EmojiAssetLoader).GetTypeInfo().Assembly.GetManifestResourceStream(resourceName)
-            ?? throw new InvalidOperationException($"The emoji catalog resource '{resourceName}' is missing; regenerate it with scripts/fetch-emoji.ps1.");
+            ?? throw new InvalidOperationException($"The emoji catalog resource '{resourceName}' is missing; regenerate it with scripts/Get-TwemojiPack.ps1.");
 
         var raw = JsonSerializer.Deserialize(stream, EmojiCatalogJsonContext.Default.RawCatalog)
             ?? throw new InvalidOperationException($"The emoji catalog resource '{resourceName}' could not be read.");
@@ -68,14 +68,14 @@ internal static class EmojiAssetLoader
     }
 }
 
-/// <summary>One category's catalog as scripts/fetch-emoji.ps1 writes it.</summary>
+/// <summary>One category's catalog as scripts/Get-TwemojiPack.ps1 writes it.</summary>
 internal sealed record RawCatalog(
     [property: JsonPropertyName("version")] string Version,
     [property: JsonPropertyName("group")] string Group,
     [property: JsonPropertyName("chunkSize")] int ChunkSize,
     [property: JsonPropertyName("emoji")] IReadOnlyList<RawEmoji> Emoji);
 
-/// <summary>One catalog entry as scripts/fetch-emoji.ps1 writes it.</summary>
+/// <summary>One catalog entry as scripts/Get-TwemojiPack.ps1 writes it.</summary>
 internal sealed record RawEmoji(
     [property: JsonPropertyName("c")] string C,
     [property: JsonPropertyName("s")] string S,

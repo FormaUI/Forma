@@ -1,7 +1,6 @@
 namespace Forma.UI.Blazor.Tests;
 
 using Forma.UI.Features.Emojis.Twemoji;
-using Forma.UI.Features.Icons.Phosphor;
 
 /// <summary>A bUnit context with the services every Forma component expects already registered.</summary>
 public abstract class FormaBunitContext : BunitContext
@@ -9,7 +8,6 @@ public abstract class FormaBunitContext : BunitContext
     /// <summary>Creates a context carrying Forma's own service registrations.</summary>
     protected FormaBunitContext()
     {
-        Services.AddFormaPhosphorPack();
         Services.AddFormaTwemojiPack();
     }
 }

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="currentColor" fill-rule="evenodd" stroke="none">
+  <path d="M 14 18 A 5 5 0 1 1 4 18 A 5 5 0 1 1 14 18 Z M 12 18 A 3 3 0 1 0 6 18 A 3 3 0 1 0 12 18 Z" />
+  <path d="M 28 18 A 5 5 0 1 1 18 18 A 5 5 0 1 1 28 18 Z M 26 18 A 3 3 0 1 0 20 18 A 3 3 0 1 0 26 18 Z" />
+  <path d="M 14 17 H 18 V 19 H 14 Z" />
+  <path d="M 3 17 L 4 12 L 6 12 L 5 17 Z M 29 17 L 28 12 L 26 12 L 27 17 Z" />
+</svg>

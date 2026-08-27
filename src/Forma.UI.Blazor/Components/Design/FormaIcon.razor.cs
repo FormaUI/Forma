@@ -26,26 +26,23 @@ public sealed partial class FormaIcon : ComponentBase
     [CascadingParameter] private IIconProvider? CascadingProvider { get; set; }
 
     private string CssClass
-        => (string.IsNullOrWhiteSpace(Class) ? "forma-icon" : $"forma-icon {Class}") + _artwork switch
-        {
-            IconCharacter when Icon.Variant is GlyphVariant.Alternate => " forma-icon-character forma-icon-character-alternate",
-            IconCharacter => " forma-icon-character",
-            _ => string.Empty,
-        };
+        => string.IsNullOrWhiteSpace(Class) ? "forma-icon" : $"forma-icon {Class}";
 
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
         // Nearest wins: this icon's own provider, then the one a surrounding subtree draws from, then the host's
-        // registration. Absent all three is a host that wants no artwork package, not a fault, and the bundled
-        // symbol font stands in.
+        // registration, and the library's own artwork when a host registered none.
         var provider = Provider
             ?? CascadingProvider
             ?? (IIconProvider?)Services.GetService(typeof(IIconProvider))
-            ?? UnicodeIconProvider.Default;
+            ?? FormaIconProvider.Default;
 
         _artwork = provider.TryGetArtwork(Icon, out var artwork) ? artwork : IconArtwork.None;
     }
+
+    private static string Width(IconPath path)
+        => path.StrokeWidth.ToString("0.###", CultureInfo.InvariantCulture);
 
     private static string? Fade(IconPath path)
         => path.Opacity < 1 ? path.Opacity.ToString("0.###", CultureInfo.InvariantCulture) : null;

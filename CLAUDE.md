@@ -43,9 +43,9 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 - Do let `Forma.UI.Blazor` reference the feature assemblies its components need and no more; anything a component works without belongs behind a package a host opts into.
 - Do ship a feature as a package of its own only when it is optional — interchangeable content such as an artwork set, which a host adds deliberately — carrying its own assets, with the contracts it needs travelling inside it through `PrivateAssets="all"`.
 - Do let the components' own package carry the features they depend on, so a host installing the library needs nothing else to render.
-- Do give a feature with services to register a `ServiceCollectionExtensions` at its project root, registering with `TryAdd` so a host that registered its own first still wins, and name the method for what lands in the container — an artwork package adds a pack named for its source, `AddFormaPhosphorPack()`, while a feature whose defaults are services is `AddFormaFeedbackServices()`.
+- Do give a feature with services to register a `ServiceCollectionExtensions` at its project root, registering with `TryAdd` so a host that registered its own first still wins, and name the method for what lands in the container — an artwork package adds a pack named for its source, `AddFormaTwemojiPack()`, while a feature whose defaults are services is `AddFormaFeedbackServices()`.
 - Do ship exactly one aggregate registrar from `Forma.UI.Blazor`, `AddFormaUI()`, fanning out to every default a component needs, so a host makes one call and still overrides any single service by registering it first.
-- Do let a component whose optional contract is unregistered fall back to a lightweight default rather than failing, as `FormaIcon` does with the bundled symbol font; a contract carrying data nobody can synthesise, such as an emoji catalog, instead leaves the component in its empty state.
+- Do let a component whose optional contract is unregistered fall back to a default the library carries rather than failing, as `FormaIcon` does with the library's own glyph artwork; a contract carrying data nobody can synthesise, such as an emoji catalog, instead leaves the component in its empty state.
 - Don't represent typed CSS values as arbitrary strings.
 - Don't set `AssemblyName` where it would only repeat the project name, and don't give a project a `PackageId` unless a host is meant to install it by name; everything else ships inside whichever package needs it.
 - Don't rename or conflate these identities; `_content/Forma.UI` is pinned and hardcoded by markup and JS, and deliberately does not track the namespace.
@@ -315,6 +315,15 @@ dotnet build Forma.slnx -p:GenerateDocumentationFile=true --no-incremental -v:q 
 - Do slow such a run enough to be followed, and hold the final state on screen before closing.
 - Don't pipe the Showcase command's output into `Select-String`, `Select-Object`, or another filter; closing the pipeline terminates the server.
 - Don't present a component as complete while build, tests, accessibility, touch, or direction checks remain unresolved.
+
+### Scripts
+
+Task scripts live in `scripts/` and are PowerShell 7, cross-platform.
+
+- Do name a script `Verb-Noun.ps1` with a verb from PowerShell's approved list (`Get-Verb`) and one PascalCase noun, so `Get-TwemojiPack.ps1`, `Build-GlyphPack.ps1`, `Update-PluralRules.ps1`; a second hyphen or a lowercase `fetch-` style name is wrong.
+- Do write a generated data asset compact by default, and take a `-Format` switch that writes it indented for a person reviewing it.
+- Do make a script that generates an asset validate its inputs and fail loudly, so a stale or malformed asset cannot be produced silently.
+- Don't introduce another runtime for tooling; a script needs only PowerShell and the .NET SDK.
 
 ## Working agreement
 

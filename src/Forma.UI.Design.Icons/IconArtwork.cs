@@ -12,11 +12,6 @@ public record IconArtwork
     public static IconArtwork Vector(string viewBox, IReadOnlyList<IconPath> paths)
         => new IconVector(viewBox, paths);
 
-    /// <summary>Drawn as a character by whichever font the reader's platform resolves it with.</summary>
-    /// <param name="text">The character sequence depicting the glyph.</param>
-    public static IconArtwork Character(string text)
-        => new IconCharacter(text);
-
     /// <summary>Closes the hierarchy to the artwork kinds this project defines.</summary>
     private protected IconArtwork()
     {

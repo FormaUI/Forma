@@ -8,4 +8,7 @@ public sealed record IconPath
 
     /// <summary>The opacity applied to the path.</summary>
     public double Opacity { get; init; } = 1;
+
+    /// <summary>The width of the stroke the path is drawn with, in the artwork's own units; zero fills the path instead.</summary>
+    public double StrokeWidth { get; init; }
 }

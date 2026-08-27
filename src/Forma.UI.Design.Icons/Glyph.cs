@@ -51,6 +51,9 @@ public enum Glyph
     /// <summary>An upward arrow.</summary>
     ArrowUp,
 
+    /// <summary>An at sign, for an address or a mention.</summary>
+    AtSign,
+
     /// <summary>A quaver, for sound.</summary>
     Audio,
 
@@ -144,6 +147,9 @@ public enum Glyph
     /// <summary>A pair of shears, for cutting.</summary>
     Cut,
 
+    /// <summary>A cylinder of stacked discs, for a database.</summary>
+    Database,
+
     /// <summary>A beetle, for debugging.</summary>
     Debug,
 
@@ -153,11 +159,17 @@ public enum Glyph
     /// <summary>Rows with columns, for a table-like view of items.</summary>
     DetailsView,
 
+    /// <summary>A dollar sign, for money in dollars.</summary>
+    DollarSign,
+
     /// <summary>A downward arrow above a line, for downloading.</summary>
     Download,
 
     /// <summary>A tray with a downward arrow, for the downloads folder.</summary>
     Downloads,
+
+    /// <summary>Text lines beside a pencil, for a draft.</summary>
+    Draft,
 
     /// <summary>Six raised dots, for a drag handle.</summary>
     DragHandle,
@@ -173,6 +185,9 @@ public enum Glyph
 
     /// <summary>An exclamation mark inside a circle, for a failure.</summary>
     Error,
+
+    /// <summary>A euro sign, for money in euros.</summary>
+    EuroSign,
 
     /// <summary>A calendar with marked days, for events.</summary>
     Events,
@@ -203,6 +218,9 @@ public enum Glyph
 
     /// <summary>A sheet with a zip, for an archive.</summary>
     FileArchive,
+
+    /// <summary>A sheet with a paper clip, for an attachment.</summary>
+    FileAttachment,
 
     /// <summary>A sheet marked with angle brackets, for a source file.</summary>
     FileCode,
@@ -246,6 +264,9 @@ public enum Glyph
     /// <summary>Stacked layers, for grouping.</summary>
     Group,
 
+    /// <summary>A hash sign, for a tag or a number.</summary>
+    HashtagSign,
+
     /// <summary>A letter H, for a heading.</summary>
     Heading,
 
@@ -261,6 +282,9 @@ public enum Glyph
     /// <summary>A clock with a counter-clockwise arrow, for recent items.</summary>
     History,
 
+    /// <summary>Two chain links side by side, for a link drawn across.</summary>
+    HorizontalLink,
+
     /// <summary>An hourglass, for waiting.</summary>
     Hourglass,
 
@@ -269,6 +293,9 @@ public enum Glyph
 
     /// <summary>Two overlapping framed pictures.</summary>
     Images,
+
+    /// <summary>A tray with an arrow settling into it, for an inbox.</summary>
+    Inbox,
 
     /// <summary>A hat and glasses, for private browsing.</summary>
     Incognito,
@@ -281,6 +308,9 @@ public enum Glyph
 
     /// <summary>A slanted letter I, for italic text.</summary>
     Italic,
+
+    /// <summary>An envelope with a prohibited badge, for junk mail.</summary>
+    JunkMail,
 
     /// <summary>A keyboard.</summary>
     Keyboard,
@@ -366,6 +396,9 @@ public enum Glyph
     /// <summary>A square with an arrow leaving it, for opening elsewhere.</summary>
     Open,
 
+    /// <summary>A tray with an arrow rising from it, for an outbox.</summary>
+    Outbox,
+
     /// <summary>Lines pulled toward the start edge, for decreasing indentation.</summary>
     Outdent,
 
@@ -411,6 +444,9 @@ public enum Glyph
     /// <summary>Bars of differing heights, for a poll.</summary>
     Poll,
 
+    /// <summary>A pound sign, for money in pounds sterling.</summary>
+    PoundSign,
+
     /// <summary>A printer, for printing.</summary>
     Print,
 
@@ -444,11 +480,17 @@ public enum Glyph
     /// <summary>A broken chain of the simpler kind, for removing a named position.</summary>
     RemoveAnchor,
 
+    /// <summary>Two chain links side by side pulled apart, for removing a link drawn across.</summary>
+    RemoveHorizontalLink,
+
     /// <summary>A broken chain, for removing a link.</summary>
     RemoveLink,
 
     /// <summary>An arrow bending up and to the left, for replying.</summary>
     Reply,
+
+    /// <summary>A pair of reading glasses, for reviewing.</summary>
+    Review,
 
     /// <summary>A single clockwise arrow, for rotating.</summary>
     Rotate,
@@ -485,6 +527,9 @@ public enum Glyph
 
     /// <summary>Three joined nodes, for sharing.</summary>
     Share,
+
+    /// <summary>A shekel sign, for money in shekels.</summary>
+    ShekelSign,
 
     /// <summary>A shopping trolley.</summary>
     ShoppingCart,
@@ -557,6 +602,12 @@ public enum Glyph
 
     /// <summary>A leftward arrow to a bar, for right-to-left reading order.</summary>
     TextDirectionRtl,
+
+    /// <summary>A hand with the thumb turned down, for disapproval.</summary>
+    ThumbsDown,
+
+    /// <summary>A hand with the thumb turned up, for approval.</summary>
+    ThumbsUp,
 
     /// <summary>A toolbox, for tools.</summary>
     Tools,

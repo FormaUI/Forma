@@ -1,11 +1,11 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "The library's own glyphs, named for what they mean rather than for the set they are drawn from.": "Los iconos propios de la biblioteca, nombrados por lo que significan y no por el conjunto del que se dibujan.",
-  "This tab draws them the way a host that registered no artwork package sees them: as Unicode characters through the symbol font the library bundles, and as nothing at all for a glyph no character honestly depicts.": "Esta pestaña los dibuja como los ve una aplicación que no registró ningún paquete de arte: como caracteres Unicode a través de la fuente de símbolos que incluye la biblioteca, y como nada en absoluto para un icono que ningún carácter representa con honestidad.",
+  "Every glyph ships as artwork inside the library, drawn as inline SVG, so a host registers nothing and loads no icon font; a host that wants a different set registers its own provider instead.": "Todos los iconos se incluyen como arte dentro de la biblioteca, dibujados como SVG en línea, así que la aplicación no registra nada ni carga ninguna fuente de iconos; una aplicación que quiera otro conjunto registra su propio proveedor.",
   "Every glyph": "Todos los iconos",
-  "A glyph with no honest character draws nothing, because a meaningless box in a toolbar reads worse than an empty one.": "Un icono sin un carácter honesto no dibuja nada, porque un cuadro sin significado en una barra de herramientas se lee peor que uno vacío.",
+  "The whole set at one size, so a glyph can be judged beside its neighbors.": "El conjunto completo a un mismo tamaño, para juzgar cada icono junto a sus vecinos.",
   "Variants": "Variantes",
-  "Both variants carry the same character here, drawn in the bundled font's regular and heavier cut, so a glyph the font draws only one way looks the same in both columns.": "Aquí ambas variantes llevan el mismo carácter, dibujado en el corte regular y en el más pesado de la fuente incluida, así que un icono que la fuente dibuja de una sola forma se ve igual en las dos columnas.",
+  "The default variant is a stroke drawing and the alternate its filled counterpart; a glyph with nothing to fill draws its strokes heavier instead.": "La variante predeterminada es un dibujo de trazo y la alternativa su equivalente relleno; un icono sin nada que rellenar dibuja sus trazos más gruesos.",
   "Sizing": "Tamaño",
   "A glyph is one em tall and keeps its own aspect ratio, so it takes the font size of whatever contains it.": "Un icono mide un em de alto y conserva su propia proporción, así que toma el tamaño de fuente de su contenedor.",
   "Color": "Color",
@@ -17,8 +17,5 @@
   "A glyph carries no accessible name of its own, so the button around it has to be labeled.": "Un icono no aporta nombre accesible propio, así que el botón que lo rodea debe estar etiquetado.",
   "Upload": "Subir",
   "Delete": "Eliminar",
-  "Search": "Buscar",
-  "This tab draws them from the Phosphor artwork package, which a host adds and registers itself: every glyph in the set, as inline SVG, with a solid shape for the alternate variant.": "Esta pestaña los dibuja desde el paquete de arte Phosphor, que la aplicación añade y registra por su cuenta: todos los iconos del conjunto, como SVG en línea, con una forma sólida para la variante alternativa.",
-  "The package draws the whole set, so nothing here falls back to a character.": "El paquete dibuja el conjunto completo, así que nada aquí recurre a un carácter.",
-  "Phosphor draws the two variants as an outline and a solid shape, so every glyph differs between the columns.": "Phosphor dibuja las dos variantes como contorno y como forma sólida, así que todos los iconos difieren entre las columnas."
+  "Search": "Buscar"
 }

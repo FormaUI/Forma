@@ -13,12 +13,10 @@ using Forma.UI.Design.Icons;
 using Forma.UI.Features.Emojis.Twemoji;
 using Forma.UI.Features.Explorer;
 using Forma.UI.Features.Feedback;
-using Forma.UI.Features.Icons.Phosphor;
 using Forma.UI.Features.Media;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddJsonLocalization();
-builder.Services.AddFormaPhosphorPack();
 builder.Services.AddFormaTwemojiPack();
 builder.Services.AddSingleton(new SandboxAssets(builder.Environment.ContentRootPath));
 builder.Services.AddFormaUI();

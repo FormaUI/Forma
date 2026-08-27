@@ -1,11 +1,11 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "The library's own glyphs, named for what they mean rather than for the set they are drawn from.": "הסמלים של הספרייה עצמה, הנקראים על שם המשמעות שלהם ולא על שם הערכה שממנה הם מצוירים.",
-  "This tab draws them the way a host that registered no artwork package sees them: as Unicode characters through the symbol font the library bundles, and as nothing at all for a glyph no character honestly depicts.": "לשונית זו מציירת אותם כפי שמארח שלא רשם חבילת אומנות רואה אותם: כתווי יוניקוד דרך גופן הסמלים המצורף לספרייה, וכלא כלום עבור סמל שאף תו אינו מתאר באמת.",
+  "Every glyph ships as artwork inside the library, drawn as inline SVG, so a host registers nothing and loads no icon font; a host that wants a different set registers its own provider instead.": "כל סמל מגיע כאומנות בתוך הספרייה, מצויר כ-SVG מוטבע, כך שהמארח אינו רושם דבר ואינו טוען גופן סמלים; מארח שרוצה ערכה אחרת רושם ספק משלו.",
   "Every glyph": "כל הסמלים",
-  "A glyph with no honest character draws nothing, because a meaningless box in a toolbar reads worse than an empty one.": "סמל שאין לו תו הולם אינו מצויר כלל, מפני שריבוע חסר משמעות בסרגל כלים נקרא גרוע יותר מריבוע ריק.",
+  "The whole set at one size, so a glyph can be judged beside its neighbors.": "הערכה כולה בגודל אחד, כדי לשפוט כל סמל לצד שכניו.",
   "Variants": "וריאציות",
-  "Both variants carry the same character here, drawn in the bundled font's regular and heavier cut, so a glyph the font draws only one way looks the same in both columns.": "שתי הווריאציות נושאות כאן את אותו התו, מצויר בגזרה הרגילה ובגזרה הכבדה של הגופן המצורף, כך שסמל שהגופן מצייר בדרך אחת בלבד נראה זהה בשתי העמודות.",
+  "The default variant is a stroke drawing and the alternate its filled counterpart; a glyph with nothing to fill draws its strokes heavier instead.": "וריאציית ברירת המחדל היא ציור קווי והחלופית היא מקבילתה המלאה; סמל שאין בו מה למלא מצייר את קוויו עבים יותר במקום זאת.",
   "Sizing": "גודל",
   "A glyph is one em tall and keeps its own aspect ratio, so it takes the font size of whatever contains it.": "גובה הסמל הוא em אחד והוא שומר על יחס המימדים שלו, לכן הוא מקבל את גודל הגופן של המכיל אותו.",
   "Color": "צבע",
@@ -17,8 +17,5 @@
   "A glyph carries no accessible name of its own, so the button around it has to be labeled.": "לסמל אין שם נגיש משלו, ולכן יש לתייג את הלחצן שסביבו.",
   "Upload": "העלאה",
   "Delete": "מחיקה",
-  "Search": "חיפוש",
-  "This tab draws them from the Phosphor artwork package, which a host adds and registers itself: every glyph in the set, as inline SVG, with a solid shape for the alternate variant.": "לשונית זו מציירת אותם מחבילת האומנות Phosphor, שהמארח מוסיף ורושם בעצמו: כל סמל בערכה, כ-SVG מוטבע, עם צורה מלאה לווריאציה החלופית.",
-  "The package draws the whole set, so nothing here falls back to a character.": "החבילה מציירת את הערכה כולה, כך שדבר כאן אינו נסוג לתו.",
-  "Phosphor draws the two variants as an outline and a solid shape, so every glyph differs between the columns.": "Phosphor מצייר את שתי הווריאציות כמתאר וכצורה מלאה, כך שכל סמל שונה בין העמודות."
+  "Search": "חיפוש"
 }
