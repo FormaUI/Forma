@@ -655,10 +655,11 @@
                 Options = [new() { Id = $"{id}-only", Title = id, Command = $"{id}.pick", IsActive = true }],
             };
 
-        /// <summary>The bound key-combination lists from every "attach" call carrying one, distinguishing FormaToolbar's shortcut attachment from FormaCommandBar's own scroll-tracking attachment.</summary>
+        /// <summary>The bound key-combination lists from every "attach" call carrying one, leaving out the attachments a command bar makes for its own scrolling, which name no bindings and need not carry options at all.</summary>
         private static List<List<object>> KeyBindingAttachments(FormaToolbarTests ctx)
             => [.. ctx.JSInterop.Invocations["attach"]
-                     .Select(invocation => invocation.Arguments[1]!.GetType().GetProperty("bindings")?.GetValue(invocation.Arguments[1]))
+                     .Select(invocation => invocation.Arguments.Count > 1 ? invocation.Arguments[1] : null)
+                     .Select(options => options?.GetType().GetProperty("bindings")?.GetValue(options))
                      .OfType<System.Collections.IEnumerable>()
                      .Select(bindings => bindings.Cast<object>().ToList())];
 

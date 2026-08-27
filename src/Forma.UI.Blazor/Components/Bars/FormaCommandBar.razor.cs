@@ -40,6 +40,7 @@ public sealed partial class FormaCommandBar : ComponentBase, IAsyncDisposable
     [Inject] private IStringLocale<FormaCommandBar> L { get; set; } = default!;
 
     private ScrollBoundaryWatcher _boundaryWatcher = default!;
+    private WheelScroll _wheelScroll = default!;
     private Scroll _scroll = default!;
     private DotNetObjectReference<FormaCommandBar>? _selfReference;
     private ElementReference _trackElement;
@@ -69,6 +70,7 @@ public sealed partial class FormaCommandBar : ComponentBase, IAsyncDisposable
     protected override void OnInitialized()
     {
         _boundaryWatcher = new ScrollBoundaryWatcher(JS);
+        _wheelScroll = new WheelScroll(JS);
         _scroll = new Scroll(JS);
     }
 
@@ -83,6 +85,9 @@ public sealed partial class FormaCommandBar : ComponentBase, IAsyncDisposable
         _selfReference = DotNetObjectReference.Create(this);
 
         await _boundaryWatcher.AttachAsync(_trackElement, _selfReference);
+
+        // A wheel reports vertically alone, so without this a turn over the commands scrolls the page past them.
+        await _wheelScroll.AttachAsync(_trackElement);
     }
 
     private async Task ScrollAsync(int direction)
@@ -92,6 +97,7 @@ public sealed partial class FormaCommandBar : ComponentBase, IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await _boundaryWatcher.DisposeAsync();
+        await _wheelScroll.DisposeAsync();
         await _scroll.DisposeAsync();
 
         _selfReference?.Dispose();
