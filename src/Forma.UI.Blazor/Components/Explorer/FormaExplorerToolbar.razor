@@ -18,7 +18,7 @@
                     </FormaButton>
                 }
                 <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-explorer-clear-button" OnClick="OnClearSelection">
-                    <FormaIcon Icon="Glyph.MinusSquare" />
+                    <FormaIcon Icon="Glyph.SelectNone" />
                     @L["Clear"]
                 </FormaButton>
             </div>
@@ -87,7 +87,7 @@
                     aria-label="@L["Details"]"
                     aria-pressed="@(ViewMode == ExplorerViewMode.Details ? "true" : "false")"
                     @onclick="() => ViewModeChanged.InvokeAsync(ExplorerViewMode.Details)">
-                <FormaIcon Icon="Glyph.ListView" />
+                <FormaIcon Icon="Glyph.DetailsView" />
             </button>
             <button type="button"
                     class="forma-explorer-view-button @(ViewMode == ExplorerViewMode.List ? "is-active" : "")"

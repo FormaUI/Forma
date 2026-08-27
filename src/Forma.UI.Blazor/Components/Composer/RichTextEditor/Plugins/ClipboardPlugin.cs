@@ -41,7 +41,7 @@ public sealed class ClipboardPlugin(RichTextEditorPlugin editor) : IComposerFeat
                     {
                         Id = "select-all",
                         Title = "Select All",
-                        Icon = Glyph.CheckSquare,
+                        Icon = Glyph.SelectAll,
                         Command = SelectAllCommand,
                         ShortcutDisplay = "Ctrl+A",
                         ShortcutAriaKeys = "Control+a",
