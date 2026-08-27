@@ -1,7 +1,19 @@
 # Third-party notices
 
-Forma's artwork packages embed work from the projects below. Each notice is reproduced here
-because that artwork ships inside a package rather than being fetched at run time.
+Forma's packages embed work from the projects below. Each notice is reproduced here because
+that content ships inside a package rather than being fetched at run time.
+
+## JuliaMono
+
+The bundled symbol font `2Site.Forma.UI.Blazor` ships — the fallback artwork `FormaIcon` draws
+when no artwork package is registered — is subsetted from
+[JuliaMono](https://github.com/cormullion/juliamono) by `scripts/fetch-symbols.ps1` and renamed
+to `Forma Unicode Symbols`, because the SIL Open Font License reserves the name JuliaMono for
+the unmodified font.
+
+The font is copyright 2020–2026 The JuliaMono Project Authors, used under the
+[SIL Open Font License 1.1](https://openfontlicense.org), whose full text ships beside the font
+as `OFL.txt`. The modified font remains under that same license.
 
 ## Phosphor Icons
 

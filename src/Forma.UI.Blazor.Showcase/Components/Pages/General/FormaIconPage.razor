@@ -22,15 +22,32 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Styles"]</h2>
-    <p class="description">@L["Every glyph is drawn either as an outline or as a solid shape, chosen through the icon itself."]</p>
+    <h2>@L["Variants"]</h2>
+    <p class="description">@L["Every glyph offers a default and an alternate variant, chosen through the icon itself; Phosphor draws them as an outline and a solid shape."]</p>
     <div class="demo-box">
         <ul class="glyph-grid">
-            @foreach (var glyph in Paired)
+            @foreach (var glyph in Drawable)
             {
                 <li>
                     <FormaIcon Icon="glyph" />
-                    <FormaIcon Icon="Icon.Filled(glyph)" />
+                    <FormaIcon Icon="Icon.Alternate(glyph)" />
+                    <code>@glyph</code>
+                </li>
+            }
+        </ul>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Unicode fallback"]</h2>
+    <p class="description">@L["With no artwork pack registered, a mapped glyph draws as a Unicode character through the library's bundled symbol font, the alternate variant takes the font's heavier cut, and a glyph no character depicts draws nothing."]</p>
+    <div class="demo-box">
+        <ul class="glyph-grid">
+            @foreach (var glyph in Drawable)
+            {
+                <li>
+                    <FormaIcon Icon="glyph" Provider="Fallback" />
+                    <FormaIcon Icon="Icon.Alternate(glyph)" Provider="Fallback" />
                     <code>@glyph</code>
                 </li>
             }
@@ -72,7 +89,7 @@
                 <FormaIcon Icon="Glyph.CloudUpload" /> @L["Upload"]
             </FormaButton>
             <FormaButton Variant="ButtonVariant.Danger">
-                <FormaIcon Icon="Icon.Filled(Glyph.Delete)" /> @L["Delete"]
+                <FormaIcon Icon="Icon.Alternate(Glyph.Delete)" /> @L["Delete"]
             </FormaButton>
             <FormaButton Variant="ButtonVariant.Secondary" aria-label="@L["Search"]">
                 <FormaIcon Icon="Glyph.Search" />
@@ -84,11 +101,7 @@
 <PageLocalization />
 
 @code {
-    private static readonly Glyph[] Paired =
-    [
-        Glyph.Heart, Glyph.Save, Glyph.Delete, Glyph.Settings, Glyph.Search,
-        Glyph.Warning, Glyph.CheckCircle, Glyph.Folder, Glyph.User, Glyph.Flag,
-    ];
+    private static readonly Forma.UI.Blazor.Design.UnicodeIconProvider Fallback = Forma.UI.Blazor.Design.UnicodeIconProvider.Default;
 
     private static IEnumerable<Glyph> Drawable
         => Enum.GetValues<Glyph>().Where(glyph => glyph is not Glyph.None);

@@ -13,7 +13,7 @@ public sealed class PhosphorIconProviderTests
         => Enum.GetValues<Glyph>().Where(glyph => glyph is not Glyph.None);
 
     [Fact]
-    public void Should_carry_artwork_for_every_glyph_in_every_style()
+    public void Should_carry_artwork_for_every_glyph_in_every_variant()
     {
         // Arrange
         var provider = new PhosphorIconProvider();
@@ -21,9 +21,9 @@ public sealed class PhosphorIconProviderTests
         // Act & Assert
         foreach (var glyph in Drawable)
         {
-            foreach (var style in Enum.GetValues<GlyphStyle>())
+            foreach (var variant in Enum.GetValues<GlyphVariant>())
             {
-                var vector = Assert.IsType<IconVector>(provider.GetArtwork(new Icon(glyph, style)));
+                var vector = Assert.IsType<IconVector>(provider.GetArtwork(new Icon(glyph, variant)));
 
                 Assert.Multiple(
                     () => Assert.Equal("0 0 256 256", vector.ViewBox),
@@ -44,17 +44,17 @@ public sealed class PhosphorIconProviderTests
     }
 
     [Fact]
-    public void Should_draw_a_filled_glyph_differently_from_its_regular()
+    public void Should_draw_the_alternate_variant_differently_from_the_default()
     {
         // Arrange
         var provider = new PhosphorIconProvider();
 
         // Act
-        var regular = Assert.IsType<IconVector>(provider.GetArtwork(new Icon(Glyph.Heart)));
-        var filled = Assert.IsType<IconVector>(provider.GetArtwork(Icon.Filled(Glyph.Heart)));
+        var primary = Assert.IsType<IconVector>(provider.GetArtwork(new Icon(Glyph.Heart)));
+        var alternate = Assert.IsType<IconVector>(provider.GetArtwork(Icon.Alternate(Glyph.Heart)));
 
         // Assert
-        Assert.NotEqual(regular.Paths[0].Data, filled.Paths[0].Data);
+        Assert.NotEqual(primary.Paths[0].Data, alternate.Paths[0].Data);
     }
 
     [Fact]

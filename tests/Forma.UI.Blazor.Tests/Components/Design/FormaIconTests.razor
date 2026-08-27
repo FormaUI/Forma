@@ -23,7 +23,7 @@
         }
 
         [Fact]
-        public void Should_draw_every_glyph_in_every_style()
+        public void Should_draw_every_glyph_in_every_variant()
         {
             // Arrange
             using var ctx = new FormaIconTests();
@@ -31,14 +31,14 @@
             // Act & Assert
             foreach (var glyph in Drawable)
             {
-                foreach (var style in Enum.GetValues<GlyphStyle>())
+                foreach (var variant in Enum.GetValues<GlyphVariant>())
                 {
-                    var icon = new Icon(glyph, style);
+                    var icon = new Icon(glyph, variant);
                     var cut = ctx.Render(@<FormaIcon Icon="icon" />);
 
                     Assert.False(
                         string.IsNullOrWhiteSpace(cut.Find("svg path").GetAttribute("d")),
-                        $"{glyph} drew nothing at {style}.");
+                        $"{glyph} drew nothing at {variant}.");
                 }
             }
         }
@@ -62,19 +62,19 @@
         }
 
         [Fact]
-        public void Should_draw_a_filled_glyph_differently_from_its_regular()
+        public void Should_draw_the_alternate_variant_differently_from_the_default()
         {
             // Arrange
             using var ctx = new FormaIconTests();
-            var regular = new Icon(Glyph.Heart);
-            var filled = Icon.Filled(Glyph.Heart);
+            var primary = new Icon(Glyph.Heart);
+            var alternate = Icon.Alternate(Glyph.Heart);
 
             // Act
-            var drawnRegular = ctx.Render(@<FormaIcon Icon="regular" />).Find("svg path").GetAttribute("d");
-            var drawnFilled = ctx.Render(@<FormaIcon Icon="filled" />).Find("svg path").GetAttribute("d");
+            var drawnPrimary = ctx.Render(@<FormaIcon Icon="primary" />).Find("svg path").GetAttribute("d");
+            var drawnAlternate = ctx.Render(@<FormaIcon Icon="alternate" />).Find("svg path").GetAttribute("d");
 
             // Assert
-            Assert.NotEqual(drawnRegular, drawnFilled);
+            Assert.NotEqual(drawnPrimary, drawnAlternate);
         }
 
         [Fact]
@@ -118,6 +118,20 @@
             var svg = cut.Find("svg");
             Assert.Contains("forma-icon", svg.ClassName, StringComparison.Ordinal);
             Assert.Contains("my-icon", svg.ClassName, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_draw_through_a_supplied_provider_over_the_registered_one()
+        {
+            // Arrange
+            using var ctx = new FormaIconTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaIcon Icon="Glyph.Check" Provider="Forma.UI.Blazor.Design.UnicodeIconProvider.Default" />);
+
+            // Assert
+            // The registered Phosphor artwork would render an svg; the parameter takes precedence.
+            Assert.Equal("✓", cut.Find("span.forma-icon-character").TextContent);
         }
 
         [Fact]

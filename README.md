@@ -104,14 +104,18 @@ focus, and link shades follow.
 
 ## Icons
 
-`FormaIcon` draws an `Icon` as inline SVG, so a host loads no icon font. An `Icon` pairs a `Glyph`
-— named for what it means rather than for the set it is drawn from — with a `GlyphStyle`, either an
-outline or a solid shape. A bare glyph converts to an icon, so `Glyph.Save` and
-`Icon.Filled(Glyph.Save)` are both accepted wherever an icon is asked for.
+`FormaIcon` draws an `Icon` as inline SVG. An `Icon` pairs a `Glyph` — named for what it means
+rather than for the set it is drawn from — with a `GlyphVariant`, the provider's primary or
+alternate representation; Phosphor draws the two as an outline and a solid shape. A bare glyph
+converts to an icon, so `Glyph.Save` and `Icon.Alternate(Glyph.Save)` are both accepted wherever
+an icon is asked for.
 
 Artwork is resolved through `IIconProvider`, so a host can draw its own set instead. With none
-registered, `FormaIcon` draws the glyphs the reader's own fonts can depict and nothing at all for
-the rest, so a host that wants no artwork package still renders. To draw the full set, add the
+registered, `FormaIcon` draws the mapped glyphs as Unicode characters through `Forma Unicode
+Symbols`, a few-kilobyte font subsetted from JuliaMono that the library bundles — fetched only
+when the fallback actually renders — and nothing at all for a glyph no character depicts, so a
+host that wants no artwork package still renders consistently. To draw the full set as
+purpose-drawn artwork, add the
 [Phosphor artwork pack](src/Forma.UI.Features.Icons.Phosphor/README.md):
 
 ```pwsh

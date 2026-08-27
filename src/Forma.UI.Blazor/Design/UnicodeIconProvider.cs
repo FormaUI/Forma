@@ -4,20 +4,25 @@ using System.Collections.Frozen;
 
 using Forma.UI.Design.Icons;
 
-/// <summary>Draws the glyphs a reader's own fonts can depict, for a host that registered no artwork of its own.</summary>
+/// <summary>Draws Unicode characters through the library's bundled symbol font, for a host that registered no artwork of its own.</summary>
 /// <remarks>
-/// Only characters that read unambiguously as the glyph are mapped, and only ones with a text presentation, so a
-/// fallback icon inherits the surrounding color rather than arriving as color emoji. Anything else draws nothing.
+/// Only characters that read unambiguously as the glyph are mapped, and both variants carry the same character —
+/// the renderer draws the alternate in the font's heavier cut. An emoji-capable character explicitly requests
+/// text presentation, so a fallback icon inherits the surrounding color rather than arriving as color emoji.
+/// Anything else draws nothing.
 /// </remarks>
 public sealed class UnicodeIconProvider : IIconProvider
 {
+    // Variation Selector-15, appended only where Unicode defines a standardized text-presentation sequence.
+    private const string TextPresentation = "\uFE0E";
+
     /// <summary>The shared provider, which holds no state of its own.</summary>
     public static UnicodeIconProvider Default { get; } = new();
 
     private static readonly FrozenDictionary<Glyph, string> Characters = new Dictionary<Glyph, string>
     {
-        [Glyph.Airplane] = "✈",
-        [Glyph.Anchor] = "⚓",
+        [Glyph.Airplane] = "✈" + TextPresentation,
+        [Glyph.Anchor] = "⚓" + TextPresentation,
         [Glyph.ArrowDown] = "↓",
         [Glyph.ArrowLeft] = "←",
         [Glyph.ArrowRight] = "→",
@@ -26,8 +31,8 @@ public sealed class UnicodeIconProvider : IIconProvider
         [Glyph.Bold] = "B",
         [Glyph.BulletList] = "•",
         [Glyph.Check] = "✓",
-        [Glyph.CheckCircle] = "✔",
-        [Glyph.CheckSquare] = "☑",
+        [Glyph.CheckCircle] = "✔" + TextPresentation,
+        [Glyph.CheckSquare] = "☑" + TextPresentation,
         [Glyph.ChevronDown] = "⌄",
         [Glyph.ChevronLeft] = "‹",
         [Glyph.ChevronRight] = "›",
@@ -39,23 +44,24 @@ public sealed class UnicodeIconProvider : IIconProvider
         [Glyph.Columns] = "║",
         [Glyph.Copy] = "⎘",
         [Glyph.Crosshair] = "⊕",
-        [Glyph.Cut] = "✂",
+        [Glyph.Cut] = "✂" + TextPresentation,
         [Glyph.Download] = "⇩",
+        [Glyph.DragHandle] = "⠿",
         [Glyph.Edit] = "✎",
-        [Glyph.Emoji] = "☺",
-        [Glyph.Error] = "✖",
+        [Glyph.Emoji] = "☺" + TextPresentation,
+        [Glyph.Error] = "✖" + TextPresentation,
         [Glyph.Filter] = "▽",
         [Glyph.Flag] = "⚑",
         [Glyph.Font] = "A",
         [Glyph.FontSize] = "A",
         [Glyph.Heading] = "H",
-        [Glyph.Heart] = "♥",
+        [Glyph.Heart] = "♥" + TextPresentation,
         [Glyph.History] = "↺",
-        [Glyph.Hourglass] = "⌛",
+        [Glyph.Hourglass] = "⌛" + TextPresentation,
         [Glyph.Indent] = "⇥",
-        [Glyph.Information] = "ℹ",
+        [Glyph.Information] = "ℹ" + TextPresentation,
         [Glyph.Italic] = "I",
-        [Glyph.Keyboard] = "⌨",
+        [Glyph.Keyboard] = "⌨" + TextPresentation,
         [Glyph.List] = "☰",
         [Glyph.Maximize] = "⛶",
         [Glyph.Minus] = "−",
@@ -65,7 +71,7 @@ public sealed class UnicodeIconProvider : IIconProvider
         [Glyph.Outdent] = "⇤",
         [Glyph.Paragraph] = "¶",
         [Glyph.Pen] = "✐",
-        [Glyph.Play] = "▶",
+        [Glyph.Play] = "▶" + TextPresentation,
         [Glyph.Plus] = "+",
         [Glyph.PlusSquare] = "⊞",
         [Glyph.Prohibited] = "⊘",
@@ -75,7 +81,7 @@ public sealed class UnicodeIconProvider : IIconProvider
         [Glyph.Refresh] = "↻",
         [Glyph.Rows] = "═",
         [Glyph.Search] = "⌕",
-        [Glyph.Settings] = "⚙",
+        [Glyph.Settings] = "⚙" + TextPresentation,
         [Glyph.SortAscending] = "▲",
         [Glyph.SortDescending] = "▼",
         [Glyph.Subscript] = "x₂",
@@ -85,20 +91,36 @@ public sealed class UnicodeIconProvider : IIconProvider
         [Glyph.Underline] = "U",
         [Glyph.Undo] = "↶",
         [Glyph.Upload] = "⇧",
-        [Glyph.Warning] = "⚠",
+        [Glyph.Warning] = "⚠" + TextPresentation,
     }.ToFrozenDictionary();
 
     /// <inheritdoc />
-    public IconArtwork GetArtwork(Icon icon)
+    public bool TryGetArtwork(Icon icon, out IconArtwork artwork)
     {
         if (icon.Glyph is Glyph.None)
         {
             throw new ArgumentOutOfRangeException(nameof(icon), "Glyph.None names no artwork.");
         }
 
-        // A character carries no weight of its own, so both styles draw the same one.
-        return Characters.TryGetValue(icon.Glyph, out var character)
-            ? IconArtwork.Character(character)
-            : IconArtwork.None;
+        // Both variants draw the same character; the renderer gives the alternate its heavier cut.
+        if (Characters.TryGetValue(icon.Glyph, out var character))
+        {
+            artwork = IconArtwork.Character(character);
+            return true;
+        }
+
+        artwork = IconArtwork.None;
+        return false;
+    }
+
+    /// <inheritdoc />
+    public IconArtwork GetArtwork(Icon icon)
+    {
+        if (!TryGetArtwork(icon, out var artwork))
+        {
+            throw new ArgumentOutOfRangeException(nameof(icon), $"No character depicts {icon.Glyph}.");
+        }
+
+        return artwork;
     }
 }

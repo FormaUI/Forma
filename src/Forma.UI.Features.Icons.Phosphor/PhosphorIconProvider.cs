@@ -15,23 +15,33 @@ public sealed class PhosphorIconProvider : IIconProvider
     private static readonly Lazy<FrozenDictionary<Glyph, IconArtwork[]>> Set = new(Load);
 
     /// <inheritdoc />
-    public IconArtwork GetArtwork(Icon icon)
+    public bool TryGetArtwork(Icon icon, out IconArtwork artwork)
     {
         if (icon.Glyph is Glyph.None)
         {
             throw new ArgumentOutOfRangeException(nameof(icon), "Glyph.None names no artwork.");
         }
 
-        if (!Set.Value.TryGetValue(icon.Glyph, out var styles))
+        var variant = (int)icon.Variant;
+
+        if (Set.Value.TryGetValue(icon.Glyph, out var variants)
+            && (uint)variant < (uint)variants.Length
+            && variants[variant] is { } found)
         {
-            throw new ArgumentOutOfRangeException(nameof(icon), $"No artwork is embedded for {icon.Glyph}; regenerate it with scripts/fetch-glyphs.ps1.");
+            artwork = found;
+            return true;
         }
 
-        var style = (int)icon.Style;
+        artwork = IconArtwork.None;
+        return false;
+    }
 
-        if ((uint)style >= (uint)styles.Length || styles[style] is not { } artwork)
+    /// <inheritdoc />
+    public IconArtwork GetArtwork(Icon icon)
+    {
+        if (!TryGetArtwork(icon, out var artwork))
         {
-            throw new ArgumentOutOfRangeException(nameof(icon), $"{icon.Glyph} is not drawn at {icon.Style}.");
+            throw new ArgumentOutOfRangeException(nameof(icon), $"No artwork is embedded for {icon.Glyph} at {icon.Variant}; regenerate it with scripts/fetch-glyphs.ps1.");
         }
 
         return artwork;
@@ -45,7 +55,7 @@ public sealed class PhosphorIconProvider : IIconProvider
         var raw = JsonSerializer.Deserialize(stream, GlyphSetJsonContext.Default.RawGlyphSet)
             ?? throw new InvalidOperationException($"The glyph resource '{ResourceName}' could not be read.");
 
-        var styleCount = Enum.GetValues<GlyphStyle>().Length;
+        var variantCount = Enum.GetValues<GlyphVariant>().Length;
         var set = new Dictionary<Glyph, IconArtwork[]>(raw.Glyphs.Count);
 
         foreach (var (name, byStyle) in raw.Glyphs)
@@ -55,22 +65,41 @@ public sealed class PhosphorIconProvider : IIconProvider
                 continue;
             }
 
-            var styles = new IconArtwork[styleCount];
+            var variants = new IconArtwork[variantCount];
 
             foreach (var (styleName, paths) in byStyle)
             {
-                if (Enum.TryParse<GlyphStyle>(styleName, ignoreCase: true, out var style))
+                if (TryMapVariant(styleName, out var variant))
                 {
-                    styles[(int)style] = IconArtwork.Vector(
+                    variants[(int)variant] = IconArtwork.Vector(
                         raw.ViewBox,
                         [.. paths.Select(path => new IconPath { Data = path.D, Opacity = path.O ?? 1 })]);
                 }
             }
 
-            set[glyph] = styles;
+            set[glyph] = variants;
         }
 
         return set.ToFrozenDictionary();
+    }
+
+    // The glyph set speaks Phosphor's own vocabulary for its cuts; the outline is the primary representation.
+    private static bool TryMapVariant(string styleName, out GlyphVariant variant)
+    {
+        if (string.Equals(styleName, "regular", StringComparison.OrdinalIgnoreCase))
+        {
+            variant = GlyphVariant.Default;
+            return true;
+        }
+
+        if (string.Equals(styleName, "filled", StringComparison.OrdinalIgnoreCase))
+        {
+            variant = GlyphVariant.Alternate;
+            return true;
+        }
+
+        variant = default;
+        return false;
     }
 }
 

@@ -123,6 +123,9 @@ public enum Glyph
     /// <summary>A downward arrow above a line, for downloading.</summary>
     Download,
 
+    /// <summary>Six raised dots, for a drag handle.</summary>
+    DragHandle,
+
     /// <summary>A pencil over a note, for editing or renaming.</summary>
     Edit,
 

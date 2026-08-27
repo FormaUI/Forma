@@ -1,0 +1,68 @@
+@inherits BunitContext
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_draw_a_character_hidden_from_assistive_technology()
+        {
+            // Arrange
+            using var ctx = new FormaIconFallbackTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaIcon Icon="Glyph.Check" />);
+
+            // Assert
+            // The character is artwork, not a label; the surrounding control supplies the accessible name.
+            var span = cut.Find("span.forma-icon-character");
+            Assert.Multiple(
+                () => Assert.Equal("true", span.GetAttribute("aria-hidden")),
+                () => Assert.Equal("✓", span.TextContent),
+                () => Assert.Contains("forma-icon", span.ClassList));
+        }
+
+        [Fact]
+        public void Should_keep_the_text_presentation_selector_in_the_markup()
+        {
+            // Arrange
+            using var ctx = new FormaIconFallbackTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaIcon Icon="Glyph.Warning" />);
+
+            // Assert
+            // The selector is what keeps the character from arriving as color emoji, so losing it in render is a bug.
+            Assert.EndsWith("\uFE0E", cut.Find("span.forma-icon-character").TextContent, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_mark_the_alternate_variant_for_the_heavier_cut()
+        {
+            // Arrange
+            using var ctx = new FormaIconFallbackTests();
+
+            // Act
+            var primary = ctx.Render(@<FormaIcon Icon="Glyph.Check" />).Find("span.forma-icon-character");
+            var alternate = ctx.Render(@<FormaIcon Icon="Icon.Alternate(Glyph.Check)" />).Find("span.forma-icon-character");
+
+            // Assert
+            // Both variants carry one character; the class is what selects the bundled font's heavier cut.
+            Assert.Multiple(
+                () => Assert.DoesNotContain("forma-icon-character-alternate", primary.ClassList),
+                () => Assert.Contains("forma-icon-character-alternate", alternate.ClassList),
+                () => Assert.Equal(primary.TextContent, alternate.TextContent));
+        }
+
+        [Fact]
+        public void Should_draw_nothing_for_a_glyph_no_character_depicts()
+        {
+            // Arrange
+            using var ctx = new FormaIconFallbackTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaIcon Icon="Glyph.AddColumnLeft" />);
+
+            // Assert
+            Assert.Empty(cut.Markup.Trim());
+        }
+    }
+}

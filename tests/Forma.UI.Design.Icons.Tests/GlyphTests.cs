@@ -11,6 +11,6 @@ public sealed class GlyphTests
         => Assert.Equal(0, (int)Glyph.None);
 
     [Fact]
-    public void Should_reserve_zero_of_the_style_for_regular()
-        => Assert.Equal(0, (int)GlyphStyle.Regular);
+    public void Should_reserve_zero_of_the_variant_for_default()
+        => Assert.Equal(0, (int)GlyphVariant.Default);
 }

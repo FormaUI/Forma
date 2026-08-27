@@ -199,8 +199,15 @@
     border-block-end: 1px dashed var(--border-color, #d9dee5);
 }
 
+/* The marker requests text presentation and the bundled symbol font, so an emoji-capable
+   character cannot arrive as color emoji or vary with the document's own font. */
 .forma-composer-rich-text-canvas ::deep a[name]:empty::before {
-    content: "\2693 " attr(name);
+    content: "\2693\FE0E";
+    font-family: "Forma Unicode Symbols", "Segoe UI Symbol", "Apple Symbols", sans-serif;
+}
+
+.forma-composer-rich-text-canvas ::deep a[name]:empty::after {
+    content: " " attr(name);
 }
 
 .forma-composer-rich-text-canvas ::deep figure.forma-composer-image img,
@@ -231,9 +238,11 @@
     border-radius: 0.375rem;
 }
 
-/* Play reads the same in both directions, so the triangle is deliberately left unmirrored. */
+/* Play reads the same in both directions, so the triangle is deliberately left unmirrored.
+   It requests text presentation and the bundled symbol font, so it cannot arrive as color emoji. */
 .forma-composer-rich-text-canvas ::deep .forma-composer-video::before {
-    content: "\25B6";
+    content: "\25B6\FE0E";
+    font-family: "Forma Unicode Symbols", "Segoe UI Symbol", "Apple Symbols", sans-serif;
     flex-shrink: 0;
     display: flex;
     align-items: center;

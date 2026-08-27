@@ -21,10 +21,15 @@ Registration uses `TryAdd`, so a host that registered its own provider first kee
 
 ## Without this package
 
-`FormaIcon` still renders: glyphs with an honest Unicode equivalent are drawn as characters from
-the reader's own fonts, and the rest draw nothing. This pack is what turns the full set into
-consistent vector artwork. It is one interchangeable artwork set among possible others — a host
-preferring different artwork implements `IIconProvider` itself and registers it instead.
+`FormaIcon` still renders. The library bundles `Forma Unicode Symbols` — a font subsetted from
+[JuliaMono](https://github.com/cormullion/juliamono) in a Regular and a Bold cut — and draws each
+mapped glyph as a Unicode character through it, the alternate variant in the Bold cut. A glyph no
+character honestly depicts draws nothing.
+
+This pack replaces the characters with purpose-drawn artwork: every glyph in the set, an outline
+and a solid shape as its two variants, and one iconographic style throughout. It is one
+interchangeable artwork set among possible others — a host preferring different artwork implements
+`IIconProvider` itself and registers it instead.
 
 ## Artwork and license
 

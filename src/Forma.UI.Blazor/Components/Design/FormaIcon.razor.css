@@ -14,7 +14,49 @@
     overflow: visible;
 }
 
-/* A character glyph would otherwise inherit the caller's line-height and sit low in its 1em box. */
+/* The bundled symbol font, subsetted from JuliaMono by scripts/fetch-symbols.ps1 so every
+   mapped character draws the same on every platform. Fetched only when character artwork
+   actually renders, which a host with an artwork pack registered never does. */
+@font-face {
+    font-family: "Forma Unicode Symbols";
+    src: url("fonts/forma-unicode-symbols.woff") format("woff");
+    font-style: normal;
+    font-weight: 400;
+    font-display: block;
+}
+
+@font-face {
+    font-family: "Forma Unicode Symbols";
+    src: url("fonts/forma-unicode-symbols-bold.woff") format("woff");
+    font-style: normal;
+    font-weight: 700;
+    font-display: block;
+}
+
+/* A character glyph is centered in its own box and drawn from the bundled symbol font, with
+   system symbol fonts standing in if it fails to load. Color emoji fonts are deliberately
+   absent from the stack; the artwork itself also requests text presentation, and
+   font-variant-emoji backs that up where the browser honors it. */
 .forma-icon-character {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: 1em;
+    font-family: var(--forma-icon-character-font-family,
+        "Forma Unicode Symbols",
+        "Segoe UI Symbol",
+        "Apple Symbols",
+        "Noto Sans Symbols 2",
+        "Noto Sans Symbols",
+        sans-serif);
+    font-style: normal;
+    font-weight: 400;
+    font-variant-emoji: text;
     line-height: 1;
+    text-align: center;
+}
+
+/* The alternate variant is the heavier cut of the same characters. */
+.forma-icon-character-alternate {
+    font-weight: 700;
 }

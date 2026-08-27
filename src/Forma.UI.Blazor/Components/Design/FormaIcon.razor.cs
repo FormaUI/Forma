@@ -18,18 +18,29 @@ public sealed partial class FormaIcon : ComponentBase
     /// <summary>Extra classes applied to the SVG element.</summary>
     [Parameter] public string? Class { get; set; }
 
+    /// <summary>The provider supplying this icon's artwork, taken from the host's registration when unset.</summary>
+    [Parameter] public IIconProvider? Provider { get; set; }
+
     [Inject] private IServiceProvider Services { get; set; } = default!;
 
-    // Absent registration is a host that wants no artwork package, not a fault; the reader's own fonts stand in.
-    private IIconProvider Provider
-        => (IIconProvider?)Services.GetService(typeof(IIconProvider)) ?? UnicodeIconProvider.Default;
-
     private string CssClass
-        => string.IsNullOrWhiteSpace(Class) ? "forma-icon" : $"forma-icon {Class}";
+        => (string.IsNullOrWhiteSpace(Class) ? "forma-icon" : $"forma-icon {Class}") + _artwork switch
+        {
+            IconCharacter when Icon.Variant is GlyphVariant.Alternate => " forma-icon-character forma-icon-character-alternate",
+            IconCharacter => " forma-icon-character",
+            _ => string.Empty,
+        };
 
     /// <inheritdoc />
     protected override void OnParametersSet()
-        => _artwork = Provider.GetArtwork(Icon);
+    {
+        // Absent registration is a host that wants no artwork package, not a fault; the bundled symbol font stands in.
+        var provider = Provider
+            ?? (IIconProvider?)Services.GetService(typeof(IIconProvider))
+            ?? UnicodeIconProvider.Default;
+
+        _artwork = provider.TryGetArtwork(Icon, out var artwork) ? artwork : IconArtwork.None;
+    }
 
     private static string? Fade(IconPath path)
         => path.Opacity < 1 ? path.Opacity.ToString("0.###", CultureInfo.InvariantCulture) : null;
