@@ -42,7 +42,7 @@ public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisp
     private bool _attached;
     private SortableDragFrom _attachedDragFrom;
     private string? _announcement;
-    private bool _announcementAlternate;
+    private bool _padsAnnouncement;
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -123,13 +123,13 @@ public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisp
         // A live region is skipped when its text is unchanged, so two moves landing on the
         // same position would announce once; an alternating zero-width space keeps each
         // announcement a distinct string without altering what is read out.
-        _announcementAlternate = !_announcementAlternate;
+        _padsAnnouncement = !_padsAnnouncement;
 
         var position = newIndex + 1;
         var total = reordered.Count;
 
         _announcement = L["Moved to position {Position} of {Total}.", position, total]
-            + (_announcementAlternate ? "\u200B" : string.Empty);
+            + (_padsAnnouncement ? "\u200B" : string.Empty);
 
         // Announced regardless of whether or when the host feeds the reordered list back,
         // since that round trip is the caller's to schedule, not this component's to wait on.

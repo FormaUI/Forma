@@ -75,28 +75,28 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
     private DateOnly? _rangeStart;
     private DateOnly? _hoverDate;
     private Calendar _calendar = null!;
-    private DateTimeFormatInfo _dtf = null!;
+    private DateTimeFormatInfo _dateFormat = null!;
 
     private bool IsRangeMode => StartDateChanged.HasDelegate || EndDateChanged.HasDelegate;
     private int CalendarCount => IsRangeMode ? 2 : 1;
 
 #pragma warning disable CA1822 // Intentionally instance — reads ambient CultureInfo per render
-    private CultureInfo _culture => CultureInfo.CurrentCulture;
+    private CultureInfo Culture => CultureInfo.CurrentCulture;
 #pragma warning restore CA1822
-    private string _textDirection => _culture.TextInfo.IsRightToLeft ? "rtl" : "ltr";
+    private string TextDirection => Culture.TextInfo.IsRightToLeft ? "rtl" : "ltr";
 
-    private int CalendarYear(DateOnly d) => _calendar.GetYear(d.ToDateTime(TimeOnly.MinValue));
-    private int CalendarMonth(DateOnly d) => _calendar.GetMonth(d.ToDateTime(TimeOnly.MinValue));
+    private int CalendarYear(DateOnly date) => _calendar.GetYear(date.ToDateTime(TimeOnly.MinValue));
+    private int CalendarMonth(DateOnly date) => _calendar.GetMonth(date.ToDateTime(TimeOnly.MinValue));
     private DateOnly CalendarMonthStart(int calYear, int calMonth) =>
         DateOnly.FromDateTime(_calendar.ToDateTime(calYear, calMonth, 1, 0, 0, 0, 0));
-    private DateOnly AddCalendarMonths(DateOnly d, int months) =>
-        DateOnly.FromDateTime(_calendar.AddMonths(d.ToDateTime(TimeOnly.MinValue), months));
+    private DateOnly AddCalendarMonths(DateOnly date, int months) =>
+        DateOnly.FromDateTime(_calendar.AddMonths(date.ToDateTime(TimeOnly.MinValue), months));
 
     // Named from a real date in the month rather than by index: the month-name table is the
     // 13-month leap-year one, so on a calendar whose common year is shorter (Hebrew drops
     // Adar II) indexing it directly mislabels every month past the missing slot.
     private string MonthName(int calYear, int calMonth) =>
-        CalendarMonthStart(calYear, calMonth).ToDateTime(TimeOnly.MinValue).ToString("MMMM", _dtf);
+        CalendarMonthStart(calYear, calMonth).ToDateTime(TimeOnly.MinValue).ToString("MMMM", _dateFormat);
 
     private bool HasValue => IsRangeMode
         ? StartDate is not null || EndDate is not null
@@ -185,19 +185,19 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
         ArgumentException.ThrowIfNullOrWhiteSpace(Label);
 
         _calendar = UseNonGregorianMonths
-            ? (_culture.OptionalCalendars.FirstOrDefault(c => c is not GregorianCalendar)
-               ?? _culture.DateTimeFormat.Calendar)
-            : _culture.DateTimeFormat.Calendar;
+            ? (Culture.OptionalCalendars.FirstOrDefault(c => c is not GregorianCalendar)
+               ?? Culture.DateTimeFormat.Calendar)
+            : Culture.DateTimeFormat.Calendar;
 
         if (UseNonGregorianMonths && _calendar is not GregorianCalendar)
         {
-            var dtf = (DateTimeFormatInfo)_culture.DateTimeFormat.Clone();
-            dtf.Calendar = _calendar;
-            _dtf = dtf;
+            var calendarFormat = (DateTimeFormatInfo)Culture.DateTimeFormat.Clone();
+            calendarFormat.Calendar = _calendar;
+            _dateFormat = calendarFormat;
         }
         else
         {
-            _dtf = _culture.DateTimeFormat;
+            _dateFormat = Culture.DateTimeFormat;
         }
 
         if (MinDate.HasValue && MaxDate.HasValue && MinDate.Value > MaxDate.Value)
@@ -219,7 +219,7 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
     // ── Helpers ──────────────────────────────────────
 
     private string FormatDate(DateOnly date) =>
-        date.ToDateTime(TimeOnly.MinValue).ToString("d", _culture);
+        date.ToDateTime(TimeOnly.MinValue).ToString("d", Culture);
 
     private void ResetDisplayMonth()
     {
@@ -295,18 +295,18 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
         }
     }
 
-    private void OnMonthDropdownChange(int panelIndex, ChangeEventArgs e)
+    private void OnMonthDropdownChange(int panelIndex, ChangeEventArgs args)
     {
-        if (int.TryParse(e.Value?.ToString(), out var month))
+        if (int.TryParse(args.Value?.ToString(), out var month))
         {
             var current = GetPanelMonth(panelIndex);
             SetPanelMonth(panelIndex, CalendarMonthStart(CalendarYear(current), month));
         }
     }
 
-    private void OnYearDropdownChange(int panelIndex, ChangeEventArgs e)
+    private void OnYearDropdownChange(int panelIndex, ChangeEventArgs args)
     {
-        if (int.TryParse(e.Value?.ToString(), out var gregorianYear))
+        if (int.TryParse(args.Value?.ToString(), out var gregorianYear))
         {
             var current = GetPanelMonth(panelIndex);
             var calMonth = CalendarMonth(current);
@@ -372,9 +372,9 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
             }
             else
             {
-                var a = _rangeStart.Value;
-                var start = a <= date ? a : date;
-                var end = a <= date ? date : a;
+                var anchor = _rangeStart.Value;
+                var start = anchor <= date ? anchor : date;
+                var end = anchor <= date ? date : anchor;
                 _rangeStart = null;
                 _hoverDate = null;
                 StartDate = start;
@@ -433,54 +433,54 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
         => dayClasses.Contains("selected", StringComparison.Ordinal);
 
     private string DayLabel(DateOnly date)
-        => date.ToDateTime(TimeOnly.MinValue).ToString("D", _dtf);
+        => date.ToDateTime(TimeOnly.MinValue).ToString("D", _dateFormat);
 
     private string GetDayClasses(DateOnly date)
     {
         var today = DateOnly.FromDateTime(DateTime.Today);
-        var css = string.Empty;
+        var classes = string.Empty;
 
         if (date == today)
         {
-            css += " today";
+            classes += " today";
         }
 
         if (IsRangeMode)
         {
             if (_rangeStart is not null)
             {
-                var rs = _rangeStart.Value;
-                var hover = _hoverDate ?? rs;
-                var lo = rs <= hover ? rs : hover;
-                var hi = rs <= hover ? hover : rs;
+                var anchor = _rangeStart.Value;
+                var hover = _hoverDate ?? anchor;
+                var from = anchor <= hover ? anchor : hover;
+                var to = anchor <= hover ? hover : anchor;
 
-                if (date == lo)
+                if (date == from)
                 {
-                    css += " selected start";
+                    classes += " selected start";
                 }
-                else if (date == hi)
+                else if (date == to)
                 {
-                    css += " selected end";
+                    classes += " selected end";
                 }
-                else if (date > lo && date < hi)
+                else if (date > from && date < to)
                 {
-                    css += " in-range";
+                    classes += " in-range";
                 }
             }
             else
             {
                 if (StartDate.HasValue && date == StartDate.Value)
                 {
-                    css += " selected start";
+                    classes += " selected start";
                 }
                 else if (EndDate.HasValue && date == EndDate.Value)
                 {
-                    css += " selected end";
+                    classes += " selected end";
                 }
                 else if (StartDate.HasValue && EndDate.HasValue &&
                          date > StartDate.Value && date < EndDate.Value)
                 {
-                    css += " in-range";
+                    classes += " in-range";
                 }
             }
         }
@@ -488,27 +488,27 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
         {
             if (Value.HasValue && date == Value.Value)
             {
-                css += " selected";
+                classes += " selected";
             }
         }
 
-        return css;
+        return classes;
     }
 
     private List<DateOnly?> GetDaysForMonth(DateOnly monthStart, DayOfWeek firstDayOfWeek)
     {
         var count = _calendar.GetDaysInMonth(CalendarYear(monthStart), CalendarMonth(monthStart));
-        var dow = ((int)monthStart.DayOfWeek - (int)firstDayOfWeek + 7) % 7;
+        var leadingBlanks = ((int)monthStart.DayOfWeek - (int)firstDayOfWeek + 7) % 7;
 
-        var days = new List<DateOnly?>(dow + count);
-        for (var i = 0; i < dow; i++)
+        var days = new List<DateOnly?>(leadingBlanks + count);
+        for (var i = 0; i < leadingBlanks; i++)
         {
             days.Add(null);
         }
 
-        for (var d = 0; d < count; d++)
+        for (var offset = 0; offset < count; offset++)
         {
-            days.Add(monthStart.AddDays(d));
+            days.Add(monthStart.AddDays(offset));
         }
 
         return days;
@@ -586,9 +586,9 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
 
     private bool IsYearDisabled(int gregorianYear, int panelIndex)
     {
-        for (var m = 1; m <= 12; m++)
+        for (var month = 1; month <= 12; month++)
         {
-            var candidate = new DateOnly(gregorianYear, m, 1);
+            var candidate = new DateOnly(gregorianYear, month, 1);
             if (candidate < MinMonth || candidate > MaxMonth)
             {
                 continue;

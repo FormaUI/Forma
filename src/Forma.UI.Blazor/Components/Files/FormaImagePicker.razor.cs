@@ -35,7 +35,7 @@ public sealed partial class FormaImagePicker : ComponentBase, IAsyncDisposable
 
     [Inject] private IStringLocale<FormaImagePicker> L { get; set; } = default!;
 
-    private ElementReference _container;
+    private ElementReference _containerElement;
 
     private FilePreview _preview = default!;
 
@@ -55,7 +55,7 @@ public sealed partial class FormaImagePicker : ComponentBase, IAsyncDisposable
     {
         if (firstRender)
         {
-            await _preview.AttachAsync(_container);
+            await _preview.AttachAsync(_containerElement);
         }
 
         if (_previewPending)

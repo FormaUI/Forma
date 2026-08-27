@@ -20,8 +20,8 @@ public sealed partial class FormaPlainTextEditor : ComponentBase, IAsyncDisposab
 
     private ElementReference _textareaElement;
     private Text _text = default!;
-    private CancellationTokenSource? _commitCts;
-    private CancellationTokenSource? _selectionCts;
+    private CancellationTokenSource? _commitCancellation;
+    private CancellationTokenSource? _selectionCancellation;
     private string? _typedContent;
     private string? _committedContent;
 
@@ -51,21 +51,21 @@ public sealed partial class FormaPlainTextEditor : ComponentBase, IAsyncDisposab
         }
     }
 
-    private async Task HandleInputAsync(ChangeEventArgs e)
+    private async Task HandleInputAsync(ChangeEventArgs args)
     {
-        _typedContent = e.Value?.ToString() ?? string.Empty;
+        _typedContent = args.Value?.ToString() ?? string.Empty;
 
-        if (_commitCts is not null)
+        if (_commitCancellation is not null)
         {
-            await _commitCts.CancelAsync();
-            _commitCts.Dispose();
+            await _commitCancellation.CancelAsync();
+            _commitCancellation.Dispose();
         }
 
-        _commitCts = new CancellationTokenSource();
+        _commitCancellation = new CancellationTokenSource();
 
         try
         {
-            await Task.Delay(CommitDelay, _commitCts.Token);
+            await Task.Delay(CommitDelay, _commitCancellation.Token);
         }
         catch (OperationCanceledException)
         {
@@ -75,36 +75,36 @@ public sealed partial class FormaPlainTextEditor : ComponentBase, IAsyncDisposab
         await CommitAsync();
     }
 
-    private async Task HandleChangeAsync(ChangeEventArgs e)
+    private async Task HandleChangeAsync(ChangeEventArgs args)
     {
-        _typedContent = e.Value?.ToString() ?? string.Empty;
+        _typedContent = args.Value?.ToString() ?? string.Empty;
 
-        if (_commitCts is not null)
+        if (_commitCancellation is not null)
         {
-            await _commitCts.CancelAsync();
+            await _commitCancellation.CancelAsync();
         }
 
         await CommitAsync();
         await ReportSelectionAsync();
     }
 
-    private Task HandleClickAsync(MouseEventArgs e)
+    private Task HandleClickAsync(MouseEventArgs args)
         => ReportSelectionAsync();
 
     // Coalesced the same way as the content commit, so holding an arrow key does not flood interop with one call per repeat.
-    private async Task HandleKeyUpAsync(KeyboardEventArgs e)
+    private async Task HandleKeyUpAsync(KeyboardEventArgs args)
     {
-        if (_selectionCts is not null)
+        if (_selectionCancellation is not null)
         {
-            await _selectionCts.CancelAsync();
-            _selectionCts.Dispose();
+            await _selectionCancellation.CancelAsync();
+            _selectionCancellation.Dispose();
         }
 
-        _selectionCts = new CancellationTokenSource();
+        _selectionCancellation = new CancellationTokenSource();
 
         try
         {
-            await Task.Delay(CommitDelay, _selectionCts.Token);
+            await Task.Delay(CommitDelay, _selectionCancellation.Token);
         }
         catch (OperationCanceledException)
         {
@@ -144,16 +144,16 @@ public sealed partial class FormaPlainTextEditor : ComponentBase, IAsyncDisposab
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        if (_commitCts is not null)
+        if (_commitCancellation is not null)
         {
-            await _commitCts.CancelAsync();
-            _commitCts.Dispose();
+            await _commitCancellation.CancelAsync();
+            _commitCancellation.Dispose();
         }
 
-        if (_selectionCts is not null)
+        if (_selectionCancellation is not null)
         {
-            await _selectionCts.CancelAsync();
-            _selectionCts.Dispose();
+            await _selectionCancellation.CancelAsync();
+            _selectionCancellation.Dispose();
         }
 
         await _text.DisposeAsync();

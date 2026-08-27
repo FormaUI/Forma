@@ -22,7 +22,7 @@ public sealed partial class FormaToggleSwitch : InputBase<bool>
     /// <summary>Disables user interaction.</summary>
     [Parameter] public bool Disabled { get; set; }
 
-    private void HandleChange(ChangeEventArgs e) => CurrentValue = e.Value is true;
+    private void HandleChange(ChangeEventArgs args) => CurrentValue = args.Value is true;
 
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, out bool result, [NotNullWhen(false)] out string? validationErrorMessage)

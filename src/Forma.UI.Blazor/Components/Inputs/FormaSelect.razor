@@ -35,15 +35,15 @@
                  @onkeydown="HandlePopupKeyDownAsync">
                 @for (var i = 0; i < Options.Count; i++)
                 {
-                    var idx = i;
-                    var option = Options[idx];
+                    var optionIndex = i;
+                    var option = Options[optionIndex];
                     var selected = IsSelected(option);
                     <button type="button"
                             class="forma-select-option@(selected ? " selected" : "")"
                             role="option"
                             tabindex="-1"
                             aria-selected="@(selected ? "true" : "false")"
-                            @ref="_optionElements[idx]"
+                            @ref="_optionElements[optionIndex]"
                             @onclick="() => SelectAsync(option)">
                         <span class="forma-select-option-label">@option.Label</span>
                         @if (selected)

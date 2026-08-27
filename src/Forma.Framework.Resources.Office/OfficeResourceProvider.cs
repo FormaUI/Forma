@@ -106,19 +106,19 @@ public sealed class OfficeResourceProvider : IResourceProvider
     }
 
     // Conversion embeds images as data URLs, which is the only place one is ever legitimate here.
-    private static void RejectDataUrlOutsideAnImage(object? sender, FilterUrlEventArgs e)
+    private static void RejectDataUrlOutsideAnImage(object? sender, FilterUrlEventArgs args)
     {
-        if (e.SanitizedUrl is not { } url || !url.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+        if (args.SanitizedUrl is not { } url || !url.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
         {
             return;
         }
 
-        var isImageSource = string.Equals(e.Tag?.TagName, "IMG", StringComparison.OrdinalIgnoreCase)
+        var isImageSource = string.Equals(args.Tag?.TagName, "IMG", StringComparison.OrdinalIgnoreCase)
             && url.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase);
 
         if (!isImageSource)
         {
-            e.SanitizedUrl = null;
+            args.SanitizedUrl = null;
         }
     }
 }

@@ -13,26 +13,26 @@
 <div class="demo-section">
     <h2>@L["Search Only"]</h2>
     <div class="demo-box">
-        <FormaSearchToolbar OnSearch="HandleSearch1" SearchPlaceholder="@L["Search..."]" />
-        <p class="demo-output">@L["Last search"]: <code>@_lastSearch1</code></p>
+        <FormaSearchToolbar OnSearch="HandleSearchOnly" SearchPlaceholder="@L["Search..."]" />
+        <p class="demo-output">@L["Last search"]: <code>@_searchOnlyQuery</code></p>
     </div>
 </div>
 
 <div class="demo-section">
     <h2>@L["Search with Actions"]</h2>
     <div class="demo-box">
-        <FormaSearchToolbar OnSearch="HandleSearch3" SearchPlaceholder="@L["Search..."]" Label="@L["List Actions"]" Items="_actions" OnCommand="HandleCommand" />
-        <p class="demo-output">@L["Last search"]: <code>@_lastSearch3</code></p>
+        <FormaSearchToolbar OnSearch="HandleSearchWithActions" SearchPlaceholder="@L["Search..."]" Label="@L["List Actions"]" Items="Actions" OnCommand="HandleCommand" />
+        <p class="demo-output">@L["Last search"]: <code>@_withActionsQuery</code></p>
         <p class="demo-output">@L["Last command"]: <code>@_lastCommand</code></p>
     </div>
 </div>
 
 @code {
-    private string _lastSearch1 = "";
-    private string _lastSearch3 = "";
+    private string _searchOnlyQuery = "";
+    private string _withActionsQuery = "";
     private string _lastCommand = "";
 
-    private IReadOnlyList<FormaToolbarItem> _actions =>
+    private IReadOnlyList<FormaToolbarItem> Actions =>
     [
         new FormaToolbarCommand { Id = "add", Title = L["Add New"], Icon = Glyph.Plus, Command = "add-new" },
         new FormaToolbarCommand { Id = "export", Title = L["Export"], Icon = Glyph.Download, Command = "export" },
@@ -41,15 +41,15 @@
     private void HandleCommand(string command)
         => _lastCommand = command;
 
-    private Task HandleSearch1(string value)
+    private Task HandleSearchOnly(string value)
     {
-        _lastSearch1 = value;
+        _searchOnlyQuery = value;
         return Task.CompletedTask;
     }
 
-    private Task HandleSearch3(string value)
+    private Task HandleSearchWithActions(string value)
     {
-        _lastSearch3 = value;
+        _withActionsQuery = value;
         return Task.CompletedTask;
     }
 }

@@ -30,7 +30,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     private ComposerPluginCatalog _catalog = default!;
     private ComposerKeyMap _keyMap = ComposerKeyMap.Empty;
     private ElementReference _composerElement;
-    private DotNetObjectReference<FormaComposer>? _dotNetRef;
+    private DotNetObjectReference<FormaComposer>? _selfReference;
     private KeyBindings _keyBindings = default!;
     private JsComposerAssetLoader _assetLoader = default!;
     private IComposerHistory _history = default!;
@@ -94,7 +94,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     {
         _keyBindings = new KeyBindings(JS);
         _assetLoader = new JsComposerAssetLoader(JS);
-        _dotNetRef = DotNetObjectReference.Create(this);
+        _selfReference = DotNetObjectReference.Create(this);
 
         var injectedHistory = (IComposerHistory?)Services.GetService(typeof(IComposerHistory));
         var injectedSanitizer = (IHtmlSanitizer?)Services.GetService(typeof(IHtmlSanitizer));
@@ -190,7 +190,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
 
         _isJsStarted = true;
 
-        await _keyBindings.AttachAsync(_composerElement, _dotNetRef!, ToKeyBindings(_keyMap.Bindings));
+        await _keyBindings.AttachAsync(_composerElement, _selfReference!, ToKeyBindings(_keyMap.Bindings));
         await _assetLoader.LoadAssetsAsync(_activeEditor.Assets);
     }
 
@@ -412,7 +412,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     {
         _regions.Changed -= HandleRegionsChanged;
 
-        _dotNetRef?.Dispose();
+        _selfReference?.Dispose();
         await _assetLoader.DisposeAsync();
         await _keyBindings.DisposeAsync();
     }

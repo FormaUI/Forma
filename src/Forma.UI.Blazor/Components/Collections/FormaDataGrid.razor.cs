@@ -27,7 +27,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     private QuickGrid<TGridItem>? _grid;
     private ElementReference _scrollerElement;
     private SelectionInteraction _selection = default!;
-    private HeightReservation _height = default!;
+    private HeightReservation _heightReservation = default!;
     private DotNetObjectReference<FormaDataGrid<TGridItem>>? _selfReference;
     private bool _rowSelectionAttached;
     private SelectionBounds _bounds;
@@ -193,7 +193,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     {
         _pagination.TotalItemCountChanged += HandleTotalItemCountChanged;
         _selection = new SelectionInteraction(JS);
-        _height = new HeightReservation(JS);
+        _heightReservation = new HeightReservation(JS);
     }
 
     /// <inheritdoc />
@@ -355,12 +355,12 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
         // page to hold a height for.
         if (EnablePagination && !Virtualize)
         {
-            if (!_height.IsAttached)
+            if (!_heightReservation.IsAttached)
             {
-                await _height.AttachAsync(_scrollerElement);
+                await _heightReservation.AttachAsync(_scrollerElement);
             }
 
-            await _height.ReserveAsync(PageSize);
+            await _heightReservation.ReserveAsync(PageSize);
         }
     }
 
@@ -371,7 +371,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
         _pagination.TotalItemCountChanged -= HandleTotalItemCountChanged;
 
         await _selection.DisposeAsync();
-        await _height.DisposeAsync();
+        await _heightReservation.DisposeAsync();
         _selfReference?.Dispose();
     }
 

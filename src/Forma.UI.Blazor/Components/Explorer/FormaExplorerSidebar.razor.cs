@@ -101,8 +101,8 @@ public sealed partial class FormaExplorerSidebar : ComponentBase, IExplorerSideb
     private double MeasuredTreeHeight
         => Math.Clamp((Folders.Count + 1) * 2, MinTreeHeight, MaxTreeHeight);
 
-    internal static void HandleDragOver(DragEventArgs e)
-        => e.DataTransfer.DropEffect = "move";
+    internal static void HandleDragOver(DragEventArgs args)
+        => args.DataTransfer.DropEffect = "move";
 
     private IReadOnlyList<FolderResourceInfo> ChildrenOf(string? parent)
         => FolderTree.ChildrenOf(parent);

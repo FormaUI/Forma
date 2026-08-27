@@ -47,8 +47,8 @@ public sealed partial class FormaBreadcrumb<TItem> : ComponentBase
         }
     }
 
-    private static void HandleDragOver(DragEventArgs e)
-        => e.DataTransfer.DropEffect = "move";
+    private static void HandleDragOver(DragEventArgs args)
+        => args.DataTransfer.DropEffect = "move";
 
     private async Task HandleItemClickAsync(BreadcrumbItem<TItem> item)
         => await OnItemClick.InvokeAsync(item.Value);

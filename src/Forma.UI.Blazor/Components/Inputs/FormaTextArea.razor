@@ -10,7 +10,7 @@
                   rows="@Rows"
                   maxlength="@MaxLength"
                   value="@CurrentValueAsString"
-                  @oninput="@(e => CurrentValueAsString = e.Value?.ToString())"
+                  @oninput="@(args => CurrentValueAsString = args.Value?.ToString())"
                   aria-required="@(Required ? "true" : null)"
                   aria-describedby="@DescribedBy"></textarea>
         @if (ShowCharacterCount)

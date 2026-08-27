@@ -63,7 +63,7 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
 
     private readonly string _noteId = $"video-note-{Guid.NewGuid():N}";
 
-    private ElementReference _video;
+    private ElementReference _videoElement;
 
     private bool _autoplayMuted;
 
@@ -150,7 +150,7 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
     {
         if (Autoplay && !_autoplayMuted && Frame is NativePlayerFrame)
         {
-            _autoplayMuted = await _playback.MuteAsync(_video);
+            _autoplayMuted = await _playback.MuteAsync(_videoElement);
         }
 
         // Keyed by address rather than script, because a new video needs the loaded script to scan again.

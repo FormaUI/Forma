@@ -57,11 +57,11 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     private string? _activeGroupId;
     private string _announcement = string.Empty;
     private EmojiSpriteLoader? _ownLoader;
-    private InfiniteScroll? _sentinelWatcher;
-    private DotNetObjectReference<FormaEmojiPicker>? _selfRef;
+    private InfiniteScroll? _infiniteScroll;
+    private DotNetObjectReference<FormaEmojiPicker>? _selfReference;
     private ElementReference _sentinelElement;
     private ElementReference _panelElement;
-    private bool _isSentinelWatched;
+    private bool _isSentinelObserved;
 
     /// <summary>Raised with the chosen emoji character.</summary>
     [Parameter] public EventCallback<string> OnSelect { get; set; }
@@ -179,9 +179,9 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        if (_sentinelWatcher is not null)
+        if (_infiniteScroll is not null)
         {
-            await _sentinelWatcher.DisposeAsync();
+            await _infiniteScroll.DisposeAsync();
         }
 
         if (_ownLoader is not null)
@@ -189,7 +189,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
             await _ownLoader.DisposeAsync();
         }
 
-        _selfRef?.Dispose();
+        _selfReference?.Dispose();
     }
 
     private string TabElementId(string groupId)
@@ -199,7 +199,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
         => TabGlyphs.TryGetValue(groupId, out var glyph) ? glyph : Glyph.Emoji;
 
     // The registered loader is shared with every emoji it renders, so a sheet is fetched once between them.
-    private EmojiSpriteLoader Loader()
+    private EmojiSpriteLoader GetSpriteLoader()
         => (EmojiSpriteLoader?)Services.GetService(typeof(EmojiSpriteLoader))
             ?? (_ownLoader ??= new EmojiSpriteLoader(JS));
 
@@ -208,15 +208,15 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
 
     private async Task WatchSentinelAsync()
     {
-        if (_isSentinelWatched || !HasMoreToLoad)
+        if (_isSentinelObserved || !HasMoreToLoad)
         {
             return;
         }
 
-        _isSentinelWatched = true;
-        _selfRef ??= DotNetObjectReference.Create(this);
-        _sentinelWatcher ??= new InfiniteScroll(JS);
-        await _sentinelWatcher.AttachAsync(_sentinelElement, _selfRef, _panelElement);
+        _isSentinelObserved = true;
+        _selfReference ??= DotNetObjectReference.Create(this);
+        _infiniteScroll ??= new InfiniteScroll(JS);
+        await _infiniteScroll.AttachAsync(_sentinelElement, _selfReference, _panelElement);
     }
 
     private async Task LoadNextSheetAsync()
@@ -230,7 +230,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
 
         try
         {
-            await Loader().LoadAsync(next);
+            await GetSpriteLoader().LoadAsync(next);
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
@@ -247,13 +247,13 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
 
     private async Task ResetChunkWindowAsync()
     {
-        if (_sentinelWatcher is not null)
+        if (_infiniteScroll is not null)
         {
-            await _sentinelWatcher.DisposeAsync();
-            _sentinelWatcher = null;
+            await _infiniteScroll.DisposeAsync();
+            _infiniteScroll = null;
         }
 
-        _isSentinelWatched = false;
+        _isSentinelObserved = false;
         await LoadNextSheetAsync();
     }
 

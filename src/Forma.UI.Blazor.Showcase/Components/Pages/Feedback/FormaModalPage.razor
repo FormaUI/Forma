@@ -35,8 +35,8 @@
     <div class="demo-box" style="display: flex; gap: 8px; flex-wrap: wrap;">
         @foreach (var size in _sizes)
         {
-            var s = size;
-            <button class="button button-secondary" @onclick="() => _activeSize = s">@s</button>
+            var chosen = size;
+            <button class="button button-secondary" @onclick="() => _activeSize = chosen">@chosen</button>
         }
         @if (_activeSize is not null)
         {

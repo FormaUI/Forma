@@ -40,7 +40,7 @@ public sealed partial class FormaFilePicker : ComponentBase, IAsyncDisposable
 
     private bool _attached;
 
-    private ElementReference _dropZone;
+    private ElementReference _dropZoneElement;
 
     private bool _isBusy;
 
@@ -74,7 +74,7 @@ public sealed partial class FormaFilePicker : ComponentBase, IAsyncDisposable
     {
         if (!_attached)
         {
-            _attached = await _fileDropZone.AttachAsync(_dropZone, DraggingClass);
+            _attached = await _fileDropZone.AttachAsync(_dropZoneElement, DraggingClass);
         }
     }
 
@@ -98,11 +98,11 @@ public sealed partial class FormaFilePicker : ComponentBase, IAsyncDisposable
         return false;
     }
 
-    private async Task HandleChangeAsync(InputFileChangeEventArgs e)
+    private async Task HandleChangeAsync(InputFileChangeEventArgs args)
     {
         _rejections.Clear();
 
-        if (e.FileCount == 0)
+        if (args.FileCount == 0)
         {
             return;
         }
@@ -111,7 +111,7 @@ public sealed partial class FormaFilePicker : ComponentBase, IAsyncDisposable
 
         try
         {
-            var files = e.GetMultipleFiles(e.FileCount);
+            var files = args.GetMultipleFiles(args.FileCount);
             var effectiveMax = AllowMultipleFiles ? MaxSelectedFiles : 1;
             var accepted = new List<IBrowserFile>();
             var rejected = new List<RejectedFile>();

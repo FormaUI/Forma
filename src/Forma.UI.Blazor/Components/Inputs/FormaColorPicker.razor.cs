@@ -33,12 +33,12 @@ public sealed partial class FormaColorPicker : InputBase<string>
     protected override void OnParametersSet()
         => ArgumentException.ThrowIfNullOrWhiteSpace(Label);
 
-    private void HandleHexInput(ChangeEventArgs e) =>
-        CurrentValueAsString = e.Value?.ToString();
+    private void HandleHexInput(ChangeEventArgs args) =>
+        CurrentValueAsString = args.Value?.ToString();
 
-    private void HandleNativeInput(ChangeEventArgs e)
+    private void HandleNativeInput(ChangeEventArgs args)
     {
-        var rgb = e.Value?.ToString();
+        var rgb = args.Value?.ToString();
         if (rgb is null)
         {
             return;
@@ -55,9 +55,9 @@ public sealed partial class FormaColorPicker : InputBase<string>
         }
     }
 
-    private void HandleAlphaInput(ChangeEventArgs e)
+    private void HandleAlphaInput(ChangeEventArgs args)
     {
-        if (e.Value?.ToString() is not { } str || !int.TryParse(str, out var percent))
+        if (args.Value?.ToString() is not { } text || !int.TryParse(text, out var percent))
         {
             return;
         }

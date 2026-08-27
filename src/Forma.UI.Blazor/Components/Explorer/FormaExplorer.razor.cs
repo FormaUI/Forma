@@ -162,9 +162,9 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
 
     private IReadOnlyList<string> _previewSiblings = [];
 
-    private string _renameFolderName = string.Empty;
+    private string _renamedFolderName = string.Empty;
 
-    private string _renameNewName = string.Empty;
+    private string _renamedResourceName = string.Empty;
 
     private FolderResourceInfo? _renamingFolder;
 
@@ -348,16 +348,16 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
 
             query = (_sortField, _sortDirection) switch
             {
-                (ExplorerSortField.Name, ExplorerSortDirection.Ascending) => query.OrderBy(e => e.Name, StringComparer.OrdinalIgnoreCase),
-                (ExplorerSortField.Name, ExplorerSortDirection.Descending) => query.OrderByDescending(e => e.Name, StringComparer.OrdinalIgnoreCase),
-                (ExplorerSortField.Size, ExplorerSortDirection.Ascending) => query.OrderBy(e => e.Size ?? 0),
-                (ExplorerSortField.Size, ExplorerSortDirection.Descending) => query.OrderByDescending(e => e.Size ?? 0),
-                (ExplorerSortField.Kind, ExplorerSortDirection.Ascending) => query.OrderBy(e => e.KindLabel(L), StringComparer.CurrentCulture),
-                (ExplorerSortField.Kind, ExplorerSortDirection.Descending) => query.OrderByDescending(e => e.KindLabel(L), StringComparer.CurrentCulture),
-                (ExplorerSortField.DateAdded, ExplorerSortDirection.Ascending) => query.OrderBy(e => e.CreatedAt ?? DateTimeOffset.MinValue),
-                (ExplorerSortField.DateAdded, ExplorerSortDirection.Descending) => query.OrderByDescending(e => e.CreatedAt ?? DateTimeOffset.MinValue),
-                (ExplorerSortField.DateModified, ExplorerSortDirection.Ascending) => query.OrderBy(e => e.ModifiedAt ?? DateTimeOffset.MinValue),
-                (ExplorerSortField.DateModified, ExplorerSortDirection.Descending) => query.OrderByDescending(e => e.ModifiedAt ?? DateTimeOffset.MinValue),
+                (ExplorerSortField.Name, ExplorerSortDirection.Ascending) => query.OrderBy(resource => resource.Name, StringComparer.OrdinalIgnoreCase),
+                (ExplorerSortField.Name, ExplorerSortDirection.Descending) => query.OrderByDescending(resource => resource.Name, StringComparer.OrdinalIgnoreCase),
+                (ExplorerSortField.Size, ExplorerSortDirection.Ascending) => query.OrderBy(resource => resource.Size ?? 0),
+                (ExplorerSortField.Size, ExplorerSortDirection.Descending) => query.OrderByDescending(resource => resource.Size ?? 0),
+                (ExplorerSortField.Kind, ExplorerSortDirection.Ascending) => query.OrderBy(resource => resource.KindLabel(L), StringComparer.CurrentCulture),
+                (ExplorerSortField.Kind, ExplorerSortDirection.Descending) => query.OrderByDescending(resource => resource.KindLabel(L), StringComparer.CurrentCulture),
+                (ExplorerSortField.DateAdded, ExplorerSortDirection.Ascending) => query.OrderBy(resource => resource.CreatedAt ?? DateTimeOffset.MinValue),
+                (ExplorerSortField.DateAdded, ExplorerSortDirection.Descending) => query.OrderByDescending(resource => resource.CreatedAt ?? DateTimeOffset.MinValue),
+                (ExplorerSortField.DateModified, ExplorerSortDirection.Ascending) => query.OrderBy(resource => resource.ModifiedAt ?? DateTimeOffset.MinValue),
+                (ExplorerSortField.DateModified, ExplorerSortDirection.Descending) => query.OrderByDescending(resource => resource.ModifiedAt ?? DateTimeOffset.MinValue),
                 _ => query
             };
 
@@ -1029,10 +1029,10 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
 
     private async Task HandleFolderRenameConfirmedAsync()
     {
-        if (_renamingFolder is not null && !string.IsNullOrWhiteSpace(_renameFolderName))
+        if (_renamingFolder is not null && !string.IsNullOrWhiteSpace(_renamedFolderName))
         {
             var folder = _renamingFolder;
-            var newName = _renameFolderName.Trim();
+            var newName = _renamedFolderName.Trim();
             _renamingFolder = null;
 
             await OnFolderRename.InvokeAsync(new ExplorerFolderRenameRequest(folder, newName));
@@ -1160,13 +1160,13 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
 
     private async Task HandleRenameConfirmedAsync()
     {
-        if (_renamingResource is null || string.IsNullOrWhiteSpace(_renameNewName))
+        if (_renamingResource is null || string.IsNullOrWhiteSpace(_renamedResourceName))
         {
             return;
         }
 
         var resource = _renamingResource;
-        var newName = _renameNewName.Trim();
+        var newName = _renamedResourceName.Trim();
         _renamingResource = null;
 
         await OnRename.InvokeAsync(new ExplorerRenameRequest(resource, newName));
@@ -1318,7 +1318,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
     private void OpenFolderRenameDialog(FolderResourceInfo folder)
     {
         _renamingFolder = folder;
-        _renameFolderName = folder.Name;
+        _renamedFolderName = folder.Name;
     }
 
     private void OpenPreview(ResourceInfo resource)
@@ -1331,7 +1331,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
     private void OpenRenameDialog(ResourceInfo resource)
     {
         _renamingResource = resource;
-        _renameNewName = resource.Name;
+        _renamedResourceName = resource.Name;
     }
 
     private void ToggleUpload()

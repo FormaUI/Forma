@@ -25,8 +25,8 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
     [Inject] private IStringLocale<FormaComposer> L { get; set; } = default!;
 
     private ElementReference _editorElement;
-    private DotNetObjectReference<FormaRichTextEditor>? _dotNetRef;
-    private RichTextEditor _interop = default!;
+    private DotNetObjectReference<FormaRichTextEditor>? _selfReference;
+    private RichTextEditor _engine = default!;
     private string? _committedContent;
     private string _blockAnnouncement = string.Empty;
     private bool _isAttached;
@@ -56,8 +56,8 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _interop = new RichTextEditor(JS);
-        _dotNetRef = DotNetObjectReference.Create(this);
+        _engine = new RichTextEditor(JS);
+        _selfReference = DotNetObjectReference.Create(this);
 
         _plugin = Editor as RichTextEditorPlugin
             ?? throw new InvalidOperationException($"{nameof(FormaRichTextEditor)} requires a cascaded {nameof(RichTextEditorPlugin)}.");
@@ -79,7 +79,7 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
         if (_isAttached && documentContent != _committedContent && documentContent is not null)
         {
             _committedContent = documentContent;
-            await _interop.SetHtmlAsync(documentContent);
+            await _engine.SetHtmlAsync(documentContent);
         }
     }
 
@@ -88,13 +88,13 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
     {
         if (firstRender)
         {
-            _isAttached = await _interop.AttachAsync(_editorElement, _dotNetRef!);
+            _isAttached = await _engine.AttachAsync(_editorElement, _selfReference!);
 
             var initialContent = Context?.Document.Content;
             if (!string.IsNullOrEmpty(initialContent))
             {
                 _committedContent = initialContent;
-                await _interop.SetHtmlAsync(initialContent);
+                await _engine.SetHtmlAsync(initialContent);
             }
 
             StateHasChanged();
@@ -158,7 +158,7 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
 
         _ = InvokeAsync(async () =>
         {
-            var target = await _interop.BeginLinkDialogAsync(isAnchor);
+            var target = await _engine.BeginLinkDialogAsync(isAnchor);
 
             _selectedText = target?.Text;
 
@@ -243,7 +243,7 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
             return;
         }
 
-        var result = await _interop.ExecAsync(command, value);
+        var result = await _engine.ExecAsync(command, value);
         if (result is not null)
         {
             var sanitized = Context.Sanitizer.Sanitize(result.Html);
@@ -302,7 +302,7 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
             _plugin.EmbedDialogRequested -= HandleEmbedDialogRequested;
         }
 
-        _dotNetRef?.Dispose();
-        await _interop.DisposeAsync();
+        _selfReference?.Dispose();
+        await _engine.DisposeAsync();
     }
 }

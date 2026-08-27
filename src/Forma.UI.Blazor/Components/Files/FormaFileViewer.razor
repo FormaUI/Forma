@@ -16,7 +16,7 @@
         }
         else if (Resource is ImageResourceInfo)
         {
-            <div @ref="_imageFrame" class="forma-file-viewer-image-frame @(IsZoomed ? "zoomed" : "")">
+            <div @ref="_imageFrameElement" class="forma-file-viewer-image-frame @(IsZoomed ? "zoomed" : "")">
                 @* A native image drag would fire dragstart and cancel the pointer mid-pan. *@
                 <img class="forma-file-viewer-image"
                      draggable="@(IsZoomed ? "false" : null)"

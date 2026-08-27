@@ -11,7 +11,7 @@
 <div class="demo-section">
     <h2>@L["Readouts"]</h2>
     <div class="demo-box">
-        <FormaStatusStrip Label="@L["Document Status"]" Items="_readoutItems" />
+        <FormaStatusStrip Label="@L["Document Status"]" Items="ReadoutItems" />
     </div>
 </div>
 
@@ -22,14 +22,14 @@
         <button class="button button-secondary" @onclick="() => _wordCount += 17">
             @L["Type some words"]
         </button>
-        <FormaStatusStrip Label="@L["Document Status"]" Items="_announcedItems" />
+        <FormaStatusStrip Label="@L["Document Status"]" Items="AnnouncedItems" />
     </div>
 </div>
 
 <div class="demo-section">
     <h2>@L["A command"]</h2>
     <div class="demo-box">
-        <FormaStatusStrip Label="@L["Document Status"]" Items="_commandItems" OnCommand="HandleCommand" />
+        <FormaStatusStrip Label="@L["Document Status"]" Items="CommandItems" OnCommand="HandleCommand" />
         <p class="demo-output">@L["Last command"]: <code>@_lastCommand</code></p>
     </div>
 </div>
@@ -37,7 +37,7 @@
 <div class="demo-section">
     <h2>@L["Disabled"]</h2>
     <div class="demo-box">
-        <FormaStatusStrip Label="@L["Document Status"]" Items="_commandItems" Disabled="true" />
+        <FormaStatusStrip Label="@L["Document Status"]" Items="CommandItems" Disabled="true" />
     </div>
 </div>
 
@@ -61,7 +61,7 @@
     <h2>@L["Hidden"]</h2>
     <p class="description">@L["Hidden is independent of EmptyMode — it hides the strip even while it holds items, keeping it mounted so its inner FormaToolbar loses no state."]</p>
     <div class="demo-box">
-        <FormaStatusStrip Label="@L["Document Status"]" Items="_commandItems" OnCommand="HandleCommand" Hidden="@(!_showStrip)" Animated="true" />
+        <FormaStatusStrip Label="@L["Document Status"]" Items="CommandItems" OnCommand="HandleCommand" Hidden="@(!_showStrip)" Animated="true" />
     </div>
     <p>
         <button class="button button-secondary" @onclick="() => _showStrip = !_showStrip">
@@ -75,18 +75,18 @@
     private string _lastCommand = "";
     private bool _showStrip = true;
 
-    private IReadOnlyList<FormaToolbarItem> _readoutItems =>
+    private IReadOnlyList<FormaToolbarItem> ReadoutItems =>
     [
         new FormaToolbarReadout { Id = "words", Title = L["Word Count"], Value = L["{Count} words", _wordCount] },
         new FormaToolbarReadout { Id = "saved", Title = L["Save State"], Value = L["Saved"] },
     ];
 
-    private IReadOnlyList<FormaToolbarItem> _announcedItems =>
+    private IReadOnlyList<FormaToolbarItem> AnnouncedItems =>
     [
         new FormaToolbarReadout { Id = "words", Title = L["Word Count"], Value = L["{Count} words", _wordCount], IsAnnounced = true },
     ];
 
-    private IReadOnlyList<FormaToolbarItem> _commandItems =>
+    private IReadOnlyList<FormaToolbarItem> CommandItems =>
     [
         new FormaToolbarReadout { Id = "words", Title = L["Word Count"], Value = L["{Count} words", _wordCount] },
         new FormaToolbarCommand { Id = "retry", Title = L["Retry"], Icon = Glyph.Undo, Command = "retry" },

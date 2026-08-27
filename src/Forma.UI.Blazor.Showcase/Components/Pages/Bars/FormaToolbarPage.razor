@@ -11,7 +11,7 @@
     <h2>@L["Grouped Commands"]</h2>
     <p class="description">@L["Each group is a FormaToolbarGroup, separated from the next by a rule."]</p>
     <div class="demo-box demo-box-flush">
-        <FormaToolbar Label="@L["Formatting"]" Items="_formattingGroups" OnCommand="HandleCommand" />
+        <FormaToolbar Label="@L["Formatting"]" Items="FormattingGroups" OnCommand="HandleCommand" />
     </div>
     <p class="demo-output">@L["Last command"]: <code>@_lastCommand</code></p>
 </div>
@@ -20,7 +20,7 @@
     <h2>@L["Icon and Label Together"]</h2>
     <p class="description">@L["ShowLabels draws each command as a full button carrying its icon and its label, for a toolbar of named actions rather than dense glyphs."]</p>
     <div class="demo-box demo-box-flush">
-        <FormaToolbar Label="@L["Library Actions"]" Items="_labelledGroups" ShowLabels="true" OnCommand="HandleCommand" />
+        <FormaToolbar Label="@L["Library Actions"]" Items="LabelledGroups" ShowLabels="true" OnCommand="HandleCommand" />
     </div>
 </div>
 
@@ -28,7 +28,7 @@
     <h2>@L["Toggle State"]</h2>
     <p class="description">@L["A FormaToolbarToggle reflects its own IsActive, drawn with an underline as well as color so the state never rests on color alone."]</p>
     <div class="demo-box demo-box-flush">
-        <FormaToolbar Label="@L["Formatting"]" Items="_toggleGroups" OnCommand="HandleToggleCommand" />
+        <FormaToolbar Label="@L["Formatting"]" Items="ToggleGroups" OnCommand="HandleToggleCommand" />
     </div>
 </div>
 
@@ -36,7 +36,7 @@
     <h2>@L["Menu of Choices"]</h2>
     <p class="description">@L["A FormaToolbarMenu renders as a dropdown, showing the active option's title or a color swatch."]</p>
     <div class="demo-box demo-box-flush">
-        <FormaToolbar Label="@L["Typography"]" Items="_menuGroups" OnCommand="HandleMenuCommand" />
+        <FormaToolbar Label="@L["Typography"]" Items="MenuGroups" OnCommand="HandleMenuCommand" />
     </div>
 </div>
 
@@ -44,7 +44,7 @@
     <h2>@L["Readout"]</h2>
     <p class="description">@L["A FormaToolbarReadout shows a value without being interactive. Marked IsAnnounced, its changes are read out politely."]</p>
     <div class="demo-box demo-box-flush">
-        <FormaToolbar Label="@L["Document Status"]" Items="_readoutGroups" OnCommand="HandleCommand" />
+        <FormaToolbar Label="@L["Document Status"]" Items="ReadoutGroups" OnCommand="HandleCommand" />
     </div>
     <p><button class="button button-secondary" @onclick="() => _wordCount += 12">@L["Add Words"]</button></p>
 </div>
@@ -53,7 +53,7 @@
     <h2>@L["Custom Item"]</h2>
     <p class="description">@L["A FormaToolbarCustomItem renders a component of the caller's choosing, with its own parameters, in place of a standard control."]</p>
     <div class="demo-box demo-box-flush">
-        <FormaToolbar Label="@L["Publication"]" Items="_customGroups" />
+        <FormaToolbar Label="@L["Publication"]" Items="CustomGroups" />
     </div>
 </div>
 
@@ -61,7 +61,7 @@
     <h2>@L["Keyboard Shortcuts"]</h2>
     <p class="description">@L["An action's ShortcutDisplay appears in its tooltip alongside the label."]</p>
     <div class="demo-box demo-box-flush">
-        <FormaToolbar Label="@L["Formatting"]" Items="_shortcutGroups" />
+        <FormaToolbar Label="@L["Formatting"]" Items="ShortcutGroups" />
     </div>
 </div>
 
@@ -69,7 +69,7 @@
     <h2>@L["Shortcuts That Fire"]</h2>
     <p class="description">@L["Setting Target makes each action's ShortcutAriaKeys live while that element or a descendant holds focus, so the toolbar never listens document-wide. Click into the panel and press Ctrl+B or Ctrl+I."]</p>
     <div class="demo-box demo-box-flush">
-        <FormaToolbar Label="@L["Formatting"]" Items="_shortcutGroups" Target="_shortcutSurface" OnCommand="HandleCommand" />
+        <FormaToolbar Label="@L["Formatting"]" Items="ShortcutGroups" Target="_shortcutSurface" OnCommand="HandleCommand" />
         <div class="demo-shortcut-surface" @ref="_shortcutSurface" tabindex="0" role="group" aria-label="@L["Shortcut Surface"]">
             @L["Focus here, then press Ctrl+B or Ctrl+I."]
         </div>
@@ -81,7 +81,7 @@
     <h2>@L["Disabled"]</h2>
     <p class="description">@L["Every control in the toolbar disables together."]</p>
     <div class="demo-box demo-box-flush">
-        <FormaToolbar Label="@L["Formatting"]" Items="_formattingGroups" Disabled="true" />
+        <FormaToolbar Label="@L["Formatting"]" Items="FormattingGroups" Disabled="true" />
     </div>
 </div>
 
@@ -89,7 +89,7 @@
     <h2>@L["One Item Disabled"]</h2>
     <p class="description">@L["An item's own IsDisabled stands it down while the rest of the toolbar stays live. Its shortcut is refused as well, not only its button."]</p>
     <div class="demo-box demo-box-flush">
-        <FormaToolbar Label="@L["Library Actions"]" Items="_partlyDisabledGroups" ShowLabels="true" Target="_shortcutSurface" OnCommand="HandleCommand" />
+        <FormaToolbar Label="@L["Library Actions"]" Items="PartlyDisabledGroups" ShowLabels="true" Target="_shortcutSurface" OnCommand="HandleCommand" />
     </div>
     <p>
         <button class="button button-secondary" @onclick="() => _canDelete = !_canDelete">
@@ -103,7 +103,7 @@
     <h2>@L["Content Pinned Past the Track"]</h2>
     <p class="description">@L["Trailing content, such as an overflow toggle, stays put while the commands beside it scroll."]</p>
     <div class="demo-box demo-box-flush demo-command-bar-narrow">
-        <FormaToolbar Label="@L["Formatting"]" Items="_manyGroups">
+        <FormaToolbar Label="@L["Formatting"]" Items="ManyGroups">
             <TrailingContent>
                 <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" IconOnly="true" aria-label="@L["More"]"><FormaIcon Icon="Glyph.MoreVertical" /></FormaButton>
             </TrailingContent>
@@ -115,7 +115,7 @@
     <h2>@L["Hidden"]</h2>
     <p class="description">@L["Hidden keeps the toolbar mounted, so a plugin or favorites toolbar can be shown and hidden on demand — by a command elsewhere, say — without losing its attached shortcut listener each time."]</p>
     <div class="demo-box demo-box-flush">
-        <FormaToolbar Label="@L["Favorites"]" Items="_formattingGroups" ShowLabels="true" Hidden="@(!_showFavorites)" Animated="true" />
+        <FormaToolbar Label="@L["Favorites"]" Items="FormattingGroups" ShowLabels="true" Hidden="@(!_showFavorites)" Animated="true" />
     </div>
     <p>
         <button class="button button-secondary" @onclick="() => _showFavorites = !_showFavorites">
@@ -128,7 +128,7 @@
     <h2>@L["Not Scrollable"]</h2>
     <p class="description">@L["With Scrollable off the toolbar renders its own row and lets the items wrap, carrying none of the command bar's observers or interop — for a toolbar whose items cannot outgrow the width."]</p>
     <div class="demo-box demo-box-flush demo-command-bar-narrow">
-        <FormaToolbar Label="@L["Formatting"]" Items="_manyGroups" Scrollable="false" />
+        <FormaToolbar Label="@L["Formatting"]" Items="ManyGroups" Scrollable="false" />
     </div>
 </div>
 
@@ -149,7 +149,7 @@
         }
     }
 
-    private IReadOnlyList<FormaToolbarItem> _formattingGroups =>
+    private IReadOnlyList<FormaToolbarItem> FormattingGroups =>
     [
         new FormaToolbarGroup
         {
@@ -173,7 +173,7 @@
         },
     ];
 
-    private IReadOnlyList<FormaToolbarItem> _labelledGroups =>
+    private IReadOnlyList<FormaToolbarItem> LabelledGroups =>
     [
         new FormaToolbarGroup
         {
@@ -188,7 +188,7 @@
         },
     ];
 
-    private IReadOnlyList<FormaToolbarItem> _toggleGroups =>
+    private IReadOnlyList<FormaToolbarItem> ToggleGroups =>
     [
         new FormaToolbarGroup
         {
@@ -198,7 +198,7 @@
         },
     ];
 
-    private IReadOnlyList<FormaToolbarItem> _menuGroups =>
+    private IReadOnlyList<FormaToolbarItem> MenuGroups =>
     [
         new FormaToolbarGroup
         {
@@ -240,7 +240,7 @@
         },
     ];
 
-    private IReadOnlyList<FormaToolbarItem> _readoutGroups =>
+    private IReadOnlyList<FormaToolbarItem> ReadoutGroups =>
     [
         new FormaToolbarGroup
         {
@@ -260,7 +260,7 @@
         },
     ];
 
-    private IReadOnlyList<FormaToolbarItem> _customGroups =>
+    private IReadOnlyList<FormaToolbarItem> CustomGroups =>
     [
         new FormaToolbarGroup
         {
@@ -279,7 +279,7 @@
         },
     ];
 
-    private IReadOnlyList<FormaToolbarItem> _shortcutGroups =>
+    private IReadOnlyList<FormaToolbarItem> ShortcutGroups =>
     [
         new FormaToolbarGroup
         {
@@ -293,7 +293,7 @@
         },
     ];
 
-    private IReadOnlyList<FormaToolbarItem> _partlyDisabledGroups =>
+    private IReadOnlyList<FormaToolbarItem> PartlyDisabledGroups =>
     [
         new FormaToolbarGroup
         {
@@ -307,7 +307,7 @@
         },
     ];
 
-    private IReadOnlyList<FormaToolbarItem> _manyGroups =>
+    private IReadOnlyList<FormaToolbarItem> ManyGroups =>
     [
         new FormaToolbarGroup
         {

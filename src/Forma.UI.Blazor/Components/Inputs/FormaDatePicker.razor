@@ -33,54 +33,54 @@
             <div class="forma-date-picker-calendars">
                 @for (var i = 0; i < CalendarCount; i++)
                 {
-                    var idx = i;
-                    var month = GetPanelMonth(idx);
-                    <div class="forma-date-picker-month" dir="@_textDirection">
+                    var panel = i;
+                    var month = GetPanelMonth(panel);
+                    <div class="forma-date-picker-month" dir="@TextDirection">
                         <div class="forma-date-picker-month-header">
                             <FormaButton Variant="ButtonVariant.Ghost"
                                          class="forma-date-picker-nav"
                                          aria-label="@L["Previous Month"]"
-                                         Disabled="!CanPanelGoPrev(idx)"
-                                         OnClick="() => PanelPrev(idx)">
+                                         Disabled="!CanPanelGoPrev(panel)"
+                                         OnClick="() => PanelPrev(panel)">
                                 &#10094;
                             </FormaButton>
                             <div class="forma-date-picker-month-selectors">
                                 <select class="forma-date-picker-select"
                                         value="@month.Year"
-                                        @onchange="e => OnYearDropdownChange(idx, e)">
-                                    @for (var y = MinYear; y <= MaxYear; y++)
+                                        @onchange="args => OnYearDropdownChange(panel, args)">
+                                    @for (var candidate = MinYear; candidate <= MaxYear; candidate++)
                                     {
-                                        var year = y;
-                                        <option value="@year" disabled="@IsYearDisabled(year, idx)">@year</option>
+                                        var year = candidate;
+                                        <option value="@year" disabled="@IsYearDisabled(year, panel)">@year</option>
                                     }
                                 </select>
                                 <select class="forma-date-picker-select"
                                         value="@CalendarMonth(month)"
-                                        @onchange="e => OnMonthDropdownChange(idx, e)">
-                                    @for (var m = 1; m <= _calendar.GetMonthsInYear(CalendarYear(month)); m++)
+                                        @onchange="args => OnMonthDropdownChange(panel, args)">
+                                    @for (var candidate = 1; candidate <= _calendar.GetMonthsInYear(CalendarYear(month)); candidate++)
                                     {
-                                        var mo = m;
-                                        <option value="@mo" disabled="@IsMonthDisabled(CalendarYear(month), mo, idx)">@MonthName(CalendarYear(month), mo)</option>
+                                        var monthNumber = candidate;
+                                        <option value="@monthNumber" disabled="@IsMonthDisabled(CalendarYear(month), monthNumber, panel)">@MonthName(CalendarYear(month), monthNumber)</option>
                                     }
                                 </select>
                             </div>
                             <FormaButton Variant="ButtonVariant.Ghost"
                                          class="forma-date-picker-nav"
                                          aria-label="@L["Next Month"]"
-                                         Disabled="!CanPanelGoNext(idx)"
-                                         OnClick="() => PanelNext(idx)">
+                                         Disabled="!CanPanelGoNext(panel)"
+                                         OnClick="() => PanelNext(panel)">
                                 &#10095;
                             </FormaButton>
                         </div>
                         <div class="forma-date-picker-weekdays">
-                            @{ var fdow = (int)_dtf.FirstDayOfWeek; }
-                            @for (var wi = 0; wi < 7; wi++)
+                            @{ var firstDayOfWeek = (int)_dateFormat.FirstDayOfWeek; }
+                            @for (var offset = 0; offset < 7; offset++)
                             {
-                                <span>@_dtf.AbbreviatedDayNames[(fdow + wi) % 7]</span>
+                                <span>@_dateFormat.AbbreviatedDayNames[(firstDayOfWeek + offset) % 7]</span>
                             }
                         </div>
                         <div class="forma-date-picker-days">
-                            @foreach (var day in GetDaysForMonth(month, _dtf.FirstDayOfWeek))
+                            @foreach (var day in GetDaysForMonth(month, _dateFormat.FirstDayOfWeek))
                             {
                                 @if (day is null)
                                 {
@@ -88,17 +88,17 @@
                                 }
                                 else
                                 {
-                                    var d = day.Value;
-                                    var dayClasses = GetDayClasses(d);
+                                    var date = day.Value;
+                                    var dayClasses = GetDayClasses(date);
                                     <button type="button"
                                             class="forma-date-picker-day@(dayClasses)"
-                                            disabled="@IsDayDisabled(d)"
-                                            aria-label="@DayLabel(d)"
+                                            disabled="@IsDayDisabled(date)"
+                                            aria-label="@DayLabel(date)"
                                             aria-current="@(MarksToday(dayClasses) ? "date" : null)"
                                             aria-pressed="@(MarksSelected(dayClasses) ? "true" : null)"
-                                            @onclick="() => SelectDay(d)"
-                                            @onmouseenter="() => HoverDay(d)">
-                                        @_calendar.GetDayOfMonth(d.ToDateTime(TimeOnly.MinValue))
+                                            @onclick="() => SelectDay(date)"
+                                            @onmouseenter="() => HoverDay(date)">
+                                        @_calendar.GetDayOfMonth(date.ToDateTime(TimeOnly.MinValue))
                                     </button>
                                 }
                             }
@@ -108,7 +108,7 @@
             </div>
             @if (ShowPresets && IsRangeMode)
             {
-                <div class="forma-date-picker-presets" dir="@_textDirection">
+                <div class="forma-date-picker-presets" dir="@TextDirection">
                     <FormaButton Variant="ButtonVariant.Ghost"
                                  class="forma-date-picker-preset"
                                  Disabled="IsPresetDisabled(Preset.Today)"

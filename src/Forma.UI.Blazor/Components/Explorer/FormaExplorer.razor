@@ -223,8 +223,8 @@
                     <input id="forma-explorer-rename-input"
                            class="forma-explorer-dialog-input"
                            type="text"
-                           value="@_renameNewName"
-                           @oninput="e => _renameNewName = e.Value?.ToString() ?? string.Empty" />
+                           value="@_renamedResourceName"
+                           @oninput="args => _renamedResourceName = args.Value?.ToString() ?? string.Empty" />
                 </div>
             </Body>
             <Footer>
@@ -275,7 +275,7 @@
                            class="forma-explorer-dialog-input"
                            type="text"
                            value="@_newFolderName"
-                           @oninput="e => _newFolderName = e.Value?.ToString() ?? string.Empty" />
+                           @oninput="args => _newFolderName = args.Value?.ToString() ?? string.Empty" />
                 </div>
             </Body>
             <Footer>
@@ -303,8 +303,8 @@
                     <input id="forma-explorer-rename-folder-input"
                            class="forma-explorer-dialog-input"
                            type="text"
-                           value="@_renameFolderName"
-                           @oninput="e => _renameFolderName = e.Value?.ToString() ?? string.Empty" />
+                           value="@_renamedFolderName"
+                           @oninput="args => _renamedFolderName = args.Value?.ToString() ?? string.Empty" />
                 </div>
             </Body>
             <Footer>

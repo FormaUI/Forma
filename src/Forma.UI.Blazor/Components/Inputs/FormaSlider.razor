@@ -16,7 +16,7 @@
                value="@CurrentValueAsString"
                disabled="@Disabled"
                aria-valuetext="@AriaValueText"
-               @oninput="@(e => CurrentValueAsString = e.Value?.ToString())" />
+               @oninput="@(args => CurrentValueAsString = args.Value?.ToString())" />
     </ChildContent>
     <Validation>
         <ValidationMessage For="@ValueExpression" />

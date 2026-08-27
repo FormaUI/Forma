@@ -16,7 +16,7 @@
         <button class="button button-secondary" @onclick="() => _basicCount = _basicCount > 0 ? 0 : 3">
             @L["Toggle selection"]
         </button>
-        <FormaSelectionToolbar Count="_basicCount" Label="@L["Selection Actions"]" Items="_basicItems" OnCommand="HandleCommand" OnClear="() => _basicCount = 0" />
+        <FormaSelectionToolbar Count="_basicCount" Label="@L["Selection Actions"]" Items="BasicItems" OnCommand="HandleCommand" OnClear="() => _basicCount = 0" />
         <p class="demo-output">@L["Last command"]: <code>@_lastCommand</code></p>
     </div>
 </div>
@@ -28,14 +28,14 @@
         <button class="button button-secondary" @onclick="() => _agreementCount = (_agreementCount + 1) % 4">
             @L["Add one"]
         </button>
-        <FormaSelectionToolbar Count="_agreementCount" Label="@L["Selection Actions"]" Items="_deleteOnly" OnCommand="HandleCommand" OnClear="() => _agreementCount = 0" />
+        <FormaSelectionToolbar Count="_agreementCount" Label="@L["Selection Actions"]" Items="DeleteOnly" OnCommand="HandleCommand" OnClear="() => _agreementCount = 0" />
     </div>
 </div>
 
 <div class="demo-section">
     <h2>@L["Without a clear button"]</h2>
     <div class="demo-box">
-        <FormaSelectionToolbar Count="2" Label="@L["Selection Actions"]" Items="_deleteOnly" OnCommand="HandleCommand" />
+        <FormaSelectionToolbar Count="2" Label="@L["Selection Actions"]" Items="DeleteOnly" OnCommand="HandleCommand" />
     </div>
 </div>
 
@@ -45,14 +45,14 @@
         <button class="button button-secondary" @onclick="() => _wideCount = _wideCount > 0 ? 0 : 4">
             @L["Toggle selection"]
         </button>
-        <FormaSelectionToolbar Count="_wideCount" Label="@L["Selection Actions"]" Items="_wideItems" OnCommand="HandleCommand" OnClear="() => _wideCount = 0" />
+        <FormaSelectionToolbar Count="_wideCount" Label="@L["Selection Actions"]" Items="WideItems" OnCommand="HandleCommand" OnClear="() => _wideCount = 0" />
     </div>
 </div>
 
 <div class="demo-section">
     <h2>@L["Caller-supplied caption"]</h2>
     <div class="demo-box">
-        <FormaSelectionToolbar Count="ModerationCount" Caption="@(L["[$ plural; one: # comment awaiting moderation; other: # comments awaiting moderation; $]", ModerationCount])" Label="@L["Selection Actions"]" Items="_publishOnly" OnCommand="HandleCommand" />
+        <FormaSelectionToolbar Count="ModerationCount" Caption="@(L["[$ plural; one: # comment awaiting moderation; other: # comments awaiting moderation; $]", ModerationCount])" Label="@L["Selection Actions"]" Items="PublishOnly" OnCommand="HandleCommand" />
     </div>
 </div>
 
@@ -64,22 +64,22 @@
     private int _wideCount = 4;
     private string _lastCommand = "";
 
-    private IReadOnlyList<FormaToolbarItem> _basicItems =>
+    private IReadOnlyList<FormaToolbarItem> BasicItems =>
     [
         Delete, Publish,
     ];
 
-    private IReadOnlyList<FormaToolbarItem> _deleteOnly =>
+    private IReadOnlyList<FormaToolbarItem> DeleteOnly =>
     [
         Delete,
     ];
 
-    private IReadOnlyList<FormaToolbarItem> _publishOnly =>
+    private IReadOnlyList<FormaToolbarItem> PublishOnly =>
     [
         Publish,
     ];
 
-    private IReadOnlyList<FormaToolbarItem> _wideItems =>
+    private IReadOnlyList<FormaToolbarItem> WideItems =>
     [
         Delete,
         Publish,

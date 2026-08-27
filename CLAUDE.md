@@ -72,6 +72,19 @@ A project's references are part of its contract, because every consumer inherits
 - Do call a thing Forma ships a **component**, and raw HTML an **element** — one word per concept. "Control" is Web Forms vocabulary inherited from Coi; keep it only in `aria-controls` and in descriptions of Coi's own markup.
 - Don't apply one naming convention indiscriminately across Razor tags, CSS classes, and C# types.
 
+### Fields, locals, and parameters
+
+A name earns its place by answering the question a reader arrives with. The declaration already gives the type; repeating it, or describing the plumbing underneath it, leaves the reader no better off than before.
+
+- Do name a field for the role its value plays rather than for its type or its mechanism, so a field holding an interop behaviour says which capability that behaviour gives the component; a bare `_watcher` or `_interop` says only what its own declaration already said.
+- Do spell a name out. An abbreviation is unreadable without jumping back to the declaration, and single letters belong to loop counters and maths alone.
+- Do keep a lambda's parameter short only while its expression reads as a single thought, and name it as soon as the body outgrows one line.
+- Do name a Blazor event handler's argument `args`; `e` is the older `(sender, e)` idiom and says nothing about what a handler is reading.
+- Do give a computed property a property's name, because a leading underscore promises a field at every call site that reads it.
+- Do say `Element` in the name of an `ElementReference` wherever the bare noun would read as the thing rendered rather than the DOM node, which matters most where the element sits beside the interop object attached to it.
+- Do spell a recurring field the way its counterparts in sibling components spell it; several names for one recurring thing is itself the defect, even where each reads well alone.
+- Don't leave a name that has drifted from what it holds; a rename is cheap and the compiler proves it.
+
 ### Booleans, events, and callbacks
 
 - Do name a `[Parameter] public bool` bare and unprefixed when it configures the component's own rendering or behaviour: `Disabled`, `Busy`, `Opened`, `Required`, `ReadOnly`, `ShowLabels`, `EnablePagination`, `Virtualize`. One forwarding to a native HTML attribute belongs to the same family as `Class`, `Id`, and `Style`, and `Disabled` holds across every component without exception — never `IsDisabled`.

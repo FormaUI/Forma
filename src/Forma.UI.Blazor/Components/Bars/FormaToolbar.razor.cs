@@ -15,7 +15,7 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
         new() { Variant = ButtonVariant.Ghost, Size = ButtonSize.Mini };
 
     private KeyBindings? _keyBindings;
-    private DotNetObjectReference<FormaToolbar>? _self;
+    private DotNetObjectReference<FormaToolbar>? _selfReference;
     private IReadOnlyList<KeyBinding> _attachedBindings = [];
     private string? _attachedTargetId;
 
@@ -111,9 +111,9 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
         }
 
         _keyBindings ??= new KeyBindings(JS);
-        _self ??= DotNetObjectReference.Create(this);
+        _selfReference ??= DotNetObjectReference.Create(this);
 
-        if (await _keyBindings.AttachAsync(target, _self, bindings))
+        if (await _keyBindings.AttachAsync(target, _selfReference, bindings))
         {
             _attachedBindings = bindings;
             _attachedTargetId = target.Id;
@@ -147,7 +147,7 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
             await _keyBindings.DisposeAsync();
         }
 
-        _self?.Dispose();
+        _selfReference?.Dispose();
     }
 
     /// <summary>Releases the current attachment, so a cleared target leaves no listener behind on the element it named.</summary>

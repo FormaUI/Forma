@@ -21,7 +21,7 @@ public sealed class FormaPropertyColumn<TGridItem, TProp> : ColumnBase<TGridItem
     private string? _boundFormat;
     private GridSort<TGridItem>? _derivedSort;
     private Func<TGridItem, TProp> _getter = default!;
-    private Func<TGridItem, string?> _display = default!;
+    private Func<TGridItem, string?> _displayText = default!;
     private Action<TGridItem, TProp>? _setter;
     private TGridItem? _cachedDraft;
     private Expression<Func<TProp>>? _cachedValueExpression;
@@ -68,10 +68,10 @@ public sealed class FormaPropertyColumn<TGridItem, TProp> : ColumnBase<TGridItem
 
         // Rebuilt on a property change too: the display closes over the getter, so keeping it
         // would read through the previous property.
-        if (_display is null || propertyChanged || _boundFormat != Format)
+        if (_displayText is null || propertyChanged || _boundFormat != Format)
         {
             _boundFormat = Format;
-            _display = BuildDisplay(_getter, Format);
+            _displayText = BuildDisplay(_getter, Format);
         }
     }
 
@@ -95,7 +95,7 @@ public sealed class FormaPropertyColumn<TGridItem, TProp> : ColumnBase<TGridItem
             return;
         }
 
-        builder.AddContent(4, _display(item));
+        builder.AddContent(4, _displayText(item));
     }
 
     /// <inheritdoc />
@@ -123,7 +123,7 @@ public sealed class FormaPropertyColumn<TGridItem, TProp> : ColumnBase<TGridItem
 
         // A read-only column still reads from the draft, so a value derived from an edited
         // one keeps up while the row is open.
-        builder.AddContent(1, _display(draft));
+        builder.AddContent(1, _displayText(draft));
     }
 
     private static Type? ResolveEditorType()

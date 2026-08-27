@@ -50,11 +50,11 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
 
     private Scroll _scroll = default!;
 
-    private ElementReference _imageFrame;
+    private ElementReference _imageFrameElement;
 
     private string? _resolvedSource;
 
-    private CancellationTokenSource? _resolving;
+    private CancellationTokenSource? _resolveCancellation;
 
     private bool _dragAttached;
 
@@ -123,14 +123,14 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
 
     private CancellationToken StartResolving()
     {
-        var abandoned = _resolving;
+        var abandoned = _resolveCancellation;
 
-        _resolving = new CancellationTokenSource();
+        _resolveCancellation = new CancellationTokenSource();
 
         abandoned?.Cancel();
         abandoned?.Dispose();
 
-        return _resolving.Token;
+        return _resolveCancellation.Token;
     }
 
     private async Task<ResourceInfo?> ResolveResourceAsync(string source, CancellationToken cancellationToken)
@@ -156,13 +156,13 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
 
         if (!_dragAttached)
         {
-            _dragAttached = await _pan.AttachAsync(_imageFrame, ZoomedClass);
+            _dragAttached = await _pan.AttachAsync(_imageFrameElement, ZoomedClass);
         }
 
         if (_zoomChanged)
         {
             _zoomChanged = false;
-            await _scroll.ToCenterAsync(_imageFrame);
+            await _scroll.ToCenterAsync(_imageFrameElement);
         }
     }
 
@@ -231,12 +231,12 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        if (_resolving is not null)
+        if (_resolveCancellation is not null)
         {
-            await _resolving.CancelAsync();
+            await _resolveCancellation.CancelAsync();
         }
 
-        _resolving?.Dispose();
+        _resolveCancellation?.Dispose();
 
         await _pan.DisposeAsync();
         await _scroll.DisposeAsync();

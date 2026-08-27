@@ -39,10 +39,10 @@ public sealed partial class FormaCommandBar : ComponentBase, IAsyncDisposable
 
     [Inject] private IStringLocale<FormaCommandBar> L { get; set; } = default!;
 
-    private ScrollBoundaryWatcher _watcher = default!;
+    private ScrollBoundaryWatcher _boundaryWatcher = default!;
     private Scroll _scroll = default!;
-    private DotNetObjectReference<FormaCommandBar>? _self;
-    private ElementReference _track;
+    private DotNetObjectReference<FormaCommandBar>? _selfReference;
+    private ElementReference _trackElement;
     private bool _canScrollBack;
     private bool _canScrollForward;
 
@@ -68,7 +68,7 @@ public sealed partial class FormaCommandBar : ComponentBase, IAsyncDisposable
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _watcher = new ScrollBoundaryWatcher(JS);
+        _boundaryWatcher = new ScrollBoundaryWatcher(JS);
         _scroll = new Scroll(JS);
     }
 
@@ -80,20 +80,20 @@ public sealed partial class FormaCommandBar : ComponentBase, IAsyncDisposable
             return;
         }
 
-        _self = DotNetObjectReference.Create(this);
+        _selfReference = DotNetObjectReference.Create(this);
 
-        await _watcher.AttachAsync(_track, _self);
+        await _boundaryWatcher.AttachAsync(_trackElement, _selfReference);
     }
 
     private async Task ScrollAsync(int direction)
-        => await _scroll.ByPageAsync(_track, direction);
+        => await _scroll.ByPageAsync(_trackElement, direction);
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        await _watcher.DisposeAsync();
+        await _boundaryWatcher.DisposeAsync();
         await _scroll.DisposeAsync();
 
-        _self?.Dispose();
+        _selfReference?.Dispose();
     }
 }

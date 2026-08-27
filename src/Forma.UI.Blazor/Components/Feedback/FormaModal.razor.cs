@@ -11,7 +11,7 @@ using Microsoft.JSInterop;
 /// <summary>A dialog rendered in the browser's top layer, with an optional header, footer actions, and backdrop dismissal.</summary>
 public sealed partial class FormaModal : IAsyncDisposable
 {
-    private ElementReference _dialogRef;
+    private ElementReference _dialogElement;
     private Modal _modal = default!;
     private bool _isOpen;
 
@@ -73,7 +73,7 @@ public sealed partial class FormaModal : IAsyncDisposable
     {
         if (firstRender)
         {
-            await _modal.AttachAsync(_dialogRef);
+            await _modal.AttachAsync(_dialogElement);
         }
 
         if (Opened && !_isOpen)

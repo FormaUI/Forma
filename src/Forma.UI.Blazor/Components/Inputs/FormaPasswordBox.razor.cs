@@ -17,7 +17,7 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
     private const int WellScoredLength = 12;
 
     private readonly string _id = $"fld-{Guid.NewGuid():N}";
-    private ElementReference _inputRef;
+    private ElementReference _inputElement;
     private AutofillTracker _autofill = default!;
     private ValidationMessageStore _messages = default!;
     private IReadOnlyList<string> _advice = [];
@@ -238,9 +238,9 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
         Reassess();
     }
 
-    private void HandleInput(ChangeEventArgs e)
+    private void HandleInput(ChangeEventArgs args)
     {
-        CurrentValueAsString = e.Value?.ToString();
+        CurrentValueAsString = args.Value?.ToString();
         Reassess();
     }
 
@@ -254,7 +254,7 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
             : [.. (StrengthAdvisor ?? Advise)(CurrentValue)];
     }
 
-    private void HandleValidationRequested(object? sender, ValidationRequestedEventArgs e)
+    private void HandleValidationRequested(object? sender, ValidationRequestedEventArgs args)
         => ValidateForbiddenTerms();
 
     private void ValidateForbiddenTerms()
@@ -333,7 +333,7 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
             return;
         }
 
-        await _autofill.AttachAsync(_inputRef);
+        await _autofill.AttachAsync(_inputElement);
     }
 
     /// <inheritdoc />

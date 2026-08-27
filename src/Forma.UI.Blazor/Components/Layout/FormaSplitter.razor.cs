@@ -49,8 +49,8 @@ public sealed partial class FormaSplitter : ComponentBase, IAsyncDisposable
 
     private Pointer _pointer = default!;
     private ElementReference _element;
-    private double _origin;
-    private double _startValue;
+    private double _dragOrigin;
+    private double _dragStartValue;
     private bool _isResizing;
 
     private bool IsVertical
@@ -90,8 +90,8 @@ public sealed partial class FormaSplitter : ComponentBase, IAsyncDisposable
     private async Task HandlePointerDownAsync(PointerEventArgs args)
     {
         _isResizing = true;
-        _origin = IsVertical ? args.ClientX : args.ClientY;
-        _startValue = Value;
+        _dragOrigin = IsVertical ? args.ClientX : args.ClientY;
+        _dragStartValue = Value;
 
         await OnResizingChanged.InvokeAsync(true);
         await _pointer.CaptureAsync(_element, args.PointerId);
@@ -104,12 +104,12 @@ public sealed partial class FormaSplitter : ComponentBase, IAsyncDisposable
             return;
         }
 
-        var travelled = (IsVertical ? args.ClientX : args.ClientY) - _origin;
+        var travelled = (IsVertical ? args.ClientX : args.ClientY) - _dragOrigin;
 
         // The pane sits before the divider, so in a right-to-left layout it grows as the pointer moves the other way.
         var direction = IsVertical && CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? -1 : 1;
 
-        await SetValueAsync(_startValue + (travelled / PixelsPerUnit * direction));
+        await SetValueAsync(_dragStartValue + (travelled / PixelsPerUnit * direction));
     }
 
     private async Task HandlePointerUpAsync(PointerEventArgs args)
