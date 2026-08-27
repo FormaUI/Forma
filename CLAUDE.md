@@ -117,7 +117,8 @@ An identifier-shaped member is one of six different things, numbered below, and 
 
 These rules govern prose that *describes a thing*. They do not apply to this file, or to documents whose purpose is to teach judgment or record decisions.
 
-- Do state only what a thing is or does in XML docs, CSS banners, inline comments, and README files.
+- Do state what a thing is in XML docs, CSS banners, inline comments, and README files.
+- Do explain how something works only where the mechanism is intricate enough that a reader could not recover it from the code, and then describe the mechanism rather than the reasoning that chose it.
 - Do use US English spelling in documentation and comments — color, license, catalog — with one deliberate exception: behaviour keeps its British spelling.
 - Do comment only when the code cannot express an important constraint, such as a necessary `!important`, a non-obvious `-webkit-` property, or an off-by-one invariant.
 - Do keep comments to one line whenever possible.
@@ -125,7 +126,8 @@ These rules govern prose that *describes a thing*. They do not apply to this fil
 - Do put `/// <inheritdoc />` on every lifecycle override and interface implementation — `OnInitialized`, `OnParametersSet`, `OnAfterRenderAsync`, `Dispose`, `DisposeAsync`, `TryParseValueFromString`, `FormatValueAsString` — rather than restating what the base member already documents.
 - Do keep historical origin and usage mapping in the intentional *Old pattern* and *Used in* rows of `COMPONENTS.md`.
 - Don't document history, rejected alternatives, decision arguments, roadmap position, call sites, mirrors, or other cross-references.
-- Don't restate obvious code or pad files with unnecessary prose.
+- Don't write what a thing might do, does not do, or would otherwise have done; a sentence about code that is not there sends the reader looking for it.
+- Don't restate obvious code or pad files with unnecessary prose; delete a comment that carries nothing rather than rewording it.
 
 ### Keeping prose true as code changes
 

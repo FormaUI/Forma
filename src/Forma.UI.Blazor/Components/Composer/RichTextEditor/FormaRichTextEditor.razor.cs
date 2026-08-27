@@ -159,10 +159,10 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
     /// <param name="isAnchor">Whether it is a named anchor rather than a hyperlink.</param>
     [JSInvokable]
     public Task HandleLinkActivatedAsync(bool isAnchor)
-        // A link dialog seeds itself from the canvas, whichever way it was asked for.
+        // A link dialog fills its fields from the canvas, whichever way it was asked for.
         => ReopenAsync(null, () => HandleLinkDialogRequested(isAnchor));
 
-    // The canvas has already selected the element whole, so confirming replaces it rather than adding another.
+    // The canvas has already selected the element whole, so confirming replaces it.
     private Task ReopenAsync(ComposerDialogResult? reopening, Action open)
     {
         if (Context is null || IsDisabled || IsReadOnly)
@@ -219,7 +219,7 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
 
     private void HandleVideoDialogRequested()
     {
-        // Asked for from the toolbar, so nothing is being reopened and the fields start empty.
+        // Asked for from the toolbar, so nothing is being reopened.
         _reopening = null;
         _isVideoDialogOpen = true;
         StateHasChanged();

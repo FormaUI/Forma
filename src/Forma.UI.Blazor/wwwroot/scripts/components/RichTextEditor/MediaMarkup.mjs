@@ -83,7 +83,7 @@ export class MediaMarkup {
     }
 
     /** What each kind is recognised by. A figure is tried before a bare picture, because closest()
-        stops at the element itself and would otherwise lose the caption wrapped around it. */
+        stops at the element itself and a picture inside a figure matches first. */
     static Kinds = [
         { kind: 'image', selector: 'figure.forma-composer-image' },
         { kind: 'image', selector: 'img' },

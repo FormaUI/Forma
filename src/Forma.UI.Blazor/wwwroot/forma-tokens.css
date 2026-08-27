@@ -24,7 +24,7 @@
     /* Focus ring */
     --focus-color: color-mix(in srgb, var(--main-color) 55%, white);
 
-    /* Links — hover darkens, so pointing at a link raises its emphasis rather than fading it. */
+    /* Links — hover darkens, so pointing at a link raises its emphasis. */
     --link-color: var(--main-dark-color);
     --link-hover-color: color-mix(in srgb, var(--main-color) 62%, black);
 

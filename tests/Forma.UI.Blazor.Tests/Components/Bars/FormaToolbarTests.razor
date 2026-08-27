@@ -655,7 +655,7 @@
                 Options = [new() { Id = $"{id}-only", Title = id, Command = $"{id}.pick", IsActive = true }],
             };
 
-        /// <summary>The bound key-combination lists from every "attach" call carrying one, leaving out the attachments a command bar makes for its own scrolling, which name no bindings and need not carry options at all.</summary>
+        /// <summary>The bound key-combination lists from every "attach" call that carries one.</summary>
         private static List<List<object>> KeyBindingAttachments(FormaToolbarTests ctx)
             => [.. ctx.JSInterop.Invocations["attach"]
                      .Select(invocation => invocation.Arguments.Count > 1 ? invocation.Arguments[1] : null)

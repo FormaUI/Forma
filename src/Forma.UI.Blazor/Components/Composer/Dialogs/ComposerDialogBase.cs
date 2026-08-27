@@ -39,13 +39,13 @@ public abstract class ComposerDialogBase : ComponentBase
     private protected IMarkupPolicy MarkupPolicy
         => Context?.Sanitizer.MarkupPolicy ?? RichContentMarkupPolicy.Default;
 
-    /// <summary>Whether the dialog reopened on something already in the document, rather than collecting something new.</summary>
+    /// <summary>Whether the dialog reopened on something already in the document.</summary>
     private protected bool IsReopened => Reopening is not null;
 
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        // Only the first opening fills the fields; a later render would otherwise overwrite what was typed.
+        // The fields are filled once, on the first opening, and hold what was typed from then on.
         if (!Opened || _hasOpened)
         {
             return;

@@ -1,9 +1,9 @@
 /**
  * WheelScroll — scrolling a sideways track with a wheel that only reports vertically
  *
- * A mouse wheel reports along the block axis alone, so pointing at a track that scrolls
- * inline-ward and turning it moves the page instead of the track. Offsets are handled in
- * both directions because a right-to-left track counts scrollLeft downwards from zero.
+ * A mouse wheel reports along the block axis alone, so its turn is read here as movement
+ * along the track's inline axis. Offsets are handled in both directions because a
+ * right-to-left track counts scrollLeft downwards from zero.
  */
 
 /** Pixels a line is taken to be, for the wheels that report in lines rather than pixels. */
@@ -21,7 +21,7 @@ class WheelScroll {
     constructor(track) {
         this.#track = track;
 
-        // Not passive, because a turn the track can still answer is one the page must not also act on.
+        // A passive listener cannot call preventDefault, which keeps the turn from the page.
         track.addEventListener('wheel', event => this.#handle(event), { signal: this.#controller.signal, passive: false });
     }
 
@@ -37,7 +37,7 @@ class WheelScroll {
 
         const slack = this.#track.scrollWidth - this.#track.clientWidth;
 
-        // A sub-pixel track width leaves a fractional remainder that would otherwise read as scrollable.
+        // A sub-pixel track width leaves a fractional remainder, so a pixel is the smallest real slack.
         if (slack <= 1) {
             return;
         }

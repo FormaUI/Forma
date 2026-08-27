@@ -20,7 +20,7 @@ export function attach(target, options = {}) {
 }
 
 class RichTextEditor {
-    /** Which callback each reopened kind reports to, since each carries fields of its own. */
+    /** Which callback each reopened kind reports to. */
     static #Activations = {
         image: 'HandleImageActivatedAsync',
         video: 'HandleVideoActivatedAsync',
@@ -71,8 +71,8 @@ class RichTextEditor {
     }
 
     /**
-     * Opens whatever the author double-clicked in the dialog that built it. The element is selected
-     * whole first, so confirming the dialog replaces it rather than inserting a second one beside it.
+     * Opens whatever the author double-clicked in the dialog that built it, selecting the element
+     * whole first so that confirming the dialog replaces it.
      */
     #handleDoubleClick(event) {
         const from = Canvas.elementOf(event.target);
@@ -89,13 +89,13 @@ class RichTextEditor {
             return;
         }
 
-        // Suppresses the word-selection a double-click would otherwise leave behind.
+        // Replaces the word a double-click selects with the whole element.
         event.preventDefault();
         this.#canvas.selectNode(found.element);
         this.#memory.save();
 
-        // Frozen because the dialog about to open returns a collapsed caret when it closes, which
-        // would otherwise overwrite the element-wide selection the replacement depends on.
+        // A closing dialog returns a collapsed caret to the canvas; freezing keeps the element-wide
+        // selection the replacement reads.
         this.#memory.freeze();
 
         if (found.kind === 'link' || found.kind === 'anchor') {

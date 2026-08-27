@@ -86,7 +86,7 @@ public sealed partial class FormaCommandBar : ComponentBase, IAsyncDisposable
 
         await _boundaryWatcher.AttachAsync(_trackElement, _selfReference);
 
-        // A wheel reports vertically alone, so without this a turn over the commands scrolls the page past them.
+        // A wheel reports vertically alone, so its turn is read as movement along the track.
         await _wheelScroll.AttachAsync(_trackElement);
     }
 
