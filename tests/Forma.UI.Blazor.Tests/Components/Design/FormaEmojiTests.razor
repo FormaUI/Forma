@@ -78,6 +78,23 @@
         }
 
         [Fact]
+        public void Should_fetch_the_sheet_its_own_sprite_is_drawn_from()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiTests();
+            Emoji emoji = "😀";
+
+            // Act
+            ctx.Render(@<FormaEmoji Emoji="emoji" />);
+
+            // Assert
+            // A sprite reference resolves against symbols in the document, which nothing else would have fetched.
+            Assert.Contains(
+                ctx.JSInterop.Invocations["loadSprite"],
+                invocation => invocation.Arguments is [string sheet, ..] && sheet.EndsWith(".svg", StringComparison.Ordinal));
+        }
+
+        [Fact]
         public void Should_refuse_to_draw_the_absent_emoji()
         {
             // Arrange

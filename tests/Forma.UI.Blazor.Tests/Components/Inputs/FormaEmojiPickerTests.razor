@@ -10,6 +10,26 @@
         private const int GroupCount = 9;
 
         [Fact]
+        public void Should_fetch_each_sheet_once_however_many_cells_draw_from_it()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaEmojiPicker />);
+
+            // Assert
+            // Every emoji on a circuit shares one loader, so hundreds of cells drawing from a sheet fetch it once.
+            var sheets = ctx.JSInterop.Invocations["loadSprite"]
+                .Select(invocation => (string)invocation.Arguments[0]!)
+                .ToArray();
+
+            Assert.Multiple(
+                () => Assert.NotEmpty(sheets),
+                () => Assert.Equal(sheets.Distinct(StringComparer.Ordinal).Count(), sheets.Length));
+        }
+
+        [Fact]
         public void Should_show_a_single_spinner_in_place_of_a_still_loading_category()
         {
             // Arrange

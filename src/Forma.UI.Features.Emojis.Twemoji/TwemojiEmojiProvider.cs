@@ -5,6 +5,9 @@ using Forma.UI.Design.Emojis;
 /// <summary>Provides the Twemoji artwork this package ships, drawing an emoji from its embedded sprite sheets.</summary>
 public sealed class TwemojiEmojiProvider : IEmojiProvider
 {
+    // Variation Selector-16, which a fully-qualified emoji spells its presentation with.
+    private const string EmojiPresentation = "\uFE0F";
+
     private readonly Lazy<IReadOnlyDictionary<string, EmojiAsset>> _byCharacter = new(BuildIndex);
 
     /// <inheritdoc />
@@ -28,5 +31,22 @@ public sealed class TwemojiEmojiProvider : IEmojiProvider
     }
 
     private static Dictionary<string, EmojiAsset> BuildIndex()
-        => EmojiAssetLoader.All().ToDictionary(asset => asset.Emoji.Character, StringComparer.Ordinal);
+    {
+        var assets = EmojiAssetLoader.All();
+        var index = new Dictionary<string, EmojiAsset>(assets.Count, StringComparer.Ordinal);
+
+        foreach (var asset in assets)
+        {
+            index[asset.Emoji.Character] = asset;
+        }
+
+        // An unqualified spelling differs from the catalog's fully-qualified one only by its emoji
+        // presentation selectors, and both name one emoji — so a pasted "⚠" still draws "⚠️".
+        foreach (var asset in assets)
+        {
+            index.TryAdd(asset.Emoji.Character.Replace(EmojiPresentation, string.Empty, StringComparison.Ordinal), asset);
+        }
+
+        return index;
+    }
 }

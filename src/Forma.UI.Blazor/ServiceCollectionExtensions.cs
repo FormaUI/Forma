@@ -1,9 +1,11 @@
 namespace Forma.UI.Blazor;
 
+using Forma.UI.Blazor.Design;
 using Forma.UI.Features.Feedback;
 using Forma.UI.Features.Sanitization;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 /// <summary>Registers the services Forma's components need to function.</summary>
 public static class ServiceCollectionExtensions
@@ -18,6 +20,9 @@ public static class ServiceCollectionExtensions
 
         services.AddFormaFeedbackServices();
         services.AddFormaSanitizationServices();
+
+        // Scoped, because the sheets it has adopted are the ones in this circuit's own document.
+        services.TryAddScoped<EmojiSpriteLoader>();
 
         return services;
     }

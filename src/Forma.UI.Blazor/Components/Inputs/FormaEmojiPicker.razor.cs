@@ -56,7 +56,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     private string _query = string.Empty;
     private string? _activeGroupId;
     private string _announcement = string.Empty;
-    private Asset? _asset;
+    private EmojiSpriteLoader? _ownLoader;
     private InfiniteScroll? _sentinelWatcher;
     private DotNetObjectReference<FormaEmojiPicker>? _selfRef;
     private ElementReference _sentinelElement;
@@ -184,9 +184,9 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
             await _sentinelWatcher.DisposeAsync();
         }
 
-        if (_asset is not null)
+        if (_ownLoader is not null)
         {
-            await _asset.DisposeAsync();
+            await _ownLoader.DisposeAsync();
         }
 
         _selfRef?.Dispose();
@@ -197,6 +197,11 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
 
     private static Icon TabIcon(string groupId)
         => TabGlyphs.TryGetValue(groupId, out var glyph) ? glyph : Glyph.Emoji;
+
+    // The registered loader is shared with every emoji it renders, so a sheet is fetched once between them.
+    private EmojiSpriteLoader Loader()
+        => (EmojiSpriteLoader?)Services.GetService(typeof(EmojiSpriteLoader))
+            ?? (_ownLoader ??= new EmojiSpriteLoader(JS));
 
     private string? Sheet(EmojiInfo info)
         => Provider.GetArtwork(info.Emoji) is EmojiSprite sprite ? sprite.Sheet : null;
@@ -225,7 +230,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
 
         try
         {
-            await (_asset ??= new Asset(JS)).LoadSpriteAsync(next);
+            await Loader().LoadAsync(next);
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {

@@ -18,10 +18,12 @@ public sealed partial class FormaIcon : ComponentBase
     /// <summary>Extra classes applied to the SVG element.</summary>
     [Parameter] public string? Class { get; set; }
 
-    /// <summary>The provider supplying this icon's artwork, taken from the host's registration when unset.</summary>
+    /// <summary>The provider supplying this icon's artwork, taken from the surrounding subtree or the host's registration when unset.</summary>
     [Parameter] public IIconProvider? Provider { get; set; }
 
     [Inject] private IServiceProvider Services { get; set; } = default!;
+
+    [CascadingParameter] private IIconProvider? CascadingProvider { get; set; }
 
     private string CssClass
         => (string.IsNullOrWhiteSpace(Class) ? "forma-icon" : $"forma-icon {Class}") + _artwork switch
@@ -34,8 +36,11 @@ public sealed partial class FormaIcon : ComponentBase
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        // Absent registration is a host that wants no artwork package, not a fault; the bundled symbol font stands in.
+        // Nearest wins: this icon's own provider, then the one a surrounding subtree draws from, then the host's
+        // registration. Absent all three is a host that wants no artwork package, not a fault, and the bundled
+        // symbol font stands in.
         var provider = Provider
+            ?? CascadingProvider
             ?? (IIconProvider?)Services.GetService(typeof(IIconProvider))
             ?? UnicodeIconProvider.Default;
 

@@ -135,6 +135,39 @@
         }
 
         [Fact]
+        public void Should_draw_through_a_provider_the_surrounding_subtree_supplies()
+        {
+            // Arrange
+            using var ctx = new FormaIconTests();
+
+            // Act
+            var cut = ctx.Render(@<CascadingValue Value="(IIconProvider)Forma.UI.Blazor.Design.UnicodeIconProvider.Default" IsFixed="true">
+                                      <FormaIcon Icon="Glyph.Check" />
+                                  </CascadingValue>);
+
+            // Assert
+            // The registered Phosphor artwork would render an svg; a subtree names its own artwork without
+            // every icon in it repeating the parameter.
+            Assert.Equal("✓", cut.Find("span.forma-icon-character").TextContent);
+        }
+
+        [Fact]
+        public void Should_prefer_its_own_provider_over_the_surrounding_one()
+        {
+            // Arrange
+            using var ctx = new FormaIconTests();
+
+            // Act
+            var cut = ctx.Render(@<CascadingValue Value="(IIconProvider)Forma.UI.Blazor.Design.UnicodeIconProvider.Default" IsFixed="true">
+                                      <FormaIcon Icon="Glyph.Check" Provider="new Forma.UI.Features.Icons.Phosphor.PhosphorIconProvider()" />
+                                  </CascadingValue>);
+
+            // Assert
+            // The nearer answer wins, so one icon can differ from the subtree around it.
+            Assert.NotEmpty(cut.Find("svg path").GetAttribute("d"));
+        }
+
+        [Fact]
         public void Should_refuse_to_draw_the_absent_glyph()
         {
             // Arrange

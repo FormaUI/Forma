@@ -63,7 +63,9 @@
                             title="@info.Name"
                             aria-label="@info.Name"
                             @onclick="() => SelectAsync(info)">
-                        <FormaEmoji Emoji="info.Emoji" />
+                        <CascadingValue Value="Loader()" IsFixed="true">
+                            <FormaEmoji Emoji="info.Emoji" />
+                        </CascadingValue>
                     </button>
                 }
             </div>

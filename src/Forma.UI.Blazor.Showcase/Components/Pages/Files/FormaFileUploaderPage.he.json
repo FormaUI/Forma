@@ -15,7 +15,7 @@
   "The sandbox contains generated 4 KB, 256 KB, 2 MB, 100 MB, and 1 GB files. Pick any combination to exercise short and sustained transfers from:": "ארגז החול מכיל קבצים שנוצרו בגודל 4 KB, 256 KB, 2 MB, 100 MB ו-1 GB. בחרו כל שילוב כדי לבדוק העברות קצרות וממושכות מתוך:",
   "Every new selection clears the upload directory before its first file is written:": "כל בחירה חדשה מנקה את תיקיית ההעלאה לפני כתיבת הקובץ הראשון שלה:",
   "Pick sandbox files of any size": "בחרו קובצי ארגז חול בכל גודל",
-  "Every measurement is switched on here through FormaFileUploaderOptions, so each file and the set as a whole report bytes, elapsed time, speed, and the time remaining.": "כל המדידות מופעלות כאן דרך FormaFileUploaderOptions, ולכן כל קובץ והקבוצה כולה מדווחים בתים, זמן שחלף, מהירות והזמן שנותר.",
+  "Every measurement is switched on here through FileUploaderOptions, so each file and the set as a whole report bytes, elapsed time, speed, and the time remaining.": "כל המדידות מופעלות כאן דרך FileUploaderOptions, ולכן כל קובץ והקבוצה כולה מדווחים בתים, זמן שחלף, מהירות והזמן שנותר.",
   "The list on its own": "הרשימה לבדה",
   "ShowTotalMetrics and ShowSummary are switched off here, so nothing is reported beneath the files: no totals line and no status message. Each row still carries its own measurements.": "כאן ShowTotalMetrics ו-ShowSummary כבויים, ולכן לא מדווח דבר מתחת לקבצים: אין שורת סיכום ואין הודעת מצב. כל שורה עדיין מציגה את המדידות שלה.",
   "A slow store, and cancelling it": "מאגר איטי, וביטולו",

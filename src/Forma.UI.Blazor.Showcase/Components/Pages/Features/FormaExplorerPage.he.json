@@ -24,7 +24,7 @@
   "Modified": "שונה",
   "Added": "נוסף",
   "Read-only explorer": "סייר לקריאה בלבד",
-  "With FormaExplorerFileOptions.ReadOnly, browsing and selection remain while upload, rename, delete, and every folder action disappear.": "עם FormaExplorerFileOptions.ReadOnly נשמרים העיון והבחירה, ואילו העלאה, שינוי שם, מחיקה וכל פעולות התיקיות נעלמות.",
+  "With ExplorerFileOptions.ReadOnly, browsing and selection remain while upload, rename, delete, and every folder action disappear.": "עם ExplorerFileOptions.ReadOnly נשמרים העיון והבחירה, ואילו העלאה, שינוי שם, מחיקה וכל פעולות התיקיות נעלמות.",
   "Media without folder management": "מדיה ללא ניהול תיקיות",
   "Media stays fully editable while the folder tree is fixed, so items can be renamed and deleted but folders cannot.": "המדיה נותרת ניתנת לעריכה מלאה בעוד עץ התיקיות קבוע, כך שניתן לשנות שם ולמחוק פריטים אך לא תיקיות.",
   "Breadcrumb-only navigation": "ניווט באמצעות שובר הנתיב בלבד",
