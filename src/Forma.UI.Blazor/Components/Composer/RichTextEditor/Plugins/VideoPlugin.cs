@@ -7,7 +7,7 @@ using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
 
 /// <summary>Contributes video embed insertion to the rich text editor.</summary>
-public sealed class VideoPlugin(RichTextEditorPlugin editor) : IComposerPlugin
+public sealed class VideoPlugin(RichTextEditorPlugin editor) : IComposerFeaturePlugin
 {
     /// <summary>The command opening the insert video embed dialog.</summary>
     public const string InsertVideoCommand = "video.insert";

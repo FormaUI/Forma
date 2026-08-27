@@ -7,7 +7,7 @@ using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
 
 /// <summary>Contributes basic text formatting operations: bold, italic, underline, strikethrough, inline code, subscript, superscript, and clear formatting.</summary>
-public sealed class BasicFormattingPlugin(RichTextEditorPlugin editor) : IComposerPlugin
+public sealed class BasicFormattingPlugin(RichTextEditorPlugin editor) : IComposerFeaturePlugin
 {
     /// <summary>The command applying bold styling.</summary>
     public const string BoldCommand = "format.bold";

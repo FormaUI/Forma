@@ -207,7 +207,7 @@ public sealed class TextEditorPlugin : IComposerEditorPlugin
 }
 
 /// <summary>An external plugin joining the shared plugin row with one command.</summary>
-public sealed class TimestampPlugin : IComposerPlugin
+public sealed class TimestampPlugin : IComposerFeaturePlugin
 {
     /// <summary>The command appending the current date and time.</summary>
     public const string TimestampCommand = "demo.timestamp";
@@ -254,7 +254,7 @@ public sealed class TimestampPlugin : IComposerPlugin
 }
 
 /// <summary>An external plugin that declares a row of its own rather than joining the shared plugin row.</summary>
-public sealed class CleanupPlugin : IComposerPlugin
+public sealed class CleanupPlugin : IComposerFeaturePlugin
 {
     /// <summary>The command dropping lines that hold nothing but whitespace.</summary>
     public const string RemoveBlankLinesCommand = "demo.remove-blank-lines";

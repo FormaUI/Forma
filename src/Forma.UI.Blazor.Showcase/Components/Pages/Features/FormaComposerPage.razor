@@ -105,10 +105,10 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Every Rich Text Plugin"]</h2>
-    <p class="description">@L["The standard preset carries the plugins most documents need. This surface registers every rich text plugin the library ships, including the ones a host opts into: video, embed, template, emoji, special character, and clipboard."]</p>
+    <h2>@L["Every Plugin"]</h2>
+    <p class="description">@L["The standard preset carries the plugins most documents need. This surface discovers and registers every plugin the library ships, so what appears here is exactly what a host can opt into."]</p>
     <div class="demo-box">
-        <FormaComposer @bind-Value="_everyPluginDoc" Plugins="_everyRichTextPlugin" />
+        <FormaComposer @bind-Value="_everyPluginDoc" Plugins="_everyPlugins" />
     </div>
 </div>
 
@@ -144,7 +144,7 @@
     private ComposerDocument _statusDoc = new(ComposerDocumentFormat.PlainText, "pear\napple\nbanana");
     private ComposerDocument _pluginDoc = new(ComposerDocumentFormat.PlainText, "pear\n\nApple\n\nbanana");
     private ComposerDocument _viewDoc = new(ComposerDocumentFormat.Html, "<p>Press <strong>Preview</strong> to read this as rendered output, or <strong>Maximize</strong> to fill the viewport.</p>");
-    private ComposerDocument _everyPluginDoc = new(ComposerDocumentFormat.Html, "<p>Every rich text plugin the library ships is registered here.</p>");
+    private ComposerDocument _everyPluginDoc = new(ComposerDocumentFormat.Html, "<p>Every plugin the library ships is registered here.</p>");
     private ComposerDocument _imagesOnlyDoc = new(ComposerDocumentFormat.Html, "<p>Insert an image by address, or browse the pictures already stored.</p>");
     private ComposerDocument _anyFileDoc = new(ComposerDocumentFormat.Html, "<p>Browse any stored file, or attach one from this device.</p>");
     private readonly FormaComposerOptions _noToolbarOptions = new() { ShowToolbar = false };
@@ -153,7 +153,7 @@
     private IReadOnlyList<IComposerPlugin> _sourcePlugins = [];
     private IReadOnlyList<IComposerPlugin> _demoPlugins = [];
     private IReadOnlyList<IComposerPlugin> _viewPlugins = [];
-    private IReadOnlyList<IComposerPlugin> _everyRichTextPlugin = [];
+    private IReadOnlyList<IComposerPlugin> _everyPlugins = [];
     private IReadOnlyList<IComposerPlugin> _imagesOnlyPlugins = [];
     private IReadOnlyList<IComposerPlugin> _anyFilePlugins = [];
 
@@ -164,28 +164,8 @@
         _demoPlugins = [_everythingTextPlugin, _everythingSourcePlugin, new TimestampPlugin(), new CleanupPlugin()];
         _viewPlugins = [new RichTextEditorPlugin(), new MaximizePlugin(), new PreviewPlugin()];
 
-        var richText = new RichTextEditorPlugin();
-        _everyRichTextPlugin =
-        [
-            richText,
-            new ParagraphFormatPlugin(richText),
-            new TypographyPlugin(richText),
-            new BasicFormattingPlugin(richText),
-            new ListPlugin(richText),
-            new AlignmentBidiPlugin(richText),
-            new LinkPlugin(richText),
-            new ImagePlugin(richText),
-            new VideoPlugin(richText),
-            new EmbedPlugin(richText),
-            new TablePlugin(richText),
-            new HorizontalRulePlugin(richText),
-            new TemplatePlugin(richText),
-            new EmojiPlugin(richText),
-            new SpecialCharacterPlugin(richText),
-            new ClipboardPlugin(richText),
-            new MaximizePlugin(),
-            new PreviewPlugin(),
-        ];
+        // Discovered rather than listed, so a plugin the library gains is here without this page learning of it.
+        _everyPlugins = ComposerPluginDiscovery.Discover([new RichTextEditorPlugin()], typeof(RichTextEditorPlugin).Assembly);
 
         var richFiles = new RichTextEditorPlugin();
         _imagesOnlyPlugins =

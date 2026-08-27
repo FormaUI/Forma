@@ -8,7 +8,7 @@ using Forma.UI.Features.Toolbar;
 /// <summary>Contributes emoji character insertion to the rich text editor.</summary>
 public sealed class EmojiPlugin(
     RichTextEditorPlugin editor,
-    EmojiPluginOptions? options = null) : IComposerPlugin
+    EmojiPluginOptions? options = null) : IComposerFeaturePlugin
 {
     /// <summary>Command prefix for inserting a specific emoji character.</summary>
     public const string InsertEmojiPrefix = "emoji.insert:";

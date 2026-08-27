@@ -142,7 +142,7 @@
             }
         }
 
-        private sealed class ScopedPlugin : IComposerPlugin
+        private sealed class ScopedPlugin : IComposerFeaturePlugin
         {
             public string Id => "scoped";
             public IReadOnlyList<string> SupportedEditorIds => ["dummy"];

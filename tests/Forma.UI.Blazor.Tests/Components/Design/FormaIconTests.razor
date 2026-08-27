@@ -164,7 +164,7 @@
 
             // Assert
             // The nearer answer wins, so one icon can differ from the subtree around it.
-            Assert.NotEmpty(cut.Find("svg path").GetAttribute("d"));
+            Assert.False(string.IsNullOrEmpty(cut.Find("svg path").GetAttribute("d")));
         }
 
         [Fact]

@@ -7,7 +7,7 @@ using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
 
 /// <summary>Contributes image insertion to the rich text editor.</summary>
-public sealed class ImagePlugin(RichTextEditorPlugin editor) : IComposerPlugin
+public sealed class ImagePlugin(RichTextEditorPlugin editor) : IComposerFeaturePlugin
 {
     /// <summary>The command opening the insert image dialog.</summary>
     public const string InsertImageCommand = "image.insert";

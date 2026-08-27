@@ -11,7 +11,7 @@ using Forma.UI.Features.Toolbar;
 /// <summary>Contributes font family, font size, text color, highlight color, and line height operations.</summary>
 public sealed class TypographyPlugin(
     RichTextEditorPlugin editor,
-    TypographyPluginOptions? options = null) : IComposerPlugin
+    TypographyPluginOptions? options = null) : IComposerFeaturePlugin
 {
     /// <summary>The command applying font family styling.</summary>
     public const string FontFamilyCommand = "typography.font-family";

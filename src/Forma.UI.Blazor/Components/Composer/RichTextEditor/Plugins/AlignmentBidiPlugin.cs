@@ -7,7 +7,7 @@ using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
 
 /// <summary>Contributes text alignment and paragraph direction operations.</summary>
-public sealed class AlignmentBidiPlugin(RichTextEditorPlugin editor) : IComposerPlugin
+public sealed class AlignmentBidiPlugin(RichTextEditorPlugin editor) : IComposerFeaturePlugin
 {
     /// <summary>The command aligning text to the left.</summary>
     public const string AlignLeftCommand = "align.left";

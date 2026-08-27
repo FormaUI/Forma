@@ -9,7 +9,7 @@ using Forma.UI.Features.Toolbar;
 /// <summary>Contributes browsing the host's stored files, and inserting whichever one is chosen.</summary>
 public sealed class ExplorerPlugin(
     RichTextEditorPlugin editor,
-    ExplorerPluginOptions? options = null) : IComposerPlugin
+    ExplorerPluginOptions? options = null) : IComposerFeaturePlugin
 {
     /// <summary>The command opening the stored files dialog.</summary>
     public const string BrowseCommand = "explorer.browse";

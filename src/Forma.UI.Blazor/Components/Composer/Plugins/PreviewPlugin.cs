@@ -7,7 +7,7 @@ using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
 
 /// <summary>Contributes a read-only rendered document preview to the composer toolbar, for any editor.</summary>
-public sealed class PreviewPlugin : IComposerPlugin
+public sealed class PreviewPlugin : IComposerFeaturePlugin
 {
     /// <summary>The command opening a read-only rendered preview of the document.</summary>
     public const string PreviewCommand = "view.preview";

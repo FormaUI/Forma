@@ -122,6 +122,9 @@ public sealed class ComposerToolbarLayout
         }
     }
 
+    // Only a feature plugin scopes itself to editors; anything else contributes to every surface.
     private static bool AppliesTo(IComposerPlugin plugin, string editorId)
-        => plugin.SupportedEditorIds.Count == 0 || plugin.SupportedEditorIds.Contains(editorId, StringComparer.Ordinal);
+        => plugin is not IComposerFeaturePlugin feature
+            || feature.SupportedEditorIds.Count == 0
+            || feature.SupportedEditorIds.Contains(editorId, StringComparer.Ordinal);
 }

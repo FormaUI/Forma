@@ -7,7 +7,7 @@ using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
 
 /// <summary>Contributes clipboard and selection commands to the rich text editor.</summary>
-public sealed class ClipboardPlugin(RichTextEditorPlugin editor) : IComposerPlugin
+public sealed class ClipboardPlugin(RichTextEditorPlugin editor) : IComposerFeaturePlugin
 {
     /// <summary>The command selecting the entire document content.</summary>
     public const string SelectAllCommand = "clipboard.select-all";

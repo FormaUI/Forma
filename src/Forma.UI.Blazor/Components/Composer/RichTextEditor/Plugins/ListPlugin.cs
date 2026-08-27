@@ -7,7 +7,7 @@ using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
 
 /// <summary>Contributes bulleted and numbered lists, indentation, and outdent operations.</summary>
-public sealed class ListPlugin(RichTextEditorPlugin editor) : IComposerPlugin
+public sealed class ListPlugin(RichTextEditorPlugin editor) : IComposerFeaturePlugin
 {
     /// <summary>The command inserting or toggling a bulleted list.</summary>
     public const string BulletListCommand = "list.bullet";

@@ -7,7 +7,7 @@ using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
 
 /// <summary>Contributes paragraph and block-level formatting operations: paragraph, headings 1–6, blockquote, and lead text.</summary>
-public sealed class ParagraphFormatPlugin(RichTextEditorPlugin editor) : IComposerPlugin
+public sealed class ParagraphFormatPlugin(RichTextEditorPlugin editor) : IComposerFeaturePlugin
 {
     /// <summary>The command applying normal paragraph block styling.</summary>
     public const string ParagraphCommand = "paragraph.p";

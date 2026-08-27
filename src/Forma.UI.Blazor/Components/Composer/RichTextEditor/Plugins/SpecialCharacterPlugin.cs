@@ -9,7 +9,7 @@ using Forma.UI.Features.Toolbar;
 /// <summary>Contributes typographic and mathematical symbol insertion to the rich text editor.</summary>
 public sealed class SpecialCharacterPlugin(
     RichTextEditorPlugin editor,
-    SpecialCharacterPluginOptions? options = null) : IComposerPlugin
+    SpecialCharacterPluginOptions? options = null) : IComposerFeaturePlugin
 {
     /// <summary>Command prefix for inserting a specific special character.</summary>
     public const string InsertCharacterPrefix = "special-character.insert:";

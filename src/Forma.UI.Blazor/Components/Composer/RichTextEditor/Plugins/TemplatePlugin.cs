@@ -9,7 +9,7 @@ using Forma.UI.Features.Toolbar;
 /// <summary>Contributes predefined document template insertion to the rich text editor.</summary>
 public sealed class TemplatePlugin(
     RichTextEditorPlugin editor,
-    TemplatePluginOptions? options = null) : IComposerPlugin
+    TemplatePluginOptions? options = null) : IComposerFeaturePlugin
 {
     /// <summary>Command prefix for inserting a specific predefined template.</summary>
     public const string InsertTemplatePrefix = "template.insert:";

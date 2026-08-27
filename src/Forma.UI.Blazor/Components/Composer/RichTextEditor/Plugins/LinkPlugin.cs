@@ -7,7 +7,7 @@ using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
 
 /// <summary>Contributes hyperlink and anchor creation and removal to the rich text editor.</summary>
-public sealed class LinkPlugin(RichTextEditorPlugin editor) : IComposerPlugin
+public sealed class LinkPlugin(RichTextEditorPlugin editor) : IComposerFeaturePlugin
 {
     /// <summary>The command adding a hyperlink, or retargeting whichever ones the selection covers.</summary>
     public const string InsertLinkCommand = "link.insert";

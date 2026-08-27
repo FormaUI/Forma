@@ -7,7 +7,7 @@ using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
 
 /// <summary>Contributes declarative host-resolved embed placeholder insertion to the rich text editor.</summary>
-public sealed class EmbedPlugin(RichTextEditorPlugin editor) : IComposerPlugin
+public sealed class EmbedPlugin(RichTextEditorPlugin editor) : IComposerFeaturePlugin
 {
     /// <summary>The command opening the insert embed dialog.</summary>
     public const string InsertEmbedCommand = "embed.insert";

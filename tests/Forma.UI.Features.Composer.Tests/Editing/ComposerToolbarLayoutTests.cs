@@ -26,7 +26,7 @@ public sealed class ComposerToolbarLayoutTests
         public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
     }
 
-    private sealed class Plugin : IComposerPlugin
+    private sealed class Plugin : IComposerFeaturePlugin
     {
         public string Id { get; init; } = "plugin";
         public IReadOnlyList<ComposerToolbarItem> Items { get; init; } = [];
