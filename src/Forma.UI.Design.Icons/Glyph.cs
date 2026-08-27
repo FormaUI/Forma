@@ -36,6 +36,9 @@ public enum Glyph
     /// <summary>A ship's anchor, for a named position in a document.</summary>
     Anchor,
 
+    /// <summary>A storage box, for archiving.</summary>
+    Archive,
+
     /// <summary>A downward arrow.</summary>
     ArrowDown,
 
@@ -68,6 +71,9 @@ public enum Glyph
 
     /// <summary>A screen with waves rising from its corner, for casting to a display.</summary>
     Cast,
+
+    /// <summary>A label tag, for a category.</summary>
+    Category,
 
     /// <summary>A tick.</summary>
     Check,
@@ -108,6 +114,9 @@ public enum Glyph
     /// <summary>Opposing angle brackets, for source code.</summary>
     Code,
 
+    /// <summary>Two arrows pointing at each other, for collapsing a section.</summary>
+    Collapse,
+
     /// <summary>A pane divided top to bottom, standing for a table's columns.</summary>
     Columns,
 
@@ -116,6 +125,9 @@ public enum Glyph
 
     /// <summary>A zipped file, for compressing into an archive.</summary>
     Compress,
+
+    /// <summary>A bound book with a person on its cover, for contacts.</summary>
+    Contacts,
 
     /// <summary>Two stacked sheets, for duplicating.</summary>
     Copy,
@@ -131,6 +143,9 @@ public enum Glyph
 
     /// <summary>A pair of shears, for cutting.</summary>
     Cut,
+
+    /// <summary>A beetle, for debugging.</summary>
+    Debug,
 
     /// <summary>A waste bin, for discarding.</summary>
     Delete,
@@ -153,11 +168,23 @@ public enum Glyph
     /// <summary>A smiling face, for picking an emoji.</summary>
     Emoji,
 
+    /// <summary>An empty tray, for a container with nothing in it.</summary>
+    Empty,
+
     /// <summary>An exclamation mark inside a circle, for a failure.</summary>
     Error,
 
+    /// <summary>A calendar with marked days, for events.</summary>
+    Events,
+
     /// <summary>A door with an arrow leaving it, for signing out.</summary>
     Exit,
+
+    /// <summary>Two arrows pointing away from each other, for expanding a section.</summary>
+    Expand,
+
+    /// <summary>A jigsaw piece, for extensions.</summary>
+    Extensions,
 
     /// <summary>A box with an arrow rising out of it, for extracting from an archive.</summary>
     Extract,
@@ -209,6 +236,9 @@ public enum Glyph
 
     /// <summary>A fork and knife.</summary>
     ForkKnife,
+
+    /// <summary>An arrow bending up and to the right, for forwarding.</summary>
+    Forward,
 
     /// <summary>A square divided into cells, for a tile layout.</summary>
     GridView,
@@ -288,11 +318,20 @@ public enum Glyph
     /// <summary>A wand throwing sparkles, for an automatic fix or format.</summary>
     MagicWand,
 
+    /// <summary>A wrench crossed with a screwdriver, for maintenance.</summary>
+    Maintenance,
+
     /// <summary>An open hand, for a manual mode.</summary>
     Manual,
 
     /// <summary>Arrows pointing outward to the four corners, for entering a full-viewport state.</summary>
     Maximize,
+
+    /// <summary>A speech bubble with text lines, for a message.</summary>
+    Message,
+
+    /// <summary>A microphone, for voice input.</summary>
+    Microphone,
 
     /// <summary>Arrows pointing inward from the four corners, for leaving a full-viewport state.</summary>
     Minimize,
@@ -351,6 +390,9 @@ public enum Glyph
     /// <summary>A pencil.</summary>
     Pen,
 
+    /// <summary>A push pin, for pinning in place.</summary>
+    Pin,
+
     /// <summary>Columns of cards, for planning.</summary>
     Plan,
 
@@ -365,6 +407,9 @@ public enum Glyph
 
     /// <summary>A square holding a plus.</summary>
     PlusSquare,
+
+    /// <summary>Bars of differing heights, for a poll.</summary>
+    Poll,
 
     /// <summary>A printer, for printing.</summary>
     Print,
@@ -384,6 +429,9 @@ public enum Glyph
     /// <summary>A filled dot inside a circle, for a marked point.</summary>
     RadioButton,
 
+    /// <summary>An opened envelope, for something read.</summary>
+    Read,
+
     /// <summary>A filled circle in a ring, for recording.</summary>
     Record,
 
@@ -399,11 +447,17 @@ public enum Glyph
     /// <summary>A broken chain, for removing a link.</summary>
     RemoveLink,
 
+    /// <summary>An arrow bending up and to the left, for replying.</summary>
+    Reply,
+
     /// <summary>A single clockwise arrow, for rotating.</summary>
     Rotate,
 
     /// <summary>Stacked bars, standing for a table's rows.</summary>
     Rows,
+
+    /// <summary>A triangle in a circle, for running.</summary>
+    Run,
 
     /// <summary>A floppy disk, for saving.</summary>
     Save,
@@ -438,6 +492,9 @@ public enum Glyph
     /// <summary>An arrow entering a bracket, for signing in.</summary>
     SignIn,
 
+    /// <summary>A bell with a sleeping mark, for snoozing.</summary>
+    Snooze,
+
     /// <summary>A football.</summary>
     SoccerBall,
 
@@ -465,6 +522,9 @@ public enum Glyph
     /// <summary>A five-point star, for a favorite.</summary>
     Star,
 
+    /// <summary>Stacked drives, for storage.</summary>
+    Storage,
+
     /// <summary>A struck-through letter S, for struck-out text.</summary>
     Strikethrough,
 
@@ -477,6 +537,9 @@ public enum Glyph
     /// <summary>Opposing horizontal arrows, for swapping or replacing.</summary>
     Swap,
 
+    /// <summary>Two arrows chasing counter-clockwise, for syncing.</summary>
+    Sync,
+
     /// <summary>A grid of cells under a header, for a table.</summary>
     Table,
 
@@ -486,11 +549,17 @@ public enum Glyph
     /// <summary>A prompt and cursor, for a terminal.</summary>
     Terminal,
 
+    /// <summary>Lines of text, for plain text.</summary>
+    Text,
+
     /// <summary>A rightward arrow to a bar, for left-to-right reading order.</summary>
     TextDirectionLtr,
 
     /// <summary>A leftward arrow to a bar, for right-to-left reading order.</summary>
     TextDirectionRtl,
+
+    /// <summary>A toolbox, for tools.</summary>
+    Tools,
 
     /// <summary>Two scripts side by side, for translation.</summary>
     Translate,
@@ -512,6 +581,12 @@ public enum Glyph
 
     /// <summary>A speaker with one wave, for unmuting.</summary>
     Unmute,
+
+    /// <summary>A push pin struck through, for unpinning.</summary>
+    Unpin,
+
+    /// <summary>A closed envelope, for something unread.</summary>
+    Unread,
 
     /// <summary>An upward arrow above a line, for uploading.</summary>
     Upload,
