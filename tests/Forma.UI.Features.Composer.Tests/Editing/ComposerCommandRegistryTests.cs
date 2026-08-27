@@ -89,7 +89,7 @@ public sealed class ComposerCommandRegistryTests
             _ => Task.CompletedTask,
             _ => Task.CompletedTask);
 
-    private static Task<ComposerCommandOutcome> ExecuteAsync(ComposerCommandRegistry registry, string command)
+    private static Task<ComposerCommandResult> ExecuteAsync(ComposerCommandRegistry registry, string command)
         => registry.ExecuteAsync(command, CreateContext(), TestContext.Current.CancellationToken);
 
     [Fact]
@@ -101,11 +101,11 @@ public sealed class ComposerCommandRegistryTests
         registry.RegisterPlugins([plugin]);
 
         // Act
-        var outcome = await ExecuteAsync(registry, "typography.text-color:#d32f2f");
+        var result = await ExecuteAsync(registry, "typography.text-color:#d32f2f");
 
         // Assert
         Assert.Multiple(
-            () => Assert.Equal(ComposerCommandOutcome.Plugin, outcome),
+            () => Assert.Equal(ComposerCommandResult.Plugin, result),
             () => Assert.Equal(["typography.text-color:#d32f2f"], plugin.Executed));
     }
 
@@ -117,11 +117,11 @@ public sealed class ComposerCommandRegistryTests
         registry.RegisterEngineCommand("engine.go", () => { ran = true; return Task.CompletedTask; });
 
         // Act
-        var outcome = await ExecuteAsync(registry, "engine.go");
+        var result = await ExecuteAsync(registry, "engine.go");
 
         // Assert
         Assert.Multiple(
-            () => Assert.Equal(ComposerCommandOutcome.Engine, outcome),
+            () => Assert.Equal(ComposerCommandResult.Engine, result),
             () => Assert.True(ran));
     }
 
@@ -134,11 +134,11 @@ public sealed class ComposerCommandRegistryTests
         registry.RegisterPlugins([plugin]);
 
         // Act
-        var outcome = await ExecuteAsync(registry, "plugin.go");
+        var result = await ExecuteAsync(registry, "plugin.go");
 
         // Assert
         Assert.Multiple(
-            () => Assert.Equal(ComposerCommandOutcome.Plugin, outcome),
+            () => Assert.Equal(ComposerCommandResult.Plugin, result),
             () => Assert.Equal(["plugin.go"], plugin.Executed));
     }
 
@@ -149,10 +149,10 @@ public sealed class ComposerCommandRegistryTests
         var registry = new ComposerCommandRegistry();
 
         // Act
-        var outcome = await ExecuteAsync(registry, "nobody.owns.this");
+        var result = await ExecuteAsync(registry, "nobody.owns.this");
 
         // Assert
-        Assert.Equal(ComposerCommandOutcome.Unhandled, outcome);
+        Assert.Equal(ComposerCommandResult.Unhandled, result);
     }
 
     [Fact]
@@ -164,11 +164,11 @@ public sealed class ComposerCommandRegistryTests
         registry.RegisterPlugins([plugin]);
 
         // Act
-        var outcome = await ExecuteAsync(registry, "emoji.insert:\U0001F600");
+        var result = await ExecuteAsync(registry, "emoji.insert:\U0001F600");
 
         // Assert
         Assert.Multiple(
-            () => Assert.Equal(ComposerCommandOutcome.Plugin, outcome),
+            () => Assert.Equal(ComposerCommandResult.Plugin, result),
             () => Assert.Equal(["emoji.insert:\U0001F600"], plugin.Executed));
     }
 
@@ -182,11 +182,11 @@ public sealed class ComposerCommandRegistryTests
         registry.RegisterPlugins([exact, byPrefix]);
 
         // Act
-        var outcome = await ExecuteAsync(registry, "emoji.insert:reset");
+        var result = await ExecuteAsync(registry, "emoji.insert:reset");
 
         // Assert
         Assert.Multiple(
-            () => Assert.Equal(ComposerCommandOutcome.Plugin, outcome),
+            () => Assert.Equal(ComposerCommandResult.Plugin, result),
             () => Assert.Equal(["emoji.insert:reset"], exact.Executed),
             () => Assert.Empty(byPrefix.Executed));
     }
@@ -200,11 +200,11 @@ public sealed class ComposerCommandRegistryTests
         registry.RegisterPlugins([plugin]);
 
         // Act
-        var outcome = await ExecuteAsync(registry, "emoji.insertion-point");
+        var result = await ExecuteAsync(registry, "emoji.insertion-point");
 
         // Assert
         Assert.Multiple(
-            () => Assert.Equal(ComposerCommandOutcome.Unhandled, outcome),
+            () => Assert.Equal(ComposerCommandResult.Unhandled, result),
             () => Assert.Empty(plugin.Executed));
     }
 
@@ -218,11 +218,11 @@ public sealed class ComposerCommandRegistryTests
         registry.RegisterEngineCommand(ComposerCommands.Undo, () => Task.CompletedTask);
 
         // Act
-        var outcome = await ExecuteAsync(registry, ComposerCommands.Undo);
+        var result = await ExecuteAsync(registry, ComposerCommands.Undo);
 
         // Assert
         Assert.Multiple(
-            () => Assert.Equal(ComposerCommandOutcome.Engine, outcome),
+            () => Assert.Equal(ComposerCommandResult.Engine, result),
             () => Assert.Empty(plugin.Executed));
     }
 

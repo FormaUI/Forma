@@ -210,7 +210,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
 
         await InvokeAsync(async () =>
         {
-            if (await _commands.ExecuteAsync(command, _context) is ComposerCommandOutcome.Plugin)
+            if (await _commands.ExecuteAsync(command, _context) is ComposerCommandResult.Plugin)
             {
                 RebuildContext();
                 StateHasChanged();
