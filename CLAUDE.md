@@ -296,9 +296,9 @@ dotnet build Forma.slnx -p:GenerateDocumentationFile=true --no-incremental -v:q 
 - Do verify both directions, colour-independent states, accessible names and focus, and 24×24 touch targets before review — the `forma-a11y-touch-rtl` skill carries the full standard.
 - Do present the component for review and stop; iterate on that same component until the maintainer declares it complete.
 - Do mark completion in both documents after approval: add `✅` to the component heading and build-order entry in `Forma/COMPONENTS.md`, then change `☐` to `✅` and update status in `EpicaDeportiva/docs/forma-components.md`.
-- Do propose a per-component commit message and wait for explicit permission before changing Git state.
+- Do finish a piece of work with it unstaged, report what changed and what the gate said, and propose a commit message for the maintainer to run themselves.
 - Do keep changes minimal and on-scope.
 - Don't move to the next component before the current one is approved.
 - Don't mark a component complete on your own judgement.
-- Don't run state-changing Git commands such as `add`, `commit`, `push`, or `reset` without explicit permission; read-only Git is allowed.
+- Don't run a state-changing Git command — `add`, `commit`, `push`, `reset`, `restore`, `stash`, a path-scoped `checkout` — without permission for that command, asked for once the work exists and the maintainer can see what is in it. An instruction given up front about work not yet done grants nothing, and neither does permission for an earlier commit; read-only Git needs no permission at all.
 - Don't retrofit new conventions onto existing components unless asked.
