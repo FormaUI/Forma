@@ -19,7 +19,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 
-/// <summary>An authoring surface hosting rich text, Markdown, code, or page composition via extensible plugins.</summary>
+/// <summary>The composer engine, hosting rich text, Markdown, code, or page composition through extensible editor plugins.</summary>
 public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncDisposable
 {
     private readonly string _generatedId = $"composer-{Guid.NewGuid():N}";

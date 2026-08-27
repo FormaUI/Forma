@@ -6,13 +6,13 @@ using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Documents;
 using Forma.UI.Features.Composer.Plugins;
 
-/// <summary>Rich text visual authoring surface for FormaComposer.</summary>
+/// <summary>The visual rich text editor for FormaComposer.</summary>
 public sealed class RichTextEditorPlugin : IComposerEditorPlugin
 {
     /// <summary>The identifier for the rich text editor plugin.</summary>
     public const string EditorId = "rich-text";
 
-    /// <summary>Raised when a plugin requests execution of a rich text command on the active surface.</summary>
+    /// <summary>Raised when a plugin requests execution of a rich text command on the active canvas.</summary>
     public event Action<string, object?>? CommandRequested;
 
     /// <summary>Raised when a plugin requests opening the link or anchor dialog.</summary>
@@ -52,7 +52,7 @@ public sealed class RichTextEditorPlugin : IComposerEditorPlugin
     public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default)
         => ValueTask.FromResult(true);
 
-    /// <summary>Requests execution of a rich text command on the active surface.</summary>
+    /// <summary>Requests execution of a rich text command on the active canvas.</summary>
     public void RequestCommand(string command, object? value = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);

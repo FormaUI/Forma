@@ -10,15 +10,15 @@ using Forma.UI.Features.Composer.Editing;
 using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Toolbar;
 
-/// <summary>A source-oriented surface, numbering its lines in a gutter and renaming a symbol from a row of its own.</summary>
+/// <summary>A source-oriented editor, numbering its lines in a gutter and renaming a symbol from a row of its own.</summary>
 public sealed class SourceEditorPlugin : IComposerEditorPlugin
 {
-    /// <summary>The command opening the rename bar over the editing surface.</summary>
+    /// <summary>The command opening the rename bar over the canvas.</summary>
     public const string RenameCommand = "source.rename";
 
     private const string RefactorRow = "source.refactor";
 
-    /// <summary>Raised when the rename command asks the editing surface to open its rename bar.</summary>
+    /// <summary>Raised when the rename command asks the canvas to open its rename bar.</summary>
     public event Action? RenameRequested;
 
     /// <inheritdoc />
@@ -68,10 +68,10 @@ public sealed class SourceEditorPlugin : IComposerEditorPlugin
     }
 }
 
-/// <summary>A prose-oriented surface, rewriting whole lines and reporting the document's size in the status strip.</summary>
+/// <summary>A prose-oriented editor, rewriting whole lines and reporting the document's size in the status strip.</summary>
 public sealed class TextEditorPlugin : IComposerEditorPlugin
 {
-    /// <summary>The identifier a plugin names to scope itself to this surface.</summary>
+    /// <summary>The identifier a plugin names to scope itself to this editor.</summary>
     public const string EditorId = "text";
 
     /// <summary>The command prefixing every line with its position.</summary>

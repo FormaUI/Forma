@@ -33,9 +33,10 @@
     --light-border-color: #d9dbde;
     --dark-border-color: rgba(98, 105, 118, 0.31);
 
-    /* Surfaces */
+    /* Backgrounds */
     --input-background-color: #fff;
     --modal-background-color: #fafbfc;
+    --muted-background-color: #f3f4f6;
     --hover-background-color: rgba(98, 105, 118, 0.06);
     --media-background-color: #000;
     --media-foreground-color: #fff;

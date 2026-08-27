@@ -8,7 +8,7 @@ using Forma.UI.Features.Composer.Editing;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-/// <summary>Source editing surface for the composer demo, numbering its lines and renaming a symbol throughout the document.</summary>
+/// <summary>The source canvas for the composer demo, numbering its lines and renaming a symbol throughout the document.</summary>
 public sealed partial class DemoSourceEditor : ComponentBase, IDisposable
 {
     // A pattern built from what the author typed, so a pathological name cannot run away with the request.
@@ -17,7 +17,7 @@ public sealed partial class DemoSourceEditor : ComponentBase, IDisposable
     /// <summary>The shared composer context cascaded from the parent shell.</summary>
     [CascadingParameter] public ComposerContext? Context { get; set; }
 
-    /// <summary>The plugin this surface belongs to, cascaded by the host so each composer drives its own.</summary>
+    /// <summary>The plugin this canvas belongs to, cascaded by the host so each composer drives its own.</summary>
     [CascadingParameter] public SourceEditorPlugin? Plugin { get; set; }
 
     private ElementReference _oldNameElement;

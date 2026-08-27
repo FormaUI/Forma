@@ -10,7 +10,7 @@ public static class ComposerPluginDiscovery
     /// <param name="assembly">The assembly to search, or null to search every loaded assembly that takes the composer.</param>
     /// <param name="locations">Namespace suffixes narrowing the search, or empty for the whole assembly.</param>
     /// <returns>The plugins given, in their order, followed by the plugins found.</returns>
-    /// <exception cref="InvalidOperationException">A found plugin takes something no given plugin can stand in for; a surface promising every plugin must not quietly miss one, so construct that plugin yourself and pass it among <paramref name="plugins"/>.</exception>
+    /// <exception cref="InvalidOperationException">A found plugin takes something no given plugin can stand in for; a caller promising every plugin must not quietly miss one, so construct that plugin yourself and pass it among <paramref name="plugins"/>.</exception>
     public static IReadOnlyList<IComposerPlugin> Discover(
         IReadOnlyList<IComposerPlugin> plugins,
         Assembly? assembly = null,

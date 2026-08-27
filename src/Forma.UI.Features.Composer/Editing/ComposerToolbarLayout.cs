@@ -14,7 +14,7 @@ public sealed record ComposerToolbarRowLayout(
     bool IsBuiltIn,
     IReadOnlyList<FormaToolbarItem> Items);
 
-/// <summary>The ordered command rows one editing surface's toolbar renders.</summary>
+/// <summary>The ordered command rows one editor's toolbar renders.</summary>
 public sealed class ComposerToolbarLayout
 {
     private ComposerToolbarLayout(IReadOnlyList<ComposerToolbarRowLayout> rows)
@@ -25,7 +25,7 @@ public sealed class ComposerToolbarLayout
     /// <summary>The rows to render, the shared built-in row first and each declared row after the one that defaults to it.</summary>
     public IReadOnlyList<ComposerToolbarRowLayout> Rows { get; }
 
-    /// <summary>Lays out the surface's own commands and those of the plugins scoped to it.</summary>
+    /// <summary>Lays out the editor's own commands and those of the plugins scoped to it.</summary>
     public static ComposerToolbarLayout Create(IComposerEditorPlugin editor, IEnumerable<IComposerPlugin> plugins)
     {
         ArgumentNullException.ThrowIfNull(editor);
@@ -122,7 +122,7 @@ public sealed class ComposerToolbarLayout
         }
     }
 
-    // Only a feature plugin scopes itself to editors; anything else contributes to every surface.
+    // Only a feature plugin scopes itself to editors; anything else contributes to every editor.
     private static bool AppliesTo(IComposerPlugin plugin, string editorId)
         => plugin is not IComposerFeaturePlugin feature
             || feature.SupportedEditorIds.Count == 0

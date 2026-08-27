@@ -1,4 +1,4 @@
-/* DemoSourceEditor — source surface for the composer demo: a line-number gutter beside an unwrapped textarea */
+/* DemoSourceEditor — the source canvas for the composer demo: a line-number gutter beside an unwrapped textarea */
 
 .demo-source-editor {
     display: flex;
@@ -23,7 +23,7 @@
     margin: 0;
     padding: var(--space-3, 0.75rem) var(--space-2, 0.5rem);
     border-inline-end: 1px solid var(--border-color, #d9dee5);
-    background: var(--surface-muted-color, #f5f6f8);
+    background: var(--muted-background-color, #f5f6f8);
     color: var(--text-muted-color, #6b7280);
     text-align: end;
     list-style: none;
@@ -60,7 +60,7 @@
     gap: var(--space-2, 0.5rem);
     padding: var(--space-2, 0.5rem);
     border-block-end: 1px solid var(--border-color, #d9dee5);
-    background: var(--surface-muted-color, #f5f6f8);
+    background: var(--muted-background-color, #f5f6f8);
 }
 
 .demo-source-rename-field {

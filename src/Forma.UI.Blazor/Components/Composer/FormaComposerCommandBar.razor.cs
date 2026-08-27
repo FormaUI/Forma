@@ -7,7 +7,7 @@ using Forma.UI.Features.Toolbar;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>One command bar belonging to an editing surface, laying its items — and, optionally, undo/redo — on a <see cref="FormaToolbar"/>.</summary>
+/// <summary>One command bar belonging to an editor, laying its items — and, optionally, undo/redo — on a <see cref="FormaToolbar"/>.</summary>
 public sealed partial class FormaComposerCommandBar : ComponentBase
 {
     /// <summary>The accessible name of the bar.</summary>

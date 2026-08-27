@@ -1,5 +1,5 @@
 /**
- * Canvas — the editable surface itself: what it contains, how its blocks are found,
+ * Canvas — the editable region itself: what it contains, how its blocks are found,
  * and how a selection inside it is read and placed.
  */
 
@@ -67,7 +67,7 @@ export class Canvas {
 
         if (node && this.contains(node) && node !== this.#element) {
             const found = node.closest(Canvas.BlockSelector);
-            // The canvas root can itself match the selector; it is the surface, never a block.
+            // The canvas root can itself match the selector; it is the canvas, never a block.
             return found && found !== this.#element ? found : node;
         }
 

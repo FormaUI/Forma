@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
-/// <summary>Plain text editing surface for the composer engine.</summary>
+/// <summary>The plain text canvas, filling the surface the engine gives its editor.</summary>
 public sealed partial class FormaPlainTextEditor : ComponentBase, IAsyncDisposable
 {
     // Keystrokes within this window commit as one state, so undo steps back a phrase rather than a character.

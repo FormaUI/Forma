@@ -8,7 +8,7 @@
     <div @ref="_composerElement" id="@ElementId" class="@ComposerClass" @attributes="AdditionalAttributes">
         @if (_isInitialized && ShowTabs)
         {
-            <FormaTabs ActiveTabId="@_activeEditor.Id" ActiveTabIdChanged="SwitchEditorAsync" Label="@L["Editor Surface"]">
+            <FormaTabs ActiveTabId="@_activeEditor.Id" ActiveTabIdChanged="SwitchEditorAsync" Label="@L["Editors"]">
                 @foreach (var editor in _catalog.Editors)
                 {
                     <FormaTab TabId="@editor.Id" Title="@L[editor.Title]" Icon="editor.Icon">

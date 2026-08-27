@@ -1,6 +1,6 @@
 /* ============================================================
    FormaCommandArea — CSS isolation
-   The region alone: surface, the rule beneath it, and the stack
+   The region alone: its fill, the rule beneath it, and the stack
    its bars sit in. What fills a bar is the caller's.
    ============================================================ */
 

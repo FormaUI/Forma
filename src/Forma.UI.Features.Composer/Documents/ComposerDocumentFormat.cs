@@ -22,7 +22,7 @@ public sealed record ComposerDocumentFormat
     /// <summary>Markdown source.</summary>
     public static ComposerDocumentFormat Markdown { get; } = new("markdown");
 
-    /// <summary>Unformatted text, a conversion target with no editing surface of its own.</summary>
+    /// <summary>Unformatted text, a conversion target with no editor of its own.</summary>
     public static ComposerDocumentFormat PlainText { get; } = new("text");
 
     /// <summary>The serialized widget tree the page designer edits.</summary>

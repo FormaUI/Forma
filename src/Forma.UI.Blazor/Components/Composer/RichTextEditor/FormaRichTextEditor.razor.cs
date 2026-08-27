@@ -12,7 +12,7 @@ using Forma.UI.Features.Composer.Plugins;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>Visual rich text editing canvas for FormaComposer.</summary>
+/// <summary>The visual rich text canvas, filling the surface the engine gives its editor.</summary>
 public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposable
 {
     /// <summary>The shared composer context cascaded from the parent shell.</summary>
@@ -148,7 +148,7 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
             return;
         }
 
-        // These are plugin command names, so they route through the engine registry rather than straight at the surface.
+        // These are plugin command names, so they route through the engine registry rather than straight at the canvas.
         _ = Context.ExecuteCommandAsync(command);
     }
 
@@ -290,7 +290,7 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        // The surface throws from OnInitialized without a cascaded plugin, and is disposed all the same.
+        // The canvas throws from OnInitialized without a cascaded plugin, and is disposed all the same.
         if (_plugin is not null)
         {
             _plugin.CommandRequested -= HandlePluginCommand;

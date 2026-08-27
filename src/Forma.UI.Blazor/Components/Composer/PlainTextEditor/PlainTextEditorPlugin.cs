@@ -5,7 +5,7 @@ using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Documents;
 using Forma.UI.Features.Composer.Plugins;
 
-/// <summary>Proof-of-routing and fallback editor plugin providing a plain text editing surface.</summary>
+/// <summary>Proof-of-routing and fallback editor plugin, authoring plain text.</summary>
 public sealed class PlainTextEditorPlugin : IComposerEditorPlugin
 {
     /// <inheritdoc />

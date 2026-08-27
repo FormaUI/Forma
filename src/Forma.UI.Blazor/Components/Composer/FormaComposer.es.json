@@ -1,7 +1,7 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "Editor Commands": "Comandos del Editor",
-  "Editor Surface": "Superficie de Edición",
+  "Editors": "Editores",
   "Plain Text": "Texto sin Formato",
   "Plugin Commands": "Comandos de Complementos",
   "Text Formatting": "Formato de Texto",

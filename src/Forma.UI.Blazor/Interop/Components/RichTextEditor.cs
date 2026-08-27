@@ -5,11 +5,11 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>Rich text contenteditable surface interop and formatting operations.</summary>
+/// <summary>Rich text contenteditable canvas interop and formatting operations.</summary>
 internal sealed class RichTextEditor(IJSRuntime js)
     : JsInterop(js, "./_content/Forma.UI/scripts/components/RichTextEditor.js")
 {
-    /// <summary>Attaches the rich text editing surface to the contenteditable target.</summary>
+    /// <summary>Attaches the rich text canvas to the contenteditable target.</summary>
     public ValueTask<bool> AttachAsync<TOwner>(ElementReference target, DotNetObjectReference<TOwner> owner, int debounceDelay = 400)
         where TOwner : class
         => AttachCoreAsync(target, new { owner, debounceDelay });

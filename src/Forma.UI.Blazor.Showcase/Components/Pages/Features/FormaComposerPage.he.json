@@ -1,6 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
-  "An extensible authoring surface hosting rich text, Markdown, code, and page composition via plugins.": "משטח עריכה הניתן להרחבה המארח טקסט עשיר, מרקדאון, קוד ועיצוב דפים באמצעות תוספים.",
+  "An extensible authoring engine hosting rich text, Markdown, code, and page composition via plugins.": "מנוע עריכה הניתן להרחבה המארח טקסט עשיר, מרקדאון, קוד ועיצוב דפים באמצעות תוספים.",
   "Standard Rich Text": "טקסט עשיר סטנדרטי",
   "Compact rich text preset with inline formatting, alignment, and basic typography.": "תבנית טקסט עשיר קומפקטית עם עיצוב תווי, יישור וטיפוגרפיה בסיסית.",
   "Default": "ברירת מחדל",
@@ -8,10 +8,10 @@
   "Fixed Height": "גובה קבוע",
   "Compact Rich Text": "טקסט עשיר קומפקטי",
   "Plugins": "תוספים",
-  "Every command is a plugin contribution. The composer's own sit in the built-in row; an editor either joins that row or declares one of its own; a plugin the host registered lands on the plugins bar ruled off beneath. Plain Text shows all three, while Source shows only its own, because both external plugins name the surface they apply to.": "כל פקודה היא תרומה של תוסף. פקודות העורך עצמן יושבות בשורה המובנית; עורך יכול להצטרף לאותה שורה או להצהיר על שורה משלו; תוסף שהמארח רישם נוחת על סרגל התוספים המופרד מתחת. Plain Text מציג את כל השלושה, ואילו Source מציג רק את שלו, משום ששני התוספים החיצוניים מציינים לאיזה משטח הם חלים.",
+  "Every command is a plugin contribution. The composer's own sit in the built-in row; an editor either joins that row or declares one of its own; a plugin the host registered lands on the plugins bar ruled off beneath. Plain Text shows all three, while Source shows only its own, because both external plugins name the editor they apply to.": "כל פקודה היא תרומה של תוסף. פקודות העורך עצמן יושבות בשורה המובנית; עורך יכול להצטרף לאותה שורה או להצהיר על שורה משלו; תוסף שהמארח רישם נוחת על סרגל התוספים המופרד מתחת. Plain Text מציג את כל השלושה, ואילו Source מציג רק את שלו, משום ששני התוספים החיצוניים מציינים לאיזה עורך הם חלים.",
   "Read-only": "קריאה בלבד",
   "Source Editor": "עורך קוד",
-  "An editor plugin bringing a surface of its own: lines numbered in a gutter, and a Rename Symbol command that replaces whole-word occurrences throughout the document. Press F2 or use the Refactor row.": "תוסף עורך המביא משטח משלו: שורות ממוספרות בשוליים, ופקודת שינוי שם סמל המחליפה מופעות של מילה שלמה בכל המסמך. הקישו F2 או השתמשו בשורת ריפאקטור.",
+  "An editor plugin bringing a canvas of its own: lines numbered in a gutter, and a Rename Symbol command that replaces whole-word occurrences throughout the document. Press F2 or use the Refactor row.": "תוסף עורך המביא בד עריכה משלו: שורות ממוספרות בשוליים, ופקודת שינוי שם סמל המחליפה מופעות של מילה שלמה בכל המסמך. הקישו F2 או השתמשו בשורת ריפאקטור.",
   "Standard rich text preset with formatting, typography, headings, lists, and alignment.": "תבנית טקסט עשיר סטנדרטית עם עיצוב, טיפוגרפיה, כותרות, רשימות ויישור.",
   "Status Strip": "רצועת מצב",
   "Word Count pushes a readout the plugin holds and mutates, shown beneath the canvas until the plugin disposes it. Press it again to take it back.": "ספירת מילים דוחפת נתון שהתוסף מחזיק ומשנה, המוצג מתחת למשטח עד שהתוסף משחרר אותו. הקישו שוב כדי להסיר אותו.",
@@ -23,5 +23,5 @@
   "Insert Image takes an address and nothing else. Browse Files opens the stored library beside it, limited here to pictures, and renders whichever one is chosen where the caret sits.": "הוספת תמונה מקבלת כתובת ולא דבר מלבד זאת. עיון בקבזים פותח לידה את הספרייה השמורה, מוגבלת כאן לתמונות, ומציג את זו שנבחרה במקום שבו נמצא הסמן.",
   "Any File, Browsed or Attached": "כל קובץ, בעיון או בצירוף",
   "Browse Files lists every stored file here rather than pictures alone, inserting what the browser can render together with a link to it, and everything else as a link. Attach Files uploads from this device instead, and what arrives is carried beside the document the way an email carries its attachments.": "עיון בקבזים מציג כאן כל קובץ שמור ולא תמונות בלבד, מוסיף את מה שהדפדפן יכול להציג יחד עם קישור אליו, וכל השאר כקישור. צירוף קבזים מעלה מהמכשיר הזה במקום זאת, ומה שמגיע נשמר ליד המסמך כשם שדואר אלקטרוני נושא את צרופותיו.",
-  "The standard preset carries the plugins most documents need. This surface discovers and registers every plugin the library ships, so what appears here is exactly what a host can opt into.": "הערכה הסטנדרטית כוללת את התוספים שרוב המסמכים זקוקים להם. משטח זה מגלה ורושם את כל התוספים שהספרייה מספקת, כך שמה שמופיע כאן הוא בדיוק מה שמארח יכול לבחור להוסיף."
+  "The standard preset carries the plugins most documents need. This demo discovers and registers every plugin the library ships, so what appears here is exactly what a host can opt into.": "הערכה הסטנדרטית כוללת את התוספים שרוב המסמכים זקוקים להם. הדגמה זו מגלה ורושמת את כל התוספים שהספרייה מספקת, כך שמה שמופיע כאן הוא בדיוק מה שמארח יכול לבחור להוסיף."
 }

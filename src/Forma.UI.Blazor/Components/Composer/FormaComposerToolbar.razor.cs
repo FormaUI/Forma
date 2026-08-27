@@ -6,16 +6,16 @@ using Forma.UI.Features.Toolbar;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>The command bar belonging to one editing surface, giving the surface's own commands and its plugins' commands a row each.</summary>
+/// <summary>The command bar belonging to one editor, giving the editor's own commands and its plugins' commands a row each.</summary>
 public sealed partial class FormaComposerToolbar : ComponentBase
 {
     /// <summary>The number of commands a bar carries before the next row starts one of its own.</summary>
     public const int CommandsPerBar = 12;
 
-    /// <summary>The editing surface this toolbar belongs to.</summary>
+    /// <summary>The editor this toolbar belongs to.</summary>
     [Parameter, EditorRequired] public IComposerEditorPlugin Editor { get; set; } = default!;
 
-    /// <summary>The feature plugins on offer; those scoped to other surfaces are left out.</summary>
+    /// <summary>The feature plugins on offer; those scoped to other editors are left out.</summary>
     [Parameter] public IReadOnlyList<IComposerPlugin> Plugins { get; set; } = [];
 
     /// <summary>Whether every control on the toolbar is disabled.</summary>

@@ -1,7 +1,7 @@
 /*
     forma-input.css — The one definition of a Forma input box.
 
-    Loads after forma-base.css. Every surface listed here draws the same box;
+    Loads after forma-base.css. Every input listed here draws the same box;
     each owning component sets only how its own differs, such as the padding it
     needs for a floating label or a leading glyph.
 */

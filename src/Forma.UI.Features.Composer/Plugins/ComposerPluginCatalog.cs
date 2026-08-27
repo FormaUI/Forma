@@ -2,7 +2,7 @@ namespace Forma.UI.Features.Composer.Plugins;
 
 using Forma.UI.Features.Composer.Documents;
 
-/// <summary>The plugins one composer can use, split into editing surfaces and everything else.</summary>
+/// <summary>The plugins one composer can use, split into editors and everything else.</summary>
 public sealed class ComposerPluginCatalog
 {
     private ComposerPluginCatalog(IReadOnlyList<IComposerEditorPlugin> editors, IReadOnlyList<IComposerPlugin> featurePlugins)
@@ -11,10 +11,10 @@ public sealed class ComposerPluginCatalog
         FeaturePlugins = featurePlugins;
     }
 
-    /// <summary>The editing surfaces available, never empty.</summary>
+    /// <summary>The editors available, never empty.</summary>
     public IReadOnlyList<IComposerEditorPlugin> Editors { get; }
 
-    /// <summary>The plugins that contribute capabilities rather than an editing surface.</summary>
+    /// <summary>The plugins that contribute capabilities rather than an editor.</summary>
     public IReadOnlyList<IComposerPlugin> FeaturePlugins { get; }
 
     /// <summary>Every available plugin, editors first.</summary>
@@ -59,7 +59,7 @@ public sealed class ComposerPluginCatalog
         return new ComposerPluginCatalog(editors, featurePlugins);
     }
 
-    /// <summary>Picks the editing surface to activate, preferring an explicit request, then a configured default, then the document's format.</summary>
+    /// <summary>Picks the editor to activate, preferring an explicit request, then a configured default, then the document's format.</summary>
     public IComposerEditorPlugin Resolve(string? requestedId, string? defaultId, ComposerDocumentFormat format)
         => Find(requestedId)
             ?? Find(defaultId)

@@ -58,7 +58,7 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
     /// <summary>Animates the transition between hidden and shown instead of snapping instantly.</summary>
     [Parameter] public bool Animated { get; set; }
 
-    /// <summary>The states the surface currently reports, by item id, which drive toggle state and action availability.</summary>
+    /// <summary>The states the host currently reports, by item id, which drive toggle state and action availability.</summary>
     [Parameter] public IReadOnlySet<string> ActiveStates { get; set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
@@ -203,11 +203,11 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
     private FormaToolbarOption GetActiveOption(FormaToolbarMenu menu)
         => menu.Options.FirstOrDefault(IsOptionActive) ?? menu.Options[0];
 
-    /// <summary>Whether a toggle is on, because it says so itself or because the surface reports its id active.</summary>
+    /// <summary>Whether a toggle is on, because it says so itself or because the host reports its id active.</summary>
     private bool IsToggleActive(FormaToolbarAction action)
         => action is FormaToolbarToggle toggle && (toggle.IsActive || ActiveStates.Contains(toggle.Id));
 
-    /// <summary>Whether a menu option is the chosen one, by its own say-so or because the surface reports its id active.</summary>
+    /// <summary>Whether a menu option is the chosen one, by its own say-so or because the host reports its id active.</summary>
     private bool IsOptionActive(FormaToolbarOption option)
         => option.IsActive || ActiveStates.Contains(option.Id);
 

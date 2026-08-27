@@ -1,6 +1,6 @@
 namespace Forma.UI.Features.Composer.Editing;
 
-/// <summary>The text operations every editing surface needs against a document's raw content.</summary>
+/// <summary>The text operations every editor needs against a document's raw content.</summary>
 public static class ComposerText
 {
     /// <summary>Returns the run of word characters touching <paramref name="offset"/>, or an empty span when none surrounds it.</summary>

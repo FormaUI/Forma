@@ -1,4 +1,4 @@
-/* FormaComposer — Extensible multi-surface authoring engine */
+/* FormaComposer — The composer engine hosting one surface per editor */
 .forma-composer {
     display: flex;
     flex-direction: column;

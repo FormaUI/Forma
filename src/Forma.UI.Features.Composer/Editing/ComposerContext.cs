@@ -58,7 +58,7 @@ public sealed class ComposerContext
     /// <summary>The caret and range as the browser last reported them.</summary>
     public ComposerSelection Selection { get; }
 
-    /// <summary>Whether the composer takes no interaction at all, which a surface renders as a disabled control.</summary>
+    /// <summary>Whether the composer takes no interaction at all, which an editor renders as a disabled control.</summary>
     public bool IsDisabled { get; init; }
 
     /// <summary>Whether the document may be read but not edited.</summary>
@@ -82,13 +82,13 @@ public sealed class ComposerContext
     /// <summary>The registered highlighter, or null when code renders unhighlighted.</summary>
     public IComposerSyntaxHighlighter? SyntaxHighlighter { get; }
 
-    /// <summary>Reports a document the editing surface has changed, so the engine can record, sanitize and raise it.</summary>
+    /// <summary>Reports a document the editor has changed, so the engine can record, sanitize and raise it.</summary>
     public Func<ComposerDocument, Task> ChangeDocumentAsync { get; }
 
     /// <summary>Asks the composer shell to re-render.</summary>
     public Func<Task> RequestRenderAsync { get; }
 
-    /// <summary>Reports the caret or range an editing surface last observed, so the engine can share it with every plugin.</summary>
+    /// <summary>Reports the caret or range an editor last observed, so the engine can share it with every plugin.</summary>
     public Func<ComposerSelection, Task> ReportSelectionAsync { get; }
 
     /// <summary>Runs a named command through the engine, which resolves it against the engine's own commands and then the registered plugins.</summary>
