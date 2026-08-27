@@ -72,6 +72,16 @@ describe('Asset', () => {
             expect(head.of('script')).toHaveLength(1);
         });
 
+        it('removes a script that failed to load', async () => {
+            const pending = assets.loadScript('/lib/missing.js');
+            const [script] = head.of('script');
+
+            settle('script', 'error');
+            await pending;
+
+            expect(script.isConnected).toBe(false);
+        });
+
         // A failure is forgotten so a later attempt can retry.
         it('tries again after a failure', async () => {
             const first = assets.loadScript('/lib/flaky.js');
@@ -240,6 +250,19 @@ describe('Asset', () => {
 
             respondWith(sprite);
             await expect(assets.loadSprite('/emojis/flaky.svg')).resolves.toBe(true);
+        });
+
+        // An enhanced navigation replaces the body, host and symbols included, while the module lives on.
+        it('adopts the symbols again after the host is swept from the document', async () => {
+            respondWith(sprite);
+            await assets.loadSprite('/emojis/smileys.svg');
+            document.getElementById('forma-sprite-definitions').remove();
+
+            await expect(assets.loadSprite('/emojis/smileys.svg')).resolves.toBe(true);
+
+            expect(global.fetch).toHaveBeenCalledTimes(1);
+            expect(document.getElementById('emoji-1f600')).not.toBeNull();
+            expect(document.querySelectorAll('#forma-sprite-definitions')).toHaveLength(1);
         });
     });
 });

@@ -2,18 +2,32 @@ namespace Forma.UI.Blazor.Design;
 
 using Forma.UI.Blazor.Interop.Operations;
 
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.JSInterop;
 
 /// <summary>Adopts emoji sprite sheets into the document, fetching each one once however many emoji draw from it.</summary>
 /// <remarks>
 /// A sprite draws from a symbol the document has to hold, and the reference alone fetches nothing. Sharing one
-/// loader keeps a surface drawing hundreds of emoji from asking for the same sheet once per emoji.
+/// loader keeps a surface drawing hundreds of emoji from asking for the same sheet once per emoji. A navigation
+/// replaces the document's body, symbols included, so what the loader remembers is forgotten with it.
 /// </remarks>
-public sealed class EmojiSpriteLoader(IJSRuntime js) : IAsyncDisposable
+public sealed class EmojiSpriteLoader : IAsyncDisposable
 {
     private readonly Dictionary<string, Task<bool>> _loads = new(StringComparer.Ordinal);
+    private readonly IJSRuntime _js;
+    private readonly NavigationManager? _navigation;
 
     private Asset? _asset;
+
+    public EmojiSpriteLoader(IJSRuntime js, NavigationManager? navigation = null)
+    {
+        ArgumentNullException.ThrowIfNull(js);
+
+        _js = js;
+        _navigation = navigation;
+        _navigation?.LocationChanged += HandleLocationChanged;
+    }
 
     /// <summary>Adopts a sheet's symbols into the document, reporting whether they arrived.</summary>
     /// <param name="sheet">The address of the sheet to load.</param>
@@ -30,7 +44,7 @@ public sealed class EmojiSpriteLoader(IJSRuntime js) : IAsyncDisposable
         // The task is held rather than its result, so callers racing the first load await it instead of repeating it.
         if (!_loads.TryGetValue(sheet, out var load))
         {
-            load = (_asset ??= new Asset(js)).LoadSpriteAsync(sheet).AsTask();
+            load = (_asset ??= new Asset(_js)).LoadSpriteAsync(sheet).AsTask();
             _loads[sheet] = load;
         }
 
@@ -50,9 +64,14 @@ public sealed class EmojiSpriteLoader(IJSRuntime js) : IAsyncDisposable
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
+        _navigation?.LocationChanged -= HandleLocationChanged;
+
         if (_asset is not null)
         {
             await _asset.DisposeAsync();
         }
     }
+
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs args)
+        => _loads.Clear();
 }

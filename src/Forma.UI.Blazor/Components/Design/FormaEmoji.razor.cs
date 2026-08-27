@@ -69,7 +69,11 @@ public sealed partial class FormaEmoji : ComponentBase, IAsyncDisposable
         // A sprite draws from a symbol adopted into the document, which the reference alone never fetches.
         // The symbol resolves the reference already rendered above it, so nothing has to re-render here.
         _requestedSheet = sprite.Sheet;
-        await GetSpriteLoader().LoadAsync(sprite.Sheet);
+
+        if (!await GetSpriteLoader().LoadAsync(sprite.Sheet))
+        {
+            _requestedSheet = null;
+        }
     }
 
     /// <inheritdoc />

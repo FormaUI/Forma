@@ -2,6 +2,8 @@ namespace Forma.UI.Blazor.Tests.Design;
 
 using Forma.UI.Blazor.Design;
 
+using Microsoft.AspNetCore.Components;
+
 public sealed class EmojiSpriteLoaderTests
 {
     private const string Module = "./_content/Forma.UI/scripts/operations/Asset.js";
@@ -67,6 +69,25 @@ public sealed class EmojiSpriteLoaderTests
     }
 
     [Fact]
+    public async Task Should_ask_for_a_sheet_again_after_a_navigation()
+    {
+        // Arrange
+        var js = new BunitJSInterop { Mode = JSRuntimeMode.Loose };
+        js.SetupModule(Module).Setup<bool>("loadSprite", _ => true).SetResult(true);
+        var navigation = new RecordedNavigationManager();
+        await using var loader = new EmojiSpriteLoader(js.JSRuntime, navigation);
+        await loader.LoadAsync("smileys-0.svg");
+
+        // Act
+        navigation.NavigateTo("/composer");
+        await loader.LoadAsync("smileys-0.svg");
+
+        // Assert
+        // A navigation replaces the document's body, symbols included, so what arrived before it is gone.
+        Assert.Equal(2, js.Invocations["loadSprite"].Count);
+    }
+
+    [Fact]
     public async Task Should_refuse_a_nameless_sheet()
     {
         // Arrange
@@ -75,5 +96,23 @@ public sealed class EmojiSpriteLoaderTests
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(() => loader.LoadAsync(" "));
+    }
+
+    private sealed class RecordedNavigationManager : NavigationManager
+    {
+        public RecordedNavigationManager()
+        {
+            Initialize("http://localhost/", "http://localhost/");
+        }
+
+        protected override void NavigateToCore(string uri, NavigationOptions options)
+        {
+            Uri = ToAbsoluteUri(uri).ToString();
+            NotifyLocationChanged(isInterceptedLink: false);
+        }
+
+        protected override void EnsureInitialized()
+        {
+        }
     }
 }

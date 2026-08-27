@@ -53,6 +53,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     private readonly string _generatedId = $"emoji-picker-{Guid.NewGuid():N}";
     private readonly HashSet<string> _loadedSheets = new(StringComparer.Ordinal);
     private readonly HashSet<string> _loadingSheets = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _failedSheets = new(StringComparer.Ordinal);
     private string _query = string.Empty;
     private string? _activeGroupId;
     private string _announcement = string.Empty;
@@ -143,7 +144,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
 
     // Cells stop at the first sheet still missing, so nothing renders ahead of its own artwork.
     private IReadOnlyList<EmojiInfo> Loadable
-        => [.. Visible.TakeWhile(info => Sheet(info) is not { } sheet || _loadedSheets.Contains(sheet))];
+        => [.. Visible.TakeWhile(info => Sheet(info) is not { } sheet || IsSettled(sheet))];
 
     private bool HasMoreToLoad
         => Loadable.Count < Visible.Count;
@@ -206,6 +207,9 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     private string? Sheet(EmojiInfo info)
         => Provider.GetArtwork(info.Emoji) is EmojiSprite sprite ? sprite.Sheet : null;
 
+    private bool IsSettled(string sheet)
+        => _loadedSheets.Contains(sheet) || _failedSheets.Contains(sheet);
+
     private async Task WatchSentinelAsync()
     {
         if (_isSentinelObserved || !HasMoreToLoad)
@@ -221,16 +225,18 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
 
     private async Task LoadNextSheetAsync()
     {
-        var next = RequiredSheets.FirstOrDefault(sheet => !_loadedSheets.Contains(sheet));
+        var next = RequiredSheets.FirstOrDefault(sheet => !IsSettled(sheet));
 
         if (next is null || !_loadingSheets.Add(next))
         {
             return;
         }
 
+        var arrived = false;
+
         try
         {
-            await GetSpriteLoader().LoadAsync(next);
+            arrived = await GetSpriteLoader().LoadAsync(next);
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
@@ -240,7 +246,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
         {
             // A sheet that failed still counts as settled: empty cells beat a spinner that never clears.
             _loadingSheets.Remove(next);
-            _loadedSheets.Add(next);
+            (arrived ? _loadedSheets : _failedSheets).Add(next);
             StateHasChanged();
         }
     }
@@ -253,6 +259,8 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
             _infiniteScroll = null;
         }
 
+        // A sheet that failed is asked for again the next time its group is shown.
+        _failedSheets.Clear();
         _isSentinelObserved = false;
         await LoadNextSheetAsync();
     }

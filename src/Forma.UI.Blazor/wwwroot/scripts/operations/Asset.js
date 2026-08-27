@@ -1,101 +1,133 @@
 /**
- * Asset — loading a script, module, or stylesheet once per page
- *
- * The promise is cached rather than the completion, so callers racing the first load
- * share it instead of each starting one. A failed load is forgotten so a later attempt
- * can retry, and nothing rejects: an asset that will not load reports false.
+ * Loads document-wide assets once, sharing concurrent requests and allowing retries after failure.
  */
 
-const loads = new Map();
-
-function once(kind, url, start) {
-    const key = `${kind}:${url}`;
-
-    if (loads.has(key)) {
-        return loads.get(key);
-    }
-
-    const pending = start().then(() => true, () => {
-        loads.delete(key);
-        return false;
-    });
-
-    loads.set(key, pending);
-
-    return pending;
-}
-
-export function loadModule(url) {
-    return once('module', url, () => import(url));
-}
-
-export function loadScript(url) {
-    return once('script', url, () => new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = url;
-        script.async = true;
-        script.addEventListener('load', resolve, { once: true });
-        script.addEventListener('error', () => reject(new Error(url)), { once: true });
-        document.head.appendChild(script);
-    }));
-}
-
-export function loadStyle(url) {
-    return once('style', url, () => new Promise((resolve, reject) => {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = url;
-        link.addEventListener('load', resolve, { once: true });
-        link.addEventListener('error', () => reject(new Error(url)), { once: true });
-        document.head.appendChild(link);
-    }));
-}
-
-const SPRITE_TIMEOUT_MS = 15000;
+const SPRITE_TIMEOUT_MS = 15_000;
 const SPRITE_HOST_ID = 'forma-sprite-definitions';
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
-function spriteHost() {
-    const existing = document.getElementById(SPRITE_HOST_ID);
+const loads = new Map();
+const sheets = new Map();
+
+// The symbol ids the current host holds; a host swept away with the body starts it afresh.
+let adopted = new Set();
+
+function cached(map, key, start) {
+    const existing = map.get(key);
 
     if (existing) {
         return existing;
     }
 
+    const pending = start().catch(error => {
+        map.delete(key);
+        throw error;
+    });
+
+    map.set(key, pending);
+
+    return pending;
+}
+
+async function attempt(start) {
+    try {
+        await start();
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+function loadElement(tag, url, configure) {
+    return new Promise((resolve, reject) => {
+        const element = document.createElement(tag);
+
+        configure(element);
+
+        element.addEventListener('load', resolve, { once: true });
+        element.addEventListener('error', () => {
+            element.remove();
+            reject(new Error(url));
+        }, { once: true });
+
+        document.head.appendChild(element);
+    });
+}
+
+function loadOnce(kind, url, start) {
+    return attempt(() => cached(loads, `${kind}:${url}`, start));
+}
+
+export function loadModule(url) {
+    return loadOnce('module', url, () => import(url));
+}
+
+export function loadScript(url) {
+    return loadOnce('script', url, () => loadElement('script', url, script => {
+        script.src = url;
+        script.async = true;
+    }));
+}
+
+export function loadStyle(url) {
+    return loadOnce('style', url, () => loadElement('link', url, link => {
+        link.rel = 'stylesheet';
+        link.href = url;
+    }));
+}
+
+function getSpriteHost() {
+    const existing = document.getElementById(SPRITE_HOST_ID);
+
+    if (existing?.isConnected) {
+        return existing;
+    }
+
     const host = document.createElementNS(SVG_NAMESPACE, 'svg');
-    host.setAttribute('id', SPRITE_HOST_ID);
+    host.id = SPRITE_HOST_ID;
     host.setAttribute('aria-hidden', 'true');
     host.setAttribute('focusable', 'false');
     host.style.cssText = 'position:absolute;inline-size:0;block-size:0;overflow:hidden';
+
     document.body.appendChild(host);
+    adopted = new Set();
 
     return host;
 }
 
-/**
- * Adopts an SVG sprite's symbols into the document so a local `<use href="#id">` resolves without
- * another request. A cross-document `<use>` fetches and parses the sprite itself, which lands after
- * the render that referenced it — this makes the symbols present before anything points at them.
- */
-export function loadSprite(url, timeoutMs = SPRITE_TIMEOUT_MS) {
-    return once('sprite', url, async () => {
+function fetchSheet(url, timeoutMs) {
+    return cached(sheets, url, async () => {
         const response = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
 
         if (!response.ok) {
-            throw new Error(url);
+            throw new Error(`Could not load SVG sprite: ${url}`);
         }
 
         const parsed = new DOMParser().parseFromString(await response.text(), 'image/svg+xml');
 
         if (parsed.querySelector('parsererror')) {
-            throw new Error(url);
+            throw new Error(`Could not parse SVG sprite: ${url}`);
         }
 
-        const host = spriteHost();
+        return [...parsed.querySelectorAll('symbol')];
+    });
+}
 
-        for (const symbol of parsed.querySelectorAll('symbol')) {
-            if (!document.getElementById(symbol.id)) {
+/**
+ * Adopts a sprite's symbols into the current document.
+ *
+ * The sheet is fetched and parsed once, while adoption is repeated whenever necessary
+ * because navigation may replace the document-owned sprite host.
+ */
+export function loadSprite(url, timeoutMs = SPRITE_TIMEOUT_MS) {
+    return attempt(async () => {
+        const symbols = await fetchSheet(url, timeoutMs);
+        const host = getSpriteHost();
+
+        for (const symbol of symbols) {
+            if (!adopted.has(symbol.id)) {
                 host.appendChild(document.importNode(symbol, true));
+                adopted.add(symbol.id);
             }
         }
     });
