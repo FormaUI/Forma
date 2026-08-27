@@ -16,9 +16,6 @@ public sealed class MaximizePlugin : IComposerFeaturePlugin
     public string Id => "maximize";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> SupportedEditorIds => [];
-
-    /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> Items =>
     [
         new(ComposerRows.BuiltIn,
@@ -42,15 +39,6 @@ public sealed class MaximizePlugin : IComposerFeaturePlugin
             },
         ]),
     ];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerAsset> Assets => [];
 
     /// <inheritdoc />
     public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default)

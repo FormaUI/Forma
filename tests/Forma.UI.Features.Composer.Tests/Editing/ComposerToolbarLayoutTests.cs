@@ -20,9 +20,6 @@ public sealed class ComposerToolbarLayoutTests
         public Type EditorComponent => typeof(Editor);
         public IReadOnlyList<ComposerToolbarItem> Items { get; init; } = [];
         public IReadOnlyList<ComposerToolbarRow> Rows { get; init; } = [];
-        public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-        public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-        public IReadOnlyList<ComposerAsset> Assets => [];
         public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
     }
 
@@ -32,9 +29,6 @@ public sealed class ComposerToolbarLayoutTests
         public IReadOnlyList<ComposerToolbarItem> Items { get; init; } = [];
         public IReadOnlyList<ComposerToolbarRow> Rows { get; init; } = [];
         public IReadOnlyList<string> SupportedEditorIds { get; init; } = [];
-        public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-        public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-        public IReadOnlyList<ComposerAsset> Assets => [];
         public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
     }
 

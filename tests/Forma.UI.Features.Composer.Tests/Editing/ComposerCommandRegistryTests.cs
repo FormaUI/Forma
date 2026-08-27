@@ -25,9 +25,6 @@ public sealed class ComposerCommandRegistryTests
         public List<string> Executed { get; } = [];
         public IReadOnlyList<ComposerToolbarItem> Items { get; } =
             [new(ComposerRows.Plugins, [.. commands.Select(c => new FormaToolbarCommand { Id = c, Title = c, Command = c })])];
-        public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-        public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-        public IReadOnlyList<ComposerAsset> Assets => [];
         public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
 
         public ValueTask ExecuteAsync(string command, ComposerContext context, CancellationToken cancellationToken = default)
@@ -53,9 +50,6 @@ public sealed class ComposerCommandRegistryTests
                 },
             ]),
         ];
-        public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-        public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-        public IReadOnlyList<ComposerAsset> Assets => [];
         public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
 
         public ValueTask ExecuteAsync(string command, ComposerContext context, CancellationToken cancellationToken = default)
@@ -69,11 +63,7 @@ public sealed class ComposerCommandRegistryTests
     {
         public string Id => id;
         public List<string> Executed { get; } = [];
-        public IReadOnlyList<ComposerToolbarItem> Items => [];
         public IReadOnlyList<string> CommandPrefixes => prefixes;
-        public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-        public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-        public IReadOnlyList<ComposerAsset> Assets => [];
         public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
 
         public ValueTask ExecuteAsync(string command, ComposerContext context, CancellationToken cancellationToken = default)

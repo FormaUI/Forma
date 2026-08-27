@@ -10,13 +10,13 @@ public interface IComposerPlugin : IComposerKeyBindingSource
     string Id { get; }
 
     /// <summary>The items this plugin contributes, each naming the row it lands on.</summary>
-    IReadOnlyList<ComposerToolbarItem> Items { get; }
+    IReadOnlyList<ComposerToolbarItem> Items => [];
 
     /// <summary>Command rows this plugin declares of its own, laid out after the rows the composer provides.</summary>
     IReadOnlyList<ComposerToolbarRow> Rows => [];
 
     /// <summary>Typed-input triggers contributed by this plugin.</summary>
-    IReadOnlyList<ComposerInputTrigger> InputTriggers { get; }
+    IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
 
     /// <summary>
     /// Prefixes of commands this plugin owns whose full form is not enumerable ahead of time — such as one
@@ -25,7 +25,7 @@ public interface IComposerPlugin : IComposerKeyBindingSource
     IReadOnlyList<string> CommandPrefixes => [];
 
     /// <summary>Browser assets the plugin needs before it can run.</summary>
-    IReadOnlyList<ComposerAsset> Assets { get; }
+    IReadOnlyList<ComposerAsset> Assets => [];
 
     /// <summary>Whether every dependency the plugin needs is present.</summary>
     ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default);

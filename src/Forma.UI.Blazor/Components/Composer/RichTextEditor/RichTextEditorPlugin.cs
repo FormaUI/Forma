@@ -49,21 +49,6 @@ public sealed class RichTextEditorPlugin : IComposerEditorPlugin
     public Type EditorComponent => typeof(FormaRichTextEditor);
 
     /// <inheritdoc />
-    public IReadOnlyList<ComposerToolbarRow> Rows => [];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerToolbarItem> Items => [];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerAsset> Assets => [];
-
-    /// <inheritdoc />
     public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default)
         => ValueTask.FromResult(true);
 

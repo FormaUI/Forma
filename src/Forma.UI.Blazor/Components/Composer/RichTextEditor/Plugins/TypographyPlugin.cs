@@ -40,9 +40,6 @@ public sealed class TypographyPlugin(
     public IReadOnlyList<string> SupportedEditorIds => [RichTextEditorPlugin.EditorId];
 
     /// <inheritdoc />
-    public IReadOnlyList<ComposerToolbarRow> Rows => [];
-
-    /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> Items =>
     [
         new(ComposerRows.Formatting,
@@ -128,15 +125,6 @@ public sealed class TypographyPlugin(
             },
         ]),
     ];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerAsset> Assets => [];
 
     /// <inheritdoc />
     public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default)

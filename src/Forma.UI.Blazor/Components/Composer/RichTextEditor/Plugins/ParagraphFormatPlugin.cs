@@ -45,9 +45,6 @@ public sealed class ParagraphFormatPlugin(RichTextEditorPlugin editor) : ICompos
     public IReadOnlyList<string> SupportedEditorIds => [RichTextEditorPlugin.EditorId];
 
     /// <inheritdoc />
-    public IReadOnlyList<ComposerToolbarRow> Rows => [];
-
-    /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> Items =>
     [
         new(ComposerRows.Formatting,
@@ -97,12 +94,6 @@ public sealed class ParagraphFormatPlugin(RichTextEditorPlugin editor) : ICompos
         new() { Key = "2", Command = Heading2Command, Control = true, Alt = true },
         new() { Key = "3", Command = Heading3Command, Control = true, Alt = true },
     ];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerAsset> Assets => [];
 
     /// <inheritdoc />
     public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default)

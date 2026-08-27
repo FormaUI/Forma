@@ -4,5 +4,5 @@ namespace Forma.UI.Features.Composer.Plugins;
 public interface IComposerKeyBindingSource
 {
     /// <summary>The key bindings this source contributes.</summary>
-    IReadOnlyList<ComposerKeyBinding> KeyBindings { get; }
+    IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
 }

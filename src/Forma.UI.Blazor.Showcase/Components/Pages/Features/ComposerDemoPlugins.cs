@@ -51,12 +51,6 @@ public sealed class SourceEditorPlugin : IComposerEditorPlugin
         [new() { Key = "F2", Command = RenameCommand }];
 
     /// <inheritdoc />
-    public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerAsset> Assets => [];
-
-    /// <inheritdoc />
     public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default)
         => ValueTask.FromResult(true);
 
@@ -129,15 +123,6 @@ public sealed class TextEditorPlugin : IComposerEditorPlugin
             new FormaToolbarCommand { Id = "sort-descending", Title = "Sort Z to A", Icon = Glyph.SortDescending, Command = SortDescendingCommand },
         ]),
     ];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerAsset> Assets => [];
 
     /// <inheritdoc />
     public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default)
@@ -227,12 +212,6 @@ public sealed class TimestampPlugin : IComposerFeaturePlugin
         [new() { Key = "t", Command = TimestampCommand, Control = true, Shift = true }];
 
     /// <inheritdoc />
-    public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerAsset> Assets => [];
-
-    /// <inheritdoc />
     public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default)
         => ValueTask.FromResult(true);
 
@@ -285,15 +264,6 @@ public sealed class CleanupPlugin : IComposerFeaturePlugin
             },
         ]),
     ];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerAsset> Assets => [];
 
     /// <inheritdoc />
     public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default)

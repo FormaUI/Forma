@@ -9,10 +9,6 @@ using Forma.UI.Features.Composer.Plugins;
 public sealed class PlainTextEditorPlugin : IComposerEditorPlugin
 {
     /// <inheritdoc />
-    public IReadOnlyList<ComposerAsset> Assets
-        => [];
-
-    /// <inheritdoc />
     public Type EditorComponent
         => typeof(FormaPlainTextEditor);
 
@@ -29,20 +25,8 @@ public sealed class PlainTextEditorPlugin : IComposerEditorPlugin
         => "plain-text";
 
     /// <inheritdoc />
-    public IReadOnlyList<ComposerInputTrigger> InputTriggers
-        => [];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerKeyBinding> KeyBindings
-        => [];
-
-    /// <inheritdoc />
     public string Title
         => "Plain Text";
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerToolbarItem> Items
-        => [];
 
     /// <inheritdoc />
     public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default)

@@ -90,12 +90,6 @@ public sealed class LinkPlugin(RichTextEditorPlugin editor) : IComposerFeaturePl
     ];
 
     /// <inheritdoc />
-    public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerAsset> Assets => [];
-
-    /// <inheritdoc />
     public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default)
         => ValueTask.FromResult(true);
 

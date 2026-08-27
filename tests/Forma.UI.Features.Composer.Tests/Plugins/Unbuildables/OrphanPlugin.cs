@@ -8,9 +8,5 @@ public sealed class OrphanPlugin(TimeProvider clock) : IComposerFeaturePlugin
 {
     public TimeProvider Clock { get; } = clock;
     public string Id => "orphan";
-    public IReadOnlyList<ComposerToolbarItem> Items => [];
-    public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-    public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-    public IReadOnlyList<ComposerAsset> Assets => [];
     public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
 }

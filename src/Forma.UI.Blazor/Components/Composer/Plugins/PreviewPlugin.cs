@@ -16,9 +16,6 @@ public sealed class PreviewPlugin : IComposerFeaturePlugin
     public string Id => "preview";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> SupportedEditorIds => [];
-
-    /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> Items =>
     [
         new(ComposerRows.BuiltIn,
@@ -40,15 +37,6 @@ public sealed class PreviewPlugin : IComposerFeaturePlugin
             },
         ]),
     ];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerAsset> Assets => [];
 
     /// <inheritdoc />
     public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default)

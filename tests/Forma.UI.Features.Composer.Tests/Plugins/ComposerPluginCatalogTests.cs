@@ -12,10 +12,6 @@ public sealed class ComposerPluginCatalogTests
     private sealed class FeaturePlugin(string id, bool isAvailable = true) : IComposerPlugin
     {
         public string Id => id;
-        public IReadOnlyList<ComposerToolbarItem> Items => [];
-        public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-        public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-        public IReadOnlyList<ComposerAsset> Assets => [];
         public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(isAvailable);
     }
 
@@ -26,10 +22,6 @@ public sealed class ComposerPluginCatalogTests
         public Icon Icon => Glyph.File;
         public ComposerDocumentFormat Format => format;
         public Type EditorComponent => typeof(EditorPlugin);
-        public IReadOnlyList<ComposerToolbarItem> Items => [];
-        public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-        public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-        public IReadOnlyList<ComposerAsset> Assets => [];
         public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(isAvailable);
     }
 

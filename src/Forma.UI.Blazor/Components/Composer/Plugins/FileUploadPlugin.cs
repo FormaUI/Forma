@@ -16,9 +16,6 @@ public sealed class FileUploadPlugin(FileUploadPluginOptions? options = null) : 
     public string Id => "file-upload";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> SupportedEditorIds => [];
-
-    /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> Items =>
     [
         new(ComposerRows.BuiltIn,
@@ -40,15 +37,6 @@ public sealed class FileUploadPlugin(FileUploadPluginOptions? options = null) : 
             },
         ]),
     ];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerAsset> Assets => [];
 
     /// <inheritdoc />
     public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default)

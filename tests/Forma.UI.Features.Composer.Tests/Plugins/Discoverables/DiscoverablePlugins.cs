@@ -13,10 +13,6 @@ public sealed class StubEditorPlugin : IComposerEditorPlugin
     public Icon Icon => Glyph.File;
     public ComposerDocumentFormat Format => ComposerDocumentFormat.PlainText;
     public Type EditorComponent => typeof(StubEditorPlugin);
-    public IReadOnlyList<ComposerToolbarItem> Items => [];
-    public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-    public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-    public IReadOnlyList<ComposerAsset> Assets => [];
     public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
 }
 
@@ -24,10 +20,6 @@ public sealed class StubEditorPlugin : IComposerEditorPlugin
 public sealed class StampPlugin : IComposerFeaturePlugin
 {
     public string Id => "stamp";
-    public IReadOnlyList<ComposerToolbarItem> Items => [];
-    public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-    public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-    public IReadOnlyList<ComposerAsset> Assets => [];
     public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
 }
 
@@ -36,10 +28,6 @@ public sealed class HighlightPlugin(StubEditorPlugin editor) : IComposerFeatureP
 {
     public StubEditorPlugin Editor { get; } = editor;
     public string Id => "highlight";
-    public IReadOnlyList<ComposerToolbarItem> Items => [];
-    public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-    public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-    public IReadOnlyList<ComposerAsset> Assets => [];
     public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
 }
 
@@ -55,10 +43,6 @@ public sealed class BadgePlugin(StubEditorPlugin editor, BadgeOptions? options =
     public StubEditorPlugin Editor { get; } = editor;
     public BadgeOptions Options { get; } = options ?? BadgeOptions.Default;
     public string Id => "badge";
-    public IReadOnlyList<ComposerToolbarItem> Items => [];
-    public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-    public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-    public IReadOnlyList<ComposerAsset> Assets => [];
     public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
 }
 
@@ -66,9 +50,5 @@ public sealed class BadgePlugin(StubEditorPlugin editor, BadgeOptions? options =
 public sealed class LoosePlugin : IComposerPlugin
 {
     public string Id => "loose";
-    public IReadOnlyList<ComposerToolbarItem> Items => [];
-    public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-    public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-    public IReadOnlyList<ComposerAsset> Assets => [];
     public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
 }

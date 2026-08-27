@@ -36,9 +36,6 @@ public sealed class AlignmentBidiPlugin(RichTextEditorPlugin editor) : IComposer
     public IReadOnlyList<string> SupportedEditorIds => [RichTextEditorPlugin.EditorId];
 
     /// <inheritdoc />
-    public IReadOnlyList<ComposerToolbarRow> Rows => [];
-
-    /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> Items =>
     [
         new(ComposerRows.Paragraph,
@@ -76,12 +73,6 @@ public sealed class AlignmentBidiPlugin(RichTextEditorPlugin editor) : IComposer
         new() { Key = "r", Command = AlignRightCommand, Control = true },
         new() { Key = "j", Command = AlignJustifyCommand, Control = true },
     ];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-
-    /// <inheritdoc />
-    public IReadOnlyList<ComposerAsset> Assets => [];
 
     /// <inheritdoc />
     public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default)

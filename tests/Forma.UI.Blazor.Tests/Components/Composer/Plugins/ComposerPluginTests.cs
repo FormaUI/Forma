@@ -4,6 +4,7 @@ using Forma.Tests.Composer;
 using Forma.UI.Blazor.Components.Composer.Plugins;
 using Forma.UI.Features.Composer.Documents;
 using Forma.UI.Features.Composer.Editing;
+using Forma.UI.Features.Composer.Plugins;
 using Forma.UI.Features.Sanitization;
 
 public sealed class ComposerPluginTests
@@ -33,7 +34,7 @@ public sealed class ComposerPluginTests
     public void MaximizePlugin_should_apply_to_every_editor()
     {
         // Arrange
-        var plugin = new MaximizePlugin();
+        IComposerFeaturePlugin plugin = new MaximizePlugin();
 
         // Assert
         Assert.Equal("maximize", plugin.Id);
@@ -58,7 +59,7 @@ public sealed class ComposerPluginTests
     public void PreviewPlugin_should_apply_to_every_editor()
     {
         // Arrange
-        var plugin = new PreviewPlugin();
+        IComposerFeaturePlugin plugin = new PreviewPlugin();
 
         // Assert
         Assert.Equal("preview", plugin.Id);

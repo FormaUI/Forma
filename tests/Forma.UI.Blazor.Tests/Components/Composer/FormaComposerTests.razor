@@ -21,10 +21,6 @@
             public Icon Icon => Glyph.File;
             public ComposerDocumentFormat Format => ComposerDocumentFormat.Html;
             public Type EditorComponent => typeof(FormaPlainTextEditor);
-            public IReadOnlyList<ComposerToolbarItem> Items => [];
-            public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-            public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-            public IReadOnlyList<ComposerAsset> Assets => [];
             public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
         }
 
@@ -35,10 +31,6 @@
             public Icon Icon => Glyph.File;
             public ComposerDocumentFormat Format => ComposerDocumentFormat.PlainText;
             public Type EditorComponent => typeof(FormaPlainTextEditor);
-            public IReadOnlyList<ComposerToolbarItem> Items => [];
-            public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-            public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-            public IReadOnlyList<ComposerAsset> Assets => [];
             public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
         }
 
@@ -58,9 +50,6 @@
                     },
                 ]),
             ];
-            public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-            public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-            public IReadOnlyList<ComposerAsset> Assets => [];
             public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
         }
 
@@ -72,8 +61,6 @@
                 [new(ComposerRows.Plugins, [new FormaToolbarCommand { Id = "shout", Title = "Shout", Icon = Glyph.File, Command = "demo.shout" }])];
             public IReadOnlyList<ComposerKeyBinding> KeyBindings =>
                 [new() { Key = "k", Command = "demo.shout", Control = true, Shift = true }];
-            public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-            public IReadOnlyList<ComposerAsset> Assets => [];
             public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
 
             public ValueTask ExecuteAsync(string command, ComposerContext context, CancellationToken cancellationToken = default)
@@ -94,9 +81,6 @@
                     Icon = Glyph.File,
                     Command = $"many.{i}",
                 })])];
-            public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-            public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-            public IReadOnlyList<ComposerAsset> Assets => [];
             public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
         }
 
@@ -122,19 +106,12 @@
                         Command = $"many.{i}",
                     }),
                 ])];
-            public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-            public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-            public IReadOnlyList<ComposerAsset> Assets => [];
             public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
         }
 
-        private sealed class SlowPlugin : IComposerPlugin        {
+        private sealed class SlowPlugin : IComposerPlugin
+        {
             public string Id => "slow";
-            public IReadOnlyList<ComposerToolbarItem> Items => [];
-            public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-            public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-            public IReadOnlyList<ComposerAsset> Assets => [];
-
             public async ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default)
             {
                 await Task.Yield();
@@ -148,9 +125,6 @@
             public IReadOnlyList<string> SupportedEditorIds => ["dummy"];
             public IReadOnlyList<ComposerToolbarItem> Items =>
                 [new(ComposerRows.Plugins, [new FormaToolbarCommand { Id = "scoped", Title = "Scoped", Icon = Glyph.File, Command = "demo.scoped" }])];
-            public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-            public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-            public IReadOnlyList<ComposerAsset> Assets => [];
             public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
         }
 
@@ -163,9 +137,6 @@
             public string Id => "status";
             public IReadOnlyList<ComposerToolbarItem> Items =>
                 [new(ComposerRows.Plugins, [new FormaToolbarCommand { Id = "wordcount", Title = "Word Count", Icon = Glyph.File, Command = "demo.wordcount" }])];
-            public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-            public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-            public IReadOnlyList<ComposerAsset> Assets => [];
             public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
 
             public ValueTask ExecuteAsync(string command, ComposerContext context, CancellationToken cancellationToken = default)
@@ -192,9 +163,6 @@
             public string Id => "announcing";
             public IReadOnlyList<ComposerToolbarItem> Items =>
                 [new(ComposerRows.Plugins, [new FormaToolbarCommand { Id = "save", Title = "Save", Icon = Glyph.File, Command = "demo.save" }])];
-            public IReadOnlyList<ComposerKeyBinding> KeyBindings => [];
-            public IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
-            public IReadOnlyList<ComposerAsset> Assets => [];
             public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
 
             public ValueTask ExecuteAsync(string command, ComposerContext context, CancellationToken cancellationToken = default)
