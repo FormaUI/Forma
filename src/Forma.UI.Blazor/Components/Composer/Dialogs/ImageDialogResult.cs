@@ -7,4 +7,4 @@ namespace Forma.UI.Blazor.Components.Composer.Dialogs;
 public sealed record ImageDialogResult(
     string Source,
     string? AltText,
-    string? Caption);
+    string? Caption) : ComposerDialogResult;

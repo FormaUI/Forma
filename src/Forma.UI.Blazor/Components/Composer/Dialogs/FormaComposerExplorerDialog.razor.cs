@@ -39,6 +39,8 @@ public sealed partial class FormaComposerExplorerDialog : ComposerDialogBase
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
+        base.OnParametersSet();
+
         ArgumentNullException.ThrowIfNull(Options);
 
         // The explorer reloads whenever the provider it was handed is a different object, so everything

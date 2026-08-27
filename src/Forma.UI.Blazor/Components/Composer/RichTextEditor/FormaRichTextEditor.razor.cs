@@ -33,17 +33,13 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
 
     private bool _isLinkDialogOpen;
     private bool _isLinkAnchorMode;
-    private string? _linkHref;
-    private ImageDialogResult? _reopenedImage;
-    private VideoDialogResult? _reopenedVideo;
-    private EmbedDialogResult? _reopenedEmbed;
+    private ComposerDialogResult? _reopening;
     private bool _isTableDialogOpen;
     private bool _isVideoDialogOpen;
     private bool _isImageDialogOpen;
     private bool _isExplorerDialogOpen;
     private ExplorerPluginOptions _explorerOptions = ExplorerPluginOptions.Default;
     private bool _isEmbedDialogOpen;
-    private string? _selectedText;
 
     private RichTextEditorPlugin _plugin = default!;
 
@@ -145,35 +141,36 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
     /// <param name="image">What that image already holds.</param>
     [JSInvokable]
     public Task HandleImageActivatedAsync(ImageDialogResult image)
-        => ReopenAsync(() => (_reopenedImage, _isImageDialogOpen) = (image, true));
+        => ReopenAsync(image, () => _isImageDialogOpen = true);
 
     /// <summary>Callback invoked from JS when the author double-clicks a video already in the document.</summary>
     /// <param name="video">What that video already holds.</param>
     [JSInvokable]
     public Task HandleVideoActivatedAsync(VideoDialogResult video)
-        => ReopenAsync(() => (_reopenedVideo, _isVideoDialogOpen) = (video, true));
+        => ReopenAsync(video, () => _isVideoDialogOpen = true);
 
     /// <summary>Callback invoked from JS when the author double-clicks an embed already in the document.</summary>
     /// <param name="embed">What that embed already holds.</param>
     [JSInvokable]
     public Task HandleEmbedActivatedAsync(EmbedDialogResult embed)
-        => ReopenAsync(() => (_reopenedEmbed, _isEmbedDialogOpen) = (embed, true));
+        => ReopenAsync(embed, () => _isEmbedDialogOpen = true);
 
     /// <summary>Callback invoked from JS when the author double-clicks a link or a named anchor.</summary>
     /// <param name="isAnchor">Whether it is a named anchor rather than a hyperlink.</param>
     [JSInvokable]
     public Task HandleLinkActivatedAsync(bool isAnchor)
-        // A link dialog reads its own fields back off the canvas, so nothing is carried across from here.
-        => ReopenAsync(() => HandleLinkDialogRequested(isAnchor));
+        // A link dialog seeds itself from the canvas, whichever way it was asked for.
+        => ReopenAsync(null, () => HandleLinkDialogRequested(isAnchor));
 
     // The canvas has already selected the element whole, so confirming replaces it rather than adding another.
-    private Task ReopenAsync(Action open)
+    private Task ReopenAsync(ComposerDialogResult? reopening, Action open)
     {
         if (Context is null || IsDisabled || IsReadOnly)
         {
             return Task.CompletedTask;
         }
 
+        _reopening = reopening;
         open();
         StateHasChanged();
 
@@ -202,10 +199,13 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
         {
             var target = await _engine.BeginLinkDialogAsync(isAnchor);
 
-            _selectedText = target?.Text;
-
             // One link is being retargeted, so its address comes back; several share none, and the author names it.
-            _linkHref = target?.Count == 1 ? target.Href : null;
+            _reopening = new LinkDialogResult(
+                isAnchor,
+                target?.Text ?? string.Empty,
+                target?.Count == 1 ? target.Href ?? string.Empty : string.Empty,
+                OpenInNewTab: false);
+
             _isLinkDialogOpen = true;
             StateHasChanged();
         });
@@ -220,14 +220,14 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
     private void HandleVideoDialogRequested()
     {
         // Asked for from the toolbar, so nothing is being reopened and the fields start empty.
-        _reopenedVideo = null;
+        _reopening = null;
         _isVideoDialogOpen = true;
         StateHasChanged();
     }
 
     private void HandleImageDialogRequested()
     {
-        _reopenedImage = null;
+        _reopening = null;
         _isImageDialogOpen = true;
         StateHasChanged();
     }
@@ -241,7 +241,7 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
 
     private void HandleEmbedDialogRequested()
     {
-        _reopenedEmbed = null;
+        _reopening = null;
         _isEmbedDialogOpen = true;
         StateHasChanged();
     }

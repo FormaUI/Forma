@@ -36,7 +36,11 @@ public sealed partial class FormaComposerFileUploadDialog : ComposerDialogBase
 
     /// <inheritdoc />
     protected override void OnParametersSet()
-        => ArgumentNullException.ThrowIfNull(Options);
+    {
+        base.OnParametersSet();
+
+        ArgumentNullException.ThrowIfNull(Options);
+    }
 
     private Task HandleFilesSelectedAsync(IReadOnlyList<IBrowserFile> files)
     {

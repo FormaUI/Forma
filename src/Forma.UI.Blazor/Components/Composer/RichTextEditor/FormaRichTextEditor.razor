@@ -26,8 +26,7 @@
         {
             <FormaComposerLinkDialog Opened="_isLinkDialogOpen"
                                      IsAnchor="_isLinkAnchorMode"
-                                     InitialHref="@_linkHref"
-                                     InitialText="@_selectedText"
+                                     Reopening="_reopening"
                                      OnInsert="HandleLinkInsertedAsync"
                                      OnCancel="() => _isLinkDialogOpen = false" />
         }
@@ -42,7 +41,7 @@
         @if (_isVideoDialogOpen)
         {
             <FormaComposerVideoDialog Opened="_isVideoDialogOpen"
-                                      Reopening="_reopenedVideo"
+                                      Reopening="_reopening"
                                       OnInsert="HandleVideoInsertedAsync"
                                       OnCancel="() => _isVideoDialogOpen = false" />
         }
@@ -50,7 +49,7 @@
         @if (_isImageDialogOpen)
         {
             <FormaComposerImageDialog Opened="_isImageDialogOpen"
-                                      Reopening="_reopenedImage"
+                                      Reopening="_reopening"
                                       OnInsert="HandleImageInsertedAsync"
                                       OnCancel="() => _isImageDialogOpen = false" />
         }
@@ -66,7 +65,7 @@
         @if (_isEmbedDialogOpen)
         {
             <FormaComposerEmbedDialog Opened="_isEmbedDialogOpen"
-                                      Reopening="_reopenedEmbed"
+                                      Reopening="_reopening"
                                       OnInsert="HandleEmbedInsertedAsync"
                                       OnCancel="() => _isEmbedDialogOpen = false" />
         }

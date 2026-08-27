@@ -9,4 +9,4 @@ public sealed record TableDialogResult(
     int Rows,
     int Columns,
     bool IncludeHeader,
-    string? Caption);
+    string? Caption) : ComposerDialogResult;

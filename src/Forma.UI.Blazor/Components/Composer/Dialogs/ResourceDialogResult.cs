@@ -11,4 +11,4 @@ public sealed record ResourceDialogResult(
     string Name,
     string Kind,
     bool Embed,
-    bool Link);
+    bool Link) : ComposerDialogResult;

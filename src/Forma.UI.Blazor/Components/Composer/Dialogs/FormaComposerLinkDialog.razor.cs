@@ -10,35 +10,19 @@ public sealed partial class FormaComposerLinkDialog : ComposerDialogBase
     private string? _href;
     private string? _name;
     private bool _openInNewTab;
-    private bool _seeded;
 
     /// <summary>Whether the dialog is configuring a named anchor rather than a hyperlink.</summary>
     [Parameter] public bool IsAnchor { get; set; }
-
-    /// <summary>The initial URL when editing an existing link.</summary>
-    [Parameter] public string? InitialHref { get; set; }
-
-    /// <summary>The initial text selected in the document.</summary>
-    [Parameter] public string? InitialText { get; set; }
 
     /// <summary>Callback invoked when link details are confirmed.</summary>
     [Parameter] public EventCallback<LinkDialogResult> OnInsert { get; set; }
 
     /// <inheritdoc />
-    protected override void OnParametersSet()
-    {
-        // Only the first opening seeds the fields; a later render would otherwise overwrite what was typed.
-        if (!Opened || _seeded)
-        {
-            return;
-        }
-
-        _seeded = true;
-
-        // An address comes back only when one link is being retargeted, and the selected text names it.
-        _href = InitialHref;
-        _name = InitialText;
-    }
+    // An address is carried only when one link is being retargeted; several share none, and the author names it.
+    private protected override void Seed()
+        => (_href, _name, _openInNewTab) = Reopened<LinkDialogResult>() is { } link
+            ? (link.Href, link.Name, link.OpenInNewTab)
+            : (null, null, false);
 
     private async Task HandleConfirmAsync()
     {

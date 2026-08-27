@@ -7,4 +7,4 @@ namespace Forma.UI.Blazor.Components.Composer.Dialogs;
 public sealed record VideoDialogResult(
     string Source,
     string? Title,
-    bool Autoplay);
+    bool Autoplay) : ComposerDialogResult;

@@ -7,4 +7,4 @@ namespace Forma.UI.Blazor.Components.Composer.Dialogs;
 public sealed record EmbedDialogResult(
     string EmbedType,
     string Identifier,
-    string? Settings);
+    string? Settings) : ComposerDialogResult;

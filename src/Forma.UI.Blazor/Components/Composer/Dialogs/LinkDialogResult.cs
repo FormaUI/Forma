@@ -9,4 +9,4 @@ public sealed record LinkDialogResult(
     bool IsAnchor,
     string Name,
     string Href,
-    bool OpenInNewTab);
+    bool OpenInNewTab) : ComposerDialogResult;
