@@ -4,8 +4,8 @@ namespace Forma.UI.Features.Composer.Plugins;
 public sealed record ComposerInputTrigger
 {
     /// <summary>The typed text that activates the trigger.</summary>
-    public required string Pattern { get; init; }
+    public required string Text { get; init; }
 
-    /// <summary>The command invoked when the pattern is typed.</summary>
+    /// <summary>The command invoked when the text is typed.</summary>
     public required string Command { get; init; }
 }
