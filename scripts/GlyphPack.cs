@@ -4,6 +4,14 @@
 // stroke drawing, and writes the compact JSON the library embeds.
 //
 //   usage: dotnet run scripts/GlyphPack.cs -- <enum.cs> <glyphs folder> <output.json> [--format]
+//          dotnet run scripts/GlyphPack.cs -- draft <glyphs folder> <from grid> <to grid>
+//
+// The glyphs folder holds one subfolder per grid, named by its size (32, 24), each with a stroke
+// drawing per glyph on that grid. At least one grid must draw every glyph; the others may be partial.
+//
+// The draft mode writes, for every glyph the target grid lacks, a starting point scaled from the
+// source grid with every coordinate snapped to the target grid. A draft is not a drawing: it is
+// reviewed and corrected before it counts.
 
 using System.Globalization;
 using System.Text;
@@ -14,12 +22,18 @@ using SkiaSharp;
 
 const float StrokeWidth = 2;
 const float HeavyStrokeWidth = 3;
-const float BodyArea = 30;
-const string ViewBox = "0 0 32 32";
+const float ReferenceGrid = 32;
+const float ReferenceBodyArea = 30;
+
+if (args.Length == 4 && args[0] == "draft")
+{
+    return Draft(args[1], int.Parse(args[2], CultureInfo.InvariantCulture), int.Parse(args[3], CultureInfo.InvariantCulture));
+}
 
 if (args.Length < 3)
 {
     Console.Error.WriteLine("usage: dotnet run scripts/GlyphPack.cs -- <enum.cs> <glyphs folder> <output.json> [--format]");
+    Console.Error.WriteLine("       dotnet run scripts/GlyphPack.cs -- draft <glyphs folder> <from grid> <to grid>");
     return 2;
 }
 
@@ -31,61 +45,96 @@ var declared = Regex.Matches(File.ReadAllText(enumPath), @"(?m)^\s{4}(\w+)(?:\s*
     .Where(name => name != "None")
     .ToArray();
 
-var files = Directory.GetFiles(glyphsFolder).Select(file => Path.GetFileName(file)!).ToHashSet(StringComparer.Ordinal);
+var grids = Directory.GetDirectories(glyphsFolder)
+    .Select(folder => (Folder: folder, Size: int.TryParse(Path.GetFileName(folder), NumberStyles.None, CultureInfo.InvariantCulture, out var size) ? size : 0))
+    .Where(grid => grid.Size > 0)
+    .OrderByDescending(grid => grid.Size)
+    .ToArray();
+
+if (grids.Length == 0)
+{
+    throw new InvalidOperationException($"No grid folders (such as 32 or 24) under {glyphsFolder}");
+}
+
+var stray = Directory.GetFiles(glyphsFolder).Select(file => Path.GetFileName(file)!).ToArray();
+if (stray.Length > 0)
+{
+    throw new InvalidOperationException($"Files outside a grid folder ({stray.Length}): {string.Join(", ", stray)}");
+}
+
 var expected = declared.Select(name => $"{name}.svg").ToHashSet(StringComparer.Ordinal);
-var overrides = declared.Select(name => $"{name}.alt.svg").ToHashSet(StringComparer.Ordinal);
 
-var missing = expected.Where(file => !files.Contains(file)).ToArray();
-if (missing.Length > 0)
+// glyph name -> grid size -> style name -> style
+var glyphs = new SortedDictionary<string, SortedDictionary<int, Dictionary<string, object>>>(StringComparer.Ordinal);
+var complete = false;
+var report = new StringBuilder();
+
+foreach (var (folder, size) in grids)
 {
-    throw new InvalidOperationException($"Missing glyph files ({missing.Length}): {string.Join(", ", missing)}");
-}
+    var files = Directory.GetFiles(folder).Select(file => Path.GetFileName(file)!).ToHashSet(StringComparer.Ordinal);
 
-var extra = files.Where(file => !expected.Contains(file) && !overrides.Contains(file)).ToArray();
-if (extra.Length > 0)
-{
-    throw new InvalidOperationException($"Unexpected files in the glyphs folder ({extra.Length}): {string.Join(", ", extra)}");
-}
-
-var glyphs = new SortedDictionary<string, object>(StringComparer.Ordinal);
-var derived = 0;
-var overridden = 0;
-
-foreach (var name in declared)
-{
-    var stroke = Drawing.Read(Path.Combine(glyphsFolder, $"{name}.svg"), expectStroke: true);
-    var overridePath = Path.Combine(glyphsFolder, $"{name}.alt.svg");
-
-    object filled;
-    if (File.Exists(overridePath))
+    var extra = files.Where(file => !expected.Contains(file)).ToArray();
+    if (extra.Length > 0)
     {
-        filled = Drawing.Read(overridePath, expectStroke: false).ToStyle();
-        overridden++;
-    }
-    else
-    {
-        filled = Derive(stroke);
-        derived++;
+        throw new InvalidOperationException($"Unexpected files in the {size} grid folder ({extra.Length}): {string.Join(", ", extra)}");
     }
 
-    glyphs[name] = new Dictionary<string, object> { ["regular"] = stroke.ToStyle(), ["filled"] = filled };
+    var drawn = 0;
+
+    foreach (var name in declared)
+    {
+        var strokePath = Path.Combine(folder, $"{name}.svg");
+        if (!File.Exists(strokePath))
+        {
+            continue;
+        }
+
+        var stroke = Drawing.Read(strokePath, size, expectStroke: true);
+
+        if (!glyphs.TryGetValue(name, out var byGrid))
+        {
+            glyphs[name] = byGrid = [];
+        }
+
+        byGrid[size] = new Dictionary<string, object> { ["regular"] = stroke.ToStyle(), ["filled"] = Derive(stroke, size) };
+        drawn++;
+    }
+
+    complete |= drawn == declared.Length;
+    report.Append(CultureInfo.InvariantCulture, $" {size}: {drawn}/{declared.Length} drawn;");
+}
+
+if (!complete)
+{
+    throw new InvalidOperationException("No grid draws every glyph; one grid must be complete");
+}
+
+if (Drawing.Problems.Count > 0)
+{
+    throw new InvalidOperationException($"{Drawing.Problems.Count} drawing(s) need redrawing:\n{string.Join('\n', Drawing.Problems)}");
 }
 
 using (var output = File.Create(outputPath))
 {
     using var writer = new Utf8JsonWriter(output, new JsonWriterOptions { Indented = format });
     writer.WriteStartObject();
-    writer.WriteString("viewBox", ViewBox);
     writer.WritePropertyName("glyphs");
     writer.WriteStartObject();
-    foreach (var (name, styles) in glyphs)
+    foreach (var (name, byGrid) in glyphs)
     {
         writer.WritePropertyName(name);
         writer.WriteStartObject();
-        foreach (var (styleName, style) in (Dictionary<string, object>)styles)
+        foreach (var (size, styles) in byGrid)
         {
-            writer.WritePropertyName(styleName);
-            WriteStyle(writer, (Dictionary<string, object>)style);
+            writer.WritePropertyName(size.ToString(CultureInfo.InvariantCulture));
+            writer.WriteStartObject();
+            foreach (var (styleName, style) in styles)
+            {
+                writer.WritePropertyName(styleName);
+                WriteStyle(writer, (Dictionary<string, object>)style);
+            }
+
+            writer.WriteEndObject();
         }
 
         writer.WriteEndObject();
@@ -96,8 +145,58 @@ using (var output = File.Create(outputPath))
     writer.Flush();
     output.WriteByte((byte)'\n');
 }
-Console.WriteLine($"Validated {declared.Length} glyphs; derived {derived} filled variants and kept {overridden} drawn ones; wrote {outputPath}.");
+Console.WriteLine($"Validated {declared.Length} glyphs on {grids.Length} grid(s):{report} wrote {outputPath}.");
 return 0;
+
+// Scales every drawing the target grid lacks from the source grid,
+// snapping each number in the path data to an integer, and writes it as a draft. Arc radii and
+// coordinates scale alike; arc flags are left as they are.
+static int Draft(string glyphsFolder, int from, int to)
+{
+    var source = Path.Combine(glyphsFolder, from.ToString(CultureInfo.InvariantCulture));
+    var target = Path.Combine(glyphsFolder, to.ToString(CultureInfo.InvariantCulture));
+    Directory.CreateDirectory(target);
+    var scale = (double)to / from;
+    var written = 0;
+
+    foreach (var file in Directory.GetFiles(source, "*.svg"))
+    {
+        var destination = Path.Combine(target, Path.GetFileName(file)!);
+        if (File.Exists(destination))
+        {
+            continue;
+        }
+
+        var content = File.ReadAllText(file)
+            .Replace($"viewBox=\"0 0 {from} {from}\"", $"viewBox=\"0 0 {to} {to}\"", StringComparison.Ordinal);
+
+        content = Regex.Replace(content, @"d=""([^""]+)""", match =>
+        {
+            var data = Regex.Replace(match.Groups[1].Value, @"([A-Za-z])\s*((?:-?\d+(?:\.\d+)?\s*)+)", segment =>
+            {
+                var command = segment.Groups[1].Value;
+                var numbers = segment.Groups[2].Value.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                var scaled = numbers.Select((text, index) =>
+                {
+                    var value = double.Parse(text, CultureInfo.InvariantCulture);
+                    var isArcFlag = command is "A" or "a" && index % 7 is 3 or 4;
+                    var isArcRotation = command is "A" or "a" && index % 7 is 2;
+                    return isArcFlag || isArcRotation
+                        ? text
+                        : Math.Round(value * scale, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture);
+                });
+                return $"{command} {string.Join(' ', scaled)} ";
+            });
+            return $"d=\"{data.Trim()}\"";
+        });
+
+        File.WriteAllText(destination, content);
+        written++;
+    }
+
+    Console.WriteLine($"Drafted {written} glyph(s) on the {to} grid from the {from} grid into {target}.");
+    return 0;
+}
 
 static void WriteStyle(Utf8JsonWriter writer, Dictionary<string, object> style)
 {
@@ -130,9 +229,10 @@ static void WriteStyle(Utf8JsonWriter writer, Dictionary<string, object> style)
 // size) is filled together with its own outline, every other mark keeps its stroked outline, and
 // whatever of those marks lies inside a body is cut out of it. A drawing with no body has nothing
 // to fill and draws its strokes heavier instead.
-static object Derive(Drawing stroke)
+static object Derive(Drawing stroke, int grid)
 {
     var paint = new SKPaint { Style = SKPaintStyle.Stroke, StrokeWidth = StrokeWidth, StrokeCap = SKStrokeCap.Round, StrokeJoin = SKStrokeJoin.Round };
+    var bodyArea = ReferenceBodyArea * (grid / ReferenceGrid) * (grid / ReferenceGrid);
 
     var parts = stroke.Paths.Select(path => new
     {
@@ -144,7 +244,7 @@ static object Derive(Drawing stroke)
     var candidates = parts
         .Where(part => !part.Filled && part.Opacity >= 1)
         .Select(part => (Part: part, Region: ClosedRegion(part.Skia)))
-        .Where(item => item.Region is not null && Math.Abs(Area(item.Region)) >= BodyArea)
+        .Where(item => item.Region is not null && Math.Abs(Area(item.Region)) >= bodyArea)
         .ToArray();
 
     // A closed shape lying inside another is a detail of that body, not a body of its own.
@@ -263,7 +363,10 @@ static string Data(SKPath path)
 /// <summary>One authored SVG file: its paths and, for a stroke file, its stroke width.</summary>
 internal sealed record Drawing(double Stroke, IReadOnlyList<DrawingPath> Paths)
 {
-    public static Drawing Read(string path, bool expectStroke)
+    /// <summary>Every rule a drawing broke that is worth reporting together rather than one at a time.</summary>
+    public static List<string> Problems { get; } = [];
+
+    public static Drawing Read(string path, int grid, bool expectStroke)
     {
         var content = File.ReadAllText(path);
         var file = Path.GetFileName(path);
@@ -287,9 +390,9 @@ internal sealed record Drawing(double Stroke, IReadOnlyList<DrawingPath> Paths)
         }
 
         var root = Regex.Match(content, @"(?s)^<svg\s+([^>]+)>(.*)</svg>\s*$");
-        if (!root.Success || !root.Groups[1].Value.Contains("viewBox=\"0 0 32 32\"", StringComparison.Ordinal))
+        if (!root.Success || !root.Groups[1].Value.Contains($"viewBox=\"0 0 {grid} {grid}\"", StringComparison.Ordinal))
         {
-            throw new InvalidOperationException($"Invalid SVG structure or viewBox in {file}");
+            throw new InvalidOperationException($"Invalid SVG structure in {file}, or a viewBox other than 0 0 {grid} {grid}");
         }
 
         var attributes = root.Groups[1].Value;
@@ -317,9 +420,12 @@ internal sealed record Drawing(double Stroke, IReadOnlyList<DrawingPath> Paths)
         foreach (Match element in Regex.Matches(root.Groups[2].Value, @"<path\s+([^>]+?)\s*/>"))
         {
             var attributeText = element.Groups[1].Value;
+            var filled = attributeText.Contains("fill=\"currentColor\"", StringComparison.Ordinal);
+            var solid = filled && attributeText.Contains("stroke=\"none\"", StringComparison.Ordinal);
             foreach (Match attribute in Regex.Matches(attributeText, @"([\w-]+)=""[^""]*"""))
             {
-                if (attribute.Groups[1].Value is not ("d" or "fill" or "stroke" or "opacity"))
+                var allowed = attribute.Groups[1].Value is "d" or "fill" or "stroke" or "opacity" || (solid && attribute.Groups[1].Value == "fill-rule");
+                if (!allowed)
                 {
                     throw new InvalidOperationException($"Forbidden attribute '{attribute.Groups[1].Value}' on a path in {file}");
                 }
@@ -331,12 +437,16 @@ internal sealed record Drawing(double Stroke, IReadOnlyList<DrawingPath> Paths)
                 throw new InvalidOperationException($"A path in {file} has no data");
             }
 
-            if (Regex.IsMatch(data, @"\d+\.\d+"))
+            // A solid silhouette's edge is anti-aliased whatever the grid, so on the 32 grid it may sit on half units.
+            var decimals = solid && grid == 32 ? @"\d+\.(?!5\b)\d+" : @"\d+\.\d+";
+            if (Regex.IsMatch(data, decimals))
             {
-                throw new InvalidOperationException($"Decimal coordinates are forbidden in {file}: {data}");
+                throw new InvalidOperationException($"Coordinates off the grid are forbidden in {file}: {data}");
             }
 
-            var filled = attributeText.Contains("fill=\"currentColor\"", StringComparison.Ordinal);
+            CheckArcs(data, file);
+            CheckCircles(data, file);
+
             var opacityText = Regex.Match(attributeText, @"opacity=""([^""]+)""").Groups[1].Value;
             var opacity = opacityText.Length == 0 ? 1 : double.Parse(opacityText, CultureInfo.InvariantCulture);
             paths.Add(new DrawingPath(data, filled && stroke > 0, opacity));
@@ -352,6 +462,64 @@ internal sealed record Drawing(double Stroke, IReadOnlyList<DrawingPath> Paths)
 
     public object ToStyle()
         => new Dictionary<string, object> { ["stroke"] = Stroke, ["paths"] = Paths.Select(path => path.ToEntry()).ToArray() };
+
+    // A circle drawn as two half-turn arcs is round only when its two points sit a diameter apart;
+    // any other spacing draws a lens.
+    private static void CheckCircles(string data, string file)
+    {
+        foreach (Match circle in Regex.Matches(data, @"M (-?\d+) (-?\d+) A (\d+) \3 0 1 ([01]) (-?\d+) (-?\d+) A \3 \3 0 1 \4 \1 \2 Z"))
+        {
+            var radius = double.Parse(circle.Groups[3].Value, CultureInfo.InvariantCulture);
+            var dx = double.Parse(circle.Groups[5].Value, CultureInfo.InvariantCulture) - double.Parse(circle.Groups[1].Value, CultureInfo.InvariantCulture);
+            var dy = double.Parse(circle.Groups[6].Value, CultureInfo.InvariantCulture) - double.Parse(circle.Groups[2].Value, CultureInfo.InvariantCulture);
+            if (Math.Abs(Math.Sqrt(dx * dx + dy * dy) - 2 * radius) > 1e-9)
+            {
+                Problems.Add($"A circle of radius {radius} in {file} spans {Math.Sqrt(dx * dx + dy * dy):0.##} between its two points instead of {2 * radius}: {circle.Value}");
+            }
+        }
+    }
+
+    // An arc whose radius is under half its chord is silently enlarged by the renderer, so the drawn
+    // curve is not the one written. A 45° rounded end on the integer grid overshoots by a few percent
+    // and is fine; a real distortion is rejected. Absolute commands only, which is all a drawing uses.
+    private static void CheckArcs(string data, string file)
+    {
+        var x = 0.0;
+        var y = 0.0;
+        var startX = 0.0;
+        var startY = 0.0;
+
+        foreach (Match segment in Regex.Matches(data, @"([MLHVACQZ])\s*((?:-?\d+(?:\.\d+)?\s*)*)"))
+        {
+            var command = segment.Groups[1].Value;
+            var numbers = segment.Groups[2].Value.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(text => double.Parse(text, CultureInfo.InvariantCulture)).ToArray();
+
+            switch (command)
+            {
+                case "M": (x, y) = (numbers[0], numbers[1]); (startX, startY) = (x, y); for (var i = 2; i + 1 < numbers.Length; i += 2) { (x, y) = (numbers[i], numbers[i + 1]); } break;
+                case "L": for (var i = 0; i + 1 < numbers.Length; i += 2) { (x, y) = (numbers[i], numbers[i + 1]); } break;
+                case "H": x = numbers[^1]; break;
+                case "V": y = numbers[^1]; break;
+                case "C": for (var i = 0; i + 5 < numbers.Length; i += 6) { (x, y) = (numbers[i + 4], numbers[i + 5]); } break;
+                case "Q": for (var i = 0; i + 3 < numbers.Length; i += 4) { (x, y) = (numbers[i + 2], numbers[i + 3]); } break;
+                case "Z": (x, y) = (startX, startY); break;
+                case "A":
+                    for (var i = 0; i + 6 < numbers.Length; i += 7)
+                    {
+                        var (rx, ry, endX, endY) = (numbers[i], numbers[i + 1], numbers[i + 5], numbers[i + 6]);
+                        var chord = Math.Sqrt((endX - x) * (endX - x) + (endY - y) * (endY - y));
+                        if (rx == ry && chord > 2 * rx * 1.15)
+                        {
+                            Problems.Add($"An arc of radius {rx} in {file} spans a chord of {chord:0.##}, so the renderer would enlarge it: {data}");
+                        }
+
+                        (x, y) = (endX, endY);
+                    }
+
+                    break;
+            }
+        }
+    }
 }
 
 /// <summary>One path of a drawing: its data, whether it is a solid mark inside a stroke drawing, and its opacity.</summary>

@@ -4,10 +4,9 @@ $ErrorActionPreference = 'Stop'
 
 # Builds Forma's own glyph artwork into the asset the library embeds.
 #
-#   src/Forma.UI.Design.Icons/Glyph.cs           the glyph set (hand-maintained)
-#   src/Forma.UI.Blazor/Assets/Glyphs/*.svg      the stroke drawings (spec: docs/glyph-artwork-spec.md)
-#   src/Forma.UI.Blazor/Assets/Glyphs/*.alt.svg  a drawn filled variant, only where the derived one is wrong
-#   src/Forma.UI.Blazor/Assets/glyphs.json       the compiled asset (generated, this script writes it)
+#   src/Forma.UI.Design.Icons/Glyph.cs       the glyph set (hand-maintained)
+#   assets/Glyphs/{grid}/*.svg               the stroke drawings, one folder per grid (spec: docs/glyph-artwork-spec.md)
+#   src/Forma.UI.Blazor/Assets/glyphs.json   the compiled asset (generated, this script writes it)
 #
 # The filled variant of every glyph is derived from its stroke drawing by scripts/GlyphPack.cs, which
 # validates the drawings against the spec as it goes. The asset is written compact; -Format writes it
@@ -15,7 +14,7 @@ $ErrorActionPreference = 'Stop'
 
 $root = Split-Path -Parent $PSScriptRoot
 $enumPath = Join-Path $root 'src' 'Forma.UI.Design.Icons' 'Glyph.cs'
-$glyphsDir = Join-Path $root 'src' 'Forma.UI.Blazor' 'Assets' 'Glyphs'
+$glyphsDir = Join-Path $root 'assets' 'Glyphs'
 $target = Join-Path $root 'src' 'Forma.UI.Blazor' 'Assets' 'glyphs.json'
 $program = Join-Path $PSScriptRoot 'GlyphPack.cs'
 
