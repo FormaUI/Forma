@@ -66,6 +66,9 @@ public enum Glyph
     /// <summary>A rightward arrow.</summary>
     ArrowRight,
 
+    /// <summary>An arrow turning down and then right, for a line return.</summary>
+    ArrowTurnDownRight,
+
     /// <summary>An upward arrow.</summary>
     ArrowUp,
 
@@ -237,6 +240,9 @@ public enum Glyph
     /// <summary>A square holding a minus, for collapsing a node.</summary>
     CollapseMinus,
 
+    /// <summary>An eyedropper over a drop of what it picked, for picking a color.</summary>
+    ColorPicker,
+
     /// <summary>A pane divided top to bottom, standing for a table's columns.</summary>
     Columns,
 
@@ -333,6 +339,9 @@ public enum Glyph
     /// <summary>A circle struck through, for a container with nothing in it.</summary>
     Empty,
 
+    /// <summary>A solid tilted eraser over the line it rubs out.</summary>
+    Eraser,
+
     /// <summary>A euro sign, for money in euros.</summary>
     EuroSign,
 
@@ -356,6 +365,9 @@ public enum Glyph
 
     /// <summary>An open eye.</summary>
     Eye,
+
+    /// <summary>A solid eyedropper on the diagonal.</summary>
+    Eyedropper,
 
     /// <summary>A struck-through eye.</summary>
     EyeSlash,
@@ -422,6 +434,12 @@ public enum Glyph
 
     /// <summary>A large four-pointed star with a small one beside it, for generative AI.</summary>
     GenerativeAI,
+
+    /// <summary>A pair of glasses with squared lenses.</summary>
+    Glasses,
+
+    /// <summary>A globe drawn as meridian and parallels, for language.</summary>
+    Globe,
 
     /// <summary>A mortarboard, for education.</summary>
     Graduation,
@@ -519,11 +537,41 @@ public enum Glyph
     /// <summary>A key.</summary>
     Key,
 
+    /// <summary>A line stepping down to a second line, the option key.</summary>
+    KeyAlt,
+
+    /// <summary>A tag pointing left with a cross inside, the backspace key.</summary>
+    KeyBackspace,
+
     /// <summary>A keyboard.</summary>
     Keyboard,
 
+    /// <summary>A keyboard with a triangle at its left end, for docking it left.</summary>
+    KeyboardLeft,
+
+    /// <summary>A keyboard with a triangle at its right end, for docking it right.</summary>
+    KeyboardRight,
+
+    /// <summary>The shift arrow over a bar, the caps lock key.</summary>
+    KeyCapsLock,
+
+    /// <summary>A square with a loop at each corner, the command key.</summary>
+    KeyCmd,
+
+    /// <summary>A wide chevron pointing up, the control key.</summary>
+    KeyCtrl,
+
+    /// <summary>A hollow up arrow with a broad stem, the shift key.</summary>
+    KeyShift,
+
+    /// <summary>Four panes in a square, the Windows key.</summary>
+    KeyWin,
+
     /// <summary>An open laptop.</summary>
     Laptop,
+
+    /// <summary>A rope loop with a trailing end, for free selection.</summary>
+    Lasso,
 
     /// <summary>A frame with a header and a sidebar, for the layout as a whole.</summary>
     Layout,
@@ -566,6 +614,9 @@ public enum Glyph
 
     /// <summary>A navigation arrow, for the current location.</summary>
     LocationArrow,
+
+    /// <summary>A location arrow inside a circle, for the current position.</summary>
+    LocationArrowCircle,
 
     /// <summary>A closed padlock, for something locked.</summary>
     Lock,
@@ -666,6 +717,9 @@ public enum Glyph
     /// <summary>A computer mouse.</summary>
     Mouse,
 
+    /// <summary>Four arrows from one center, for moving.</summary>
+    Move,
+
     /// <summary>A speaker struck through, for muting.</summary>
     Mute,
 
@@ -690,6 +744,12 @@ public enum Glyph
     /// <summary>A paintbrush.</summary>
     Paintbrush,
 
+    /// <summary>A paint can under its handle, paint dripping down its side, for filling.</summary>
+    PaintBucket,
+
+    /// <summary>A solid paint bucket tipped on its side with a drop beside it, for pouring.</summary>
+    PaintBucketPour,
+
     /// <summary>A painter's palette, for theming.</summary>
     Palette,
 
@@ -713,6 +773,9 @@ public enum Glyph
 
     /// <summary>A pencil.</summary>
     Pen,
+
+    /// <summary>A solid pen nib pointing down, with its breather hole and slit, for paths.</summary>
+    PenNib,
 
     /// <summary>A telephone handset, for a call.</summary>
     Phone,
@@ -750,7 +813,7 @@ public enum Glyph
     /// <summary>A rocket, for publishing.</summary>
     Publish,
 
-    /// <summary>Quotation marks, for a quoted passage.</summary>
+    /// <summary>An opening and a closing quotation mark, for a quoted passage.</summary>
     Quote,
 
     /// <summary>A filled dot inside a circle, for a marked point.</summary>
@@ -780,8 +843,8 @@ public enum Glyph
     /// <summary>An arrow bending up and to the left, for replying.</summary>
     Reply,
 
-    /// <summary>A pair of reading glasses, for reviewing.</summary>
-    Review,
+    /// <summary>Two triangles pointing left against a bar, for skipping back.</summary>
+    Rewind,
 
     /// <summary>A single clockwise arrow, for rotating.</summary>
     Rotate,
@@ -828,6 +891,9 @@ public enum Glyph
     /// <summary>Three joined nodes, for sharing.</summary>
     Share,
 
+    /// <summary>An arrow rising out of an open box, for sharing.</summary>
+    ShareBox,
+
     /// <summary>A shekel sign, for money in shekels.</summary>
     ShekelSign,
 
@@ -839,6 +905,9 @@ public enum Glyph
 
     /// <summary>A box over three boxes, for a site map.</summary>
     Sitemap,
+
+    /// <summary>A hand with its index finger pointing down and to the left, for smudging.</summary>
+    Smudge,
 
     /// <summary>A bell with a sleeping mark, for snoozing.</summary>
     Snooze,
@@ -872,6 +941,9 @@ public enum Glyph
 
     /// <summary>A frame divided in two, for splitting a view.</summary>
     Split,
+
+    /// <summary>A rubber stamp on its base.</summary>
+    Stamp,
 
     /// <summary>A five-point star, for a favorite.</summary>
     Star,
@@ -924,11 +996,17 @@ public enum Glyph
     /// <summary>A toolbox.</summary>
     Toolbox,
 
+    /// <summary>A frame with a handle at each corner and an arrow inside, for transforming.</summary>
+    Transform,
+
     /// <summary>A Han character beside a Latin A, for translation.</summary>
     Translation,
 
     /// <summary>A solid triangle pointing down.</summary>
     TriangleDown,
+
+    /// <summary>A solid triangle pointing left.</summary>
+    TriangleLeft,
 
     /// <summary>A solid triangle pointing right.</summary>
     TriangleRight,
@@ -971,6 +1049,9 @@ public enum Glyph
 
     /// <summary>An exclamation mark inside a triangle.</summary>
     Warning,
+
+    /// <summary>A spiral, for warping.</summary>
+    Warp,
 
     /// <summary>Arcs over a dot, for a wireless network.</summary>
     Wifi,

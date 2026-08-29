@@ -179,6 +179,7 @@ glyph with no parts named is drawn from scratch on the grid.
 | `ArrowDown` | Shaft from (16, 5) to (16, 27); Arrowhead pointing down at (16, 27). |
 | `ArrowLeft` | Shaft from (27, 16) to (5, 16); Arrowhead pointing left at (5, 16). |
 | `ArrowRight` | Shaft from (5, 16) to (27, 16); Arrowhead pointing right at (27, 16). |
+| `ArrowTurnDownRight` | A shaft from (8, 5) down to y 18, rounding through radius 3 to run right to (26, 21) with an arrowhead scaled to 6 there. |
 | `ArrowUp` | Shaft from (16, 27) to (16, 5); Arrowhead pointing up at (16, 5). |
 | `AtSign` | A circle radius 5 at (16, 16); a tail from (21, 12) down to (21, 19) rounding into a hook to (27, 19) and up to (27, 16); an outer arc of radius 11 around (16, 16) from (27, 16) over the top and left round to (23, 25). |
 | `Attachment` | A paper clip on the diagonal, one wire on four parallel lines 4 apart: from (26, 18) down the outer line to (18, 26), round a radius-8 bend to (6, 14), up the far line to (14, 6), round a radius-6 loop to (22, 14), down the middle line to (17, 19), round a radius-3 bend to (13, 15), and back up the inner line to (18, 10), stopping at the loop's center. |
@@ -193,7 +194,7 @@ glyph with no parts named is drawn from scratch on the grid.
 | `Bold` | A capital B built from strokes: a vertical at x 11 from y 7 to 25, two bowls to the right, the lower one larger. |
 | `Bookmark` | A ribbon: (8, 4) down to (8, 28), up to the notch at (16, 22), up to (24, 28), up to (24, 4), closing across the top. |
 | `Borders` | A square from (5, 5) to (27, 27) divided by a vertical and a horizontal line through its center. |
-| `Brightness` | A disc as a circle radius 6 at the center with its lower-left half filled from (12, 12) round to (20, 20); eight rays 2 long at radius 11 to 13, on the axes and the diagonals. |
+| `Brightness` | A disc as a circle radius 5 at the center with its right half filled; eight rays 3 long from radius 9 to 12 on the axes and about as long on the diagonals, from (7, 7) to (9, 9) and their mirrors. |
 | `Broadcast` | A filled dot radius 3 at (16, 15) on a mast down to (16, 29); two waves either side as arcs of radius 7 and 13 about the dot, each spanning from 45° above to 45° below the horizontal. |
 | `Bug` | An oval body from (11, 11) to (21, 27); a head arc across the top; three legs each side at y 15, 19, 23 reaching x 5 and x 27; two short antennae. The filled form keeps every leg and antenna as its own solid bar. |
 | `Calculator` | A body from (6, 3) to (26, 29) with radius-3 corners; a display from (10, 6) to (22, 11) with radius-1 corners; nine keys as filled dots radius 1 at x 11, 16, 21 and y 15, 20, 25. |
@@ -236,6 +237,7 @@ glyph with no parts named is drawn from scratch on the grid.
 | `Coins` | A front coin as a circle radius 8 at (13, 19); a back coin as a circle radius 8 at (19, 13) drawn only where it shows, as an arc from (12, 10) over the top and right to (21, 21). |
 | `Collapse` | Two arrows on the diagonal pointing inward: one from (4, 4) to (13, 13) with arrowhead scaled to 5 at (13, 13), one from (28, 28) to (19, 19) with arrowhead scaled to 5 at (19, 19). |
 | `CollapseMinus` | Square; a line from (11, 16) to (21, 16). |
+| `ColorPicker` | `Eyedropper` fitted into the upper right, spanning (8, 3) to (29, 24); a solid drop in the free corner, its point at (5, 22) over a radius-2.5 bowl at (5, 26.5). |
 | `Columns` | Frame; one vertical divider at x 16. |
 | `Comment` | A speech bubble: a rounded rect from (4, 5) to (28, 23) with a tail dropping from (9, 23) to (7, 28) back to (15, 23). |
 | `Compress` | Two arrows pressing toward a line: an ArrowDown with shaft (16, 4)–(16, 12) and an ArrowUp with shaft (16, 28)–(16, 20), arrowheads scaled to 4; the line from (7, 16) to (25, 16). |
@@ -248,7 +250,7 @@ glyph with no parts named is drawn from scratch on the grid.
 | `Crop` | Two overlapping L marks: one from (9, 4) down to (9, 23) across to (28, 23); the other from (4, 9) across to (23, 9) down to (23, 28). |
 | `Cross` | Two diagonals: (8, 8)–(24, 24) and (24, 8)–(8, 24). |
 | `Crosshair` | Circle radius 9; four ticks from radius 9 to radius 13 at the compass points. |
-| `Crown` | A crown as one outline: from (4, 26) up to (4, 10), in to (11, 15), up to a peak at (16, 5), down to (21, 15), out to (28, 10) and down to (28, 26), closing along the base; a band across at y 21. |
+| `Crown` | Fitted from the reference drawing: a crown as one outline from (6, 10) down to a dip at (11, 16), up to the peak at (16, 5), down to (21, 16), up to (26, 10), then down the sides to a base from (25, 26) to (7, 26); three finials as solid dots radius 2 at (6, 8), (16, 3) and (26, 8); a band as a curve from (8, 21) sagging through y 22.5 to (24, 21); a cushion line beneath from (7, 29) to (25, 29). |
 | `Cursor` | A pointer as one outline: from (7, 4) down to (7, 25), out to (12, 20), down to (16, 28), across to (20, 26), back up to (16, 18), out to (23, 18) and closing. |
 | `Cut` | Two ring handles radius 4 at (9, 24) and (23, 24); blades from each ring crossing at (16, 15) up to (9, 4) and (23, 4). |
 | `Dashboard` | Four tiles of radius 2 in two columns, x 4 to 13 and 19 to 28: on the left a tall tile from y 4 to 18 over a short one from 21 to 28; on the right a short tile from y 4 to 11 over a tall one from 14 to 28. |
@@ -268,6 +270,7 @@ glyph with no parts named is drawn from scratch on the grid.
 | `Edit` | A box from (4, 8) to (24, 28) with radius-3 corners, open at its top right between (14, 8) and (24, 18); the Pencil at three quarters lying across that opening, its tip at (11, 21) inside the box and its cap reaching (29, 7). |
 | `Emoji` | Circle; two filled dots radius 1 at (12, 13) and (20, 13); a smile arc from (11, 19) to (21, 19) dipping to y 22. |
 | `Empty` | A ring of radius 12 under a Slash, broken around it: one arc from (27, 11) over the right and bottom to (11, 27), the other from (5, 21) over the left and top to (21, 5). |
+| `Eraser` | A solid eraser fitted from the reference drawing: a block on the diagonal with radius-4 rounded ends from (3.5, 17.5) up to (24, 3) and down to (16.5, 26), a slit knocked out across it from (11, 12) to (21.5, 19) as its sleeve edge; a solid ground line with round ends from (5, 26.5) to (27.5, 29). |
 | `EuroSign` | A C as an arc of radius 10 from (24, 8) round the left to (24, 24); two bars at y 13 and y 19 from x 5 to 19. |
 | `Events` | Frame reduced to (4, 6)–(28, 28) with a header line at y 12 and two binding ticks rising from (10, 6) and (22, 6) to y 3; three filled dots radius 1 at (11, 20), (16, 20), (21, 20). |
 | `Exit` | A door frame: an open bracket from (15, 4) to (5, 4) down to (5, 28) to (15, 28); an ArrowRight from (12, 16) to (28, 16), arrowhead at (28, 16) scaled to 5. |
@@ -276,6 +279,7 @@ glyph with no parts named is drawn from scratch on the grid.
 | `Extensions` | A puzzle piece: a body from (6, 9) to (28, 28), radius 3, with a nub of radius 3 on its top edge between x 14 and 20 and a notch of radius 3 in its left edge between y 14 and 20. |
 | `Extract` | The open box Tray; an ArrowUp with shaft (16, 20)–(16, 5) and arrowhead scaled to 5 at (16, 5). |
 | `Eye` | A lens: two arcs of radius 15 from (3, 16) to (29, 16) and back, meeting at the corners and reaching y 8 and 24 at the middle; a pupil circle radius 4 at (16, 16). |
+| `Eyedropper` | A solid dropper on the diagonal, fitted from the reference drawing to fill the live area: a rounded bulb at the upper right joined to a crossbar collar with round-capped ends, and a separate tube from (15.5, 10) tapering to a rounded tip at (3, 26.5). |
 | `EyeSlash` | The `Eye` outline under a Slash, broken 2 units clear of the slash on either side: the upper lid runs from (3, 16) to (17, 9) and resumes at (26, 12); the lower from (29, 16) to (15, 23) and resumes at (6, 20). The pupil lies within the break and is left out. |
 | `FastForward` | Two Triangles pointing right, (3, 8)–(3, 24)–(14, 16) and (13, 8)–(13, 24)–(24, 16), against a bar 2 wide from (27, 8) to (29, 24) with radius-1 ends. |
 | `File` | Page. |
@@ -298,10 +302,12 @@ glyph with no parts named is drawn from scratch on the grid.
 | `ForkKnife` | A fork on the left: three tines at x 5, 8 and 11 from y 4 down to a bowl that closes at y 14, and a handle from (8, 14) to (8, 28). A knife on the right: a handle from (25, 4) to (25, 28) and a blade curving out from its top to (20, 12), down to (20, 16) and back to the handle, drawn solid. |
 | `Forward` | A line from (4, 28) up to y 16, turning through a corner of radius 4 to run right along y 11 to (28, 11); an arrowhead at (28, 11) pointing right. |
 | `GenerativeAI` | Two four-pointed stars whose sides curve in to the center: a large one centered at (14, 18) reaching 11 to each point, and a small one centered at (25, 8) reaching 4. |
+| `Glasses` | Two lenses as rounded rectangles from (3, 12) to (14, 22) and (18, 12) to (29, 22) with radius-3 corners, joined by a bridge from (14, 17) to (18, 17); a temple rising outward from each top outer corner, from (4, 12) to (2, 9) and from (28, 12) to (30, 9). |
+| `Globe` | Circle; a meridian as a lens from (16, 4) to (16, 28) bulging 7 either side of center; parallels from (4, 16) to (28, 16) and from (6, 10) to (26, 10) and (6, 22) to (26, 22). |
 | `Graduation` | A mortarboard: a rhombus with corners (16, 6), (29, 12), (16, 18) and (3, 12); the cap below it from (8, 15) down to (8, 19), round an elliptical bottom of radii 8 and 4 to (24, 19) and up to (24, 15); a tassel from (29, 12) down to (29, 21). |
 | `GridView` | Four rounded squares of side 9 at (4, 4), (19, 4), (4, 19), (19, 19). |
 | `Group` | Three rhombi seen edge-on: the top one a closed diamond with vertices (16, 4), (28, 10), (16, 16), (4, 10); below it two chevrons from (4, 16) to (16, 22) to (28, 16) and from (4, 22) to (16, 28) to (28, 22). |
-| `Hand…` | The fourteen hands are solid silhouettes, each traced from the reference sheet and fitted to fill the live area: `HandRaisedLeft` and `HandRaisedRight` (an open palm, thumb to the named side), `HandPointUp`, `HandPointDown`, `HandPointLeft` and `HandPointRight` (a fist with the index extended), `HandThumbUp` and `HandThumbDown` (the latter the former turned top to bottom), `HandPeace`, `HandCall`, `HandPen`, `Handshake`, and `HandWave` and `HandClap`, which carry their motion and impact marks as separate solid strokes. |
+| `Hand…` | The fourteen hands are solid silhouettes, each traced from the reference sheet and fitted to fill the live area: `HandRaisedLeft` and `HandRaisedRight` (an open palm, thumb to the named side), `HandPointDown` (a fist with the index extended), `HandPointUp` (`HandPointDown` turned a half turn), `HandPointLeft` and `HandPointRight`, `HandThumbUp` and `HandThumbDown` (the latter the former turned top to bottom), `HandPeace`, `HandCall`, `HandPen`, `Handshake`, and `HandWave` and `HandClap`, which carry their motion and impact marks as separate solid strokes. |
 | `HashtagSign` | Two slanted strokes from (12, 5) to (9, 27) and from (23, 5) to (20, 27); two bars from (6, 12) to (27, 12) and from (5, 20) to (26, 20). |
 | `Heading` | A capital H: verticals at x 8 and 24 from y 7 to 25, crossbar at y 16. |
 | `Heart` | A heart from its notch at (16, 9) out to round lobes at (4, 11) and (28, 11), meeting at the point (16, 28). |
@@ -317,8 +323,18 @@ glyph with no parts named is drawn from scratch on the grid.
 | `Indent` | Four lines at y 7, 13, 19 and 25, the outer two from x 5 to 27 and the inner two from x 15 to 27; a Triangle pointing right, (5, 12)–(5, 20)–(11, 16), before the inner lines. |
 | `Italic` | A slanted capital I: bar at y 7 from x 13 to 24, bar at y 25 from x 8 to 19, stem from (19, 7) to (13, 25). |
 | `Key` | A key as a solid silhouette: a bow as a disc radius 6 at (22, 10) with a radius-2 hole; a shaft 4 wide down the diagonal from the bow to (3.5, 25.5)–(6.5, 28.5); two teeth on its underside, 3.5 long, at the tip and 5.66 further up. |
-| `Keyboard` | Frame reduced to (4, 8)–(28, 24); nine key dots radius 1 in three rows; a space bar line at y 20 from x 11 to 21. |
+| `KeyAlt` | A line from (4, 8) to (11, 8) stepping down the diagonal to (21, 24) and on to (28, 24); a second line from (20, 8) to (28, 8). |
+| `KeyBackspace` | A tag from (11, 6) to (26, 6) with radius-3 corners at the right down to (11, 26), pointing left to (3, 16); a Cross of length 6 centered at (18, 16). |
+| `Keyboard` | A body from (3, 7) to (29, 25) with radius-3 corners; keys as solid 2-unit squares, five in a row at y 11 from x 7 to 23 every 4 and four staggered below at y 15 from x 9 to 21; a space bar line at y 21 from x 11 to 21. |
+| `KeyboardLeft` | `Keyboard` narrowed to a body from (11, 8) to (29, 24), its keys three squares at y 11 from x 15 to 23 and two at y 15 from x 17 to 21 and its space bar from (16, 20) to (24, 20); a solid triangle standing clear to its left, pointing left from (8, 12)–(8, 20) to (3, 16). |
+| `KeyboardRight` | `KeyboardLeft` mirrored: the body from (3, 8) to (21, 24) with its keys at x 7 to 15 and x 9 to 13, the space bar from (8, 20) to (16, 20), and the triangle pointing right from (24, 12)–(24, 20) to (29, 16). |
+| `KeyCapsLock` | The `KeyShift` arrow reduced to a tip at (16, 3), shoulders at (27, 14) and (5, 14) and a stem to y 20; a bar from (11, 24) to (21, 27) below it. |
+| `KeyCmd` | A square from (11, 11) to (21, 21) whose sides run on past each corner into a radius-4 loop, the loops centered at (7, 7), (25, 7), (25, 25) and (7, 25). |
+| `KeyCtrl` | A chevron scaled to 10 pointing up, its tip at (16, 10). |
+| `KeyShift` | A hollow arrow: tip at (16, 4), shoulders at (28, 16) and (4, 16), a stem 12 wide from y 16 down to y 26. |
+| `KeyWin` | Four panes 9 square with radius-1 corners, at (5, 5), (18, 5), (5, 18) and (18, 18). |
 | `Laptop` | A screen from (5, 6) to (27, 21) with radius-2 top corners; a base from (3, 25) to (29, 25). |
+| `Lasso` | A loop as a rounded oval from (4, 12) to (28, 12) between y 4 and 20; a rope tail as a curve from (10, 19) swinging out and back to (10, 28). |
 | `Layout` | Frame; a horizontal divider at y 12; below it a vertical divider at x 12. |
 | `LayoutBottom` | Frame; a horizontal divider at y 21; the lower pane filled at opacity 0.4. |
 | `LayoutLeft` | Frame; a vertical divider at x 12; the left pane filled at opacity 0.4. |
@@ -333,6 +349,7 @@ glyph with no parts named is drawn from scratch on the grid.
 | `ListMultilevel` | Three lines ending at x 27 at y 8, 16, 24, starting at x 11, 15, 19, each with a filled bullet radius 2 five to its left. |
 | `ListNumbered` | Two rows: the digits 1 and 2 as strokes 10 tall within x 4 to 11, at y 3–13 and 18–28; a line from x 15 to 28 beside each, at y 8 and 23. Two rows, not three, because three digits cannot keep the gap. |
 | `LocationArrow` | A navigation arrow as one outline: (27, 5), (5, 14), (15, 17), (18, 27). |
+| `LocationArrowCircle` | Circle; `LocationArrow` reduced to its tip at (21, 11), left point at (10, 15), notch at (15, 17) and bottom point at (17, 22). |
 | `Lock` | A body as a rounded rect from (6, 14) to (26, 28); a shackle arc from (10, 14) up over (16, 4) down to (22, 14); a keyhole as a filled dot radius 2 at (16, 20) with a stem down to (16, 24). |
 | `LockOpen` | The `Lock` body and keyhole; the shackle, lifted, rises from (10, 14) over (16, 3) and ends free in the air at (22, 9), 3 clear of the body. |
 | `MagicWand` | A solid wand 4 wide with rounded ends on the diagonal from (4, 28) to (17, 15); three four-pointed stars as in `GenerativeAI`, a large one centered at (23, 9) reaching 6 and two small ones at (9, 8) and (27, 21) reaching 3. |
@@ -357,7 +374,7 @@ glyph with no parts named is drawn from scratch on the grid.
 | `MathSigma` | A capital sigma: from (26, 6) across to (6, 6), in to (16, 16), out to (6, 26) and across to (26, 26). |
 | `MathSquareRoot` | A root sign: from (4, 18) down to (9, 26), up to (16, 6) and across to (28, 6). |
 | `Maximize` | Four corner brackets: each an L of 7 by 7 at the four corners of the live area. |
-| `Medal` | A disc as a circle radius 7 at (16, 21); a ribbon as two straps from (9, 3) and (23, 3) down to the disc's top at (14, 14) and (18, 14). |
+| `Medal` | A disc as a circle radius 8 at (16, 21) bearing a solid five-pointed star of outer radius 4; a ribbon as two straps, each a closed band from (6, 3) across to (11, 3), down to (16, 11) and back to (12, 14), mirrored on the right. |
 | `Message` | A bubble: a rounded rect from (5, 5) to (27, 24) whose lower-left corner is drawn out to a point at (5, 28); two text lines inside at y 12 and y 17 from x 11 to 21. |
 | `Microphone` | A capsule from (11, 3) to (21, 19) with radius-5 ends; a cradle as a U from (7, 14) down through (16, 23) up to (25, 14); a stand from (16, 23) to (16, 29) on a foot from (10, 29) to (22, 29). |
 | `Minimize` | A single line from (5, 16) to (27, 16). |
@@ -365,7 +382,8 @@ glyph with no parts named is drawn from scratch on the grid.
 | `Mobile` | A handset from (9, 3) to (23, 29) with radius-3 corners; a home button as a filled dot radius 1 at (16, 25). |
 | `More` | Three solid dots radius 3 at (6, 16), (16, 16) and (26, 16). |
 | `MoreVertical` | Three solid dots radius 3 at (16, 6), (16, 16) and (16, 26). |
-| `Mouse` | A body from (9, 4) to (23, 28) with radius-7 ends; a line across it at y 14 and a wheel line down the middle from the top to it. |
+| `Mouse` | A body from (9, 4) to (23, 28) with radius-7 ends; a scroll wheel as a line down the middle from (16, 9) to (16, 13). |
+| `Move` | Two shafts crossing at the center, from (16, 4) to (16, 28) and (4, 16) to (28, 16), each end an arrowhead scaled to 4 so neighboring heads stay clear of each other. |
 | `Mute` | The `SoundOutput` speaker body without its waves, under a Slash, its outline broken 2 units clear of the slash on either side: the cones edge stops at (17, 9) and resumes at (17, 21), and the boxs bottom edge stops at (6, 20). |
 | `NavigationMenu` | Three full-width lines x 5–27 at y 8, 16, 24 — spaced one unit wider than `List`, so the two read as different things side by side. |
 | `Network` | A top node as a square side 6 at (13, 4); two bottom nodes as squares side 6 at (4, 22) and (22, 22); a trunk from (16, 10) down to (16, 16); a bar at y 16 from x 7 to 25; drops from (7, 16) and (25, 16) down to y 22. |
@@ -374,14 +392,17 @@ glyph with no parts named is drawn from scratch on the grid.
 | `Outdent` | The lines of `Indent` with the Triangle pointing left, (11, 12)–(11, 20)–(5, 16). |
 | `Package` | A cube in three-quarter view: a hexagonal outline with top vertex (16, 4) and bottom (16, 28); interior edges from (16, 16) to the top-left, top-right and bottom; a tape line across the top-left face. |
 | `Paintbrush` | A handle from (16, 3) down to a ferrule from (11, 15) to (21, 19); bristles below it flaring to (9, 27) and (23, 27) with radius-2 corners. |
-| `Palette` | A painter's palette: a rounded kidney shape filling the live area with a thumb hole at the lower-right; four filled dots radius 2 as paint wells. |
+| `PaintBucket` | A can from (6, 12) down to a radius-3 base at y 28 and (26, 12); its rim a flat oval on y 12 bulging 1 above and below; a handle as a radius-9 arc from (7, 12) over the top to (25, 12); a solid drip of paint hanging from the rim, from (12, 15) to (20, 15) narrowing to a radius-1.5 drop at (16, 23). |
+| `PaintBucketPour` | A solid tipped bucket fitted from the reference drawing: a rounded body on the diagonal from (3, 17) to (25, 16), its paint level a line across at y 18 that opens the upper half, a handle as a round-capped bar from (6, 5.5) to (15.5, 12) crossing the rim; a solid drop beside it, its point at (24.5, 17.5) over a radius-5 bowl at (24.5, 25.5). |
+| `Palette` | A painter's palette: a rounded body from (2, 16) up over the top at (16, 4) and round to (29, 14), whose lower right folds in through an S-curve — down to (20, 22) and back out to (23, 19) — into a small cup ending at the base (16, 28); four solid wells radius 2 at (10, 12), (15, 9), (21, 10) and (10, 19). |
 | `Paragraph` | A pilcrow: a filled bowl on the left (a half-circle from (9, 5) to (9, 16) bulging left), two stems at x 15 and x 20 from y 5 to 27, a top bar from x 9 to 25. |
 | `ParagraphDirectionLtr` | A three-quarter `Paragraph` on the left — bowl from (6, 6) to (6, 14), bar to x 18, stems at x 10 and 14 down to y 24 — beside an ArrowRight from (21, 16) to (28, 16) with a head 4 wide. |
 | `ParagraphDirectionRtl` | Mirror of `ParagraphDirectionLtr`: the pilcrow on the right, its bowl bulging right, beside an arrow pointing left from (11, 16) to (4, 16). |
 | `PasswordField` | Frame reduced to (4, 10)–(28, 22); three filled dots radius 2 inside it at x 9, 16 and 23, masking the characters. |
 | `Paste` | A clipboard: a rounded rect (7, 7)–(25, 28); a clip at the top from (12, 4) to (20, 4) with sides down to y 9; two lines inside at y 16 and 21. |
-| `PawPrint` | A pad as a rounded shape from (9, 23) up to (16, 14) and back to (23, 23); four solid toes radius 3 at (6, 11), (12, 6), (20, 6) and (26, 11). |
+| `PawPrint` | Fitted from the reference drawing: a pad as a rounded heart from its top at (16, 15) out to lobes at (7, 25) and (25, 25) and down to a notch at (16, 27); four toes as outlined ovals about 4 by 6, the inner pair upright at (12, 7) and (20, 7), the outer pair leaning outward at (6, 12) and (26, 12). |
 | `Pen` | Pencil. |
+| `PenNib` | A solid nib pointing down: a flat top from (8, 4) to (24, 4), sides bulging out to (28, 15) and (4, 15) and tapering to the tip at (16, 29); a breather hole radius 2.5 at (16, 15) and a slit 1 wide from the hole down to (16, 27), both knocked out. |
 | `Phone` | A handset on the diagonal as one outline: an earpiece block from (4, 4) with a radius-3 corner, its lip from (11, 4) to (14, 11) and in to (11, 13); a bar 6 wide down to the mouthpiece, whose lip runs from (19, 21) to (21, 18) out to (28, 21), with a radius-3 corner at (28, 28); the back edge from (18, 28) up to (4, 14). Every other corner is softened by a quadratic curve joining its edges 2 units short of the vertex. |
 | `PhoneSlash` | `Phone` under a Slash, its bar broken 2 clear of the slash on either side: the earpiece's edges stop at (12, 14) and (8, 18), the mouthpiece's resume at (18, 20) and (14, 24). |
 | `Pin` | A pushpin: a cap line from (9, 4) to (23, 4); a body whose sides run from (12, 4) and (20, 4) down to (11, 14) and (21, 14), then flare through quadratic curves to a base from (7, 20) to (25, 20); a needle from (16, 20) to (16, 28). |
@@ -393,8 +414,8 @@ glyph with no parts named is drawn from scratch on the grid.
 | `Print` | A body as a rounded rect from (4, 12) to (28, 24); a sheet rising out of the top from (9, 12) up to (9, 4) across to (23, 4) down to (23, 12); a sheet emerging at the bottom from (9, 24) down to (9, 28) across to (23, 28) up to (23, 24); a filled dot radius 1 at (24, 16). |
 | `Prohibited` | Circle; a Slash inside it from (8, 24) to (24, 8). |
 | `Properties` | Three lines x 5–27 at y 9, 16, 23; on each a filled knob circle radius 3, at x 20, 11 and 17 respectively. |
-| `Publish` | An upright rocket: a body whose nose is at (16, 3) and whose sides curve out to a base from (12, 20) to (20, 20); a porthole circle radius 2 at (16, 12); a fin each side from the body at y 15 out to (7, 21) and (25, 21); a flame from (14, 21) down to (16, 28) and back to (18, 21). |
-| `Quote` | Two closing quotation marks: solid dots radius 4 at (9, 11) and (23, 11), each with a tail curving from its lower-right down to (7, 24) and (21, 24). |
+| `Publish` | An upright rocket: a body whose nose is at (16, 3), whose sides curve out to their widest at y 18 and taper to a base from (12, 23) to (20, 23); a porthole circle radius 2 at (16, 13); a fin each side from the body at y 15 out and down to (7, 19) and (25, 19), dropping to y 24 and turning back in to (12, 22) and (20, 22); an exhaust from (14, 23) down to a point at (16, 29) and back up to (18, 23). |
+| `Quote` | An opening and a closing quotation mark on the diagonal: the opening mark a solid dot radius 4 at (9, 14) with a tail curving from its upper-left up to (11, 3); the closing mark the same rotated a half turn, a dot at (23, 18) with a tail curving from its lower-right down to (21, 29). |
 | `RadioButton` | Circle radius 12; a filled circle radius 5 at the center. |
 | `Ranking` | A podium as one outline: steps from (4, 16), (12, 8) and (20, 20) down to a base at y 28, with dividers at x 12 and 20. |
 | `Read` | An envelope with its flap open: a body from (4, 14) down to (4, 27) across to (28, 27) up to (28, 14); the flap as a chevron from (4, 14) up to (16, 5) down to (28, 14); the fold as a chevron from (4, 14) down to (16, 22) up to (28, 14). |
@@ -404,7 +425,7 @@ glyph with no parts named is drawn from scratch on the grid.
 | `RemoveHorizontalLink` | Two broken Chain links either side of a Slash: the left keeps its outer end at (6, 16), its top side to (10, 12) and a tail curling to (13, 13); the right is the same turned about the center. |
 | `RemoveLink` | Two broken Chain links either side of a Slash mirrored onto the other diagonal, from (5, 5) to (27, 27), because the chain itself lies along the Slash's own: the lower link keeps its outer end at (6, 26), its sides to (13, 25) and (7, 19), and a tail curling to (12, 18); the upper is the same turned about the center. |
 | `Reply` | A line from (28, 28) up to y 16, turning through a corner of radius 4 to run left along y 11 to (4, 11); an arrowhead at (4, 11) pointing left. |
-| `Review` | Two lens circles radius 5 at (9, 18) and (23, 18) joined by a bridge from (14, 18) to (18, 18); a temple rising from each outer edge, from (4, 17) to (5, 12) and from (28, 17) to (27, 12). |
+| `Rewind` | `FastForward` mirrored: two Triangles pointing left, (29, 8)–(29, 24)–(18, 16) and (19, 8)–(19, 24)–(8, 16), against a bar 2 wide from (3, 8) to (5, 24) with radius-1 ends. |
 | `Rotate` | One clockwise arc of radius 10 around (16, 16) from the top (16, 6) around the right and bottom to (7, 19), ending in an Arrowhead scaled to 4 pointing up at (7, 19). |
 | `Rows` | Frame; one horizontal divider at y 16. |
 | `Ruler` | A bar on the diagonal with corners (4, 22), (22, 4), (28, 10) and (10, 28); four scale marks from its upper edge inward, from (7, 19), (11, 15), (15, 11) and (19, 7), each 2 across and 2 down. |
@@ -420,24 +441,27 @@ glyph with no parts named is drawn from scratch on the grid.
 | `Settings` | A gear: a ring radius 4 at the center; an outer outline with eight teeth reaching radius 13; one closed path. |
 | `Shading` | A tilted can as a square on its corner with vertices (12, 5), (22, 15), (12, 25) and (2, 15); a drip as a drop from (28, 18) to (28, 26). |
 | `Share` | Three nodes as circles radius 3 at (7, 16), (24, 7) and (24, 25); a line from the left node to each right node. |
+| `ShareBox` | An open box from (4, 16) to (28, 28) with radius-3 corners, its top edge stopping at x 10 and 22; an ArrowUp with shaft (16, 20)–(16, 4) rising through the gap, arrowhead scaled to 6. |
 | `ShekelSign` | Two interlocking brackets: one from (5, 26) up to (5, 6) across to (17, 6) rounding down to (20, 9) and on to (20, 20); the other from (27, 6) down to (27, 26) across to (15, 26) rounding up to (12, 23) and on to (12, 12). |
 | `Signal` | Four filled bars 4 wide with round ends, at x 3, 10, 17 and 24, rising from y 28 to y 20, 15, 10 and 4. |
 | `SignIn` | A door frame: an open bracket from (17, 4) to (27, 4) down to (27, 28) to (17, 28); an ArrowRight from (4, 16) to (19, 16), arrowhead at (19, 16) scaled to 5. |
 | `Sitemap` | A box from (12, 4) to (20, 10) over three boxes 6 wide from y 22 to 28 at x 3, 13 and 23, all with radius-1 corners; a stem from the top box down to a bar at y 15 from x 6 to 26, and drops from it into each lower box. |
+| `Smudge` | `HandPointDown` turned an eighth of a turn so its finger points down and to the left, refitted to the live area. |
 | `Snooze` | The `Bell` reduced to fit the left two-thirds of the live area; a small letter Z of strokes within (20, 4)–(28, 11). |
-| `SoccerBall` | Circle; a solid central pentagon of radius 4; five spokes from the ring in to where a pentagon of radius 5 would have its vertices; five solid patches 2 deep and 4 wide against the inside of the ring, midway between the spokes, as the neighboring panels. |
+| `SoccerBall` | Fitted from the reference drawing: a ring of radius 13; a solid central pentagon with its top at (16, 11) and base from (13, 20) to (19, 20); a spoke from each vertex out to the ring; between neighboring spokes, the panel edges as a V of two lines meeting at the rim, so the ring reads as stitched panels. |
 | `Sort` | An ArrowDown with shaft (11, 5)–(11, 27) and an ArrowUp with shaft (21, 27)–(21, 5), arrowheads scaled to 5. |
 | `SortAlphaAscending` | An A with legs from (4, 13) up to (8, 4) and down to (12, 13) and a bar at y 10, over a Z from (4, 19) across to (12, 19), down to (4, 28) and across to (12, 28); an ArrowDown at x 24 from y 4 to 28 with a head 4 wide. |
 | `SortAlphaDescending` | The Z of `SortAlphaAscending` on top at y 4–13 and its A below at y 19–28; an ArrowUp at x 24 from y 28 to 4 with a head 4 wide. |
-| `SortNumericAscending` | A 0 as a stadium from x 4 to 12 and y 4 to 13 with radius-4 ends, over a 9 whose bowl is a circle radius 3 at (8, 22) and whose tail drops from (11, 22) to (11, 25) and curls to (8, 28); an ArrowDown at x 24 from y 4 to 28 with a head 4 wide. |
-| `SortNumericDescending` | The 9 of `SortNumericAscending` on top with its bowl at (8, 7) and tail to (8, 13), over its 0 at y 19–28; an ArrowUp at x 24 from y 28 to 4 with a head 4 wide. |
+| `SortNumericAscending` | A 0 as a stadium from x 4 to 12 and y 4 to 13 with radius-4 ends, over a 9 whose bowl is a full circle radius 3 at (8, 22) and whose tail drops from the bowl's right at (11, 22) to (11, 25) and rounds through radius 3 to (8, 28); an ArrowDown at x 24 from y 4 to 28 with a head 4 wide. |
+| `SortNumericDescending` | The 9 of `SortNumericAscending` on top with its bowl at (8, 7) and tail rounding to (8, 13), over its 0 at y 19–28; an ArrowUp at x 24 from y 28 to 4 with a head 4 wide. |
 | `SoundOutput` | The `Unmute` speaker with two sound waves: arcs from (21, 11) to (21, 21) of radius 6 and from (24, 7) to (24, 25) of radius 12. |
 | `Speaker` | A cabinet as a rounded rect from (7, 3) to (25, 29); a small driver circle radius 2 at (16, 9); a large driver circle radius 5 at (16, 20). |
 | `SpellCheck` | The letters ab: an a as a cup from (4, 10) to (10, 18) with a bar at y 14, a b with its stem from (14, 4) to (14, 18) and a bowl of radius 4 on its lower half; a tick from (13, 23) down to (18, 28) and up to (28, 18). |
 | `Split` | Frame; a vertical divider at x 16; two small Arrowheads pointing away from the divider, tips at (10, 16) and (22, 16), scaled to 3. |
+| `Stamp` | A handle as a loop from (13, 15) up to a radius-3 top at y 7 and down to (19, 15); a base from (4, 22) to (28, 22) rising to y 15 with radius-2 shoulders; a ground line from (8, 27) to (24, 27). |
 | `Star` | A five-pointed star: top point (16, 3), outer points (29, 12), (25, 27), (7, 27) and (3, 12), inner points (20, 12), (22, 18), (16, 21), (10, 18) and (12, 12). |
-| `Stopwatch` | A case as a circle radius 10 at (16, 19) with four ticks 3 long inward from its inner edge at the quarters; a hand from the center to half past four at (20, 23); a crown as a stem from (16, 9) up to (16, 6) under a cap as a box from (13, 3) to (19, 6); a start lever from (24, 11) out to (28, 7). |
-| `StopwatchDigital` | The case, crown and lever of `Stopwatch`, the face showing a 5: a bar from (19, 14) to (13, 14), down to (13, 19), across to (16, 19), round a bowl of radius 3 to (16, 25) and back to (13, 25), centered on the face. |
+| `Stopwatch` | A case as a circle radius 11 at (16, 18); four ticks 1 long at the quarters, 7 from the center; a hand from (16, 14) down to the center and on to (20, 21); a crown as a stem from the case up to (16, 3) under a cap from (12, 3) to (20, 3); a start lever from (24, 10) out to (27, 7). |
+| `StopwatchDigital` | The case, crown and lever of `Stopwatch`, the face showing a 5: a bar from (20, 12) to (14, 12), down to (14, 18), across to (17, 18), then round a bowl of radius 3 ending at (13, 22). |
 | `Strikethrough` | A letter S of strokes from (23, 9) down to (9, 22); a line from (4, 16) to (28, 16) through it. |
 | `Subscript` | A letter x as two crossed lines from (4, 9) to (16, 21); a small 2 of strokes within (20, 17)–(28, 28). |
 | `Superscript` | A letter x as two crossed lines from (4, 12) to (16, 24); a small 2 of strokes within (20, 5)–(28, 16). |
@@ -452,8 +476,10 @@ glyph with no parts named is drawn from scratch on the grid.
 | `TextDirectionRtl` | Mirror of `TextDirectionLtr`: lines from x 12 to 27, arrow pointing left from (11, 16) to (4, 16). |
 | `TextGlow` | The A of `FontSizeIncrease` with a four-pointed star centered at (26, 7) reaching 4 to each point. |
 | `Toolbox` | A box as a rounded rect from (4, 11) to (28, 27); a handle from (11, 11) up to (11, 7) across to (21, 7) down to (21, 11); a latch line across the box at y 18 from x 4 to 28 broken by a clasp from (14, 16) to (18, 16) down to (18, 20) to (14, 20). |
+| `Transform` | Four solid handles 4 square at the corners of the live area; a frame between them as lines from x 11 to 21 at y 6 and 26 and from y 11 to 21 at x 6 and 26; inside, an arrow from (12, 20) up to (20, 12) with an arrowhead scaled to 5 pointing up-right. |
 | `Translation` | The Han character 文 in the upper left — a stem from (9, 3) down to a bar from (3, 7) to (15, 7), over two strokes that start close under it at (12, 10) and (6, 10) and sweep apart to (3, 20) and (16, 20), crossing high — and a Latin A in the lower right, legs from (18, 29) up to (24, 14) and down to (30, 29) with a bar at y 24 from x 20 to 28. |
 | `TriangleDown` | A Triangle pointing down: base from (5, 10) to (27, 10), apex (16, 24). |
+| `TriangleLeft` | `TriangleRight` mirrored: (24, 5)–(24, 27)–(5, 16). |
 | `TriangleRight` | A Triangle pointing right: (8, 5)–(8, 27)–(27, 16). |
 | `TriangleUp` | A Triangle pointing up: base from (5, 22) to (27, 22), apex (16, 8). |
 | `Truck` | A cargo box from (3, 8) to (18, 22) with radius-2 top corners, its floor running only from (18, 22) to (14, 22); a cab roof from (18, 12) to (22, 12) sloping down to (28, 18); two wheels as circles radius 3 at (8, 24) and (24, 24), the body's edges stopping clear of them. |
@@ -468,6 +494,7 @@ glyph with no parts named is drawn from scratch on the grid.
 | `Video` | Frame reduced to (4, 8)–(21, 24); a lens flap: (21, 13) to (28, 9) down to (28, 23) back to (21, 19). |
 | `Wallet` | A body from (3, 10) to (29, 27) with radius-3 corners under a fold from (6, 10) up to y 7, across at y 5 with radius-2 corners to x 26 and down to the body; a pocket entering from the right edge at y 15, rounding radius 3 to leave at y 21; a clasp as a filled dot radius 1 at (24, 18). |
 | `Warning` | A triangle with corners of radius 2: apex (16, 4), base along y 27 from x 3 to 29; a bar from (16, 11) to (16, 19) and a solid dot radius 1 at (16, 23). |
+| `Warp` | A spiral from the center: semicircles of radius 2, 5, 8 and 11 alternating above and below y 16, ending at (4, 16). |
 | `Wifi` | A filled dot radius 2 at (16, 25) under two arcs about it of radius 7 and 14, each spanning 45° either side of vertical. |
 | `WindowMaximize` | Four corner brackets 6 by 6 at the corners of the live area, with a full Frame between them at opacity 0.4. |
 | `WindowMinimize` | An ArrowDown with shaft (16, 4)–(16, 20), arrowhead at (16, 20); a line from (6, 26) to (26, 26). |
