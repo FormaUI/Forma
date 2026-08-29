@@ -11,7 +11,7 @@ public interface IEmojiCatalog
     /// <returns>Whether the category is known.</returns>
     bool TryFindByGroupId(string groupId, out IReadOnlyList<EmojiInfo> emojis);
 
-    /// <summary>Finds an emoji by the character sequence that is it.</summary>
+    /// <summary>Finds an emoji by the Unicode sequence that is it.</summary>
     /// <param name="emoji">The emoji to look up.</param>
     /// <param name="info">The emoji's catalog entry, when known.</param>
     /// <returns>Whether the emoji is known.</returns>

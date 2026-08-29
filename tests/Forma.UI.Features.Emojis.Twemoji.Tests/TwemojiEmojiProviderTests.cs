@@ -62,7 +62,8 @@ public sealed class TwemojiEmojiProviderTests
         var provider = new TwemojiEmojiProvider();
 
         // Act
-        var artwork = provider.GetArtwork("🛸👾🫠🫠🫠🫠🫠");
+        // One character, but a joining Unicode never defined, so no set holds it.
+        var artwork = provider.GetArtwork("👨‍🥑");
 
         // Assert
         Assert.Same(EmojiArtwork.Unicode, artwork);

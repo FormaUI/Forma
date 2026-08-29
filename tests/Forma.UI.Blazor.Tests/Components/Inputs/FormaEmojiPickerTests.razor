@@ -223,7 +223,7 @@
             cut.Find(".forma-emoji-picker-emoji").Click();
 
             // Assert
-            Assert.Equal(smileys[0].Emoji.Character, selected);
+            Assert.Equal(smileys[0].Emoji.Sequence, selected);
         }
 
         [Fact]
@@ -238,6 +238,21 @@
 
             // Assert
             Assert.Equal(GroupCount + 1, cut.FindAll("[role='tab']").Count);
+            Assert.Single(cut.FindAll(".forma-emoji-picker-emoji"));
+        }
+
+        [Fact]
+        public void Should_skip_a_recent_entry_that_names_no_emoji()
+        {
+            // Arrange
+            using var ctx = new FormaEmojiPickerTests();
+            // A persisted list can carry an empty or run-together entry; neither is an emoji, and neither may break the picker.
+            IReadOnlyList<string> recent = ["", "😀😀", "😀"];
+
+            // Act
+            var cut = ctx.Render(@<FormaEmojiPicker Recent="recent" />);
+
+            // Assert
             Assert.Single(cut.FindAll(".forma-emoji-picker-emoji"));
         }
 
@@ -258,7 +273,7 @@
 
             // Assert
             Assert.NotNull(updated);
-            Assert.Equal(smileys[0].Emoji.Character, updated[0]);
+            Assert.Equal(smileys[0].Emoji.Sequence, updated[0]);
         }
 
         [Fact]
@@ -268,7 +283,7 @@
             using var ctx = new FormaEmojiPickerTests();
             var catalog = ctx.Services.GetRequiredService<IEmojiCatalog>();
             catalog.TryFindByGroupId("smileys", out var smileys);
-            var first = smileys[0].Emoji.Character;
+            var first = smileys[0].Emoji.Sequence;
             IReadOnlyList<string> recent = ["😂", first];
             IReadOnlyList<string>? updated = null;
             var cut = ctx.Render(@<FormaEmojiPicker Recent="recent" RecentChanged="value => updated = value" />);

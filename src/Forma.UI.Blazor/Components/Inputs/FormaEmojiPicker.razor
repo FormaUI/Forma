@@ -57,7 +57,7 @@
             <div class="forma-emoji-picker-grid" role="group" aria-label="@HeadingText">
                 @foreach (var info in Loadable)
                 {
-                    <button @key="info.Emoji.Character"
+                    <button @key="info.Emoji.Sequence"
                             type="button"
                             class="forma-emoji-picker-emoji"
                             title="@info.Name"

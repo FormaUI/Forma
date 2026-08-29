@@ -7,7 +7,7 @@ using Forma.UI.Design.Emojis;
 /// <summary>Reads the emoji this package ships, grouped by category and searchable by name and keyword.</summary>
 public sealed class TwemojiEmojiCatalog : IEmojiCatalog
 {
-    private readonly Lazy<IReadOnlyDictionary<string, EmojiInfo>> _byCharacter = new(BuildIndex);
+    private readonly Lazy<IReadOnlyDictionary<string, EmojiInfo>> _bySequence = new(BuildIndex);
 
     /// <inheritdoc />
     public bool TryFindByGroupId(string groupId, out IReadOnlyList<EmojiInfo> emojis)
@@ -26,7 +26,7 @@ public sealed class TwemojiEmojiCatalog : IEmojiCatalog
 
     /// <inheritdoc />
     public bool TryGetByEmoji(Emoji emoji, [MaybeNullWhen(false)] out EmojiInfo info)
-        => _byCharacter.Value.TryGetValue(emoji.Character, out info);
+        => _bySequence.Value.TryGetValue(emoji.Sequence, out info);
 
     /// <inheritdoc />
     public IReadOnlyList<EmojiInfo> Find(string text)
@@ -38,7 +38,7 @@ public sealed class TwemojiEmojiCatalog : IEmojiCatalog
             return [];
         }
 
-        return [.. _byCharacter.Value.Values.Where(info => terms.All(term => Matches(info, term)))];
+        return [.. _bySequence.Value.Values.Where(info => terms.All(term => Matches(info, term)))];
     }
 
     private static bool Matches(EmojiInfo info, string term)
@@ -78,5 +78,5 @@ public sealed class TwemojiEmojiCatalog : IEmojiCatalog
         };
 
     private static Dictionary<string, EmojiInfo> BuildIndex()
-        => EmojiAssetLoader.All().Select(ToInfo).ToDictionary(info => info.Emoji.Character, StringComparer.Ordinal);
+        => EmojiAssetLoader.All().Select(ToInfo).ToDictionary(info => info.Emoji.Sequence, StringComparer.Ordinal);
 }

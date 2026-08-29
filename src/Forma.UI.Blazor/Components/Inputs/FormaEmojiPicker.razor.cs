@@ -64,7 +64,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     private ElementReference _panelElement;
     private bool _isSentinelObserved;
 
-    /// <summary>Raised with the chosen emoji character.</summary>
+    /// <summary>Raised with the chosen emoji's sequence.</summary>
     [Parameter] public EventCallback<string> OnSelect { get; set; }
 
     /// <summary>The recently chosen emoji, most recent first.</summary>
@@ -268,7 +268,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     private IReadOnlyList<EmojiInfo> RecentEmoji()
         => Catalog is not { } catalog
             ? []
-            : [.. Recent.Select(character => catalog.TryGetByEmoji(character, out var info) ? info : null).OfType<EmojiInfo>()];
+            : [.. Recent.Select(sequence => Emoji.TryCreate(sequence, out var emoji) && catalog.TryGetByEmoji(emoji, out var info) ? info : null).OfType<EmojiInfo>()];
 
     private async Task OnQueryChangedAsync(string query)
     {
@@ -289,10 +289,10 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
 
     private async Task SelectAsync(EmojiInfo info)
     {
-        await OnSelect.InvokeAsync(info.Emoji.Character);
+        await OnSelect.InvokeAsync(info.Emoji.Sequence);
 
-        var updated = new List<string> { info.Emoji.Character };
-        updated.AddRange(Recent.Where(character => !string.Equals(character, info.Emoji.Character, StringComparison.Ordinal)));
+        var updated = new List<string> { info.Emoji.Sequence };
+        updated.AddRange(Recent.Where(sequence => !string.Equals(sequence, info.Emoji.Sequence, StringComparison.Ordinal)));
 
         if (updated.Count > MaxRecent)
         {

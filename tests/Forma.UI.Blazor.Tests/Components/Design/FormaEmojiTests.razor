@@ -21,13 +21,14 @@
         {
             // Arrange
             using var ctx = new FormaEmojiTests();
-            Emoji emoji = "🛸👾🫠🫠🫠🫠🫠";
+            // One character, but a joining Unicode never defined, so no set holds it.
+            Emoji emoji = "👨‍🥑";
 
             // Act
             var cut = ctx.Render(@<FormaEmoji Emoji="emoji" />);
 
             // Assert
-            Assert.Equal("🛸👾🫠🫠🫠🫠🫠", cut.Find("span").TextContent);
+            Assert.Equal("👨‍🥑", cut.Find("span").TextContent);
         }
 
         [Fact]

@@ -83,7 +83,7 @@ public sealed class TwemojiEmojiCatalogTests
         // Assert
         Assert.True(found);
         Assert.NotNull(info);
-        Assert.Equal("😀", info.Emoji.Character);
+        Assert.Equal("😀", info.Emoji.Sequence);
     }
 
     [Fact]
@@ -93,7 +93,8 @@ public sealed class TwemojiEmojiCatalogTests
         var catalog = new TwemojiEmojiCatalog();
 
         // Act
-        var found = catalog.TryGetByEmoji("🛸👾🫠🫠🫠🫠🫠", out var info);
+        // One character, but a joining Unicode never defined, so no catalog holds it.
+        var found = catalog.TryGetByEmoji("👨‍🥑", out var info);
 
         // Assert
         Assert.Multiple(
@@ -111,7 +112,7 @@ public sealed class TwemojiEmojiCatalogTests
         var results = catalog.Find("grin");
 
         // Assert
-        Assert.Contains(results, info => info.Emoji.Character == "😀");
+        Assert.Contains(results, info => info.Emoji.Sequence == "😀");
     }
 
     [Fact]
@@ -124,8 +125,8 @@ public sealed class TwemojiEmojiCatalogTests
         var results = catalog.Find("cat");
 
         // Assert
-        Assert.Contains(results, info => info.Emoji.Character == "🐱");
-        Assert.DoesNotContain(results, info => info.Emoji.Character == "🥴");
+        Assert.Contains(results, info => info.Emoji.Sequence == "🐱");
+        Assert.DoesNotContain(results, info => info.Emoji.Sequence == "🥴");
     }
 
     [Fact]
@@ -138,7 +139,7 @@ public sealed class TwemojiEmojiCatalogTests
         var results = catalog.Find("face");
 
         // Assert
-        Assert.Contains(results, info => info.Emoji.Character == "😀");
+        Assert.Contains(results, info => info.Emoji.Sequence == "😀");
     }
 
     [Fact]
@@ -152,7 +153,7 @@ public sealed class TwemojiEmojiCatalogTests
         var impossible = catalog.Find("grin colombia");
 
         // Assert
-        Assert.Contains(both, info => info.Emoji.Character == "🇨🇴");
+        Assert.Contains(both, info => info.Emoji.Sequence == "🇨🇴");
         Assert.Empty(impossible);
     }
 
@@ -180,7 +181,7 @@ public sealed class TwemojiEmojiCatalogTests
         {
             catalog.TryFindByGroupId(groupId, out var emojis);
 
-            Assert.DoesNotContain(emojis, info => info.Emoji.Character.Contains("\U0001F3FB", StringComparison.Ordinal));
+            Assert.DoesNotContain(emojis, info => info.Emoji.Sequence.Contains("\U0001F3FB", StringComparison.Ordinal));
         });
     }
 }
