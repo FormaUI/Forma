@@ -81,6 +81,9 @@ public enum Glyph
     /// <summary>A lightning bolt, for an automatic mode.</summary>
     Auto,
 
+    /// <summary>Bars of uneven spacing, for a barcode.</summary>
+    Barcode,
+
     /// <summary>An empty battery.</summary>
     Battery,
 
@@ -137,6 +140,9 @@ public enum Glyph
 
     /// <summary>A label tag, for a category.</summary>
     Category,
+
+    /// <summary>A cent sign.</summary>
+    Cent,
 
     /// <summary>A capital A beside a small a, for changing case.</summary>
     ChangeCase,
@@ -201,6 +207,30 @@ public enum Glyph
     /// <summary>Opposing angle brackets, for source code.</summary>
     Code,
 
+    /// <summary>A line of nodes with one branching off, for a code branch.</summary>
+    CodeBranch,
+
+    /// <summary>A node on a line, for a code commit.</summary>
+    CodeCommit,
+
+    /// <summary>Two arrows turning past each other, for comparing code.</summary>
+    CodeCompare,
+
+    /// <summary>Two nodes joining into one, for a code fork.</summary>
+    CodeFork,
+
+    /// <summary>A branch curving back into its line, for a code merge.</summary>
+    CodeMerge,
+
+    /// <summary>A line of nodes beside an arrow turning into it, for a pull request.</summary>
+    CodePullRequest,
+
+    /// <summary>A coin, its face marked with an S.</summary>
+    Coin,
+
+    /// <summary>Two coins, one behind the other.</summary>
+    Coins,
+
     /// <summary>Two arrows pointing at each other, for collapsing a section.</summary>
     Collapse,
 
@@ -221,6 +251,15 @@ public enum Glyph
 
     /// <summary>Two stacked sheets, for duplicating.</summary>
     Copy,
+
+    /// <summary>The digits 1 and 2 followed by an ellipsis, for counting.</summary>
+    Count,
+
+    /// <summary>A solid box showing the digits 0, 1 and a 2 rolling to 3, for a counter.</summary>
+    CountBox,
+
+    /// <summary>A `CountBox` with a divider between each digit.</summary>
+    CountDividedBox,
 
     /// <summary>A payment card.</summary>
     CreditCard,
@@ -458,6 +497,9 @@ public enum Glyph
 
     /// <summary>An hourglass, for waiting.</summary>
     Hourglass,
+
+    /// <summary>An hourglass with sand running through it, for progress.</summary>
+    HourglassProgress,
 
     /// <summary>A framed picture.</summary>
     Image,
@@ -795,6 +837,9 @@ public enum Glyph
     /// <summary>An arrow entering a bracket, for signing in.</summary>
     SignIn,
 
+    /// <summary>A box over three boxes, for a site map.</summary>
+    Sitemap,
+
     /// <summary>A bell with a sleeping mark, for snoozing.</summary>
     Snooze,
 
@@ -803,6 +848,18 @@ public enum Glyph
 
     /// <summary>Paired arrows, for sorting.</summary>
     Sort,
+
+    /// <summary>An A over a Z beside a downward arrow, for sorting text ascending.</summary>
+    SortAlphaAscending,
+
+    /// <summary>A Z over an A beside an upward arrow, for sorting text descending.</summary>
+    SortAlphaDescending,
+
+    /// <summary>A 0 over a 9 beside a downward arrow, for sorting numbers ascending.</summary>
+    SortNumericAscending,
+
+    /// <summary>A 9 over a 0 beside an upward arrow, for sorting numbers descending.</summary>
+    SortNumericDescending,
 
     /// <summary>A speaker with sound waves, for audio output.</summary>
     SoundOutput,
@@ -818,6 +875,12 @@ public enum Glyph
 
     /// <summary>A five-point star, for a favorite.</summary>
     Star,
+
+    /// <summary>A stopwatch with its crown and start lever, its hand on a marked face.</summary>
+    Stopwatch,
+
+    /// <summary>A stopwatch with its crown and start lever, showing a digit on a digital face.</summary>
+    StopwatchDigital,
 
     /// <summary>A struck-through letter S, for struck-out text.</summary>
     Strikethrough,
@@ -902,6 +965,9 @@ public enum Glyph
 
     /// <summary>A strip of film, for moving pictures.</summary>
     Video,
+
+    /// <summary>A wallet with its fold, pocket and clasp.</summary>
+    Wallet,
 
     /// <summary>An exclamation mark inside a triangle.</summary>
     Warning,

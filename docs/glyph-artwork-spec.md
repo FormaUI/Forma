@@ -174,6 +174,7 @@ glyph with no parts named is drawn from scratch on the grid.
 | `Attachment` | A paper clip on the diagonal, one wire on four parallel lines 4 apart: from (26, 18) down the outer line to (18, 26), round a radius-8 bend to (6, 14), up the far line to (14, 6), round a radius-6 loop to (22, 14), down the middle line to (17, 19), round a radius-3 bend to (13, 15), and back up the inner line to (18, 10), stopping at the loop's center. |
 | `Audio` | A beamed pair of notes: two note heads (filled circles radius 3) at (9, 23) and (23, 20), stems up to y 8 and y 5, a beam joining the stem tops. |
 | `Auto` | A bolt as one closed zigzag: (18, 3) down-left to (8, 18), across to (15, 18), down-left to (12, 29), up-right to (24, 13), across to (17, 13), back up to (18, 3). |
+| `Barcode` | Seven bars from y 7 to 25, evenly spaced 4 apart from x 4 to 28. |
 | `Battery` | A body from (3, 9) to (26, 23) with radius-2 corners; a terminal on its right from (26, 13) out to x 29 and back at y 19, with radius-1 corners. |
 | `BatteryFull` | `Battery` with a filled bar from (7, 13) to (22, 19), radius 1, inside the body. |
 | `Bell` | A bell: a dome from (7, 22) up to (16, 5) and down to (25, 22), closed along the bottom; a rim from (4, 22) to (28, 22); a clapper as a radius-3 arc under it from (13, 27) to (19, 27). |
@@ -193,6 +194,7 @@ glyph with no parts named is drawn from scratch on the grid.
 | `CartPlus` | `CartCheck` with the badge carrying a Plus of length 4 at (24, 9). |
 | `Cast` | Frame open at its lower-left; three concentric arcs of radius 4, 8 and 12 centered at (4, 27) in that corner, the smallest a filled dot. |
 | `Category` | A tag: a pentagon from (4, 8) to (18, 8), out to the point (28, 16), back to (18, 24), to (4, 24), closing; a filled dot radius 2 at (9, 16) as the eyelet. |
+| `Cent` | A c as an arc of radius 8 about the center from (22, 10) round the left to (22, 22); a bar through it drawn only outside, from (16, 3) to (16, 5) and from (16, 27) to (16, 29). |
 | `ChangeCase` | A capital A with legs from (2, 27) up to (10, 7) and down to (18, 27) and a bar at y 19; a small a as a ring radius 4 at (25, 23) with a stem at x 29 from y 19 to 27. |
 | `Check` | A tick from (5, 17) down to (12, 24) and up to (27, 8). |
 | `CheckSquare` | Square; the same inner tick. |
@@ -214,6 +216,14 @@ glyph with no parts named is drawn from scratch on the grid.
 | `Cloud` | Cloud. |
 | `CloudUpload` | Cloud; an ArrowUp with shaft (16, 28)–(16, 13) and arrowhead scaled to 5 at (16, 13) rising through the base, which breaks around the shaft, running from (6, 22) to (12, 22) and from (20, 22) to (26, 22). |
 | `Code` | Two chevrons: one pointing left with its tip at (3, 16), one pointing right with its tip at (29, 16). |
+| `CodeBranch` | Nodes as rings radius 3 at (10, 7), (10, 25) and (22, 9); a line between the two left nodes; a branch from (10, 18) curving up and right to the bottom of the right node at (22, 12). |
+| `CodeCommit` | A ring radius 6 at the center on a line from (4, 16) to (28, 16), the line stopping at the ring. |
+| `CodeCompare` | Two arrows: one from (10, 26) up to y 12, rounding radius 4 to run right to (17, 8) with a head there and a head pointing down at its foot; the other from (22, 6) down to y 20, rounding to run left to (15, 24) with a head there and a head pointing up at its top. |
+| `CodeFork` | Nodes as rings radius 3 at (8, 7), (24, 7) and (16, 25); lines from the top nodes down to y 12, rounding radius 4 into a bar at y 16 from x 12 to 20, and a line from its middle down to the bottom node. |
+| `CodeMerge` | Nodes as rings radius 3 at (10, 7), (10, 25) and (22, 16); a line between the two left nodes; a branch leaving the top node and curving down and right into the left of the right node at (19, 16). |
+| `CodePullRequest` | Nodes as rings radius 3 at (8, 7), (8, 25) and (24, 25) with a line between the two left nodes; from the right node a line up to y 12, rounding radius 4 to run left to (17, 8) with an arrowhead there. |
+| `Coin` | Circle; on its face an S 8 tall from (19, 12) back to (14, 12), round to (14, 16), across to (18, 16), round to (18, 20) and back to (13, 20). |
+| `Coins` | A front coin as a circle radius 8 at (13, 19); a back coin as a circle radius 8 at (19, 13) drawn only where it shows, as an arc from (12, 10) over the top and right to (21, 21). |
 | `Collapse` | Two arrows on the diagonal pointing inward: one from (4, 4) to (13, 13) with arrowhead scaled to 5 at (13, 13), one from (28, 28) to (19, 19) with arrowhead scaled to 5 at (19, 19). |
 | `CollapseMinus` | Square; a line from (11, 16) to (21, 16). |
 | `Columns` | Frame; one vertical divider at x 16. |
@@ -221,7 +231,10 @@ glyph with no parts named is drawn from scratch on the grid.
 | `Compress` | Two arrows pressing toward a line: an ArrowDown with shaft (16, 4)–(16, 12) and an ArrowUp with shaft (16, 28)–(16, 20), arrowheads scaled to 4; the line from (7, 16) to (25, 16). |
 | `Contacts` | A book: a rounded rect from (7, 4) to (27, 28) with two binding ticks on its spine from (4, 10) to (7, 10) and (4, 22) to (7, 22); Person reduced to head radius 3 at (17, 13) and shoulders from (11, 23) to (23, 23) rising to y 18. |
 | `Copy` | Two overlapping rounded squares: back one (5, 5)–(20, 20), front one (12, 12)–(27, 27); the back one is interrupted where the front covers it. |
-| `CreditCard` | Frame; a magnetic stripe as a line from (4, 13) to (28, 13). |
+| `Count` | A 1 with its flag from (3, 11) to (6, 8) and stem down to (6, 22); a comma from (9, 22) to (8, 25); a 2 from x 12 to 18 whose bowl is a half circle radius 3 at y 11 sweeping down to a base at y 22; three filled dots radius 1 at x 21, 25, 29 on the baseline y 22. |
+| `CountBox` | A solid box from (3, 8) to (29, 24) with radius-3 corners, its three cells centered at x 8.5, 16 and 23.5 and its digits knocked out between y 11 and 21: a 0 as a stadium ring 5 wide with a 2-wide hole, a 1 as a 2-wide stem with a flag to the left, and in the third cell the bottom of a 2 (a diagonal into a base) above the top of a 3 (a bar into a hook), the digit caught mid-roll. |
+| `CountDividedBox` | `CountBox` with a 1-unit divider knocked out at x 12 and x 20 from y 10 to 22, on the cells' shared edges. |
+| `CreditCard` | Frame; a magnetic stripe as a line from (4, 13) to (28, 13); two embossed dashes at y 21 from x 8 to 12 and from x 15 to 18. |
 | `Crop` | Two overlapping L marks: one from (9, 4) down to (9, 23) across to (28, 23); the other from (4, 9) across to (23, 9) down to (23, 28). |
 | `Cross` | Two diagonals: (8, 8)–(24, 24) and (24, 8)–(8, 24). |
 | `Crosshair` | Circle radius 9; four ticks from radius 9 to radius 13 at the compass points. |
@@ -286,7 +299,8 @@ glyph with no parts named is drawn from scratch on the grid.
 | `History` | A circular arrow: an arc from (7, 11) around the right side to (7, 21), arrowhead at (7, 11) pointing down-left; hands from center to (16, 11) and (20, 17). |
 | `Home` | A house: a roof peaking at (16, 5) with eaves at (5, 14) and (27, 14), walls down to a base from y 25 with radius-3 corners at y 28; a door from (13, 28) up to (13, 20) across to (19, 20) and down. |
 | `HorizontalLink` | Two Chain links interlocked on the horizontal axis, y 12 to 20: the left with end centers (7, 16) and (14, 16), the right with (17, 16) and (24, 16); the right link passes over at the top, the left at the bottom. |
-| `Hourglass` | Two triangles meeting at (16, 16): top from (8, 4) to (24, 4), bottom from (8, 28) to (24, 28); caps at y 4 and y 28. |
+| `Hourglass` | Caps from x 6 to 26 at y 4 and y 28; two bulbs as sides that drop straight from each cap to y 9, curve in to a neck 4 wide at y 16 and curve back out to y 23, then drop straight to the other cap. |
+| `HourglassProgress` | `Hourglass` with sand: a solid wedge from (11, 9) to (21, 9) down to a point at (16, 14) in the top bulb, two falling grains as dots radius 1 at (16, 19) and (16, 22), and a solid mound from (11, 25) over (16, 22) to (21, 25) down to y 27 in the bottom bulb. |
 | `Image` | Frame; a filled dot radius 2 at (11, 12); a mountain range: (4, 23) up to (12, 15) to (17, 20) to (21, 16) to (28, 23). |
 | `Images` | `Image` reduced to a frame from (9, 8) to (28, 27) with its content; behind it at `opacity 0.4` a second frame from (4, 4) to (23, 23). |
 | `Incognito` | A hat: a brim from (4, 15) to (28, 15) with a crown rising from (9, 15) and (23, 15) to a rounded top at y 5; below, two lens circles radius 4 at (10, 23) and (22, 23) joined by a bridge from (14, 23) to (18, 23). |
@@ -399,14 +413,21 @@ glyph with no parts named is drawn from scratch on the grid.
 | `ShekelSign` | Two interlocking brackets: one from (5, 26) up to (5, 6) across to (17, 6) rounding down to (20, 9) and on to (20, 20); the other from (27, 6) down to (27, 26) across to (15, 26) rounding up to (12, 23) and on to (12, 12). |
 | `Signal` | Four filled bars 4 wide with round ends, at x 3, 10, 17 and 24, rising from y 28 to y 20, 15, 10 and 4. |
 | `SignIn` | A door frame: an open bracket from (17, 4) to (27, 4) down to (27, 28) to (17, 28); an ArrowRight from (4, 16) to (19, 16), arrowhead at (19, 16) scaled to 5. |
+| `Sitemap` | A box from (12, 4) to (20, 10) over three boxes 6 wide from y 22 to 28 at x 3, 13 and 23, all with radius-1 corners; a stem from the top box down to a bar at y 15 from x 6 to 26, and drops from it into each lower box. |
 | `Snooze` | The `Bell` reduced to fit the left two-thirds of the live area; a small letter Z of strokes within (20, 4)–(28, 11). |
-| `SoccerBall` | Circle; a central pentagon of radius 5; five spokes from its vertices to the ring. |
+| `SoccerBall` | Circle; a solid central pentagon of radius 4; five spokes from the ring in to where a pentagon of radius 5 would have its vertices; five solid patches 2 deep and 4 wide against the inside of the ring, midway between the spokes, as the neighboring panels. |
 | `Sort` | An ArrowDown with shaft (11, 5)–(11, 27) and an ArrowUp with shaft (21, 27)–(21, 5), arrowheads scaled to 5. |
+| `SortAlphaAscending` | An A with legs from (4, 13) up to (8, 4) and down to (12, 13) and a bar at y 10, over a Z from (4, 19) across to (12, 19), down to (4, 28) and across to (12, 28); an ArrowDown at x 24 from y 4 to 28 with a head 4 wide. |
+| `SortAlphaDescending` | The Z of `SortAlphaAscending` on top at y 4–13 and its A below at y 19–28; an ArrowUp at x 24 from y 28 to 4 with a head 4 wide. |
+| `SortNumericAscending` | A 0 as a stadium from x 4 to 12 and y 4 to 13 with radius-4 ends, over a 9 whose bowl is a circle radius 3 at (8, 22) and whose tail drops from (11, 22) to (11, 25) and curls to (8, 28); an ArrowDown at x 24 from y 4 to 28 with a head 4 wide. |
+| `SortNumericDescending` | The 9 of `SortNumericAscending` on top with its bowl at (8, 7) and tail to (8, 13), over its 0 at y 19–28; an ArrowUp at x 24 from y 28 to 4 with a head 4 wide. |
 | `SoundOutput` | The `Unmute` speaker with two sound waves: arcs from (21, 11) to (21, 21) of radius 6 and from (24, 7) to (24, 25) of radius 12. |
 | `Speaker` | A cabinet as a rounded rect from (7, 3) to (25, 29); a small driver circle radius 2 at (16, 9); a large driver circle radius 5 at (16, 20). |
 | `SpellCheck` | The letters ab: an a as a cup from (4, 10) to (10, 18) with a bar at y 14, a b with its stem from (14, 4) to (14, 18) and a bowl of radius 4 on its lower half; a tick from (13, 23) down to (18, 28) and up to (28, 18). |
 | `Split` | Frame; a vertical divider at x 16; two small Arrowheads pointing away from the divider, tips at (10, 16) and (22, 16), scaled to 3. |
 | `Star` | A five-pointed star: top point (16, 3), outer points (29, 12), (25, 27), (7, 27) and (3, 12), inner points (20, 12), (22, 18), (16, 21), (10, 18) and (12, 12). |
+| `Stopwatch` | A case as a circle radius 10 at (16, 19) with four ticks 3 long inward from its inner edge at the quarters; a hand from the center to half past four at (20, 23); a crown as a stem from (16, 9) up to (16, 6) under a cap as a box from (13, 3) to (19, 6); a start lever from (24, 11) out to (28, 7). |
+| `StopwatchDigital` | The case, crown and lever of `Stopwatch`, the face showing a 5: a bar from (19, 14) to (13, 14), down to (13, 19), across to (16, 19), round a bowl of radius 3 to (16, 25) and back to (13, 25), centered on the face. |
 | `Strikethrough` | A letter S of strokes from (23, 9) down to (9, 22); a line from (4, 16) to (28, 16) through it. |
 | `Subscript` | A letter x as two crossed lines from (4, 9) to (16, 21); a small 2 of strokes within (20, 17)–(28, 28). |
 | `Superscript` | A letter x as two crossed lines from (4, 12) to (16, 24); a small 2 of strokes within (20, 5)–(28, 16). |
@@ -435,6 +456,7 @@ glyph with no parts named is drawn from scratch on the grid.
 | `User` | Person. |
 | `Users` | A Person shifted left to center x 12; behind at `opacity 0.4` a second head radius 4 at (23, 11) and a partial shoulder arc from (21, 20) to (28, 28). |
 | `Video` | Frame reduced to (4, 8)–(21, 24); a lens flap: (21, 13) to (28, 9) down to (28, 23) back to (21, 19). |
+| `Wallet` | A body from (3, 10) to (29, 27) with radius-3 corners under a fold from (6, 10) up to y 7, across at y 5 with radius-2 corners to x 26 and down to the body; a pocket entering from the right edge at y 15, rounding radius 3 to leave at y 21; a clasp as a filled dot radius 1 at (24, 18). |
 | `Warning` | A triangle with corners of radius 2: apex (16, 4), base along y 27 from x 3 to 29; a bar from (16, 11) to (16, 19) and a solid dot radius 1 at (16, 23). |
 | `Wifi` | A filled dot radius 2 at (16, 25) under two arcs about it of radius 7 and 14, each spanning 45° either side of vertical. |
 | `WindowMaximize` | Four corner brackets 6 by 6 at the corners of the live area, with a full Frame between them at opacity 0.4. |

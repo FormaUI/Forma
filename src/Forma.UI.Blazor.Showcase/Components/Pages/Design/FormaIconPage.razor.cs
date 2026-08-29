@@ -14,7 +14,7 @@ public partial class FormaIconPage
             Glyph.Expand, Glyph.Collapse, Glyph.ExpandPlus, Glyph.CollapseMinus, Glyph.Maximize, Glyph.Minimize,
             Glyph.Swap, Glyph.Sync, Glyph.Refresh, Glyph.Rotate, Glyph.Undo, Glyph.Redo, Glyph.Forward, Glyph.Reply, Glyph.FastForward,
             Glyph.Download, Glyph.Upload, Glyph.Exit, Glyph.SignIn, Glyph.LocationArrow, Glyph.Cursor, Glyph.DragHandle,
-            Glyph.Sort, Glyph.ZoomIn, Glyph.ZoomOut, Glyph.NavigationMenu, Glyph.Home, Glyph.More, Glyph.MoreVertical,
+            Glyph.Sort, Glyph.SortAlphaAscending, Glyph.SortAlphaDescending, Glyph.SortNumericAscending, Glyph.SortNumericDescending, Glyph.ZoomIn, Glyph.ZoomOut, Glyph.NavigationMenu, Glyph.Home, Glyph.More, Glyph.MoreVertical,
         ]),
         new("Actions",
         [
@@ -27,7 +27,7 @@ public partial class FormaIconPage
             Glyph.Settings, Glyph.Wrench, Glyph.Toolbox, Glyph.Maintenance, Glyph.Extract, Glyph.Compress, Glyph.Crop,
             Glyph.MagicWand, Glyph.Paintbrush, Glyph.Palette, Glyph.Emoji,
             Glyph.Rules, Glyph.Security, Glyph.Incognito, Glyph.Properties, Glyph.Extensions, Glyph.Apps, Glyph.Dashboard,
-            Glyph.Plan, Glyph.Poll, Glyph.Ranking, Glyph.History, Glyph.Snooze, Glyph.Hourglass, Glyph.Clock, Glyph.AlarmClock,
+            Glyph.Plan, Glyph.Poll, Glyph.Ranking, Glyph.Count, Glyph.CountBox, Glyph.CountDividedBox, Glyph.History, Glyph.Snooze, Glyph.Hourglass, Glyph.HourglassProgress, Glyph.Clock, Glyph.AlarmClock, Glyph.Stopwatch, Glyph.StopwatchDigital,
             Glyph.Auto, Glyph.Power, Glyph.Prohibited, Glyph.Empty,
         ]),
         new("Status and feedback",
@@ -72,6 +72,7 @@ public partial class FormaIconPage
         [
             Glyph.Desktop, Glyph.Laptop, Glyph.Tablet, Glyph.Mobile, Glyph.Devices, Glyph.Keyboard, Glyph.Mouse,
             Glyph.Chip, Glyph.Database, Glyph.Data, Glyph.Network, Glyph.NeuralNetwork, Glyph.GenerativeAI,
+            Glyph.CodeCommit, Glyph.CodeBranch, Glyph.CodeMerge, Glyph.CodeFork, Glyph.CodeCompare, Glyph.CodePullRequest, Glyph.Sitemap, Glyph.Barcode,
             Glyph.Cloud, Glyph.CloudUpload, Glyph.Terminal, Glyph.Battery, Glyph.BatteryFull, Glyph.Brightness, Glyph.Flashlight, Glyph.Calculator,
         ]),
         new("People and hands",
@@ -83,7 +84,7 @@ public partial class FormaIconPage
         ]),
         new("Commerce and travel",
         [
-            Glyph.Cart, Glyph.CartPlus, Glyph.CartCheck, Glyph.CartCross, Glyph.CreditCard,
+            Glyph.Cart, Glyph.CartPlus, Glyph.CartCheck, Glyph.CartCross, Glyph.CreditCard, Glyph.Wallet,Glyph.Coin, Glyph.Coins, Glyph.Cent,
             Glyph.DollarSign, Glyph.EuroSign, Glyph.PoundSign, Glyph.ShekelSign, Glyph.Truck,
             Glyph.AirplaneUp, Glyph.AirplaneDown, Glyph.AirplaneLeft, Glyph.AirplaneRight, Glyph.Earth,
             Glyph.Medal, Glyph.Crown, Glyph.ForkKnife, Glyph.SoccerBall, Glyph.PawPrint,
