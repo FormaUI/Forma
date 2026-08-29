@@ -531,6 +531,9 @@ public enum Glyph
     /// <summary>Lines with a triangle pointing into them, for increasing indentation.</summary>
     Indent,
 
+    /// <summary>A magnifying glass with an eye in its lens, for inspecting.</summary>
+    Inspect,
+
     /// <summary>A slanted letter I, for italic text.</summary>
     Italic,
 
@@ -800,6 +803,9 @@ public enum Glyph
 
     /// <summary>A power symbol.</summary>
     Power,
+
+    /// <summary>A page with an eye on it, for previewing a document.</summary>
+    Preview,
 
     /// <summary>A printer, for printing.</summary>
     Print,

@@ -321,6 +321,7 @@ glyph with no parts named is drawn from scratch on the grid.
 | `Images` | `Image` reduced to a frame from (9, 8) to (28, 27) with its content; behind it at `opacity 0.4` a second frame from (4, 4) to (23, 23). |
 | `Incognito` | A hat: a brim from (4, 15) to (28, 15) with a crown rising from (9, 15) and (23, 15) to a rounded top at y 5; below, two lens circles radius 4 at (10, 23) and (22, 23) joined by a bridge from (14, 23) to (18, 23). |
 | `Indent` | Four lines at y 7, 13, 19 and 25, the outer two from x 5 to 27 and the inner two from x 15 to 27; a Triangle pointing right, (5, 12)–(5, 20)–(11, 16), before the inner lines. |
+| `Inspect` | `Search` with an eye in its lens: two arcs of radius 7 from (7, 13) to (19, 13) and back, and a solid pupil radius 1.5 at (13, 13). |
 | `Italic` | A slanted capital I: bar at y 7 from x 13 to 24, bar at y 25 from x 8 to 19, stem from (19, 7) to (13, 25). |
 | `Key` | A key as a solid silhouette: a bow as a disc radius 6 at (22, 10) with a radius-2 hole; a shaft 4 wide down the diagonal from the bow to (3.5, 25.5)–(6.5, 28.5); two teeth on its underside, 3.5 long, at the tip and 5.66 further up. |
 | `KeyAlt` | A line from (4, 8) to (11, 8) stepping down the diagonal to (21, 24) and on to (28, 24); a second line from (20, 8) to (28, 8). |
@@ -411,6 +412,7 @@ glyph with no parts named is drawn from scratch on the grid.
 | `Poll` | A chart: the Frame with three bars inside it at x 10, 16 and 22, each rising from y 22 to y 16, 10 and 18. |
 | `PoundSign` | A hook as an arc of radius 5 from (22, 8) over the top to (12, 8) continuing down to (12, 20), a foot from (12, 20) to (8, 26) across to (24, 26); a bar from (8, 16) to (18, 16). |
 | `Power` | An arc of radius 10 about the center open at the top, from (10, 8) round the bottom to (22, 8); a stem from (16, 4) to (16, 15). |
+| `Preview` | Page; an eye on it as a lens from (11, 19) to (21, 19) reaching y 15 and 23, with a solid pupil radius 1.5 at (16, 19). |
 | `Print` | A body as a rounded rect from (4, 12) to (28, 24); a sheet rising out of the top from (9, 12) up to (9, 4) across to (23, 4) down to (23, 12); a sheet emerging at the bottom from (9, 24) down to (9, 28) across to (23, 28) up to (23, 24); a filled dot radius 1 at (24, 16). |
 | `Prohibited` | Circle; a Slash inside it from (8, 24) to (24, 8). |
 | `Properties` | Three lines x 5–27 at y 9, 16, 23; on each a filled knob circle radius 3, at x 20, 11 and 17 respectively. |
@@ -435,7 +437,7 @@ glyph with no parts named is drawn from scratch on the grid.
 | `Security` | A shield: a point at (16, 3), shoulders at (5, 7) and (27, 7), straight sides to y 15, then curving to a tip at (16, 29); a Check inside it from (11, 16) through (15, 20) to (22, 12). |
 | `Select` | The dashed selection frame of `SelectAll`, empty. |
 | `SelectAll` | A dashed selection frame: the Square drawn as four corner brackets of 6 by 6 plus a 4-long dash centered on each side; a smaller solid square from (11, 11) to (21, 21) inside it. |
-| `SelectNone` | The same dashed selection frame as `SelectAll`, empty, with a Slash. |
+| `SelectNone` | The same dashed selection frame as `SelectAll`, empty, with a Slash; the frame breaks around it, so the lower-left and upper-right corner brackets it would pass through are dropped. |
 | `Send` | A paper plane: a triangle with its nose at (28, 4) and tail corners at (4, 14) and (13, 28); a fold line from (28, 4) to (13, 19). |
 | `Session` | Person reduced to head radius 4 at (16, 13) and shoulders from (9, 26) to (23, 26) rising to y 20; four corner brackets 6 by 6 at the corners of the live area. |
 | `Settings` | A gear: a ring radius 4 at the center; an outer outline with eight teeth reaching radius 13; one closed path. |
