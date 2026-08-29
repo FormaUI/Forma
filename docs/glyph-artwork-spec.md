@@ -377,8 +377,8 @@ glyph with no parts named is drawn from scratch on the grid.
 | `Medal` | A disc as a circle radius 8 at (16, 21) bearing a solid five-pointed star of outer radius 4; a ribbon as two straps, each a closed band from (6, 3) across to (11, 3), down to (16, 11) and back to (12, 14), mirrored on the right. |
 | `Message` | A bubble: a rounded rect from (5, 5) to (27, 24) whose lower-left corner is drawn out to a point at (5, 28); two text lines inside at y 12 and y 17 from x 11 to 21. |
 | `Microphone` | A capsule from (11, 3) to (21, 19) with radius-5 ends; a cradle as a U from (7, 14) down through (16, 23) up to (25, 14); a stand from (16, 23) to (16, 29) on a foot from (10, 29) to (22, 29). |
-| `Minimize` | A single line from (5, 16) to (27, 16). |
-| `Minus` | A line from (5, 16) to (27, 16). Identical to `Minimize`; the compile step permits it. |
+| `Minimize` | `Maximize` turned inward: four L brackets of 7 by 7 whose corners sit at (11, 11), (21, 11), (11, 21) and (21, 21), each with its arms reaching out toward its corner of the live area. |
+| `Minus` | A line from (5, 16) to (27, 16). |
 | `Mobile` | A handset from (9, 3) to (23, 29) with radius-3 corners; a home button as a filled dot radius 1 at (16, 25). |
 | `More` | Three solid dots radius 3 at (6, 16), (16, 16) and (26, 16). |
 | `MoreVertical` | Three solid dots radius 3 at (16, 6), (16, 16) and (16, 26). |
