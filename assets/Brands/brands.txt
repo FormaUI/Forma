@@ -1,0 +1,139 @@
+# The brand marks kept on hand, one per line as `Name slug`, where the slug is
+# the Simple Icons identifier. Run scripts/Get-SimpleIconsPack.ps1 after editing.
+
+# Social
+Facebook facebook
+Instagram instagram
+X x
+Threads threads
+TikTok tiktok
+YouTube youtube
+Pinterest pinterest
+Snapchat snapchat
+Reddit reddit
+Tumblr tumblr
+Mastodon mastodon
+Bluesky bluesky
+WhatsApp whatsapp
+Telegram telegram
+Discord discord
+Signal signal
+Twitch twitch
+Vimeo vimeo
+Flickr flickr
+Messenger messenger
+Viber viber
+WeChat wechat
+Line line
+
+# Developer
+GitHub github
+GitLab gitlab
+Bitbucket bitbucket
+StackOverflow stackoverflow
+Npm npm
+NuGet nuget
+Docker docker
+Kubernetes kubernetes
+Linux linux
+Ubuntu ubuntu
+Debian debian
+DotNet dotnet
+Blazor blazor
+JetBrains jetbrains
+PostgreSql postgresql
+NodeJs nodedotjs
+TypeScript typescript
+React react
+Angular angular
+Vue vuedotjs
+Cloudflare cloudflare
+Vercel vercel
+Netlify netlify
+DigitalOcean digitalocean
+GoogleCloud googlecloud
+Firebase firebase
+
+# Platforms
+Google google
+Apple apple
+Meta meta
+Netflix netflix
+Spotify spotify
+SoundCloud soundcloud
+Steam steam
+PlayStation playstation
+Android android
+AppStore appstore
+GooglePlay googleplay
+Samsung samsung
+Huawei huawei
+Xiaomi xiaomi
+Sony sony
+Lg lg
+Tesla tesla
+Uber uber
+Airbnb airbnb
+
+# Payments
+PayPal paypal
+Stripe stripe
+Visa visa
+Mastercard mastercard
+AmericanExpress americanexpress
+ApplePay applepay
+GooglePay googlepay
+Bitcoin bitcoin
+
+# Productivity and publishing
+Zoom zoom
+Notion notion
+Trello trello
+Figma figma
+Dropbox dropbox
+GoogleDrive googledrive
+ICloud icloud
+Medium medium
+Substack substack
+WordPress wordpress
+Shopify shopify
+Patreon patreon
+Kickstarter kickstarter
+BuyMeACoffee buymeacoffee
+Gmail gmail
+Rss rss
+
+# Browsers and search
+DuckDuckGo duckduckgo
+Opera opera
+Firefox firefox
+GoogleChrome googlechrome
+Safari safari
+Brave brave
+
+# Media and community
+Dribbble dribbble
+Behance behance
+Unsplash unsplash
+Wikipedia wikipedia
+Imdb imdb
+Quora quora
+Goodreads goodreads
+Letterboxd letterboxd
+TripAdvisor tripadvisor
+DeviantArt deviantart
+Flipboard flipboard
+
+# Commerce
+Etsy etsy
+Ebay ebay
+AliExpress aliexpress
+Target target
+Ikea ikea
+Nike nike
+Adidas adidas
+
+# Sport
+Strava strava
+Garmin garmin
+Komoot komoot

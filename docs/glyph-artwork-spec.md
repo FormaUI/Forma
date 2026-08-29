@@ -47,6 +47,14 @@ Two attributes may appear on an individual `<path>` and nothing else:
 The build script (`scripts/Build-GlyphPack.ps1`) turns the folder into the asset the built-in
 provider reads and rejects any file that breaks the rules above, or a glyph with no drawing.
 
+### Brand marks
+
+A brand logo is never drawn by hand: it is a trademark, and its owner's guidelines forbid a
+redrawing. `assets/Brands/` holds the official marks as fetched from Simple Icons by
+`scripts/Get-SimpleIconsPack.ps1`, listed in its `brands.txt`; nothing compiles or ships them.
+A mark a component or host needs is promoted from there into this pipeline as a solid path on
+both grids, keeping its own precision, with a `Glyph` member named for the brand.
+
 ## Naming
 
 A glyph is named for its recognizable visual form: `ArrowLeft`, not `Back`; `TriangleRight`, not
