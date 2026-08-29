@@ -52,11 +52,11 @@ $utf8 = New-Object System.Text.UTF8Encoding $false
 $written = @{}
 
 foreach ($item in ($artwork | Sort-Object -Property Name)) {
-    if ($item.Markup -notmatch '(?s)<svg[^>]*\sviewBox="0 0 24 24"[^>]*>.*<path d="(?<data>[^"]+)"') {
-        throw "Unexpected markup for $($item.Name): expected a single path on a 24 by 24 view box."
+    if ($item.Markup -notmatch '(?s)<svg[^>]*\sviewBox="0 0 24 24"[^>]*>\s*<title>(?<title>[^<]+)</title>.*<path d="(?<data>[^"]+)"') {
+        throw "Unexpected markup for $($item.Name): expected a titled single path on a 24 by 24 view box."
     }
 
-    $markup = "<svg xmlns=`"http://www.w3.org/2000/svg`" viewBox=`"0 0 24 24`" fill=`"currentColor`">`n  <path d=`"$($Matches['data'])`" />`n</svg>`n"
+    $markup = "<svg xmlns=`"http://www.w3.org/2000/svg`" viewBox=`"0 0 24 24`" fill=`"currentColor`">`n  <title>$($Matches['title'])</title>`n  <path d=`"$($Matches['data'])`" />`n</svg>`n"
     $target = Join-Path $brandsFolder "$($item.Name).svg"
     [System.IO.File]::WriteAllText($target, $markup, $utf8)
     $written[$item.Name] = $true
