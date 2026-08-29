@@ -799,7 +799,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
             new()
             {
                 Id = "preview",
-                Icon = Glyph.Eye,
+                Icon = Glyph.Inspect,
                 Text = () => L["Preview"].Value,
                 Invoke = resource => { OpenPreview(resource); StateHasChanged(); return Task.CompletedTask; }
             }

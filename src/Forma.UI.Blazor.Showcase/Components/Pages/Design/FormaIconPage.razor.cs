@@ -26,7 +26,7 @@ public partial class FormaIconPage
             Glyph.Save, Glyph.Delete, Glyph.Copy, Glyph.Cut, Glyph.Paste, Glyph.Edit, Glyph.Draft, Glyph.Pen, Glyph.Print,
             Glyph.Share, Glyph.ShareBox, Glyph.Send, Glyph.Publish, Glyph.Open, Glyph.Read, Glyph.Unread, Glyph.Glasses,
             Glyph.Search, Glyph.Filter, Glyph.Crosshair, Glyph.Pin, Glyph.Unpin, Glyph.Flag, Glyph.Bookmark, Glyph.Star, Glyph.Heart,
-            Glyph.Eye, Glyph.EyeSlash, Glyph.Lock, Glyph.LockOpen, Glyph.Key, Glyph.PasswordField,
+            Glyph.Eye, Glyph.EyeSlash, Glyph.Inspect, Glyph.Preview, Glyph.Lock, Glyph.LockOpen, Glyph.Key, Glyph.PasswordField,
             Glyph.Settings, Glyph.Wrench, Glyph.Toolbox, Glyph.Maintenance, Glyph.Extract, Glyph.Compress, Glyph.Crop,
             Glyph.MagicWand, Glyph.Lasso, Glyph.Transform, Glyph.Warp, Glyph.Paintbrush, Glyph.PaintBucket, Glyph.PaintBucketPour, Glyph.Eraser, Glyph.Stamp, Glyph.Smudge, Glyph.PenNib, Glyph.Eyedropper, Glyph.ColorPicker, Glyph.Palette, Glyph.Emoji,
             Glyph.Rules, Glyph.Security, Glyph.Incognito, Glyph.Properties, Glyph.Extensions, Glyph.Apps, Glyph.Dashboard,

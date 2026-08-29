@@ -30,7 +30,7 @@ public sealed class PreviewPlugin : IComposerFeaturePlugin
                     {
                         Id = "preview",
                         Title = "Preview",
-                        Icon = Glyph.Eye,
+                        Icon = Glyph.Preview,
                         Command = PreviewCommand,
                     },
                 ],

@@ -105,10 +105,10 @@
     outline-offset: 1px;
 }
 
+/* An on state is a tint, the accent color and an underline as wide as the glyph; no border, so a row of toggles stays flat. */
 .forma-toolbar-button-active {
     position: relative;
     background-color: var(--hover-background-color);
-    border-color: var(--dark-border-color);
     color: var(--main-color);
 }
 
@@ -116,10 +116,14 @@
     content: '';
     position: absolute;
     inset-block-end: 2px;
-    inset-inline: 25%;
-    block-size: 0.125rem;
+    inset-inline: var(--space-2);
+    block-size: 2px;
     border-radius: var(--radius-sm);
     background-color: currentcolor;
+}
+
+.forma-toolbar-button-labelled.forma-toolbar-button-active::after {
+    inset-inline: var(--space-3);
 }
 
 @media (forced-colors: active) {

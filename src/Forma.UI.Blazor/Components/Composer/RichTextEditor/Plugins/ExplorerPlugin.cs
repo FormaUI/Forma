@@ -40,7 +40,7 @@ public sealed class ExplorerPlugin(
                     {
                         Id = "explorer-browse",
                         Title = "Browse Files",
-                        Icon = Glyph.Folder,
+                        Icon = Glyph.FolderOpen,
                         Command = BrowseCommand,
                     },
                 ],

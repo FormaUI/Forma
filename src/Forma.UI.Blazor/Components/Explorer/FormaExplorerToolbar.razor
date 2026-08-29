@@ -51,7 +51,7 @@
                 }
                 else
                 {
-                    <FormaIcon Icon="Glyph.CheckSquare" Size="IconSize.Small" />
+                    <FormaIcon Icon="Glyph.Select" Size="IconSize.Small" />
                     @L["Select"]
                 }
             </FormaButton>
@@ -125,7 +125,7 @@
                         <FormaDropDownMenuItem IsSelected="@(SortDirection == direction)"
                                                data-sort-direction="@direction"
                                                OnClick="() => SortDirectionChanged.InvokeAsync(direction)">
-                            <FormaIcon Icon="@GlyphFor(direction)" Size="IconSize.Small" />
+                            <FormaIcon Icon="@GlyphFor(SortField, direction)" Size="IconSize.Small" />
                             <span>@DirectionLabel(direction)</span>
                         </FormaDropDownMenuItem>
                     }

@@ -57,10 +57,12 @@
     white-space: nowrap;
 }
 
+/* A header starts where its column's cells start; the browser would center it on its own. */
 .forma-explorer-details-table th {
     font-weight: 600;
     color: var(--text-color);
     background: var(--hover-background-color);
+    text-align: start;
     white-space: nowrap;
     user-select: none;
     cursor: pointer;
@@ -87,10 +89,16 @@
     inline-size: 9.5rem;
 }
 
+/* The leading slot is exactly the actions trigger or the checkbox, so the name starts one small control in. */
 .forma-explorer-column-actions {
-    inline-size: var(--control-size-md);
+    inline-size: var(--control-size-sm);
     text-align: start;
     cursor: default !important;
+}
+
+.forma-explorer-details-table .forma-explorer-column-actions,
+.forma-explorer-details-table .forma-explorer-cell-actions {
+    padding-inline: var(--space-1);
 }
 
 .forma-explorer-visually-hidden {

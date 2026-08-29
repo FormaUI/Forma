@@ -74,7 +74,7 @@ public sealed class TablePlugin(
                             new FormaToolbarOption { Id = "table-col-before", Title = "Add Column Left", Icon = Glyph.AddColumnLeft, Command = AddColBeforeCommand },
                             new FormaToolbarOption { Id = "table-col-after", Title = "Add Column Right", Icon = Glyph.AddColumnRight, Command = AddColAfterCommand },
                             new FormaToolbarOption { Id = "table-col-delete", Title = "Delete Column", Icon = Glyph.Columns, Command = DeleteColCommand },
-                            new FormaToolbarOption { Id = "table-toggle-header", Title = "Toggle Header Row", Icon = Glyph.Rows, Command = ToggleHeaderCommand },
+                            new FormaToolbarOption { Id = "table-toggle-header", Title = "Toggle Header Row", Icon = Glyph.LayoutTop, Command = ToggleHeaderCommand },
                             new FormaToolbarOption { Id = "table-delete", Title = "Delete Table", Icon = Glyph.Delete, Command = DeleteTableCommand },
                         ],
                     },

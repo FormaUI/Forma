@@ -64,8 +64,7 @@
             }
 
             // Assert
-            // A minus sign and a minimize mark are one line by design; nothing else may coincide.
-            Assert.Equal([Glyph.Minus], repeated);
+            Assert.Empty(repeated);
         }
 
         [Fact]

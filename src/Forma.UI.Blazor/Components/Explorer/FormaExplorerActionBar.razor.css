@@ -1,4 +1,4 @@
-/* Item operation menu, shared by every explorer view; it leads the item so its position never depends on the item's width. */
+/* Item operation menu, shared by every explorer view; it leads the item in a slot no wider than its own trigger. */
 
 .forma-explorer-action-bar {
     display: flex;

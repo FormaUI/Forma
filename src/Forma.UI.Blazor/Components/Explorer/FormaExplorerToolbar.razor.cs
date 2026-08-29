@@ -71,10 +71,17 @@ public sealed partial class FormaExplorerToolbar : ComponentBase
         => SelectedCount > 0 ? L["{SelectedCount} selected", SelectedCount].Value : string.Empty;
 
     private Glyph DirectionGlyph
-        => GlyphFor(SortDirection);
+        => GlyphFor(SortField, SortDirection);
 
-    private static Glyph GlyphFor(ExplorerSortDirection direction)
-        => direction == ExplorerSortDirection.Ascending ? Glyph.TriangleUp : Glyph.TriangleDown;
+    // Names and kinds sort alphabetically, sizes and dates numerically, so the mark says which order is meant.
+    private static Glyph GlyphFor(ExplorerSortField field, ExplorerSortDirection direction)
+        => (field is ExplorerSortField.Name or ExplorerSortField.Kind, direction is ExplorerSortDirection.Ascending) switch
+        {
+            (true, true) => Glyph.SortAlphaAscending,
+            (true, false) => Glyph.SortAlphaDescending,
+            (false, true) => Glyph.SortNumericAscending,
+            (false, false) => Glyph.SortNumericDescending,
+        };
 
     private string SortFieldLabel(ExplorerSortField field)
         => field switch

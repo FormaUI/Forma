@@ -59,7 +59,7 @@ public sealed class ParagraphFormatPlugin(RichTextEditorPlugin editor) : ICompos
                     {
                         Id = "block-style",
                         Title = "Block Style",
-                        Icon = Glyph.Paragraph,
+                        Icon = Glyph.Heading,
                         Options =
                         [
                             new() { Id = "p", Title = "Normal", Command = ParagraphCommand },
@@ -81,7 +81,7 @@ public sealed class ParagraphFormatPlugin(RichTextEditorPlugin editor) : ICompos
             {
                 Id = "paragraph-style",
                 Title = "Paragraph Style",
-                Items = [new FormaToolbarToggle { Id = "lead", Title = "Lead", Icon = Glyph.Quote, Command = LeadCommand }],
+                Items = [new FormaToolbarToggle { Id = "lead", Title = "Lead", Icon = Glyph.Paragraph, Command = LeadCommand }],
             },
         ]),
     ];

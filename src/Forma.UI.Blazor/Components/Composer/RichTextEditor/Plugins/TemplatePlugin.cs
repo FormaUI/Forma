@@ -40,7 +40,7 @@ public sealed class TemplatePlugin(
                     {
                         Id = "template-menu",
                         Title = "Templates",
-                        Icon = Glyph.Copy,
+                        Icon = Glyph.Layout,
                         Options = [.. Options.Templates.Select(t => new FormaToolbarOption
                         {
                             Id = $"tpl-{t.Id}",

@@ -99,7 +99,7 @@ public sealed class TypographyPlugin(
                     {
                         Id = "text-color",
                         Title = "Text Color",
-                        Icon = Glyph.Palette,
+                        Icon = Glyph.FontColor,
                         Options = [.. Options.TextColors.Select(color => new FormaToolbarOption
                         {
                             Id = $"text-color:{color}",

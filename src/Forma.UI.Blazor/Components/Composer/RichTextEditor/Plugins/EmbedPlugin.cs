@@ -35,7 +35,7 @@ public sealed class EmbedPlugin(RichTextEditorPlugin editor) : IComposerFeatureP
                     {
                         Id = "embed-insert",
                         Title = "Insert Embed",
-                        Icon = Glyph.FolderTree,
+                        Icon = Glyph.FileCode,
                         Command = InsertEmbedCommand,
                     },
                 ],

@@ -30,7 +30,7 @@ public sealed class FileUploadPlugin(FileUploadPluginOptions? options = null) : 
                     {
                         Id = "attach",
                         Title = "Attach Files",
-                        Icon = Glyph.Upload,
+                        Icon = Glyph.Attachment,
                         Command = ComposerCommands.Attach,
                     },
                 ],

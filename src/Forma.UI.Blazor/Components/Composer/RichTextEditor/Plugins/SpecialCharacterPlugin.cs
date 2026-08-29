@@ -1,5 +1,7 @@
 namespace Forma.UI.Blazor.Components.Composer.RichTextEditor.Plugins;
 
+using System.Text;
+
 using Forma.UI.Design.Icons;
 using Forma.UI.Features.Composer.Assets;
 using Forma.UI.Features.Composer.Editing;
@@ -40,7 +42,7 @@ public sealed class SpecialCharacterPlugin(
                     {
                         Id = "special-character",
                         Title = "Special Character",
-                        Icon = Glyph.Keyboard,
+                        Icon = new Rune('Ω'),
                         Options = [.. Options.Characters.Select(c => new FormaToolbarOption
                         {
                             Id = $"char-{c}",
