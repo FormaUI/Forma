@@ -22,8 +22,8 @@
 }
 
 .forma-explorer-thumbnail.is-row {
-    inline-size: 2rem;
-    block-size: 2rem;
+    inline-size: var(--icon-size-md);
+    block-size: var(--icon-size-md);
     border-radius: var(--radius-sm);
 }
 
@@ -32,8 +32,8 @@
 }
 
 .forma-explorer-thumbnail.is-cell {
-    inline-size: 1.75rem;
-    block-size: 1.75rem;
+    inline-size: var(--icon-size-sm);
+    block-size: var(--icon-size-sm);
     border-radius: var(--radius-sm);
 }
 

@@ -1,10 +1,13 @@
 namespace Forma.UI.Design.Icons;
 
-/// <summary>A mark the library draws, named for what it means rather than for the set it is drawn from.</summary>
+/// <summary>A mark the library draws, named for its recognizable form, or for that form's conventional meaning where the literal name would be obscure.</summary>
 public enum Glyph
 {
     /// <summary>No glyph. Asking a provider for this is an error.</summary>
     None = 0,
+
+    /// <summary>A figure in a wheelchair, for accessibility.</summary>
+    Accessibility,
 
     /// <summary>Columns with one added to the left.</summary>
     AddColumnLeft,
@@ -18,8 +21,20 @@ public enum Glyph
     /// <summary>Rows with one added below.</summary>
     AddRowBelow,
 
-    /// <summary>An aeroplane.</summary>
-    Airplane,
+    /// <summary>An aeroplane flying down the page.</summary>
+    AirplaneDown,
+
+    /// <summary>An aeroplane flying left.</summary>
+    AirplaneLeft,
+
+    /// <summary>An aeroplane flying right.</summary>
+    AirplaneRight,
+
+    /// <summary>An aeroplane flying up the page.</summary>
+    AirplaneUp,
+
+    /// <summary>A clock with bells, for an alarm.</summary>
+    AlarmClock,
 
     /// <summary>Stacked lines centred on a common axis, for centre alignment.</summary>
     AlignCenter,
@@ -35,6 +50,9 @@ public enum Glyph
 
     /// <summary>A ship's anchor, for a named position in a document.</summary>
     Anchor,
+
+    /// <summary>Nine dots in a square, for the applications launcher.</summary>
+    Apps,
 
     /// <summary>A storage box, for archiving.</summary>
     Archive,
@@ -54,11 +72,29 @@ public enum Glyph
     /// <summary>An at sign, for an address or a mention.</summary>
     AtSign,
 
+    /// <summary>A paper clip, for an attachment.</summary>
+    Attachment,
+
     /// <summary>A quaver, for sound.</summary>
     Audio,
 
     /// <summary>A lightning bolt, for an automatic mode.</summary>
     Auto,
+
+    /// <summary>An empty battery.</summary>
+    Battery,
+
+    /// <summary>A battery filled to its end.</summary>
+    BatteryFull,
+
+    /// <summary>A bell, for notifications.</summary>
+    Bell,
+
+    /// <summary>A bell struck through, for notifications silenced.</summary>
+    BellSlash,
+
+    /// <summary>The Bluetooth rune.</summary>
+    Bluetooth,
 
     /// <summary>A heavy letter B, for bold text.</summary>
     Bold,
@@ -66,11 +102,35 @@ public enum Glyph
     /// <summary>A ribbon, for a saved place.</summary>
     Bookmark,
 
+    /// <summary>A square divided into four cells, for borders.</summary>
+    Borders,
+
+    /// <summary>A sun with a half-shaded disc, for brightness.</summary>
+    Brightness,
+
+    /// <summary>An antenna with waves either side, for broadcasting.</summary>
+    Broadcast,
+
     /// <summary>An insect, for a defect.</summary>
     Bug,
 
-    /// <summary>Lines beside bullets, for an unordered list.</summary>
-    BulletList,
+    /// <summary>A handheld calculator.</summary>
+    Calculator,
+
+    /// <summary>A camera body with its lens.</summary>
+    Camera,
+
+    /// <summary>A shopping trolley.</summary>
+    Cart,
+
+    /// <summary>A shopping trolley wearing a tick badge, for an order confirmed.</summary>
+    CartCheck,
+
+    /// <summary>A shopping trolley wearing a cross badge, for an order cancelled.</summary>
+    CartCross,
+
+    /// <summary>A shopping trolley wearing a plus badge, for adding to it.</summary>
+    CartPlus,
 
     /// <summary>A screen with waves rising from its corner, for casting to a display.</summary>
     Cast,
@@ -78,11 +138,11 @@ public enum Glyph
     /// <summary>A label tag, for a category.</summary>
     Category,
 
+    /// <summary>A capital A beside a small a, for changing case.</summary>
+    ChangeCase,
+
     /// <summary>A tick.</summary>
     Check,
-
-    /// <summary>A ticked circle.</summary>
-    CheckCircle,
 
     /// <summary>A ticked square.</summary>
     CheckSquare,
@@ -99,17 +159,41 @@ public enum Glyph
     /// <summary>An upward chevron.</summary>
     ChevronUp,
 
+    /// <summary>A chip with its pins, for hardware.</summary>
+    Chip,
+
+    /// <summary>A circle holding a tick.</summary>
+    CircleCheck,
+
+    /// <summary>A circle holding a cross.</summary>
+    CircleCross,
+
+    /// <summary>A circle holding an exclamation mark, for a failure.</summary>
+    CircleError,
+
+    /// <summary>A circle holding a question mark, for help.</summary>
+    CircleHelp,
+
+    /// <summary>A circle holding a letter i, for information.</summary>
+    CircleInfo,
+
+    /// <summary>A circle holding a play triangle.</summary>
+    CirclePlay,
+
+    /// <summary>A ring holding a filled disc, for recording.</summary>
+    CircleRecord,
+
+    /// <summary>A circle holding a filled triangle, for running.</summary>
+    CircleRun,
+
     /// <summary>A struck-through letter T, for clearing formatting.</summary>
     ClearFormatting,
 
     /// <summary>A clock face.</summary>
     Clock,
 
-    /// <summary>A cross, for dismissing.</summary>
-    Close,
-
-    /// <summary>A cross inside a circle, for dismissing.</summary>
-    CloseCircle,
+    /// <summary>A cloud.</summary>
+    Cloud,
 
     /// <summary>A cloud with an upward arrow, for uploading.</summary>
     CloudUpload,
@@ -119,6 +203,9 @@ public enum Glyph
 
     /// <summary>Two arrows pointing at each other, for collapsing a section.</summary>
     Collapse,
+
+    /// <summary>A square holding a minus, for collapsing a node.</summary>
+    CollapseMinus,
 
     /// <summary>A pane divided top to bottom, standing for a table's columns.</summary>
     Columns,
@@ -141,11 +228,26 @@ public enum Glyph
     /// <summary>Two overlapping corner marks, for cropping.</summary>
     Crop,
 
+    /// <summary>A cross.</summary>
+    Cross,
+
     /// <summary>Crosshairs, for pinpointing a position.</summary>
     Crosshair,
 
+    /// <summary>A crown with three points.</summary>
+    Crown,
+
+    /// <summary>A pointer arrow, for the cursor.</summary>
+    Cursor,
+
     /// <summary>A pair of shears, for cutting.</summary>
     Cut,
+
+    /// <summary>Four tiles of unequal height, for a dashboard.</summary>
+    Dashboard,
+
+    /// <summary>A folder with a star on it, for data.</summary>
+    Data,
 
     /// <summary>A cylinder of stacked discs, for a database.</summary>
     Database,
@@ -156,8 +258,14 @@ public enum Glyph
     /// <summary>A waste bin, for discarding.</summary>
     Delete,
 
+    /// <summary>A monitor on a stand, for a desktop computer.</summary>
+    Desktop,
+
     /// <summary>Rows with columns, for a table-like view of items.</summary>
     DetailsView,
+
+    /// <summary>A laptop beside a phone, for devices.</summary>
+    Devices,
 
     /// <summary>A dollar sign, for money in dollars.</summary>
     DollarSign,
@@ -174,17 +282,17 @@ public enum Glyph
     /// <summary>Six raised dots, for a drag handle.</summary>
     DragHandle,
 
+    /// <summary>A globe, for the world.</summary>
+    Earth,
+
     /// <summary>A pencil over a note, for editing or renaming.</summary>
     Edit,
 
     /// <summary>A smiling face, for picking an emoji.</summary>
     Emoji,
 
-    /// <summary>An empty tray, for a container with nothing in it.</summary>
+    /// <summary>A circle struck through, for a container with nothing in it.</summary>
     Empty,
-
-    /// <summary>An exclamation mark inside a circle, for a failure.</summary>
-    Error,
 
     /// <summary>A euro sign, for money in euros.</summary>
     EuroSign,
@@ -198,6 +306,9 @@ public enum Glyph
     /// <summary>Two arrows pointing away from each other, for expanding a section.</summary>
     Expand,
 
+    /// <summary>A square holding a plus, for expanding a node.</summary>
+    ExpandPlus,
+
     /// <summary>A jigsaw piece, for extensions.</summary>
     Extensions,
 
@@ -210,7 +321,7 @@ public enum Glyph
     /// <summary>A struck-through eye.</summary>
     EyeSlash,
 
-    /// <summary>A pair of triangles, for skipping ahead.</summary>
+    /// <summary>Two triangles against a bar, for skipping ahead.</summary>
     FastForward,
 
     /// <summary>A blank sheet.</summary>
@@ -218,9 +329,6 @@ public enum Glyph
 
     /// <summary>A sheet with a zip, for an archive.</summary>
     FileArchive,
-
-    /// <summary>A sheet with a paper clip, for an attachment.</summary>
-    FileAttachment,
 
     /// <summary>A sheet marked with angle brackets, for a source file.</summary>
     FileCode,
@@ -237,6 +345,9 @@ public enum Glyph
     /// <summary>A pennant on a pole.</summary>
     Flag,
 
+    /// <summary>A torch with light rays, for a flashlight.</summary>
+    Flashlight,
+
     /// <summary>A closed folder.</summary>
     Folder,
 
@@ -246,11 +357,23 @@ public enum Glyph
     /// <summary>An open folder.</summary>
     FolderOpen,
 
+    /// <summary>A node branching into two, for a folder tree.</summary>
+    FolderTree,
+
     /// <summary>Two letter As, for typeface.</summary>
     Font,
 
+    /// <summary>A letter A over a bar, for the text color.</summary>
+    FontColor,
+
     /// <summary>A letter T, for text size.</summary>
     FontSize,
+
+    /// <summary>A letter A beside a downward arrow, for a smaller font size.</summary>
+    FontSizeDecrease,
+
+    /// <summary>A letter A beside an upward arrow, for a larger font size.</summary>
+    FontSizeIncrease,
 
     /// <summary>A fork and knife.</summary>
     ForkKnife,
@@ -258,11 +381,59 @@ public enum Glyph
     /// <summary>An arrow bending up and to the right, for forwarding.</summary>
     Forward,
 
+    /// <summary>A large four-pointed star with a small one beside it, for generative AI.</summary>
+    GenerativeAI,
+
+    /// <summary>A mortarboard, for education.</summary>
+    Graduation,
+
     /// <summary>A square divided into cells, for a tile layout.</summary>
     GridView,
 
     /// <summary>Stacked layers, for grouping.</summary>
     Group,
+
+    /// <summary>A fist with the little finger extended, for a call.</summary>
+    HandCall,
+
+    /// <summary>An open hand with impact marks, for applause.</summary>
+    HandClap,
+
+    /// <summary>A hand with two fingers raised, for peace.</summary>
+    HandPeace,
+
+    /// <summary>A hand holding a pen, for writing.</summary>
+    HandPen,
+
+    /// <summary>A hand pointing down.</summary>
+    HandPointDown,
+
+    /// <summary>A hand pointing left.</summary>
+    HandPointLeft,
+
+    /// <summary>A hand pointing right.</summary>
+    HandPointRight,
+
+    /// <summary>A hand pointing up.</summary>
+    HandPointUp,
+
+    /// <summary>An open left hand, palm forward.</summary>
+    HandRaisedLeft,
+
+    /// <summary>An open right hand, palm forward.</summary>
+    HandRaisedRight,
+
+    /// <summary>Two hands clasped, for an agreement.</summary>
+    Handshake,
+
+    /// <summary>A fist with the thumb turned down, for disapproval.</summary>
+    HandThumbDown,
+
+    /// <summary>A fist with the thumb turned up, for approval.</summary>
+    HandThumbUp,
+
+    /// <summary>An open hand with motion marks, for a greeting.</summary>
+    HandWave,
 
     /// <summary>A hash sign, for a tag or a number.</summary>
     HashtagSign,
@@ -273,14 +444,14 @@ public enum Glyph
     /// <summary>A heart.</summary>
     Heart,
 
-    /// <summary>A question mark in a circle, for help.</summary>
-    Help,
-
     /// <summary>A marker pen, for highlighted text.</summary>
     Highlight,
 
     /// <summary>A clock with a counter-clockwise arrow, for recent items.</summary>
     History,
+
+    /// <summary>A house, for the home page.</summary>
+    Home,
 
     /// <summary>Two chain links side by side, for a link drawn across.</summary>
     HorizontalLink,
@@ -294,26 +465,23 @@ public enum Glyph
     /// <summary>Two overlapping framed pictures.</summary>
     Images,
 
-    /// <summary>A tray with an arrow settling into it, for an inbox.</summary>
-    Inbox,
-
     /// <summary>A hat and glasses, for private browsing.</summary>
     Incognito,
 
-    /// <summary>Lines pushed toward the end edge, for increasing indentation.</summary>
+    /// <summary>Lines with a triangle pointing into them, for increasing indentation.</summary>
     Indent,
-
-    /// <summary>A letter i inside a circle.</summary>
-    Information,
 
     /// <summary>A slanted letter I, for italic text.</summary>
     Italic,
 
-    /// <summary>An envelope with a prohibited badge, for junk mail.</summary>
-    JunkMail,
+    /// <summary>A key.</summary>
+    Key,
 
     /// <summary>A keyboard.</summary>
     Keyboard,
+
+    /// <summary>An open laptop.</summary>
+    Laptop,
 
     /// <summary>A frame with a header and a sidebar, for the layout as a whole.</summary>
     Layout,
@@ -336,26 +504,101 @@ public enum Glyph
     /// <summary>Opposing vertical arrows, for line height.</summary>
     LineHeight,
 
+    /// <summary>Stacked lines beside a two-headed vertical arrow, for line spacing.</summary>
+    LineSpacing,
+
     /// <summary>Two joined chain links.</summary>
     Link,
 
     /// <summary>Stacked lines, for a list.</summary>
     List,
 
+    /// <summary>Lines beside bullets, for an unordered list.</summary>
+    ListBullet,
+
+    /// <summary>Lines with bullets at stepped indents, for a multilevel list.</summary>
+    ListMultilevel,
+
+    /// <summary>Lines beside numerals, for an ordered list.</summary>
+    ListNumbered,
+
+    /// <summary>A navigation arrow, for the current location.</summary>
+    LocationArrow,
+
     /// <summary>A closed padlock, for something locked.</summary>
     Lock,
+
+    /// <summary>An open padlock, for something unlocked.</summary>
+    LockOpen,
 
     /// <summary>A wand throwing sparkles, for an automatic fix or format.</summary>
     MagicWand,
 
-    /// <summary>A wrench crossed with a screwdriver, for maintenance.</summary>
+    /// <summary>A mailbox holding a pencil, for a mail draft.</summary>
+    MailDraft,
+
+    /// <summary>An open mailbox with nothing in it.</summary>
+    MailEmpty,
+
+    /// <summary>A mailbox with an arrow settling into it, for a mail inbox.</summary>
+    MailInbox,
+
+    /// <summary>A mailbox holding a prohibited sign, for junk mail.</summary>
+    MailJunk,
+
+    /// <summary>A mailbox with an arrow rising from it, for a mail outbox.</summary>
+    MailOutbox,
+
+    /// <summary>A wrench over a gear, for maintenance.</summary>
     Maintenance,
 
-    /// <summary>An open hand, for a manual mode.</summary>
-    Manual,
+    /// <summary>A division sign.</summary>
+    MathDivide,
+
+    /// <summary>An equals sign.</summary>
+    MathEquals,
+
+    /// <summary>A greater-than sign.</summary>
+    MathGreaterThan,
+
+    /// <summary>A greater-than-or-equal sign.</summary>
+    MathGreaterThanOrEqual,
+
+    /// <summary>An infinity sign.</summary>
+    MathInfinity,
+
+    /// <summary>A less-than sign.</summary>
+    MathLessThan,
+
+    /// <summary>A less-than-or-equal sign.</summary>
+    MathLessThanOrEqual,
+
+    /// <summary>A multiplication sign.</summary>
+    MathMultiply,
+
+    /// <summary>A not-equal sign.</summary>
+    MathNotEqual,
+
+    /// <summary>A percent sign.</summary>
+    MathPercent,
+
+    /// <summary>The letter pi.</summary>
+    MathPi,
+
+    /// <summary>A plus-or-minus sign.</summary>
+    MathPlusMinus,
+
+    /// <summary>A capital sigma, for a sum.</summary>
+    MathSigma,
+
+    /// <summary>A square-root sign.</summary>
+    MathSquareRoot,
 
     /// <summary>Arrows pointing outward to the four corners, for entering a full-viewport state.</summary>
     Maximize,
+
+    /// <summary>A medal hanging from its ribbon.</summary>
+    Medal,
 
     /// <summary>A speech bubble with text lines, for a message.</summary>
     Message,
@@ -369,14 +612,17 @@ public enum Glyph
     /// <summary>A minus sign.</summary>
     Minus,
 
-    /// <summary>A square holding a minus.</summary>
-    MinusSquare,
+    /// <summary>A mobile phone.</summary>
+    Mobile,
 
     /// <summary>Three dots in a row, for more actions.</summary>
     More,
 
     /// <summary>Three stacked dots, for more actions.</summary>
     MoreVertical,
+
+    /// <summary>A computer mouse.</summary>
+    Mouse,
 
     /// <summary>A speaker struck through, for muting.</summary>
     Mute,
@@ -387,23 +633,20 @@ public enum Glyph
     /// <summary>Nodes joined by lines, for a network.</summary>
     Network,
 
-    /// <summary>A bell, for notifications.</summary>
-    Notifications,
-
-    /// <summary>Lines beside numerals, for an ordered list.</summary>
-    NumberedList,
+    /// <summary>Nodes joined in layers, for a neural network.</summary>
+    NeuralNetwork,
 
     /// <summary>A square with an arrow leaving it, for opening elsewhere.</summary>
     Open,
 
-    /// <summary>A tray with an arrow rising from it, for an outbox.</summary>
-    Outbox,
-
-    /// <summary>Lines pulled toward the start edge, for decreasing indentation.</summary>
+    /// <summary>Lines with a triangle pointing away from them, for decreasing indentation.</summary>
     Outdent,
 
     /// <summary>An open carton, for something being packed or handled.</summary>
     Package,
+
+    /// <summary>A paintbrush.</summary>
+    Paintbrush,
 
     /// <summary>A painter's palette, for theming.</summary>
     Palette,
@@ -411,8 +654,14 @@ public enum Glyph
     /// <summary>A pilcrow, for a paragraph block.</summary>
     Paragraph,
 
-    /// <summary>A field with masked characters, for stored passwords.</summary>
-    Passwords,
+    /// <summary>A pilcrow beside a rightward arrow, for a left-to-right paragraph.</summary>
+    ParagraphDirectionLtr,
+
+    /// <summary>A pilcrow beside a leftward arrow, for a right-to-left paragraph.</summary>
+    ParagraphDirectionRtl,
+
+    /// <summary>A field with masked characters, for a password.</summary>
+    PasswordField,
 
     /// <summary>A clipboard holding a sheet, for pasting.</summary>
     Paste,
@@ -423,29 +672,29 @@ public enum Glyph
     /// <summary>A pencil.</summary>
     Pen,
 
+    /// <summary>A telephone handset, for a call.</summary>
+    Phone,
+
+    /// <summary>A telephone handset struck through, for no calls.</summary>
+    PhoneSlash,
+
     /// <summary>A push pin, for pinning in place.</summary>
     Pin,
 
     /// <summary>Columns of cards, for planning.</summary>
     Plan,
 
-    /// <summary>A play triangle.</summary>
-    Play,
-
-    /// <summary>A play triangle inside a circle.</summary>
-    PlayCircle,
-
     /// <summary>A plus sign.</summary>
     Plus,
-
-    /// <summary>A square holding a plus.</summary>
-    PlusSquare,
 
     /// <summary>Bars of differing heights, for a poll.</summary>
     Poll,
 
     /// <summary>A pound sign, for money in pounds sterling.</summary>
     PoundSign,
+
+    /// <summary>A power symbol.</summary>
+    Power,
 
     /// <summary>A printer, for printing.</summary>
     Print,
@@ -465,11 +714,11 @@ public enum Glyph
     /// <summary>A filled dot inside a circle, for a marked point.</summary>
     RadioButton,
 
+    /// <summary>A podium, for a ranking.</summary>
+    Ranking,
+
     /// <summary>An opened envelope, for something read.</summary>
     Read,
-
-    /// <summary>A filled circle in a ring, for recording.</summary>
-    Record,
 
     /// <summary>A clockwise arrow, for redoing.</summary>
     Redo,
@@ -498,14 +747,20 @@ public enum Glyph
     /// <summary>Stacked bars, standing for a table's rows.</summary>
     Rows,
 
-    /// <summary>A triangle in a circle, for running.</summary>
-    Run,
+    /// <summary>A ruler with its scale marks.</summary>
+    Ruler,
+
+    /// <summary>A life ring, for rules.</summary>
+    Rules,
 
     /// <summary>A floppy disk, for saving.</summary>
     Save,
 
     /// <summary>A magnifying glass, for searching.</summary>
     Search,
+
+    /// <summary>A shield with a tick, for security.</summary>
+    Security,
 
     /// <summary>A dashed selection frame, for selecting.</summary>
     Select,
@@ -525,14 +780,17 @@ public enum Glyph
     /// <summary>A cogwheel, for configuration.</summary>
     Settings,
 
+    /// <summary>A tilted paint can with a drip, for shading.</summary>
+    Shading,
+
     /// <summary>Three joined nodes, for sharing.</summary>
     Share,
 
     /// <summary>A shekel sign, for money in shekels.</summary>
     ShekelSign,
 
-    /// <summary>A shopping trolley.</summary>
-    ShoppingCart,
+    /// <summary>Four rising bars, for signal strength.</summary>
+    Signal,
 
     /// <summary>An arrow entering a bracket, for signing in.</summary>
     SignIn,
@@ -545,12 +803,6 @@ public enum Glyph
 
     /// <summary>Paired arrows, for sorting.</summary>
     Sort,
-
-    /// <summary>Bars ordered short to long, for ascending sort.</summary>
-    SortAscending,
-
-    /// <summary>Bars ordered long to short, for descending sort.</summary>
-    SortDescending,
 
     /// <summary>A speaker with sound waves, for audio output.</summary>
     SoundOutput,
@@ -566,9 +818,6 @@ public enum Glyph
 
     /// <summary>A five-point star, for a favorite.</summary>
     Star,
-
-    /// <summary>Stacked drives, for storage.</summary>
-    Storage,
 
     /// <summary>A struck-through letter S, for struck-out text.</summary>
     Strikethrough,
@@ -588,6 +837,9 @@ public enum Glyph
     /// <summary>A grid of cells under a header, for a table.</summary>
     Table,
 
+    /// <summary>A tablet.</summary>
+    Tablet,
+
     /// <summary>Lines beside ticks, for a task list.</summary>
     TaskList,
 
@@ -603,20 +855,23 @@ public enum Glyph
     /// <summary>A leftward arrow to a bar, for right-to-left reading order.</summary>
     TextDirectionRtl,
 
-    /// <summary>A hand with the thumb turned down, for disapproval.</summary>
-    ThumbsDown,
+    /// <summary>A letter A with a sparkle, for text effects.</summary>
+    TextGlow,
 
-    /// <summary>A hand with the thumb turned up, for approval.</summary>
-    ThumbsUp,
+    /// <summary>A toolbox.</summary>
+    Toolbox,
 
-    /// <summary>A toolbox, for tools.</summary>
-    Tools,
+    /// <summary>A Han character beside a Latin A, for translation.</summary>
+    Translation,
 
-    /// <summary>Two scripts side by side, for translation.</summary>
-    Translate,
+    /// <summary>A solid triangle pointing down.</summary>
+    TriangleDown,
 
-    /// <summary>A node branching into two, for a hierarchy.</summary>
-    TreeStructure,
+    /// <summary>A solid triangle pointing right.</summary>
+    TriangleRight,
+
+    /// <summary>A solid triangle pointing up.</summary>
+    TriangleUp,
 
     /// <summary>A delivery lorry.</summary>
     Truck,
@@ -626,9 +881,6 @@ public enum Glyph
 
     /// <summary>An anticlockwise arrow, for undoing.</summary>
     Undo,
-
-    /// <summary>An open padlock, for something unlocked.</summary>
-    Unlock,
 
     /// <summary>A speaker with one wave, for unmuting.</summary>
     Unmute,
@@ -654,6 +906,9 @@ public enum Glyph
     /// <summary>An exclamation mark inside a triangle.</summary>
     Warning,
 
+    /// <summary>Arcs over a dot, for a wireless network.</summary>
+    Wifi,
+
     /// <summary>Corner brackets, for maximizing a window.</summary>
     WindowMaximize,
 
@@ -662,6 +917,42 @@ public enum Glyph
 
     /// <summary>A spanner, for configuration or repair.</summary>
     Wrench,
+
+    /// <summary>The Aquarius sign.</summary>
+    ZodiacAquarius,
+
+    /// <summary>The Aries sign.</summary>
+    ZodiacAries,
+
+    /// <summary>The Cancer sign.</summary>
+    ZodiacCancer,
+
+    /// <summary>The Capricorn sign.</summary>
+    ZodiacCapricorn,
+
+    /// <summary>The Gemini sign.</summary>
+    ZodiacGemini,
+
+    /// <summary>The Leo sign.</summary>
+    ZodiacLeo,
+
+    /// <summary>The Libra sign.</summary>
+    ZodiacLibra,
+
+    /// <summary>The Pisces sign.</summary>
+    ZodiacPisces,
+
+    /// <summary>The Sagittarius sign.</summary>
+    ZodiacSagittarius,
+
+    /// <summary>The Scorpio sign.</summary>
+    ZodiacScorpio,
+
+    /// <summary>The Taurus sign.</summary>
+    ZodiacTaurus,
+
+    /// <summary>The Virgo sign.</summary>
+    ZodiacVirgo,
 
     /// <summary>A magnifying glass with a plus, for zooming in.</summary>
     ZoomIn,

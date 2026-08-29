@@ -15,6 +15,9 @@ public sealed partial class FormaIcon : ComponentBase
     /// <summary>The icon to draw.</summary>
     [Parameter, EditorRequired] public Icon Icon { get; set; }
 
+    /// <summary>The size to draw at, which selects both the icon's box and the artwork drawn for that box.</summary>
+    [Parameter] public IconSize Size { get; set; }
+
     /// <summary>Extra classes applied to the SVG element.</summary>
     [Parameter] public string? Class { get; set; }
 
@@ -26,7 +29,21 @@ public sealed partial class FormaIcon : ComponentBase
     [CascadingParameter] private IIconProvider? CascadingProvider { get; set; }
 
     private string CssClass
-        => string.IsNullOrWhiteSpace(Class) ? "forma-icon" : $"forma-icon {Class}";
+    {
+        get
+        {
+            var sizeClass = Size switch
+            {
+                IconSize.Small => " forma-icon-sm",
+                IconSize.Medium => " forma-icon-md",
+                IconSize.Large => " forma-icon-lg",
+                IconSize.Display => " forma-icon-display",
+                _ => string.Empty,
+            };
+
+            return string.IsNullOrWhiteSpace(Class) ? $"forma-icon{sizeClass}" : $"forma-icon{sizeClass} {Class}";
+        }
+    }
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -38,7 +55,7 @@ public sealed partial class FormaIcon : ComponentBase
             ?? (IIconProvider?)Services.GetService(typeof(IIconProvider))
             ?? FormaIconProvider.Default;
 
-        _artwork = provider.TryGetArtwork(Icon, out var artwork) ? artwork : IconArtwork.None;
+        _artwork = provider.TryGetArtwork(Icon, Size, out var artwork) ? artwork : IconArtwork.None;
     }
 
     private static string Width(IconPath path)

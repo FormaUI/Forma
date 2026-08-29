@@ -21,7 +21,7 @@
                         tabindex="@(isActive ? "0" : "-1")"
                         @onclick="() => SelectGroupAsync(tab.Id)"
                         @onkeydown="OnTabKeyDownAsync">
-                    <FormaIcon Icon="TabIcon(tab.Id)" />
+                    <FormaIcon Icon="TabIcon(tab.Id)" Size="IconSize.Small" />
                 </button>
             }
         </div>

@@ -24,7 +24,7 @@
 }
 
 .forma-splitter-vertical {
-    inline-size: var(--forma-splitter-thickness, 0.75rem);
+    inline-size: var(--forma-splitter-thickness, var(--space-3));
     cursor: col-resize;
 }
 
@@ -34,7 +34,7 @@
 }
 
 .forma-splitter-horizontal {
-    block-size: var(--forma-splitter-thickness, 0.75rem);
+    block-size: var(--forma-splitter-thickness, var(--space-3));
     align-items: center;
     cursor: row-resize;
 }
@@ -81,10 +81,10 @@
 
 @media (pointer: coarse) {
     .forma-splitter-vertical {
-        inline-size: var(--forma-splitter-coarse-thickness, 2.75rem);
+        inline-size: var(--forma-splitter-coarse-thickness, var(--control-size-lg));
     }
 
     .forma-splitter-horizontal {
-        block-size: var(--forma-splitter-coarse-thickness, 2.75rem);
+        block-size: var(--forma-splitter-coarse-thickness, var(--control-size-lg));
     }
 }

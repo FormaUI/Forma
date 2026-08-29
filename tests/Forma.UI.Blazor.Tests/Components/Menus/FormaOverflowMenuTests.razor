@@ -23,7 +23,7 @@
         {
             // Arrange
             using var ctx = new FormaOverflowMenuTests();
-            var expected = ctx.Render(@<FormaIcon Icon="Glyph.More" />).Find("path").GetAttribute("d");
+            var expected = ctx.Render(@<FormaIcon Icon="Glyph.More" Size="IconSize.Small" />).Find("path").GetAttribute("d");
 
             // Act
             var cut = ctx.Render(
@@ -40,7 +40,7 @@
         {
             // Arrange
             using var ctx = new FormaOverflowMenuTests();
-            var expected = ctx.Render(@<FormaIcon Icon="Glyph.MoreVertical" />).Find("path").GetAttribute("d");
+            var expected = ctx.Render(@<FormaIcon Icon="Glyph.MoreVertical" Size="IconSize.Small" />).Find("path").GetAttribute("d");
 
             // Act
             var cut = ctx.Render(

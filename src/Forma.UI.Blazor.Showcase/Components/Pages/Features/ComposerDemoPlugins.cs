@@ -114,13 +114,13 @@ public sealed class TextEditorPlugin : IComposerEditorPlugin
     [
         new(ComposerRows.BuiltIn,
         [
-            new FormaToolbarCommand { Id = "number-lines", Title = "Number Lines", Icon = Glyph.NumberedList, Command = NumberLinesCommand },
+            new FormaToolbarCommand { Id = "number-lines", Title = "Number Lines", Icon = Glyph.ListNumbered, Command = NumberLinesCommand },
             new FormaToolbarCommand { Id = "word-count", Title = "Word Count", Icon = Glyph.LineHeight, Command = WordCountCommand },
         ]),
         new(SortingRow,
         [
-            new FormaToolbarCommand { Id = "sort-ascending", Title = "Sort A to Z", Icon = Glyph.SortAscending, Command = SortAscendingCommand },
-            new FormaToolbarCommand { Id = "sort-descending", Title = "Sort Z to A", Icon = Glyph.SortDescending, Command = SortDescendingCommand },
+            new FormaToolbarCommand { Id = "sort-ascending", Title = "Sort A to Z", Icon = Glyph.TriangleUp, Command = SortAscendingCommand },
+            new FormaToolbarCommand { Id = "sort-descending", Title = "Sort Z to A", Icon = Glyph.TriangleDown, Command = SortDescendingCommand },
         ]),
     ];
 
@@ -258,7 +258,7 @@ public sealed class CleanupPlugin : IComposerFeaturePlugin
                 Title = "Cleanup",
                 Items =
                 [
-                    new FormaToolbarCommand { Id = "remove-blank-lines", Title = "Remove Blank Lines", Icon = Glyph.MinusSquare, Command = RemoveBlankLinesCommand },
+                    new FormaToolbarCommand { Id = "remove-blank-lines", Title = "Remove Blank Lines", Icon = Glyph.CollapseMinus, Command = RemoveBlankLinesCommand },
                     new FormaToolbarCommand { Id = "clear", Title = "Clear", Icon = Glyph.Delete, Command = ClearCommand },
                 ],
             },

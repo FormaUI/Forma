@@ -7,7 +7,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-1);
-    border-block-end: 2px solid var(--border-color, #dee2e6);
+    border-block-end: 2px solid var(--border-color);
     margin-block-end: var(--space-4);
 }
 
@@ -17,7 +17,7 @@
     border-block-end: 2px solid transparent;
     margin-block-end: -2px;
     background: none;
-    color: var(--text-muted-color, #6c757d);
+    color: var(--text-muted-color);
     font-size: var(--font-size-sm);
     cursor: pointer;
     display: flex;
@@ -29,20 +29,20 @@
 
 @media (hover: hover) {
     .forma-tab-button:hover {
-        color: var(--text-color, #212529);
-        border-block-end-color: var(--border-color, #dee2e6);
+        color: var(--text-color);
+        border-block-end-color: var(--border-color);
     }
 }
 
 .forma-tab-button:focus-visible {
-    outline: 2px solid var(--focus-color, #86b7fe);
+    outline: 2px solid var(--focus-color);
     outline-offset: 2px;
     border-radius: var(--radius-sm);
 }
 
 .forma-tab-button.active {
-    color: var(--main-color, #0d6efd);
-    border-block-end-color: var(--main-color, #0d6efd);
+    color: var(--main-color);
+    border-block-end-color: var(--main-color);
     font-weight: 500;
 }
 
@@ -56,6 +56,6 @@
 
 @media (pointer: coarse) {
     .forma-tab-button {
-        min-block-size: 2.75rem;
+        min-block-size: var(--control-size-lg);
     }
 }

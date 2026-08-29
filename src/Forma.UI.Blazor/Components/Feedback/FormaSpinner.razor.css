@@ -7,8 +7,8 @@
 }
 
 .forma-spinner-ring {
-    inline-size: var(--forma-spinner-size, 1.5rem);
-    block-size: var(--forma-spinner-size, 1.5rem);
+    inline-size: var(--forma-spinner-size, var(--icon-size-sm));
+    block-size: var(--forma-spinner-size, var(--icon-size-sm));
     border: 0.2em solid var(--forma-spinner-track-color, var(--light-border-color));
     border-block-start-color: var(--forma-spinner-color, var(--main-color));
     border-radius: 50%;

@@ -62,7 +62,7 @@
     padding-inline: var(--space-3);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
-    background: #fff;
+    background: var(--input-background-color);
     color: var(--text-color);
     font-size: var(--font-size-sm);
     font-weight: inherit;
@@ -80,7 +80,7 @@
 ::deep .forma-pagination-current.forma-pagination-current {
     background: var(--main-color);
     border-color: var(--main-color);
-    color: #fff;
+    color: var(--main-foreground-color);
     cursor: default;
     font-weight: 700;
 }
@@ -115,11 +115,11 @@
 
 @media (pointer: coarse) {
     ::deep .forma-pagination-link {
-        min-inline-size: 2.75rem;
+        min-inline-size: var(--control-size-lg);
     }
 
     .forma-pagination-jump-input {
-        min-block-size: 2.75rem;
+        min-block-size: var(--control-size-lg);
     }
 }
 

@@ -34,21 +34,21 @@
                         @if (options.AllowFolderCreate)
                         {
                             <FormaDropDownMenuItem data-action="folder-create" OnClick="() => Interaction.CreateFolderAsync(Folder)">
-                                <FormaIcon Icon="Glyph.FolderAdd" />
+                                <FormaIcon Icon="Glyph.FolderAdd" Size="IconSize.Small" />
                                 <span>@L["New Folder"]</span>
                             </FormaDropDownMenuItem>
                         }
                         @if (options.AllowFolderRename)
                         {
                             <FormaDropDownMenuItem data-action="folder-rename" OnClick="() => Interaction.RenameFolderAsync(Folder)">
-                                <FormaIcon Icon="Glyph.Pen" />
+                                <FormaIcon Icon="Glyph.Pen" Size="IconSize.Small" />
                                 <span>@L["Rename Folder"]</span>
                             </FormaDropDownMenuItem>
                         }
                         @if (options.AllowFolderDelete)
                         {
                             <FormaDropDownMenuItem data-action="folder-delete" IsDestructive="true" OnClick="() => Interaction.DeleteFolderAsync(Folder)">
-                                <FormaIcon Icon="Glyph.Delete" />
+                                <FormaIcon Icon="Glyph.Delete" Size="IconSize.Small" />
                                 <span>@L["Delete Folder"]</span>
                             </FormaDropDownMenuItem>
                         }
@@ -64,7 +64,7 @@
                     aria-label="@(selected ? L["Deselect Folder \"{Name}\"", ("Name", Folder.Name)] : L["Select Folder \"{Name}\"", ("Name", Folder.Name)])"
                     aria-pressed="@(selected ? "true" : "false")"
                     @onclick="() => Interaction.ToggleFolderSelectAsync(Folder)">
-                <FormaIcon Icon="Glyph.Check" />
+                <FormaIcon Icon="Glyph.Check" Size="IconSize.Small" />
             </button>
         }
 
@@ -85,7 +85,7 @@
         <button type="button"
                 class="forma-explorer-folder-target"
                 @onclick="() => Interaction.SelectFolderAsync(Folder)">
-            <span class="forma-explorer-folder-icon" aria-hidden="true"><FormaIcon Icon="@(isCurrent ? Glyph.FolderOpen : Glyph.Folder)" /></span>
+            <span class="forma-explorer-folder-icon" aria-hidden="true"><FormaIcon Icon="@(isCurrent ? Glyph.FolderOpen : Glyph.Folder)" Size="IconSize.Small" /></span>
             <span class="forma-explorer-folder-name" title="@Folder.Name">@Folder.Name</span>
         </button>
 

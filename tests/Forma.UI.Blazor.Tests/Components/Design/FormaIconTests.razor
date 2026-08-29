@@ -128,6 +128,54 @@
         }
 
         [Fact]
+        public void Should_carry_no_size_class_when_inline()
+        {
+            // Arrange
+            using var ctx = new FormaIconTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaIcon Icon="Glyph.Check" />);
+
+            // Assert
+            // An inline icon follows the text around it, so nothing sets its size.
+            Assert.Equal("forma-icon", cut.Find("svg").ClassName);
+        }
+
+        [Theory]
+        [InlineData(IconSize.Small, "forma-icon-sm")]
+        [InlineData(IconSize.Medium, "forma-icon-md")]
+        [InlineData(IconSize.Large, "forma-icon-lg")]
+        [InlineData(IconSize.Display, "forma-icon-display")]
+        public void Should_carry_the_class_of_its_size(IconSize size, string expected)
+        {
+            // Arrange
+            using var ctx = new FormaIconTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaIcon Icon="Glyph.Check" Size="size" />);
+
+            // Assert
+            Assert.Equal($"forma-icon {expected}", cut.Find("svg").ClassName);
+        }
+
+        [Fact]
+        public void Should_draw_the_grid_that_is_crisp_at_its_size()
+        {
+            // Arrange
+            using var ctx = new FormaIconTests();
+
+            // Act
+            var small = ctx.Render(@<FormaIcon Icon="Glyph.Check" Size="IconSize.Small" />).Find("svg");
+            var medium = ctx.Render(@<FormaIcon Icon="Glyph.Check" Size="IconSize.Medium" />).Find("svg");
+
+            // Assert
+            // At 24px a 24-unit grid puts the stroke on whole pixels; at 32px the 32-unit grid does.
+            Assert.Multiple(
+                () => Assert.Equal("0 0 24 24", small.GetAttribute("viewBox")),
+                () => Assert.Equal("0 0 32 32", medium.GetAttribute("viewBox")));
+        }
+
+        [Fact]
         public void Should_draw_through_a_supplied_provider_over_the_registered_one()
         {
             // Arrange
@@ -224,13 +272,13 @@
     {
         public const string Data = "M 0 0 L 32 32";
 
-        public bool TryGetArtwork(Icon icon, out IconArtwork artwork)
+        public bool TryGetArtwork(Icon icon, IconSize size, out IconArtwork artwork)
         {
             artwork = IconArtwork.Vector("0 0 32 32", [new IconPath { Data = Data, StrokeWidth = 2 }]);
             return true;
         }
 
-        public IconArtwork GetArtwork(Icon icon)
-            => TryGetArtwork(icon, out var artwork) ? artwork : IconArtwork.None;
+        public IconArtwork GetArtwork(Icon icon, IconSize size)
+            => TryGetArtwork(icon, size, out var artwork) ? artwork : IconArtwork.None;
     }
 }

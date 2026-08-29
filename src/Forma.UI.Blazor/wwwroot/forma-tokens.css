@@ -31,11 +31,20 @@
     --space-5: 1.5rem;    /* between sections; a dialog's padding */
     --space-6: 2rem;      /* between page regions */
 
-    /* Standalone glyph sizes; a glyph inline with text is sized in em instead. */
-    --icon-size-sm: 1rem;       /* a glyph in a dense row: a menu item, a grid cell, a toast marker */
-    --icon-size-md: 1.25rem;    /* a glyph on a button or in a toolbar */
-    --icon-size-lg: 1.5rem;     /* a glyph that leads a panel, a tile or a picker cell */
-    --icon-size-display: 3rem;  /* the figure of an empty state, a drop zone, a media facade */
+    /* Standalone glyph sizes, each a whole multiple of a grid the artwork is drawn on (24 or 32), so
+       a 2-unit stroke lands on whole pixels; a glyph inline with text is sized in em instead. */
+    --icon-size-sm: 1.5rem;     /* 24px, the 24 grid: a button, a toolbar, a menu item, a grid cell, a toast marker */
+    --icon-size-md: 2rem;       /* 32px, the 32 grid: a glyph that leads a panel, a tile or a picker cell */
+    --icon-size-lg: 3rem;       /* 48px, the 24 grid: a section's figure */
+    --icon-size-display: 4rem;  /* 64px, the 32 grid: the figure of an empty state, a drop zone, a media facade */
+    --icon-size-label: 1.25em;  /* a glyph beside a label, a step above the text: Material's 18px on 14px */
+
+    /* The box a control is pressed on. The floor is WCAG's 24×24, which the small icon token already
+       states; the ceiling is the 44×44 that WCAG 2.5.5 and Apple set for touch, which a control grows
+       to under a coarse pointer. Each pairs with an icon size: 24 in 32, 24 in 40. */
+    --control-size-sm: 2rem;      /* 32px: a mini button, a compact toolbar cell, a dense row */
+    --control-size-md: 2.5rem;    /* 40px: a button, an input, a toolbar button */
+    --control-size-lg: 2.75rem;   /* 44px: any control under a coarse pointer */
 
     /* Radii, one per kind of surface. */
     --radius-sm: 0.25rem;   /* a control: button, input, checkbox, cell */
@@ -53,6 +62,7 @@
     --main-color: #1370df;
     --main-dark-color: color-mix(in srgb, var(--main-color) 82%, black);
     --main-light-color: color-mix(in srgb, var(--main-color) 60%, white);
+    --main-foreground-color: #fff;  /* text and marks on an accent or status fill */
 
     /* Focus ring */
     --focus-color: color-mix(in srgb, var(--main-color) 55%, white);

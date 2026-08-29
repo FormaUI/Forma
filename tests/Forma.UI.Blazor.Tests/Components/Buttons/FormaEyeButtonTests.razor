@@ -48,7 +48,7 @@
         {
             // Arrange
             using var ctx = new FormaEyeButtonTests();
-            var expected = ctx.Render(@<FormaIcon Icon="Glyph.EyeSlash" />).Find("svg").InnerHtml;
+            var expected = ctx.Render(@<FormaIcon Icon="Glyph.EyeSlash" Size="IconSize.Small" />).Find("svg").InnerHtml;
 
             // Act
             var cut = ctx.Render(@<FormaEyeButton Label="Show Password" Revealed="false" />);
@@ -62,7 +62,7 @@
         {
             // Arrange
             using var ctx = new FormaEyeButtonTests();
-            var expected = ctx.Render(@<FormaIcon Icon="Glyph.Eye" />).Find("svg").InnerHtml;
+            var expected = ctx.Render(@<FormaIcon Icon="Glyph.Eye" Size="IconSize.Small" />).Find("svg").InnerHtml;
 
             // Act
             var cut = ctx.Render(@<FormaEyeButton Label="Hide Password" Revealed="true" />);

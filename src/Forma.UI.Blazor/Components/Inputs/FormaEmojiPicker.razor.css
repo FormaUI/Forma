@@ -24,8 +24,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-inline-size: 1.75rem;
-    min-block-size: 1.75rem;
+    min-inline-size: var(--control-size-sm);
+    min-block-size: var(--control-size-sm);
     padding: var(--space-1);
     border: none;
     border-block-end: 2px solid transparent;
@@ -96,15 +96,15 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-inline-size: 2rem;
-    min-block-size: 2rem;
+    min-inline-size: var(--control-size-md);
+    min-block-size: var(--control-size-md);
     padding: 0;
     border: none;
     border-radius: var(--radius-sm);
     background: none;
     cursor: pointer;
     touch-action: manipulation;
-    font-size: var(--icon-size-lg);
+    font-size: var(--icon-size-md);
 }
 
 .forma-emoji-picker-emoji:focus-visible {
@@ -144,13 +144,13 @@
 
 @media (pointer: coarse) {
     .forma-emoji-picker-tab {
-        min-inline-size: 2.75rem;
-        min-block-size: 2.75rem;
+        min-inline-size: var(--control-size-lg);
+        min-block-size: var(--control-size-lg);
     }
 
     .forma-emoji-picker-emoji {
-        min-inline-size: 2.75rem;
-        min-block-size: 2.75rem;
+        min-inline-size: var(--control-size-lg);
+        min-block-size: var(--control-size-lg);
     }
 
     .forma-emoji-picker-grid {

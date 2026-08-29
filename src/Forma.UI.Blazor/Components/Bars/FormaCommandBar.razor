@@ -8,7 +8,7 @@
                     disabled="@(!_canScrollBack)"
                     aria-label="@(ScrollBackLabel ?? L["Scroll Commands Back"].Value)"
                     @onclick="() => ScrollAsync(-1)">
-                <FormaIcon Icon="Glyph.ChevronRight" />
+                <FormaIcon Icon="Glyph.ChevronRight" Size="IconSize.Small" />
             </button>
         }
 
@@ -23,7 +23,7 @@
                     disabled="@(!_canScrollForward)"
                     aria-label="@(ScrollForwardLabel ?? L["Scroll Commands Forward"].Value)"
                     @onclick="() => ScrollAsync(1)">
-                <FormaIcon Icon="Glyph.ChevronRight" />
+                <FormaIcon Icon="Glyph.ChevronRight" Size="IconSize.Small" />
             </button>
         }
 

@@ -88,7 +88,7 @@
 }
 
 .forma-explorer-column-actions {
-    inline-size: 2.5rem;
+    inline-size: var(--control-size-md);
     text-align: start;
     cursor: default !important;
 }

@@ -21,10 +21,10 @@ public sealed partial class FormaToastContainer : IDisposable
     private static Glyph MarkerFor(ToastType type)
         => type switch
         {
-            ToastType.Success => Glyph.CheckCircle,
-            ToastType.Error => Glyph.CloseCircle,
+            ToastType.Success => Glyph.CircleCheck,
+            ToastType.Error => Glyph.CircleCross,
             ToastType.Warning => Glyph.Warning,
-            _ => Glyph.Information
+            _ => Glyph.CircleInfo
         };
 
     private Task HandleChangeAsync()

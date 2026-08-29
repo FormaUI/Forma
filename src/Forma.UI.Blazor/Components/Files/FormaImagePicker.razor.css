@@ -36,7 +36,6 @@
     block-size: 5rem;
     border-radius: var(--radius-md);
     border: 1px solid var(--light-border-color);
-    font-size: var(--icon-size-display);
     color: var(--text-muted-color);
 }
 

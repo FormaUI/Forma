@@ -40,8 +40,8 @@ public sealed class ListPlugin(RichTextEditorPlugin editor) : IComposerFeaturePl
                 Title = "Lists",
                 Items =
                 [
-                    new FormaToolbarToggle { Id = "bullet-list", Title = "Bulleted List", Icon = Glyph.BulletList, Command = BulletListCommand },
-                    new FormaToolbarToggle { Id = "ordered-list", Title = "Numbered List", Icon = Glyph.NumberedList, Command = OrderedListCommand },
+                    new FormaToolbarToggle { Id = "bullet-list", Title = "Bulleted List", Icon = Glyph.ListBullet, Command = BulletListCommand },
+                    new FormaToolbarToggle { Id = "ordered-list", Title = "Numbered List", Icon = Glyph.ListNumbered, Command = OrderedListCommand },
                 ],
             },
             new FormaToolbarGroup

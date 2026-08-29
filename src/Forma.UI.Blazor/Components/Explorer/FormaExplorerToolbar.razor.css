@@ -9,7 +9,7 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
-    min-block-size: 2.5rem;
+    min-block-size: var(--control-size-md);
 }
 
 /* A glyph's ink is taller than a capital, so it is lowered onto the label's cap-height centre. */
@@ -24,11 +24,6 @@
     justify-content: center;
     line-height: 1;
     translate: 0 0.064em;
-}
-
-.forma-explorer-selection-status ::deep .forma-explorer-exit-select-button svg {
-    inline-size: 0.6875rem;
-    block-size: 0.6875rem;
 }
 
 .forma-explorer-visually-hidden {
@@ -53,7 +48,7 @@
 .forma-explorer-selection-bar {
     flex: 1;
     box-sizing: border-box;
-    min-block-size: 2.5rem;
+    min-block-size: var(--control-size-md);
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -146,8 +141,8 @@
 
 @media (pointer: coarse) {
     .forma-explorer-view-button {
-        inline-size: 2.75rem;
-        block-size: 2.75rem;
+        inline-size: var(--control-size-lg);
+        block-size: var(--control-size-lg);
     }
 }
 

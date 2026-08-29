@@ -10,12 +10,12 @@
     block-size: 1rem;
     flex-shrink: 0;
     margin: 0;
-    accent-color: var(--main-color, #0d6efd);
+    accent-color: var(--main-color);
     touch-action: manipulation;
 }
 
 .forma-checkbox:focus-visible {
-    outline: 2px solid var(--focus-color, #86b7fe);
+    outline: 2px solid var(--focus-color);
     outline-offset: 2px;
 }
 

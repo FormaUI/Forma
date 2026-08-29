@@ -2,5 +2,5 @@
 
 .forma-composer-plugins-row {
     padding-block-start: var(--space-2);
-    border-block-start: 1px solid var(--border-color, rgba(98, 105, 118, 0.16));
+    border-block-start: 1px solid var(--border-color);
 }

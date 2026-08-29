@@ -35,10 +35,10 @@
     max-inline-size: 20rem;
     max-block-size: 20rem;
     overflow-y: auto;
-    border: 1px solid var(--border-color, rgba(98, 105, 118, 0.16));
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
-    background: var(--input-background-color, #fff);
-    box-shadow: var(--shadow-medium, 0 8px 24px rgba(0, 0, 0, 0.14));
+    background: var(--input-background-color);
+    box-shadow: var(--shadow-medium);
 }
 
 /* Held back until the popover opens so it cannot flash at the top-left corner in the
@@ -52,10 +52,10 @@
     padding-block: var(--space-2);
     padding-inline: var(--space-3);
     margin-block-end: var(--space-1);
-    border-block-end: 1px solid var(--border-color, rgba(98, 105, 118, 0.16));
+    border-block-end: 1px solid var(--border-color);
     font-weight: 600;
     font-size: var(--font-size-xs);
-    color: var(--text-color, #212529);
+    color: var(--text-color);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -80,7 +80,7 @@
     border: none;
     border-radius: var(--radius-sm);
     background: transparent;
-    color: var(--text-color, #212529);
+    color: var(--text-color);
     font: inherit;
     font-size: var(--font-size-sm);
     line-height: var(--line-height-control);
@@ -91,10 +91,14 @@
     touch-action: manipulation;
 }
 
-/* Keeps labels aligned when only some items carry a glyph. */
+/* Keeps labels aligned when only some items carry a glyph; a glyph the item left unsized takes the row's size. */
 ::deep .forma-dropdown-menu-item .forma-icon {
     inline-size: 1em;
-    color: var(--text-muted-color, #889097);
+    color: var(--text-muted-color);
+}
+
+::deep .forma-dropdown-menu-item .forma-icon:not([class*="forma-icon-"]) {
+    font-size: var(--icon-size-sm);
 }
 
 /* The chosen item of a set carries weight and a mark, so the choice survives without colour. */
@@ -110,13 +114,13 @@
 
 @media (pointer: coarse) {
     ::deep .forma-dropdown-menu-item {
-        min-block-size: 2.75rem;
+        min-block-size: var(--control-size-lg);
     }
 }
 
 @media (hover: hover) {
     ::deep .forma-dropdown-menu-item:hover:not(:disabled) {
-        background: var(--hover-background-color, rgba(98, 105, 118, 0.06));
+        background: var(--hover-background-color);
     }
 
     ::deep .forma-dropdown-menu-item:hover:not(:disabled) .forma-icon {
@@ -124,7 +128,7 @@
     }
 
     ::deep .forma-dropdown-menu-item.is-destructive:hover:not(:disabled) {
-        background: var(--forma-dropdown-menu-destructive-background-color, rgba(214, 57, 57, 0.10));
+        background: var(--forma-dropdown-menu-destructive-background-color, color-mix(in srgb, var(--danger-color) 10%, transparent));
         color: var(--forma-dropdown-menu-destructive-color, var(--danger-color));
     }
 }
@@ -139,13 +143,13 @@
 }
 
 ::deep .forma-dropdown-menu-item:focus-visible {
-    outline: 2px solid var(--focus-color, #86b7fe);
+    outline: 2px solid var(--focus-color);
     outline-offset: -2px;
 }
 
 ::deep .forma-dropdown-menu-item:disabled,
 ::deep .forma-dropdown-menu-item[aria-disabled="true"] {
-    color: var(--text-muted-color, #889097);
+    color: var(--text-muted-color);
     cursor: not-allowed;
 }
 
@@ -153,5 +157,5 @@
 ::deep .forma-dropdown-menu-divider {
     block-size: 0;
     margin-block: var(--space-1);
-    border-block-start: 1px solid var(--border-color, rgba(98, 105, 118, 0.16));
+    border-block-start: 1px solid var(--border-color);
 }

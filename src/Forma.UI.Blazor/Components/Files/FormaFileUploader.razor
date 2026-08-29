@@ -6,7 +6,7 @@
         @foreach (var upload in _uploads)
         {
             <li class="forma-file-uploader-item forma-file-uploader-@upload.State.ToString().ToLowerInvariant()">
-                <span class="forma-file-uploader-mark" aria-hidden="true"><FormaIcon Icon="StateGlyph(upload.State)" /></span>
+                <span class="forma-file-uploader-mark" aria-hidden="true"><FormaIcon Icon="StateGlyph(upload.State)" Size="IconSize.Small" /></span>
 
                 <span class="forma-file-uploader-name">
                     @upload.Name

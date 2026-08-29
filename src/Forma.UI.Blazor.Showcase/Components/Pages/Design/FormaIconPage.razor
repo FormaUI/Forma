@@ -1,5 +1,7 @@
 @page "/icon"
 @attribute [ShowcasePage("FormaIcon")]
+@rendermode InteractiveServer
+@using Forma.UI.Blazor.Components.Layout
 @inject IStringLocale<FormaIconPage> L
 
 <h1>FormaIcon</h1>
@@ -8,46 +10,58 @@
 
 <div class="demo-section">
     <h2>@L["Every glyph"]</h2>
-    <p class="description">@L["The whole set at one size, so a glyph can be judged beside its neighbors."]</p>
-    <div class="demo-box">
-        <ul class="glyph-grid glyph-grid-named">
-            @foreach (var glyph in Drawable)
-            {
-                <li>
-                    <FormaIcon Icon="glyph" />
-                    <code>@glyph</code>
-                </li>
-            }
-        </ul>
-    </div>
-</div>
-
-<div class="demo-section">
-    <h2>@L["Variants"]</h2>
+    <p class="description">@L["The whole set at both of its native sizes, 32px from the 32-unit grid and 24px from the 24-unit grid, so a glyph can be judged beside its neighbors and against its other drawing."]</p>
     <p class="description">@L["The default variant is a stroke drawing and the alternate its filled counterpart; a glyph with nothing to fill draws its strokes heavier instead."]</p>
-    <div class="demo-box">
-        <ul class="glyph-grid glyph-grid-named">
-            @foreach (var glyph in Drawable)
+    <FormaTabs Label="@L["Variants"]">
+        <FormaTab Title="@L["Default"]">
+            @foreach (var section in Sections)
             {
-                <li>
-                    <FormaIcon Icon="glyph" />
-                    <FormaIcon Icon="Icon.Alternate(glyph)" />
-                    <code>@glyph</code>
-                </li>
+                <h3>@L[section.Title]</h3>
+                <div class="demo-box">
+                    <ul class="glyph-grid glyph-grid-named">
+                        @foreach (var glyph in section.Glyphs)
+                        {
+                            <li>
+                                <FormaIcon Icon="glyph" Size="IconSize.Medium" />
+                                <FormaIcon Icon="glyph" Size="IconSize.Small" />
+                                <code>@glyph</code>
+                            </li>
+                        }
+                    </ul>
+                </div>
             }
-        </ul>
-    </div>
+        </FormaTab>
+        <FormaTab Title="@L["Alternate"]">
+            @foreach (var section in Sections)
+            {
+                <h3>@L[section.Title]</h3>
+                <div class="demo-box">
+                    <ul class="glyph-grid glyph-grid-named">
+                        @foreach (var glyph in section.Glyphs)
+                        {
+                            <li>
+                                <FormaIcon Icon="Icon.Alternate(glyph)" Size="IconSize.Medium" />
+                                <FormaIcon Icon="Icon.Alternate(glyph)" Size="IconSize.Small" />
+                                <code>@glyph</code>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+        </FormaTab>
+    </FormaTabs>
 </div>
 
 <div class="demo-section">
     <h2>@L["Sizing"]</h2>
-    <p class="description">@L["A glyph is one em tall and keeps its own aspect ratio, so it takes the font size of whatever contains it."]</p>
+    <p class="description">@L["Each size an icon takes is a whole multiple of the grid its artwork is drawn on, so a stroke lands on whole pixels: 24px and 48px draw the 24-unit grid, 32px and 64px the 32-unit grid. A glyph inline with text follows the text instead."]</p>
     <div class="demo-box">
         <div class="glyph-sizes">
-            <span style="font-size: 0.75rem;"><FormaIcon Icon="Glyph.Folder" /> 0.75rem</span>
-            <span style="font-size: 1rem;"><FormaIcon Icon="Glyph.Folder" /> 1rem</span>
-            <span style="font-size: 1.5rem;"><FormaIcon Icon="Glyph.Folder" /> 1.5rem</span>
-            <span style="font-size: 3rem;"><FormaIcon Icon="Glyph.Folder" /> 3rem</span>
+            <span><FormaIcon Icon="Glyph.Folder" /> @L["Inline"]</span>
+            <span><FormaIcon Icon="Glyph.Folder" Size="IconSize.Small" /> @L["Small"] · 24px</span>
+            <span><FormaIcon Icon="Glyph.Folder" Size="IconSize.Medium" /> @L["Medium"] · 32px</span>
+            <span><FormaIcon Icon="Glyph.Folder" Size="IconSize.Large" /> @L["Large"] · 48px</span>
+            <span><FormaIcon Icon="Glyph.Folder" Size="IconSize.Display" /> @L["Display"] · 64px</span>
         </div>
     </div>
 </div>
@@ -76,15 +90,10 @@
                 <FormaIcon Icon="Icon.Alternate(Glyph.Delete)" /> @L["Delete"]
             </FormaButton>
             <FormaButton Variant="ButtonVariant.Secondary" aria-label="@L["Search"]">
-                <FormaIcon Icon="Glyph.Search" />
+                <FormaIcon Icon="Glyph.Search" Size="IconSize.Small" />
             </FormaButton>
         </div>
     </div>
 </div>
 
 <PageLocalization />
-
-@code {
-    private static IEnumerable<Glyph> Drawable
-        => Enum.GetValues<Glyph>().Where(glyph => glyph is not Glyph.None);
-}

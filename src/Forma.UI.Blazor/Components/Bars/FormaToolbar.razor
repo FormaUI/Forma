@@ -26,7 +26,7 @@
                             <Trigger>
                                 @if (menu.Icon is { } menuIcon)
                                 {
-                                    <FormaIcon Icon="menuIcon" />
+                                    <FormaIcon Icon="menuIcon" Size="IconSize.Small" />
                                 }
                                 @if (GetActiveOption(menu).Swatch is { } activeSwatch)
                                 {
@@ -50,7 +50,7 @@
                                         }
                                         @if (option.Icon is { } optionIcon)
                                         {
-                                            <span class="forma-toolbar-option-icon" aria-hidden="true"><FormaIcon Icon="optionIcon" /></span>
+                                            <span class="forma-toolbar-option-icon" aria-hidden="true"><FormaIcon Icon="optionIcon" Size="IconSize.Small" /></span>
                                         }
                                         <span style="@option.PreviewStyle">@option.Title</span>
                                     </FormaDropDownMenuItem>
@@ -85,7 +85,7 @@
                                 title="@GetActionTitle(action, showsLabel)">
                             @if (effectiveIcon is { } icon)
                             {
-                                <FormaIcon Icon="icon" />
+                                <FormaIcon Icon="icon" Size="IconSize.Small" />
                             }
                             @if (showsLabel)
                             {

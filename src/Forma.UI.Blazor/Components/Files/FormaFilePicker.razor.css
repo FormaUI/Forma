@@ -66,10 +66,6 @@
     cursor: not-allowed;
 }
 
-.forma-file-picker-icon {
-    font-size: var(--icon-size-display);
-}
-
 .forma-file-picker-prompt {
     margin: 0;
     font-size: var(--font-size-sm);

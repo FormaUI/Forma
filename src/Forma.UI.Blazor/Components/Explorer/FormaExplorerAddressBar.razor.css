@@ -22,8 +22,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    inline-size: 2rem;
-    block-size: 2rem;
+    inline-size: var(--control-size-sm);
+    block-size: var(--control-size-sm);
     min-inline-size: 24px;
     min-block-size: 24px;
     border: none;
@@ -50,8 +50,8 @@
 
 @media (pointer: coarse) {
     .forma-explorer-nav-button {
-        inline-size: 2.75rem;
-        block-size: 2.75rem;
+        inline-size: var(--control-size-lg);
+        block-size: var(--control-size-lg);
     }
 }
 

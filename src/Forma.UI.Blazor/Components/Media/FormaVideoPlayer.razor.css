@@ -70,7 +70,6 @@
 
 /* A play glyph points the way the media runs, not the way the text reads, so it stays put in RTL. */
 ::deep .forma-video-player-facade-glyph {
-    font-size: var(--icon-size-display);
     position: relative;
     z-index: 1;
 }

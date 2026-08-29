@@ -18,7 +18,7 @@
     outline: none;
     background: transparent;
     color: var(--forma-composer-color, var(--text-color, inherit));
-    font-family: var(--font-family-mono, monospace);
+    font-family: var(--font-family-mono);
     font-size: var(--font-size-sm);
     line-height: var(--line-height-prose);
 

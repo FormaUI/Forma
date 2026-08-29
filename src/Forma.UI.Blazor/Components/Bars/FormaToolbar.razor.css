@@ -37,7 +37,7 @@
     display: inline-block;
     inline-size: 1px;
     block-size: 1.25rem;
-    background-color: var(--border-color, rgba(98, 105, 118, 0.16));
+    background-color: var(--border-color);
     margin-inline: var(--space-1);
 }
 
@@ -46,12 +46,12 @@
     align-items: center;
     justify-content: center;
     gap: var(--space-1);
-    min-inline-size: 2rem;
-    min-block-size: 2rem;
+    min-inline-size: var(--control-size-md);
+    min-block-size: var(--control-size-md);
     padding-inline: var(--space-2);
     padding-block: var(--space-1);
     font-size: var(--font-size-sm);
-    color: var(--text-color, #2c384a);
+    color: var(--text-color);
     background: transparent;
     border: 1px solid transparent;
     border-radius: var(--radius-sm);
@@ -64,34 +64,34 @@
     padding-inline: var(--space-3);
     white-space: nowrap;
     font-weight: 500;
-    background-color: var(--input-background-color, #fff);
-    border-color: var(--light-border-color, rgba(98, 105, 118, 0.16));
+    background-color: var(--input-background-color);
+    border-color: var(--light-border-color);
     box-shadow: var(--shadow-small);
 }
 
 .forma-toolbar-readout {
     display: inline-flex;
     align-items: center;
-    min-block-size: 2rem;
+    min-block-size: var(--control-size-sm);
     padding-inline: var(--space-2);
     font-size: var(--font-size-sm);
-    color: var(--text-secondary-color, #6c757d);
+    color: var(--text-secondary-color);
 }
 
 @media (pointer: coarse) {
     .forma-toolbar-button {
-        min-inline-size: 2.75rem;
-        min-block-size: 2.75rem;
+        min-inline-size: var(--control-size-lg);
+        min-block-size: var(--control-size-lg);
     }
 }
 
 @media (hover: hover) {
     .forma-toolbar-button:hover:not(:disabled) {
-        background-color: var(--hover-background-color, rgba(98, 105, 118, 0.06));
+        background-color: var(--hover-background-color);
     }
 
     .forma-toolbar-button-labelled:hover:not(:disabled) {
-        border-color: var(--dark-border-color, rgba(98, 105, 118, 0.31));
+        border-color: var(--dark-border-color);
     }
 }
 
@@ -101,15 +101,15 @@
 }
 
 .forma-toolbar-button:focus-visible {
-    outline: 2px solid var(--focus-color, #1370df);
+    outline: 2px solid var(--focus-color);
     outline-offset: 1px;
 }
 
 .forma-toolbar-button-active {
     position: relative;
-    background-color: var(--hover-background-color, rgba(98, 105, 118, 0.12));
-    border-color: var(--dark-border-color, rgba(98, 105, 118, 0.31));
-    color: var(--main-color, #1370df);
+    background-color: var(--hover-background-color);
+    border-color: var(--dark-border-color);
+    color: var(--main-color);
 }
 
 .forma-toolbar-button-active::after {
@@ -128,9 +128,11 @@
     }
 }
 
-.forma-toolbar-menu ::deep .forma-button {
+/* The menu's trigger is the drop-down's own button, so it is reached from the row that holds it. */
+.forma-toolbar-group ::deep .forma-toolbar-menu,
+.forma-toolbar-loose ::deep .forma-toolbar-menu {
     gap: var(--space-1);
-    min-block-size: 2rem;
+    min-block-size: var(--control-size-md);
     padding-inline: var(--space-2);
     font-size: var(--font-size-xs);
     font-weight: 500;
@@ -138,8 +140,9 @@
 }
 
 @media (pointer: coarse) {
-    .forma-toolbar-menu ::deep .forma-button {
-        min-block-size: 2.75rem;
+    .forma-toolbar-group ::deep .forma-toolbar-menu,
+    .forma-toolbar-loose ::deep .forma-toolbar-menu {
+        min-block-size: var(--control-size-lg);
     }
 }
 
@@ -150,7 +153,8 @@
     white-space: nowrap;
 }
 
-.forma-toolbar-menu-caret {
+.forma-toolbar-group ::deep .forma-toolbar-menu-caret,
+.forma-toolbar-loose ::deep .forma-toolbar-menu-caret {
     inline-size: 0.625em;
     opacity: 0.7;
 }
@@ -158,7 +162,7 @@
 .forma-toolbar-menu-bar {
     inline-size: 1rem;
     block-size: 0.25rem;
-    border: 1px solid var(--dark-border-color, rgba(98, 105, 118, 0.31));
+    border: 1px solid var(--dark-border-color);
     border-radius: var(--radius-sm);
 }
 
@@ -167,8 +171,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    inline-size: 0.875rem;
-    block-size: 0.875rem;
+    inline-size: var(--icon-size-sm);
+    block-size: var(--icon-size-sm);
     margin-inline-end: var(--space-1);
     vertical-align: -0.125rem;
     color: var(--text-secondary-color);
@@ -176,10 +180,10 @@
 
 .forma-toolbar-swatch {
     display: inline-block;
-    inline-size: 0.875rem;
-    block-size: 0.875rem;
+    inline-size: var(--icon-size-sm);
+    block-size: var(--icon-size-sm);
     margin-inline-end: var(--space-1);
-    border: 1px solid var(--dark-border-color, rgba(98, 105, 118, 0.31));
+    border: 1px solid var(--dark-border-color);
     border-radius: var(--radius-sm);
     vertical-align: -0.125rem;
 }

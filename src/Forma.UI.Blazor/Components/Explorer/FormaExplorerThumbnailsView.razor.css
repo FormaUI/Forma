@@ -97,7 +97,7 @@
     flex-shrink: 0;
     border-radius: var(--radius-sm);
     border: 1px solid var(--dark-border-color);
-    background: rgba(255, 255, 255, 0.95);
+    background: color-mix(in srgb, var(--input-background-color) 95%, transparent);
     color: transparent;
     pointer-events: none;
     font-size: var(--forma-explorer-check-glyph-size);

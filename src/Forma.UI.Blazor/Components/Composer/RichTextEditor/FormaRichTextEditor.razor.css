@@ -81,23 +81,23 @@
     margin-inline-end: 0;
     margin-block: var(--space-3);
     padding-inline-start: var(--space-3);
-    border-inline-start: 3px solid var(--border-color, #d9dee5);
-    color: var(--text-secondary-color, #6b7280);
+    border-inline-start: 3px solid var(--border-color);
+    color: var(--text-secondary-color);
     font-style: italic;
 }
 
 .forma-composer-rich-text-canvas ::deep code {
     padding: 0.125rem 0.25rem;
-    font-family: var(--font-family-mono, monospace);
+    font-family: var(--font-family-mono);
     font-size: 0.875em;
-    background-color: var(--muted-background-color, #f3f4f6);
+    background-color: var(--muted-background-color);
     border-radius: var(--radius-sm);
 }
 
 .forma-composer-rich-text-canvas ::deep pre {
     margin-block: var(--space-3);
     padding: var(--space-3);
-    background-color: var(--muted-background-color, #f3f4f6);
+    background-color: var(--muted-background-color);
     border-radius: var(--radius-md);
     overflow-x: auto;
 }
@@ -112,7 +112,7 @@
 .forma-composer-rich-text-canvas ::deep hr {
     margin-block: var(--space-4);
     border: none;
-    border-block-start: 1px solid var(--border-color, #d9dee5);
+    border-block-start: 1px solid var(--border-color);
 }
 
 .forma-composer-rich-text-canvas ::deep table,
@@ -120,20 +120,20 @@
     inline-size: 100%;
     margin-block: var(--space-3);
     border-collapse: collapse;
-    border: 1px solid var(--border-color, #d9dee5);
+    border: 1px solid var(--border-color);
 }
 
 .forma-composer-rich-text-canvas ::deep table th,
 .forma-composer-rich-text-canvas ::deep table td {
     padding-inline: var(--space-3);
     padding-block: var(--space-2);
-    border: 1px solid var(--border-color, #d9dee5);
+    border: 1px solid var(--border-color);
     text-align: start;
     vertical-align: top;
 }
 
 .forma-composer-rich-text-canvas ::deep table th {
-    background-color: var(--muted-background-color, #f3f4f6);
+    background-color: var(--muted-background-color);
     font-weight: 600;
 }
 
@@ -141,7 +141,7 @@
     margin-block-end: var(--space-1);
     font-weight: 600;
     text-align: start;
-    color: var(--text-secondary-color, #6b7280);
+    color: var(--text-secondary-color);
 }
 
 .forma-composer-rich-text-canvas ::deep figure.forma-composer-image {
@@ -176,7 +176,7 @@
 
 .forma-composer-rich-text-canvas ::deep a[href]:focus-visible,
 .forma-composer-rich-text-canvas ::deep a[name]:focus-visible {
-    outline: 2px solid var(--focus-color, #86b7fe);
+    outline: 2px solid var(--focus-color);
     outline-offset: 2px;
     border-radius: var(--radius-sm);
 }
@@ -187,19 +187,19 @@
     margin-inline: var(--space-1);
     padding-inline: var(--space-1);
     vertical-align: baseline;
-    font-family: var(--font-family-mono, monospace);
+    font-family: var(--font-family-mono);
     font-size: var(--font-size-sm);
     line-height: var(--line-height-prose);
-    color: var(--text-secondary-color, #6b7280);
-    background-color: var(--muted-background-color, #f3f4f6);
-    border: 1px dashed var(--border-color, #d9dee5);
+    color: var(--text-secondary-color);
+    background-color: var(--muted-background-color);
+    border: 1px dashed var(--border-color);
     border-radius: var(--radius-sm);
     user-select: none;
 }
 
 /* An anchor wrapping selected text keeps that text visible, so it is marked rather than replaced. */
 .forma-composer-rich-text-canvas ::deep a[name]:not(:empty) {
-    border-block-end: 1px dashed var(--border-color, #d9dee5);
+    border-block-end: 1px dashed var(--border-color);
 }
 
 /* The marker requests text presentation through a symbol font, so an emoji-capable character
@@ -223,7 +223,7 @@
 .forma-composer-rich-text-canvas ::deep figure.forma-composer-image figcaption {
     margin-block-start: var(--space-1);
     font-size: var(--font-size-sm);
-    color: var(--text-secondary-color, #6b7280);
+    color: var(--text-secondary-color);
     font-style: italic;
     text-align: center;
 }
@@ -250,8 +250,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    inline-size: 2rem;
-    block-size: 2rem;
+    inline-size: var(--icon-size-md);
+    block-size: var(--icon-size-md);
     font-size: var(--font-size-xs);
     color: var(--forma-composer-video-badge-foreground-color, var(--input-background-color));
     background-color: var(--forma-composer-video-badge-color, var(--main-color));
@@ -265,10 +265,10 @@
 .forma-composer-rich-text-canvas ::deep .forma-composer-embed {
     margin-block: var(--space-3);
     padding: var(--space-3);
-    background-color: var(--muted-background-color, #f3f4f6);
-    border: 1px dashed var(--border-color, #d9dee5);
+    background-color: var(--muted-background-color);
+    border: 1px dashed var(--border-color);
     border-radius: var(--radius-md);
-    font-family: var(--font-family-mono, monospace);
+    font-family: var(--font-family-mono);
     font-size: var(--font-size-sm);
 }
 

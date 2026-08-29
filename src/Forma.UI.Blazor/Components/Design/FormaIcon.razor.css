@@ -1,8 +1,9 @@
 /* ============================================================
    FormaIcon — CSS isolation
-   Sized in em so a caller that set font-size on the icon it
-   replaced keeps the same rendered size. Width follows each
-   glyph's own aspect ratio rather than being forced square.
+   Sized in em, so an inline icon follows the text it sits in
+   and a sized one takes its token through font-size. Width
+   follows each glyph's own aspect ratio rather than being
+   forced square.
    ============================================================ */
 
 .forma-icon {
@@ -12,4 +13,21 @@
     flex-shrink: 0;
     vertical-align: -0.125em;
     overflow: visible;
+}
+
+/* Each size is one the artwork is drawn crisp at; the provider picks the matching grid. */
+.forma-icon-sm {
+    font-size: var(--icon-size-sm);
+}
+
+.forma-icon-md {
+    font-size: var(--icon-size-md);
+}
+
+.forma-icon-lg {
+    font-size: var(--icon-size-lg);
+}
+
+.forma-icon-display {
+    font-size: var(--icon-size-display);
 }

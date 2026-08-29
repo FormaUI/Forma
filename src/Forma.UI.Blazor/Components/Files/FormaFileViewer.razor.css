@@ -66,8 +66,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    inline-size: 2rem;
-    block-size: 2rem;
+    inline-size: var(--control-size-sm);
+    block-size: var(--control-size-sm);
     padding: 0;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
@@ -81,8 +81,8 @@
 
 @media (pointer: coarse) {
     .forma-file-viewer-zoom-button {
-        inline-size: 2.75rem;
-        block-size: 2.75rem;
+        inline-size: var(--control-size-lg);
+        block-size: var(--control-size-lg);
     }
 }
 
@@ -150,7 +150,6 @@
 }
 
 ::deep .forma-file-viewer-unsupported-glyph {
-    font-size: var(--icon-size-display);
     color: var(--text-muted-color);
 }
 
@@ -191,13 +190,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    inline-size: 2.75rem;
-    block-size: 2.75rem;
+    inline-size: var(--control-size-lg);
+    block-size: var(--control-size-lg);
     border: 0;
     border-radius: var(--radius-pill);
     background-color: var(--forma-file-viewer-nav-background-color, var(--media-scrim-color));
     color: var(--forma-file-viewer-nav-color, var(--media-foreground-color));
-    font-size: var(--icon-size-md);
+    font-size: var(--icon-size-sm);
     cursor: pointer;
     touch-action: manipulation;
 }

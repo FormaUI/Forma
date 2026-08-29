@@ -5,15 +5,15 @@
     inline-size: 100%;
     min-inline-size: 16rem;
     min-block-size: 14rem;
-    background-color: var(--input-background-color, #fff);
-    border: 1px solid var(--border-color, rgba(98, 105, 118, 0.16));
+    background-color: var(--input-background-color);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     box-sizing: border-box;
     overflow: hidden;
 }
 
 .forma-composer:focus-within {
-    border-color: var(--focus-color, #1370df);
+    border-color: var(--focus-color);
 }
 
 .forma-composer-resizable {
@@ -24,11 +24,11 @@
 .forma-composer-disabled {
     opacity: 0.6;
     pointer-events: none;
-    background-color: var(--modal-background-color, #fafbfc);
+    background-color: var(--modal-background-color);
 }
 
 .forma-composer-readonly {
-    background-color: var(--modal-background-color, #fafbfc);
+    background-color: var(--modal-background-color);
 }
 
 .forma-composer.forma-composer-maximized {
@@ -58,8 +58,8 @@
     min-block-size: 10rem;
     max-block-size: 70vh;
     overflow-y: auto;
-    background-color: var(--input-background-color, #fff);
-    border: 1px solid var(--border-color, rgba(98, 105, 118, 0.16));
+    background-color: var(--input-background-color);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     line-height: var(--line-height-prose);
 }

@@ -9,7 +9,7 @@ dialog.forma-modal {
     border-radius: var(--radius-lg);
     padding: 0;
     max-height: 90vh;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+    box-shadow: var(--shadow-large);
     overflow: hidden;
     opacity: 0;
     transform: translateY(-12px) scale(0.98);
@@ -25,7 +25,7 @@ dialog.forma-modal[open] {
 
 /* ── Backdrop ── */
 dialog.forma-modal::backdrop {
-    background-color: rgba(0, 0, 0, 0.45);
+    background-color: color-mix(in srgb, var(--media-background-color) 45%, transparent);
 }
 
 @starting-style {

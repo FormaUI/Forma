@@ -38,7 +38,7 @@
 .forma-button-primary {
     background-color: var(--main-color);
     border-color: var(--main-color);
-    color: #fff;
+    color: var(--main-foreground-color);
     box-shadow: 0 1px 2px color-mix(in srgb, var(--main-color) 28%, transparent);
 }
 
@@ -99,7 +99,7 @@
 .forma-button-danger {
     background-color: var(--danger-color);
     border-color: var(--danger-color);
-    color: #fff;
+    color: var(--main-foreground-color);
     box-shadow: 0 1px 2px color-mix(in srgb, var(--danger-color) 28%, transparent);
 }
 
@@ -140,30 +140,28 @@
     font-size: var(--font-size-xs);
 }
 
+/* A glyph beside a label sits a step above the text, the 18px-on-14px ratio Material draws, so it
+   reads as a mark rather than a letter; the glyph belongs to the caller's markup, so ::deep reaches it. */
+.forma-button ::deep .forma-icon:not([class*="forma-icon-"]) {
+    font-size: var(--icon-size-label);
+}
+
 /* ---------- icon only ---------- */
 .forma-button-icon {
     padding: 0;
-    inline-size: 1.875rem;
-    block-size: 1.875rem;
+    inline-size: var(--control-size-md);
+    block-size: var(--control-size-md);
     flex-shrink: 0;
 }
 
 .forma-button-icon.forma-button-mini {
-    inline-size: 1.5rem;
-    block-size: 1.5rem;
+    inline-size: var(--control-size-sm);
+    block-size: var(--control-size-sm);
 }
 
-/* The glyph belongs to the calling component's markup, so ::deep is what reaches it. Sizing it
-   here keeps it in step with the square: a ghost button has no box to see it shrink against.
-   Only the height is pinned, because glyph artwork is not square. */
-.forma-button-icon ::deep svg {
-    inline-size: auto;
-    block-size: 1rem;
-}
-
-.forma-button-icon.forma-button-mini ::deep svg {
-    inline-size: auto;
-    block-size: 0.8125rem;
+/* With no label, an unsized glyph takes the button's own size instead; one the caller sized keeps its own. */
+.forma-button-icon ::deep .forma-icon:not([class*="forma-icon-"]) {
+    font-size: var(--icon-size-sm);
 }
 
 /* ---------- busy ---------- */
@@ -181,8 +179,8 @@
         60deg,
         transparent,
         transparent 0.75rem,
-        var(--forma-button-busy-stripe-color, rgba(255, 255, 255, 0.28)) 0.75rem,
-        var(--forma-button-busy-stripe-color, rgba(255, 255, 255, 0.28)) 1.5rem
+        var(--forma-button-busy-stripe-color, color-mix(in srgb, var(--main-foreground-color) 28%, transparent)) 0.75rem,
+        var(--forma-button-busy-stripe-color, color-mix(in srgb, var(--main-foreground-color) 28%, transparent)) 1.5rem
     );
     animation: forma-button-busy-stripes 1s linear infinite;
 }
@@ -190,7 +188,7 @@
 .forma-button-secondary.forma-button-busy::after,
 .forma-button-tertiary.forma-button-busy::after,
 .forma-button-ghost.forma-button-busy::after {
-    --forma-button-busy-stripe-color: rgba(98, 105, 118, 0.18);
+    --forma-button-busy-stripe-color: color-mix(in srgb, var(--text-secondary-color) 18%, transparent);
 }
 
 @keyframes forma-button-busy-stripes {
@@ -216,12 +214,12 @@
 @media (pointer: coarse) {
     .forma-button,
     .forma-button-mini {
-        min-block-size: 2.75rem;
+        min-block-size: var(--control-size-lg);
     }
 
     .forma-button-icon,
     .forma-button-icon.forma-button-mini {
-        inline-size: 2.75rem;
-        block-size: 2.75rem;
+        inline-size: var(--control-size-lg);
+        block-size: var(--control-size-lg);
     }
 }

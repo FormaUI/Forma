@@ -84,7 +84,7 @@
 
 @media (pointer: coarse) {
     .forma-command-bar-scroll {
-        min-inline-size: 2.75rem;
-        min-block-size: 2.75rem;
+        min-inline-size: var(--control-size-lg);
+        min-block-size: var(--control-size-lg);
     }
 }

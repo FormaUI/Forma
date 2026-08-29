@@ -13,7 +13,7 @@
     display: flex;
     flex: 1;
     overflow: auto;
-    font-family: var(--font-family-mono, monospace);
+    font-family: var(--font-family-mono);
     font-size: var(--font-size-sm);
     line-height: var(--line-height-prose);
 }
@@ -22,9 +22,9 @@
     flex-shrink: 0;
     margin: 0;
     padding: var(--space-3) var(--space-2);
-    border-inline-end: 1px solid var(--border-color, #d9dee5);
-    background: var(--muted-background-color, #f5f6f8);
-    color: var(--text-muted-color, #6b7280);
+    border-inline-end: 1px solid var(--border-color);
+    background: var(--muted-background-color);
+    color: var(--text-muted-color);
     text-align: end;
     list-style: none;
     user-select: none;
@@ -59,8 +59,8 @@
     align-items: center;
     gap: var(--space-2);
     padding: var(--space-2);
-    border-block-end: 1px solid var(--border-color, #d9dee5);
-    background: var(--muted-background-color, #f5f6f8);
+    border-block-end: 1px solid var(--border-color);
+    background: var(--muted-background-color);
 }
 
 .demo-source-rename-field {
@@ -68,14 +68,14 @@
     min-inline-size: 6rem;
     min-block-size: 1.75rem;
     padding: var(--space-1) var(--space-2);
-    border: 1px solid var(--border-color, #d9dee5);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
-    font-family: var(--font-family-mono, monospace);
+    font-family: var(--font-family-mono);
     font-size: var(--font-size-sm);
 }
 
 .demo-source-rename-arrow {
-    color: var(--text-muted-color, #6b7280);
+    color: var(--text-muted-color);
 }
 
 @media (pointer: coarse) {

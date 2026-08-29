@@ -7,7 +7,7 @@
 .forma-explorer {
     --forma-explorer-check-size: 1.5rem;
     --forma-explorer-check-glyph-size: var(--font-size-xs);
-    --forma-explorer-check-foreground-color: #fff;
+    --forma-explorer-check-foreground-color: var(--main-foreground-color);
     --forma-explorer-block-size: 40rem;
     --forma-explorer-padding: var(--space-3);
     --forma-explorer-radius: var(--radius-md);
@@ -218,7 +218,6 @@
 }
 
 .forma-explorer-empty-icon {
-    font-size: var(--icon-size-display);
     opacity: 0.6;
 }
 
@@ -282,8 +281,8 @@
 }
 
 .forma-explorer-spinner {
-    inline-size: 1.75rem;
-    block-size: 1.75rem;
+    inline-size: var(--icon-size-md);
+    block-size: var(--icon-size-md);
     border: 3px solid var(--light-border-color);
     border-block-start-color: var(--main-color);
     border-radius: 50%;
@@ -339,6 +338,6 @@
 
 @media (pointer: coarse) {
     .forma-explorer-scroll-sentinel ::deep .forma-explorer-load-more-button {
-        min-block-size: 2.75rem;
+        min-block-size: var(--control-size-lg);
     }
 }

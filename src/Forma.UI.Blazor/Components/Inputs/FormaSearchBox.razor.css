@@ -55,6 +55,6 @@
 
 @media (pointer: coarse) {
     .forma-search-box {
-        min-block-size: 2.75rem;
+        min-block-size: var(--control-size-lg);
     }
 }

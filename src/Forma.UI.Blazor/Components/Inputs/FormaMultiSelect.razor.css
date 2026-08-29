@@ -24,7 +24,7 @@
     padding-inline: var(--space-2);
     padding-block: var(--space-1);
     border-radius: var(--radius-pill);
-    background: var(--hover-background-color, rgba(98, 105, 118, 0.06));
+    background: var(--hover-background-color);
     color: var(--forma-input-color, var(--text-color));
     font-size: var(--font-size-sm);
 }
@@ -48,12 +48,12 @@
 
 @media (hover: hover) {
     .forma-multi-select-tag-remove:hover:not(:disabled) {
-        background: var(--forma-multi-select-tag-remove-hover-background-color, rgba(0, 0, 0, 0.1));
+        background: var(--forma-multi-select-tag-remove-hover-background-color, var(--hover-background-color));
     }
 }
 
 .forma-multi-select-tag-remove:focus-visible {
-    outline: 2px solid var(--focus-color, #86b7fe);
+    outline: 2px solid var(--focus-color);
     outline-offset: 2px;
 }
 
@@ -80,7 +80,7 @@
 
 @media (hover: hover) {
     .forma-multi-select-trigger:hover:not(:disabled) {
-        border-color: var(--main-color, #0d6efd);
+        border-color: var(--main-color);
     }
 }
 
@@ -96,7 +96,7 @@
 }
 
 .forma-multi-select-trigger-text.placeholder {
-    color: var(--text-muted-color, #889097);
+    color: var(--text-muted-color);
 }
 
 .forma-multi-select-arrow {
@@ -130,8 +130,8 @@
     max-block-size: 16rem;
     border: none;
     border-radius: var(--radius-md);
-    background: #fff;
-    box-shadow: var(--shadow-medium, 0 4px 16px rgba(0, 0, 0, 0.12));
+    background: var(--input-background-color);
+    box-shadow: var(--shadow-medium);
 }
 
 /* Held back until the popover opens so it cannot flash at the top-left corner in the
@@ -170,19 +170,19 @@
 
 @media (hover: hover) {
     .forma-multi-select-options ::deep .forma-checkbox-label:hover {
-        background: var(--hover-background-color, rgba(98, 105, 118, 0.06));
+        background: var(--hover-background-color);
     }
 }
 
 .forma-multi-select-options ::deep .forma-checkbox-label:has(:focus-visible) {
-    outline: 2px solid var(--focus-color, #86b7fe);
+    outline: 2px solid var(--focus-color);
     outline-offset: -2px;
 }
 
 .forma-multi-select-empty {
     padding-block: var(--space-2);
     padding-inline: var(--space-2);
-    color: var(--text-muted-color, #889097);
+    color: var(--text-muted-color);
     font-size: var(--font-size-sm);
     text-align: center;
 }
@@ -193,7 +193,7 @@
     border: 1px dashed var(--forma-input-border-color, var(--dark-border-color));
     border-radius: var(--radius-sm);
     background: transparent;
-    color: var(--main-color, #0d6efd);
+    color: var(--main-color);
     font: inherit;
     font-size: var(--font-size-sm);
     text-align: start;
@@ -203,12 +203,12 @@
 
 @media (hover: hover) {
     .forma-multi-select-add:hover {
-        background: var(--hover-background-color, rgba(98, 105, 118, 0.06));
+        background: var(--hover-background-color);
     }
 }
 
 .forma-multi-select-add:focus-visible {
-    outline: 2px solid var(--focus-color, #86b7fe);
+    outline: 2px solid var(--focus-color);
     outline-offset: 2px;
 }
 
@@ -216,7 +216,7 @@
     .forma-multi-select-trigger,
     .forma-multi-select-search,
     .forma-multi-select-add {
-        min-block-size: 2.75rem;
+        min-block-size: var(--control-size-lg);
     }
 
     .forma-multi-select-tag-remove {
@@ -225,6 +225,6 @@
     }
 
     .forma-multi-select-options ::deep .forma-checkbox-label {
-        min-block-size: 2.75rem;
+        min-block-size: var(--control-size-lg);
     }
 }

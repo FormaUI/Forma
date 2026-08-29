@@ -21,7 +21,7 @@
 
 @media (hover: hover) {
     .forma-select-trigger:hover:not(:disabled) {
-        border-color: var(--main-color, #0d6efd);
+        border-color: var(--main-color);
     }
 }
 
@@ -37,7 +37,7 @@
 }
 
 .forma-select-trigger-text.placeholder {
-    color: var(--text-muted-color, #889097);
+    color: var(--text-muted-color);
 }
 
 .forma-select-arrow {
@@ -72,8 +72,8 @@
     overflow-y: auto;
     border: none;
     border-radius: var(--radius-md);
-    background: #fff;
-    box-shadow: var(--shadow-medium, 0 4px 16px rgba(0, 0, 0, 0.12));
+    background: var(--input-background-color);
+    box-shadow: var(--shadow-medium);
 }
 
 /* Held back until the popover opens so it cannot flash at the top-left corner in the
@@ -109,37 +109,37 @@
 
 @media (pointer: coarse) {
     .forma-select-option {
-        min-block-size: 2.75rem;
+        min-block-size: var(--control-size-lg);
     }
 }
 
 @media (hover: hover) {
     .forma-select-option:hover {
-        background: var(--hover-background-color, rgba(98, 105, 118, 0.06));
+        background: var(--hover-background-color);
     }
 }
 
 .forma-select-option:focus-visible {
-    outline: 2px solid var(--focus-color, #86b7fe);
+    outline: 2px solid var(--focus-color);
     outline-offset: -2px;
 }
 
 /* Bold weight plus the check mark below are the state's second channel — the tinted
    background alone would fail on a desaturated or forced-colours display. */
 .forma-select-option.selected {
-    background: var(--hover-background-color, rgba(98, 105, 118, 0.06));
+    background: var(--hover-background-color);
     font-weight: 600;
 }
 
 .forma-select-option-check {
     flex-shrink: 0;
-    color: var(--main-color, #0d6efd);
+    color: var(--main-color);
 }
 
 .forma-select-empty {
     padding-block: var(--space-2);
     padding-inline: var(--space-2);
-    color: var(--text-muted-color, #889097);
+    color: var(--text-muted-color);
     font-size: var(--font-size-sm);
     text-align: center;
 }

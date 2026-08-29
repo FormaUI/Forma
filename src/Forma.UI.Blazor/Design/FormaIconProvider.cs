@@ -1,6 +1,7 @@
 namespace Forma.UI.Blazor.Design;
 
 using System.Collections.Frozen;
+using System.Globalization;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -12,13 +13,13 @@ public sealed class FormaIconProvider : IIconProvider
 {
     private const string ResourceName = "Forma.UI.Blazor.Assets.glyphs.json";
 
-    private static readonly Lazy<FrozenDictionary<Glyph, IconArtwork[]>> Set = new(Load);
+    private static readonly Lazy<FrozenDictionary<(Glyph Glyph, int Grid), IconArtwork[]>> Set = new(Load);
 
     /// <summary>The shared provider, which holds no state of its own.</summary>
     public static FormaIconProvider Default { get; } = new();
 
     /// <inheritdoc />
-    public bool TryGetArtwork(Icon icon, out IconArtwork artwork)
+    public bool TryGetArtwork(Icon icon, IconSize size, out IconArtwork artwork)
     {
         if (icon.Glyph is Glyph.None)
         {
@@ -27,12 +28,15 @@ public sealed class FormaIconProvider : IIconProvider
 
         var variant = (int)icon.Variant;
 
-        if (Set.Value.TryGetValue(icon.Glyph, out var variants)
-            && (uint)variant < (uint)variants.Length
-            && variants[variant] is { } found)
+        foreach (var grid in GridsFor(size))
         {
-            artwork = found;
-            return true;
+            if (Set.Value.TryGetValue((icon.Glyph, grid), out var variants)
+                && (uint)variant < (uint)variants.Length
+                && variants[variant] is { } found)
+            {
+                artwork = found;
+                return true;
+            }
         }
 
         artwork = IconArtwork.None;
@@ -40,9 +44,9 @@ public sealed class FormaIconProvider : IIconProvider
     }
 
     /// <inheritdoc />
-    public IconArtwork GetArtwork(Icon icon)
+    public IconArtwork GetArtwork(Icon icon, IconSize size)
     {
-        if (!TryGetArtwork(icon, out var artwork))
+        if (!TryGetArtwork(icon, size, out var artwork))
         {
             throw new ArgumentOutOfRangeException(nameof(icon), $"No artwork is embedded for {icon.Glyph} at {icon.Variant}; rebuild it with scripts/Build-GlyphPack.ps1.");
         }
@@ -50,7 +54,11 @@ public sealed class FormaIconProvider : IIconProvider
         return artwork;
     }
 
-    private static FrozenDictionary<Glyph, IconArtwork[]> Load()
+    // The grid whose stroke lands on whole pixels at the size, then the other as a fallback.
+    private static ReadOnlySpan<int> GridsFor(IconSize size)
+        => size is IconSize.Small or IconSize.Large ? [24, 32] : [32, 24];
+
+    private static FrozenDictionary<(Glyph, int), IconArtwork[]> Load()
     {
         using var stream = typeof(FormaIconProvider).GetTypeInfo().Assembly.GetManifestResourceStream(ResourceName)
             ?? throw new InvalidOperationException($"The glyph resource '{ResourceName}' is missing; rebuild it with scripts/Build-GlyphPack.ps1.");
@@ -59,33 +67,37 @@ public sealed class FormaIconProvider : IIconProvider
             ?? throw new InvalidOperationException($"The glyph resource '{ResourceName}' could not be read.");
 
         var variantCount = Enum.GetValues<GlyphVariant>().Length;
-        var set = new Dictionary<Glyph, IconArtwork[]>(raw.Glyphs.Count);
+        var set = new Dictionary<(Glyph, int), IconArtwork[]>(raw.Glyphs.Count);
 
-        foreach (var (name, byStyle) in raw.Glyphs)
+        foreach (var (name, byGrid) in raw.Glyphs)
         {
             if (!Enum.TryParse<Glyph>(name, out var glyph) || glyph is Glyph.None)
             {
                 continue;
             }
 
-            var variants = new IconArtwork[variantCount];
-
-            foreach (var (styleName, style) in byStyle)
+            foreach (var (gridName, byStyle) in byGrid)
             {
-                if (TryMapVariant(styleName, out var variant))
-                {
-                    variants[(int)variant] = IconArtwork.Vector(
-                        raw.ViewBox,
-                        [.. style.Paths.Select(path => new IconPath
-                        {
-                            Data = path.D,
-                            Opacity = path.O ?? 1,
-                            StrokeWidth = path.F is true ? 0 : style.Stroke,
-                        })]);
-                }
-            }
+                var grid = int.Parse(gridName, CultureInfo.InvariantCulture);
+                var variants = new IconArtwork[variantCount];
 
-            set[glyph] = variants;
+                foreach (var (styleName, style) in byStyle)
+                {
+                    if (TryMapVariant(styleName, out var variant))
+                    {
+                        variants[(int)variant] = IconArtwork.Vector(
+                            $"0 0 {grid} {grid}",
+                            [.. style.Paths.Select(path => new IconPath
+                            {
+                                Data = path.D,
+                                Opacity = path.O ?? 1,
+                                StrokeWidth = path.F is true ? 0 : style.Stroke,
+                            })]);
+                    }
+                }
+
+                set[(glyph, grid)] = variants;
+            }
         }
 
         return set.ToFrozenDictionary();
@@ -110,10 +122,9 @@ public sealed class FormaIconProvider : IIconProvider
     }
 }
 
-/// <summary>The glyph set as scripts/Build-GlyphPack.ps1 writes it.</summary>
+/// <summary>The glyph set as scripts/Build-GlyphPack.ps1 writes it: glyph name, then grid size, then style name.</summary>
 internal sealed record RawGlyphSet(
-    [property: JsonPropertyName("viewBox")] string ViewBox,
-    [property: JsonPropertyName("glyphs")] Dictionary<string, Dictionary<string, RawGlyphStyle>> Glyphs);
+    [property: JsonPropertyName("glyphs")] Dictionary<string, Dictionary<string, Dictionary<string, RawGlyphStyle>>> Glyphs);
 
 /// <summary>One style of one glyph: the stroke width its paths are drawn with, zero for a filled drawing, and the paths.</summary>
 internal sealed record RawGlyphStyle(

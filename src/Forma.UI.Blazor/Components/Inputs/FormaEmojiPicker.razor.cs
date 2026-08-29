@@ -43,7 +43,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
         ["animals"] = Glyph.PawPrint,
         ["food"] = Glyph.ForkKnife,
         ["activities"] = Glyph.SoccerBall,
-        ["travel"] = Glyph.Airplane,
+        ["travel"] = Glyph.AirplaneRight,
         ["objects"] = Glyph.Lightbulb,
         ["symbols"] = Glyph.Heart,
         ["flags"] = Glyph.Flag,

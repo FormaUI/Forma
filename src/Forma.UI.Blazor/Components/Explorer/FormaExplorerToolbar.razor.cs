@@ -74,7 +74,7 @@ public sealed partial class FormaExplorerToolbar : ComponentBase
         => GlyphFor(SortDirection);
 
     private static Glyph GlyphFor(ExplorerSortDirection direction)
-        => direction == ExplorerSortDirection.Ascending ? Glyph.SortAscending : Glyph.SortDescending;
+        => direction == ExplorerSortDirection.Ascending ? Glyph.TriangleUp : Glyph.TriangleDown;
 
     private string SortFieldLabel(ExplorerSortField field)
         => field switch

@@ -27,6 +27,6 @@
 
 @media (pointer: coarse) {
     .forma-search-toolbar-search {
-        min-block-size: 2.75rem;
+        min-block-size: var(--control-size-lg);
     }
 }

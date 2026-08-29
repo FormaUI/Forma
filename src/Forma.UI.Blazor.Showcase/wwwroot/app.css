@@ -134,8 +134,8 @@ body {
 /* The glyph and emoji galleries every Design page lays out the same way. */
 .glyph-grid {
     display: grid;
-    /* Wide enough for a glyph beside its name on one line: the longest name in the set at the caption size, the glyph, and the padding. */
-    grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+    /* Wide enough for a glyph pair beside its name on one line: the longest name in the set at the caption size (7.5rem), a 32px and a 24px glyph (3.5rem), two gaps and the padding (2rem). */
+    grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
     gap: var(--space-2);
     margin: 0;
     padding: 0;

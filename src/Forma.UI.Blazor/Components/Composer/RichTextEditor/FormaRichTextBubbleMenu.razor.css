@@ -7,11 +7,11 @@
     align-items: center;
     gap: var(--space-1);
     padding: var(--space-1);
-    background-color: var(--input-background-color, #fff);
-    color: var(--text-color, #1a1a1a);
-    border: 1px solid var(--border-color, #d9dee5);
+    background-color: var(--input-background-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06));
+    box-shadow: var(--shadow-medium);
     box-sizing: border-box;
 }
 
@@ -23,8 +23,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-inline-size: 1.75rem;
-    min-block-size: 1.75rem;
+    min-inline-size: var(--control-size-sm);
+    min-block-size: var(--control-size-sm);
     padding: var(--space-1);
     border: none;
     border-radius: var(--radius-sm);
@@ -36,12 +36,12 @@
 
 @media (hover: hover) {
     .forma-composer-bubble-item:hover {
-        background-color: var(--muted-background-color, #f3f4f6);
+        background-color: var(--muted-background-color);
     }
 }
 
 .forma-composer-bubble-item:focus-visible {
-    outline: 2px solid var(--focus-color, #0066cc);
+    outline: 2px solid var(--focus-color);
     outline-offset: 1px;
 }
 
@@ -55,7 +55,7 @@
 
 @media (pointer: coarse) {
     .forma-composer-bubble-item {
-        min-inline-size: 2.75rem;
-        min-block-size: 2.75rem;
+        min-inline-size: var(--control-size-lg);
+        min-block-size: var(--control-size-lg);
     }
 }

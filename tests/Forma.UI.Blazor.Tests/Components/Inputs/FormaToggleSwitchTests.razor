@@ -91,7 +91,7 @@
             // Arrange
             using var ctx = new FormaToggleSwitchTests();
             var model = new FakeModel { Toggle = false };
-            var expected = ctx.Render(@<FormaIcon Icon="Glyph.Close" />).Find("path").GetAttribute("d");
+            var expected = ctx.Render(@<FormaIcon Icon="Glyph.Cross" />).Find("path").GetAttribute("d");
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
