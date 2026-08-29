@@ -274,7 +274,7 @@
                     Title = L["Publication State"],
                     Component = typeof(FormaStatusBadge),
                     @* A loose parameter dictionary is read by reflection, which applies no conversion, so the icon arrives as one. *@
-                    Parameters = new Dictionary<string, object> { ["Text"] = L["Draft"].ToString(), ["Marker"] = new Icon(Glyph.Pen) },
+                    Parameters = new Dictionary<string, object> { ["Text"] = L["Draft"].ToString(), ["Marker"] = Icon.FromGlyph(Glyph.Pen) },
                 },
             ],
         },

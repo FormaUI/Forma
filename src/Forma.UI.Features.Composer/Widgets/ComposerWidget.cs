@@ -15,7 +15,7 @@ public sealed record ComposerWidget
     public required string Category { get; init; }
 
     /// <summary>The icon shown in the palette.</summary>
-    public Icon Icon { get; init; }
+    public required Icon Icon { get; init; }
 
     /// <summary>The component rendering the widget on the canvas.</summary>
     public required Type Component { get; init; }

@@ -206,7 +206,7 @@
    cannot arrive as color emoji. */
 .forma-composer-rich-text-canvas ::deep a[name]:empty::before {
     content: "\2693\FE0E";
-    font-family: "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols 2", sans-serif;
+    font-family: var(--font-family-symbol);
 }
 
 .forma-composer-rich-text-canvas ::deep a[name]:empty::after {
@@ -245,7 +245,7 @@
    It requests text presentation through a symbol font, so it cannot arrive as color emoji. */
 .forma-composer-rich-text-canvas ::deep .forma-composer-video::before {
     content: "\25B6\FE0E";
-    font-family: "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols 2", sans-serif;
+    font-family: var(--font-family-symbol);
     flex-shrink: 0;
     display: flex;
     align-items: center;

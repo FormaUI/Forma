@@ -474,7 +474,7 @@
                 Id = "clock",
                 Title = "Clock",
                 Component = typeof(FormaIcon),
-                Parameters = new Dictionary<string, object> { ["Icon"] = new Icon(Glyph.Clock) },
+                Parameters = new Dictionary<string, object> { ["Icon"] = Icon.FromGlyph(Glyph.Clock) },
             });
 
             // Act
@@ -495,7 +495,7 @@
                 Id = "trash",
                 Title = "Delete",
                 Component = typeof(FormaIcon),
-                Parameters = new Dictionary<string, object> { ["Icon"] = new Icon(Glyph.Delete), ["Class"] = "test-marker" },
+                Parameters = new Dictionary<string, object> { ["Icon"] = Icon.FromGlyph(Glyph.Delete), ["Class"] = "test-marker" },
             });
 
             // Act

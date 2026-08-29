@@ -9,6 +9,8 @@
     --font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
         'Noto Sans Hebrew', sans-serif;
     --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+    /* Faces that draw signs and symbols as text, so a character standing in for an icon never arrives as color emoji. */
+    --font-family-symbol: 'Segoe UI Symbol', 'Apple Symbols', 'Noto Sans Symbols 2', sans-serif;
 
     /* Type scale, in rem so a reader's own font size carries through. Each step has one job. */
     --font-size-xs: 0.75rem;    /* a caption, a badge, a keyboard hint */

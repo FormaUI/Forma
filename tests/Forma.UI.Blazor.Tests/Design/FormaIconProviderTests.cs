@@ -1,26 +1,31 @@
 namespace Forma.UI.Blazor.Tests.Design;
 
+using System.Text;
+
 using Forma.UI.Blazor.Design;
 using Forma.UI.Design.Icons;
 
 public sealed class FormaIconProviderTests
 {
-    private static IEnumerable<Glyph> Drawable
+    private static IEnumerable<Glyph> DrawableGlyphs
         => Enum.GetValues<Glyph>().Where(glyph => glyph is not Glyph.None);
+
+    private static IEnumerable<Brand> DrawableBrands
+        => Enum.GetValues<Brand>().Where(brand => brand is not Brand.None);
 
     [Fact]
     public void Should_carry_artwork_for_every_glyph_in_every_variant_at_every_size()
     {
         // Act & Assert
-        foreach (var glyph in Drawable)
+        foreach (var glyph in DrawableGlyphs)
         {
             foreach (var variant in Enum.GetValues<GlyphVariant>())
             {
                 foreach (var size in Enum.GetValues<IconSize>())
                 {
-                    var artwork = FormaIconProvider.Default.GetArtwork(new Icon(glyph, variant), size);
+                    var artwork = FormaIconProvider.Default.GetArtwork(Icon.FromGlyph(glyph, variant), size);
 
-                    Assert.NotEmpty(Assert.IsType<IconVector>(artwork).Paths);
+                    Assert.NotEmpty(Assert.IsType<IconVector>(artwork, exactMatch: false).Paths);
                 }
             }
         }
@@ -40,7 +45,7 @@ public sealed class FormaIconProviderTests
     public void Should_draw_a_filled_alternate_without_a_stroke()
     {
         // Act
-        var artwork = Assert.IsType<IconVector>(FormaIconProvider.Default.GetArtwork(Icon.Alternate(Glyph.Heart), IconSize.Inline));
+        var artwork = Assert.IsType<IconVector>(FormaIconProvider.Default.GetArtwork(Icon.FromGlyph(Glyph.Heart, GlyphVariant.Alternate), IconSize.Inline));
 
         // Assert
         Assert.All(artwork.Paths, path => Assert.Equal(0, path.StrokeWidth));
@@ -64,7 +69,7 @@ public sealed class FormaIconProviderTests
     {
         // Act
         var primary = Assert.IsType<IconVector>(FormaIconProvider.Default.GetArtwork(Glyph.ArrowRight, IconSize.Inline));
-        var alternate = Assert.IsType<IconVector>(FormaIconProvider.Default.GetArtwork(Icon.Alternate(Glyph.ArrowRight), IconSize.Inline));
+        var alternate = Assert.IsType<IconVector>(FormaIconProvider.Default.GetArtwork(Icon.FromGlyph(Glyph.ArrowRight, GlyphVariant.Alternate), IconSize.Inline));
 
         // Assert
         Assert.Multiple(
@@ -89,8 +94,64 @@ public sealed class FormaIconProviderTests
 
     [Fact]
     public void Should_refuse_the_absent_glyph()
+        => Assert.Throws<ArgumentOutOfRangeException>(() => FormaIconProvider.Default.GetArtwork(Glyph.None, IconSize.Inline));
+
+    [Fact]
+    public void Should_carry_a_titled_mark_for_every_brand_at_every_size()
     {
         // Act & Assert
-        Assert.Throws<ArgumentOutOfRangeException>(() => FormaIconProvider.Default.GetArtwork(default, IconSize.Inline));
+        foreach (var brand in DrawableBrands)
+        {
+            foreach (var size in Enum.GetValues<IconSize>())
+            {
+                var artwork = Assert.IsType<BrandIconArtwork>(FormaIconProvider.Default.GetArtwork(brand, size));
+
+                Assert.Multiple(
+                    () => Assert.Single(artwork.Paths),
+                    () => Assert.False(string.IsNullOrWhiteSpace(artwork.Title), $"{brand} carries no title."));
+            }
+        }
+    }
+
+    [Fact]
+    public void Should_draw_a_brand_mark_as_one_solid_path()
+    {
+        // Act
+        var artwork = Assert.IsType<BrandIconArtwork>(FormaIconProvider.Default.GetArtwork(Brand.GitHub, IconSize.Inline));
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal("GitHub", artwork.Title),
+            () => Assert.Equal(0, Assert.Single(artwork.Paths).StrokeWidth));
+    }
+
+    [Fact]
+    public void Should_answer_no_artwork_for_a_brand_with_no_mark_compiled()
+    {
+        // Arrange
+        // A member the enum will never define, standing in for a brand whose mark has not been compiled.
+        var unknown = (Brand)int.MaxValue;
+
+        // Act
+        var found = FormaIconProvider.Default.TryGetArtwork(unknown, IconSize.Inline, out var artwork);
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.False(found),
+            () => Assert.Same(IconArtwork.None, artwork));
+    }
+
+    [Fact]
+    public void Should_refuse_the_absent_brand()
+        => Assert.Throws<ArgumentOutOfRangeException>(() => FormaIconProvider.Default.GetArtwork(Brand.None, IconSize.Inline));
+
+    [Fact]
+    public void Should_answer_any_character_with_itself()
+    {
+        // Act
+        var artwork = FormaIconProvider.Default.GetArtwork(new Rune('Ω'), IconSize.Small);
+
+        // Assert
+        Assert.Equal(new Rune('Ω'), Assert.IsType<IconCharacter>(artwork).Value);
     }
 }

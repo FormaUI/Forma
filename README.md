@@ -104,17 +104,22 @@ focus, and link shades follow.
 
 ## Icons
 
-`FormaIcon` draws an `Icon` as inline SVG. An `Icon` pairs a `Glyph` — named for what it means
-rather than for the set it is drawn from — with a `GlyphVariant`, the provider's primary or
-alternate representation; the library's own set draws the two as an outline and a solid shape. A
-bare glyph converts to an icon, so `Glyph.Save` and `Icon.Alternate(Glyph.Save)` are both accepted
-wherever an icon is asked for.
+`FormaIcon` draws an `Icon`, which is one of three things. A `Glyph` — named for what it means
+rather than for the set it is drawn from — in an `GlyphVariant`, the provider's primary or alternate
+representation; the library's own set draws the two as an outline and a solid shape. A `Brand`,
+whose official mark is drawn with the brand's name as its accessible name, for a link to a presence
+on that platform. Or a single character, a `Rune`, set by the symbol font in the same box, for a
+badge, a keyboard hint or an initial where a drawing would be overkill. A bare `Glyph`, `Brand` or
+`Rune` converts to an icon, so `Glyph.Save`, `Brand.GitHub` and `new Rune('Ω')` are all accepted
+wherever an icon is asked for; `Icon.FromGlyph(Glyph.Save, GlyphVariant.Alternate)` names the
+alternate.
 
-The artwork for every glyph ships inside the library, drawn to
-[its own specification](docs/glyph-artwork-spec.md), so a host registers nothing and loads no icon
-font. Artwork is resolved through `IIconProvider`; a host that wants a different set registers its
-own provider, and a subtree or a single icon can name one through a cascading value or the
-`Provider` parameter.
+The artwork for every glyph and brand mark ships inside the library — glyphs drawn to
+[its own specification](docs/glyph-artwork-spec.md), marks fetched from Simple Icons — so a host
+registers nothing and loads no icon font. Artwork is resolved through `IIconProvider`; a host that
+wants a different set registers its own provider, and a subtree or a single icon can name one
+through a cascading value or the `Provider` parameter. Whatever a host's provider declines to draw,
+the library's own artwork answers.
 
 ## Emoji
 

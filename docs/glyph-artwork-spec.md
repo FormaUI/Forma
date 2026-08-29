@@ -1,7 +1,7 @@
 # Forma glyph artwork
 
-The specification for Forma's own icon set: the artwork `FormaIcon` draws unless a host registers
-an `IIconProvider` of its own. Every glyph in the `Glyph` enum is a stroke drawing authored as SVG on a
+The specification for Forma's own icon set: the artwork `FormaIcon` draws for a `Glyph` unless a host
+registers an `IIconProvider` of its own. Every glyph in the `Glyph` enum is a stroke drawing authored as SVG on a
 shared grid, from which the build derives its filled counterpart, so the set reads as one family.
 
 This document is the brief for whoever draws the glyphs — a person or a generator. Everything it
@@ -51,9 +51,11 @@ provider reads and rejects any file that breaks the rules above, or a glyph with
 
 A brand logo is never drawn by hand: it is a trademark, and its owner's guidelines forbid a
 redrawing. `assets/Brands/` holds the official marks as fetched from Simple Icons by
-`scripts/Get-SimpleIconsPack.ps1`, listed in its `brands.txt`; nothing compiles or ships them.
-A mark a component or host needs is promoted from there into this pipeline as a solid path on
-both grids, keeping its own precision, with a `Glyph` member named for the brand.
+`scripts/Get-SimpleIconsPack.ps1`, listed in its `brands.txt`, and none of the rules above apply
+to them. Every mark there has a member of the `Brand` enum named for the brand;
+`scripts/Build-BrandPack.ps1` compiles the marks, at their own precision and with each brand's
+title as its accessible name, into the asset the library embeds, and fails when the enum and the
+marks on hand disagree in either direction.
 
 ## Naming
 

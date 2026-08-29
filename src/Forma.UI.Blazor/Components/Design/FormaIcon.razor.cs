@@ -7,18 +7,18 @@ using Forma.UI.Design.Icons;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Renders an icon as inline SVG, so no icon font has to be loaded.</summary>
+/// <summary>Renders an icon as inline SVG, or as a single character set by the font, so no icon font has to be loaded.</summary>
 public sealed partial class FormaIcon : ComponentBase
 {
     private IconArtwork _artwork = default!;
 
     /// <summary>The icon to draw.</summary>
-    [Parameter, EditorRequired] public Icon Icon { get; set; }
+    [Parameter, EditorRequired] public Icon Icon { get; set; } = default!;
 
     /// <summary>The size to draw at, which selects both the icon's box and the artwork drawn for that box.</summary>
     [Parameter] public IconSize Size { get; set; }
 
-    /// <summary>Extra classes applied to the SVG element.</summary>
+    /// <summary>Extra classes applied to the rendered element.</summary>
     [Parameter] public string? Class { get; set; }
 
     /// <summary>The provider supplying this icon's artwork, taken from the surrounding subtree or the host's registration when unset.</summary>
@@ -48,14 +48,17 @@ public sealed partial class FormaIcon : ComponentBase
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
+        ArgumentNullException.ThrowIfNull(Icon);
+
         // Nearest wins: this icon's own provider, then the one a surrounding subtree draws from, then the host's
-        // registration, and the library's own artwork when a host registered none.
+        // registration; the library's own artwork answers whatever none of those can.
         var provider = Provider
             ?? CascadingProvider
-            ?? (IIconProvider?)Services.GetService(typeof(IIconProvider))
-            ?? FormaIconProvider.Default;
+            ?? (IIconProvider?)Services.GetService(typeof(IIconProvider));
 
-        _artwork = provider.TryGetArtwork(Icon, Size, out var artwork) ? artwork : IconArtwork.None;
+        _artwork = provider is not null && provider.TryGetArtwork(Icon, Size, out var supplied)
+            ? supplied
+            : FormaIconProvider.Default.TryGetArtwork(Icon, Size, out var bundled) ? bundled : IconArtwork.None;
     }
 
     private static string Width(IconPath path)

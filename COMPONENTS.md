@@ -21,7 +21,7 @@ Forma.UI.Blazor/Components/
 ├── ✅ FormaVisibility.razor / .razor.cs / .razor.css  # collapses content to nothing without unmounting it
 ├── FieldLabelMode.cs                     # enum: Floating, Pinned, Above, Inline
 ├── (2 / 2) Design/
-│   ├── ✅ FormaIcon.razor / .razor.cs / .razor.css   # draws an Icon as inline SVG, or through the bundled symbol font unregistered
+│   ├── ✅ FormaIcon.razor / .razor.cs / .razor.css   # draws an Icon — a glyph, a brand mark or a character — as inline SVG or symbol-font text
 │   └── ✅ FormaEmoji.razor / .razor.cs / .razor.css  # draws a Forma.UI.Design.Emojis.Emoji from a host's provider
 ├── (6 / 6) Bars/
 │   ├── ✅ FormaCommandArea.razor / .razor.cs / .razor.css
@@ -783,7 +783,7 @@ These are more complex, possibly page-specific, but still benefit from being com
 |---|---|
 | **Old pattern** | The hand-rolled breadcrumb section of `FormaExplorerAddressBar` — root icon, chevron separators, a per-segment dropdown of alternatives, and drop-target handlers, all written directly into that component. `FormaPageTitle`'s own plain `<ol>` of links predates it too |
 | **Used in** | Any trail of segments: a page header's site navigation as well as an explorer's folder path. `FormaExplorerAddressBar` and `FormaPageTitle` both compose it now rather than drawing their own |
-| **Parameters** | `IReadOnlyList<BreadcrumbItem<TItem>> Items`, `Glyph? RootIcon`, `string? AriaLabel`, `EventCallback<TItem?> OnItemClick`, `EventCallback<TItem?> OnItemDrop`. `BreadcrumbItem<TItem>` carries `Label`, `Url?`, `Value?`, `IsCurrent`, and `Children?` for a segment's own dropdown |
+| **Parameters** | `IReadOnlyList<BreadcrumbItem<TItem>> Items`, `Icon? RootIcon`, `string? AriaLabel`, `EventCallback<TItem?> OnItemClick`, `EventCallback<TItem?> OnItemDrop`. `BreadcrumbItem<TItem>` carries `Label`, `Url?`, `Value?`, `IsCurrent`, and `Children?` for a segment's own dropdown |
 | **Blazor approach** | Generic over the value a click or drop reports back, the way `FormaDataGrid<TItem>` and `FormaSortableList<TItem>` already are, with a non-generic marker type so `IStringLocale` resolves independently of `TItem`. A segment with a `Url` renders a real `<a>`; one without renders a `<button>` when `OnItemClick` is wired, or falls back to static text when it is not — so a plain site breadcrumb never gains a false clickable affordance it does nothing with. A chevron beside a segment with `Children` opens a menu of alternatives, closing on a second click, a backdrop click, or Escape |
 | **Notes** | `aria-current="page"` is set from the caller-supplied `IsCurrent` rather than inferred from position, since a defensive comparison against the current value is more robust than assuming the last segment is always current. `FormaPageTitle` derives it itself — only the last crumb lacking a `Url` counts as current, not every non-linked one — which also means an intermediate category label no longer looks identical to the current page, since only the true current segment is bold. Chevron separators mirror through `:dir(rtl)`, matching the rest of the library's glyph-mirroring convention |
 

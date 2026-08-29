@@ -4,6 +4,9 @@ using Forma.UI.Design.Icons;
 
 public partial class FormaIconPage
 {
+    private static readonly IReadOnlyList<Brand> Brands =
+        [.. Enum.GetValues<Brand>().Where(brand => brand is not Brand.None)];
+
     private static readonly IReadOnlyList<GlyphSection> Named =
     [
         new("Arrows and navigation",

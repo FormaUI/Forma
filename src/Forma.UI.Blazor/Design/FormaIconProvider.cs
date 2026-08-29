@@ -8,12 +8,14 @@ using System.Text.Json.Serialization;
 
 using Forma.UI.Design.Icons;
 
-/// <summary>Provides the library's own artwork for every glyph, read from the glyph set embedded in this assembly.</summary>
+/// <summary>Provides the library's own artwork: every glyph and brand mark embedded in this assembly, and any character.</summary>
 public sealed class FormaIconProvider : IIconProvider
 {
-    private const string ResourceName = "Forma.UI.Blazor.Assets.glyphs.json";
+    private const string GlyphResourceName = "Forma.UI.Blazor.Assets.glyphs.json";
+    private const string BrandResourceName = "Forma.UI.Blazor.Assets.brands.json";
 
-    private static readonly Lazy<FrozenDictionary<(Glyph Glyph, int Grid), IconArtwork[]>> Set = new(Load);
+    private static readonly Lazy<FrozenDictionary<(Glyph Glyph, int Grid), IconArtwork[]>> Glyphs = new(LoadGlyphs);
+    private static readonly Lazy<FrozenDictionary<Brand, IconArtwork>> Brands = new(LoadBrands);
 
     /// <summary>The shared provider, which holds no state of its own.</summary>
     public static FormaIconProvider Default { get; } = new();
@@ -21,18 +23,54 @@ public sealed class FormaIconProvider : IIconProvider
     /// <inheritdoc />
     public bool TryGetArtwork(Icon icon, IconSize size, out IconArtwork artwork)
     {
-        if (icon.Glyph is Glyph.None)
+        ArgumentNullException.ThrowIfNull(icon);
+
+        switch (icon)
         {
-            throw new ArgumentOutOfRangeException(nameof(icon), "Glyph.None names no artwork.");
+            case GlyphIcon { Glyph: Glyph.None }:
+                throw new ArgumentOutOfRangeException(nameof(icon), "Glyph.None names no artwork.");
+            case BrandIcon { Brand: Brand.None }:
+                throw new ArgumentOutOfRangeException(nameof(icon), "Brand.None names no artwork.");
+            case GlyphIcon glyph:
+                return TryGetGlyph(glyph, size, out artwork);
+            case BrandIcon brand:
+                if (Brands.Value.TryGetValue(brand.Brand, out var mark))
+                {
+                    artwork = mark;
+                    return true;
+                }
+
+                artwork = IconArtwork.None;
+                return false;
+            case CharacterIcon character:
+                artwork = IconArtwork.Character(character.Character);
+                return true;
+            default:
+                artwork = IconArtwork.None;
+                return false;
+        }
+    }
+
+    /// <inheritdoc />
+    public IconArtwork GetArtwork(Icon icon, IconSize size)
+    {
+        if (!TryGetArtwork(icon, size, out var artwork))
+        {
+            throw new ArgumentOutOfRangeException(nameof(icon), $"No artwork is embedded for {icon}; rebuild it with scripts/Build-GlyphPack.ps1 or scripts/Build-BrandPack.ps1.");
         }
 
-        var variant = (int)icon.Variant;
+        return artwork;
+    }
+
+    private static bool TryGetGlyph(GlyphIcon icon, IconSize size, out IconArtwork artwork)
+    {
+        var index = (int)icon.Variant;
 
         foreach (var grid in GridsFor(size))
         {
-            if (Set.Value.TryGetValue((icon.Glyph, grid), out var variants)
-                && (uint)variant < (uint)variants.Length
-                && variants[variant] is { } found)
+            if (Glyphs.Value.TryGetValue((icon.Glyph, grid), out var variants)
+                && (uint)index < (uint)variants.Length
+                && variants[index] is { } found)
             {
                 artwork = found;
                 return true;
@@ -43,28 +81,20 @@ public sealed class FormaIconProvider : IIconProvider
         return false;
     }
 
-    /// <inheritdoc />
-    public IconArtwork GetArtwork(Icon icon, IconSize size)
-    {
-        if (!TryGetArtwork(icon, size, out var artwork))
-        {
-            throw new ArgumentOutOfRangeException(nameof(icon), $"No artwork is embedded for {icon.Glyph} at {icon.Variant}; rebuild it with scripts/Build-GlyphPack.ps1.");
-        }
-
-        return artwork;
-    }
-
     // The grid whose stroke lands on whole pixels at the size, then the other as a fallback.
     private static ReadOnlySpan<int> GridsFor(IconSize size)
         => size is IconSize.Small or IconSize.Large ? [24, 32] : [32, 24];
 
-    private static FrozenDictionary<(Glyph, int), IconArtwork[]> Load()
-    {
-        using var stream = typeof(FormaIconProvider).GetTypeInfo().Assembly.GetManifestResourceStream(ResourceName)
-            ?? throw new InvalidOperationException($"The glyph resource '{ResourceName}' is missing; rebuild it with scripts/Build-GlyphPack.ps1.");
+    private static Stream OpenResource(string name, string script)
+        => typeof(FormaIconProvider).GetTypeInfo().Assembly.GetManifestResourceStream(name)
+            ?? throw new InvalidOperationException($"The resource '{name}' is missing; rebuild it with {script}.");
 
-        var raw = JsonSerializer.Deserialize(stream, GlyphSetJsonContext.Default.RawGlyphSet)
-            ?? throw new InvalidOperationException($"The glyph resource '{ResourceName}' could not be read.");
+    private static FrozenDictionary<(Glyph, int), IconArtwork[]> LoadGlyphs()
+    {
+        using var stream = OpenResource(GlyphResourceName, "scripts/Build-GlyphPack.ps1");
+
+        var raw = JsonSerializer.Deserialize(stream, IconSetJsonContext.Default.RawGlyphSet)
+            ?? throw new InvalidOperationException($"The resource '{GlyphResourceName}' could not be read.");
 
         var variantCount = Enum.GetValues<GlyphVariant>().Length;
         var set = new Dictionary<(Glyph, int), IconArtwork[]>(raw.Glyphs.Count);
@@ -97,6 +127,26 @@ public sealed class FormaIconProvider : IIconProvider
                 }
 
                 set[(glyph, grid)] = variants;
+            }
+        }
+
+        return set.ToFrozenDictionary();
+    }
+
+    private static FrozenDictionary<Brand, IconArtwork> LoadBrands()
+    {
+        using var stream = OpenResource(BrandResourceName, "scripts/Build-BrandPack.ps1");
+
+        var raw = JsonSerializer.Deserialize(stream, IconSetJsonContext.Default.RawBrandSet)
+            ?? throw new InvalidOperationException($"The resource '{BrandResourceName}' could not be read.");
+
+        var set = new Dictionary<Brand, IconArtwork>(raw.Brands.Count);
+
+        foreach (var (name, mark) in raw.Brands)
+        {
+            if (Enum.TryParse<Brand>(name, out var brand) && brand is not Brand.None)
+            {
+                set[brand] = IconArtwork.Brand(mark.ViewBox, [new IconPath { Data = mark.D }], mark.Title);
             }
         }
 
@@ -137,6 +187,17 @@ internal sealed record RawGlyphPath(
     [property: JsonPropertyName("o")] double? O,
     [property: JsonPropertyName("f")] bool? F);
 
+/// <summary>The brand set as scripts/Build-BrandPack.ps1 writes it: brand name, then its mark.</summary>
+internal sealed record RawBrandSet(
+    [property: JsonPropertyName("brands")] Dictionary<string, RawBrandMark> Brands);
+
+/// <summary>One brand mark: its view box, its single solid path, and the brand's name.</summary>
+internal sealed record RawBrandMark(
+    [property: JsonPropertyName("viewBox")] string ViewBox,
+    [property: JsonPropertyName("d")] string D,
+    [property: JsonPropertyName("title")] string Title);
+
 [JsonSerializable(typeof(RawGlyphSet))]
+[JsonSerializable(typeof(RawBrandSet))]
 [JsonSourceGenerationOptions(PropertyNameCaseInsensitive = true)]
-internal sealed partial class GlyphSetJsonContext : JsonSerializerContext;
+internal sealed partial class IconSetJsonContext : JsonSerializerContext;

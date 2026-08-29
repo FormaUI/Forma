@@ -1,13 +1,12 @@
 # Brand marks
 
-A holding library of brand logos as single-path SVGs, kept on hand so one can be drawn by
-the library when a component or host needs it. Nothing here ships on its own: a mark reaches
-a package only once the `Brand` enum names it, at which point `scripts/Build-BrandPack.ps1`
-compiles it into the asset the library embeds.
+The brand logos the library draws, as single-path SVGs. `brands.txt` names each mark and its
+Simple Icons slug; `scripts/Get-SimpleIconsPack.ps1` fetches every entry from a pinned Simple
+Icons release and writes it here as `{Name}.svg`, keeping the brand's title as the mark's
+accessible name. The `Brand` enum names every mark here, and `scripts/Build-BrandPack.ps1`
+compiles them into the asset the library embeds, failing when the two disagree.
 
-`brands.txt` names each mark and its Simple Icons slug. `scripts/Get-SimpleIconsPack.ps1`
-fetches every entry from a pinned Simple Icons release and writes it here as `{Name}.svg`,
-keeping the brand's title as the mark's accessible name.
+Adding a brand is one line in `brands.txt`, a fetch, and one enum member.
 
 ## Credits
 

@@ -1,6 +1,7 @@
 @page "/icon"
 @attribute [ShowcasePage("FormaIcon")]
 @rendermode InteractiveServer
+@using System.Text
 @using Forma.UI.Blazor.Components.Layout
 @inject IStringLocale<FormaIconPage> L
 
@@ -40,14 +41,29 @@
                         @foreach (var glyph in section.Glyphs)
                         {
                             <li>
-                                <FormaIcon Icon="Icon.Alternate(glyph)" Size="IconSize.Medium" />
-                                <FormaIcon Icon="Icon.Alternate(glyph)" Size="IconSize.Small" />
+                                <FormaIcon Icon="Icon.FromGlyph(glyph, GlyphVariant.Alternate)" Size="IconSize.Medium" />
+                                <FormaIcon Icon="Icon.FromGlyph(glyph, GlyphVariant.Alternate)" Size="IconSize.Small" />
                                 <code>@glyph</code>
                             </li>
                         }
                     </ul>
                 </div>
             }
+        </FormaTab>
+        <FormaTab Title="@L["Brands"]">
+            <p class="description">@L["A brand's official mark, fetched rather than drawn, carrying the brand's name as its accessible name so the mark can stand alone as a link."]</p>
+            <div class="demo-box">
+                <ul class="glyph-grid glyph-grid-named">
+                    @foreach (var brand in Brands)
+                    {
+                        <li>
+                            <FormaIcon Icon="brand" Size="IconSize.Medium" />
+                            <FormaIcon Icon="brand" Size="IconSize.Small" />
+                            <code>@brand</code>
+                        </li>
+                    }
+                </ul>
+            </div>
         </FormaTab>
     </FormaTabs>
 </div>
@@ -62,6 +78,20 @@
             <span><FormaIcon Icon="Glyph.Folder" Size="IconSize.Medium" /> @L["Medium"] · 32px</span>
             <span><FormaIcon Icon="Glyph.Folder" Size="IconSize.Large" /> @L["Large"] · 48px</span>
             <span><FormaIcon Icon="Glyph.Folder" Size="IconSize.Display" /> @L["Display"] · 64px</span>
+        </div>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A character"]</h2>
+    <p class="description">@L["A single character set by the symbol font fills the same box as a glyph, for a badge, a keyboard hint or an initial that no drawing needs to exist for."]</p>
+    <div class="demo-box">
+        <div class="glyph-sizes">
+            <span><FormaIcon Icon="new Rune('Ω')" Size="IconSize.Small" /> Ω</span>
+            <span><FormaIcon Icon="new Rune('①')" Size="IconSize.Small" /> ①</span>
+            <span><FormaIcon Icon="new Rune('א')" Size="IconSize.Small" /> א</span>
+            <span><FormaIcon Icon="new Rune(0x1D538)" Size="IconSize.Small" /> 𝔸</span>
+            <span><FormaIcon Icon="new Rune('⌘')" Size="IconSize.Medium" /> ⌘</span>
         </div>
     </div>
 </div>
@@ -87,7 +117,7 @@
                 <FormaIcon Icon="Glyph.CloudUpload" /> @L["Upload"]
             </FormaButton>
             <FormaButton Variant="ButtonVariant.Danger">
-                <FormaIcon Icon="Icon.Alternate(Glyph.Delete)" /> @L["Delete"]
+                <FormaIcon Icon="Icon.FromGlyph(Glyph.Delete, GlyphVariant.Alternate)" /> @L["Delete"]
             </FormaButton>
             <FormaButton Variant="ButtonVariant.Secondary" aria-label="@L["Search"]">
                 <FormaIcon Icon="Glyph.Search" Size="IconSize.Small" />

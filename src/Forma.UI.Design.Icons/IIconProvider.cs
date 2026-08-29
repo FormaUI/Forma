@@ -1,6 +1,6 @@
 namespace Forma.UI.Design.Icons;
 
-/// <summary>Provides artwork for semantic icons.</summary>
+/// <summary>Provides artwork for icons.</summary>
 public interface IIconProvider
 {
     /// <summary>Attempts to get the artwork used to render an icon at a size.</summary>

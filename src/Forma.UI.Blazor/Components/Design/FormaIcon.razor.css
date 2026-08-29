@@ -15,6 +15,19 @@
     overflow: visible;
 }
 
+/* A character fills the same box as a drawing, set in the symbol font so every script and sign
+   comes from one face rather than the page font's fallback chain. */
+.forma-icon-character {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 1em;
+    font-family: var(--font-family-symbol);
+    font-size: inherit;
+    line-height: 1;
+    font-variant-emoji: text;
+}
+
 /* Each size is one the artwork is drawn crisp at; the provider picks the matching grid. */
 .forma-icon-sm {
     font-size: var(--icon-size-sm);
