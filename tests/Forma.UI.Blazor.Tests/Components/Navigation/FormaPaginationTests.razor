@@ -659,7 +659,7 @@
         [Fact]
         public void Should_read_the_box_when_typing_preceded_the_connection()
         {
-            // Arrange — no Input() call, so the component never saw an input event; the shown page is cleared to force the read.
+            // Arrange — the box is emptied so the entry is read from the element.
             using var ctx = new FormaPaginationTests();
             var received = new List<int>();
             ctx.JSInterop

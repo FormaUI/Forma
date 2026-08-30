@@ -6,7 +6,7 @@
     margin-block-end: var(--space-4);
 }
 
-/* The field takes the room the actions leave, and folds under them once there is less than it needs. */
+/* The field takes the room the actions leave. */
 .forma-search-toolbar-search {
     flex: 1 1 12.5rem;
     min-inline-size: 0;

@@ -164,7 +164,7 @@
         _demoPlugins = [_everythingTextPlugin, _everythingSourcePlugin, new TimestampPlugin(), new CleanupPlugin()];
         _viewPlugins = [new RichTextEditorPlugin(), new MaximizePlugin(), new PreviewPlugin()];
 
-        // Discovered rather than listed, so a plugin the library gains is here without this page learning of it.
+        // Plugins are discovered from the library.
         _everyPlugins = ComposerPluginDiscovery.Discover([new RichTextEditorPlugin()], typeof(RichTextEditorPlugin).Assembly);
 
         var richFiles = new RichTextEditorPlugin();

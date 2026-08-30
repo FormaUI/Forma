@@ -250,7 +250,7 @@
         return category?.ToString().ToLowerInvariant() ?? "other";
     }
 
-    // Neither row names a translation, so both format the count directly rather than through a lookup.
+    // Both rows format the count directly.
     private static string GroupedCount(decimal count)
         => PluralFormat.Evaluate(GroupedFormat, CultureInfo.CurrentCulture, LocalizedFormat.Bind(GroupedFormat, count));
 

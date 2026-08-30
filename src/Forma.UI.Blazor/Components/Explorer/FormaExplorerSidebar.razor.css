@@ -46,7 +46,7 @@
     --forma-splitter-thickness: 0.6rem;
 }
 
-/* Rows are rendered by FormaExplorerFolderNode as well as by this component, so row rules reach into the child through ::deep. */
+/* Row rules reach FormaExplorerFolderNode's rows through ::deep. */
 
 .forma-explorer-folder-tree ::deep .forma-explorer-folder-branch {
     list-style: none;
@@ -270,7 +270,7 @@
     }
 }
 
-/* The tree scrolls, so a ring drawn outside a row would be cut at the pane's edges; every control in it rings inward. */
+/* Controls in the tree ring inward. */
 ::deep .forma-explorer-sidebar-tool:focus-visible,
 .forma-explorer-folder-target:focus-visible,
 .forma-explorer-folder-twisty:focus-visible {

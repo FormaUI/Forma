@@ -28,7 +28,7 @@ body {
     border-inline-end: 1px solid var(--border-color);
 }
 
-/* The library's name heads the page list and leads home. */
+/* The brand: heads the page list and links home. */
 .showcase-brand {
     display: block;
     margin: 0 var(--space-5) var(--space-4);
@@ -159,7 +159,7 @@ body {
     list-style: none;
 }
 
-/* A cell is a tint rather than a rule, so a gallery of hundreds does not read as a lattice. */
+/* A gallery cell. */
 .glyph-grid li {
     display: flex;
     align-items: center;
@@ -180,12 +180,12 @@ body {
     grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr));
 }
 
-/* A gallery too long to mount at once is cut into rows; each keeps the grid's own gap below it. */
+/* A gallery row, with the grid's gap below it. */
 .glyph-grid-row {
     margin-block-end: var(--space-2);
 }
 
-/* A glyph the fallback draws nothing for is marked, so an empty cell reads as a fact rather than a fault. */
+/* A glyph the fallback draws nothing for is marked. */
 .glyph-grid-named li:not(:has(.forma-icon))::before {
     content: "–";
     color: var(--text-muted-color);
@@ -278,7 +278,7 @@ body {
     font-size: var(--font-size-base);
 }
 
-/* A scenario's description sits between its heading and its box, so it keeps a heading's gap rather than a section's. */
+/* A scenario's description, between its heading and its box. */
 .demo-section p.description {
     margin-block-end: var(--space-4);
 }
@@ -306,12 +306,12 @@ body {
     margin: 0;
 }
 
-/* A control that sizes to its label keeps that size when it stands alone in a stack. */
+/* A control standing alone in a stack keeps its own width. */
 .demo-box > .forma-button {
     align-self: flex-start;
 }
 
-/* Whatever follows a box in its section, a note, a row of controls or another box, stands a block away from it. */
+/* What follows a box stands a block away. */
 .demo-box + * {
     margin-block-start: var(--space-4);
 }
@@ -399,7 +399,7 @@ body {
     gap: var(--space-1);
 }
 
-/* Things shown side by side; they are separate examples, so they keep a group's gap rather than a control's. */
+/* Examples shown side by side. */
 .demo-row {
     display: flex;
     flex-direction: row;
@@ -408,7 +408,7 @@ body {
     gap: var(--space-3);
 }
 
-/* A square the size of one control, standing in for a tile whose content has not arrived. */
+/* A placeholder tile, one control square. */
 .demo-cell {
     display: flex;
     align-items: center;
@@ -424,7 +424,7 @@ body {
     font-size: var(--font-size-sm);
 }
 
-/* The home page's index: one tile per component, packed the way the glyph gallery is. */
+/* The home page's index: one tile per component. */
 .showcase-index {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
@@ -454,7 +454,7 @@ body {
     }
 }
 
-/* Reference output a demo prints as rows of inputs and results rather than prose. */
+/* Reference output: rows of inputs and results. */
 .demo-table {
     inline-size: 100%;
     border-collapse: collapse;
@@ -479,7 +479,7 @@ body {
     inline-size: 35%;
 }
 
-/* A key or resource name has no spaces to break at, so it wraps mid-token rather than overflowing. */
+/* A key or resource name wraps mid-token. */
 .demo-table code {
     overflow-wrap: anywhere;
 }
@@ -497,8 +497,7 @@ body {
     border-block-start: 1px solid var(--border-color);
 }
 
-/* The running report a demo prints as a component raises events: output rather than prose, so it
-   is set apart from the surrounding copy instead of carrying a list's bullets and indent. */
+/* The running report of events a demo prints. */
 .demo-log {
     list-style: none;
     margin: 0;
@@ -555,7 +554,7 @@ body {
     inline-size: 100%;
 }
 
-/* A labelled control that sits on one line beside its siblings rather than filling the row. */
+/* A labelled control on one line beside its siblings. */
 .demo-field {
     display: inline-flex;
     align-items: center;
@@ -568,7 +567,7 @@ body {
     padding-inline: var(--space-2);
 }
 
-/* A resolved value worth reading as a result rather than as running text. */
+/* A resolved value, read as a result. */
 .demo-chip {
     padding: var(--space-1) var(--space-3);
     border: 1px solid var(--border-color);
@@ -586,7 +585,7 @@ body {
     padding-inline-start: var(--space-5);
 }
 
-/* A field that shares a row with an action rather than filling it. */
+/* A field sharing a row with an action. */
 .demo-row-field {
     flex: 1 1 12rem;
     min-inline-size: 0;

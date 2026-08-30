@@ -50,7 +50,6 @@
     max-block-size: none;
 }
 
-/* The zoom stands a group's distance below the image, so it reads as a control of its own rather than a caption. */
 .forma-file-viewer-zoom {
     display: flex;
     align-items: center;
@@ -59,7 +58,7 @@
     margin-block-start: var(--space-2);
 }
 
-/* Wide enough for "100%" in figures that line up, so the buttons hold still as the level changes. */
+/* Tabular figures, so the buttons hold still as the level changes. */
 .forma-file-viewer-zoom-level {
     min-inline-size: 4ch;
     text-align: center;
@@ -86,7 +85,7 @@
     border: 0;
 }
 
-/* Converted markup is document content, so it scrolls and reads rather than fitting a frame. */
+/* Converted markup scrolls and reads as a document. */
 .forma-file-viewer-html {
     flex: 1;
     min-block-size: 0;
@@ -142,7 +141,7 @@
     white-space: nowrap;
 }
 
-/* The arrows float over the media on a scrim, so the ghost's colors are the scrim's; the button is FormaButton's, reached through ::deep. */
+/* The arrows float over the media on its scrim. */
 ::deep .forma-file-viewer-nav {
     --forma-button-ghost-color: var(--forma-file-viewer-nav-color, var(--media-foreground-color));
     --forma-button-ghost-hover-color: var(--forma-file-viewer-nav-color, var(--media-foreground-color));

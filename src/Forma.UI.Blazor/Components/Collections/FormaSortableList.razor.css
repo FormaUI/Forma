@@ -48,8 +48,7 @@
     min-inline-size: 0;
 }
 
-/* A full-width bar rather than an outline, so the target position reads as clearly
-   between two rows as it does when hovering directly over one. */
+/* The drop target is a full-width bar. */
 .forma-sortable-list-item.forma-sortable-list-drop-before::before,
 .forma-sortable-list-item.forma-sortable-list-drop-after::after {
     content: "";
@@ -69,8 +68,7 @@
     inset-block-end: calc((var(--space-2) + 0.125rem) / -2);
 }
 
-/* The handle is FormaButton's, reached through ::deep. The drag is driven by pointer events, which a touch would
-   otherwise never deliver because the browser claims the gesture for scrolling first. */
+/* The drag is driven by pointer events, so the handle takes no touch gesture. */
 ::deep .forma-sortable-list-handle {
     --forma-button-ghost-color: var(--text-muted-color);
     cursor: grab;

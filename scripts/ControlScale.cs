@@ -22,7 +22,7 @@ var routes = await page.EvaluateAsync<string[]>("() => [...new Set([...document.
 const string Probe = """
     () => {
         const controls = document.querySelectorAll('.showcase-main :is(button, input:not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=range]):not([type=color]):not([type=file]), select, [role=switch], [role=combobox], [role=menuitem], [role=option], [role=tab])');
-        // A surface the reader presses is not a control standing in a row: a tile, a drop zone, a media facade.
+        // Surfaces the reader presses: a tile, a drop zone, a media facade.
         const surfaces = '.forma-explorer-item-open, .forma-video-player-facade';
         const seen = new Map();
         for (const control of controls) {

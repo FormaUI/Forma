@@ -70,7 +70,7 @@
 }
 
 @code {
-    // One button drawn for either row; the stride is how far it moves, a window beside the steps and one page beside the input.
+    // A navigation button; the stride is how far it moves.
     private RenderFragment NavigationButton(NavigationDirection direction, int stride) => @<FormaButton Variant="ButtonVariant.Tertiary"
                  class="@(direction is NavigationDirection.Previous ? "forma-pagination-navigation-button forma-pagination-navigation-button-previous" : "forma-pagination-navigation-button forma-pagination-navigation-button-next")"
                  Disabled="@(direction is NavigationDirection.Previous ? ActivePage <= 1 : ActivePage >= PageCount)"

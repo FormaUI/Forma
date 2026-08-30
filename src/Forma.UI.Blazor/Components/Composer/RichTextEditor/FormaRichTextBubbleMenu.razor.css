@@ -19,7 +19,7 @@
     display: flex;
 }
 
-/* The heading level rides the glyph's lower corner; the label already names it, so the digit is decoration. */
+/* The heading level, in the glyph's lower corner. */
 ::deep .forma-composer-bubble-item-level-1::after,
 ::deep .forma-composer-bubble-item-level-2::after {
     font-size: 0.625em;

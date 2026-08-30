@@ -100,7 +100,7 @@ public sealed partial class FormaSearchBox : ComponentBase, IAsyncDisposable
         await OnSearch.InvokeAsync(value);
     }
 
-    // Cancelling synchronously keeps the swap atomic on the dispatcher; awaiting would let a second keystroke interleave and strand a token.
+    // Cancels and swaps the token synchronously on the dispatcher.
     private CancellationToken RestartDebounce()
     {
         CancelDebounce();

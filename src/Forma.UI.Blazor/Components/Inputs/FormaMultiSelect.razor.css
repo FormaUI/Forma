@@ -30,7 +30,7 @@
     font-size: var(--font-size-sm);
 }
 
-/* The chip is round, so its remove button is too; the button is FormaButton's, reached through ::deep. */
+/* Round, like the chip. */
 ::deep .forma-multi-select-tag-remove {
     border-radius: var(--radius-pill);
 }
@@ -154,7 +154,7 @@
     text-align: center;
 }
 
-/* Add stands at the start of the popup like the options above it. */
+/* Add is set at the start, like the options. */
 ::deep .forma-multi-select-add {
     justify-content: flex-start;
     color: var(--main-color);

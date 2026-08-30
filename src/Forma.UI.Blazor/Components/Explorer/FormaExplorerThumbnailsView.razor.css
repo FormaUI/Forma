@@ -10,7 +10,7 @@
     align-content: start;
 }
 
-/* A narrow explorer packs its tiles smaller rather than stacking full-size ones down a long column. */
+/* A narrow explorer packs its tiles smaller. */
 @container (max-width: 40rem) {
     .forma-explorer-grid {
         grid-template-columns: repeat(auto-fill, minmax(5rem, 1fr));
@@ -74,7 +74,7 @@
     touch-action: manipulation;
 }
 
-/* The button covers the whole tile, so its ring sits just inside the tile's edge rather than around it. */
+/* The tile's button rings inward. */
 .forma-explorer-item-open:focus-visible {
     outline: none;
     box-shadow: var(--focus-ring-inset);

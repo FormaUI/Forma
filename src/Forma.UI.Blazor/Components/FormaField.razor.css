@@ -26,7 +26,7 @@
 }
 
 /* ---------- input element ---------- */
-/* The box itself is drawn once in forma-input.css; a field stands one step taller, the step that holds a label over a value. */
+/* A field stands one step taller than an input, holding a label over its value. */
 ::deep .forma-field-input {
     min-block-size: var(--control-size-xl);
     padding-block: var(--forma-field-padding-block-start) var(--forma-field-padding-block-end);
@@ -136,7 +136,7 @@
     margin-block-end: var(--space-2);
 }
 
-/* Breaks the message below the row rather than leaving it beside the element. */
+/* Breaks the message below the row. */
 .forma-field-label-inline ::deep .validation-message {
     flex-basis: 100%;
 }

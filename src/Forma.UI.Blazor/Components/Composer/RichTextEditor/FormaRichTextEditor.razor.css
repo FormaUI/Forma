@@ -105,7 +105,7 @@
 .forma-composer-rich-text-canvas ::deep ul,
 .forma-composer-rich-text-canvas ::deep ol {
     margin-block: var(--space-2);
-    /* A list is indented past its own markers rather than by the shared spacing step. */
+    /* A list is indented past its own markers. */
     padding-inline-start: 1.25rem;
 }
 
@@ -197,7 +197,7 @@
     user-select: none;
 }
 
-/* An anchor wrapping selected text keeps that text visible, so it is marked rather than replaced. */
+/* An anchor wrapping selected text is marked, keeping the text visible. */
 .forma-composer-rich-text-canvas ::deep a[name]:not(:empty) {
     border-block-end: 1px dashed var(--border-color);
 }

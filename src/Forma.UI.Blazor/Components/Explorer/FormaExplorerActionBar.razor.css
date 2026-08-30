@@ -7,8 +7,7 @@
     pointer-events: auto;
 }
 
-/* Hidden until asked for where a pointer can hover, so the row stays quiet; opacity rather than
-   display keeps the trigger in the tab order, which is what lets :focus-within reveal it. */
+/* Hidden until hovered where a pointer can hover; opacity keeps it in the layout. */
 @media (hover: hover) {
     .forma-explorer-action-bar {
         opacity: 0;
@@ -28,7 +27,7 @@
     }
 }
 
-/* The trigger sits inside a tile or row that clips its corners, so its ring turns inward rather than being cut off. */
+/* The trigger rings inward. */
 .forma-explorer-action-bar ::deep .forma-button:focus-visible {
     outline: none;
     box-shadow: var(--focus-ring-inset);

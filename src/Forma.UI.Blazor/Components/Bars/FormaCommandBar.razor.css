@@ -29,13 +29,12 @@
     display: none;
 }
 
-/* A row of commands must not squash to fit; overflowing is what the arrows are for. The commands are the caller's
-   elements, so ::deep reaches them. */
+/* A command keeps its width; the arrows scroll what overflows. */
 .forma-command-bar-track > ::deep * {
     flex-shrink: 0;
 }
 
-/* The arrows are the bar's own, so they are reached through ::deep; they keep the muted tone of chrome rather than a command. */
+/* The arrows take the muted tone. */
 ::deep .forma-command-bar-scroll {
     --forma-button-ghost-color: var(--text-muted-color);
 }
@@ -53,7 +52,7 @@
     rotate: 180deg;
 }
 
-/* The arrows sit at the ends of the clipped track, so their ring turns inward. */
+/* The arrows ring inward. */
 ::deep .forma-command-bar-scroll:focus-visible {
     outline: none;
     box-shadow: var(--focus-ring-inset);

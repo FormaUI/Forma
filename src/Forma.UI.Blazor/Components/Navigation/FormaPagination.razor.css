@@ -6,9 +6,9 @@
    ============================================================ */
 
 .forma-pagination {
-    /* Whether the steps fit is decided by the width the pager was given, not the viewport's. */
+    /* Container queries size against the pager's own width. */
     container-type: inline-size;
-    /* A contained box has no intrinsic width to offer a flex row, so in one it takes the room left instead. */
+    /* In a flex row the pager takes the room left. */
     flex: 1 1 auto;
     min-inline-size: 0;
     font-size: var(--font-size-sm);
@@ -42,7 +42,7 @@
     margin-inline-start: auto;
 }
 
-/* Rendered beside the steps as their stand-in, the input row waits until the steps no longer fit. */
+/* The input row shows only where the steps do not fit. */
 .forma-pagination-navigation-input-fallback {
     display: none;
 }
@@ -80,7 +80,7 @@
     font-size: var(--font-size-sm);
 }
 
-/* The page the reader is on takes no click, but stays a button so it is drawn as its neighbours are. */
+/* The current page is a button that takes no click. */
 ::deep .forma-pagination-navigation-step-current {
     cursor: default;
 }
@@ -96,7 +96,7 @@
     gap: var(--space-2);
 }
 
-/* The box names itself by its watermark, so the label is heard but not seen. */
+/* The label is heard but not seen. */
 .forma-pagination-navigation-input-label {
     position: absolute;
     inline-size: 1px;
@@ -115,8 +115,7 @@
     text-align: center;
 }
 
-/* A navigation button is worded until words no longer fit; its glyph waits until then. The one glyph points
-   forward, and is turned about for the button that goes back and for a right-to-left reader. */
+/* The glyph stands in for the words where they do not fit; it points forward and is turned for back and for right-to-left. */
 ::deep .forma-pagination-navigation-button-glyph {
     display: none;
 }
@@ -177,12 +176,12 @@
     }
 }
 
-/* The watermark is a hint, not a value, so it takes the muted color. */
+/* The watermark takes the muted color. */
 ::deep .forma-pagination-navigation-input-box::placeholder {
     color: var(--text-muted-color);
 }
 
-/* Without the option the button is kept for a touch keypad alone, since a keypad for digits may have no key that submits. */
+/* Without the option, the Go button shows for a touch keypad alone. */
 ::deep .forma-pagination-go-button-touch {
     display: none;
 }

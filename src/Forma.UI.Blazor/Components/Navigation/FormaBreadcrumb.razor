@@ -28,7 +28,7 @@
                 }
                 else if (OnItemClick.HasDelegate)
                 {
-                    @* Drops land on the anchor, since a modifier such as preventDefault cannot be handed to a component. *@
+                    @* Drag events land on the anchor around the button. *@
                     <span class="forma-breadcrumb-drop-target"
                           @ondragover="HandleDragOver"
                           @ondragover:preventDefault="OnItemDrop.HasDelegate"

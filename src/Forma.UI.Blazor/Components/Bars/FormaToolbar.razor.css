@@ -10,7 +10,7 @@
     min-inline-size: 0;
 }
 
-/* A row and a group stand one control tall whatever they hold, so a bar of custom items is as tall as one of buttons. */
+/* A row and a group stand one control tall. */
 .forma-toolbar,
 .forma-toolbar-group {
     min-block-size: var(--control-size-md);
@@ -22,7 +22,7 @@
     gap: var(--space-1);
 }
 
-/* Without a track to scroll, a group wider than the row has to break rather than overflow it. */
+/* Without a track, a group wider than the row breaks. */
 .forma-toolbar .forma-toolbar-group {
     flex-wrap: wrap;
 }
@@ -122,7 +122,7 @@
     vertical-align: -0.125rem;
 }
 
-/* Every item sits on a track that clips what scrolls past its ends, so a ring drawn outside would be cut; it turns inward. */
+/* Items on the clipped track ring inward. */
 ::deep .forma-toggle-button:focus-visible,
 .forma-toolbar-group ::deep .forma-toolbar-menu:focus-visible,
 .forma-toolbar-loose ::deep .forma-toolbar-menu:focus-visible {

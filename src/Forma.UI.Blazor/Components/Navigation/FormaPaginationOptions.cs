@@ -22,6 +22,6 @@ public sealed record FormaPaginationOptions
     /// <summary>Shows the Go button beside the navigation input; a touch keypad with no Enter key gets it regardless.</summary>
     public bool GoButton { get; init; } = true;
 
-    /// <summary>Turns a page with a wheel gesture anywhere over the pager, keeping the turn from the page while the pointer stays there.</summary>
+    /// <summary>Turns a page with a wheel gesture over the pager.</summary>
     public bool WheelScrollOnHover { get; init; }
 }

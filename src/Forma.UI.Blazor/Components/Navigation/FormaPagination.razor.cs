@@ -18,7 +18,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
     private const int LookAhead = 4;
     private const int StepCount = LookAhead + 3;
 
-    // Beside the steps a navigation button moves a whole window, so pressing it repeatedly walks the list quickly.
+    // Beside the steps a navigation button moves a whole window.
     private const int StepsStride = LookAhead;
 
     private readonly string _navigationInputId = $"forma-pagination-input-{Guid.NewGuid():N}";
@@ -57,29 +57,24 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
 
     private int PageCount => Math.Max(1, (int)Math.Ceiling(TotalItems / (double)PageSize));
 
-    // State alone can call for the input; the width does so too, but that is the stylesheet's decision.
+    // Whether state calls for the input; the width is the stylesheet's decision.
     private bool HasInputByState => Options.NavigationInput || PageCount > Options.MaxPagesWithSteps;
 
-    // The page actually shown. A caller's page can fall outside the range whenever the
-    // item count shrinks under it — a filter narrowing, a delete, a hand-edited query
-    // string — none of which are programming errors, so they resolve to the nearest page.
+    // The page shown; a page outside the range resolves to the nearest.
     private int ActivePage => Math.Clamp(CurrentPage, 1, PageCount);
 
     private IReadOnlyList<NavigationStep> NavigationSteps => BuildNavigationSteps(ActivePage, PageCount);
 
-    // The renderer owns the box and disposes it with the pager; the reference is only for reaching its element.
+    // The navigation box; the reference reaches its element.
     private FormaTextBox NavigationInput { get; set; } = default!;
 
-    // The host's accessible name wins, so a page carrying more than one pager can tell
-    // its navigation landmarks apart.
+    // The host's accessible name wins.
     private string NavLabel => AdditionalAttributes.HostValue("aria-label") ?? L["Pagination"].Value;
 
-    // Host class is merged rather than splatted, so supplying one never drops
-    // the component's own class.
     private string CssClass
         => AdditionalAttributes.MergeClass("forma-pagination");
 
-    // The box is another component's, so its handlers reach the input as splatted attributes.
+    // Handlers splatted onto the box's input.
     private EventCallback<KeyboardEventArgs> NavigationInputKeyDown
         => EventCallback.Factory.Create<KeyboardEventArgs>(this, OnNavigationInputKeyDownAsync);
 
@@ -113,7 +108,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
         ArgumentOutOfRangeException.ThrowIfNegative(TotalItems);
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(PageSize, 0);
 
-        // The input shows the page the reader is on, so a navigation button visibly moves it; typing replaces it.
+        // The input shows the page the reader is on.
         if (_shownPage != ActivePage)
         {
             _shownPage = ActivePage;
@@ -126,7 +121,6 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
     {
         if (PageCount <= 1)
         {
-            // The nav went away, so the listeners went with it.
             _submitGuardAttached = false;
             await _submitGuard.DetachAsync();
             await _wheelScroll.DetachAsync();
@@ -158,9 +152,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
         _selfReference?.Dispose();
     }
 
-    // The window starts at the current page and looks ahead, so the steps read as what comes next; near the end the
-    // last seven pages show whole, since a gap there would hide nothing. A list shorter than the strip pads with empty
-    // steps, so the first page sits in the same place however many there are.
+    // The window starts at the current page and looks ahead; near the end the last seven pages show whole; a shorter list pads with empty steps so the first page sits in the same place.
     private static List<NavigationStep> BuildNavigationSteps(int currentPage, int pageCount)
     {
         var steps = new List<NavigationStep>(StepCount);
@@ -222,7 +214,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
         await OnPageChanged.InvokeAsync(page);
     }
 
-    // A button never overshoots an end: the last press before it lands on the first or the last page.
+    // A button stops at either end.
     private Task MoveAsync(NavigationDirection direction, int stride)
         => GoToPageAsync(direction is NavigationDirection.Previous
             ? Math.Max(ActivePage - stride, 1)
@@ -236,9 +228,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
         }
     }
 
-    // A typed page outside the range settles on the nearest one, matching how an
-    // out-of-range CurrentPage behaves. Enter or Go consumes whatever is in the box,
-    // which then reads the page landed on; an unparseable entry gives way to the page shown.
+    // A typed page outside the range settles on the nearest one; an unparseable entry gives way to the page shown.
     private async Task GoAsync()
     {
         var entry = await TakeNavigationEntryAsync();
@@ -255,7 +245,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
     private void ShowPage()
         => _navigationEntry = PageSummary;
 
-    // Leaving the box blurs it before a Go click lands, so an entry in progress stays; only an emptied box reverts.
+    // Only an emptied box reverts to the page shown.
     private void ShowPageIfEmpty()
     {
         if (string.IsNullOrEmpty(_navigationEntry))
@@ -264,15 +254,14 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
         }
     }
 
-    // Selected whole, the summary gives way to the first key typed rather than taking it on the end.
+    // Selects the whole entry, so the first key typed replaces it.
     private async Task SelectNavigationEntryAsync()
     {
         await Task.Yield();
         await _text.WriteSelectionAsync(NavigationInput.Element, 0, _navigationEntry?.Length ?? 0);
     }
 
-    // Typing that lands before the circuit connects raises no input event, leaving the
-    // tracked value stale while the box holds the number. The box is the fallback.
+    // Typing before the circuit connects raises no input event, so the box is read when the tracked value is empty.
     private async ValueTask<string?> TakeNavigationEntryAsync()
     {
         if (!string.IsNullOrEmpty(_navigationEntry))

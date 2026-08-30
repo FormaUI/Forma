@@ -98,7 +98,7 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(Source);
 
-        // Resolving can cost a provider a fetch and a conversion, so it happens per address rather than per render.
+        // Resolves once per address.
         if (_resolvedSource == Source)
         {
             return;
@@ -167,7 +167,7 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
             _dragAttached = await _pan.AttachAsync(_imageFrameElement, ZoomedClass);
         }
 
-        // Ctrl and a wheel over the image zooms it, as it does the page elsewhere; the plain wheel keeps scrolling the image.
+        // Ctrl with the wheel zooms the image.
         if (!_wheelAttached)
         {
             _selfReference ??= DotNetObjectReference.Create(this);
@@ -181,7 +181,7 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
         }
     }
 
-    /// <summary>Zooms a step in for a wheel rolled up and a step out for one rolled down; called from the wheel behaviour.</summary>
+    /// <summary>Zooms a step in for a wheel rolled up and a step out for one rolled down.</summary>
     [JSInvokable]
     public Task HandleWheelAsync(int direction)
         => InvokeAsync(() =>

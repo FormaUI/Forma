@@ -92,7 +92,7 @@
     overflow: hidden;
 }
 
-/* The group clips its corners, so a view button rings inward. */
+/* A view button rings inward. */
 ::deep .forma-explorer-view-button:focus-visible {
     box-shadow: var(--focus-ring-inset);
 }

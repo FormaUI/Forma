@@ -10,7 +10,7 @@
     {
         <h3>@L[group.Title] <span class="demo-count">@rows.Sum(row => row.Length)</span></h3>
         <div class="demo-box">
-            @* Only the rows in view are mounted, so a group of hundreds costs the page a screenful at a time. *@
+            @* Only the rows in view are mounted. *@
             <Virtualize Items="rows" ItemSize="RowHeight" Context="row">
                 <ul class="glyph-grid glyph-grid-emoji glyph-grid-row">
                     @foreach (var info in row)
@@ -27,10 +27,10 @@
 </div>
 
 @code {
-    // A row holds what one line of the gallery grid fits at the page's widest, so a row is one line there and wraps narrower.
+    // Emoji per row: one line of the gallery grid at the page's widest.
     private const int RowSize = 9;
 
-    // One cell's height plus the gap below it, in pixels, which is what the virtualizer sizes its placeholders by.
+    // One cell's height plus the gap below it, in pixels.
     private const float RowHeight = 68;
 
     private IReadOnlyList<(EmojiGroup Group, List<EmojiInfo[]> Rows)> _groups = [];

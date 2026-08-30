@@ -56,7 +56,7 @@
 }
 
 /* ---------- clear ---------- */
-/* Clear floats at the end of the trigger; the button is FormaButton's, reached through ::deep, and warns in the danger color. */
+/* Clear floats at the end of the trigger, in the danger color. */
 ::deep .forma-date-picker-clear {
     --forma-button-ghost-hover-color: var(--danger-color);
     --forma-button-ghost-hover-background-color: color-mix(in srgb, var(--danger-color) 10%, transparent);

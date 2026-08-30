@@ -47,7 +47,7 @@ public sealed partial class FormaMultiSelect<TValue> : InputBase<List<TValue>>, 
     private string _searchText = "";
     private ElementReference _anchorElement;
     private ElementReference _triggerElement;
-    // The renderer owns the box and disposes it with the popup; the reference is only for focusing it.
+    // The popup's search box; the reference focuses it.
     private FormaSearchBox SearchBox { get; set; } = default!;
     private ElementReference _popupElement;
     private AnchoredPopup _popup = default!;

@@ -40,12 +40,11 @@ public sealed partial class FormaButton : ComponentBase
     /// <summary>The rendered button element, for a composing component that must anchor to it or focus it.</summary>
     public ElementReference Element { get; private set; }
 
-    // Busy is announced rather than disabled, so the button keeps focus and its place in the tab order.
+    // Busy is announced, not disabled, so the button keeps focus.
     private string? AriaDisabled => Busy ? "true" : null;
 
     private string? AriaBusy => Busy ? "true" : null;
 
-    // Work in flight is shown whether or not the button is also disabled; the progress is what says it will come back.
     private string DataBusy => Busy ? "true" : "false";
 
     private Task HandleClickAsync(MouseEventArgs args)
@@ -67,7 +66,6 @@ public sealed partial class FormaButton : ComponentBase
         _ => "forma-button-secondary"
     };
 
-    // Host class is merged rather than splatted, so supplying one never drops the button's own styling.
     private string CssClass
         => AdditionalAttributes.MergeClass(
             "forma-button",

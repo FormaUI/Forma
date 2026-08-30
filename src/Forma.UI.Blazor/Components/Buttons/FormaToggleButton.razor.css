@@ -8,7 +8,7 @@
     display: contents;
 }
 
-/* An on state holds the hover fill and takes the accent color; no border and no mark, so a row of toggles stays flat. */
+/* A pressed toggle: the hover fill and the accent color. */
 ::deep .forma-toggle-button-pressed {
     --forma-button-ghost-background-color: var(--control-quiet-hover-color);
     --forma-button-ghost-color: var(--main-color);

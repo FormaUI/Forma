@@ -5,8 +5,7 @@
    ============================================================ */
 
 /* ---------- base ---------- */
-/* A button stands one control tall whatever its variant and takes a control's corner; only Size changes its shape.
-   It clips its own box so the progress ends at its corners. */
+/* Clips its own box so the progress ends at its corners. */
 .forma-button {
     position: relative;
     display: inline-flex;
@@ -14,7 +13,6 @@
     justify-content: center;
     gap: var(--space-1);
     min-block-size: var(--control-size-md);
-    /* The step sets the height and the box centres its content, so a glyph taller than the text line costs nothing. */
     padding-block: 0;
     padding-inline: var(--space-3);
     font-family: inherit;
@@ -26,16 +24,13 @@
     border: 1px solid transparent;
     border-radius: var(--forma-button-radius, var(--radius-sm));
     overflow: hidden;
-    /* Clipping lets a flex row shrink the button under its label; a button is never narrower than what it says. */
     flex-shrink: 0;
     cursor: pointer;
     touch-action: manipulation;
     transition: background-color 120ms ease, color 120ms ease;
 }
 
-/* Disabled is one neutral treatment for every variant. Busy is unavailable too, but only for now, so a filled
-   button keeps its own color dimmed to a tint under the progress rather than going neutral; that holds even when
-   the button is disabled as well, because the work is still running. */
+/* Disabled is one neutral treatment for every variant; busy dims the variant's own color under the progress, disabled or not. */
 .forma-button:disabled {
     background-color: var(--control-disabled-color);
     color: var(--control-disabled-foreground-color);
@@ -61,7 +56,7 @@
     color: var(--main-foreground-color);
 }
 
-/* The quiet variants have no fill to dim, so their label takes the disabled gray instead. */
+/* A busy quiet variant takes the disabled gray on its label. */
 .forma-button-tertiary[data-busy="true"] {
     background-color: var(--control-quiet-color);
     color: var(--control-disabled-foreground-color);
@@ -90,7 +85,7 @@
     background-color: var(--danger-color);
 }
 
-/* The ghost's colors are hooks, so a composing component can set its own state's look without outranking these rules. */
+/* Hooks for a composing component's own state. */
 .forma-button-ghost {
     background-color: var(--forma-button-ghost-background-color, transparent);
     color: var(--forma-button-ghost-color, var(--control-quiet-foreground-color));
@@ -100,7 +95,7 @@
     background-color: transparent;
 }
 
-/* Hover and press darken the fill and nothing else; a busy button holds still. */
+/* Hover and press darken the fill; a busy button holds still. */
 @media (hover: hover) {
     .forma-button-primary:hover:not(:disabled):not([data-busy="true"]) {
         background-color: var(--main-dark-color);
@@ -145,8 +140,7 @@
 }
 
 /* ---------- size ---------- */
-/* The small step is the small glyph's own size, so the border goes: a glyph is crisp only on its own grid, and a
-   glyph shrunk to leave room for a border would blur. */
+/* No border: the small step is the small glyph's own size. */
 .forma-button-mini {
     min-block-size: var(--control-size-sm);
     padding-inline: var(--space-2);
@@ -154,8 +148,7 @@
     font-size: var(--font-size-xs);
 }
 
-/* A glyph a caller left unsized takes the small glyph size, the one drawn for a button, whether it stands beside a
-   label or alone; one the caller sized keeps its own. The glyph belongs to the caller's markup, so ::deep reaches it. */
+/* An unsized glyph takes the small glyph size; a sized one keeps its own. */
 .forma-button ::deep .forma-icon:not([class*="forma-icon-"]) {
     font-size: var(--icon-size-sm);
 }
@@ -173,13 +166,12 @@
     block-size: var(--control-size-sm);
 }
 
-/* With no label, an unsized glyph takes the small glyph size, the one drawn for a button; one the caller sized keeps its own. */
 .forma-button-icon ::deep .forma-icon:not([class*="forma-icon-"]) {
     font-size: var(--icon-size-sm);
 }
 
 /* ---------- busy ---------- */
-/* Both labels share one cell, so the button is always as wide as the wider of them and never moves. */
+/* Both labels share one cell, so the button is as wide as the wider. */
 .forma-button-labels {
     display: grid;
 }
@@ -199,8 +191,7 @@
     opacity: 1;
 }
 
-/* The progress is a track along the bottom edge, drawn in the label's own color so it fits every variant, and two
-   phased fills that grow, travel, shrink and leave; it is always mounted, fading in and out with the state. */
+/* The busy progress: a track along the bottom edge in the label's color, with two phased fills. */
 .forma-button-progress {
     position: absolute;
     inset-inline: 0;
@@ -218,7 +209,6 @@
     opacity: 1;
 }
 
-/* The fills pause rather than stop, so a button leaving busy fades out with its fills where they were. */
 .forma-button-progress-fill {
     position: absolute;
     inset-block: 0;
