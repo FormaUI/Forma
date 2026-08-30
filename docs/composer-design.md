@@ -598,6 +598,7 @@ Without any highlighter registered, code blocks render as plain monospaced text.
 
 These are correctness requirements for every Forma component, and the composer is the hardest case in the library — a dense toolbar plus a `contenteditable` surface.
 
+- **Tab order:** the composer is one stretch of the page's tab order arranged its own way: the canvas first, then its toolbar and status strip, then out to whatever follows the composer. Tab from the canvas therefore reaches this composer's commands, never the next composer on the page, and Shift+Tab from the canvas leaves the composer.
 - **Toolbar semantics:** `role="toolbar"` obliges arrow-key roving focus between its controls. Either implement it or use a plain button group, matching the decision already recorded for `FormaToolbar`. The editor switcher is a `radiogroup`, since it selects one of a set.
 - **Editing surface:** the `contenteditable` region is labelled, exposes `aria-multiline`, and announces the active block and formatting through a live region — a screen-reader user must be able to learn that the caret is inside a heading or a code block.
 - **Every state without colour:** an active toolbar toggle carries `aria-pressed` and a persistent non-colour mark, not a tint alone.

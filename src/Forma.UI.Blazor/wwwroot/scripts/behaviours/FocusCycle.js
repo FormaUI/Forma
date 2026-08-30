@@ -6,8 +6,7 @@
  * page behind it is never tabbed into by accident. Escape is the surface's own affair.
  */
 
-/** What Tab moves between. */
-const FocusableSelector = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+import { focusablesIn } from '../operations/Focus.js';
 
 /**
  * @param {HTMLElement} target The surface whose controls Tab cycles through.
@@ -36,7 +35,7 @@ export class FocusCycle {
             return;
         }
 
-        const controls = [...this.#target.querySelectorAll(FocusableSelector)];
+        const controls = focusablesIn(this.#target);
         if (controls.length === 0) {
             return;
         }
