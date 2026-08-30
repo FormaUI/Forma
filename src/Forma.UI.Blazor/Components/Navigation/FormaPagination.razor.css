@@ -50,8 +50,8 @@
     margin-inline-start: auto;
 }
 
-/* The repeated class raises specificity above FormaButton's own variant rules, so
-   the compact numbered pill keeps a visible border instead of a ghost's blank one.
+/* The repeated class raises specificity above FormaButton's own variant rules, so the compact numbered
+   pill takes a quiet fill at rest, like a tertiary button, and the current page alone is filled with the accent.
    Shared by the FormaButton page links and the static current-page span. */
 ::deep .forma-pagination-link.forma-pagination-link {
     display: inline-flex;
@@ -60,10 +60,10 @@
     min-width: 2.25em;
     padding-block: var(--space-2);
     padding-inline: var(--space-3);
-    border: 1px solid var(--border-color);
+    border: 1px solid transparent;
     border-radius: var(--radius-sm);
-    background: var(--input-background-color);
-    color: var(--text-color);
+    background: var(--control-quiet-color);
+    color: var(--control-quiet-foreground-color);
     font-size: var(--font-size-sm);
     font-weight: inherit;
     line-height: var(--line-height-control);
@@ -71,7 +71,7 @@
 
 @media (hover: hover) {
     ::deep button.forma-pagination-link:hover:not(:disabled) {
-        background: var(--hover-background-color);
+        background: var(--control-quiet-hover-color);
     }
 }
 
@@ -79,7 +79,6 @@
    the page the reader is on. */
 ::deep .forma-pagination-current.forma-pagination-current {
     background: var(--main-color);
-    border-color: var(--main-color);
     color: var(--main-foreground-color);
     cursor: default;
     font-weight: 700;

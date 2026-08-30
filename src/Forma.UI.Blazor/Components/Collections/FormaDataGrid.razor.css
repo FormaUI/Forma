@@ -137,8 +137,8 @@
 /* The marker carries the focus but cannot show it, so the row draws the ring — focus
    moves independently of selection (ctrl with an arrow key), so the tint is not enough. */
 ::deep tr:has(.forma-data-grid-row-marker:focus-visible) {
-    outline: 2px solid var(--main-color);
-    outline-offset: -2px;
+    outline: none;
+    box-shadow: var(--focus-ring-inset);
 }
 
 /* A tinted background reads as "selected" without depending on the checkbox column,

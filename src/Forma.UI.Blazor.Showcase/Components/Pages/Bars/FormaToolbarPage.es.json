@@ -1,6 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
-  "A toolbar of grouped, item-driven commands, built on FormaCommandArea and FormaCommandBar. Each item is a record whose type decides how it renders.": "Una barra de comandos agrupados y guiados por datos, construida sobre FormaCommandArea y FormaCommandBar. Cada elemento es un registro cuyo tipo decide cómo se representa.",
+  "A row of commands grouped by what they do, each a small record the toolbar draws as a button, a toggle, a menu or a readout. Describing the commands as data is what lets one list feed a keyboard shortcut, a tooltip and a screen reader at once.": "Una fila de comandos agrupados por lo que hacen, cada uno un pequeño registro que la barra dibuja como botón, conmutador, menú o lectura. Describir los comandos como datos es lo que permite que una sola lista alimente a la vez un atajo de teclado, una descripción emergente y un lector de pantalla.",
   "Formatting": "Formato",
   "Typography": "Tipografía",
   "Inline Style": "Estilo en Línea",
@@ -57,7 +57,7 @@
   "Enable Delete": "Habilitar Eliminar",
   "Disabled": "Deshabilitado",
   "Every control in the toolbar disables together.": "Todos los controles de la barra se deshabilitan juntos.",
-  "Content Pinned Past the Track": "Contenido Fijo Más Allá del Riel",
+  "Content Pinned past the Track": "Contenido Fijo Más Allá del Riel",
   "Trailing content, such as an overflow toggle, stays put while the commands beside it scroll.": "El contenido final, como un interruptor de desbordamiento, permanece fijo mientras los comandos a su lado se desplazan.",
   "More": "Más",
   "Hidden": "Oculto",

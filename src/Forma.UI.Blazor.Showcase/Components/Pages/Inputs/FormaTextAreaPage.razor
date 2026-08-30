@@ -10,33 +10,33 @@
 <EditForm EditContext="_editContext">
 
     <div class="demo-section">
-        <h2>@L["Basic usage"]</h2>
+        <h2>@L["Basic Usage"]</h2>
         <div class="demo-box">
             <FormaTextArea @bind-Value="_model.Notes" Label="@L["Notes"]" />
-            <p class="demo-output">@L["Value"]: <code>@_model.Notes</code></p>
+            <p class="demo-note">@L["Value"]: <code>@_model.Notes</code></p>
         </div>
     </div>
 
     <div class="demo-section">
-        <h2>@L["Taller field"]</h2>
+        <h2>@L["Taller Field"]</h2>
         <div class="demo-box">
             <FormaTextArea @bind-Value="_model.Summary" Label="@L["Summary"]" Rows="8" />
         </div>
     </div>
 
     <div class="demo-section">
-        <h2>@L["Required and length-limited"]</h2>
+        <h2>@L["Required and Length-Limited"]</h2>
         <p class="description">@L["Submit with the field empty to see the validation border and message."]</p>
         <div class="demo-box">
             <FormaTextArea @bind-Value="_model.Excerpt" Label="@L["Excerpt"]" Required="true" MaxLength="280" />
-            <button type="button" class="button button-primary" @onclick="Validate">
-                @L["Validate"]
-            </button>
+            <div class="demo-row">
+                <FormaButton Variant="ButtonVariant.Primary" OnClick="Validate">@L["Validate"]</FormaButton>
+            </div>
         </div>
     </div>
 
     <div class="demo-section">
-        <h2>@L["Counting characters"]</h2>
+        <h2>@L["Counting Characters"]</h2>
         <p class="description">@L["The count floats inside the field's end corner, clear of the resize grip, and reads out as a sentence rather than as glyphs. Without a maximum it simply counts up."]</p>
         <div class="demo-box">
             <FormaTextArea @bind-Value="_model.Tweet" Label="@L["Social post"]" MaxLength="280" ShowCharacterCount="true" />

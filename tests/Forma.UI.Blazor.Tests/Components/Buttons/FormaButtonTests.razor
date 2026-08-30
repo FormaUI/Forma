@@ -133,7 +133,7 @@
             var button = cut.Find(".forma-button");
 
             // Assert
-            Assert.Contains("forma-button-busy", button.ClassName);
+            Assert.Equal("true", button.GetAttribute("data-busy"));
             Assert.Equal("true", button.GetAttribute("aria-busy"));
             Assert.Equal("true", button.GetAttribute("aria-disabled"));
             Assert.False(button.HasAttribute("disabled"));
@@ -152,6 +152,60 @@
 
             // Assert
             Assert.Equal(0, clicks);
+        }
+
+        [Fact]
+        public void Should_render_both_labels_when_given_busy_text()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaButton Busy="true" BusyText="Saving…">Save</FormaButton>);
+
+            // Assert
+            Assert.Equal("Save", cut.Find(".forma-button-label").TextContent);
+            Assert.Equal("Saving…", cut.Find(".forma-button-busy-label").TextContent);
+        }
+
+        [Fact]
+        public void Should_keep_showing_progress_when_disabled_and_busy()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaButton Busy="true" Disabled="true">Save</FormaButton>);
+            var button = cut.Find(".forma-button");
+
+            // Assert
+            Assert.Equal("true", button.GetAttribute("data-busy"));
+            Assert.Equal("true", button.GetAttribute("aria-busy"));
+            Assert.True(button.HasAttribute("disabled"));
+        }
+
+        [Fact]
+        public void Should_release_the_button_when_busy_ends()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+            var clicks = 0;
+            var cut = ctx.Render<FormaButton>(parameters => parameters
+                .Add(p => p.Busy, true)
+                .Add(p => p.OnClick, () => clicks++)
+                .AddChildContent("Save"));
+            cut.Find(".forma-button").Click();
+
+            // Act
+            cut.Render(parameters => parameters.Add(p => p.Busy, false));
+            cut.Find(".forma-button").Click();
+            var button = cut.Find(".forma-button");
+
+            // Assert
+            Assert.Equal(1, clicks);
+            Assert.Equal("false", button.GetAttribute("data-busy"));
+            Assert.False(button.HasAttribute("aria-busy"));
+            Assert.False(button.HasAttribute("aria-disabled"));
         }
 
         [Fact]

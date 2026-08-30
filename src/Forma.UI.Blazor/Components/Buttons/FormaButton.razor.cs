@@ -18,10 +18,13 @@ public sealed partial class FormaButton : ComponentBase
     /// <summary>Behaviour the button has inside a form.</summary>
     [Parameter] public ButtonType Type { get; set; } = ButtonType.Button;
 
-    /// <summary>Shows a running-stripes animation and blocks interaction while work is in flight.</summary>
+    /// <summary>Holds the button unavailable while work is in flight, dimmed to its busy tint with a progress bar along its edge, until the work is done.</summary>
     [Parameter] public bool Busy { get; set; }
 
-    /// <summary>Blocks interaction and dims the button.</summary>
+    /// <summary>Text shown in place of the content while busy; the button keeps the wider of the two so it never changes size.</summary>
+    [Parameter] public string? BusyText { get; set; }
+
+    /// <summary>Blocks interaction and draws the button in the neutral disabled colors.</summary>
     [Parameter] public bool Disabled { get; set; }
 
     /// <summary>Raised when the button is clicked.</summary>
@@ -41,6 +44,9 @@ public sealed partial class FormaButton : ComponentBase
     private string? AriaDisabled => Busy ? "true" : null;
 
     private string? AriaBusy => Busy ? "true" : null;
+
+    // Work in flight is shown whether or not the button is also disabled; the runner is what says it will come back.
+    private string DataBusy => Busy ? "true" : "false";
 
     private Task HandleClickAsync(MouseEventArgs args)
         => Busy ? Task.CompletedTask : OnClick.InvokeAsync(args);
@@ -67,6 +73,5 @@ public sealed partial class FormaButton : ComponentBase
             "forma-button",
             VariantClass,
             Size is ButtonSize.Mini ? "forma-button-mini" : null,
-            IconOnly ? "forma-button-icon" : null,
-            Busy ? "forma-button-busy" : null);
+            IconOnly ? "forma-button-icon" : null);
 }

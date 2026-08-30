@@ -119,8 +119,8 @@
 }
 
 .forma-explorer-view-button:focus-visible {
-    outline: 2px solid var(--focus-color);
-    outline-offset: -2px;
+    outline: none;
+    box-shadow: var(--focus-ring-inset);
 }
 
 .forma-explorer-view-button.is-active {

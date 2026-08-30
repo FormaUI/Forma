@@ -1,6 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
-  "Modal dialog using native <dialog> element. Provides backdrop, focus trap, Escape key, and scoped CSS animations.": "Cuadro de diálogo modal que usa el elemento nativo <dialog>. Proporciona fondo, trampa de foco, tecla Escape y animaciones CSS con ámbito.",
+  "A dialog that holds the page until it is answered. It is the browser's own dialog underneath, so focus stays inside it, Escape closes it and a screen reader treats it as modal without the library reimplementing any of that.": "Un diálogo que retiene la página hasta que se responde. Por debajo es el diálogo propio del navegador, así que el foco se queda dentro, Escape lo cierra y un lector de pantalla lo trata como modal sin que la biblioteca reimplemente nada de eso.",
   "Basic Modal": "Modal básico",
   "Open Basic Modal": "Abrir modal básico",
   "This is a basic modal with a title and child content.": "Este es un modal básico con un título y contenido secundario.",

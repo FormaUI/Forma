@@ -1,6 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
-  "A color picker with swatch preview, hex text input, and native browser color selector. Supports optional alpha (opacity) channel. Replaces the legacy tinyColorPicker jQuery plugin.": "Un selector de color con vista previa de muestra, entrada de texto hexadecimal y selector de color nativo del navegador. Admite un canal alfa (opacidad) opcional. Reemplaza el antiguo complemento jQuery tinyColorPicker.",
+  "A color field showing the chosen color beside its hex value, with the browser's own picker behind it and an optional alpha channel. Typing a value and picking one are the same input, so the two never disagree.": "Un campo de color que muestra el color elegido junto a su valor hexadecimal, con el selector propio del navegador detrás y un canal alfa opcional. Escribir un valor y elegir uno son la misma entrada, así que los dos nunca discrepan.",
   "Basic": "Básico",
   "With Label": "Con etiqueta",
   "With Alpha": "Con alfa",

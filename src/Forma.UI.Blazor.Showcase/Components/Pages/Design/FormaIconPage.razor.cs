@@ -9,7 +9,7 @@ public partial class FormaIconPage
 
     private static readonly IReadOnlyList<GlyphSection> Named =
     [
-        new("Arrows and navigation",
+        new("Arrows and Navigation",
         [
             Glyph.ArrowUp, Glyph.ArrowDown, Glyph.ArrowLeft, Glyph.ArrowRight,
             Glyph.ChevronUp, Glyph.ChevronDown, Glyph.ChevronLeft, Glyph.ChevronRight,
@@ -33,13 +33,13 @@ public partial class FormaIconPage
             Glyph.Plan, Glyph.Poll, Glyph.Ranking, Glyph.Count, Glyph.CountBox, Glyph.CountDividedBox, Glyph.History, Glyph.Snooze, Glyph.Hourglass, Glyph.HourglassProgress, Glyph.Clock, Glyph.AlarmClock, Glyph.Stopwatch, Glyph.StopwatchDigital,
             Glyph.Auto, Glyph.Power, Glyph.Prohibited, Glyph.Empty,
         ]),
-        new("Status and feedback",
+        new("Status and Feedback",
         [
             Glyph.CircleCheck, Glyph.CircleCross, Glyph.CircleError, Glyph.CircleHelp, Glyph.CircleInfo,
             Glyph.CirclePlay, Glyph.CircleRecord, Glyph.CircleRun,
             Glyph.Warning, Glyph.Bug, Glyph.Debug, Glyph.Bell, Glyph.BellSlash, Glyph.Lightbulb, Glyph.Session, Glyph.Events,
         ]),
-        new("Text formatting",
+        new("Text Formatting",
         [
             Glyph.Bold, Glyph.Italic, Glyph.Underline, Glyph.Strikethrough, Glyph.Subscript, Glyph.Superscript,
             Glyph.Font, Glyph.FontSize, Glyph.FontSizeIncrease, Glyph.FontSizeDecrease, Glyph.FontColor, Glyph.TextGlow,
@@ -51,13 +51,13 @@ public partial class FormaIconPage
             Glyph.Anchor, Glyph.RemoveAnchor, Glyph.Borders, Glyph.Shading, Glyph.Highlight,
             Glyph.SpellCheck, Glyph.FindAndReplace, Glyph.Translation, Glyph.Ruler,
         ]),
-        new("Tables and layout",
+        new("Tables and Layout",
         [
             Glyph.Table, Glyph.Rows, Glyph.Columns, Glyph.AddColumnLeft, Glyph.AddColumnRight, Glyph.AddRowAbove, Glyph.AddRowBelow, Glyph.Split,
             Glyph.Layout, Glyph.LayoutTop, Glyph.LayoutBottom, Glyph.LayoutLeft, Glyph.LayoutRight,
             Glyph.GridView, Glyph.DetailsView, Glyph.WindowMaximize, Glyph.WindowMinimize,
         ]),
-        new("Files and media",
+        new("Files and Media",
         [
             Glyph.File, Glyph.FileText, Glyph.FileCode, Glyph.FileArchive,
             Glyph.Folder, Glyph.FolderOpen, Glyph.FolderAdd, Glyph.FolderTree, Glyph.Archive, Glyph.Package, Glyph.Downloads, Glyph.Attachment,
@@ -71,7 +71,7 @@ public partial class FormaIconPage
             Glyph.Broadcast, Glyph.Signal, Glyph.Wifi, Glyph.Bluetooth, Glyph.Cast,
             Glyph.Contacts, Glyph.User, Glyph.Users, Glyph.Group, Glyph.Category,
         ]),
-        new("Devices and data",
+        new("Devices and Data",
         [
             Glyph.Desktop, Glyph.Laptop, Glyph.Tablet, Glyph.Mobile, Glyph.Devices, Glyph.Keyboard, Glyph.KeyboardLeft, Glyph.KeyboardRight, Glyph.Mouse,
             Glyph.KeyWin, Glyph.KeyCmd, Glyph.KeyAlt, Glyph.KeyCtrl, Glyph.KeyShift, Glyph.KeyCapsLock, Glyph.KeyBackspace,
@@ -79,14 +79,14 @@ public partial class FormaIconPage
             Glyph.CodeCommit, Glyph.CodeBranch, Glyph.CodeMerge, Glyph.CodeFork, Glyph.CodeCompare, Glyph.CodePullRequest, Glyph.Sitemap, Glyph.Barcode,
             Glyph.Cloud, Glyph.CloudUpload, Glyph.Terminal, Glyph.Battery, Glyph.BatteryFull, Glyph.Brightness, Glyph.Flashlight, Glyph.Calculator,
         ]),
-        new("People and hands",
+        new("People and Hands",
         [
             Glyph.Accessibility, Glyph.Graduation,
             Glyph.HandRaisedLeft, Glyph.HandRaisedRight, Glyph.HandWave, Glyph.HandPeace, Glyph.HandCall, Glyph.HandClap, Glyph.HandPen,
             Glyph.HandPointUp, Glyph.HandPointDown, Glyph.HandPointLeft, Glyph.HandPointRight,
             Glyph.HandThumbUp, Glyph.HandThumbDown, Glyph.Handshake,
         ]),
-        new("Commerce and travel",
+        new("Commerce and Travel",
         [
             Glyph.Cart, Glyph.CartPlus, Glyph.CartCheck, Glyph.CartCross, Glyph.CreditCard, Glyph.Wallet, Glyph.Coin, Glyph.Coins, Glyph.Cent,
             Glyph.DollarSign, Glyph.EuroSign, Glyph.PoundSign, Glyph.ShekelSign, Glyph.Truck,
@@ -108,6 +108,8 @@ public partial class FormaIconPage
 
     // Every glyph the sections above leave out lands in a last section, so nothing is hidden by omission.
     private static readonly IReadOnlyList<GlyphSection> Sections = Complete(Named);
+
+    private static readonly int Total = Sections.Sum(section => section.Glyphs.Count);
 
     private static IReadOnlyList<GlyphSection> Complete(IReadOnlyList<GlyphSection> named)
     {

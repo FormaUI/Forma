@@ -5,7 +5,7 @@
 @inject IStringLocale<FormaPageTitlePage> L
 
 <h1>FormaPageTitle</h1>
-<p class="description">@L["Page header with title, breadcrumb navigation, and optional action slot."]</p>
+<p class="description">@L["The heading of a page, with its breadcrumb trail above and its actions beside it. Putting the three in one component keeps every page's top edge aligned."]</p>
 
 <div class="demo-section">
     <h2>@L["Basic with Breadcrumbs"]</h2>
@@ -28,8 +28,8 @@
         <FormaPageTitle Title="@L["Products"]"
                        Breadcrumbs="ProductsBreadcrumbs">
             <Actions>
-                <button class="button button-primary">@L["Add New"]</button>
-                <button class="button button-secondary">@L["Export"]</button>
+                <FormaButton Variant="ButtonVariant.Primary">@L["Add New"]</FormaButton>
+                <FormaButton>@L["Export"]</FormaButton>
             </Actions>
         </FormaPageTitle>
     </div>

@@ -1,6 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
-  "Modal dialog using native <dialog> element. Provides backdrop, focus trap, Escape key, and scoped CSS animations.": "חלון מודאלי המבוסס על <dialog> מקורי. כולל רקע כהה, נעילת פוקוס, מקש Escape ואנימציות CSS מבודדות.",
+  "A dialog that holds the page until it is answered. It is the browser's own dialog underneath, so focus stays inside it, Escape closes it and a screen reader treats it as modal without the library reimplementing any of that.": "דו-שיח שמחזיק את העמוד עד שנענה. מתחתיו זהו הדו-שיח של הדפדפן עצמו, ולכן המיקוד נשאר בתוכו, Escape סוגר אותו וקורא מסך מתייחס אליו כמודאלי בלי שהספרייה תממש דבר מזה מחדש.",
   "Basic Modal": "מודאל בסיסי",
   "Open Basic Modal": "פתח מודאל בסיסי",
   "This is a basic modal with a title and child content.": "זהו מודאל בסיסי עם כותרת ותוכן פנימי.",

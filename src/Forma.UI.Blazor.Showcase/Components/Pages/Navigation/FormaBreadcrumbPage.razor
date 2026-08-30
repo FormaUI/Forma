@@ -20,7 +20,7 @@
     <p class="description">@L["No segment carries a Url; every one is a button reporting its folder through OnItemClick, and the root wears a folder icon."]</p>
     <div class="demo-box">
         <FormaBreadcrumb TItem="string" Items="FolderItems" RootIcon="Glyph.FolderOpen" OnItemClick="HandleFolderSelected" />
-        <p class="demo-output">@L["Current folder"]: <code>@(_currentFolder ?? L["(root)"])</code></p>
+        <p class="demo-note">@L["Current folder"]: <code>@(_currentFolder ?? L["(root)"])</code></p>
     </div>
 </div>
 
@@ -29,7 +29,7 @@
     <p class="description">@L["A chevron beside a segment opens a menu of siblings it could jump to instead, the way a folder's breadcrumb offers folders next to the one shown."]</p>
     <div class="demo-box">
         <FormaBreadcrumb TItem="string" Items="ItemsWithChildren" RootIcon="Glyph.FolderOpen" OnItemClick="HandleAlternativeSelected" />
-        <p class="demo-output">@L["Selected"]: <code>@(_selectedAlternative ?? L["(none yet)"])</code></p>
+        <p class="demo-note">@L["Selected"]: <code>@(_selectedAlternative ?? L["(none yet)"])</code></p>
     </div>
 </div>
 
@@ -41,7 +41,7 @@
             <span class="demo-chip" draggable="true">@L["banner.png"]</span>
             <FormaBreadcrumb TItem="string" Items="DropTargetItems" OnItemClick="v => { }" OnItemDrop="HandleDropped" />
         </div>
-        <p class="demo-output">@L["Dropped on"]: <code>@(_droppedOn ?? L["(nothing yet)"])</code></p>
+        <p class="demo-note">@L["Dropped on"]: <code>@(_droppedOn ?? L["(nothing yet)"])</code></p>
     </div>
 </div>
 

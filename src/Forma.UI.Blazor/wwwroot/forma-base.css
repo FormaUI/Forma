@@ -22,9 +22,19 @@ a {
     text-decoration: none;
 }
 
-a:focus-visible {
-    outline: 2px solid var(--focus-color);
-    outline-offset: 2px;
+/* Keyboard focus draws one ring everywhere, so no control falls back to the browser's own; a component that
+   turns the ring inward outranks this, since :where() carries no specificity. */
+:where(:focus-visible) {
+    outline: none;
+    box-shadow: var(--focus-ring);
+}
+
+/* Forced colors drops shadows, so the ring falls back to the system highlight as an outline. */
+@media (forced-colors: active) {
+    :where(:focus-visible) {
+        outline: 2px solid Highlight;
+        outline-offset: 2px;
+    }
 }
 
 @media (hover: hover) {

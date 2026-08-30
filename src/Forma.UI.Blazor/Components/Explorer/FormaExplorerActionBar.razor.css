@@ -27,3 +27,9 @@
         opacity: 1;
     }
 }
+
+/* The trigger sits inside a tile or row that clips its corners, so its ring turns inward rather than being cut off. */
+.forma-explorer-action-bar ::deep .forma-button:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring-inset);
+}

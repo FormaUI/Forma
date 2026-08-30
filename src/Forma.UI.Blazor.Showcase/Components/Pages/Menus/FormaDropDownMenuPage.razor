@@ -6,7 +6,7 @@
 @inject IStringLocale<FormaDropDownMenuPage> L
 
 <h1>FormaDropDownMenu</h1>
-<p class="description">@L["A trigger button that opens an anchored menu of commands."]</p>
+<p class="description">@L["A button that opens a menu of commands anchored beneath it. The menu follows its trigger when the page scrolls and the arrow keys walk it, so it behaves the way a native menu would."]</p>
 
 <div class="demo-section">
     <h2>@L["Basic"]</h2>
@@ -18,7 +18,7 @@
                 <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Notes"])">@L["Notes"]</FormaDropDownMenuItem>
             </ChildContent>
         </FormaDropDownMenu>
-        <p class="demo-output">@L["Last action"]: <code>@(_lastAction ?? L["none yet"])</code></p>
+        <p class="demo-note">@L["Last action"]: <code>@(_lastAction ?? L["none yet"])</code></p>
     </div>
 </div>
 
@@ -114,7 +114,7 @@
                 </div>
             </ChildContent>
         </FormaDropDownMenu>
-        <p class="demo-output"><code>@SortFields[_sortIndex], @Directions[_directionIndex]</code></p>
+        <p class="demo-note"><code>@SortFields[_sortIndex], @Directions[_directionIndex]</code></p>
     </div>
 </div>
 
@@ -133,7 +133,7 @@
                 <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Delete"])">@L["Delete"]</FormaDropDownMenuItem>
             </ChildContent>
         </FormaDropDownMenu>
-        <p class="demo-output">@L["Last action"]: <code>@(_lastAction ?? L["none yet"])</code></p>
+        <p class="demo-note">@L["Last action"]: <code>@(_lastAction ?? L["none yet"])</code></p>
     </div>
 </div>
 

@@ -107,8 +107,8 @@
 }
 
 .forma-video-player-facade:focus-visible {
-    outline: 2px solid var(--focus-color);
-    outline-offset: -2px;
+    outline: none;
+    box-shadow: var(--focus-ring-inset);
 }
 
 @media (hover: hover) {

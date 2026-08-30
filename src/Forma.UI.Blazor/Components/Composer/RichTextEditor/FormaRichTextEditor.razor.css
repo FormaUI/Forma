@@ -176,8 +176,8 @@
 
 .forma-composer-rich-text-canvas ::deep a[href]:focus-visible,
 .forma-composer-rich-text-canvas ::deep a[name]:focus-visible {
-    outline: 2px solid var(--focus-color);
-    outline-offset: 2px;
+    outline: none;
+    box-shadow: var(--focus-ring);
     border-radius: var(--radius-sm);
 }
 

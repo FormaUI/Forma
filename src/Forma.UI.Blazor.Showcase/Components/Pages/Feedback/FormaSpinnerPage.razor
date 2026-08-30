@@ -16,7 +16,7 @@
 
 <div class="demo-section">
     <h2>@L["Sizes"]</h2>
-    <div class="demo-box" style="display: flex; align-items: center; gap: 16px;">
+    <div class="demo-box demo-row">
         <FormaSpinner Label="@L["Loading"]" Size="SpinnerSize.Small" />
         <FormaSpinner Label="@L["Loading"]" Size="SpinnerSize.Medium" />
         <FormaSpinner Label="@L["Loading"]" Size="SpinnerSize.Large" />
@@ -34,10 +34,10 @@
 <div class="demo-section">
     <h2>@L["In a Grid Cell"]</h2>
     <p class="description">@L["A small spinner standing in for content that has not arrived yet, such as one image in a gallery."]</p>
-    <div class="demo-box" style="display: flex; gap: 8px;">
+    <div class="demo-box demo-row">
         @for (var i = 0; i < 6; i++)
         {
-            <div style="display: flex; align-items: center; justify-content: center; inline-size: 2.5rem; block-size: 2.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+            <div class="demo-cell">
                 <FormaSpinner Label="@L["Loading image"]" Size="SpinnerSize.Small" />
             </div>
         }

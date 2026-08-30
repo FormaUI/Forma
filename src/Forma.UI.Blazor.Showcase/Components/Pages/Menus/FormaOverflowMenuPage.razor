@@ -6,7 +6,7 @@
 @inject IStringLocale<FormaOverflowMenuPage> L
 
 <h1>FormaOverflowMenu</h1>
-<p class="description">@L["A dropdown menu preset with an ellipsis trigger button."]</p>
+<p class="description">@L["The three-dot menu that collects the actions a row or a card has no room to show. It is a drop-down menu with its trigger already chosen, so every overflow in the app looks the same."]</p>
 
 <div class="demo-section">
     <h2>@L["Horizontal (Toolbar)"]</h2>
@@ -17,7 +17,7 @@
             <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Export"].Value)">@L["Export"]</FormaDropDownMenuItem>
             <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Share"].Value)">@L["Share"]</FormaDropDownMenuItem>
         </FormaOverflowMenu>
-        <p class="demo-output">@L["Last action"]: <code>@(_lastAction ?? L["none yet"].Value)</code></p>
+        <p class="demo-note">@L["Last action"]: <code>@(_lastAction ?? L["none yet"].Value)</code></p>
     </div>
 </div>
 

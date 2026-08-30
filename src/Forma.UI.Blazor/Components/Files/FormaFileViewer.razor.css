@@ -11,11 +11,6 @@
     gap: var(--space-2);
 }
 
-.forma-file-viewer:focus-visible {
-    outline: 2px solid var(--focus-color);
-    outline-offset: 2px;
-}
-
 .forma-file-viewer-content {
     position: relative;
     flex: 1;
@@ -92,8 +87,8 @@
 }
 
 .forma-file-viewer-zoom-button:focus-visible {
-    outline: 2px solid var(--focus-color);
-    outline-offset: -2px;
+    outline: none;
+    box-shadow: var(--focus-ring-inset);
 }
 
 @media (hover: hover) {
@@ -212,11 +207,6 @@
 .forma-file-viewer-nav:disabled {
     opacity: 0.4;
     cursor: default;
-}
-
-.forma-file-viewer-nav:focus-visible {
-    outline: 2px solid var(--focus-color);
-    outline-offset: 2px;
 }
 
 @media (hover: hover) {

@@ -14,11 +14,6 @@
     touch-action: manipulation;
 }
 
-.forma-checkbox:focus-visible {
-    outline: 2px solid var(--focus-color);
-    outline-offset: 2px;
-}
-
 .forma-checkbox:disabled {
     opacity: 0.6;
     cursor: not-allowed;

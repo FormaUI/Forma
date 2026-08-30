@@ -11,7 +11,7 @@
 <p class="description">@L["Every string Forma renders resolves through IStringLocale. Switch the culture in the sidebar to watch each section below change."]</p>
 
 <div class="demo-section">
-    <h2>@L["The culture in force"]</h2>
+    <h2>@L["The Culture in Force"]</h2>
     <div class="demo-box">
         <table class="demo-table">
             <tbody>
@@ -37,7 +37,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["A hit and a miss"]</h2>
+    <h2>@L["A Hit and a Miss"]</h2>
     <p class="description">@L["A key with no translation is returned as written and flagged, so nothing ever renders blank. In English both rows miss, because English is the language the keys are written in and carries no file of its own."]</p>
     <div class="demo-box">
         @foreach (var text in new[] { L["Save"], L[AbsentKey] })
@@ -67,7 +67,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Holes filled with values"]</h2>
+    <h2>@L["Holes Filled with Values"]</h2>
     <p class="description">@L["Arguments stay as objects rather than text, so a format specifier written into a translation still reaches the value."]</p>
     <div class="demo-box">
         <div class="demo-row">
@@ -79,7 +79,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Values paired by position"]</h2>
+    <h2>@L["Values Paired by Position"]</h2>
     <p class="description">@L["The names mark where the holes are, and the values are paired with them in the order the key writes them, so any expression can be passed. A translation refers to the holes by name, so it may put them in another order — the Hebrew here does."]</p>
     <div class="demo-box">
         <p>@L["Stored {Stored} of {Total}.", _written, _allowed]</p>
@@ -87,7 +87,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["An interpolated string"]</h2>
+    <h2>@L["An Interpolated String"]</h2>
     <p class="description">@L["The handler rebuilds the composite key from the literal text between the holes, then looks that up. The values never touch the key."]</p>
     <div class="demo-box">
         <p>@L[$"Stored {_written} of {_allowed}."]</p>
@@ -96,7 +96,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Plural forms"]</h2>
+    <h2>@L["Plural Forms"]</h2>
     <p class="description">@L["The count decides which branch of the construct is used. Try 1, 2 and 5, then switch to Hebrew, which has a dual the other two languages do not."]</p>
     <div class="demo-box">
         <div class="demo-row">
@@ -109,7 +109,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["The categories this language uses"]</h2>
+    <h2>@L["The Categories This Language Uses"]</h2>
     <p class="description">@L["A language selects only the categories it needs, so a construct only has to carry those. A category it never selects is simply unused."]</p>
     <div class="demo-box">
         <table class="demo-table">
@@ -134,7 +134,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["A count written two ways"]</h2>
+    <h2>@L["A Count Written Two Ways"]</h2>
     <p class="description">@L["Both stand for the count. The hash is substituted while the plural is resolved and carries the culture's grouping; the named hole survives until the holes are filled."]</p>
     <div class="demo-box">
         <table class="demo-table">
@@ -153,7 +153,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["A branch that is missing"]</h2>
+    <h2>@L["A Branch That Is Missing"]</h2>
     <p class="description">@L["A construct needs a branch for every category its language can select. When the one chosen is absent and there is no other branch to fall back to, the result is empty."]</p>
     <div class="demo-box">
         <table class="demo-table">
@@ -171,7 +171,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["The language the keys are written in"]</h2>
+    <h2>@L["The Language the Keys Are Written In"]</h2>
     <p class="description">@L["This key has no translation, so it is shown exactly as authored — in Hebrew. Its plural forms have to follow Hebrew, whatever language is on screen, and SourceLanguage is what says so."]</p>
     <div class="demo-box">
         <table class="demo-table">
@@ -197,7 +197,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Holes left open"]</h2>
+    <h2>@L["Holes Left Open"]</h2>
     <p class="description">@L["Resolve hands back the translated format with its holes still open, so a caller can render each value itself rather than pasting text together."]</p>
     <div class="demo-box">
         <table class="demo-table">

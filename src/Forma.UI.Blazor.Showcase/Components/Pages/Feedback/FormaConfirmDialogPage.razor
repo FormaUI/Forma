@@ -6,15 +6,15 @@
 @inject IStringLocale<FormaConfirmDialogPage> L
 
 <h1>FormaConfirmDialog</h1>
-<p class="description">@L["Confirmation dialog built on FormaModal. Uses IConfirmDialogService to show async confirm/cancel prompts from anywhere."]</p>
+<p class="description">@L["A question the app asks before it acts, answered with one of two buttons. Any code raises it through the confirm service and simply awaits the answer, so a confirmation is one line wherever it is needed."]</p>
 
 <div class="demo-section">
     <h2>@L["Basic Confirmation"]</h2>
     <div class="demo-box">
-        <button class="button button-primary" @onclick="HandleBasicConfirm">@L["Delete Item"]</button>
+        <FormaButton Variant="ButtonVariant.Primary" OnClick="HandleBasicConfirm">@L["Delete Item"]</FormaButton>
         @if (_basicResult is not null)
         {
-            <p style="margin-top: 12px; color: var(--text-muted-color);">@L["Result:"] <strong>@(_basicResult.Value ? L["Confirmed"] : L["Canceled"])</strong></p>
+            <p class="demo-note">@L["Result:"] <strong>@(_basicResult.Value ? L["Confirmed"] : L["Canceled"])</strong></p>
         }
     </div>
 </div>
@@ -22,10 +22,10 @@
 <div class="demo-section">
     <h2>@L["Custom Button Labels"]</h2>
     <div class="demo-box">
-        <button class="button button-secondary" @onclick="HandleCustomConfirm">@L["Discard Changes"]</button>
+        <FormaButton OnClick="HandleCustomConfirm">@L["Discard Changes"]</FormaButton>
         @if (_customResult is not null)
         {
-            <p style="margin-top: 12px; color: var(--text-muted-color);">@L["Result:"] <strong>@(_customResult.Value ? L["Discarded"] : L["Kept"])</strong></p>
+            <p class="demo-note">@L["Result:"] <strong>@(_customResult.Value ? L["Discarded"] : L["Kept"])</strong></p>
         }
     </div>
 </div>
@@ -33,10 +33,10 @@
 <div class="demo-section">
     <h2>@L["Cascading Confirmations"]</h2>
     <div class="demo-box">
-        <button class="button button-primary" @onclick="HandleCascadeConfirm">@L["Delete Account"]</button>
+        <FormaButton Variant="ButtonVariant.Primary" OnClick="HandleCascadeConfirm">@L["Delete Account"]</FormaButton>
         @if (_cascadeResult is not null)
         {
-            <p style="margin-top: 12px; color: var(--text-muted-color);">@L["Result:"] <strong>@_cascadeResult</strong></p>
+            <p class="demo-note">@L["Result:"] <strong>@_cascadeResult</strong></p>
         }
     </div>
 </div>

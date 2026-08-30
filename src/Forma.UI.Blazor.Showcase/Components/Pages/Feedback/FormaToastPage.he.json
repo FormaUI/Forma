@@ -1,6 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
-  "Slide-in toast notifications via a service. Auto-dismiss with configurable duration.": "התראות צפות באמצעות שירות. סגירה אוטומטית עם משך זמן הניתן לקביעה.",
+  "A brief notice that arrives from the edge of the screen and leaves on its own. Any part of the app raises one through the toast service, so nothing has to know where the toasts are drawn.": "הודעה קצרה שמגיעה מקצה המסך ונעלמת מעצמה. כל חלק ביישום מעלה אותה דרך שירות ההודעות, ולכן דבר אינו צריך לדעת היכן ההודעות מצוירות.",
   "Toast Types": "סוגי התראות",
   "Success": "הצלחה",
   "Error": "שגיאה",

@@ -3,7 +3,7 @@
   "The dismiss glyph every panel closes with. A ghost FormaButton drawn square, so the modal, the toast and the context toolbar share one shape, one focus ring and one touch target.": "El icono de cierre con el que se descarta cada panel. Un FormaButton ghost dibujado cuadrado, para que el modal, el toast y la barra contextual compartan una forma, un anillo de foco y un objetivo táctil.",
   "Sizes": "Tamaños",
   "Disabled": "Deshabilitado",
-  "On a colored surface": "Sobre una superficie de color",
+  "On a Colored Surface": "Sobre una Superficie de Color",
   "A surface sets --forma-button-ghost-color and its hover pair to retint the glyph; the toast does exactly this.": "Una superficie define --forma-button-ghost-color y su par de hover para recolorear el icono; el toast hace exactamente eso.",
   "Saved successfully": "Guardado correctamente",
   "Close": "Cerrar",

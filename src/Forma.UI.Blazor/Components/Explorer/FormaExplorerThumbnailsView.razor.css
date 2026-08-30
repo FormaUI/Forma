@@ -68,9 +68,16 @@
     inline-size: 100%;
     block-size: 100%;
     border: none;
+    border-radius: inherit;
     background: transparent;
     cursor: pointer;
     touch-action: manipulation;
+}
+
+/* The button covers the whole tile, so its ring sits just inside the tile's edge rather than around it. */
+.forma-explorer-item-open:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring-inset);
 }
 
 /* The actions menu and the check share the tile's leading corner, so the check no longer places itself.

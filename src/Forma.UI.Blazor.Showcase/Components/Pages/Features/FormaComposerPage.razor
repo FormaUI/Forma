@@ -11,7 +11,7 @@
 @inject IStringLocale<FormaComposerPage> L
 
 <h1>FormaComposer</h1>
-<p class="description">@L["An extensible authoring engine hosting rich text, Markdown, code, and page composition via plugins."]</p>
+<p class="description">@L["An authoring surface a host assembles from plugins: rich text, Markdown, code or whole page layouts, each bringing its own toolbar rows. Nothing about the content is built in, so a new kind of editing is a plugin rather than a fork."]</p>
 
 <div class="demo-section">
     <h2>@L["Default"]</h2>
@@ -28,7 +28,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Read-only"]</h2>
+    <h2>@L["Read-Only"]</h2>
     <div class="demo-box">
         <FormaComposer @bind-Value="_readOnlyDoc" ReadOnly="true" />
     </div>

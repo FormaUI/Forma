@@ -1,12 +1,18 @@
-/* Showcase app styles - add as needed */
-
 /* ============================================================
    Showcase chrome — the shell the components are displayed in.
    None of it ships in the library.
+
+   A page is a title, an intro, then one demo-section per scenario:
+   an h2, an optional description and a demo-box. A box stacks what
+   it holds a group's gap apart; demo-row lays the same things out on
+   one line at that gap. Every measure is a token: --space-3 between
+   things inside a box, --space-4 between a heading and its box,
+   --space-6 between sections. One rule per box; the heading above
+   it draws none, and neither does a cell inside it.
    ============================================================ */
 
 body {
-    background: #f9fafb;
+    background: var(--modal-background-color);
 }
 
 .showcase-layout {
@@ -18,12 +24,23 @@ body {
     flex-shrink: 0;
     inline-size: 15rem;
     padding: var(--space-5) 0;
-    background: #fff;
+    background: var(--input-background-color);
     border-inline-end: 1px solid var(--border-color);
 }
 
-.showcase-sidebar h3 {
+/* The library's name heads the page list and leads home. */
+.showcase-brand {
+    display: block;
     margin: 0 var(--space-5) var(--space-4);
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--text-color);
+    text-decoration: none;
+}
+
+.showcase-sidebar h3 {
+    margin: var(--space-4) var(--space-5) var(--space-2);
     font-size: var(--font-size-sm);
     letter-spacing: 0.05em;
     text-transform: uppercase;
@@ -44,8 +61,8 @@ body {
 
 .showcase-sidebar a.active {
     font-weight: 600;
-    background: #eff6ff;
-    color: #2563eb;
+    background: color-mix(in srgb, var(--main-color) 8%, transparent);
+    color: var(--main-color);
 }
 
 .culture-switcher {
@@ -67,9 +84,9 @@ body {
 }
 
 .culture-switcher a.active {
-    background: #eff6ff;
-    border-color: #bfdbfe;
-    color: #2563eb;
+    background: color-mix(in srgb, var(--main-color) 8%, transparent);
+    border-color: color-mix(in srgb, var(--main-color) 30%, transparent);
+    color: var(--main-color);
 }
 
 .culture-switcher a:hover:not(.active) {
@@ -105,7 +122,7 @@ body {
         margin: var(--space-2);
         border: 1px solid var(--border-color);
         border-radius: var(--radius-sm);
-        background: #fff;
+        background: var(--input-background-color);
         color: var(--text-color);
         cursor: pointer;
     }
@@ -142,13 +159,14 @@ body {
     list-style: none;
 }
 
+/* A cell is a tint rather than a rule, so a gallery of hundreds does not read as a lattice. */
 .glyph-grid li {
     display: flex;
     align-items: center;
     gap: var(--space-2);
     padding: var(--space-3);
-    border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
+    background: var(--hover-background-color);
     font-size: var(--font-size-xl);
 }
 
@@ -160,6 +178,11 @@ body {
 /* A gallery of bare emoji has no name to fit, so its cells pack to the glyph pair and its padding. */
 .glyph-grid-emoji {
     grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr));
+}
+
+/* A gallery too long to mount at once is cut into rows; each keeps the grid's own gap below it. */
+.glyph-grid-row {
+    margin-block-end: var(--space-2);
 }
 
 /* A glyph the fallback draws nothing for is marked, so an empty cell reads as a fact rather than a fault. */
@@ -246,21 +269,56 @@ body {
 }
 
 .demo-section h2 {
-    margin: 0 0 var(--space-3);
-    padding-block-end: var(--space-2);
-    border-block-end: 1px solid var(--border-color);
+    margin: 0 0 var(--space-4);
     font-size: var(--font-size-lg);
 }
 
+.demo-section h3 {
+    margin: var(--space-5) 0 var(--space-4);
+    font-size: var(--font-size-base);
+}
+
+/* A scenario's description sits between its heading and its box, so it keeps a heading's gap rather than a section's. */
+.demo-section p.description {
+    margin-block-end: var(--space-4);
+}
+
+/* How many of a thing a heading introduces, set beside it in the caption weight. */
+.demo-count {
+    margin-inline-start: var(--space-2);
+    font-size: var(--font-size-sm);
+    font-weight: 400;
+    color: var(--text-muted-color);
+}
+
 .demo-box {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
     padding: var(--space-5);
-    background: #fff;
+    background: var(--input-background-color);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
 }
 
+.demo-box > p {
+    margin: 0;
+}
+
+/* A control that sizes to its label keeps that size when it stands alone in a stack. */
+.demo-box > .forma-button {
+    align-self: flex-start;
+}
+
+/* Whatever follows a box in its section, a note, a row of controls or another box, stands a block away from it. */
+.demo-box + * {
+    margin-block-start: var(--space-4);
+}
+
 /* Lets a region reach the box's own edges, the way it would seat in a real surface. */
 .demo-box-flush {
+    gap: 0;
     padding: 0;
     overflow: hidden;
 }
@@ -292,7 +350,7 @@ body {
 .demo-split {
     display: flex;
     block-size: 12rem;
-    background: #fff;
+    background: var(--input-background-color);
 }
 
 .demo-split-column {
@@ -325,34 +383,6 @@ body {
     user-select: none;
 }
 
-.button {
-    padding: var(--space-2) var(--space-3);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    font-size: var(--font-size-sm);
-    cursor: pointer;
-    transition: background 120ms;
-}
-
-.button-primary {
-    background: #2563eb;
-    border-color: #2563eb;
-    color: #fff;
-}
-
-.button-primary:hover {
-    background: #1d4ed8;
-}
-
-.button-secondary {
-    background: #fff;
-    color: var(--text-color);
-}
-
-.button-secondary:hover {
-    background: var(--hover-background-color);
-}
-
 .row-inactive {
     opacity: 0.5;
 }
@@ -369,16 +399,59 @@ body {
     gap: var(--space-1);
 }
 
+/* Things shown side by side; they are separate examples, so they keep a group's gap rather than a control's. */
 .demo-row {
     display: flex;
+    flex-direction: row;
     flex-wrap: wrap;
     align-items: center;
     gap: var(--space-3);
 }
 
+/* A square the size of one control, standing in for a tile whose content has not arrived. */
+.demo-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: var(--control-size-md);
+    block-size: var(--control-size-md);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+}
+
 .demo-note {
     color: var(--text-muted-color);
     font-size: var(--font-size-sm);
+}
+
+/* The home page's index: one tile per component, packed the way the glyph gallery is. */
+.showcase-index {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.showcase-index a {
+    display: flex;
+    align-items: center;
+    min-block-size: var(--control-size-lg);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--hover-background-color);
+    color: var(--text-color);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    text-decoration: none;
+}
+
+@media (hover: hover) {
+    .showcase-index a:hover {
+        background: color-mix(in srgb, var(--main-color) 8%, transparent);
+        color: var(--main-color);
+    }
 }
 
 /* Reference output a demo prints as rows of inputs and results rather than prose. */
@@ -453,9 +526,9 @@ body {
     padding: var(--space-3) var(--space-4);
     border-radius: var(--radius-md);
     background: var(--info-color);
-    color: #fff;
+    color: var(--main-foreground-color);
     --forma-button-ghost-color: rgba(255, 255, 255, 0.85);
-    --forma-button-ghost-hover-color: #fff;
+    --forma-button-ghost-hover-color: var(--main-foreground-color);
     --forma-button-ghost-hover-background-color: rgba(255, 255, 255, 0.18);
 }
 

@@ -1,13 +1,13 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "A drop zone and file picker in one. Dragging a file onto it, or clicking it, hands the browser's file straight to the change handler — the same validated selection either way.": "Una zona de arrastre y un selector de archivos en uno. Arrastrar un archivo hasta ella, o hacer clic, entrega el archivo del navegador directamente al controlador de cambio; la misma selección validada en ambos casos.",
-  "Any file": "Cualquier archivo",
+  "Any File": "Cualquier Archivo",
   "No restriction, so every drop or pick is accepted.": "Sin restricciones, así que se acepta cualquier archivo arrastrado o seleccionado.",
-  "Restricted to images": "Restringido a imágenes",
+  "Restricted to Images": "Restringido a Imágenes",
   "Accept is checked against both a click-picked file and a dropped one, since a drop never consults the file dialog's own filter.": "Accept se comprueba tanto en un archivo elegido con clic como en uno soltado, ya que un archivo soltado nunca pasa por el filtro propio del diálogo de archivos.",
-  "A size limit": "Un límite de tamaño",
+  "A Size Limit": "Un Límite de Tamaño",
   "Capped at {SizeMarkup} here; a larger file is declined before it is ever read.": "Limitado a {SizeMarkup} aquí; un archivo más grande se rechaza antes de siquiera leerlo.",
-  "A selection limit": "Un límite de selección",
+  "A Selection Limit": "Un Límite de Selección",
   "Capped at two files per drop or pick; anything past the cap is declined rather than the whole selection.": "Limitado a dos archivos por selección; lo que supera el límite se rechaza en lugar de toda la selección.",
   "{Name} selected": "{Name} seleccionado",
   "{Name} declined ({Reason})": "{Name} rechazado ({Reason})"

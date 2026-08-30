@@ -43,11 +43,6 @@
     }
 }
 
-.forma-explorer-nav-button:focus-visible {
-    outline: 2px solid var(--focus-color);
-    outline-offset: 1px;
-}
-
 @media (pointer: coarse) {
     .forma-explorer-nav-button {
         inline-size: var(--control-size-lg);

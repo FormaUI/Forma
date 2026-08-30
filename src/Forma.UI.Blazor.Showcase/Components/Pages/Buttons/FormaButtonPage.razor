@@ -6,7 +6,7 @@
 @inject IStringLocale<FormaButtonPage> L
 
 <h1>FormaButton</h1>
-<p class="description">@L["The Forma button. Five variants set its visual weight, two sizes set its density, and a busy state animates while work is in flight. Pure CSS — no JavaScript."]</p>
+<p class="description">@L["The button every Forma surface presses. Its variant says how much it should stand out, its size how dense the row around it is, and while work is in flight it shows itself busy so the same click cannot be sent twice."]</p>
 
 <div class="demo-section">
     <h2>@L["Variants"]</h2>
@@ -30,14 +30,14 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Row actions"]</h2>
+    <h2>@L["Row Actions"]</h2>
     <p class="description">@L["The tertiary variant is the one built for repeated inline commands, such as the actions at the end of a table row."]</p>
     <div class="demo-box demo-row">
-        <FormaButton Variant="ButtonVariant.Tertiary"
+        <FormaButton Variant="ButtonVariant.Tertiary" Size="ButtonSize.Mini"
                      OnClick="@(() => Record(L["View"]))">@L["View"]</FormaButton>
-        <FormaButton Variant="ButtonVariant.Tertiary"
+        <FormaButton Variant="ButtonVariant.Tertiary" Size="ButtonSize.Mini"
                      OnClick="@(() => Record(L["Edit"]))">@L["Edit"]</FormaButton>
-        <FormaButton Variant="ButtonVariant.Tertiary"
+        <FormaButton Variant="ButtonVariant.Tertiary" Size="ButtonSize.Mini"
                      OnClick="@(() => Record(L["Delete"]))">@L["Delete"]</FormaButton>
         <span class="demo-note">@L["Last action: {Action}", ("Action", _lastAction ?? L["none yet"].Value)]</span>
     </div>
@@ -58,15 +58,17 @@
     <h2>@L["Busy"]</h2>
     <p class="description">@L["A busy button keeps its label, announces itself with aria-busy, and stops accepting clicks until the work finishes."]</p>
     <div class="demo-box demo-row">
-        <FormaButton Variant="ButtonVariant.Primary" Busy="true">@L["Saving…"]</FormaButton>
-        <FormaButton Busy="true">@L["Saving…"]</FormaButton>
-        <FormaButton Variant="ButtonVariant.Tertiary" Busy="true">@L["Saving…"]</FormaButton>
-        <FormaButton Variant="ButtonVariant.Danger" Busy="true">@L["Saving…"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Primary" Busy="true">@L["Save"]</FormaButton>
+        <FormaButton Busy="true">@L["Save"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Tertiary" Busy="true">@L["Save"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Danger" Busy="true">@L["Save"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Ghost" Busy="true">@L["Save"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Primary" Busy="true" BusyText="@L["Saving…"]">@L["Save"]</FormaButton>
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["Inside a form"]</h2>
+    <h2>@L["Inside a Form"]</h2>
     <p class="description">@L["Submit and reset buttons drive the surrounding form without any click handler of their own. A native reset clears the inputs but leaves the bound model alone, so the value below is what the form still holds."]</p>
     <div class="demo-box">
         <EditForm Model="Model" FormName="button-demo" OnValidSubmit="HandleSubmitAsync">

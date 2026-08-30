@@ -1,6 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
-  "A trigger button that opens an anchored menu of commands.": "כפתור מפעיל שפותח תפריט פקודות מעוגן.",
+  "A button that opens a menu of commands anchored beneath it. The menu follows its trigger when the page scrolls and the arrow keys walk it, so it behaves the way a native menu would.": "כפתור שפותח תפריט פקודות המעוגן מתחתיו. התפריט עוקב אחר המפעיל שלו כשהעמוד נגלל ומקשי החצים עוברים בו, ולכן הוא מתנהג כפי שתפריט מקורי היה מתנהג.",
   "Basic": "בסיסי",
   "Options": "אפשרויות",
   "Print": "הדפס",

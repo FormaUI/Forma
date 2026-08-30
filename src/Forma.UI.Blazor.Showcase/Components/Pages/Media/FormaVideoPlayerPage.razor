@@ -38,7 +38,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Holding a player back until it is asked for"]</h2>
+    <h2>@L["Holding a Player Back Until It Is Asked For"]</h2>
     <p class="description">@L["By default nothing is fetched from a hosting service until a reader presses play, so an article page carrying an embed leaks neither an address nor a visit. Autoplay overrides it, and a self-hosted file never needs it."]</p>
     <div class="demo-box">
         <FormaVideoPlayer Source="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
@@ -50,7 +50,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["With a still to look at"]</h2>
+    <h2>@L["With a Still to Look At"]</h2>
     <p class="description">@L["The still comes from the host's own server, never from the video's service — a poster fetched from the service would give away the visit the play control is there to withhold. It also stands in for a self-hosted file before it loads."]</p>
     <div class="demo-box">
         <FormaVideoPlayer Source="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
@@ -65,7 +65,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Services that bring their own player"]</h2>
+    <h2>@L["Services That Bring Their Own Player"]</h2>
     <p class="description">@L["TikTok, Instagram, Facebook and X publish markup and a script rather than an embed address, and each sizes its own player — so the 16:9 frame steps aside for them. Block those scripts, as an ad blocker does, and a link to the video takes the player's place."]</p>
     <div class="demo-box">
         <FormaVideoPlayer Source="@TikTokSample" Title="@L["Sample TikTok video"]" DeferLoading="false" />
@@ -82,7 +82,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["A self-hosted file"]</h2>
+    <h2>@L["A Self-Hosted File"]</h2>
     <p class="description">@L["No embed and no provider chrome — the browser's own player loads the file directly."]</p>
     <div class="demo-box">
         <FormaVideoPlayer Source="/media/sample.mp4"
@@ -91,7 +91,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Playing on arrival"]</h2>
+    <h2>@L["Playing on Arrival"]</h2>
     <p class="description">@L["Autoplay is always muted, because browsers block a video that starts with sound."]</p>
     <div class="demo-box">
         <FormaVideoPlayer Source="/media/sample.mp4"
@@ -101,7 +101,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["With captions"]</h2>
+    <h2>@L["With Captions"]</h2>
     <p class="description">@L["A self-hosted video carries its own caption files. The English track is the default; open the player's caption menu to switch to Spanish."]</p>
     <div class="demo-box">
         <FormaVideoPlayer Source="/media/sample.mp4"
@@ -111,7 +111,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["An address no player can reach"]</h2>
+    <h2>@L["An Address No Player Can Reach"]</h2>
     <p class="description">@L["A scheme the browser will never fetch leaves a notice in place of the player rather than an empty frame or a crash."]</p>
     <div class="demo-box">
         <FormaVideoPlayer Source="ftp://example.com/stage-1.mp4"
@@ -120,7 +120,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["An address only the host understands"]</h2>
+    <h2>@L["An Address Only the Host Understands"]</h2>
     <p class="description">@L["This page registers a provider that claims custom: addresses and resolves them against its own storage. A host's providers are tried before the services this library recognizes, so one can teach the player an address shape the library never knew — or take over an address it would otherwise claim."]</p>
     <div class="demo-box">
         <FormaVideoPlayer Source="custom:sample" Title="@L["Sample video file"]" />
@@ -128,7 +128,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["In a narrow column"]</h2>
+    <h2>@L["In a Narrow Column"]</h2>
     <p class="description">@L["The frame keeps its 16:9 shape at any width, so it fits a sidebar as readily as an article body."]</p>
     <div class="demo-box">
         <div style="max-inline-size: 20rem;">

@@ -1,6 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
-  "Tab container for organizing page content. Used in page editors, product editors, and settings pages.": "מיכל לשוניות לארגון תוכן הדף. משמש בעורכי עמודים, מוצרים והגדרות.",
+  "A strip of tabs over one panel at a time, for a form or an editor too long to read as one page. The selected tab is marked by an underline as well as its color, so the choice reads without color.": "רצועת לשוניות מעל לוח אחד בכל פעם, לטופס או לעורך ארוכים מכדי להיקרא כעמוד אחד. הלשונית שנבחרה מסומנת בקו תחתון וגם בצבעה, ולכן הבחירה נקראת גם בלי צבע.",
   "Basic Tabs": "לשוניות בסיסיות",
   "Tabs with Icons": "לשוניות עם אייקונים",
   "Many Tabs": "הרבה לשוניות",

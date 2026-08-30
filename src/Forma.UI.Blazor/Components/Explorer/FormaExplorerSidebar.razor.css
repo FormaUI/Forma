@@ -304,3 +304,11 @@
         min-block-size: var(--control-size-lg);
     }
 }
+
+/* The tree scrolls, so a ring drawn outside a row would be cut at the pane's edges; every control in it rings inward. */
+.forma-explorer-sidebar-tool:focus-visible,
+.forma-explorer-folder-target:focus-visible,
+.forma-explorer-folder-twisty:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring-inset);
+}

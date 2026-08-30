@@ -1,24 +1,20 @@
 @page "/"
-@using System.Globalization
+@using Forma.UI.Blazor.Globalization
+@inject CultureRouter Router
+@inject IStringLocale<Home> L
 
-<h1>Forma Component Showcase</h1>
-<p class="description">Visual testing and documentation for the Forma component library.</p>
+<h1>Forma</h1>
+<p class="description">@L["Every component in the library, rendered in every state it can take, in each culture and both writing directions. Pick a component to see it standing in each of its states."]</p>
 
-<h3>Blazor Runtime Environment</h3>
-
-@if (RendererInfo.IsInteractive)
+@foreach (var group in ShowcaseCatalog.Sidebar)
 {
-    <p>Interactive mode: @RendererInfo.Name</p>
-}
-else
-{
-    <p>Static SSR (prerendering)</p>
-}
-
-<h3>Blazor LifeCycle Order</h3>
-
-<LifeCycle @rendermode="InteractiveServer" />
-
-@code {
-    private string Culture => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+    <div class="demo-section">
+        <h2>@group.Key <span class="demo-count">@group.Count()</span></h2>
+        <ul class="showcase-index">
+            @foreach (var entry in group)
+            {
+                <li><a href="@Router.GetPath(Router.CurrentRoute, entry.Route)">@entry.Title</a></li>
+            }
+        </ul>
+    </div>
 }

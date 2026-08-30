@@ -43,8 +43,8 @@
 }
 
 .forma-emoji-picker-tab:focus-visible {
-    outline: 2px solid var(--focus-color);
-    outline-offset: -2px;
+    outline: none;
+    box-shadow: var(--focus-ring-inset);
 }
 
 .forma-emoji-picker-search {
@@ -108,8 +108,8 @@
 }
 
 .forma-emoji-picker-emoji:focus-visible {
-    outline: 2px solid var(--focus-color);
-    outline-offset: -2px;
+    outline: none;
+    box-shadow: var(--focus-ring-inset);
 }
 
 .forma-emoji-picker-empty {

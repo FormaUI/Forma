@@ -11,46 +11,46 @@
 <p class="description">@L["A toolbar for actions that apply to the current selection. It appears while one or more items are selected and can clear the selection when the work is done."]</p>
 
 <div class="demo-section">
-    <h2>@L["Basic usage"]</h2>
+    <h2>@L["Basic Usage"]</h2>
     <div class="demo-box">
-        <button class="button button-secondary" @onclick="() => _basicCount = _basicCount > 0 ? 0 : 3">
+        <FormaButton OnClick="() => _basicCount = _basicCount > 0 ? 0 : 3">
             @L["Toggle selection"]
-        </button>
+        </FormaButton>
         <FormaSelectionToolbar Count="_basicCount" Label="@L["Selection Actions"]" Items="BasicItems" OnCommand="HandleCommand" OnClear="() => _basicCount = 0" />
-        <p class="demo-output">@L["Last command"]: <code>@_lastCommand</code></p>
+        <p class="demo-note">@L["Last command"]: <code>@_lastCommand</code></p>
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["Caption agreeing with the count"]</h2>
+    <h2>@L["Caption Agreeing with the Count"]</h2>
     <p class="description">@L["Step the count up. The caption is a plural construct, so a language with a dual reads differently at one, two, and more."]</p>
     <div class="demo-box">
-        <button class="button button-secondary" @onclick="() => _agreementCount = (_agreementCount + 1) % 4">
+        <FormaButton OnClick="() => _agreementCount = (_agreementCount + 1) % 4">
             @L["Add one"]
-        </button>
+        </FormaButton>
         <FormaSelectionToolbar Count="_agreementCount" Label="@L["Selection Actions"]" Items="DeleteOnly" OnCommand="HandleCommand" OnClear="() => _agreementCount = 0" />
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["Without a clear button"]</h2>
+    <h2>@L["Without a Clear Button"]</h2>
     <div class="demo-box">
         <FormaSelectionToolbar Count="2" Label="@L["Selection Actions"]" Items="DeleteOnly" OnCommand="HandleCommand" />
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["Several actions"]</h2>
+    <h2>@L["Several Actions"]</h2>
     <div class="demo-box">
-        <button class="button button-secondary" @onclick="() => _wideCount = _wideCount > 0 ? 0 : 4">
+        <FormaButton OnClick="() => _wideCount = _wideCount > 0 ? 0 : 4">
             @L["Toggle selection"]
-        </button>
+        </FormaButton>
         <FormaSelectionToolbar Count="_wideCount" Label="@L["Selection Actions"]" Items="WideItems" OnCommand="HandleCommand" OnClear="() => _wideCount = 0" />
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["Caller-supplied caption"]</h2>
+    <h2>@L["Caller-Supplied Caption"]</h2>
     <div class="demo-box">
         <FormaSelectionToolbar Count="ModerationCount" Caption="@(L["[$ plural; one: # comment awaiting moderation; other: # comments awaiting moderation; $]", ModerationCount])" Label="@L["Selection Actions"]" Items="PublishOnly" OnCommand="HandleCommand" />
     </div>

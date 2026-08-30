@@ -40,11 +40,6 @@
     }
 }
 
-.forma-composer-bubble-item:focus-visible {
-    outline: 2px solid var(--focus-color);
-    outline-offset: 1px;
-}
-
 .forma-composer-bubble-level {
     font-size: 0.625em;
     font-weight: 700;

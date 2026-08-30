@@ -5,7 +5,7 @@
 @inject IStringLocale<FormaToolbarPage> L
 
 <h1>FormaToolbar</h1>
-<p class="description">@L["A toolbar of grouped, item-driven commands, built on FormaCommandArea and FormaCommandBar. Each item is a record whose type decides how it renders."]</p>
+<p class="description">@L["A row of commands grouped by what they do, each a small record the toolbar draws as a button, a toggle, a menu or a readout. Describing the commands as data is what lets one list feed a keyboard shortcut, a tooltip and a screen reader at once."]</p>
 
 <div class="demo-section">
     <h2>@L["Grouped Commands"]</h2>
@@ -13,7 +13,7 @@
     <div class="demo-box demo-box-flush">
         <FormaToolbar Label="@L["Formatting"]" Items="FormattingGroups" OnCommand="HandleCommand" />
     </div>
-    <p class="demo-output">@L["Last command"]: <code>@_lastCommand</code></p>
+    <p class="demo-note">@L["Last command"]: <code>@_lastCommand</code></p>
 </div>
 
 <div class="demo-section">
@@ -46,7 +46,7 @@
     <div class="demo-box demo-box-flush">
         <FormaToolbar Label="@L["Document Status"]" Items="ReadoutGroups" OnCommand="HandleCommand" />
     </div>
-    <p><button class="button button-secondary" @onclick="() => _wordCount += 12">@L["Add Words"]</button></p>
+    <p><FormaButton OnClick="() => _wordCount += 12">@L["Add Words"]</FormaButton></p>
 </div>
 
 <div class="demo-section">
@@ -74,7 +74,7 @@
             @L["Focus here, then press Ctrl+B or Ctrl+I."]
         </div>
     </div>
-    <p class="demo-output">@L["Last command"]: <code>@_lastCommand</code></p>
+    <p class="demo-note">@L["Last command"]: <code>@_lastCommand</code></p>
 </div>
 
 <div class="demo-section">
@@ -92,15 +92,15 @@
         <FormaToolbar Label="@L["Library Actions"]" Items="PartlyDisabledGroups" ShowLabels="true" Target="_shortcutSurface" OnCommand="HandleCommand" />
     </div>
     <p>
-        <button class="button button-secondary" @onclick="() => _canDelete = !_canDelete">
+        <FormaButton OnClick="() => _canDelete = !_canDelete">
             @(_canDelete ? L["Disable Delete"] : L["Enable Delete"])
-        </button>
+        </FormaButton>
     </p>
-    <p class="demo-output">@L["Last command"]: <code>@_lastCommand</code></p>
+    <p class="demo-note">@L["Last command"]: <code>@_lastCommand</code></p>
 </div>
 
 <div class="demo-section">
-    <h2>@L["Content Pinned Past the Track"]</h2>
+    <h2>@L["Content Pinned past the Track"]</h2>
     <p class="description">@L["Trailing content, such as an overflow toggle, stays put while the commands beside it scroll."]</p>
     <div class="demo-box demo-box-flush demo-command-bar-narrow">
         <FormaToolbar Label="@L["Formatting"]" Items="ManyGroups">
@@ -118,9 +118,9 @@
         <FormaToolbar Label="@L["Favorites"]" Items="FormattingGroups" ShowLabels="true" Hidden="@(!_showFavorites)" Animated="true" />
     </div>
     <p>
-        <button class="button button-secondary" @onclick="() => _showFavorites = !_showFavorites">
+        <FormaButton OnClick="() => _showFavorites = !_showFavorites">
             @(_showFavorites ? L["Hide Favorites"] : L["Show Favorites"])
-        </button>
+        </FormaButton>
     </p>
 </div>
 

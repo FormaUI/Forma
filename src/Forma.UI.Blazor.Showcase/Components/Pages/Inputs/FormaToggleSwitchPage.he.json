@@ -1,9 +1,9 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
-  "An iOS-style toggle switch for boolean values. Supports optional on/off labels and a disabled state. Pure CSS — no JavaScript.": "מתג הפעלה/כיבוי בסגנון iOS לערכים בוליאניים. תומך בתוויות מצב אופציונליות ובמצב מושבת. CSS טהור — ללא JavaScript.",
+  "A switch for a setting that is either on or off, with optional labels for each side. It is a checkbox underneath, so a form, the keyboard and a screen reader all treat it as one.": "מתג להגדרה שהיא דולקת או כבויה, עם תוויות אופציונליות לכל צד. מתחתיו זו תיבת סימון, ולכן טופס, המקלדת וקורא מסך מתייחסים אליו ככזו.",
   "Basic Toggle": "מתג בסיסי",
   "With Labels": "עם תוויות",
-  "As a named setting": "כהגדרה בעלת שם",
+  "As a Named Setting": "כהגדרה בעלת שם",
   "A label names the setting itself, so the switch needs no aria-label of its own. Pair it with the on/off labels sparingly — together they make for a busy row.": "התווית מציינת את ההגדרה עצמה, ולכן המתג אינו זקוק ל-aria-label משלו. שלב אותה עם תוויות המצב במשורה — יחד הן יוצרות שורה עמוסה.",
   "Send the weekly newsletter": "שליחת הניוזלטר השבועי",
   "Allow search engines to index": "אפשר למנועי חיפוש לאנדקס",

@@ -59,11 +59,6 @@
     }
 }
 
-.forma-command-bar-scroll:focus-visible {
-    outline: 2px solid var(--focus-color);
-    outline-offset: 1px;
-}
-
 .forma-command-bar-scroll:disabled {
     opacity: 0.35;
     cursor: default;
@@ -87,4 +82,10 @@
         min-inline-size: var(--control-size-lg);
         min-block-size: var(--control-size-lg);
     }
+}
+
+/* The arrows sit at the ends of the clipped track, so their ring turns inward. */
+.forma-command-bar-scroll:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring-inset);
 }

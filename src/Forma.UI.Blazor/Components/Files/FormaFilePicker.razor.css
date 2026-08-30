@@ -35,8 +35,8 @@
 }
 
 .forma-file-picker-drop-zone:has(:focus-visible) {
-    outline: 2px solid var(--focus-color);
-    outline-offset: 2px;
+    outline: none;
+    box-shadow: var(--focus-ring);
 }
 
 /* The second, colour-independent channel for the drag state: the border changes shape, not only colour. */

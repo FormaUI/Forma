@@ -6,31 +6,31 @@
 @inject IStringLocale<FormaToastPage> L
 
 <h1>FormaToast</h1>
-<p class="description">@L["Slide-in toast notifications via a service. Auto-dismiss with configurable duration."]</p>
+<p class="description">@L["A brief notice that arrives from the edge of the screen and leaves on its own. Any part of the app raises one through the toast service, so nothing has to know where the toasts are drawn."]</p>
 
 <div class="demo-section">
     <h2>@L["Toast Types"]</h2>
-    <div class="demo-box" style="display: flex; gap: 8px; flex-wrap: wrap;">
-        <button class="button button-primary" @onclick="ShowSuccess">@L["Success"]</button>
-        <button class="button button-secondary" @onclick="ShowError">@L["Error"]</button>
-        <button class="button button-secondary" @onclick="ShowInfo">@L["Info"]</button>
-        <button class="button button-secondary" @onclick="ShowWarning">@L["Warning"]</button>
+    <div class="demo-box demo-row">
+        <FormaButton Variant="ButtonVariant.Primary" OnClick="ShowSuccess">@L["Success"]</FormaButton>
+        <FormaButton OnClick="ShowError">@L["Error"]</FormaButton>
+        <FormaButton OnClick="ShowInfo">@L["Info"]</FormaButton>
+        <FormaButton OnClick="ShowWarning">@L["Warning"]</FormaButton>
     </div>
 </div>
 
 <div class="demo-section">
     <h2>@L["Custom Duration"]</h2>
-    <div class="demo-box" style="display: flex; gap: 8px; flex-wrap: wrap;">
-        <button class="button button-secondary" @onclick="() => ShowTimed(1000)">1s</button>
-        <button class="button button-secondary" @onclick="() => ShowTimed(5000)">5s</button>
-        <button class="button button-secondary" @onclick="() => ShowTimed(10000)">10s</button>
+    <div class="demo-box demo-row">
+        <FormaButton OnClick="() => ShowTimed(1000)">1s</FormaButton>
+        <FormaButton OnClick="() => ShowTimed(5000)">5s</FormaButton>
+        <FormaButton OnClick="() => ShowTimed(10000)">10s</FormaButton>
     </div>
 </div>
 
 <div class="demo-section">
     <h2>@L["Multiple Toasts"]</h2>
     <div class="demo-box">
-        <button class="button button-primary" @onclick="ShowMultiple">@L["Show 3 at once"]</button>
+        <FormaButton Variant="ButtonVariant.Primary" OnClick="ShowMultiple">@L["Show 3 at once"]</FormaButton>
     </div>
 </div>
 

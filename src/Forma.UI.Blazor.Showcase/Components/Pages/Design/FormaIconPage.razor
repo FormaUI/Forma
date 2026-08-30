@@ -10,14 +10,14 @@
 <p class="description">@L["Every glyph ships as artwork inside the library, drawn as inline SVG, so a host registers nothing and loads no icon font; a host that wants a different set registers its own provider instead."]</p>
 
 <div class="demo-section">
-    <h2>@L["Every glyph"]</h2>
+    <h2>@L["Every Glyph"] <span class="demo-count">@Total</span></h2>
     <p class="description">@L["The whole set at both of its native sizes, 32px from the 32-unit grid and 24px from the 24-unit grid, so a glyph can be judged beside its neighbors and against its other drawing."]</p>
     <p class="description">@L["The default variant is a stroke drawing and the alternate its filled counterpart; a glyph with nothing to fill draws its strokes heavier instead."]</p>
     <FormaTabs Label="@L["Variants"]">
         <FormaTab Title="@L["Default"]">
             @foreach (var section in Sections)
             {
-                <h3>@L[section.Title]</h3>
+                <h3>@L[section.Title] <span class="demo-count">@section.Glyphs.Count</span></h3>
                 <div class="demo-box">
                     <ul class="glyph-grid glyph-grid-named">
                         @foreach (var glyph in section.Glyphs)
@@ -35,7 +35,7 @@
         <FormaTab Title="@L["Alternate"]">
             @foreach (var section in Sections)
             {
-                <h3>@L[section.Title]</h3>
+                <h3>@L[section.Title] <span class="demo-count">@section.Glyphs.Count</span></h3>
                 <div class="demo-box">
                     <ul class="glyph-grid glyph-grid-named">
                         @foreach (var glyph in section.Glyphs)
@@ -51,6 +51,7 @@
             }
         </FormaTab>
         <FormaTab Title="@L["Brands"]">
+            <h3>@L["Brands"] <span class="demo-count">@Brands.Count</span></h3>
             <p class="description">@L["A brand's official mark, fetched rather than drawn, carrying the brand's name as its accessible name so the mark can stand alone as a link."]</p>
             <div class="demo-box">
                 <ul class="glyph-grid glyph-grid-named">
@@ -83,7 +84,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["A character"]</h2>
+    <h2>@L["A Character"]</h2>
     <p class="description">@L["A single character set by the symbol font fills the same box as a glyph, for a badge, a keyboard hint or an initial that no drawing needs to exist for."]</p>
     <div class="demo-box">
         <div class="glyph-sizes">
@@ -109,7 +110,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Inside a button"]</h2>
+    <h2>@L["Inside a Button"]</h2>
     <p class="description">@L["A glyph carries no accessible name of its own, so the button around it has to be labeled."]</p>
     <div class="demo-box">
         <div class="glyph-sizes">

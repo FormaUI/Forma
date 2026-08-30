@@ -8,7 +8,7 @@
   "Disabled": "Deshabilitado",
   "Long List in a Scrolling Panel": "Lista larga en un panel con desplazamiento",
   "Holding a drag near the top or bottom edge scrolls the panel, and releasing in the empty space below the last row sends the item to the end.": "Mantener un arrastre cerca del borde superior o inferior desplaza el panel, y soltar en el espacio vacío bajo la última fila envía el elemento al final.",
-  "Dragging From the Whole Row": "Arrastrar desde toda la fila",
+  "Dragging from the Whole Row": "Arrastrar desde Toda la Fila",
   "The whole row starts a drag, not just the handle. Interactive elements inside a row keep their own press, and on touch the row is held briefly before it lifts so a swipe still scrolls.": "Toda la fila inicia un arrastre, no sólo el asa. Los elementos interactivos dentro de una fila conservan su propia pulsación, y en pantallas táctiles la fila se mantiene pulsada un momento antes de levantarse, así que un deslizamiento sigue desplazando.",
   "Edit": "Editar",
   "Drag a row anywhere to reorder, or press Edit — it still clicks.": "Arrastra una fila desde cualquier punto para reordenar, o pulsa Editar: sigue siendo clicable.",

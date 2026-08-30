@@ -1,6 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
-  "A styled checkbox with a script-driven indeterminate state, and an option to suppress the native toggle so the caller owns the checked state, as a tri-state select-all does.": "Una casilla de verificación con estado indeterminado controlado por script y la opción de suprimir la alternancia nativa para que el llamador controle el estado marcado, como hace un «seleccionar todo» de tres estados.",
+  "A checkbox with a third, indeterminate state for a choice that governs others. A caller can also take the checked state over entirely, which is what a select-all needs when only some of its children are checked.": "Una casilla con un tercer estado, indeterminado, para una elección que gobierna otras. Quien la usa también puede asumir por completo el estado marcado, que es lo que necesita un seleccionar-todo cuando solo algunos de sus hijos están marcados.",
   "Basic": "Básico",
   "Disabled": "Deshabilitado",
   "Indeterminate": "Indeterminado",

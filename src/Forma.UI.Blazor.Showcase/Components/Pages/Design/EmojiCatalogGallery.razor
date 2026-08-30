@@ -1,0 +1,47 @@
+@using Forma.UI.Blazor.Components.Inputs
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@inject IEmojiCatalog Catalog
+@inject IStringLocale<FormaEmojiPage> L
+
+<div class="demo-section">
+    <h2>@L["Every Emoji"] <span class="demo-count">@_total</span></h2>
+    <p class="description">@L["The whole shipped set, filed under the categories the picker offers, each drawn beside the reader's own character for it."]</p>
+    @foreach (var (group, rows) in _groups)
+    {
+        <h3>@L[group.Title] <span class="demo-count">@rows.Sum(row => row.Length)</span></h3>
+        <div class="demo-box">
+            @* Only the rows in view are mounted, so a group of hundreds costs the page a screenful at a time. *@
+            <Virtualize Items="rows" ItemSize="RowHeight" Context="row">
+                <ul class="glyph-grid glyph-grid-emoji glyph-grid-row">
+                    @foreach (var info in row)
+                    {
+                        <li>
+                            <FormaEmoji Emoji="info.Emoji" />
+                            <code>@info.Emoji.Sequence</code>
+                        </li>
+                    }
+                </ul>
+            </Virtualize>
+        </div>
+    }
+</div>
+
+@code {
+    // A row holds what one line of the gallery grid fits at the page's widest, so a row is one line there and wraps narrower.
+    private const int RowSize = 9;
+
+    // One cell's height plus the gap below it, in pixels, which is what the virtualizer sizes its placeholders by.
+    private const float RowHeight = 68;
+
+    private IReadOnlyList<(EmojiGroup Group, List<EmojiInfo[]> Rows)> _groups = [];
+
+    private int _total;
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        _groups = [.. FormaEmojiPicker.DefaultGroups
+            .Select(group => (group, (Catalog.TryFindByGroupId(group.Id, out var emojis) ? emojis : []).Chunk(RowSize).ToList()))];
+        _total = _groups.Sum(entry => entry.Rows.Sum(row => row.Length));
+    }
+}

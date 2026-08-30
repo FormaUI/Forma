@@ -4,12 +4,12 @@
 @using Forma.UI.Design.Css
 
 <h1>FormaStatusBadge</h1>
-<p class="description">@L["Pill-shaped status label. The application defines its own statuses and colors; the library ships none."]</p>
+<p class="description">@L["A small pill that names a record's state, colored so states tell apart at a glance. The library ships no states of its own; the application registers each one once, with its color and glyph, and names it from then on."]</p>
 
 <div class="demo-section">
-    <h2>@L["Application statuses"]</h2>
+    <h2>@L["Application Statuses"]</h2>
     <p class="description">@L["Registered once at startup, then referenced by name."]</p>
-    <div class="demo-box" style="display: flex; gap: 8px; flex-wrap: wrap;">
+    <div class="demo-box demo-row">
         <FormaStatusBadge Text="@L["Draft"]" Status="draft" />
         <FormaStatusBadge Text="@L["Scheduled"]" Status="scheduled" />
         <FormaStatusBadge Text="@L["Published"]" Status="published" />
@@ -19,9 +19,9 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["A second vocabulary"]</h2>
+    <h2>@L["A Second Vocabulary"]</h2>
     <p class="description">@L["The same component with an unrelated set of statuses, registered by the page itself."]</p>
-    <div class="demo-box" style="display: flex; gap: 8px; flex-wrap: wrap;">
+    <div class="demo-box demo-row">
         @foreach (var status in OrderStatuses)
         {
             <FormaStatusBadge Text="@status.Label" Status="@status.Name" />
@@ -30,9 +30,9 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Colors without a status"]</h2>
+    <h2>@L["Colors without a Status"]</h2>
     <p class="description">@L["One-off badges can pass colors directly instead of registering a status."]</p>
-    <div class="demo-box" style="display: flex; gap: 8px; flex-wrap: wrap;">
+    <div class="demo-box demo-row">
         <FormaStatusBadge Text="@L["Shipped"]"
                           Background="CssColor.FromRgba(111, 66, 193, 0.14)" Foreground="CssColor.FromHex(0x59359a)" />
         <FormaStatusBadge Text="@L["Refunded"]"
@@ -41,9 +41,9 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Overriding a status glyph"]</h2>
+    <h2>@L["Overriding a Status Glyph"]</h2>
     <p class="description">@L["A badge shows the glyph its status registered, unless it is given one of its own."]</p>
-    <div class="demo-box" style="display: flex; gap: 8px; flex-wrap: wrap;">
+    <div class="demo-box demo-row">
         <FormaStatusBadge Text="@L["Pending"]" Status="pending" />
         <FormaStatusBadge Text="@L["Pending"]" Status="pending" Marker="Glyph.CircleError" />
         <FormaStatusBadge Text="@L["No status"]" Marker="Glyph.CircleInfo" />
@@ -53,34 +53,34 @@
 <div class="demo-section">
     <h2>@L["Fallback"]</h2>
     <p class="description">@L["An unregistered status, or no status at all, falls back to the neutral default."]</p>
-    <div class="demo-box" style="display: flex; gap: 8px; flex-wrap: wrap;">
+    <div class="demo-box demo-row">
         <FormaStatusBadge Text="@L["Unknown status"]" Status="never-registered" />
         <FormaStatusBadge Text="@L["No status"]" />
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["Inside a list"]</h2>
+    <h2>@L["Inside a List"]</h2>
     <div class="demo-box">
-        <table style="width: 100%; border-collapse: collapse;">
+        <table class="demo-table">
             <thead>
                 <tr>
-                    <th style="text-align: start; padding: 6px;">@L["Article"]</th>
-                    <th style="text-align: start; padding: 6px;">@L["Status"]</th>
+                    <th>@L["Article"]</th>
+                    <th>@L["Status"]</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td style="padding: 6px;">@L["Stage 12 report"]</td>
-                    <td style="padding: 6px;"><FormaStatusBadge Text="@L["Published"]" Status="published" /></td>
+                    <td>@L["Stage 12 report"]</td>
+                    <td><FormaStatusBadge Text="@L["Published"]" Status="published" /></td>
                 </tr>
                 <tr>
-                    <td style="padding: 6px;">@L["Rider interview"]</td>
-                    <td style="padding: 6px;"><FormaStatusBadge Text="@L["Scheduled"]" Status="scheduled" /></td>
+                    <td>@L["Rider interview"]</td>
+                    <td><FormaStatusBadge Text="@L["Scheduled"]" Status="scheduled" /></td>
                 </tr>
                 <tr>
-                    <td style="padding: 6px;">@L["Season preview"]</td>
-                    <td style="padding: 6px;"><FormaStatusBadge Text="@L["Draft"]" Status="draft" /></td>
+                    <td>@L["Season preview"]</td>
+                    <td><FormaStatusBadge Text="@L["Draft"]" Status="draft" /></td>
                 </tr>
             </tbody>
         </table>
@@ -88,8 +88,8 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Longer label"]</h2>
-    <div class="demo-box" style="display: flex; gap: 8px; flex-wrap: wrap;">
+    <h2>@L["Longer Label"]</h2>
+    <div class="demo-box demo-row">
         <FormaStatusBadge Text="@L["Awaiting editorial review"]" Status="pending" />
     </div>
 </div>

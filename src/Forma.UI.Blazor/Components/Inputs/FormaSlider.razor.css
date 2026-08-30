@@ -28,11 +28,6 @@
     cursor: not-allowed;
 }
 
-.forma-slider:focus-visible {
-    outline: 2px solid var(--forma-slider-focus-color, var(--focus-color));
-    outline-offset: 2px;
-}
-
 /* Only the track grows: a native-appearance range ignores author thumb styling, so the
    touch target is the input's own height rather than a larger drawn thumb. */
 @media (pointer: coarse) {

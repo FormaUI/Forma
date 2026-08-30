@@ -20,10 +20,10 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     /// <summary>The identifier of the tab holding recently chosen emoji.</summary>
     public const string RecentGroupId = "recent";
 
-    // The nine standard categories, matching what TwemojiEmojiCatalog groups its entries under.
     // A host supplying a different IEmojiCatalog also supplies matching Groups, since browsing and
     // data are two halves of one decision.
-    private static readonly EmojiGroup[] DefaultGroups =
+    /// <summary>The nine standard categories, matching what a shipped catalog groups its entries under.</summary>
+    public static IReadOnlyList<EmojiGroup> DefaultGroups { get; } =
     [
         new() { Id = "smileys", Title = "Smileys & Emotion" },
         new() { Id = "people", Title = "People & Body" },

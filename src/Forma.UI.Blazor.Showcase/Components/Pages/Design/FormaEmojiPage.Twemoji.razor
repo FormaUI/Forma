@@ -7,37 +7,23 @@
 <p class="description">@L["This tab draws them from the Twemoji artwork package, which a host adds and registers itself: one drawing per emoji, identical on every device, fetched as a sprite sheet the first time one of its emoji is drawn."]</p>
 
 <CascadingValue Value="Twemoji" IsFixed="true">
-    <div class="demo-section">
-        <h2>@L["A sample of the set"]</h2>
-        <p class="description">@L["Each cell is one emoji drawn at the surrounding font size."]</p>
-        <div class="demo-box">
-            <ul class="glyph-grid glyph-grid-emoji">
-                @foreach (var character in Sample)
-                {
-                    <li>
-                        <FormaEmoji Emoji="character" />
-                        <code>@character</code>
-                    </li>
-                }
-            </ul>
-        </div>
-    </div>
+    <EmojiCatalogGallery />
 
     <div class="demo-section">
         <h2>@L["Sizing"]</h2>
         <p class="description">@L["An emoji takes the font size of whatever contains it, so it sits on a line of text without being measured against it."]</p>
         <div class="demo-box">
             <div class="glyph-sizes">
-                <span style="font-size: 0.75rem;"><FormaEmoji Emoji="@("🚴")" /> 0.75rem</span>
-                <span style="font-size: 1rem;"><FormaEmoji Emoji="@("🚴")" /> 1rem</span>
-                <span style="font-size: 1.5rem;"><FormaEmoji Emoji="@("🚴")" /> 1.5rem</span>
-                <span style="font-size: 3rem;"><FormaEmoji Emoji="@("🚴")" /> 3rem</span>
+                <span style="font-size: var(--font-size-xs);"><FormaEmoji Emoji="@("🚴")" /> xs</span>
+                <span style="font-size: var(--font-size-base);"><FormaEmoji Emoji="@("🚴")" /> base</span>
+                <span style="font-size: var(--font-size-2xl);"><FormaEmoji Emoji="@("🚴")" /> 2xl</span>
+                <span style="font-size: var(--icon-size-lg);"><FormaEmoji Emoji="@("🚴")" /> @L["Large"]</span>
             </div>
         </div>
     </div>
 
     <div class="demo-section">
-        <h2>@L["Inside a sentence"]</h2>
+        <h2>@L["Inside a Sentence"]</h2>
         <p class="description">@L["An emoji is decorative by default and hidden from assistive technology, so the sentence around it has to read without it."]</p>
         <div class="demo-box">
             <p>@L["The stage winner"] <FormaEmoji Emoji="@("🏆")" /> @L["took the mountains classification as well"] <FormaEmoji Emoji="@("⛰️")" />.</p>
@@ -45,7 +31,7 @@
     </div>
 
     <div class="demo-section">
-        <h2>@L["Named for a reader"]</h2>
+        <h2>@L["Named for a Reader"]</h2>
         <p class="description">@L["An emoji carrying meaning of its own takes a label, which announces it as an image rather than leaving it silent."]</p>
         <div class="demo-box">
             <div class="glyph-sizes">
@@ -61,10 +47,4 @@
 
 @code {
     private static readonly IEmojiProvider Twemoji = new TwemojiEmojiProvider();
-
-    private static readonly string[] Sample =
-    [
-        "😀", "😍", "🤝", "👏", "🚴", "🏆", "🥇", "⛰️", "🌧️", "🔥",
-        "⏱️", "📣", "🩺", "✅", "⚠️", "🎉", "📸", "🚑", "🧭", "🍀",
-    ];
 }

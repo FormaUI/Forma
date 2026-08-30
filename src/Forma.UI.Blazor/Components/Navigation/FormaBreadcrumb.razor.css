@@ -89,11 +89,6 @@ button.forma-breadcrumb-item {
 /* The theme's own ring rather than the browser default, which varies and ignores the tokens. */
 .forma-breadcrumb-item:focus-visible,
 .forma-breadcrumb-chevron:focus-visible,
-.forma-breadcrumb-menu-item:focus-visible {
-    outline: 2px solid var(--focus-color);
-    outline-offset: 1px;
-}
-
 .forma-breadcrumb-separator {
     font-size: var(--font-size-xs);
     color: var(--text-muted-color);

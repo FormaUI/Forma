@@ -52,8 +52,8 @@
 }
 
 .forma-color-picker-native:focus-visible + .forma-color-picker-swatch {
-    outline: 2px solid var(--focus-color);
-    outline-offset: 2px;
+    outline: none;
+    box-shadow: var(--focus-ring);
 }
 
 /* ---------- hex text input ---------- */

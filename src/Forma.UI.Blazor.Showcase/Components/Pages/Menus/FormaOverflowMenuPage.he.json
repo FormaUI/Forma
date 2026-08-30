@@ -1,6 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
-  "A dropdown menu preset with an ellipsis trigger button.": "תפריט נפתח עם לחצן שלוש נקודות.",
+  "The three-dot menu that collects the actions a row or a card has no room to show. It is a drop-down menu with its trigger already chosen, so every overflow in the app looks the same.": "תפריט שלוש הנקודות שאוסף את הפעולות שלשורה או לכרטיס אין מקום להציג. זהו תפריט נפתח שהמפעיל שלו כבר נבחר, ולכן כל גלישה ביישום נראית אותו דבר.",
   "Horizontal (Toolbar)": "אופקי (סרגל כלים)",
   "A horizontal ellipsis (⋯) for toolbars and wider contexts.": "שלוש נקודות אופקיות (⋯) עבור סרגלי כלים והקשרים רחבים.",
   "More options": "אפשרויות נוספות",

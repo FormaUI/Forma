@@ -4,6 +4,7 @@
 @inject NavigationManager Nav
 
 <nav class="showcase-sidebar">
+    <a class="showcase-brand" href="@Router.GetPath(Current, "/")">Forma</a>
     <div class="culture-switcher">
         @foreach (var route in Router.Routes)
         {

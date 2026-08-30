@@ -4,10 +4,16 @@
         class="@CssClass"
         type="@TypeAttribute"
         disabled="@Disabled"
+        data-busy="@DataBusy"
         aria-disabled="@AriaDisabled"
         aria-busy="@AriaBusy"
         @ref="Element"
         @onclick="HandleClickAsync"
-        @onclick:preventDefault="Busy">
-    @ChildContent
-</button>
+        @onclick:preventDefault="Busy">@if (BusyText is null)
+    {
+        @ChildContent
+    }
+    else
+    {
+        <span class="forma-button-labels"><span class="forma-button-label">@ChildContent</span><span class="forma-button-busy-label">@BusyText</span></span>
+    }<span class="forma-button-runner" aria-hidden="true"><span class="forma-button-runner-fill"></span><span class="forma-button-runner-fill"></span></span></button>

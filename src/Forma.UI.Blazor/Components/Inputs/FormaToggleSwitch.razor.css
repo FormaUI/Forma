@@ -50,8 +50,8 @@
 }
 
 .forma-toggle-switch-input:focus-visible + .forma-toggle-switch-track {
-    outline: 2px solid var(--focus-color);
-    outline-offset: 2px;
+    outline: none;
+    box-shadow: var(--focus-ring);
 }
 
 /* ---------- state mark ---------- */

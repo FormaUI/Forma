@@ -61,13 +61,18 @@
     --gray-color: rgba(44, 56, 74, 0.45);
 
     /* Brand / accent */
-    --main-color: #1370df;
+    --main-color: #0066bf;
     --main-dark-color: color-mix(in srgb, var(--main-color) 82%, black);
     --main-light-color: color-mix(in srgb, var(--main-color) 60%, white);
     --main-foreground-color: #fff;  /* text and marks on an accent or status fill */
 
-    /* Focus ring */
-    --focus-color: color-mix(in srgb, var(--main-color) 55%, white);
+    /* Focus ring — a gap in the surface color, then a band of the accent, drawn as shadows so it follows the
+       corner; --focus-ring-inset is the same ring turned inward, for a control that clips its own box. */
+    --focus-color: color-mix(in srgb, var(--main-color) 35%, transparent);
+    --focus-ring-gap: 2px;
+    --focus-ring-width: 2px;
+    --focus-ring: 0 0 0 var(--focus-ring-gap) var(--input-background-color), 0 0 0 calc(var(--focus-ring-gap) + var(--focus-ring-width)) var(--focus-color);
+    --focus-ring-inset: inset 0 0 0 var(--focus-ring-width) var(--focus-color), inset 0 0 0 calc(var(--focus-ring-gap) + var(--focus-ring-width)) var(--input-background-color);
 
     /* Links — hover darkens, so pointing at a link raises its emphasis. */
     --link-color: var(--main-dark-color);
@@ -88,9 +93,20 @@
     --media-muted-foreground-color: rgba(255, 255, 255, 0.72);
     --media-scrim-color: rgba(0, 0, 0, 0.7);
 
+    /* Controls — the fills a pressable surface takes when it carries no accent, and the one state every control shares. */
+    --control-neutral-color: #4b5563;             /* a filled control with no accent, such as a secondary button */
+    --control-neutral-hover-color: #374151;
+    --control-neutral-active-color: #1f2937;
+    --control-quiet-color: #f2f4f7;               /* a control that recedes: a tertiary button, a ghost button under the pointer */
+    --control-quiet-hover-color: #e5e7eb;
+    --control-quiet-active-color: #d1d5db;
+    --control-quiet-foreground-color: #4b5563;    /* the label on a quiet fill or on no fill at all */
+    --control-disabled-color: #f2f4f7;            /* every disabled control, whatever it was when live */
+    --control-disabled-foreground-color: #9ca3af;
+
     /* Status colors */
     --success-color: #28a745;
-    --danger-color: #d63939;
+    --danger-color: #c4314b;
     --warning-color: #ffc107;
     --info-color: #307fdd;
 

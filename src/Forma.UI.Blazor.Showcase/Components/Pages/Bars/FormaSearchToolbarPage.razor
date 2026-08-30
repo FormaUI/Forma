@@ -14,7 +14,7 @@
     <h2>@L["Search Only"]</h2>
     <div class="demo-box">
         <FormaSearchToolbar OnSearch="HandleSearchOnly" SearchPlaceholder="@L["Search..."]" />
-        <p class="demo-output">@L["Last search"]: <code>@_searchOnlyQuery</code></p>
+        <p class="demo-note">@L["Last search"]: <code>@_searchOnlyQuery</code></p>
     </div>
 </div>
 
@@ -22,8 +22,8 @@
     <h2>@L["Search with Actions"]</h2>
     <div class="demo-box">
         <FormaSearchToolbar OnSearch="HandleSearchWithActions" SearchPlaceholder="@L["Search..."]" Label="@L["List Actions"]" Items="Actions" OnCommand="HandleCommand" />
-        <p class="demo-output">@L["Last search"]: <code>@_withActionsQuery</code></p>
-        <p class="demo-output">@L["Last command"]: <code>@_lastCommand</code></p>
+        <p class="demo-note">@L["Last search"]: <code>@_withActionsQuery</code></p>
+        <p class="demo-note">@L["Last command"]: <code>@_lastCommand</code></p>
     </div>
 </div>
 

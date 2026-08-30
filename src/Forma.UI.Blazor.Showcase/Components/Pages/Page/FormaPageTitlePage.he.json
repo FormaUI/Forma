@@ -1,6 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
-  "Page header with title, breadcrumb navigation, and optional action slot.": "כותרת עמוד עם שם, ניווט פירורי לחם, ומקום לפעולות.",
+  "The heading of a page, with its breadcrumb trail above and its actions beside it. Putting the three in one component keeps every page's top edge aligned.": "כותרת העמוד, עם שביל פירורי הלחם מעליה ופעולותיה לצדה. איחוד השלושה ברכיב אחד שומר על קצה עליון מיושר בכל העמודים.",
   "Basic with Breadcrumbs": "בסיסי עם פירורי לחם",
   "Title Only": "כותרת בלבד",
   "With Action Buttons": "עם כפתורי פעולה",

@@ -1,6 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
-  "An extensible authoring engine hosting rich text, Markdown, code, and page composition via plugins.": "מנוע עריכה הניתן להרחבה המארח טקסט עשיר, מרקדאון, קוד ועיצוב דפים באמצעות תוספים.",
+  "An authoring surface a host assembles from plugins: rich text, Markdown, code or whole page layouts, each bringing its own toolbar rows. Nothing about the content is built in, so a new kind of editing is a plugin rather than a fork.": "משטח כתיבה שהמארח מרכיב מתוספים: טקסט עשיר, Markdown, קוד או פריסות עמוד שלמות, כל אחד מביא את שורות סרגל הכלים שלו. דבר מהתוכן אינו מובנה, ולכן סוג עריכה חדש הוא תוסף ולא פיצול.",
   "Standard Rich Text": "טקסט עשיר סטנדרטי",
   "Compact rich text preset with inline formatting, alignment, and basic typography.": "תבנית טקסט עשיר קומפקטית עם עיצוב תווי, יישור וטיפוגרפיה בסיסית.",
   "Default": "ברירת מחדל",
@@ -9,7 +9,7 @@
   "Compact Rich Text": "טקסט עשיר קומפקטי",
   "Plugins": "תוספים",
   "Every command is a plugin contribution. The composer's own sit in the built-in row; an editor either joins that row or declares one of its own; a plugin the host registered lands on the plugins bar ruled off beneath. Plain Text shows all three, while Source shows only its own, because both external plugins name the editor they apply to.": "כל פקודה היא תרומה של תוסף. פקודות העורך עצמן יושבות בשורה המובנית; עורך יכול להצטרף לאותה שורה או להצהיר על שורה משלו; תוסף שהמארח רישם נוחת על סרגל התוספים המופרד מתחת. Plain Text מציג את כל השלושה, ואילו Source מציג רק את שלו, משום ששני התוספים החיצוניים מציינים לאיזה עורך הם חלים.",
-  "Read-only": "קריאה בלבד",
+  "Read-Only": "קריאה בלבד",
   "Source Editor": "עורך קוד",
   "An editor plugin bringing a canvas of its own: lines numbered in a gutter, and a Rename Symbol command that replaces whole-word occurrences throughout the document. Press F2 or use the Refactor row.": "תוסף עורך המביא בד עריכה משלו: שורות ממוספרות בשוליים, ופקודת שינוי שם סמל המחליפה מופעות של מילה שלמה בכל המסמך. הקישו F2 או השתמשו בשורת ריפאקטור.",
   "Standard rich text preset with formatting, typography, headings, lists, and alignment.": "תבנית טקסט עשיר סטנדרטית עם עיצוב, טיפוגרפיה, כותרות, רשימות ויישור.",

@@ -10,6 +10,12 @@
     min-inline-size: 0;
 }
 
+/* A row and a group stand one control tall whatever they hold, so a bar of custom items is as tall as one of buttons. */
+.forma-toolbar,
+.forma-toolbar-group {
+    min-block-size: var(--control-size-md);
+}
+
 .forma-toolbar-group {
     display: inline-flex;
     align-items: center;
@@ -79,6 +85,11 @@
 }
 
 @media (pointer: coarse) {
+    .forma-toolbar,
+    .forma-toolbar-group {
+        min-block-size: var(--control-size-lg);
+    }
+
     .forma-toolbar-button {
         min-inline-size: var(--control-size-lg);
         min-block-size: var(--control-size-lg);
@@ -98,11 +109,6 @@
 .forma-toolbar-button:disabled {
     opacity: 0.45;
     cursor: not-allowed;
-}
-
-.forma-toolbar-button:focus-visible {
-    outline: 2px solid var(--focus-color);
-    outline-offset: 1px;
 }
 
 /* An on state is a tint, the accent color and an underline as wide as the glyph; no border, so a row of toggles stays flat. */
@@ -190,4 +196,12 @@
     border: 1px solid var(--dark-border-color);
     border-radius: var(--radius-sm);
     vertical-align: -0.125rem;
+}
+
+/* Every item sits on a track that clips what scrolls past its ends, so a ring drawn outside would be cut; it turns inward. */
+.forma-toolbar-button:focus-visible,
+.forma-toolbar-group ::deep .forma-toolbar-menu:focus-visible,
+.forma-toolbar-loose ::deep .forma-toolbar-menu:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring-inset);
 }

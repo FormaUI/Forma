@@ -1,6 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
-  "Tab container for organizing page content. Used in page editors, product editors, and settings pages.": "Contenedor de pestañas para organizar el contenido de la página. Se usa en editores de páginas, editores de productos y páginas de configuración.",
+  "A strip of tabs over one panel at a time, for a form or an editor too long to read as one page. The selected tab is marked by an underline as well as its color, so the choice reads without color.": "Una tira de pestañas sobre un panel a la vez, para un formulario o un editor demasiado largo para leerse como una sola página. La pestaña elegida se marca con un subrayado además de su color, así que la elección se lee sin color.",
   "Basic Tabs": "Pestañas básicas",
   "Tabs with Icons": "Pestañas con iconos",
   "Many Tabs": "Muchas pestañas",

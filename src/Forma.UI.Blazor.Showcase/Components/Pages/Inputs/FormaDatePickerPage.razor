@@ -5,7 +5,7 @@
 @inject IStringLocale<FormaDatePickerPage> L
 
 <h1>FormaDatePicker</h1>
-<p class="description">@L["A custom calendar date picker with dual-month view, date range selection with presets, locale-aware month and day names, and RTL support. Supports single-date and range modes. Replaces the legacy jQuery datepick / Easepick library."]</p>
+<p class="description">@L["A calendar for choosing one date or a range, with two months side by side and presets for the usual spans. Month and day names follow the culture, and the calendar mirrors for a right-to-left reader."]</p>
 
 <div class="demo-section">
     <h2>@L["Basic (Single Date)"]</h2>
@@ -51,7 +51,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Pre-filled"]</h2>
+    <h2>@L["Pre-Filled"]</h2>
     <div class="demo-box">
         <FormaDatePicker @bind-Value="_preFilled"
                        Label="@L["Today"]" />
@@ -70,7 +70,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Inside a scrolling container"]</h2>
+    <h2>@L["Inside a Scrolling Container"]</h2>
     <p class="description">@L["The box below scrolls and would clip an ordinary popup. The calendar opens in the top layer instead, so it stays whole, and it follows the trigger as the box scrolls."]</p>
     <div class="demo-box demo-scroll-box">
         <p>@L["Scroll this box to move the field around."]</p>

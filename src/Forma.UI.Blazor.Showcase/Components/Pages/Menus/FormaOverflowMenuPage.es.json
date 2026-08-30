@@ -1,6 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
-  "A dropdown menu preset with an ellipsis trigger button.": "Un menú desplegable predefinido con botón disparador de puntos suspensivos.",
+  "The three-dot menu that collects the actions a row or a card has no room to show. It is a drop-down menu with its trigger already chosen, so every overflow in the app looks the same.": "El menú de tres puntos que reúne las acciones que una fila o una tarjeta no tiene sitio para mostrar. Es un menú desplegable con el disparador ya elegido, así que todo desbordamiento de la aplicación se ve igual.",
   "Horizontal (Toolbar)": "Horizontal (barra de herramientas)",
   "A horizontal ellipsis (⋯) for toolbars and wider contexts.": "Puntos suspensivos horizontales (⋯) para barras de herramientas y contextos más amplios.",
   "More options": "Más opciones",

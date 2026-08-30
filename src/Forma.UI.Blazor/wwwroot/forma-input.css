@@ -44,8 +44,8 @@
 .forma-pagination-jump-input:focus,
 .forma-explorer-dialog-input:focus,
 .forma-multi-select-search:focus {
-    border-color: var(--forma-input-focus-border-color, var(--focus-color));
-    box-shadow: 0 0 0 0.2rem var(--forma-input-focus-shadow-color, color-mix(in srgb, var(--focus-color) 25%, transparent));
+    outline: none;
+    box-shadow: var(--focus-ring);
 }
 
 /* Forced colours drops the shadow and overrides the border, leaving no focus ring. */

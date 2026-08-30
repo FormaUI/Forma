@@ -9,7 +9,7 @@
 <p class="description">@L["A thin skin over FormaFilePicker that pins the accept filter to images and shows a thumbnail of each one accepted."]</p>
 
 <div class="demo-section">
-    <h2>@L["Basic picker"]</h2>
+    <h2>@L["Basic Picker"]</h2>
     <p class="description">@L["Pick or drop one or more images; each accepted file gets a thumbnail below the drop zone."]</p>
     <div class="demo-box">
         <FormaImagePicker OnFilesSelected="@(files => HandleSelected("basic", files))" />
@@ -23,7 +23,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["A single image"]</h2>
+    <h2>@L["A Single Image"]</h2>
     <p class="description">@L["A new pick replaces the last one, matching a single cover-image field."]</p>
     <div class="demo-box">
         <FormaImagePicker AllowMultipleFiles="false" OnFilesSelected="@(files => HandleSelected("single", files))" />
@@ -37,7 +37,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["A non-image rejected"]</h2>
+    <h2>@L["A Non-Image Rejected"]</h2>
     <p class="description">@L["The accept filter is pinned, so a non-image file is declined the same way FormaFilePicker declines one."]</p>
     <div class="demo-box">
         <FormaImagePicker OnFilesSelected="@(files => HandleSelected("rejected", files))"
@@ -52,7 +52,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["A size cap"]</h2>
+    <h2>@L["A Size Cap"]</h2>
     <p class="description">@L["MaxFileSize declines an image over 100 KB, so the host never receives it."]</p>
     <div class="demo-box">
         <FormaImagePicker MaxFileSize="100_000"

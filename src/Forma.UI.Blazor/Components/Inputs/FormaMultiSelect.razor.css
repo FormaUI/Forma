@@ -52,11 +52,6 @@
     }
 }
 
-.forma-multi-select-tag-remove:focus-visible {
-    outline: 2px solid var(--focus-color);
-    outline-offset: 2px;
-}
-
 .forma-multi-select-tag-remove:disabled {
     cursor: default;
     opacity: 0.5;
@@ -175,8 +170,8 @@
 }
 
 .forma-multi-select-options ::deep .forma-checkbox-label:has(:focus-visible) {
-    outline: 2px solid var(--focus-color);
-    outline-offset: -2px;
+    outline: none;
+    box-shadow: var(--focus-ring-inset);
 }
 
 .forma-multi-select-empty {
@@ -205,11 +200,6 @@
     .forma-multi-select-add:hover {
         background: var(--hover-background-color);
     }
-}
-
-.forma-multi-select-add:focus-visible {
-    outline: 2px solid var(--focus-color);
-    outline-offset: 2px;
 }
 
 @media (pointer: coarse) {

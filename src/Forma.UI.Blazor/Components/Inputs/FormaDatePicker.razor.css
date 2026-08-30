@@ -236,11 +236,6 @@
 }
 
 .forma-date-picker-day:focus-visible,
-.forma-date-picker-select:focus-visible {
-    outline: 2px solid var(--focus-color);
-    outline-offset: 1px;
-}
-
 .forma-date-picker-day:disabled {
     opacity: 0.35;
     cursor: default;

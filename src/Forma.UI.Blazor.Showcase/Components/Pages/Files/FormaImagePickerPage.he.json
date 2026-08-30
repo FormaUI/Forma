@@ -1,13 +1,13 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "A thin skin over FormaFilePicker that pins the accept filter to images and shows a thumbnail of each one accepted.": "מעטפת דקה מעל FormaFilePicker שמנעלת את מסנן הקבלה לתמונות ומציגה תצוגה מקדימה לכל קובץ שהתקבל.",
-  "Basic picker": "בורר בסיסי",
+  "Basic Picker": "בורר בסיסי",
   "Pick or drop one or more images; each accepted file gets a thumbnail below the drop zone.": "בחרו או גררו תמונה אחת או יותר; לכל קובץ שהתקבל תוצג תצוגה מקדימה מתחת לאזור הגרירה.",
-  "A single image": "תמונה יחידה",
+  "A Single Image": "תמונה יחידה",
   "A new pick replaces the last one, matching a single cover-image field.": "בחירה חדשה מחליפה את הקודמת, בהתאמה לשדה תמונת שער יחיד.",
-  "A non-image rejected": "קובץ שאינו תמונה נדחה",
+  "A Non-Image Rejected": "קובץ שאינו תמונה נדחה",
   "The accept filter is pinned, so a non-image file is declined the same way FormaFilePicker declines one.": "מסנן הקבלה מנועל, כך שקובץ שאינו תמונה נדחה באותו אופן שבו FormaFilePicker דוחה קובץ כזה.",
-  "A size cap": "מגבלת גודל",
+  "A Size Cap": "מגבלת גודל",
   "MaxFileSize declines an image over 100 KB, so the host never receives it.": "MaxFileSize דוחה תמונה שגודלה מעל 100 קילובייט, כך שהמארח לעולם אינו מקבל אותה.",
   "{Name} selected": "{Name} נבחר",
   "{Name} declined ({Reason})": "{Name} נדחה ({Reason})"

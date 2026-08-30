@@ -4,10 +4,10 @@
 @using Forma.UI.Blazor.Components.Inputs
 
 <h1>FormaDataGrid</h1>
-<p class="description">@L["A paged, sortable table over a queryable set of items, built on QuickGrid."]</p>
+<p class="description">@L["A table that pages, sorts and selects over any queryable set of items. The grid keeps its state in the address, so a page number or a sort order survives a refresh and can be shared as a link."]</p>
 
 <div class="demo-section">
-    <h2>@L["Basic grid"]</h2>
+    <h2>@L["Basic Grid"]</h2>
     <div class="demo-box">
         <FormaDataGrid Items="_employees" PageSize="5" QueryParameterNamePrefix="basic">
             <Columns>
@@ -20,7 +20,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Mass-select checkboxes"]</h2>
+    <h2>@L["Mass-Select Checkboxes"]</h2>
     <div class="demo-box">
         <FormaDataGrid TGridItem="Employee" Items="_employees" PageSize="5" EnableCheckedSelection="true"
                        QueryParameterNamePrefix="selectable"
@@ -36,7 +36,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Row selection"]</h2>
+    <h2>@L["Row Selection"]</h2>
     <p class="description">@L["Click a row to select only it; Ctrl/Cmd-click to toggle one row; Shift-click or Shift with arrow keys to select a range."]</p>
     <div class="demo-box">
         <FormaDataGrid TGridItem="Employee" Items="_employees" PageSize="5" EnableRowSelection="true"
@@ -53,7 +53,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Selection limits and captions"]</h2>
+    <h2>@L["Selection Limits and Captions"]</h2>
     <p class="description">@L["At most {SelectionLimit} rows; the master toggle is a text caption instead of a checkbox.", SelectionLimit]</p>
     <div class="demo-box">
         <FormaDataGrid TGridItem="Employee" Items="_employees" PageSize="5" EnableCheckedSelection="true"
@@ -71,7 +71,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Row click-through"]</h2>
+    <h2>@L["Row Click-Through"]</h2>
     <div class="demo-box">
         <FormaDataGrid TGridItem="Employee" Items="_employees" PageSize="5" OnRowClick="HandleRowClick"
                        QueryParameterNamePrefix="clickable">
@@ -87,7 +87,7 @@
 
 
 <div class="demo-section">
-    <h2>@L["Custom cell rendering and row styling"]</h2>
+    <h2>@L["Custom Cell Rendering and Row Styling"]</h2>
     <p class="description">@L["A TemplateColumn renders a FormaStatusBadge per row; RowClass dims inactive rows."]</p>
     <div class="demo-box">
         <FormaDataGrid TGridItem="Employee" Items="_employees" PageSize="5" RowClass="GetRowClass"
@@ -105,7 +105,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Row actions"]</h2>
+    <h2>@L["Row Actions"]</h2>
     <p class="description">@L["An action column is an ordinary TemplateColumn — the grid adds no button components of its own. In a real app these navigate to an editor page or raise a confirm dialog."]</p>
     <div class="demo-box">
         <FormaDataGrid TGridItem="Employee" Items="_employees" PageSize="5"
@@ -115,11 +115,11 @@
                 <PropertyColumn Property="@(e => e.Name)" />
                 <TemplateColumn Title="@L["Actions"]">
                     <div class="demo-row-actions">
-                        <FormaButton Variant="ButtonVariant.Tertiary"
+                        <FormaButton Variant="ButtonVariant.Tertiary" Size="ButtonSize.Mini"
                                      OnClick="() => RecordAction(RowAction.View, context)">@L["View"]</FormaButton>
-                        <FormaButton Variant="ButtonVariant.Tertiary"
+                        <FormaButton Variant="ButtonVariant.Tertiary" Size="ButtonSize.Mini"
                                      OnClick="() => RecordAction(RowAction.Edit, context)">@L["Edit"]</FormaButton>
-                        <FormaButton Variant="ButtonVariant.Tertiary"
+                        <FormaButton Variant="ButtonVariant.Tertiary" Size="ButtonSize.Mini"
                                      OnClick="() => RecordAction(RowAction.Delete, context)">@L["Delete"]</FormaButton>
                     </div>
                 </TemplateColumn>
@@ -129,7 +129,7 @@
     </div>
 </div>
 
-<div class="demo-section">    <h2>@L["Modal details"]</h2>
+<div class="demo-section">    <h2>@L["Modal Details"]</h2>
     <p class="description">@L["A single FormaModal instance is shared by every row; the action column tells it which row to show."]</p>
     <div class="demo-box">
         <FormaDataGrid TGridItem="Employee" Items="_employees" PageSize="5"
@@ -139,7 +139,7 @@
                 <PropertyColumn Property="@(e => e.Name)" />
                 <PropertyColumn Property="@(e => e.Department)" />
                 <TemplateColumn Title="@L["Actions"]">
-                    <FormaButton Variant="ButtonVariant.Tertiary"
+                    <FormaButton Variant="ButtonVariant.Tertiary" Size="ButtonSize.Mini"
                                  OnClick="() => OpenDetails(context)">@L["View"]</FormaButton>
                 </TemplateColumn>
             </Columns>
@@ -163,7 +163,7 @@
     </div>
 </div>
 
-<div class="demo-section">    <h2>@L["Inline editing inside a form"]</h2>
+<div class="demo-section">    <h2>@L["Inline Editing Inside a Form"]</h2>
     <p class="description">@L["FormaPropertyColumn shows its property, then swaps to an editor chosen from the property's type while its row is edited — text, number and date here. The grid owns the edit: it copies the row, validates the copy against its data annotations, and reports it only once valid, so Cancel discards and Save commits. The edited row drops out of selection while it is open."]</p>
     <div class="demo-box">
         <FormaDataGrid @ref="_editGrid" TGridItem="EditableEmployee" Items="@_editable.AsQueryable()"
@@ -180,14 +180,14 @@
                     <div class="demo-row-actions">
                         @if (_editGrid?.IsEditing(context) == true)
                         {
-                            <FormaButton Variant="ButtonVariant.Tertiary"
+                            <FormaButton Variant="ButtonVariant.Tertiary" Size="ButtonSize.Mini"
                                          OnClick="() => _editGrid!.SaveEditAsync()">@L["Save"]</FormaButton>
-                            <FormaButton Variant="ButtonVariant.Tertiary"
+                            <FormaButton Variant="ButtonVariant.Tertiary" Size="ButtonSize.Mini"
                                          OnClick="() => _editGrid!.CancelEditAsync()">@L["Cancel"]</FormaButton>
                         }
                         else
                         {
-                            <FormaButton Variant="ButtonVariant.Tertiary" Disabled="@(_editGrid?.EditingItem is not null)"
+                            <FormaButton Variant="ButtonVariant.Tertiary" Size="ButtonSize.Mini" Disabled="@(_editGrid?.EditingItem is not null)"
                                          OnClick="() => _editGrid!.BeginEdit(context)">@L["Edit"]</FormaButton>
                         }
                     </div>
@@ -198,7 +198,7 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Many rows"]</h2>
+    <h2>@L["Many Rows"]</h2>
     <div class="demo-box">
         <FormaDataGrid Items="_manyItems" PageSize="ManyPageSize" QueryParameterNamePrefix="many">
             <Columns>

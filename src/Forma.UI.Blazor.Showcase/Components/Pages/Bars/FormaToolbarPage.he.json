@@ -1,6 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
-  "A toolbar of grouped, item-driven commands, built on FormaCommandArea and FormaCommandBar. Each item is a record whose type decides how it renders.": "סרגל של פקודות מקובצות ומונעות נתונים, הבנוי על FormaCommandArea ו-FormaCommandBar. כל פריט הוא רשומה שהטיפוס שלה קובע כיצד הוא מוצג.",
+  "A row of commands grouped by what they do, each a small record the toolbar draws as a button, a toggle, a menu or a readout. Describing the commands as data is what lets one list feed a keyboard shortcut, a tooltip and a screen reader at once.": "שורת פקודות מקובצות לפי מה שהן עושות, כל אחת רשומה קטנה שסרגל הכלים מצייר ככפתור, כמתג, כתפריט או כקריאה. תיאור הפקודות כנתונים הוא מה שמאפשר לרשימה אחת להזין בבת אחת קיצור מקלדת, תיאור מרחף וקורא מסך.",
   "Formatting": "עיצוב",
   "Typography": "טיפוגרפיה",
   "Inline Style": "סגנון פנימי",
@@ -57,7 +57,7 @@
   "Enable Delete": "אפשר מחיקה",
   "Disabled": "מושבת",
   "Every control in the toolbar disables together.": "כל הפקדים בסרגל מושבתים יחד.",
-  "Content Pinned Past the Track": "תוכן מוצמד מעבר למסלול",
+  "Content Pinned past the Track": "תוכן מוצמד מעבר למסלול",
   "Trailing content, such as an overflow toggle, stays put while the commands beside it scroll.": "תוכן נגרר, כגון מתג גלישה, נשאר במקומו בזמן שהפקודות לצידו נגללות.",
   "More": "עוד",
   "Hidden": "מוסתר",

@@ -1,6 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
-  "A color picker with swatch preview, hex text input, and native browser color selector. Supports optional alpha (opacity) channel. Replaces the legacy tinyColorPicker jQuery plugin.": "בורר צבעים עם תצוגה מקדימה, שדה הקסדצימלי ובורר צבעים מובנה בדפדפן. תומך בערוץ שקיפות (אלפא) אופציונלי. מחליף את תוסף jQuery הישן tinyColorPicker.",
+  "A color field showing the chosen color beside its hex value, with the browser's own picker behind it and an optional alpha channel. Typing a value and picking one are the same input, so the two never disagree.": "שדה צבע שמציג את הצבע שנבחר לצד ערכו ההקסדצימלי, עם בורר הדפדפן עצמו מאחוריו וערוץ אלפא אופציונלי. הקלדת ערך ובחירתו הן אותו קלט, ולכן השניים לעולם אינם חלוקים.",
   "Basic": "בסיסי",
   "With Label": "עם תווית",
   "With Alpha": "עם שקיפות",

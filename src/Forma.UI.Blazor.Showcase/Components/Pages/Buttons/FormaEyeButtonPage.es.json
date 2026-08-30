@@ -1,11 +1,11 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "The reveal glyph, drawn as a ghost FormaButton square. Struck through while what it governs is hidden, plain once it is shown, so the state reads without color. FormaPasswordBox's toggle is this component.": "El símbolo de revelar, dibujado como un cuadrado ghost de FormaButton. Tachado mientras lo que gobierna está oculto y limpio una vez mostrado, de modo que el estado se lee sin color. El interruptor de FormaPasswordBox es este componente.",
-  "Both states": "Ambos estados",
+  "Both States": "Ambos Estados",
   "The caller owns the state and the wording, because what is being revealed decides both.": "Quien lo usa es dueño del estado y del texto, porque ambos los decide aquello que se revela.",
   "Sizes": "Tamaños",
   "Disabled": "Deshabilitado",
-  "On a colored surface": "Sobre una superficie de color",
+  "On a Colored Surface": "Sobre una Superficie de Color",
   "The glyph follows the surface through --forma-button-ghost-color and its hover pair rather than a forked stylesheet. Nothing else changes: it reveals here exactly as it does above.": "El símbolo sigue a la superficie mediante --forma-button-ghost-color y su par de hover, en lugar de una hoja de estilos bifurcada. Nada más cambia: revela aquí igual que arriba.",
   "API key": "Clave de API",
   "Show value": "Mostrar valor",

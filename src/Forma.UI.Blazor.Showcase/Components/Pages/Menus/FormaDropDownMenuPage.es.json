@@ -1,6 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
-  "A trigger button that opens an anchored menu of commands.": "Un botón activador que abre un menú de comandos anclado.",
+  "A button that opens a menu of commands anchored beneath it. The menu follows its trigger when the page scrolls and the arrow keys walk it, so it behaves the way a native menu would.": "Un botón que abre un menú de comandos anclado debajo. El menú sigue a su disparador cuando la página se desplaza y las flechas lo recorren, así que se comporta como lo haría un menú nativo.",
   "Basic": "Básico",
   "Options": "Opciones",
   "Print": "Imprimir",

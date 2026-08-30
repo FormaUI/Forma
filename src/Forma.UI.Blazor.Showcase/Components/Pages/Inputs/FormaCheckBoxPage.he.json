@@ -1,6 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
-  "A styled checkbox with a script-driven indeterminate state, and an option to suppress the native toggle so the caller owns the checked state, as a tri-state select-all does.": "תיבת סימון מעוצבת עם מצב חלקי המנוהל על ידי סקריפט, ועם אפשרות לבטל את ההחלפה המובנית כך שהקורא שולט במצב הסימון, כפי שעושה \"בחר הכול\" בשלושה מצבים.",
+  "A checkbox with a third, indeterminate state for a choice that governs others. A caller can also take the checked state over entirely, which is what a select-all needs when only some of its children are checked.": "תיבת סימון עם מצב שלישי, בלתי מוגדר, לבחירה השולטת באחרות. הקורא יכול גם ליטול לידיו לגמרי את מצב הסימון, וזה מה שבחר-הכול צריך כשרק חלק מילדיו מסומנים.",
   "Basic": "בסיסי",
   "Disabled": "מושבת",
   "Indeterminate": "מצב חלקי",
