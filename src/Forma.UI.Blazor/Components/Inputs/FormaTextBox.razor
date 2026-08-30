@@ -6,7 +6,7 @@
         @<input @attributes="AdditionalAttributes"
                 id="@ElementId"
                 type="@TypeValue"
-                class="@BoxClass @CssClass"
+                class="@AdditionalAttributes.MergeClass(BoxClass, CssClass)"
                 style="@BoxStyle"
                 placeholder="@EffectivePlaceholder"
                 value="@CurrentValueAsString"
@@ -22,7 +22,7 @@
                 autocomplete="@AutoComplete"
                 aria-required="@(Required ? "true" : null)"
                 @oninput="HandleInput"
-                @ref="_inputElement" />;
+                @ref="Element" />;
 }
 
 @if (HasLabel)

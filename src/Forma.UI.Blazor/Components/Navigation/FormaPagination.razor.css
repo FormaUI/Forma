@@ -1,168 +1,153 @@
 /* ============================================================
    FormaPagination — CSS isolation
-   Numbered page navigator. Logical properties throughout for
-   RTL/LTR parity — the browser mirrors the layout, not the code.
+   Navigation buttons at either end of one row, and between them
+   either the navigation steps or the navigation input. Logical
+   properties throughout for RTL/LTR parity.
    ============================================================ */
 
 .forma-pagination {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: var(--space-4);
-    /* Whether the jump control's label fits is decided by the width the pager was given, not the viewport's. */
+    /* Whether the steps fit is decided by the width the pager was given, not the viewport's. */
     container-type: inline-size;
     /* A contained box has no intrinsic width to offer a flex row, so in one it takes the room left instead. */
     flex: 1 1 auto;
     min-inline-size: 0;
+    font-size: var(--font-size-sm);
 }
 
-/* One row, edge to edge: Previous at the start, Next at the end, the pages packed together in the middle. */
-.forma-pagination-list {
+/* ── The two rows ── */
+/* Either row is one line, edge to edge: a navigation button at each end, the middle packed together between them. */
+.forma-pagination-navigation-steps,
+.forma-pagination-navigation-input {
     display: flex;
-    flex: 1 1 auto;
     flex-wrap: nowrap;
     justify-content: center;
     align-items: center;
     gap: var(--space-1);
-    /* Room for the steps and the current page; a row too narrow for that and the jump control wraps the jump beneath. */
-    min-inline-size: 12rem;
     margin: 0;
     padding: 0;
     list-style: none;
-    /* Which pages fit is decided by the room the list itself has, which a jump control beside it reduces. */
-    container-type: inline-size;
 }
 
-/* A step or a page keeps its width and its label on one line; the tiers decide what fits, not the buttons. */
-.forma-pagination-list > li {
+.forma-pagination-navigation-steps > li {
     flex-shrink: 0;
 }
 
-::deep .forma-pagination-link {
-    white-space: nowrap;
-}
-
-.forma-pagination-list > li:first-child {
+.forma-pagination-navigation-steps > li:first-child,
+.forma-pagination-navigation-input > .forma-pagination-navigation-button-previous {
     margin-inline-end: auto;
 }
 
-.forma-pagination-list > li:last-child {
+.forma-pagination-navigation-steps > li:last-child,
+.forma-pagination-navigation-input > .forma-pagination-navigation-button-next {
     margin-inline-start: auto;
 }
 
-/* The repeated class raises specificity above FormaButton's own variant rules, so the compact numbered
-   pill takes a quiet fill at rest, like a tertiary button, and the current page alone is filled with the accent.
-   Shared by the FormaButton page links and the static current-page span. */
-::deep .forma-pagination-link.forma-pagination-link {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 2.25em;
-    padding-block: var(--space-2);
-    padding-inline: var(--space-3);
-    border: 1px solid transparent;
-    border-radius: var(--radius-sm);
-    background: var(--control-quiet-color);
-    color: var(--control-quiet-foreground-color);
-    font-size: var(--font-size-sm);
-    font-weight: inherit;
-    line-height: var(--line-height-control);
+/* Rendered beside the steps as their stand-in, the input row waits until the steps no longer fit. */
+.forma-pagination-navigation-input-fallback {
+    display: none;
 }
 
-@media (hover: hover) {
-    ::deep button.forma-pagination-link:hover:not(:disabled) {
-        background: var(--control-quiet-hover-color);
+/* The steps need the two navigation buttons (about 8.5rem for both, in English), seven steps at 3.7rem each,
+   and a 0.25rem gap between every pair: 36.5rem. Narrower than that, the input row takes their place. */
+@container (max-width: 36.5rem) {
+    .forma-pagination-navigation-steps {
+        display: none;
+    }
+
+    .forma-pagination-navigation-input-fallback {
+        display: flex;
     }
 }
 
-/* Doubled to match the shared pill rule above, which it has to outrank to mark
-   the page the reader is on. */
-::deep .forma-pagination-current.forma-pagination-current {
-    background: var(--main-color);
-    color: var(--main-foreground-color);
-    cursor: default;
-    font-weight: 700;
+/* ── Steps ── */
+/* A step is one width in every pager: room for the four digits the steps go up to, plus a button's padding. So
+   two pagers side by side put their first page in the same place, whatever either of them counts to; a gap or an
+   empty step takes the same width and stands a control tall, so the row never changes shape. */
+.forma-pagination-navigation-steps {
+    --forma-pagination-step-width: calc(2.5em + 2 * var(--space-3));
 }
 
-.forma-pagination-ellipsis {
+.forma-pagination-navigation-steps > li > ::deep .forma-pagination-navigation-step,
+.forma-pagination-navigation-gap,
+.forma-pagination-navigation-empty {
+    box-sizing: border-box;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 2.25em;
+    inline-size: var(--forma-pagination-step-width);
+    min-block-size: var(--control-size-md);
+    padding-inline: 0;
+    font-size: var(--font-size-sm);
+}
+
+/* The page the reader is on takes no click, but stays a button so it is drawn as its neighbours are. */
+::deep .forma-pagination-navigation-step-current {
+    cursor: default;
+}
+
+.forma-pagination-navigation-gap {
     color: var(--text-muted-color);
 }
 
-/* ── Jump to page ── */
-.forma-pagination-jump {
+/* ── The navigation input ── */
+.forma-pagination-navigation-input-group {
     display: flex;
     align-items: center;
     gap: var(--space-2);
 }
 
-.forma-pagination-jump-label {
-    color: var(--text-muted-color);
-    font-size: var(--font-size-sm);
+/* The box names itself by its watermark, so the label is heard but not seen. */
+.forma-pagination-navigation-input-label {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
 }
 
-.forma-pagination-jump-input {
-    inline-size: 5.5em;
-    padding-block: var(--space-2);
-    padding-inline: var(--space-3);
-    font-size: var(--font-size-sm);
+/* Wide enough to show its watermark, or four digits out of four digits, whole. */
+::deep .forma-pagination-navigation-input-box {
+    inline-size: 10em;
     text-align: center;
 }
 
-@media (pointer: coarse) {
-    ::deep .forma-pagination-link {
-        min-inline-size: var(--control-size-lg);
-    }
-
-    .forma-pagination-jump-input {
-        min-block-size: var(--control-size-lg);
-    }
+/* A navigation button is worded until words no longer fit; its glyph waits until then. The one glyph points
+   forward, and is turned about for the button that goes back and for a right-to-left reader. */
+::deep .forma-pagination-navigation-button-glyph {
+    display: none;
 }
 
-/* Fewer pages show as the pager narrows: every page, then the current page with two neighbours,
-   then one, then the current page alone. Previous and Next stay whatever the width. Every rule
-   carries the same :not() pair, so the tiers are decided by source order rather than specificity. */
-@container (max-width: 28rem) {
-    .forma-pagination-list > li:not(:first-child):not(:last-child) {
-        display: none;
-    }
-
-    /* A gap marker beside the current page says nothing a narrow pager has room for, so a neighbour is
-       brought back only when it is a page. */
-    .forma-pagination-list > li:not(:first-child):not(:last-child):has(> .forma-pagination-current),
-    .forma-pagination-list > li:not(:first-child):not(:last-child):not(:has(> .forma-pagination-ellipsis)):has(+ li > .forma-pagination-current),
-    .forma-pagination-list > li:has(> .forma-pagination-current) + li:not(:first-child):not(:last-child):not(:has(> .forma-pagination-ellipsis)),
-    .forma-pagination-list > li:not(:first-child):not(:last-child):not(:has(> .forma-pagination-ellipsis)):has(+ li + li > .forma-pagination-current),
-    .forma-pagination-list > li:has(> .forma-pagination-current) + li + li:not(:first-child):not(:last-child):not(:has(> .forma-pagination-ellipsis)) {
-        display: revert;
-    }
+::deep .forma-pagination-navigation-button-previous .forma-pagination-navigation-button-glyph {
+    rotate: 180deg;
 }
 
-@container (max-width: 22rem) {
-    .forma-pagination-list > li:not(:first-child):not(:last-child):has(+ li + li > .forma-pagination-current),
-    .forma-pagination-list > li:has(> .forma-pagination-current) + li + li:not(:first-child):not(:last-child) {
-        display: none;
-    }
+::deep .forma-pagination-navigation-button-previous:dir(rtl) .forma-pagination-navigation-button-glyph {
+    rotate: 0deg;
 }
 
-@container (max-width: 17rem) {
-    .forma-pagination-list > li:not(:first-child):not(:last-child):has(+ li > .forma-pagination-current),
-    .forma-pagination-list > li:has(> .forma-pagination-current) + li:not(:first-child):not(:last-child) {
-        display: none;
-    }
-}
-/* The jump control keeps its place beside Next; on a narrow pager its label is heard but not seen,
-   and the box narrows, so the row still holds the steps, the pages that fit, and the jump. A jump
-   standing alone keeps its label, because nothing else says what the box is for. */
-.forma-pagination-jump {
-    flex: 0 0 auto;
+::deep .forma-pagination-navigation-button-next:dir(rtl) .forma-pagination-navigation-button-glyph {
+    rotate: 180deg;
 }
 
-@container (max-width: 36rem) {
-    .forma-pagination:has(> .forma-pagination-list) .forma-pagination-jump-label {
+/* The input row needs the two navigation buttons (78px and 55px, in English), the 10em box (140px at the small
+   size), the Go button (44px) and its gaps (24px): 341px, 21.25rem. Narrower than that the words go and the
+   glyphs stand in, and the buttons draw in to the tighter padding: a glyph button is then 24 + 16 + 2 = 42px
+   and Go 36px, so the row needs 42 + 140 + 36 + 42 + 24 = 284px, 17.75rem. */
+@container (max-width: 21.25rem) {
+    ::deep .forma-pagination-navigation-button-glyph {
+        display: inline-block;
+    }
+
+    ::deep .forma-pagination-navigation-button,
+    ::deep .forma-pagination-go-button {
+        padding-inline: var(--space-2);
+    }
+
+    ::deep .forma-pagination-navigation-button-text {
         position: absolute;
         inline-size: 1px;
         block-size: 1px;
@@ -173,8 +158,47 @@
         clip-path: inset(50%);
         white-space: nowrap;
     }
+}
 
-    .forma-pagination:has(> .forma-pagination-list) .forma-pagination-jump-input {
-        inline-size: 4em;
+/* Narrower still, the box is sized by what it holds, between the 6em (84px) of a page number and the 8em (112px)
+   of four digits out of four digits, and the group closes its gaps to the row's: the row needs 42 + 84 + 36 + 42
+   + 16 = 220px, 13.75rem, for the usual "7 of 20", within what a 20rem phone leaves a page's content, and 248px,
+   15.5rem, at most. A browser without field-sizing keeps the 6em floor. */
+@container (max-width: 17.75rem) {
+    ::deep .forma-pagination-navigation-input-box {
+        inline-size: auto;
+        min-inline-size: 6em;
+        max-inline-size: 8em;
+        field-sizing: content;
+    }
+
+    .forma-pagination-navigation-input-group {
+        gap: var(--space-1);
+    }
+}
+
+/* The watermark is a hint, not a value, so it takes the muted color. */
+::deep .forma-pagination-navigation-input-box::placeholder {
+    color: var(--text-muted-color);
+}
+
+/* Without the option the button is kept for a touch keypad alone, since a keypad for digits may have no key that submits. */
+::deep .forma-pagination-go-button-touch {
+    display: none;
+}
+
+@media (pointer: coarse) {
+    ::deep .forma-pagination-go-button-touch {
+        display: inline-flex;
+    }
+
+    ::deep .forma-pagination-navigation-button,
+    ::deep .forma-pagination-navigation-step,
+    ::deep .forma-pagination-go-button {
+        min-inline-size: var(--control-size-lg);
+    }
+
+    ::deep .forma-pagination-navigation-input-box {
+        min-block-size: var(--control-size-lg);
     }
 }

@@ -450,9 +450,9 @@
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
                 </FormaDataGrid>);
-            cut.WaitForState(() => cut.FindAll(".forma-pagination-next").Count == 1);
-            cut.Find(".forma-pagination-next").Click();
-            cut.Find(".forma-pagination-next").Click();
+            cut.WaitForState(() => cut.FindAll(".forma-pagination-navigation-input .forma-pagination-navigation-button-next").Count == 1);
+            cut.Find(".forma-pagination-navigation-input .forma-pagination-navigation-button-next").Click();
+            cut.Find(".forma-pagination-navigation-input .forma-pagination-navigation-button-next").Click();
             cut.WaitForState(() => cut.Markup.Contains("Item 25", StringComparison.Ordinal));
 
             // Act
@@ -482,7 +482,7 @@
             cut.WaitForState(() => cut.FindAll("nav.forma-pagination").Count == 1);
 
             // Assert
-            Assert.NotEmpty(cut.FindAll(".forma-pagination-list"));
+            Assert.NotEmpty(cut.FindAll(".forma-pagination-navigation-steps"));
         }
 
         [Fact]
@@ -490,7 +490,7 @@
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
-            var options = new FormaPaginationOptions { EnableNavigationSteps = true, EnableNavigationInput = false };
+            var options = new FormaPaginationOptions { NavigationInput = true };
 
             // Act
             var cut = ctx.Render(
@@ -502,7 +502,7 @@
             cut.WaitForState(() => cut.FindAll("nav.forma-pagination").Count == 1);
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-pagination-jump"));
+            Assert.Empty(cut.FindAll(".forma-pagination-navigation-steps"));
         }
 
         [Fact]

@@ -1,17 +1,27 @@
 namespace Forma.UI.Blazor.Components.Navigation;
 
-/// <summary>Which parts of a <see cref="FormaPagination"/> are shown.</summary>
+/// <summary>How a <see cref="FormaPagination"/> lets the reader move between pages.</summary>
 public sealed record FormaPaginationOptions
 {
-    /// <summary>Every navigation element: page links, page-number box, and Go button.</summary>
-    public static FormaPaginationOptions Default { get; } = new() { EnableNavigationSteps = true };
+    /// <summary>Navigation steps where they fit, the navigation input where they do not.</summary>
+    public static FormaPaginationOptions Default { get; } = new();
 
-    /// <summary>Shows the button that commits the page number typed into the box.</summary>
-    public bool EnableGoButton { get; init; } = true;
+    /// <summary>The most pages a step can number; a step is sized for four digits.</summary>
+    public const int MaxStepsPageCount = 9999;
 
-    /// <summary>Shows the box for typing a page number.</summary>
-    public bool EnableNavigationInput { get; init; } = true;
+    /// <summary>Shows the navigation input in place of the navigation steps, whatever the page count or the width.</summary>
+    public bool NavigationInput { get; init; }
 
-    /// <summary>Shows the numbered page links flanked by previous and next buttons.</summary>
-    public bool EnableNavigationSteps { get; init; }
+    /// <summary>Page count past which the navigation steps give way to the navigation input; held between 1 and <see cref="MaxStepsPageCount"/>.</summary>
+    public int MaxPagesWithSteps
+    {
+        get;
+        init => field = Math.Clamp(value, 1, MaxStepsPageCount);
+    } = 50;
+
+    /// <summary>Shows the Go button beside the navigation input; a touch keypad with no Enter key gets it regardless.</summary>
+    public bool GoButton { get; init; } = true;
+
+    /// <summary>Turns a page with a wheel gesture anywhere over the pager, keeping the turn from the page while the pointer stays there.</summary>
+    public bool WheelScrollOnHover { get; init; }
 }

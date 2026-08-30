@@ -13,9 +13,11 @@ using Microsoft.JSInterop;
 public sealed partial class FormaTextBox : InputBase<string?>, IAsyncDisposable
 {
     private readonly string _generatedId = $"text-box-{Guid.NewGuid():N}";
-    private ElementReference _inputElement;
     private AutofillTracker _autofill = default!;
     private bool _isWatchingAutofill;
+
+    /// <summary>The rendered input element, for a composing component that must read it or focus it.</summary>
+    public ElementReference Element { get; private set; }
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
@@ -198,7 +200,7 @@ public sealed partial class FormaTextBox : InputBase<string?>, IAsyncDisposable
     {
         if (HasLabel && !_isWatchingAutofill)
         {
-            _isWatchingAutofill = await _autofill.AttachAsync(_inputElement);
+            _isWatchingAutofill = await _autofill.AttachAsync(Element);
         }
     }
 

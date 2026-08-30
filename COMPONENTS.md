@@ -290,7 +290,7 @@ These components form the shell of a page. Build first.
 | **Old pattern** | Server-rendered page links: `<a class="page">1</a> <a class="page">2</a>...`, custom paging in code-behind with `PageSize`, `PageIndex`, total count |
 | **Used in** | All list pages, image library |
 | **Parameters** | Standalone, no knowledge of QuickGrid or any other component: `int TotalItems` (required), `int PageSize` (required), `int CurrentPage` (required), `EventCallback<int> OnPageChanged`, `FormaPaginationOptions Options`, plus captured pass-through attributes |
-| **Options** | Which parts are shown — page buttons, the page-number box, the Go button — travel together in a `FormaPaginationOptions` record rather than one parameter each. A host that composes the pager therefore forwards a single parameter, and a new option later costs the record plus this component and touches no host |
+| **Options** | How the reader moves — the navigation input in place of the steps, the Go button, a wheel gesture over the pager — travel together in a `FormaPaginationOptions` record rather than one parameter each. A host that composes the pager therefore forwards a single parameter, and a new option later costs the record plus this component and touches no host |
 | **Blazor approach** | A self-contained paginator, usable on its own (e.g. the image library) or composed into `FormaDataGrid`. Dependency direction is one-way: larger components adapt to `FormaPagination`, it never adapts to them |
 
 ---
