@@ -71,6 +71,21 @@ public sealed class BasicFormattingPlugin(RichTextEditorPlugin editor) : ICompos
                 ],
             },
         ]),
+        new(ComposerRows.Selection,
+        [
+            new FormaToolbarGroup
+            {
+                Id = "selection-inline",
+                Title = "Inline Style",
+                Items =
+                [
+                    new FormaToolbarToggle { Id = "bold", Title = "Bold", Icon = Glyph.Bold, Command = BoldCommand },
+                    new FormaToolbarToggle { Id = "italic", Title = "Italic", Icon = Glyph.Italic, Command = ItalicCommand },
+                    new FormaToolbarToggle { Id = "underline", Title = "Underline", Icon = Glyph.Underline, Command = UnderlineCommand },
+                    new FormaToolbarToggle { Id = "code", Title = "Code", Icon = Glyph.Code, Command = CodeCommand },
+                ],
+            },
+        ]),
     ];
 
     /// <inheritdoc />

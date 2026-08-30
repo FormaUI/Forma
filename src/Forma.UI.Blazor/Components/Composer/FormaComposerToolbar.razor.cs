@@ -58,7 +58,7 @@ public sealed partial class FormaComposerToolbar : ComponentBase
     }
 
     private IEnumerable<ComposerToolbarRowLayout> EditorRows
-        => _layout.Rows.Where(row => row.Id != ComposerRows.Plugins);
+        => _layout.Rows.Where(row => row.Id is not (ComposerRows.Plugins or ComposerRows.Selection));
 
     private IReadOnlyList<FormaToolbarItem> PluginItems
         => _layout.Rows.FirstOrDefault(row => row.Id == ComposerRows.Plugins)?.Items ?? [];

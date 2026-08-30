@@ -99,12 +99,14 @@ public sealed class ComposerToolbarLayout
             ComposerRows.Formatting,
             ComposerRows.Paragraph,
             ComposerRows.Plugins,
+            ComposerRows.Selection,
         };
 
         AddDeclared(editor.Rows);
         order.Add(new() { Id = ComposerRows.Formatting, Label = "Text Formatting" });
         order.Add(new() { Id = ComposerRows.Paragraph, Label = "Paragraph Formatting" });
         order.Add(new() { Id = ComposerRows.Plugins, Label = "Plugin Commands" });
+        order.Add(new() { Id = ComposerRows.Selection, Label = "Selection Formatting" });
 
         foreach (var plugin in external)
         {

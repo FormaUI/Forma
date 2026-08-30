@@ -93,7 +93,4 @@ public sealed class ComposerContext
 
     /// <summary>Runs a named command through the engine, which resolves it against the engine's own commands and then the registered plugins.</summary>
     public Func<string, Task> ExecuteCommandAsync { get; }
-
-    /// <summary>Whether a named command has an engine or plugin to run it.</summary>
-    public Func<string, bool> CanExecuteCommand { get; init; } = _ => true;
 }

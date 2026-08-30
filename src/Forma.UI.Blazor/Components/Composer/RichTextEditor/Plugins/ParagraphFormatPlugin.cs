@@ -36,6 +36,25 @@ public sealed class ParagraphFormatPlugin(RichTextEditorPlugin editor) : ICompos
     /// <summary>The command toggling lead paragraph styling.</summary>
     public const string LeadCommand = "paragraph.lead";
 
+    /// <summary>The block styles on offer, from a paragraph through the six headings to a quote.</summary>
+    private static readonly FormaToolbarMenu BlockStyleMenu = new()
+    {
+        Id = "block-style",
+        Title = "Block Style",
+        Icon = Glyph.Heading,
+        Options =
+        [
+            new() { Id = "p", Title = "Normal", Command = ParagraphCommand },
+            new() { Id = "h1", Title = "Heading 1", Command = Heading1Command, PreviewStyle = "font-size:1.75rem;font-weight:700" },
+            new() { Id = "h2", Title = "Heading 2", Command = Heading2Command, PreviewStyle = "font-size:1.5rem;font-weight:700" },
+            new() { Id = "h3", Title = "Heading 3", Command = Heading3Command, PreviewStyle = "font-size:1.25rem;font-weight:600" },
+            new() { Id = "h4", Title = "Heading 4", Command = Heading4Command, PreviewStyle = "font-size:1.125rem;font-weight:600" },
+            new() { Id = "h5", Title = "Heading 5", Command = Heading5Command, PreviewStyle = "font-size:1rem;font-weight:600" },
+            new() { Id = "h6", Title = "Heading 6", Command = Heading6Command, PreviewStyle = "font-size:0.875rem;font-weight:600" },
+            new() { Id = "blockquote", Title = "Quote", Command = BlockquoteCommand, PreviewStyle = "font-style:italic" },
+        ],
+    };
+
     private readonly RichTextEditorPlugin _editor = editor;
 
     /// <inheritdoc />
@@ -53,26 +72,7 @@ public sealed class ParagraphFormatPlugin(RichTextEditorPlugin editor) : ICompos
             {
                 Id = "paragraph-style",
                 Title = "Paragraph Style",
-                Items =
-                [
-                    new FormaToolbarMenu
-                    {
-                        Id = "block-style",
-                        Title = "Block Style",
-                        Icon = Glyph.Heading,
-                        Options =
-                        [
-                            new() { Id = "p", Title = "Normal", Command = ParagraphCommand },
-                            new() { Id = "h1", Title = "Heading 1", Command = Heading1Command, PreviewStyle = "font-size:1.75rem;font-weight:700" },
-                            new() { Id = "h2", Title = "Heading 2", Command = Heading2Command, PreviewStyle = "font-size:1.5rem;font-weight:700" },
-                            new() { Id = "h3", Title = "Heading 3", Command = Heading3Command, PreviewStyle = "font-size:1.25rem;font-weight:600" },
-                            new() { Id = "h4", Title = "Heading 4", Command = Heading4Command, PreviewStyle = "font-size:1.125rem;font-weight:600" },
-                            new() { Id = "h5", Title = "Heading 5", Command = Heading5Command, PreviewStyle = "font-size:1rem;font-weight:600" },
-                            new() { Id = "h6", Title = "Heading 6", Command = Heading6Command, PreviewStyle = "font-size:0.875rem;font-weight:600" },
-                            new() { Id = "blockquote", Title = "Quote", Command = BlockquoteCommand, PreviewStyle = "font-style:italic" },
-                        ],
-                    },
-                ],
+                Items = [BlockStyleMenu],
             },
         ]),
         new(ComposerRows.Paragraph,
@@ -82,6 +82,15 @@ public sealed class ParagraphFormatPlugin(RichTextEditorPlugin editor) : ICompos
                 Id = "paragraph-style",
                 Title = "Paragraph Style",
                 Items = [new FormaToolbarToggle { Id = "lead", Title = "Lead", Icon = Glyph.Paragraph, Command = LeadCommand }],
+            },
+        ]),
+        new(ComposerRows.Selection,
+        [
+            new FormaToolbarGroup
+            {
+                Id = "selection-paragraph",
+                Title = "Paragraph Style",
+                Items = [BlockStyleMenu],
             },
         ]),
     ];

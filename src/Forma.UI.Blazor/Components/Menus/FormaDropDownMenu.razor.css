@@ -11,6 +11,12 @@
     display: inline-flex;
 }
 
+/* While the menu is open its trigger stands above the backdrop, so a second click on it closes the menu. */
+.forma-dropdown-menu-anchor-open {
+    position: relative;
+    z-index: 1000;
+}
+
 /* ---------- backdrop ---------- */
 .forma-dropdown-menu-backdrop {
     position: fixed;

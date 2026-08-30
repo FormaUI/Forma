@@ -244,7 +244,7 @@ Each lives in its own directory, mirroring how `Explorer` earned a category of i
 
 | Directory | Plugin | Surface |
 |---|---|---|
-| `RichTextEditor/` | `RichTextEditorPlugin` | Visual `contenteditable` canvas. Hosts the feature plugins, the bubble menu, and embedded Markdown and code blocks. |
+| `RichTextEditor/` | `RichTextEditorPlugin` | Visual `contenteditable` canvas. Hosts the feature plugins, the selection bar, and embedded Markdown and code blocks. |
 | `MarkdownEditor/` | `MarkdownEditorPlugin` | Markdown source with line numbers, highlighting and a live rendered preview. |
 | `CodeEditor/` | `CodeEditorPlugin` | Lightweight code editor — line numbers, active-line marker, smart `Tab`, bracket pairing, language picker. Not a Monaco replacement, and not HTML-only: HTML, CSS, JavaScript, TypeScript, C#, SQL, JSON, YAML, Bash, Python. |
 | `PageDesigner/` | `PageDesignerPlugin` | Drag-and-drop widget canvas with a palette, per-widget chrome, nesting through rows and columns, and a settings panel per widget. Replaces Coi's `template.aspx`. |
@@ -598,7 +598,7 @@ These are correctness requirements for every Forma component, and the composer i
 - **Toolbar semantics:** `role="toolbar"` obliges arrow-key roving focus between its controls. Either implement it or use a plain button group, matching the decision already recorded for `FormaToolbar`. The editor switcher is a `radiogroup`, since it selects one of a set.
 - **Editing surface:** the `contenteditable` region is labelled, exposes `aria-multiline`, and announces the active block and formatting through a live region — a screen-reader user must be able to learn that the caret is inside a heading or a code block.
 - **Every state without colour:** an active toolbar toggle carries `aria-pressed` and a persistent non-colour mark, not a tint alone.
-- **Touch:** every control is at least 24×24 CSS px, and 44×44 under `@media (pointer: coarse)`. Every `:hover` rule sits inside `@media (hover: hover)`. The bubble menu is clamped to the viewport and reachable by tap; nothing essential hangs off hover.
+- **Touch:** every control is at least 24×24 CSS px, and 44×44 under `@media (pointer: coarse)`. Every `:hover` rule sits inside `@media (hover: hover)`. The selection bar is clamped to the viewport and reachable by tap; nothing essential hangs off hover.
 - **Direction:** logical properties only, per-block `dir`, and horizontal arrow keys resolved through `CultureInfo.CurrentCulture.TextInfo.IsRightToLeft`. Bidi is not a plugin's problem to solve twice.
 
 ---
@@ -680,9 +680,9 @@ src/Forma.UI.Blazor/Components/Composer/
 │   ├── FormaRichTextEditor.razor.js       # owns the surface and the selection
 │   ├── FormaStandardRichTextEditor.razor  # preset: Coi Basic
 │   ├── FormaCompactRichTextEditor.razor   # preset: Coi Mini
-│   ├── FormaRichTextBubbleMenu.razor
-│   ├── FormaRichTextBubbleMenu.razor.cs
-│   ├── FormaRichTextBubbleMenu.razor.css
+│   ├── FormaRichTextSelectionBar.razor
+│   ├── FormaRichTextSelectionBar.razor.cs
+│   ├── FormaRichTextSelectionBar.razor.css
 │   └── Plugins/                           # namespace …Composer.RichTextEditor.Plugins
 │       ├── BasicFormattingPlugin.cs
 │       ├── TypographyPlugin.cs
@@ -759,7 +759,7 @@ Each phase ends buildable, tested and reviewable.
 1. **Capability model.** ✅ The composer assembly, every contract in §3 and §5–§7, the default sanitiser, the converter registry, and history are built, and `IComposerAssetLoader` has the JS-backed implementation it was missing. That one sits in `Forma.UI.Blazor` rather than here, because it needs `IJSRuntime`, which places it with Phase 2's engine shell. This lands first precisely because the external-dependency question decides everything after it.
 2. **Engine shell.** ✅ `FormaComposer`, `FormaComposerToolbar`, the `ComposerDocument` binding of §3.7, plugin discovery and availability probing, the selection bridge, `ComposerText`, and the debounced sync of §3.6 are built, along with the command spine, the key map, and the toolbar row model of §3.8. The editor switcher is a controlled `FormaTabs` strip above each surface's own toolbar rather than a segmented control inside it. The selection bridge is the shared `Text` operation, not welded into any one editor plugin, so a future textarea-based surface reuses it rather than reimplementing it; a contenteditable surface will need its own, because the DOM APIs genuinely differ, but through the same generic `ComposerContext.ReportSelectionAsync` seam.
 2a. **Regions.** ◐ The status strip of §3.8 is built: `IComposerRegionRegistry` pushes `IComposerStatusItem` handles that any plugin creates and disposes, cascaded on `ComposerContext.Regions` so no editor is a special case. `FormaComposerStatusStrip` renders it once per composer, beneath whichever surface is active. The gutter's contract (`IComposerGutterMarker`) is built and tested the same way; its visual rendering waits on a line-oriented surface, since pixel-aligning a marker beside a wrapping `<textarea>` needs font-metric mirroring that would itself become a one-off hack rather than a real capability.
-3. **Rich text editor and core formatting.** ✅ `RichTextEditorPlugin`, the canvas, the bubble menu, and the formatting, typography, paragraph, list and alignment/bidi plugins.
+3. **Rich text editor and core formatting.** ✅ `RichTextEditorPlugin`, the canvas, the selection bar, and the formatting, typography, paragraph, list and alignment/bidi plugins.
 4. **Markdown and code editors.** `MarkdownEditorPlugin`, `CodeEditorPlugin`, `Forma.UI.Features.Composer.Markdown`, the lossless-only HTML → Markdown guard, and the embedded Markdown and code blocks.
 5. **Media, tables and embeds.** ✅ Link, image, video, table, horizontal rule, emoji, special character, clipboard, template and embed plugins, each contributing a toolbar entry and driving the canvas through the rich text surface; the five data-collecting dialogs sit in `Composer/Dialogs/` rather than under the editor, because nothing in them is contenteditable-specific. `ImagePlugin` chooses from stored media through an embedded `FormaExplorer`, opened already selecting and gated by `ImagePluginOptions`, falling back to an address alone when the host registered no `IExplorerResourcesProvider` or `IFileStore`. `VideoPlugin` stores a placeholder rather than an embed, because `iframe` is discarded by the sanitizer, and the dialog refuses an address the document could not keep. Preview and maximize landed as **engine** commands on `FormaComposer` (§4.3a) rather than rich text plugins, since both change chrome the engine owns rather than the document any one editor holds.
 6. **Satellite capabilities.** `Forma.UI.Features.Composer.TextMate`, `.KaTeX`, a Ganss.Xss sanitizer satellite for hosts wanting a hardened implementation, and the highlighting and math plugins that consume them.

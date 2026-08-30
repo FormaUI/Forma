@@ -114,3 +114,48 @@ describe('AnchoredPopup', () => {
     });
 });
 
+
+describe('AnchoredPopup keeping focus', () => {
+    beforeEach(() => {
+        stubResizeObserver();
+        document.body.innerHTML = '<button id="anchor">Open</button><div id="popup"><button id="one">One</button><button id="two">Two</button><button id="three">Three</button></div><button id="after">After</button>';
+    });
+
+    function tab(shiftKey = false) {
+        const event = new KeyboardEvent('keydown', { key: 'Tab', shiftKey, bubbles: true, cancelable: true });
+        document.activeElement.dispatchEvent(event);
+
+        return event;
+    }
+
+    it('moves Tab between the popup controls and wraps at the end', () => {
+        const handle = attach(document.querySelector('#popup'), { anchor: document.querySelector('#anchor'), keepsFocus: true });
+        handle.open();
+        document.querySelector('#three').focus();
+
+        const event = tab();
+
+        expect(document.activeElement.id).toBe('one');
+        expect(event.defaultPrevented).toBe(true);
+    });
+
+    it('moves Shift+Tab back and wraps at the start', () => {
+        const handle = attach(document.querySelector('#popup'), { anchor: document.querySelector('#anchor'), keepsFocus: true });
+        handle.open();
+        document.querySelector('#one').focus();
+
+        tab(true);
+
+        expect(document.activeElement.id).toBe('three');
+    });
+
+    it('leaves Tab to the page when the popup does not keep focus', () => {
+        const handle = attach(document.querySelector('#popup'), { anchor: document.querySelector('#anchor') });
+        handle.open();
+        document.querySelector('#three').focus();
+
+        const event = tab();
+
+        expect(event.defaultPrevented).toBe(false);
+    });
+});

@@ -1,28 +1,41 @@
 /**
- * BubbleMenuPositioner — positions a floating bubble menu above or below an active text selection
+ * SelectionFollower — an element kept over the text selection inside its owner, holding focus while it shows
  */
 
-export function attach(target, editor = null, options = {}) {
-    return new BubbleMenuPositioner(target, editor, options);
+import { FocusCycle } from './FocusCycle.js';
+
+export function attach(target, owner = null, options = {}) {
+    return new SelectionFollower(target, owner, options);
 }
 
-class BubbleMenuPositioner {
+class SelectionFollower {
     #target;
-    #editor;
+    #owner;
     #activeClass;
     #controller = new AbortController();
     #isDisposed = false;
 
-    constructor(target, editor = null, options = {}) {
+    constructor(target, owner = null, options = {}) {
         this.#target = target;
-        this.#editor = editor;
-        this.#activeClass = options?.activeClass ?? 'forma-composer-bubble-menu-active';
+        this.#owner = owner;
+        this.#activeClass = options?.activeClass ?? 'forma-selection-follower-active';
 
         const { signal } = this.#controller;
+
+        // The element holds focus while it shows; Escape hands focus back to the owner and leaves the selection standing.
+        new FocusCycle(target, signal);
+        target.addEventListener('keydown', event => this.#handleKeyDown(event), { signal });
 
         document.addEventListener('selectionchange', () => this.update(), { signal });
         window.addEventListener('resize', () => this.update(), { signal });
         window.addEventListener('scroll', () => this.update(), { signal, capture: true, passive: true });
+    }
+
+    #handleKeyDown(event) {
+        if (event.key === 'Escape' && this.#owner) {
+            event.preventDefault();
+            this.#owner.focus();
+        }
     }
 
     dispose() {
@@ -46,7 +59,7 @@ class BubbleMenuPositioner {
         const anchor = selection.anchorNode;
         const container = anchor?.nodeType === Node.TEXT_NODE ? anchor.parentElement : anchor;
 
-        if (this.#editor && (!container || !this.#editor.contains(container))) {
+        if (this.#owner && (!container || !this.#owner.contains(container))) {
             this.#hide();
             return;
         }

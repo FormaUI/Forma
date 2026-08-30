@@ -36,7 +36,9 @@ export class SelectionInspector {
     /** Describes the selection for the toolbar, or null when it sits outside the canvas. */
     snapshot() {
         const range = this.#canvas.currentRange();
-        const anchor = Canvas.elementOf(window.getSelection()?.anchorNode);
+        // A range across marked text anchors on the block around it; the first text it covers is what carries the marks.
+        const focus = range && !range.collapsed && range.commonAncestorContainer ? (this.#canvas.textNodesIn(range)[0] ?? range.startContainer) : window.getSelection()?.anchorNode;
+        const anchor = Canvas.elementOf(focus);
 
         if (!range || !anchor || !this.#canvas.contains(anchor)) {
             return null;

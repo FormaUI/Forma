@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { attach } from '#behaviours/BubbleMenuPositioner.js';
+import { attach } from '#behaviours/SelectionFollower.js';
 
-describe('BubbleMenuPositioner', () => {
+describe('SelectionFollower', () => {
     /** @type {HTMLElement} */
     let editor;
     /** @type {HTMLElement} */
@@ -12,7 +12,7 @@ describe('BubbleMenuPositioner', () => {
             <div id="editor" contenteditable="true">
                 <p id="text">Selected content</p>
             </div>
-            <div id="menu" class="bubble-menu"></div>
+            <div id="menu" class="selection-bar"></div>
         `;
         editor = document.querySelector('#editor');
         menu = document.querySelector('#menu');
@@ -56,7 +56,7 @@ describe('BubbleMenuPositioner', () => {
         return range;
     };
 
-    it('shows and positions the bubble menu when a range is selected inside the editor', () => {
+    it('shows and positions the selection bar when a range is selected inside the editor', () => {
         attach(menu, editor, { activeClass: 'is-visible' });
         selectText(false, false);
 
@@ -111,5 +111,37 @@ describe('BubbleMenuPositioner', () => {
 
         document.dispatchEvent(new Event('selectionchange'));
         expect(menu.classList.contains('is-visible')).toBe(false);
+    });
+});
+
+describe('SelectionFollower holding focus', () => {
+    beforeEach(() => {
+        document.body.innerHTML = '<div id="editor" contenteditable="true" tabindex="0"><p>Selected content</p></div><div id="bar"><button id="first">First</button><button id="last">Last</button></div><button id="after">After</button>';
+    });
+
+    function key(name, shiftKey = false) {
+        const event = new KeyboardEvent('keydown', { key: name, shiftKey, bubbles: true, cancelable: true });
+        document.activeElement.dispatchEvent(event);
+
+        return event;
+    }
+
+    it('wraps Tab from the last control back to the first', () => {
+        attach(document.querySelector('#bar'), document.querySelector('#editor'));
+        document.querySelector('#last').focus();
+
+        const event = key('Tab');
+
+        expect(document.activeElement.id).toBe('first');
+        expect(event.defaultPrevented).toBe(true);
+    });
+
+    it('hands focus back to the editor on Escape', () => {
+        attach(document.querySelector('#bar'), document.querySelector('#editor'));
+        document.querySelector('#first').focus();
+
+        key('Escape');
+
+        expect(document.activeElement.id).toBe('editor');
     });
 });

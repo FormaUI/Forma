@@ -177,7 +177,7 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
         return Task.CompletedTask;
     }
 
-    /// <summary>Handles commands raised directly by UI elements like the bubble menu.</summary>
+    /// <summary>Handles commands raised directly by UI elements like the selection bar.</summary>
     public void HandleCommand(string command)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);

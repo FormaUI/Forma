@@ -7,12 +7,15 @@
  * together for as long as the popup is open.
  */
 
+import { FocusCycle } from './FocusCycle.js';
+
 /** Distance between the anchor and the popup. */
 const GAP = 4;
 
 /**
  * @param {HTMLElement} target The popup.
- * @param {{ anchor: HTMLElement }} options
+ * @param {{ anchor: HTMLElement, keepsFocus?: boolean }} options
+ *   The element the popup hangs from; whether Tab moves between the popup's own controls instead of leaving it.
  */
 export function attach(target, options) {
     return new AnchoredPopup(target, options);
@@ -21,12 +24,14 @@ export function attach(target, options) {
 class AnchoredPopup {
     #popup;
     #anchor;
+    #keepsFocus;
     #placement = null;
     #resizeObserver = null;
 
-    constructor(popup, { anchor }) {
+    constructor(popup, { anchor, keepsFocus = false }) {
         this.#popup = popup;
         this.#anchor = anchor;
+        this.#keepsFocus = keepsFocus;
     }
 
     /** Shows the popup and keeps it positioned against its anchor until closed. */
@@ -49,6 +54,10 @@ class AnchoredPopup {
         // search result count, a category switch — so its size alone must trigger repositioning.
         this.#resizeObserver = new ResizeObserver(place);
         this.#resizeObserver.observe(this.#popup);
+
+        if (this.#keepsFocus) {
+            new FocusCycle(this.#popup, this.#placement.signal);
+        }
 
         place();
     }

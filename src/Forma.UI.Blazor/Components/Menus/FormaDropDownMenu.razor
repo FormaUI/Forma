@@ -2,7 +2,7 @@
 <CascadingValue Value="this" IsFixed="true">
     @* Keydown is caught on the wrapper because it bubbles from the button, which a
        component tag cannot carry a handler for directly. *@
-    <span class="forma-dropdown-menu-anchor" @ref="_anchorElement" @onkeydown="HandleTriggerKeyDown">
+    <span class="@(_isOpen ? "forma-dropdown-menu-anchor forma-dropdown-menu-anchor-open" : "forma-dropdown-menu-anchor")" @ref="_anchorElement" @onkeydown="HandleTriggerKeyDown">
         <FormaButton @ref="_trigger"
                      @attributes="TriggerAttributes"
                      Variant="TriggerOptions.Variant"
@@ -15,7 +15,8 @@
 
     @if (_isOpen)
     {
-        <div class="forma-dropdown-menu-backdrop" @onclick="Close"></div>
+        @* The backdrop takes the click that dismisses the menu and nothing else: no focus, so the selection under it stands. *@
+        <div class="forma-dropdown-menu-backdrop" @onclick="Close" @onmousedown:preventDefault></div>
         @* Manual rather than auto: the backdrop above owns dismissal, which also sidesteps
            the iOS 17–18.2 bug where a popover ignores a tap outside it. *@
         <div class="forma-dropdown-menu"

@@ -1,0 +1,9 @@
+@namespace Forma.UI.Blazor.Components.Composer.RichTextEditor
+@inject IStringLocale<FormaRichTextEditor> L
+
+@if (Bar is { Items.Count: > 0 })
+{
+    <div @ref="_menuElement" class="forma-composer-selection-bar">
+        <FormaComposerCommandBar Label="@L["Selection formatting"]" Items="Bar.Items" KeyMap="Bar.KeyMap" OnCommand="OnCommand" />
+    </div>
+}

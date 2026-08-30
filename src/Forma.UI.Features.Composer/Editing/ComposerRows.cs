@@ -14,4 +14,7 @@ public static class ComposerRows
 
     /// <summary>The row carrying the commands that arrange the blocks of the active editor.</summary>
     public const string Paragraph = "composer.paragraph";
+
+    /// <summary>The bar shown over a text selection in the active editor.</summary>
+    public const string Selection = "composer.selection";
 }

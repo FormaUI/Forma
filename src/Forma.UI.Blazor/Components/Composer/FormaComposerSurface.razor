@@ -12,6 +12,8 @@
 
 <div class="forma-composer-canvas">
     <CascadingValue Value="Editor" IsFixed="true">
-        <DynamicComponent Type="Editor.EditorComponent" />
+        <CascadingValue Value="SelectionBar">
+            <DynamicComponent Type="Editor.EditorComponent" />
+        </CascadingValue>
     </CascadingValue>
 </div>

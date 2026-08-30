@@ -14,16 +14,6 @@ public sealed class ComposerCommandRegistry
     public IEnumerable<string> Commands
         => _engineCommands.Keys.Concat(_pluginCommands.Keys);
 
-    /// <summary>Whether the engine or a registered plugin runs the named command.</summary>
-    public bool Contains(string command)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(command);
-
-        return _engineCommands.ContainsKey(command)
-            || _pluginCommands.ContainsKey(command)
-            || _pluginCommandPrefixes.Any(entry => command.StartsWith(entry.Prefix, StringComparison.Ordinal));
-    }
-
     /// <summary>Registers a command the engine runs itself.</summary>
     public void RegisterEngineCommand(string command, Func<Task> handler)
     {

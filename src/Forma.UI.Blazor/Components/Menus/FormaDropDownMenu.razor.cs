@@ -147,9 +147,6 @@ public sealed partial class FormaDropDownMenu : ComponentBase, IAsyncDisposable
             case "Escape":
                 await RequestActivateAsync();
                 break;
-            case "Tab":
-                Close();
-                break;
         }
     }
 
@@ -180,7 +177,7 @@ public sealed partial class FormaDropDownMenu : ComponentBase, IAsyncDisposable
         {
             await _keyGuard.AttachAsync(_popupElement);
             await FocusIndexAsync(_openAtLastItem ? _items.Count - 1 : 0);
-        });
+        }, keepsFocus: true);
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()

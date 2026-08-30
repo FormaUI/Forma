@@ -1,0 +1,21 @@
+/* FormaRichTextSelectionBar — the formatting bar floating over a selection */
+
+/* Twelve commands at the control step with the row's gaps between them: 12 × 2rem + 11 × 0.25rem = 26.75rem;
+   more scroll within the bar. */
+.forma-composer-selection-bar {
+    position: fixed;
+    z-index: var(--z-index-popover, 1060);
+    display: none;
+    max-inline-size: 26.75rem;
+    padding: var(--space-1);
+    background-color: var(--input-background-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-medium);
+    box-sizing: border-box;
+}
+
+.forma-composer-selection-bar.forma-composer-selection-bar-active {
+    display: block;
+}

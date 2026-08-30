@@ -16,6 +16,8 @@ export class BlockFormatter {
     convert(value) {
         const name = String(value ?? 'p').replace(/[<>]/g, '').toLowerCase();
         const blocks = this.#canvas.selectedBlocks().filter(block => block.tagName !== 'LI');
+        const range = this.#canvas.currentRange();
+        const kept = range ? { start: range.startContainer, startOffset: range.startOffset, end: range.endContainer, endOffset: range.endOffset } : null;
         let last = null;
 
         for (const block of blocks) {
@@ -34,9 +36,23 @@ export class BlockFormatter {
             last = replacement;
         }
 
-        // Converting an empty block detaches the node the caret sat on, so the caret moves into the replacement.
         const selection = window.getSelection();
-        if (last && selection && (!selection.anchorNode || !selection.anchorNode.isConnected)) {
+        if (!last || !selection) {
+            return;
+        }
+
+        // The text the selection covered moved whole into the replacement, so the selection is put back over it.
+        if (kept && kept.start.isConnected && kept.end.isConnected) {
+            const restored = document.createRange();
+            restored.setStart(kept.start, kept.startOffset);
+            restored.setEnd(kept.end, kept.endOffset);
+            selection.removeAllRanges();
+            selection.addRange(restored);
+            return;
+        }
+
+        // Converting an empty block detaches the node the caret sat on, so the caret moves into the replacement.
+        if (!selection.anchorNode || !selection.anchorNode.isConnected) {
             const caret = document.createRange();
             caret.selectNodeContents(last);
             caret.collapse(false);

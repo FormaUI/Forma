@@ -26,7 +26,16 @@ public sealed partial class FormaComposerSurface : ComponentBase
     /// <summary>Callback invoked with the command an action raised.</summary>
     [Parameter] public EventCallback<string> OnCommand { get; set; }
 
+    private ComposerSelectionBar SelectionBar { get; set; } = new([], ComposerKeyMap.Empty);
+
     /// <inheritdoc />
     protected override void OnParametersSet()
-        => ArgumentNullException.ThrowIfNull(Editor);
+    {
+        ArgumentNullException.ThrowIfNull(Editor);
+
+        var layout = ComposerToolbarLayout.Create(Editor, Plugins);
+        var items = layout.Rows.FirstOrDefault(row => row.Id == ComposerRows.Selection)?.Items ?? [];
+
+        SelectionBar = new ComposerSelectionBar(items, KeyMap);
+    }
 }
