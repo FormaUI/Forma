@@ -28,6 +28,11 @@
     touch-action: manipulation;
 }
 
+/* The first trailing tab pushes itself and those after it to the strip's far end. */
+.forma-tab-button-trailing {
+    margin-inline-start: auto;
+}
+
 @media (hover: hover) {
     .forma-tab-button:hover {
         color: var(--text-color);

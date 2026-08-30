@@ -46,6 +46,19 @@ public sealed class BadgePlugin(StubEditorPlugin editor, BadgeOptions? options =
     public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
 }
 
+/// <summary>A view over the stub editor's document, the shape the library's preview and source views take.</summary>
+public sealed class OutlineViewPlugin(StubEditorPlugin editor) : IComposerViewPlugin
+{
+    public StubEditorPlugin Editor { get; } = editor;
+    public string Id => "stub-editor.outline";
+    public string EditorId => editor.Id;
+    public string Kind => ComposerViews.Preview;
+    public string Title => "Outline";
+    public Icon Icon => Glyph.Preview;
+    public Type ViewComponent => typeof(OutlineViewPlugin);
+    public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
+}
+
 /// <summary>A plugin declaring no role, which discovery must not sweep in.</summary>
 public sealed class LoosePlugin : IComposerPlugin
 {

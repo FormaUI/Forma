@@ -1,5 +1,7 @@
 @inherits FormaBunitContext
 @using Forma.UI.Blazor.Components.Composer.Plugins
+@using Forma.UI.Blazor.Components.Composer.RichTextEditor
+@using Forma.UI.Blazor.Components.Composer.RichTextEditor.Views
 
 @code {
     public sealed class Component
@@ -1104,25 +1106,85 @@
         }
 
         [Fact]
-        public void Should_open_preview_modal_when_preview_command_is_handled()
+        public void Should_offer_an_editors_views_as_trailing_tabs_and_show_one_when_picked()
         {
             // Arrange
             using var ctx = new FormaComposerTests();
-            var model = new HtmlModel { Body = new ComposerDocument(ComposerDocumentFormat.Html, "<p>Preview me</p>") };
-            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
-            var composer = cut.FindComponent<FormaComposer>().Instance;
-
-            // Act
-            cut.InvokeAsync(() => composer.HandleCommandAsync(ComposerCommands.Preview));
+            var model = new HtmlModel();
+            var richText = new RichTextEditorPlugin();
+            IReadOnlyList<IComposerPlugin> plugins = [richText, new RichTextPreviewViewPlugin(richText), new RichTextSourceViewPlugin(richText)];
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
 
             // Assert
-            cut.WaitForAssertion(() => Assert.Contains("Preview me", cut.Find(".forma-composer-preview-body").TextContent));
+            var tabs = cut.FindAll("[role=tab]");
+            Assert.Equal(3, tabs.Count);
+            Assert.Contains("forma-tab-button-trailing", tabs[1].ClassList);
+            Assert.Empty(cut.FindAll(".forma-composer-preview"));
 
-            // Act 2 (close)
-            cut.InvokeAsync(() => composer.HandleCommandAsync(ComposerCommands.Preview));
+            // Act
+            tabs[1].Click();
 
-            // Assert 2
-            cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".forma-composer-preview-body")));
+            // Assert
+            cut.WaitForAssertion(() => Assert.Contains("Initial", cut.Find(".forma-composer-preview").TextContent, StringComparison.Ordinal));
+            Assert.Equal("true", cut.FindAll("[role=tab]")[1].GetAttribute("aria-selected"));
+        }
+
+        [Fact]
+        public void Should_show_the_source_view_one_block_per_numbered_line()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new HtmlModel { Body = new ComposerDocument(ComposerDocumentFormat.Html, "<p>One</p><p>Two</p>") };
+            var richText = new RichTextEditorPlugin();
+            IReadOnlyList<IComposerPlugin> plugins = [richText, new RichTextSourceViewPlugin(richText)];
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            // Act
+            cut.FindAll("[role=tab]")[1].Click();
+
+            // Assert
+            cut.WaitForAssertion(() =>
+            {
+                var lines = cut.FindAll(".forma-composer-source-line");
+                Assert.Equal(2, lines.Count);
+                Assert.Equal("<p>Two</p>", lines[1].QuerySelector(".forma-composer-source-text")!.TextContent);
+            });
+        }
+
+        [Fact]
+        public void Should_return_to_the_editor_when_its_tab_is_picked_while_a_view_shows()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new HtmlModel();
+            var richText = new RichTextEditorPlugin();
+            IReadOnlyList<IComposerPlugin> plugins = [richText, new RichTextPreviewViewPlugin(richText)];
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.FindAll("[role=tab]")[1].Click();
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find(".forma-composer-preview")));
+
+            // Act
+            cut.FindAll("[role=tab]")[0].Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".forma-composer-preview")));
+            Assert.NotNull(cut.Find(".forma-composer-rich-text-canvas"));
+        }
+
+        [Fact]
+        public void Should_lay_a_views_own_commands_on_its_toolbar_without_undo_or_the_editors_formatting()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new HtmlModel();
+            var richText = new RichTextEditorPlugin();
+            IReadOnlyList<IComposerPlugin> plugins = [richText, new BasicFormattingPlugin(richText), new RichTextPreviewViewPlugin(richText)];
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.FindAll("[role=tab]")[1].Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Print']")));
+            Assert.Empty(cut.FindAll("button[aria-label='Bold']"));
+            Assert.Empty(cut.FindAll("button[aria-label='Undo']"));
         }
     }
 }

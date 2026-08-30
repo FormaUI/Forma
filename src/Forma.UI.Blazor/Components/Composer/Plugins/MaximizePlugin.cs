@@ -16,6 +16,9 @@ public sealed class MaximizePlugin : IComposerFeaturePlugin
     public string Id => "maximize";
 
     /// <inheritdoc />
+    public bool AppliesToViews => true;
+
+    /// <inheritdoc />
     public IReadOnlyList<ComposerToolbarItem> Items =>
     [
         new(ComposerRows.BuiltIn,

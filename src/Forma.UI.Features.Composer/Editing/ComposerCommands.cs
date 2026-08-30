@@ -12,9 +12,6 @@ public static class ComposerCommands
     /// <summary>Toggles full-viewport maximized editing mode.</summary>
     public const string Maximize = "view.maximize";
 
-    /// <summary>Toggles a read-only rendered preview of the document.</summary>
-    public const string Preview = "view.preview";
-
     /// <summary>Toggles the formatting bar that follows the text selection.</summary>
     public const string SelectionBar = "view.selection-bar";
 

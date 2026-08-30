@@ -31,6 +31,9 @@ public sealed partial class FormaComposerCommandBar : ComponentBase
     /// <summary>Content rendered after the command groups, such as an overflow toggle.</summary>
     [Parameter] public RenderFragment? TrailingContent { get; set; }
 
+    /// <summary>The toggles and options the bar's own plugin reports as active, beside what the selection reports.</summary>
+    [Parameter] public IReadOnlyCollection<string> PluginStates { get; set; } = [];
+
     /// <summary>The shared composer context cascaded from the parent shell.</summary>
     [CascadingParameter] public ComposerContext? Context { get; set; }
 
@@ -142,6 +145,8 @@ public sealed partial class FormaComposerCommandBar : ComponentBase
             {
                 states.Add(SelectionBarToggleId);
             }
+
+            states.UnionWith(PluginStates);
 
             return states;
         }

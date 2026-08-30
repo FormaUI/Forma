@@ -1,0 +1,8 @@
+@namespace Forma.UI.Blazor.Components.Composer.RichTextEditor.Views
+@inject IStringLocale<FormaRichTextEditor> L
+
+<div class="@ContainerClass" role="region" aria-label="@L["Document Source"]">
+    <pre class="forma-composer-source-code"><code>@foreach (var (line, index) in Lines.Select((line, index) => (line, index)))
+{<span class="forma-composer-source-line"><span class="forma-composer-source-number" aria-hidden="true">@(index + 1)</span><span class="forma-composer-source-text">@line</span></span>
+}</code></pre>
+</div>

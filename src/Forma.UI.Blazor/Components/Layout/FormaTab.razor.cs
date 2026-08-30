@@ -20,6 +20,9 @@ public sealed partial class FormaTab : IDisposable
     /// <summary>The identifier a controlled parent selects this tab by. A generated one stands in while this is unset.</summary>
     [Parameter] public string? TabId { get; set; }
 
+    /// <summary>Whether the tab's header sits at the far end of the strip, after every leading tab.</summary>
+    [Parameter] public bool Trailing { get; set; }
+
     /// <summary>The tab's panel content.</summary>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
 

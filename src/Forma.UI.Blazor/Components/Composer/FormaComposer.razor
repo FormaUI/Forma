@@ -1,6 +1,5 @@
 @namespace Forma.UI.Blazor.Components.Composer
 @using Forma.UI.Blazor.Components.Composer.Dialogs
-@using Forma.UI.Blazor.Components.Feedback
 @inherits InputBase<ComposerDocument>
 @inject IStringLocale<FormaComposer> L
 
@@ -8,14 +7,30 @@
     <div @ref="_composerElement" id="@ElementId" class="@ComposerClass" @attributes="AdditionalAttributes">
         @if (_isInitialized && ShowTabs)
         {
-            <FormaTabs ActiveTabId="@_activeEditor.Id" ActiveTabIdChanged="SwitchEditorAsync" Label="@L["Editors"]">
+            <FormaTabs ActiveTabId="@ActiveTabId" ActiveTabIdChanged="SelectTabAsync" Label="@L["Editors"]">
                 @foreach (var editor in _catalog.Editors)
                 {
                     <FormaTab TabId="@editor.Id" Title="@L[editor.Title]" Icon="editor.Icon">
-                        @if (editor.Id == _activeEditor.Id)
+                        @if (editor.Id == _activeEditor.Id && _activeView is null)
                         {
                             <FormaComposerSurface
                                 Editor="_activeEditor"
+                                Plugins="_catalog.FeaturePlugins"
+                                ShowToolbar="ShowToolbar"
+                                Disabled="Disabled"
+                                KeyMap="_keyMap"
+                                OnCommand="HandleCommandAsync" />
+                        }
+                    </FormaTab>
+                }
+                @foreach (var view in ActiveViews)
+                {
+                    <FormaTab TabId="@view.Id" Title="@L[view.Title]" Icon="view.Icon" Trailing="true">
+                        @if (view.Id == _activeView?.Id)
+                        {
+                            <FormaComposerSurface
+                                Editor="_activeEditor"
+                                View="_activeView"
                                 Plugins="_catalog.FeaturePlugins"
                                 ShowToolbar="ShowToolbar"
                                 Disabled="Disabled"
@@ -30,6 +45,7 @@
         {
             <FormaComposerSurface
                 Editor="_activeEditor"
+                View="_activeView"
                 Plugins="_catalog.FeaturePlugins"
                 ShowToolbar="ShowToolbar"
                 Disabled="Disabled"
@@ -54,28 +70,5 @@
                                        Options="AttachOptions"
                                        OnAttach="HandleAttachedAsync"
                                        OnCancel="() => _isAttachOpen = false" />
-    }
-
-    @if (_isPreviewOpen)
-    {
-        <FormaModal Opened="_isPreviewOpen"
-                    Title="@L["Document Preview"]"
-                    Size="ModalSize.Large"
-                    OnClose="() => _isPreviewOpen = false"
-                    ConfirmText="@L["Close"]"
-                    OnConfirm="() => _isPreviewOpen = false">
-            <Body>
-                <div class="forma-composer-preview-body">
-                    @if (CurrentDocument.Format == ComposerDocumentFormat.Html)
-                    {
-                        @((MarkupString)CurrentDocument.Content)
-                    }
-                    else
-                    {
-                        <pre>@CurrentDocument.Content</pre>
-                    }
-                </div>
-            </Body>
-        </FormaModal>
     }
 </CascadingValue>

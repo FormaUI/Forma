@@ -98,6 +98,7 @@ itself:
 | `forma-reset.css` | Box sizing, form-element font inheritance, reduced motion | Unless your app already normalizes |
 | `forma-base.css` | Body typography and link colours | You want Forma's look; skip it if you have your own |
 | `forma-input.css` | The input box every field draws — border, radius, colours, focus ring | Whenever you use any Forma input |
+| `forma-prose.css` | The look of a document the composer authored — headings, quotes, code, lists, tables, figures, links | Whenever you render composer content, in the editor or to readers |
 
 Retheming is one token: override `--main-color` in a stylesheet loaded after Forma's, and the hover,
 focus, and link shades follow.

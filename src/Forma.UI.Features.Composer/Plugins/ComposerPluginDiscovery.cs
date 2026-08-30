@@ -2,10 +2,10 @@ namespace Forma.UI.Features.Composer.Plugins;
 
 using System.Reflection;
 
-/// <summary>Finds the feature plugins an assembly ships and builds them against the plugins already chosen.</summary>
+/// <summary>Finds the feature and view plugins an assembly ships and builds them against the plugins already chosen.</summary>
 public static class ComposerPluginDiscovery
 {
-    /// <summary>Builds every feature plugin found, appended after the plugins given.</summary>
+    /// <summary>Builds every feature and view plugin found, appended after the plugins given.</summary>
     /// <param name="plugins">The plugins already constructed — the editors, and any feature plugin needing configuration of its own. A found plugin's constructor parameters are satisfied from these, and a type among them is never built a second time.</param>
     /// <param name="assembly">The assembly to search, or null to search every loaded assembly that takes the composer.</param>
     /// <param name="locations">Namespace suffixes narrowing the search, or empty for the whole assembly.</param>
@@ -34,7 +34,7 @@ public static class ComposerPluginDiscovery
         return assemblies
             .SelectMany(TypesOf)
             .Where(candidate => candidate is { IsClass: true, IsAbstract: false, IsVisible: true }
-                && typeof(IComposerFeaturePlugin).IsAssignableFrom(candidate));
+                && (typeof(IComposerFeaturePlugin).IsAssignableFrom(candidate) || typeof(IComposerViewPlugin).IsAssignableFrom(candidate)));
     }
 
     private static IEnumerable<Assembly> TakingComposer()

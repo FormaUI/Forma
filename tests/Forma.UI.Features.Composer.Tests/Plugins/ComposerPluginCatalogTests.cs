@@ -25,7 +25,42 @@ public sealed class ComposerPluginCatalogTests
         public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(isAvailable);
     }
 
+    private sealed class ViewPlugin(string id, string editorId) : IComposerViewPlugin
+    {
+        public string Id => id;
+        public string EditorId => editorId;
+        public string Kind => ComposerViews.Preview;
+        public string Title => id;
+        public Icon Icon => Glyph.Preview;
+        public Type ViewComponent => typeof(ViewPlugin);
+        public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
+    }
+
     private static readonly EditorPlugin Fallback = new("fallback", ComposerDocumentFormat.PlainText);
+
+    [Fact]
+    public async Task Should_split_views_from_editors_and_feature_plugins_and_answer_them_by_editor()
+    {
+        // Arrange
+        IComposerPlugin[] candidates =
+        [
+            new EditorPlugin("html", ComposerDocumentFormat.Html),
+            new ViewPlugin("html.preview", "html"),
+            new ViewPlugin("markdown.preview", "markdown"),
+            new FeaturePlugin("tables"),
+        ];
+
+        // Act
+        var catalog = await CreateAsync(candidates);
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal(["html"], catalog.Editors.Select(e => e.Id)),
+            () => Assert.Equal(["html.preview", "markdown.preview"], catalog.Views.Select(v => v.Id)),
+            () => Assert.Equal(["tables"], catalog.FeaturePlugins.Select(p => p.Id)),
+            () => Assert.Equal(["html.preview"], catalog.ViewsOf("html").Select(v => v.Id)),
+            () => Assert.Equal(["html", "html.preview", "markdown.preview", "tables"], catalog.All.Select(p => p.Id)));
+    }
 
     private static ValueTask<ComposerPluginCatalog> CreateAsync(IEnumerable<IComposerPlugin> candidates)
         => ComposerPluginCatalog.CreateAsync(candidates, Fallback, TestContext.Current.CancellationToken);

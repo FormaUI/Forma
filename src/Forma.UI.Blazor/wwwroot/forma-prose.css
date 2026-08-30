@@ -1,0 +1,248 @@
+/*
+    forma-prose.css — The look of a document the composer authored: headings, paragraphs,
+    quotes, code, lists, tables, figures, links and the placeholders the composer stores.
+
+    Applies inside any element carrying the forma-prose class — the rich text canvas, its
+    preview, a printed page, and a host page rendering the document to readers.
+
+    Loads after forma-tokens.css.
+*/
+
+/* Each block resolves its own base direction from its first strong character, so an English
+   paragraph reads left-to-right inside an RTL page and a Hebrew one right-to-left beside it.
+   Skipping [dir] leaves a direction the author set in charge. */
+.forma-prose p:not([dir]),
+.forma-prose h1:not([dir]),
+.forma-prose h2:not([dir]),
+.forma-prose h3:not([dir]),
+.forma-prose h4:not([dir]),
+.forma-prose h5:not([dir]),
+.forma-prose h6:not([dir]),
+.forma-prose li:not([dir]),
+.forma-prose blockquote:not([dir]),
+.forma-prose pre:not([dir]),
+.forma-prose td:not([dir]),
+.forma-prose th:not([dir]),
+.forma-prose caption:not([dir]),
+.forma-prose figcaption:not([dir]) {
+    unicode-bidi: plaintext;
+}
+
+.forma-prose h1,
+.forma-prose h2,
+.forma-prose h3,
+.forma-prose h4,
+.forma-prose h5,
+.forma-prose h6 {
+    margin-block-start: var(--space-4);
+    margin-block-end: var(--space-2);
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.forma-prose p {
+    margin-block-start: 0;
+    margin-block-end: var(--space-3);
+}
+
+.forma-prose .forma-composer-lead {
+    font-size: var(--font-size-lg);
+    font-weight: 400;
+    line-height: 1.75;
+}
+
+.forma-prose blockquote {
+    margin-inline-start: 0;
+    margin-inline-end: 0;
+    margin-block: var(--space-3);
+    padding-inline-start: var(--space-3);
+    border-inline-start: 3px solid var(--border-color);
+    color: var(--text-secondary-color);
+    font-style: italic;
+}
+
+.forma-prose code {
+    padding: 0.125rem 0.25rem;
+    font-family: var(--font-family-mono);
+    font-size: 0.875em;
+    background-color: var(--muted-background-color);
+    border-radius: var(--radius-sm);
+}
+
+.forma-prose pre {
+    margin-block: var(--space-3);
+    padding: var(--space-3);
+    background-color: var(--muted-background-color);
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+}
+
+.forma-prose ul,
+.forma-prose ol {
+    margin-block: var(--space-2);
+    /* A list is indented past its own markers. */
+    padding-inline-start: 1.25rem;
+}
+
+.forma-prose hr {
+    margin-block: var(--space-4);
+    border: none;
+    border-block-start: 1px solid var(--border-color);
+}
+
+.forma-prose table,
+.forma-prose .forma-composer-table {
+    inline-size: 100%;
+    margin-block: var(--space-3);
+    border-collapse: collapse;
+    border: 1px solid var(--border-color);
+}
+
+.forma-prose table th,
+.forma-prose table td {
+    padding-inline: var(--space-3);
+    padding-block: var(--space-2);
+    border: 1px solid var(--border-color);
+    text-align: start;
+    vertical-align: top;
+}
+
+.forma-prose table th {
+    background-color: var(--muted-background-color);
+    font-weight: 600;
+}
+
+.forma-prose table caption {
+    margin-block-end: var(--space-1);
+    font-weight: 600;
+    text-align: start;
+    color: var(--text-secondary-color);
+}
+
+.forma-prose figure.forma-composer-image {
+    margin-block: var(--space-3);
+    margin-inline: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* A link is underlined as well as coloured, because colour alone leaves the state unreadable without it.
+   The underline is set away from the baseline and skips the ink of a descender, which a rule sitting
+   tight under the text would otherwise cut through. */
+.forma-prose a[href] {
+    color: var(--forma-composer-link-color, var(--link-color));
+    text-decoration: underline;
+    text-decoration-thickness: 0.0625em;
+    text-decoration-skip-ink: auto;
+    text-underline-offset: 0.22em;
+}
+
+@media (hover: hover) {
+    .forma-prose a[href]:hover {
+        color: var(--forma-composer-link-hover-color, var(--link-hover-color));
+        text-decoration-thickness: 0.1em;
+    }
+
+    .forma-prose a[name]:hover {
+        border-block-end-color: var(--forma-composer-link-hover-color, var(--link-hover-color));
+    }
+}
+
+.forma-prose a[href]:focus-visible,
+.forma-prose a[name]:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+    border-radius: var(--radius-sm);
+}
+
+/* A named anchor carries no visible text of its own, so it is drawn as a badge the author can see, select and remove. */
+.forma-prose a[name]:empty {
+    display: inline-block;
+    margin-inline: var(--space-1);
+    padding-inline: var(--space-1);
+    vertical-align: baseline;
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-prose);
+    color: var(--text-secondary-color);
+    background-color: var(--muted-background-color);
+    border: 1px dashed var(--border-color);
+    border-radius: var(--radius-sm);
+    user-select: none;
+}
+
+/* An anchor wrapping selected text is marked, keeping the text visible. */
+.forma-prose a[name]:not(:empty) {
+    border-block-end: 1px dashed var(--border-color);
+}
+
+/* The marker requests text presentation through a symbol font, so an emoji-capable character
+   cannot arrive as color emoji. */
+.forma-prose a[name]:empty::before {
+    content: "\2693\FE0E";
+    font-family: var(--font-family-symbol);
+}
+
+.forma-prose a[name]:empty::after {
+    content: " " attr(name);
+}
+
+.forma-prose figure.forma-composer-image img,
+.forma-prose img.forma-composer-image {
+    max-inline-size: 100%;
+    block-size: auto;
+    border-radius: var(--radius-sm);
+}
+
+.forma-prose figure.forma-composer-image figcaption {
+    margin-block-start: var(--space-1);
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary-color);
+    font-style: italic;
+    text-align: center;
+}
+
+/* A video is stored as a placeholder the host resolves into a player, so it is marked as a
+   video with a play badge rather than left to read as an ordinary link. */
+.forma-prose .forma-composer-video {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-block: var(--space-3);
+    padding: var(--space-3);
+    background-color: var(--forma-composer-video-background-color, var(--modal-background-color));
+    border: 1px solid var(--forma-composer-video-border-color, var(--light-border-color));
+    border-radius: var(--radius-md);
+}
+
+/* Play reads the same in both directions, so the triangle is deliberately left unmirrored.
+   It requests text presentation through a symbol font, so it cannot arrive as color emoji. */
+.forma-prose .forma-composer-video::before {
+    content: "\25B6\FE0E";
+    font-family: var(--font-family-symbol);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: var(--icon-size-md);
+    block-size: var(--icon-size-md);
+    font-size: var(--font-size-xs);
+    color: var(--forma-composer-video-badge-foreground-color, var(--input-background-color));
+    background-color: var(--forma-composer-video-badge-color, var(--main-color));
+    border-radius: 50%;
+}
+
+.forma-prose .forma-composer-video > p {
+    margin: 0;
+}
+
+.forma-prose .forma-composer-embed {
+    margin-block: var(--space-3);
+    padding: var(--space-3);
+    background-color: var(--muted-background-color);
+    border: 1px dashed var(--border-color);
+    border-radius: var(--radius-md);
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-sm);
+}

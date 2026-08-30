@@ -25,7 +25,8 @@ public sealed class ComposerPluginDiscoveryTests
             () => Assert.Same(editor, plugins[0]),
             () => Assert.Contains(plugins, plugin => plugin is StampPlugin),
             () => Assert.Contains(plugins, plugin => plugin is HighlightPlugin),
-            () => Assert.Contains(plugins, plugin => plugin is BadgePlugin));
+            () => Assert.Contains(plugins, plugin => plugin is BadgePlugin),
+            () => Assert.Contains(plugins, plugin => plugin is OutlineViewPlugin view && ReferenceEquals(view.Editor, editor)));
     }
 
     [Fact]

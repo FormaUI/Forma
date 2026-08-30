@@ -27,6 +27,9 @@ public interface IComposerPlugin : IComposerKeyBindingSource
     /// <summary>Browser assets the plugin needs before it can run.</summary>
     IReadOnlyList<ComposerAsset> Assets => [];
 
+    /// <summary>The identifiers of this plugin's toggles and options that are currently active.</summary>
+    IReadOnlyCollection<string> ActiveStates => [];
+
     /// <summary>Whether every dependency the plugin needs is present.</summary>
     ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default);
 

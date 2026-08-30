@@ -38,11 +38,11 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     private IHtmlSanitizer _sanitizer = default!;
     private ComposerContext _context = default!;
     private IComposerEditorPlugin _activeEditor = default!;
+    private IComposerViewPlugin? _activeView;
     private bool _isInitialized;
     private bool _isJsStarted;
     private bool _isMaximized;
     private bool _isSelectionBarShown = true;
-    private bool _isPreviewOpen;
     private bool _isAttachOpen;
 
     /// <summary>Options configuring toolbar display, editor switcher, and default editor.</summary>
@@ -77,7 +77,13 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
         => Options.ShowToolbar && !ReadOnly;
 
     private bool ShowTabs
-        => Options.ShowEditorSwitcher && _catalog.Editors.Count > 1;
+        => Options.ShowEditorSwitcher && (_catalog.Editors.Count > 1 || ActiveViews.Count > 0);
+
+    private IReadOnlyList<IComposerViewPlugin> ActiveViews
+        => _catalog.ViewsOf(_activeEditor.Id);
+
+    private string ActiveTabId
+        => _activeView?.Id ?? _activeEditor.Id;
 
     private string ComposerClass
         => AdditionalAttributes.MergeClass(
@@ -108,7 +114,6 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
         _commands.RegisterEngineCommand(ComposerCommands.Undo, HandleUndoAsync);
         _commands.RegisterEngineCommand(ComposerCommands.Redo, HandleRedoAsync);
         _commands.RegisterEngineCommand(ComposerCommands.Maximize, HandleMaximizeAsync);
-        _commands.RegisterEngineCommand(ComposerCommands.Preview, HandlePreviewAsync);
         _commands.RegisterEngineCommand(ComposerCommands.SelectionBar, HandleSelectionBarAsync);
         _commands.RegisterEngineCommand(ComposerCommands.Attach, HandleAttachAsync);
         _regions.Changed += HandleRegionsChanged;
@@ -128,11 +133,25 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
         return Task.CompletedTask;
     }
 
-    private Task HandlePreviewAsync()
+    private async Task ShowViewAsync(IComposerViewPlugin? view)
     {
-        _isPreviewOpen = !_isPreviewOpen;
+        _activeView = view;
+
+        if (view is not null)
+        {
+            await _assetLoader.LoadAssetsAsync(view.Assets);
+        }
+
+        RebuildContext();
         StateHasChanged();
-        return Task.CompletedTask;
+    }
+
+    // A tab names either an editor or one of the active editor's views.
+    private Task SelectTabAsync(string tabId)
+    {
+        var view = ActiveViews.FirstOrDefault(candidate => candidate.Id == tabId);
+
+        return view is not null ? ShowViewAsync(view) : SwitchEditorAsync(tabId);
     }
 
     private Task HandleSelectionBarAsync()
@@ -239,8 +258,18 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
 
         var target = _catalog.Editors.FirstOrDefault(e => e.Id == targetEditorId);
 
-        if (target is null || target.Id == _activeEditor.Id)
+        if (target is null)
         {
+            return;
+        }
+
+        if (target.Id == _activeEditor.Id)
+        {
+            if (_activeView is not null)
+            {
+                await ShowViewAsync(null);
+            }
+
             return;
         }
 
@@ -250,6 +279,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
         }
 
         _activeEditor = target;
+        _activeView = null;
 
         await _assetLoader.LoadAssetsAsync(target.Assets);
 

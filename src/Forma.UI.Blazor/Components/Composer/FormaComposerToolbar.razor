@@ -7,9 +7,10 @@
         <FormaComposerCommandBar
             Label="@L[bar.Label]"
             Items="bar.Items"
-            ShowHistory="index == 0"
+            ShowHistory="index == 0 && View is null"
             Disabled="Disabled"
             KeyMap="KeyMap"
+            PluginStates="Owner.ActiveStates"
             OnCommand="OnCommand">
             <TrailingContent>
                 @if (index == 0 && PluginItems.Count > 0)

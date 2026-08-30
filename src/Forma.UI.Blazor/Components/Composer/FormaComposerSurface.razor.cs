@@ -5,11 +5,14 @@ using Forma.UI.Features.Composer.Plugins;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>The region one editor occupies: its toolbar together with its canvas.</summary>
+/// <summary>The region one editor, or one view over it, occupies: its toolbar together with its canvas.</summary>
 public sealed partial class FormaComposerSurface : ComponentBase
 {
-    /// <summary>The editor whose component fills this surface's canvas.</summary>
+    /// <summary>The editor whose component fills this surface's canvas, or whose document the view shows.</summary>
     [Parameter, EditorRequired] public IComposerEditorPlugin Editor { get; set; } = default!;
+
+    /// <summary>The view filling this surface's canvas in the editor's place, or null for the editor itself.</summary>
+    [Parameter] public IComposerViewPlugin? View { get; set; }
 
     /// <summary>The feature plugins on offer to this surface.</summary>
     [Parameter] public IReadOnlyList<IComposerPlugin> Plugins { get; set; } = [];

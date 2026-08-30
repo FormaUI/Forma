@@ -4,6 +4,7 @@
 {
     <FormaComposerToolbar
         Editor="Editor"
+        View="View"
         Plugins="Plugins"
         Disabled="Disabled"
         KeyMap="KeyMap"
@@ -11,9 +12,18 @@
 }
 
 <div class="forma-composer-canvas">
-    <CascadingValue Value="Editor" IsFixed="true">
-        <CascadingValue Value="SelectionBar">
-            <DynamicComponent Type="Editor.EditorComponent" />
+    @if (View is not null)
+    {
+        <CascadingValue Value="View" IsFixed="true">
+            <DynamicComponent Type="View.ViewComponent" />
         </CascadingValue>
-    </CascadingValue>
+    }
+    else
+    {
+        <CascadingValue Value="Editor" IsFixed="true">
+            <CascadingValue Value="SelectionBar">
+                <DynamicComponent Type="Editor.EditorComponent" />
+            </CascadingValue>
+        </CascadingValue>
+    }
 </div>

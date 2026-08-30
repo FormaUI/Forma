@@ -14,7 +14,7 @@ public sealed record ComposerToolbarRowLayout(
     bool IsBuiltIn,
     IReadOnlyList<FormaToolbarItem> Items);
 
-/// <summary>The ordered command rows one editor's toolbar renders.</summary>
+/// <summary>The ordered command rows one surface's toolbar renders.</summary>
 public sealed class ComposerToolbarLayout
 {
     private ComposerToolbarLayout(IReadOnlyList<ComposerToolbarRowLayout> rows)
@@ -31,11 +31,39 @@ public sealed class ComposerToolbarLayout
         ArgumentNullException.ThrowIfNull(editor);
         ArgumentNullException.ThrowIfNull(plugins);
 
-        var external = plugins.Where(p => !ReferenceEquals(p, editor) && AppliesTo(p, editor.Id)).ToList();
-        var order = Order(editor, external);
-        var items = order.ToDictionary(r => r.Id, _ => new List<FormaToolbarItem>(), StringComparer.Ordinal);
+        return Create(editor, editor.Id, plugins, StandardRows);
+    }
 
-        Place(editor.Items);
+    /// <summary>Lays out the view's own commands and those of the plugins scoped to its editor; an item naming a row the view never declared is left out.</summary>
+    public static ComposerToolbarLayout CreateForView(IComposerViewPlugin view, IEnumerable<IComposerPlugin> plugins)
+    {
+        ArgumentNullException.ThrowIfNull(view);
+        ArgumentNullException.ThrowIfNull(plugins);
+
+        // A view takes only the plugins that say they belong on a view; the rest act on the document, which a view never edits.
+        return Create(view, view.EditorId, plugins.Where(plugin => plugin is IComposerFeaturePlugin { AppliesToViews: true }), []);
+    }
+
+    private static readonly IReadOnlyList<ComposerToolbarRow> StandardRows =
+    [
+        new() { Id = ComposerRows.Formatting, Label = "Text Formatting" },
+        new() { Id = ComposerRows.Paragraph, Label = "Paragraph Formatting" },
+        new() { Id = ComposerRows.Plugins, Label = "Plugin Commands" },
+        new() { Id = ComposerRows.Selection, Label = "Selection Formatting" },
+    ];
+
+    private static ComposerToolbarLayout Create(
+        IComposerPlugin owner,
+        string editorId,
+        IEnumerable<IComposerPlugin> plugins,
+        IReadOnlyList<ComposerToolbarRow> standardRows)
+    {
+        var external = plugins.Where(p => !ReferenceEquals(p, owner) && p is not IComposerEditorPlugin and not IComposerViewPlugin && AppliesTo(p, editorId)).ToList();
+        var order = Order(owner, external, standardRows);
+        var items = order.ToDictionary(r => r.Id, _ => new List<FormaToolbarItem>(), StringComparer.Ordinal);
+        var catchesStrays = items.ContainsKey(ComposerRows.Plugins);
+
+        Place(owner.Items);
 
         foreach (var plugin in external)
         {
@@ -53,9 +81,15 @@ public sealed class ComposerToolbarLayout
         {
             foreach (var entry in contributed)
             {
-                // An entry naming a row nobody declared keeps its items reachable on the plugins row instead.
-                var row = items.ContainsKey(entry.RowId) ? entry.RowId : ComposerRows.Plugins;
-                items[row].AddRange(entry.Items);
+                if (items.TryGetValue(entry.RowId, out var row))
+                {
+                    row.AddRange(entry.Items);
+                }
+                else if (catchesStrays)
+                {
+                    // An entry naming a row nobody declared keeps its items reachable on the plugins row instead.
+                    items[ComposerRows.Plugins].AddRange(entry.Items);
+                }
             }
         }
     }
@@ -90,27 +124,26 @@ public sealed class ComposerToolbarLayout
         return merged;
     }
 
-    private static List<ComposerToolbarRow> Order(IComposerEditorPlugin editor, IEnumerable<IComposerPlugin> external)
+    private static List<ComposerToolbarRow> Order(IComposerPlugin owner, IEnumerable<IComposerPlugin> external, IReadOnlyList<ComposerToolbarRow> standardRows)
     {
         var order = new List<ComposerToolbarRow> { new() { Id = ComposerRows.BuiltIn, Label = "Editor Commands" } };
-        var seen = new HashSet<string>(StringComparer.Ordinal)
-        {
-            ComposerRows.BuiltIn,
-            ComposerRows.Formatting,
-            ComposerRows.Paragraph,
-            ComposerRows.Plugins,
-            ComposerRows.Selection,
-        };
+        var seen = new HashSet<string>(StringComparer.Ordinal) { ComposerRows.BuiltIn };
 
-        AddDeclared(editor.Rows);
-        order.Add(new() { Id = ComposerRows.Formatting, Label = "Text Formatting" });
-        order.Add(new() { Id = ComposerRows.Paragraph, Label = "Paragraph Formatting" });
-        order.Add(new() { Id = ComposerRows.Plugins, Label = "Plugin Commands" });
-        order.Add(new() { Id = ComposerRows.Selection, Label = "Selection Formatting" });
-
-        foreach (var plugin in external)
+        foreach (var row in standardRows)
         {
-            AddDeclared(plugin.Rows);
+            seen.Add(row.Id);
+        }
+
+        AddDeclared(owner.Rows);
+        order.AddRange(standardRows);
+
+        // Only the editor's own surface takes rows a feature plugin declares; a view lays out what it declared itself.
+        if (standardRows.Count > 0)
+        {
+            foreach (var plugin in external)
+            {
+                AddDeclared(plugin.Rows);
+            }
         }
 
         return order;

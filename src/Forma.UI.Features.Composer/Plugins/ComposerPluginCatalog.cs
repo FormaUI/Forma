@@ -2,24 +2,31 @@ namespace Forma.UI.Features.Composer.Plugins;
 
 using Forma.UI.Features.Composer.Documents;
 
-/// <summary>The plugins one composer can use, split into editors and everything else.</summary>
+/// <summary>The plugins one composer can use, split into editors, the views over them, and everything else.</summary>
 public sealed class ComposerPluginCatalog
 {
-    private ComposerPluginCatalog(IReadOnlyList<IComposerEditorPlugin> editors, IReadOnlyList<IComposerPlugin> featurePlugins)
+    private ComposerPluginCatalog(
+        IReadOnlyList<IComposerEditorPlugin> editors,
+        IReadOnlyList<IComposerViewPlugin> views,
+        IReadOnlyList<IComposerPlugin> featurePlugins)
     {
         Editors = editors;
+        Views = views;
         FeaturePlugins = featurePlugins;
     }
 
     /// <summary>The editors available, never empty.</summary>
     public IReadOnlyList<IComposerEditorPlugin> Editors { get; }
 
-    /// <summary>The plugins that contribute capabilities rather than an editor.</summary>
+    /// <summary>The views available, each belonging to one editor.</summary>
+    public IReadOnlyList<IComposerViewPlugin> Views { get; }
+
+    /// <summary>The plugins that contribute capabilities rather than an editor or a view.</summary>
     public IReadOnlyList<IComposerPlugin> FeaturePlugins { get; }
 
-    /// <summary>Every available plugin, editors first.</summary>
+    /// <summary>Every available plugin: editors, then views, then the rest.</summary>
     public IEnumerable<IComposerPlugin> All
-        => Editors.Concat(FeaturePlugins);
+        => Editors.Concat<IComposerPlugin>(Views).Concat(FeaturePlugins);
 
     /// <summary>Keeps the first plugin of each identifier that reports itself available, falling back when no editor does.</summary>
     public static async ValueTask<ComposerPluginCatalog> CreateAsync(
@@ -31,6 +38,7 @@ public sealed class ComposerPluginCatalog
         ArgumentNullException.ThrowIfNull(fallbackEditor);
 
         var editors = new List<IComposerEditorPlugin>();
+        var views = new List<IComposerViewPlugin>();
         var featurePlugins = new List<IComposerPlugin>();
         var seen = new HashSet<string>(StringComparer.Ordinal);
 
@@ -41,13 +49,17 @@ public sealed class ComposerPluginCatalog
                 continue;
             }
 
-            if (candidate is IComposerEditorPlugin editor)
+            switch (candidate)
             {
-                editors.Add(editor);
-            }
-            else
-            {
-                featurePlugins.Add(candidate);
+                case IComposerEditorPlugin editor:
+                    editors.Add(editor);
+                    break;
+                case IComposerViewPlugin view:
+                    views.Add(view);
+                    break;
+                default:
+                    featurePlugins.Add(candidate);
+                    break;
             }
         }
 
@@ -56,7 +68,7 @@ public sealed class ComposerPluginCatalog
             editors.Add(fallbackEditor);
         }
 
-        return new ComposerPluginCatalog(editors, featurePlugins);
+        return new ComposerPluginCatalog(editors, views, featurePlugins);
     }
 
     /// <summary>Picks the editor to activate, preferring an explicit request, then a configured default, then the document's format.</summary>
@@ -65,6 +77,14 @@ public sealed class ComposerPluginCatalog
             ?? Find(defaultId)
             ?? Editors.FirstOrDefault(e => e.Format == format)
             ?? Editors[0];
+
+    /// <summary>The views belonging to one editor, in the order they were given.</summary>
+    public IReadOnlyList<IComposerViewPlugin> ViewsOf(string editorId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(editorId);
+
+        return [.. Views.Where(view => view.EditorId == editorId)];
+    }
 
     private IComposerEditorPlugin? Find(string? id)
         => id is null ? null : Editors.FirstOrDefault(e => e.Id == id);

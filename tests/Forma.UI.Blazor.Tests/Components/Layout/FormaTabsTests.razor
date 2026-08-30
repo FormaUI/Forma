@@ -20,6 +20,26 @@
         }
 
         [Fact]
+        public void Should_mark_the_first_trailing_tab_so_it_and_those_after_sit_at_the_end()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaTabs>
+                    <FormaTab Title="Edit">Edit</FormaTab>
+                    <FormaTab Title="Preview" Trailing="true">Preview</FormaTab>
+                    <FormaTab Title="Source" Trailing="true">Source</FormaTab>
+                </FormaTabs>);
+
+            // Assert
+            var trailing = cut.FindAll(".forma-tab-button-trailing");
+            Assert.Single(trailing);
+            Assert.Contains("Preview", trailing[0].TextContent, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void Should_render_button_for_each_tab()
         {
             // Arrange

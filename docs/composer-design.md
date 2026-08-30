@@ -130,7 +130,25 @@ public interface IComposerEditorPlugin : IComposerPlugin
     /// <summary>The component rendering the editing surface.</summary>
     Type EditorComponent { get; }
 }
+
+/// <summary>A read-only way of looking at one editor's document, such as a rendered preview or its source, with a command bar of its own.</summary>
+public interface IComposerViewPlugin : IComposerPlugin
+{
+    /// <summary>The identifier of the editor this view belongs to.</summary>
+    string EditorId { get; }
+
+    /// <summary>The kind of view, one of ComposerViews: Preview or Source.</summary>
+    string Kind { get; }
+
+    string Title { get; }
+    Glyph Icon { get; }
+
+    /// <summary>The component filling this view's canvas.</summary>
+    Type ViewComponent { get; }
+}
 ```
+
+A **view** has the shape of an editor — its own component, rows, items and assets, maximizable like any surface — but shows one editor's document read-only rather than editing it. Each editor opts into whichever views it offers by shipping a view plugin naming it, and feature plugins contribute to a view's rows exactly as they do to an editor's; the layout for a view takes the built-in row and the rows the view declared, from the view itself and from feature plugins that say `AppliesToViews`, and nothing else — so neither an editor's formatting nor a command acting on the document, such as attaching a file, lands on its preview. The switcher lists the active editor's views as trailing tabs after the editors, and those tabs are the only way in: a view is its own surface, not a toolbar toggle. A plugin reports which of its own toggles and options are active through `ActiveStates`, which is how a view's paper size and zoom show in its bar without going through the selection.
 
 `Title` is the **English source string**, not a resolved translation, so the composer renders it as `L[Title]`. A plugin never resolves a localizer of its own — a singleton that did would capture whichever culture constructed it and show the wrong language to every other reader.
 
@@ -248,6 +266,10 @@ Each lives in its own directory, mirroring how `Explorer` earned a category of i
 | `MarkdownEditor/` | `MarkdownEditorPlugin` | Markdown source with line numbers, highlighting and a live rendered preview. |
 | `CodeEditor/` | `CodeEditorPlugin` | Lightweight code editor — line numbers, active-line marker, smart `Tab`, bracket pairing, language picker. Not a Monaco replacement, and not HTML-only: HTML, CSS, JavaScript, TypeScript, C#, SQL, JSON, YAML, Bash, Python. |
 | `PageDesigner/` | `PageDesignerPlugin` | Drag-and-drop widget canvas with a palette, per-widget chrome, nesting through rows and columns, and a settings panel per widget. Replaces Coi's `template.aspx`. |
+
+#### Views
+
+The rich text editor ships two views under `RichTextEditor/Views/`. **Preview** lays the document out as a reader will see it at a chosen size — the ISO A series, Letter and Legal as sheets with a printer's margin, or the width of a phone, tablet or desktop — turned to landscape or zoomed, so the author can see how it reads at that size; Print sends the document alone to the printer, whose dialog owns the paper, and Export saves it as an HTML file. **Source** shows the document's HTML one block per numbered line, wrapped or not, copied to the clipboard or downloaded. Both are read-only by design; a source that edits and commits back is what the code editor of Phase 4 is for. The document's own look — headings, quotes, code, lists, tables, figures, links and the composer's placeholders — lives in `forma-prose.css` under the `forma-prose` class, so the canvas, the preview, the printed page and a host page rendering the document to readers all draw it the same way.
 
 ### 4.2 The page designer
 
@@ -437,15 +459,14 @@ Clipboard note: browsers do not grant programmatic cut/copy/paste without user a
 
 ### 4.3a Engine-agnostic plugins
 
-`MaximizePlugin`, `PreviewPlugin` and `SelectionBarPlugin` are not rich text features: full-viewport editing, a rendered preview and the choice of whether a formatting bar follows the selection are useful to any editor, so all three declare `SupportedEditorIds` empty and take no dependency on `RichTextEditorPlugin`. They live at `Composer/Plugins/`, one level up from the editor-specific ones.
+`MaximizePlugin` and `SelectionBarPlugin` are not rich text features: full-viewport editing and the choice of whether a formatting bar follows the selection are useful to any editor, so both declare `SupportedEditorIds` empty and take no dependency on `RichTextEditorPlugin`. They live at `Composer/Plugins/`, one level up from the editor-specific ones.
 
 | Plugin | Covers | Coi origin |
 |---|---|---|
 | `MaximizePlugin` | Full-viewport editing | Maximize |
-| `PreviewPlugin` | Read-only rendered preview of the document | Preview |
 | `SelectionBarPlugin` | Showing or hiding the bar that follows the selection | — |
 
-All three commands are also registered as **engine** commands (`ComposerCommands.Maximize`, `ComposerCommands.Preview`, `ComposerCommands.SelectionBar`) on `FormaComposer` itself, which owns the maximized, preview and selection-bar state because it, not any one editor, renders the chrome that changes.
+Both commands are also registered as **engine** commands (`ComposerCommands.Maximize`, `ComposerCommands.SelectionBar`) on `FormaComposer` itself, which owns the maximized and selection-bar state because it, not any one editor, renders the chrome that changes.
 
 The selection bar itself sits beneath the selection, moving above it only when the viewport leaves no room beneath, so it never covers the line being read or the toolbar above the first line. Its handle drags it, or arrow-keys it, to wherever the author wants it, and the bar keeps that displacement from one selection to the next. `ComposerCommandRegistry.ExecuteAsync` resolves an engine command before ever consulting a plugin, so each plugin's `ExecuteAsync` is unreachable by design — the plugin exists only to contribute the toolbar entry that names the engine's own command.
 
@@ -674,7 +695,6 @@ src/Forma.UI.Blazor/Components/Composer/
 │
 ├── Plugins/                                # namespace …Composer.Plugins — apply to any editor
 │   ├── MaximizePlugin.cs
-│   ├── PreviewPlugin.cs
 │   └── SelectionBarPlugin.cs
 │
 ├── RichTextEditor/
@@ -688,6 +708,11 @@ src/Forma.UI.Blazor/Components/Composer/
 │   ├── FormaRichTextSelectionBar.razor
 │   ├── FormaRichTextSelectionBar.razor.cs
 │   ├── FormaRichTextSelectionBar.razor.css
+│   ├── Views/                             # namespace …Composer.RichTextEditor.Views — read-only views over the document
+│   │   ├── RichTextPreviewViewPlugin.cs
+│   │   ├── FormaRichTextPreview.razor
+│   │   ├── RichTextSourceViewPlugin.cs
+│   │   └── FormaRichTextSource.razor
 │   └── Plugins/                           # namespace …Composer.RichTextEditor.Plugins
 │       ├── BasicFormattingPlugin.cs
 │       ├── TypographyPlugin.cs
@@ -764,7 +789,7 @@ Each phase ends buildable, tested and reviewable.
 1. **Capability model.** ✅ The composer assembly, every contract in §3 and §5–§7, the default sanitiser, the converter registry, and history are built, and `IComposerAssetLoader` has the JS-backed implementation it was missing. That one sits in `Forma.UI.Blazor` rather than here, because it needs `IJSRuntime`, which places it with Phase 2's engine shell. This lands first precisely because the external-dependency question decides everything after it.
 2. **Engine shell.** ✅ `FormaComposer`, `FormaComposerToolbar`, the `ComposerDocument` binding of §3.7, plugin discovery and availability probing, the selection bridge, `ComposerText`, and the debounced sync of §3.6 are built, along with the command spine, the key map, and the toolbar row model of §3.8. The editor switcher is a controlled `FormaTabs` strip above each surface's own toolbar rather than a segmented control inside it. The selection bridge is the shared `Text` operation, not welded into any one editor plugin, so a future textarea-based surface reuses it rather than reimplementing it; a contenteditable surface will need its own, because the DOM APIs genuinely differ, but through the same generic `ComposerContext.ReportSelectionAsync` seam.
 2a. **Regions.** ◐ The status strip of §3.8 is built: `IComposerRegionRegistry` pushes `IComposerStatusItem` handles that any plugin creates and disposes, cascaded on `ComposerContext.Regions` so no editor is a special case. `FormaComposerStatusStrip` renders it once per composer, beneath whichever surface is active. The gutter's contract (`IComposerGutterMarker`) is built and tested the same way; its visual rendering waits on a line-oriented surface, since pixel-aligning a marker beside a wrapping `<textarea>` needs font-metric mirroring that would itself become a one-off hack rather than a real capability.
-3. **Rich text editor and core formatting.** ✅ `RichTextEditorPlugin`, the canvas, the selection bar, and the formatting, typography, paragraph, list and alignment/bidi plugins.
+3. **Rich text editor and core formatting.** ✅ `RichTextEditorPlugin`, the canvas, the selection bar, the preview and source views, and the formatting, typography, paragraph, list and alignment/bidi plugins.
 4. **Markdown and code editors.** `MarkdownEditorPlugin`, `CodeEditorPlugin`, `Forma.UI.Features.Composer.Markdown`, the lossless-only HTML → Markdown guard, and the embedded Markdown and code blocks.
 5. **Media, tables and embeds.** ✅ Link, image, video, table, horizontal rule, emoji, special character, clipboard, template and embed plugins, each contributing a toolbar entry and driving the canvas through the rich text surface; the five data-collecting dialogs sit in `Composer/Dialogs/` rather than under the editor, because nothing in them is contenteditable-specific. `ImagePlugin` chooses from stored media through an embedded `FormaExplorer`, opened already selecting and gated by `ImagePluginOptions`, falling back to an address alone when the host registered no `IExplorerResourcesProvider` or `IFileStore`. `VideoPlugin` stores a placeholder rather than an embed, because `iframe` is discarded by the sanitizer, and the dialog refuses an address the document could not keep. Preview and maximize landed as **engine** commands on `FormaComposer` (§4.3a) rather than rich text plugins, since both change chrome the engine owns rather than the document any one editor holds.
 6. **Satellite capabilities.** `Forma.UI.Features.Composer.TextMate`, `.KaTeX`, a Ganss.Xss sanitizer satellite for hosts wanting a hardened implementation, and the highlighting and math plugins that consume them.

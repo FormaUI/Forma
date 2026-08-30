@@ -6,6 +6,7 @@
 @using Forma.UI.Blazor.Components.Composer.Plugins
 @using Forma.UI.Blazor.Components.Composer.RichTextEditor
 @using Forma.UI.Blazor.Components.Composer.RichTextEditor.Plugins
+@using Forma.UI.Blazor.Components.Composer.RichTextEditor.Views
 @using Forma.UI.Features.Composer.Documents
 @using Forma.UI.Features.Composer.Plugins
 @inject IStringLocale<FormaComposerPage> L
@@ -98,7 +99,7 @@
 
 <div class="demo-section">
     <h2>@L["View Commands"]</h2>
-    <p class="description">@L["Preview and Maximize apply to whichever editor is active, so both are engine commands rather than rich text plugins. Press Preview for a read-only rendering of the document, and Maximize to fill the viewport; press either again to return. Selection Bar shows or hides the formatting bar that follows a selection; drag its handle to move it."]</p>
+    <p class="description">@L["Preview and Source are views the rich text editor offers over its document, reached from the tabs at the far end of the strip. Preview lays the document out at a chosen paper or screen size, prints it, and exports it; Source shows its markup one block per line. Maximize fills the viewport with whichever surface shows, and Selection Bar shows or hides the formatting bar that follows a selection; drag its handle to move it."]</p>
     <div class="demo-box">
         <FormaComposer @bind-Value="_viewDoc" Plugins="_viewPlugins" />
     </div>
@@ -163,7 +164,7 @@
         _sourcePlugins = [_sourceOnlyPlugin];
         _demoPlugins = [_everythingTextPlugin, _everythingSourcePlugin, new TimestampPlugin(), new CleanupPlugin()];
         var richView = new RichTextEditorPlugin();
-        _viewPlugins = [richView, new BasicFormattingPlugin(richView), new MaximizePlugin(), new PreviewPlugin(), new SelectionBarPlugin()];
+        _viewPlugins = [richView, new BasicFormattingPlugin(richView), new RichTextPreviewViewPlugin(richView), new RichTextSourceViewPlugin(richView), new MaximizePlugin(), new SelectionBarPlugin()];
 
         // Plugins are discovered from the library.
         _everyPlugins = ComposerPluginDiscovery.Discover([new RichTextEditorPlugin()], typeof(RichTextEditorPlugin).Assembly);

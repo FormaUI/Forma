@@ -29,11 +29,68 @@ public sealed class ComposerToolbarLayoutTests
         public IReadOnlyList<ComposerToolbarItem> Items { get; init; } = [];
         public IReadOnlyList<ComposerToolbarRow> Rows { get; init; } = [];
         public IReadOnlyList<string> SupportedEditorIds { get; init; } = [];
+        public bool AppliesToViews { get; init; }
+        public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
+    }
+
+    private sealed class View : IComposerViewPlugin
+    {
+        public string Id { get; init; } = "editor.preview";
+        public string EditorId { get; init; } = "editor";
+        public string Kind => ComposerViews.Preview;
+        public string Title => Id;
+        public Icon Icon => Glyph.Preview;
+        public Type ViewComponent => typeof(View);
+        public IReadOnlyList<ComposerToolbarItem> Items { get; init; } = [];
+        public IReadOnlyList<ComposerToolbarRow> Rows { get; init; } = [];
         public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
     }
 
     private static ComposerToolbarItem Row(string rowId, params FormaToolbarItem[] items)
         => new(rowId, items);
+
+    [Fact]
+    public void Should_lay_a_view_out_from_the_built_in_row_and_its_own_rows_alone()
+    {
+        // Arrange
+        var view = new View
+        {
+            Rows = [new() { Id = "preview.page", Label = "Page" }],
+            Items = [Row("preview.page", Command("paper"))],
+        };
+        var plugins = new IComposerPlugin[]
+        {
+            new Plugin { Id = "chrome", AppliesToViews = true, Items = [Row(ComposerRows.BuiltIn, Command("maximize"))] },
+            new Plugin { Id = "attach", Items = [Row(ComposerRows.BuiltIn, Command("attach"))] },
+            new Plugin { Id = "bold", AppliesToViews = true, Items = [Row(ComposerRows.Formatting, Command("bold"))] },
+            new Plugin { Id = "export", AppliesToViews = true, Items = [Row("preview.page", Command("export"))] },
+            new Plugin { Id = "stray", AppliesToViews = true, Items = [Row("nowhere", Command("stray"))], Rows = [new() { Id = "declared", Label = "Declared" }] },
+            new Plugin { Id = "elsewhere", AppliesToViews = true, SupportedEditorIds = ["other"], Items = [Row("preview.page", Command("elsewhere"))] },
+        };
+
+        // Act
+        var layout = ComposerToolbarLayout.CreateForView(view, plugins);
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal([ComposerRows.BuiltIn, "preview.page"], layout.Rows.Select(row => row.Id)),
+            () => Assert.Equal(["maximize"], ItemIds(layout.Rows[0])),
+            () => Assert.Equal(["paper", "export"], ItemIds(layout.Rows[1])));
+    }
+
+    [Fact]
+    public void Should_leave_a_views_items_off_its_editors_own_toolbar()
+    {
+        // Arrange
+        var editor = new Editor();
+        var view = new View { Rows = [new() { Id = "preview.page", Label = "Page" }], Items = [Row("preview.page", Command("paper"))] };
+
+        // Act
+        var layout = ComposerToolbarLayout.Create(editor, [view]);
+
+        // Assert
+        Assert.DoesNotContain(layout.Rows, row => row.Id == "preview.page" || ItemIds(row).Contains("paper"));
+    }
 
     private static FormaToolbarCommand Command(string id)
         => new() { Id = id, Title = id, Command = id };

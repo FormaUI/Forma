@@ -1,0 +1,43 @@
+/* FormaRichTextSource — the document's markup, one block per numbered line */
+
+.forma-composer-source {
+    display: flex;
+    flex: 1;
+    min-block-size: 12rem;
+    overflow: auto;
+    box-sizing: border-box;
+}
+
+.forma-composer-source-code {
+    flex: 1;
+    margin: 0;
+    padding: var(--space-4);
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-prose);
+    color: var(--text-color);
+    tab-size: 2;
+}
+
+.forma-composer-source-line {
+    display: flex;
+    gap: var(--space-3);
+}
+
+/* Wide enough for four digits, so the text starts at one column however long the document grows. */
+.forma-composer-source-number {
+    flex-shrink: 0;
+    inline-size: 4ch;
+    text-align: end;
+    color: var(--text-muted-color);
+    user-select: none;
+}
+
+.forma-composer-source-text {
+    white-space: pre;
+}
+
+.forma-composer-source-wrapped .forma-composer-source-text {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}

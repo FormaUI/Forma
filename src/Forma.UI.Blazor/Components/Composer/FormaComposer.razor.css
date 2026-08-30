@@ -53,17 +53,6 @@
     gap: var(--space-1);
 }
 
-.forma-composer-preview-body {
-    padding: var(--space-4);
-    min-block-size: 10rem;
-    max-block-size: 70vh;
-    overflow-y: auto;
-    background-color: var(--input-background-color);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    line-height: var(--line-height-prose);
-}
-
 ::deep .forma-tabs {
     flex: 1;
     min-block-size: 0;

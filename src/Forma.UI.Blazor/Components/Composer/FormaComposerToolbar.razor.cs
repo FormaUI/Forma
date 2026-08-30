@@ -6,14 +6,17 @@ using Forma.UI.Features.Toolbar;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>The command bar belonging to one editor, giving the editor's own commands and its plugins' commands a row each.</summary>
+/// <summary>The command bar belonging to one editor or one view over it, giving its own commands and its plugins' commands a row each.</summary>
 public sealed partial class FormaComposerToolbar : ComponentBase
 {
     /// <summary>The number of commands a bar carries before the next row starts one of its own.</summary>
     public const int CommandsPerBar = 12;
 
-    /// <summary>The editor this toolbar belongs to.</summary>
+    /// <summary>The editor this toolbar belongs to, or whose view it belongs to.</summary>
     [Parameter, EditorRequired] public IComposerEditorPlugin Editor { get; set; } = default!;
+
+    /// <summary>The view this toolbar belongs to, or null when it belongs to the editor itself.</summary>
+    [Parameter] public IComposerViewPlugin? View { get; set; }
 
     /// <summary>The feature plugins on offer; those scoped to other editors are left out.</summary>
     [Parameter] public IReadOnlyList<IComposerPlugin> Plugins { get; set; } = [];
@@ -30,6 +33,10 @@ public sealed partial class FormaComposerToolbar : ComponentBase
     private ComposerToolbarLayout _layout = default!;
     private readonly string _pluginsId = $"composer-plugins-{Guid.NewGuid():N}";
     private bool _arePluginsShown;
+
+    /// <summary>The plugin whose bar this is: the view when one shows, and otherwise the editor.</summary>
+    private IComposerPlugin Owner
+        => View ?? (IComposerPlugin)Editor;
 
     /// <summary>The bars to render, small rows folded together so none is spent on a handful of commands.</summary>
     private IReadOnlyList<ComposerToolbarRowLayout> Bars
@@ -74,6 +81,9 @@ public sealed partial class FormaComposerToolbar : ComponentBase
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(Editor);
-        _layout = ComposerToolbarLayout.Create(Editor, Plugins);
+
+        _layout = View is null
+            ? ComposerToolbarLayout.Create(Editor, Plugins)
+            : ComposerToolbarLayout.CreateForView(View, Plugins);
     }
 }
