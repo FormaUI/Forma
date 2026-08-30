@@ -39,14 +39,15 @@
     --icon-size-md: 2rem;       /* 32px, the 32 grid: a glyph that leads a panel, a tile or a picker cell */
     --icon-size-lg: 3rem;       /* 48px, the 24 grid: a section's figure */
     --icon-size-display: 4rem;  /* 64px, the 32 grid: the figure of an empty state, a drop zone, a media facade */
-    --icon-size-label: 1.25em;  /* a glyph beside a label, a step above the text: Material's 18px on 14px */
 
-    /* The box a control is pressed on. The floor is WCAG's 24×24, which the small icon token already
-       states; the ceiling is the 44×44 that WCAG 2.5.5 and Apple set for touch, which a control grows
-       to under a coarse pointer. Each pairs with an icon size: 24 in 32, 24 in 40. */
-    --control-size-sm: 2rem;      /* 32px: a mini button, a compact toolbar cell, a dense row */
-    --control-size-md: 2.5rem;    /* 40px: a button, an input, a toolbar button */
-    --control-size-lg: 2.75rem;   /* 44px: any control under a coarse pointer */
+    /* The box a control is pressed on, one height for a button and the input beside it. Each step is a
+       line of 14px text at the control line height (17.5px) plus padding and a 1px border, rounded up
+       to the 4px grid: one line tight, one line comfortable, a label over a value, and the finger. */
+    --control-size-sm: 1.5rem;      /* 24px: an icon button, a compact toolbar cell, a dense row; WCAG's 24×24 floor */
+    --control-size-md: 2rem;        /* 32px: a button, an input, a toolbar button, a menu item */
+    --control-size-lg: 2.5rem;      /* 40px: a prominent action, a row that carries two lines */
+    --control-size-xl: 3rem;        /* 48px: a field that stacks its label over its value (15 + 21 + 8 + 2) */
+    --control-size-touch: 2.75rem;  /* 44px: any control under a coarse pointer; WCAG 2.5.5 and Apple */
 
     /* Radii, one per kind of surface. */
     --radius-sm: 0.25rem;   /* a control: button, input, checkbox, cell */

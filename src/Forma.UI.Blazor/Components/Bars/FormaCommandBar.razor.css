@@ -29,63 +29,32 @@
     display: none;
 }
 
-/* A row of buttons must not squash to fit; overflowing is what the arrows are for. */
-.forma-command-bar-track > * {
+/* A row of commands must not squash to fit; overflowing is what the arrows are for. The commands are the caller's
+   elements, so ::deep reaches them. */
+.forma-command-bar-track > ::deep * {
     flex-shrink: 0;
 }
 
-.forma-command-bar-scroll {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    min-inline-size: 24px;
-    min-block-size: 24px;
-    padding: 0;
-    border: none;
-    border-radius: var(--radius-sm);
-    background: transparent;
-    color: var(--text-muted-color);
-    font-size: var(--font-size-xs);
-    cursor: pointer;
-    touch-action: manipulation;
-    transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-@media (hover: hover) {
-    .forma-command-bar-scroll:not(:disabled):hover {
-        background: var(--hover-background-color);
-        color: var(--main-color);
-    }
-}
-
-.forma-command-bar-scroll:disabled {
-    opacity: 0.35;
-    cursor: default;
+/* The arrows are the bar's own, so they are reached through ::deep; they keep the muted tone of chrome rather than a command. */
+::deep .forma-command-bar-scroll {
+    --forma-button-ghost-color: var(--text-muted-color);
 }
 
 /* The chevron is not bidi-mirrored, so each arrow is turned to point the way it scrolls. */
-.forma-command-bar-scroll-back {
+::deep .forma-command-bar-scroll-back {
     rotate: 180deg;
 }
 
-.forma-command-bar-scroll-back:dir(rtl) {
+::deep .forma-command-bar-scroll-back:dir(rtl) {
     rotate: 0deg;
 }
 
-.forma-command-bar-scroll-forward:dir(rtl) {
+::deep .forma-command-bar-scroll-forward:dir(rtl) {
     rotate: 180deg;
 }
 
-@media (pointer: coarse) {
-    .forma-command-bar-scroll {
-        min-inline-size: var(--control-size-lg);
-        min-block-size: var(--control-size-lg);
-    }
-}
-
 /* The arrows sit at the ends of the clipped track, so their ring turns inward. */
-.forma-command-bar-scroll:focus-visible {
+::deep .forma-command-bar-scroll:focus-visible {
     outline: none;
     box-shadow: var(--focus-ring-inset);
 }

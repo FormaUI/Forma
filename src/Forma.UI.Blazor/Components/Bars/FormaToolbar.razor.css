@@ -47,34 +47,6 @@
     margin-inline: var(--space-1);
 }
 
-.forma-toolbar-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-1);
-    min-inline-size: var(--control-size-md);
-    min-block-size: var(--control-size-md);
-    padding-inline: var(--space-2);
-    padding-block: var(--space-1);
-    font-size: var(--font-size-sm);
-    color: var(--text-color);
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    touch-action: manipulation;
-}
-
-/* A labelled command reads as a button; an icon-only one stays flat so a dense row of glyphs is not all borders. */
-.forma-toolbar-button-labelled {
-    padding-inline: var(--space-3);
-    white-space: nowrap;
-    font-weight: 500;
-    background-color: var(--input-background-color);
-    border-color: var(--light-border-color);
-    box-shadow: var(--shadow-small);
-}
-
 .forma-toolbar-readout {
     display: inline-flex;
     align-items: center;
@@ -87,54 +59,7 @@
 @media (pointer: coarse) {
     .forma-toolbar,
     .forma-toolbar-group {
-        min-block-size: var(--control-size-lg);
-    }
-
-    .forma-toolbar-button {
-        min-inline-size: var(--control-size-lg);
-        min-block-size: var(--control-size-lg);
-    }
-}
-
-@media (hover: hover) {
-    .forma-toolbar-button:hover:not(:disabled) {
-        background-color: var(--hover-background-color);
-    }
-
-    .forma-toolbar-button-labelled:hover:not(:disabled) {
-        border-color: var(--dark-border-color);
-    }
-}
-
-.forma-toolbar-button:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-}
-
-/* An on state is a tint, the accent color and an underline as wide as the glyph; no border, so a row of toggles stays flat. */
-.forma-toolbar-button-active {
-    position: relative;
-    background-color: var(--hover-background-color);
-    color: var(--main-color);
-}
-
-.forma-toolbar-button-active::after {
-    content: '';
-    position: absolute;
-    inset-block-end: 2px;
-    inset-inline: var(--space-2);
-    block-size: 2px;
-    border-radius: var(--radius-sm);
-    background-color: currentcolor;
-}
-
-.forma-toolbar-button-labelled.forma-toolbar-button-active::after {
-    inset-inline: var(--space-3);
-}
-
-@media (forced-colors: active) {
-    .forma-toolbar-button-active {
-        border-color: Highlight;
+        min-block-size: var(--control-size-touch);
     }
 }
 
@@ -152,7 +77,7 @@
 @media (pointer: coarse) {
     .forma-toolbar-group ::deep .forma-toolbar-menu,
     .forma-toolbar-loose ::deep .forma-toolbar-menu {
-        min-block-size: var(--control-size-lg);
+        min-block-size: var(--control-size-touch);
     }
 }
 
@@ -165,7 +90,6 @@
 
 .forma-toolbar-group ::deep .forma-toolbar-menu-caret,
 .forma-toolbar-loose ::deep .forma-toolbar-menu-caret {
-    inline-size: 0.625em;
     opacity: 0.7;
 }
 
@@ -199,7 +123,7 @@
 }
 
 /* Every item sits on a track that clips what scrolls past its ends, so a ring drawn outside would be cut; it turns inward. */
-.forma-toolbar-button:focus-visible,
+::deep .forma-toggle-button:focus-visible,
 .forma-toolbar-group ::deep .forma-toolbar-menu:focus-visible,
 .forma-toolbar-loose ::deep .forma-toolbar-menu:focus-visible {
     outline: none;

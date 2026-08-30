@@ -101,8 +101,8 @@
     justify-content: center;
     inline-size: var(--forma-explorer-check-size);
     block-size: var(--forma-explorer-check-size);
-    min-inline-size: 24px;
-    min-block-size: 24px;
+    min-inline-size: var(--control-size-sm);
+    min-block-size: var(--control-size-sm);
     flex-shrink: 0;
     border-radius: var(--radius-sm);
     border: 1px solid var(--dark-border-color);
@@ -124,9 +124,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    inline-size: 1.25rem;
-    min-inline-size: 1.25rem;
-    block-size: 1.5rem;
+    inline-size: var(--control-size-sm);
+    min-inline-size: var(--control-size-sm);
+    block-size: var(--control-size-sm);
     flex-shrink: 0;
     margin-inline-start: calc(var(--forma-explorer-folder-depth, 0) * var(--space-3));
     padding: 0;
@@ -168,7 +168,7 @@
     min-inline-size: 0;
     min-block-size: var(--control-size-sm);
     padding-inline: var(--space-1);
-    padding-block: var(--space-1);
+    padding-block: 0;
     border: none;
     background: transparent;
     color: var(--text-color);
@@ -179,6 +179,7 @@
 }
 
 .forma-explorer-folder-tree ::deep .forma-explorer-folder-icon {
+    display: inline-flex;
     font-size: var(--font-size-sm);
     color: var(--main-color);
     flex-shrink: 0;
@@ -269,44 +270,8 @@
     }
 }
 
-.forma-explorer-sidebar-tool {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    inline-size: 1.5rem;
-    block-size: 1.5rem;
-    min-inline-size: 24px;
-    min-block-size: 24px;
-    border: none;
-    border-radius: var(--radius-sm);
-    background: transparent;
-    color: var(--text-muted-color);
-    cursor: pointer;
-    font-size: var(--font-size-xs);
-    touch-action: manipulation;
-}
-
-@media (hover: hover) {
-    .forma-explorer-sidebar-tool:not(:disabled):hover {
-        background: var(--border-color);
-        color: var(--text-color);
-    }
-}
-
-.forma-explorer-sidebar-tool:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-@media (pointer: coarse) {
-    .forma-explorer-sidebar-tool {
-        min-inline-size: var(--control-size-lg);
-        min-block-size: var(--control-size-lg);
-    }
-}
-
 /* The tree scrolls, so a ring drawn outside a row would be cut at the pane's edges; every control in it rings inward. */
-.forma-explorer-sidebar-tool:focus-visible,
+::deep .forma-explorer-sidebar-tool:focus-visible,
 .forma-explorer-folder-target:focus-visible,
 .forma-explorer-folder-twisty:focus-visible {
     outline: none;

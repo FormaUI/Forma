@@ -35,11 +35,16 @@
 }
 
 /* ---------- track ---------- */
+/* The track is two small controls long and one tall; the knob sits inside it by half a grid step. */
+.forma-toggle-switch {
+    --forma-toggle-switch-knob-inset: calc(var(--space-1) / 2);
+}
+
 .forma-toggle-switch-track {
     position: relative;
     display: inline-block;
-    width: 3rem;
-    height: 1.5rem;
+    width: calc(2 * var(--control-size-sm));
+    height: var(--control-size-sm);
     background-color: var(--forma-toggle-switch-off-background-color, var(--gray-color));
     border-radius: var(--radius-pill);
     transition: background-color 0.2s ease;
@@ -74,10 +79,10 @@
 /* ---------- knob ---------- */
 .forma-toggle-switch-knob {
     position: absolute;
-    inset-block-start: 0.125rem;
-    inset-inline-start: 0.125rem;
-    width: 1.25rem;
-    height: 1.25rem;
+    inset-block-start: var(--forma-toggle-switch-knob-inset);
+    inset-inline-start: var(--forma-toggle-switch-knob-inset);
+    width: calc(var(--control-size-sm) - 2 * var(--forma-toggle-switch-knob-inset));
+    height: calc(var(--control-size-sm) - 2 * var(--forma-toggle-switch-knob-inset));
     background-color: var(--input-background-color);
     border-radius: 50%;
     box-shadow: var(--shadow-small);
@@ -98,6 +103,6 @@
 /* Padding rather than a taller track, so the knob geometry is untouched. */
 @media (pointer: coarse) {
     .forma-toggle-switch {
-        padding-block: calc((44px - 1.5rem) / 2);
+        padding-block: calc((var(--control-size-touch) - var(--control-size-sm)) / 2);
     }
 }

@@ -22,39 +22,17 @@
     align-items: center;
     gap: var(--space-1);
     padding-inline: var(--space-2);
-    padding-block: var(--space-1);
+    padding-block: 0;
+    min-block-size: var(--control-size-sm);
     border-radius: var(--radius-pill);
     background: var(--hover-background-color);
     color: var(--forma-input-color, var(--text-color));
     font-size: var(--font-size-sm);
 }
 
-.forma-multi-select-tag-remove {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    inline-size: 1rem;
-    block-size: 1rem;
-    padding: 0;
-    border: none;
-    background: transparent;
-    color: inherit;
-    font-size: var(--font-size-sm);
-    line-height: 1;
-    cursor: pointer;
-    border-radius: 50%;
-    touch-action: manipulation;
-}
-
-@media (hover: hover) {
-    .forma-multi-select-tag-remove:hover:not(:disabled) {
-        background: var(--forma-multi-select-tag-remove-hover-background-color, var(--hover-background-color));
-    }
-}
-
-.forma-multi-select-tag-remove:disabled {
-    cursor: default;
-    opacity: 0.5;
+/* The chip is round, so its remove button is too; the button is FormaButton's, reached through ::deep. */
+::deep .forma-multi-select-tag-remove {
+    border-radius: var(--radius-pill);
 }
 
 /* ---------- trigger ---------- */
@@ -143,12 +121,6 @@
     }
 }
 
-.forma-multi-select-search {
-    padding-block: var(--space-2);
-    padding-inline: var(--space-2);
-    font-size: var(--font-size-sm);
-}
-
 .forma-multi-select-options {
     display: flex;
     flex-direction: column;
@@ -182,39 +154,16 @@
     text-align: center;
 }
 
-.forma-multi-select-add {
-    padding-block: var(--space-2);
-    padding-inline: var(--space-2);
-    border: 1px dashed var(--forma-input-border-color, var(--dark-border-color));
-    border-radius: var(--radius-sm);
-    background: transparent;
+/* Add stands at the start of the popup like the options above it. */
+::deep .forma-multi-select-add {
+    justify-content: flex-start;
     color: var(--main-color);
-    font: inherit;
-    font-size: var(--font-size-sm);
-    text-align: start;
-    cursor: pointer;
-    touch-action: manipulation;
-}
-
-@media (hover: hover) {
-    .forma-multi-select-add:hover {
-        background: var(--hover-background-color);
-    }
 }
 
 @media (pointer: coarse) {
     .forma-multi-select-trigger,
     .forma-multi-select-search,
-    .forma-multi-select-add {
-        min-block-size: var(--control-size-lg);
-    }
-
-    .forma-multi-select-tag-remove {
-        inline-size: 1.5rem;
-        block-size: 1.5rem;
-    }
-
     .forma-multi-select-options ::deep .forma-checkbox-label {
-        min-block-size: var(--control-size-lg);
+        min-block-size: var(--control-size-touch);
     }
 }

@@ -47,7 +47,8 @@ public sealed partial class FormaMultiSelect<TValue> : InputBase<List<TValue>>, 
     private string _searchText = "";
     private ElementReference _anchorElement;
     private ElementReference _triggerElement;
-    private ElementReference _searchElement;
+    // The renderer owns the box and disposes it with the popup; the reference is only for focusing it.
+    private FormaSearchBox SearchBox { get; set; } = default!;
     private ElementReference _popupElement;
     private AnchoredPopup _popup = default!;
 
@@ -142,7 +143,7 @@ public sealed partial class FormaMultiSelect<TValue> : InputBase<List<TValue>>, 
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
-        => await _popup.SyncAsync(_isOpen, _popupElement, _anchorElement, () => _searchElement.FocusAsync());
+        => await _popup.SyncAsync(_isOpen, _popupElement, _anchorElement, () => SearchBox.Element.FocusAsync());
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()

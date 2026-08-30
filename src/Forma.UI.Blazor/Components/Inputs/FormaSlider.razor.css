@@ -32,6 +32,6 @@
    touch target is the input's own height rather than a larger drawn thumb. */
 @media (pointer: coarse) {
     .forma-slider {
-        block-size: var(--control-size-lg);
+        block-size: var(--control-size-touch);
     }
 }

@@ -15,13 +15,15 @@
                 </button>
                 @if (HasValue)
                 {
-                    <button type="button"
-                            class="forma-date-picker-clear"
-                            @onclick="HandleClear"
-                            @onclick:stopPropagation
-                            aria-label="@L["Clear"]">
-                        &times;
-                    </button>
+                    <FormaButton Variant="ButtonVariant.Ghost"
+                                 Size="ButtonSize.Mini"
+                                 IconOnly="true"
+                                 class="forma-date-picker-clear"
+                                 aria-label="@L["Clear"]"
+                                 OnClick="HandleClear"
+                                 :stopPropagation>
+                        <FormaIcon Icon="Glyph.Cross" />
+                    </FormaButton>
                 }
             </div>
     @if (_isOpen)

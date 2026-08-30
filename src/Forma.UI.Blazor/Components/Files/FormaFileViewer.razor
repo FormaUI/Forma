@@ -25,13 +25,13 @@
                      style="@(IsZoomed ? $"inline-size: {ZoomPercent}%;" : null)" />
             </div>
             <div class="forma-file-viewer-zoom" role="group" aria-label="@L["Zoom"]">
-                <button type="button" class="forma-file-viewer-zoom-button" disabled="@(_zoomIndex == 0)" @onclick="ZoomOut" aria-label="@L["Zoom Out"]">
-                    <span aria-hidden="true">&minus;</span>
-                </button>
+                <FormaButton Variant="ButtonVariant.Tertiary" IconOnly="true" class="forma-file-viewer-zoom-button" Disabled="@(_zoomIndex == 0)" aria-label="@L["Zoom Out"]" OnClick="ZoomOut">
+                    <FormaIcon Icon="Glyph.Minus" />
+                </FormaButton>
                 <span class="forma-file-viewer-zoom-level" role="status">@ZoomPercent%</span>
-                <button type="button" class="forma-file-viewer-zoom-button" disabled="@(_zoomIndex == ZoomSteps.Length - 1)" @onclick="ZoomIn" aria-label="@L["Zoom In"]">
-                    <span aria-hidden="true">+</span>
-                </button>
+                <FormaButton Variant="ButtonVariant.Tertiary" IconOnly="true" class="forma-file-viewer-zoom-button" Disabled="@(_zoomIndex == ZoomSteps.Length - 1)" aria-label="@L["Zoom In"]" OnClick="ZoomIn">
+                    <FormaIcon Icon="Glyph.Plus" />
+                </FormaButton>
             </div>
         }
         else if (Resource is VideoResourceInfo)
@@ -81,20 +81,22 @@
 
         @if (IsNavigable)
         {
-            <button type="button"
-                    class="forma-file-viewer-nav forma-file-viewer-nav-previous"
-                    disabled="@(!CanNavigate(-1))"
-                    @onclick="() => NavigateAsync(-1)"
-                    aria-label="@L["Previous"]">
-                <span aria-hidden="true">&#10094;</span>
-            </button>
-            <button type="button"
-                    class="forma-file-viewer-nav forma-file-viewer-nav-next"
-                    disabled="@(!CanNavigate(1))"
-                    @onclick="() => NavigateAsync(1)"
-                    aria-label="@L["Next"]">
-                <span aria-hidden="true">&#10095;</span>
-            </button>
+            <FormaButton Variant="ButtonVariant.Ghost"
+                         IconOnly="true"
+                         class="forma-file-viewer-nav forma-file-viewer-nav-previous"
+                         Disabled="@(!CanNavigate(-1))"
+                         aria-label="@L["Previous"]"
+                         OnClick="() => NavigateAsync(-1)">
+                <FormaIcon Icon="Glyph.ChevronLeft" />
+            </FormaButton>
+            <FormaButton Variant="ButtonVariant.Ghost"
+                         IconOnly="true"
+                         class="forma-file-viewer-nav forma-file-viewer-nav-next"
+                         Disabled="@(!CanNavigate(1))"
+                         aria-label="@L["Next"]"
+                         OnClick="() => NavigateAsync(1)">
+                <FormaIcon Icon="Glyph.ChevronRight" />
+            </FormaButton>
         }
     </div>
 

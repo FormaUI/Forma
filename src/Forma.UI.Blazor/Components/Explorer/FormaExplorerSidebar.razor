@@ -11,20 +11,24 @@
         <div class="forma-explorer-sidebar-tools">
             @if (FileOptions.AllowFolderCreate)
             {
-                <button type="button"
-                        class="forma-explorer-sidebar-tool forma-explorer-new-folder-tool"
-                        aria-label="@L["New Folder"]"
-                        @onclick="() => CreateFolderAsync(null)">
-                    <FormaIcon Icon="Glyph.FolderAdd" Size="IconSize.Small" />
-                </button>
+                <FormaButton Variant="ButtonVariant.Ghost"
+                             Size="ButtonSize.Mini"
+                             IconOnly="true"
+                             class="forma-explorer-sidebar-tool forma-explorer-new-folder-tool"
+                             aria-label="@L["New Folder"]"
+                             OnClick="() => CreateFolderAsync(null)">
+                    <FormaIcon Icon="Glyph.FolderAdd" />
+                </FormaButton>
             }
-            <button type="button"
-                    class="forma-explorer-sidebar-tool @(IsFullyCollapsed ? "forma-explorer-expand-all-tool" : "forma-explorer-collapse-all-tool")"
-                    disabled="@(!HasExpandableFolders)"
-                    aria-label="@(IsFullyCollapsed ? L["Expand All Folders"] : L["Collapse All Folders"])"
-                    @onclick="ToggleAll">
-                <FormaIcon Icon="@(IsFullyCollapsed ? Glyph.ExpandPlus : Glyph.CollapseMinus)" Size="IconSize.Small" />
-            </button>
+            <FormaButton Variant="ButtonVariant.Ghost"
+                         Size="ButtonSize.Mini"
+                         IconOnly="true"
+                         class="@(IsFullyCollapsed ? "forma-explorer-sidebar-tool forma-explorer-expand-all-tool" : "forma-explorer-sidebar-tool forma-explorer-collapse-all-tool")"
+                         Disabled="@(!HasExpandableFolders)"
+                         aria-label="@(IsFullyCollapsed ? L["Expand All Folders"] : L["Collapse All Folders"])"
+                         OnClick="ToggleAll">
+                <FormaIcon Icon="@(IsFullyCollapsed ? Glyph.ExpandPlus : Glyph.CollapseMinus)" />
+            </FormaButton>
         </div>
     </div>
 

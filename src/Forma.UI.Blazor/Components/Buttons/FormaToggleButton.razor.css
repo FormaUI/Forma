@@ -1,0 +1,22 @@
+/* ============================================================
+   FormaToggleButton — CSS isolation
+   A ghost FormaButton with a toggle's on state; the button is
+   FormaButton's element, so every rule reaches it through ::deep.
+   ============================================================ */
+
+.forma-toggle-button-shell {
+    display: contents;
+}
+
+/* An on state holds the hover fill and takes the accent color; no border and no mark, so a row of toggles stays flat. */
+::deep .forma-toggle-button-pressed {
+    --forma-button-ghost-background-color: var(--control-quiet-hover-color);
+    --forma-button-ghost-color: var(--main-color);
+    --forma-button-ghost-hover-color: var(--main-color);
+}
+
+@media (forced-colors: active) {
+    ::deep .forma-toggle-button-pressed {
+        border-color: Highlight;
+    }
+}

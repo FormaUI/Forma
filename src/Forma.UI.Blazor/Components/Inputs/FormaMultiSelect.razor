@@ -32,13 +32,12 @@
                      aria-label="@Label"
                      popover="manual"
                      @ref="_popupElement">
-                    <input type="text"
-                           class="forma-multi-select-search"
-                           @ref="_searchElement"
-                           @bind="_searchText"
-                           @bind:event="oninput"
-                           placeholder="@L["Search"]"
-                           aria-label="@L["Search"]" />
+                    <FormaSearchBox @ref="SearchBox"
+                                    Class="forma-multi-select-search"
+                                    Value="@_searchText"
+                                    ValueChanged="value => _searchText = value"
+                                    Placeholder="@L["Search"]"
+                                    aria-label="@L["Search"]" />
                     @{ var filtered = FilteredOptions; }
                     <div class="forma-multi-select-options">
                         @foreach (var option in filtered)
@@ -55,9 +54,10 @@
                     </div>
                     @if (CanAddSearchText)
                     {
-                        <button type="button" class="forma-multi-select-add" @onclick="HandleAddNewAsync">
-                            + @L["Add New"]
-                        </button>
+                        <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-multi-select-add" OnClick="HandleAddNewAsync">
+                            <FormaIcon Icon="Glyph.Plus" />
+                            @L["Add New"]
+                        </FormaButton>
                     }
                 </div>
             }
@@ -70,13 +70,15 @@
                         var text = FindOption(value)?.Label ?? value.ToString() ?? string.Empty;
                         <span class="forma-multi-select-tag">
                             @text
-                            <button type="button"
-                                    class="forma-multi-select-tag-remove"
-                                    disabled="@Disabled"
-                                    @onclick="() => RemoveValue(value)"
-                                    aria-label="@L["Remove {Text}", text]">
-                                &times;
-                            </button>
+                            <FormaButton Variant="ButtonVariant.Ghost"
+                                         Size="ButtonSize.Mini"
+                                         IconOnly="true"
+                                         class="forma-multi-select-tag-remove"
+                                         Disabled="@Disabled"
+                                         aria-label="@L["Remove {Text}", text]"
+                                         OnClick="() => RemoveValue(value)">
+                                <FormaIcon Icon="Glyph.Cross" />
+                            </FormaButton>
                         </span>
                     }
                 </div>

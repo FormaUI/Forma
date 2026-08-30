@@ -97,7 +97,8 @@
 /* The selection column keeps the same gutter and leading edge as every other column, so
    its box starts on the line the values beside it start on. */
 ::deep .forma-data-grid-select-column {
-    inline-size: 3rem;
+    /* The box's target plus the column's gutter on either side. */
+    inline-size: calc(var(--control-size-sm) + 2 * var(--space-3));
     padding-inline: var(--space-3);
     text-align: start;
 }
@@ -169,7 +170,7 @@
     display: grid;
 }
 
-.forma-data-grid-master-caption-slot > * {
+.forma-data-grid-master-caption-slot > ::deep * {
     grid-area: 1 / 1;
 }
 
@@ -179,33 +180,14 @@
 }
 
 /* A caption stands in for the checkbox, so the column has to widen to the words rather
-   than hold the width a box needs and break them across lines. A button centres its own
-   text, which would set the caption in from the gutter the boxes below it sit on. */
-.forma-data-grid-master-caption {
-    background: none;
-    border: none;
-    padding: 0;
-    color: var(--main-color);
-    font: inherit;
-    text-align: start;
-    white-space: nowrap;
-    cursor: pointer;
-    touch-action: manipulation;
-}
-
-.forma-data-grid-master-caption:disabled {
-    color: var(--text-muted-color);
-    cursor: default;
+   than hold the width a box needs and break them across lines. The caption is a ghost
+   FormaButton with no inline padding, so it starts on the gutter the boxes below it sit on. */
+::deep .forma-data-grid-master-caption {
+    --forma-button-ghost-color: var(--main-color);
+    padding-inline: 0;
+    font-weight: inherit;
 }
 
 .forma-data-grid-master-caption-static {
     color: var(--text-muted-color);
 }
-
-@media (pointer: coarse) {
-    .forma-data-grid-master-caption {
-        min-block-size: var(--control-size-lg);
-    }
-}
-
-

@@ -114,7 +114,7 @@
 
 @media (pointer: coarse) {
     ::deep .forma-dropdown-menu-item {
-        min-block-size: var(--control-size-lg);
+        min-block-size: var(--control-size-touch);
     }
 }
 

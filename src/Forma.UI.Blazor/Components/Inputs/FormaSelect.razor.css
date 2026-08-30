@@ -109,7 +109,7 @@
 
 @media (pointer: coarse) {
     .forma-select-option {
-        min-block-size: var(--control-size-lg);
+        min-block-size: var(--control-size-touch);
     }
 }
 

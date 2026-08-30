@@ -12,15 +12,12 @@
             <div class="forma-explorer-selection-actions">
                 @if (FileOptions.AllowDelete)
                 {
-                    <FormaButton Variant="ButtonVariant.Danger" Size="ButtonSize.Mini" class="forma-explorer-delete-button" OnClick="OnDelete">
+                    <FormaButton Variant="ButtonVariant.Danger" class="forma-explorer-delete-button" OnClick="OnDelete">
                         <FormaIcon Icon="Glyph.Delete" Size="IconSize.Small" />
                         @L["Delete"]
                     </FormaButton>
                 }
-                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-explorer-clear-button" OnClick="OnClearSelection">
-                    <FormaIcon Icon="Glyph.SelectNone" Size="IconSize.Small" />
-                    @L["Clear"]
-                </FormaButton>
+                <FormaToggleButton Icon="Glyph.SelectNone" Label="@L["Clear"]" ShowLabel="true" class="forma-explorer-clear-button" OnClick="OnClearSelection" />
             </div>
 
             <div class="forma-explorer-selection-status">
@@ -39,63 +36,41 @@
     <div class="forma-explorer-toolbar-left">
         @if (CanLeaveSelectMode)
         {
-            <FormaButton Variant="@(IsSelectMode ? ButtonVariant.Primary : ButtonVariant.Ghost)"
-                         Size="ButtonSize.Mini"
-                         class="forma-explorer-select-mode-button"
-                         aria-pressed="@(IsSelectMode ? "true" : "false")"
-                         OnClick="OnToggleSelectMode">
-                @if (IsSelectMode)
-                {
-                    <FormaIcon Icon="Glyph.Cross" Size="IconSize.Small" />
-                    @L["Cancel"]
-                }
-                else
-                {
-                    <FormaIcon Icon="Glyph.Select" Size="IconSize.Small" />
-                    @L["Select"]
-                }
-            </FormaButton>
+            <FormaToggleButton Icon="@(IsSelectMode ? Glyph.Cross : Glyph.Select)"
+                                Label="@(IsSelectMode ? L["Cancel"] : L["Select"])"
+                                ShowLabel="true"
+                                Pressed="IsSelectMode"
+                                class="forma-explorer-select-mode-button"
+                                OnClick="OnToggleSelectMode" />
         }
         @if (FileOptions.AllowFolderCreate && ShowNewFolder)
         {
-            <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-explorer-new-folder-button" OnClick="OnFolderCreate">
-                <FormaIcon Icon="Glyph.FolderAdd" Size="IconSize.Small" />
-                @L["New Folder"]
-            </FormaButton>
+            <FormaToggleButton Icon="Glyph.FolderAdd" Label="@L["New Folder"]" ShowLabel="true" class="forma-explorer-new-folder-button" OnClick="OnFolderCreate" />
         }
         @if (FileOptions.AllowUpload)
         {
-            <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-explorer-upload-button" OnClick="OnToggleUpload">
-                <FormaIcon Icon="Glyph.CloudUpload" Size="IconSize.Small" />
-                @L["Upload"]
-            </FormaButton>
+            <FormaToggleButton Icon="Glyph.CloudUpload" Label="@L["Upload"]" ShowLabel="true" class="forma-explorer-upload-button" OnClick="OnToggleUpload" />
         }
     </div>
 
     <div class="forma-explorer-toolbar-right">
         <!-- View Mode Switcher -->
         <div class="forma-explorer-view-modes" role="group" aria-label="@L["View Mode"]">
-            <button type="button"
-                    class="forma-explorer-view-button @(ViewMode == ExplorerViewMode.Thumbnails ? "is-active" : "")"
-                    aria-label="@L["Thumbnails"]"
-                    aria-pressed="@(ViewMode == ExplorerViewMode.Thumbnails ? "true" : "false")"
-                    @onclick="() => ViewModeChanged.InvokeAsync(ExplorerViewMode.Thumbnails)">
-                <FormaIcon Icon="Glyph.GridView" Size="IconSize.Small" />
-            </button>
-            <button type="button"
-                    class="forma-explorer-view-button @(ViewMode == ExplorerViewMode.Details ? "is-active" : "")"
-                    aria-label="@L["Details"]"
-                    aria-pressed="@(ViewMode == ExplorerViewMode.Details ? "true" : "false")"
-                    @onclick="() => ViewModeChanged.InvokeAsync(ExplorerViewMode.Details)">
-                <FormaIcon Icon="Glyph.DetailsView" Size="IconSize.Small" />
-            </button>
-            <button type="button"
-                    class="forma-explorer-view-button @(ViewMode == ExplorerViewMode.List ? "is-active" : "")"
-                    aria-label="@L["List"]"
-                    aria-pressed="@(ViewMode == ExplorerViewMode.List ? "true" : "false")"
-                    @onclick="() => ViewModeChanged.InvokeAsync(ExplorerViewMode.List)">
-                <FormaIcon Icon="Glyph.List" Size="IconSize.Small" />
-            </button>
+            <FormaToggleButton Icon="Glyph.GridView"
+                                Label="@L["Thumbnails"]"
+                                class="forma-explorer-view-button"
+                                Pressed="@(ViewMode == ExplorerViewMode.Thumbnails)"
+                                OnClick="() => ViewModeChanged.InvokeAsync(ExplorerViewMode.Thumbnails)" />
+            <FormaToggleButton Icon="Glyph.DetailsView"
+                                Label="@L["Details"]"
+                                class="forma-explorer-view-button"
+                                Pressed="@(ViewMode == ExplorerViewMode.Details)"
+                                OnClick="() => ViewModeChanged.InvokeAsync(ExplorerViewMode.Details)" />
+            <FormaToggleButton Icon="Glyph.List"
+                                Label="@L["List"]"
+                                class="forma-explorer-view-button"
+                                Pressed="@(ViewMode == ExplorerViewMode.List)"
+                                OnClick="() => ViewModeChanged.InvokeAsync(ExplorerViewMode.List)" />
         </div>
 
         <!-- Sort Menu -->

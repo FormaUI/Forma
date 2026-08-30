@@ -89,15 +89,15 @@
 
 @media (pointer: coarse) {
     .forma-color-picker-swatch-wrapper {
-        inline-size: var(--control-size-lg);
-        block-size: var(--control-size-lg);
+        inline-size: var(--control-size-touch);
+        block-size: var(--control-size-touch);
     }
 
     .forma-color-picker-hex-input {
-        min-block-size: var(--control-size-lg);
+        min-block-size: var(--control-size-touch);
     }
 
     .forma-color-picker-alpha {
-        block-size: var(--control-size-lg);
+        block-size: var(--control-size-touch);
     }
 }

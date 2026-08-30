@@ -65,7 +65,7 @@ public sealed partial class FormaExplorerToolbar : ComponentBase
     private static readonly ExplorerSortDirection[] SortDirections = Enum.GetValues<ExplorerSortDirection>();
 
     private static readonly FormaButtonOptions SortTriggerOptions =
-        new() { Variant = ButtonVariant.Ghost, Size = ButtonSize.Mini };
+        new() { Variant = ButtonVariant.Ghost };
 
     private string SelectionAnnouncement
         => SelectedCount > 0 ? L["{SelectedCount} selected", SelectedCount].Value : string.Empty;

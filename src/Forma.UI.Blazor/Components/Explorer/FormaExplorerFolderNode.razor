@@ -74,7 +74,7 @@
                     class="forma-explorer-folder-twisty @(expanded ? "is-expanded" : "")"
                     aria-label="@(expanded ? L["Collapse {Name}", ("Name", Folder.Name)] : L["Expand {Name}", ("Name", Folder.Name)])"
                     @onclick="() => Interaction.ToggleExpanded(Folder.Source)">
-                <FormaIcon Icon="Glyph.ChevronRight" />
+                <FormaIcon Icon="Glyph.ChevronRight" Size="IconSize.Small" />
             </button>
         }
         else

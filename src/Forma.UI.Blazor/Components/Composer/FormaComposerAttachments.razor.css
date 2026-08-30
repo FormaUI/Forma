@@ -62,6 +62,6 @@
 
 @media (pointer: coarse) {
     .forma-composer-attachment {
-        min-block-size: var(--control-size-lg);
+        min-block-size: var(--control-size-touch);
     }
 }

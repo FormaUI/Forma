@@ -155,7 +155,7 @@
             var button = cut.Find("button");
             Assert.Multiple(
                 () => Assert.Equal("true", button.GetAttribute("aria-pressed")),
-                () => Assert.Contains("forma-toolbar-button-active", button.ClassList));
+                () => Assert.Contains("forma-toggle-button-pressed", button.ClassList));
         }
 
         [Fact]
@@ -263,7 +263,7 @@
             var button = cut.Find("button");
             Assert.Multiple(
                 () => Assert.Equal("false", button.GetAttribute("aria-pressed")),
-                () => Assert.DoesNotContain("forma-toolbar-button-active", button.ClassList));
+                () => Assert.DoesNotContain("forma-toggle-button-active", button.ClassList));
         }
 
         [Fact]
@@ -519,7 +519,7 @@
             var button = cut.Find("button");
             Assert.Multiple(
                 () => Assert.NotNull(button.QuerySelector("svg")),
-                () => Assert.Empty(button.QuerySelectorAll("span")),
+                () => Assert.Equal(string.Empty, button.TextContent.Trim()),
                 () => Assert.Equal("Bold", button.GetAttribute("aria-label")));
         }
 
@@ -555,7 +555,7 @@
         }
 
         [Fact]
-        public void Should_give_a_labelled_button_its_own_chrome()
+        public void Should_pad_a_labelled_button_for_its_text()
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
@@ -565,11 +565,11 @@
             var cut = ctx.Render(@<FormaToolbar Label="Library" Items="groups" ShowLabels="true" />);
 
             // Assert
-            Assert.Contains("forma-toolbar-button-labelled", cut.Find("button").ClassList);
+            Assert.DoesNotContain("forma-button-icon", cut.Find("button").ClassList);
         }
 
         [Fact]
-        public void Should_leave_an_icon_only_button_flat()
+        public void Should_draw_an_icon_only_button_square()
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
@@ -579,7 +579,7 @@
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
 
             // Assert
-            Assert.DoesNotContain("forma-toolbar-button-labelled", cut.Find("button").ClassList);
+            Assert.Contains("forma-button-icon", cut.Find("button").ClassList);
         }
 
         [Fact]

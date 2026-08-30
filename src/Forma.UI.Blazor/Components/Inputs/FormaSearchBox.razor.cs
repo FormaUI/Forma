@@ -36,6 +36,9 @@ public sealed partial class FormaSearchBox : ComponentBase, IAsyncDisposable
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
+    /// <summary>The rendered input element, for a composing component that must focus it.</summary>
+    public ElementReference Element { get; private set; }
+
     [Inject] private IStringLocale<FormaSearchBox> L { get; set; } = default!;
 
     private CancellationTokenSource? _debounceCancellation;
@@ -61,7 +64,7 @@ public sealed partial class FormaSearchBox : ComponentBase, IAsyncDisposable
             return;
         }
 
-        await CancelDebounceAsync();
+        CancelDebounce();
         await OnSearch.InvokeAsync(Value);
     }
 
@@ -70,22 +73,20 @@ public sealed partial class FormaSearchBox : ComponentBase, IAsyncDisposable
         Value = string.Empty;
 
         await ValueChanged.InvokeAsync(Value);
-        await CancelDebounceAsync();
+        CancelDebounce();
         await OnSearch.InvokeAsync(Value);
     }
 
     private async Task RaiseSearchAsync(string value)
     {
-        await CancelDebounceAsync();
-
         if (DebounceDelay is not { } delay || delay <= TimeSpan.Zero)
         {
+            CancelDebounce();
             await OnSearch.InvokeAsync(value);
             return;
         }
 
-        _debounceCancellation = new CancellationTokenSource();
-        var token = _debounceCancellation.Token;
+        var token = RestartDebounce();
 
         try
         {
@@ -99,19 +100,27 @@ public sealed partial class FormaSearchBox : ComponentBase, IAsyncDisposable
         await OnSearch.InvokeAsync(value);
     }
 
-    private async Task CancelDebounceAsync()
+    // Cancelling synchronously keeps the swap atomic on the dispatcher; awaiting would let a second keystroke interleave and strand a token.
+    private CancellationToken RestartDebounce()
     {
-        if (_debounceCancellation is null)
-        {
-            return;
-        }
+        CancelDebounce();
+        _debounceCancellation = new CancellationTokenSource();
 
-        await _debounceCancellation.CancelAsync();
-        _debounceCancellation.Dispose();
+        return _debounceCancellation.Token;
+    }
+
+    private void CancelDebounce()
+    {
+        _debounceCancellation?.Cancel();
+        _debounceCancellation?.Dispose();
         _debounceCancellation = null;
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-        => await CancelDebounceAsync();
+    public ValueTask DisposeAsync()
+    {
+        CancelDebounce();
+
+        return ValueTask.CompletedTask;
+    }
 }

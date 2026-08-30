@@ -69,39 +69,16 @@
     inset-block-end: calc((var(--space-2) + 0.125rem) / -2);
 }
 
-.forma-sortable-list-handle {
-    flex: 0 0 auto;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    inline-size: var(--control-size-sm);
-    block-size: var(--control-size-sm);
-    padding: 0;
-    border: none;
-    border-radius: var(--radius-sm);
-    background: transparent;
-    color: var(--text-muted-color);
-    font-size: var(--font-size-base);
-    line-height: 1;
+/* The handle is FormaButton's, reached through ::deep. The drag is driven by pointer events, which a touch would
+   otherwise never deliver because the browser claims the gesture for scrolling first. */
+::deep .forma-sortable-list-handle {
+    --forma-button-ghost-color: var(--text-muted-color);
     cursor: grab;
-    /* The drag is driven by pointer events, which a touch would otherwise never deliver
-       because the browser claims the gesture for scrolling first. */
     touch-action: none;
 }
 
-@media (hover: hover) {
-    .forma-sortable-list-handle:hover:not(:disabled) {
-        background: var(--hover-background-color);
-    }
-}
-
-.forma-sortable-list-handle:active:not(:disabled) {
+::deep .forma-sortable-list-handle:active:not(:disabled) {
     cursor: grabbing;
-}
-
-.forma-sortable-list-handle:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
 }
 
 /* Announces a keyboard move to a screen reader without a visible element, since the
@@ -115,9 +92,3 @@
     white-space: nowrap;
 }
 
-@media (pointer: coarse) {
-    .forma-sortable-list-handle {
-        inline-size: var(--control-size-lg);
-        block-size: var(--control-size-lg);
-    }
-}

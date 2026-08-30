@@ -220,11 +220,7 @@
             <Body>
                 <div class="forma-explorer-dialog-field">
                     <label class="forma-explorer-dialog-label" for="forma-explorer-rename-input">@L["New Name"]</label>
-                    <input id="forma-explorer-rename-input"
-                           class="forma-explorer-dialog-input"
-                           type="text"
-                           value="@_renamedResourceName"
-                           @oninput="args => _renamedResourceName = args.Value?.ToString() ?? string.Empty" />
+                    <FormaTextBox Id="forma-explorer-rename-input" class="forma-explorer-dialog-input" @bind-Value="_renamedResourceName" />
                 </div>
             </Body>
             <Footer>
@@ -271,11 +267,7 @@
             <Body>
                 <div class="forma-explorer-dialog-field">
                     <label class="forma-explorer-dialog-label" for="forma-explorer-folder-input">@L["Folder Name"]</label>
-                    <input id="forma-explorer-folder-input"
-                           class="forma-explorer-dialog-input"
-                           type="text"
-                           value="@_newFolderName"
-                           @oninput="args => _newFolderName = args.Value?.ToString() ?? string.Empty" />
+                    <FormaTextBox Id="forma-explorer-folder-input" class="forma-explorer-dialog-input" @bind-Value="_newFolderName" />
                 </div>
             </Body>
             <Footer>
@@ -300,11 +292,7 @@
             <Body>
                 <div class="forma-explorer-dialog-field">
                     <label class="forma-explorer-dialog-label" for="forma-explorer-rename-folder-input">@L["Folder Name"]</label>
-                    <input id="forma-explorer-rename-folder-input"
-                           class="forma-explorer-dialog-input"
-                           type="text"
-                           value="@_renamedFolderName"
-                           @oninput="args => _renamedFolderName = args.Value?.ToString() ?? string.Empty" />
+                    <FormaTextBox Id="forma-explorer-rename-folder-input" class="forma-explorer-dialog-input" @bind-Value="_renamedFolderName" />
                 </div>
             </Body>
             <Footer>

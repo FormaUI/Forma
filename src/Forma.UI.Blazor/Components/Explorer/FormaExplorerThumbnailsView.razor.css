@@ -99,8 +99,8 @@
     justify-content: center;
     inline-size: var(--forma-explorer-check-size);
     block-size: var(--forma-explorer-check-size);
-    min-inline-size: 24px;
-    min-block-size: 24px;
+    min-inline-size: var(--control-size-sm);
+    min-block-size: var(--control-size-sm);
     flex-shrink: 0;
     border-radius: var(--radius-sm);
     border: 1px solid var(--dark-border-color);

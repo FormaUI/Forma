@@ -28,7 +28,7 @@
 }
 
 .forma-explorer-thumbnail-glyph.is-row {
-    font-size: var(--font-size-xl);
+    font-size: var(--icon-size-md);
 }
 
 .forma-explorer-thumbnail.is-cell {
@@ -38,5 +38,5 @@
 }
 
 .forma-explorer-thumbnail-glyph.is-cell {
-    font-size: var(--font-size-xl);
+    font-size: var(--icon-size-sm);
 }

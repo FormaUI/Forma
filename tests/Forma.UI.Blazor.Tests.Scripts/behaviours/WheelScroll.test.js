@@ -17,8 +17,18 @@ describe('WheelScroll', () => {
         sizeScroller(track, { scrollWidth, clientWidth });
     }
 
-    function wheel(properties) {
+    // The test DOM drops the modifier keys a browser puts on a wheel event, so a held key is defined on the event itself.
+    function wheel({ ctrlKey, shiftKey, ...properties }) {
         const event = new WheelEvent('wheel', { bubbles: true, cancelable: true, ...properties });
+
+        if (ctrlKey !== undefined) {
+            Object.defineProperty(event, 'ctrlKey', { value: ctrlKey });
+        }
+
+        if (shiftKey !== undefined) {
+            Object.defineProperty(event, 'shiftKey', { value: shiftKey });
+        }
+
         track.dispatchEvent(event);
 
         return event;
@@ -149,5 +159,89 @@ describe('WheelScroll', () => {
 
         expect(track.scrollLeft).toBe(0);
         expect(event.defaultPrevented).toBe(false);
+    });
+
+    /** An owner that records the directions it is told. */
+    function owner() {
+        const directions = [];
+
+        return { directions, invokeMethodAsync: (name, direction) => { directions.push(name === 'HandleWheelAsync' ? direction : name); return Promise.resolve(); } };
+    }
+
+    describe('told to an owner', () => {
+        it('reports the direction of every wheel notch and keeps the turn from the page', () => {
+            const target = owner();
+            attach(track, { owner: target });
+
+            const event = wheel({ deltaY: 100 });
+            wheel({ deltaY: 100, timeStamp: 50 });
+            wheel({ deltaY: -100 });
+
+            expect(target.directions).toEqual([1, 1, -1]);
+            expect(event.defaultPrevented).toBe(true);
+        });
+
+        it('reports a wheel that counts in lines as notches too', () => {
+            const target = owner();
+            attach(track, { owner: target });
+
+            wheel({ deltaY: 3, deltaMode: WheelEvent.DOM_DELTA_LINE });
+            wheel({ deltaY: 3, deltaMode: WheelEvent.DOM_DELTA_LINE });
+
+            expect(target.directions).toEqual([1, 1]);
+        });
+
+        it('reports a trackpad flick once however many events it sends', () => {
+            const target = owner();
+            attach(track, { owner: target });
+
+            for (let i = 0; i < 12; i++) {
+                wheel({ deltaY: 8 });
+            }
+
+            expect(target.directions).toEqual([1]);
+        });
+
+        it('reads a sideways turn as a direction rather than leaving it to the browser', () => {
+            const target = owner();
+            attach(track, { owner: target });
+
+            wheel({ deltaX: -100 });
+
+            expect(target.directions).toEqual([-1]);
+        });
+    });
+
+    describe('gated on a key', () => {
+        it('leaves a turn made without the key to the page', () => {
+            const target = owner();
+            attach(track, { owner: target, modifier: 'ctrl' });
+
+            const event = wheel({ deltaY: 100 });
+
+            expect(target.directions).toEqual([]);
+            expect(event.defaultPrevented).toBe(false);
+        });
+
+        it('answers a turn made with the key held', () => {
+            const target = owner();
+            attach(track, { owner: target, modifier: 'ctrl' });
+
+            const event = wheel({ deltaY: -100, ctrlKey: true });
+
+            expect(target.directions).toEqual([-1]);
+            expect(event.defaultPrevented).toBe(true);
+        });
+
+        it('gates a track the same way', () => {
+            overflowing();
+            attach(track, { modifier: 'shift' });
+
+            wheel({ deltaY: 120 });
+            expect(track.scrollLeft).toBe(0);
+
+            wheel({ deltaY: 120, shiftKey: true });
+            expect(track.scrollLeft).toBe(120);
+        });
     });
 });

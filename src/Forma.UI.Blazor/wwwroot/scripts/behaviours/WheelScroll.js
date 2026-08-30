@@ -22,21 +22,24 @@ const NotchDistance = 40;
 
 /**
  * @param {HTMLElement} target The element the wheel is answered over.
- * @param {{ track?: HTMLElement, owner?: { invokeMethodAsync: (name: string, ...args: unknown[]) => Promise<unknown> } }} options
+ * @param {{ track?: HTMLElement, owner?: { invokeMethodAsync: (name: string, ...args: unknown[]) => Promise<unknown> }, modifier?: string }} options
  *   The element that scrolls by the movement, or the owner that is told its direction; the target scrolls when neither is given.
+ *   A modifier names the key the reader must hold for the wheel to be answered at all; without one every turn is.
  */
-export function attach(target, { track, owner } = {}) {
-    return new WheelScroll(target, owner ? new DirectionSink(owner) : new TrackSink(track ?? target));
+export function attach(target, { track, owner, modifier } = {}) {
+    return new WheelScroll(target, owner ? new DirectionSink(owner) : new TrackSink(track ?? target), modifier);
 }
 
 class WheelScroll {
     #target;
     #sink;
+    #modifier;
     #controller = new AbortController();
 
-    constructor(target, sink) {
+    constructor(target, sink, modifier) {
         this.#target = target;
         this.#sink = sink;
+        this.#modifier = modifier ? `${modifier}Key` : null;
 
         // A passive listener cannot call preventDefault, which keeps the turn from the page.
         target.addEventListener('wheel', event => this.#handle(event), { signal: this.#controller.signal, passive: false });
@@ -47,6 +50,11 @@ class WheelScroll {
     }
 
     #handle(event) {
+        // Without its key held, the turn is the page's or the target's own scrolling.
+        if (this.#modifier && !event[this.#modifier]) {
+            return;
+        }
+
         // A popup or a scrolling panel opened from the target is nearer to the pointer than the target is.
         if (this.#nearerScroller(event.target)) {
             return;

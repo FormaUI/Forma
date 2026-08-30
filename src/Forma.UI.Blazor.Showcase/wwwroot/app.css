@@ -437,7 +437,7 @@ body {
 .showcase-index a {
     display: flex;
     align-items: center;
-    min-block-size: var(--control-size-lg);
+    min-block-size: var(--control-size-touch);
     padding: var(--space-2) var(--space-3);
     border-radius: var(--radius-md);
     background: var(--hover-background-color);
@@ -564,6 +564,8 @@ body {
 
 .demo-number {
     inline-size: 6rem;
+    min-block-size: var(--control-size-md);
+    padding-inline: var(--space-2);
 }
 
 /* A resolved value worth reading as a result rather than as running text. */

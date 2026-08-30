@@ -1,17 +1,10 @@
 /* ============================================================
    FormaTextBox — CSS isolation
-   The bare box, sized to stand level with a button. Once labelled
-   the element wears FormaField's .forma-field-input instead. The
-   box both share is drawn in forma-input.css; only the compact
-   sizing and the states this component adds are set here.
+   The bare box. Once labelled the element wears FormaField's
+   .forma-field-input instead. The box both share, and its size,
+   is drawn in forma-input.css; only the states this component
+   adds are set here.
    ============================================================ */
-
-.forma-text-box {
-    min-block-size: 2.125rem;
-    padding-block: var(--space-1);
-    padding-inline: var(--space-3);
-    font-size: var(--font-size-sm);
-}
 
 .forma-text-box:disabled {
     color: var(--forma-input-disabled-color, var(--text-muted-color));
@@ -34,10 +27,4 @@
 .forma-text-box.invalid,
 .forma-field-input.invalid {
     border-color: var(--forma-invalid-color, var(--danger-color));
-}
-
-@media (pointer: coarse) {
-    .forma-text-box {
-        min-block-size: var(--control-size-lg);
-    }
 }

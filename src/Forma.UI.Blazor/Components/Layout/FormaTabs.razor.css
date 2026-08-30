@@ -12,7 +12,8 @@
 }
 
 .forma-tab-button {
-    padding: var(--space-2) var(--space-4);
+    min-block-size: var(--control-size-md);
+    padding: 0 var(--space-4);
     border: none;
     border-block-end: 2px solid transparent;
     margin-block-end: -2px;
@@ -56,6 +57,6 @@
 
 @media (pointer: coarse) {
     .forma-tab-button {
-        min-block-size: var(--control-size-lg);
+        min-block-size: var(--control-size-touch);
     }
 }

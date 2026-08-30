@@ -577,7 +577,7 @@
             var pluginsBar = cut.Find(".forma-composer-plugins-row");
             Assert.Equal(
                 FormaComposerPluginsBar.InlineLimit,
-                pluginsBar.QuerySelectorAll(".forma-toolbar-button").Length);
+                pluginsBar.QuerySelectorAll(".forma-toggle-button").Length);
             Assert.NotEmpty(cut.FindAll("button[aria-label='More Plugin Commands']"));
         }
 
@@ -597,7 +597,7 @@
 
             // Assert
             var shown = cut.Find(".forma-composer-plugins-row")
-                           .QuerySelectorAll(".forma-toolbar-button")
+                           .QuerySelectorAll(".forma-toggle-button")
                            .Select(button => button.GetAttribute("aria-label"));
             var overflowed = cut.FindAll("[role=menuitem]").Select(item => item.TextContent.Trim());
             Assert.Equal(surplus, shown.Concat(overflowed).Distinct().Count(name => name?.StartsWith("Command ", StringComparison.Ordinal) == true));

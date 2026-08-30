@@ -3,48 +3,10 @@
 @inject IStringLocale<FormaRichTextEditor> L
 
 <div @ref="_menuElement" class="forma-composer-bubble-menu" role="toolbar" aria-label="@L["Selection formatting"]">
-    <button type="button"
-            class="forma-composer-bubble-item"
-            title="@L["Bold"]"
-            aria-label="@L["Bold"]"
-            @onclick="() => OnCommand.InvokeAsync(BasicFormattingPlugin.BoldCommand)">
-        <FormaIcon Icon="Glyph.Bold" Size="IconSize.Small" />
-    </button>
-    <button type="button"
-            class="forma-composer-bubble-item"
-            title="@L["Italic"]"
-            aria-label="@L["Italic"]"
-            @onclick="() => OnCommand.InvokeAsync(BasicFormattingPlugin.ItalicCommand)">
-        <FormaIcon Icon="Glyph.Italic" Size="IconSize.Small" />
-    </button>
-    <button type="button"
-            class="forma-composer-bubble-item"
-            title="@L["Underline"]"
-            aria-label="@L["Underline"]"
-            @onclick="() => OnCommand.InvokeAsync(BasicFormattingPlugin.UnderlineCommand)">
-        <FormaIcon Icon="Glyph.Underline" Size="IconSize.Small" />
-    </button>
-    <button type="button"
-            class="forma-composer-bubble-item"
-            title="@L["Code"]"
-            aria-label="@L["Code"]"
-            @onclick="() => OnCommand.InvokeAsync(BasicFormattingPlugin.CodeCommand)">
-        <FormaIcon Icon="Glyph.Code" Size="IconSize.Small" />
-    </button>
-    <button type="button"
-            class="forma-composer-bubble-item"
-            title="@L["Heading 1"]"
-            aria-label="@L["Heading 1"]"
-            @onclick="() => OnCommand.InvokeAsync(ParagraphFormatPlugin.Heading1Command)">
-        <FormaIcon Icon="Glyph.Heading" Size="IconSize.Small" />
-        <span class="forma-composer-bubble-level" aria-hidden="true">1</span>
-    </button>
-    <button type="button"
-            class="forma-composer-bubble-item"
-            title="@L["Heading 2"]"
-            aria-label="@L["Heading 2"]"
-            @onclick="() => OnCommand.InvokeAsync(ParagraphFormatPlugin.Heading2Command)">
-        <FormaIcon Icon="Glyph.Heading" Size="IconSize.Small" />
-        <span class="forma-composer-bubble-level" aria-hidden="true">2</span>
-    </button>
+    <FormaToggleButton Icon="Glyph.Bold" Label="@L["Bold"]" class="forma-composer-bubble-item" title="@L["Bold"]" OnClick="() => OnCommand.InvokeAsync(BasicFormattingPlugin.BoldCommand)" />
+    <FormaToggleButton Icon="Glyph.Italic" Label="@L["Italic"]" class="forma-composer-bubble-item" title="@L["Italic"]" OnClick="() => OnCommand.InvokeAsync(BasicFormattingPlugin.ItalicCommand)" />
+    <FormaToggleButton Icon="Glyph.Underline" Label="@L["Underline"]" class="forma-composer-bubble-item" title="@L["Underline"]" OnClick="() => OnCommand.InvokeAsync(BasicFormattingPlugin.UnderlineCommand)" />
+    <FormaToggleButton Icon="Glyph.Code" Label="@L["Code"]" class="forma-composer-bubble-item" title="@L["Code"]" OnClick="() => OnCommand.InvokeAsync(BasicFormattingPlugin.CodeCommand)" />
+    <FormaToggleButton Icon="Glyph.Heading" Label="@L["Heading 1"]" class="forma-composer-bubble-item forma-composer-bubble-item-level-1" title="@L["Heading 1"]" OnClick="() => OnCommand.InvokeAsync(ParagraphFormatPlugin.Heading1Command)" />
+    <FormaToggleButton Icon="Glyph.Heading" Label="@L["Heading 2"]" class="forma-composer-bubble-item forma-composer-bubble-item-level-2" title="@L["Heading 2"]" OnClick="() => OnCommand.InvokeAsync(ParagraphFormatPlugin.Heading2Command)" />
 </div>

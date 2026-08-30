@@ -45,7 +45,7 @@ public sealed partial class FormaButton : ComponentBase
 
     private string? AriaBusy => Busy ? "true" : null;
 
-    // Work in flight is shown whether or not the button is also disabled; the runner is what says it will come back.
+    // Work in flight is shown whether or not the button is also disabled; the progress is what says it will come back.
     private string DataBusy => Busy ? "true" : "false";
 
     private Task HandleClickAsync(MouseEventArgs args)

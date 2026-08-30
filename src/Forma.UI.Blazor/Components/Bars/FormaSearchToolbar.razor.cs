@@ -5,10 +5,8 @@ using Forma.UI.Features.Toolbar;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>A search field and a row of toolbar items, for the top of a list page.</summary>
-public sealed partial class FormaSearchToolbar : IDisposable
+public sealed partial class FormaSearchToolbar
 {
-    private CancellationTokenSource? _debounceCancellation;
-
     /// <summary>The accessible name of the action toolbar; required only when Items is not empty.</summary>
     [Parameter] public string? Label { get; set; }
 
@@ -42,39 +40,5 @@ public sealed partial class FormaSearchToolbar : IDisposable
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(Label);
         }
-    }
-
-    private async Task HandleSearchInput(ChangeEventArgs args)
-    {
-        var token = RestartDebounce();
-        var value = args.Value?.ToString() ?? "";
-
-        try
-        {
-            await Task.Delay(SearchDelay, token);
-        }
-        catch (OperationCanceledException)
-        {
-            return;
-        }
-
-        await OnSearch.InvokeAsync(value);
-    }
-
-    // Cancelling synchronously keeps the swap atomic on the dispatcher; awaiting would let a second keystroke interleave and strand a token.
-    private CancellationToken RestartDebounce()
-    {
-        _debounceCancellation?.Cancel();
-        _debounceCancellation?.Dispose();
-        _debounceCancellation = new CancellationTokenSource();
-
-        return _debounceCancellation.Token;
-    }
-
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        _debounceCancellation?.Cancel();
-        _debounceCancellation?.Dispose();
     }
 }

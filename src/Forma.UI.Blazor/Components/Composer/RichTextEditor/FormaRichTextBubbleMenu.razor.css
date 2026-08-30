@@ -19,28 +19,9 @@
     display: flex;
 }
 
-.forma-composer-bubble-item {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-inline-size: var(--control-size-sm);
-    min-block-size: var(--control-size-sm);
-    padding: var(--space-1);
-    border: none;
-    border-radius: var(--radius-sm);
-    background: transparent;
-    color: inherit;
-    cursor: pointer;
-    touch-action: manipulation;
-}
-
-@media (hover: hover) {
-    .forma-composer-bubble-item:hover {
-        background-color: var(--muted-background-color);
-    }
-}
-
-.forma-composer-bubble-level {
+/* The heading level rides the glyph's lower corner; the label already names it, so the digit is decoration. */
+::deep .forma-composer-bubble-item-level-1::after,
+::deep .forma-composer-bubble-item-level-2::after {
     font-size: 0.625em;
     font-weight: 700;
     line-height: 1;
@@ -48,9 +29,10 @@
     margin-block-end: 0.15em;
 }
 
-@media (pointer: coarse) {
-    .forma-composer-bubble-item {
-        min-inline-size: var(--control-size-lg);
-        min-block-size: var(--control-size-lg);
-    }
+::deep .forma-composer-bubble-item-level-1::after {
+    content: '1';
+}
+
+::deep .forma-composer-bubble-item-level-2::after {
+    content: '2';
 }

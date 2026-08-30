@@ -48,7 +48,11 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
 
     private PanGesture _pan = default!;
 
+    private WheelScroll _wheelScroll = default!;
+
     private Scroll _scroll = default!;
+
+    private DotNetObjectReference<FormaFileViewer>? _selfReference;
 
     private ElementReference _imageFrameElement;
 
@@ -57,6 +61,8 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
     private CancellationTokenSource? _resolveCancellation;
 
     private bool _dragAttached;
+
+    private bool _wheelAttached;
 
     private int _zoomIndex;
 
@@ -83,6 +89,7 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
     protected override void OnInitialized()
     {
         _pan = new PanGesture(JS);
+        _wheelScroll = new WheelScroll(JS);
         _scroll = new Scroll(JS);
     }
 
@@ -101,6 +108,7 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
 
         _zoomIndex = 0;
         _dragAttached = false;
+        _wheelAttached = false;
         _resolvedSource = requested;
 
         // The name and extension come free from the address, so an unclaimed or still-resolving source still reads properly.
@@ -159,12 +167,28 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
             _dragAttached = await _pan.AttachAsync(_imageFrameElement, ZoomedClass);
         }
 
+        // Ctrl and a wheel over the image zooms it, as it does the page elsewhere; the plain wheel keeps scrolling the image.
+        if (!_wheelAttached)
+        {
+            _selfReference ??= DotNetObjectReference.Create(this);
+            _wheelAttached = await _wheelScroll.AttachAsync(_imageFrameElement, _selfReference, WheelModifier.Ctrl);
+        }
+
         if (_zoomChanged)
         {
             _zoomChanged = false;
             await _scroll.ToCenterAsync(_imageFrameElement);
         }
     }
+
+    /// <summary>Zooms a step in for a wheel rolled up and a step out for one rolled down; called from the wheel behaviour.</summary>
+    [JSInvokable]
+    public Task HandleWheelAsync(int direction)
+        => InvokeAsync(() =>
+        {
+            SetZoomIndex(_zoomIndex - direction);
+            StateHasChanged();
+        });
 
     private void ZoomIn()
         => SetZoomIndex(_zoomIndex + 1);
@@ -239,6 +263,8 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
         _resolveCancellation?.Dispose();
 
         await _pan.DisposeAsync();
+        await _wheelScroll.DisposeAsync();
         await _scroll.DisposeAsync();
+        _selfReference?.Dispose();
     }
 }

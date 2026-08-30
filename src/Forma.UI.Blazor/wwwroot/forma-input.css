@@ -8,12 +8,14 @@
 
 .forma-field-input,
 .forma-text-box,
-.forma-search-box,
-.forma-search-toolbar-search,
-.forma-explorer-dialog-input,
-.forma-multi-select-search {
+.forma-search-box {
     display: block;
     inline-size: 100%;
+    /* An input stands exactly as tall as the button beside it. */
+    min-block-size: var(--control-size-md);
+    padding-block: var(--space-1);
+    padding-inline: var(--space-3);
+    font-size: var(--font-size-sm);
     line-height: var(--line-height-prose);
     color: var(--forma-input-color, var(--text-color));
     background-color: var(--forma-input-background-color, var(--input-background-color));
@@ -27,32 +29,31 @@
 
 .forma-field-input::placeholder,
 .forma-text-box::placeholder,
-.forma-search-box::placeholder,
-.forma-search-toolbar-search::placeholder,
-.forma-explorer-dialog-input::placeholder,
-.forma-multi-select-search::placeholder {
+.forma-search-box::placeholder {
     color: var(--forma-placeholder-color, var(--text-secondary-color));
     opacity: 1;
 }
 
 .forma-field-input:focus,
 .forma-text-box:focus,
-.forma-search-box:focus,
-.forma-search-toolbar-search:focus,
-.forma-explorer-dialog-input:focus,
-.forma-multi-select-search:focus {
+.forma-search-box:focus {
     outline: none;
     box-shadow: var(--focus-ring);
+}
+
+@media (pointer: coarse) {
+    .forma-field-input,
+    .forma-text-box,
+    .forma-search-box {
+        min-block-size: var(--control-size-touch);
+    }
 }
 
 /* Forced colours drops the shadow and overrides the border, leaving no focus ring. */
 @media (forced-colors: active) {
     .forma-field-input:focus,
     .forma-text-box:focus,
-    .forma-search-box:focus,
-    .forma-search-toolbar-search:focus,
-    .forma-explorer-dialog-input:focus,
-    .forma-multi-select-search:focus {
+    .forma-search-box:focus {
         outline: 2px solid Highlight;
         outline-offset: 1px;
     }

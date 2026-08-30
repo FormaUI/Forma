@@ -1,10 +1,10 @@
 <div class="forma-search-toolbar">
-    <input class="forma-search-toolbar-search"
-           type="search"
-           dir="auto"
-           placeholder="@SearchPlaceholder"
-           aria-label="@SearchPlaceholder"
-           @oninput="HandleSearchInput" />
+    <div class="forma-search-toolbar-search">
+        <FormaSearchBox Placeholder="@SearchPlaceholder"
+                        DebounceDelay="SearchDelay"
+                        OnSearch="OnSearch"
+                        aria-label="@SearchPlaceholder" />
+    </div>
     @if (Items.Count > 0)
     {
         <FormaToolbar Class="forma-search-toolbar-items" Label="@Label" Items="Items" ShowLabels="true" OnCommand="OnCommand" />

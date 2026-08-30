@@ -24,10 +24,7 @@
     /* An input is sized from its size attribute unless told otherwise, which is wider than a phone. */
     inline-size: 100%;
     min-inline-size: 0;
-    min-block-size: 2.125rem;
     padding-inline: calc(var(--space-3) + var(--icon-size-sm) + var(--space-1));
-    padding-block: var(--space-1);
-    font-size: var(--font-size-sm);
 }
 
 /* The placeholder is UI text, so an empty field follows the page rather than the value typed into it.
@@ -55,6 +52,6 @@
 
 @media (pointer: coarse) {
     .forma-search-box {
-        min-block-size: var(--control-size-lg);
+        min-block-size: var(--control-size-touch);
     }
 }

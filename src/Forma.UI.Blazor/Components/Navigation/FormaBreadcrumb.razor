@@ -28,15 +28,18 @@
                 }
                 else if (OnItemClick.HasDelegate)
                 {
-                    <button type="button"
-                            class="forma-breadcrumb-item @(item.IsCurrent ? "is-current" : "")"
-                            aria-current="@(item.IsCurrent ? "page" : null)"
-                            @ondragover="HandleDragOver"
-                            @ondragover:preventDefault="OnItemDrop.HasDelegate"
-                            @ondrop="() => HandleItemDropAsync(item)"
-                            @onclick="() => HandleItemClickAsync(item)">
-                        @item.Label
-                    </button>
+                    @* Drops land on the anchor, since a modifier such as preventDefault cannot be handed to a component. *@
+                    <span class="forma-breadcrumb-drop-target"
+                          @ondragover="HandleDragOver"
+                          @ondragover:preventDefault="OnItemDrop.HasDelegate"
+                          @ondrop="() => HandleItemDropAsync(item)">
+                        <FormaButton Variant="ButtonVariant.Ghost"
+                                     class="@(item.IsCurrent ? "forma-breadcrumb-item is-current" : "forma-breadcrumb-item")"
+                                     aria-current="@(item.IsCurrent ? "page" : null)"
+                                     OnClick="() => HandleItemClickAsync(item)">
+                            @item.Label
+                        </FormaButton>
+                    </span>
                 }
                 else
                 {
@@ -51,14 +54,16 @@
                     var menuId = $"{_menuIdPrefix}-{currentIndex}";
 
                     <span class="forma-breadcrumb-menu-anchor">
-                        <button type="button"
-                                class="forma-breadcrumb-chevron @(isOpen ? "is-open" : "")"
-                                aria-expanded="@(isOpen ? "true" : "false")"
-                                aria-controls="@(isOpen ? menuId : null)"
-                                aria-label="@L["Show options for {Label}", ("Label", item.Label)]"
-                                @onclick="() => ToggleChildren(currentIndex)">
+                        <FormaButton Variant="ButtonVariant.Ghost"
+                                     Size="ButtonSize.Mini"
+                                     IconOnly="true"
+                                     class="@(isOpen ? "forma-breadcrumb-chevron is-open" : "forma-breadcrumb-chevron")"
+                                     aria-expanded="@(isOpen ? "true" : "false")"
+                                     aria-controls="@(isOpen ? menuId : null)"
+                                     aria-label="@L["Show options for {Label}", ("Label", item.Label)]"
+                                     OnClick="() => ToggleChildren(currentIndex)">
                             <FormaIcon Icon="Glyph.ChevronRight" />
-                        </button>
+                        </FormaButton>
 
                         @if (isOpen)
                         {
@@ -70,11 +75,9 @@
                                   aria-label="@L["Show options for {Label}", ("Label", item.Label)]">
                                 @foreach (var child in children)
                                 {
-                                    <button type="button"
-                                            class="forma-breadcrumb-menu-item"
-                                            @onclick="() => HandleChildSelectedAsync(child)">
+                                    <FormaButton Variant="ButtonVariant.Ghost" class="forma-breadcrumb-menu-item" OnClick="() => HandleChildSelectedAsync(child)">
                                         @child.Label
-                                    </button>
+                                    </FormaButton>
                                 }
                             </span>
                         }

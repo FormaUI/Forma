@@ -92,66 +92,9 @@
     overflow: hidden;
 }
 
-.forma-explorer-view-button {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    inline-size: 2.25rem;
-    block-size: 2.25rem;
-    min-inline-size: 24px;
-    min-block-size: 24px;
-    border: none;
-    border-radius: var(--radius-sm);
-    background: transparent;
-    color: var(--text-muted-color);
-    cursor: pointer;
-    font-size: var(--font-size-sm);
-    touch-action: manipulation;
-    transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-@media (hover: hover) {
-    .forma-explorer-view-button:hover {
-        background: var(--hover-background-color);
-        color: var(--text-color);
-    }
-}
-
-.forma-explorer-view-button:focus-visible {
-    outline: none;
+/* The group clips its corners, so a view button rings inward. */
+::deep .forma-explorer-view-button:focus-visible {
     box-shadow: var(--focus-ring-inset);
-}
-
-.forma-explorer-view-button.is-active {
-    background: var(--hover-background-color);
-    color: var(--main-color);
-}
-
-/* An underline marks the active view, because the fill alone repeats what hover already draws. */
-.forma-explorer-view-button.is-active::after {
-    content: "";
-    position: absolute;
-    inset-block-end: var(--space-1);
-    inline-size: 1rem;
-    block-size: 0.125rem;
-    border-radius: var(--radius-sm);
-    background: currentColor;
-}
-
-@media (pointer: coarse) {
-    .forma-explorer-view-button {
-        inline-size: var(--control-size-lg);
-        block-size: var(--control-size-lg);
-    }
-}
-
-/* Sort Menu. The host class merges onto FormaButton's own element, so the trigger is reached through ::deep. */
-/* Matched to the view-mode buttons beside it, but only where FormaButton is not already enlarging it for touch. */
-@media (pointer: fine) {
-    .forma-explorer-toolbar-right ::deep .forma-explorer-sort-trigger {
-        min-block-size: 2.25rem;
-    }
 }
 
 .forma-explorer-sort-trigger-text {

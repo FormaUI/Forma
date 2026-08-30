@@ -239,13 +239,6 @@
     color: var(--text-color);
 }
 
-.forma-explorer-dialog-input {
-    min-block-size: 2.25rem;
-    padding-inline: var(--space-3);
-    padding-block: var(--space-2);
-    font-size: var(--font-size-sm);
-}
-
 /* --- Delete Message --- */
 .forma-explorer-delete-message {
     margin: 0;
@@ -276,7 +269,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    min-block-size: 3rem;
+    min-block-size: calc(var(--control-size-md) + var(--space-2));
     padding-block-end: var(--space-2);
 }
 
@@ -306,7 +299,7 @@
     display: inline-flex;
     align-items: center;
     gap: var(--space-1);
-    min-block-size: 2.25rem;
+    min-block-size: var(--control-size-md);
     padding-inline: var(--space-3);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-pill);
@@ -338,6 +331,6 @@
 
 @media (pointer: coarse) {
     .forma-explorer-scroll-sentinel ::deep .forma-explorer-load-more-button {
-        min-block-size: var(--control-size-lg);
+        min-block-size: var(--control-size-touch);
     }
 }

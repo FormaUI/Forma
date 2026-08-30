@@ -3,33 +3,18 @@
 
 <div class="forma-explorer-address-bar @(!string.IsNullOrEmpty(SearchQuery) ? "has-search-query" : "")">
     <div class="forma-explorer-nav-buttons" role="group" aria-label="@L["Navigation"]">
-        <button type="button"
-                class="forma-explorer-nav-button"
-                disabled="@(!CanGoBack)"
-                aria-label="@L["Back"]"
-                @onclick="OnBack">
-            <span class="forma-explorer-nav-arrow" aria-hidden="true"><FormaIcon Icon="Glyph.ArrowLeft" Size="IconSize.Small" /></span>
-        </button>
-        <button type="button"
-                class="forma-explorer-nav-button"
-                disabled="@(!CanGoForward)"
-                aria-label="@L["Forward"]"
-                @onclick="OnForward">
-            <span class="forma-explorer-nav-arrow" aria-hidden="true"><FormaIcon Icon="Glyph.ArrowRight" Size="IconSize.Small" /></span>
-        </button>
-        <button type="button"
-                class="forma-explorer-nav-button"
-                disabled="@(!CanGoUp)"
-                aria-label="@L["Up to Parent Folder"]"
-                @onclick="OnUp">
-            <FormaIcon Icon="Glyph.ArrowUp" Size="IconSize.Small" />
-        </button>
-        <button type="button"
-                class="forma-explorer-nav-button"
-                aria-label="@L["Refresh"]"
-                @onclick="OnRefresh">
-            <FormaIcon Icon="Glyph.Refresh" Size="IconSize.Small" />
-        </button>
+        <FormaButton Variant="ButtonVariant.Ghost" IconOnly="true" class="forma-explorer-nav-button" Disabled="@(!CanGoBack)" aria-label="@L["Back"]" OnClick="OnBack">
+            <span class="forma-explorer-nav-arrow" aria-hidden="true"><FormaIcon Icon="Glyph.ArrowLeft" /></span>
+        </FormaButton>
+        <FormaButton Variant="ButtonVariant.Ghost" IconOnly="true" class="forma-explorer-nav-button" Disabled="@(!CanGoForward)" aria-label="@L["Forward"]" OnClick="OnForward">
+            <span class="forma-explorer-nav-arrow" aria-hidden="true"><FormaIcon Icon="Glyph.ArrowRight" /></span>
+        </FormaButton>
+        <FormaButton Variant="ButtonVariant.Ghost" IconOnly="true" class="forma-explorer-nav-button" Disabled="@(!CanGoUp)" aria-label="@L["Up to Parent Folder"]" OnClick="OnUp">
+            <FormaIcon Icon="Glyph.ArrowUp" />
+        </FormaButton>
+        <FormaButton Variant="ButtonVariant.Ghost" IconOnly="true" class="forma-explorer-nav-button" aria-label="@L["Refresh"]" OnClick="OnRefresh">
+            <FormaIcon Icon="Glyph.Refresh" />
+        </FormaButton>
     </div>
 
     <div class="forma-explorer-breadcrumb-bar">

@@ -9,12 +9,14 @@
             var item = Items[i];
             var index = i;
             <li class="forma-sortable-list-item" @key="ItemKey(item)">
-                <button type="button"
-                        class="forma-sortable-list-handle"
-                        disabled="@Disabled"
-                        aria-label="@HandleLabel(index)">
-                    <FormaIcon Icon="Glyph.DragHandle" Size="IconSize.Small" />
-                </button>
+                <FormaButton Variant="ButtonVariant.Ghost"
+                             Size="ButtonSize.Mini"
+                             IconOnly="true"
+                             class="forma-sortable-list-handle"
+                             Disabled="@Disabled"
+                             aria-label="@HandleLabel(index)">
+                    <FormaIcon Icon="Glyph.DragHandle" />
+                </FormaButton>
                 <div class="forma-sortable-list-content">
                     @ItemTemplate(item)
                 </div>

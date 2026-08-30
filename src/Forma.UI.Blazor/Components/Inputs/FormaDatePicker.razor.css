@@ -8,8 +8,8 @@
     --forma-date-picker-primary-foreground-color: var(--main-foreground-color);
     --forma-date-picker-range-background-color: color-mix(in srgb, var(--forma-date-picker-primary-color) 8%, transparent);
     --forma-date-picker-border-color: var(--light-border-color);
-    --forma-date-picker-day-width: 2.5rem;
-    --forma-date-picker-day-height: 2.1875rem;
+    --forma-date-picker-day-width: var(--control-size-md);
+    --forma-date-picker-day-height: var(--control-size-md);
     --forma-date-picker-radius: var(--radius-md);
 
     position: relative;
@@ -56,30 +56,13 @@
 }
 
 /* ---------- clear ---------- */
-.forma-date-picker-clear {
+/* Clear floats at the end of the trigger; the button is FormaButton's, reached through ::deep, and warns in the danger color. */
+::deep .forma-date-picker-clear {
+    --forma-button-ghost-hover-color: var(--danger-color);
+    --forma-button-ghost-hover-background-color: color-mix(in srgb, var(--danger-color) 10%, transparent);
     position: absolute;
     inset-inline-end: var(--space-2);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.5rem;
-    height: 1.5rem;
-    border: none;
-    background: transparent;
-    color: var(--text-secondary-color);
-    font-size: var(--font-size-lg);
-    line-height: 1;
-    cursor: pointer;
-    border-radius: 50%;
-    padding: 0;
-    touch-action: manipulation;
-}
-
-@media (hover: hover) {
-    .forma-date-picker-clear:hover {
-        color: var(--danger-color);
-        background-color: color-mix(in srgb, var(--danger-color) 10%, transparent);
-    }
+    border-radius: var(--radius-pill);
 }
 
 /* ---------- backdrop ---------- */
@@ -331,22 +314,17 @@
 
 @media (pointer: coarse) {
     .forma-date-picker {
-        --forma-date-picker-day-width: 2.75rem;
-        --forma-date-picker-day-height: 2.75rem;
+        --forma-date-picker-day-width: var(--control-size-touch);
+        --forma-date-picker-day-height: var(--control-size-touch);
     }
 
     .forma-date-picker-trigger,
     .forma-date-picker-select {
-        min-block-size: var(--control-size-lg);
-    }
-
-    .forma-date-picker-clear {
-        inline-size: var(--control-size-lg);
-        block-size: var(--control-size-lg);
+        min-block-size: var(--control-size-touch);
     }
 
     ::deep .forma-date-picker-nav.forma-date-picker-nav {
-        inline-size: var(--control-size-lg);
-        block-size: var(--control-size-lg);
+        inline-size: var(--control-size-touch);
+        block-size: var(--control-size-touch);
     }
 }

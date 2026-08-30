@@ -25,7 +25,7 @@
             var cut = ctx.Render(@<FormaSearchToolbar OnSearch="Noop" SearchPlaceholder="Search..." />);
 
             // Assert
-            cut.Find("input.forma-search-toolbar-search");
+            cut.Find(".forma-search-toolbar-search input");
         }
 
         [Fact]
@@ -110,7 +110,7 @@
             var cut = ctx.Render(@<FormaSearchToolbar OnSearch="Noop" SearchPlaceholder="Search..." Label="Actions" Items="actions" />);
 
             // Assert
-            cut.Find("input.forma-search-toolbar-search");
+            cut.Find(".forma-search-toolbar-search input");
             Assert.Equal("Add", cut.Find(".forma-search-toolbar-items button").TextContent);
         }
 

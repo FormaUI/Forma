@@ -18,52 +18,15 @@
     flex-shrink: 0;
 }
 
-.forma-explorer-nav-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    inline-size: var(--control-size-sm);
-    block-size: var(--control-size-sm);
-    min-inline-size: 24px;
-    min-block-size: 24px;
-    border: none;
-    border-radius: var(--radius-sm);
-    background: transparent;
-    color: var(--text-color);
-    cursor: pointer;
-    font-size: var(--font-size-xs);
-    touch-action: manipulation;
-    transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-@media (hover: hover) {
-    .forma-explorer-nav-button:not(:disabled):hover {
-        background: var(--hover-background-color);
-        color: var(--main-color);
-    }
-}
-
-@media (pointer: coarse) {
-    .forma-explorer-nav-button {
-        inline-size: var(--control-size-lg);
-        block-size: var(--control-size-lg);
-    }
-}
-
-.forma-explorer-nav-button:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
 /* An arrow glyph is not bidi-mirrored, so back and forward are turned to follow the reading direction. */
-.forma-explorer-nav-arrow:dir(rtl) {
+::deep .forma-explorer-nav-arrow:dir(rtl) {
     rotate: 180deg;
 }
 
 .forma-explorer-breadcrumb-bar {
     flex: 1;
     min-inline-size: 0;
-    min-block-size: 2.25rem;
+    min-block-size: var(--control-size-md);
     display: flex;
     align-items: center;
     gap: var(--space-1);

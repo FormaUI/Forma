@@ -6,27 +6,14 @@
     margin-block-end: var(--space-4);
 }
 
+/* The field takes the room the actions leave, and folds under them once there is less than it needs. */
 .forma-search-toolbar-search {
     flex: 1 1 12.5rem;
-    padding-block: var(--space-2);
-    padding-inline: var(--space-3);
-    font-size: var(--font-size-sm);
-}
-
-/* The placeholder is UI text, so an empty field follows the page; dir="auto" would fall back to ltr and strand an RTL placeholder. */
-.forma-search-toolbar-search:placeholder-shown {
-    direction: inherit;
-    unicode-bidi: normal;
+    min-inline-size: 0;
 }
 
 /* forma-search-toolbar-items lands on FormaToolbar's own FormaCommandBar output, not this component's. */
 ::deep .forma-search-toolbar-items {
     flex-shrink: 0;
     margin-inline-start: auto;
-}
-
-@media (pointer: coarse) {
-    .forma-search-toolbar-search {
-        min-block-size: var(--control-size-lg);
-    }
 }

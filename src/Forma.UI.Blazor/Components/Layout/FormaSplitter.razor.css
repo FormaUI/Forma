@@ -81,10 +81,10 @@
 
 @media (pointer: coarse) {
     .forma-splitter-vertical {
-        inline-size: var(--forma-splitter-coarse-thickness, var(--control-size-lg));
+        inline-size: var(--forma-splitter-coarse-thickness, var(--control-size-touch));
     }
 
     .forma-splitter-horizontal {
-        block-size: var(--forma-splitter-coarse-thickness, var(--control-size-lg));
+        block-size: var(--forma-splitter-coarse-thickness, var(--control-size-touch));
     }
 }
