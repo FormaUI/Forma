@@ -292,7 +292,8 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
         {
             IsDisabled = Disabled,
             IsReadOnly = ReadOnly,
-            IsMaximized = _isMaximized
+            IsMaximized = _isMaximized,
+            CanExecuteCommand = _commands.Contains
         };
     }
 

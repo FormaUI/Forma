@@ -143,7 +143,9 @@ public sealed class TextEditorPlugin : IComposerEditorPlugin
 
         var content = command switch
         {
-            NumberLinesCommand => string.Join('\n', lines.Select((line, index) => $"{(index + 1).ToString(CultureInfo.CurrentCulture)}. {line}")),
+            NumberLinesCommand => lines.All(IsNumbered)
+                ? string.Join('\n', lines.Select(StripNumber))
+                : string.Join('\n', lines.Select((line, index) => $"{(index + 1).ToString(CultureInfo.CurrentCulture)}. {line}")),
             SortAscendingCommand => string.Join('\n', lines.Order(StringComparer.CurrentCulture)),
             SortDescendingCommand => string.Join('\n', lines.OrderDescending(StringComparer.CurrentCulture)),
             _ => null,
@@ -164,6 +166,12 @@ public sealed class TextEditorPlugin : IComposerEditorPlugin
 
         _wordCount?.Text = Describe(content);
     }
+
+    private static bool IsNumbered(string line)
+        => line.Length > 0 && char.IsDigit(line[0]) && line.IndexOf(". ", StringComparison.Ordinal) is > 0 and var dot && line[..dot].All(char.IsDigit);
+
+    private static string StripNumber(string line)
+        => line[(line.IndexOf(". ", StringComparison.Ordinal) + 2)..];
 
     private static string Describe(string content)
     {

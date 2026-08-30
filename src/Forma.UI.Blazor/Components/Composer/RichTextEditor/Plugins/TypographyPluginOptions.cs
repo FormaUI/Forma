@@ -8,7 +8,11 @@ public sealed record TypographyPluginOptions
 
     /// <summary>The font families offered in the font picker.</summary>
     public IReadOnlyList<string> FontFamilies { get; init; } =
-        ["Arial", "Georgia", "Helvetica", "Times New Roman", "monospace"];
+    [
+        "Arial", "Helvetica", "Verdana", "Tahoma", "Trebuchet MS", "Segoe UI",
+        "Georgia", "Times New Roman", "Garamond", "Palatino", "Book Antiqua",
+        "Courier New", "Consolas", "Lucida Console", "monospace",
+    ];
 
     /// <summary>The font sizes offered in the size picker, labelled by their pixel size at the reader's default.</summary>
     public IReadOnlyList<string> FontSizes { get; init; } =

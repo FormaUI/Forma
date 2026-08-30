@@ -1,6 +1,8 @@
 namespace Forma.UI.Blazor.Components.Composer.RichTextEditor;
 
+using Forma.UI.Blazor.Components.Composer.RichTextEditor.Plugins;
 using Forma.UI.Blazor.Interop.Behaviours;
+using Forma.UI.Features.Composer.Editing;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -13,6 +15,8 @@ public sealed partial class FormaRichTextBubbleMenu : ComponentBase, IAsyncDispo
 
     /// <summary>Callback invoked when a formatting command is clicked.</summary>
     [Parameter] public EventCallback<string> OnCommand { get; set; }
+
+    [CascadingParameter] private ComposerContext? Context { get; set; }
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
@@ -36,4 +40,11 @@ public sealed partial class FormaRichTextBubbleMenu : ComponentBase, IAsyncDispo
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
         => await _positioner.DisposeAsync();
+
+    private bool HasItems
+        => CanExecute(BasicFormattingPlugin.BoldCommand) || CanExecute(BasicFormattingPlugin.ItalicCommand) || CanExecute(BasicFormattingPlugin.UnderlineCommand)
+            || CanExecute(BasicFormattingPlugin.CodeCommand) || CanExecute(ParagraphFormatPlugin.Heading1Command) || CanExecute(ParagraphFormatPlugin.Heading2Command);
+
+    private bool CanExecute(string command)
+        => Context?.CanExecuteCommand(command) ?? true;
 }

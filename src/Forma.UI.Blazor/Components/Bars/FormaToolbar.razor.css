@@ -82,9 +82,6 @@
 }
 
 .forma-toolbar-menu-value {
-    max-inline-size: 7ch;
-    overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
 }
 

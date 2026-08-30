@@ -54,7 +54,27 @@
         }
 
         [Fact]
-        public void Should_render_bubble_menu_when_active()
+        public void Should_render_bubble_menu_with_the_commands_the_composer_can_run()
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            var model = new TestModel();
+            var editor = new RichTextEditorPlugin();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="[editor, new BasicFormattingPlugin(editor)]" />);
+
+            // Assert
+            var menu = cut.Find(".forma-composer-bubble-menu");
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("toolbar", menu.GetAttribute("role"));
+                Assert.Equal(4, menu.QuerySelectorAll("button").Length);
+            });
+        }
+
+        [Fact]
+        public void Should_render_no_bubble_menu_when_no_plugin_runs_its_commands()
         {
             // Arrange
             using var ctx = new FormaRichTextEditorTests();
@@ -64,9 +84,7 @@
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="[new RichTextEditorPlugin()]" />);
 
             // Assert
-            var menu = cut.Find(".forma-composer-bubble-menu");
-            Assert.NotNull(menu);
-            Assert.Equal("toolbar", menu.GetAttribute("role"));
+            Assert.Empty(cut.FindAll(".forma-composer-bubble-menu"));
         }
     }
 }
