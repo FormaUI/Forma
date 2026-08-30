@@ -3,7 +3,7 @@
  */
 
 import { attach as attachDragGesture } from './DragGesture.js';
-import { FocusCycle } from './FocusCycle.js';
+import { Focus } from './Focus.js';
 
 /** Space kept between the element and the selection, and between the element and the viewport's edge. */
 const GAP = 8;
@@ -51,7 +51,7 @@ class SelectionFollower {
 
         const { signal } = this.#controller;
 
-        new FocusCycle(target, signal);
+        new Focus(target, { wrap: true }, signal);
         target.addEventListener('keydown', event => this.#handleKeyDown(event), { signal });
 
         if (this.#handleSelector) {

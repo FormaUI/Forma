@@ -32,7 +32,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     private ElementReference _composerElement;
     private DotNetObjectReference<FormaComposer>? _selfReference;
     private KeyBindings _keyBindings = default!;
-    private FocusSequence _focusSequence = default!;
+    private Focus _focus = default!;
     private JsComposerAssetLoader _assetLoader = default!;
     private IComposerHistory _history = default!;
     private IHtmlSanitizer _sanitizer = default!;
@@ -95,7 +95,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     protected override async Task OnInitializedAsync()
     {
         _keyBindings = new KeyBindings(JS);
-        _focusSequence = new FocusSequence(JS);
+        _focus = new Focus(JS);
         _assetLoader = new JsComposerAssetLoader(JS);
         _selfReference = DotNetObjectReference.Create(this);
 
@@ -204,7 +204,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
 
         await _keyBindings.AttachAsync(_composerElement, _selfReference!, ToKeyBindings(_keyMap.Bindings));
         // The canvas is where focus lands first; Tab then reaches the composer's own commands before leaving it.
-        await _focusSequence.AttachAsync(_composerElement, [".forma-composer-canvas"]);
+        await _focus.AttachAsync(_composerElement, order: [".forma-composer-canvas"]);
         await _assetLoader.LoadAssetsAsync(_activeEditor.Assets);
     }
 
@@ -429,7 +429,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
 
         _selfReference?.Dispose();
         await _assetLoader.DisposeAsync();
-        await _focusSequence.DisposeAsync();
+        await _focus.DisposeAsync();
         await _keyBindings.DisposeAsync();
     }
 }

@@ -7,7 +7,7 @@
  * together for as long as the popup is open.
  */
 
-import { FocusCycle } from './FocusCycle.js';
+import { Focus } from './Focus.js';
 
 /** Distance between the anchor and the popup. */
 const GAP = 4;
@@ -56,7 +56,7 @@ class AnchoredPopup {
         this.#resizeObserver.observe(this.#popup);
 
         if (this.#keepsFocus) {
-            new FocusCycle(this.#popup, this.#placement.signal);
+            new Focus(this.#popup, { wrap: true }, this.#placement.signal);
         }
 
         place();
