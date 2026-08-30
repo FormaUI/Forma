@@ -74,6 +74,15 @@ describe('SelectionFollower', () => {
         expect(menu.style.left).toBe('180px'); // 200 + 80 / 2 - 120 / 2
     });
 
+    it('shows the bar at once for a selection that already exists when it attaches', () => {
+        selectText(false, false);
+
+        attach(menu, editor, { activeClass: 'is-visible' });
+
+        expect(menu.classList.contains('is-visible')).toBe(true);
+        expect(menu.style.top).toBe('128px');
+    });
+
     it('places the bar above the selection when asked to', () => {
         attach(menu, editor, { activeClass: 'is-visible', placement: 'above' });
         select();

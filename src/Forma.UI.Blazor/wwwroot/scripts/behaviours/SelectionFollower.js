@@ -69,6 +69,8 @@ class SelectionFollower {
         document.addEventListener('selectionchange', () => this.update(), { signal });
         window.addEventListener('resize', () => this.update(), { signal });
         window.addEventListener('scroll', () => this.update(), { signal, capture: true, passive: true });
+
+        this.update();
     }
 
     #handleKeyDown(event) {
