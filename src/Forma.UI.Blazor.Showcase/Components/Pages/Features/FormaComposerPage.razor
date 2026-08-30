@@ -98,7 +98,7 @@
 
 <div class="demo-section">
     <h2>@L["View Commands"]</h2>
-    <p class="description">@L["Preview and Maximize apply to whichever editor is active, so both are engine commands rather than rich text plugins. Press Preview for a read-only rendering of the document, and Maximize to fill the viewport; press either again to return."]</p>
+    <p class="description">@L["Preview and Maximize apply to whichever editor is active, so both are engine commands rather than rich text plugins. Press Preview for a read-only rendering of the document, and Maximize to fill the viewport; press either again to return. Selection Bar shows or hides the formatting bar that follows a selection; drag its handle to move it."]</p>
     <div class="demo-box">
         <FormaComposer @bind-Value="_viewDoc" Plugins="_viewPlugins" />
     </div>
@@ -162,7 +162,8 @@
         _statusPlugins = [_statusTextPlugin];
         _sourcePlugins = [_sourceOnlyPlugin];
         _demoPlugins = [_everythingTextPlugin, _everythingSourcePlugin, new TimestampPlugin(), new CleanupPlugin()];
-        _viewPlugins = [new RichTextEditorPlugin(), new MaximizePlugin(), new PreviewPlugin()];
+        var richView = new RichTextEditorPlugin();
+        _viewPlugins = [richView, new BasicFormattingPlugin(richView), new MaximizePlugin(), new PreviewPlugin(), new SelectionBarPlugin()];
 
         // Plugins are discovered from the library.
         _everyPlugins = ComposerPluginDiscovery.Discover([new RichTextEditorPlugin()], typeof(RichTextEditorPlugin).Assembly);

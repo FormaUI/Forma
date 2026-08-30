@@ -52,6 +52,9 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
     private bool ContentEditable
         => !IsDisabled && !IsReadOnly;
 
+    private bool IsSelectionBarShown
+        => Context?.IsSelectionBarShown ?? true;
+
     /// <inheritdoc />
     protected override void OnInitialized()
     {

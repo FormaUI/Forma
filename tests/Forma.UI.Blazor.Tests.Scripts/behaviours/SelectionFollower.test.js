@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { attach } from '#behaviours/SelectionFollower.js';
+import { pointerEvent, stubPointerCapture } from '#support/platform.js';
 
 describe('SelectionFollower', () => {
     /** @type {HTMLElement} */
@@ -12,7 +13,7 @@ describe('SelectionFollower', () => {
             <div id="editor" contenteditable="true">
                 <p id="text">Selected content</p>
             </div>
-            <div id="menu" class="selection-bar"></div>
+            <div id="menu" class="selection-bar"><button id="handle">Move</button><button id="bold">Bold</button></div>
         `;
         editor = document.querySelector('#editor');
         menu = document.querySelector('#menu');
@@ -29,6 +30,7 @@ describe('SelectionFollower', () => {
         });
 
         globalThis.innerWidth = 1024;
+        globalThis.innerHeight = 768;
     });
 
     const selectText = (collapsed = false, outside = false) => {
@@ -56,20 +58,32 @@ describe('SelectionFollower', () => {
         return range;
     };
 
-    it('shows and positions the selection bar when a range is selected inside the editor', () => {
-        attach(menu, editor, { activeClass: 'is-visible' });
-        selectText(false, false);
-
+    const select = () => {
+        const range = selectText(false, false);
         document.dispatchEvent(new Event('selectionchange'));
 
+        return range;
+    };
+
+    it('shows the selection bar beneath a range selected inside the editor', () => {
+        attach(menu, editor, { activeClass: 'is-visible' });
+        select();
+
         expect(menu.classList.contains('is-visible')).toBe(true);
+        expect(menu.style.top).toBe('128px'); // 120 (bottom) + 8 (gap)
+        expect(menu.style.left).toBe('180px'); // 200 + 80 / 2 - 120 / 2
+    });
+
+    it('places the bar above the selection when asked to', () => {
+        attach(menu, editor, { activeClass: 'is-visible', placement: 'above' });
+        select();
+
         expect(menu.style.top).toBe('62px'); // 100 (top) - 30 (height) - 8 (gap)
     });
 
     it('hides the menu when selection is collapsed', () => {
         attach(menu, editor, { activeClass: 'is-visible' });
-        selectText(false, false);
-        document.dispatchEvent(new Event('selectionchange'));
+        select();
         expect(menu.classList.contains('is-visible')).toBe(true);
 
         selectText(true, false);
@@ -87,8 +101,20 @@ describe('SelectionFollower', () => {
         expect(menu.classList.contains('is-visible')).toBe(false);
     });
 
-    it('positions below selection when not enough room above', () => {
+    it('moves above the selection when the viewport leaves no room beneath', () => {
         attach(menu, editor, { activeClass: 'is-visible' });
+        const range = selectText(false, false);
+        range.getBoundingClientRect = () => ({
+            top: 730, bottom: 750, left: 200, right: 280, width: 80, height: 20, x: 200, y: 730,
+        });
+
+        document.dispatchEvent(new Event('selectionchange'));
+
+        expect(menu.style.top).toBe('692px'); // 730 (top) - 30 (height) - 8 (gap)
+    });
+
+    it('moves beneath the selection when asked above with no room there', () => {
+        attach(menu, editor, { activeClass: 'is-visible', placement: 'above' });
         const range = selectText(false, false);
         range.getBoundingClientRect = () => ({
             top: 10, bottom: 30, left: 200, right: 280, width: 80, height: 20, x: 200, y: 10,
@@ -99,10 +125,114 @@ describe('SelectionFollower', () => {
         expect(menu.style.top).toBe('38px'); // 30 (bottom) + 8 (gap)
     });
 
+    it('keeps the displacement the handle was dragged by across selections', () => {
+        attach(menu, editor, { activeClass: 'is-visible', handleSelector: '#handle' });
+        select();
+
+        const handle = document.querySelector('#handle');
+        const pointer = (type, target, clientX, clientY) => target.dispatchEvent(pointerEvent(type, { clientX, clientY }));
+        stubPointerCapture(menu);
+
+        pointer('pointerdown', handle, 50, 140);
+        pointer('pointermove', menu, 50, 180);
+        pointer('pointerup', menu, 50, 180);
+
+        expect(menu.style.top).toBe('168px'); // 128 + 40 dragged
+
+        select();
+
+        expect(menu.style.top).toBe('168px');
+    });
+
+    it('settles a drag past the viewport edge at the edge, with no dead distance to drag back', () => {
+        attach(menu, editor, { activeClass: 'is-visible', handleSelector: '#handle' });
+        select();
+
+        const handle = document.querySelector('#handle');
+        const pointer = (type, target, clientX, clientY) => target.dispatchEvent(pointerEvent(type, { clientX, clientY }));
+        stubPointerCapture(menu);
+
+        pointer('pointerdown', handle, 50, 140);
+        pointer('pointermove', menu, 50, 2000);
+        pointer('pointerup', menu, 50, 2000);
+        expect(menu.style.top).toBe('730px'); // 768 - 30 (height) - 8 (gap)
+
+        pointer('pointerdown', handle, 50, 140);
+        pointer('pointermove', menu, 50, 130);
+        pointer('pointerup', menu, 50, 130);
+
+        expect(menu.style.top).toBe('720px');
+    });
+
+    it('holds the bar where the pointer has it while the selection changes mid-drag', () => {
+        attach(menu, editor, { activeClass: 'is-visible', handleSelector: '#handle' });
+        select();
+
+        const handle = document.querySelector('#handle');
+        const pointer = (type, target, clientX, clientY) => target.dispatchEvent(pointerEvent(type, { clientX, clientY }));
+        stubPointerCapture(menu);
+
+        pointer('pointerdown', handle, 50, 140);
+        pointer('pointermove', menu, 50, 180);
+        selectText(true, false);
+        document.dispatchEvent(new Event('selectionchange'));
+
+        expect(menu.classList.contains('is-visible')).toBe(true);
+        expect(menu.style.top).toBe('168px');
+
+        pointer('pointerup', menu, 50, 180);
+        select();
+
+        expect(menu.style.top).toBe('168px');
+    });
+
+    it('keeps the offset a hidden bar was nudged by for its next showing', () => {
+        attach(menu, editor, { activeClass: 'is-visible', handleSelector: '#handle' });
+        select();
+        const shown = menu.getBoundingClientRect;
+        selectText(true, false);
+        document.dispatchEvent(new Event('selectionchange'));
+        menu.getBoundingClientRect = () => ({ top: 0, bottom: 0, left: 0, right: 0, width: 0, height: 0, x: 0, y: 0 });
+
+        const handle = document.querySelector('#handle');
+        handle.focus();
+        handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }));
+
+        menu.getBoundingClientRect = shown;
+        select();
+
+        expect(menu.style.top).toBe('136px'); // 128 + 8
+    });
+
+    it('nudges the bar with the arrow keys on the handle', () => {
+        attach(menu, editor, { activeClass: 'is-visible', handleSelector: '#handle' });
+        select();
+
+        const handle = document.querySelector('#handle');
+        handle.focus();
+        const event = new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true, cancelable: true });
+        handle.dispatchEvent(event);
+
+        expect(event.defaultPrevented).toBe(true);
+        expect(menu.style.top).toBe('120px'); // 128 - 8
+    });
+
+    it('leaves the arrow keys alone away from the handle', () => {
+        attach(menu, editor, { activeClass: 'is-visible', handleSelector: '#handle' });
+        select();
+
+        const bold = document.querySelector('#bold');
+        bold.focus();
+        const event = new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true, cancelable: true });
+        bold.dispatchEvent(event);
+
+        expect(event.defaultPrevented).toBe(false);
+        expect(menu.style.top).toBe('128px');
+    });
+
     it('hides and removes listeners once disposed', () => {
         const handle = attach(menu, editor, { activeClass: 'is-visible' });
-        selectText(false, false);
-        document.dispatchEvent(new Event('selectionchange'));
+        select();
         expect(menu.classList.contains('is-visible')).toBe(true);
 
         handle.dispose();

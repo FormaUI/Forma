@@ -98,6 +98,15 @@ describe('DragGesture', () => {
             expect(reported).toEqual([]);
         });
 
+        it('counts travel in any direction when asked to', () => {
+            start({ axis: 'any' });
+
+            press({ clientX: 0 });
+            move({ clientX: 400, clientY: 300 });
+
+            expect(stages()).toEqual(['start', 'move']);
+        });
+
         it('reports each move once the drag is under way', () => {
             start();
 

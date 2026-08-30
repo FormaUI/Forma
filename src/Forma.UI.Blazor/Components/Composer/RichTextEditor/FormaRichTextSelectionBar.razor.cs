@@ -6,7 +6,7 @@ using Forma.UI.Features.Composer.Editing;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>Floating formatting bar positioned over an active text selection, carrying the items plugins placed on the selection row.</summary>
+/// <summary>Floating formatting bar positioned beneath an active text selection, carrying the items plugins placed on the selection row.</summary>
 public sealed partial class FormaRichTextSelectionBar : ComponentBase, IAsyncDisposable
 {
     /// <summary>The editor element this selection bar is scoped to.</summary>
@@ -17,6 +17,9 @@ public sealed partial class FormaRichTextSelectionBar : ComponentBase, IAsyncDis
 
     /// <summary>The class the follower sets on the bar while a selection is active.</summary>
     private const string ActiveClass = "forma-composer-selection-bar-active";
+
+    /// <summary>The handle that drags the bar to where the author wants it.</summary>
+    private const string HandleSelector = ".forma-composer-selection-bar-handle";
 
     [CascadingParameter] private ComposerSelectionBar? Bar { get; set; }
 
@@ -35,7 +38,7 @@ public sealed partial class FormaRichTextSelectionBar : ComponentBase, IAsyncDis
     {
         if (!_isAttached && EditorElement.HasValue && EditorElement.Value.Id is not null && _menuElement.Id is not null)
         {
-            _isAttached = await _follower.AttachAsync(_menuElement, EditorElement.Value, ActiveClass);
+            _isAttached = await _follower.AttachAsync(_menuElement, EditorElement.Value, ActiveClass, SelectionFollowerPlacement.Below, HandleSelector);
         }
     }
 

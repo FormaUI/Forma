@@ -13,7 +13,7 @@
          tabindex="0"
          spellcheck="true"></div>
 
-    @if (!IsDisabled && !IsReadOnly && _isAttached)
+    @if (!IsDisabled && !IsReadOnly && _isAttached && IsSelectionBarShown)
     {
         <FormaRichTextSelectionBar EditorElement="_editorElement" OnCommand="HandleCommand" />
     }

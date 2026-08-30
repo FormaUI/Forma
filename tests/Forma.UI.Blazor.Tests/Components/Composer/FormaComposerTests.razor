@@ -1078,6 +1078,32 @@
         }
 
         [Fact]
+        public void Should_release_the_selection_bar_toggle_while_the_bar_is_hidden()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var plugins = new IComposerPlugin[] { new SelectionBarPlugin() };
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            var composer = cut.FindComponent<FormaComposer>().Instance;
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal("true", cut.Find("button[aria-label='Selection Bar']").GetAttribute("aria-pressed")));
+
+            // Act
+            cut.InvokeAsync(() => composer.HandleCommandAsync(ComposerCommands.SelectionBar));
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal("false", cut.Find("button[aria-label='Selection Bar']").GetAttribute("aria-pressed")));
+
+            // Act 2 (show again)
+            cut.InvokeAsync(() => composer.HandleCommandAsync(ComposerCommands.SelectionBar));
+
+            // Assert 2
+            cut.WaitForAssertion(() => Assert.Equal("true", cut.Find("button[aria-label='Selection Bar']").GetAttribute("aria-pressed")));
+        }
+
+        [Fact]
         public void Should_open_preview_modal_when_preview_command_is_handled()
         {
             // Arrange

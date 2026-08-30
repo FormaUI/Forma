@@ -116,8 +116,9 @@ public sealed partial class FormaComposerCommandBar : ComponentBase
     private FormaToolbarOption PatchOption(FormaToolbarOption option)
         => option with { Title = L[option.Title] };
 
-    // The maximize toggle's own id, since the engine reports that state rather than the selection.
+    // The engine's own toggles, whose state it reports rather than the selection.
     private const string MaximizeToggleId = "maximize";
+    private const string SelectionBarToggleId = "selection-bar";
 
     /// <summary>What the toolbar treats as active: the styles the selection reports, plus the engine's own chrome state.</summary>
     private IReadOnlySet<string> ActiveStates
@@ -131,10 +132,15 @@ public sealed partial class FormaComposerCommandBar : ComponentBase
                 states.UnionWith(styles);
             }
 
-            // Maximize is engine-owned chrome rather than a text style, so the selection never reports it.
+            // Engine-owned chrome rather than a text style, so the selection never reports it.
             if (Context?.IsMaximized ?? false)
             {
                 states.Add(MaximizeToggleId);
+            }
+
+            if (Context?.IsSelectionBarShown ?? true)
+            {
+                states.Add(SelectionBarToggleId);
             }
 
             return states;

@@ -437,14 +437,17 @@ Clipboard note: browsers do not grant programmatic cut/copy/paste without user a
 
 ### 4.3a Engine-agnostic plugins
 
-`MaximizePlugin` and `PreviewPlugin` are not rich text features: full-viewport editing and a rendered preview are useful to any editor, so both declare `SupportedEditorIds` empty and take no dependency on `RichTextEditorPlugin`. They live at `Composer/Plugins/`, one level up from the editor-specific ones.
+`MaximizePlugin`, `PreviewPlugin` and `SelectionBarPlugin` are not rich text features: full-viewport editing, a rendered preview and the choice of whether a formatting bar follows the selection are useful to any editor, so all three declare `SupportedEditorIds` empty and take no dependency on `RichTextEditorPlugin`. They live at `Composer/Plugins/`, one level up from the editor-specific ones.
 
 | Plugin | Covers | Coi origin |
 |---|---|---|
 | `MaximizePlugin` | Full-viewport editing | Maximize |
 | `PreviewPlugin` | Read-only rendered preview of the document | Preview |
+| `SelectionBarPlugin` | Showing or hiding the bar that follows the selection | — |
 
-Both commands are also registered as **engine** commands (`ComposerCommands.Maximize`, `ComposerCommands.Preview`) on `FormaComposer` itself, which owns the maximized/preview state because it, not any one editor, renders the chrome that changes. `ComposerCommandRegistry.ExecuteAsync` resolves an engine command before ever consulting a plugin, so each plugin's `ExecuteAsync` is unreachable by design — the plugin exists only to contribute the toolbar entry that names the engine's own command.
+All three commands are also registered as **engine** commands (`ComposerCommands.Maximize`, `ComposerCommands.Preview`, `ComposerCommands.SelectionBar`) on `FormaComposer` itself, which owns the maximized, preview and selection-bar state because it, not any one editor, renders the chrome that changes.
+
+The selection bar itself sits beneath the selection, moving above it only when the viewport leaves no room beneath, so it never covers the line being read or the toolbar above the first line. Its handle drags it, or arrow-keys it, to wherever the author wants it, and the bar keeps that displacement from one selection to the next. `ComposerCommandRegistry.ExecuteAsync` resolves an engine command before ever consulting a plugin, so each plugin's `ExecuteAsync` is unreachable by design — the plugin exists only to contribute the toolbar entry that names the engine's own command.
 
 ### 4.4 Plugin options
 
@@ -670,7 +673,8 @@ src/Forma.UI.Blazor/Components/Composer/
 │
 ├── Plugins/                                # namespace …Composer.Plugins — apply to any editor
 │   ├── MaximizePlugin.cs
-│   └── PreviewPlugin.cs
+│   ├── PreviewPlugin.cs
+│   └── SelectionBarPlugin.cs
 │
 ├── RichTextEditor/
 │   ├── RichTextEditorPlugin.cs

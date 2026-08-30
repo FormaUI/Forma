@@ -1,12 +1,16 @@
-/* FormaRichTextSelectionBar — the formatting bar floating over a selection */
+/* FormaRichTextSelectionBar — the formatting bar floating beneath a selection */
 
-/* Twelve commands at the control step with the row's gaps between them: 12 × 2rem + 11 × 0.25rem = 26.75rem;
-   more scroll within the bar. */
+/* The handle plus twelve commands at the control step with the row's gaps between them:
+   13 × 2rem + 12 × 0.25rem = 29rem; more scroll within the bar. */
 .forma-composer-selection-bar {
     position: fixed;
     z-index: var(--z-index-popover, 1060);
     display: none;
-    max-inline-size: 26.75rem;
+    align-items: center;
+    gap: var(--space-1);
+    /* Sized by its content, so where it is placed never squeezes it against the viewport's edge. */
+    inline-size: max-content;
+    max-inline-size: 29rem;
     padding: var(--space-1);
     background-color: var(--input-background-color);
     color: var(--text-color);
@@ -14,8 +18,21 @@
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-medium);
     box-sizing: border-box;
+    user-select: none;
 }
 
 .forma-composer-selection-bar.forma-composer-selection-bar-active {
-    display: block;
+    display: flex;
+}
+
+/* The drag is driven by pointer events, so the handle takes no touch gesture. */
+::deep .forma-composer-selection-bar-handle {
+    --forma-button-ghost-color: var(--text-muted-color);
+    flex-shrink: 0;
+    cursor: grab;
+    touch-action: none;
+}
+
+::deep .forma-composer-selection-bar-handle:active:not(:disabled) {
+    cursor: grabbing;
 }

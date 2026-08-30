@@ -40,6 +40,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     private bool _isInitialized;
     private bool _isJsStarted;
     private bool _isMaximized;
+    private bool _isSelectionBarShown = true;
     private bool _isPreviewOpen;
     private bool _isAttachOpen;
 
@@ -106,6 +107,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
         _commands.RegisterEngineCommand(ComposerCommands.Redo, HandleRedoAsync);
         _commands.RegisterEngineCommand(ComposerCommands.Maximize, HandleMaximizeAsync);
         _commands.RegisterEngineCommand(ComposerCommands.Preview, HandlePreviewAsync);
+        _commands.RegisterEngineCommand(ComposerCommands.SelectionBar, HandleSelectionBarAsync);
         _commands.RegisterEngineCommand(ComposerCommands.Attach, HandleAttachAsync);
         _regions.Changed += HandleRegionsChanged;
 
@@ -127,6 +129,14 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     private Task HandlePreviewAsync()
     {
         _isPreviewOpen = !_isPreviewOpen;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task HandleSelectionBarAsync()
+    {
+        _isSelectionBarShown = !_isSelectionBarShown;
+        RebuildContext();
         StateHasChanged();
         return Task.CompletedTask;
     }
@@ -292,7 +302,8 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
         {
             IsDisabled = Disabled,
             IsReadOnly = ReadOnly,
-            IsMaximized = _isMaximized
+            IsMaximized = _isMaximized,
+            IsSelectionBarShown = _isSelectionBarShown,
         };
     }
 

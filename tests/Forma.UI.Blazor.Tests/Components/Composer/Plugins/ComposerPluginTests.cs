@@ -56,6 +56,31 @@ public sealed class ComposerPluginTests
     }
 
     [Fact]
+    public void SelectionBarPlugin_should_apply_to_every_editor()
+    {
+        // Arrange
+        IComposerFeaturePlugin plugin = new SelectionBarPlugin();
+
+        // Assert
+        Assert.Equal("selection-bar", plugin.Id);
+        Assert.Empty(plugin.SupportedEditorIds);
+        Assert.NotEmpty(plugin.Items);
+    }
+
+    [Fact]
+    public async Task SelectionBarPlugin_execute_should_be_a_no_op_because_the_engine_claims_the_command()
+    {
+        // Arrange
+        var plugin = new SelectionBarPlugin();
+        var context = CreateContext();
+
+        // Act
+        await plugin.ExecuteAsync(SelectionBarPlugin.SelectionBarCommand, context, TestContext.Current.CancellationToken);
+
+        // Assert (no exception, no state to observe: the engine owns the command)
+    }
+
+    [Fact]
     public void PreviewPlugin_should_apply_to_every_editor()
     {
         // Arrange

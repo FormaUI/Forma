@@ -15,6 +15,9 @@ public static class ComposerCommands
     /// <summary>Toggles a read-only rendered preview of the document.</summary>
     public const string Preview = "view.preview";
 
+    /// <summary>Toggles the formatting bar that follows the text selection.</summary>
+    public const string SelectionBar = "view.selection-bar";
+
     /// <summary>Opens the dialog that uploads files and attaches them to the document.</summary>
     public const string Attach = "attachment.upload";
 }

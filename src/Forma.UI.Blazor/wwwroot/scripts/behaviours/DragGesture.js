@@ -7,8 +7,8 @@
  * The handle owns one container: it decides when a press has travelled far enough to be a
  * drag, keeps the pointer captured for the rest of the gesture, scrolls the nearest
  * scrolling ancestor while the pointer is held at an edge, and reports each stage to its
- * caller. What is being dragged, where it may land, and what landing there means are all
- * the caller's to answer.
+ * caller with the subject, where the pointer is and where the press began. What is being
+ * dragged, where it may land, and what landing there means are all the caller's to answer.
  */
 
 /**
@@ -20,6 +20,7 @@
  *   onDrop?: (context: object) => void,
  *   onCancel?: (context: object) => void,
  *   threshold?: number,
+ *   axis?: 'vertical' | 'any',
  *   autoScroll?: boolean,
  *   holdDelay?: number
  * }} options
@@ -45,11 +46,13 @@ class DragGesture {
     #onDrop;
     #onCancel;
     #threshold;
+    #axis;
     #autoScroll;
     #holdDelay;
 
     #subject = null;
     #pointerId = null;
+    #startX = 0;
     #startY = 0;
     #lastX = 0;
     #lastY = 0;
@@ -68,6 +71,7 @@ class DragGesture {
         this.#onDrop = options.onDrop;
         this.#onCancel = options.onCancel;
         this.#threshold = options.threshold ?? DragGesture.#DEFAULT_THRESHOLD;
+        this.#axis = options.axis ?? 'vertical';
         this.#autoScroll = options.autoScroll ?? true;
         this.#holdDelay = options.holdDelay ?? 0;
 
@@ -111,7 +115,13 @@ class DragGesture {
     }
 
     #context() {
-        return { subject: this.#subject, clientX: this.#lastX, clientY: this.#lastY };
+        return {
+            subject: this.#subject,
+            clientX: this.#lastX,
+            clientY: this.#lastY,
+            startX: this.#startX,
+            startY: this.#startY,
+        };
     }
 
     #release() {
@@ -143,6 +153,7 @@ class DragGesture {
 
         this.#subject = subject;
         this.#pointerId = event.pointerId;
+        this.#startX = event.clientX;
         this.#startY = event.clientY;
         this.#lastX = event.clientX;
         this.#lastY = event.clientY;
@@ -183,7 +194,7 @@ class DragGesture {
         // Moving before the hold elapses means the press was a swipe, so it is abandoned
         // and the browser is left to scroll with it.
         if (this.#holdTimer !== null) {
-            if (Math.abs(event.clientY - this.#startY) >= this.#threshold) {
+            if (this.#travelled(event) >= this.#threshold) {
                 this.#release();
             }
 
@@ -194,7 +205,7 @@ class DragGesture {
         this.#lastY = event.clientY;
 
         if (!this.#isDragging) {
-            if (Math.abs(event.clientY - this.#startY) < this.#threshold) {
+            if (this.#travelled(event) < this.#threshold) {
                 return;
             }
 
@@ -222,6 +233,13 @@ class DragGesture {
         if (wasDragging) {
             this.#onDrop?.(context);
         }
+    }
+
+    /** How far the pointer has travelled from where the press began, along the axis the gesture drags on. */
+    #travelled(event) {
+        return this.#axis === 'any'
+            ? Math.hypot(event.clientX - this.#startX, event.clientY - this.#startY)
+            : Math.abs(event.clientY - this.#startY);
     }
 
     #handleKeydown(event) {

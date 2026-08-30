@@ -67,6 +67,9 @@ public sealed class ComposerContext
     /// <summary>Whether the composer currently fills the viewport.</summary>
     public bool IsMaximized { get; init; }
 
+    /// <summary>Whether the formatting bar that follows the text selection is shown.</summary>
+    public bool IsSelectionBarShown { get; init; } = true;
+
     /// <summary>The undo and redo stack shared by every editor.</summary>
     public IComposerHistory History { get; }
 
