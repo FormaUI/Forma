@@ -3,7 +3,6 @@
     <Project Path="src\Forma.Framework.Localization.Abstractions\Forma.Framework.Localization.Abstractions.csproj" />
     <Project Path="src\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
     <Project Path="src\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />
-    <Project Path="tools\Forma.Locali\Forma.Locali.csproj" />
     <Project Path="src\Forma.Framework.Sanitization.Abstractions\Forma.Framework.Sanitization.Abstractions.csproj" />
     <Project Path="src\Forma.UI.Design.Css\Forma.UI.Design.Css.csproj" />
     <Project Path="src\Forma.UI.Design.Icons\Forma.UI.Design.Icons.csproj" />
@@ -41,5 +40,4 @@
     <Project Path="tests\Forma.Framework.Resources.Markdown.Tests\Forma.Framework.Resources.Markdown.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Localization.Tests\Forma.Framework.Localization.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Localization.Json.Tests\Forma.Framework.Localization.Json.Tests.csproj" />
-    <Project Path="tests\Forma.Locali.Tests\Forma.Locali.Tests.csproj" />
 </Solution>
