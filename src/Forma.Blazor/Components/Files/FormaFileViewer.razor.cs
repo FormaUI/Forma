@@ -36,6 +36,9 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
     /// <summary>Shows the resource's name and size alongside its preview.</summary>
     [Parameter] public bool ShowMetadata { get; set; }
 
+    /// <summary>Zooms the image with a Ctrl-held wheel turn over it.</summary>
+    [Parameter] public bool ZoomOnWheelGesture { get; set; } = true;
+
     /// <summary>Replaces the built-in fallback shown when no provider claims the address.</summary>
     [Parameter] public RenderFragment<string>? UnsupportedTemplate { get; set; }
 
@@ -168,10 +171,15 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
         }
 
         // Ctrl with the wheel zooms the image.
-        if (!_wheelAttached)
+        if (ZoomOnWheelGesture && !_wheelAttached)
         {
             _selfReference ??= DotNetObjectReference.Create(this);
             _wheelAttached = await _wheelScroll.AttachAsync(_imageFrameElement, _selfReference, WheelModifier.Ctrl);
+        }
+        else if (!ZoomOnWheelGesture && _wheelAttached)
+        {
+            _wheelAttached = false;
+            await _wheelScroll.DetachAsync();
         }
 
         if (_zoomChanged)

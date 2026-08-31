@@ -22,7 +22,7 @@ public sealed partial class FormaEmojiPickerTests
         else
         {
             _completeSpriteLoad = () => handler.SetResult(true);
-            _failSpriteLoad = () => handler.SetException(new TimeoutException("The sprite never arrived."));
+            _failSpriteLoad = () => handler.SetException(new JSException("The sprite never arrived."));
         }
     }
 
