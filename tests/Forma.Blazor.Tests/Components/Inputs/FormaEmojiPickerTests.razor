@@ -304,7 +304,7 @@
             using var ctx = new FormaEmojiPickerTests();
             IReadOnlyList<string> recent = ["😂", "😊"];
             IReadOnlyList<string>? updated = null;
-            var cut = ctx.Render(@<FormaEmojiPicker Recent="recent" MaxRecent="2" RecentChanged="value => updated = value" />);
+            var cut = ctx.Render(@<FormaEmojiPicker Recent="recent" Options="@(new EmojiPickerOptions { MaxRecent = 2 })" RecentChanged="value => updated = value" />);
 
             // Act
             cut.FindAll("[role='tab']")[1].Click();
@@ -322,7 +322,7 @@
             using var ctx = new FormaEmojiPickerTests();
 
             // Assert
-            Assert.Throws<ArgumentOutOfRangeException>(() => ctx.Render(@<FormaEmojiPicker MaxRecent="0" />));
+            Assert.Throws<ArgumentOutOfRangeException>(() => ctx.Render(@<FormaEmojiPicker Options="@(new EmojiPickerOptions { MaxRecent = 0 })" />));
         }
 
         [Fact]
@@ -332,7 +332,7 @@
             using var ctx = new FormaEmojiPickerTests();
 
             // Act
-            var cut = ctx.Render(@<FormaEmojiPicker ShowGroupTabs="false" ShowSearch="false" />);
+            var cut = ctx.Render(@<FormaEmojiPicker Options="@(new EmojiPickerOptions { ShowGroupTabs = false, ShowSearch = false })" />);
 
             // Assert
             Assert.Empty(cut.FindAll("[role='tab']"));

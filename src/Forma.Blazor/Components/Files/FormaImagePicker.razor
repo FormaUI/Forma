@@ -1,10 +1,7 @@
 @namespace Forma.Blazor.Components.Files
 
 <div class="forma-image-picker" @ref="_containerElement">
-    <FormaFilePicker Accept="@ImageAccept"
-                      AllowMultipleFiles="AllowMultipleFiles"
-                      MaxFileSize="MaxFileSize"
-                      MaxSelectedFiles="MaxSelectedFiles"
+    <FormaFilePicker Options="@(Options with { Accept = ImageAccept })"
                       Prompt="@EffectivePrompt"
                       OnFilesRejected="HandleFilesRejectedAsync"
                       OnFilesSelected="HandleFilesSelectedAsync" />

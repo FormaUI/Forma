@@ -51,7 +51,7 @@ public sealed class OutlineViewPlugin(StubEditorPlugin editor) : IComposerViewPl
 {
     public StubEditorPlugin Editor { get; } = editor;
     public string Id => "stub-editor.outline";
-    public string EditorId => editor.Id;
+    public string EditorId => Editor.Id;
     public string Kind => ComposerViews.Preview;
     public string Title => "Outline";
     public Icon Icon => Glyph.Preview;

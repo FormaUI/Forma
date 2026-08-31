@@ -40,20 +40,8 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
     /// <summary>The autocomplete token passed to the input, such as "current-password" or "new-password".</summary>
     [Parameter] public string AutoComplete { get; set; } = "current-password";
 
-    /// <summary>Shows a strength meter under the field once a value is typed.</summary>
-    [Parameter] public bool ShowStrengthMeter { get; set; }
-
-    /// <summary>Rates a typed value, replacing the built-in judgement with the host's own password policy.</summary>
-    [Parameter] public Func<string, PasswordStrength>? StrengthEvaluator { get; set; }
-
-    /// <summary>Lists under the field what the typed value still needs to earn the top rating.</summary>
-    [Parameter] public bool ShowStrengthAdvice { get; set; }
-
-    /// <summary>Names what a typed value still needs, replacing the built-in advice with the host's own.</summary>
-    [Parameter] public Func<string, IEnumerable<string>>? StrengthAdvisor { get; set; }
-
-    /// <summary>Values the password must not draw on, such as the email address or phone number entered elsewhere on the form.</summary>
-    [Parameter] public IEnumerable<string?>? ForbiddenTerms { get; set; }
+    /// <summary>How the typed value's strength is judged and shown.</summary>
+    [Parameter] public PasswordStrengthOptions StrengthOptions { get; set; } = PasswordStrengthOptions.Default;
 
     // Shorter runs than this match too much ordinary language to be worth forbidding.
     private const int MinimumFragmentLength = 4;
@@ -62,9 +50,9 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
     private static readonly int SegmentCount = Enum.GetValues<PasswordStrength>().Length;
 
     private PasswordStrength? Strength
-        => !ShowStrengthMeter || string.IsNullOrEmpty(CurrentValue) ? null
+        => !StrengthOptions.ShowMeter || string.IsNullOrEmpty(CurrentValue) ? null
             : _hasForbiddenTerm ? PasswordStrength.Weak
-            : (StrengthEvaluator ?? Rate)(CurrentValue);
+            : (StrengthOptions.Evaluator ?? Rate)(CurrentValue);
 
     // Length first, then how many character classes are drawn on; a host with a real policy
     // supplies its own evaluator rather than bending this one.
@@ -235,6 +223,7 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
     protected override void OnParametersSet()
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(Label);
+        ArgumentNullException.ThrowIfNull(StrengthOptions);
         Reassess();
     }
 
@@ -249,9 +238,9 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
     {
         ValidateForbiddenTerms();
 
-        _advice = !ShowStrengthAdvice || string.IsNullOrEmpty(CurrentValue) || _hasForbiddenTerm
+        _advice = !StrengthOptions.ShowAdvice || string.IsNullOrEmpty(CurrentValue) || _hasForbiddenTerm
             ? []
-            : [.. (StrengthAdvisor ?? Advise)(CurrentValue)];
+            : [.. (StrengthOptions.Advisor ?? Advise)(CurrentValue)];
     }
 
     private void HandleValidationRequested(object? sender, ValidationRequestedEventArgs args)
@@ -279,12 +268,12 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
 
     private bool ContainsForbiddenTerm()
     {
-        if (ForbiddenTerms is null || string.IsNullOrEmpty(CurrentValue))
+        if (StrengthOptions.ForbiddenTerms is null || string.IsNullOrEmpty(CurrentValue))
         {
             return false;
         }
 
-        return ForbiddenTerms
+        return StrengthOptions.ForbiddenTerms
             .Where(term => !string.IsNullOrWhiteSpace(term))
             .SelectMany(term => Fragments(term!))
             .Any(fragment => CurrentValue.Contains(fragment, StringComparison.OrdinalIgnoreCase));

@@ -64,7 +64,7 @@ public sealed partial class FormaFileUploaderPage : ComponentBase
     {
         foreach (var resource in resources)
         {
-            Entries(key).Add(L["Stored at {Source}", ("Source", resource.Source)]);
+            Entries(key).Add(L["Stored at {Source}", resource.Source]);
         }
     }
 
@@ -80,7 +80,7 @@ public sealed partial class FormaFileUploaderPage : ComponentBase
     }
 
     private void Fail(string key, UploadFailure failure)
-        => Entries(key).Add(L["{Name} was refused: {Reason}", ("Name", failure.Name), ("Reason", failure.Error.Message)]);
+        => Entries(key).Add(L["{Name} was refused: {Reason}", failure.Name, failure.Error.Message]);
 
     private string Holding(DefaultFileStore store)
     {
@@ -88,7 +88,7 @@ public sealed partial class FormaFileUploaderPage : ComponentBase
 
         return held.Count == 0
             ? L["The store is holding nothing."]
-            : L["The store is holding: {Names}", ("Names", string.Join(", ", held.Select(resource => resource.Name)))];
+            : L["The store is holding: {Names}", string.Join(", ", held.Select(resource => resource.Name))];
     }
 
     private List<string> Log(string key)

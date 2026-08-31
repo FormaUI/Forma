@@ -9,13 +9,13 @@ public sealed partial class FormaPaginationPage : ComponentBase
 {
     [Inject] private IStringLocale<FormaPaginationPage> L { get; set; } = default!;
 
-    private static readonly FormaPaginationOptions InputByOption =
+    private static readonly PaginationOptions InputByOption =
         new() { NavigationInput = true };
 
-    private static readonly FormaPaginationOptions WithoutGoButton =
+    private static readonly PaginationOptions WithoutGoButton =
         new() { NavigationInput = true, GoButton = false };
 
-    private static readonly FormaPaginationOptions WithWheel =
+    private static readonly PaginationOptions WithWheel =
         new() { WheelScrollOnHover = true };
 
     private static readonly IQueryable<GridItem> _gridItems = Enumerable.Range(1, 47)

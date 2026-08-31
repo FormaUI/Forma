@@ -34,6 +34,19 @@
         }
 
         [Fact]
+        public void Should_pin_accept_to_images_whatever_the_options_say()
+        {
+            // Arrange
+            using var ctx = new FormaImagePickerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaImagePicker Options="@(new FilePickerOptions { Accept = "application/pdf" })" OnFilesSelected="@(_ => Task.CompletedTask)" />);
+
+            // Assert
+            Assert.Equal("image/*", cut.Find("input").GetAttribute("accept"));
+        }
+
+        [Fact]
         public void Should_pin_the_accept_filter_to_images()
         {
             // Arrange
@@ -68,7 +81,7 @@
             // Arrange
             using var ctx = new FormaImagePickerTests();
             IReadOnlyList<RejectedFile>? rejected = null;
-            var cut = ctx.Render(@<FormaImagePicker MaxFileSize="4"
+            var cut = ctx.Render(@<FormaImagePicker Options="@(new FilePickerOptions { MaxFileSize = 4 })"
                                                     OnFilesSelected="@(_ => Task.CompletedTask)"
                                                     OnFilesRejected="@(files => { rejected = files; return Task.CompletedTask; })" />);
             var input = cut.FindComponent<InputFile>();
@@ -124,7 +137,7 @@
         {
             // Arrange
             using var ctx = new FormaImagePickerTests();
-            var cut = ctx.Render(@<FormaImagePicker MaxFileSize="8" OnFilesSelected="@(_ => Task.CompletedTask)" />);
+            var cut = ctx.Render(@<FormaImagePicker Options="@(new FilePickerOptions { MaxFileSize = 8 })" OnFilesSelected="@(_ => Task.CompletedTask)" />);
             var input = cut.FindComponent<InputFile>();
             input.UploadFiles(InputFileContent.CreateFromText("one", "one.jpg", contentType: "image/jpeg"));
 

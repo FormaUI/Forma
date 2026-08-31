@@ -43,7 +43,7 @@ public sealed class EmojiPlugin(
                         Id = "emoji",
                         Title = "Emoji",
                         Component = typeof(FormaComposerEmojiButton),
-                        Parameters = new Dictionary<string, object> { ["MaxRecent"] = Options.MaxRecent },
+                        Parameters = new Dictionary<string, object> { ["PickerOptions"] = Options.Picker },
                     },
                 ],
             },

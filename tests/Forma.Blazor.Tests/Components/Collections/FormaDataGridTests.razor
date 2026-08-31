@@ -490,7 +490,7 @@
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
-            var options = new FormaPaginationOptions { NavigationInput = true };
+            var options = new PaginationOptions { NavigationInput = true };
 
             // Act
             var cut = ctx.Render(
@@ -640,7 +640,7 @@
 
             var cut = ctx.Render(
                 @<FormaDataGrid Items="Items(3)" PageSize="10" EnableRowSelection="true"
-                                MaximumSelection="1" SelectedItems="Items(1).ToArray()"
+                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Maximum = 1 })" SelectedItems="Items(1).ToArray()"
                                 SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)"
                                 OnSelectionRejected="@((SelectionRejected args) => rejections.Add(args))">
                     <Columns>
@@ -670,7 +670,7 @@
             // Act
             var cut = ctx.Render(
                 @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true"
-                                MaximumSelection="1" SelectedItems="Items(1).ToArray()">
+                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Maximum = 1 })" SelectedItems="Items(1).ToArray()">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -693,7 +693,7 @@
 
             var cut = ctx.Render(
                 @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true"
-                                MinimumSelection="1" SelectedItems="Items(1).ToArray()"
+                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Minimum = 1 })" SelectedItems="Items(1).ToArray()"
                                 SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
@@ -717,7 +717,7 @@
 
             var cut = ctx.Render(
                 @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true"
-                                MinimumSelection="1" SelectedItems="Items(1).ToArray()"
+                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Minimum = 1 })" SelectedItems="Items(1).ToArray()"
                                 SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
@@ -741,7 +741,7 @@
             // Act
             var cut = ctx.Render(
                 @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true"
-                                CheckedSelectionCaption="CheckedSelectionCaption.Hidden">
+                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Caption = CheckedSelectionCaption.Hidden })">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -762,7 +762,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true" CheckedSelectionCaption="caption">
+                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { Caption = caption })">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -784,7 +784,7 @@
             // Act
             var cut = ctx.Render(
                 @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true"
-                                SelectedItems="Items(3).ToArray()" CheckedSelectionCaption="caption">
+                                SelectedItems="Items(3).ToArray()" CheckedSelectionOptions="@(new CheckedSelectionOptions { Caption = caption })">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -805,7 +805,7 @@
             // Act
             var cut = ctx.Render(
                 @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true"
-                                CheckedSelectionCaption="caption">
+                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Caption = caption })">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -826,7 +826,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true" MaximumSelection="2">
+                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { Maximum = 2 })">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -846,7 +846,7 @@
 
             var cut = ctx.Render(
                 @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true"
-                                MinimumSelection="1" SelectedItems="Items(1).ToArray()"
+                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Minimum = 1 })" SelectedItems="Items(1).ToArray()"
                                 OnSelectionRejected="@((SelectionRejected args) => rejections.Add(args))">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
@@ -872,7 +872,7 @@
             // Act
             var cut = ctx.Render(
                 @<FormaDataGrid Items="Items(3)" PageSize="10" EnableRowSelection="true"
-                                MinimumSelection="2" SelectedItems="Items(1).ToArray()">
+                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Minimum = 2 })" SelectedItems="Items(1).ToArray()">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>

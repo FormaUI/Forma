@@ -1,10 +1,10 @@
 namespace Forma.Blazor.Components.Feedback;
 
 /// <summary>Default close and footer-action behavior of a <see cref="FormaModal"/>.</summary>
-public sealed record FormaModalOptions
+public sealed record ModalOptions
 {
     /// <summary>The backdrop dismisses the modal, and both default footer actions show and close it.</summary>
-    public static FormaModalOptions Default { get; } = new();
+    public static ModalOptions Default { get; } = new();
 
     /// <summary>Whether clicking the backdrop, outside the dialog, closes the modal.</summary>
     public bool CloseOnBackdropClick { get; init; } = true;

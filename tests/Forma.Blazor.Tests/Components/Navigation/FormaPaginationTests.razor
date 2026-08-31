@@ -4,13 +4,13 @@
 @code {
     public sealed class Component
     {
-        private static readonly FormaPaginationOptions InputByOption =
+        private static readonly PaginationOptions InputByOption =
             new() { NavigationInput = true };
 
-        private static readonly FormaPaginationOptions WithoutGoButton =
+        private static readonly PaginationOptions WithoutGoButton =
             new() { GoButton = false };
 
-        private static readonly FormaPaginationOptions WithWheel =
+        private static readonly PaginationOptions WithWheel =
             new() { WheelScrollOnHover = true };
 
         private const string Steps = ".forma-pagination-navigation-steps";
@@ -158,7 +158,7 @@
         {
             // Arrange
             using var ctx = new FormaPaginationTests();
-            var options = new FormaPaginationOptions { MaxPagesWithSteps = 200 };
+            var options = new PaginationOptions { MaxPagesWithSteps = 200 };
 
             // Act
             var within = ctx.Render(@<FormaPagination TotalItems="2000" PageSize="10" CurrentPage="1" Options="options" />);
@@ -176,11 +176,11 @@
         public void Should_hold_the_pages_with_steps_between_one_and_four_digits()
         {
             // Arrange & Act
-            var above = new FormaPaginationOptions { MaxPagesWithSteps = 25_000 };
-            var below = new FormaPaginationOptions { MaxPagesWithSteps = -3 };
+            var above = new PaginationOptions { MaxPagesWithSteps = 25_000 };
+            var below = new PaginationOptions { MaxPagesWithSteps = -3 };
 
             // Assert
-            Assert.Equal((FormaPaginationOptions.MaxStepsPageCount, 1), (above.MaxPagesWithSteps, below.MaxPagesWithSteps));
+            Assert.Equal((PaginationOptions.MaxStepsPageCount, 1), (above.MaxPagesWithSteps, below.MaxPagesWithSteps));
         }
 
         [Fact]

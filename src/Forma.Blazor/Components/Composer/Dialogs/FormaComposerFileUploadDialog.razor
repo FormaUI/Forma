@@ -14,10 +14,7 @@
                      OnCancel="HandleCancelAsync">
     @if (_store is not null)
     {
-        <FormaFilePicker Accept="@Options.Accept"
-                         MaxFileSize="Options.MaxFileSize"
-                         MaxSelectedFiles="Options.MaxFiles"
-                         AllowMultipleFiles="@(Options.MaxFiles != 1)"
+        <FormaFilePicker Options="PickerOptions"
                          OnFilesSelected="HandleFilesSelectedAsync"
                          OnFilesRejected="HandleFilesRejected" />
 

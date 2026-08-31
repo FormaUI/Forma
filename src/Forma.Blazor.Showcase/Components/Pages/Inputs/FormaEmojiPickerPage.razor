@@ -29,7 +29,7 @@
     <h2>@L["Recent Limit"]</h2>
     <p class="description">@L["MaxRecent caps how many are kept. This one keeps three."]</p>
     <div class="demo-box">
-        <FormaEmojiPicker @bind-Recent="_limitedRecent" MaxRecent="3" />
+        <FormaEmojiPicker @bind-Recent="_limitedRecent" Options="@(new EmojiPickerOptions { MaxRecent = 3 })" />
     </div>
     <p>@L["Recent: {Emoji}", string.Join(" ", _limitedRecent)]</p>
 </div>
@@ -37,7 +37,7 @@
 <div class="demo-section">
     <h2>@L["Without Search"]</h2>
     <div class="demo-box">
-        <FormaEmojiPicker ShowSearch="false" />
+        <FormaEmojiPicker Options="@(new EmojiPickerOptions { ShowSearch = false })" />
     </div>
 </div>
 
@@ -45,7 +45,7 @@
     <h2>@L["Without Category Tabs"]</h2>
     <p class="description">@L["Only the first category is reachable, so this suits a picker narrowed to one category."]</p>
     <div class="demo-box">
-        <FormaEmojiPicker ShowGroupTabs="false" />
+        <FormaEmojiPicker Options="@(new EmojiPickerOptions { ShowGroupTabs = false })" />
     </div>
 </div>
 

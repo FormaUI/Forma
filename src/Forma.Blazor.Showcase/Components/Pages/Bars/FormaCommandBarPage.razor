@@ -81,7 +81,7 @@
     <p class="description">@L["A caller naming the arrows for its own domain, rather than the generic default."]</p>
     <div class="demo-box demo-box-flush demo-command-bar-narrow">
         <FormaCommandArea>
-            <FormaCommandBar ScrollBackLabel="@L["Earlier Filters"]" ScrollForwardLabel="@L["Later Filters"]">
+            <FormaCommandBar Options="@(new CommandBarOptions { ScrollBackLabel = L["Earlier Filters"], ScrollForwardLabel = L["Later Filters"] })">
                 @foreach (var filter in ManyFilters)
                 {
                     <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini">@filter</FormaButton>

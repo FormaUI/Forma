@@ -148,8 +148,8 @@
     private ComposerDocument _everyPluginDoc = new(ComposerDocumentFormat.Html, "<p>Every plugin the library ships is registered here.</p>");
     private ComposerDocument _imagesOnlyDoc = new(ComposerDocumentFormat.Html, "<p>Insert an image by address, or browse the pictures already stored.</p>");
     private ComposerDocument _anyFileDoc = new(ComposerDocumentFormat.Html, "<p>Browse any stored file, or attach one from this device.</p>");
-    private readonly FormaComposerOptions _noToolbarOptions = new() { ShowToolbar = false };
-    private readonly FormaComposerOptions _fixedHeightOptions = new() { IsResizable = false };
+    private readonly ComposerOptions _noToolbarOptions = new() { ShowToolbar = false };
+    private readonly ComposerOptions _fixedHeightOptions = new() { IsResizable = false };
     private IReadOnlyList<IComposerPlugin> _statusPlugins = [];
     private IReadOnlyList<IComposerPlugin> _sourcePlugins = [];
     private IReadOnlyList<IComposerPlugin> _demoPlugins = [];
@@ -189,7 +189,7 @@
             richAnything,
             new BasicFormattingPlugin(richAnything),
             new ExplorerPlugin(richAnything, new ExplorerPluginOptions { AllowUpload = false, InsertMode = MediaInsertMode.Both }),
-            new FileUploadPlugin(new FileUploadPluginOptions { MaxFileSize = 5 * 1024 * 1024 }),
+            new FileUploadPlugin(new FileUploadPluginOptions { Picker = new() { MaxFileSize = 5 * 1024 * 1024 } }),
         ];
     }
 }

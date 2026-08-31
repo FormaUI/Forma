@@ -46,7 +46,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     private bool _isAttachOpen;
 
     /// <summary>Options configuring toolbar display, editor switcher, and default editor.</summary>
-    [Parameter] public FormaComposerOptions Options { get; set; } = FormaComposerOptions.Default;
+    [Parameter] public ComposerOptions Options { get; set; } = ComposerOptions.Default;
 
     /// <summary>Plugins supplied directly to this instance in addition to any registered in dependency injection.</summary>
     [Parameter] public IEnumerable<IComposerPlugin>? Plugins { get; set; }

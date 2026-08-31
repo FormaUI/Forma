@@ -39,32 +39,8 @@ public sealed partial class FormaTextBox : InputBase<string?>, IAsyncDisposable
     /// <summary>Whether the text box is read-only.</summary>
     [Parameter] public bool ReadOnly { get; set; }
 
-    /// <summary>The kind of text the box holds, which decides how a browser validates and assists it.</summary>
-    [Parameter] public TextInputType Type { get; set; } = TextInputType.Text;
-
-    /// <summary>The fewest characters the box accepts before it counts as valid.</summary>
-    [Parameter] public int? MinLength { get; set; }
-
-    /// <summary>The greatest number of characters the box will accept.</summary>
-    [Parameter] public int? MaxLength { get; set; }
-
-    /// <summary>A regular expression the value must match for the box to be valid.</summary>
-    [Parameter] public string? Pattern { get; set; }
-
-    /// <summary>The virtual keyboard to ask a touch device for.</summary>
-    [Parameter] public TextInputMode? InputMode { get; set; }
-
-    /// <summary>What a touch keyboard's action key does, and how it is labelled.</summary>
-    [Parameter] public TextEnterKeyHint? EnterKeyHint { get; set; }
-
-    /// <summary>What a touch keyboard capitalizes automatically as text is typed.</summary>
-    [Parameter] public TextAutoCapitalize? AutoCapitalize { get; set; }
-
-    /// <summary>Whether the browser checks the spelling of the text.</summary>
-    [Parameter] public bool? SpellCheck { get; set; }
-
-    /// <summary>The autofill hint given to the browser, such as <c>email</c> or <c>new-password</c>.</summary>
-    [Parameter] public string? AutoComplete { get; set; }
+    /// <summary>What kind of text the box holds and how an agent assists typing it.</summary>
+    [Parameter] public TextBoxOptions Options { get; set; } = TextBoxOptions.Default;
 
     /// <summary>How wide the box stands. Absent, it fills the space it is given.</summary>
     [Parameter] public CssLength? Width { get; set; }
@@ -84,7 +60,7 @@ public sealed partial class FormaTextBox : InputBase<string?>, IAsyncDisposable
         => HasLabel ? " " : Placeholder;
 
     private string TypeValue
-        => Type switch
+        => Options.Type switch
         {
             TextInputType.Email => "email",
             TextInputType.Tel => "tel",
@@ -93,7 +69,7 @@ public sealed partial class FormaTextBox : InputBase<string?>, IAsyncDisposable
         };
 
     private string? InputModeValue
-        => InputMode switch
+        => Options.InputMode switch
         {
             TextInputMode.None => "none",
             TextInputMode.Text => "text",
@@ -107,7 +83,7 @@ public sealed partial class FormaTextBox : InputBase<string?>, IAsyncDisposable
         };
 
     private string? EnterKeyHintValue
-        => EnterKeyHint switch
+        => Options.EnterKeyHint switch
         {
             TextEnterKeyHint.Enter => "enter",
             TextEnterKeyHint.Done => "done",
@@ -120,7 +96,7 @@ public sealed partial class FormaTextBox : InputBase<string?>, IAsyncDisposable
         };
 
     private string? AutoCapitalizeValue
-        => AutoCapitalize switch
+        => Options.AutoCapitalize switch
         {
             TextAutoCapitalize.None => "none",
             TextAutoCapitalize.Sentences => "sentences",
@@ -130,7 +106,7 @@ public sealed partial class FormaTextBox : InputBase<string?>, IAsyncDisposable
         };
 
     private string? SpellCheckValue
-        => SpellCheck is { } spellCheck ? (spellCheck ? "true" : "false") : null;
+        => Options.SpellCheck is { } spellCheck ? (spellCheck ? "true" : "false") : null;
 
     // Carries a caller's own style through, since the explicit attribute would otherwise replace it.
     // The width joins it only when bare; labelled, it sizes the field wrapper instead.
@@ -172,18 +148,20 @@ public sealed partial class FormaTextBox : InputBase<string?>, IAsyncDisposable
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        if (MinLength is { } minLength)
+        ArgumentNullException.ThrowIfNull(Options);
+
+        if (Options.MinLength is { } minLength)
         {
-            ArgumentOutOfRangeException.ThrowIfNegative(minLength);
+            ArgumentOutOfRangeException.ThrowIfNegative(minLength, nameof(Options));
         }
 
-        if (MaxLength is { } maxLength)
+        if (Options.MaxLength is { } maxLength)
         {
-            ArgumentOutOfRangeException.ThrowIfLessThan(maxLength, 1);
+            ArgumentOutOfRangeException.ThrowIfLessThan(maxLength, 1, nameof(Options));
 
-            if (MinLength is { } lowerBound)
+            if (Options.MinLength is { } lowerBound)
             {
-                ArgumentOutOfRangeException.ThrowIfGreaterThan(lowerBound, maxLength, nameof(MinLength));
+                ArgumentOutOfRangeException.ThrowIfGreaterThan(lowerBound, maxLength, nameof(Options));
             }
         }
     }

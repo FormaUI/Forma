@@ -103,13 +103,13 @@
 </div>
 
 @code {
-    private static readonly FormaModalOptions HideConfirmAction =
+    private static readonly ModalOptions HideConfirmAction =
         new() { ShowConfirmAction = false };
 
-    private static readonly FormaModalOptions HideFooterActions =
+    private static readonly ModalOptions HideFooterActions =
         new() { ShowCancelAction = false, ShowConfirmAction = false };
 
-    private static readonly FormaModalOptions RequireExplicitClose =
+    private static readonly ModalOptions RequireExplicitClose =
         new() { CloseOnBackdropClick = false, ShowConfirmAction = false };
 
     private bool _showBasic;

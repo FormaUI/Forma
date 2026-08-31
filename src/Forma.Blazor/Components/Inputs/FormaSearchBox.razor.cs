@@ -14,11 +14,11 @@ public sealed partial class FormaSearchBox : ComponentBase, IAsyncDisposable
     /// <summary>Raised on every keystroke, so a caller can keep a bound value in step as the user types.</summary>
     [Parameter] public EventCallback<string> ValueChanged { get; set; }
 
-    /// <summary>Raised with the committed search term: instantly, or after DebounceDelay once typing pauses. Pressing Enter or clearing the field bypasses the wait.</summary>
+    /// <summary>Raised with the committed search term: instantly, or after SearchDebounce once typing pauses. Pressing Enter or clearing the field bypasses the wait.</summary>
     [Parameter] public EventCallback<string> OnSearch { get; set; }
 
     /// <summary>How long to wait after the last keystroke before raising OnSearch. Null, the default, reports on every keystroke.</summary>
-    [Parameter] public TimeSpan? DebounceDelay { get; set; }
+    [Parameter] public TimeSpan? SearchDebounce { get; set; }
 
     /// <summary>Placeholder text shown when the field is empty.</summary>
     [Parameter] public string? Placeholder { get; set; }
@@ -79,7 +79,7 @@ public sealed partial class FormaSearchBox : ComponentBase, IAsyncDisposable
 
     private async Task RaiseSearchAsync(string value)
     {
-        if (DebounceDelay is not { } delay || delay <= TimeSpan.Zero)
+        if (SearchDebounce is not { } delay || delay <= TimeSpan.Zero)
         {
             CancelDebounce();
             await OnSearch.InvokeAsync(value);

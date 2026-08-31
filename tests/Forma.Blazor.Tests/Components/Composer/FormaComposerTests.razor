@@ -231,7 +231,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
-            var options = new FormaComposerOptions { ShowToolbar = false };
+            var options = new ComposerOptions { ShowToolbar = false };
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
@@ -332,7 +332,7 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var model = new TestModel();
-            var options = new FormaComposerOptions { IsResizable = false };
+            var options = new ComposerOptions { IsResizable = false };
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">

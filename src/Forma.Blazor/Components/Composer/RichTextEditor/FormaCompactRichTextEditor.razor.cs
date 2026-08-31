@@ -16,7 +16,7 @@ public sealed partial class FormaCompactRichTextEditor : InputBase<ComposerDocum
     private readonly IReadOnlyList<IComposerPlugin> _plugins;
 
     /// <summary>Options configuring the underlying composer instance.</summary>
-    [Parameter] public FormaComposerOptions Options { get; set; } = FormaComposerOptions.Default;
+    [Parameter] public ComposerOptions Options { get; set; } = ComposerOptions.Default;
 
     /// <summary>Whether the editor is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }

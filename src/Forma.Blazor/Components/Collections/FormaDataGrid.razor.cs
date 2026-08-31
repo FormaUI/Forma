@@ -54,7 +54,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     [Parameter] public bool EnablePagination { get; set; } = true;
 
     /// <summary>Which parts of the page navigation are shown.</summary>
-    [Parameter] public FormaPaginationOptions PaginationOptions { get; set; } = FormaPaginationOptions.Default;
+    [Parameter] public PaginationOptions PaginationOptions { get; set; } = PaginationOptions.Default;
 
     /// <summary>Renders only the rows near the scroll viewport, for a large list with <see cref="EnablePagination"/> disabled. Requires an ancestor that scrolls.</summary>
     [Parameter] public bool Virtualize { get; set; }
@@ -86,14 +86,8 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     /// <summary>Fired with the untouched row when an edit is abandoned.</summary>
     [Parameter] public EventCallback<TGridItem> OnRowCancel { get; set; }
 
-    /// <summary>The fewest rows that must remain selected once a selection exists. A selected row cannot be individually unchecked below this floor; clearing the whole selection is always allowed.</summary>
-    [Parameter] public int? MinimumSelection { get; set; }
-
-    /// <summary>The most rows that may be selected at once.</summary>
-    [Parameter] public int? MaximumSelection { get; set; }
-
-    /// <summary>Caption shown in place of the header checkbox. A <see langword="null"/> value keeps the plain checkbox.</summary>
-    [Parameter] public CheckedSelectionCaption? CheckedSelectionCaption { get; set; }
+    /// <summary>The checked selection's bounds and header caption.</summary>
+    [Parameter] public CheckedSelectionOptions CheckedSelectionOptions { get; set; } = CheckedSelectionOptions.Default;
 
     /// <summary>The currently selected rows.</summary>
     [Parameter] public IReadOnlyList<TGridItem> SelectedItems { get; set; } = [];
@@ -101,7 +95,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     /// <summary>Fired when the set of selected rows changes.</summary>
     [Parameter] public EventCallback<IReadOnlyList<TGridItem>> SelectedItemsChanged { get; set; }
 
-    /// <summary>Fired when a selection attempt is blocked by <see cref="MinimumSelection"/> or <see cref="MaximumSelection"/>.</summary>
+    /// <summary>Fired when a selection attempt is blocked by <see cref="CheckedSelectionOptions.Minimum"/> or <see cref="CheckedSelectionOptions.Maximum"/>.</summary>
     [Parameter] public EventCallback<SelectionRejected> OnSelectionRejected { get; set; }
 
     /// <summary>Fired when a row is clicked outside of a selection gesture.</summary>
@@ -139,11 +133,11 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     private bool PartiallySelected
         => _selectedSet.Count > 0 && !AllSelected;
 
-    /// <summary>Whether <see cref="MaximumSelection"/> has been reached, so no additional row can be selected.</summary>
+    /// <summary>Whether <see cref="CheckedSelectionOptions.Maximum"/> has been reached, so no additional row can be selected.</summary>
     public bool IsMaximumSelectionReached
         => !_bounds.CanAdd(_selectedSet.Count);
 
-    /// <summary>Whether the current selection meets <see cref="MinimumSelection"/>.</summary>
+    /// <summary>Whether the current selection meets <see cref="CheckedSelectionOptions.Minimum"/>.</summary>
     public bool IsMinimumSelectionSatisfied
         => _bounds.Minimum is null || _selectedSet.Count >= _bounds.Minimum.Value;
 
@@ -158,20 +152,20 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
         => _selectedSet.Count == 0 && !CanSelectAll;
 
     private bool HasMasterCaption
-        => CheckedSelectionCaption is not null;
+        => CheckedSelectionOptions.Caption is not null;
 
     private bool MasterCaptionHidden
-        => CheckedSelectionCaption is { SelectAllText: null, DeselectAllText: null };
+        => CheckedSelectionOptions.Caption is { SelectAllText: null, DeselectAllText: null };
 
     private bool MasterCaptionInteractive
-        => CheckedSelectionCaption is { SelectAllText: not null, DeselectAllText: not null };
+        => CheckedSelectionOptions.Caption is { SelectAllText: not null, DeselectAllText: not null };
 
     private string? MasterCaptionText
-        => CheckedSelectionCaption switch
+        => CheckedSelectionOptions.Caption switch
         {
             null => null,
             { SelectAllText: not null, DeselectAllText: not null }
-                => _selectedSet.Count > 0 ? CheckedSelectionCaption.DeselectAllText : CheckedSelectionCaption.SelectAllText,
+                => _selectedSet.Count > 0 ? CheckedSelectionOptions.Caption.DeselectAllText : CheckedSelectionOptions.Caption.SelectAllText,
             { SelectAllText: not null } caption => caption.SelectAllText,
             { DeselectAllText: not null } caption => caption.DeselectAllText,
             _ => null,
@@ -180,7 +174,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     // The caption the toggle would show in its other state.
     private string? MasterCaptionAlternateText
         => MasterCaptionInteractive
-            ? _selectedSet.Count > 0 ? CheckedSelectionCaption!.SelectAllText : CheckedSelectionCaption!.DeselectAllText
+            ? _selectedSet.Count > 0 ? CheckedSelectionOptions.Caption!.SelectAllText : CheckedSelectionOptions.Caption!.DeselectAllText
             : null;
 
     // Host class is merged rather than splatted, so supplying one never drops
@@ -249,7 +243,9 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
 
         _editSession.KeyOf = ItemKey;
 
-        _bounds = new SelectionBounds(MinimumSelection, MaximumSelection);
+        ArgumentNullException.ThrowIfNull(CheckedSelectionOptions);
+
+        _bounds = new SelectionBounds(CheckedSelectionOptions.Minimum, CheckedSelectionOptions.Maximum);
         _bounds.Validate();
 
         // An unpaginated grid leaves Pagination unbound, so virtualization sizes its scroll

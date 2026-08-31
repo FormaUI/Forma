@@ -1,5 +1,6 @@
 namespace Forma.Blazor.Components.Composer.RichTextEditor.Plugins;
 
+using Forma.Blazor.Components.Inputs;
 using Forma.Blazor.Interop.Behaviours;
 using Forma.Features.Composer.Editing;
 using Forma.Framework.Localization;
@@ -17,8 +18,8 @@ public sealed partial class FormaComposerEmojiButton : ComponentBase, IAsyncDisp
     private ElementReference _popupElement;
     private bool _isOpen;
 
-    /// <summary>How many recently chosen emoji the picker keeps.</summary>
-    [Parameter] public int MaxRecent { get; set; } = 24;
+    /// <summary>How the picker this button opens browses.</summary>
+    [Parameter] public EmojiPickerOptions PickerOptions { get; set; } = EmojiPickerOptions.Default;
 
     [CascadingParameter] private ComposerContext? Context { get; set; }
 

@@ -38,7 +38,7 @@
     <h2>@L["Mini Size"]</h2>
     <p class="description">@L["Sized mini to fit alongside compact row controls."]</p>
     <div class="demo-box">
-        <FormaOverflowMenu Label="@L["Compact actions"]" Size="ButtonSize.Mini" Orientation="MenuOrientation.Vertical">
+        <FormaOverflowMenu Label="@L["Compact actions"]" TriggerOptions="ButtonOptions.MiniGhostIcon" Orientation="MenuOrientation.Vertical">
             <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Edit"].Value)">@L["Edit"]</FormaDropDownMenuItem>
             <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Delete"].Value)">@L["Delete"]</FormaDropDownMenuItem>
         </FormaOverflowMenu>

@@ -33,7 +33,7 @@ public sealed partial class FormaFilePickerPage : ComponentBase
     {
         foreach (var rejection in rejections)
         {
-            Entries(key).Add(L["{Name} declined ({Reason})", ("Name", rejection.Name), ("Reason", rejection.Reason)]);
+            Entries(key).Add(L["{Name} declined ({Reason})", rejection.Name, rejection.Reason]);
         }
     }
 
@@ -41,7 +41,7 @@ public sealed partial class FormaFilePickerPage : ComponentBase
     {
         foreach (var file in files)
         {
-            Entries(key).Add(L["{Name} selected", ("Name", file.Name)]);
+            Entries(key).Add(L["{Name} selected", file.Name]);
         }
     }
 

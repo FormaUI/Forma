@@ -31,7 +31,7 @@ public sealed partial class FormaModal : IAsyncDisposable
     [Parameter] public ModalSize Size { get; set; } = ModalSize.Medium;
 
     /// <summary>Default close and footer-action behavior.</summary>
-    [Parameter] public FormaModalOptions Options { get; set; } = FormaModalOptions.Default;
+    [Parameter] public ModalOptions Options { get; set; } = ModalOptions.Default;
 
     /// <summary>Main content of the modal.</summary>
     [Parameter] public RenderFragment? Body { get; set; }

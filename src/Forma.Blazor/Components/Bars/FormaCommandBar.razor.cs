@@ -16,11 +16,8 @@ public sealed partial class FormaCommandBar : ComponentBase, IAsyncDisposable
     /// <summary>Content pinned past the end of the track, staying put while the commands scroll.</summary>
     [Parameter] public RenderFragment? TrailingContent { get; set; }
 
-    /// <summary>Accessible name for the button scrolling toward the start.</summary>
-    [Parameter] public string? ScrollBackLabel { get; set; }
-
-    /// <summary>Accessible name for the button scrolling toward the end.</summary>
-    [Parameter] public string? ScrollForwardLabel { get; set; }
+    /// <summary>How the bar's track scrolls.</summary>
+    [Parameter] public CommandBarOptions Options { get; set; } = CommandBarOptions.Default;
 
     /// <summary>Extra classes applied alongside forma-command-bar.</summary>
     [Parameter] public string? Class { get; set; }
@@ -30,9 +27,6 @@ public sealed partial class FormaCommandBar : ComponentBase, IAsyncDisposable
 
     /// <summary>Animates the transition between hidden and shown instead of snapping instantly.</summary>
     [Parameter] public bool Animated { get; set; }
-
-    /// <summary>Scrolls the commands with a wheel turned anywhere over the bar, keeping the turn from the page while the pointer stays there.</summary>
-    [Parameter] public bool WheelScrollOnHover { get; set; } = true;
 
     /// <summary>Additional attributes applied to the bar element.</summary>
     [Parameter(CaptureUnmatchedValues = true)]
@@ -91,7 +85,7 @@ public sealed partial class FormaCommandBar : ComponentBase, IAsyncDisposable
         await _boundaryWatcher.AttachAsync(_trackElement, _selfReference);
 
         // A wheel reports vertically alone, so its turn anywhere over the bar is read as movement along the track.
-        if (WheelScrollOnHover)
+        if (Options.WheelScrollOnHover)
         {
             await _wheelScroll.AttachAsync(_barElement, _trackElement);
         }

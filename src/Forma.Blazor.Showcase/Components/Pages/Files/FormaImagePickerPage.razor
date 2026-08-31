@@ -26,7 +26,7 @@
     <h2>@L["A Single Image"]</h2>
     <p class="description">@L["A new pick replaces the last one, matching a single cover-image field."]</p>
     <div class="demo-box">
-        <FormaImagePicker AllowMultipleFiles="false" OnFilesSelected="@(files => HandleSelected("single", files))" />
+        <FormaImagePicker Options="@(new FilePickerOptions { AllowMultipleFiles = false })" OnFilesSelected="@(files => HandleSelected("single", files))" />
         <ul class="demo-log">
             @foreach (var line in Log("single"))
             {
@@ -55,7 +55,7 @@
     <h2>@L["A Size Cap"]</h2>
     <p class="description">@L["MaxFileSize declines an image over 100 KB, so the host never receives it."]</p>
     <div class="demo-box">
-        <FormaImagePicker MaxFileSize="100_000"
+        <FormaImagePicker Options="@(new FilePickerOptions { MaxFileSize = 100_000 })"
                           OnFilesSelected="@(files => HandleSelected("large", files))"
                           OnFilesRejected="@(files => HandleRejected("large", files))" />
         <ul class="demo-log">

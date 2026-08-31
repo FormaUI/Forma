@@ -32,7 +32,7 @@
             @for (var i = 0; i < _children.Length; i++)
             {
                 var index = i;
-                <FormaCheckBox Checked="_children[index]" CheckedChanged="v => _children[index] = v">@L["Item {Number}", ("Number", index + 1)]</FormaCheckBox>
+                <FormaCheckBox Checked="_children[index]" CheckedChanged="v => _children[index] = v">@L["Item {Number}", index + 1]</FormaCheckBox>
             }
         </div>
     </div>

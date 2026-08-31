@@ -55,7 +55,7 @@
             // Arrange
             using var ctx = new FormaFilePickerTests();
             IReadOnlyList<RejectedFile>? rejected = null;
-            var cut = ctx.Render(@<FormaFilePicker Accept="image/*"
+            var cut = ctx.Render(@<FormaFilePicker Options="@(new FilePickerOptions { Accept = "image/*" })"
                                                    OnFilesSelected="@(_ => Task.CompletedTask)"
                                                    OnFilesRejected="@(files => { rejected = files; return Task.CompletedTask; })" />);
             var input = cut.FindComponent<InputFile>();
@@ -79,7 +79,7 @@
             // Arrange
             using var ctx = new FormaFilePickerTests();
             IReadOnlyList<RejectedFile>? rejected = null;
-            var cut = ctx.Render(@<FormaFilePicker MaxFileSize="4"
+            var cut = ctx.Render(@<FormaFilePicker Options="@(new FilePickerOptions { MaxFileSize = 4 })"
                                                    OnFilesSelected="@(_ => Task.CompletedTask)"
                                                    OnFilesRejected="@(files => { rejected = files; return Task.CompletedTask; })" />);
             var input = cut.FindComponent<InputFile>();
@@ -98,7 +98,7 @@
             using var ctx = new FormaFilePickerTests();
             IReadOnlyList<IBrowserFile>? selected = null;
             IReadOnlyList<RejectedFile>? rejected = null;
-            var cut = ctx.Render(@<FormaFilePicker MaxSelectedFiles="1"
+            var cut = ctx.Render(@<FormaFilePicker Options="@(new FilePickerOptions { MaxFiles = 1 })"
                                                    OnFilesSelected="@(files => { selected = files; return Task.CompletedTask; })"
                                                    OnFilesRejected="@(files => { rejected = files; return Task.CompletedTask; })" />);
             var input = cut.FindComponent<InputFile>();
@@ -117,12 +117,12 @@
         }
 
         [Fact]
-        public void Should_cap_a_single_file_selection_when_AllowMultipleFiles_is_false()
+        public void Should_cap_a_single_file_selection_when_multiple_files_are_not_allowed()
         {
             // Arrange
             using var ctx = new FormaFilePickerTests();
             IReadOnlyList<IBrowserFile>? selected = null;
-            var cut = ctx.Render(@<FormaFilePicker AllowMultipleFiles="false" OnFilesSelected="@(files => { selected = files; return Task.CompletedTask; })" />);
+            var cut = ctx.Render(@<FormaFilePicker Options="@(new FilePickerOptions { AllowMultipleFiles = false })" OnFilesSelected="@(files => { selected = files; return Task.CompletedTask; })" />);
             var input = cut.FindComponent<InputFile>();
 
             // Act

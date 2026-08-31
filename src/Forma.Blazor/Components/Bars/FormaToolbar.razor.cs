@@ -11,7 +11,7 @@ using Microsoft.JSInterop;
 /// <summary>A toolbar of grouped, item-driven commands, built on <see cref="FormaCommandBar"/>.</summary>
 public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
 {
-    private static readonly FormaButtonOptions MenuTriggerOptions =
+    private static readonly ButtonOptions MenuTriggerOptions =
         new() { Variant = ButtonVariant.Ghost, Size = ButtonSize.Mini };
 
     private KeyBindings? _keyBindings;
@@ -43,14 +43,8 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
     /// <summary>Lays the items on a <see cref="FormaCommandBar"/> that scrolls them behind arrows once they outgrow the width; they wrap instead when false.</summary>
     [Parameter] public bool Scrollable { get; set; } = true;
 
-    /// <summary>Scrolls the items with a wheel turned anywhere over the toolbar, keeping the turn from the page while the pointer stays there.</summary>
-    [Parameter] public bool WheelScrollOnHover { get; set; } = true;
-
-    /// <summary>Accessible name for the button scrolling toward the start.</summary>
-    [Parameter] public string? ScrollBackLabel { get; set; }
-
-    /// <summary>Accessible name for the button scrolling toward the end.</summary>
-    [Parameter] public string? ScrollForwardLabel { get; set; }
+    /// <summary>How the track carrying the items scrolls.</summary>
+    [Parameter] public CommandBarOptions CommandBarOptions { get; set; } = CommandBarOptions.Default;
 
     /// <summary>Extra classes applied to the toolbar's root element.</summary>
     [Parameter] public string? Class { get; set; }
@@ -79,6 +73,7 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
     protected override void OnParametersSet()
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(Label);
+        ArgumentNullException.ThrowIfNull(CommandBarOptions);
 
         foreach (var item in Items.SelectMany(Leaves))
         {

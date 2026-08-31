@@ -26,7 +26,7 @@
     <h2>@L["Restricted to Images"]</h2>
     <p class="description">@L["Accept is checked against both a click-picked file and a dropped one, since a drop never consults the file dialog's own filter."]</p>
     <div class="demo-box">
-        <FormaFilePicker Accept="image/*"
+        <FormaFilePicker Options="@(new FilePickerOptions { Accept = "image/*" })"
                          OnFilesSelected="@(files => HandleSelected("images", files))"
                          OnFilesRejected="@(files => HandleRejected("images", files))" />
         <ul class="demo-log">
@@ -42,7 +42,7 @@
     <h2>@L["A Size Limit"]</h2>
     <p class="description">@((MarkupString)L["Capped at {SizeMarkup} here; a larger file is declined before it is ever read.", SizeMarkup].Value)</p>
     <div class="demo-box">
-        <FormaFilePicker MaxFileSize="@MaxSizeBytes"
+        <FormaFilePicker Options="@(new FilePickerOptions { MaxFileSize = MaxSizeBytes })"
                          OnFilesSelected="@(files => HandleSelected("size", files))"
                          OnFilesRejected="@(files => HandleRejected("size", files))" />
         <ul class="demo-log">
@@ -58,7 +58,7 @@
     <h2>@L["A Selection Limit"]</h2>
     <p class="description">@L["Capped at two files per drop or pick; anything past the cap is declined rather than the whole selection."]</p>
     <div class="demo-box">
-        <FormaFilePicker MaxSelectedFiles="2"
+        <FormaFilePicker Options="@(new FilePickerOptions { MaxFiles = 2 })"
                          OnFilesSelected="@(files => HandleSelected("count", files))"
                          OnFilesRejected="@(files => HandleRejected("count", files))" />
         <ul class="demo-log">

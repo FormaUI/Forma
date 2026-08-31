@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Components;
 /// <summary>Dialog for choosing one of the host's stored files and inserting it.</summary>
 public sealed partial class FormaComposerExplorerDialog : ComposerDialogBase
 {
-    private static readonly ExplorerOptions Library = new() { AsDialog = true, ShowFolderMenu = false, SelectOnOpen = true };
+    private static readonly ExplorerOptions Library = new() { AsDialog = true, ShowFolderMenu = false, SelectOnOpen = true, MaxSelection = 1 };
 
     /// <summary>What the dialog browses, takes in, and inserts.</summary>
     [Parameter] public ExplorerPluginOptions Options { get; set; } = ExplorerPluginOptions.Default;

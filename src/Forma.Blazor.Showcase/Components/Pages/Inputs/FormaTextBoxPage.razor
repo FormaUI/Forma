@@ -98,7 +98,7 @@
     <div class="demo-box">
         <div class="demo-stack">
             <div class="demo-row">
-                <FormaTextBox @bind-Value="_model.Tag" Placeholder="@L["Add a tag..."]" aria-label="@L["Add a tag..."]" MaxLength="20" class="demo-row-field" />
+                <FormaTextBox @bind-Value="_model.Tag" Placeholder="@L["Add a tag..."]" aria-label="@L["Add a tag..."]" Options="@(new TextBoxOptions { MaxLength = 20 })" class="demo-row-field" />
                 <FormaButton Variant="ButtonVariant.Secondary" OnClick="AddTag">@L["Add"]</FormaButton>
             </div>
             @if (_tags.Count > 0)
@@ -120,16 +120,16 @@
     <div class="demo-box">
         <div class="demo-stack">
             <label for="text-box-phone">@L["Telephone"]</label>
-            <FormaTextBox @bind-Value="_model.Phone" Id="text-box-phone" InputMode="TextInputMode.Tel" AutoComplete="tel" />
+            <FormaTextBox @bind-Value="_model.Phone" Id="text-box-phone" Options="@(new TextBoxOptions { InputMode = TextInputMode.Tel, AutoComplete = "tel" })" />
 
             <label for="text-box-email">@L["Email"]</label>
-            <FormaTextBox @bind-Value="_model.Email" Id="text-box-email" InputMode="TextInputMode.Email" AutoComplete="email" />
+            <FormaTextBox @bind-Value="_model.Email" Id="text-box-email" Options="@(new TextBoxOptions { InputMode = TextInputMode.Email, AutoComplete = "email" })" />
 
             <label for="text-box-quantity">@L["Quantity"]</label>
-            <FormaTextBox @bind-Value="_model.Quantity" Id="text-box-quantity" InputMode="TextInputMode.Numeric" />
+            <FormaTextBox @bind-Value="_model.Quantity" Id="text-box-quantity" Options="@(new TextBoxOptions { InputMode = TextInputMode.Numeric })" />
 
             <label for="text-box-amount">@L["Amount"]</label>
-            <FormaTextBox @bind-Value="_model.Amount" Id="text-box-amount" InputMode="TextInputMode.Fractional" />
+            <FormaTextBox @bind-Value="_model.Amount" Id="text-box-amount" Options="@(new TextBoxOptions { InputMode = TextInputMode.Fractional })" />
         </div>
     </div>
 </div>
@@ -140,16 +140,16 @@
     <div class="demo-box">
         <div class="demo-stack">
             <label for="text-box-plain">@L["Plain Text"]</label>
-            <FormaTextBox @bind-Value="_model.Plain" Id="text-box-plain" Type="TextInputType.Text" />
+            <FormaTextBox @bind-Value="_model.Plain" Id="text-box-plain" Options="@(new TextBoxOptions { Type = TextInputType.Text })" />
 
             <label for="text-box-typed-email">@L["Email Address"]</label>
-            <FormaTextBox @bind-Value="_model.TypedEmail" Id="text-box-typed-email" Type="TextInputType.Email" AutoComplete="email" />
+            <FormaTextBox @bind-Value="_model.TypedEmail" Id="text-box-typed-email" Options="TextBoxOptions.Email" />
 
             <label for="text-box-typed-tel">@L["Telephone Number"]</label>
-            <FormaTextBox @bind-Value="_model.TypedTel" Id="text-box-typed-tel" Type="TextInputType.Tel" AutoComplete="tel" />
+            <FormaTextBox @bind-Value="_model.TypedTel" Id="text-box-typed-tel" Options="TextBoxOptions.Phone" />
 
             <label for="text-box-typed-url">@L["Website Address"]</label>
-            <FormaTextBox @bind-Value="_model.TypedUrl" Id="text-box-typed-url" Type="TextInputType.Url" AutoComplete="url" />
+            <FormaTextBox @bind-Value="_model.TypedUrl" Id="text-box-typed-url" Options="TextBoxOptions.Url" />
         </div>
     </div>
 </div>
@@ -160,13 +160,13 @@
     <div class="demo-box">
         <div class="demo-stack">
             <label for="text-box-full-name">@L["Full Name"]</label>
-            <FormaTextBox @bind-Value="_model.FullName" Id="text-box-full-name" AutoCapitalize="TextAutoCapitalize.Words" AutoComplete="name" />
+            <FormaTextBox @bind-Value="_model.FullName" Id="text-box-full-name" Options="@(new TextBoxOptions { AutoCapitalize = TextAutoCapitalize.Words, AutoComplete = "name" })" />
 
             <label for="text-box-coupon">@L["Coupon Code"]</label>
-            <FormaTextBox @bind-Value="_model.Coupon" Id="text-box-coupon" AutoCapitalize="TextAutoCapitalize.Characters" SpellCheck="false" EnterKeyHint="TextEnterKeyHint.Done" />
+            <FormaTextBox @bind-Value="_model.Coupon" Id="text-box-coupon" Options="@(new TextBoxOptions { AutoCapitalize = TextAutoCapitalize.Characters, SpellCheck = false, EnterKeyHint = TextEnterKeyHint.Done })" />
 
             <label for="text-box-message">@L["Message"]</label>
-            <FormaTextBox @bind-Value="_model.Message" Id="text-box-message" AutoCapitalize="TextAutoCapitalize.Sentences" SpellCheck="true" EnterKeyHint="TextEnterKeyHint.Send" />
+            <FormaTextBox @bind-Value="_model.Message" Id="text-box-message" Options="@(new TextBoxOptions { AutoCapitalize = TextAutoCapitalize.Sentences, SpellCheck = true, EnterKeyHint = TextEnterKeyHint.Send })" />
         </div>
     </div>
 </div>
@@ -181,10 +181,7 @@
             <label for="text-box-code">@L["Product Code"]</label>
             <FormaTextBox @bind-Value="_patternModel.Code"
                           Id="text-box-code"
-                          MinLength="4"
-                          MaxLength="12"
-                          Pattern="[a-z0-9]+"
-                          SpellCheck="false"
+                          Options="@(new TextBoxOptions { MinLength = 4, MaxLength = 12, Pattern = "[a-z0-9]+", SpellCheck = false })"
                           Placeholder="@L["acme12"]" />
             <ValidationMessage For="@(() => _patternModel.Code)" />
 
@@ -208,7 +205,7 @@
             <FormaTextBox @bind-Value="_model.FullWidth" aria-label="@L["Full Width"]" />
 
             <p class="demo-note">@L["Six characters wide, for a year:"]</p>
-            <FormaTextBox @bind-Value="_model.Year" aria-label="@L["Year"]" Width="CssLength.FromCh(6)" InputMode="TextInputMode.Numeric" MaxLength="4" />
+            <FormaTextBox @bind-Value="_model.Year" aria-label="@L["Year"]" Width="CssLength.FromCh(6)" Options="@(new TextBoxOptions { InputMode = TextInputMode.Numeric, MaxLength = 4 })" />
 
             <p class="demo-note">@L["Fourteen rem, for a postcode:"]</p>
             <FormaTextBox @bind-Value="_model.Postcode" aria-label="@L["Postcode"]" Width="CssLength.FromRem(14)" />

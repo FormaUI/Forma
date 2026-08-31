@@ -13,14 +13,8 @@ public sealed partial class FormaImagePicker : ComponentBase, IAsyncDisposable
 {
     private const string ImageAccept = "image/*";
 
-    /// <summary>Whether more than one image may be selected or dropped at once.</summary>
-    [Parameter] public bool AllowMultipleFiles { get; set; } = true;
-
-    /// <summary>The largest a single image may be, in bytes; unset allows any size.</summary>
-    [Parameter] public long? MaxFileSize { get; set; }
-
-    /// <summary>The most images one selection may carry; unset allows any number.</summary>
-    [Parameter] public int? MaxSelectedFiles { get; set; }
+    /// <summary>The images the picker accepts; its `Accept` is pinned to image types.</summary>
+    [Parameter] public FilePickerOptions Options { get; set; } = FilePickerOptions.Default;
 
     /// <summary>Raised with the files a selection declined, alongside why.</summary>
     [Parameter] public EventCallback<IReadOnlyList<RejectedFile>> OnFilesRejected { get; set; }
@@ -49,6 +43,10 @@ public sealed partial class FormaImagePicker : ComponentBase, IAsyncDisposable
     /// <inheritdoc />
     protected override void OnInitialized()
         => _preview = new FilePreview(JS);
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+        => ArgumentNullException.ThrowIfNull(Options);
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)

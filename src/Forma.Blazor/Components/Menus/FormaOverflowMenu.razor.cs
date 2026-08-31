@@ -13,11 +13,8 @@ public sealed partial class FormaOverflowMenu : ComponentBase
     /// <summary>Which way the ellipsis glyph points.</summary>
     [Parameter] public MenuOrientation Orientation { get; set; } = MenuOrientation.Horizontal;
 
-    /// <summary>Size of the trigger button.</summary>
-    [Parameter] public ButtonSize Size { get; set; } = ButtonSize.Normal;
-
-    /// <summary>Visual weight of the trigger button.</summary>
-    [Parameter] public ButtonVariant Variant { get; set; } = ButtonVariant.Ghost;
+    /// <summary>Appearance of the trigger button, always drawn icon-only around the ellipsis.</summary>
+    [Parameter] public ButtonOptions TriggerOptions { get; set; } = ButtonOptions.GhostIcon;
 
     /// <summary>Blocks interaction with the trigger button.</summary>
     [Parameter] public bool Disabled { get; set; }
@@ -32,15 +29,10 @@ public sealed partial class FormaOverflowMenu : ComponentBase
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
-    private FormaButtonOptions TriggerOptions
-        => new()
-        {
-            IconOnly = true,
-            Size = Size,
-            Variant = Variant,
-        };
-
     /// <inheritdoc />
     protected override void OnParametersSet()
-        => ArgumentException.ThrowIfNullOrWhiteSpace(Label);
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(Label);
+        ArgumentNullException.ThrowIfNull(TriggerOptions);
+    }
 }

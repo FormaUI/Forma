@@ -24,9 +24,9 @@
         @if (hasActions)
         {
             <div class="forma-explorer-folder-actions">
-                <FormaOverflowMenu Label="@L["Actions for {Name}", ("Name", Folder.Name)]"
+                <FormaOverflowMenu Label="@L["Actions for {Name}", Folder.Name]"
                                    Orientation="MenuOrientation.Vertical"
-                                   Size="ButtonSize.Mini">
+                                   TriggerOptions="ButtonOptions.MiniGhostIcon">
                     <HeaderContent>
                         <span title="@Folder.Name">@Folder.Name</span>
                     </HeaderContent>
@@ -61,7 +61,7 @@
         {
             <button type="button"
                     class="forma-explorer-folder-select @(selected ? "is-checked" : "")"
-                    aria-label="@(selected ? L["Deselect Folder \"{Name}\"", ("Name", Folder.Name)] : L["Select Folder \"{Name}\"", ("Name", Folder.Name)])"
+                    aria-label="@(selected ? L["Deselect Folder \"{Name}\"", Folder.Name] : L["Select Folder \"{Name}\"", Folder.Name])"
                     aria-pressed="@(selected ? "true" : "false")"
                     @onclick="() => Interaction.ToggleFolderSelectAsync(Folder)">
                 <FormaIcon Icon="Glyph.Check" Size="IconSize.Small" />
@@ -72,7 +72,7 @@
         {
             <button type="button"
                     class="forma-explorer-folder-twisty @(expanded ? "is-expanded" : "")"
-                    aria-label="@(expanded ? L["Collapse {Name}", ("Name", Folder.Name)] : L["Expand {Name}", ("Name", Folder.Name)])"
+                    aria-label="@(expanded ? L["Collapse {Name}", Folder.Name] : L["Expand {Name}", Folder.Name])"
                     @onclick="() => Interaction.ToggleExpanded(Folder.Source)">
                 <FormaIcon Icon="Glyph.ChevronRight" Size="IconSize.Small" />
             </button>

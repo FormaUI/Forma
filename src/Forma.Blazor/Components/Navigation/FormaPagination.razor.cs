@@ -21,6 +21,8 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
     // Beside the steps a navigation button moves a whole window.
     private const int StepsStride = LookAhead;
 
+    private static readonly TextBoxOptions NavigationEntryOptions = new() { InputMode = TextInputMode.Numeric, EnterKeyHint = TextEnterKeyHint.Go };
+
     private readonly string _navigationInputId = $"forma-pagination-input-{Guid.NewGuid():N}";
 
     private ImplicitSubmitGuard _submitGuard = default!;
@@ -45,7 +47,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
     [Parameter] public EventCallback<int> OnPageChanged { get; set; }
 
     /// <summary>How the reader moves between pages.</summary>
-    [Parameter] public FormaPaginationOptions Options { get; set; } = FormaPaginationOptions.Default;
+    [Parameter] public PaginationOptions Options { get; set; } = PaginationOptions.Default;
 
     /// <summary>Additional attributes applied to the navigation element.</summary>
     [Parameter(CaptureUnmatchedValues = true)]

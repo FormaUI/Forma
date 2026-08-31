@@ -458,7 +458,7 @@
             ];
             IReadOnlyList<ResourceInfo>? selected = null;
             var cut = ctx.Render(@<FormaExplorer Resources="resources"
-                                                MaxSelection="1"
+                                                Options="@(new ExplorerOptions { MaxSelection = 1 })"
                                                 SelectedChanged="@(items => { selected = items; return Task.CompletedTask; })" />);
 
             // Act

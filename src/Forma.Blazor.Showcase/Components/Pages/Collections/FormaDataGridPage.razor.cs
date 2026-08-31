@@ -48,7 +48,7 @@ public sealed partial class FormaDataGridPage : ComponentBase
 
     private IReadOnlyList<Employee> _limitsSelected = [];
 
-    private CheckedSelectionCaption _limitsCaption = default!;
+    private CheckedSelectionOptions _limitsOptions = default!;
 
     private Employee? _lastClicked;
 
@@ -62,10 +62,14 @@ public sealed partial class FormaDataGridPage : ComponentBase
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _limitsCaption = new CheckedSelectionCaption
+        => _limitsOptions = new CheckedSelectionOptions
         {
-            SelectAllText = L["Select all"],
-            DeselectAllText = L["Deselect all"],
+            Maximum = SelectionLimit,
+            Caption = new CheckedSelectionCaption
+            {
+                SelectAllText = L["Select all"],
+                DeselectAllText = L["Deselect all"],
+            },
         };
 
     private void HandleSelectionChanged(IReadOnlyList<Employee> selected)

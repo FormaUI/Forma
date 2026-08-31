@@ -24,9 +24,9 @@
 
 <div class="demo-section">
     <h2>@L["Debounced Search"]</h2>
-    <p class="description">@L["DebounceDelay holds OnSearch back until typing pauses, so a handful of keystrokes reports once rather than once each. Pressing Enter searches immediately without waiting."]</p>
+    <p class="description">@L["SearchDebounce holds OnSearch back until typing pauses, so a handful of keystrokes reports once rather than once each. Pressing Enter searches immediately without waiting."]</p>
     <div class="demo-box">
-        <FormaSearchBox Value="@_debouncedQuery" ValueChanged="v => _debouncedQuery = v" DebounceDelay="TimeSpan.FromMilliseconds(400)" OnSearch="HandleDebouncedSearch" Placeholder="@L["Search fruit..."]" aria-label="@L["Search fruit..."]" />
+        <FormaSearchBox Value="@_debouncedQuery" ValueChanged="v => _debouncedQuery = v" SearchDebounce="TimeSpan.FromMilliseconds(400)" OnSearch="HandleDebouncedSearch" Placeholder="@L["Search fruit..."]" aria-label="@L["Search fruit..."]" />
         <p class="demo-note">@L["Last search"]: <code>@(_lastSearchedTerm.Length == 0 ? L["(none)"] : _lastSearchedTerm)</code></p>
         <p class="demo-note">@L["Searches performed"]: <code>@_searchCount</code></p>
     </div>

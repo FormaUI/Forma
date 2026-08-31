@@ -2,7 +2,7 @@
 
 <div class="forma-file-picker" aria-busy="@_isBusy">
     <label @ref="_dropZoneElement" class="forma-file-picker-drop-zone @(_isBusy ? "forma-file-picker-busy" : "")">
-        <InputFile class="forma-file-picker-input" accept="@Accept" multiple="@AllowMultipleFiles" disabled="@_isBusy" OnChange="HandleChangeAsync" />
+        <InputFile class="forma-file-picker-input" accept="@Options.Accept" multiple="@Options.AllowMultipleFiles" disabled="@_isBusy" OnChange="HandleChangeAsync" />
         <span class="forma-file-picker-icon" aria-hidden="true"><FormaIcon Icon="Glyph.CloudUpload" Size="IconSize.Display" /></span>
         <p class="forma-file-picker-prompt">@EffectivePrompt</p>
     </label>

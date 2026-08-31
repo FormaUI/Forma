@@ -103,6 +103,22 @@
         }
 
         [Fact]
+        public void Should_keep_the_trigger_icon_only_whatever_the_options_say()
+        {
+            // Arrange
+            using var ctx = new FormaOverflowMenuTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaOverflowMenu Label="Actions" TriggerOptions="@(new ButtonOptions { IconOnly = false })">
+                    <FormaDropDownMenuItem>Print</FormaDropDownMenuItem>
+                </FormaOverflowMenu>);
+
+            // Assert
+            Assert.Contains("forma-button-icon", cut.Find(".forma-dropdown-menu-trigger").ClassList);
+        }
+
+        [Fact]
         public void Should_forward_size_and_variant_to_trigger()
         {
             // Arrange
@@ -110,7 +126,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaOverflowMenu Label="Actions" Size="ButtonSize.Mini" Variant="ButtonVariant.Secondary">
+                @<FormaOverflowMenu Label="Actions" TriggerOptions="@(ButtonOptions.MiniGhostIcon with { Variant = ButtonVariant.Secondary })">
                     <FormaDropDownMenuItem>Print</FormaDropDownMenuItem>
                 </FormaOverflowMenu>);
 

@@ -60,7 +60,7 @@
                                      class="@(isOpen ? "forma-breadcrumb-chevron is-open" : "forma-breadcrumb-chevron")"
                                      aria-expanded="@(isOpen ? "true" : "false")"
                                      aria-controls="@(isOpen ? menuId : null)"
-                                     aria-label="@L["Show options for {Label}", ("Label", item.Label)]"
+                                     aria-label="@L["Show options for {Label}", item.Label]"
                                      OnClick="() => ToggleChildren(currentIndex)">
                             <FormaIcon Icon="Glyph.ChevronRight" />
                         </FormaButton>
@@ -72,7 +72,7 @@
                             <span class="forma-breadcrumb-menu"
                                   id="@menuId"
                                   role="group"
-                                  aria-label="@L["Show options for {Label}", ("Label", item.Label)]">
+                                  aria-label="@L["Show options for {Label}", item.Label]">
                                 @foreach (var child in children)
                                 {
                                     <FormaButton Variant="ButtonVariant.Ghost" class="forma-breadcrumb-menu-item" OnClick="() => HandleChildSelectedAsync(child)">

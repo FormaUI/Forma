@@ -73,20 +73,11 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     /// <summary>Raised when choosing an emoji changes the recently chosen list.</summary>
     [Parameter] public EventCallback<IReadOnlyList<string>> RecentChanged { get; set; }
 
-    /// <summary>How many recently chosen emoji to keep.</summary>
-    [Parameter] public int MaxRecent { get; set; } = 24;
-
-    /// <summary>Whether the search box is shown.</summary>
-    [Parameter] public bool ShowSearch { get; set; } = true;
-
-    /// <summary>Whether the category tab strip is shown.</summary>
-    [Parameter] public bool ShowGroupTabs { get; set; } = true;
+    /// <summary>How the picker browses: search, tabs, and the recents it keeps.</summary>
+    [Parameter] public EmojiPickerOptions Options { get; set; } = EmojiPickerOptions.Default;
 
     /// <summary>The categories the tab strip offers, defaulting to the nine standard ones.</summary>
     [Parameter] public IReadOnlyList<EmojiGroup> Groups { get; set; } = DefaultGroups;
-
-    /// <summary>How long typing pauses before the search runs.</summary>
-    [Parameter] public TimeSpan? SearchDebounce { get; set; } = TimeSpan.FromMilliseconds(200);
 
     /// <summary>The value of the root element's id attribute.</summary>
     [Parameter] public string? Id { get; set; }
@@ -152,7 +143,8 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(MaxRecent, 1);
+        ArgumentNullException.ThrowIfNull(Options);
+        ArgumentOutOfRangeException.ThrowIfLessThan(Options.MaxRecent, 1);
 
         // A tab that was showing recents disappears once the host clears them.
         if (_activeGroupId == RecentGroupId && Recent.Count == 0)
@@ -294,9 +286,9 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
         var updated = new List<string> { info.Emoji.Sequence };
         updated.AddRange(Recent.Where(sequence => !string.Equals(sequence, info.Emoji.Sequence, StringComparison.Ordinal)));
 
-        if (updated.Count > MaxRecent)
+        if (updated.Count > Options.MaxRecent)
         {
-            updated.RemoveRange(MaxRecent, updated.Count - MaxRecent);
+            updated.RemoveRange(Options.MaxRecent, updated.Count - Options.MaxRecent);
         }
 
         Recent = updated;

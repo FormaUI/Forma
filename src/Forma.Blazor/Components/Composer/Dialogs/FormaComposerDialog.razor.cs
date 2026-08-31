@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Components.Forms;
 public sealed partial class FormaComposerDialog : ComponentBase
 {
     // Confirming has to be able to fail, so the modal is not allowed to close itself before the fields are judged.
-    private static readonly FormaModalOptions StayOpenOnConfirm = new() { CloseOnConfirm = false };
+    private static readonly ModalOptions StayOpenOnConfirm = new() { CloseOnConfirm = false };
 
     /// <summary>Whether the dialog is currently visible.</summary>
     [Parameter, EditorRequired] public bool Opened { get; set; }

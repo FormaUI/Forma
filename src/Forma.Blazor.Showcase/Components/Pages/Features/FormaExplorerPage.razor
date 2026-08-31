@@ -39,7 +39,7 @@
     <p class="description">@L["With MaxSelection set to 1, picking any item immediately selects it alone. This one holds its collection through Resources, which is the simpler half of the contract and the right choice for a handful of items."]</p>
     <div class="demo-box">
         <FormaExplorer Resources="_singleSelectResources"
-                      MaxSelection="1"
+                      Options="@(new ExplorerOptions { MaxSelection = 1 })"
                       SelectedChanged="@(resources => HandleSelectedAsync("single", resources))" />
         <ul class="demo-log">
             @foreach (var resource in Log("single"))
@@ -170,7 +170,7 @@
                       PageSize="12"
                       TotalCount="_libraryCount"
                       OnFolderChanged="@(folder => HandleFolderChangedAsync("library", folder))" />
-        <p class="demo-note">@L["Windows fetched: {Count}", ("Count", _libraryStore.QueryCount)] — @LibraryQueryDescription</p>
+        <p class="demo-note">@L["Windows fetched: {Count}", _libraryStore.QueryCount] — @LibraryQueryDescription</p>
     </div>
 </div>
 

@@ -13,17 +13,8 @@ public sealed partial class FormaFilePicker : ComponentBase, IAsyncDisposable
 {
     private const string DraggingClass = "forma-file-picker-dragging";
 
-    /// <summary>HTML `accept` syntax (MIME types, wildcards, or extensions) a file must match; unset accepts anything.</summary>
-    [Parameter] public string? Accept { get; set; }
-
-    /// <summary>Whether more than one file may be selected or dropped at once.</summary>
-    [Parameter] public bool AllowMultipleFiles { get; set; } = true;
-
-    /// <summary>The largest a single file may be, in bytes; unset allows any size.</summary>
-    [Parameter] public long? MaxFileSize { get; set; }
-
-    /// <summary>The most files one selection may carry; unset allows any number.</summary>
-    [Parameter] public int? MaxSelectedFiles { get; set; }
+    /// <summary>The files the picker accepts.</summary>
+    [Parameter] public FilePickerOptions Options { get; set; } = FilePickerOptions.Default;
 
     /// <summary>Raised with the files a selection declined, alongside why.</summary>
     [Parameter] public EventCallback<IReadOnlyList<RejectedFile>> OnFilesRejected { get; set; }
@@ -58,14 +49,16 @@ public sealed partial class FormaFilePicker : ComponentBase, IAsyncDisposable
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        if (MaxFileSize is <= 0)
+        ArgumentNullException.ThrowIfNull(Options);
+
+        if (Options.MaxFileSize is <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(MaxFileSize), MaxFileSize, "MaxFileSize must be greater than zero.");
+            throw new ArgumentOutOfRangeException(nameof(Options), Options.MaxFileSize, "MaxFileSize must be greater than zero.");
         }
 
-        if (MaxSelectedFiles is <= 0)
+        if (Options.MaxFiles is <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(MaxSelectedFiles), MaxSelectedFiles, "MaxSelectedFiles must be greater than zero.");
+            throw new ArgumentOutOfRangeException(nameof(Options), Options.MaxFiles, "MaxFiles must be greater than zero.");
         }
     }
 
@@ -112,7 +105,7 @@ public sealed partial class FormaFilePicker : ComponentBase, IAsyncDisposable
         try
         {
             var files = args.GetMultipleFiles(args.FileCount);
-            var effectiveMax = AllowMultipleFiles ? MaxSelectedFiles : 1;
+            var effectiveMax = Options.AllowMultipleFiles ? Options.MaxFiles : 1;
             var accepted = new List<IBrowserFile>();
             var rejected = new List<RejectedFile>();
 
@@ -155,12 +148,12 @@ public sealed partial class FormaFilePicker : ComponentBase, IAsyncDisposable
             return FileRejectionReason.TooManyFiles;
         }
 
-        if (!string.IsNullOrEmpty(Accept) && !MatchesAccept(Accept, file))
+        if (!string.IsNullOrEmpty(Options.Accept) && !MatchesAccept(Options.Accept, file))
         {
             return FileRejectionReason.DisallowedType;
         }
 
-        if (MaxFileSize is { } max && file.Size > max)
+        if (Options.MaxFileSize is { } max && file.Size > max)
         {
             return FileRejectionReason.TooLarge;
         }

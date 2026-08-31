@@ -24,7 +24,7 @@ public sealed partial class FormaShareMenu : ComponentBase, IAsyncDisposable
     [Parameter] public RenderFragment? Trigger { get; set; }
 
     /// <summary>Appearance of the trigger button.</summary>
-    [Parameter] public FormaButtonOptions TriggerOptions { get; set; } = FormaButtonOptions.Default;
+    [Parameter] public ButtonOptions TriggerOptions { get; set; } = ButtonOptions.Default;
 
     /// <summary>Additional attributes applied to the trigger button, such as aria-label for an icon-only trigger.</summary>
     [Parameter(CaptureUnmatchedValues = true)]

@@ -2,7 +2,7 @@
 @using Forma.Blazor.Components.Feedback
 
 <div class="@CssClass" id="@Id" @attributes="AdditionalAttributes">
-    @if (ShowGroupTabs)
+    @if (Options.ShowGroupTabs)
     {
         <div class="forma-emoji-picker-tabs" role="tablist" aria-label="@L["Emoji Categories"]" aria-orientation="horizontal">
             @foreach (var tab in Tabs)
@@ -27,10 +27,10 @@
         </div>
     }
 
-    @if (ShowSearch)
+    @if (Options.ShowSearch)
     {
         <div class="forma-emoji-picker-search">
-            <FormaSearchBox Value="@_query" ValueChanged="OnQueryChangedAsync" Placeholder="@L["Search Emoji"]" DebounceDelay="SearchDebounce" />
+            <FormaSearchBox Value="@_query" ValueChanged="OnQueryChangedAsync" Placeholder="@L["Search Emoji"]" SearchDebounce="Options.SearchDebounce" />
         </div>
     }
 
@@ -38,7 +38,7 @@
          id="@PanelElementId"
          @ref="_panelElement"
          role="tabpanel"
-         aria-labelledby="@(IsSearching || !ShowGroupTabs ? null : TabElementId(ActiveGroupId))">
+         aria-labelledby="@(IsSearching || !Options.ShowGroupTabs ? null : TabElementId(ActiveGroupId))">
 
         @if (Visible.Count == 0)
         {

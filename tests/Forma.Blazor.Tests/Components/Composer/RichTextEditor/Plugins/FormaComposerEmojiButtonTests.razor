@@ -93,14 +93,14 @@
         {
             // Arrange
             using var ctx = new FormaComposerEmojiButtonTests();
-            var cut = ctx.Render(@<CascadingValue Value="CreateContext()"><FormaComposerEmojiButton MaxRecent="5" /></CascadingValue>);
+            var cut = ctx.Render(@<CascadingValue Value="CreateContext()"><FormaComposerEmojiButton PickerOptions="@(new EmojiPickerOptions { MaxRecent = 5 })" /></CascadingValue>);
 
             // Act
             cut.Find("button").Click();
 
             // Assert
             Assert.NotNull(cut.FindComponent<FormaEmojiPicker>().Instance);
-            Assert.Equal(5, cut.FindComponent<FormaEmojiPicker>().Instance.MaxRecent);
+            Assert.Equal(5, cut.FindComponent<FormaEmojiPicker>().Instance.Options.MaxRecent);
         }
     }
 }

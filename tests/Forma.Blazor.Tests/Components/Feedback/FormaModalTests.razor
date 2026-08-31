@@ -2,10 +2,10 @@
 @code {
     public sealed class Component
     {
-        private static readonly FormaModalOptions HideConfirmAction =
+        private static readonly ModalOptions HideConfirmAction =
             new() { ShowConfirmAction = false };
 
-        private static readonly FormaModalOptions HideFooterActions =
+        private static readonly ModalOptions HideFooterActions =
             new() { ShowCancelAction = false, ShowConfirmAction = false };
 
         [Fact]

@@ -2,6 +2,7 @@ namespace Forma.Blazor.Tests.Components.Composer.RichTextEditor;
 
 using Forma.Blazor.Components.Composer.RichTextEditor;
 using Forma.Blazor.Components.Composer.RichTextEditor.Plugins;
+using Forma.Blazor.Components.Inputs;
 using Forma.Features.Composer.Documents;
 using Forma.Features.Composer.Editing;
 using Forma.Features.Composer.Plugins;
@@ -340,14 +341,14 @@ public sealed class RichTextPluginTests
     public void EmojiPlugin_should_contribute_the_composer_emoji_button()
     {
         // Arrange
-        var plugin = new EmojiPlugin(new RichTextEditorPlugin(), new EmojiPluginOptions { MaxRecent = 12 });
+        var plugin = new EmojiPlugin(new RichTextEditorPlugin(), new EmojiPluginOptions { Picker = new() { MaxRecent = 12 } });
 
         // Act
         var item = (FormaToolbarCustomItem)plugin.Items.SelectMany(entry => entry.Items).SelectMany(Flatten).Single(entry => entry.Id == "emoji");
 
         // Assert
         Assert.Equal(typeof(FormaComposerEmojiButton), item.Component);
-        Assert.Equal(12, item.Parameters?["MaxRecent"]);
+        Assert.Equal(12, ((EmojiPickerOptions)item.Parameters?["PickerOptions"]!).MaxRecent);
     }
 
     [Fact]

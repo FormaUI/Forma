@@ -48,11 +48,35 @@
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaTextBox @bind-Value="model.Text" Type="type" />
+                <FormaTextBox @bind-Value="model.Text" Options="@(new TextBoxOptions { Type = type })" />
             </FakeFormHost>);
 
             // Assert
             Assert.Equal(expected, cut.Find("input").GetAttribute("type"));
+        }
+
+        [Fact]
+        public void Should_apply_the_email_preset_whole()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" Options="TextBoxOptions.Email" />
+            </FakeFormHost>);
+            var input = cut.Find("input");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("email", input.GetAttribute("type"));
+                Assert.Equal("email", input.GetAttribute("inputmode"));
+                Assert.Equal("email", input.GetAttribute("autocomplete"));
+                Assert.Equal("none", input.GetAttribute("autocapitalize"));
+                Assert.Equal("false", input.GetAttribute("spellcheck"));
+            });
         }
 
         [Fact]
@@ -177,7 +201,7 @@
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaTextBox @bind-Value="model.Text" autocomplete="off" maxlength="50" data-testid="tb-1" />
+                <FormaTextBox @bind-Value="model.Text" Options="@(new TextBoxOptions { AutoComplete = "off", MaxLength = 50 })" data-testid="tb-1" />
             </FakeFormHost>);
             var input = cut.Find("input");
 
@@ -404,14 +428,7 @@
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaTextBox @bind-Value="model.Text"
-                              MinLength="3"
-                              MaxLength="20"
-                              Pattern="[a-z]+"
-                              InputMode="TextInputMode.Email"
-                              EnterKeyHint="TextEnterKeyHint.Send"
-                              AutoCapitalize="TextAutoCapitalize.Words"
-                              SpellCheck="true"
-                              AutoComplete="email" />
+                              Options="@(new TextBoxOptions { MinLength = 3, MaxLength = 20, Pattern = "[a-z]+", InputMode = TextInputMode.Email, EnterKeyHint = TextEnterKeyHint.Send, AutoCapitalize = TextAutoCapitalize.Words, SpellCheck = true, AutoComplete = "email" })" />
             </FakeFormHost>);
             var input = cut.Find("input");
 
@@ -466,7 +483,7 @@
 
             // Act
             var act = () => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaTextBox @bind-Value="model.Text" MinLength="-1" />
+                <FormaTextBox @bind-Value="model.Text" Options="@(new TextBoxOptions { MinLength = -1 })" />
             </FakeFormHost>);
 
             // Assert
@@ -482,7 +499,7 @@
 
             // Act
             var act = () => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaTextBox @bind-Value="model.Text" MaxLength="0" />
+                <FormaTextBox @bind-Value="model.Text" Options="@(new TextBoxOptions { MaxLength = 0 })" />
             </FakeFormHost>);
 
             // Assert
@@ -498,7 +515,7 @@
 
             // Act
             var act = () => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaTextBox @bind-Value="model.Text" MinLength="10" MaxLength="4" />
+                <FormaTextBox @bind-Value="model.Text" Options="@(new TextBoxOptions { MinLength = 10, MaxLength = 4 })" />
             </FakeFormHost>);
 
             // Assert
@@ -514,7 +531,7 @@
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaTextBox @bind-Value="model.Text" SpellCheck="false" />
+                <FormaTextBox @bind-Value="model.Text" Options="@(new TextBoxOptions { SpellCheck = false })" />
             </FakeFormHost>);
 
             // Assert
@@ -530,7 +547,7 @@
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaTextBox @bind-Value="model.Text" InputMode="TextInputMode.Numeric" />
+                <FormaTextBox @bind-Value="model.Text" Options="@(new TextBoxOptions { InputMode = TextInputMode.Numeric })" />
             </FakeFormHost>);
 
             // Assert
@@ -546,7 +563,7 @@
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaTextBox @bind-Value="model.Text" InputMode="TextInputMode.Fractional" />
+                <FormaTextBox @bind-Value="model.Text" Options="@(new TextBoxOptions { InputMode = TextInputMode.Fractional })" />
             </FakeFormHost>);
 
             // Assert

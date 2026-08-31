@@ -69,7 +69,7 @@
                 <h4 class="forma-explorer-upload-title">@L["Upload Media"]</h4>
                 <FormaCloseButton Label="@L["Close Upload"]" OnClick="CloseUpload" />
             </div>
-            <FormaFilePicker Accept="image/*,video/*,audio/*"
+            <FormaFilePicker Options="UploadPickerOptions"
                              OnFilesSelected="HandleUploadFilesPickedAsync" />
             @if (_pickedUploadFiles is { Count: > 0 })
             {
@@ -118,7 +118,7 @@
                         }
                         else if (!string.IsNullOrWhiteSpace(_searchQuery))
                         {
-                            <p>@L["No media matches \"{Query}\"", ("Query", _searchQuery)]</p>
+                            <p>@L["No media matches \"{Query}\"", _searchQuery]</p>
                         }
                         else if (CurrentFolder is not null)
                         {
@@ -172,11 +172,11 @@
                 <div class="forma-explorer-scroll-status" role="status">
                     @if (MatchingCount is { } total)
                     {
-                        @L["Showing {Shown} of {Total}", ("Shown", VisibleResources.Count), ("Total", total)]
+                        @L["Showing {Shown} of {Total}", VisibleResources.Count, total]
                     }
                     else
                     {
-                        @L["Showing {Shown}", ("Shown", VisibleResources.Count)]
+                        @L["Showing {Shown}", VisibleResources.Count]
                     }
                 </div>
             }

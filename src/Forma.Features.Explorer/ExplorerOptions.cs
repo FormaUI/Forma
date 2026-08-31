@@ -12,6 +12,9 @@ public sealed record ExplorerOptions
     /// <summary>Whether the explorer opens already selecting, so a caller whose whole purpose is choosing needs no first press of Select.</summary>
     public bool SelectOnOpen { get; init; }
 
+    /// <summary>The maximum number of resources that may be selected at once (0 for unlimited).</summary>
+    public int MaxSelection { get; init; }
+
     /// <summary>Whether the reader can resize the explorer.</summary>
     public bool Resizable { get; init; }
 

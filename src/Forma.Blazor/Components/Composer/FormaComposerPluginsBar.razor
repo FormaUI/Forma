@@ -12,7 +12,7 @@
                 @if (Overflowing.Count > 0)
                 {
                     <FormaOverflowMenu Orientation="MenuOrientation.Vertical"
-                                       Size="ButtonSize.Mini"
+                                       TriggerOptions="ButtonOptions.MiniGhostIcon"
                                        Disabled="Disabled"
                                        Label="@L["More Plugin Commands"]">
                         @foreach (var action in Overflowing)

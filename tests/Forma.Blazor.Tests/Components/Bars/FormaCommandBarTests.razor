@@ -197,7 +197,7 @@
             // Arrange
             using var ctx = new FormaCommandBarTests();
             var cut = ctx.Render(
-                @<FormaCommandBar ScrollBackLabel="Earlier filters" ScrollForwardLabel="Later filters">
+                @<FormaCommandBar Options="@(new CommandBarOptions { ScrollBackLabel = "Earlier filters", ScrollForwardLabel = "Later filters" })">
                     <button>Upload</button>
                 </FormaCommandBar>);
 

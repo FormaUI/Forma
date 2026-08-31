@@ -30,6 +30,10 @@ public sealed partial class FormaComposerFileUploadDialog : ComposerDialogBase
     private static FileUploaderOptions UploaderOptions
         => Detailed;
 
+    /// <summary>The picker's options, single-select when only one file may be attached.</summary>
+    private FilePickerOptions PickerOptions
+        => Options.Picker.MaxFiles == 1 ? Options.Picker with { AllowMultipleFiles = false } : Options.Picker;
+
     /// <inheritdoc />
     protected override void OnInitialized()
         => _store = (IFileStore?)Services.GetService(typeof(IFileStore));
@@ -54,12 +58,12 @@ public sealed partial class FormaComposerFileUploadDialog : ComposerDialogBase
     {
         foreach (var rejection in rejections)
         {
-            Messages.Add(L["\"{Name}\" was not accepted.", ("Name", rejection.Name)].Value);
+            Messages.Add(L["\"{Name}\" was not accepted.", rejection.Name].Value);
         }
     }
 
     private void HandleFailed(UploadFailure failure)
-        => Messages.Add(L["\"{Name}\" could not be uploaded.", ("Name", failure.Name)].Value);
+        => Messages.Add(L["\"{Name}\" could not be uploaded.", failure.Name].Value);
 
     // Handing these over would close the dialog, so what arrives is held until the reader is done choosing.
     private void HandleCompleted(IReadOnlyList<ResourceInfo> uploaded)

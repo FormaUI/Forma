@@ -5,7 +5,7 @@
   "Every keystroke reports instantly, filtering the list as you type. Clearing the field — by the button or by hand — reports an empty search right away.": "כל הקשה מדווחת מיד, ומסננת את הרשימה תוך כדי הקלדה. ניקוי השדה — בכפתור או ביד — מדווח על חיפוש ריק מיד.",
   "Search fruit...": "חפש פרי...",
   "Debounced Search": "חיפוש עם עיכוב",
-  "DebounceDelay holds OnSearch back until typing pauses, so a handful of keystrokes reports once rather than once each. Pressing Enter searches immediately without waiting.": "DebounceDelay עוצר את OnSearch עד שההקלדה נעצרת, כך שכמה הקשות מדווחות פעם אחת ולא פעם על כל אחת. לחיצה על Enter מחפשת מיד ללא המתנה.",
+  "SearchDebounce holds OnSearch back until typing pauses, so a handful of keystrokes reports once rather than once each. Pressing Enter searches immediately without waiting.": "SearchDebounce עוצר את OnSearch עד שההקלדה נעצרת, כך שכמה הקשות מדווחות פעם אחת ולא פעם על כל אחת. לחיצה על Enter מחפשת מיד ללא המתנה.",
   "Last search": "חיפוש אחרון",
   "(none)": "(אין)",
   "Searches performed": "חיפושים שבוצעו",

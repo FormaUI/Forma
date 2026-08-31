@@ -171,7 +171,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
 
     private Task HandleRejectedAsync(string key, ExplorerRejection rejection)
     {
-        LogAction(key, L["Refused ({Reason}): {Message}", ("Reason", rejection.Reason), ("Message", rejection.Message)]);
+        LogAction(key, L["Refused ({Reason}): {Message}", rejection.Reason, rejection.Message]);
 
         return Task.CompletedTask;
     }
@@ -194,7 +194,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
     private Task HandleFolderChangedAsync(string key, FolderResourceInfo? folder)
     {
         _currentFolderSources[key] = folder?.Source;
-        LogAction(key, folder is null ? L["Opened all media"] : L["Opened folder \"{Name}\"", ("Name", folder.Name)]);
+        LogAction(key, folder is null ? L["Opened all media"] : L["Opened folder \"{Name}\"", folder.Name]);
 
         return Task.CompletedTask;
     }
@@ -203,7 +203,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
     {
         _mediaStore.Remove(request.Resources);
         SyncFromStore();
-        LogAction(key, L["Deleted {Count} item(s)", ("Count", request.Resources.Count)]);
+        LogAction(key, L["Deleted {Count} item(s)", request.Resources.Count]);
 
         return Task.CompletedTask;
     }
@@ -215,7 +215,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
 
         _mediaStore.Move(request.Resources, request.TargetFolder?.Source);
         SyncFromStore();
-        LogAction(key, L["Moved {Count} item(s) to \"{Folder}\"", ("Count", count), ("Folder", folderName)]);
+        LogAction(key, L["Moved {Count} item(s) to \"{Folder}\"", count, folderName]);
 
         return Task.CompletedTask;
     }
@@ -230,7 +230,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
 
         _sampleFolders.Add(new FolderResourceInfo(source) { Name = request.Name, Parent = parent?.Source, Count = 0 });
 
-        LogAction(key, L["Created folder \"{Name}\" in {Parent}", ("Name", request.Name), ("Parent", FolderName(parent))]);
+        LogAction(key, L["Created folder \"{Name}\" in {Parent}", request.Name, FolderName(parent)]);
 
         return Task.CompletedTask;
     }
@@ -247,7 +247,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
             _currentFolderSources[demo] = null;
         }
 
-        LogAction(key, L["Deleted folder \"{Name}\"", ("Name", removed.Name)]);
+        LogAction(key, L["Deleted folder \"{Name}\"", removed.Name]);
 
         return Task.CompletedTask;
     }
@@ -261,7 +261,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
             _sampleFolders[index] = _sampleFolders[index] with { Parent = request.TargetFolder?.Source };
         }
 
-        LogAction(key, L["Moved folder \"{Source}\" into \"{Target}\"", ("Source", request.SourceFolder.Name), ("Target", FolderName(request.TargetFolder))]);
+        LogAction(key, L["Moved folder \"{Source}\" into \"{Target}\"", request.SourceFolder.Name, FolderName(request.TargetFolder)]);
 
         return Task.CompletedTask;
     }
@@ -275,7 +275,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
             _sampleFolders[index] = _sampleFolders[index] with { Name = request.NewName };
         }
 
-        LogAction(key, L["Renamed folder \"{OldName}\" to \"{NewName}\"", ("OldName", request.Folder.Name), ("NewName", request.NewName)]);
+        LogAction(key, L["Renamed folder \"{OldName}\" to \"{NewName}\"", request.Folder.Name, request.NewName]);
 
         return Task.CompletedTask;
     }
@@ -284,7 +284,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
     {
         _mediaStore.Rename(request.Resource, request.NewName);
         SyncFromStore();
-        LogAction(key, L["Renamed \"{OldName}\" to \"{NewName}\"", ("OldName", request.Resource.Name), ("NewName", request.NewName)]);
+        LogAction(key, L["Renamed \"{OldName}\" to \"{NewName}\"", request.Resource.Name, request.NewName]);
 
         return Task.CompletedTask;
     }
@@ -292,14 +292,14 @@ public sealed partial class FormaExplorerPage : ComponentBase
     private Task HandleSelectedAsync(string key, IReadOnlyList<ResourceInfo> resources)
     {
         var names = string.Join(", ", resources.Select(resource => resource.Name));
-        LogAction(key, L["Selected: {Names}", ("Names", names)]);
+        LogAction(key, L["Selected: {Names}", names]);
 
         return Task.CompletedTask;
     }
 
     private Task HandleUploadedAsync(string key, IReadOnlyList<ResourceInfo> resources)
     {
-        LogAction(key, L["Uploaded {Count} file(s)", ("Count", resources.Count)]);
+        LogAction(key, L["Uploaded {Count} file(s)", resources.Count]);
 
         return Task.CompletedTask;
     }

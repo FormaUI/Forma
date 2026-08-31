@@ -5,6 +5,7 @@ using System.Globalization;
 using Forma.Blazor.Components.Feedback;
 using Forma.Blazor.Interop.Behaviours;
 using Forma.Features.Explorer;
+using Forma.Features.Files;
 using Forma.Framework.Icons;
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
@@ -19,11 +20,13 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
 {
     private const int DefaultPageSize = 24;
 
-    private static readonly FormaModalOptions DialogModalOptions = new()
+    private static readonly ModalOptions DialogModalOptions = new()
     {
         ShowCancelAction = false,
         ShowConfirmAction = false
     };
+
+    private static readonly FilePickerOptions UploadPickerOptions = new() { Accept = "image/*,video/*,audio/*" };
 
     /// <summary>The currently active folder, or null for all media.</summary>
     [Parameter] public FolderResourceInfo? CurrentFolder { get; set; }
@@ -54,9 +57,6 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
 
     /// <summary>Raised when a ceiling stopped an operation, with the reason already written for a reader.</summary>
     [Parameter] public EventCallback<ExplorerRejection> OnRejected { get; set; }
-
-    /// <summary>The maximum number of resources that may be selected at once (0 for unlimited).</summary>
-    [Parameter] public int MaxSelection { get; set; }
 
     /// <summary>How the explorer presents itself and moves through the collection.</summary>
     [Parameter] public ExplorerOptions Options { get; set; } = ExplorerOptions.Default;
@@ -478,7 +478,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
             AdoptSelection(Selected);
         }
 
-        _selection.MaxSelection = MaxSelection;
+        _selection.MaxSelection = Options.MaxSelection;
     }
 
     /// <inheritdoc />
@@ -657,7 +657,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
             await RejectAsync(
                 ExplorerRejectionReason.TotalBytes,
                 Constraints.MaxTotalBytes,
-                L["This explorer holds at most {Size}.", ("Size", ResourceFormatter.FromByteCount(Constraints.MaxTotalBytes))].Value);
+                L["This explorer holds at most {Size}.", ResourceFormatter.FromByteCount(Constraints.MaxTotalBytes)].Value);
 
             return false;
         }
@@ -1260,7 +1260,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
             await RejectAsync(
                 ExplorerRejectionReason.ResourceKind,
                 0,
-                L["\"{Name}\" is not a kind of file this explorer accepts.", ("Name", refused.Name)].Value);
+                L["\"{Name}\" is not a kind of file this explorer accepts.", refused.Name].Value);
 
             return;
         }

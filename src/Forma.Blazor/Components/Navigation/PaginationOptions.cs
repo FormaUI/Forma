@@ -1,10 +1,10 @@
 namespace Forma.Blazor.Components.Navigation;
 
 /// <summary>How a <see cref="FormaPagination"/> lets the reader move between pages.</summary>
-public sealed record FormaPaginationOptions
+public sealed record PaginationOptions
 {
     /// <summary>Navigation steps where they fit, the navigation input where they do not.</summary>
-    public static FormaPaginationOptions Default { get; } = new();
+    public static PaginationOptions Default { get; } = new();
 
     /// <summary>The most pages a step can number; a step is sized for four digits.</summary>
     public const int MaxStepsPageCount = 9999;

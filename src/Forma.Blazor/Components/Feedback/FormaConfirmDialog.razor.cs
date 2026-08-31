@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Components;
 /// <summary>The host that renders confirmation requests raised through <see cref="IConfirmDialogService"/>.</summary>
 public sealed partial class FormaConfirmDialog : IDisposable
 {
-    private static readonly FormaModalOptions ModalOptions =
+    private static readonly ModalOptions ModalOptions =
         new() { CloseOnBackdropClick = false, ShowCancelAction = false, ShowConfirmAction = false };
 
     private ConfirmDialogRequest? _request;

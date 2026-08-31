@@ -1,10 +1,10 @@
 namespace Forma.Blazor.Components.Composer;
 
 /// <summary>Options configuring toolbar display, editor switcher, and default editor in <see cref="FormaComposer"/>.</summary>
-public sealed record FormaComposerOptions
+public sealed record ComposerOptions
 {
     /// <summary>Default options showing the toolbar and editor switcher.</summary>
-    public static FormaComposerOptions Default { get; } = new();
+    public static ComposerOptions Default { get; } = new();
 
     /// <summary>Whether the toolbar is shown above the editor canvas.</summary>
     public bool ShowToolbar { get; init; } = true;
