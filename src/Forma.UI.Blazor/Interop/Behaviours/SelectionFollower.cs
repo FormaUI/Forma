@@ -29,6 +29,8 @@ internal sealed class SelectionFollower(IJSRuntime js)
             activeClass,
             placement = placement == SelectionFollowerPlacement.Above ? "above" : "below",
             handleSelector,
+            // An owner named here must arrive in the browser; a reference that resolves to nothing hides the element rather than widening it to every selection.
+            requiresOwner = owner is not null,
         });
 
     /// <summary>Moves the element to the current selection.</summary>

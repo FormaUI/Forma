@@ -1,14 +1,17 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { attach } from '#behaviours/SelectionFollower.js';
-import { pointerEvent, stubPointerCapture } from '#support/platform.js';
+import { pointerEvent, stubPointerCapture, stubResizeObserver } from '#support/platform.js';
 
 describe('SelectionFollower', () => {
     /** @type {HTMLElement} */
     let editor;
     /** @type {HTMLElement} */
     let menu;
+    /** @type {ReturnType<typeof stubResizeObserver>} */
+    let resizes;
 
     beforeEach(() => {
+        resizes = stubResizeObserver();
         document.body.innerHTML = `
             <div id="editor" contenteditable="true">
                 <p id="text">Selected content</p>
@@ -239,6 +242,43 @@ describe('SelectionFollower', () => {
         expect(menu.style.top).toBe('128px');
     });
 
+    it('follows the selection when its owner\'s box changes without any event', () => {
+        attach(menu, editor, { activeClass: 'is-visible' });
+        const range = select();
+        expect(menu.style.top).toBe('128px');
+
+        range.getBoundingClientRect = () => ({
+            top: 300, bottom: 320, left: 200, right: 280, width: 80, height: 20, x: 200, y: 300,
+        });
+        resizes.latest().deliver([]);
+
+        expect(menu.style.top).toBe('328px'); // 320 (bottom) + 8 (gap)
+    });
+
+    it('never shows when the promised owner did not arrive', () => {
+        attach(menu, null, { activeClass: 'is-visible', requiresOwner: true });
+        select();
+
+        expect(menu.classList.contains('is-visible')).toBe(false);
+    });
+
+    it('hides once its owner leaves the document', () => {
+        attach(menu, editor, { activeClass: 'is-visible' });
+        const range = select();
+        expect(menu.classList.contains('is-visible')).toBe(true);
+
+        const text = document.querySelector('#text');
+        const getSelection = window.getSelection;
+        editor.remove();
+        // The selection object still answers with the detached range.
+        Object.defineProperty(window, 'getSelection', { value: () => ({ rangeCount: 1, isCollapsed: false, anchorNode: text.firstChild, getRangeAt: () => range }), configurable: true });
+
+        document.dispatchEvent(new Event('selectionchange'));
+
+        Object.defineProperty(window, 'getSelection', { value: getSelection, configurable: true });
+        expect(menu.classList.contains('is-visible')).toBe(false);
+    });
+
     it('hides and removes listeners once disposed', () => {
         const handle = attach(menu, editor, { activeClass: 'is-visible' });
         select();
@@ -255,6 +295,7 @@ describe('SelectionFollower', () => {
 
 describe('SelectionFollower holding focus', () => {
     beforeEach(() => {
+        stubResizeObserver();
         document.body.innerHTML = '<div id="editor" contenteditable="true" tabindex="0"><p>Selected content</p></div><div id="bar"><button id="first">First</button><button id="last">Last</button></div><button id="after">After</button>';
     });
 

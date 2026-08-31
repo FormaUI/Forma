@@ -17,7 +17,8 @@ const NUDGE = 8;
  * @param {{
  *   activeClass?: string,
  *   placement?: 'above' | 'below',
- *   handleSelector?: string
+ *   handleSelector?: string,
+ *   requiresOwner?: boolean
  * }} options
  */
 export function attach(target, owner = null, options = {}) {
@@ -27,10 +28,12 @@ export function attach(target, owner = null, options = {}) {
 class SelectionFollower {
     #target;
     #owner;
+    #requiresOwner;
     #activeClass;
     #placement;
     #handleSelector;
     #gesture = null;
+    #resizeObserver = null;
     #controller = new AbortController();
     #isDisposed = false;
 
@@ -45,6 +48,7 @@ class SelectionFollower {
     constructor(target, owner = null, options = {}) {
         this.#target = target;
         this.#owner = owner;
+        this.#requiresOwner = options?.requiresOwner ?? false;
         this.#activeClass = options?.activeClass ?? 'forma-selection-follower-active';
         this.#placement = options?.placement ?? 'below';
         this.#handleSelector = options?.handleSelector ?? null;
@@ -69,6 +73,13 @@ class SelectionFollower {
         document.addEventListener('selectionchange', () => this.update(), { signal });
         window.addEventListener('resize', () => this.update(), { signal });
         window.addEventListener('scroll', () => this.update(), { signal, capture: true, passive: true });
+
+        // The owner's own box changing — maximizing, a layout shift — moves the selection without any of the events above firing.
+        this.#resizeObserver = new ResizeObserver(() => this.update());
+        this.#resizeObserver.observe(target);
+        if (owner) {
+            this.#resizeObserver.observe(owner);
+        }
 
         this.update();
     }
@@ -139,6 +150,7 @@ class SelectionFollower {
     dispose() {
         this.#isDisposed = true;
         this.#gesture?.dispose();
+        this.#resizeObserver?.disconnect();
         this.#controller.abort();
         this.#hide();
     }
@@ -146,6 +158,12 @@ class SelectionFollower {
     update() {
         // A drag in flight holds the element where the pointer has it, whatever the selection does meanwhile.
         if (this.#isDisposed || this.#dragOrigin) {
+            return;
+        }
+
+        // An owner that was promised but is missing or gone leaves the element hidden, never following the whole page.
+        if ((this.#requiresOwner && !this.#owner) || (this.#owner && !this.#owner.isConnected)) {
+            this.#hide();
             return;
         }
 
