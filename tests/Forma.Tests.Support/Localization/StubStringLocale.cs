@@ -13,28 +13,11 @@ public sealed class StubStringLocale(IReadOnlyDictionary<string, string> transla
     public LocalizedText this[string name]
         => Text(name, []);
 
-    /// <summary>The translation for a key, formatted with the supplied arguments.</summary>
-    public LocalizedText this[string name, params ReadOnlySpan<LocalizedArgument> arguments]
-        => Text(name, arguments.ToArray());
-
     /// <summary>The translation for a key, formatted with values paired to the key's holes by position.</summary>
     public LocalizedText this[string name, params ReadOnlySpan<object?> values]
         => Text(name, LocalizedFormat.Bind(name, values));
 
-    /// <summary>The translation for an interpolated string.</summary>
-    public LocalizedText this[LocalizedFormatHandler handler]
-    {
-        get
-        {
-            var name = handler.Key.ToString();
-            var arguments = handler.GetArguments();
-            handler.Clear();
-
-            return Text(name, arguments);
-        }
-    }
-
-    /// <summary>The translated format for a key that fills no holes.</summary>
+    /// <summary>The translated format for a key, with every hole left open.</summary>
     public LocalizedPattern Resolve(string name)
     {
         LocalizedArgument[] arguments = [];
@@ -46,20 +29,6 @@ public sealed class StubStringLocale(IReadOnlyDictionary<string, string> transla
     public LocalizedPattern Resolve(string name, params object?[] values)
         => Resolve(name, LocalizedFormat.Bind(name, values));
 
-    /// <summary>The translated format for a key, with the holes left open.</summary>
-    public LocalizedPattern Resolve(string name, params LocalizedArgument[] arguments)
-        => new(name, Find(name, out var found), arguments, !found, searchedLocation);
-
-    /// <summary>The translated format for an interpolated string, with the holes left open.</summary>
-    public LocalizedPattern Resolve(LocalizedFormatHandler handler)
-    {
-        var name = handler.Key.ToString();
-        var arguments = handler.GetArguments();
-        handler.Clear();
-
-        return new LocalizedPattern(name, Find(name, out var found), arguments, !found, searchedLocation);
-    }
-
     /// <summary>Every translation the stub was given.</summary>
     public IEnumerable<LocalizedText> GetAllStrings(bool includeParentCultures)
     {
@@ -68,6 +37,9 @@ public sealed class StubStringLocale(IReadOnlyDictionary<string, string> transla
             yield return new LocalizedText(entry.Key, entry.Value, false, searchedLocation);
         }
     }
+
+    private LocalizedPattern Resolve(string name, LocalizedArgument[] arguments)
+        => new(name, Find(name, out var found), arguments, !found, searchedLocation);
 
     private string Find(string name, out bool found)
     {

@@ -16,12 +16,11 @@ translated format with. Everything here is backend-agnostic: a backend registers
 | `LocalizationOptions` | The settings every backend shares, whatever it reads translations from. |
 | `LocalizationNotFoundException` | Thrown when a key has no translation and the host requires one. |
 | `LocalizedText` | A translated string with the key it was looked up under. Converts implicitly to `string`. |
-| `LocalizedArgument` | A value with the name a hole refers to it by. Converts implicitly from `(string, object?)`. |
+| `LocalizedArgument` | A value with the name a hole refers to it by. |
 | `LocalizedFormat` | Pairs values with a format's holes, and renders a format once they are paired. |
 | `LocalizedPattern` | A translated format whose plural forms are resolved and whose holes are still open. |
 | `LocalizedSegment` | One run of a format: literal text, or a hole naming an argument. |
 | `LocalizedSegmentEnumerator` | Walks a format as segments, slicing rather than copying. |
-| `LocalizedFormatHandler` | Rebuilds a key from an interpolated string and captures the hole values. |
 
 ## Language
 
@@ -55,31 +54,26 @@ The key is the English source text, so a key with no translation renders as writ
 
 ## Filling holes
 
-A hole is `{name}`, optionally `{name,alignment}` and `{name:specifier}`. Three forms fill them:
+A hole is `{name}`, optionally `{name,alignment}` and `{name:specifier}`. Values pair with the key's
+holes by position:
 
 ```csharp
-L[$"Stored {stored} of {total}."]                              // names taken from the identifiers
-L["Stored {stored} of {total}.", written, allowed]             // paired with the key's holes, in order
-L["Stored {stored} of {total}.", ("stored", a), ("total", b)]  // names written out
+L["Stored {stored} of {total}.", written, allowed]
 ```
-
-All three produce the same key and the same arguments. Prefer interpolation; reach for the positional
-form when a value is an expression rather than a variable.
 
 | Rule | |
 | --- | --- |
-| An interpolated hole must be a plain identifier | `{model.Total}` throws; assign it to a local first |
-| The positional form takes one value per distinct hole | any other count throws |
+| A lookup takes one value per distinct hole | any other count throws |
 | A repeated hole is still one hole | `"{n} of {n}"` takes one value |
-| A key with no holes takes at most one value | which is what a nameless expression reads |
+| A key with no holes takes at most one value | which the name-less plural form reads |
 | A hole with no argument renders as written | `{total}` appears literally |
 
 A specifier stays in the key and the value is passed unrendered, so the translation decides the
-formatting: `$"Ratio {ratio:P1}"` keys on `"Ratio {ratio:P1}"`, and a translation may write `{ratio}`
-or `{ratio:P2}` instead.
+formatting: `"Ratio {ratio:P1}"` carries its specifier in the key, and a translation may write
+`{ratio}` or `{ratio:P2}` instead.
 
-A literal brace is doubled, in keys and in translation files alike: `$"Use {{curly}}"` keys on
-`"Use {{curly}}"`, whose translation writes `{{` too and renders as `{`. Doubling is only needed when
+A literal brace is doubled, in keys and in translation files alike: `"Use {{curly}}"` renders as
+`Use {`, and its translation writes `{{` too. Doubling is only needed when
 the braces would otherwise read as a hole naming an argument that was supplied, because a hole whose
 argument is missing already renders as written.
 
@@ -104,14 +98,8 @@ Leave the name out when the count is the only value:
 "[$ plural; one: # file; other: # files; $]": "[$ plural; one: קובץ אחד; two: שני קבצים; other: # קבצים; $]"
 ```
 
-That form takes exactly one unnamed value; anything else throws. An interpolated call site writes the
-name as a hole, and the key is canonicalized before lookup:
-
-```csharp
-L[$"[$ [{files}] plural; one: # file; other: # files; $]"]
-```
-
-Expressions use brackets and holes use braces, so the two never collide. The category comes from
+That form takes exactly one unnamed value; anything else throws. Expressions use brackets and holes
+use braces, so the two never collide. The category comes from
 `IPluralRuleSet`, falling back to `other` when the translation omits the chosen field or the language
 has no rules. `#` keeps the digits the count was written with, so `0.5` does not round and `1000000` is
 grouped for the culture. A malformed expression is left as written.
@@ -137,7 +125,7 @@ caller can render literal text and holes differently — filling a hole with ren
 text, for instance:
 
 ```csharp
-var pattern = L.Resolve($"Capped at {limit} here.");
+var pattern = L.Resolve("Capped at {limit} here.", limit);
 
 foreach (var segment in pattern.Segments())
 {

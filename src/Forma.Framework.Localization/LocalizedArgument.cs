@@ -9,11 +9,4 @@ public readonly record struct LocalizedArgument(string Name, object? Value)
     /// <param name="value">The value the expression reads.</param>
     public static LocalizedArgument Unnamed(object? value)
         => new(string.Empty, value);
-
-    /// <summary>Converts a name and value pair into an argument.</summary>
-    /// <param name="pair">The name and the value it stands for.</param>
-    public static implicit operator LocalizedArgument((string Name, object? Value) pair)
-    {
-        return new(pair.Name, pair.Value);
-    }
 }

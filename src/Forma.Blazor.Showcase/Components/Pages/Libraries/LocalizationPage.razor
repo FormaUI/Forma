@@ -74,7 +74,7 @@
             <label class="demo-field">@L["Written"] <input type="number" class="demo-number" @bind="_written" @bind:event="oninput" /></label>
             <label class="demo-field">@L["Allowed"] <input type="number" class="demo-number" @bind="_allowed" @bind:event="oninput" /></label>
         </div>
-        <p>@L["{Written} of {Allowed} characters", ("Written", _written), ("Allowed", _allowed)]</p>
+        <p>@L["{Written} of {Allowed} characters", _written, _allowed]</p>
     </div>
 </div>
 
@@ -83,15 +83,6 @@
     <p class="description">@L["The names mark where the holes are, and the values are paired with them in the order the key writes them, so any expression can be passed. A translation refers to the holes by name, so it may put them in another order — the Hebrew here does."]</p>
     <div class="demo-box">
         <p>@L["Stored {Stored} of {Total}.", _written, _allowed]</p>
-    </div>
-</div>
-
-<div class="demo-section">
-    <h2>@L["An Interpolated String"]</h2>
-    <p class="description">@L["The handler rebuilds the composite key from the literal text between the holes, then looks that up. The values never touch the key."]</p>
-    <div class="demo-box">
-        <p>@L[$"Stored {_written} of {_allowed}."]</p>
-        <p class="demo-note">@L["Rebuilt key"]: <code dir="ltr">Stored {_written} of {_allowed}.</code></p>
     </div>
 </div>
 
@@ -241,7 +232,7 @@
         => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
 
     private LocalizedPattern Pattern
-        => L.Resolve("{Written} of {Allowed} characters", ("Written", _written), ("Allowed", _allowed));
+        => L.Resolve("{Written} of {Allowed} characters", _written, _allowed);
 
     private static string CategoryFor(decimal count)
     {

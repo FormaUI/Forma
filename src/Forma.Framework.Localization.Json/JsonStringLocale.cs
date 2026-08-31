@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Reflection;
 
 using Forma.Framework.Localization;
-using Forma.Framework.Localization.Parser;
 
 /// <summary>Reads the strings for one base name, walking the culture chain and falling back to the key itself.</summary>
 internal sealed class JsonStringLocale(JsonLocaleContext context, Assembly assembly, string baseName) : IStringLocale
@@ -15,56 +14,24 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, Assembly assem
         {
             ArgumentException.ThrowIfNullOrEmpty(name);
 
-            var found = TryFind(name, out var entry);
-            RequireFound(name, found);
-
-            LocalizedArgument[] arguments = [];
-            var format = Evaluate(found ? entry.Format : name, Translated(found, entry), arguments);
-
-            return new LocalizedText(name, LocalizedFormat.Render(format, arguments, CultureInfo.CurrentCulture), !found, baseName);
+            return Render(name, []);
         }
     }
 
-    public LocalizedText this[string name, params ReadOnlySpan<LocalizedArgument> arguments]
+    public LocalizedText this[string name, params ReadOnlySpan<object?> values]
     {
         get
         {
             ArgumentException.ThrowIfNullOrEmpty(name);
 
-            var found = TryFind(name, out var entry);
-            RequireFound(name, found);
-
-            var retained = arguments.IsEmpty ? [] : arguments.ToArray();
-            var format = Evaluate(found ? entry.Format : name, Translated(found, entry), retained);
-
-            return new LocalizedText(name, LocalizedFormat.Render(format, retained, CultureInfo.CurrentCulture), !found, baseName);
-        }
-    }
-
-    public LocalizedText this[string name, params ReadOnlySpan<object?> values]
-        => this[name, LocalizedFormat.Bind(name, values)];
-
-    public LocalizedText this[LocalizedFormatHandler handler]
-    {
-        get
-        {
-            var key = LocaleExpressionParser.TryNormalize(handler.Key, out var canonical) ? canonical.AsSpan() : handler.Key;
-
-            var found = TryFindBySpan(key, out var entry);
-            var name = found ? entry.Name : canonical ?? key.ToString();
-            var arguments = handler.GetArguments();
-            handler.Clear();
-
-            RequireFound(name, found);
-
-            var format = Evaluate(found ? entry.Format : name, Translated(found, entry), arguments);
-
-            return new LocalizedText(name, LocalizedFormat.Render(format, arguments, CultureInfo.CurrentCulture), !found, baseName);
+            return Render(name, LocalizedFormat.Bind(name, values));
         }
     }
 
     public LocalizedPattern Resolve(string name)
     {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
         LocalizedArgument[] arguments = [];
 
         return Resolve(name, arguments);
@@ -76,31 +43,6 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, Assembly assem
         ArgumentNullException.ThrowIfNull(values);
 
         return Resolve(name, LocalizedFormat.Bind(name, values));
-    }
-
-    public LocalizedPattern Resolve(string name, params LocalizedArgument[] arguments)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(name);
-        ArgumentNullException.ThrowIfNull(arguments);
-
-        var found = TryFind(name, out var entry);
-        RequireFound(name, found);
-
-        return new LocalizedPattern(name, Evaluate(found ? entry.Format : name, Translated(found, entry), arguments), arguments, !found, baseName);
-    }
-
-    public LocalizedPattern Resolve(LocalizedFormatHandler handler)
-    {
-        var key = LocaleExpressionParser.TryNormalize(handler.Key, out var canonical) ? canonical.AsSpan() : handler.Key;
-
-        var found = TryFindBySpan(key, out var entry);
-        var name = found ? entry.Name : canonical ?? key.ToString();
-        var arguments = handler.GetArguments();
-        handler.Clear();
-
-        RequireFound(name, found);
-
-        return new LocalizedPattern(name, Evaluate(found ? entry.Format : name, Translated(found, entry), arguments), arguments, !found, baseName);
     }
 
     public IEnumerable<LocalizedText> GetAllStrings(bool includeParentCultures)
@@ -126,6 +68,24 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, Assembly assem
                 yield break;
             }
         }
+    }
+
+    private LocalizedText Render(string name, LocalizedArgument[] arguments)
+    {
+        var found = TryFind(name, out var entry);
+        RequireFound(name, found);
+
+        var format = Evaluate(found ? entry.Format : name, Translated(found, entry), arguments);
+
+        return new LocalizedText(name, LocalizedFormat.Render(format, arguments, CultureInfo.CurrentCulture), !found, baseName);
+    }
+
+    private LocalizedPattern Resolve(string name, LocalizedArgument[] arguments)
+    {
+        var found = TryFind(name, out var entry);
+        RequireFound(name, found);
+
+        return new LocalizedPattern(name, Evaluate(found ? entry.Format : name, Translated(found, entry), arguments), arguments, !found, baseName);
     }
 
     // A format that is the key is source-language text, whether it was written as null or never found at all.
@@ -166,19 +126,4 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, Assembly assem
         return false;
     }
 
-    private bool TryFindBySpan(ReadOnlySpan<char> name, out JsonResourceEntry entry)
-    {
-        for (var culture = CultureInfo.CurrentUICulture; culture.Name.Length != 0; culture = culture.Parent)
-        {
-            var file = context.Cache.Read(assembly, baseName, culture);
-            if (file is not null && file.GetAlternateLookup<ReadOnlySpan<char>>().TryGetValue(name, out entry))
-            {
-                return true;
-            }
-        }
-
-        entry = default;
-
-        return false;
-    }
 }

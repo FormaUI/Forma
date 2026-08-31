@@ -134,28 +134,14 @@ public sealed class JsonStringLocaleTests
     }
 
     [Fact]
-    public void Should_format_arguments_into_the_translation()
-    {
-        // Arrange
-        using var culture = new CultureScope("he");
-        var strings = Locale<Colocated>();
-
-        // Act
-        var localized = strings["Moved to position {position} of {total}.", ("position", 2), ("total", 7)];
-
-        // Assert
-        Assert.Equal("הועבר למיקום 2 מתוך 7.", localized.Value);
-    }
-
-    [Fact]
-    public void Should_format_arguments_into_the_key_when_untranslated()
+    public void Should_format_values_into_the_key_when_untranslated()
     {
         // Arrange
         using var culture = new CultureScope("en");
         var strings = Locale<Colocated>();
 
         // Act
-        var localized = strings["Moved to position {position} of {total}.", ("position", 2), ("total", 7)];
+        var localized = strings["Moved to position {position} of {total}.", 2, 7];
 
         // Assert
         Assert.Equal("Moved to position 2 of 7.", localized.Value);
@@ -319,22 +305,6 @@ public sealed class JsonStringLocaleTests
     }
 
     [Fact]
-    public void Should_format_an_interpolated_string_through_the_handler()
-    {
-        // Arrange
-        using var culture = new CultureScope("he");
-        var strings = Locale<Colocated>();
-
-        // Act
-        var position = 2;
-        var total = 7;
-        var localized = strings[$"Moved to position {position} of {total}."];
-
-        // Assert
-        Assert.Equal("הועבר למיקום 2 מתוך 7.", localized.Value);
-    }
-
-    [Fact]
     public void Should_resolve_a_pattern_with_its_holes_left_open()
     {
         // Arrange
@@ -342,7 +312,7 @@ public sealed class JsonStringLocaleTests
         var strings = Locale<Colocated>();
 
         // Act
-        var pattern = strings.Resolve("Moved to position {position} of {total}.", ("position", 2), ("total", 7));
+        var pattern = strings.Resolve("Moved to position {position} of {total}.", 2, 7);
 
         // Assert
         Assert.Multiple(() =>
@@ -350,22 +320,6 @@ public sealed class JsonStringLocaleTests
             Assert.Equal("הועבר למיקום {position} מתוך {total}.", pattern.Format);
             Assert.Equal([new LocalizedArgument("position", 2), new LocalizedArgument("total", 7)], pattern.Arguments);
         });
-    }
-
-    [Fact]
-    public void Should_resolve_an_interpolated_pattern_with_its_holes_left_open()
-    {
-        // Arrange
-        using var culture = new CultureScope("he");
-        var strings = Locale<Colocated>();
-
-        // Act
-        var position = 2;
-        var total = 7;
-        var pattern = strings.Resolve($"Moved to position {position} of {total}.");
-
-        // Assert
-        Assert.Equal("הועבר למיקום {position} מתוך {total}.", pattern.Format);
     }
 
     [Fact]
@@ -390,26 +344,6 @@ public sealed class JsonStringLocaleTests
         });
     }
 
-    // The expression survives interpolation because the handler doubles only braces, which the delimiters avoid.
-    [Fact]
-    public void Should_evaluate_a_plural_expression_written_as_an_interpolated_string()
-    {
-        // Arrange
-        using var culture = new CultureScope("he");
-        var strings = Locale<Pluralized>();
-        const int count = 2;
-
-        // Act
-        var localized = strings[$"[$ [{count}] plural; one: # file; other: # files; $]"];
-
-        // Assert
-        Assert.Multiple(() =>
-        {
-            Assert.Equal("שני קבצים", localized.Value);
-            Assert.False(localized.ResourceNotFound);
-        });
-    }
-
     // A bracketed name carries no braces, so formatting cannot mistake it for a hole and rewrite it.
     [Theory]
     [InlineData("[$ plural; one: # file; other: # files $]")]
@@ -425,22 +359,6 @@ public sealed class JsonStringLocaleTests
 
         // Assert
         Assert.Equal(key, localized.Value);
-    }
-
-    // Only a expression's own header is canonicalized, so brackets in prose keep the hole they mean to fill.
-    [Fact]
-    public void Should_fill_a_hole_inside_brackets_that_are_not_a_expression()
-    {
-        // Arrange
-        using var culture = new CultureScope("en");
-        var strings = Locale<Pluralized>();
-
-        // Act
-        var id = 7;
-        var localized = strings[$"See [{id}] for details"];
-
-        // Assert
-        Assert.Equal("See [7] for details", localized.Value);
     }
 
     [Fact]

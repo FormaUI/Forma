@@ -63,30 +63,6 @@ public sealed class RequireMatchingLocalizationTests
     }
 
     [Fact]
-    public void Should_throw_for_an_interpolated_key_with_no_translation()
-    {
-        // Arrange
-        using var culture = new CultureScope("he");
-        var strings = Locale<Colocated>(require: true);
-        var count = 2;
-
-        // Act, Assert
-        Assert.Throws<LocalizationNotFoundException>(() => strings[$"Absent from every file, {count} times"]);
-    }
-
-    [Fact]
-    public void Should_throw_from_resolve_for_an_interpolated_key_with_no_translation()
-    {
-        // Arrange
-        using var culture = new CultureScope("he");
-        var strings = Locale<Colocated>(require: true);
-        var count = 2;
-
-        // Act, Assert
-        Assert.Throws<LocalizationNotFoundException>(() => strings.Resolve($"Absent from every file, {count} times"));
-    }
-
-    [Fact]
     public void Should_not_throw_for_a_key_that_is_translated()
     {
         // Arrange
