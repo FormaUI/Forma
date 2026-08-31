@@ -5,7 +5,7 @@ description: Forma's test standard — the one-test-project-per-assembly rule an
 
 # Tests (bUnit + xUnit v3)
 
-Every production assembly has exactly one test project named after it, so `Forma.UI.Design.Icons` is tested by `tests/Forma.UI.Design.Icons.Tests` and never from another project. An `.Abstractions` assembly is the exception: it shares its sibling's namespace, so it shares its sibling's test project too. Mirror source paths within it, so component tests live under `tests/Forma.UI.Blazor.Tests/Components/{Category}/` with `FormaXTests.razor` and `FormaXTests.razor.cs`.
+Every production assembly has exactly one test project named after it, so `Forma.Framework.Icons` is tested by `tests/Forma.Framework.Icons.Tests` and never from another project. A Framework contracts assembly whose behavior only shows through what extends it is the exception: `Forma.Framework.Share` is exercised through `tests/Forma.AddOns.Share.Targets.Tests`. Mirror source paths within it, so component tests live under `tests/Forma.Blazor.Tests/Components/{Category}/` with `FormaXTests.razor` and `FormaXTests.razor.cs`.
 
 - Do keep `.razor.cs` to `public sealed partial class FormaXTests;`.
 - Do start `.razor` with `@inherits BunitContext` and place `[Fact]` methods in a nested `public sealed class Component`.
@@ -31,7 +31,7 @@ bUnit renders markup and drives its own synchronous JS interop, so a green suite
 
 ## JavaScript tests
 
-`tests/Forma.UI.Blazor.Tests.Scripts` runs the `wwwroot/scripts/` modules under Vitest and happy-dom, mirroring the source layout in its own `behaviours/`, `operations/`, and `components/` folders.
+`tests/Forma.Blazor.Tests.Scripts` runs the `wwwroot/scripts/` modules under Vitest and happy-dom, mirroring the source layout in its own `behaviours/`, `operations/`, and `components/` folders.
 
 - Do add a `{Name}.test.js` beside its siblings whenever you add or change a behaviour, operation, or component module.
 - Do drive it with `npm test` from that folder; it is a separate runner and `dotnet test` does not reach it.

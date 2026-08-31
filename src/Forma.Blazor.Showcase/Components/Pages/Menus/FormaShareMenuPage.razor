@@ -1,0 +1,114 @@
+@page "/share-menu"
+@attribute [ShowcasePage("FormaShareMenu")]
+@rendermode InteractiveServer
+@using Forma.Framework.Resources
+@using Forma.Blazor.Components.Menus
+@using Forma.Framework.Share
+@using Forma.Framework.Icons
+@inject IStringLocale<FormaShareMenuPage> L
+
+<h1>FormaShareMenu</h1>
+<p class="description">@L["A share menu over one subject. The social networks and a download make up the baseline, a consumer adds its own actions beside them, and everything past the primary row waits behind More. Where the platform offers a native share surface, one entry hands the subject to it."]</p>
+
+<div class="demo-section">
+    <h2>@L["An Address"]</h2>
+    <p class="description">@L["A subject with an address gets the full baseline: the networks, email, and copying the link."]</p>
+    <div class="demo-box">
+        <FormaShareMenu Item="_article" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A File"]</h2>
+    <p class="description">@L["A file stays off the networks; what applies is saving it, and any registered destination that takes files — here a stand-in Vault the Showcase registers."]</p>
+    <div class="demo-box">
+        <FormaShareMenu Item="_notes" />
+        <p class="demo-note">@L["Sent to Vault"]: <code>@(Vault.LastShared?.Name ?? L["nothing yet"])</code></p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A Picture"]</h2>
+    <p class="description">@L["A picture keeps the networks and adds the board that pins media, pointed at the image itself."]</p>
+    <div class="demo-box">
+        <FormaShareMenu Item="_photo" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A Contact"]</h2>
+    <p class="description">@L["A contact is reached by email and saved as a card, not posted to a network."]</p>
+    <div class="demo-box">
+        <FormaShareMenu Item="_contact" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Consumer Actions"]</h2>
+    <p class="description">@L["A consumer adds commands of its own behind More, each raising its command through one callback; the networks bar and the built-in commands stay as they are."]</p>
+    <div class="demo-box">
+        <FormaShareMenu Item="_article" Actions="_actions" OnCommand="command => _lastCommand = command" />
+        <p class="demo-note">@L["Last command"]: <code>@(_lastCommand ?? L["none yet"])</code></p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Icon-Only Trigger"]</h2>
+    <div class="demo-box">
+        <FormaShareMenu Item="_article" TriggerOptions="new() { IconOnly = true, Variant = ButtonVariant.Ghost }" aria-label="@L["Share"]">
+            <Trigger><FormaIcon Icon="Glyph.Share" Size="IconSize.Small" /></Trigger>
+        </FormaShareMenu>
+    </div>
+</div>
+
+@code {
+    [Inject] private ShowcaseShareTarget Vault { get; set; } = default!;
+
+    private string? _lastCommand;
+
+    protected override void OnInitialized()
+        => Vault.Shared += () => InvokeAsync(StateHasChanged);
+
+    private readonly ShareItem _article = new()
+    {
+        Name = "Stage 12: mountain finish shakes the standings",
+        Meta = "Article",
+        Icon = Glyph.FileText,
+        Address = "https://example.com/news/stage-12-mountain-finish",
+    };
+
+    private readonly ShareItem _notes = new()
+    {
+        Kind = ShareItemKind.File,
+        Name = "race-notes.txt",
+        Meta = "Plain Text · 1 KB",
+        Icon = Glyph.FileText,
+        Resource = new ResourceInfo("data:text/plain,Stage 12 notes: the break went at km 0; the GC group followed at 40s.") { Name = "race-notes.txt" },
+    };
+
+    private readonly ShareItem _photo = new()
+    {
+        Kind = ShareItemKind.Image,
+        Name = "The finish line sprint",
+        Meta = "Photo",
+        Icon = Glyph.Image,
+        Address = "https://example.com/photos/finish-line",
+        Resource = new ResourceInfo("https://example.com/photos/finish-line.jpg"),
+    };
+
+    private readonly ShareItem _contact = new()
+    {
+        Kind = ShareItemKind.Contact,
+        Name = "Ana Torres",
+        Meta = "Editor",
+        Icon = Glyph.User,
+        Address = "https://example.com/people/ana-torres",
+        Resource = new ResourceInfo("data:text/vcard,BEGIN:VCARD%0AVERSION:4.0%0AFN:Ana Torres%0AEND:VCARD") { Name = "ana-torres.vcf" },
+    };
+
+    private readonly IReadOnlyList<ShareAction> _actions =
+    [
+        new() { Id = "translate", Title = "Translate", Icon = Glyph.Font, Command = "demo.translate" },
+        new() { Id = "embed", Title = "Copy Embed Code", Icon = Glyph.Code, Command = "demo.embed" },
+    ];
+}

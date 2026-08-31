@@ -1,0 +1,83 @@
+@namespace Forma.Blazor.Components.Inputs
+@using Forma.Blazor.Components.Feedback
+
+<div class="@CssClass" id="@Id" @attributes="AdditionalAttributes">
+    @if (ShowGroupTabs)
+    {
+        <div class="forma-emoji-picker-tabs" role="tablist" aria-label="@L["Emoji Categories"]" aria-orientation="horizontal">
+            @foreach (var tab in Tabs)
+            {
+                var isActive = !IsSearching && tab.Id == ActiveGroupId;
+
+                <button @key="tab.Id"
+                        type="button"
+                        role="tab"
+                        id="@TabElementId(tab.Id)"
+                        class="forma-emoji-picker-tab"
+                        title="@tab.Title"
+                        aria-label="@tab.Title"
+                        aria-selected="@isActive.ToString().ToLowerInvariant()"
+                        aria-controls="@PanelElementId"
+                        tabindex="@(isActive ? "0" : "-1")"
+                        @onclick="() => SelectGroupAsync(tab.Id)"
+                        @onkeydown="OnTabKeyDownAsync">
+                    <FormaIcon Icon="TabIcon(tab.Id)" Size="IconSize.Small" />
+                </button>
+            }
+        </div>
+    }
+
+    @if (ShowSearch)
+    {
+        <div class="forma-emoji-picker-search">
+            <FormaSearchBox Value="@_query" ValueChanged="OnQueryChangedAsync" Placeholder="@L["Search Emoji"]" DebounceDelay="SearchDebounce" />
+        </div>
+    }
+
+    <div class="forma-emoji-picker-panel"
+         id="@PanelElementId"
+         @ref="_panelElement"
+         role="tabpanel"
+         aria-labelledby="@(IsSearching || !ShowGroupTabs ? null : TabElementId(ActiveGroupId))">
+
+        @if (Visible.Count == 0)
+        {
+            <p class="forma-emoji-picker-empty">@L["No emoji match \"{Query}\".", _query]</p>
+        }
+        else if (Loadable.Count == 0)
+        {
+            <h3 class="forma-emoji-picker-heading">@HeadingText</h3>
+            <div class="forma-emoji-picker-loading">
+                <FormaSpinner Label="@L["Loading {Category}", HeadingText]" Size="SpinnerSize.Large" />
+            </div>
+        }
+        else
+        {
+            <h3 class="forma-emoji-picker-heading">@HeadingText</h3>
+            <div class="forma-emoji-picker-grid" role="group" aria-label="@HeadingText">
+                @foreach (var info in Loadable)
+                {
+                    <button @key="info.Emoji.Sequence"
+                            type="button"
+                            class="forma-emoji-picker-emoji"
+                            title="@info.Name"
+                            aria-label="@info.Name"
+                            @onclick="() => SelectAsync(info)">
+                        <CascadingValue Value="GetSpriteLoader()" IsFixed="true">
+                            <FormaEmoji Emoji="info.Emoji" />
+                        </CascadingValue>
+                    </button>
+                }
+            </div>
+
+            @if (HasMoreToLoad)
+            {
+                <div class="forma-emoji-picker-sentinel" @ref="_sentinelElement">
+                    <FormaSpinner Label="@L["Loading More Emoji"]" Size="SpinnerSize.Small" />
+                </div>
+            }
+        }
+    </div>
+
+    <div class="forma-emoji-picker-announcer" role="status">@_announcement</div>
+</div>

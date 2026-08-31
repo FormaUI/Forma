@@ -1,0 +1,42 @@
+@namespace Forma.Blazor.Components.Inputs
+@inherits InputBase<string?>
+
+@{
+    RenderFragment box =
+        @<input @attributes="AdditionalAttributes"
+                id="@ElementId"
+                type="@TypeValue"
+                class="@AdditionalAttributes.MergeClass(BoxClass, CssClass)"
+                style="@BoxStyle"
+                placeholder="@EffectivePlaceholder"
+                value="@CurrentValueAsString"
+                disabled="@Disabled"
+                readonly="@ReadOnly"
+                minlength="@MinLength"
+                maxlength="@MaxLength"
+                pattern="@Pattern"
+                inputmode="@InputModeValue"
+                enterkeyhint="@EnterKeyHintValue"
+                autocapitalize="@AutoCapitalizeValue"
+                spellcheck="@SpellCheckValue"
+                autocomplete="@AutoComplete"
+                aria-required="@(Required ? "true" : null)"
+                @oninput="HandleInput"
+                @ref="Element" />;
+}
+
+@if (HasLabel)
+{
+    <FormaField Label="@Label" TargetId="@ElementId" Required="@Required" style="@FieldStyle">
+        <ChildContent>
+            @box
+        </ChildContent>
+        <Validation>
+            <ValidationMessage For="@ValueExpression" />
+        </Validation>
+    </FormaField>
+}
+else
+{
+    @box
+}

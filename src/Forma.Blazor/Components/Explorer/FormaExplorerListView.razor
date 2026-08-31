@@ -1,0 +1,47 @@
+@namespace Forma.Blazor.Components.Explorer
+@using Forma.Features.Explorer
+
+<div class="forma-explorer-list" role="list">
+    @foreach (var resource in Resources)
+    {
+        var selected = View.Selection.IsSelected(resource);
+        var selecting = View.Selection.IsSelectMode && !View.Selection.HasFolders;
+
+        <div class="forma-explorer-list-item @(selected ? "is-selected" : "")"
+             role="listitem"
+             draggable="true"
+             @ondragstart="() => Interaction.BeginDrag(resource)">
+            @if (selecting)
+            {
+                <button type="button"
+                        class="forma-explorer-list-select @(selected ? "is-checked" : "")"
+                        aria-label="@resource.SelectLabel(L, View.Selection)"
+                        aria-pressed="@(selected ? "true" : "false")"
+                        @onclick="() => Interaction.ToggleSelectAsync(resource)">
+                    <FormaIcon Icon="Glyph.Check" Size="IconSize.Small" />
+                </button>
+            }
+            else
+            {
+                <FormaExplorerActionBar Resource="resource" />
+            }
+
+            <button type="button"
+                    class="forma-explorer-list-main"
+                    aria-label="@resource.ActivateLabel(L, View.Selection)"
+                    @onclick="() => Interaction.ActivateAsync(resource)">
+                <span class="forma-explorer-list-media">
+                    <FormaExplorerThumbnail Resource="resource" Size="ExplorerThumbnailSize.Row" />
+                </span>
+
+                <span class="forma-explorer-list-info">
+                    <span class="forma-explorer-list-name" title="@resource.Name">@resource.Name</span>
+                    @if (resource.DisplaySize is { } size)
+                    {
+                        <span class="forma-explorer-list-size" dir="auto">@size</span>
+                    }
+                </span>
+            </button>
+        </div>
+    }
+</div>

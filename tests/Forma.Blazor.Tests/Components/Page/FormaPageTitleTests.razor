@@ -1,0 +1,223 @@
+@inherits FormaBunitContext
+@using Forma.Blazor.Components.Navigation
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_title()
+        {
+            // Arrange
+            using var ctx = new FormaPageTitleTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaPageTitle Title="Orders" />);
+            var title = cut.Find(".forma-page-title-heading");
+
+            // Assert
+            Assert.Equal("Orders", title.TextContent);
+        }
+
+        [Fact]
+        public void Should_render_title_as_h1()
+        {
+            // Arrange
+            using var ctx = new FormaPageTitleTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaPageTitle Title="Dashboard" />);
+            var h1 = cut.Find("h1.forma-page-title-heading");
+
+            // Assert
+            Assert.Equal("Dashboard", h1.TextContent);
+        }
+
+        [Fact]
+        public void Should_not_render_breadcrumb_when_null()
+        {
+            // Arrange
+            using var ctx = new FormaPageTitleTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaPageTitle Title="Dashboard" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-breadcrumb"));
+        }
+
+        [Fact]
+        public void Should_not_render_breadcrumb_when_empty()
+        {
+            // Arrange
+            using var ctx = new FormaPageTitleTests();
+            var crumbs = Array.Empty<BreadcrumbItem<object?>>();
+
+            // Act
+            var cut = ctx.Render(@<FormaPageTitle Title="Dashboard" Breadcrumbs="@crumbs" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-breadcrumb"));
+        }
+
+        [Fact]
+        public void Should_not_render_actions_slot_when_not_provided()
+        {
+            // Arrange
+            using var ctx = new FormaPageTitleTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaPageTitle Title="Dashboard" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-page-title-actions"));
+        }
+
+        [Fact]
+        public void Should_render_breadcrumb_items()
+        {
+            // Arrange
+            using var ctx = new FormaPageTitleTests();
+            BreadcrumbItem<object?>[] crumbs = [new("Home", "/"), new("Store"), new("Orders")];
+
+            // Act
+            var cut = ctx.Render(@<FormaPageTitle Title="Orders" Breadcrumbs="@crumbs" />);
+            var items = cut.FindAll(".forma-breadcrumb-item");
+
+            // Assert
+            Assert.Equal(3, items.Count);
+        }
+
+        [Fact]
+        public void Should_render_link_for_items_with_url()
+        {
+            // Arrange
+            using var ctx = new FormaPageTitleTests();
+            BreadcrumbItem<object?>[] crumbs = [new("Home", "/"), new("Orders")];
+
+            // Act
+            var cut = ctx.Render(@<FormaPageTitle Title="Orders" Breadcrumbs="@crumbs" />);
+            var link = cut.Find("a.forma-breadcrumb-item");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("Home", link.TextContent.Trim());
+                Assert.Equal("/", link.GetAttribute("href"));
+            });
+        }
+
+        [Fact]
+        public void Should_render_span_for_items_without_url()
+        {
+            // Arrange
+            using var ctx = new FormaPageTitleTests();
+            BreadcrumbItem<object?>[] crumbs = [new("Home", "/"), new("Current Page")];
+
+            // Act
+            var cut = ctx.Render(@<FormaPageTitle Title="Current Page" Breadcrumbs="@crumbs" />);
+            var currentItem = cut.Find("span.forma-breadcrumb-item");
+
+            // Assert
+            Assert.Equal("Current Page", currentItem.TextContent.Trim());
+        }
+
+        [Fact]
+        public void Should_render_items_without_url_as_static_text()
+        {
+            // Arrange
+            using var ctx = new FormaPageTitleTests();
+            BreadcrumbItem<object?>[] crumbs = [new("Home", "/"), new("Store"), new("Orders")];
+
+            // Act
+            var cut = ctx.Render(@<FormaPageTitle Title="Orders" Breadcrumbs="@crumbs" />);
+            var staticItems = cut.FindAll("span.forma-breadcrumb-item");
+
+            // Assert
+            Assert.Equal(2, staticItems.Count);
+        }
+
+        [Fact]
+        public void Should_set_aria_current_only_on_last_item()
+        {
+            // Arrange
+            using var ctx = new FormaPageTitleTests();
+            BreadcrumbItem<object?>[] crumbs = [new("Home", "/"), new("Store"), new("Orders")];
+
+            // Act
+            var cut = ctx.Render(@<FormaPageTitle Title="Orders" Breadcrumbs="@crumbs" />);
+            var items = cut.FindAll(".forma-breadcrumb-item");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(3, items.Count);
+                Assert.Null(items[0].GetAttribute("aria-current"));
+                Assert.Null(items[1].GetAttribute("aria-current"));
+                Assert.Equal("page", items[2].GetAttribute("aria-current"));
+            });
+        }
+
+        [Fact]
+        public void Should_render_nav_with_aria_label()
+        {
+            // Arrange
+            using var ctx = new FormaPageTitleTests();
+            BreadcrumbItem<object?>[] crumbs = [new("Home", "/"), new("Orders")];
+
+            // Act
+            var cut = ctx.Render(@<FormaPageTitle Title="Orders" Breadcrumbs="@crumbs" />);
+            var nav = cut.Find("nav");
+
+            // Assert
+            Assert.Equal("Breadcrumb", nav.GetAttribute("aria-label"));
+        }
+
+        [Fact]
+        public void Should_render_actions_content()
+        {
+            // Arrange
+            using var ctx = new FormaPageTitleTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaPageTitle Title="Products">
+                    <Actions><button>Add New</button></Actions>
+                </FormaPageTitle>);
+            var actions = cut.Find(".forma-page-title-actions");
+
+            // Assert
+            Assert.Contains("Add New", actions.InnerHtml, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_render_multiple_action_buttons()
+        {
+            // Arrange
+            using var ctx = new FormaPageTitleTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaPageTitle Title="Products">
+                    <Actions><button>Add</button><button>Export</button></Actions>
+                </FormaPageTitle>);
+            var buttons = cut.FindAll(".forma-page-title-actions button");
+
+            // Assert
+            Assert.Equal(2, buttons.Count);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("   ")]
+        public void Should_reject_invalid_title(string? title)
+        {
+            // Arrange
+            using var ctx = new FormaPageTitleTests();
+
+            // Act & Assert
+            Assert.ThrowsAny<ArgumentException>(() => ctx.Render<FormaPageTitle>(p => p
+                .Add(h => h.Title, title!)));
+        }
+    }
+}

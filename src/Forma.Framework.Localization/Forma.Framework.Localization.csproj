@@ -9,8 +9,4 @@
         <RootNamespace>Forma.Framework.Localization</RootNamespace>
     </PropertyGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\Forma.Framework.Localization.Abstractions\Forma.Framework.Localization.Abstractions.csproj" />
-    </ItemGroup>
-
 </Project>

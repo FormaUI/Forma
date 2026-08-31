@@ -1,0 +1,195 @@
+@page "/composer"
+@attribute [ShowcasePage("FormaComposer")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Composer
+@using Forma.Blazor.Components.Composer.PlainTextEditor
+@using Forma.Blazor.Components.Composer.Plugins
+@using Forma.Blazor.Components.Composer.RichTextEditor
+@using Forma.Blazor.Components.Composer.RichTextEditor.Plugins
+@using Forma.Blazor.Components.Composer.RichTextEditor.Views
+@using Forma.Features.Composer.Documents
+@using Forma.Features.Composer.Plugins
+@inject IStringLocale<FormaComposerPage> L
+
+<h1>FormaComposer</h1>
+<p class="description">@L["An authoring surface a host assembles from plugins: rich text, Markdown, code or whole page layouts, each bringing its own toolbar rows. Nothing about the content is built in, so a new kind of editing is a plugin rather than a fork."]</p>
+
+<div class="demo-section">
+    <h2>@L["Default"]</h2>
+    <div class="demo-box">
+        <FormaComposer @bind-Value="_defaultDoc" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Disabled"]</h2>
+    <div class="demo-box">
+        <FormaComposer @bind-Value="_disabledDoc" Disabled="true" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Read-Only"]</h2>
+    <div class="demo-box">
+        <FormaComposer @bind-Value="_readOnlyDoc" ReadOnly="true" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Without Toolbar"]</h2>
+    <div class="demo-box">
+        <FormaComposer @bind-Value="_noToolbarDoc" Options="_noToolbarOptions" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Fixed Height"]</h2>
+    <div class="demo-box">
+        <FormaComposer @bind-Value="_fixedHeightDoc" Options="_fixedHeightOptions" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Standard Rich Text"]</h2>
+    <p class="description">@L["Standard rich text preset with formatting, typography, headings, lists, and alignment."]</p>
+    <div class="demo-box">
+        <FormaStandardRichTextEditor @bind-Value="_standardDoc" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Compact Rich Text"]</h2>
+    <p class="description">@L["Compact rich text preset with inline formatting, alignment, and basic typography."]</p>
+    <div class="demo-box">
+        <FormaCompactRichTextEditor @bind-Value="_compactDoc" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Source Editor"]</h2>
+    <p class="description">@L["An editor plugin bringing a canvas of its own: lines numbered in a gutter, and a Rename Symbol command that replaces whole-word occurrences throughout the document. Press F2 or use the Refactor row."]</p>
+    <div class="demo-box">
+        <CascadingValue Value="_sourceOnlyPlugin" IsFixed="true">
+            <FormaComposer @bind-Value="_sourceDoc" Plugins="_sourcePlugins" />
+        </CascadingValue>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Status Strip"]</h2>
+    <p class="description">@L["Word Count pushes a readout the plugin holds and mutates, shown beneath the canvas until the plugin disposes it. Press it again to take it back."]</p>
+    <div class="demo-box">
+        <CascadingValue Value="_statusTextPlugin" IsFixed="true">
+            <FormaComposer @bind-Value="_statusDoc" Plugins="_statusPlugins" />
+        </CascadingValue>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Plugins"]</h2>
+    <p class="description">@L["Every command is a plugin contribution. The composer's own sit in the built-in row; an editor either joins that row or declares one of its own; a plugin the host registered lands on the plugins bar ruled off beneath. Plain Text shows all three, while Source shows only its own, because both external plugins name the editor they apply to."]</p>
+    <div class="demo-box">
+        <CascadingValue Value="_everythingSourcePlugin" IsFixed="true">
+            <CascadingValue Value="_everythingTextPlugin" IsFixed="true">
+                <FormaComposer @bind-Value="_pluginDoc" Plugins="_demoPlugins" />
+            </CascadingValue>
+        </CascadingValue>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["View Commands"]</h2>
+    <p class="description">@L["Preview and Source are views the rich text editor offers over its document, reached from the tabs at the far end of the strip. Preview lays the document out at a chosen paper or screen size, prints it, and exports it; Source shows its markup one block per line. Maximize fills the viewport with whichever surface shows, and Selection Bar shows or hides the formatting bar that follows a selection; drag its handle to move it."]</p>
+    <div class="demo-box">
+        <FormaComposer @bind-Value="_viewDoc" Plugins="_viewPlugins" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Every Plugin"]</h2>
+    <p class="description">@L["The standard preset carries the plugins most documents need. This demo discovers and registers every plugin the library ships, so what appears here is exactly what a host can opt into."]</p>
+    <div class="demo-box">
+        <FormaComposer @bind-Value="_everyPluginDoc" Plugins="_everyPlugins" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Images and Stored Pictures"]</h2>
+    <p class="description">@L["Insert Image takes an address and nothing else. Browse Files opens the stored library beside it, limited here to pictures, and renders whichever one is chosen where the caret sits."]</p>
+    <div class="demo-box">
+        <FormaComposer @bind-Value="_imagesOnlyDoc" Plugins="_imagesOnlyPlugins" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Any File, Browsed or Attached"]</h2>
+    <p class="description">@L["Browse Files lists every stored file here rather than pictures alone, inserting what the browser can render together with a link to it, and everything else as a link. Attach Files uploads from this device instead, and what arrives is carried beside the document the way an email carries its attachments."]</p>
+    <div class="demo-box">
+        <FormaComposer @bind-Value="_anyFileDoc" Plugins="_anyFilePlugins" />
+    </div>
+</div>
+
+@code {
+    private readonly SourceEditorPlugin _sourceOnlyPlugin = new();
+    private readonly SourceEditorPlugin _everythingSourcePlugin = new();
+    private readonly TextEditorPlugin _statusTextPlugin = new();
+    private readonly TextEditorPlugin _everythingTextPlugin = new();
+    private ComposerDocument _defaultDoc = new(ComposerDocumentFormat.PlainText, "Welcome to FormaComposer.\nEvery capability and editor arrives as a plugin.");
+    private ComposerDocument _disabledDoc = new(ComposerDocumentFormat.PlainText, "This composer instance is disabled.");
+    private ComposerDocument _readOnlyDoc = new(ComposerDocumentFormat.PlainText, "This composer instance is in a read-only state.");
+    private ComposerDocument _noToolbarDoc = new(ComposerDocumentFormat.PlainText, "Composer without top toolbar.");
+    private ComposerDocument _fixedHeightDoc = new(ComposerDocumentFormat.PlainText, "This composer cannot be dragged taller.");
+    private ComposerDocument _standardDoc = new(ComposerDocumentFormat.Html, "<p>Welcome to <strong>FormaStandardRichTextEditor</strong>.</p><p>You can format text, create headings, add lists, and change alignment.</p>");
+    private ComposerDocument _compactDoc = new(ComposerDocumentFormat.Html, "<p>A lightweight <em>rich text editor</em> preset for short blurbs and tickers.</p>");
+    private ComposerDocument _sourceDoc = new(ComposerDocumentFormat.PlainText, "function total(cart) {\n    let total = 0;\n\n    for (const line of cart) {\n        total += line.price;\n    }\n\n    return total;\n}");
+    private ComposerDocument _statusDoc = new(ComposerDocumentFormat.PlainText, "pear\napple\nbanana");
+    private ComposerDocument _pluginDoc = new(ComposerDocumentFormat.PlainText, "pear\n\nApple\n\nbanana");
+    private ComposerDocument _viewDoc = new(ComposerDocumentFormat.Html, "<p>Press <strong>Preview</strong> to read this as rendered output, or <strong>Maximize</strong> to fill the viewport.</p>");
+    private ComposerDocument _everyPluginDoc = new(ComposerDocumentFormat.Html, "<p>Every plugin the library ships is registered here.</p>");
+    private ComposerDocument _imagesOnlyDoc = new(ComposerDocumentFormat.Html, "<p>Insert an image by address, or browse the pictures already stored.</p>");
+    private ComposerDocument _anyFileDoc = new(ComposerDocumentFormat.Html, "<p>Browse any stored file, or attach one from this device.</p>");
+    private readonly FormaComposerOptions _noToolbarOptions = new() { ShowToolbar = false };
+    private readonly FormaComposerOptions _fixedHeightOptions = new() { IsResizable = false };
+    private IReadOnlyList<IComposerPlugin> _statusPlugins = [];
+    private IReadOnlyList<IComposerPlugin> _sourcePlugins = [];
+    private IReadOnlyList<IComposerPlugin> _demoPlugins = [];
+    private IReadOnlyList<IComposerPlugin> _viewPlugins = [];
+    private IReadOnlyList<IComposerPlugin> _everyPlugins = [];
+    private IReadOnlyList<IComposerPlugin> _imagesOnlyPlugins = [];
+    private IReadOnlyList<IComposerPlugin> _anyFilePlugins = [];
+
+    protected override void OnInitialized()
+    {
+        _statusPlugins = [_statusTextPlugin];
+        _sourcePlugins = [_sourceOnlyPlugin];
+        _demoPlugins = [_everythingTextPlugin, _everythingSourcePlugin, new TimestampPlugin(), new CleanupPlugin()];
+        var richView = new RichTextEditorPlugin();
+        _viewPlugins = [richView, new BasicFormattingPlugin(richView), new RichTextPreviewViewPlugin(richView), new RichTextSourceViewPlugin(richView), new MaximizePlugin(), new SelectionBarPlugin()];
+
+        // Plugins are discovered from the library.
+        _everyPlugins = ComposerPluginDiscovery.Discover([new RichTextEditorPlugin()], typeof(RichTextEditorPlugin).Assembly);
+
+        var richFiles = new RichTextEditorPlugin();
+        _imagesOnlyPlugins =
+        [
+            richFiles,
+            new BasicFormattingPlugin(richFiles),
+            new ImagePlugin(richFiles),
+            new ExplorerPlugin(richFiles, new ExplorerPluginOptions
+            {
+                AcceptedResourceKinds = "contentType:image",
+                AcceptedUploadKinds = "globs:*.png;*.jpg;*.svg",
+                InsertMode = MediaInsertMode.Embed,
+            }),
+        ];
+
+        var richAnything = new RichTextEditorPlugin();
+        _anyFilePlugins =
+        [
+            richAnything,
+            new BasicFormattingPlugin(richAnything),
+            new ExplorerPlugin(richAnything, new ExplorerPluginOptions { AllowUpload = false, InsertMode = MediaInsertMode.Both }),
+            new FileUploadPlugin(new FileUploadPluginOptions { MaxFileSize = 5 * 1024 * 1024 }),
+        ];
+    }
+}

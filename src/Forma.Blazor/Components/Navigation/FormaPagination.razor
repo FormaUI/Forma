@@ -1,0 +1,82 @@
+@namespace Forma.Blazor.Components.Navigation
+@if (PageCount > 1)
+{
+    <nav @attributes="AdditionalAttributes" class="@CssClass" aria-label="@NavLabel" @ref="_navElement">
+        @if (!HasInputByState)
+        {
+            <ul class="forma-pagination-navigation-steps">
+                <li>@NavigationButton(NavigationDirection.Previous, StepsStride)</li>
+                @foreach (var step in NavigationSteps)
+                {
+                    <li>
+                        @switch (step.Kind)
+                        {
+                            case StepKind.Gap:
+                                <span class="forma-pagination-navigation-gap" aria-hidden="true">&hellip;</span>
+                                break;
+
+                            case StepKind.Empty:
+                                <span class="forma-pagination-navigation-empty" aria-hidden="true"></span>
+                                break;
+
+                            case StepKind.Page when step.Number == ActivePage:
+                                <FormaButton Variant="ButtonVariant.Primary"
+                                             class="forma-pagination-navigation-step forma-pagination-navigation-step-current"
+                                             aria-label="@L["Page {PageNumber}", step.Number]"
+                                             aria-current="page">
+                                    @step.Number
+                                </FormaButton>
+                                break;
+
+                            default:
+                                <FormaButton Variant="ButtonVariant.Tertiary"
+                                             class="forma-pagination-navigation-step"
+                                             aria-label="@L["Page {PageNumber}", step.Number]"
+                                             OnClick="() => GoToPageAsync(step.Number)">
+                                    @step.Number
+                                </FormaButton>
+                                break;
+                        }
+                    </li>
+                }
+                <li>@NavigationButton(NavigationDirection.Next, StepsStride)</li>
+            </ul>
+        }
+
+        @* The input row stands in for the steps: always when state calls for it, otherwise only where the steps do not fit. *@
+        <div class="@(HasInputByState ? "forma-pagination-navigation-input" : "forma-pagination-navigation-input forma-pagination-navigation-input-fallback")">
+            @NavigationButton(NavigationDirection.Previous, 1)
+            <div class="forma-pagination-navigation-input-group">
+                <label class="forma-pagination-navigation-input-label" for="@_navigationInputId">@L["Go to Page"]</label>
+                <FormaTextBox @ref="NavigationInput"
+                              @bind-Value="_navigationEntry"
+                              Id="@_navigationInputId"
+                              class="forma-pagination-navigation-input-box"
+                              InputMode="TextInputMode.Numeric"
+                              EnterKeyHint="TextEnterKeyHint.Go"
+                              Placeholder="@L["Go to Page"]"
+                              onfocus="@NavigationInputFocus"
+                              onblur="@NavigationInputBlur"
+                              onkeydown="@NavigationInputKeyDown" />
+                <FormaButton Variant="ButtonVariant.Tertiary"
+                             class="@(Options.GoButton ? "forma-pagination-go-button" : "forma-pagination-go-button forma-pagination-go-button-touch")"
+                             OnClick="GoAsync">
+                    @L["Go"]
+                </FormaButton>
+            </div>
+            @NavigationButton(NavigationDirection.Next, 1)
+        </div>
+    </nav>
+}
+
+@code {
+    // A navigation button; the stride is how far it moves.
+    private RenderFragment NavigationButton(NavigationDirection direction, int stride) => @<FormaButton Variant="ButtonVariant.Tertiary"
+                 class="@(direction is NavigationDirection.Previous ? "forma-pagination-navigation-button forma-pagination-navigation-button-previous" : "forma-pagination-navigation-button forma-pagination-navigation-button-next")"
+                 Disabled="@(direction is NavigationDirection.Previous ? ActivePage <= 1 : ActivePage >= PageCount)"
+                 aria-label="@(direction is NavigationDirection.Previous ? L["Previous"] : L["Next"])"
+                 OnClick="() => MoveAsync(direction, stride)">
+        <FormaIcon Icon="Glyph.ChevronRight" Size="IconSize.Small" Class="forma-pagination-navigation-button-glyph" />
+        <span class="forma-pagination-navigation-button-text">@(direction is NavigationDirection.Previous ? L["Previous"] : L["Next"])</span>
+    </FormaButton>;
+}

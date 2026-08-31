@@ -1,0 +1,110 @@
+@using Forma.Blazor.Components.Composer.Plugins
+@inherits FormaBunitContext
+@code {
+    public sealed class Component
+    {
+        private sealed class TestModel
+        {
+            public ComposerDocument Body { get; set; } = new(ComposerDocumentFormat.Html, "<p>Initial Text</p>");
+        }
+
+        [Fact]
+        public void Should_render_contenteditable_canvas()
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="[new RichTextEditorPlugin()]" />);
+
+            // Assert
+            var canvas = cut.Find(".forma-composer-rich-text-canvas");
+            Assert.True(canvas.HasAttribute("contenteditable"));
+            Assert.Equal("textbox", canvas.GetAttribute("role"));
+        }
+
+        [Fact]
+        public void Should_disable_contenteditable_when_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Disabled="true" Plugins="[new RichTextEditorPlugin()]" />);
+
+            // Assert
+            var canvas = cut.Find(".forma-composer-rich-text-canvas");
+            Assert.Equal("false", canvas.GetAttribute("contenteditable"));
+        }
+
+        [Fact]
+        public void Should_make_contenteditable_readonly_when_readonly()
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" ReadOnly="true" Plugins="[new RichTextEditorPlugin()]" />);
+
+            // Assert
+            var canvas = cut.Find(".forma-composer-rich-text-canvas");
+            Assert.Equal("false", canvas.GetAttribute("contenteditable"));
+        }
+
+        [Fact]
+        public void Should_render_the_selection_bar_with_the_commands_plugins_placed_on_it()
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            var model = new TestModel();
+            var editor = new RichTextEditorPlugin();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="[editor, new BasicFormattingPlugin(editor)]" />);
+
+            // Assert
+            var menu = cut.Find(".forma-composer-selection-bar");
+            Assert.Multiple(() =>
+            {
+                Assert.NotNull(menu.QuerySelector("[role='toolbar']"));
+                Assert.NotNull(menu.QuerySelector(".forma-composer-selection-bar-handle"));
+                Assert.Equal(4, menu.QuerySelectorAll("[role='toolbar'] button").Length);
+            });
+        }
+
+        [Fact]
+        public void Should_render_no_selection_bar_while_the_engine_hides_it()
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            var model = new TestModel();
+            var editor = new RichTextEditorPlugin();
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="[editor, new BasicFormattingPlugin(editor), new SelectionBarPlugin()]" />);
+            var composer = cut.FindComponent<FormaComposer>().Instance;
+            Assert.NotNull(cut.Find(".forma-composer-selection-bar"));
+
+            // Act
+            cut.InvokeAsync(() => composer.HandleCommandAsync(ComposerCommands.SelectionBar));
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".forma-composer-selection-bar")));
+        }
+
+        [Fact]
+        public void Should_render_no_selection_bar_when_no_plugin_placed_anything_on_it()
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="[new RichTextEditorPlugin()]" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-composer-selection-bar"));
+        }
+    }
+}

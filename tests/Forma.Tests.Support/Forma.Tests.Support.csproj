@@ -14,11 +14,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Forma.UI.Features.Feedback\Forma.UI.Features.Feedback.csproj" />
-        <ProjectReference Include="..\..\src\Forma.UI.Features.Media\Forma.UI.Features.Media.csproj" />
-        <ProjectReference Include="..\..\src\Forma.UI.Features.Composer\Forma.UI.Features.Composer.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Framework.Localization.Abstractions\Forma.Framework.Localization.Abstractions.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Framework.Resources.Abstractions\Forma.Framework.Resources.Abstractions.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Features.Feedback\Forma.Features.Feedback.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Features.Media\Forma.Features.Media.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Features.Composer\Forma.Features.Composer.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
     </ItemGroup>
 
     <ItemGroup>

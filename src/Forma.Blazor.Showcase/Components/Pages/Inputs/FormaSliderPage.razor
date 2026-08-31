@@ -1,0 +1,63 @@
+@page "/slider"
+@attribute [ShowcasePage("FormaSlider")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Inputs
+@inject IStringLocale<FormaSliderPage> L
+
+<h1>FormaSlider</h1>
+<p class="description">@L["A bounded numeric input rendered as a native range slider, its current value shown beside the label rather than requiring a second field to read it."]</p>
+
+<EditForm Model="_model">
+
+    <div class="demo-section">
+        <h2>@L["Basic Usage"]</h2>
+        <div class="demo-box">
+            <FormaSlider @bind-Value="_model.BorderRadius" Label="@L["Border radius"]" Min="0" Max="20" Unit="px" />
+            <p class="demo-note">@L["Value"]: <code>@_model.BorderRadius</code></p>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["A Step Larger than One"]</h2>
+        <p class="description">@L["Step controls the increment a drag or arrow key moves the value by."]</p>
+        <div class="demo-box">
+            <FormaSlider @bind-Value="_model.Volume" Label="@L["Volume"]" Min="0" Max="100" Step="5" Unit="%" />
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["A Decimal Value"]</h2>
+        <p class="description">@L["The slider is generic over any INumber<T>, so a fractional step works the same way as a whole one."]</p>
+        <div class="demo-box">
+            <FormaSlider @bind-Value="_model.Duration" Label="@L["Duration"]" Min="0.5" Max="5" Step="0.5" Unit="s" />
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["Without a Unit"]</h2>
+        <p class="description">@L["A bare count needs no suffix, and aria-valuetext is left to the native valuenow the input already announces."]</p>
+        <div class="demo-box">
+            <FormaSlider @bind-Value="_model.Priority" Label="@L["Priority"]" Min="1" Max="5" />
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["Disabled"]</h2>
+        <div class="demo-box">
+            <FormaSlider @bind-Value="_model.Locked" Label="@L["Site width"]" Min="960" Max="1920" Unit="px" Disabled="true" />
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private readonly DemoModel _model = new();
+
+    private sealed class DemoModel
+    {
+        public int BorderRadius { get; set; } = 4;
+        public int Volume { get; set; } = 50;
+        public double Duration { get; set; } = 2.5;
+        public int Priority { get; set; } = 3;
+        public int Locked { get; set; } = 1280;
+    }
+}

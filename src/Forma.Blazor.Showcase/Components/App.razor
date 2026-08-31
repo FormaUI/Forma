@@ -1,0 +1,22 @@
+@using System.Globalization
+@using Forma.Blazor.Components.Page
+
+<!DOCTYPE html>
+<html lang="@Lang" dir="@Dir">
+<head>
+    <FormaPageHead Title="Forma Component Showcase">
+        <link rel="stylesheet" href="@Assets["app.css"]" />
+        <link rel="stylesheet" href="@Assets["Forma.Blazor.Showcase.styles.css"]" />
+        <PageLocalization />
+    </FormaPageHead>
+</head>
+<body>
+    <Routes />
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+</body>
+</html>
+
+@code {
+    private string Lang => CultureInfo.CurrentUICulture.Name;
+    private string Dir => CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? "rtl" : "ltr";
+}

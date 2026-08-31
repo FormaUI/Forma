@@ -1,0 +1,13 @@
+@namespace Forma.Blazor.Components.Menus
+<FormaDropDownMenu @attributes="AdditionalAttributes"
+                   TriggerOptions="TriggerOptions"
+                   HeaderContent="HeaderContent"
+                   aria-label="@Label"
+                   disabled="@(Disabled ? true : null)">
+    <Trigger>
+        <FormaIcon Icon="@(Orientation == MenuOrientation.Vertical ? Glyph.MoreVertical : Glyph.More)" Size="IconSize.Small" />
+    </Trigger>
+    <ChildContent>
+        @ChildContent
+    </ChildContent>
+</FormaDropDownMenu>

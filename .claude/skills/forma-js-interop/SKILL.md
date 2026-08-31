@@ -96,7 +96,7 @@ export function capture(element, pointerId) {
 - Do name a wrapper after the module it owns, with no `Bridge`, `Helper`, or `Interop` suffix.
 - Do let `JsModule` and `JsInterop` handle importing, `JSException`, `JSDisconnectedException`, and disposal rather than repeating any of it.
 - Do dispose the wrapper from the component's `DisposeAsync`.
-- Do import from `./_content/Forma.UI/scripts/{behaviours|operations|components}/{Name}.js`.
+- Do import from `./_content/Forma.Blazor/scripts/{behaviours|operations|components}/{Name}.js`.
 - Do suppress CA1812 on a private record that exists only to receive a JS return shape, since nothing constructs it in C#.
 - Don't make a wrapper static; `IJSRuntime` is scoped per circuit and the module reference has to be disposed with it.
 - Don't import a module by hand with `JS.InvokeAsync<IJSObjectReference>("import", …)`.
@@ -113,7 +113,7 @@ export function capture(element, pointerId) {
 ## External libraries
 
 - Don't use jQuery, npm packages, polyfills, or other external JS libraries. `FormaComposer` is the single carve-out, because an editor hosts capabilities — Markdown rendering, maths typesetting, syntax highlighting — that are solved problems nobody should reimplement.
-- Do confine every such library to its own satellite package, `Forma.UI.Features.Composer.{Capability}`, reached only through a plugin contract, so a host that does not want the capability never downloads it and the engine never depends on it.
+- Do confine every such library to its own satellite package, `Forma.AddOns.Composer.{Capability}`, reached only through a plugin contract, so a host that does not want the capability never downloads it and the engine never depends on it.
 - Do keep those libraries in a supporting role: a capability renders, converts, or classifies. The editing surface, the selection, the undo stack, and the toolbar stay Forma's, in C#.
 - Do ship them as plain static assets under `_content/…`, loaded through the plugin's declared assets. A bundler, a build step, or an `npm install` is still out.
 - Do make a capability that is absent or fails to load degrade to absent, never to a control that throws when pressed.

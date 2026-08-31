@@ -1,0 +1,71 @@
+@page "/file-picker"
+@attribute [ShowcasePage("FormaFilePicker")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Files
+@using Forma.Features.Files
+@using Microsoft.AspNetCore.Components.Forms
+
+<h1>FormaFilePicker</h1>
+<p class="description">@L["A drop zone and file picker in one. Dragging a file onto it, or clicking it, hands the browser's file straight to the change handler — the same validated selection either way."]</p>
+
+<div class="demo-section">
+    <h2>@L["Any File"]</h2>
+    <p class="description">@L["No restriction, so every drop or pick is accepted."]</p>
+    <div class="demo-box">
+        <FormaFilePicker OnFilesSelected="@(files => HandleSelected("basic", files))" />
+        <ul class="demo-log">
+            @foreach (var line in Log("basic"))
+            {
+                <li>@line</li>
+            }
+        </ul>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Restricted to Images"]</h2>
+    <p class="description">@L["Accept is checked against both a click-picked file and a dropped one, since a drop never consults the file dialog's own filter."]</p>
+    <div class="demo-box">
+        <FormaFilePicker Accept="image/*"
+                         OnFilesSelected="@(files => HandleSelected("images", files))"
+                         OnFilesRejected="@(files => HandleRejected("images", files))" />
+        <ul class="demo-log">
+            @foreach (var line in Log("images"))
+            {
+                <li>@line</li>
+            }
+        </ul>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A Size Limit"]</h2>
+    <p class="description">@((MarkupString)L["Capped at {SizeMarkup} here; a larger file is declined before it is ever read.", SizeMarkup].Value)</p>
+    <div class="demo-box">
+        <FormaFilePicker MaxFileSize="@MaxSizeBytes"
+                         OnFilesSelected="@(files => HandleSelected("size", files))"
+                         OnFilesRejected="@(files => HandleRejected("size", files))" />
+        <ul class="demo-log">
+            @foreach (var line in Log("size"))
+            {
+                <li>@line</li>
+            }
+        </ul>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A Selection Limit"]</h2>
+    <p class="description">@L["Capped at two files per drop or pick; anything past the cap is declined rather than the whole selection."]</p>
+    <div class="demo-box">
+        <FormaFilePicker MaxSelectedFiles="2"
+                         OnFilesSelected="@(files => HandleSelected("count", files))"
+                         OnFilesRejected="@(files => HandleRejected("count", files))" />
+        <ul class="demo-log">
+            @foreach (var line in Log("count"))
+            {
+                <li>@line</li>
+            }
+        </ul>
+    </div>
+</div>

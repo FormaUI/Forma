@@ -1,0 +1,102 @@
+@inherits FormaBunitContext
+@using Bunit.Rendering
+@using Forma.Blazor.Components.Composer.Dialogs
+@using Forma.Blazor.Components.Feedback
+
+@code {
+    public sealed class Component
+    {
+        private static void Fill(IRenderedComponent<ContainerFragment> cut, string label, string value)
+        {
+            var field = cut.FindAll("label.forma-field-label")
+                .Single(candidate => candidate.TextContent.Trim().TrimEnd('*', ' ') == label);
+
+            cut.Find($"#{field.GetAttribute("for")}").Input(value);
+        }
+
+        [Fact]
+        public void Should_hold_the_modal_open_so_a_refused_address_can_be_reported()
+        {
+            // Arrange
+            using var ctx = new FormaComposerVideoDialogTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposerVideoDialog Opened="true" />);
+
+            // Assert
+            Assert.False(cut.FindComponent<FormaModal>().Instance.Options.CloseOnConfirm);
+        }
+
+        [Fact]
+        public void Should_ask_for_an_address_when_confirmed_empty()
+        {
+            // Arrange
+            using var ctx = new FormaComposerVideoDialogTests();
+            var inserted = false;
+            var cut = ctx.Render(@<FormaComposerVideoDialog Opened="true" OnInsert="_ => inserted = true" />);
+
+            // Act
+            cut.FindAll("button").Single(button => button.TextContent.Trim() == "Insert").Click();
+
+            // Assert
+            Assert.False(inserted);
+            Assert.Equal("Enter the address of the video before inserting.", cut.Find(".forma-composer-dialog-error[role=alert]").TextContent.Trim());
+        }
+
+        [Fact]
+        public void Should_refuse_an_address_the_document_cannot_keep()
+        {
+            // Arrange
+            using var ctx = new FormaComposerVideoDialogTests();
+            var inserted = false;
+            var cut = ctx.Render(@<FormaComposerVideoDialog Opened="true" OnInsert="_ => inserted = true" />);
+            Fill(cut, "Video URL", "javascript:alert(1)");
+
+            // Act
+            cut.FindAll("button").Single(button => button.TextContent.Trim() == "Insert").Click();
+
+            // Assert
+            Assert.False(inserted);
+            Assert.Equal("A video address has to start with http:// or https://.", cut.Find(".forma-composer-dialog-error[role=alert]").TextContent.Trim());
+        }
+
+        [Fact]
+        public void Should_report_the_video_when_the_address_is_usable()
+        {
+            // Arrange
+            using var ctx = new FormaComposerVideoDialogTests();
+            VideoDialogResult? result = null;
+            var cut = ctx.Render(@<FormaComposerVideoDialog Opened="true" OnInsert="value => result = value" />);
+            Fill(cut, "Video URL", "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+            Fill(cut, "Title", "Race Highlights");
+
+            // Act
+            cut.FindAll("button").Single(button => button.TextContent.Trim() == "Insert").Click();
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal("https://www.youtube.com/watch?v=dQw4w9WgXcQ", result.Source);
+            Assert.Equal("Race Highlights", result.Title);
+            Assert.False(result.Autoplay);
+            Assert.Empty(cut.FindAll(".forma-composer-dialog-error"));
+        }
+
+        [Fact]
+        public void Should_carry_autoplay_when_it_is_checked()
+        {
+            // Arrange
+            using var ctx = new FormaComposerVideoDialogTests();
+            VideoDialogResult? result = null;
+            var cut = ctx.Render(@<FormaComposerVideoDialog Opened="true" OnInsert="value => result = value" />);
+            Fill(cut, "Video URL", "https://vimeo.com/76979871");
+            cut.Find("input[type=checkbox]").Change(true);
+
+            // Act
+            cut.FindAll("button").Single(button => button.TextContent.Trim() == "Insert").Click();
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.Autoplay);
+        }
+    }
+}

@@ -1,0 +1,14 @@
+namespace Forma.Blazor.Components.Buttons;
+
+/// <summary>The behaviour a button has when it sits inside a form.</summary>
+public enum ButtonType
+{
+    /// <summary>Does nothing on its own; only raises its click callback.</summary>
+    Button,
+
+    /// <summary>Submits the surrounding form.</summary>
+    Submit,
+
+    /// <summary>Restores the surrounding form's inputs to their initial values.</summary>
+    Reset
+}

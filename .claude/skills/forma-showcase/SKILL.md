@@ -5,7 +5,7 @@ description: How to build a Forma Showcase page — the required path and direct
 
 # Showcase
 
-Every component requires `src/Forma.UI.Blazor.Showcase/Components/Pages/{Category}/FormaXPage.razor` and its translation pair. The Showcase exists to be looked at, so a state it never renders is a state nobody has ever reviewed.
+Every component requires `src/Forma.Blazor.Showcase/Components/Pages/{Category}/FormaXPage.razor` and its translation pair. The Showcase exists to be looked at, so a state it never renders is a state nobody has ever reviewed.
 
 ```razor
 @page "/x-component"
@@ -25,7 +25,7 @@ Every component requires `src/Forma.UI.Blazor.Showcase/Components/Pages/{Categor
 ## Running it
 
 ```powershell
-dotnet run --project src/Forma.UI.Blazor.Showcase
+dotnet run --project src/Forma.Blazor.Showcase
 ```
 
 - Do stop a running Showcase before rebuilding; it holds its `bin` DLLs open and the copy fails with `MSB3027`.

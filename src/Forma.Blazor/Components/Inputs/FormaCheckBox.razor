@@ -1,0 +1,25 @@
+@namespace Forma.Blazor.Components.Inputs
+
+@{
+    RenderFragment input = @<input @attributes="AdditionalAttributes"
+                                   @ref="_element"
+                                   type="checkbox"
+                                   class="@CssClass"
+                                   checked="@Checked"
+                                   disabled="@Disabled"
+                                   @onchange="HandleChangeAsync"
+                                   @onclick="HandleClickAsync"
+                                   @onclick:preventDefault="@PreventDefault" />;
+}
+
+@if (ChildContent is null)
+{
+    @input
+}
+else
+{
+    <label class="forma-checkbox-label">
+        @input
+        @ChildContent
+    </label>
+}

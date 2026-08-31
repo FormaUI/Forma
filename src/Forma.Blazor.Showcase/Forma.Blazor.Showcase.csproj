@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <IsPackable>false</IsPackable>
+        <RootNamespace>Forma.Blazor.Showcase</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="11.0.0-preview.6.26359.118" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Blazor\Forma.Blazor.csproj" />
+        <ProjectReference Include="..\Forma.AddOns.Resources.Office\Forma.AddOns.Resources.Office.csproj" />
+        <ProjectReference Include="..\Forma.AddOns.Resources.Markdown\Forma.AddOns.Resources.Markdown.csproj" />
+        <ProjectReference Include="..\Forma.Features.Files\Forma.Features.Files.csproj" />
+        <ProjectReference Include="..\Forma.Features.Feedback\Forma.Features.Feedback.csproj" />
+        <ProjectReference Include="..\Forma.Features.Media\Forma.Features.Media.csproj" />
+        <ProjectReference Include="..\Forma.Features.Explorer\Forma.Features.Explorer.csproj" />
+        <ProjectReference Include="..\Forma.Features.Composer\Forma.Features.Composer.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Css\Forma.Framework.Css.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Icons\Forma.Framework.Icons.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
+        <ProjectReference Include="..\Forma.AddOns.Emojis.Twemoji\Forma.AddOns.Emojis.Twemoji.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />
+        <ProjectReference Include="..\Forma.AddOns.Share.Targets\Forma.AddOns.Share.Targets.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Share\Forma.Framework.Share.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Components\**\*.json" />
+    </ItemGroup>
+
+</Project>

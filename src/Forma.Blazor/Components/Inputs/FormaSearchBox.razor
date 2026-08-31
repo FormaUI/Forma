@@ -1,0 +1,23 @@
+@namespace Forma.Blazor.Components.Inputs
+@using Forma.Blazor.Components.Buttons
+
+<div class="forma-search-box-wrapper">
+    <span class="forma-search-box-icon" aria-hidden="true"><FormaIcon Icon="Glyph.Search" Size="IconSize.Small" /></span>
+    <input @attributes="AdditionalAttributes"
+           @ref="Element"
+           id="@Id"
+           type="search"
+           dir="auto"
+           class="@InputClass"
+           placeholder="@EffectivePlaceholder"
+           value="@Value"
+           disabled="@Disabled"
+           @oninput="HandleInputAsync"
+           @onkeydown="HandleKeyDownAsync" />
+    @if (!string.IsNullOrEmpty(Value))
+    {
+        <span class="forma-search-box-clear">
+            <FormaCloseButton Label="@L["Clear Search"]" Size="ButtonSize.Mini" Disabled="Disabled" OnClick="ClearAsync" />
+        </span>
+    }
+</div>

@@ -19,7 +19,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Framework.Localization.Abstractions\Forma.Framework.Localization.Abstractions.csproj" />
         <ProjectReference Include="..\Forma.Tests.Support\Forma.Tests.Support.csproj" />
     </ItemGroup>
 

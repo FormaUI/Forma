@@ -1,0 +1,82 @@
+@page "/toggle-switch"
+@attribute [ShowcasePage("FormaToggleSwitch")]
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components.Forms
+@using Forma.Blazor.Components.Inputs
+@inject IStringLocale<FormaToggleSwitchPage> L
+
+<h1>FormaToggleSwitch</h1>
+<p class="description">@L["A switch for a setting that is either on or off, with optional labels for each side. It is a checkbox underneath, so a form, the keyboard and a screen reader all treat it as one."]</p>
+
+<EditForm Model="Model" FormName="toggle-demo" OnValidSubmit="HandleSubmit">
+    <div class="demo-section">
+        <h2>@L["Basic Toggle"]</h2>
+        <div class="demo-box">
+            <FormaToggleSwitch @bind-Value="Model.Active" />
+            <FormaToggleSwitch @bind-Value="Model.Featured" />
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["With Labels"]</h2>
+        <div class="demo-box">
+            <FormaToggleSwitch @bind-Value="Model.Comments"
+                             OnLabel="@L["On"]"
+                             OffLabel="@L["Off"]" />
+            <FormaToggleSwitch @bind-Value="Model.Published"
+                             OnLabel="@L["Published"]"
+                             OffLabel="@L["Unpublished"]" />
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["As a Named Setting"]</h2>
+        <p class="description">@L["A label names the setting itself, so the switch needs no aria-label of its own. Pair it with the on/off labels sparingly — together they make for a busy row."]</p>
+        <div class="demo-box">
+            <FormaToggleSwitch @bind-Value="Model.Newsletter" Label="@L["Send the weekly newsletter"]" />
+            <FormaToggleSwitch @bind-Value="Model.Indexing" Label="@L["Allow search engines to index"]" />
+            <FormaToggleSwitch @bind-Value="Model.Maintenance" Label="@L["Maintenance mode"]" Disabled="true" />
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["States"]</h2>
+        <div class="demo-box">
+            <FormaToggleSwitch @bind-Value="Model.OnByDefault"
+                             OnLabel="@L["On"]"
+                             OffLabel="@L["Off"]" />
+            <FormaToggleSwitch @bind-Value="Model.Disabled"
+                             Disabled="true"
+                             OnLabel="@L["On"]"
+                             OffLabel="@L["Off"]" />
+            <FormaToggleSwitch @bind-Value="Model.DisabledOn"
+                             Disabled="true"
+                             OnLabel="@L["On"]"
+                             OffLabel="@L["Off"]" />
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private ToggleDemoModel Model { get; set; } = new()
+    {
+        OnByDefault = true,
+        DisabledOn = true
+    };
+
+    private void HandleSubmit() { }
+
+    private sealed class ToggleDemoModel
+    {
+        public bool Active { get; set; }
+        public bool Featured { get; set; }
+        public bool Comments { get; set; }
+        public bool Published { get; set; }
+        public bool OnByDefault { get; set; }
+        public bool Disabled { get; set; }
+        public bool DisabledOn { get; set; }
+        public bool Newsletter { get; set; }
+        public bool Indexing { get; set; }
+        public bool Maintenance { get; set; }
+    }
+}

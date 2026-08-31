@@ -1,0 +1,63 @@
+@page "/eye-button"
+@attribute [ShowcasePage("FormaEyeButton")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Inputs
+@inject IStringLocale<FormaEyeButtonPage> L
+
+<h1>FormaEyeButton</h1>
+<p class="description">@L["The reveal glyph, drawn as a ghost FormaButton square. Struck through while what it governs is hidden, plain once it is shown, so the state reads without color. FormaPasswordBox's toggle is this component."]</p>
+
+<div class="demo-section">
+    <h2>@L["Both States"]</h2>
+    <p class="description">@L["The caller owns the state and the wording, because what is being revealed decides both."]</p>
+    <div class="demo-box">
+        <div class="demo-row">
+            <FormaEyeButton Label="@(_revealed ? L["Hide value"] : L["Show value"])"
+                            Revealed="_revealed"
+                            OnClick="() => _revealed = !_revealed" />
+            <code>@(_revealed ? Secret : new string('•', Secret.Length))</code>
+        </div>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Sizes"]</h2>
+    <div class="demo-box">
+        <div class="demo-row">
+            <FormaEyeButton Label="@L["Show value"]" />
+            <FormaEyeButton Label="@L["Show value"]" Size="ButtonSize.Mini" />
+        </div>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Disabled"]</h2>
+    <div class="demo-box">
+        <div class="demo-row">
+            <FormaEyeButton Label="@L["Show value"]" Disabled="true" />
+            <FormaEyeButton Label="@L["Hide value"]" Revealed="true" Disabled="true" />
+        </div>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["On a Colored Surface"]</h2>
+    <p class="description">@L["The glyph follows the surface through --forma-button-ghost-color and its hover pair rather than a forked stylesheet. Nothing else changes: it reveals here exactly as it does above."]</p>
+    <div class="demo-box">
+        <div class="demo-tinted">
+            <span>@L["API key"]</span>
+            <code>@(_keyRevealed ? ApiKey : new string('•', ApiKey.Length))</code>
+            <FormaEyeButton Label="@(_keyRevealed ? L["Hide value"] : L["Show value"])"
+                            Revealed="_keyRevealed"
+                            Size="ButtonSize.Mini"
+                            OnClick="() => _keyRevealed = !_keyRevealed" />
+        </div>
+    </div>
+</div>
+
+@code {
+    private const string Secret = "s3cr3t-key-9f2a";
+    private const string ApiKey = "sk-live-4f9c2a71";
+    private bool _revealed;
+    private bool _keyRevealed;
+}

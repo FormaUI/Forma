@@ -1,0 +1,82 @@
+@page "/search-box"
+@attribute [ShowcasePage("FormaSearchBox")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Buttons
+@using Forma.Blazor.Components.Inputs
+@inject IStringLocale<FormaSearchBoxPage> L
+
+<h1>FormaSearchBox</h1>
+<p class="description">@L["A search field with a leading glyph and a clear button that appears once it holds a value. It needs no surrounding form: a caller binds Value and reacts through OnSearch, either on every keystroke or after a debounce."]</p>
+
+<div class="demo-section">
+    <h2>@L["Basic Usage"]</h2>
+    <p class="description">@L["Every keystroke reports instantly, filtering the list as you type. Clearing the field — by the button or by hand — reports an empty search right away."]</p>
+    <div class="demo-box">
+        <FormaSearchBox Value="@_basicQuery" ValueChanged="v => _basicQuery = v" Placeholder="@L["Search fruit..."]" aria-label="@L["Search fruit..."]" />
+        <ul class="demo-list">
+            @foreach (var fruit in FilteredFruits(_basicQuery))
+            {
+                <li>@fruit</li>
+            }
+        </ul>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Debounced Search"]</h2>
+    <p class="description">@L["DebounceDelay holds OnSearch back until typing pauses, so a handful of keystrokes reports once rather than once each. Pressing Enter searches immediately without waiting."]</p>
+    <div class="demo-box">
+        <FormaSearchBox Value="@_debouncedQuery" ValueChanged="v => _debouncedQuery = v" DebounceDelay="TimeSpan.FromMilliseconds(400)" OnSearch="HandleDebouncedSearch" Placeholder="@L["Search fruit..."]" aria-label="@L["Search fruit..."]" />
+        <p class="demo-note">@L["Last search"]: <code>@(_lastSearchedTerm.Length == 0 ? L["(none)"] : _lastSearchedTerm)</code></p>
+        <p class="demo-note">@L["Searches performed"]: <code>@_searchCount</code></p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Naming the Field"]</h2>
+    <p class="description">@L["The field carries no label of its own, so an aria-label names it for anyone who cannot see the placeholder once it disappears."]</p>
+    <div class="demo-box">
+        <FormaSearchBox Value="@_namedQuery" ValueChanged="v => _namedQuery = v" aria-label="@L["Search the site"]" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Disabled"]</h2>
+    <p class="description">@L["A disabled field is skipped by the keyboard and dimmed."]</p>
+    <div class="demo-box">
+        <FormaSearchBox Value="@L["Archived"]" Disabled="true" aria-label="@L["Archived Search"]" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["In a Toolbar Row"]</h2>
+    <p class="description">@L["With no margin of its own, the field sits on one line beside a button."]</p>
+    <div class="demo-box">
+        <div class="demo-row">
+            <FormaSearchBox Value="@_toolbarQuery" ValueChanged="v => _toolbarQuery = v" Placeholder="@L["Filter..."]" aria-label="@L["Filter..."]" class="demo-row-field" />
+            <FormaButton Variant="ButtonVariant.Secondary">@L["Filter"]</FormaButton>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string _basicQuery = string.Empty;
+    private string _debouncedQuery = string.Empty;
+    private string _namedQuery = string.Empty;
+    private string _toolbarQuery = string.Empty;
+    private string _lastSearchedTerm = string.Empty;
+    private int _searchCount;
+
+    private string[] Fruits => [L["Apple"], L["Banana"], L["Cherry"], L["Mango"], L["Orange"]];
+
+    private IEnumerable<string> FilteredFruits(string query)
+        => string.IsNullOrWhiteSpace(query)
+            ? Fruits
+            : Fruits.Where(f => f.Contains(query, StringComparison.OrdinalIgnoreCase));
+
+    private void HandleDebouncedSearch(string term)
+    {
+        _lastSearchedTerm = term;
+        _searchCount++;
+    }
+}

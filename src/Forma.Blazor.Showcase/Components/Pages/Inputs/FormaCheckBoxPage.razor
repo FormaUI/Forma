@@ -1,0 +1,57 @@
+@page "/checkbox"
+@attribute [ShowcasePage("FormaCheckBox")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Inputs
+@inject IStringLocale<FormaCheckBoxPage> L
+
+<h1>FormaCheckBox</h1>
+<p class="description">@L["A checkbox with a third, indeterminate state for a choice that governs others. A caller can also take the checked state over entirely, which is what a select-all needs when only some of its children are checked."]</p>
+
+<div class="demo-section">
+    <h2>@L["Basic"]</h2>
+    <div class="demo-box demo-row">
+        <FormaCheckBox Checked="_basic" CheckedChanged="v => _basic = v">@L["Subscribe to updates"]</FormaCheckBox>
+        <FormaCheckBox Checked="_prechecked" CheckedChanged="v => _prechecked = v">@L["Featured"]</FormaCheckBox>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Disabled"]</h2>
+    <div class="demo-box demo-row">
+        <FormaCheckBox Checked="false" Disabled="true">@L["Off"]</FormaCheckBox>
+        <FormaCheckBox Checked="true" Disabled="true">@L["On"]</FormaCheckBox>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Indeterminate"]</h2>
+    <p class="description">@L["The parent checkbox reflects and controls the state of its children, showing a dash when only some are checked."]</p>
+    <div class="demo-box">
+        <FormaCheckBox Checked="@AllChildrenChecked" Indeterminate="@SomeChildrenChecked" PreventDefault="true" OnClick="ToggleAllChildren">@L["Select all"]</FormaCheckBox>
+        <div class="demo-row demo-checkbox-children">
+            @for (var i = 0; i < _children.Length; i++)
+            {
+                var index = i;
+                <FormaCheckBox Checked="_children[index]" CheckedChanged="v => _children[index] = v">@L["Item {Number}", ("Number", index + 1)]</FormaCheckBox>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool _basic;
+    private bool _prechecked = true;
+    private readonly bool[] _children = new bool[3];
+
+    private bool AllChildrenChecked
+        => Array.TrueForAll(_children, value => value);
+
+    private bool SomeChildrenChecked
+        => Array.Exists(_children, value => value) && !AllChildrenChecked;
+
+    private void ToggleAllChildren()
+    {
+        var next = !AllChildrenChecked;
+        Array.Fill(_children, next);
+    }
+}

@@ -1,6 +1,6 @@
 namespace Forma.Tests.Composer;
 
-using Forma.UI.Features.Composer.Assets;
+using Forma.Features.Composer.Assets;
 
 /// <summary>An asset loader that reports nothing loaded and performs no loading.</summary>
 public sealed class NullAssetLoader : IComposerAssetLoader

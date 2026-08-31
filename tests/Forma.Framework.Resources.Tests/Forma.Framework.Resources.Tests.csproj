@@ -17,7 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Forma.Framework.Resources.Abstractions\Forma.Framework.Resources.Abstractions.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
     </ItemGroup>
 
 </Project>

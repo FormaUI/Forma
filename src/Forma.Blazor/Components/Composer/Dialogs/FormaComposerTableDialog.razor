@@ -1,0 +1,20 @@
+@namespace Forma.Blazor.Components.Composer.Dialogs
+@using Forma.Blazor.Components.Feedback
+@using Forma.Blazor.Components.Inputs
+@inherits ComposerDialogBase
+
+<FormaComposerDialog Opened="Opened"
+                     Title="@L["Insert Table"]"
+                     Size="ModalSize.Small"
+                     Messages="Messages"
+                     OnConfirm="HandleConfirmAsync"
+                     OnCancel="OnCancel">
+    <FormaSlider TValue="int" @bind-Value="_rows" Label="@L["Rows"]" Min="1" Max="@MaxRows" />
+    <FormaSlider TValue="int" @bind-Value="_columns" Label="@L["Columns"]" Min="1" Max="@MaxColumns" />
+    <div class="forma-composer-dialog-checkbox">
+        <FormaCheckBox Checked="_includeHeader" CheckedChanged="v => _includeHeader = v">
+            @L["Include Header Row"]
+        </FormaCheckBox>
+    </div>
+    <FormaTextBox @bind-Value="_caption" Label="@L["Caption"]" />
+</FormaComposerDialog>

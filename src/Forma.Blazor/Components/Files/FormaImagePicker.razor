@@ -1,0 +1,27 @@
+@namespace Forma.Blazor.Components.Files
+
+<div class="forma-image-picker" @ref="_containerElement">
+    <FormaFilePicker Accept="@ImageAccept"
+                      AllowMultipleFiles="AllowMultipleFiles"
+                      MaxFileSize="MaxFileSize"
+                      MaxSelectedFiles="MaxSelectedFiles"
+                      Prompt="@EffectivePrompt"
+                      OnFilesRejected="HandleFilesRejectedAsync"
+                      OnFilesSelected="HandleFilesSelectedAsync" />
+
+    @if (_previews.Count > 0)
+    {
+        <ul class="forma-image-picker-previews">
+            @foreach (var name in _previews)
+            {
+                <li class="forma-image-picker-preview">
+                    <span class="forma-image-picker-frame" aria-hidden="true">
+                        <FormaIcon Icon="Glyph.Image" Size="IconSize.Display" />
+                        <img data-forma-preview alt="" class="forma-image-picker-thumbnail" />
+                    </span>
+                    <span class="forma-image-picker-name">@name</span>
+                </li>
+            }
+        </ul>
+    }
+</div>

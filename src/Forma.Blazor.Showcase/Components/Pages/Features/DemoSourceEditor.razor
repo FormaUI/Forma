@@ -1,0 +1,50 @@
+@namespace Forma.Blazor.Showcase.Components.Pages.Features
+@inject IStringLocale<DemoSourceEditor> L
+
+<div class="demo-source-editor">
+    @if (_isRenaming)
+    {
+        <div class="demo-source-rename" role="group" aria-label="@L["Rename Symbol"]">
+            <input class="demo-source-rename-field"
+                   @ref="_oldNameElement"
+                   value="@_oldName"
+                   @oninput="e => _oldName = e.Value?.ToString() ?? string.Empty"
+                   @onkeydown="HandleRenameKeyDownAsync"
+                   placeholder="@L["Current name"]"
+                   aria-label="@L["Current name"]" />
+            <span class="demo-source-rename-arrow" aria-hidden="true">&#10095;</span>
+            <input class="demo-source-rename-field"
+                   value="@_newName"
+                   @oninput="e => _newName = e.Value?.ToString() ?? string.Empty"
+                   @onkeydown="HandleRenameKeyDownAsync"
+                   placeholder="@L["New name"]"
+                   aria-label="@L["New name"]" />
+            <FormaButton Size="ButtonSize.Mini" Disabled="!CanRename" OnClick="ApplyRenameAsync">@L["Rename"]</FormaButton>
+            <FormaButton Size="ButtonSize.Mini" Variant="ButtonVariant.Ghost" OnClick="CancelRename">@L["Cancel"]</FormaButton>
+        </div>
+    }
+
+    @* Source is fixed-direction content: it must read left to right even on an RTL page. *@
+    <div class="demo-source-body" dir="ltr">
+        <ol class="demo-source-gutter" aria-hidden="true">
+            @for (var line = 1; line <= LineCount; line++)
+            {
+                <li>@line</li>
+            }
+        </ol>
+
+        <textarea class="demo-source-textarea"
+                  rows="@LineCount"
+                  wrap="off"
+                  value="@Content"
+                  @oninput="HandleInputAsync"
+                  @onchange="HandleChangeAsync"
+                  placeholder="@L["Edit Source"]"
+                  aria-label="@L["Source"]"
+                  disabled="@IsDisabled"
+                  readonly="@IsReadOnly"
+                  spellcheck="false"></textarea>
+    </div>
+
+    <div class="demo-source-announcer" role="status">@_announcement</div>
+</div>

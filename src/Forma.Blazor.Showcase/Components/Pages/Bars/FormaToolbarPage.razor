@@ -1,0 +1,337 @@
+@page "/toolbar"
+@attribute [ShowcasePage("FormaToolbar")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Bars
+@inject IStringLocale<FormaToolbarPage> L
+
+<h1>FormaToolbar</h1>
+<p class="description">@L["A row of commands grouped by what they do, each a small record the toolbar draws as a button, a toggle, a menu or a readout. Describing the commands as data is what lets one list feed a keyboard shortcut, a tooltip and a screen reader at once."]</p>
+
+<div class="demo-section">
+    <h2>@L["Grouped Commands"]</h2>
+    <p class="description">@L["Each group is a FormaToolbarGroup, separated from the next by a rule."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaToolbar Label="@L["Formatting"]" Items="FormattingGroups" OnCommand="HandleCommand" />
+    </div>
+    <p class="demo-note">@L["Last command"]: <code>@_lastCommand</code></p>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Icon and Label Together"]</h2>
+    <p class="description">@L["ShowLabels draws each command as a full button carrying its icon and its label, for a toolbar of named actions rather than dense glyphs."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaToolbar Label="@L["Library Actions"]" Items="LabelledGroups" ShowLabels="true" OnCommand="HandleCommand" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Toggle State"]</h2>
+    <p class="description">@L["A FormaToolbarToggle reflects its own IsActive, drawn with an underline as well as color so the state never rests on color alone."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaToolbar Label="@L["Formatting"]" Items="ToggleGroups" OnCommand="HandleToggleCommand" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Menu of Choices"]</h2>
+    <p class="description">@L["A FormaToolbarMenu renders as a dropdown, showing the active option's title or a color swatch."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaToolbar Label="@L["Typography"]" Items="MenuGroups" OnCommand="HandleMenuCommand" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Readout"]</h2>
+    <p class="description">@L["A FormaToolbarReadout shows a value without being interactive. Marked IsAnnounced, its changes are read out politely."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaToolbar Label="@L["Document Status"]" Items="ReadoutGroups" OnCommand="HandleCommand" />
+    </div>
+    <p><FormaButton OnClick="() => _wordCount += 12">@L["Add Words"]</FormaButton></p>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Custom Item"]</h2>
+    <p class="description">@L["A FormaToolbarCustomItem renders a component of the caller's choosing, with its own parameters, in place of a standard control."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaToolbar Label="@L["Publication"]" Items="CustomGroups" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Keyboard Shortcuts"]</h2>
+    <p class="description">@L["An action's ShortcutDisplay appears in its tooltip alongside the label."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaToolbar Label="@L["Formatting"]" Items="ShortcutGroups" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Shortcuts That Fire"]</h2>
+    <p class="description">@L["Setting Target makes each action's ShortcutAriaKeys live while that element or a descendant holds focus, so the toolbar never listens document-wide. Click into the panel and press Ctrl+B or Ctrl+I."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaToolbar Label="@L["Formatting"]" Items="ShortcutGroups" Target="_shortcutSurface" OnCommand="HandleCommand" />
+        <div class="demo-shortcut-surface" @ref="_shortcutSurface" tabindex="0" role="group" aria-label="@L["Shortcut Surface"]">
+            @L["Focus here, then press Ctrl+B or Ctrl+I."]
+        </div>
+    </div>
+    <p class="demo-note">@L["Last command"]: <code>@_lastCommand</code></p>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Disabled"]</h2>
+    <p class="description">@L["Every control in the toolbar disables together."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaToolbar Label="@L["Formatting"]" Items="FormattingGroups" Disabled="true" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["One Item Disabled"]</h2>
+    <p class="description">@L["An item's own IsDisabled stands it down while the rest of the toolbar stays live. Its shortcut is refused as well, not only its button."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaToolbar Label="@L["Library Actions"]" Items="PartlyDisabledGroups" ShowLabels="true" Target="_shortcutSurface" OnCommand="HandleCommand" />
+    </div>
+    <p>
+        <FormaButton OnClick="() => _canDelete = !_canDelete">
+            @(_canDelete ? L["Disable Delete"] : L["Enable Delete"])
+        </FormaButton>
+    </p>
+    <p class="demo-note">@L["Last command"]: <code>@_lastCommand</code></p>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Content Pinned past the Track"]</h2>
+    <p class="description">@L["Trailing content, such as an overflow toggle, stays put while the commands beside it scroll."]</p>
+    <div class="demo-box demo-box-flush demo-command-bar-narrow">
+        <FormaToolbar Label="@L["Formatting"]" Items="ManyGroups">
+            <TrailingContent>
+                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" IconOnly="true" aria-label="@L["More"]"><FormaIcon Icon="Glyph.MoreVertical" /></FormaButton>
+            </TrailingContent>
+        </FormaToolbar>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Hidden"]</h2>
+    <p class="description">@L["Hidden keeps the toolbar mounted, so a plugin or favorites toolbar can be shown and hidden on demand — by a command elsewhere, say — without losing its attached shortcut listener each time."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaToolbar Label="@L["Favorites"]" Items="FormattingGroups" ShowLabels="true" Hidden="@(!_showFavorites)" Animated="true" />
+    </div>
+    <p>
+        <FormaButton OnClick="() => _showFavorites = !_showFavorites">
+            @(_showFavorites ? L["Hide Favorites"] : L["Show Favorites"])
+        </FormaButton>
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Not Scrollable"]</h2>
+    <p class="description">@L["With Scrollable off the toolbar renders its own row and lets the items wrap, carrying none of the command bar's observers or interop — for a toolbar whose items cannot outgrow the width."]</p>
+    <div class="demo-box demo-box-flush demo-command-bar-narrow">
+        <FormaToolbar Label="@L["Formatting"]" Items="ManyGroups" Scrollable="false" />
+    </div>
+</div>
+
+@code {
+    private string _lastCommand = "";
+    private bool _isBoldActive;
+    private int _wordCount = 12;
+    private bool _canDelete = true;
+    private bool _showFavorites = true;
+    private ElementReference _shortcutSurface;
+
+    // The @ref is only populated once the element has rendered, so the toolbars targeting it need one more render to receive it.
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            StateHasChanged();
+        }
+    }
+
+    private IReadOnlyList<FormaToolbarItem> FormattingGroups =>
+    [
+        new FormaToolbarGroup
+        {
+            Id = "inline",
+            Title = L["Inline Style"],
+            Items =
+            [
+                new FormaToolbarCommand { Id = "bold", Title = L["Bold"], Icon = Glyph.Bold, Command = "format.bold" },
+                new FormaToolbarCommand { Id = "italic", Title = L["Italic"], Icon = Glyph.Italic, Command = "format.italic" },
+            ],
+        },
+        new FormaToolbarGroup
+        {
+            Id = "align",
+            Title = L["Alignment"],
+            Items =
+            [
+                new FormaToolbarCommand { Id = "align-left", Title = L["Align Left"], Icon = Glyph.AlignLeft, Command = "format.align-left" },
+                new FormaToolbarCommand { Id = "align-right", Title = L["Align Right"], Icon = Glyph.AlignRight, Command = "format.align-right" },
+            ],
+        },
+    ];
+
+    private IReadOnlyList<FormaToolbarItem> LabelledGroups =>
+    [
+        new FormaToolbarGroup
+        {
+            Id = "library",
+            Title = L["Library Actions"],
+            Items =
+            [
+                new FormaToolbarCommand { Id = "add", Title = L["Add New"], Icon = Glyph.Plus, Command = "library.add" },
+                new FormaToolbarCommand { Id = "upload", Title = L["Upload"], Icon = Glyph.Upload, Command = "library.upload" },
+                new FormaToolbarCommand { Id = "delete", Title = L["Delete"], Icon = Glyph.Delete, Command = "library.delete" },
+            ],
+        },
+    ];
+
+    private IReadOnlyList<FormaToolbarItem> ToggleGroups =>
+    [
+        new FormaToolbarGroup
+        {
+            Id = "inline",
+            Title = L["Inline Style"],
+            Items = [new FormaToolbarToggle { Id = "bold", Title = L["Bold"], Icon = Glyph.Bold, Command = "toggle.bold", IsActive = _isBoldActive }],
+        },
+    ];
+
+    private IReadOnlyList<FormaToolbarItem> MenuGroups =>
+    [
+        new FormaToolbarGroup
+        {
+            Id = "font",
+            Title = L["Font"],
+            Items =
+            [
+                new FormaToolbarMenu
+                {
+                    Id = "font-family",
+                    Title = L["Font Family"],
+                    Icon = Glyph.Font,
+                    Options =
+                    [
+                        new() { Id = "arial", Title = "Arial", Command = "typography.font-family:Arial", IsActive = true, PreviewStyle = "font-family:Arial" },
+                        new() { Id = "georgia", Title = "Georgia", Command = "typography.font-family:Georgia", PreviewStyle = "font-family:Georgia" },
+                    ],
+                },
+            ],
+        },
+        new FormaToolbarGroup
+        {
+            Id = "color",
+            Title = L["Color"],
+            Items =
+            [
+                new FormaToolbarMenu
+                {
+                    Id = "text-color",
+                    Title = L["Text Color"],
+                    Icon = Glyph.Palette,
+                    Options =
+                    [
+                        new() { Id = "black", Title = L["Black"], Command = "typography.text-color:#000000", IsActive = true, Swatch = "#000000" },
+                        new() { Id = "red", Title = L["Red"], Command = "typography.text-color:#d32f2f", Swatch = "#d32f2f" },
+                    ],
+                },
+            ],
+        },
+    ];
+
+    private IReadOnlyList<FormaToolbarItem> ReadoutGroups =>
+    [
+        new FormaToolbarGroup
+        {
+            Id = "counts",
+            Title = L["Counts"],
+            Items =
+            [
+                new FormaToolbarReadout { Id = "words", Title = L["Word count"], Value = L["[$ plural; one: # word; other: # words; $]", _wordCount], IsAnnounced = true },
+                new FormaToolbarReadout { Id = "saved", Title = L["Save state"], Value = L["Saved"] },
+            ],
+        },
+        new FormaToolbarGroup
+        {
+            Id = "actions",
+            Title = L["Actions"],
+            Items = [new FormaToolbarCommand { Id = "recount", Title = L["Recount"], Icon = Glyph.Refresh, Command = "document.recount" }],
+        },
+    ];
+
+    private IReadOnlyList<FormaToolbarItem> CustomGroups =>
+    [
+        new FormaToolbarGroup
+        {
+            Id = "custom",
+            Title = L["Publication"],
+            Items =
+            [
+                new FormaToolbarCustomItem
+                {
+                    Id = "state",
+                    Title = L["Publication State"],
+                    Component = typeof(FormaStatusBadge),
+                    @* A loose parameter dictionary is read by reflection, which applies no conversion, so the icon arrives as one. *@
+                    Parameters = new Dictionary<string, object> { ["Text"] = L["Draft"].ToString(), ["Marker"] = Icon.FromGlyph(Glyph.Pen) },
+                },
+            ],
+        },
+    ];
+
+    private IReadOnlyList<FormaToolbarItem> ShortcutGroups =>
+    [
+        new FormaToolbarGroup
+        {
+            Id = "inline",
+            Title = L["Inline Style"],
+            Items =
+            [
+                new FormaToolbarCommand { Id = "bold", Title = L["Bold"], Icon = Glyph.Bold, Command = "format.bold", ShortcutDisplay = "Ctrl+B", ShortcutAriaKeys = "Control+B" },
+                new FormaToolbarCommand { Id = "italic", Title = L["Italic"], Icon = Glyph.Italic, Command = "format.italic", ShortcutDisplay = "Ctrl+I", ShortcutAriaKeys = "Control+I" },
+            ],
+        },
+    ];
+
+    private IReadOnlyList<FormaToolbarItem> PartlyDisabledGroups =>
+    [
+        new FormaToolbarGroup
+        {
+            Id = "library",
+            Title = L["Library Actions"],
+            Items =
+            [
+                new FormaToolbarCommand { Id = "add", Title = L["Add New"], Icon = Glyph.Plus, Command = "library.add" },
+                new FormaToolbarCommand { Id = "delete", Title = L["Delete"], Icon = Glyph.Delete, Command = "library.delete", IsDisabled = !_canDelete, ShortcutDisplay = "Ctrl+D", ShortcutAriaKeys = "Control+D" },
+            ],
+        },
+    ];
+
+    private IReadOnlyList<FormaToolbarItem> ManyGroups =>
+    [
+        new FormaToolbarGroup
+        {
+            Id = "many",
+            Title = L["Commands"],
+            Items =
+            [
+                .. Enumerable.Range(1, 10).Select(i => new FormaToolbarCommand
+                {
+                    Id = $"command-{i}",
+                    Title = $"{L["Command"]} {i}",
+                    Command = $"demo.command-{i}",
+                }),
+            ],
+        },
+    ];
+
+    private void HandleCommand(string command)
+        => _lastCommand = command;
+
+    private void HandleToggleCommand(string command)
+        => _isBoldActive = !_isBoldActive;
+
+    private void HandleMenuCommand(string command)
+        => _lastCommand = command;
+}

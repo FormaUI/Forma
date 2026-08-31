@@ -4,7 +4,7 @@ An extensible authoring surface for the **Forma** component library, replacing b
 
 The name is the claim: **the composer composes content, and content can be composed of more content.** A page designer places widgets; one of those widgets is a text widget; that text widget hosts the rich text editor. Coi did exactly this with `CKEDITOR.inline`, and the plugin model makes it fall out rather than be special-cased.
 
-- **Component category:** `Components/Composer/`, namespace `Forma.UI.Blazor.Components.Composer`
+- **Component category:** `Components/Composer/`, namespace `Forma.Blazor.Components.Composer`
 - **Root component:** `FormaComposer`
 - **Supersedes:** `FormaRichTextEditor` (#36 in [COMPONENTS.md](../COMPONENTS.md)), and Coi's `admin/pops/template.aspx` over `Controls/Edit/`
 - **Consumers:** Coi's admin, whose page designer and product templates this replaces wholesale; Épica Deportiva's News article body (P6), page and product editors
@@ -66,19 +66,19 @@ Two Coi behaviours are deliberately **not** reproduced as-authored:
 
 ## 2. Assembly layout
 
-The composer is one assembly, `Forma.UI.Features.Composer`, carrying its contracts and the engine that implements them. The components cannot render a composer without that engine, so splitting the two would only add a reference to get wrong. A capability resting on an external dependency is the exception, and ships as a satellite package a host adds deliberately.
+The composer is one assembly, `Forma.Features.Composer`, carrying its contracts and the engine that implements them. The components cannot render a composer without that engine, so splitting the two would only add a reference to get wrong. A capability resting on an external dependency is the exception, and ships as a satellite package a host adds deliberately.
 
 | Project | Namespace | References |
 |---|---|---|
-| `Forma.UI.Features.Composer` | `Forma.UI.Features.Composer` | `Forma.UI.Design.Icons`, `Forma.UI.Features.Toolbar`, `Forma.Framework.Resources.Abstractions`, `Forma.Framework.Sanitization.Abstractions` |
-| `Forma.UI.Features.Composer.Markdown` | `Forma.UI.Features.Composer.Markdown` | the composer + Markdig |
-| `Forma.UI.Features.Composer.TextMate` | `Forma.UI.Features.Composer.TextMate` | the composer + TextMateSharp |
-| `Forma.UI.Features.Composer.KaTeX` | `Forma.UI.Features.Composer.KaTeX` | the composer + KaTeX browser assets |
-| `Forma.UI.Blazor` | `Forma.UI.Blazor.Components.Composer` | adds `Forma.UI.Features.Composer` |
+| `Forma.Features.Composer` | `Forma.Features.Composer` | `Forma.Framework.Icons`, `Forma.Framework.Toolbar`, `Forma.Framework.Resources`, `Forma.Framework.Sanitization` |
+| `Forma.AddOns.Composer.Markdown` | `Forma.Features.Composer.Markdown` | the composer + Markdig |
+| `Forma.AddOns.Composer.TextMate` | `Forma.Features.Composer.TextMate` | the composer + TextMateSharp |
+| `Forma.AddOns.Composer.KaTeX` | `Forma.Features.Composer.KaTeX` | the composer + KaTeX browser assets |
+| `Forma.Blazor` | `Forma.Blazor.Components.Composer` | adds `Forma.Features.Composer` |
 
-Sanitization is not the composer's own concern. Anything holding markup to a policy needs it, so the contract sits in `Forma.Framework.Sanitization.Abstractions` and the allowlist implementation in `Forma.UI.Features.Sanitization`; a host replacing it with a hardened library registers its own `IHtmlSanitizer` and the composer takes it.
+Sanitization is not the composer's own concern. Anything holding markup to a policy needs it, so the contract sits in `Forma.Framework.Sanitization` and the allowlist implementation in `Forma.Features.Sanitization`; a host replacing it with a hardened library registers its own `IHtmlSanitizer` and the composer takes it.
 
-**The composer project must not take `FrameworkReference Microsoft.AspNetCore.App`.** The repository confines that to `Forma.UI.Blazor` and `Forma.Tests.Support`, so no contract may mention `RenderFragment`, `EventCallback` or `ComponentBase`. Editor plugins therefore surface a `Type` and the composer hosts it in `<DynamicComponent>`; a plugin that needs custom toolbar markup supplies a `Type` too. This is a constraint on the design, not an inconvenience — it keeps every contract testable from a plain class library.
+**The composer project must not take `FrameworkReference Microsoft.AspNetCore.App`.** The repository confines that to `Forma.Blazor` and `Forma.Tests.Support`, so no contract may mention `RenderFragment`, `EventCallback` or `ComponentBase`. Editor plugins therefore surface a `Type` and the composer hosts it in `<DynamicComponent>`; a plugin that needs custom toolbar markup supplies a `Type` too. This is a constraint on the design, not an inconvenience — it keeps every contract testable from a plain class library.
 
 **Every public type the composer owns carries the prefix** — `IComposer*` for contracts, `Composer*` for types. The namespace would disambiguate on its own, but a host sees these names in its DI registrations and its `using` list, where `ComposerDocumentFormat` cannot be mistaken for a framework type. The prefix is the convention for this assembly rather than a special case for the one collision that prompted it. It stops at the assembly boundary: a contract that is not the composer's own, such as `IHtmlSanitizer`, is named for what it does.
 
@@ -91,7 +91,7 @@ The composer ships inside the components' own package, because a host installing
 ### 3.1 Plugin contracts
 
 ```csharp
-namespace Forma.UI.Features.Composer;
+namespace Forma.Features.Composer;
 
 /// <summary>A capability contributed to the composer, whatever it is implemented in.</summary>
 public interface IComposerPlugin
@@ -174,7 +174,7 @@ This is what makes KaTeX, TextMate and Markdig the same shape of problem: each i
 
 The library is JS-free by default and the composer is the one place that rule bends. It bends by category rather than by naming a library, so a capability may bundle an external dependency provided all five hold:
 
-1. It lives in its own `Forma.UI.Features.Composer.{Capability}` satellite, so a host that does not want it never downloads it.
+1. It lives in its own `Forma.AddOns.Composer.{Capability}` satellite, so a host that does not want it never downloads it.
 2. It is reached only through a plugin contract — the engine never references it.
 3. It stays in a supporting role: it renders, converts, or classifies. The editing surface, the selection, the undo stack and the toolbar remain Forma's, in C#.
 4. It ships as plain static assets under `_content/…`, loaded through the plugin's declared `Assets`. No bundler, no build step, no `npm install`.
@@ -388,7 +388,7 @@ The engine never deserialises `Settings`. It hands the `JsonElement` to the widg
 
 Those token widgets carry no content and barely any settings, because *what* they render is fixed and the value comes from whichever product the page is displaying. One template renders ten thousand products. Coi approximated this with `{TOPMENU}`-style tokens substituted into an HTML string.
 
-**HTML is output, not storage.** `FormaWidgetRenderer` walks the tree emitting a `<DynamicComponent>` per widget — the same walk the canvas performs, minus `FormaWidgetFrame` — so it works under static SSR and needs no `HtmlRenderer`. A host wanting an HTML *string*, for an email, an API or a cache, calls an opt-in service; that is the only path needing `HtmlRenderer`, and it lives in `Forma.UI.Blazor` because the composer project may not reference ASP.NET Core.
+**HTML is output, not storage.** `FormaWidgetRenderer` walks the tree emitting a `<DynamicComponent>` per widget — the same walk the canvas performs, minus `FormaWidgetFrame` — so it works under static SSR and needs no `HtmlRenderer`. A host wanting an HTML *string*, for an email, an API or a cache, calls an opt-in service; that is the only path needing `HtmlRenderer`, and it lives in `Forma.Blazor` because the composer project may not reference ASP.NET Core.
 
 This is why the tree wins over Coi's saved HTML. Coi froze rendering decisions at save time — `<img src="/media/8842.jpg">`, `style="width:60%"` — so a new image format, a CDN move or a theme change could not reach an already-saved page, and a widget dropped from the palette left stale markup rendering silently instead of a visible "no longer available". Storing `mediaId: 8842` and `raceId: 42` keeps the author's *intent* and decides the markup at render time. Coi's approach also never escaped the tree: recovering a widget's identity and settings from HTML requires `data-widget` and `data-settings` attributes, which is the same JSON in a worse container, read back with an HTML parser the tree does not need.
 
@@ -558,7 +558,7 @@ This replaces the "lossless transitions" claim in the first draft, which was unt
 
 The refusal is surfaced, not swallowed: the switcher disables the Markdown editor and explains which features are in the way, so the author can remove them and try again.
 
-`Forma.Framework.Resources.Markdown` is **not** reused for this. It exists to render a stored `.md` resource for viewing, so its pipeline calls `DisableHtml()` and sanitises the output — one-way by construction. `Forma.UI.Features.Composer.Markdown` is a separate converter over the same Markdig dependency.
+`Forma.AddOns.Resources.Markdown` is **not** reused for this. It exists to render a stored `.md` resource for viewing, so its pipeline calls `DisableHtml()` and sanitises the output — one-way by construction. `Forma.AddOns.Composer.Markdown` is a separate converter over the same Markdig dependency.
 
 ---
 
@@ -578,7 +578,7 @@ public interface IHtmlSanitizer
 }
 ```
 
-- Forma ships `AllowlistHtmlSanitizer` in `Forma.UI.Features.Sanitization` with no external dependency, covering the element and attribute set the built-in plugins can produce. The composer builds one for itself when a host has registered none, so a composer is never unsanitised.
+- Forma ships `AllowlistHtmlSanitizer` in `Forma.Features.Sanitization` with no external dependency, covering the element and attribute set the built-in plugins can produce. The composer builds one for itself when a host has registered none, so a composer is never unsanitised.
 - A host may replace it — a satellite wrapping Ganss.Xss suits a host wanting a hardened, widely-reviewed implementation, and any registration overrides the default.
 - A host wanting only different *rules* rather than a different implementation supplies an `IMarkupPolicy` to the sanitiser instead, wrapping `RichContentMarkupPolicy.Default` to widen or narrow what it permits. Event handler attributes are refused by the sanitiser itself, so no policy can re-admit them.
 - Sanitisation runs at **four** points, and none is optional: content loaded into the composer, content pasted in, content leaving the code editor, and content raised to the host. In a widget tree that means every node's `Content` (§4.2); the settings JSON is never sanitised as markup.
@@ -609,7 +609,7 @@ Returning **tokens, not HTML**. A highlighter that returned `"<span class=…>"`
 
 Scopes map to `.forma-tm-*` classes: `keyword`, `string`, `comment`, `function`, `type`, `variable`, `number`, `operator`, `punctuation`.
 
-**TextMate grammars need an Oniguruma-compatible engine.** Real `.tmLanguage.json` files use `\G`, `\h`, possessive quantifiers, inline `(?i)` scoping, and `end` patterns back-referencing `begin` captures — none of which .NET's `Regex` supports. `Forma.UI.Features.Composer.TextMate` therefore wraps **TextMateSharp**, which ships Oniguruma bindings and a grammar registry, rather than attempting a tokenizer over `System.Text.RegularExpressions`.
+**TextMate grammars need an Oniguruma-compatible engine.** Real `.tmLanguage.json` files use `\G`, `\h`, possessive quantifiers, inline `(?i)` scoping, and `end` patterns back-referencing `begin` captures — none of which .NET's `Regex` supports. `Forma.AddOns.Composer.TextMate` therefore wraps **TextMateSharp**, which ships Oniguruma bindings and a grammar registry, rather than attempting a tokenizer over `System.Text.RegularExpressions`.
 
 Without any highlighter registered, code blocks render as plain monospaced text. Highlighting is an enhancement, never a prerequisite.
 
@@ -631,17 +631,17 @@ These are correctness requirements for every Forma component, and the composer i
 ## 9. File layout
 
 ```text
-src/Forma.Framework.Sanitization.Abstractions/
+src/Forma.Framework.Sanitization/
 ├── HtmlSubject.cs
 ├── IHtmlSanitizer.cs
 └── IMarkupPolicy.cs
 
-src/Forma.UI.Features.Sanitization/
+src/Forma.Features.Sanitization/
 ├── AllowlistHtmlSanitizer.cs
 ├── RichContentMarkupPolicy.cs             # the markup policy the sanitiser applies
 └── ServiceCollectionExtensions.cs
 
-src/Forma.UI.Features.Composer/
+src/Forma.Features.Composer/
 ├── Assets/                                # namespace …Composer.Assets
 │   ├── ComposerAsset.cs
 │   ├── ComposerAssetKind.cs
@@ -674,7 +674,7 @@ src/Forma.UI.Features.Composer/
     ├── ComposerWidgetTree.cs
     └── ComposerWidgetNode.cs
 
-src/Forma.UI.Blazor/Components/Composer/
+src/Forma.Blazor/Components/Composer/
 ├── FormaComposer.razor                    # engine shell, editor routing
 ├── FormaComposer.razor.cs
 ├── FormaComposer.razor.css
@@ -786,15 +786,15 @@ Every folder and its namespace stay in step, so `Plugins/` and `Dialogs/` are re
 
 Each phase ends buildable, tested and reviewable.
 
-1. **Capability model.** ✅ The composer assembly, every contract in §3 and §5–§7, the default sanitiser, the converter registry, and history are built, and `IComposerAssetLoader` has the JS-backed implementation it was missing. That one sits in `Forma.UI.Blazor` rather than here, because it needs `IJSRuntime`, which places it with Phase 2's engine shell. This lands first precisely because the external-dependency question decides everything after it.
+1. **Capability model.** ✅ The composer assembly, every contract in §3 and §5–§7, the default sanitiser, the converter registry, and history are built, and `IComposerAssetLoader` has the JS-backed implementation it was missing. That one sits in `Forma.Blazor` rather than here, because it needs `IJSRuntime`, which places it with Phase 2's engine shell. This lands first precisely because the external-dependency question decides everything after it.
 2. **Engine shell.** ✅ `FormaComposer`, `FormaComposerToolbar`, the `ComposerDocument` binding of §3.7, plugin discovery and availability probing, the selection bridge, `ComposerText`, and the debounced sync of §3.6 are built, along with the command spine, the key map, and the toolbar row model of §3.8. The editor switcher is a controlled `FormaTabs` strip above each surface's own toolbar rather than a segmented control inside it. The selection bridge is the shared `Text` operation, not welded into any one editor plugin, so a future textarea-based surface reuses it rather than reimplementing it; a contenteditable surface will need its own, because the DOM APIs genuinely differ, but through the same generic `ComposerContext.ReportSelectionAsync` seam.
 2a. **Regions.** ◐ The status strip of §3.8 is built: `IComposerRegionRegistry` pushes `IComposerStatusItem` handles that any plugin creates and disposes, cascaded on `ComposerContext.Regions` so no editor is a special case. `FormaComposerStatusStrip` renders it once per composer, beneath whichever surface is active. The gutter's contract (`IComposerGutterMarker`) is built and tested the same way; its visual rendering waits on a line-oriented surface, since pixel-aligning a marker beside a wrapping `<textarea>` needs font-metric mirroring that would itself become a one-off hack rather than a real capability.
 3. **Rich text editor and core formatting.** ✅ `RichTextEditorPlugin`, the canvas, the selection bar, the preview and source views, and the formatting, typography, paragraph, list and alignment/bidi plugins.
-4. **Markdown and code editors.** `MarkdownEditorPlugin`, `CodeEditorPlugin`, `Forma.UI.Features.Composer.Markdown`, the lossless-only HTML → Markdown guard, and the embedded Markdown and code blocks.
+4. **Markdown and code editors.** `MarkdownEditorPlugin`, `CodeEditorPlugin`, `Forma.AddOns.Composer.Markdown`, the lossless-only HTML → Markdown guard, and the embedded Markdown and code blocks.
 5. **Media, tables and embeds.** ✅ Link, image, video, table, horizontal rule, emoji, special character, clipboard, template and embed plugins, each contributing a toolbar entry and driving the canvas through the rich text surface; the five data-collecting dialogs sit in `Composer/Dialogs/` rather than under the editor, because nothing in them is contenteditable-specific. `ImagePlugin` chooses from stored media through an embedded `FormaExplorer`, opened already selecting and gated by `ImagePluginOptions`, falling back to an address alone when the host registered no `IExplorerResourcesProvider` or `IFileStore`. `VideoPlugin` stores a placeholder rather than an embed, because `iframe` is discarded by the sanitizer, and the dialog refuses an address the document could not keep. Preview and maximize landed as **engine** commands on `FormaComposer` (§4.3a) rather than rich text plugins, since both change chrome the engine owns rather than the document any one editor holds.
-6. **Satellite capabilities.** `Forma.UI.Features.Composer.TextMate`, `.KaTeX`, a Ganss.Xss sanitizer satellite for hosts wanting a hardened implementation, and the highlighting and math plugins that consume them.
+6. **Satellite capabilities.** `Forma.AddOns.Composer.TextMate`, `.KaTeX`, a Ganss.Xss sanitizer satellite for hosts wanting a hardened implementation, and the highlighting and math plugins that consume them.
 7. **Page designer.** `PageDesignerPlugin`, the palette, canvas, per-widget chrome and settings panel, `IComposerDesignerPlugin` with the built-in palette, `ComposerWidgetTree` with its renderer, pointer-based drag with a keyboard equivalent, and the text widget hosting `FormaRichTextEditor`. It lands last because it composes everything above it — a designer without a working rich text editor inside its text widget is not the component Coi had.
-8. **Accessibility, touch, direction, tests and Showcase.** §8 verified in a real browser, `he` and `es-419` checked, bUnit tests under `tests/Forma.UI.Blazor.Tests/Components/Composer/` mirroring the source tree, and a Showcase page at `/composer` rendering every state each plugin can enter.
+8. **Accessibility, touch, direction, tests and Showcase.** §8 verified in a real browser, `he` and `es-419` checked, bUnit tests under `tests/Forma.Blazor.Tests/Components/Composer/` mirroring the source tree, and a Showcase page at `/composer` rendering every state each plugin can enter.
 
 ---
 

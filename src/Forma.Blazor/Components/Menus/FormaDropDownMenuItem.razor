@@ -1,0 +1,38 @@
+@namespace Forma.Blazor.Components.Menus
+@if (Href is not null)
+{
+    <a href="@Href"
+       @attributes="AdditionalAttributes"
+       class="@CssClass"
+       role="@Role"
+       aria-checked="@AriaChecked"
+       tabindex="-1"
+       aria-disabled="@(Disabled ? "true" : null)"
+       @ref="_element"
+       @onclick="HandleActivateAsync"
+       @onclick:preventDefault="Disabled">
+        @ChildContent
+        @if (IsSelected is true)
+        {
+            <span class="forma-dropdown-menu-item-check" aria-hidden="true">&#10003;</span>
+        }
+    </a>
+}
+else
+{
+    <button type="button"
+            @attributes="AdditionalAttributes"
+            class="@CssClass"
+            role="@Role"
+            aria-checked="@AriaChecked"
+            tabindex="-1"
+            disabled="@Disabled"
+            @ref="_element"
+            @onclick="HandleActivateAsync">
+        @ChildContent
+        @if (IsSelected is true)
+        {
+            <span class="forma-dropdown-menu-item-check" aria-hidden="true">&#10003;</span>
+        }
+    </button>
+}

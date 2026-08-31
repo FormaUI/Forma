@@ -1,0 +1,18 @@
+@namespace Forma.Blazor.Components.Composer.RichTextEditor
+@using Forma.Blazor.Components.Buttons
+@using Forma.Blazor.Components.Design
+@inject IStringLocale<FormaRichTextEditor> L
+
+@if (Bar is { Items.Count: > 0 })
+{
+    <div @ref="_menuElement" class="forma-composer-selection-bar">
+        <FormaButton Variant="ButtonVariant.Ghost"
+                     Size="ButtonSize.Mini"
+                     IconOnly="true"
+                     class="forma-composer-selection-bar-handle"
+                     aria-label="@L["Move Selection Bar"]">
+            <FormaIcon Icon="Glyph.DragHandle" />
+        </FormaButton>
+        <FormaComposerCommandBar Label="@L["Selection formatting"]" Items="Bar.Items" KeyMap="Bar.KeyMap" OnCommand="OnCommand" />
+    </div>
+}

@@ -1,0 +1,24 @@
+@namespace Forma.Blazor.Components.Inputs
+@typeparam TValue where TValue : struct, System.Numerics.INumber<TValue>
+@inherits InputBase<TValue>
+
+<FormaField Label="@Label" TargetId="@_id" LabelMode="FieldLabelMode.Above">
+    <ChildContent>
+        @* Sits on the label's row, so the reading stays beside the name it belongs to. *@
+        <span class="forma-slider-value" aria-hidden="true"><bdi dir="ltr">@DisplayValue</bdi></span>
+        <input @attributes="AdditionalAttributes"
+               id="@_id"
+               type="range"
+               class="forma-slider @CssClass"
+               min="@FormatInvariant(Min)"
+               max="@FormatInvariant(Max)"
+               step="@FormatInvariant(Step)"
+               value="@CurrentValueAsString"
+               disabled="@Disabled"
+               aria-valuetext="@AriaValueText"
+               @oninput="@(args => CurrentValueAsString = args.Value?.ToString())" />
+    </ChildContent>
+    <Validation>
+        <ValidationMessage For="@ValueExpression" />
+    </Validation>
+</FormaField>

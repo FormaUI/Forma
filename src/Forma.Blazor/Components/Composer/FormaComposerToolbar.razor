@@ -1,0 +1,45 @@
+@namespace Forma.Blazor.Components.Composer
+@inject IStringLocale<FormaComposer> L
+
+<FormaCommandArea Class="forma-composer-toolbar">
+    @foreach (var (bar, index) in Bars.Select((bar, index) => (bar, index)))
+    {
+        <FormaComposerCommandBar
+            Label="@L[bar.Label]"
+            Items="bar.Items"
+            ShowHistory="index == 0 && View is null"
+            Disabled="Disabled"
+            KeyMap="KeyMap"
+            PluginStates="Owner.ActiveStates"
+            OnCommand="OnCommand">
+            <TrailingContent>
+                @if (index == 0 && PluginItems.Count > 0)
+                {
+                    <FormaButton Variant="ButtonVariant.Ghost"
+                                 Size="ButtonSize.Mini"
+                                 IconOnly="true"
+                                 Disabled="Disabled"
+                                 OnClick="TogglePlugins"
+                                 aria-expanded="@(_arePluginsShown ? "true" : "false")"
+                                 aria-controls="@_pluginsId"
+                                 aria-label="@L["Plugin Commands"]"
+                                 title="@L["Plugin Commands"]">
+                        <FormaIcon Icon="Glyph.MoreVertical" Size="IconSize.Small" />
+                    </FormaButton>
+                }
+            </TrailingContent>
+        </FormaComposerCommandBar>
+    }
+
+    @if (PluginItems.Count > 0)
+    {
+        <FormaComposerPluginsBar
+            Id="@_pluginsId"
+            Items="PluginItems"
+            Disabled="Disabled"
+            KeyMap="KeyMap"
+            OnCommand="OnCommand"
+            Hidden="!_arePluginsShown"
+            Animated="true" />
+    }
+</FormaCommandArea>

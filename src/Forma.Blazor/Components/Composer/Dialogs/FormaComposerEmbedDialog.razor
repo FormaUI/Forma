@@ -1,0 +1,15 @@
+@namespace Forma.Blazor.Components.Composer.Dialogs
+@using Forma.Blazor.Components.Feedback
+@using Forma.Blazor.Components.Inputs
+@inherits ComposerDialogBase
+
+<FormaComposerDialog Opened="Opened"
+                     Title="@(IsReopened ? L["Edit Embed"] : L["Insert Embed"])"
+                     Size="ModalSize.Medium"
+                     Messages="Messages"
+                     OnConfirm="HandleConfirmAsync"
+                     OnCancel="OnCancel">
+    <FormaTextBox @bind-Value="_embedType" Label="@L["Embed Type"]" Required="true" />
+    <FormaTextBox @bind-Value="_identifier" Label="@L["Identifier"]" Required="true" />
+    <FormaTextArea @bind-Value="_settings" Label="@L["Settings"]" Rows="3" />
+</FormaComposerDialog>

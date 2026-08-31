@@ -1,0 +1,11 @@
+@namespace Forma.Blazor.Components.Buttons
+
+<FormaButton @attributes="AdditionalAttributes"
+             Variant="ButtonVariant.Ghost"
+             Size="Size"
+             IconOnly="true"
+             Disabled="Disabled"
+             OnClick="OnClick"
+             aria-label="@Label">
+    <FormaIcon Icon="@(Revealed ? Glyph.Eye : Glyph.EyeSlash)" Size="IconSize.Small" />
+</FormaButton>

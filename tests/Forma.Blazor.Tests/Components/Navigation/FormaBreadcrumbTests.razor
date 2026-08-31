@@ -1,0 +1,328 @@
+@inherits FormaBunitContext
+@using Forma.Blazor.Components.Navigation
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_a_link_when_url_is_set()
+        {
+            // Arrange
+            using var ctx = new FormaBreadcrumbTests();
+            BreadcrumbItem<string>[] items = [new("Home", "/")];
+
+            // Act
+            var cut = ctx.Render(@<FormaBreadcrumb Items="items" />);
+
+            // Assert
+            var link = cut.Find("a.forma-breadcrumb-item");
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("Home", link.TextContent.Trim());
+                Assert.Equal("/", link.GetAttribute("href"));
+            });
+        }
+
+        [Fact]
+        public void Should_render_a_button_when_url_is_absent_and_on_item_click_is_wired()
+        {
+            // Arrange
+            using var ctx = new FormaBreadcrumbTests();
+            BreadcrumbItem<string>[] items = [new("Races") { Value = "races" }];
+
+            // Act
+            var cut = ctx.Render(@<FormaBreadcrumb Items="items" OnItemClick="(string? v) => { }" />);
+
+            // Assert
+            Assert.NotNull(cut.Find("button.forma-breadcrumb-item"));
+        }
+
+        [Fact]
+        public void Should_render_static_text_when_url_is_absent_and_on_item_click_is_not_wired()
+        {
+            // Arrange
+            using var ctx = new FormaBreadcrumbTests();
+            BreadcrumbItem<string>[] items = [new("Orders")];
+
+            // Act
+            var cut = ctx.Render(@<FormaBreadcrumb Items="items" />);
+
+            // Assert
+            Assert.NotNull(cut.Find("span.forma-breadcrumb-item"));
+            Assert.Empty(cut.FindAll("button.forma-breadcrumb-item"));
+        }
+
+        [Fact]
+        public void Should_not_render_root_icon_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaBreadcrumbTests();
+            BreadcrumbItem<string>[] items = [new("Home", "/")];
+
+            // Act
+            var cut = ctx.Render(@<FormaBreadcrumb Items="items" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-breadcrumb-root-icon"));
+        }
+
+        [Fact]
+        public void Should_render_root_icon_when_specified()
+        {
+            // Arrange
+            using var ctx = new FormaBreadcrumbTests();
+            BreadcrumbItem<string>[] items = [new("All Media")];
+
+            // Act
+            var cut = ctx.Render(@<FormaBreadcrumb Items="items" RootIcon="Glyph.FolderOpen" />);
+
+            // Assert
+            Assert.NotNull(cut.Find(".forma-breadcrumb-root-icon svg"));
+        }
+
+        [Fact]
+        public void Should_render_a_separator_between_items_without_children()
+        {
+            // Arrange
+            using var ctx = new FormaBreadcrumbTests();
+            BreadcrumbItem<string>[] items = [new("Home", "/"), new("Orders")];
+
+            // Act
+            var cut = ctx.Render(@<FormaBreadcrumb Items="items" />);
+
+            // Assert
+            Assert.Single(cut.FindAll(".forma-breadcrumb-separator"));
+        }
+
+        [Fact]
+        public void Should_not_render_a_separator_after_the_last_item()
+        {
+            // Arrange
+            using var ctx = new FormaBreadcrumbTests();
+            BreadcrumbItem<string>[] items = [new("Home", "/")];
+
+            // Act
+            var cut = ctx.Render(@<FormaBreadcrumb Items="items" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-breadcrumb-separator"));
+        }
+
+        [Fact]
+        public void Should_mark_the_current_item()
+        {
+            // Arrange
+            using var ctx = new FormaBreadcrumbTests();
+            BreadcrumbItem<string>[] items = [new("Home", "/"), new("Orders") { IsCurrent = true }];
+
+            // Act
+            var cut = ctx.Render(@<FormaBreadcrumb Items="items" />);
+            var current = cut.Find(".forma-breadcrumb-item.is-current");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("Orders", current.TextContent.Trim());
+                Assert.Equal("page", current.GetAttribute("aria-current"));
+            });
+        }
+
+        [Fact]
+        public void Should_raise_on_item_click_with_the_clicked_items_value()
+        {
+            // Arrange
+            using var ctx = new FormaBreadcrumbTests();
+            string? clicked = null;
+            BreadcrumbItem<string>[] items = [new("Races") { Value = "races" }];
+
+            // Act
+            var cut = ctx.Render(@<FormaBreadcrumb Items="items" OnItemClick="(string? v) => clicked = v" />);
+            cut.Find("button.forma-breadcrumb-item").Click();
+
+            // Assert
+            Assert.Equal("races", clicked);
+        }
+
+        [Fact]
+        public void Should_not_render_chevron_without_children()
+        {
+            // Arrange
+            using var ctx = new FormaBreadcrumbTests();
+            BreadcrumbItem<string>[] items = [new("Home", "/")];
+
+            // Act
+            var cut = ctx.Render(@<FormaBreadcrumb Items="items" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-breadcrumb-chevron"));
+        }
+
+        [Fact]
+        public void Should_render_chevron_when_item_has_children()
+        {
+            // Arrange
+            using var ctx = new FormaBreadcrumbTests();
+            BreadcrumbItem<string>[] children = [new("Races") { Value = "races" }];
+            BreadcrumbItem<string>[] items = [new("Home", "/") { Children = children }];
+
+            // Act
+            var cut = ctx.Render(@<FormaBreadcrumb Items="items" />);
+
+            // Assert
+            Assert.NotNull(cut.Find(".forma-breadcrumb-chevron"));
+        }
+
+        [Fact]
+        public void Should_open_children_menu_on_chevron_click()
+        {
+            // Arrange
+            using var ctx = new FormaBreadcrumbTests();
+            BreadcrumbItem<string>[] children = [new("Races") { Value = "races" }, new("Covers") { Value = "covers" }];
+            BreadcrumbItem<string>[] items = [new("Home", "/") { Children = children }];
+            var cut = ctx.Render(@<FormaBreadcrumb Items="items" />);
+
+            // Act
+            cut.Find(".forma-breadcrumb-chevron").Click();
+
+            // Assert
+            var menuItems = cut.FindAll(".forma-breadcrumb-menu-item").Select(i => i.TextContent.Trim()).ToList();
+            Assert.Equal(["Races", "Covers"], menuItems);
+            Assert.Equal("true", cut.Find(".forma-breadcrumb-chevron").GetAttribute("aria-expanded"));
+        }
+
+        [Fact]
+        public void Should_point_the_chevron_at_the_menu_it_controls_while_open()
+        {
+            // Arrange
+            using var ctx = new FormaBreadcrumbTests();
+            BreadcrumbItem<string>[] children = [new("Races") { Value = "races" }];
+            BreadcrumbItem<string>[] items = [new("Home", "/") { Children = children }];
+            var cut = ctx.Render(@<FormaBreadcrumb Items="items" />);
+
+            // Assert
+            Assert.Null(cut.Find(".forma-breadcrumb-chevron").GetAttribute("aria-controls"));
+
+            // Act
+            cut.Find(".forma-breadcrumb-chevron").Click();
+
+            // Assert
+            var controls = cut.Find(".forma-breadcrumb-chevron").GetAttribute("aria-controls");
+            Assert.False(string.IsNullOrEmpty(controls));
+            Assert.Equal(controls, cut.Find(".forma-breadcrumb-menu").GetAttribute("id"));
+        }
+
+        [Fact]
+        public void Should_close_children_menu_on_second_chevron_click()
+        {
+            // Arrange
+            using var ctx = new FormaBreadcrumbTests();
+            BreadcrumbItem<string>[] children = [new("Races") { Value = "races" }];
+            BreadcrumbItem<string>[] items = [new("Home", "/") { Children = children }];
+            var cut = ctx.Render(@<FormaBreadcrumb Items="items" />);
+            cut.Find(".forma-breadcrumb-chevron").Click();
+
+            // Act
+            cut.Find(".forma-breadcrumb-chevron").Click();
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-breadcrumb-menu"));
+        }
+
+        [Fact]
+        public void Should_close_children_menu_when_backdrop_is_clicked()
+        {
+            // Arrange
+            using var ctx = new FormaBreadcrumbTests();
+            BreadcrumbItem<string>[] children = [new("Races") { Value = "races" }];
+            BreadcrumbItem<string>[] items = [new("Home", "/") { Children = children }];
+            var cut = ctx.Render(@<FormaBreadcrumb Items="items" />);
+            cut.Find(".forma-breadcrumb-chevron").Click();
+
+            // Act
+            cut.Find(".forma-breadcrumb-backdrop").Click();
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-breadcrumb-menu"));
+        }
+
+        [Fact]
+        public void Should_close_children_menu_on_escape()
+        {
+            // Arrange
+            using var ctx = new FormaBreadcrumbTests();
+            BreadcrumbItem<string>[] children = [new("Races") { Value = "races" }];
+            BreadcrumbItem<string>[] items = [new("Home", "/") { Children = children }];
+            var cut = ctx.Render(@<FormaBreadcrumb Items="items" />);
+            cut.Find(".forma-breadcrumb-chevron").Click();
+
+            // Act
+            cut.Find(".forma-breadcrumb").KeyDown("Escape");
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-breadcrumb-menu"));
+        }
+
+        [Fact]
+        public void Should_raise_on_item_click_and_close_the_menu_when_a_child_is_selected()
+        {
+            // Arrange
+            using var ctx = new FormaBreadcrumbTests();
+            string? clicked = null;
+            BreadcrumbItem<string>[] children = [new("Races") { Value = "races" }];
+            BreadcrumbItem<string>[] items = [new("Home", "/") { Children = children }];
+            var cut = ctx.Render(@<FormaBreadcrumb Items="items" OnItemClick="(string? v) => clicked = v" />);
+            cut.Find(".forma-breadcrumb-chevron").Click();
+
+            // Act
+            cut.Find(".forma-breadcrumb-menu-item").Click();
+
+            // Assert
+            Assert.Equal("races", clicked);
+            Assert.Empty(cut.FindAll(".forma-breadcrumb-menu"));
+        }
+
+        [Fact]
+        public void Should_raise_on_item_drop()
+        {
+            // Arrange
+            using var ctx = new FormaBreadcrumbTests();
+            string? dropped = null;
+            BreadcrumbItem<string>[] items = [new("Races") { Value = "races" }];
+
+            // Act
+            var cut = ctx.Render(@<FormaBreadcrumb Items="items" OnItemClick="(string? v) => { }" OnItemDrop="(string? v) => dropped = v" />);
+            cut.Find("button.forma-breadcrumb-item").Drop();
+
+            // Assert
+            Assert.Equal("races", dropped);
+        }
+
+        [Fact]
+        public void Should_use_a_default_localized_aria_label()
+        {
+            // Arrange
+            using var ctx = new FormaBreadcrumbTests();
+            BreadcrumbItem<string>[] items = [new("Home", "/")];
+
+            // Act
+            var cut = ctx.Render(@<FormaBreadcrumb Items="items" />);
+
+            // Assert
+            Assert.Equal("Breadcrumb", cut.Find("nav").GetAttribute("aria-label"));
+        }
+
+        [Fact]
+        public void Should_use_a_custom_aria_label()
+        {
+            // Arrange
+            using var ctx = new FormaBreadcrumbTests();
+            BreadcrumbItem<string>[] items = [new("Home", "/")];
+
+            // Act
+            var cut = ctx.Render(@<FormaBreadcrumb Items="items" AriaLabel="Folder Path" />);
+
+            // Assert
+            Assert.Equal("Folder Path", cut.Find("nav").GetAttribute("aria-label"));
+        }
+    }
+}

@@ -15,7 +15,7 @@ services.AddJsonLocalization(new JsonLocalizationOptions { ResourcesPath = "Reso
 
 That registers `IStringLocale<T>` and `IStringLocaleFactory`, so a consumer injecting either
 resolves. `JsonLocalizationOptions` adds `ResourcesPath` to the settings every backend shares, which
-`Forma.Framework.Localization.Abstractions` documents.
+`Forma.Framework.Localization` documents.
 
 Put a file beside the type it translates and mark it `EmbeddedResource`:
 
@@ -141,7 +141,7 @@ declares the current schema.
 ## Plural rules
 
 A translation resolves its plural expressions before the holes are filled.
-`Forma.Framework.Localization.Abstractions` documents the syntax.
+`Forma.Framework.Localization` documents the syntax.
 
 ```json
 "{selected} selected": "[$ [selected] plural; one: נבחר אחד; two: שניים נבחרו; other: # נבחרו; $]"

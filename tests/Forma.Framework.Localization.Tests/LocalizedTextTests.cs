@@ -43,11 +43,11 @@ public sealed class LocalizedTextTests
     public void Should_carry_the_key_it_was_looked_up_under()
     {
         // Act
-        var text = new LocalizedText("Save", "Save", ResourceNotFound: true, SearchedLocation: "Forma.UI.Blazor.Components.Buttons.FormaButton");
+        var text = new LocalizedText("Save", "Save", ResourceNotFound: true, SearchedLocation: "Forma.Blazor.Components.Buttons.FormaButton");
 
         // Assert
         Assert.Equal("Save", text.Name);
         Assert.True(text.ResourceNotFound);
-        Assert.Equal("Forma.UI.Blazor.Components.Buttons.FormaButton", text.SearchedLocation);
+        Assert.Equal("Forma.Blazor.Components.Buttons.FormaButton", text.SearchedLocation);
     }
 }

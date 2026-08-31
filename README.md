@@ -1,4 +1,4 @@
-# Forma.UI.Blazor
+# Forma.Blazor
 
 A reusable Blazor component library — modals, toasts, pickers, tabs, data grids, form inputs, a
 file explorer, and the `FormaComposer` authoring surface. Localized, RTL-ready, and JS-free apart
@@ -8,12 +8,12 @@ from what the DOM cannot do without script.
 
 Everything a host needs ships in one package; optional artwork packs are separate and opt-in.
 The host owns its own `App.razor` and `Routes.razor`; the package ships components, styles, and JS.
-`src/Forma.UI.Blazor.Showcase` is a complete working host to copy from.
+`src/Forma.Blazor.Showcase` is a complete working host to copy from.
 
 ## Install
 
 ```pwsh
-dotnet add package 2Site.Forma.UI.Blazor
+dotnet add package 2Site.Forma.Blazor
 ```
 
 ## Quick start
@@ -22,7 +22,7 @@ dotnet add package 2Site.Forma.UI.Blazor
 
 ```csharp
 using Forma.Framework.Localization.Json;
-using Forma.UI.Blazor;
+using Forma.Blazor;
 
 builder.Services.AddJsonLocalization();
 builder.Services.AddFormaUI();
@@ -60,7 +60,7 @@ benefits from.
 ```csharp
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
-    .AddAdditionalAssemblies(typeof(Forma.UI.Blazor._Imports).Assembly);
+    .AddAdditionalAssemblies(typeof(Forma.Blazor._Imports).Assembly);
 ```
 
 Components that use JS interop, such as `FormaModal` and `FormaTextBox`, need the Interactive Server
@@ -128,10 +128,10 @@ the library's own artwork answers.
 `IEmojiCatalog` describes. With neither registered, `FormaEmoji` falls back to the reader's own
 platform font and the picker shows its empty state, because a catalog is data nothing can stand in
 for. To draw the bundled artwork and browse the bundled catalog, add the
-[Twemoji artwork pack](src/Forma.UI.Features.Emojis.Twemoji/README.md):
+[Twemoji artwork pack](src/Forma.AddOns.Emojis.Twemoji/README.md):
 
 ```pwsh
-dotnet add package 2Site.Forma.UI.Features.Emojis.Twemoji
+dotnet add package 2Site.Forma.AddOns.Emojis.Twemoji
 ```
 
 ```csharp
@@ -156,7 +156,7 @@ strings, inject `IStringLocale<T>` and look a string up by its English text:
 Translations sit beside the type in `MyPage.he.json`, keyed by that same English text. A key with no
 translation renders as written, so a page reads correctly before any translation exists.
 
-[`Forma.Framework.Localization.Abstractions`](src/Forma.Framework.Localization.Abstractions/README.md)
+[`Forma.Framework.Localization`](src/Forma.Framework.Localization/README.md)
 documents the contract, the ways to fill a hole, and the plural syntax.
 [`Forma.Framework.Localization.Json`](src/Forma.Framework.Localization.Json/README.md) documents the
 file format and how a file is found.
@@ -196,8 +196,8 @@ in two consecutive segments such as `/he/en/page` is answered with `400 Bad Requ
 dotnet build Forma.slnx
 dotnet test Forma.slnx
 dotnet format Forma.slnx --verify-no-changes
-npm test --prefix tests/Forma.UI.Blazor.Tests.Scripts
-dotnet run --project src/Forma.UI.Blazor.Showcase
+npm test --prefix tests/Forma.Blazor.Tests.Scripts
+dotnet run --project src/Forma.Blazor.Showcase
 ```
 
 All four checks must pass before a change is offered for review. The Showcase serves an interactive

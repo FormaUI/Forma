@@ -1,0 +1,1190 @@
+@inherits FormaBunitContext
+@using Forma.Blazor.Components.Composer.Plugins
+@using Forma.Blazor.Components.Composer.RichTextEditor
+@using Forma.Blazor.Components.Composer.RichTextEditor.Views
+
+@code {
+    public sealed class Component
+    {
+        private sealed class TestModel
+        {
+            public ComposerDocument Body { get; set; } = new(ComposerDocumentFormat.PlainText, "Initial Content");
+        }
+
+        private sealed class HtmlModel
+        {
+            public ComposerDocument Body { get; set; } = new(ComposerDocumentFormat.Html, "<p>Initial</p>");
+        }
+
+        private sealed class HtmlEditorPlugin : IComposerEditorPlugin
+        {
+            public string Id => "html";
+            public string Title => "Dummy";
+            public Icon Icon => Glyph.File;
+            public ComposerDocumentFormat Format => ComposerDocumentFormat.Html;
+            public Type EditorComponent => typeof(FormaPlainTextEditor);
+            public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
+        }
+
+        private sealed class DummyEditorPlugin : IComposerEditorPlugin
+        {
+            public string Id => "dummy";
+            public string Title => "Dummy";
+            public Icon Icon => Glyph.File;
+            public ComposerDocumentFormat Format => ComposerDocumentFormat.PlainText;
+            public Type EditorComponent => typeof(FormaPlainTextEditor);
+            public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
+        }
+
+        // Proves a plugin-declared group's own title is localized, not only the items inside it.
+        private sealed class GroupedCommandPlugin : IComposerPlugin
+        {
+            public string Id => "grouped";
+            public IReadOnlyList<ComposerToolbarItem> Items =>
+            [
+                new(ComposerRows.Plugins,
+                [
+                    new FormaToolbarGroup
+                    {
+                        Id = "grouped-commands",
+                        Title = "Grouped Commands",
+                        Items = [new FormaToolbarCommand { Id = "shout", Title = "Shout", Icon = Glyph.File, Command = "demo.shout" }],
+                    },
+                ]),
+            ];
+            public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
+        }
+
+        private sealed class CommandPlugin : IComposerPlugin
+        {
+            public string Id => "commands";
+            public List<string> Executed { get; } = [];
+            public IReadOnlyList<ComposerToolbarItem> Items =>
+                [new(ComposerRows.Plugins, [new FormaToolbarCommand { Id = "shout", Title = "Shout", Icon = Glyph.File, Command = "demo.shout" }])];
+            public IReadOnlyList<ComposerKeyBinding> KeyBindings =>
+                [new() { Key = "k", Command = "demo.shout", Control = true, Shift = true }];
+            public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
+
+            public ValueTask ExecuteAsync(string command, ComposerContext context, CancellationToken cancellationToken = default)
+            {
+                Executed.Add(command);
+                return ValueTask.CompletedTask;
+            }
+        }
+
+        private sealed class ManyCommandsPlugin(int count) : IComposerPlugin
+        {
+            public string Id => "many";
+            public IReadOnlyList<ComposerToolbarItem> Items =>
+                [new(ComposerRows.Plugins, [.. Enumerable.Range(0, count).Select(i => new FormaToolbarCommand
+                {
+                    Id = $"many-{i}",
+                    Title = $"Command {i}",
+                    Icon = Glyph.File,
+                    Command = $"many.{i}",
+                })])];
+            public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
+        }
+
+        // Leads with a menu, so part of the inline limit is spent on a leaf that is not an action
+        // and the overflow index has to account for it.
+        private sealed class MenuThenCommandsPlugin(int count) : IComposerPlugin
+        {
+            public string Id => "menu-then-commands";
+            public IReadOnlyList<ComposerToolbarItem> Items =>
+                [new(ComposerRows.Plugins,
+                [
+                    new FormaToolbarMenu
+                    {
+                        Id = "picker",
+                        Title = "Picker",
+                        Options = [new() { Id = "one", Title = "One", Command = "pick.one" }],
+                    },
+                    .. Enumerable.Range(0, count).Select(i => new FormaToolbarCommand
+                    {
+                        Id = $"many-{i}",
+                        Title = $"Command {i}",
+                        Icon = Glyph.File,
+                        Command = $"many.{i}",
+                    }),
+                ])];
+            public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
+        }
+
+        private sealed class SlowPlugin : IComposerPlugin
+        {
+            public string Id => "slow";
+            public async ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default)
+            {
+                await Task.Yield();
+                return true;
+            }
+        }
+
+        private sealed class ScopedPlugin : IComposerFeaturePlugin
+        {
+            public string Id => "scoped";
+            public IReadOnlyList<string> SupportedEditorIds => ["dummy"];
+            public IReadOnlyList<ComposerToolbarItem> Items =>
+                [new(ComposerRows.Plugins, [new FormaToolbarCommand { Id = "scoped", Title = "Scoped", Icon = Glyph.File, Command = "demo.scoped" }])];
+            public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
+        }
+
+        // Pushes a status item on command, proving the region registry is a composer-level capability
+        // rather than something an editor plugin has to implement for itself.
+        private sealed class StatusPushingPlugin : IComposerPlugin
+        {
+            private IComposerStatusItem? _item;
+
+            public string Id => "status";
+            public IReadOnlyList<ComposerToolbarItem> Items =>
+                [new(ComposerRows.Plugins, [new FormaToolbarCommand { Id = "wordcount", Title = "Word Count", Icon = Glyph.File, Command = "demo.wordcount" }])];
+            public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
+
+            public ValueTask ExecuteAsync(string command, ComposerContext context, CancellationToken cancellationToken = default)
+            {
+                var count = context.Document.Content.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
+                var text = $"{count} words";
+
+                if (_item is null)
+                {
+                    _item = context.Regions.CreateStatusItem(text);
+                }
+                else
+                {
+                    _item.Text = text;
+                }
+
+                return ValueTask.CompletedTask;
+            }
+        }
+
+        // Pushes a status item that opts into being announced, unlike the frequently updating readout above.
+        private sealed class AnnouncingStatusPlugin : IComposerPlugin
+        {
+            public string Id => "announcing";
+            public IReadOnlyList<ComposerToolbarItem> Items =>
+                [new(ComposerRows.Plugins, [new FormaToolbarCommand { Id = "save", Title = "Save", Icon = Glyph.File, Command = "demo.save" }])];
+            public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
+
+            public ValueTask ExecuteAsync(string command, ComposerContext context, CancellationToken cancellationToken = default)
+            {
+                var item = context.Regions.CreateStatusItem("Saved");
+                item.IsAnnounced = true;
+
+                return ValueTask.CompletedTask;
+            }
+        }
+
+        [Fact]
+        public void Should_render_composer_container_with_base_class()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComposer @bind-Value="model.Body" />
+            </FakeFormHost>);
+
+            // Assert
+            var element = cut.Find(".forma-composer");
+            Assert.NotNull(element);
+        }
+
+        [Fact]
+        public void Should_render_while_plugin_availability_is_still_resolving()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            IReadOnlyList<IComposerPlugin> plugins = [new SlowPlugin()];
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Single(cut.FindAll("textarea")));
+        }
+
+        [Fact]
+        public void Should_render_toolbar_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComposer @bind-Value="model.Body" />
+            </FakeFormHost>);
+
+            // Assert
+            var toolbar = cut.Find(".forma-composer-toolbar");
+            Assert.NotNull(toolbar);
+        }
+
+        [Fact]
+        public void Should_hide_toolbar_when_configured_in_options()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var options = new FormaComposerOptions { ShowToolbar = false };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComposer @bind-Value="model.Body" Options="options" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-composer-toolbar"));
+        }
+
+        [Fact]
+        public void Should_hide_toolbar_when_readonly()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComposer @bind-Value="model.Body" ReadOnly="true" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-composer-toolbar"));
+        }
+
+        [Fact]
+        public void Should_render_plain_text_editor_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComposer @bind-Value="model.Body" />
+            </FakeFormHost>);
+
+            // Assert
+            var textarea = cut.Find("textarea.forma-composer-plain-text-textarea");
+            Assert.Equal("Initial Content", textarea.GetAttribute("value") ?? textarea.TextContent);
+        }
+
+        [Fact]
+        public void Should_apply_disabled_class_when_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComposer @bind-Value="model.Body" Disabled="true" />
+            </FakeFormHost>);
+
+            // Assert
+            var container = cut.Find(".forma-composer");
+            Assert.Contains("forma-composer-disabled", container.ClassName, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_apply_readonly_class_when_readonly()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComposer @bind-Value="model.Body" ReadOnly="true" />
+            </FakeFormHost>);
+
+            // Assert
+            var container = cut.Find(".forma-composer");
+            Assert.Contains("forma-composer-readonly", container.ClassName, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_apply_resizable_class_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComposer @bind-Value="model.Body" />
+            </FakeFormHost>);
+
+            // Assert
+            var container = cut.Find(".forma-composer");
+            Assert.Contains("forma-composer-resizable", container.ClassName, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_omit_resizable_class_when_resizing_is_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var options = new FormaComposerOptions { IsResizable = false };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComposer @bind-Value="model.Body" Options="options" />
+            </FakeFormHost>);
+
+            // Assert
+            var container = cut.Find(".forma-composer");
+            Assert.DoesNotContain("forma-composer-resizable", container.ClassName, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_omit_resizable_class_when_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComposer @bind-Value="model.Body" Disabled="true" />
+            </FakeFormHost>);
+
+            // Assert
+            var container = cut.Find(".forma-composer");
+            Assert.DoesNotContain("forma-composer-resizable", container.ClassName, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_render_a_tab_per_editor_when_several_are_available()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            IReadOnlyList<IComposerPlugin> plugins = [new PlainTextEditorPlugin(), new DummyEditorPlugin()];
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComposer @bind-Value="model.Body" Plugins="plugins" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal(2, cut.FindAll("[role=tab]").Count);
+        }
+
+        [Fact]
+        public void Should_omit_the_tab_strip_when_only_one_editor_is_available()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll("[role=tablist]"));
+        }
+
+        [Fact]
+        public void Should_mark_the_resolved_editor_as_the_selected_tab()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            IReadOnlyList<IComposerPlugin> plugins = [new PlainTextEditorPlugin(), new DummyEditorPlugin()];
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+
+            // Assert
+            var selected = Assert.Single(cut.FindAll("[role=tab][aria-selected=true]"));
+            Assert.Contains("Plain Text", selected.TextContent, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_switch_active_editor_when_another_tab_is_picked()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            IReadOnlyList<IComposerPlugin> plugins = [new PlainTextEditorPlugin(), new DummyEditorPlugin()];
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+
+            // Act
+            cut.FindAll("[role=tab]")[1].Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Contains(
+                "Dummy",
+                cut.Find("[role=tab][aria-selected=true]").TextContent,
+                StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void Should_localize_a_plugin_declared_groups_own_title()
+        {
+            // Arrange
+            using var culture = new CultureFixture("he");
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            IReadOnlyList<IComposerPlugin> plugins = [new GroupedCommandPlugin()];
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.Find("button[aria-expanded]").Click();
+
+            // Assert
+            Assert.Equal("פקודות מקובצות", cut.Find(".forma-composer-plugins-row [role=group]").GetAttribute("aria-label"));
+        }
+
+        [Fact]
+        public void Should_render_one_command_row_when_no_plugin_contributes_a_command()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
+
+            // Assert
+            Assert.Single(cut.FindAll("[role=toolbar]"));
+        }
+
+        [Fact]
+        public void Should_put_host_registered_plugin_commands_on_the_plugins_bar()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            IReadOnlyList<IComposerPlugin> plugins = [new CommandPlugin()];
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.Find("button[aria-label='Plugin Commands']").Click();
+
+            // Assert
+            var pluginsBar = cut.Find(".forma-composer-plugins-row");
+            Assert.NotEmpty(pluginsBar.QuerySelectorAll("button[aria-label=Shout]"));
+            Assert.Empty(pluginsBar.QuerySelectorAll("button[aria-label=Undo]"));
+        }
+
+        [Fact]
+        public void Should_render_history_only_once()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            IReadOnlyList<IComposerPlugin> plugins = [new CommandPlugin()];
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+
+            // Assert
+            Assert.Single(cut.FindAll("button[aria-label=Undo]"));
+        }
+
+        [Fact]
+        public void Should_leave_out_the_plugins_bar_when_no_plugin_contributes_a_command()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-composer-plugins-row"));
+            Assert.Empty(cut.FindAll("button[aria-label='Plugin Commands']"));
+        }
+
+        [Fact]
+        public void Should_keep_the_plugins_bar_collapsed_until_the_toggle_is_pressed()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            IReadOnlyList<IComposerPlugin> plugins = [new CommandPlugin()];
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+
+            // Assert
+            var wrapper = cut.Find(".forma-composer-plugins-row").ParentElement!.ParentElement!;
+            Assert.Multiple(
+                () => Assert.DoesNotContain("is-shown", wrapper.ClassList),
+                () => Assert.True(wrapper.HasAttribute("inert")),
+                () => Assert.Equal("false", cut.Find("button[aria-label='Plugin Commands']").GetAttribute("aria-expanded")));
+        }
+
+        [Fact]
+        public void Should_hide_the_plugins_bar_again_when_the_toggle_is_pressed_twice()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            IReadOnlyList<IComposerPlugin> plugins = [new CommandPlugin()];
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.Find("button[aria-label='Plugin Commands']").Click();
+            Assert.Contains("is-shown", cut.Find(".forma-composer-plugins-row").ParentElement!.ParentElement!.ClassList);
+
+            // Act
+            cut.Find("button[aria-label='Plugin Commands']").Click();
+
+            // Assert
+            Assert.DoesNotContain("is-shown", cut.Find(".forma-composer-plugins-row").ParentElement!.ParentElement!.ClassList);
+            Assert.Equal("false", cut.Find("button[aria-label='Plugin Commands']").GetAttribute("aria-expanded"));
+        }
+
+        [Fact]
+        public void Should_point_the_toggle_at_the_plugins_bar_it_controls()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            IReadOnlyList<IComposerPlugin> plugins = [new CommandPlugin()];
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+
+            // Act
+            cut.Find("button[aria-label='Plugin Commands']").Click();
+
+            // Assert
+            var toggle = cut.Find("button[aria-label='Plugin Commands']");
+            Assert.Equal("true", toggle.GetAttribute("aria-expanded"));
+            Assert.Equal(toggle.GetAttribute("aria-controls"), cut.Find(".forma-composer-plugins-row").Id);
+        }
+
+        [Fact]
+        public void Should_overflow_plugin_commands_past_the_inline_limit_into_a_menu()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var surplus = FormaComposerPluginsBar.InlineLimit + 3;
+            IReadOnlyList<IComposerPlugin> plugins = [new ManyCommandsPlugin(surplus)];
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.Find("button[aria-label='Plugin Commands']").Click();
+
+            // Assert
+            var pluginsBar = cut.Find(".forma-composer-plugins-row");
+            Assert.Equal(
+                FormaComposerPluginsBar.InlineLimit,
+                pluginsBar.QuerySelectorAll(".forma-toggle-button").Length);
+            Assert.NotEmpty(cut.FindAll("button[aria-label='More Plugin Commands']"));
+        }
+
+        [Fact]
+        public void Should_lose_no_command_when_a_non_action_item_takes_part_of_the_inline_limit()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var surplus = FormaComposerPluginsBar.InlineLimit + 3;
+            IReadOnlyList<IComposerPlugin> plugins = [new MenuThenCommandsPlugin(surplus)];
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.Find("button[aria-label='Plugin Commands']").Click();
+            cut.Find("button[aria-label='More Plugin Commands']").Click();
+
+            // Assert
+            var shown = cut.Find(".forma-composer-plugins-row")
+                           .QuerySelectorAll(".forma-toggle-button")
+                           .Select(button => button.GetAttribute("aria-label"));
+            var overflowed = cut.FindAll("[role=menuitem]").Select(item => item.TextContent.Trim());
+            Assert.Equal(surplus, shown.Concat(overflowed).Distinct().Count(name => name?.StartsWith("Command ", StringComparison.Ordinal) == true));
+        }
+
+        [Fact]
+        public void Should_leave_out_a_plugin_scoped_to_another_editor()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            IReadOnlyList<IComposerPlugin> plugins = [new PlainTextEditorPlugin(), new DummyEditorPlugin(), new ScopedPlugin()];
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll("button[aria-label='Plugin Commands']"));
+            Assert.Empty(cut.FindAll("button[aria-label=Scoped]"));
+        }
+
+        [Fact]
+        public void Should_show_a_scoped_plugin_once_its_editor_is_active()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            IReadOnlyList<IComposerPlugin> plugins = [new PlainTextEditorPlugin(), new DummyEditorPlugin(), new ScopedPlugin()];
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+
+            // Act
+            cut.FindAll("[role=tab]")[1].Click();
+
+            // Assert
+            cut.WaitForAssertion(() => cut.Find("button[aria-label='Plugin Commands']").Click());
+            Assert.Single(cut.FindAll("button[aria-label=Scoped]"));
+        }
+
+        [Fact]
+        public void Should_sanitize_html_content_raised_to_the_host()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new HtmlModel();
+            IReadOnlyList<IComposerPlugin> plugins = [new HtmlEditorPlugin()];
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+
+            // Act
+            cut.Find("textarea").Change("<p onclick=\"steal()\">Text</p><script>evil()</script>");
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal("<p>Text</p>", model.Body.Content));
+        }
+
+        [Fact]
+        public void Should_leave_a_non_markup_format_untouched()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
+
+            // Act
+            cut.Find("textarea").Change("2 < 3 & 4 > 1");
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal("2 < 3 & 4 > 1", model.Body.Content));
+        }
+
+        [Fact]
+        public void Should_disable_undo_before_any_edit()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(cut.Find("button[aria-label=Undo]").HasAttribute("disabled")),
+                () => Assert.True(cut.Find("button[aria-label=Redo]").HasAttribute("disabled")));
+        }
+
+        [Fact]
+        public void Should_enable_undo_after_an_edit()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
+
+            // Act
+            cut.Find("textarea").Change("edited");
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.False(cut.Find("button[aria-label=Undo]").HasAttribute("disabled")));
+        }
+
+        [Fact]
+        public void Should_enable_undo_from_typing_alone()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
+
+            // Act
+            cut.Find("textarea").Input("typed");
+
+            // Assert
+            cut.WaitForAssertion(
+                () => Assert.False(cut.Find("button[aria-label=Undo]").HasAttribute("disabled")),
+                TimeSpan.FromSeconds(5));
+        }
+
+        [Fact]
+        public void Should_coalesce_rapid_keystrokes_into_one_undo_step()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var original = model.Body.Content;
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
+            cut.Find("textarea").Input("a");
+            cut.Find("textarea").Input("ab");
+            cut.Find("textarea").Input("abc");
+            cut.WaitForAssertion(() => Assert.Equal("abc", model.Body.Content), TimeSpan.FromSeconds(5));
+
+            // Act
+            cut.InvokeAsync(() => cut.Find("button[aria-label=Undo]").Click());
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal(original, model.Body.Content));
+        }
+
+        [Fact]
+        public void Should_restore_the_previous_content_on_undo()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
+            var original = model.Body.Content;
+            cut.Find("textarea").Change("edited");
+
+            // Act
+            cut.Find("button[aria-label=Undo]").Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal(original, model.Body.Content));
+        }
+
+        [Fact]
+        public void Should_reapply_the_undone_content_on_redo()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
+            cut.Find("textarea").Change("edited");
+            cut.Find("button[aria-label=Undo]").Click();
+
+            // Act
+            cut.Find("button[aria-label=Redo]").Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal("edited", model.Body.Content));
+        }
+
+        [Fact]
+        public void Should_show_the_shortcut_in_the_undo_tooltip()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
+
+            // Assert
+            Assert.Equal("Undo (Ctrl+Z)", cut.Find("button[aria-label=Undo]").GetAttribute("title"));
+        }
+
+        [Fact]
+        public void Should_expose_the_shortcut_to_assistive_technology()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
+
+            // Assert
+            Assert.Equal("Control+Z", cut.Find("button[aria-label=Undo]").GetAttribute("aria-keyshortcuts"));
+        }
+
+        [Fact]
+        public void Should_show_a_plugin_shortcut_in_its_toolbar_item_tooltip()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            IReadOnlyList<IComposerPlugin> plugins = [new CommandPlugin()];
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.Find("button[aria-label='Plugin Commands']").Click();
+
+            // Assert
+            Assert.Equal("Shout (Ctrl+Shift+K)", cut.Find("button[aria-label=Shout]").GetAttribute("title"));
+        }
+
+        [Fact]
+        public void Should_route_a_toolbar_item_to_the_plugin_that_named_its_command()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var plugin = new CommandPlugin();
+            IReadOnlyList<IComposerPlugin> plugins = [plugin];
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.Find("button[aria-label='Plugin Commands']").Click();
+
+            // Act
+            cut.Find("button[aria-label=Shout]").Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal(["demo.shout"], plugin.Executed));
+        }
+
+        [Fact]
+        public void Should_undo_when_the_undo_command_is_dispatched()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var original = model.Body.Content;
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
+            cut.Find("textarea").Change("edited");
+            var composer = cut.FindComponent<FormaComposer>().Instance;
+
+            // Act
+            cut.InvokeAsync(() => composer.HandleCommandAsync(ComposerCommands.Undo));
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal(original, model.Body.Content));
+        }
+
+        [Fact]
+        public void Should_ignore_a_dispatched_command_when_read_only()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var plugin = new CommandPlugin();
+            IReadOnlyList<IComposerPlugin> plugins = [plugin];
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" ReadOnly="true" />);
+            var composer = cut.FindComponent<FormaComposer>().Instance;
+
+            // Act
+            cut.InvokeAsync(() => composer.HandleCommandAsync("demo.shout"));
+
+            // Assert
+            Assert.Empty(plugin.Executed);
+        }
+
+        [Fact]
+        public void Should_disable_the_editing_surface_when_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Disabled="true" />);
+
+            // Assert
+            Assert.True(cut.Find("textarea").HasAttribute("disabled"));
+        }
+
+        [Fact]
+        public void Should_mark_the_editing_surface_read_only_when_read_only()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" ReadOnly="true" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(cut.Find("textarea").HasAttribute("readonly")),
+                () => Assert.False(cut.Find("textarea").HasAttribute("disabled")));
+        }
+
+        [Fact]
+        public void Should_leave_the_editing_surface_interactive_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.False(cut.Find("textarea").HasAttribute("disabled")),
+                () => Assert.False(cut.Find("textarea").HasAttribute("readonly")));
+        }
+
+        [Fact]
+        public void Should_render_a_status_item_a_plugin_pushes()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            IReadOnlyList<IComposerPlugin> plugins = [new StatusPushingPlugin()];
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.Find("button[aria-label='Plugin Commands']").Click();
+
+            // Act
+            cut.Find("button[aria-label='Word Count']").Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal("2 words", cut.Find(".forma-status-strip").TextContent.Trim()));
+        }
+
+        // A readout is plugin-supplied text of unknown direction, so it resolves and isolates its own.
+        [Fact]
+        public void Should_isolate_the_direction_of_a_status_item()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            IReadOnlyList<IComposerPlugin> plugins = [new StatusPushingPlugin()];
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.Find("button[aria-label='Plugin Commands']").Click();
+
+            // Act
+            cut.Find("button[aria-label='Word Count']").Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal("auto", cut.Find(".forma-toolbar-readout").GetAttribute("dir")));
+        }
+
+        [Fact]
+        public void Should_omit_the_status_strip_when_nothing_has_been_pushed()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-status-strip"));
+        }
+
+        [Fact]
+        public void Should_keep_a_pushed_status_item_visible_after_switching_editors()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            IReadOnlyList<IComposerPlugin> plugins = [new PlainTextEditorPlugin(), new DummyEditorPlugin(), new StatusPushingPlugin()];
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.Find("button[aria-label='Plugin Commands']").Click();
+            cut.Find("button[aria-label='Word Count']").Click();
+            cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".forma-status-strip")));
+
+            // Act
+            cut.FindAll("[role=tab]")[1].Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal("2 words", cut.Find(".forma-status-strip").TextContent.Trim()));
+        }
+
+        [Fact]
+        public void Should_keep_an_unannounced_status_item_out_of_the_live_region()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            IReadOnlyList<IComposerPlugin> plugins = [new StatusPushingPlugin()];
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.Find("button[aria-label='Plugin Commands']").Click();
+
+            // Act
+            cut.Find("button[aria-label='Word Count']").Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Empty(cut.Find(".forma-composer-status-announcer").TextContent.Trim()));
+        }
+
+        [Fact]
+        public void Should_announce_a_status_item_that_opts_in()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            IReadOnlyList<IComposerPlugin> plugins = [new AnnouncingStatusPlugin()];
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.Find("button[aria-label='Plugin Commands']").Click();
+
+            // Act
+            cut.Find("button[aria-label='Save']").Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal("Saved", cut.Find(".forma-composer-status-announcer").TextContent.Trim()));
+        }
+
+        [Fact]
+        public void Should_render_the_live_region_before_anything_is_pushed()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal("status", cut.Find(".forma-composer-status-announcer").GetAttribute("role")));
+        }
+
+        [Fact]
+        public void Should_toggle_maximized_class_when_maximize_command_is_handled()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
+            var composer = cut.FindComponent<FormaComposer>().Instance;
+
+            // Act
+            cut.InvokeAsync(() => composer.HandleCommandAsync(ComposerCommands.Maximize));
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Contains("forma-composer-maximized", cut.Find(".forma-composer").ClassList));
+
+            // Act 2 (unmaximize)
+            cut.InvokeAsync(() => composer.HandleCommandAsync(ComposerCommands.Maximize));
+
+            // Assert 2
+            cut.WaitForAssertion(() => Assert.DoesNotContain("forma-composer-maximized", cut.Find(".forma-composer").ClassList));
+        }
+
+        [Fact]
+        public void Should_relabel_the_maximize_button_to_minimize_while_maximized()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var plugins = new IComposerPlugin[] { new MaximizePlugin() };
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            var composer = cut.FindComponent<FormaComposer>().Instance;
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Maximize']")));
+
+            // Act
+            cut.InvokeAsync(() => composer.HandleCommandAsync(ComposerCommands.Maximize));
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Minimize']")));
+
+            // Act 2 (unmaximize)
+            cut.InvokeAsync(() => composer.HandleCommandAsync(ComposerCommands.Maximize));
+
+            // Assert 2
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Maximize']")));
+        }
+
+        [Fact]
+        public void Should_release_the_selection_bar_toggle_while_the_bar_is_hidden()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var plugins = new IComposerPlugin[] { new SelectionBarPlugin() };
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            var composer = cut.FindComponent<FormaComposer>().Instance;
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal("true", cut.Find("button[aria-label='Selection Bar']").GetAttribute("aria-pressed")));
+
+            // Act
+            cut.InvokeAsync(() => composer.HandleCommandAsync(ComposerCommands.SelectionBar));
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal("false", cut.Find("button[aria-label='Selection Bar']").GetAttribute("aria-pressed")));
+
+            // Act 2 (show again)
+            cut.InvokeAsync(() => composer.HandleCommandAsync(ComposerCommands.SelectionBar));
+
+            // Assert 2
+            cut.WaitForAssertion(() => Assert.Equal("true", cut.Find("button[aria-label='Selection Bar']").GetAttribute("aria-pressed")));
+        }
+
+        [Fact]
+        public void Should_offer_an_editors_views_as_trailing_tabs_and_show_one_when_picked()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new HtmlModel();
+            var richText = new RichTextEditorPlugin();
+            IReadOnlyList<IComposerPlugin> plugins = [richText, new RichTextPreviewViewPlugin(richText), new RichTextSourceViewPlugin(richText)];
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+
+            // Assert
+            var tabs = cut.FindAll("[role=tab]");
+            Assert.Equal(3, tabs.Count);
+            Assert.Contains("forma-tab-button-trailing", tabs[1].ClassList);
+            Assert.Empty(cut.FindAll(".forma-composer-preview"));
+
+            // Act
+            tabs[1].Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Contains("Initial", cut.Find(".forma-composer-preview").TextContent, StringComparison.Ordinal));
+            Assert.Equal("true", cut.FindAll("[role=tab]")[1].GetAttribute("aria-selected"));
+        }
+
+        [Fact]
+        public void Should_show_the_source_view_one_block_per_numbered_line()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new HtmlModel { Body = new ComposerDocument(ComposerDocumentFormat.Html, "<p>One</p><p>Two</p>") };
+            var richText = new RichTextEditorPlugin();
+            IReadOnlyList<IComposerPlugin> plugins = [richText, new RichTextSourceViewPlugin(richText)];
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            // Act
+            cut.FindAll("[role=tab]")[1].Click();
+
+            // Assert
+            cut.WaitForAssertion(() =>
+            {
+                var lines = cut.FindAll(".forma-composer-source-line");
+                Assert.Equal(2, lines.Count);
+                Assert.Equal("<p>Two</p>", lines[1].QuerySelector(".forma-composer-source-text")!.TextContent);
+            });
+        }
+
+        [Fact]
+        public void Should_return_to_the_editor_when_its_tab_is_picked_while_a_view_shows()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new HtmlModel();
+            var richText = new RichTextEditorPlugin();
+            IReadOnlyList<IComposerPlugin> plugins = [richText, new RichTextPreviewViewPlugin(richText)];
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.FindAll("[role=tab]")[1].Click();
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find(".forma-composer-preview")));
+
+            // Act
+            cut.FindAll("[role=tab]")[0].Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".forma-composer-preview")));
+            Assert.NotNull(cut.Find(".forma-composer-rich-text-canvas"));
+        }
+
+        [Fact]
+        public void Should_lay_a_views_own_commands_on_its_toolbar_without_undo_or_the_editors_formatting()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new HtmlModel();
+            var richText = new RichTextEditorPlugin();
+            IReadOnlyList<IComposerPlugin> plugins = [richText, new BasicFormattingPlugin(richText), new RichTextPreviewViewPlugin(richText)];
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.FindAll("[role=tab]")[1].Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Print']")));
+            Assert.Empty(cut.FindAll("button[aria-label='Bold']"));
+            Assert.Empty(cut.FindAll("button[aria-label='Undo']"));
+        }
+    }
+}

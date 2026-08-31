@@ -1,0 +1,74 @@
+@namespace Forma.Blazor.Components.Composer.RichTextEditor
+@using Forma.Blazor.Components.Composer.Dialogs
+
+<div class="forma-composer-rich-text-editor">
+    <div @ref="_editorElement"
+         class="forma-composer-rich-text-canvas forma-prose"
+         contenteditable="@(ContentEditable ? "true" : "false")"
+         role="textbox"
+         aria-multiline="true"
+         aria-label="@L["Rich Text Document"]"
+         aria-disabled="@IsDisabled"
+         aria-readonly="@IsReadOnly"
+         tabindex="0"
+         spellcheck="true"></div>
+
+    @if (!IsDisabled && !IsReadOnly && _isAttached && IsSelectionBarShown)
+    {
+        <FormaRichTextSelectionBar EditorElement="_editorElement" OnCommand="HandleCommand" />
+    }
+
+    <div class="forma-composer-rich-text-announcer" role="status" aria-live="polite">@_blockAnnouncement</div>
+
+    @if (_isAttached)
+    {
+        @if (_isLinkDialogOpen)
+        {
+            <FormaComposerLinkDialog Opened="_isLinkDialogOpen"
+                                     IsAnchor="_isLinkAnchorMode"
+                                     Reopening="_reopening"
+                                     OnInsert="HandleLinkInsertedAsync"
+                                     OnCancel="() => _isLinkDialogOpen = false" />
+        }
+
+        @if (_isTableDialogOpen)
+        {
+            <FormaComposerTableDialog Opened="_isTableDialogOpen"
+                                      OnInsert="HandleTableInsertedAsync"
+                                      OnCancel="() => _isTableDialogOpen = false" />
+        }
+
+        @if (_isVideoDialogOpen)
+        {
+            <FormaComposerVideoDialog Opened="_isVideoDialogOpen"
+                                      Reopening="_reopening"
+                                      OnInsert="HandleVideoInsertedAsync"
+                                      OnCancel="() => _isVideoDialogOpen = false" />
+        }
+
+        @if (_isImageDialogOpen)
+        {
+            <FormaComposerImageDialog Opened="_isImageDialogOpen"
+                                      Reopening="_reopening"
+                                      OnInsert="HandleImageInsertedAsync"
+                                      OnCancel="() => _isImageDialogOpen = false" />
+        }
+
+        @if (_isExplorerDialogOpen)
+        {
+            <FormaComposerExplorerDialog Opened="_isExplorerDialogOpen"
+                                         Options="_explorerOptions"
+                                         OnInsert="HandleResourceInsertedAsync"
+                                         OnCancel="() => _isExplorerDialogOpen = false" />
+        }
+
+        @if (_isEmbedDialogOpen)
+        {
+            <FormaComposerEmbedDialog Opened="_isEmbedDialogOpen"
+                                      Reopening="_reopening"
+                                      OnInsert="HandleEmbedInsertedAsync"
+                                      OnCancel="() => _isEmbedDialogOpen = false" />
+        }
+    }
+</div>
+

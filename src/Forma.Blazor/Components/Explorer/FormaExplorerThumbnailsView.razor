@@ -1,0 +1,46 @@
+@namespace Forma.Blazor.Components.Explorer
+@using Forma.Features.Explorer
+
+<div class="forma-explorer-grid" role="list">
+    @foreach (var resource in Resources)
+    {
+        var selected = View.Selection.IsSelected(resource);
+        var selecting = View.Selection.IsSelectMode && !View.Selection.HasFolders;
+
+        <div class="forma-explorer-item @(selected ? "is-selected" : "")"
+             role="listitem"
+             draggable="true"
+             @ondragstart="() => Interaction.BeginDrag(resource)">
+            <div class="forma-explorer-thumbnail-wrapper">
+                <FormaExplorerThumbnail Resource="resource" Size="ExplorerThumbnailSize.Tile" />
+
+                <button type="button"
+                        class="forma-explorer-item-open"
+                        aria-label="@resource.ActivateLabel(L, View.Selection)"
+                        aria-pressed="@(View.Selection.IsSelectMode ? (selected ? "true" : "false") : null)"
+                        @onclick="() => Interaction.ActivateAsync(resource)"></button>
+
+                <span class="forma-explorer-item-lead">
+                    @if (selecting)
+                    {
+                        <span class="forma-explorer-item-select @(selected ? "is-checked" : "")" aria-hidden="true">
+                            <FormaIcon Icon="Glyph.Check" Size="IconSize.Small" />
+                        </span>
+                    }
+                    else
+                    {
+                        <FormaExplorerActionBar Resource="resource" />
+                    }
+                </span>
+            </div>
+
+            <div class="forma-explorer-item-info">
+                <span class="forma-explorer-item-name" title="@resource.Name">@resource.Name</span>
+                @if (resource.DisplaySize is { } size)
+                {
+                    <span class="forma-explorer-item-size" dir="auto">@size</span>
+                }
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,20 @@
+@page "/"
+@using Forma.Blazor.Globalization
+@inject CultureRouter Router
+@inject IStringLocale<Home> L
+
+<h1>Forma</h1>
+<p class="description">@L["Every component in the library, rendered in every state it can take, in each culture and both writing directions. Pick a component to see it standing in each of its states."]</p>
+
+@foreach (var group in ShowcaseCatalog.Sidebar)
+{
+    <div class="demo-section">
+        <h2>@group.Key <span class="demo-count">@group.Count()</span></h2>
+        <ul class="showcase-index">
+            @foreach (var entry in group)
+            {
+                <li><a href="@Router.GetPath(Router.CurrentRoute, entry.Route)">@entry.Title</a></li>
+            }
+        </ul>
+    </div>
+}

@@ -1,0 +1,16 @@
+@namespace Forma.Blazor.Components.Design
+
+@if (_artwork is EmojiSprite sprite)
+{
+    <svg class="@CssClass" viewBox="0 0 36 36" focusable="false" role="@Role" aria-hidden="@AriaHidden" aria-label="@Label">
+        <use href="@SpriteHref(sprite)" />
+    </svg>
+}
+else if (_artwork is EmojiImage image)
+{
+    <img class="@CssClass" src="@image.Url" alt="@(Label ?? string.Empty)" />
+}
+else
+{
+    <span class="@CssClass" role="@Role" aria-hidden="@AriaHidden" aria-label="@Label">@Emoji.Sequence</span>
+}

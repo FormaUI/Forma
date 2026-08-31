@@ -1,0 +1,59 @@
+@page "/tabs"
+@attribute [ShowcasePage("FormaTabs")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Layout
+@inject IStringLocale<FormaTabsPage> L
+
+<h1>FormaTabs</h1>
+<p class="description">@L["A strip of tabs over one panel at a time, for a form or an editor too long to read as one page. The selected tab is marked by an underline as well as its color, so the choice reads without color."]</p>
+
+<div class="demo-section">
+    <h2>@L["Basic Tabs"]</h2>
+    <div class="demo-box">
+        <FormaTabs>
+            <FormaTab Title="@L["General"]">
+                <p>@L["General settings and configuration."]</p>
+            </FormaTab>
+            <FormaTab Title="@L["SEO"]">
+                <p>@L["Search engine optimization options."]</p>
+            </FormaTab>
+            <FormaTab Title="@L["Images"]">
+                <p>@L["Image gallery and uploads."]</p>
+            </FormaTab>
+        </FormaTabs>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Tabs with Icons"]</h2>
+    <div class="demo-box">
+        <FormaTabs>
+            <FormaTab Title="@L["Settings"]" Icon="Glyph.Settings">
+                <p>@L["System settings."]</p>
+            </FormaTab>
+            <FormaTab Title="@L["Users"]" Icon="Glyph.Users">
+                <p>@L["User management."]</p>
+            </FormaTab>
+            <FormaTab Title="@L["Billing"]" Icon="Glyph.CreditCard">
+                <p>@L["Billing and payments."]</p>
+            </FormaTab>
+        </FormaTabs>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Many Tabs"]</h2>
+    <div class="demo-box">
+        <FormaTabs>
+            @for (var index = 1; index <= ManyTabCount; index++)
+            {
+                var number = index;
+                <FormaTab Title="@(L["Tab {Number}", number])"><p>@L["Content for tab {Number}.", number]</p></FormaTab>
+            }
+        </FormaTabs>
+    </div>
+</div>
+
+@code {
+    private const int ManyTabCount = 5;
+}

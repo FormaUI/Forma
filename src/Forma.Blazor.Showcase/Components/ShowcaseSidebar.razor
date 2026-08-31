@@ -1,0 +1,42 @@
+@using Forma.Blazor.Globalization
+@using Forma.Blazor.Showcase
+@inject CultureRouter Router
+@inject NavigationManager Nav
+
+<nav class="showcase-sidebar">
+    <a class="showcase-brand" href="@Router.GetPath(Current, "/")">Forma</a>
+    <div class="culture-switcher">
+        @foreach (var route in Router.Routes)
+        {
+            <a href="@LinkTo(route)" data-enhance-nav="false" class="@(IsCurrent(route) ? "active" : "")">@Label(route)</a>
+        }
+    </div>
+    @foreach (var group in ShowcaseCatalog.Sidebar)
+    {
+        <h3>@group.Key</h3>
+        @foreach (var entry in group)
+        {
+            <NavLink href="@Router.GetPath(Current, entry.Route)" Match="NavLinkMatch.Prefix">@entry.Title</NavLink>
+        }
+    }
+</nav>
+
+@code {
+    private static readonly Dictionary<string, string> Labels = new(StringComparer.Ordinal)
+    {
+        ["en"] = "En",
+        ["he"] = "עב",
+        ["es"] = "Es"
+    };
+
+    private CultureRoute Current => Router.CurrentRoute;
+
+    private static string Label(CultureRoute route)
+        => Labels.GetValueOrDefault(route.Token, route.Token);
+
+    private bool IsCurrent(CultureRoute route)
+        => string.Equals(route.Token, Current.Token, StringComparison.Ordinal);
+
+    private string LinkTo(CultureRoute route)
+        => Router.GetUrl(route, Nav.ToBaseRelativePath(Nav.Uri));
+}

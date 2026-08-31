@@ -1,8 +1,0 @@
-@namespace Forma.UI.Blazor.Components.Composer
-
-@if (Context is not null)
-{
-    <div class="forma-composer-status-announcer" role="status">@AnnouncedText</div>
-
-    <FormaStatusStrip Label="@L["Document Status"]" Items="Items" OnCommand="OnCommand" />
-}
