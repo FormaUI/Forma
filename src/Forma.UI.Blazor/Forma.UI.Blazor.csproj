@@ -38,6 +38,7 @@
         <ProjectReference Include="..\Forma.UI.Features.Feedback\Forma.UI.Features.Feedback.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.UI.Features.Media\Forma.UI.Features.Media.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.UI.Features.Sanitization\Forma.UI.Features.Sanitization.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.UI.Features.Share.Abstractions\Forma.UI.Features.Share.Abstractions.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.UI.Features.Toolbar\Forma.UI.Features.Toolbar.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.UI.Design.Css\Forma.UI.Design.Css.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.UI.Design.Icons\Forma.UI.Design.Icons.csproj" PrivateAssets="all" />

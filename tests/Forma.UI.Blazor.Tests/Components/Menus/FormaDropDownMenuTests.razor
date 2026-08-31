@@ -130,6 +130,27 @@
         }
 
         [Fact]
+        public void Should_leave_the_popup_open_when_the_item_keeps_it()
+        {
+            // Arrange
+            using var ctx = new FormaDropDownMenuTests();
+            var clicked = false;
+            var cut = ctx.Render(
+                @<FormaDropDownMenu>
+                    <Trigger>Options</Trigger>
+                    <ChildContent><FormaDropDownMenuItem KeepsOpen="true" OnClick="() => clicked = true">More</FormaDropDownMenuItem></ChildContent>
+                </FormaDropDownMenu>);
+            cut.Find(".forma-dropdown-menu-trigger").Click();
+
+            // Act
+            cut.Find(".forma-dropdown-menu-item").Click();
+
+            // Assert
+            Assert.True(clicked);
+            Assert.NotEmpty(cut.FindAll(".forma-dropdown-menu"));
+        }
+
+        [Fact]
         public void Should_close_the_popup_on_escape()
         {
             // Arrange

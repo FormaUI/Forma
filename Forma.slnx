@@ -16,6 +16,8 @@
     <Project Path="src\Forma.UI.Features.Toolbar\Forma.UI.Features.Toolbar.csproj" />
     <Project Path="src\Forma.UI.Features.Sanitization\Forma.UI.Features.Sanitization.csproj" />
     <Project Path="src\Forma.UI.Features.Composer\Forma.UI.Features.Composer.csproj" />
+    <Project Path="src\Forma.UI.Features.Share.Abstractions\Forma.UI.Features.Share.Abstractions.csproj" />
+    <Project Path="src\Forma.UI.Features.Share\Forma.UI.Features.Share.csproj" />
     <Project Path="src\Forma.UI.Features.Explorer\Forma.UI.Features.Explorer.csproj" />
     <Project Path="src\Forma.UI.Blazor\Forma.UI.Blazor.csproj" />
     <Project Path="src\Forma.Framework.Resources.Office\Forma.Framework.Resources.Office.csproj" />
@@ -32,6 +34,7 @@
     <Project Path="tests\Forma.UI.Features.Feedback.Tests\Forma.UI.Features.Feedback.Tests.csproj" />
     <Project Path="tests\Forma.UI.Features.Sanitization.Tests\Forma.UI.Features.Sanitization.Tests.csproj" />
     <Project Path="tests\Forma.UI.Features.Composer.Tests\Forma.UI.Features.Composer.Tests.csproj" />
+    <Project Path="tests\Forma.UI.Features.Share.Tests\Forma.UI.Features.Share.Tests.csproj" />
     <Project Path="tests\Forma.UI.Features.Explorer.Tests\Forma.UI.Features.Explorer.Tests.csproj" />
     <Project Path="tests\Forma.UI.Features.Emojis.Twemoji.Tests\Forma.UI.Features.Emojis.Twemoji.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Resources.Office.Tests\Forma.Framework.Resources.Office.Tests.csproj" />

@@ -2,6 +2,11 @@
  * Print — sending a document alone to the printer
  */
 
+/** Prints the page as it stands. */
+export function page() {
+    window.print();
+}
+
 /**
  * Prints markup by itself, dressed in the page's own stylesheets.
  * @param {string} html The document's markup.

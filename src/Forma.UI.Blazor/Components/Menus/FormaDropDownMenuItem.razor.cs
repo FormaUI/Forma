@@ -22,6 +22,9 @@ public sealed partial class FormaDropDownMenuItem : IDisposable
     /// <summary>Raised when the item is activated.</summary>
     [Parameter] public EventCallback OnClick { get; set; }
 
+    /// <summary>Leaves the menu open when the item is activated, for an item that changes the menu rather than completing it.</summary>
+    [Parameter] public bool KeepsOpen { get; set; }
+
     /// <summary>Content rendered inside the item.</summary>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
 
@@ -65,7 +68,11 @@ public sealed partial class FormaDropDownMenuItem : IDisposable
         }
 
         await OnClick.InvokeAsync();
-        await Menu.RequestActivateAsync();
+
+        if (!KeepsOpen)
+        {
+            await Menu.RequestActivateAsync();
+        }
     }
 
     /// <inheritdoc />

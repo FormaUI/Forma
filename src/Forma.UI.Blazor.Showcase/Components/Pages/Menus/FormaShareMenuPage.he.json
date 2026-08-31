@@ -1,0 +1,20 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "A share menu over one subject. The social networks and a download make up the baseline, a consumer adds its own actions beside them, and everything past the primary row waits behind More. Where the platform offers a native share surface, one entry hands the subject to it.": "תפריט שיתוף על נושא אחד. הרשתות החברתיות והורדה מרכיבות את הבסיס, צרכן מוסיף פעולות משלו לצדן, וכל מה שמעבר לשורה הראשית ממתין מאחורי עוד. היכן שהפלטפורמה מציעה משטח שיתוף מקורי, פריט אחד מוסר לו את הנושא.",
+  "An Address": "כתובת",
+  "A subject with an address gets the full baseline: the networks, email, and copying the link.": "נושא עם כתובת מקבל את הבסיס המלא: הרשתות, דוא\"ל והעתקת הקישור.",
+  "A File": "קובץ",
+  "A file stays off the networks; what applies is saving it, and any registered destination that takes files — here a stand-in Vault the Showcase registers.": "קובץ נשאר מחוץ לרשתות; מה שרלוונטי הוא לשמור אותו, וכל יעד רשום שמקבל קבצים — כאן Vault לדוגמה שה-Showcase רושם.",
+  "Sent to Vault": "נשלח ל-Vault",
+  "nothing yet": "עדיין כלום",
+  "A Picture": "תמונה",
+  "A picture keeps the networks and adds the board that pins media, pointed at the image itself.": "תמונה שומרת על הרשתות ומוסיפה את הלוח שמצמיד מדיה, המצביע על התמונה עצמה.",
+  "A Contact": "איש קשר",
+  "A contact is reached by email and saved as a card, not posted to a network.": "לאיש קשר מגיעים בדוא\"ל ושומרים אותו ככרטיס, לא מפרסמים ברשת.",
+  "Consumer Actions": "פעולות הצרכן",
+  "A consumer adds commands of its own behind More, each raising its command through one callback; the networks bar and the built-in commands stay as they are.": "צרכן מוסיף פקודות משלו מאחורי עוד, כל אחת מעלה את הפקודה שלה דרך callback אחד; סרגל הרשתות והפקודות המובנות נשארים כפי שהם.",
+  "Last command": "פקודה אחרונה",
+  "none yet": "עדיין אין",
+  "Icon-Only Trigger": "מפעיל אייקון בלבד",
+  "Share": "שיתוף"
+}

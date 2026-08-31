@@ -1,0 +1,231 @@
+@using Forma.Framework.Resources
+@using Forma.UI.Features.Share
+@inherits FormaBunitContext
+@code {
+    public sealed class Component
+    {
+        private static ShareItem Article => new()
+        {
+            Name = "Stage 12",
+            Address = "https://example.com/news/stage-12?ref=a b",
+        };
+
+        [Fact]
+        public void Should_offer_the_networks_for_a_subject_with_an_address()
+        {
+            // Arrange
+            using var ctx = new FormaShareMenuTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaShareMenu Item="Article" />);
+            cut.Find(".forma-dropdown-menu-anchor button").Click();
+
+            // Assert
+            var facebook = cut.FindAll("a").First(a => a.TextContent.Contains("Facebook", StringComparison.Ordinal));
+            Assert.Multiple(
+                () => Assert.StartsWith("https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fexample.com", facebook.GetAttribute("href"), StringComparison.Ordinal),
+                () => Assert.Equal("_blank", facebook.GetAttribute("target")),
+                () => Assert.Contains("noopener", facebook.GetAttribute("rel"), StringComparison.Ordinal),
+                () => Assert.Contains(cut.FindAll(".forma-share-menu-primary a"), item => item.TextContent.Contains("WhatsApp", StringComparison.Ordinal)),
+                () => Assert.Contains(cut.FindAll(".forma-share-menu-primary a"), item => item.TextContent.Contains("Bluesky", StringComparison.Ordinal)),
+                () => Assert.Contains(cut.FindAll(".forma-share-menu-primary a"), item => item.GetAttribute("href")?.StartsWith("https://www.snapchat.com/share?link=", StringComparison.Ordinal) == true));
+        }
+
+        [Fact]
+        public void Should_offer_no_network_for_a_subject_without_an_address()
+        {
+            // Arrange
+            using var ctx = new FormaShareMenuTests();
+            var notes = new ShareItem { Name = "notes.txt", Resource = new ResourceInfo("data:text/plain,notes") { Name = "notes.txt" } };
+
+            // Act
+            var cut = ctx.Render(@<FormaShareMenu Item="notes" />);
+            cut.Find(".forma-dropdown-menu-anchor button").Click();
+
+            // Assert
+            Assert.DoesNotContain(cut.FindAll("a,button"), item => item.TextContent.Contains("Facebook", StringComparison.Ordinal));
+            Assert.Contains(cut.FindAll("a"), item => item.TextContent.Contains("Download", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void Should_download_through_the_address_when_the_subject_has_one()
+        {
+            // Arrange
+            using var ctx = new FormaShareMenuTests();
+            var file = new ShareItem { Name = "kit.zip", Resource = new ResourceInfo("/files/kit.zip") };
+
+            // Act
+            var cut = ctx.Render(@<FormaShareMenu Item="file" />);
+            cut.Find(".forma-dropdown-menu-anchor button").Click();
+
+            // Assert
+            var download = cut.FindAll("a").First(a => a.TextContent.Contains("Download", StringComparison.Ordinal));
+            Assert.Equal("/files/kit.zip", download.GetAttribute("href"));
+            Assert.Equal("kit.zip", download.GetAttribute("download"));
+        }
+
+        private sealed class VaultTarget : IShareTarget
+        {
+            public ShareItem? Shared { get; private set; }
+            public string Id => "vault";
+            public string Title => "Vault";
+            public Icon Icon => Glyph.Folder;
+            public bool Supports(ShareItem item) => item.Kind == ShareItemKind.File;
+            public Task ShareAsync(ShareItem item)
+            {
+                Shared = item;
+                return Task.CompletedTask;
+            }
+        }
+
+        [Fact]
+        public void Should_keep_a_file_off_the_networks_and_off_email()
+        {
+            // Arrange
+            using var ctx = new FormaShareMenuTests();
+            var file = new ShareItem { Kind = ShareItemKind.File, Name = "kit.zip", Address = "https://example.com/files/kit.zip", Resource = new ResourceInfo("/files/kit.zip") };
+
+            // Act
+            var cut = ctx.Render(@<FormaShareMenu Item="file" />);
+            cut.Find(".forma-dropdown-menu-anchor button").Click();
+
+            // Assert
+            Assert.DoesNotContain(cut.FindAll("a,button"), item => item.TextContent.Contains("Facebook", StringComparison.Ordinal));
+            Assert.DoesNotContain(cut.FindAll("a"), item => item.GetAttribute("href")?.StartsWith("mailto:", StringComparison.Ordinal) == true);
+            Assert.Contains(cut.FindAll("a"), item => item.TextContent.Contains("Download", StringComparison.Ordinal));
+            Assert.Contains(cut.FindAll("button"), item => item.TextContent.Contains("Copy Link", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void Should_offer_a_picture_to_the_board_that_pins_media()
+        {
+            // Arrange
+            using var ctx = new FormaShareMenuTests();
+            var picture = new ShareItem { Kind = ShareItemKind.Image, Name = "Finish line", Address = "https://example.com/photos/finish", Resource = new ResourceInfo("https://example.com/photos/finish.jpg") };
+
+            // Act
+            var cut = ctx.Render(@<FormaShareMenu Item="picture" />);
+            cut.Find(".forma-dropdown-menu-anchor button").Click();
+
+            // Assert
+            var pinterest = cut.FindAll("a").First(a => a.TextContent.Contains("Pinterest", StringComparison.Ordinal));
+            Assert.Contains("media=https%3A%2F%2Fexample.com%2Fphotos%2Ffinish.jpg", pinterest.GetAttribute("href"), StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_reach_a_contact_by_email_rather_than_a_network_or_a_copied_link()
+        {
+            // Arrange
+            using var ctx = new FormaShareMenuTests();
+            var contact = new ShareItem { Kind = ShareItemKind.Contact, Name = "Ana Torres", Address = "https://example.com/people/ana" };
+
+            // Act
+            var cut = ctx.Render(@<FormaShareMenu Item="contact" />);
+            cut.Find(".forma-dropdown-menu-anchor button").Click();
+
+            // Assert
+            Assert.DoesNotContain(cut.FindAll("a,button"), item => item.TextContent.Contains("Facebook", StringComparison.Ordinal));
+            Assert.DoesNotContain(cut.FindAll("button"), item => item.TextContent.Contains("Copy Link", StringComparison.Ordinal));
+            Assert.Contains(cut.FindAll("a"), item => item.GetAttribute("href")?.StartsWith("mailto:?subject=Ana%20Torres", StringComparison.Ordinal) == true);
+        }
+
+        [Fact]
+        public void Should_offer_a_registered_target_to_the_items_it_supports_alone()
+        {
+            // Arrange
+            using var ctx = new FormaShareMenuTests();
+            var vault = new VaultTarget();
+            ctx.Services.AddSingleton<IShareTarget>(vault);
+            var file = new ShareItem { Kind = ShareItemKind.File, Name = "kit.zip", Resource = new ResourceInfo("/files/kit.zip") };
+
+            // Act
+            var cut = ctx.Render(@<FormaShareMenu Item="file" />);
+            cut.Find(".forma-dropdown-menu-anchor button").Click();
+            cut.FindAll(".forma-share-menu-primary button").First(button => button.TextContent.Contains("Vault", StringComparison.Ordinal)).Click();
+
+            // Assert
+            Assert.Same(file, vault.Shared);
+
+            // Act 2 (a link, which the target refuses)
+            var linkCut = ctx.Render(@<FormaShareMenu Item="Article" />);
+            linkCut.Find(".forma-dropdown-menu-anchor button").Click();
+
+            // Assert 2
+            Assert.DoesNotContain(linkCut.FindAll("a,button"), item => item.TextContent.Contains("Vault", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void Should_render_no_header_for_an_item_without_a_name()
+        {
+            // Arrange
+            using var ctx = new FormaShareMenuTests();
+            var item = new ShareItem { Address = "https://example.com/a" };
+
+            // Act
+            var cut = ctx.Render(@<FormaShareMenu Item="item" />);
+            cut.Find(".forma-dropdown-menu-anchor button").Click();
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-dropdown-menu-header"));
+        }
+
+        [Fact]
+        public void Should_show_the_subjects_name_and_meta_in_the_header()
+        {
+            // Arrange
+            using var ctx = new FormaShareMenuTests();
+            var subject = new ShareItem { Name = "Stage 12", Meta = "Article", Address = "https://example.com/a" };
+
+            // Act
+            var cut = ctx.Render(@<FormaShareMenu Item="subject" />);
+            cut.Find(".forma-dropdown-menu-anchor button").Click();
+
+            // Assert
+            var header = cut.Find(".forma-share-menu-item");
+            Assert.Contains("Stage 12", header.TextContent, StringComparison.Ordinal);
+            Assert.Contains("Article", header.TextContent, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Should_keep_the_built_in_commands_in_the_open_with_no_more_to_press()
+        {
+            // Arrange
+            using var ctx = new FormaShareMenuTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaShareMenu Item="Article" />);
+            cut.Find(".forma-dropdown-menu-anchor button").Click();
+
+            // Assert — email, copy link and print stand in the open, and with no consumer actions there is no More at all.
+            Assert.Contains(cut.FindAll("a"), item => item.GetAttribute("href")?.StartsWith("mailto:", StringComparison.Ordinal) == true);
+            Assert.Contains(cut.FindAll("button"), item => item.TextContent.Contains("Copy Link", StringComparison.Ordinal));
+            Assert.Contains(cut.FindAll("button"), item => item.TextContent.Contains("Print", StringComparison.Ordinal));
+            Assert.DoesNotContain(cut.FindAll("button"), item => item.TextContent.Contains("More", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void Should_hold_consumer_actions_behind_more_and_raise_their_commands()
+        {
+            // Arrange
+            using var ctx = new FormaShareMenuTests();
+            string? raised = null;
+            IReadOnlyList<ShareAction> actions = [new() { Id = "embed", Title = "Copy Embed Code", Command = "demo.embed" }];
+            var callback = EventCallback.Factory.Create<string>(this, command => raised = command);
+
+            // Act
+            var cut = ctx.Render(@<FormaShareMenu Item="Article" Actions="actions" OnCommand="callback" />);
+            cut.Find(".forma-dropdown-menu-anchor button").Click();
+
+            // Assert (waiting behind More)
+            Assert.DoesNotContain(cut.FindAll(".forma-share-menu-primary button"), item => item.TextContent.Contains("Copy Embed Code", StringComparison.Ordinal));
+            Assert.DoesNotContain("is-shown", cut.FindAll(".forma-visibility")[^1].ClassList);
+
+            // Act 2 (expand and run)
+            cut.FindAll("button").First(button => button.TextContent.Contains("More", StringComparison.Ordinal)).Click();
+            cut.FindAll(".forma-visibility button").First(button => button.TextContent.Contains("Copy Embed Code", StringComparison.Ordinal)).Click();
+
+            // Assert 2
+            Assert.Equal("demo.embed", raised);
+        }
+    }
+}

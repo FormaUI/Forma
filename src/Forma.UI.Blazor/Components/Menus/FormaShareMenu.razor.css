@@ -1,0 +1,61 @@
+/* FormaShareMenu — the item header and the primary row inside the menu it composes */
+
+/* The menu opens wide enough for the primary row's five widest columns beside the bar's arrows:
+   5 × 4rem + 4 × 0.25rem gaps + 2 × 1.5rem arrows + 1rem padding = 25rem; more scroll within the bar.
+   The popover inherits the width from this wrapper, its position in the top layer notwithstanding. */
+.forma-share-menu {
+    display: inline-flex;
+    --forma-dropdown-menu-max-inline-size: 25rem;
+}
+
+.forma-share-menu-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.forma-share-menu-item-text {
+    display: flex;
+    flex-direction: column;
+    min-inline-size: 0;
+}
+
+.forma-share-menu-item-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.forma-share-menu-item-meta {
+    font-weight: 400;
+    color: var(--text-muted-color);
+}
+
+/* The primary actions ride the command bar's scrolling track, each a column of mark over name. */
+.forma-share-menu-primary {
+    min-inline-size: 0;
+}
+
+.forma-share-menu-primary ::deep .forma-command-bar-track {
+    display: flex;
+    gap: var(--space-1);
+}
+
+.forma-share-menu-primary ::deep .forma-dropdown-menu-item {
+    flex-direction: column;
+    justify-content: center;
+    flex-shrink: 0;
+    gap: var(--space-1);
+    inline-size: 4rem;
+    padding: var(--space-2) var(--space-1);
+    font-size: var(--font-size-xs);
+    white-space: normal;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.forma-share-menu-primary ::deep .forma-dropdown-menu-item .forma-icon {
+    inline-size: auto;
+    font-size: var(--icon-size-sm);
+}

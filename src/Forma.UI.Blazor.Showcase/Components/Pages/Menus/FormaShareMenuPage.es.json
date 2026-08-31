@@ -1,0 +1,20 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "A share menu over one subject. The social networks and a download make up the baseline, a consumer adds its own actions beside them, and everything past the primary row waits behind More. Where the platform offers a native share surface, one entry hands the subject to it.": "Un menú de compartir sobre un único elemento. Las redes sociales y una descarga forman la base, un consumidor añade sus propias acciones junto a ellas, y todo lo que queda fuera de la fila principal espera tras Más. Donde la plataforma ofrece una superficie de compartir nativa, una entrada le entrega el elemento.",
+  "An Address": "Una Dirección",
+  "A subject with an address gets the full baseline: the networks, email, and copying the link.": "Un elemento con dirección recibe la base completa: las redes, el correo y copiar el enlace.",
+  "A File": "Un Archivo",
+  "A file stays off the networks; what applies is saving it, and any registered destination that takes files — here a stand-in Vault the Showcase registers.": "Un archivo queda fuera de las redes; lo que aplica es guardarlo, y cualquier destino registrado que acepte archivos — aquí un Vault de ejemplo que registra el Showcase.",
+  "Sent to Vault": "Enviado a Vault",
+  "nothing yet": "nada todavía",
+  "A Picture": "Una Imagen",
+  "A picture keeps the networks and adds the board that pins media, pointed at the image itself.": "Una imagen conserva las redes y añade el tablero que fija medios, apuntando a la propia imagen.",
+  "A Contact": "Un Contacto",
+  "A contact is reached by email and saved as a card, not posted to a network.": "A un contacto se le llega por correo y se guarda como tarjeta, no se publica en una red.",
+  "Consumer Actions": "Acciones del Consumidor",
+  "A consumer adds commands of its own behind More, each raising its command through one callback; the networks bar and the built-in commands stay as they are.": "Un consumidor añade comandos propios tras Más, cada uno lanzando su comando a través de un único callback; la barra de redes y los comandos integrados quedan como están.",
+  "Last command": "Último comando",
+  "none yet": "ninguno todavía",
+  "Icon-Only Trigger": "Disparador de Solo Icono",
+  "Share": "Compartir"
+}

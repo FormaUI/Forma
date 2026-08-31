@@ -29,6 +29,8 @@
         <ProjectReference Include="..\Forma.UI.Features.Emojis.Twemoji\Forma.UI.Features.Emojis.Twemoji.csproj" />
         <ProjectReference Include="..\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
         <ProjectReference Include="..\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />
+        <ProjectReference Include="..\Forma.UI.Features.Share\Forma.UI.Features.Share.csproj" />
+        <ProjectReference Include="..\Forma.UI.Features.Share.Abstractions\Forma.UI.Features.Share.Abstractions.csproj" />
     </ItemGroup>
 
     <ItemGroup>

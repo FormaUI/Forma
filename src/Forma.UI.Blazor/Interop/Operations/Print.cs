@@ -11,6 +11,10 @@ internal sealed class Print(IJSRuntime js) : IAsyncDisposable
     public ValueTask<bool> PrintAsync(string html, string title, string className)
         => _module.TryInvokeVoidAsync("print", html, title, className);
 
+    /// <summary>Prints the page as it stands.</summary>
+    public ValueTask<bool> PrintPageAsync()
+        => _module.TryInvokeVoidAsync("page");
+
     /// <inheritdoc />
     public ValueTask DisposeAsync()
         => _module.DisposeAsync();
