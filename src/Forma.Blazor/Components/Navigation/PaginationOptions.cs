@@ -23,5 +23,5 @@ public sealed record PaginationOptions
     public bool GoButton { get; init; } = true;
 
     /// <summary>Turns a page with a wheel gesture over the pager.</summary>
-    public bool WheelScrollOnHover { get; init; }
+    public bool PageOnWheelGesture { get; init; }
 }

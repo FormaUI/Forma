@@ -134,12 +134,12 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
             _submitGuardAttached = await _submitGuard.AttachAsync(NavigationInput.Element);
         }
 
-        if (Options.WheelScrollOnHover && !_wheelScroll.IsAttached)
+        if (Options.PageOnWheelGesture && !_wheelScroll.IsAttached)
         {
             _selfReference ??= DotNetObjectReference.Create(this);
             await _wheelScroll.AttachAsync(_navElement, _selfReference);
         }
-        else if (!Options.WheelScrollOnHover && _wheelScroll.IsAttached)
+        else if (!Options.PageOnWheelGesture && _wheelScroll.IsAttached)
         {
             await _wheelScroll.DetachAsync();
         }

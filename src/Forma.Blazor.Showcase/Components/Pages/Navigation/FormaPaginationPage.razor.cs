@@ -16,7 +16,7 @@ public sealed partial class FormaPaginationPage : ComponentBase
         new() { NavigationInput = true, GoButton = false };
 
     private static readonly PaginationOptions WithWheel =
-        new() { WheelScrollOnHover = true };
+        new() { PageOnWheelGesture = true };
 
     private static readonly IQueryable<GridItem> _gridItems = Enumerable.Range(1, 47)
         .Select(id => new GridItem(id, $"Sample item {id}"))

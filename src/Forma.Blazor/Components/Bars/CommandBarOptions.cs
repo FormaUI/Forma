@@ -4,7 +4,7 @@ namespace Forma.Blazor.Components.Bars;
 public sealed record CommandBarOptions
 {
     /// <summary>Scrolls the commands with a wheel turned anywhere over the bar, keeping the turn from the page while the pointer stays there.</summary>
-    public bool WheelScrollOnHover { get; init; } = true;
+    public bool PageOnWheelGesture { get; init; } = true;
 
     /// <summary>Accessible name for the button scrolling toward the start, replacing the bar's own.</summary>
     public string? ScrollBackLabel { get; init; }

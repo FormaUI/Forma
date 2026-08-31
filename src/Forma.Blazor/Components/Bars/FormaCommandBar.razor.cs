@@ -85,7 +85,7 @@ public sealed partial class FormaCommandBar : ComponentBase, IAsyncDisposable
         await _boundaryWatcher.AttachAsync(_trackElement, _selfReference);
 
         // A wheel reports vertically alone, so its turn anywhere over the bar is read as movement along the track.
-        if (Options.WheelScrollOnHover)
+        if (Options.PageOnWheelGesture)
         {
             await _wheelScroll.AttachAsync(_barElement, _trackElement);
         }
