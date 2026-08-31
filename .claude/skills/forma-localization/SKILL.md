@@ -43,4 +43,4 @@ A string is a **label** when it names a thing the user acts on or reads as a hea
 
 ## Linting
 
-`src/Forma.Framework.Localization.Linter` ships `locali`, which checks translation files against the `L[...]` call sites that key them.
+`tools/Forma.Locali` ships `locali`, which checks translation files against the `L[...]` call sites that key them.
