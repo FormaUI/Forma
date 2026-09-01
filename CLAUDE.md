@@ -383,3 +383,16 @@ Task scripts live in `scripts/` and are PowerShell 7, cross-platform.
 - Don't mark a component complete on your own judgement.
 - Don't run a state-changing Git command — `add`, `commit`, `push`, `reset`, `restore`, `stash`, a path-scoped `checkout` — without permission for that command, asked for once the work exists and the maintainer can see what is in it. An instruction given up front about work not yet done grants nothing, and neither does permission for an earlier commit; read-only Git needs no permission at all.
 - Don't retrofit new conventions onto existing components unless asked.
+
+## Commit messages
+
+A commit message describes the durable change the commit introduces — the
+repository after the commit — never the development session that produced it.
+
+- Do make the title summarize the entire commit and its body; the body may expand the title but never tell a broader story.
+- Do split a commit whose body one honest title cannot cover, so each commit reads from its title alone.
+- Do add a body only where the title alone is not enough, and keep every part of it inside the one change the title names.
+- Do state rationale only where the change cannot be understood correctly without it.
+- Don't describe how the change was implemented unless the implementation is itself the subject of the commit.
+- Don't narrate attempts, discoveries, or discussion, enumerate files or members, or report test counts, build output, or other routine verification.
+- Don't append an attribution trailer such as `Co-Authored-By`.
