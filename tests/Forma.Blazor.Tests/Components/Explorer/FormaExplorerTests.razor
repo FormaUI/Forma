@@ -23,6 +23,20 @@
         }
 
         [Fact]
+        public void Should_render_folder_specific_empty_state_when_the_current_folder_has_no_resources()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            var folder = new FolderResourceInfo("/photos");
+
+            // Act
+            var cut = ctx.Render(@<FormaExplorer Resources="[]" CurrentFolder="folder" />);
+
+            // Assert
+            Assert.Contains("No media in this folder", cut.Find(".forma-explorer-empty").TextContent);
+        }
+
+        [Fact]
         public void Should_list_only_the_resources_the_accept_pattern_admits()
         {
             // Arrange
