@@ -99,6 +99,16 @@ recalling them, not by inventing.
 - Do treat a name as a claim checked against the implementation: a static calculator is an `*Estimator`, lifecycle bookkeeping a `*Tracker`, a bounded interaction a `*Session`, and "completed" means finished either way — success or failure — as .NET uses the word.
 - Don't rename a concept that survives a refactor; restructuring grants no license to rename, and the name changes only when the name itself is the defect.
 
+### Parameter choice and order
+
+- Do add only a parameter relevant to the abstraction, one that earns its place at every call site rather than serving the convenience of one caller.
+- Do order parameters by significance to the operation: the primary subject and the other collaborators the operation depends on first, then parameters that define what the operation does, then secondary options and supporting details, with a genuinely optional or decorative parameter such as `CancellationToken` last.
+- Do group every parameter validated with `ArgumentNullException.ThrowIfNull` or similar required-argument checks near the front, whatever its CLR shape; a required, validated delegate or callback is a collaborator like any other dependency, not automatically trailing plumbing.
+- Do write argument validation in the same order the parameters are declared, and treat any mismatch between validation order and declaration order as a signal the declaration order is wrong.
+- Do keep parameters that belong together adjacent, even across tiers, and place required parameters before optional ones within a tier.
+- Don't let the order reflect the sequence the implementation happens to read or use them in; that is authoring convenience, not an API decision.
+- Don't judge a signature's order before its names are honest — a parameter that cannot answer its own question makes the order impossible to evaluate, and the right order often turns out to be the one already there once the names are fixed.
+
 ### Fields, locals, and parameters
 
 A name earns its place by answering the question a reader arrives with. The declaration already gives the type; repeating it, or describing the plumbing underneath it, leaves the reader no better off than before.
