@@ -101,13 +101,20 @@ recalling them, not by inventing.
 
 ### Parameter choice and order
 
+Parameters are not added or ordered arbitrarily; their names and positions reflect their importance, their relationships, and their role in the method.
+
 - Do add only a parameter relevant to the abstraction, one that earns its place at every call site rather than serving the convenience of one caller.
-- Do order parameters by significance to the operation: the primary subject and the other collaborators the operation depends on first, then parameters that define what the operation does, then secondary options and supporting details, with a genuinely optional or decorative parameter such as `CancellationToken` last.
-- Do group every parameter validated with `ArgumentNullException.ThrowIfNull` or similar required-argument checks near the front, whatever its CLR shape; a required, validated delegate or callback is a collaborator like any other dependency, not automatically trailing plumbing.
-- Do write argument validation in the same order the parameters are declared, and treat any mismatch between validation order and declaration order as a signal the declaration order is wrong.
-- Do keep parameters that belong together adjacent, even across tiers, and place required parameters before optional ones within a tier.
-- Don't let the order reflect the sequence the implementation happens to read or use them in; that is authoring convenience, not an API decision.
-- Don't judge a signature's order before its names are honest — a parameter that cannot answer its own question makes the order impossible to evaluate, and the right order often turns out to be the one already there once the names are fixed.
+- Do put the principal required participant first — the parameter establishing the method's primary context or identity, which a validation call at the top of the body is strong evidence for.
+- Do validate parameters in the same order they are declared, so the signature and the body tell the same story; a mismatch is a signal the declaration order is wrong.
+- Do order the rest by the method's conceptual flow: importance and the sequence in which each parameter's role becomes relevant, never by CLR type or the order the implementation happens to use them in.
+- Do put a parameter controlling whether or how the operation proceeds before the parameters only that branch uses.
+- Do keep closely related parameters adjacent, especially when they share a type, so proximity and distinct names prevent an accidental reversal at a call site.
+- Do put optional parameters last, staying beside any required parameter they qualify.
+- Do name a parameter for its domain meaning, never a vague word like `isWanted` that says nothing about what is wanted.
+- Do name a Boolean parameter as the condition its `true` value represents — `shouldObserve`, not a generic preference or mechanism-oriented name.
+- Do keep terminology consistent across the signature, its doc comment, and the implementation; a parameter named `shouldObserve` gets a summary that talks about observation.
+- Don't let a required, validated parameter default to a trailing "plumbing" position just because it happens to be callback- or delegate-shaped; validated and required makes it a principal collaborator regardless of CLR shape.
+- Don't judge a signature's order before its names are honest — a parameter that cannot answer its own question makes the order impossible to evaluate.
 
 ### Fields, locals, and parameters
 
