@@ -1,0 +1,87 @@
+@namespace Forma.Blazor.Components.Explorer
+
+<div class="forma-explorer-content">
+    <div class="forma-explorer-scroll @(View.IsFetching ? "is-busy" : "")" @ref="_scrollElement" aria-busy="@(View.IsFetching ? "true" : "false")">
+        @if (View.VisibleResources.Count == 0)
+        {
+            <div class="forma-explorer-empty" role="status">
+                <span class="forma-explorer-empty-icon" aria-hidden="true"><FormaIcon Icon="Glyph.Images" Size="IconSize.Display" /></span>
+                @if (View.IsFetching)
+                {
+                    <p>@L["Loading media"]</p>
+                }
+                else if (!string.IsNullOrWhiteSpace(Search.SearchQuery))
+                {
+                    <p>@L["No media matches \"{Query}\"", Search.SearchQuery]</p>
+                }
+                else if (View.CurrentFolder is not null)
+                {
+                    <p>@L["No media in this folder"]</p>
+                }
+                else
+                {
+                    <p>@L["No media found"]</p>
+                }
+            </div>
+        }
+        else
+        {
+            @if (View.ViewMode == ExplorerViewMode.Thumbnails)
+            {
+                <FormaExplorerThumbnailsView Resources="View.VisibleResources" />
+            }
+            else if (View.ViewMode == ExplorerViewMode.Details)
+            {
+                <FormaExplorerDetailsView Resources="View.VisibleResources" />
+            }
+            else
+            {
+                <FormaExplorerListView Resources="View.VisibleResources" />
+            }
+        }
+
+        @if (IsInfiniteScrolling && View.Paging.HasMorePages)
+        {
+            <div class="forma-explorer-scroll-sentinel" @ref="_sentinelElement">
+                @if (View.Options.InfiniteScroll == ExplorerInfiniteScrollMode.Automatic)
+                {
+                    @if (_isLoadingPage)
+                    {
+                        <span class="forma-explorer-spinner" aria-hidden="true"></span>
+                    }
+                }
+                else
+                {
+                    <FormaButton Variant="ButtonVariant.Ghost" class="forma-explorer-load-more-button" OnClick="HandleReachedAsync">
+                        <span class="forma-explorer-load-more-icon" aria-hidden="true"><FormaIcon Icon="Glyph.ChevronDown" /></span>
+                        @L["Load More"]
+                    </FormaButton>
+                }
+            </div>
+        }
+    </div>
+
+    @if (IsInfiniteScrolling && View.VisibleResources.Count > 0)
+    {
+        <div class="forma-explorer-scroll-status" role="status">
+            @if (View.MatchingCount is { } total)
+            {
+                @L["Showing {Shown} of {Total}", View.VisibleResources.Count, total]
+            }
+            else
+            {
+                @L["Showing {Shown}", View.VisibleResources.Count]
+            }
+        </div>
+    }
+
+    @if (View.MatchingCount is not null && View.Paging.PageCount > 1 && !IsInfiniteScrolling)
+    {
+        <div class="forma-explorer-pagination">
+            <FormaPagination TotalItems="View.MatchingCount ?? 0"
+                             PageSize="View.Paging.PageSize"
+                             CurrentPage="View.Paging.EffectivePage"
+                             OnPageChanged="HandlePageChangedAsync" />
+        </div>
+    }
+</div>

@@ -5,11 +5,14 @@
 @using Forma.Blazor.Components.Files
 @using Forma.Features.Files
 @using Forma.Blazor.Components.Layout
-@using Forma.Blazor.Components.Navigation
 @using Forma.Features.Explorer
 
-<CascadingValue Value="(IExplorerView)this" IsFixed="true">
+<CascadingValue Value="(IExplorerView)this">
 <CascadingValue Value="(IExplorerInteraction)this" IsFixed="true">
+<CascadingValue Value="(IExplorerLocationView)this">
+<CascadingValue Value="(IExplorerLocationInteraction)this" IsFixed="true">
+<CascadingValue Value="(IExplorerSearchView)this">
+<CascadingValue Value="(IExplorerSearchInteraction)this" IsFixed="true">
 <div class="forma-explorer @(Options.Resizable ? "is-resizable" : "") @(Options.AsDialog ? "is-dialog" : "")">
 <FormaCommandArea Class="forma-explorer-header">
     <!-- Top Explorer Address Bar -->
@@ -106,91 +109,7 @@
                            OnResizingChanged="resizing => _isResizingSidebar = resizing" />
         }
 
-        <div class="forma-explorer-content">
-            <div class="forma-explorer-scroll @(_providerWindow.IsFetching ? "is-busy" : "")" @ref="_scrollElement" aria-busy="@(_providerWindow.IsFetching ? "true" : "false")">
-                @if (VisibleResources.Count == 0)
-                {
-                    <div class="forma-explorer-empty" role="status">
-                        <span class="forma-explorer-empty-icon" aria-hidden="true"><FormaIcon Icon="Glyph.Images" Size="IconSize.Display" /></span>
-                        @if (_providerWindow.IsFetching)
-                        {
-                            <p>@L["Loading media"]</p>
-                        }
-                        else if (!string.IsNullOrWhiteSpace(_collection.SearchQuery))
-                        {
-                            <p>@L["No media matches \"{Query}\"", _collection.SearchQuery]</p>
-                        }
-                        else if (CurrentFolder is not null)
-                        {
-                            <p>@L["No media in this folder"]</p>
-                        }
-                        else
-                        {
-                            <p>@L["No media found"]</p>
-                        }
-                    </div>
-                }
-                else
-                {
-                    @if (_viewMode == ExplorerViewMode.Thumbnails)
-                    {
-                        <FormaExplorerThumbnailsView Resources="VisibleResources" />
-                    }
-                    else if (_viewMode == ExplorerViewMode.Details)
-                    {
-                        <FormaExplorerDetailsView Resources="VisibleResources" />
-                    }
-                    else
-                    {
-                        <FormaExplorerListView Resources="VisibleResources" />
-                    }
-                }
-
-                @if (IsInfiniteScrolling && HasMorePages)
-                {
-                    <div class="forma-explorer-scroll-sentinel" @ref="_sentinelElement">
-                        @if (Options.InfiniteScroll == ExplorerInfiniteScrollMode.Automatic)
-                        {
-                            @if (_isLoadingPage)
-                            {
-                                <span class="forma-explorer-spinner" aria-hidden="true"></span>
-                            }
-                        }
-                        else
-                        {
-                            <FormaButton Variant="ButtonVariant.Ghost" class="forma-explorer-load-more-button" OnClick="HandleReachedAsync">
-                                <span class="forma-explorer-load-more-icon" aria-hidden="true"><FormaIcon Icon="Glyph.ChevronDown" /></span>
-                                @L["Load More"]
-                            </FormaButton>
-                        }
-                    </div>
-                }
-            </div>
-
-            @if (IsInfiniteScrolling && VisibleResources.Count > 0)
-            {
-                <div class="forma-explorer-scroll-status" role="status">
-                    @if (MatchingCount is { } total)
-                    {
-                        @L["Showing {Shown} of {Total}", VisibleResources.Count, total]
-                    }
-                    else
-                    {
-                        @L["Showing {Shown}", VisibleResources.Count]
-                    }
-                </div>
-            }
-
-            @if (MatchingCount is not null && PageCount > 1 && !IsInfiniteScrolling)
-            {
-                <div class="forma-explorer-pagination">
-                    <FormaPagination TotalItems="MatchingCount ?? 0"
-                                     PageSize="PageSize"
-                                     CurrentPage="EffectivePage"
-                                     OnPageChanged="HandlePageChangedAsync" />
-                </div>
-            }
-        </div>
+        <FormaExplorerContentArea />
     </div>
 
     <!-- Preview Lightbox Modal -->
@@ -328,5 +247,9 @@
         </FormaModal>
     }
 </div>
+</CascadingValue>
+</CascadingValue>
+</CascadingValue>
+</CascadingValue>
 </CascadingValue>
 </CascadingValue>

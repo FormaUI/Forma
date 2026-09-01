@@ -3,7 +3,6 @@ namespace Forma.Blazor.Components.Explorer;
 using System.Globalization;
 
 using Forma.Blazor.Components.Feedback;
-using Forma.Blazor.Interop.Behaviours;
 using Forma.Blazor.Threading;
 using Forma.Features.Explorer;
 using Forma.Features.Files;
@@ -14,10 +13,10 @@ using Forma.Framework.Resources;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.JSInterop;
 
 /// <summary>A server-side media library manager with thumbnail/details/list views, folders, navigation, drag-and-drop organization, upload, preview, rename, and delete.</summary>
-public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IExplorerView, IExplorerInteraction, IResourceKindLabels
+public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplorerView, IExplorerInteraction,
+    IExplorerLocationView, IExplorerLocationInteraction, IExplorerSearchView, IExplorerSearchInteraction, IResourceKindLabels
 {
     private const int DefaultPageSize = 24;
 
@@ -127,8 +126,6 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
 
     [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
 
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-
     private readonly ExplorerBatchAction<ResourceInfo> _resourceDeletion = new();
 
     private readonly ExplorerBatchAction<FolderResourceInfo> _folderDeletion = new();
@@ -160,14 +157,6 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
     private double _sidebarWidth = 18;
 
     private bool _isResizingSidebar;
-
-    private SentinelObserver<FormaExplorer> _sentinel = default!;
-
-    private ElementReference _sentinelElement;
-
-    private ElementReference _scrollElement;
-
-    private bool _isLoadingPage;
 
     private readonly ParameterState<IReadOnlyList<ResourceInfo>?> _selectedParameter = new();
 
@@ -311,8 +300,6 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _sentinel = new SentinelObserver<FormaExplorer>(JS);
-
         _collection = new ExplorerCollectionView(this)
         {
             PageNumber = CurrentPage,
@@ -575,15 +562,39 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
 
     ExplorerFolderTree IExplorerView.FolderTree => FolderTree;
 
+    FolderResourceInfo? IExplorerView.CurrentFolder => CurrentFolder;
+
     ExplorerSortField IExplorerView.SortField => _collection.SortField;
 
     ExplorerSortDirection IExplorerView.SortDirection => _collection.SortDirection;
 
     string IResourceKindLabels.LabelOf(ResourceInfo resource) => resource.KindLabel(L);
 
+    ExplorerViewMode IExplorerView.ViewMode => _viewMode;
+
     IExplorerSelectionView IExplorerView.Selection => _selection;
 
     IReadOnlyList<ExplorerAction> IExplorerView.Actions => Actions;
+
+    IReadOnlyList<ResourceInfo> IExplorerView.VisibleResources => VisibleResources;
+
+    bool IExplorerView.IsFetching => _providerWindow.IsFetching;
+
+    int? IExplorerView.MatchingCount => MatchingCount;
+
+    ExplorerPagingInfo IExplorerView.Paging => new(PageSize, PageCount, EffectivePage, HasMorePages);
+
+    string IExplorerSearchView.SearchQuery => _collection.SearchQuery;
+
+    string? IExplorerSearchView.SearchPlaceholder => SearchPlaceholder;
+
+    bool IExplorerLocationView.CanGoBack => CanGoBack;
+
+    bool IExplorerLocationView.CanGoForward => CanGoForward;
+
+    bool IExplorerLocationView.CanGoUp => CanGoUp;
+
+    IReadOnlyList<FolderResourceInfo> IExplorerLocationView.Breadcrumbs => Breadcrumbs;
 
     Task IExplorerInteraction.ActivateAsync(ResourceInfo resource)
     {
@@ -615,6 +626,40 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
 
     void IExplorerInteraction.BeginDrag(ResourceInfo resource)
         => _drag.Begin(resource);
+
+    Task IExplorerInteraction.ChangeViewModeAsync(ExplorerViewMode mode)
+        => HandleViewModeChangedAsync(mode);
+
+    async Task IExplorerInteraction.RequestNextPageAsync()
+    {
+        if (!IsInfiniteScrolling || !HasMorePages)
+        {
+            return;
+        }
+
+        _collection.PageNumber = EffectivePage + 1;
+
+        await QueryAsync(append: true);
+        await OnPageChanged.InvokeAsync(_collection.PageNumber);
+    }
+
+    Task IExplorerInteraction.ChangePageAsync(int page)
+        => HandlePageChangedAsync(page);
+
+    Task IExplorerSearchInteraction.ChangeSearchQueryAsync(string query)
+        => HandleSearchQueryChangedAsync(query);
+
+    Task IExplorerLocationInteraction.GoBackAsync()
+        => HandleBackAsync();
+
+    Task IExplorerLocationInteraction.GoForwardAsync()
+        => HandleForwardAsync();
+
+    Task IExplorerLocationInteraction.GoUpAsync()
+        => HandleUpAsync();
+
+    Task IExplorerLocationInteraction.SelectFolderAsync(FolderResourceInfo? folder)
+        => HandleFolderSelectedAsync(folder);
 
     // The sidebar re-exposes this to its folder nodes, which never reach past it to the explorer.
     internal Task ToggleFolderSelectAsync(FolderResourceInfo folder)
@@ -700,48 +745,6 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
     private string SidebarSizeStyle
         => string.Create(CultureInfo.InvariantCulture, $"--forma-explorer-sidebar-size: {_sidebarWidth}rem");
 
-    /// <inheritdoc />
-    protected override Task OnAfterRenderAsync(bool firstRender)
-        => SyncSentinelAsync();
-
-    private Task SyncSentinelAsync()
-    {
-        // Only automatic scrolling watches the sentinel; the manual mode waits for the button to be pressed.
-        var wantsSentinel = Options.InfiniteScroll == ExplorerInfiniteScrollMode.Automatic && HasMorePages;
-
-        return _sentinel.SyncAsync(this, wantsSentinel, _sentinelElement, _scrollElement);
-    }
-
-    /// <summary>Appends the next page of media, as the reader scrolls toward the end of the current one.</summary>
-    [JSInvokable]
-    public async Task HandleReachedAsync()
-    {
-        if (_isLoadingPage || !IsInfiniteScrolling || !HasMorePages)
-        {
-            return;
-        }
-
-        _collection.PageNumber = EffectivePage + 1;
-
-        // An observer reports crossings, not a standing state, so it is re-armed to keep filling a viewport the new page did not.
-        _sentinel.Invalidate();
-        _isLoadingPage = true;
-
-        StateHasChanged();
-
-        try
-        {
-            await QueryAsync(append: true);
-            await OnPageChanged.InvokeAsync(_collection.PageNumber);
-        }
-        finally
-        {
-            _isLoadingPage = false;
-        }
-
-        StateHasChanged();
-    }
-
     private async Task HandleRefreshAsync()
     {
         await OnRefresh.InvokeAsync();
@@ -749,10 +752,8 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    public void Dispose()
     {
-        await _sentinel.DisposeAsync();
-
         _providerWindow.Dispose();
         _searchDebouncer.Dispose();
     }

@@ -19,4 +19,13 @@ public interface IExplorerInteraction
 
     /// <summary>Records the resource as the one being dragged.</summary>
     void BeginDrag(ResourceInfo resource);
+
+    /// <summary>Switches which layout the media is shown in.</summary>
+    Task ChangeViewModeAsync(ExplorerViewMode mode);
+
+    /// <summary>Fetches the next page, appending it to what is already shown.</summary>
+    Task RequestNextPageAsync();
+
+    /// <summary>Replaces what is shown with the given page.</summary>
+    Task ChangePageAsync(int page);
 }
