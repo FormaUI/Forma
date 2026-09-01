@@ -84,7 +84,7 @@
                                     class="forma-explorer-table-select @(selected ? "is-checked" : "")"
                                     aria-label="@resource.SelectLabel(L, View.Selection)"
                                     aria-pressed="@(selected ? "true" : "false")"
-                                    @onclick="() => Interaction.ToggleSelectAsync(resource)">
+                                    @onclick="() => Interaction.ToggleSelectionAsync(resource)">
                                 <FormaIcon Icon="Glyph.Check" Size="IconSize.Small" />
                             </button>
                         }

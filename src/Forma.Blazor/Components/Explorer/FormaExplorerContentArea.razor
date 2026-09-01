@@ -14,7 +14,7 @@
                 {
                     <p>@L["No media matches \"{Query}\"", Search.SearchQuery]</p>
                 }
-                else if (View.CurrentFolder is not null)
+                else if (Location.CurrentFolder is not null)
                 {
                     <p>@L["No media in this folder"]</p>
                 }
@@ -43,7 +43,7 @@
         @if (IsInfiniteScrolling && View.Paging.HasMorePages)
         {
             <div class="forma-explorer-scroll-sentinel" @ref="_sentinelElement">
-                @if (View.Options.InfiniteScroll == ExplorerInfiniteScrollMode.Automatic)
+                @if (Configuration.Options.InfiniteScroll == ExplorerInfiniteScrollMode.Automatic)
                 {
                     @if (_isLoadingPage)
                     {

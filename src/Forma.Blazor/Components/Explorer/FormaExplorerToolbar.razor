@@ -10,14 +10,14 @@
     {
         <div class="forma-explorer-selection-bar">
             <div class="forma-explorer-selection-actions">
-                @if (FileOptions.AllowDelete)
+                @if (View.FileOptions.AllowDelete)
                 {
-                    <FormaButton Variant="ButtonVariant.Danger" class="forma-explorer-delete-button" OnClick="OnDelete">
+                    <FormaButton Variant="ButtonVariant.Danger" class="forma-explorer-delete-button" OnClick="Interaction.RequestDeleteSelected">
                         <FormaIcon Icon="Glyph.Delete" Size="IconSize.Small" />
                         @L["Delete"]
                     </FormaButton>
                 }
-                <FormaToggleButton Icon="Glyph.SelectNone" Label="@L["Clear"]" ShowLabel="true" class="forma-explorer-clear-button" OnClick="OnClearSelection" />
+                <FormaToggleButton Icon="Glyph.SelectNone" Label="@L["Clear"]" ShowLabel="true" class="forma-explorer-clear-button" OnClick="Interaction.ClearSelectionAsync" />
             </div>
 
             <div class="forma-explorer-selection-status">
@@ -26,7 +26,7 @@
                 {
                     <FormaCloseButton class="forma-explorer-exit-select-button"
                                       Label="@L["Leave Selection Mode"]"
-                                      OnClick="OnToggleSelectMode" />
+                                      OnClick="Interaction.ToggleSelectionModeAsync" />
                 }
             </div>
         </div>
@@ -36,20 +36,20 @@
     <div class="forma-explorer-toolbar-left">
         @if (CanLeaveSelectMode)
         {
-            <FormaToggleButton Icon="@(IsSelectMode ? Glyph.Cross : Glyph.Select)"
-                                Label="@(IsSelectMode ? L["Cancel"] : L["Select"])"
+            <FormaToggleButton Icon="@(View.Selection.IsSelectionModeActive ? Glyph.Cross : Glyph.Select)"
+                                Label="@(View.Selection.IsSelectionModeActive ? L["Cancel"] : L["Select"])"
                                 ShowLabel="true"
-                                Pressed="IsSelectMode"
+                                Pressed="View.Selection.IsSelectionModeActive"
                                 class="forma-explorer-select-mode-button"
-                                OnClick="OnToggleSelectMode" />
+                                OnClick="Interaction.ToggleSelectionModeAsync" />
         }
-        @if (FileOptions.AllowFolderCreate && ShowNewFolder)
+        @if (ShowsNewFolderAction)
         {
-            <FormaToggleButton Icon="Glyph.FolderAdd" Label="@L["New Folder"]" ShowLabel="true" class="forma-explorer-new-folder-button" OnClick="OnFolderCreate" />
+            <FormaToggleButton Icon="Glyph.FolderAdd" Label="@L["New Folder"]" ShowLabel="true" class="forma-explorer-new-folder-button" OnClick="Interaction.RequestNewFolderAsync" />
         }
-        @if (FileOptions.AllowUpload)
+        @if (View.FileOptions.AllowUpload)
         {
-            <FormaToggleButton Icon="Glyph.CloudUpload" Label="@L["Upload"]" ShowLabel="true" class="forma-explorer-upload-button" OnClick="OnToggleUpload" />
+            <FormaToggleButton Icon="Glyph.CloudUpload" Label="@L["Upload"]" ShowLabel="true" class="forma-explorer-upload-button" OnClick="Interaction.ToggleUpload" />
         }
     </div>
 
@@ -59,18 +59,18 @@
             <FormaToggleButton Icon="Glyph.GridView"
                                 Label="@L["Thumbnails"]"
                                 class="forma-explorer-view-button"
-                                Pressed="@(ViewMode == ExplorerViewMode.Thumbnails)"
-                                OnClick="() => ViewModeChanged.InvokeAsync(ExplorerViewMode.Thumbnails)" />
+                                Pressed="@(View.ViewMode == ExplorerViewMode.Thumbnails)"
+                                OnClick="() => Interaction.ChangeViewModeAsync(ExplorerViewMode.Thumbnails)" />
             <FormaToggleButton Icon="Glyph.DetailsView"
                                 Label="@L["Details"]"
                                 class="forma-explorer-view-button"
-                                Pressed="@(ViewMode == ExplorerViewMode.Details)"
-                                OnClick="() => ViewModeChanged.InvokeAsync(ExplorerViewMode.Details)" />
+                                Pressed="@(View.ViewMode == ExplorerViewMode.Details)"
+                                OnClick="() => Interaction.ChangeViewModeAsync(ExplorerViewMode.Details)" />
             <FormaToggleButton Icon="Glyph.List"
                                 Label="@L["List"]"
                                 class="forma-explorer-view-button"
-                                Pressed="@(ViewMode == ExplorerViewMode.List)"
-                                OnClick="() => ViewModeChanged.InvokeAsync(ExplorerViewMode.List)" />
+                                Pressed="@(View.ViewMode == ExplorerViewMode.List)"
+                                OnClick="() => Interaction.ChangeViewModeAsync(ExplorerViewMode.List)" />
         </div>
 
         <!-- Sort Menu -->
@@ -79,16 +79,16 @@
                            aria-label="@L["Sort By"]">
             <Trigger>
                 <FormaIcon Icon="@DirectionGlyph" Size="IconSize.Small" />
-                <span class="forma-explorer-sort-trigger-text">@SortFieldLabel(SortField)</span>
+                <span class="forma-explorer-sort-trigger-text">@SortFieldLabel(View.SortField)</span>
                 <span class="forma-explorer-sort-trigger-caret" aria-hidden="true"><FormaIcon Icon="Glyph.ChevronDown" /></span>
             </Trigger>
             <ChildContent>
                 <div role="group" aria-label="@L["Sort By"]">
                     @foreach (var field in SortFields)
                     {
-                        <FormaDropDownMenuItem IsSelected="@(SortField == field)"
+                        <FormaDropDownMenuItem IsSelected="@(View.SortField == field)"
                                                data-sort-field="@field"
-                                               OnClick="() => SortFieldChanged.InvokeAsync(field)">
+                                               OnClick="() => Interaction.SortByAsync(field)">
                             <span>@SortFieldLabel(field)</span>
                         </FormaDropDownMenuItem>
                     }
@@ -97,10 +97,10 @@
                 <div role="group" aria-label="@L["Sort Direction"]">
                     @foreach (var direction in SortDirections)
                     {
-                        <FormaDropDownMenuItem IsSelected="@(SortDirection == direction)"
+                        <FormaDropDownMenuItem IsSelected="@(View.SortDirection == direction)"
                                                data-sort-direction="@direction"
-                                               OnClick="() => SortDirectionChanged.InvokeAsync(direction)">
-                            <FormaIcon Icon="@GlyphFor(SortField, direction)" Size="IconSize.Small" />
+                                               OnClick="() => Interaction.SetSortDirectionAsync(direction)">
+                            <FormaIcon Icon="@GlyphFor(View.SortField, direction)" Size="IconSize.Small" />
                             <span>@DirectionLabel(direction)</span>
                         </FormaDropDownMenuItem>
                     }

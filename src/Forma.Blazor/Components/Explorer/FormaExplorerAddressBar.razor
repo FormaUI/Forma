@@ -1,18 +1,18 @@
 @namespace Forma.Blazor.Components.Explorer
 @using Forma.Blazor.Components.Navigation
 
-<div class="forma-explorer-address-bar @(!string.IsNullOrEmpty(SearchQuery) ? "has-search-query" : "")">
+<div class="forma-explorer-address-bar @(!string.IsNullOrEmpty(Search.SearchQuery) ? "has-search-query" : "")">
     <div class="forma-explorer-nav-buttons" role="group" aria-label="@L["Navigation"]">
-        <FormaButton Variant="ButtonVariant.Ghost" IconOnly="true" class="forma-explorer-nav-button" Disabled="@(!CanGoBack)" aria-label="@L["Back"]" OnClick="OnBack">
+        <FormaButton Variant="ButtonVariant.Ghost" IconOnly="true" class="forma-explorer-nav-button" Disabled="@(!Location.CanGoBack)" aria-label="@L["Back"]" OnClick="LocationInteraction.GoBackAsync">
             <span class="forma-explorer-nav-arrow" aria-hidden="true"><FormaIcon Icon="Glyph.ArrowLeft" /></span>
         </FormaButton>
-        <FormaButton Variant="ButtonVariant.Ghost" IconOnly="true" class="forma-explorer-nav-button" Disabled="@(!CanGoForward)" aria-label="@L["Forward"]" OnClick="OnForward">
+        <FormaButton Variant="ButtonVariant.Ghost" IconOnly="true" class="forma-explorer-nav-button" Disabled="@(!Location.CanGoForward)" aria-label="@L["Forward"]" OnClick="LocationInteraction.GoForwardAsync">
             <span class="forma-explorer-nav-arrow" aria-hidden="true"><FormaIcon Icon="Glyph.ArrowRight" /></span>
         </FormaButton>
-        <FormaButton Variant="ButtonVariant.Ghost" IconOnly="true" class="forma-explorer-nav-button" Disabled="@(!CanGoUp)" aria-label="@L["Up to Parent Folder"]" OnClick="OnUp">
+        <FormaButton Variant="ButtonVariant.Ghost" IconOnly="true" class="forma-explorer-nav-button" Disabled="@(!Location.CanGoUp)" aria-label="@L["Up to Parent Folder"]" OnClick="LocationInteraction.GoUpAsync">
             <FormaIcon Icon="Glyph.ArrowUp" />
         </FormaButton>
-        <FormaButton Variant="ButtonVariant.Ghost" IconOnly="true" class="forma-explorer-nav-button" aria-label="@L["Refresh"]" OnClick="OnRefresh">
+        <FormaButton Variant="ButtonVariant.Ghost" IconOnly="true" class="forma-explorer-nav-button" aria-label="@L["Refresh"]" OnClick="Interaction.RefreshAsync">
             <FormaIcon Icon="Glyph.Refresh" />
         </FormaButton>
     </div>
@@ -21,12 +21,12 @@
         <FormaBreadcrumb Items="Items"
                         RootIcon="Glyph.FolderOpen"
                         AriaLabel="@L["Folder Path"]"
-                        OnItemClick="OnFolderSelected"
-                        OnItemDrop="OnBreadcrumbDrop" />
+                        OnItemClick="(FolderResourceInfo? folder) => LocationInteraction.SelectFolderAsync(folder)"
+                        OnItemDrop="(FolderResourceInfo? folder) => Interaction.DropOnFolderAsync(folder)" />
     </div>
 
     <div class="forma-explorer-search-wrapper">
-        <FormaSearchBox Value="@SearchQuery"
+        <FormaSearchBox Value="@Search.SearchQuery"
                         ValueChanged="HandleSearchValueChangedAsync"
                         Placeholder="@SearchPlaceholder"
                         aria-label="@SearchPlaceholder" />

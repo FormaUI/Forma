@@ -10,55 +10,29 @@ using Microsoft.AspNetCore.Components;
 /// <summary>Address bar and navigation controls for a media explorer.</summary>
 public sealed partial class FormaExplorerAddressBar : ComponentBase
 {
-    /// <summary>Breadcrumb folder segments leading to the current folder.</summary>
-    [Parameter] public IReadOnlyList<FolderResourceInfo> Breadcrumbs { get; set; } = [];
+    [CascadingParameter] private IExplorerConfigurationView Configuration { get; set; } = default!;
 
-    /// <summary>Whether navigation backward is available in the history stack.</summary>
-    [Parameter] public bool CanGoBack { get; set; }
+    [CascadingParameter] private IExplorerContentInteraction Interaction { get; set; } = default!;
 
-    /// <summary>Whether navigation forward is available in the history stack.</summary>
-    [Parameter] public bool CanGoForward { get; set; }
+    [CascadingParameter] private IExplorerLocationView Location { get; set; } = default!;
 
-    /// <summary>Whether navigation up to a parent folder is available.</summary>
-    [Parameter] public bool CanGoUp { get; set; }
+    [CascadingParameter] private IExplorerLocationInteraction LocationInteraction { get; set; } = default!;
 
-    /// <summary>The currently active folder, or null for root.</summary>
-    [Parameter] public FolderResourceInfo? CurrentFolder { get; set; }
+    [CascadingParameter] private IExplorerSearchView Search { get; set; } = default!;
 
-    /// <summary>Every known folder indexed, used to list a breadcrumb level's children.</summary>
-    [Parameter] public ExplorerFolderTree FolderTree { get; set; } = ExplorerFolderTree.Empty;
-
-    /// <summary>Raised when the back button is clicked.</summary>
-    [Parameter] public EventCallback OnBack { get; set; }
-
-    /// <summary>Raised when dropped resources land on a breadcrumb folder target.</summary>
-    [Parameter] public EventCallback<FolderResourceInfo?> OnBreadcrumbDrop { get; set; }
-
-    /// <summary>Raised when a breadcrumb segment folder is clicked.</summary>
-    [Parameter] public EventCallback<FolderResourceInfo?> OnFolderSelected { get; set; }
-
-    /// <summary>Raised when the forward button is clicked.</summary>
-    [Parameter] public EventCallback OnForward { get; set; }
-
-    /// <summary>Raised when the refresh button is clicked.</summary>
-    [Parameter] public EventCallback OnRefresh { get; set; }
-
-    /// <summary>Raised when the search query changes.</summary>
-    [Parameter] public EventCallback<string> OnSearchQueryChanged { get; set; }
-
-    /// <summary>Raised when the up button is clicked.</summary>
-    [Parameter] public EventCallback OnUp { get; set; }
-
-    /// <summary>Custom placeholder for the search box.</summary>
-    [Parameter] public string? Placeholder { get; set; }
-
-    /// <summary>Current active search query filter.</summary>
-    [Parameter] public string SearchQuery { get; set; } = string.Empty;
-
-    /// <summary>Whether each breadcrumb offers a menu of that folder's children.</summary>
-    [Parameter] public bool ShowFolderMenu { get; set; } = true;
+    [CascadingParameter] private IExplorerSearchInteraction SearchInteraction { get; set; } = default!;
 
     [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        if (Configuration is null || Interaction is null || Location is null || LocationInteraction is null
+            || Search is null || SearchInteraction is null)
+        {
+            throw new InvalidOperationException($"{nameof(FormaExplorerAddressBar)} must be rendered inside a {nameof(FormaExplorer)}.");
+        }
+    }
 
     private IReadOnlyList<BreadcrumbItem<FolderResourceInfo>> Items
     {
@@ -68,17 +42,17 @@ public sealed partial class FormaExplorerAddressBar : ComponentBase
             {
                 new(L["All Media"].Value)
                 {
-                    IsCurrent = CurrentFolder is null,
+                    IsCurrent = Location.CurrentFolder is null,
                     Children = ChildrenAsItems(null)
                 }
             };
 
-            foreach (var segment in Breadcrumbs)
+            foreach (var segment in Location.Breadcrumbs)
             {
                 items.Add(new BreadcrumbItem<FolderResourceInfo>(segment.Name)
                 {
                     Value = segment,
-                    IsCurrent = CurrentFolder?.Source == segment.Source,
+                    IsCurrent = Location.CurrentFolder?.Source == segment.Source,
                     Children = ChildrenAsItems(segment.Source)
                 });
             }
@@ -89,43 +63,36 @@ public sealed partial class FormaExplorerAddressBar : ComponentBase
 
     private List<BreadcrumbItem<FolderResourceInfo>>? ChildrenAsItems(string? folderKey)
     {
-        if (!ShowFolderMenu)
+        if (!Configuration.Options.ShowFolderMenu)
         {
             return null;
         }
 
-        var children = ChildrenOf(folderKey);
+        var children = Location.FolderTree.ChildrenOf(folderKey);
 
         return children.Count == 0
             ? null
             : [.. children.Select(child => new BreadcrumbItem<FolderResourceInfo>(child.Name) { Value = child })];
     }
 
-    private IReadOnlyList<FolderResourceInfo> ChildrenOf(string? parent)
-        => FolderTree.ChildrenOf(parent);
-
     private string SearchPlaceholder
     {
         get
         {
-            if (!string.IsNullOrEmpty(Placeholder))
+            if (!string.IsNullOrEmpty(Search.SearchPlaceholder))
             {
-                return Placeholder;
+                return Search.SearchPlaceholder;
             }
 
-            if (CurrentFolder is not null)
+            if (Location.CurrentFolder is not null)
             {
-                return L["Search {Name}...", CurrentFolder.Name].Value;
+                return L["Search {Name}...", Location.CurrentFolder.Name].Value;
             }
 
             return L["Search media..."].Value;
         }
     }
 
-    private async Task HandleSearchValueChangedAsync(string query)
-    {
-        SearchQuery = query;
-
-        await OnSearchQueryChanged.InvokeAsync(SearchQuery);
-    }
+    private Task HandleSearchValueChangedAsync(string query)
+        => SearchInteraction.SetSearchQueryAsync(query);
 }

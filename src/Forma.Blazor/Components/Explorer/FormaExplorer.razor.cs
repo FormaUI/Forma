@@ -15,8 +15,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 
 /// <summary>A server-side media library manager with thumbnail/details/list views, folders, navigation, drag-and-drop organization, upload, preview, rename, and delete.</summary>
-public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplorerView, IExplorerInteraction,
-    IExplorerLocationView, IExplorerLocationInteraction, IExplorerSearchView, IExplorerSearchInteraction, IResourceKindLabels
+public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplorerView, IExplorerInteraction, IResourceKindLabels
 {
     private const int DefaultPageSize = 24;
 
@@ -558,35 +557,19 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         }
     }
 
-    ExplorerOptions IExplorerView.Options => Options;
+    ExplorerOptions IExplorerConfigurationView.Options => Options;
 
-    ExplorerFolderTree IExplorerView.FolderTree => FolderTree;
+    ExplorerFileOptions IExplorerConfigurationView.FileOptions => FileOptions;
 
-    FolderResourceInfo? IExplorerView.CurrentFolder => CurrentFolder;
+    bool IExplorerConfigurationView.ShowsSidebar => ShowsSidebar;
 
-    ExplorerSortField IExplorerView.SortField => _collection.SortField;
+    IReadOnlyList<ExplorerAction> IExplorerConfigurationView.Actions => Actions;
 
-    ExplorerSortDirection IExplorerView.SortDirection => _collection.SortDirection;
+    FolderResourceInfo? IExplorerLocationView.CurrentFolder => CurrentFolder;
 
-    string IResourceKindLabels.LabelOf(ResourceInfo resource) => resource.KindLabel(L);
+    IReadOnlyList<FolderResourceInfo> IExplorerLocationView.Breadcrumbs => Breadcrumbs;
 
-    ExplorerViewMode IExplorerView.ViewMode => _viewMode;
-
-    IExplorerSelectionView IExplorerView.Selection => _selection;
-
-    IReadOnlyList<ExplorerAction> IExplorerView.Actions => Actions;
-
-    IReadOnlyList<ResourceInfo> IExplorerView.VisibleResources => VisibleResources;
-
-    bool IExplorerView.IsFetching => _providerWindow.IsFetching;
-
-    int? IExplorerView.MatchingCount => MatchingCount;
-
-    ExplorerPagingInfo IExplorerView.Paging => new(PageSize, PageCount, EffectivePage, HasMorePages);
-
-    string IExplorerSearchView.SearchQuery => _collection.SearchQuery;
-
-    string? IExplorerSearchView.SearchPlaceholder => SearchPlaceholder;
+    ExplorerFolderTree IExplorerLocationView.FolderTree => FolderTree;
 
     bool IExplorerLocationView.CanGoBack => CanGoBack;
 
@@ -594,9 +577,43 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
 
     bool IExplorerLocationView.CanGoUp => CanGoUp;
 
-    IReadOnlyList<FolderResourceInfo> IExplorerLocationView.Breadcrumbs => Breadcrumbs;
+    ExplorerSortField IExplorerContentView.SortField => _collection.SortField;
 
-    Task IExplorerInteraction.ActivateAsync(ResourceInfo resource)
+    ExplorerSortDirection IExplorerContentView.SortDirection => _collection.SortDirection;
+
+    string IResourceKindLabels.LabelOf(ResourceInfo resource) => resource.KindLabel(L);
+
+    ExplorerViewMode IExplorerContentView.ViewMode => _viewMode;
+
+    IExplorerSelectionView IExplorerView.Selection => _selection;
+
+    IReadOnlyList<ResourceInfo> IExplorerContentView.VisibleResources => VisibleResources;
+
+    bool IExplorerContentView.IsFetching => _providerWindow.IsFetching;
+
+    int? IExplorerContentView.MatchingCount => MatchingCount;
+
+    ExplorerPagingInfo IExplorerContentView.Paging => new(PageSize, PageCount, EffectivePage, HasMorePages);
+
+    string IExplorerSearchView.SearchQuery => _collection.SearchQuery;
+
+    string? IExplorerSearchView.SearchPlaceholder => SearchPlaceholder;
+
+    // A cascaded interaction call is received by whichever descendant's own markup wired it, so its
+    // implicit render trigger lands there rather than here; the render this component needs is requested explicitly.
+    private void Run(Action action)
+    {
+        action();
+        StateHasChanged();
+    }
+
+    private async Task RunAsync(Func<Task> action)
+    {
+        await action();
+        StateHasChanged();
+    }
+
+    Task IExplorerContentInteraction.ActivateAsync(ResourceInfo resource)
     {
         ArgumentNullException.ThrowIfNull(resource);
 
@@ -611,26 +628,26 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         return Task.CompletedTask;
     }
 
-    Task IExplorerInteraction.ToggleSelectAsync(ResourceInfo resource)
+    Task IExplorerSelectionInteraction.ToggleSelectionAsync(ResourceInfo resource)
     {
         ArgumentNullException.ThrowIfNull(resource);
 
         return ChangeSelectionAsync(selection => selection.Toggle(resource));
     }
 
-    Task IExplorerInteraction.ToggleFolderSelectAsync(FolderResourceInfo folder)
+    Task IExplorerSelectionInteraction.ToggleFolderSelectAsync(FolderResourceInfo folder)
         => ToggleFolderSelectAsync(folder);
 
-    Task IExplorerInteraction.SortByAsync(ExplorerSortField field)
+    Task IExplorerContentInteraction.SortByAsync(ExplorerSortField field)
         => HandleSortRequestedAsync(field);
 
-    void IExplorerInteraction.BeginDrag(ResourceInfo resource)
+    void IExplorerContentInteraction.BeginDrag(ResourceInfo resource)
         => _drag.Begin(resource);
 
-    Task IExplorerInteraction.ChangeViewModeAsync(ExplorerViewMode mode)
-        => HandleViewModeChangedAsync(mode);
+    Task IExplorerContentInteraction.ChangeViewModeAsync(ExplorerViewMode mode)
+        => RunAsync(() => HandleViewModeChangedAsync(mode));
 
-    async Task IExplorerInteraction.RequestNextPageAsync()
+    async Task IExplorerContentInteraction.RequestNextPageAsync()
     {
         if (!IsInfiniteScrolling || !HasMorePages)
         {
@@ -641,25 +658,50 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
 
         await QueryAsync(append: true);
         await OnPageChanged.InvokeAsync(_collection.PageNumber);
+        StateHasChanged();
     }
 
-    Task IExplorerInteraction.ChangePageAsync(int page)
-        => HandlePageChangedAsync(page);
+    Task IExplorerContentInteraction.ChangePageAsync(int page)
+        => RunAsync(() => HandlePageChangedAsync(page));
 
-    Task IExplorerSearchInteraction.ChangeSearchQueryAsync(string query)
-        => HandleSearchQueryChangedAsync(query);
+    Task IExplorerSearchInteraction.SetSearchQueryAsync(string query)
+        => RunAsync(() => HandleSearchQueryChangedAsync(query));
 
     Task IExplorerLocationInteraction.GoBackAsync()
-        => HandleBackAsync();
+        => RunAsync(HandleBackAsync);
 
     Task IExplorerLocationInteraction.GoForwardAsync()
-        => HandleForwardAsync();
+        => RunAsync(HandleForwardAsync);
 
     Task IExplorerLocationInteraction.GoUpAsync()
-        => HandleUpAsync();
+        => RunAsync(HandleUpAsync);
 
     Task IExplorerLocationInteraction.SelectFolderAsync(FolderResourceInfo? folder)
-        => HandleFolderSelectedAsync(folder);
+        => RunAsync(() => HandleFolderSelectedAsync(folder));
+
+    Task IExplorerContentInteraction.SetSortDirectionAsync(ExplorerSortDirection direction)
+        => RunAsync(() => HandleSortDirectionChangedAsync(direction));
+
+    Task IExplorerContentInteraction.DropOnFolderAsync(FolderResourceInfo? folder)
+        => RunAsync(() => HandleDropOnFolderAsync(folder));
+
+    Task IExplorerSelectionInteraction.ToggleSelectionModeAsync()
+        => RunAsync(ToggleSelectModeAsync);
+
+    Task IExplorerSelectionInteraction.ClearSelectionAsync()
+        => RunAsync(ClearSelectionAsync);
+
+    void IExplorerSelectionInteraction.RequestDeleteSelected()
+        => Run(() => OpenDeleteDialog());
+
+    Task IExplorerContentInteraction.RequestNewFolderAsync()
+        => RunAsync(() => OpenFolderDialogAsync(CurrentFolder));
+
+    void IExplorerContentInteraction.ToggleUpload()
+        => Run(ToggleUpload);
+
+    Task IExplorerContentInteraction.RefreshAsync()
+        => RunAsync(HandleRefreshAsync);
 
     // The sidebar re-exposes this to its folder nodes, which never reach past it to the explorer.
     internal Task ToggleFolderSelectAsync(FolderResourceInfo folder)

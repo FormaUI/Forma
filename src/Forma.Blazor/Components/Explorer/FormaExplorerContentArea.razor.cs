@@ -10,9 +10,13 @@ using Microsoft.JSInterop;
 /// <summary>The view switch, infinite scroll, and pagination for the resources an explorer shows.</summary>
 public sealed partial class FormaExplorerContentArea : ComponentBase, IAsyncDisposable
 {
-    [CascadingParameter] private IExplorerView View { get; set; } = default!;
+    [CascadingParameter] private IExplorerConfigurationView Configuration { get; set; } = default!;
 
-    [CascadingParameter] private IExplorerInteraction Interaction { get; set; } = default!;
+    [CascadingParameter] private IExplorerLocationView Location { get; set; } = default!;
+
+    [CascadingParameter] private IExplorerContentView View { get; set; } = default!;
+
+    [CascadingParameter] private IExplorerContentInteraction Interaction { get; set; } = default!;
 
     [CascadingParameter] private IExplorerSearchView Search { get; set; } = default!;
 
@@ -29,12 +33,12 @@ public sealed partial class FormaExplorerContentArea : ComponentBase, IAsyncDisp
     private bool _isLoadingPage;
 
     private bool IsInfiniteScrolling
-        => View.Options.InfiniteScroll != ExplorerInfiniteScrollMode.Off;
+        => Configuration.Options.InfiniteScroll != ExplorerInfiniteScrollMode.Off;
 
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        if (View is null || Interaction is null || Search is null)
+        if (Configuration is null || Location is null || View is null || Interaction is null || Search is null)
         {
             throw new InvalidOperationException($"{nameof(FormaExplorerContentArea)} must be rendered inside a {nameof(FormaExplorer)}.");
         }
@@ -49,7 +53,7 @@ public sealed partial class FormaExplorerContentArea : ComponentBase, IAsyncDisp
     private Task SyncSentinelAsync()
     {
         // Only automatic scrolling watches the sentinel; the manual mode waits for the button to be pressed.
-        var wantsSentinel = View.Options.InfiniteScroll == ExplorerInfiniteScrollMode.Automatic && View.Paging.HasMorePages;
+        var wantsSentinel = Configuration.Options.InfiniteScroll == ExplorerInfiniteScrollMode.Automatic && View.Paging.HasMorePages;
 
         return _sentinel.SyncAsync(this, wantsSentinel, _sentinelElement, _scrollElement);
     }
