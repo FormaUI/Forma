@@ -334,6 +334,11 @@ npm test --prefix tests/Forma.Blazor.Tests.Scripts
 dotnet run --project src/Forma.Blazor.Showcase
 ```
 
+Every compiler warning is a build failure: `TreatWarningsAsErrors` is on for
+src and tests alike, the `.editorconfig` severity table decides what the
+compiler reports, and the answer to an unwanted diagnostic is that table,
+never a local suppression.
+
 No project sets `GenerateDocumentationFile`, so nothing reports an undocumented public member. Turn it on for one throwaway build to list them:
 
 ```powershell

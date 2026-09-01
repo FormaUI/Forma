@@ -13,6 +13,7 @@
     <!-- Reports the .editorconfig IDE* code-style severities from the compiler, not just the IDE. -->
     <PropertyGroup>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
 
 </Project>
