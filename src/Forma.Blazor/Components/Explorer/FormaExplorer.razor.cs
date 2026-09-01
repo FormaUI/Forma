@@ -190,16 +190,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
 
     private ExplorerCollectionView _collection = default!;
 
-    private List<ResourceInfo> _providerWindow = [];
-
-    private int? _providerTotal;
-
-    // A store that cannot count still has to say whether the end has been reached, and a full window is the only signal left.
-    private bool _lastWindowWasFull;
-
-    private bool _isQuerying;
-
-    private CancellationTokenSource? _queryCancellation;
+    private readonly ExplorerProviderWindow _providerWindow = new();
 
     private CancellationTokenSource? _searchCancellation;
 
@@ -297,7 +288,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
 
     /// <summary>How many resources match the current search and sort, or null when the provider cannot say.</summary>
     private int? MatchingCount
-        => IsProviderMode ? _providerTotal : _collection.MatchingCount;
+        => IsProviderMode ? _providerWindow.Total : _collection.MatchingCount;
 
     private int PageCount
         => MatchingCount is { } total ? Math.Max(1, (int)Math.Ceiling(total / (double)PageSize)) : 1;
@@ -311,7 +302,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
                 return EffectivePage < PageCount;
             }
 
-            return MatchingCount is { } total ? VisibleResources.Count < total : _lastWindowWasFull;
+            return MatchingCount is { } total ? VisibleResources.Count < total : _providerWindow.WasFull;
         }
     }
 
@@ -320,7 +311,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
 
     /// <summary>The resources on screen; a provider supplies its own window, and a held collection is sliced into one.</summary>
     private IReadOnlyList<ResourceInfo> VisibleResources
-        => IsProviderMode ? _providerWindow : _collection.VisibleResources;
+        => IsProviderMode ? _providerWindow.Resources : _collection.VisibleResources;
 
     private IReadOnlyList<ResourceInfo> SelectedResources
         => _selection.ResolveResources();
@@ -421,61 +412,23 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
     }
 
     /// <summary>Fetches a window from the provider, replacing what is shown or extending it while infinite scrolling.</summary>
-    private async Task QueryAsync(bool append)
+    private Task QueryAsync(bool append)
     {
         if (ResourcesProvider is not { } provider)
         {
-            return;
+            return Task.CompletedTask;
         }
 
-        // A newer window makes an older one irrelevant rather than merely late, so the earlier request is abandoned.
-        await CancelAsync(_queryCancellation);
-        _queryCancellation = new CancellationTokenSource();
-        var token = _queryCancellation.Token;
-
         var query = new ExplorerResourceQuery(
-            append ? _providerWindow.Count : (EffectivePage - 1) * PageSize,
+            append ? _providerWindow.Resources.Count : (EffectivePage - 1) * PageSize,
             PageSize,
             string.IsNullOrWhiteSpace(_collection.SearchQuery) ? null : _collection.SearchQuery,
             _collection.SortField,
             _collection.SortDirection);
 
-        _isQuerying = true;
-        StateHasChanged();
-
-        try
-        {
-            var page = await provider.GetResourcesAsync(query, token);
-
-            if (token.IsCancellationRequested)
-            {
-                return;
-            }
-
-            // A provider is expected to apply the same filter itself; this only keeps a stray resource off the screen.
-            var window = _collection.Filter is { } accepted
-                ? page.Resources.Where(accepted.Accepts)
-                : page.Resources;
-
-            // The views hold the window they were handed, so a longer one replaces it rather than growing it underneath them.
-            _providerWindow = append ? [.. _providerWindow, .. window] : [.. window];
-            _providerTotal = page.TotalCount;
-            _lastWindowWasFull = page.Resources.Count >= PageSize;
-        }
-        catch (OperationCanceledException)
-        {
-            return;
-        }
-        finally
-        {
-            // A superseded query leaves the flag to the one that replaced it; anything else, including a failure, clears it.
-            if (!token.IsCancellationRequested)
-            {
-                _isQuerying = false;
-            }
-        }
-
-        StateHasChanged();
+        // FetchAsync lives in a library that must ConfigureAwait(false), so its continuation is not
+        // guaranteed to land back on the render thread; StateHasChanged needs InvokeAsync to get there.
+        return _providerWindow.FetchAsync(provider, onStateChanged: () => InvokeAsync(StateHasChanged), query, _collection.Filter, appendToWindow: append);
     }
 
     /// <summary>Re-reads the current window, after something the explorer does not own has changed the collection.</summary>
@@ -846,7 +799,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
         await _infiniteScroll.DisposeAsync();
 
         _selfReference?.Dispose();
-        _queryCancellation?.Dispose();
+        _providerWindow.Dispose();
         _searchCancellation?.Dispose();
     }
 

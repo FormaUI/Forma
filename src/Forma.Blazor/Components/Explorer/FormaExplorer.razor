@@ -107,12 +107,12 @@
         }
 
         <div class="forma-explorer-content">
-            <div class="forma-explorer-scroll @(_isQuerying ? "is-busy" : "")" @ref="_scrollElement" aria-busy="@(_isQuerying ? "true" : "false")">
+            <div class="forma-explorer-scroll @(_providerWindow.IsFetching ? "is-busy" : "")" @ref="_scrollElement" aria-busy="@(_providerWindow.IsFetching ? "true" : "false")">
                 @if (VisibleResources.Count == 0)
                 {
                     <div class="forma-explorer-empty" role="status">
                         <span class="forma-explorer-empty-icon" aria-hidden="true"><FormaIcon Icon="Glyph.Images" Size="IconSize.Display" /></span>
-                        @if (_isQuerying)
+                        @if (_providerWindow.IsFetching)
                         {
                             <p>@L["Loading media"]</p>
                         }
