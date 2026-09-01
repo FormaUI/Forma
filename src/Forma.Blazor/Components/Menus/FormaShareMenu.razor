@@ -27,7 +27,7 @@
                     {
                         <FormaDropDownMenuItem OnClick="ShareNativelyAsync"><FormaIcon Icon="Glyph.Share" /><span>@L["Share"]</span></FormaDropDownMenuItem>
                     }
-                    @foreach (var target in SupportedShareTargets)
+                    @foreach (var target in _supportedTargets)
                     {
                         @if (target.GetAddress(Item!) is { } address)
                         {

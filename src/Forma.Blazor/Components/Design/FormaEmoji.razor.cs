@@ -13,6 +13,8 @@ public sealed partial class FormaEmoji : ComponentBase, IAsyncDisposable
 
     private EmojiSpriteLoader? _ownLoader;
 
+    private EmojiSpriteLoader? _resolvedLoader;
+
     private string? _requestedSheet;
 
     /// <summary>The emoji to draw.</summary>
@@ -89,8 +91,7 @@ public sealed partial class FormaEmoji : ComponentBase, IAsyncDisposable
     // down, and the registered one covers the rest of the circuit. Only an emoji offered neither loads alone.
     private EmojiSpriteLoader GetSpriteLoader()
         => SpriteLoader
-            ?? (EmojiSpriteLoader?)Services.GetService(typeof(EmojiSpriteLoader))
-            ?? (_ownLoader ??= new EmojiSpriteLoader(JS));
+            ?? (_resolvedLoader ??= (EmojiSpriteLoader?)Services.GetService(typeof(EmojiSpriteLoader)) ?? (_ownLoader = new EmojiSpriteLoader(JS)));
 
     private static string SpriteHref(EmojiSprite sprite)
         => $"#{sprite.Symbol}";

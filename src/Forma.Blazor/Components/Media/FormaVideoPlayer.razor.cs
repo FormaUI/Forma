@@ -67,6 +67,10 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
 
     private bool _autoplayMuted;
 
+    private string? _resolvedSource;
+
+    private bool _resolvedAutoplay;
+
     private bool _activated;
 
     private string? _activatedSource;
@@ -102,20 +106,28 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
         ArgumentException.ThrowIfNullOrWhiteSpace(Source);
         ArgumentException.ThrowIfNullOrWhiteSpace(Title);
 
-        var previous = Frame;
-
-        Frame = await ResolveFrameAsync();
-
-        // A different video is a fresh decision to load a third party.
-        if (previous?.Source != Frame?.Source)
+        // The providers decide by address and autoplay alone, so the chain is asked again only when either changes.
+        if (Source != _resolvedSource || Autoplay != _resolvedAutoplay)
         {
-            _activated = false;
-        }
+            var previous = Frame;
 
-        // A frame of another kind takes the video element with it, so the next one has to be muted again.
-        if (Frame is not NativePlayerFrame)
-        {
-            _autoplayMuted = false;
+            Frame = await ResolveFrameAsync();
+
+            // Recorded only once resolution finished, so a provider that threw is asked again on the next change.
+            _resolvedSource = Source;
+            _resolvedAutoplay = Autoplay;
+
+            // A different video is a fresh decision to load a third party.
+            if (previous?.Source != Frame?.Source)
+            {
+                _activated = false;
+            }
+
+            // A frame of another kind takes the video element with it, so the next one has to be muted again.
+            if (Frame is not NativePlayerFrame)
+            {
+                _autoplayMuted = false;
+            }
         }
 
         if (Captions is { Count: > 0 } && Frame is EmbeddedPlayerFrame or HtmlPlayerFrame)

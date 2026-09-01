@@ -92,12 +92,32 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
 
     [Inject] private IServiceProvider Services { get; set; } = default!;
 
+    private IEmojiCatalog? _catalog;
+    private bool _catalogResolved;
+    private IEmojiProvider? _provider;
+    private EmojiSpriteLoader? _resolvedLoader;
+    private List<EmojiGroup>? _tabs;
+    private IReadOnlyList<EmojiInfo>? _visible;
+    private IReadOnlyList<string>? _requiredSheets;
+    private IReadOnlyList<EmojiInfo>? _loadable;
+
     // A catalog is data, so nothing can stand in for it; the picker shows its empty state instead.
     private IEmojiCatalog? Catalog
-        => (IEmojiCatalog?)Services.GetService(typeof(IEmojiCatalog));
+    {
+        get
+        {
+            if (!_catalogResolved)
+            {
+                _catalog = (IEmojiCatalog?)Services.GetService(typeof(IEmojiCatalog));
+                _catalogResolved = true;
+            }
+
+            return _catalog;
+        }
+    }
 
     private IEmojiProvider Provider
-        => (IEmojiProvider?)Services.GetService(typeof(IEmojiProvider)) ?? UnicodeEmojiProvider.Default;
+        => _provider ??= (IEmojiProvider?)Services.GetService(typeof(IEmojiProvider)) ?? UnicodeEmojiProvider.Default;
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
@@ -111,14 +131,14 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     private bool IsSearching => !string.IsNullOrWhiteSpace(_query);
 
     private IReadOnlyList<EmojiGroup> Tabs
-        => Recent.Count == 0
-            ? Groups
+        => _tabs ??= Recent.Count == 0
+            ? [.. Groups]
             : [new EmojiGroup { Id = RecentGroupId, Title = L["Recently Used"] }, .. Groups];
 
     private string ActiveGroupId => _activeGroupId ?? Tabs[0].Id;
 
     private IReadOnlyList<EmojiInfo> Visible
-        => Catalog is not { } catalog ? []
+        => _visible ??= Catalog is not { } catalog ? []
             : IsSearching ? catalog.Find(_query)
             : ActiveGroupId == RecentGroupId ? RecentEmoji()
             : catalog.TryFindByGroupId(ActiveGroupId, out var emojis) ? emojis : [];
@@ -131,11 +151,20 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     // The sheets the visible emoji need, in the order they are rendered, so a prefix of this is what has loaded.
     // An emoji whose artwork carries no sheet — native or an image — needs nothing awaited.
     private IReadOnlyList<string> RequiredSheets
-        => [.. Visible.Select(Sheet).OfType<string>().Distinct(StringComparer.Ordinal)];
+        => _requiredSheets ??= [.. Visible.Select(Sheet).OfType<string>().Distinct(StringComparer.Ordinal)];
 
     // Cells stop at the first sheet still missing, so nothing renders ahead of its own artwork.
     private IReadOnlyList<EmojiInfo> Loadable
-        => [.. Visible.TakeWhile(info => Sheet(info) is not { } sheet || IsSettled(sheet))];
+        => _loadable ??= [.. Visible.TakeWhile(info => Sheet(info) is not { } sheet || IsSettled(sheet))];
+
+    /// <summary>Forgets the derived view, so the next read rebuilds it from the state that just changed.</summary>
+    private void InvalidateView()
+    {
+        _tabs = null;
+        _visible = null;
+        _requiredSheets = null;
+        _loadable = null;
+    }
 
     private bool HasMoreToLoad
         => Loadable.Count < Visible.Count;
@@ -145,6 +174,8 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     {
         ArgumentNullException.ThrowIfNull(Options);
         ArgumentOutOfRangeException.ThrowIfLessThan(Options.MaxRecent, 1);
+
+        InvalidateView();
 
         // A tab that was showing recents disappears once the host clears them.
         if (_activeGroupId == RecentGroupId && Recent.Count == 0)
@@ -193,8 +224,21 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
 
     // The registered loader is shared with every emoji it renders, so a sheet is fetched once between them.
     private EmojiSpriteLoader GetSpriteLoader()
-        => (EmojiSpriteLoader?)Services.GetService(typeof(EmojiSpriteLoader))
+        => _resolvedLoader ??= (EmojiSpriteLoader?)Services.GetService(typeof(EmojiSpriteLoader))
             ?? (_ownLoader ??= new EmojiSpriteLoader(JS));
+
+    private int IndexOfTab(string groupId)
+    {
+        for (var index = 0; index < Tabs.Count; index++)
+        {
+            if (Tabs[index].Id == groupId)
+            {
+                return index;
+            }
+        }
+
+        return -1;
+    }
 
     private string? Sheet(EmojiInfo info)
         => Provider.GetArtwork(info.Emoji) is EmojiSprite sprite ? sprite.Sheet : null;
@@ -239,6 +283,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
             // A sheet that failed still counts as settled: empty cells beat a spinner that never clears.
             _loadingSheets.Remove(next);
             (arrived ? _loadedSheets : _failedSheets).Add(next);
+            InvalidateView();
             StateHasChanged();
         }
     }
@@ -254,6 +299,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
         // A sheet that failed is asked for again the next time its group is shown.
         _failedSheets.Clear();
         _isSentinelObserved = false;
+        InvalidateView();
         await LoadNextSheetAsync();
     }
 
@@ -265,6 +311,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     private async Task OnQueryChangedAsync(string query)
     {
         _query = query;
+        InvalidateView();
         _announcement = IsSearching
             ? L["{Count} emoji found.", Visible.Count]
             : string.Empty;
@@ -276,6 +323,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     {
         _activeGroupId = groupId;
         _query = string.Empty;
+        InvalidateView();
         await ResetChunkWindowAsync();
     }
 
@@ -292,6 +340,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
         }
 
         Recent = updated;
+        InvalidateView();
         await RecentChanged.InvokeAsync(updated);
     }
 
@@ -311,7 +360,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
             return;
         }
 
-        var current = Tabs.ToList().FindIndex(tab => tab.Id == ActiveGroupId);
+        var current = IndexOfTab(ActiveGroupId);
         var next = args.Key switch
         {
             "Home" => 0,

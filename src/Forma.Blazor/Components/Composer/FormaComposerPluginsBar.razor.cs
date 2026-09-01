@@ -35,40 +35,46 @@ public sealed partial class FormaComposerPluginsBar : ComponentBase
 
     [Inject] private IStringLocale<FormaComposer> L { get; set; } = default!;
 
-    private IReadOnlyList<FormaToolbarItem> Visible
+    private IReadOnlyList<FormaToolbarItem> _visible = [];
+
+    private IReadOnlyList<FormaToolbarAction> _overflowing = [];
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
     {
-        get
-        {
-            var remaining = InlineLimit;
-            List<FormaToolbarItem> visible = [];
+        _visible = SplitVisible();
 
-            foreach (var item in Items)
-            {
-                if (remaining <= 0)
-                {
-                    break;
-                }
-
-                if (item is FormaToolbarGroup group)
-                {
-                    visible.Add(group.Items.Count <= remaining ? group : group with { Items = [.. group.Items.Take(remaining)] });
-                    remaining -= group.Items.Count;
-                }
-                else
-                {
-                    visible.Add(item);
-                    remaining -= 1;
-                }
-            }
-
-            return visible;
-        }
+        // Skips before filtering, since the visible split counts every leaf toward the limit — filtering
+        // first would misalign the index and drop an action that is neither shown nor in the menu.
+        _overflowing = [.. Items.SelectMany(Leaves).Skip(InlineLimit).OfType<FormaToolbarAction>()];
     }
 
-    // Skips before filtering, since Visible counts every leaf toward the limit — filtering first
-    // would misalign the index and drop an action that is neither shown nor in the menu.
-    private IReadOnlyList<FormaToolbarAction> Overflowing
-        => [.. Items.SelectMany(Leaves).Skip(InlineLimit).OfType<FormaToolbarAction>()];
+    private List<FormaToolbarItem> SplitVisible()
+    {
+        var remaining = InlineLimit;
+        List<FormaToolbarItem> visible = [];
+
+        foreach (var item in Items)
+        {
+            if (remaining <= 0)
+            {
+                break;
+            }
+
+            if (item is FormaToolbarGroup group)
+            {
+                visible.Add(group.Items.Count <= remaining ? group : group with { Items = [.. group.Items.Take(remaining)] });
+                remaining -= group.Items.Count;
+            }
+            else
+            {
+                visible.Add(item);
+                remaining -= 1;
+            }
+        }
+
+        return visible;
+    }
 
     private static IEnumerable<FormaToolbarItem> Leaves(FormaToolbarItem item)
         => item is FormaToolbarGroup group ? group.Items : [item];

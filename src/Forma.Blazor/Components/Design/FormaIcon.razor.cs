@@ -10,7 +10,12 @@ using Microsoft.AspNetCore.Components;
 /// <summary>Renders an icon as inline SVG, or as a single character set by the font, so no icon font has to be loaded.</summary>
 public sealed partial class FormaIcon : ComponentBase
 {
+    /// <summary>One vector path as the markup writes it: its data, its stroke width or null for a filled path, and its opacity.</summary>
+    private readonly record struct VectorPathView(string Data, string? StrokeWidth, string? Opacity);
+
     private IconArtwork _artwork = default!;
+    private VectorPathView[] _vectorPaths = [];
+    private string? _characterText;
 
     /// <summary>The icon to draw.</summary>
     [Parameter, EditorRequired] public Icon Icon { get; set; } = default!;
@@ -59,6 +64,12 @@ public sealed partial class FormaIcon : ComponentBase
         _artwork = provider is not null && provider.TryGetArtwork(Icon, Size, out var supplied)
             ? supplied
             : FormaIconProvider.Default.TryGetArtwork(Icon, Size, out var bundled) ? bundled : IconArtwork.None;
+
+        // The path attributes are written once here rather than formatted again on every render.
+        _vectorPaths = _artwork is IconVector vector
+            ? [.. vector.Paths.Select(path => new VectorPathView(path.Data, path.StrokeWidth > 0 ? Width(path) : null, Fade(path)))]
+            : [];
+        _characterText = _artwork is IconCharacter character ? character.Value.ToString() : null;
     }
 
     private static string Width(IconPath path)

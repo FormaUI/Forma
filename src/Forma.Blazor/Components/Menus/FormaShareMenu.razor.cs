@@ -40,8 +40,10 @@ public sealed partial class FormaShareMenu : ComponentBase, IAsyncDisposable
     private bool _canShareNatively;
     private bool _isExpanded;
 
+    private IReadOnlyList<IShareTarget> _supportedTargets = [];
+
     private bool HasSocialNetworks
-        => SupportedShareTargets.Any() || (_canShareNatively && Item is { Address: not null });
+        => _supportedTargets.Count > 0 || (_canShareNatively && Item is { Address: not null });
 
     // A file is not posted to a network; a contact is reached by email rather than a copied address.
     private bool OffersEmail
@@ -50,9 +52,9 @@ public sealed partial class FormaShareMenu : ComponentBase, IAsyncDisposable
     private bool OffersCopyLink
         => Item is { Address: not null } && Item.Kind is not ShareItemKind.Contact;
 
-    /// <summary>The registered targets that support this item.</summary>
-    private IEnumerable<IShareTarget> SupportedShareTargets
-        => Item is null ? [] : ShareTargets.Where(target => target.Supports(Item));
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+        => _supportedTargets = Item is null ? [] : [.. ShareTargets.Where(target => target.Supports(Item))];
 
     private string EmailAddress
         => $"mailto:?subject={Uri.EscapeDataString(Item?.Name ?? string.Empty)}&body={Uri.EscapeDataString(Item?.Address ?? string.Empty)}";

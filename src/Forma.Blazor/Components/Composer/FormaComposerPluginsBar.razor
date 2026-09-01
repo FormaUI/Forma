@@ -4,18 +4,18 @@
     <div class="forma-composer-plugins-row" id="@Id">
         <FormaComposerCommandBar
             Label="@L["Plugin Commands"]"
-            Items="Visible"
+            Items="_visible"
             Disabled="Disabled"
             KeyMap="KeyMap"
             OnCommand="OnCommand">
             <TrailingContent>
-                @if (Overflowing.Count > 0)
+                @if (_overflowing.Count > 0)
                 {
                     <FormaOverflowMenu Orientation="MenuOrientation.Vertical"
                                        TriggerOptions="ButtonOptions.MiniGhostIcon"
                                        Disabled="Disabled"
                                        Label="@L["More Plugin Commands"]">
-                        @foreach (var action in Overflowing)
+                        @foreach (var action in _overflowing)
                         {
                             <FormaDropDownMenuItem OnClick="() => OnCommand.InvokeAsync(action.Command)">
                                 @if (action.Icon is { } icon)

@@ -67,7 +67,7 @@
     @if (_isAttachOpen)
     {
         <FormaComposerFileUploadDialog Opened="_isAttachOpen"
-                                       Options="AttachOptions"
+                                       Options="_attachOptions"
                                        OnAttach="HandleAttachedAsync"
                                        OnCancel="() => _isAttachOpen = false" />
     }

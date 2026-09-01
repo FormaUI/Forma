@@ -38,6 +38,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     private IHtmlSanitizer _sanitizer = default!;
     private ComposerContext _context = default!;
     private IComposerEditorPlugin _activeEditor = default!;
+    private IReadOnlyList<IComposerViewPlugin>? _activeViews;
     private IComposerViewPlugin? _activeView;
     private bool _isInitialized;
     private bool _isJsStarted;
@@ -80,7 +81,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
         => Options.ShowEditorSwitcher && (_catalog.Editors.Count > 1 || ActiveViews.Count > 0);
 
     private IReadOnlyList<IComposerViewPlugin> ActiveViews
-        => _catalog.ViewsOf(_activeEditor.Id);
+        => _activeViews ??= _catalog.ViewsOf(_activeEditor.Id);
 
     private string ActiveTabId
         => _activeView?.Id ?? _activeEditor.Id;
@@ -170,8 +171,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     }
 
     // Attaching is the engine's to run, so the gates come from whichever plugin contributed the command.
-    private FileUploadPluginOptions AttachOptions
-        => _catalog.FeaturePlugins.OfType<FileUploadPlugin>().FirstOrDefault()?.Options ?? FileUploadPluginOptions.Default;
+    private FileUploadPluginOptions _attachOptions = FileUploadPluginOptions.Default;
     private async Task HandleAttachedAsync(IReadOnlyList<ResourceInfo> attached)
     {
         _isAttachOpen = false;
@@ -189,9 +189,11 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
 
         _catalog = await ComposerPluginCatalog.CreateAsync(candidates, new PlainTextEditorPlugin());
         _activeEditor = _catalog.Resolve(ActiveEditorId, Options.DefaultEditorId, CurrentDocument.Format);
+        _activeViews = null;
 
         _commands.RegisterPlugins(_catalog.All);
         _keyMap = new ComposerKeyMap([ComposerKeyBindingSource.Default, .. _catalog.All]);
+        _attachOptions = _catalog.FeaturePlugins.OfType<FileUploadPlugin>().FirstOrDefault()?.Options ?? FileUploadPluginOptions.Default;
     }
 
     /// <inheritdoc />
@@ -280,6 +282,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
 
         _activeEditor = target;
         _activeView = null;
+        _activeViews = null;
 
         await _assetLoader.LoadAssetsAsync(target.Assets);
 

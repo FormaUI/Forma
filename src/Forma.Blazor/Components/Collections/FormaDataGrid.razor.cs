@@ -24,6 +24,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     private readonly RowEditSession<TGridItem> _editSession = new();
 
     private HashSet<TGridItem> _selectedSet = [];
+    private IReadOnlyList<TGridItem>? _syncedSelectedItems;
     private QuickGrid<TGridItem>? _grid;
     private ElementReference _scrollerElement;
     private SelectionInteraction _selection = default!;
@@ -255,7 +256,13 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
             _pagination.ItemsPerPage = PageSize;
         }
 
-        _selectedSet = [.. SelectedItems];
+        // The set is rebuilt only when the host hands over a different list, since every change
+        // this grid reports arrives as a new one.
+        if (!ReferenceEquals(_syncedSelectedItems, SelectedItems))
+        {
+            _syncedSelectedItems = SelectedItems;
+            _selectedSet = [.. SelectedItems];
+        }
     }
 
     /// <inheritdoc />
