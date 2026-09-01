@@ -62,7 +62,7 @@
     </div>
 
     <!-- Collapsible Upload Intake Panel -->
-    @if (_isUploadOpen)
+    @if (_uploadPanel.IsOpen)
     {
         <div class="forma-explorer-upload-panel">
             <div class="forma-explorer-upload-header">
@@ -71,9 +71,9 @@
             </div>
             <FormaFilePicker Options="UploadPickerOptions"
                              OnFilesSelected="HandleUploadFilesPickedAsync" />
-            @if (_pickedUploadFiles is { Count: > 0 })
+            @if (_uploadPanel.PickedFiles is { Count: > 0 })
             {
-                <FormaFileUploader Files="_pickedUploadFiles"
+                <FormaFileUploader Files="_uploadPanel.PickedFiles"
                                    Store="Store"
                                    OnCompleted="HandleUploadCompletedAsync" />
             }
@@ -90,7 +90,7 @@
                                  FolderTree="FolderTree"
                                  TotalCount="TotalCount ?? Resources?.Count ?? MatchingCount ?? 0"
                                  OnFolderDelete="OpenFolderDeleteDialog"
-                                 OnFolderDragStart="folder => _draggedFolder = folder"
+                                 OnFolderDragStart="folder => _drag.Begin(folder)"
                                  OnFolderDrop="HandleDropOnFolderAsync"
                                  OnFolderCreate="OpenFolderDialogAsync"
                                  OnFolderRename="OpenFolderRenameDialog"
@@ -194,7 +194,7 @@
     </div>
 
     <!-- Preview Lightbox Modal -->
-    @if (_previewResource is { } preview)
+    @if (_preview.Resource is { } preview)
     {
         <FormaModal Opened="true"
                     Size="ModalSize.ExtraLarge"
@@ -203,16 +203,16 @@
                     OnClose="ClosePreview">
             <Body>
                 <FormaFileViewer Source="@preview.Source"
-                                 Siblings="_previewSiblings"
+                                 Siblings="_preview.Siblings"
                                  OnNavigate="HandlePreviewNavigate" />
             </Body>
         </FormaModal>
     }
 
     <!-- Rename Media Modal -->
-    @if (_renameSession.Resource is not null)
+    @if (_resourceRename.Target is not null)
     {
-        <FormaModal Opened="@(_renameSession.Resource is not null)"
+        <FormaModal Opened="@(_resourceRename.Target is not null)"
                     Size="ModalSize.Small"
                     Title="@L["Rename Media"]"
                     Options="DialogModalOptions"
@@ -220,7 +220,7 @@
             <Body>
                 <div class="forma-explorer-dialog-field">
                     <label class="forma-explorer-dialog-label" for="forma-explorer-rename-input">@L["New Name"]</label>
-                    <FormaTextBox Id="forma-explorer-rename-input" class="forma-explorer-dialog-input" @bind-Value="_renameSession.DraftName" />
+                    <FormaTextBox Id="forma-explorer-rename-input" class="forma-explorer-dialog-input" @bind-Value="_resourceRename.Name" />
                 </div>
             </Body>
             <Footer>
@@ -235,9 +235,9 @@
     }
 
     <!-- Delete Media Modal -->
-    @if (_deletion.Resources.Count > 0)
+    @if (_resourceDeletion.IsActive)
     {
-        <FormaModal Opened="@(_deletion.Resources.Count > 0)"
+        <FormaModal Opened="@(_resourceDeletion.IsActive)"
                     Size="ModalSize.Small"
                     Title="@L["Delete Media"]"
                     Options="DialogModalOptions"
@@ -282,9 +282,9 @@
     }
 
     <!-- Rename Folder Modal -->
-    @if (_renameSession.Folder is not null)
+    @if (_folderRename.Target is not null)
     {
-        <FormaModal Opened="@(_renameSession.Folder is not null)"
+        <FormaModal Opened="@(_folderRename.Target is not null)"
                     Size="ModalSize.Small"
                     Title="@L["Rename Folder"]"
                     Options="DialogModalOptions"
@@ -292,7 +292,7 @@
             <Body>
                 <div class="forma-explorer-dialog-field">
                     <label class="forma-explorer-dialog-label" for="forma-explorer-rename-folder-input">@L["Folder Name"]</label>
-                    <FormaTextBox Id="forma-explorer-rename-folder-input" class="forma-explorer-dialog-input" @bind-Value="_renameSession.DraftName" />
+                    <FormaTextBox Id="forma-explorer-rename-folder-input" class="forma-explorer-dialog-input" @bind-Value="_folderRename.Name" />
                 </div>
             </Body>
             <Footer>
@@ -307,9 +307,9 @@
     }
 
     <!-- Delete Folder Modal -->
-    @if (_deletion.Folders.Count > 0)
+    @if (_folderDeletion.IsActive)
     {
-        <FormaModal Opened="@(_deletion.Folders.Count > 0)"
+        <FormaModal Opened="@(_folderDeletion.IsActive)"
                     Size="ModalSize.Small"
                     Title="@L["Delete Folder"]"
                     Options="DialogModalOptions"

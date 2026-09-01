@@ -1,5 +1,6 @@
 namespace Forma.Blazor.Components.Inputs;
 
+using Forma.Blazor.Threading;
 using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
@@ -41,7 +42,7 @@ public sealed partial class FormaSearchBox : ComponentBase, IAsyncDisposable
 
     [Inject] private IStringLocale<FormaSearchBox> L { get; set; } = default!;
 
-    private CancellationTokenSource? _debounceCancellation;
+    private readonly Debouncer _debouncer = new();
 
     private string InputClass
         => string.IsNullOrWhiteSpace(Class) ? "forma-search-box" : $"forma-search-box {Class}";
@@ -64,7 +65,7 @@ public sealed partial class FormaSearchBox : ComponentBase, IAsyncDisposable
             return;
         }
 
-        CancelDebounce();
+        _debouncer.Cancel();
         await OnSearch.InvokeAsync(Value);
     }
 
@@ -73,7 +74,7 @@ public sealed partial class FormaSearchBox : ComponentBase, IAsyncDisposable
         Value = string.Empty;
 
         await ValueChanged.InvokeAsync(Value);
-        CancelDebounce();
+        _debouncer.Cancel();
         await OnSearch.InvokeAsync(Value);
     }
 
@@ -81,45 +82,21 @@ public sealed partial class FormaSearchBox : ComponentBase, IAsyncDisposable
     {
         if (SearchDebounce is not { } delay || delay <= TimeSpan.Zero)
         {
-            CancelDebounce();
+            _debouncer.Cancel();
             await OnSearch.InvokeAsync(value);
             return;
         }
 
-        var token = RestartDebounce();
-
-        try
+        if (await _debouncer.WaitAsync(delay))
         {
-            await Task.Delay(delay, token);
+            await OnSearch.InvokeAsync(value);
         }
-        catch (OperationCanceledException)
-        {
-            return;
-        }
-
-        await OnSearch.InvokeAsync(value);
-    }
-
-    // Cancels and swaps the token synchronously on the dispatcher.
-    private CancellationToken RestartDebounce()
-    {
-        CancelDebounce();
-        _debounceCancellation = new CancellationTokenSource();
-
-        return _debounceCancellation.Token;
-    }
-
-    private void CancelDebounce()
-    {
-        _debounceCancellation?.Cancel();
-        _debounceCancellation?.Dispose();
-        _debounceCancellation = null;
     }
 
     /// <inheritdoc />
     public ValueTask DisposeAsync()
     {
-        CancelDebounce();
+        _debouncer.Dispose();
 
         return ValueTask.CompletedTask;
     }
