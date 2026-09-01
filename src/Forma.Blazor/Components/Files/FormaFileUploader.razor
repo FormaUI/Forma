@@ -3,7 +3,7 @@
 
 <div class="forma-file-uploader" aria-busy="@(IsUploading ? "true" : "false")">
     <ul class="forma-file-uploader-list">
-        @foreach (var upload in _uploads.Files)
+        @foreach (var upload in _batch.Files)
         {
             <li class="forma-file-uploader-item forma-file-uploader-@upload.State.ToString().ToLowerInvariant()">
                 <span class="forma-file-uploader-mark" aria-hidden="true"><FormaIcon Icon="StateGlyph(upload.State)" Size="IconSize.Small" /></span>
@@ -21,7 +21,7 @@
                     <span class="forma-file-uploader-rate"><bdi>@FileRate(upload)</bdi></span>
                 }
 
-                <progress class="forma-file-uploader-bar" max="100" value="@upload.Percent" aria-label="@upload.Name"></progress>
+                <progress class="forma-file-uploader-bar" max="100" value="@upload.ProgressPercentage" aria-label="@upload.Name"></progress>
 
                 @if (ShowsDuration)
                 {
@@ -33,7 +33,7 @@
         }
     </ul>
 
-    @if (Options.ShowTotalMetrics && ShowsMetrics && _uploads.Count > 1)
+    @if (Options.ShowTotalMetrics && ShowsMetrics && _batch.Count > 1)
     {
         <p class="forma-file-uploader-totals">
             <span class="forma-file-uploader-mark" aria-hidden="true"></span>

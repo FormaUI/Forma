@@ -16,19 +16,19 @@ public sealed partial class FormaComposerStatusStrip : ComponentBase
     [Parameter] public EventCallback<string> OnCommand { get; set; }
 
     /// <summary>The composer state cascaded from the parent shell.</summary>
-    [CascadingParameter] public ComposerState? State { get; set; }
+    [CascadingParameter] public ComposerContext? Context { get; set; }
 
     [Inject] private IStringLocale<FormaComposer> L { get; set; } = default!;
 
     private string AnnouncedText
-        => State is null
+        => Context is null
             ? string.Empty
-            : string.Join(", ", State.Regions.StatusItems.Where(item => item.IsAnnounced).Select(item => item.Text));
+            : string.Join(", ", Context.Regions.StatusItems.Where(item => item.IsAnnounced).Select(item => item.Text));
 
     // A pushed item's own role/aria-live stays off; the live region above already speaks the combined,
     // coherent text, so announcing each item again separately would talk over it.
     private IReadOnlyList<FormaToolbarItem> Items
-        => State is null ? [] : [.. State.Regions.StatusItems.Select(ToItem)];
+        => Context is null ? [] : [.. Context.Regions.StatusItems.Select(ToItem)];
 
     private static FormaToolbarItem ToItem(IComposerStatusItem item)
     {

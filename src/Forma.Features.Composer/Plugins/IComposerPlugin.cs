@@ -34,6 +34,6 @@ public interface IComposerPlugin : IComposerKeyBindingSource
     ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default);
 
     /// <summary>Runs one of the commands this plugin named, doing nothing when it names none.</summary>
-    ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+    ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
         => ValueTask.CompletedTask;
 }

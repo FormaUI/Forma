@@ -5,7 +5,7 @@
     @foreach (var resource in Resources)
     {
         var selected = View.Selection.IsSelected(resource);
-        var selecting = View.Selection.IsSelectMode && !View.Selection.HasFolders;
+        var selecting = View.Selection.IsSelectionModeActive && !View.Selection.HasFolders;
 
         <div class="forma-explorer-item @(selected ? "is-selected" : "")"
              role="listitem"
@@ -17,7 +17,7 @@
                 <button type="button"
                         class="forma-explorer-item-open"
                         aria-label="@resource.ActivateLabel(L, View.Selection)"
-                        aria-pressed="@(View.Selection.IsSelectMode ? (selected ? "true" : "false") : null)"
+                        aria-pressed="@(View.Selection.IsSelectionModeActive ? (selected ? "true" : "false") : null)"
                         @onclick="() => Interaction.ActivateAsync(resource)"></button>
 
                 <span class="forma-explorer-item-lead">

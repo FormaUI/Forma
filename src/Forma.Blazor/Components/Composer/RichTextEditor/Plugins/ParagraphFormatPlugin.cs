@@ -55,7 +55,7 @@ public sealed class ParagraphFormatPlugin(RichTextEditorPlugin editor) : ICompos
         ],
     };
 
-    private readonly RichTextEditorPlugin _editor = editor;
+    private readonly RichTextEditorPlugin _editorPlugin = editor;
 
     /// <inheritdoc />
     public string Id => "paragraph-format";
@@ -109,15 +109,15 @@ public sealed class ParagraphFormatPlugin(RichTextEditorPlugin editor) : ICompos
         => ValueTask.FromResult(true);
 
     /// <inheritdoc />
-    public ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+    public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
-        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(interaction);
 
         if (command == LeadCommand)
         {
-            _editor.RequestCommand("lead");
+            _editorPlugin.RequestCommand("lead");
             return ValueTask.CompletedTask;
         }
 
@@ -136,7 +136,7 @@ public sealed class ParagraphFormatPlugin(RichTextEditorPlugin editor) : ICompos
 
         if (blockTag is not null)
         {
-            _editor.RequestCommand("formatBlock", blockTag);
+            _editorPlugin.RequestCommand("formatBlock", blockTag);
         }
 
         return ValueTask.CompletedTask;

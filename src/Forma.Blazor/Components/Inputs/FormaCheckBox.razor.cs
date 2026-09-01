@@ -41,7 +41,7 @@ public sealed partial class FormaCheckBox : ComponentBase, IAsyncDisposable
 
     // Seeded to the element's own default, so a checkbox that is never indeterminate
     // — every row and option checkbox — never imports the module or calls into it.
-    private bool _indeterminateApplied;
+    private bool _isIndeterminateApplied;
 
     // Host class is merged rather than splatted, so supplying one never drops the checkbox's own styling.
     private string CssClass
@@ -62,14 +62,14 @@ public sealed partial class FormaCheckBox : ComponentBase, IAsyncDisposable
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_indeterminateApplied == Indeterminate)
+        if (_isIndeterminateApplied == Indeterminate)
         {
             return;
         }
 
         if (await _checkBox.SetIndeterminateAsync(_element, Indeterminate))
         {
-            _indeterminateApplied = Indeterminate;
+            _isIndeterminateApplied = Indeterminate;
         }
     }
 

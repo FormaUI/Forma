@@ -7,7 +7,7 @@ internal sealed class RowEditSession<TGridItem>
     where TGridItem : notnull
 {
     /// <summary>Resolves a row's identity, so the editing row is recognised across reloads.</summary>
-    public Func<TGridItem, object> KeyOf { get; set; } = item => item;
+    public Func<TGridItem, object> KeySelector { get; set; } = item => item;
 
     /// <summary>The untouched row the edit started from.</summary>
     public TGridItem? Item { get; private set; }
@@ -22,16 +22,16 @@ internal sealed class RowEditSession<TGridItem>
         => Draft is not null;
 
     public bool IsEditing(TGridItem candidate)
-        => Item is not null && KeyOf(Item).Equals(KeyOf(candidate));
+        => Item is not null && KeySelector(Item).Equals(KeySelector(candidate));
 
-    public void Begin(TGridItem item, TGridItem draft)
+    public void BeginEditing(TGridItem item, TGridItem draft)
     {
         Item = item;
         Draft = draft;
         EditContext = new EditContext(draft);
     }
 
-    public void End()
+    public void EndEditing()
     {
         Item = default;
         Draft = default;

@@ -16,7 +16,7 @@ public sealed class SpecialCharacterPlugin(
     /// <summary>Command prefix for inserting a specific special character.</summary>
     public const string InsertCharacterPrefix = "special-character.insert:";
 
-    private readonly RichTextEditorPlugin _editor = editor;
+    private readonly RichTextEditorPlugin _editorPlugin = editor;
 
     /// <summary>Options configuring available symbols.</summary>
     public SpecialCharacterPluginOptions Options { get; } = options ?? SpecialCharacterPluginOptions.Default;
@@ -60,10 +60,10 @@ public sealed class SpecialCharacterPlugin(
         => ValueTask.FromResult(true);
 
     /// <inheritdoc />
-    public ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+    public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
-        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(interaction);
 
         if (command.StartsWith(InsertCharacterPrefix, StringComparison.Ordinal))
@@ -71,7 +71,7 @@ public sealed class SpecialCharacterPlugin(
             var character = command[InsertCharacterPrefix.Length..];
             if (!string.IsNullOrEmpty(character))
             {
-                _editor.RequestCommand("insertText", character);
+                _editorPlugin.RequestCommand("insertText", character);
             }
         }
 

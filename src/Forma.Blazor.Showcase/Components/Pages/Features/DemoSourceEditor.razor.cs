@@ -15,7 +15,7 @@ public sealed partial class DemoSourceEditor : ComponentBase, IDisposable
     private static readonly TimeSpan MatchTimeout = TimeSpan.FromMilliseconds(250);
 
     /// <summary>The composer state cascaded from the parent shell.</summary>
-    [CascadingParameter] public ComposerState? State { get; set; }
+    [CascadingParameter] public ComposerContext? Context { get; set; }
 
     [CascadingParameter] public IComposerInteraction? Interaction { get; set; }
 
@@ -33,16 +33,16 @@ public sealed partial class DemoSourceEditor : ComponentBase, IDisposable
 
     // Rendering what the textarea already holds keeps an interleaved render from overwriting uncommitted typing.
     private string Content
-        => _typedContent ?? State?.Document.Content ?? string.Empty;
+        => _typedContent ?? Context?.Document.Content ?? string.Empty;
 
     private int LineCount
         => Content.Split('\n').Length;
 
     private bool IsDisabled
-        => State?.IsDisabled ?? false;
+        => Context?.IsDisabled ?? false;
 
     private bool IsReadOnly
-        => State?.IsReadOnly ?? false;
+        => Context?.IsReadOnly ?? false;
 
     private bool CanRename
         => !string.IsNullOrWhiteSpace(_oldName) && !string.IsNullOrWhiteSpace(_newName);
@@ -61,7 +61,7 @@ public sealed partial class DemoSourceEditor : ComponentBase, IDisposable
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        var documentContent = State?.Document.Content;
+        var documentContent = Context?.Document.Content;
 
         if (documentContent != _committedContent)
         {
@@ -117,7 +117,7 @@ public sealed partial class DemoSourceEditor : ComponentBase, IDisposable
 
     private async Task ApplyRenameAsync()
     {
-        if (State is null || Interaction is null || !CanRename)
+        if (Context is null || Interaction is null || !CanRename)
         {
             return;
         }
@@ -158,7 +158,7 @@ public sealed partial class DemoSourceEditor : ComponentBase, IDisposable
 
     private async Task CommitAsync(string content)
     {
-        if (State is null || Interaction is null || State.Document.Content == content)
+        if (Context is null || Interaction is null || Context.Document.Content == content)
         {
             return;
         }
@@ -166,7 +166,7 @@ public sealed partial class DemoSourceEditor : ComponentBase, IDisposable
         _typedContent = null;
         _committedContent = content;
 
-        await Interaction.ChangeDocumentAsync(State.Document with { Content = content });
+        await Interaction.ChangeDocumentAsync(Context.Document with { Content = content });
     }
 
     /// <inheritdoc />

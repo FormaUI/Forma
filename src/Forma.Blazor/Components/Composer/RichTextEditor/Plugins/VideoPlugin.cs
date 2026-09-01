@@ -12,7 +12,7 @@ public sealed class VideoPlugin(RichTextEditorPlugin editor) : IComposerFeatureP
     /// <summary>The command opening the insert video embed dialog.</summary>
     public const string InsertVideoCommand = "video.insert";
 
-    private readonly RichTextEditorPlugin _editor = editor;
+    private readonly RichTextEditorPlugin _editorPlugin = editor;
 
     /// <inheritdoc />
     public string Id => "video";
@@ -48,15 +48,15 @@ public sealed class VideoPlugin(RichTextEditorPlugin editor) : IComposerFeatureP
         => ValueTask.FromResult(true);
 
     /// <inheritdoc />
-    public ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+    public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
-        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(interaction);
 
         if (command == InsertVideoCommand)
         {
-            _editor.RequestVideoDialog();
+            _editorPlugin.RequestVideoDialog();
         }
 
         return ValueTask.CompletedTask;

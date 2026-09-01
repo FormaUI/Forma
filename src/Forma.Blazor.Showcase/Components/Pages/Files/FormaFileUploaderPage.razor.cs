@@ -22,9 +22,9 @@ public sealed partial class FormaFileUploaderPage : ComponentBase
 
     [Inject] private SandboxAssets Sandbox { get; set; } = default!;
 
-    private readonly Dictionary<string, List<string>> _log = [];
+    private readonly Dictionary<string, List<string>> _logs = [];
 
-    private readonly Dictionary<string, IReadOnlyList<IBrowserFile>> _selected = [];
+    private readonly Dictionary<string, IReadOnlyList<IBrowserFile>> _selectedFiles = [];
 
     private readonly Dictionary<string, DefaultFileStore> _stores = [];
 
@@ -57,7 +57,7 @@ public sealed partial class FormaFileUploaderPage : ComponentBase
     {
         Entries(key).Clear();
         Store(key).ClearBeforeSave = true;
-        _selected[key] = files;
+        _selectedFiles[key] = files;
     }
 
     private void Complete(string key, IReadOnlyList<ResourceInfo> resources)
@@ -70,10 +70,10 @@ public sealed partial class FormaFileUploaderPage : ComponentBase
 
     private List<string> Entries(string key)
     {
-        if (!_log.TryGetValue(key, out var lines))
+        if (!_logs.TryGetValue(key, out var lines))
         {
             lines = [];
-            _log[key] = lines;
+            _logs[key] = lines;
         }
 
         return lines;
@@ -92,10 +92,10 @@ public sealed partial class FormaFileUploaderPage : ComponentBase
     }
 
     private List<string> Log(string key)
-        => _log.TryGetValue(key, out var lines) ? lines : [];
+        => _logs.TryGetValue(key, out var lines) ? lines : [];
 
     private IReadOnlyList<IBrowserFile>? Selected(string key)
-        => _selected.TryGetValue(key, out var files) ? files : null;
+        => _selectedFiles.TryGetValue(key, out var files) ? files : null;
 
     private void SetStore(string key, long? refusesOver = null, TimeSpan chunkDelay = default)
     {

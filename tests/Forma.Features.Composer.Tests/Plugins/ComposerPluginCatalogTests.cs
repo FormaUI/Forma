@@ -58,8 +58,8 @@ public sealed class ComposerPluginCatalogTests
             () => Assert.Equal(["html"], catalog.Editors.Select(e => e.Id)),
             () => Assert.Equal(["html.preview", "markdown.preview"], catalog.Views.Select(v => v.Id)),
             () => Assert.Equal(["tables"], catalog.FeaturePlugins.Select(p => p.Id)),
-            () => Assert.Equal(["html.preview"], catalog.ViewsOf("html").Select(v => v.Id)),
-            () => Assert.Equal(["html", "html.preview", "markdown.preview", "tables"], catalog.All.Select(p => p.Id)));
+            () => Assert.Equal(["html.preview"], catalog.GetViewsForEditor("html").Select(v => v.Id)),
+            () => Assert.Equal(["html", "html.preview", "markdown.preview", "tables"], catalog.Plugins.Select(p => p.Id)));
     }
 
     private static ValueTask<ComposerPluginCatalog> CreateAsync(IEnumerable<IComposerPlugin> candidates)
@@ -127,7 +127,7 @@ public sealed class ComposerPluginCatalogTests
         var catalog = await CreateAsync(candidates);
 
         // Act
-        var resolved = catalog.Resolve("code", defaultId: "html", ComposerDocumentFormat.Html);
+        var resolved = catalog.ResolveEditor("code", defaultId: "html", ComposerDocumentFormat.Html);
 
         // Assert
         Assert.Equal("code", resolved.Id);
@@ -141,7 +141,7 @@ public sealed class ComposerPluginCatalogTests
         var catalog = await CreateAsync(candidates);
 
         // Act
-        var resolved = catalog.Resolve(requestedId: null, defaultId: "code", ComposerDocumentFormat.Html);
+        var resolved = catalog.ResolveEditor(requestedId: null, defaultId: "code", ComposerDocumentFormat.Html);
 
         // Assert
         Assert.Equal("code", resolved.Id);
@@ -155,7 +155,7 @@ public sealed class ComposerPluginCatalogTests
         var catalog = await CreateAsync(candidates);
 
         // Act
-        var resolved = catalog.Resolve(requestedId: null, defaultId: null, ComposerDocumentFormat.PlainText);
+        var resolved = catalog.ResolveEditor(requestedId: null, defaultId: null, ComposerDocumentFormat.PlainText);
 
         // Assert
         Assert.Equal("code", resolved.Id);
@@ -169,7 +169,7 @@ public sealed class ComposerPluginCatalogTests
         var catalog = await CreateAsync(candidates);
 
         // Act
-        var resolved = catalog.Resolve("absent", defaultId: "also-absent", ComposerDocumentFormat.PlainText);
+        var resolved = catalog.ResolveEditor("absent", defaultId: "also-absent", ComposerDocumentFormat.PlainText);
 
         // Assert
         Assert.Equal("html", resolved.Id);
@@ -185,6 +185,6 @@ public sealed class ComposerPluginCatalogTests
         var catalog = await CreateAsync(candidates);
 
         // Assert
-        Assert.Equal(["html", "tables"], catalog.All.Select(p => p.Id));
+        Assert.Equal(["html", "tables"], catalog.Plugins.Select(p => p.Id));
     }
 }

@@ -11,9 +11,9 @@ public sealed partial class FormaEmoji : ComponentBase, IAsyncDisposable
 {
     private EmojiArtwork _artwork = default!;
 
-    private EmojiSpriteLoader? _ownLoader;
+    private EmojiSpriteLoader? _ownedSpriteLoader;
 
-    private EmojiSpriteLoader? _resolvedLoader;
+    private EmojiSpriteLoader? _activeSpriteLoader;
 
     private string? _requestedSheet;
 
@@ -81,9 +81,9 @@ public sealed partial class FormaEmoji : ComponentBase, IAsyncDisposable
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        if (_ownLoader is not null)
+        if (_ownedSpriteLoader is not null)
         {
-            await _ownLoader.DisposeAsync();
+            await _ownedSpriteLoader.DisposeAsync();
         }
     }
 
@@ -91,7 +91,7 @@ public sealed partial class FormaEmoji : ComponentBase, IAsyncDisposable
     // down, and the registered one covers the rest of the circuit. Only an emoji offered neither loads alone.
     private EmojiSpriteLoader GetSpriteLoader()
         => SpriteLoader
-            ?? (_resolvedLoader ??= (EmojiSpriteLoader?)Services.GetService(typeof(EmojiSpriteLoader)) ?? (_ownLoader = new EmojiSpriteLoader(JS)));
+            ?? (_activeSpriteLoader ??= (EmojiSpriteLoader?)Services.GetService(typeof(EmojiSpriteLoader)) ?? (_ownedSpriteLoader = new EmojiSpriteLoader(JS)));
 
     private static string SpriteHref(EmojiSprite sprite)
         => $"#{sprite.Symbol}";

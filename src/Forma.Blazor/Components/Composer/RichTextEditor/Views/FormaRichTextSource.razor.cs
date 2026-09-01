@@ -12,25 +12,25 @@ using Microsoft.JSInterop;
 public sealed partial class FormaRichTextSource : ComponentBase, IAsyncDisposable
 {
     /// <summary>The composer state cascaded from the parent shell.</summary>
-    [CascadingParameter] public ComposerState? State { get; set; }
+    [CascadingParameter] public ComposerContext? Context { get; set; }
 
     /// <summary>The view plugin cascaded by the composer surface.</summary>
     [CascadingParameter] public IComposerViewPlugin? ViewPlugin { get; set; }
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
-    private RichTextSourceViewPlugin _plugin = default!;
+    private RichTextSourceViewPlugin _sourcePlugin = default!;
     private Clipboard _clipboard = default!;
     private Download _download = default!;
 
     private string Source
-        => HtmlSourceFormatter.Format(State?.Document.Content ?? string.Empty);
+        => HtmlSourceFormatter.Format(Context?.Document.Content ?? string.Empty);
 
     private IReadOnlyList<string> Lines
         => Source.Split('\n');
 
     private string ContainerClass
-        => _plugin.IsWrapped ? "forma-composer-source forma-composer-source-wrapped" : "forma-composer-source";
+        => _sourcePlugin.IsWrapped ? "forma-composer-source forma-composer-source-wrapped" : "forma-composer-source";
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -38,11 +38,11 @@ public sealed partial class FormaRichTextSource : ComponentBase, IAsyncDisposabl
         _clipboard = new Clipboard(JS);
         _download = new Download(JS);
 
-        _plugin = ViewPlugin as RichTextSourceViewPlugin
+        _sourcePlugin = ViewPlugin as RichTextSourceViewPlugin
             ?? throw new InvalidOperationException($"{nameof(FormaRichTextSource)} requires a cascaded {nameof(RichTextSourceViewPlugin)}.");
 
-        _plugin.CopyRequested += HandleCopyRequested;
-        _plugin.DownloadRequested += HandleDownloadRequested;
+        _sourcePlugin.CopyRequested += HandleCopyRequested;
+        _sourcePlugin.DownloadRequested += HandleDownloadRequested;
     }
 
     private void HandleCopyRequested()
@@ -54,8 +54,8 @@ public sealed partial class FormaRichTextSource : ComponentBase, IAsyncDisposabl
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        _plugin.CopyRequested -= HandleCopyRequested;
-        _plugin.DownloadRequested -= HandleDownloadRequested;
+        _sourcePlugin.CopyRequested -= HandleCopyRequested;
+        _sourcePlugin.DownloadRequested -= HandleDownloadRequested;
 
         await _clipboard.DisposeAsync();
         await _download.DisposeAsync();

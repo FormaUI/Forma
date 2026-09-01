@@ -14,7 +14,7 @@ using Microsoft.JSInterop;
 /// </remarks>
 public sealed class EmojiSpriteLoader : IAsyncDisposable
 {
-    private readonly Dictionary<string, Task<bool>> _loads = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, Task<bool>> _loadsBySheet = new(StringComparer.Ordinal);
     private readonly IJSRuntime _js;
     private readonly NavigationManager? _navigation;
 
@@ -42,10 +42,10 @@ public sealed class EmojiSpriteLoader : IAsyncDisposable
     private async Task<bool> LoadCoreAsync(string sheet)
     {
         // The task is held rather than its result, so callers racing the first load await it instead of repeating it.
-        if (!_loads.TryGetValue(sheet, out var load))
+        if (!_loadsBySheet.TryGetValue(sheet, out var load))
         {
             load = (_asset ??= new Asset(_js)).LoadSpriteAsync(sheet).AsTask();
-            _loads[sheet] = load;
+            _loadsBySheet[sheet] = load;
         }
 
         var arrived = await load;
@@ -53,9 +53,9 @@ public sealed class EmojiSpriteLoader : IAsyncDisposable
         // A sheet that did not arrive is forgotten rather than remembered as failed, so a surface asking later
         // retries a transient failure instead of leaving its emoji blank for the rest of the circuit. Only the
         // load that failed is forgotten, so a retry someone else already started stays shared.
-        if (!arrived && _loads.TryGetValue(sheet, out var current) && ReferenceEquals(current, load))
+        if (!arrived && _loadsBySheet.TryGetValue(sheet, out var current) && ReferenceEquals(current, load))
         {
-            _loads.Remove(sheet);
+            _loadsBySheet.Remove(sheet);
         }
 
         return arrived;
@@ -73,5 +73,5 @@ public sealed class EmojiSpriteLoader : IAsyncDisposable
     }
 
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs args)
-        => _loads.Clear();
+        => _loadsBySheet.Clear();
 }

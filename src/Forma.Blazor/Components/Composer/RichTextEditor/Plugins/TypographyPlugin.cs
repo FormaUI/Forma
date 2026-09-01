@@ -28,7 +28,7 @@ public sealed class TypographyPlugin(
     /// <summary>The command applying line height styling.</summary>
     public const string LineHeightCommand = "typography.line-height";
 
-    private readonly RichTextEditorPlugin _editor = editor;
+    private readonly RichTextEditorPlugin _editorPlugin = editor;
 
     /// <summary>The options configuring available typography choices.</summary>
     public TypographyPluginOptions Options { get; } = options ?? TypographyPluginOptions.Default;
@@ -131,10 +131,10 @@ public sealed class TypographyPlugin(
         => ValueTask.FromResult(true);
 
     /// <inheritdoc />
-    public ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+    public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
-        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(interaction);
 
         var separator = command.IndexOf(':', StringComparison.Ordinal);
@@ -153,7 +153,7 @@ public sealed class TypographyPlugin(
 
         if (jsCommand is not null)
         {
-            _editor.RequestCommand(jsCommand, value ?? fallback);
+            _editorPlugin.RequestCommand(jsCommand, value ?? fallback);
         }
 
         return ValueTask.CompletedTask;

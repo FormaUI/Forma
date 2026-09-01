@@ -55,7 +55,7 @@ public sealed partial class FormaExplorerSidebar : ComponentBase, IExplorerSideb
 
     private const double MaxTreeHeight = 30;
 
-    private readonly HashSet<string> _collapsed = [];
+    private readonly HashSet<string> _collapsedFolderSources = [];
 
     private readonly string _titleId = $"forma-explorer-folders-{Guid.NewGuid():N}";
 
@@ -66,7 +66,7 @@ public sealed partial class FormaExplorerSidebar : ComponentBase, IExplorerSideb
         => ExpandableFolders.Any();
 
     private bool IsFullyCollapsed
-        => ExpandableFolders.All(folder => _collapsed.Contains(folder.Source));
+        => ExpandableFolders.All(folder => _collapsedFolderSources.Contains(folder.Source));
 
     private void ToggleAll()
     {
@@ -80,13 +80,13 @@ public sealed partial class FormaExplorerSidebar : ComponentBase, IExplorerSideb
     }
 
     private void ExpandAll()
-        => _collapsed.Clear();
+        => _collapsedFolderSources.Clear();
 
     private void CollapseAll()
     {
         foreach (var folder in ExpandableFolders)
         {
-            _collapsed.Add(folder.Source);
+            _collapsedFolderSources.Add(folder.Source);
         }
     }
 
@@ -126,13 +126,13 @@ public sealed partial class FormaExplorerSidebar : ComponentBase, IExplorerSideb
 
     // Folders start expanded so a nested tree is discoverable without a first click.
     bool IExplorerSidebarView.IsExpanded(string folderSource)
-        => !_collapsed.Contains(folderSource);
+        => !_collapsedFolderSources.Contains(folderSource);
 
     void IExplorerSidebarInteraction.ToggleExpanded(string folderSource)
     {
-        if (!_collapsed.Remove(folderSource))
+        if (!_collapsedFolderSources.Remove(folderSource))
         {
-            _collapsed.Add(folderSource);
+            _collapsedFolderSources.Add(folderSource);
         }
 
         // The toolbar toggle reflects the whole tree, so the sidebar rerenders for a change made inside a node.

@@ -65,6 +65,12 @@ A project's references are part of its contract, because every consumer inherits
 
 ## Naming
 
+Naming is a reading exercise before it is a writing one. Before naming
+anything, read the context the name will live in — the .NET conventions, the
+type, its comments, and its surrounding neighbors — and read the finished
+expression aloud at its call sites, because that is where `_months.GetYear`
+fails and `_calendar.GetYear` passes.
+
 - Do prefix component tags with `Forma`: `<FormaModal>`, `<FormaDataGrid>`.
 - Do prefix CSS classes with `forma-`: `.forma-toggle-switch-track`.
 - Do leave C# services, enums, and records unprefixed because namespaces disambiguate them: `ToastService`, `ModalSize`, `BreadcrumbItem`.
@@ -76,11 +82,33 @@ A project's references are part of its contract, because every consumer inherits
 - Do name a glyph for its recognizable visual form — `ArrowLeft`, not `Back` — and fall back to the form's conventional UI meaning only where the literal name would be obscure, cumbersome, or less recognizable: `Search`, not `MagnifyingGlass`.
 - Don't name a glyph for an application's command or feature unless it was drawn specifically and exclusively for it, such as a bespoke `Checkout` glyph used only for checkout.
 
+### Methods and API shape
+
+Established .NET vocabulary and API shapes take precedence over composing a
+descriptive name; there are patterns set in stone, and a member is named by
+recalling them, not by inventing.
+
+- Do keep collection vocabulary unqualified on a collection-like type: `Add`, `Clear`, `Count`, `Contains`, `Remove`.
+- Do use `Get*` for parameterized retrieval or calculation where a property is inappropriate, aligned with the BCL sibling when one exists: `GetYear` beside `Calendar.GetYear`, `GetChildren`, `GetViewsForEditor`.
+- Do use `Try*` where returning `false` is an expected inability rather than a failure — `TryZoomIn`, `TryStartLoading` — and reserve the Boolean-and-`out` shape for `TryGet*`.
+- Do name a delegate property for its role: `KeySelector`, `Factory`, `Comparer`, `Predicate`.
+- Do expose the unit in a numeric member's name when its type carries none — `TotalBytes`, `BytesTransferred`, `BytesPerSecond`, `ProgressPercentage` — and call a Stopwatch reading a `*Timestamp`; `*At` promises wall-clock time.
+- Do qualify a lifecycle method when its owner does not uniquely determine what begins or ends — `BeginUpload`, `BeginEditing`, `BeginRenaming` — and reserve `Open`/`Close` for something genuinely openable; a draft or session begins and ends.
+- Do split a method taking a Boolean callers would pass as a bare literal into one method per meaning, the way `MarkLoaded`/`MarkFailed` beat `Settle(sheet, bool)`.
+- Do suffix asynchronous methods with `Async`, spelled out in full: `ExecuteCommandAsync`, never `ExecAsync`.
+- Do treat a name as a claim checked against the implementation: a static calculator is an `*Estimator`, lifecycle bookkeeping a `*Tracker`, a bounded interaction a `*Session`, and "completed" means finished either way — success or failure — as .NET uses the word.
+- Don't rename a concept that survives a refactor; restructuring grants no license to rename, and the name changes only when the name itself is the defect.
+
 ### Fields, locals, and parameters
 
 A name earns its place by answering the question a reader arrives with. The declaration already gives the type; repeating it, or describing the plumbing underneath it, leaves the reader no better off than before.
 
 - Do name a field for the role its value plays rather than for its type or its mechanism, so a field holding an interop behaviour says which capability that behaviour gives the component; a bare `_watcher` or `_interop` says only what its own declaration already said.
+- Do derive a field's name from its type when the type name is the clearest statement of that role — `_sheetLoadTracker` for a `SpriteSheetLoadTracker` — and spend the words clarity needs; the rule above targets vacuous echoes, never full names.
+- Do name a collection field as a plural noun phrase, never a bare adjective: `_matchingEmojis` and `_renderedEmojis`, not `_visible` and `_loadable`.
+- Do keep one vocabulary across a type's field block, and name related fields as a family whose names state their true relationship — `_activeSpriteLoader` beside `_ownedSpriteLoader` is use versus ownership, and a ranked pair like primary/secondary would misdescribe fields where the owned instance can be the active one.
+- Do look into several collections of one element type living in a single type; where they are honest pipeline stages, the names must state how one derives from the other.
+- Do reread every call site after renaming a type or member, because a field named for the old identity turns expressions false — `_sheets.IsCompleted(sheet)` read as asking the sheets whether they had finished.
 - Do spell a name out. An abbreviation is unreadable without jumping back to the declaration, and single letters belong to loop counters and maths alone.
 - Do keep a lambda's parameter short only while its expression reads as a single thought, and name it as soon as the body outgrows one line.
 - Do name a Blazor event handler's argument `args`; `e` is the older `(sender, e)` idiom and says nothing about what a handler is reading.
@@ -344,6 +372,7 @@ Task scripts live in `scripts/` and are PowerShell 7, cross-platform.
 - Do present the component for review and stop; iterate on that same component until the maintainer declares it complete.
 - Do mark completion in both documents after approval: add `✅` to the component heading and build-order entry in `Forma/COMPONENTS.md`, then change `☐` to `✅` and update status in `EpicaDeportiva/docs/forma-components.md`.
 - Do finish a piece of work with it unstaged, report what changed and what the gate said, and propose a commit message for the maintainer to run themselves.
+- Do present a wholesale rename as a ledger of `current -> proposed` lines with a per-member note on what each member does, and apply only what the maintainer's review of that ledger decides; members it leaves unlisted stay unchanged.
 - Do keep changes minimal and on-scope.
 - Don't move to the next component before the current one is approved.
 - Don't mark a component complete on your own judgement.

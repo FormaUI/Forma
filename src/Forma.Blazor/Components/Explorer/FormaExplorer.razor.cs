@@ -136,7 +136,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
 
     private readonly ExplorerHistory _history = new();
 
-    private readonly FolderDraft _folderDraft = new();
+    private readonly FolderCreationDraft _folderDraft = new();
 
     private bool _isUploadOpen;
 
@@ -150,7 +150,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
 
     private IReadOnlyList<string> _previewSiblings = [];
 
-    private readonly ExplorerRename _rename = new();
+    private readonly ExplorerRenameSession _renameSession = new();
 
     private readonly ExplorerSelection _selection = new();
 
@@ -268,7 +268,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
     }
 
     private int EffectivePage
-        => Math.Clamp(_collection.Page, 1, PageCount);
+        => Math.Clamp(_collection.PageNumber, 1, PageCount);
 
     private string FolderDeleteConfirmMessage
     {
@@ -320,10 +320,10 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
 
     /// <summary>The resources on screen; a provider supplies its own window, and a held collection is sliced into one.</summary>
     private IReadOnlyList<ResourceInfo> VisibleResources
-        => IsProviderMode ? _providerWindow : _collection.Visible;
+        => IsProviderMode ? _providerWindow : _collection.VisibleResources;
 
     private IReadOnlyList<ResourceInfo> SelectedResources
-        => _selection.Resolve();
+        => _selection.ResolveResources();
 
     private IReadOnlyList<FolderResourceInfo> SelectedFolders
         => _selection.ResolveFolders();
@@ -335,7 +335,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
 
         _collection = new ExplorerCollectionView(this)
         {
-            Page = CurrentPage,
+            PageNumber = CurrentPage,
             PageSize = PageSize,
             SortField = SortField,
             SortDirection = SortDirection,
@@ -344,7 +344,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
         _viewMode = ViewMode;
 
         // Seeded once, so leaving selection mode afterwards is the reader's to decide.
-        _selection.IsSelectMode = Options.SelectOnOpen;
+        _selection.IsSelectionModeActive = Options.SelectOnOpen;
     }
 
     /// <inheritdoc />
@@ -365,12 +365,12 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
 
         if (_acceptParameter.Update(Constraints.AcceptedResourceKinds))
         {
-            _collection.Accept = ExplorerResourceFilter.Parse(Constraints.AcceptedResourceKinds);
+            _collection.Filter = ExplorerResourceFilter.Parse(Constraints.AcceptedResourceKinds);
         }
 
         if (_currentPageParameter.Update(CurrentPage))
         {
-            _collection.Page = CurrentPage;
+            _collection.PageNumber = CurrentPage;
         }
 
         if (_viewModeParameter.Update(ViewMode))
@@ -394,7 +394,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
             AdoptSelection(Selected);
         }
 
-        _selection.MaxSelection = Options.MaxSelection;
+        _selection.SelectionLimit = Options.MaxSelection;
     }
 
     /// <inheritdoc />
@@ -415,7 +415,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
             return;
         }
 
-        _collection.Page = 1;
+        _collection.PageNumber = 1;
 
         await QueryAsync(append: false);
     }
@@ -453,7 +453,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
             }
 
             // A provider is expected to apply the same filter itself; this only keeps a stray resource off the screen.
-            var window = _collection.Accept is { } accepted
+            var window = _collection.Filter is { } accepted
                 ? page.Resources.Where(accepted.Accepts)
                 : page.Resources;
 
@@ -489,7 +489,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
         // An append would stack a second copy of what is already shown, so a refresh always starts the window again.
         if (IsInfiniteScrolling)
         {
-            _collection.Page = 1;
+            _collection.PageNumber = 1;
         }
 
         return QueryAsync(append: false);
@@ -660,7 +660,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
     {
         ArgumentNullException.ThrowIfNull(resource);
 
-        if (_selection.IsSelectMode)
+        if (_selection.IsSelectionModeActive)
         {
             return ChangeSelectionAsync(selection => selection.Toggle(resource));
         }
@@ -761,9 +761,9 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
 
     private async Task ToggleSelectModeAsync()
     {
-        _selection.IsSelectMode = !_selection.IsSelectMode;
+        _selection.IsSelectionModeActive = !_selection.IsSelectionModeActive;
 
-        if (!_selection.IsSelectMode)
+        if (!_selection.IsSelectionModeActive)
         {
             await ClearSelectionAsync();
         }
@@ -813,7 +813,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
             return;
         }
 
-        _collection.Page = EffectivePage + 1;
+        _collection.PageNumber = EffectivePage + 1;
 
         // An observer reports crossings, not a standing state, so it is re-armed to keep filling a viewport the new page did not.
         _isSentinelStale = true;
@@ -824,7 +824,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
         try
         {
             await QueryAsync(append: true);
-            await OnPageChanged.InvokeAsync(_collection.Page);
+            await OnPageChanged.InvokeAsync(_collection.PageNumber);
         }
         finally
         {
@@ -857,16 +857,16 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
         => _deletion.Clear();
 
     private void CloseFolderDialog()
-        => _folderDraft.Close();
+        => _folderDraft.EndCreating();
 
     private void CloseFolderRenameDialog()
-        => _rename.Close();
+        => _renameSession.EndRenaming();
 
     private void ClosePreview()
         => _previewResource = null;
 
     private void CloseRenameDialog()
-        => _rename.Close();
+        => _renameSession.EndRenaming();
 
     private void CloseUpload()
     {
@@ -880,7 +880,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
         {
             _history.GoBack();
             var folder = Folders?.FirstOrDefault(f => f.Source == _history.Current);
-            _collection.Page = 1;
+            _collection.PageNumber = 1;
 
             await OnFolderChanged.InvokeAsync(folder);
         }
@@ -894,7 +894,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
         }
 
         var request = new ExplorerFolderCreateRequest(_folderDraft.Parent, _folderDraft.ConfirmedName);
-        _folderDraft.Close();
+        _folderDraft.EndCreating();
 
         await OnFolderCreate.InvokeAsync(request);
     }
@@ -934,10 +934,10 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
 
     private async Task HandleFolderRenameConfirmedAsync()
     {
-        if (_rename.Folder is { } folder && _rename.CanConfirm)
+        if (_renameSession.Folder is { } folder && _renameSession.CanConfirm)
         {
-            var newName = _rename.ConfirmedName;
-            _rename.Close();
+            var newName = _renameSession.ConfirmedName;
+            _renameSession.EndRenaming();
 
             await OnFolderRename.InvokeAsync(new ExplorerFolderRenameRequest(folder, newName));
         }
@@ -951,7 +951,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
         }
 
         _history.Visit(folder?.Source);
-        _collection.Page = 1;
+        _collection.PageNumber = 1;
 
         await OnFolderChanged.InvokeAsync(folder);
     }
@@ -962,7 +962,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
         {
             _history.GoForward();
             var folder = Folders?.FirstOrDefault(f => f.Source == _history.Current);
-            _collection.Page = 1;
+            _collection.PageNumber = 1;
 
             await OnFolderChanged.InvokeAsync(folder);
         }
@@ -1009,7 +1009,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
 
     private async Task HandlePageChangedAsync(int page)
     {
-        _collection.Page = page;
+        _collection.PageNumber = page;
 
         await QueryAsync(append: false);
         await OnPageChanged.InvokeAsync(page);
@@ -1057,13 +1057,13 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
 
     private async Task HandleRenameConfirmedAsync()
     {
-        if (_rename.Resource is not { } resource || !_rename.CanConfirm)
+        if (_renameSession.Resource is not { } resource || !_renameSession.CanConfirm)
         {
             return;
         }
 
-        var newName = _rename.ConfirmedName;
-        _rename.Close();
+        var newName = _renameSession.ConfirmedName;
+        _renameSession.EndRenaming();
 
         await OnRename.InvokeAsync(new ExplorerRenameRequest(resource, newName));
         await RefreshProviderAsync();
@@ -1072,7 +1072,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
     private async Task HandleSearchQueryChangedAsync(string query)
     {
         _collection.SearchQuery = query;
-        _collection.Page = 1;
+        _collection.PageNumber = 1;
 
         if (!IsProviderMode)
         {
@@ -1098,7 +1098,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
     private async Task HandleSortDirectionChangedAsync(ExplorerSortDirection direction)
     {
         _collection.SortDirection = direction;
-        _collection.Page = 1;
+        _collection.PageNumber = 1;
 
         await QueryAsync(append: false);
     }
@@ -1117,7 +1117,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
             _collection.SortDirection = ExplorerSortDirection.Ascending;
         }
 
-        _collection.Page = 1;
+        _collection.PageNumber = 1;
 
         await QueryAsync(append: false);
     }
@@ -1147,7 +1147,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
     {
         _rejectionMessage = null;
 
-        if (_collection.Accept is { } filter
+        if (_collection.Filter is { } filter
             && files.FirstOrDefault(file => !filter.Accepts(file.Name, file.ContentType)) is { } refused)
         {
             await RejectAsync(
@@ -1203,11 +1203,11 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
             return;
         }
 
-        _folderDraft.Open(parent);
+        _folderDraft.BeginCreating(parent);
     }
 
     private void OpenFolderRenameDialog(FolderResourceInfo folder)
-        => _rename.Begin(folder);
+        => _renameSession.BeginRenaming(folder);
 
     private void OpenPreview(ResourceInfo resource)
     {
@@ -1217,7 +1217,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
     }
 
     private void OpenRenameDialog(ResourceInfo resource)
-        => _rename.Begin(resource);
+        => _renameSession.BeginRenaming(resource);
 
     private void ToggleUpload()
         => _isUploadOpen = !_isUploadOpen;

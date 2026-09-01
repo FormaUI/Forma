@@ -14,7 +14,7 @@ public sealed class ExplorerPlugin(
     /// <summary>The command opening the stored files dialog.</summary>
     public const string BrowseCommand = "explorer.browse";
 
-    private readonly RichTextEditorPlugin _editor = editor;
+    private readonly RichTextEditorPlugin _editorPlugin = editor;
 
     /// <summary>Options configuring what is browsed, taken in, and inserted.</summary>
     public ExplorerPluginOptions Options { get; } = options ?? ExplorerPluginOptions.Default;
@@ -53,15 +53,15 @@ public sealed class ExplorerPlugin(
         => ValueTask.FromResult(true);
 
     /// <inheritdoc />
-    public ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+    public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
-        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(interaction);
 
         if (command == BrowseCommand)
         {
-            _editor.RequestExplorerDialog(Options);
+            _editorPlugin.RequestExplorerDialog(Options);
         }
 
         return ValueTask.CompletedTask;

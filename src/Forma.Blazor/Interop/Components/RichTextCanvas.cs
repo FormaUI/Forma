@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>Rich text contenteditable canvas interop and formatting operations.</summary>
-internal sealed class RichTextEditor(IJSRuntime js)
+internal sealed class RichTextCanvas(IJSRuntime js)
     : JsInterop(js, "./_content/Forma.Blazor/scripts/components/RichTextEditor.js")
 {
     /// <summary>Attaches the rich text canvas to the contenteditable target.</summary>
@@ -31,7 +31,7 @@ internal sealed class RichTextEditor(IJSRuntime js)
         => InvokeAsync<RichTextLinkTargetDto>("beginLinkDialog", isAnchor ? "a[name]" : "a[href]");
 
     /// <summary>Executes a rich text formatting command on the active selection.</summary>
-    public ValueTask<RichTextCommandResult?> ExecAsync(string command, object? value = null)
+    public ValueTask<RichTextCommandResult?> ExecuteCommandAsync(string command, object? value = null)
         => InvokeAsync<RichTextCommandResult>("exec", command, value);
 }
 

@@ -33,7 +33,7 @@ public sealed class BasicFormattingPlugin(RichTextEditorPlugin editor) : ICompos
     /// <summary>The command removing formatting from the selection.</summary>
     public const string RemoveFormatCommand = "format.remove-format";
 
-    private readonly RichTextEditorPlugin _editor = editor;
+    private readonly RichTextEditorPlugin _editorPlugin = editor;
 
     /// <inheritdoc />
     public string Id => "basic-formatting";
@@ -101,10 +101,10 @@ public sealed class BasicFormattingPlugin(RichTextEditorPlugin editor) : ICompos
         => ValueTask.FromResult(true);
 
     /// <inheritdoc />
-    public ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+    public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
-        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(interaction);
 
         var jsCommand = command switch
@@ -122,7 +122,7 @@ public sealed class BasicFormattingPlugin(RichTextEditorPlugin editor) : ICompos
 
         if (jsCommand is not null)
         {
-            _editor.RequestCommand(jsCommand);
+            _editorPlugin.RequestCommand(jsCommand);
         }
 
         return ValueTask.CompletedTask;

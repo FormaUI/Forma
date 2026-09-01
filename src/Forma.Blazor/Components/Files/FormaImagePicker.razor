@@ -6,10 +6,10 @@
                       OnFilesRejected="HandleFilesRejectedAsync"
                       OnFilesSelected="HandleFilesSelectedAsync" />
 
-    @if (_previews.Count > 0)
+    @if (_previewFileNames.Count > 0)
     {
         <ul class="forma-image-picker-previews">
-            @foreach (var name in _previews)
+            @foreach (var name in _previewFileNames)
             {
                 <li class="forma-image-picker-preview">
                     <span class="forma-image-picker-frame" aria-hidden="true">

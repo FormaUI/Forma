@@ -71,7 +71,7 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
 
     private bool _resolvedAutoplay;
 
-    private bool _activated;
+    private bool _isActivated;
 
     private string? _activatedSource;
 
@@ -79,7 +79,7 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
 
     // Autoplay is a request to start, so it overrides holding the player back.
     private bool ShowFacade
-        => DeferLoading && !Autoplay && !_activated && Frame is EmbeddedPlayerFrame or HtmlPlayerFrame;
+        => DeferLoading && !Autoplay && !_isActivated && Frame is EmbeddedPlayerFrame or HtmlPlayerFrame;
 
     private string CssClass
     {
@@ -120,7 +120,7 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
             // A different video is a fresh decision to load a third party.
             if (previous?.Source != Frame?.Source)
             {
-                _activated = false;
+                _isActivated = false;
             }
 
             // A frame of another kind takes the video element with it, so the next one has to be muted again.
@@ -178,7 +178,7 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
     }
 
     private void Activate()
-        => _activated = true;
+        => _isActivated = true;
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()

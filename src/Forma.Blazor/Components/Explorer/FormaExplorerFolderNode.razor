@@ -6,7 +6,7 @@
     var expanded = Sidebar.IsExpanded(Folder.Source);
     var isCurrent = Sidebar.IsCurrent(Folder);
     var selected = Sidebar.Selection.IsFolderSelected(Folder);
-    var selectable = Sidebar.Selection.IsSelectMode && !Sidebar.Selection.HasResources;
+    var selectable = Sidebar.Selection.IsSelectionModeActive && !Sidebar.Selection.HasResources;
     var options = Sidebar.FileOptions;
     var hasActions = !selectable && (options.AllowFolderCreate || options.AllowFolderRename || options.AllowFolderDelete);
 }

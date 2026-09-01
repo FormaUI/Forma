@@ -3,7 +3,7 @@ namespace Forma.Blazor.Components.Files;
 /// <summary>Counts the bytes read through an inner stream, reporting the running total.</summary>
 internal sealed class UploadFileStream(Stream inner, Action<long> onProgress) : Stream
 {
-    private long _totalRead;
+    private long _bytesRead;
 
     /// <inheritdoc />
     public override bool CanRead
@@ -24,7 +24,7 @@ internal sealed class UploadFileStream(Stream inner, Action<long> onProgress) : 
     /// <inheritdoc />
     public override long Position
     {
-        get => _totalRead;
+        get => _bytesRead;
         set => throw new NotSupportedException();
     }
 
@@ -95,7 +95,7 @@ internal sealed class UploadFileStream(Stream inner, Action<long> onProgress) : 
             return;
         }
 
-        _totalRead += read;
-        onProgress(_totalRead);
+        _bytesRead += read;
+        onProgress(_bytesRead);
     }
 }

@@ -35,26 +35,26 @@ public sealed partial class FormaDataGridPage : ComponentBase
         .Select(id => new GridItem(id, $"Sample item {id}"))
         .AsQueryable();
 
-    private readonly List<EditableEmployee> _editable =
+    private readonly List<EditableEmployee> _editableEmployees =
     [
         new() { Id = 1, Name = "Alice Johnson", Department = "Engineering", StartDate = new DateOnly(2019, 4, 2), Salary = 92000 },
         new() { Id = 2, Name = "Bob Smith", Department = "Marketing", StartDate = new DateOnly(2021, 9, 13), Salary = 74500 },
         new() { Id = 3, Name = "Carol Davis", Department = "Sales", StartDate = new DateOnly(2020, 1, 27), Salary = 81250 },
     ];
 
-    private IReadOnlyList<Employee> _selected = [];
+    private IReadOnlyList<Employee> _selectedEmployees = [];
 
-    private IReadOnlyList<Employee> _rowSelected = [];
+    private IReadOnlyList<Employee> _rowSelectedEmployees = [];
 
-    private IReadOnlyList<Employee> _limitsSelected = [];
+    private IReadOnlyList<Employee> _limitsSelectedEmployees = [];
 
     private CheckedSelectionOptions _limitsOptions = default!;
 
-    private Employee? _lastClicked;
+    private Employee? _lastClickedEmployee;
 
     private string? _lastAction;
 
-    private bool _detailsOpen;
+    private bool _isDetailsOpen;
 
     private Employee? _detailsEmployee;
 
@@ -73,16 +73,16 @@ public sealed partial class FormaDataGridPage : ComponentBase
         };
 
     private void HandleSelectionChanged(IReadOnlyList<Employee> selected)
-        => _selected = selected;
+        => _selectedEmployees = selected;
 
     private void HandleRowSelectionChanged(IReadOnlyList<Employee> selected)
-        => _rowSelected = selected;
+        => _rowSelectedEmployees = selected;
 
     private void HandleLimitsSelectionChanged(IReadOnlyList<Employee> selected)
-        => _limitsSelected = selected;
+        => _limitsSelectedEmployees = selected;
 
     private void HandleRowClick(Employee employee)
-        => _lastClicked = employee;
+        => _lastClickedEmployee = employee;
 
     private static string? GetRowClass(Employee employee)
         => employee.IsActive ? null : "row-inactive";
@@ -102,12 +102,12 @@ public sealed partial class FormaDataGridPage : ComponentBase
     private void OpenDetails(Employee employee)
     {
         _detailsEmployee = employee;
-        _detailsOpen = true;
+        _isDetailsOpen = true;
     }
 
     private void CloseDetails()
     {
-        _detailsOpen = false;
+        _isDetailsOpen = false;
         _detailsEmployee = null;
     }
 
@@ -123,7 +123,7 @@ public sealed partial class FormaDataGridPage : ComponentBase
 
     private void SaveEmployee(EditableEmployee edited)
     {
-        var target = _editable.Find(employee => employee.Id == edited.Id);
+        var target = _editableEmployees.Find(employee => employee.Id == edited.Id);
 
         if (target is null)
         {

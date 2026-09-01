@@ -19,8 +19,8 @@ public sealed class RichTextPluginTests
     private static IEnumerable<FormaToolbarItem> Flatten(FormaToolbarItem item)
         => item is FormaToolbarGroup group ? group.Items.SelectMany(Flatten) : [item];
 
-    private static ComposerState CreateState(string html = "<p>Test</p>", params string[] activeStyles)
-        => ComposerStates.Create(
+    private static ComposerContext CreateState(string html = "<p>Test</p>", params string[] activeStyles)
+        => ComposerContexts.Create(
             html,
             activeStyles.Length == 0
                 ? null

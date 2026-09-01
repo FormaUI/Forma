@@ -12,7 +12,7 @@ using Microsoft.JSInterop;
 public sealed partial class FormaComposerEmojiButton : ComponentBase, IAsyncDisposable
 {
     private readonly string _popupId = $"composer-emoji-{Guid.NewGuid():N}";
-    private IReadOnlyList<string> _recent = [];
+    private IReadOnlyList<string> _recentEmojis = [];
     private AnchoredPopup _popup = default!;
     private ElementReference _anchorElement;
     private ElementReference _popupElement;

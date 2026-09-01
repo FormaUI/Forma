@@ -25,13 +25,13 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
 
     private HashSet<TGridItem> _selectedSet = [];
     private readonly ParameterState<IReadOnlyList<TGridItem>?> _selectedItemsParameter = new();
-    private QuickGrid<TGridItem>? _grid;
+    private QuickGrid<TGridItem>? _quickGrid;
     private ElementReference _scrollerElement;
-    private SelectionInteraction _selection = default!;
+    private SelectionInteraction _selectionInteraction = default!;
     private HeightReservation _heightReservation = default!;
     private DotNetObjectReference<FormaDataGrid<TGridItem>>? _selfReference;
-    private bool _rowSelectionAttached;
-    private SelectionBounds _bounds;
+    private bool _isRowSelectionAttached;
+    private SelectionBounds _selectionBounds;
 
     /// <summary>The rows to display. Supply this or <see cref="ItemsProvider"/>, not both.</summary>
     [Parameter] public IQueryable<TGridItem>? Items { get; set; }
@@ -136,16 +136,16 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
 
     /// <summary>Whether <see cref="CheckedSelectionOptions.Maximum"/> has been reached, so no additional row can be selected.</summary>
     public bool IsMaximumSelectionReached
-        => !_bounds.CanAdd(_selectedSet.Count);
+        => !_selectionBounds.CanAdd(_selectedSet.Count);
 
     /// <summary>Whether the current selection meets <see cref="CheckedSelectionOptions.Minimum"/>.</summary>
     public bool IsMinimumSelectionSatisfied
-        => _bounds.Minimum is null || _selectedSet.Count >= _bounds.Minimum.Value;
+        => _selectionBounds.Minimum is null || _selectedSet.Count >= _selectionBounds.Minimum.Value;
 
     // Selecting every item can only ever be offered when it would not itself exceed the
     // maximum — there is no partial "select as many as fit" fallback.
     private bool CanSelectAll
-        => _bounds.CanSelectAll(TotalItemCount);
+        => _selectionBounds.CanSelectAll(TotalItemCount);
 
     // Deselecting is always available; selecting all is blocked once it would overshoot
     // the maximum, and there is nothing to clear when the selection is already empty.
@@ -187,7 +187,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     protected override void OnInitialized()
     {
         _pagination.TotalItemCountChanged += HandleTotalItemCountChanged;
-        _selection = new SelectionInteraction(JS);
+        _selectionInteraction = new SelectionInteraction(JS);
         _heightReservation = new HeightReservation(JS);
     }
 
@@ -242,12 +242,12 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
                 $"{nameof(EnableInlineEditing)} requires a reference type, but {typeof(TGridItem)} is a value type.");
         }
 
-        _editSession.KeyOf = ItemKey;
+        _editSession.KeySelector = ItemKey;
 
         ArgumentNullException.ThrowIfNull(CheckedSelectionOptions);
 
-        _bounds = new SelectionBounds(CheckedSelectionOptions.Minimum, CheckedSelectionOptions.Maximum);
-        _bounds.Validate();
+        _selectionBounds = new SelectionBounds(CheckedSelectionOptions.Minimum, CheckedSelectionOptions.Maximum);
+        _selectionBounds.Validate();
 
         // An unpaginated grid leaves Pagination unbound, so virtualization sizes its scroll
         // range from the real row count rather than a page.
@@ -277,7 +277,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
 
     /// <summary>Re-queries the data source and re-renders the current page.</summary>
     public Task RefreshDataAsync()
-        => _grid?.RefreshDataAsync() ?? Task.CompletedTask;
+        => _quickGrid?.RefreshDataAsync() ?? Task.CompletedTask;
 
     /// <summary>The row currently being edited, or <see langword="null"/> when no edit is in progress.</summary>
     public TGridItem? EditingItem
@@ -301,7 +301,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
             throw new InvalidOperationException($"{nameof(BeginEdit)} requires {nameof(EnableInlineEditing)}.");
         }
 
-        _editSession.Begin(item, CloneForEdit!(item));
+        _editSession.BeginEditing(item, CloneForEdit!(item));
         StateHasChanged();
     }
 
@@ -318,7 +318,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
             return false;
         }
 
-        _editSession.End();
+        _editSession.EndEditing();
         StateHasChanged();
         await OnRowSave.InvokeAsync(draft);
 
@@ -333,7 +333,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
             return;
         }
 
-        _editSession.End();
+        _editSession.EndEditing();
         StateHasChanged();
         await OnRowCancel.InvokeAsync(item);
     }
@@ -344,13 +344,13 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (EnableRowSelection && !_rowSelectionAttached)
+        if (EnableRowSelection && !_isRowSelectionAttached)
         {
             // Claimed before the await so a render arriving mid-call cannot re-enter and
             // attach a second listener to the same scroller.
-            _rowSelectionAttached = true;
+            _isRowSelectionAttached = true;
             _selfReference ??= DotNetObjectReference.Create(this);
-            _rowSelectionAttached = await _selection.AttachAsync(_scrollerElement, _selfReference);
+            _isRowSelectionAttached = await _selectionInteraction.AttachAsync(_scrollerElement, _selfReference);
         }
 
         // Virtualization sizes its own scroll range, and an unpaginated grid has no short
@@ -372,7 +372,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     {
         _pagination.TotalItemCountChanged -= HandleTotalItemCountChanged;
 
-        await _selection.DisposeAsync();
+        await _selectionInteraction.DisposeAsync();
         await _heightReservation.DisposeAsync();
         _selfReference?.Dispose();
     }
@@ -408,7 +408,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     // A row already selected can always be cleared; an unselected row can only be added
     // while doing so would not exceed the maximum.
     private bool CanSelectRow(TGridItem item)
-        => IsSelected(item) || _bounds.CanAdd(_selectedSet.Count);
+        => IsSelected(item) || _selectionBounds.CanAdd(_selectedSet.Count);
 
     // The checkbox column enforces both bounds directly: an unselected row cannot be
     // checked once the maximum is reached, and a selected row cannot be unchecked once
@@ -417,7 +417,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     // removal and are exempt from the minimum.
     private bool CanToggleRow(TGridItem item)
         => IsSelected(item)
-            ? _bounds.CanRemove(_selectedSet.Count)
+            ? _selectionBounds.CanRemove(_selectedSet.Count)
             : CanSelectRow(item);
 
     // What the row's own interactive elements can still do, which is what its muted styling and
@@ -440,7 +440,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
             ? OnSelectionRejected.InvokeAsync(new SelectionRejected
             {
                 Boundary = boundary,
-                Limit = (boundary == SelectionBoundary.Minimum ? _bounds.Minimum : _bounds.Maximum).GetValueOrDefault(),
+                Limit = (boundary == SelectionBoundary.Minimum ? _selectionBounds.Minimum : _selectionBounds.Maximum).GetValueOrDefault(),
             })
             : Task.CompletedTask;
 
@@ -534,7 +534,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
 
         // Reuses the same "does this count fit under the maximum" rule that gates a
         // master select-all, since a range select is likewise a whole-set replacement.
-        if (!_bounds.CanSelectAll(updated.Count))
+        if (!_selectionBounds.CanSelectAll(updated.Count))
         {
             await RejectSelectionAsync(SelectionBoundary.Maximum);
             return;

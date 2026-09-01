@@ -2,7 +2,7 @@
 @using Forma.Features.Explorer
 
 @{
-    var selecting = View.Selection.IsSelectMode && !View.Selection.HasFolders;
+    var selecting = View.Selection.IsSelectionModeActive && !View.Selection.HasFolders;
 }
 
 <div class="forma-explorer-details-wrapper">

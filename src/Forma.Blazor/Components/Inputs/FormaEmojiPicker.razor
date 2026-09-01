@@ -30,7 +30,7 @@
     @if (Options.ShowSearch)
     {
         <div class="forma-emoji-picker-search">
-            <FormaSearchBox Value="@_query" ValueChanged="OnQueryChangedAsync" Placeholder="@L["Search Emoji"]" SearchDebounce="Options.SearchDebounce" />
+            <FormaSearchBox Value="@_searchQuery" ValueChanged="OnQueryChangedAsync" Placeholder="@L["Search Emoji"]" SearchDebounce="Options.SearchDebounce" />
         </div>
     }
 
@@ -40,11 +40,11 @@
          role="tabpanel"
          aria-labelledby="@(IsSearching || !Options.ShowGroupTabs ? null : TabElementId(ActiveGroupId))">
 
-        @if (Visible.Count == 0)
+        @if (MatchingEmojis.Count == 0)
         {
-            <p class="forma-emoji-picker-empty">@L["No emoji match \"{Query}\".", _query]</p>
+            <p class="forma-emoji-picker-empty">@L["No emoji match \"{Query}\".", _searchQuery]</p>
         }
-        else if (Loadable.Count == 0)
+        else if (RenderedEmojis.Count == 0)
         {
             <h3 class="forma-emoji-picker-heading">@HeadingText</h3>
             <div class="forma-emoji-picker-loading">
@@ -55,7 +55,7 @@
         {
             <h3 class="forma-emoji-picker-heading">@HeadingText</h3>
             <div class="forma-emoji-picker-grid" role="group" aria-label="@HeadingText">
-                @foreach (var info in Loadable)
+                @foreach (var info in RenderedEmojis)
                 {
                     <button @key="info.Emoji.Sequence"
                             type="button"

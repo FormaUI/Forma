@@ -25,7 +25,7 @@ public sealed class ComposerPluginCatalog
     public IReadOnlyList<IComposerPlugin> FeaturePlugins { get; }
 
     /// <summary>Every available plugin: editors, then views, then the rest.</summary>
-    public IEnumerable<IComposerPlugin> All
+    public IEnumerable<IComposerPlugin> Plugins
         => Editors.Concat<IComposerPlugin>(Views).Concat(FeaturePlugins);
 
     /// <summary>Keeps the first plugin of each identifier that reports itself available, falling back when no editor does.</summary>
@@ -72,14 +72,14 @@ public sealed class ComposerPluginCatalog
     }
 
     /// <summary>Picks the editor to activate, preferring an explicit request, then a configured default, then the document's format.</summary>
-    public IComposerEditorPlugin Resolve(string? requestedId, string? defaultId, ComposerDocumentFormat format)
+    public IComposerEditorPlugin ResolveEditor(string? requestedId, string? defaultId, ComposerDocumentFormat format)
         => Find(requestedId)
             ?? Find(defaultId)
             ?? Editors.FirstOrDefault(e => e.Format == format)
             ?? Editors[0];
 
     /// <summary>The views belonging to one editor, in the order they were given.</summary>
-    public IReadOnlyList<IComposerViewPlugin> ViewsOf(string editorId)
+    public IReadOnlyList<IComposerViewPlugin> GetViewsForEditor(string editorId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(editorId);
 

@@ -14,14 +14,14 @@ public sealed partial class FormaPlainTextEditor : ComponentBase, IAsyncDisposab
     private static readonly TimeSpan CommitDelay = TimeSpan.FromMilliseconds(400);
 
     /// <summary>The composer state cascaded from the parent shell.</summary>
-    [CascadingParameter] public ComposerState? State { get; set; }
+    [CascadingParameter] public ComposerContext? Context { get; set; }
 
     [CascadingParameter] public IComposerInteraction? Interaction { get; set; }
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
     private ElementReference _textareaElement;
-    private Text _text = default!;
+    private TextEntry _textEntry = default!;
     private CancellationTokenSource? _commitCancellation;
     private CancellationTokenSource? _selectionCancellation;
     private string? _typedContent;
@@ -29,22 +29,22 @@ public sealed partial class FormaPlainTextEditor : ComponentBase, IAsyncDisposab
 
     // Rendering what the textarea already holds keeps an interleaved render from overwriting uncommitted typing.
     private string Content
-        => _typedContent ?? State?.Document.Content ?? string.Empty;
+        => _typedContent ?? Context?.Document.Content ?? string.Empty;
 
     private bool IsDisabled
-        => State?.IsDisabled ?? false;
+        => Context?.IsDisabled ?? false;
 
     private bool IsReadOnly
-        => State?.IsReadOnly ?? false;
+        => Context?.IsReadOnly ?? false;
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _text = new Text(JS);
+        => _textEntry = new TextEntry(JS);
 
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        var documentContent = State?.Document.Content;
+        var documentContent = Context?.Document.Content;
 
         if (documentContent != _committedContent)
         {
@@ -118,12 +118,12 @@ public sealed partial class FormaPlainTextEditor : ComponentBase, IAsyncDisposab
 
     private async Task ReportSelectionAsync()
     {
-        if (State is null || Interaction is null)
+        if (Context is null || Interaction is null)
         {
             return;
         }
 
-        var range = await _text.ReadSelectionAsync(_textareaElement);
+        var range = await _textEntry.ReadSelectionAsync(_textareaElement);
 
         if (range is not null)
         {
@@ -133,14 +133,14 @@ public sealed partial class FormaPlainTextEditor : ComponentBase, IAsyncDisposab
 
     private async Task CommitAsync()
     {
-        if (State is null || Interaction is null || _typedContent is null || State.Document.Content == _typedContent)
+        if (Context is null || Interaction is null || _typedContent is null || Context.Document.Content == _typedContent)
         {
             return;
         }
 
         _committedContent = _typedContent;
 
-        await Interaction.ChangeDocumentAsync(State.Document with { Content = _typedContent });
+        await Interaction.ChangeDocumentAsync(Context.Document with { Content = _typedContent });
     }
 
     /// <inheritdoc />
@@ -158,6 +158,6 @@ public sealed partial class FormaPlainTextEditor : ComponentBase, IAsyncDisposab
             _selectionCancellation.Dispose();
         }
 
-        await _text.DisposeAsync();
+        await _textEntry.DisposeAsync();
     }
 }

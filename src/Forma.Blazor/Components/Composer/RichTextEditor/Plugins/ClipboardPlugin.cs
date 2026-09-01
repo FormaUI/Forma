@@ -18,7 +18,7 @@ public sealed class ClipboardPlugin(RichTextEditorPlugin editor) : IComposerFeat
     /// <summary>The command pasting clipboard contents sanitized from Microsoft Word formatting.</summary>
     public const string PasteWordCommand = "clipboard.paste-word";
 
-    private readonly RichTextEditorPlugin _editor = editor;
+    private readonly RichTextEditorPlugin _editorPlugin = editor;
 
     /// <inheritdoc />
     public string Id => "clipboard";
@@ -76,24 +76,24 @@ public sealed class ClipboardPlugin(RichTextEditorPlugin editor) : IComposerFeat
         => ValueTask.FromResult(true);
 
     /// <inheritdoc />
-    public ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+    public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
-        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(interaction);
 
         switch (command)
         {
             case SelectAllCommand:
-                _editor.RequestCommand("selectAll");
+                _editorPlugin.RequestCommand("selectAll");
                 break;
 
             case PasteTextCommand:
-                _editor.RequestCommand("pasteText");
+                _editorPlugin.RequestCommand("pasteText");
                 break;
 
             case PasteWordCommand:
-                _editor.RequestCommand("pasteWord");
+                _editorPlugin.RequestCommand("pasteWord");
                 break;
         }
 

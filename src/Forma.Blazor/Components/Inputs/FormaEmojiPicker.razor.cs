@@ -51,11 +51,11 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     };
 
     private readonly string _generatedId = $"emoji-picker-{Guid.NewGuid():N}";
-    private readonly SpriteSheetProgress _sheets = new();
-    private string _query = string.Empty;
+    private readonly SpriteSheetLoadTracker _sheetLoadTracker = new();
+    private string _searchQuery = string.Empty;
     private string? _activeGroupId;
     private string _announcement = string.Empty;
-    private EmojiSpriteLoader? _ownLoader;
+    private EmojiSpriteLoader? _ownedSpriteLoader;
     private InfiniteScroll? _infiniteScroll;
     private DotNetObjectReference<FormaEmojiPicker>? _selfReference;
     private ElementReference _sentinelElement;
@@ -91,23 +91,23 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     [Inject] private IServiceProvider Services { get; set; } = default!;
 
     private IEmojiCatalog? _catalog;
-    private bool _catalogResolved;
+    private bool _isCatalogResolved;
     private IEmojiProvider? _provider;
-    private EmojiSpriteLoader? _resolvedLoader;
+    private EmojiSpriteLoader? _activeSpriteLoader;
     private List<EmojiGroup>? _tabs;
-    private IReadOnlyList<EmojiInfo>? _visible;
+    private IReadOnlyList<EmojiInfo>? _matchingEmojis;
     private IReadOnlyList<string>? _requiredSheets;
-    private IReadOnlyList<EmojiInfo>? _loadable;
+    private IReadOnlyList<EmojiInfo>? _renderedEmojis;
 
     // A catalog is data, so nothing can stand in for it; the picker shows its empty state instead.
     private IEmojiCatalog? Catalog
     {
         get
         {
-            if (!_catalogResolved)
+            if (!_isCatalogResolved)
             {
                 _catalog = (IEmojiCatalog?)Services.GetService(typeof(IEmojiCatalog));
-                _catalogResolved = true;
+                _isCatalogResolved = true;
             }
 
             return _catalog;
@@ -126,7 +126,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
 
     private string PanelElementId => $"{ElementId}-panel";
 
-    private bool IsSearching => !string.IsNullOrWhiteSpace(_query);
+    private bool IsSearching => !string.IsNullOrWhiteSpace(_searchQuery);
 
     private IReadOnlyList<EmojiGroup> Tabs
         => _tabs ??= Recent.Count == 0
@@ -135,9 +135,9 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
 
     private string ActiveGroupId => _activeGroupId ?? Tabs[0].Id;
 
-    private IReadOnlyList<EmojiInfo> Visible
-        => _visible ??= Catalog is not { } catalog ? []
-            : IsSearching ? catalog.Find(_query)
+    private IReadOnlyList<EmojiInfo> MatchingEmojis
+        => _matchingEmojis ??= Catalog is not { } catalog ? []
+            : IsSearching ? catalog.Find(_searchQuery)
             : ActiveGroupId == RecentGroupId ? RecentEmoji()
             : catalog.TryFindByGroupId(ActiveGroupId, out var emojis) ? emojis : [];
 
@@ -149,23 +149,23 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     // The sheets the visible emoji need, in the order they are rendered, so a prefix of this is what has loaded.
     // An emoji whose artwork carries no sheet — native or an image — needs nothing awaited.
     private IReadOnlyList<string> RequiredSheets
-        => _requiredSheets ??= [.. Visible.Select(Sheet).OfType<string>().Distinct(StringComparer.Ordinal)];
+        => _requiredSheets ??= [.. MatchingEmojis.Select(Sheet).OfType<string>().Distinct(StringComparer.Ordinal)];
 
     // Cells stop at the first sheet still missing, so nothing renders ahead of its own artwork.
-    private IReadOnlyList<EmojiInfo> Loadable
-        => _loadable ??= [.. Visible.TakeWhile(info => Sheet(info) is not { } sheet || IsSettled(sheet))];
+    private IReadOnlyList<EmojiInfo> RenderedEmojis
+        => _renderedEmojis ??= [.. MatchingEmojis.TakeWhile(info => Sheet(info) is not { } sheet || IsCompleted(sheet))];
 
     /// <summary>Forgets the derived view, so the next read rebuilds it from the state that just changed.</summary>
     private void InvalidateView()
     {
         _tabs = null;
-        _visible = null;
+        _matchingEmojis = null;
         _requiredSheets = null;
-        _loadable = null;
+        _renderedEmojis = null;
     }
 
     private bool HasMoreToLoad
-        => Loadable.Count < Visible.Count;
+        => RenderedEmojis.Count < MatchingEmojis.Count;
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -206,9 +206,9 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
             await _infiniteScroll.DisposeAsync();
         }
 
-        if (_ownLoader is not null)
+        if (_ownedSpriteLoader is not null)
         {
-            await _ownLoader.DisposeAsync();
+            await _ownedSpriteLoader.DisposeAsync();
         }
 
         _selfReference?.Dispose();
@@ -222,8 +222,8 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
 
     // The registered loader is shared with every emoji it renders, so a sheet is fetched once between them.
     private EmojiSpriteLoader GetSpriteLoader()
-        => _resolvedLoader ??= (EmojiSpriteLoader?)Services.GetService(typeof(EmojiSpriteLoader))
-            ?? (_ownLoader ??= new EmojiSpriteLoader(JS));
+        => _activeSpriteLoader ??= (EmojiSpriteLoader?)Services.GetService(typeof(EmojiSpriteLoader))
+            ?? (_ownedSpriteLoader ??= new EmojiSpriteLoader(JS));
 
     private int IndexOfTab(string groupId)
     {
@@ -241,8 +241,8 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     private string? Sheet(EmojiInfo info)
         => Provider.GetArtwork(info.Emoji) is EmojiSprite sprite ? sprite.Sheet : null;
 
-    private bool IsSettled(string sheet)
-        => _sheets.IsSettled(sheet);
+    private bool IsCompleted(string sheet)
+        => _sheetLoadTracker.IsCompleted(sheet);
 
     private async Task WatchSentinelAsync()
     {
@@ -259,9 +259,9 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
 
     private async Task LoadNextSheetAsync()
     {
-        var next = RequiredSheets.FirstOrDefault(sheet => !IsSettled(sheet));
+        var next = RequiredSheets.FirstOrDefault(sheet => !IsCompleted(sheet));
 
-        if (next is null || !_sheets.Begin(next))
+        if (next is null || !_sheetLoadTracker.TryStartLoading(next))
         {
             return;
         }
@@ -278,8 +278,15 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
         }
         finally
         {
-            // A sheet that failed still counts as settled: empty cells beat a spinner that never clears.
-            _sheets.Settle(next, arrived);
+            // A sheet that failed still counts as completed: empty cells beat a spinner that never clears.
+            if (arrived)
+            {
+                _sheetLoadTracker.MarkLoaded(next);
+            }
+            else
+            {
+                _sheetLoadTracker.MarkFailed(next);
+            }
             InvalidateView();
             StateHasChanged();
         }
@@ -294,7 +301,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
         }
 
         // A sheet that failed is asked for again the next time its group is shown.
-        _sheets.ForgetFailures();
+        _sheetLoadTracker.ClearFailures();
         _isSentinelObserved = false;
         InvalidateView();
         await LoadNextSheetAsync();
@@ -307,10 +314,10 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
 
     private async Task OnQueryChangedAsync(string query)
     {
-        _query = query;
+        _searchQuery = query;
         InvalidateView();
         _announcement = IsSearching
-            ? L["{Count} emoji found.", Visible.Count]
+            ? L["{Count} emoji found.", MatchingEmojis.Count]
             : string.Empty;
 
         await ResetChunkWindowAsync();
@@ -319,7 +326,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     private async Task SelectGroupAsync(string groupId)
     {
         _activeGroupId = groupId;
-        _query = string.Empty;
+        _searchQuery = string.Empty;
         InvalidateView();
         await ResetChunkWindowAsync();
     }

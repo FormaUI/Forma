@@ -37,16 +37,16 @@ public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisp
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
     private ElementReference _element;
-    private ReorderInteraction _reorder = default!;
+    private ReorderInteraction _reorderInteraction = default!;
     private DotNetObjectReference<FormaSortableList<TItem>>? _selfReference;
-    private bool _attached;
+    private bool _isAttached;
     private SortableDragFrom _attachedDragFrom;
     private string? _announcement;
     private bool _padsAnnouncement;
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _reorder = new ReorderInteraction(JS);
+        => _reorderInteraction = new ReorderInteraction(JS);
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -61,7 +61,7 @@ public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisp
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (Disabled || (_attached && _attachedDragFrom == DragFrom))
+        if (Disabled || (_isAttached && _attachedDragFrom == DragFrom))
         {
             return;
         }
@@ -70,10 +70,10 @@ public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisp
         // mind has to rebind rather than leave the script answering for the old one.
         // Claimed before the await so a render arriving mid-call cannot re-enter and
         // attach a second listener to the same list.
-        _attached = true;
+        _isAttached = true;
         _attachedDragFrom = DragFrom;
         _selfReference ??= DotNetObjectReference.Create(this);
-        _attached = await _reorder.AttachAsync(_element, _selfReference, DragFrom == SortableDragFrom.Item);
+        _isAttached = await _reorderInteraction.AttachAsync(_element, _selfReference, DragFrom == SortableDragFrom.Item);
     }
 
     // The row-drag affordances are withheld while disabled, so a row that cannot be dragged
@@ -141,7 +141,7 @@ public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisp
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        await _reorder.DisposeAsync();
+        await _reorderInteraction.DisposeAsync();
         _selfReference?.Dispose();
     }
 }

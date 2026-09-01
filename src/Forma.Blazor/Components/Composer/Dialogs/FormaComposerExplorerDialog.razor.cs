@@ -20,7 +20,7 @@ public sealed partial class FormaComposerExplorerDialog : ComposerDialogBase
 
     [Inject] private IServiceProvider Services { get; set; } = default!;
 
-    private IExplorerResourcesProvider? _resources;
+    private IExplorerResourcesProvider? _resourcesProvider;
     private IFileStore? _store;
     private ExplorerFileOptions _fileOptions = ExplorerFileOptions.ReadOnly;
     private ExplorerConstraints _constraints = ExplorerConstraints.None;
@@ -53,7 +53,7 @@ public sealed partial class FormaComposerExplorerDialog : ComposerDialogBase
         var provider = (IExplorerResourcesProvider?)Services.GetService(typeof(IExplorerResourcesProvider));
 
         _store = (IFileStore?)Services.GetService(typeof(IFileStore));
-        _resources = provider is null
+        _resourcesProvider = provider is null
             ? null
             : ExplorerResourceFilter.Parse(Options.AcceptedResourceKinds) is { } filter
                 ? new FilteredResources(provider, filter)

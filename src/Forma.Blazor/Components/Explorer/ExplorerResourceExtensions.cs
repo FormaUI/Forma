@@ -29,7 +29,7 @@ internal static class ExplorerResourceExtensions
 
     /// <summary>The accessible name for activating the resource, reflecting the current mode.</summary>
     internal static string ActivateLabel(this ResourceInfo resource, IStringLocale<FormaExplorer> locale, IExplorerSelectionView selection)
-        => selection.IsSelectMode
+        => selection.IsSelectionModeActive
             ? resource.SelectLabel(locale, selection)
             : locale["Preview {Name}", resource.Name].Value;
 

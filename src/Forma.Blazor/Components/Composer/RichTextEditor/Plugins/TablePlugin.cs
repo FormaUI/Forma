@@ -38,7 +38,7 @@ public sealed class TablePlugin(
     /// <summary>The command deleting the active table entirely.</summary>
     public const string DeleteTableCommand = "table.delete";
 
-    private readonly RichTextEditorPlugin _editor = editor;
+    private readonly RichTextEditorPlugin _editorPlugin = editor;
 
     /// <summary>Options configuring table creation limits.</summary>
     public TablePluginOptions Options { get; } = options ?? TablePluginOptions.Default;
@@ -88,48 +88,48 @@ public sealed class TablePlugin(
         => ValueTask.FromResult(true);
 
     /// <inheritdoc />
-    public ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+    public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
-        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(interaction);
 
         switch (command)
         {
             case InsertTableCommand:
-                _editor.RequestTableDialog();
+                _editorPlugin.RequestTableDialog();
                 break;
 
             case AddRowBeforeCommand:
-                _editor.RequestCommand("tableAddRowBefore");
+                _editorPlugin.RequestCommand("tableAddRowBefore");
                 break;
 
             case AddRowAfterCommand:
-                _editor.RequestCommand("tableAddRowAfter");
+                _editorPlugin.RequestCommand("tableAddRowAfter");
                 break;
 
             case DeleteRowCommand:
-                _editor.RequestCommand("tableDeleteRow");
+                _editorPlugin.RequestCommand("tableDeleteRow");
                 break;
 
             case AddColBeforeCommand:
-                _editor.RequestCommand("tableAddColBefore");
+                _editorPlugin.RequestCommand("tableAddColBefore");
                 break;
 
             case AddColAfterCommand:
-                _editor.RequestCommand("tableAddColAfter");
+                _editorPlugin.RequestCommand("tableAddColAfter");
                 break;
 
             case DeleteColCommand:
-                _editor.RequestCommand("tableDeleteCol");
+                _editorPlugin.RequestCommand("tableDeleteCol");
                 break;
 
             case ToggleHeaderCommand:
-                _editor.RequestCommand("tableToggleHeader");
+                _editorPlugin.RequestCommand("tableToggleHeader");
                 break;
 
             case DeleteTableCommand:
-                _editor.RequestCommand("tableDelete");
+                _editorPlugin.RequestCommand("tableDelete");
                 break;
         }
 

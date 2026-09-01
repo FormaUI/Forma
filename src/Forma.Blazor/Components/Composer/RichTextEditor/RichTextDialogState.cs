@@ -28,8 +28,8 @@ internal enum RichTextDialogKind
 }
 
 /// <summary>The one dialog an editor has open, holding what a reopened element already carried.</summary>
-internal sealed record RichTextDialog(RichTextDialogKind Kind, ComposerDialogResult? Reopening = null)
+internal sealed record RichTextDialogState(RichTextDialogKind Kind, ComposerDialogResult? ExistingResult = null)
 {
     /// <summary>No dialog open.</summary>
-    public static RichTextDialog None { get; } = new(RichTextDialogKind.None);
+    public static RichTextDialogState None { get; } = new(RichTextDialogKind.None);
 }

@@ -3,7 +3,7 @@ namespace Forma.Features.Explorer;
 using Forma.Framework.Resources;
 
 /// <summary>The one rename in progress, of a folder or any other resource, with the draft name being typed.</summary>
-public sealed class ExplorerRename
+public sealed class ExplorerRenameSession
 {
     /// <summary>What is being renamed, or null while nothing is.</summary>
     public ResourceInfo? Target { get; private set; }
@@ -28,7 +28,7 @@ public sealed class ExplorerRename
         => DraftName.Trim();
 
     /// <summary>Starts renaming the given target, replacing any rename already in progress.</summary>
-    public void Begin(ResourceInfo target)
+    public void BeginRenaming(ResourceInfo target)
     {
         ArgumentNullException.ThrowIfNull(target);
 
@@ -37,7 +37,7 @@ public sealed class ExplorerRename
     }
 
     /// <summary>Ends the rename without applying it.</summary>
-    public void Close()
+    public void EndRenaming()
     {
         Target = null;
         DraftName = string.Empty;

@@ -14,7 +14,7 @@ internal static class EmojiAssetLoader
     public const string SpriteBasePath = "_content/Forma.AddOns.Emojis.Twemoji";
 
     /// <summary>The categories, in the order the picker presents them.</summary>
-    public static readonly IReadOnlyList<EmojiGroup> Groups =
+    public static IReadOnlyList<EmojiGroup> Groups { get; } =
     [
         new() { Id = "smileys", Title = "Smileys & Emotion" },
         new() { Id = "people", Title = "People & Body" },
@@ -36,14 +36,14 @@ internal static class EmojiAssetLoader
         => Groups.Any(group => string.Equals(group.Id, groupId, StringComparison.Ordinal));
 
     /// <summary>Returns the emoji belonging to the named category, reading it on first use.</summary>
-    public static IReadOnlyList<EmojiAsset> InGroup(string groupId)
-        => IsKnownGroup(groupId) ? Loaded.GetOrAdd(groupId, Load) : [];
+    public static IReadOnlyList<EmojiAsset> LoadGroup(string groupId)
+        => IsKnownGroup(groupId) ? Loaded.GetOrAdd(groupId, LoadGroupCore) : [];
 
     /// <summary>Every emoji in the catalog, which reads every category.</summary>
-    public static IReadOnlyList<EmojiAsset> All()
-        => [.. Groups.SelectMany(group => InGroup(group.Id))];
+    public static IReadOnlyList<EmojiAsset> LoadAll()
+        => [.. Groups.SelectMany(group => LoadGroup(group.Id))];
 
-    private static IReadOnlyList<EmojiAsset> Load(string groupId)
+    private static IReadOnlyList<EmojiAsset> LoadGroupCore(string groupId)
     {
         var resourceName = $"{ResourceFolder}.{groupId}.json";
 

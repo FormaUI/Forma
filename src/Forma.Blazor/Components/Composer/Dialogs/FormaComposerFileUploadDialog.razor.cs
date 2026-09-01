@@ -25,7 +25,7 @@ public sealed partial class FormaComposerFileUploadDialog : ComposerDialogBase
     private FormaFileUploader? _uploader;
     private IFileStore? _store;
     private IReadOnlyList<IBrowserFile> _files = [];
-    private readonly List<ResourceInfo> _uploaded = [];
+    private readonly List<ResourceInfo> _uploadedResources = [];
 
     private static FileUploaderOptions UploaderOptions
         => Detailed;
@@ -67,19 +67,19 @@ public sealed partial class FormaComposerFileUploadDialog : ComposerDialogBase
 
     // Handing these over would close the dialog, so what arrives is held until the reader is done choosing.
     private void HandleCompleted(IReadOnlyList<ResourceInfo> uploaded)
-        => _uploaded.AddRange(uploaded);
+        => _uploadedResources.AddRange(uploaded);
 
     private async Task HandleConfirmAsync()
     {
         // Nothing has finished yet, so confirming means the reader is done choosing rather than done uploading.
-        if (_uploaded.Count == 0)
+        if (_uploadedResources.Count == 0)
         {
             await OnCancel.InvokeAsync();
 
             return;
         }
 
-        await OnAttach.InvokeAsync([.. _uploaded]);
+        await OnAttach.InvokeAsync([.. _uploadedResources]);
     }
 
     private async Task HandleCancelAsync()

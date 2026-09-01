@@ -27,10 +27,10 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
 
     private ImplicitSubmitGuard _submitGuard = default!;
     private WheelScroll _wheelScroll = default!;
-    private Text _text = default!;
+    private TextEntry _textEntry = default!;
     private DotNetObjectReference<FormaPagination>? _selfReference;
     private ElementReference _navElement;
-    private bool _submitGuardAttached;
+    private bool _isSubmitGuardAttached;
     private string? _navigationEntry;
     private int _shownPage;
 
@@ -100,7 +100,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
     {
         _submitGuard = new ImplicitSubmitGuard(JS);
         _wheelScroll = new WheelScroll(JS);
-        _text = new Text(JS);
+        _textEntry = new TextEntry(JS);
     }
 
     /// <inheritdoc />
@@ -123,15 +123,15 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
     {
         if (PageCount <= 1)
         {
-            _submitGuardAttached = false;
+            _isSubmitGuardAttached = false;
             await _submitGuard.DetachAsync();
             await _wheelScroll.DetachAsync();
             return;
         }
 
-        if (!_submitGuardAttached)
+        if (!_isSubmitGuardAttached)
         {
-            _submitGuardAttached = await _submitGuard.AttachAsync(NavigationInput.Element);
+            _isSubmitGuardAttached = await _submitGuard.AttachAsync(NavigationInput.Element);
         }
 
         if (Options.PageOnWheelGesture && !_wheelScroll.IsAttached)
@@ -150,7 +150,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
     {
         await _submitGuard.DisposeAsync();
         await _wheelScroll.DisposeAsync();
-        await _text.DisposeAsync();
+        await _textEntry.DisposeAsync();
         _selfReference?.Dispose();
     }
 
@@ -260,7 +260,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
     private async Task SelectNavigationEntryAsync()
     {
         await Task.Yield();
-        await _text.WriteSelectionAsync(NavigationInput.Element, 0, _navigationEntry?.Length ?? 0);
+        await _textEntry.TryWriteSelectionAsync(NavigationInput.Element, 0, _navigationEntry?.Length ?? 0);
     }
 
     // Typing before the circuit connects raises no input event, so the box is read when the tracked value is empty.
@@ -271,6 +271,6 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
             return _navigationEntry;
         }
 
-        return await _text.TakeAsync(NavigationInput.Element);
+        return await _textEntry.ReadAndClearAsync(NavigationInput.Element);
     }
 }

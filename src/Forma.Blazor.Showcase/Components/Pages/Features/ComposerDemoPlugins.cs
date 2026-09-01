@@ -55,9 +55,9 @@ public sealed class SourceEditorPlugin : IComposerEditorPlugin
         => ValueTask.FromResult(true);
 
     /// <inheritdoc />
-    public ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+    public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(interaction);
 
         if (command == RenameCommand)
@@ -130,18 +130,18 @@ public sealed class TextEditorPlugin : IComposerEditorPlugin
         => ValueTask.FromResult(true);
 
     /// <inheritdoc />
-    public async ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+    public async ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(interaction);
 
         if (command == WordCountCommand)
         {
-            ToggleWordCount(state);
+            ToggleWordCount(context);
             return;
         }
 
-        var lines = state.Document.Content.Split('\n');
+        var lines = context.Document.Content.Split('\n');
 
         var content = command switch
         {
@@ -158,7 +158,7 @@ public sealed class TextEditorPlugin : IComposerEditorPlugin
             return;
         }
 
-        await interaction.ChangeDocumentAsync(state.Document with { Content = content }).ConfigureAwait(false);
+        await interaction.ChangeDocumentAsync(context.Document with { Content = content }).ConfigureAwait(false);
     }
 
     /// <summary>Brings the readout back in step with a document that has changed, whoever changed it.</summary>
@@ -188,7 +188,7 @@ public sealed class TextEditorPlugin : IComposerEditorPlugin
         }
     }
 
-    private void ToggleWordCount(ComposerState state)
+    private void ToggleWordCount(ComposerContext context)
     {
         if (_wordCount is not null)
         {
@@ -197,7 +197,7 @@ public sealed class TextEditorPlugin : IComposerEditorPlugin
             return;
         }
 
-        _wordCount = state.Regions.CreateStatusItem(Describe(state.Document.Content), "Words and lines in the document");
+        _wordCount = context.Regions.CreateStatusItem(Describe(context.Document.Content), "Words and lines in the document");
     }
 }
 
@@ -226,9 +226,9 @@ public sealed class TimestampPlugin : IComposerFeaturePlugin
         => ValueTask.FromResult(true);
 
     /// <inheritdoc />
-    public async ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+    public async ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(interaction);
 
         if (command != TimestampCommand)
@@ -237,9 +237,9 @@ public sealed class TimestampPlugin : IComposerFeaturePlugin
         }
 
         var stamp = DateTime.Now.ToString("g", CultureInfo.CurrentCulture);
-        var content = string.IsNullOrEmpty(state.Document.Content) ? stamp : $"{state.Document.Content}\n{stamp}";
+        var content = string.IsNullOrEmpty(context.Document.Content) ? stamp : $"{context.Document.Content}\n{stamp}";
 
-        await interaction.ChangeDocumentAsync(state.Document with { Content = content }).ConfigureAwait(false);
+        await interaction.ChangeDocumentAsync(context.Document with { Content = content }).ConfigureAwait(false);
     }
 }
 
@@ -281,21 +281,21 @@ public sealed class CleanupPlugin : IComposerFeaturePlugin
         => ValueTask.FromResult(true);
 
     /// <inheritdoc />
-    public async ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+    public async ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(interaction);
 
         var content = command switch
         {
-            RemoveBlankLinesCommand => string.Join('\n', state.Document.Content.Split('\n').Where(l => !string.IsNullOrWhiteSpace(l))),
+            RemoveBlankLinesCommand => string.Join('\n', context.Document.Content.Split('\n').Where(l => !string.IsNullOrWhiteSpace(l))),
             ClearCommand => string.Empty,
             _ => null,
         };
 
         if (content is not null)
         {
-            await interaction.ChangeDocumentAsync(state.Document with { Content = content }).ConfigureAwait(false);
+            await interaction.ChangeDocumentAsync(context.Document with { Content = content }).ConfigureAwait(false);
         }
     }
 }

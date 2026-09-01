@@ -32,7 +32,7 @@ public sealed class TwemojiEmojiProvider : IEmojiProvider
 
     private static Dictionary<string, EmojiAsset> BuildIndex()
     {
-        var assets = EmojiAssetLoader.All();
+        var assets = EmojiAssetLoader.LoadAll();
         var index = new Dictionary<string, EmojiAsset>(assets.Count, StringComparer.Ordinal);
 
         foreach (var asset in assets)

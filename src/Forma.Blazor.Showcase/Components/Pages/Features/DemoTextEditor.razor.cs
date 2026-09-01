@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Components;
 public sealed partial class DemoTextEditor : ComponentBase
 {
     /// <summary>The composer state cascaded from the parent shell.</summary>
-    [CascadingParameter] public ComposerState? State { get; set; }
+    [CascadingParameter] public ComposerContext? Context { get; set; }
 
     /// <summary>The plugin this canvas belongs to, cascaded by the host so each composer drives its own.</summary>
     [CascadingParameter] public TextEditorPlugin? Plugin { get; set; }
@@ -17,5 +17,5 @@ public sealed partial class DemoTextEditor : ComponentBase
     // signal a plugin gets that its readout has gone stale.
     /// <inheritdoc />
     protected override void OnParametersSet()
-        => Plugin?.RefreshReadout(State?.Document.Content ?? string.Empty);
+        => Plugin?.RefreshReadout(Context?.Document.Content ?? string.Empty);
 }

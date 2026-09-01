@@ -14,7 +14,7 @@ public sealed class TemplatePlugin(
     /// <summary>Command prefix for inserting a specific predefined template.</summary>
     public const string InsertTemplatePrefix = "template.insert:";
 
-    private readonly RichTextEditorPlugin _editor = editor;
+    private readonly RichTextEditorPlugin _editorPlugin = editor;
 
     /// <summary>Options configuring available templates and replacement behavior.</summary>
     public TemplatePluginOptions Options { get; } = options ?? TemplatePluginOptions.Default;
@@ -58,10 +58,10 @@ public sealed class TemplatePlugin(
         => ValueTask.FromResult(true);
 
     /// <inheritdoc />
-    public ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+    public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
-        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(interaction);
 
         if (command.StartsWith(InsertTemplatePrefix, StringComparison.Ordinal))
@@ -72,7 +72,7 @@ public sealed class TemplatePlugin(
             if (template is not null)
             {
                 var execCommand = Options.ReplaceContent ? "replaceContent" : "insertHtml";
-                _editor.RequestCommand(execCommand, template.Html);
+                _editorPlugin.RequestCommand(execCommand, template.Html);
             }
         }
 

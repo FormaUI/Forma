@@ -15,10 +15,10 @@ public sealed class ExplorerSelection : IExplorerSelectionView
     private IReadOnlyList<FolderResourceInfo>? _resolvedFolders;
 
     /// <inheritdoc />
-    public bool IsSelectMode { get; set; }
+    public bool IsSelectionModeActive { get; set; }
 
     /// <summary>How many resources may be selected at once; zero for unlimited.</summary>
-    public int MaxSelection { get; set; }
+    public int SelectionLimit { get; set; }
 
     /// <inheritdoc />
     public int Count
@@ -53,7 +53,7 @@ public sealed class ExplorerSelection : IExplorerSelectionView
         => _resolvedFolders ??= [.. _folders.Values];
 
     /// <summary>The selected resources.</summary>
-    public IReadOnlyList<ResourceInfo> Resolve()
+    public IReadOnlyList<ResourceInfo> ResolveResources()
         => _resolvedResources ??= [.. _resources.Values];
 
     public void Toggle(ResourceInfo resource)
@@ -70,12 +70,12 @@ public sealed class ExplorerSelection : IExplorerSelectionView
             return;
         }
 
-        if (MaxSelection == 1)
+        if (SelectionLimit == 1)
         {
             _resources.Clear();
             _resources[resource.Source] = resource;
         }
-        else if (MaxSelection <= 0 || _resources.Count < MaxSelection)
+        else if (SelectionLimit <= 0 || _resources.Count < SelectionLimit)
         {
             _resources[resource.Source] = resource;
         }

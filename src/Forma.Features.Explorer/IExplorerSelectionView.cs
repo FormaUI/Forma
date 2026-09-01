@@ -6,7 +6,7 @@ using Forma.Framework.Resources;
 public interface IExplorerSelectionView
 {
     /// <summary>Whether the explorer shows selection controls instead of activating previews.</summary>
-    bool IsSelectMode { get; }
+    bool IsSelectionModeActive { get; }
 
     /// <summary>How many media resources and folders are selected together.</summary>
     int Count { get; }

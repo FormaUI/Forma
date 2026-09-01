@@ -24,12 +24,12 @@ public sealed partial class FormaComposerSurface : ComponentBase
     [Parameter] public bool Disabled { get; set; }
 
     /// <summary>The key bindings each action's shortcut is read from.</summary>
-    [Parameter] public ComposerKeyMap KeyMap { get; set; } = ComposerKeyMap.Empty;
+    [Parameter] public ComposerKeyBindingCatalog KeyBindings { get; set; } = ComposerKeyBindingCatalog.Empty;
 
     /// <summary>Callback invoked with the command an action raised.</summary>
     [Parameter] public EventCallback<string> OnCommand { get; set; }
 
-    private ComposerSelectionBar SelectionBar { get; set; } = new([], ComposerKeyMap.Empty);
+    private ComposerSelectionBar SelectionBar { get; set; } = new([], ComposerKeyBindingCatalog.Empty);
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -39,6 +39,6 @@ public sealed partial class FormaComposerSurface : ComponentBase
         var layout = ComposerToolbarLayout.Create(Editor, Plugins);
         var items = layout.Rows.FirstOrDefault(row => row.Id == ComposerRows.Selection)?.Items ?? [];
 
-        SelectionBar = new ComposerSelectionBar(items, KeyMap);
+        SelectionBar = new ComposerSelectionBar(items, KeyBindings);
     }
 }

@@ -23,7 +23,7 @@ public sealed partial class FormaComposerCommandBar : ComponentBase
     [Parameter] public bool Disabled { get; set; }
 
     /// <summary>The key bindings each action's shortcut is read from.</summary>
-    [Parameter] public ComposerKeyMap KeyMap { get; set; } = ComposerKeyMap.Empty;
+    [Parameter] public ComposerKeyBindingCatalog KeyBindings { get; set; } = ComposerKeyBindingCatalog.Empty;
 
     /// <summary>Callback invoked with the command an item raised.</summary>
     [Parameter] public EventCallback<string> OnCommand { get; set; }
@@ -35,15 +35,15 @@ public sealed partial class FormaComposerCommandBar : ComponentBase
     [Parameter] public IReadOnlyCollection<string> PluginStates { get; set; } = [];
 
     /// <summary>The composer state cascaded from the parent shell.</summary>
-    [CascadingParameter] public ComposerState? State { get; set; }
+    [CascadingParameter] public ComposerContext? Context { get; set; }
 
     [Inject] private IStringLocale<FormaComposer> L { get; set; } = default!;
 
     private bool CanUndo
-        => State?.History.CanUndo ?? false;
+        => Context?.History.CanUndo ?? false;
 
     private bool CanRedo
-        => State?.History.CanRedo ?? false;
+        => Context?.History.CanRedo ?? false;
 
     /// <summary>What the bar actually renders: the history group first when shown, then Items localized and patched with live state.</summary>
     private IReadOnlyList<FormaToolbarItem> RenderedItems
@@ -78,7 +78,7 @@ public sealed partial class FormaComposerCommandBar : ComponentBase
 
     private FormaToolbarCommand BuildHistoryCommand(string id, string title, Glyph icon, string command, bool isDisabled)
     {
-        var shortcut = KeyMap.Find(command);
+        var shortcut = KeyBindings.FindByCommand(command);
 
         return new FormaToolbarCommand
         {
@@ -101,14 +101,14 @@ public sealed partial class FormaComposerCommandBar : ComponentBase
         {
             Title = L[toggle.Title],
             AlternateTitle = toggle.AlternateTitle is { } activeTitle ? L[activeTitle] : null,
-            ShortcutDisplay = KeyMap.Find(toggle.Command)?.Display,
-            ShortcutAriaKeys = KeyMap.Find(toggle.Command)?.AriaKeyShortcuts,
+            ShortcutDisplay = KeyBindings.FindByCommand(toggle.Command)?.Display,
+            ShortcutAriaKeys = KeyBindings.FindByCommand(toggle.Command)?.AriaKeyShortcuts,
         },
         FormaToolbarCommand command => command with
         {
             Title = L[command.Title],
-            ShortcutDisplay = KeyMap.Find(command.Command)?.Display,
-            ShortcutAriaKeys = KeyMap.Find(command.Command)?.AriaKeyShortcuts,
+            ShortcutDisplay = KeyBindings.FindByCommand(command.Command)?.Display,
+            ShortcutAriaKeys = KeyBindings.FindByCommand(command.Command)?.AriaKeyShortcuts,
         },
         FormaToolbarMenu menu => menu with { Title = L[menu.Title], Options = [.. menu.Options.Select(PatchOption)] },
         FormaToolbarReadout readout => readout with { Title = L[readout.Title] },
@@ -130,18 +130,18 @@ public sealed partial class FormaComposerCommandBar : ComponentBase
         {
             var states = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            if (State?.Selection.ActiveStyles is { } styles)
+            if (Context?.Selection.ActiveStyles is { } styles)
             {
                 states.UnionWith(styles);
             }
 
             // Engine-owned chrome rather than a text style, so the selection never reports it.
-            if (State?.IsMaximized ?? false)
+            if (Context?.IsMaximized ?? false)
             {
                 states.Add(MaximizeToggleId);
             }
 
-            if (State?.IsSelectionBarShown ?? true)
+            if (Context?.IsSelectionBarShown ?? true)
             {
                 states.Add(SelectionBarToggleId);
             }

@@ -27,7 +27,7 @@ public sealed class LinkPlugin(RichTextEditorPlugin editor) : IComposerFeaturePl
     /// <summary>The active style reported while the selection sits inside or overlaps a named anchor.</summary>
     public const string AnchorStyle = "anchor";
 
-    private readonly RichTextEditorPlugin _editor = editor;
+    private readonly RichTextEditorPlugin _editorPlugin = editor;
 
     /// <inheritdoc />
     public string Id => "link";
@@ -94,28 +94,28 @@ public sealed class LinkPlugin(RichTextEditorPlugin editor) : IComposerFeaturePl
         => ValueTask.FromResult(true);
 
     /// <inheritdoc />
-    public ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+    public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
-        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(interaction);
 
         switch (command)
         {
             case InsertLinkCommand:
-                _editor.RequestLinkDialog(isAnchor: false);
+                _editorPlugin.RequestLinkDialog(isAnchor: false);
                 break;
 
             case RemoveLinkCommand:
-                _editor.RequestCommand("unlink");
+                _editorPlugin.RequestCommand("unlink");
                 break;
 
             case InsertAnchorCommand:
-                _editor.RequestLinkDialog(isAnchor: true);
+                _editorPlugin.RequestLinkDialog(isAnchor: true);
                 break;
 
             case RemoveAnchorCommand:
-                _editor.RequestCommand("removeAnchor");
+                _editorPlugin.RequestCommand("removeAnchor");
                 break;
         }
 

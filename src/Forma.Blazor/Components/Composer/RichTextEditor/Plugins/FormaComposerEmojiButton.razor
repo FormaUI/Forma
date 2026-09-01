@@ -22,6 +22,6 @@
     <div class="forma-composer-emoji-backdrop" @onclick="Close"></div>
     @* Manual rather than auto: the backdrop above owns dismissal, matching FormaDatePicker's popup. *@
     <div class="forma-composer-emoji-popup" id="@_popupId" popover="manual" @ref="_popupElement">
-        <FormaEmojiPicker OnSelect="HandleSelectAsync" @bind-Recent="_recent" Options="PickerOptions" />
+        <FormaEmojiPicker OnSelect="HandleSelectAsync" @bind-Recent="_recentEmojis" Options="PickerOptions" />
     </div>
 }

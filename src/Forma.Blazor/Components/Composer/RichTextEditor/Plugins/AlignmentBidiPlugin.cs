@@ -27,7 +27,7 @@ public sealed class AlignmentBidiPlugin(RichTextEditorPlugin editor) : IComposer
     /// <summary>The command setting text direction to right-to-left.</summary>
     public const string DirectionRtlCommand = "dir.rtl";
 
-    private readonly RichTextEditorPlugin _editor = editor;
+    private readonly RichTextEditorPlugin _editorPlugin = editor;
 
     /// <inheritdoc />
     public string Id => "alignment-bidi";
@@ -79,10 +79,10 @@ public sealed class AlignmentBidiPlugin(RichTextEditorPlugin editor) : IComposer
         => ValueTask.FromResult(true);
 
     /// <inheritdoc />
-    public ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+    public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
-        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(interaction);
 
         var (jsCommand, jsValue) = command switch
@@ -98,7 +98,7 @@ public sealed class AlignmentBidiPlugin(RichTextEditorPlugin editor) : IComposer
 
         if (jsCommand is not null)
         {
-            _editor.RequestCommand(jsCommand, jsValue);
+            _editorPlugin.RequestCommand(jsCommand, jsValue);
         }
 
         return ValueTask.CompletedTask;

@@ -6,14 +6,14 @@
 <FormaComposerDialog Opened="Opened"
                      Title="@L["Browse Files"]"
                      Size="ModalSize.Large"
-                     Notice="@(_resources is null ? L["No stored files are available, because this application registered nowhere to browse."].Value : null)"
+                     Notice="@(_resourcesProvider is null ? L["No stored files are available, because this application registered nowhere to browse."].Value : null)"
                      Messages="Messages"
                      OnConfirm="HandleConfirmAsync"
                      OnCancel="OnCancel">
-    @if (_resources is not null)
+    @if (_resourcesProvider is not null)
     {
         <div class="forma-composer-explorer-library">
-            <FormaExplorer ResourcesProvider="_resources"
+            <FormaExplorer ResourcesProvider="_resourcesProvider"
                            Store="_store"
                            Selected="_selected"
                            SelectedChanged="HandleSelectedChanged"

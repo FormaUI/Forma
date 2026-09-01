@@ -25,7 +25,7 @@ public sealed partial class FormaComposerToolbar : ComponentBase
     [Parameter] public bool Disabled { get; set; }
 
     /// <summary>The key bindings each action's shortcut is read from.</summary>
-    [Parameter] public ComposerKeyMap KeyMap { get; set; } = ComposerKeyMap.Empty;
+    [Parameter] public ComposerKeyBindingCatalog KeyBindings { get; set; } = ComposerKeyBindingCatalog.Empty;
 
     /// <summary>Callback invoked with the command an action raised.</summary>
     [Parameter] public EventCallback<string> OnCommand { get; set; }

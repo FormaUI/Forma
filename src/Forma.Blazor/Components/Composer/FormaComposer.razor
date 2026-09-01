@@ -4,23 +4,23 @@
 @inherits InputBase<ComposerDocument>
 @inject IStringLocale<FormaComposer> L
 
-<CascadingValue Value="State">
+<CascadingValue Value="Context">
 <CascadingValue Value="(IComposerInteraction)this" IsFixed="true">
     <div @ref="_composerElement" id="@ElementId" class="@ComposerClass" @attributes="AdditionalAttributes">
         @if (_isInitialized && ShowTabs)
         {
             <FormaTabs ActiveTabId="@ActiveTabId" ActiveTabIdChanged="SelectTabAsync" Label="@L["Editors"]">
-                @foreach (var editor in _catalog.Editors)
+                @foreach (var editor in _pluginCatalog.Editors)
                 {
                     <FormaTab TabId="@editor.Id" Title="@L[editor.Title]" Icon="editor.Icon">
                         @if (editor.Id == _activeEditor.Id && _activeView is null)
                         {
                             <FormaComposerSurface
                                 Editor="_activeEditor"
-                                Plugins="_catalog.FeaturePlugins"
+                                Plugins="_pluginCatalog.FeaturePlugins"
                                 ShowToolbar="ShowToolbar"
                                 Disabled="Disabled"
-                                KeyMap="_keyMap"
+                                KeyBindings="_keyBindingCatalog"
                                 OnCommand="HandleCommandAsync" />
                         }
                     </FormaTab>
@@ -33,10 +33,10 @@
                             <FormaComposerSurface
                                 Editor="_activeEditor"
                                 View="_activeView"
-                                Plugins="_catalog.FeaturePlugins"
+                                Plugins="_pluginCatalog.FeaturePlugins"
                                 ShowToolbar="ShowToolbar"
                                 Disabled="Disabled"
-                                KeyMap="_keyMap"
+                                KeyBindings="_keyBindingCatalog"
                                 OnCommand="HandleCommandAsync" />
                         }
                     </FormaTab>
@@ -48,10 +48,10 @@
             <FormaComposerSurface
                 Editor="_activeEditor"
                 View="_activeView"
-                Plugins="_catalog.FeaturePlugins"
+                Plugins="_pluginCatalog.FeaturePlugins"
                 ShowToolbar="ShowToolbar"
                 Disabled="Disabled"
-                KeyMap="_keyMap"
+                KeyBindings="_keyBindingCatalog"
                 OnCommand="HandleCommandAsync" />
         }
 

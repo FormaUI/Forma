@@ -7,7 +7,7 @@ public sealed class ExplorerFolderTree
 {
     private static readonly List<FolderResourceInfo> NoChildren = [];
 
-    private readonly Dictionary<string, FolderResourceInfo> _bySource = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, FolderResourceInfo> _foldersBySource = new(StringComparer.Ordinal);
 
     private readonly Dictionary<string, List<FolderResourceInfo>> _childrenByParent = new(StringComparer.Ordinal);
 
@@ -28,7 +28,7 @@ public sealed class ExplorerFolderTree
             var folder = folders[index];
 
             // A host can repeat a source; the first folder claiming it wins, matching what the breadcrumb walk would find.
-            _bySource.TryAdd(folder.Source, folder);
+            _foldersBySource.TryAdd(folder.Source, folder);
 
             if (folder.Parent is not { } parent)
             {
@@ -59,7 +59,7 @@ public sealed class ExplorerFolderTree
 
     /// <summary>The folder at the source, or null when the tree has none.</summary>
     public FolderResourceInfo? Find(string? source)
-        => source is not null && _bySource.TryGetValue(source, out var folder) ? folder : null;
+        => source is not null && _foldersBySource.TryGetValue(source, out var folder) ? folder : null;
 
     /// <summary>Whether anything sits inside the folder.</summary>
     public bool HasChildren(string source)
@@ -68,7 +68,7 @@ public sealed class ExplorerFolderTree
     /// <summary>Every folder holding at least one other, which are the only ones a tree can collapse.</summary>
     public IEnumerable<FolderResourceInfo> Expandable()
     {
-        foreach (var folder in _bySource.Values)
+        foreach (var folder in _foldersBySource.Values)
         {
             if (_childrenByParent.ContainsKey(folder.Source))
             {

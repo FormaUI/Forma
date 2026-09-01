@@ -22,7 +22,7 @@ public sealed partial class FormaComposerPluginsBar : ComponentBase
     [Parameter] public bool Disabled { get; set; }
 
     /// <summary>The key bindings each command's shortcut is read from.</summary>
-    [Parameter] public ComposerKeyMap KeyMap { get; set; } = ComposerKeyMap.Empty;
+    [Parameter] public ComposerKeyBindingCatalog KeyBindings { get; set; } = ComposerKeyBindingCatalog.Empty;
 
     /// <summary>Callback invoked with the command an item raised.</summary>
     [Parameter] public EventCallback<string> OnCommand { get; set; }
@@ -35,18 +35,18 @@ public sealed partial class FormaComposerPluginsBar : ComponentBase
 
     [Inject] private IStringLocale<FormaComposer> L { get; set; } = default!;
 
-    private IReadOnlyList<FormaToolbarItem> _visible = [];
+    private IReadOnlyList<FormaToolbarItem> _visibleItems = [];
 
-    private IReadOnlyList<FormaToolbarAction> _overflowing = [];
+    private IReadOnlyList<FormaToolbarAction> _overflowingActions = [];
 
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        _visible = SplitVisible();
+        _visibleItems = SplitVisible();
 
         // Skips before filtering, since the visible split counts every leaf toward the limit — filtering
         // first would misalign the index and drop an action that is neither shown nor in the menu.
-        _overflowing = [.. Items.SelectMany(Leaves).Skip(InlineLimit).OfType<FormaToolbarAction>()];
+        _overflowingActions = [.. Items.SelectMany(Leaves).Skip(InlineLimit).OfType<FormaToolbarAction>()];
     }
 
     private List<FormaToolbarItem> SplitVisible()

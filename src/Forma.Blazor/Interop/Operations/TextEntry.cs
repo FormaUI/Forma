@@ -6,12 +6,12 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>The value and selected range of a text entry.</summary>
-internal sealed class Text(IJSRuntime js) : IAsyncDisposable
+internal sealed class TextEntry(IJSRuntime js) : IAsyncDisposable
 {
     private readonly JsModule _module = new(js, "./_content/Forma.Blazor/scripts/operations/Text.js");
 
     /// <summary>Reads what is currently typed and empties the entry.</summary>
-    public ValueTask<string?> TakeAsync(ElementReference input)
+    public ValueTask<string?> ReadAndClearAsync(ElementReference input)
         => _module.TryInvokeAsync<string>("take", input);
 
     /// <summary>Reads the entry's current selected range, or null when the call could not complete.</summary>
@@ -19,7 +19,7 @@ internal sealed class Text(IJSRuntime js) : IAsyncDisposable
         => _module.TryInvokeAsync<TextRange>("readSelection", input);
 
     /// <summary>Sets the entry's selection to the given range.</summary>
-    public ValueTask<bool> WriteSelectionAsync(ElementReference input, int start, int end)
+    public ValueTask<bool> TryWriteSelectionAsync(ElementReference input, int start, int end)
         => _module.TryInvokeVoidAsync("writeSelection", input, start, end);
 
     /// <inheritdoc />

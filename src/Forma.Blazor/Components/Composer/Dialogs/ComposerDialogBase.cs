@@ -27,7 +27,7 @@ public abstract class ComposerDialogBase : ComponentBase
     public ComposerDialogResult? Reopening { get; set; }
 
     /// <summary>The composer state cascaded from the parent shell.</summary>
-    [CascadingParameter] public ComposerState? State { get; set; }
+    [CascadingParameter] public ComposerContext? Context { get; set; }
 
     /// <summary>The messages shown beneath the fields, rebuilt each time confirming is judged.</summary>
     private protected List<string> Messages { get; } = [];
@@ -37,7 +37,7 @@ public abstract class ComposerDialogBase : ComponentBase
     // A dialog standing outside a composer has no host rules to answer to, so it judges an address the way the engine would.
     /// <summary>The markup the document may carry, from the host's sanitizer where there is one.</summary>
     private protected IMarkupPolicy MarkupPolicy
-        => State?.Sanitizer.MarkupPolicy ?? RichContentMarkupPolicy.Default;
+        => Context?.Sanitizer.MarkupPolicy ?? RichContentMarkupPolicy.Default;
 
     /// <summary>Whether the dialog reopened on something already in the document.</summary>
     private protected bool IsReopened => Reopening is not null;

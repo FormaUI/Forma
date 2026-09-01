@@ -12,7 +12,7 @@ public sealed class HorizontalRulePlugin(RichTextEditorPlugin editor) : ICompose
     /// <summary>The command inserting a horizontal divider line at the active caret position.</summary>
     public const string InsertRuleCommand = "insert.horizontal-rule";
 
-    private readonly RichTextEditorPlugin _editor = editor;
+    private readonly RichTextEditorPlugin _editorPlugin = editor;
 
     /// <inheritdoc />
     public string Id => "horizontal-rule";
@@ -48,15 +48,15 @@ public sealed class HorizontalRulePlugin(RichTextEditorPlugin editor) : ICompose
         => ValueTask.FromResult(true);
 
     /// <inheritdoc />
-    public ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+    public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
-        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(interaction);
 
         if (command == InsertRuleCommand)
         {
-            _editor.RequestCommand("insertHorizontalRule");
+            _editorPlugin.RequestCommand("insertHorizontalRule");
         }
 
         return ValueTask.CompletedTask;

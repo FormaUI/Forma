@@ -7,7 +7,7 @@
     public sealed class Component
     {
         private static RenderFragment Host(IComposerInteraction interaction, RenderFragment content)
-            => @<CascadingValue Value="ComposerStates.Create()"><CascadingValue Value="interaction">@content</CascadingValue></CascadingValue>;
+            => @<CascadingValue Value="ComposerContexts.Create()"><CascadingValue Value="interaction">@content</CascadingValue></CascadingValue>;
 
         [Fact]
         public void Should_render_a_button_named_emoji()

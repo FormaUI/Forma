@@ -10,7 +10,7 @@ using Forma.Framework.Toolbar;
 /// <summary>The rich text document as a reader will see it, laid out at a chosen paper or screen size, printed or exported from there.</summary>
 public sealed class RichTextPreviewViewPlugin(RichTextEditorPlugin editor) : IComposerViewPlugin
 {
-    /// <summary>The identifier of this state.</summary>
+    /// <summary>The identifier of this view.</summary>
     public const string ViewId = "rich-text.preview";
 
     /// <summary>The row carrying the page's size, orientation and zoom.</summary>
@@ -36,7 +36,7 @@ public sealed class RichTextPreviewViewPlugin(RichTextEditorPlugin editor) : ICo
 
     private static readonly IReadOnlyList<int> Zooms = [50, 75, 100, 125, 150];
 
-    private readonly RichTextEditorPlugin _editor = editor ?? throw new ArgumentNullException(nameof(editor));
+    private readonly RichTextEditorPlugin _editorPlugin = editor ?? throw new ArgumentNullException(nameof(editor));
 
     /// <summary>Raised when the document is to be printed.</summary>
     public event Action? PrintRequested;
@@ -57,7 +57,7 @@ public sealed class RichTextPreviewViewPlugin(RichTextEditorPlugin editor) : ICo
     public string Id => ViewId;
 
     /// <inheritdoc />
-    public string EditorId => _editor.Id;
+    public string EditorId => _editorPlugin.Id;
 
     /// <inheritdoc />
     public string Kind => ComposerViews.Preview;
@@ -162,10 +162,10 @@ public sealed class RichTextPreviewViewPlugin(RichTextEditorPlugin editor) : ICo
         => ValueTask.FromResult(true);
 
     /// <inheritdoc />
-    public ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+    public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
-        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(interaction);
 
         if (command.StartsWith(PageCommandPrefix, StringComparison.Ordinal))

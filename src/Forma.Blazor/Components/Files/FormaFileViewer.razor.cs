@@ -63,21 +63,21 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
 
     private CancellationTokenSource? _resolveCancellation;
 
-    private bool _dragAttached;
+    private bool _isDragAttached;
 
-    private bool _wheelAttached;
+    private bool _isWheelAttached;
 
-    private readonly SteppedZoom _zoom = new(ZoomSteps);
+    private readonly ZoomScale _zoom = new(ZoomSteps);
 
-    private bool _zoomChanged;
+    private bool _hasZoomChanged;
 
     private ResourceInfo? Resource { get; set; }
 
     private bool IsNavigable
         => Siblings is { Count: > 1 };
 
-    private bool IsZoomed
-        => _zoom.IsZoomed;
+    private bool IsZoomedIn
+        => _zoom.IsZoomedIn;
 
     private int ZoomPercent
         => _zoom.Percent;
@@ -110,8 +110,8 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
         var requested = Source;
 
         _zoom.Reset();
-        _dragAttached = false;
-        _wheelAttached = false;
+        _isDragAttached = false;
+        _isWheelAttached = false;
         _resolvedSource = requested;
 
         // The name and extension come free from the address, so an unclaimed or still-resolving source still reads properly.
@@ -165,26 +165,26 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
             return;
         }
 
-        if (!_dragAttached)
+        if (!_isDragAttached)
         {
-            _dragAttached = await _pan.AttachAsync(_imageFrameElement, ZoomedClass);
+            _isDragAttached = await _pan.AttachAsync(_imageFrameElement, ZoomedClass);
         }
 
         // Ctrl with the wheel zooms the image.
-        if (ZoomOnWheelGesture && !_wheelAttached)
+        if (ZoomOnWheelGesture && !_isWheelAttached)
         {
             _selfReference ??= DotNetObjectReference.Create(this);
-            _wheelAttached = await _wheelScroll.AttachAsync(_imageFrameElement, _selfReference, WheelModifier.Ctrl);
+            _isWheelAttached = await _wheelScroll.AttachAsync(_imageFrameElement, _selfReference, WheelModifier.Ctrl);
         }
-        else if (!ZoomOnWheelGesture && _wheelAttached)
+        else if (!ZoomOnWheelGesture && _isWheelAttached)
         {
-            _wheelAttached = false;
+            _isWheelAttached = false;
             await _wheelScroll.DetachAsync();
         }
 
-        if (_zoomChanged)
+        if (_hasZoomChanged)
         {
-            _zoomChanged = false;
+            _hasZoomChanged = false;
             await _scroll.ToCenterAsync(_imageFrameElement);
         }
     }
@@ -194,15 +194,15 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
     public Task HandleWheelAsync(int direction)
         => InvokeAsync(() =>
         {
-            _zoomChanged |= direction < 0 ? _zoom.In() : _zoom.Out();
+            _hasZoomChanged |= direction < 0 ? _zoom.TryZoomIn() : _zoom.TryZoomOut();
             StateHasChanged();
         });
 
     private void ZoomIn()
-        => _zoomChanged |= _zoom.In();
+        => _hasZoomChanged |= _zoom.TryZoomIn();
 
     private void ZoomOut()
-        => _zoomChanged |= _zoom.Out();
+        => _hasZoomChanged |= _zoom.TryZoomOut();
 
     private bool CanNavigate(int delta)
         => Siblings is { Count: > 1 } siblings && IndexOfSource(siblings) is { } index

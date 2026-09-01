@@ -8,7 +8,7 @@ using Forma.Framework.Toolbar;
 /// <summary>The rich text document's HTML, laid out for reading, copied or saved from there.</summary>
 public sealed class RichTextSourceViewPlugin(RichTextEditorPlugin editor) : IComposerViewPlugin
 {
-    /// <summary>The identifier of this state.</summary>
+    /// <summary>The identifier of this view.</summary>
     public const string ViewId = "rich-text.source";
 
     /// <summary>The row carrying how the source reads and where it goes.</summary>
@@ -23,7 +23,7 @@ public sealed class RichTextSourceViewPlugin(RichTextEditorPlugin editor) : ICom
     /// <summary>The command saving the source as an HTML file.</summary>
     public const string DownloadCommand = "source.download";
 
-    private readonly RichTextEditorPlugin _editor = editor ?? throw new ArgumentNullException(nameof(editor));
+    private readonly RichTextEditorPlugin _editorPlugin = editor ?? throw new ArgumentNullException(nameof(editor));
 
     /// <summary>Raised when the source is to be placed on the clipboard.</summary>
     public event Action? CopyRequested;
@@ -38,7 +38,7 @@ public sealed class RichTextSourceViewPlugin(RichTextEditorPlugin editor) : ICom
     public string Id => ViewId;
 
     /// <inheritdoc />
-    public string EditorId => _editor.Id;
+    public string EditorId => _editorPlugin.Id;
 
     /// <inheritdoc />
     public string Kind => ComposerViews.Source;
@@ -86,10 +86,10 @@ public sealed class RichTextSourceViewPlugin(RichTextEditorPlugin editor) : ICom
         => ValueTask.FromResult(true);
 
     /// <inheritdoc />
-    public ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+    public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
-        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(interaction);
 
         switch (command)

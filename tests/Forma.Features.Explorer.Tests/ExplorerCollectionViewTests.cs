@@ -24,7 +24,7 @@ public sealed class ExplorerCollectionViewTests
         var view = CreateView(File("cherry.png"), File("Apple.png"), File("banana.png"));
 
         // Assert
-        Assert.Equal(["Apple.png", "banana.png", "cherry.png"], view.Matching.Select(resource => resource.Name));
+        Assert.Equal(["Apple.png", "banana.png", "cherry.png"], view.MatchingResources.Select(resource => resource.Name));
     }
 
     [Fact]
@@ -39,7 +39,7 @@ public sealed class ExplorerCollectionViewTests
         // Assert
         Assert.Multiple(
             () => Assert.Equal(2, view.MatchingCount),
-            () => Assert.All(view.Matching, resource => Assert.Contains("tage", resource.Name, StringComparison.Ordinal)));
+            () => Assert.All(view.MatchingResources, resource => Assert.Contains("tage", resource.Name, StringComparison.Ordinal)));
     }
 
     [Fact]
@@ -51,10 +51,10 @@ public sealed class ExplorerCollectionViewTests
             new VideoResourceInfo("/media/clip.mp4"));
 
         // Act
-        view.Accept = ExplorerResourceFilter.Parse("contentType:image");
+        view.Filter = ExplorerResourceFilter.Parse("contentType:image");
 
         // Assert
-        Assert.Equal(["photo.png"], view.Matching.Select(resource => resource.Name));
+        Assert.Equal(["photo.png"], view.MatchingResources.Select(resource => resource.Name));
     }
 
     [Fact]
@@ -69,16 +69,16 @@ public sealed class ExplorerCollectionViewTests
 
         // Act & Assert
         view.SortField = ExplorerSortField.Size;
-        Assert.Equal([small, large], view.Matching);
+        Assert.Equal([small, large], view.MatchingResources);
 
         view.SortDirection = ExplorerSortDirection.Descending;
-        Assert.Equal([large, small], view.Matching);
+        Assert.Equal([large, small], view.MatchingResources);
 
         view.SortField = ExplorerSortField.DateAdded;
-        Assert.Equal([small, large], view.Matching);
+        Assert.Equal([small, large], view.MatchingResources);
 
         view.SortField = ExplorerSortField.DateModified;
-        Assert.Equal([large, small], view.Matching);
+        Assert.Equal([large, small], view.MatchingResources);
     }
 
     [Fact]
@@ -93,7 +93,7 @@ public sealed class ExplorerCollectionViewTests
         view.SortField = ExplorerSortField.Kind;
 
         // Assert
-        Assert.Equal([image, video], view.Matching);
+        Assert.Equal([image, video], view.MatchingResources);
     }
 
     [Fact]
@@ -105,14 +105,14 @@ public sealed class ExplorerCollectionViewTests
         view.PageSize = 10;
 
         // Act
-        view.Page = 3;
+        view.PageNumber = 3;
 
         // Assert
         Assert.Multiple(
             () => Assert.Equal(3, view.PageCount),
-            () => Assert.Equal(5, view.Visible.Count),
-            () => Assert.Equal("file-21.txt", view.Visible[0].Name),
-            () => Assert.False(view.HasMore));
+            () => Assert.Equal(5, view.VisibleResources.Count),
+            () => Assert.Equal("file-21.txt", view.VisibleResources[0].Name),
+            () => Assert.False(view.HasMorePages));
     }
 
     [Fact]
@@ -125,13 +125,13 @@ public sealed class ExplorerCollectionViewTests
         view.IsAppending = true;
 
         // Act
-        view.Page = 2;
+        view.PageNumber = 2;
 
         // Assert
         Assert.Multiple(
-            () => Assert.Equal(20, view.Visible.Count),
-            () => Assert.Equal("file-01.txt", view.Visible[0].Name),
-            () => Assert.True(view.HasMore));
+            () => Assert.Equal(20, view.VisibleResources.Count),
+            () => Assert.Equal("file-01.txt", view.VisibleResources[0].Name),
+            () => Assert.True(view.HasMorePages));
     }
 
     [Fact]
@@ -142,13 +142,13 @@ public sealed class ExplorerCollectionViewTests
         view.PageSize = 10;
 
         // Act
-        view.Page = 99;
+        view.PageNumber = 99;
 
         // Assert
         Assert.Multiple(
-            () => Assert.Equal(1, view.EffectivePage),
-            () => Assert.Equal(2, view.Visible.Count),
-            () => Assert.False(view.HasMore));
+            () => Assert.Equal(1, view.EffectivePageNumber),
+            () => Assert.Equal(2, view.VisibleResources.Count),
+            () => Assert.False(view.HasMorePages));
     }
 
     [Fact]
@@ -159,12 +159,12 @@ public sealed class ExplorerCollectionViewTests
 
         // Act & Assert
         Assert.Multiple(
-            () => Assert.Same(view.Matching, view.Matching),
-            () => Assert.Same(view.Visible, view.Visible));
+            () => Assert.Same(view.MatchingResources, view.MatchingResources),
+            () => Assert.Same(view.VisibleResources, view.VisibleResources));
 
-        var shapedBefore = view.Matching;
+        var shapedBefore = view.MatchingResources;
         view.SearchQuery = "one";
-        Assert.NotSame(shapedBefore, view.Matching);
+        Assert.NotSame(shapedBefore, view.MatchingResources);
     }
 
     [Fact]

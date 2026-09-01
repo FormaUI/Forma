@@ -5,8 +5,8 @@ using Forma.Features.Composer.Documents;
 using Forma.Features.Composer.Syntax;
 using Forma.Framework.Sanitization;
 
-/// <summary>One moment of the composer as a plugin reads it: the active document, the selection, and the engine services beside them.</summary>
-public sealed record ComposerState
+/// <summary>The composer as a plugin reads it: the active document, the selection, and the live engine services beside them.</summary>
+public sealed record ComposerContext
 {
     /// <summary>The identifier of the editor plugin currently rendering.</summary>
     public required string ActiveEditorId { get; init; }

@@ -2,11 +2,11 @@ namespace Forma.Features.Files.Tests;
 
 using Xunit;
 
-public sealed class UploadSetTests
+public sealed class UploadBatchTests
 {
-    private static UploadSet CreateSet(params (string Name, long Size)[] files)
+    private static UploadBatch CreateSet(params (string Name, long Size)[] files)
     {
-        var set = new UploadSet();
+        var set = new UploadBatch();
 
         foreach (var (name, size) in files)
         {
@@ -38,13 +38,13 @@ public sealed class UploadSetTests
         var set = CreateSet(("one.png", 100), ("two.png", 200));
 
         // Act
-        set.Report(0, percent: 50, transferred: 50);
-        set.Report(1, percent: 25, transferred: 50);
+        set.UpdateFileProgress(0, percent: 50, transferred: 50);
+        set.UpdateFileProgress(1, percent: 25, transferred: 50);
 
         // Assert
         Assert.Multiple(
-            () => Assert.Equal(100, set.TransferredBytes),
-            () => Assert.Equal(50, set[0].Percent));
+            () => Assert.Equal(100, set.BytesTransferred),
+            () => Assert.Equal(50, set[0].ProgressPercentage));
     }
 
     [Fact]
@@ -54,16 +54,16 @@ public sealed class UploadSetTests
         var set = CreateSet(("one.png", 100));
 
         // Act
-        set.Transition(0, UploadState.Uploading, percent: 0);
+        set.SetFileState(0, UploadState.Uploading, percent: 0);
 
         // Assert
         Assert.Multiple(
             () => Assert.Equal(UploadState.Uploading, set[0].State),
-            () => Assert.True(set[0].StartedAt > 0),
+            () => Assert.True(set[0].StartTimestamp > 0),
             () => Assert.Null(set[0].Duration),
             () => Assert.Equal(1, set.StartedCount));
 
-        set.Transition(0, UploadState.Completed, percent: 100);
+        set.SetFileState(0, UploadState.Completed, percent: 100);
         Assert.Multiple(
             () => Assert.Equal(UploadState.Completed, set[0].State),
             () => Assert.NotNull(set[0].Duration),
@@ -76,10 +76,10 @@ public sealed class UploadSetTests
     {
         // Arrange
         var set = CreateSet(("one.png", 100), ("two.png", 100), ("three.png", 100));
-        set.Transition(0, UploadState.Completed);
+        set.SetFileState(0, UploadState.Completed);
 
         // Act
-        set.MarkPendingFrom(0, UploadState.Cancelled);
+        set.TransitionPendingFiles(0, UploadState.Cancelled);
 
         // Assert
         Assert.Multiple(
@@ -96,8 +96,8 @@ public sealed class UploadSetTests
         Assert.Equal(TimeSpan.Zero, set.Elapsed);
 
         // Act
-        set.Begin();
-        set.End();
+        set.BeginUpload();
+        set.EndUpload();
 
         // Assert
         var frozen = set.Elapsed;
@@ -107,15 +107,15 @@ public sealed class UploadSetTests
     }
 
     [Fact]
-    public void Should_hold_nothing_after_a_reset()
+    public void Should_hold_nothing_after_being_cleared()
     {
         // Arrange
         var set = CreateSet(("one.png", 100));
-        set.Begin();
-        set.End();
+        set.BeginUpload();
+        set.EndUpload();
 
         // Act
-        set.Reset();
+        set.Clear();
 
         // Assert
         Assert.Multiple(
@@ -131,13 +131,13 @@ public sealed class UploadSetTests
         var untouched = new UploadFile("one.png", 100);
 
         // Act
-        var moving = untouched with { StartedAt = 1, Transferred = 50 };
-        var done = untouched with { StartedAt = 1, Transferred = 100 };
+        var moving = untouched with { StartTimestamp = 1, BytesTransferred = 50 };
+        var done = untouched with { StartTimestamp = 1, BytesTransferred = 100 };
 
         // Assert
         Assert.Multiple(
-            () => Assert.Null(untouched.Estimate),
-            () => Assert.NotNull(moving.Estimate),
-            () => Assert.Null(done.Estimate));
+            () => Assert.Null(untouched.EstimatedTimeRemaining),
+            () => Assert.NotNull(moving.EstimatedTimeRemaining),
+            () => Assert.Null(done.EstimatedTimeRemaining));
     }
 }

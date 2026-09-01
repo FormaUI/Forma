@@ -20,7 +20,7 @@ public sealed class ComposerCommandRegistryTests
             [new(ComposerRows.Plugins, [.. commands.Select(c => new FormaToolbarCommand { Id = c, Title = c, Command = c })])];
         public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
 
-        public ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+        public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
         {
             Executed.Add(command);
             return ValueTask.CompletedTask;
@@ -45,7 +45,7 @@ public sealed class ComposerCommandRegistryTests
         ];
         public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
 
-        public ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+        public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
         {
             Executed.Add(command);
             return ValueTask.CompletedTask;
@@ -59,7 +59,7 @@ public sealed class ComposerCommandRegistryTests
         public IReadOnlyList<string> CommandPrefixes => prefixes;
         public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
 
-        public ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+        public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
         {
             Executed.Add(command);
             return ValueTask.CompletedTask;
@@ -69,7 +69,7 @@ public sealed class ComposerCommandRegistryTests
     private static Task<ComposerCommandResult> ExecuteAsync(ComposerCommandRegistry registry, string command)
         => registry.ExecuteAsync(
             command,
-            ComposerStates.Create(),
+            ComposerContexts.Create(),
             new RecordingComposerInteraction(),
             TestContext.Current.CancellationToken);
 

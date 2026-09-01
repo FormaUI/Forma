@@ -11,7 +11,7 @@ public sealed partial class FormaFilePickerPage : ComponentBase
 {
     private const long MaxSizeBytes = 204_800;
 
-    private readonly Dictionary<string, List<string>> _log = [];
+    private readonly Dictionary<string, List<string>> _logs = [];
 
     [Inject] private IStringLocale<FormaFilePickerPage> L { get; set; } = default!;
 
@@ -20,10 +20,10 @@ public sealed partial class FormaFilePickerPage : ComponentBase
 
     private List<string> Entries(string key)
     {
-        if (!_log.TryGetValue(key, out var lines))
+        if (!_logs.TryGetValue(key, out var lines))
         {
             lines = [];
-            _log[key] = lines;
+            _logs[key] = lines;
         }
 
         return lines;
@@ -46,5 +46,5 @@ public sealed partial class FormaFilePickerPage : ComponentBase
     }
 
     private List<string> Log(string key)
-        => _log.TryGetValue(key, out var lines) ? lines : [];
+        => _logs.TryGetValue(key, out var lines) ? lines : [];
 }

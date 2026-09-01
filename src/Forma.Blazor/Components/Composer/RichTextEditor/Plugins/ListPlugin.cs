@@ -21,7 +21,7 @@ public sealed class ListPlugin(RichTextEditorPlugin editor) : IComposerFeaturePl
     /// <summary>The command decreasing indentation.</summary>
     public const string OutdentCommand = "list.outdent";
 
-    private readonly RichTextEditorPlugin _editor = editor;
+    private readonly RichTextEditorPlugin _editorPlugin = editor;
 
     /// <inheritdoc />
     public string Id => "list";
@@ -62,10 +62,10 @@ public sealed class ListPlugin(RichTextEditorPlugin editor) : IComposerFeaturePl
         => ValueTask.FromResult(true);
 
     /// <inheritdoc />
-    public ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+    public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
-        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(interaction);
 
         var jsCommand = command switch
@@ -79,7 +79,7 @@ public sealed class ListPlugin(RichTextEditorPlugin editor) : IComposerFeaturePl
 
         if (jsCommand is not null)
         {
-            _editor.RequestCommand(jsCommand);
+            _editorPlugin.RequestCommand(jsCommand);
         }
 
         return ValueTask.CompletedTask;

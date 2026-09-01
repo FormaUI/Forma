@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Components;
 public sealed partial class FormaComposerAttachments : ComponentBase
 {
     /// <summary>The composer state cascaded from the parent shell.</summary>
-    [CascadingParameter] public ComposerState? State { get; set; }
+    [CascadingParameter] public ComposerContext? Context { get; set; }
 
     [CascadingParameter] public IComposerInteraction? Interaction { get; set; }
 
@@ -19,23 +19,23 @@ public sealed partial class FormaComposerAttachments : ComponentBase
     private readonly string _headingId = $"composer-attachments-{Guid.NewGuid():N}";
 
     private IReadOnlyList<ResourceInfo> Attachments
-        => State?.Document.Attachments ?? [];
+        => Context?.Document.Attachments ?? [];
 
     private bool CanRemove
-        => State is { IsDisabled: false, IsReadOnly: false };
+        => Context is { IsDisabled: false, IsReadOnly: false };
 
     private string TotalSize
         => ResourceFormatter.FromByteCount(Attachments.Sum(attachment => attachment.Size ?? 0));
 
     private async Task RemoveAsync(ResourceInfo attachment)
     {
-        if (State is null || Interaction is null || !CanRemove)
+        if (Context is null || Interaction is null || !CanRemove)
         {
             return;
         }
 
         var remaining = Attachments.Where(held => !ReferenceEquals(held, attachment)).ToList();
 
-        await Interaction.ChangeDocumentAsync(State.Document with { Attachments = remaining });
+        await Interaction.ChangeDocumentAsync(Context.Document with { Attachments = remaining });
     }
 }

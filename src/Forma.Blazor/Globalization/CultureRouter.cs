@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http;
 /// <summary>The validated cultures an application serves, and the URLs addressing them.</summary>
 public sealed partial class CultureRouter
 {
-    private readonly Dictionary<string, CultureRoute> _byToken = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, CultureRoute> _routesByToken = new(StringComparer.OrdinalIgnoreCase);
     private readonly CulturePrefix _prefix;
 
     /// <summary>Validates <paramref name="options"/> and builds the token lookup.</summary>
@@ -96,7 +96,7 @@ public sealed partial class CultureRouter
 
         var normalized = path.HasValue ? path : new PathString("/");
         var segments = Segments(normalized);
-        CultureRoute? route = segments.Length > 0 && _byToken.TryGetValue(segments[0], out var found) ? found : null;
+        CultureRoute? route = segments.Length > 0 && _routesByToken.TryGetValue(segments[0], out var found) ? found : null;
         var effectiveRoute = route ?? DefaultRoute;
 
         var remainder = route is null
@@ -114,7 +114,7 @@ public sealed partial class CultureRouter
     {
         var segments = Segments(path);
 
-        return segments.Length > 1 && _byToken.ContainsKey(segments[0]) && _byToken.ContainsKey(segments[1]);
+        return segments.Length > 1 && _routesByToken.ContainsKey(segments[0]) && _routesByToken.ContainsKey(segments[1]);
     }
 
     private static string[] Segments(PathString path)
@@ -167,7 +167,7 @@ public sealed partial class CultureRouter
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(token);
 
-        if (!_byToken.TryAdd(token, route))
+        if (!_routesByToken.TryAdd(token, route))
         {
             throw new ArgumentException($"Token '{token}' is registered by more than one culture.", parameterName);
         }
@@ -178,7 +178,7 @@ public sealed partial class CultureRouter
         var normalized = path.HasValue ? path : new PathString("/");
         var segments = Segments(normalized);
 
-        if (segments.Length > 0 && _byToken.ContainsKey(segments[0]))
+        if (segments.Length > 0 && _routesByToken.ContainsKey(segments[0]))
         {
             return new PathString(segments.Length == 1 ? "/" : "/" + string.Join('/', segments.Skip(1)));
         }

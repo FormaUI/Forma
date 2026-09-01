@@ -13,7 +13,7 @@ public sealed class EmojiPlugin(
     /// <summary>Command prefix for inserting a specific emoji character.</summary>
     public const string InsertEmojiPrefix = "emoji.insert:";
 
-    private readonly RichTextEditorPlugin _editor = editor;
+    private readonly RichTextEditorPlugin _editorPlugin = editor;
 
     /// <summary>Options configuring the emoji picker.</summary>
     public EmojiPluginOptions Options { get; } = options ?? EmojiPluginOptions.Default;
@@ -55,10 +55,10 @@ public sealed class EmojiPlugin(
         => ValueTask.FromResult(true);
 
     /// <inheritdoc />
-    public ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+    public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
-        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(interaction);
 
         if (command.StartsWith(InsertEmojiPrefix, StringComparison.Ordinal))
@@ -66,7 +66,7 @@ public sealed class EmojiPlugin(
             var emoji = command[InsertEmojiPrefix.Length..];
             if (!string.IsNullOrEmpty(emoji))
             {
-                _editor.RequestCommand("insertText", emoji);
+                _editorPlugin.RequestCommand("insertText", emoji);
             }
         }
 

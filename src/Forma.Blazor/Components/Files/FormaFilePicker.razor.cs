@@ -29,7 +29,7 @@ public sealed partial class FormaFilePicker : ComponentBase, IAsyncDisposable
 
     [Inject] private IStringLocale<FormaFilePicker> L { get; set; } = default!;
 
-    private bool _attached;
+    private bool _isAttached;
 
     private ElementReference _dropZoneElement;
 
@@ -65,9 +65,9 @@ public sealed partial class FormaFilePicker : ComponentBase, IAsyncDisposable
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!_attached)
+        if (!_isAttached)
         {
-            _attached = await _fileDropZone.AttachAsync(_dropZoneElement, DraggingClass);
+            _isAttached = await _fileDropZone.AttachAsync(_dropZoneElement, DraggingClass);
         }
     }
 

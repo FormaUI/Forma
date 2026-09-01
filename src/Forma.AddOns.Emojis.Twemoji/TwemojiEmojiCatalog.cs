@@ -20,7 +20,7 @@ public sealed class TwemojiEmojiCatalog : IEmojiCatalog
             return false;
         }
 
-        emojis = [.. EmojiAssetLoader.InGroup(groupId).Select(ToInfo)];
+        emojis = [.. EmojiAssetLoader.LoadGroup(groupId).Select(ToInfo)];
         return true;
     }
 
@@ -78,5 +78,5 @@ public sealed class TwemojiEmojiCatalog : IEmojiCatalog
         };
 
     private static Dictionary<string, EmojiInfo> BuildIndex()
-        => EmojiAssetLoader.All().Select(ToInfo).ToDictionary(info => info.Emoji.Sequence, StringComparer.Ordinal);
+        => EmojiAssetLoader.LoadAll().Select(ToInfo).ToDictionary(info => info.Emoji.Sequence, StringComparer.Ordinal);
 }

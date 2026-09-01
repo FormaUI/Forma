@@ -33,9 +33,9 @@ public sealed partial class FormaImagePicker : ComponentBase, IAsyncDisposable
 
     private FilePreview _preview = default!;
 
-    private bool _previewPending;
+    private bool _isPreviewPending;
 
-    private readonly List<string> _previews = [];
+    private readonly List<string> _previewFileNames = [];
 
     private string EffectivePrompt
         => Prompt ?? L["Drop images here or click to browse"];
@@ -56,25 +56,25 @@ public sealed partial class FormaImagePicker : ComponentBase, IAsyncDisposable
             await _preview.AttachAsync(_containerElement);
         }
 
-        if (_previewPending)
+        if (_isPreviewPending)
         {
-            _previewPending = false;
-            await _preview.ShowAsync(_previews);
+            _isPreviewPending = false;
+            await _preview.ShowAsync(_previewFileNames);
         }
     }
 
     private async Task HandleFilesRejectedAsync(IReadOnlyList<RejectedFile> rejected)
     {
-        _previews.Clear();
+        _previewFileNames.Clear();
 
         await OnFilesRejected.InvokeAsync(rejected);
     }
 
     private async Task HandleFilesSelectedAsync(IReadOnlyList<IBrowserFile> files)
     {
-        _previews.Clear();
-        _previews.AddRange(files.Select(file => file.Name));
-        _previewPending = true;
+        _previewFileNames.Clear();
+        _previewFileNames.AddRange(files.Select(file => file.Name));
+        _isPreviewPending = true;
 
         await OnFilesSelected.InvokeAsync(files);
     }

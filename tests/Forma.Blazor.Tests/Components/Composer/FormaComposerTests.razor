@@ -65,7 +65,7 @@
                 [new() { Key = "k", Command = "demo.shout", Control = true, Shift = true }];
             public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
 
-            public ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+            public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
             {
                 Executed.Add(command);
                 return ValueTask.CompletedTask;
@@ -141,14 +141,14 @@
                 [new(ComposerRows.Plugins, [new FormaToolbarCommand { Id = "wordcount", Title = "Word Count", Icon = Glyph.File, Command = "demo.wordcount" }])];
             public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
 
-            public ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+            public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
             {
-                var count = state.Document.Content.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
+                var count = context.Document.Content.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
                 var text = $"{count} words";
 
                 if (_item is null)
                 {
-                    _item = state.Regions.CreateStatusItem(text);
+                    _item = context.Regions.CreateStatusItem(text);
                 }
                 else
                 {
@@ -167,9 +167,9 @@
                 [new(ComposerRows.Plugins, [new FormaToolbarCommand { Id = "save", Title = "Save", Icon = Glyph.File, Command = "demo.save" }])];
             public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
 
-            public ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+            public ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
             {
-                var item = state.Regions.CreateStatusItem("Saved");
+                var item = context.Regions.CreateStatusItem("Saved");
                 item.IsAnnounced = true;
 
                 return ValueTask.CompletedTask;

@@ -16,34 +16,34 @@ public sealed partial class FormaRichTextPreview : ComponentBase, IAsyncDisposab
     private const string ProseClass = "forma-prose";
 
     /// <summary>The composer state cascaded from the parent shell.</summary>
-    [CascadingParameter] public ComposerState? State { get; set; }
+    [CascadingParameter] public ComposerContext? Context { get; set; }
 
     /// <summary>The view plugin cascaded by the composer surface.</summary>
     [CascadingParameter] public IComposerViewPlugin? ViewPlugin { get; set; }
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
-    private RichTextPreviewViewPlugin _plugin = default!;
+    private RichTextPreviewViewPlugin _previewPlugin = default!;
     private Print _print = default!;
     private Download _download = default!;
 
     private string Content
-        => State?.Document.Content ?? string.Empty;
+        => Context?.Document.Content ?? string.Empty;
 
     private string PageClass
-        => _plugin.Page.IsSheet ? $"forma-composer-preview-page forma-composer-preview-sheet {ProseClass}" : $"forma-composer-preview-page {ProseClass}";
+        => _previewPlugin.Page.IsSheet ? $"forma-composer-preview-page forma-composer-preview-sheet {ProseClass}" : $"forma-composer-preview-page {ProseClass}";
 
     /// <summary>The page's own size: a sheet's width and height, a screen's width, or nothing for the width on offer; and its zoom.</summary>
     private string PageStyle
     {
         get
         {
-            var page = _plugin.Page;
-            var zoom = (_plugin.Zoom / 100.0).ToString(CultureInfo.InvariantCulture);
+            var page = _previewPlugin.Page;
+            var zoom = (_previewPlugin.Zoom / 100.0).ToString(CultureInfo.InvariantCulture);
 
             if (page.IsSheet)
             {
-                var (width, height) = _plugin.IsLandscape ? (page.HeightMm, page.WidthMm) : (page.WidthMm, page.HeightMm);
+                var (width, height) = _previewPlugin.IsLandscape ? (page.HeightMm, page.WidthMm) : (page.WidthMm, page.HeightMm);
 
                 return $"inline-size: {Millimetres(width!.Value)}; min-block-size: {Millimetres(height!.Value)}; zoom: {zoom};";
             }
@@ -63,11 +63,11 @@ public sealed partial class FormaRichTextPreview : ComponentBase, IAsyncDisposab
         _print = new Print(JS);
         _download = new Download(JS);
 
-        _plugin = ViewPlugin as RichTextPreviewViewPlugin
+        _previewPlugin = ViewPlugin as RichTextPreviewViewPlugin
             ?? throw new InvalidOperationException($"{nameof(FormaRichTextPreview)} requires a cascaded {nameof(RichTextPreviewViewPlugin)}.");
 
-        _plugin.PrintRequested += HandlePrintRequested;
-        _plugin.ExportHtmlRequested += HandleExportHtmlRequested;
+        _previewPlugin.PrintRequested += HandlePrintRequested;
+        _previewPlugin.ExportHtmlRequested += HandleExportHtmlRequested;
     }
 
     private void HandlePrintRequested()
@@ -79,8 +79,8 @@ public sealed partial class FormaRichTextPreview : ComponentBase, IAsyncDisposab
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        _plugin.PrintRequested -= HandlePrintRequested;
-        _plugin.ExportHtmlRequested -= HandleExportHtmlRequested;
+        _previewPlugin.PrintRequested -= HandlePrintRequested;
+        _previewPlugin.ExportHtmlRequested -= HandleExportHtmlRequested;
 
         await _print.DisposeAsync();
         await _download.DisposeAsync();

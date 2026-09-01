@@ -8,16 +8,16 @@ public sealed class ExplorerCollectionView
     private readonly IResourceKindLabels _kindLabels;
 
     private IReadOnlyList<ResourceInfo> _source = [];
-    private ExplorerResourceFilter? _accept;
+    private ExplorerResourceFilter? _filter;
     private string _searchQuery = string.Empty;
     private ExplorerSortField _sortField = ExplorerSortField.Name;
     private ExplorerSortDirection _sortDirection = ExplorerSortDirection.Ascending;
 
-    private List<ResourceInfo>? _matching;
-    private List<ResourceInfo>? _visible;
-    private List<ResourceInfo>? _visibleSource;
-    private int _visibleSkip;
-    private int _visibleTake;
+    private List<ResourceInfo>? _matchingResources;
+    private List<ResourceInfo>? _visibleResources;
+    private List<ResourceInfo>? _visibleResourcesSource;
+    private int _visibleResourcesSkip;
+    private int _visibleResourcesTake;
 
     public ExplorerCollectionView(IResourceKindLabels kindLabels)
     {
@@ -37,21 +37,21 @@ public sealed class ExplorerCollectionView
             if (!ReferenceEquals(_source, value))
             {
                 _source = value;
-                _matching = null;
+                _matchingResources = null;
             }
         }
     }
 
     /// <summary>The kind filter a resource must pass to be listed, or null to list everything.</summary>
-    public ExplorerResourceFilter? Accept
+    public ExplorerResourceFilter? Filter
     {
-        get => _accept;
+        get => _filter;
         set
         {
-            if (!ReferenceEquals(_accept, value))
+            if (!ReferenceEquals(_filter, value))
             {
-                _accept = value;
-                _matching = null;
+                _filter = value;
+                _matchingResources = null;
             }
         }
     }
@@ -67,7 +67,7 @@ public sealed class ExplorerCollectionView
             if (!string.Equals(_searchQuery, value, StringComparison.Ordinal))
             {
                 _searchQuery = value;
-                _matching = null;
+                _matchingResources = null;
             }
         }
     }
@@ -81,7 +81,7 @@ public sealed class ExplorerCollectionView
             if (_sortField != value)
             {
                 _sortField = value;
-                _matching = null;
+                _matchingResources = null;
             }
         }
     }
@@ -95,13 +95,13 @@ public sealed class ExplorerCollectionView
             if (_sortDirection != value)
             {
                 _sortDirection = value;
-                _matching = null;
+                _matchingResources = null;
             }
         }
     }
 
-    /// <summary>The requested one-based page; reads clamp it through <see cref="EffectivePage"/>.</summary>
-    public int Page { get; set; } = 1;
+    /// <summary>The requested one-based page; reads clamp it through <see cref="EffectivePageNumber"/>.</summary>
+    public int PageNumber { get; set; } = 1;
 
     /// <summary>How many resources one page holds.</summary>
     public int PageSize { get; set; } = 1;
@@ -110,7 +110,7 @@ public sealed class ExplorerCollectionView
     public bool IsAppending { get; set; }
 
     /// <summary>The resources that pass the filter and the search, in sort order.</summary>
-    public IReadOnlyList<ResourceInfo> Matching
+    public IReadOnlyList<ResourceInfo> MatchingResources
         => MatchingList;
 
     /// <summary>How many resources pass the filter and the search.</summary>
@@ -122,53 +122,53 @@ public sealed class ExplorerCollectionView
         => Math.Max(1, (int)Math.Ceiling(MatchingCount / (double)PageSize));
 
     /// <summary>The requested page clamped to the pages that exist.</summary>
-    public int EffectivePage
-        => Math.Clamp(Page, 1, PageCount);
+    public int EffectivePageNumber
+        => Math.Clamp(PageNumber, 1, PageCount);
 
     /// <summary>Whether pages remain beyond the visible window.</summary>
-    public bool HasMore
-        => IsAppending ? Visible.Count < MatchingCount : EffectivePage < PageCount;
+    public bool HasMorePages
+        => IsAppending ? VisibleResources.Count < MatchingCount : EffectivePageNumber < PageCount;
 
     /// <summary>The matching resources cut to the visible window.</summary>
-    public IReadOnlyList<ResourceInfo> Visible
+    public IReadOnlyList<ResourceInfo> VisibleResources
     {
         get
         {
             var source = MatchingList;
-            var take = IsAppending ? EffectivePage * PageSize : PageSize;
-            var skip = IsAppending ? 0 : (EffectivePage - 1) * PageSize;
+            var take = IsAppending ? EffectivePageNumber * PageSize : PageSize;
+            var skip = IsAppending ? 0 : (EffectivePageNumber - 1) * PageSize;
 
             // Appending grows this window to thousands, and rendering reads it several times, so it is rebuilt only when it moves.
-            if (_visible is not null && ReferenceEquals(_visibleSource, source) && _visibleSkip == skip && _visibleTake == take)
+            if (_visibleResources is not null && ReferenceEquals(_visibleResourcesSource, source) && _visibleResourcesSkip == skip && _visibleResourcesTake == take)
             {
-                return _visible;
+                return _visibleResources;
             }
 
-            _visibleSource = source;
-            _visibleSkip = skip;
-            _visibleTake = take;
-            _visible = [.. source.Skip(skip).Take(take)];
+            _visibleResourcesSource = source;
+            _visibleResourcesSkip = skip;
+            _visibleResourcesTake = take;
+            _visibleResources = [.. source.Skip(skip).Take(take)];
 
-            return _visible;
+            return _visibleResources;
         }
     }
 
     /// <summary>Drops the memoized shape, for a source list mutated in place.</summary>
     public void Invalidate()
-        => _matching = null;
+        => _matchingResources = null;
 
     private List<ResourceInfo> MatchingList
     {
         get
         {
-            if (_matching is not null)
+            if (_matchingResources is not null)
             {
-                return _matching;
+                return _matchingResources;
             }
 
             IEnumerable<ResourceInfo> query = _source;
 
-            if (_accept is { } accepted)
+            if (_filter is { } accepted)
             {
                 query = query.Where(accepted.Accepts);
             }
@@ -193,9 +193,9 @@ public sealed class ExplorerCollectionView
                 _ => query
             };
 
-            _matching = [.. query];
+            _matchingResources = [.. query];
 
-            return _matching;
+            return _matchingResources;
         }
     }
 }

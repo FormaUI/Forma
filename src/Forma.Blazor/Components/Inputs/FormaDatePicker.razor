@@ -50,19 +50,19 @@
                                 <select class="forma-date-picker-select"
                                         value="@month.Year"
                                         @onchange="args => OnYearDropdownChange(panel, args)">
-                                    @for (var candidate = _months.MinYear; candidate <= _months.MaxYear; candidate++)
+                                    @for (var candidate = _calendar.MinYear; candidate <= _calendar.MaxYear; candidate++)
                                     {
                                         var year = candidate;
                                         <option value="@year" disabled="@IsYearDisabled(year, panel)">@year</option>
                                     }
                                 </select>
                                 <select class="forma-date-picker-select"
-                                        value="@_months.MonthOf(month)"
+                                        value="@_calendar.GetMonth(month)"
                                         @onchange="args => OnMonthDropdownChange(panel, args)">
-                                    @for (var candidate = 1; candidate <= _months.MonthsInYear(_months.YearOf(month)); candidate++)
+                                    @for (var candidate = 1; candidate <= _calendar.GetMonthsInYear(_calendar.GetYear(month)); candidate++)
                                     {
                                         var monthNumber = candidate;
-                                        <option value="@monthNumber" disabled="@IsMonthDisabled(_months.YearOf(month), monthNumber, panel)">@_months.MonthName(_months.YearOf(month), monthNumber)</option>
+                                        <option value="@monthNumber" disabled="@IsMonthDisabled(_calendar.GetYear(month), monthNumber, panel)">@_calendar.GetMonthName(_calendar.GetYear(month), monthNumber)</option>
                                     }
                                 </select>
                             </div>
@@ -77,11 +77,11 @@
                         <div class="forma-date-picker-weekdays">
                             @for (var offset = 0; offset < 7; offset++)
                             {
-                                <span>@_months.DayAbbreviation(offset)</span>
+                                <span>@_calendar.GetDayAbbreviation(offset)</span>
                             }
                         </div>
                         <div class="forma-date-picker-days">
-                            @foreach (var day in _months.DaysOf(month))
+                            @foreach (var day in _calendar.GetDayCells(month))
                             {
                                 @if (day is null)
                                 {
@@ -94,12 +94,12 @@
                                     <button type="button"
                                             class="forma-date-picker-day@(dayClasses)"
                                             disabled="@IsDayDisabled(date)"
-                                            aria-label="@_months.DayLabel(date)"
+                                            aria-label="@_calendar.GetDayLabel(date)"
                                             aria-current="@(MarksToday(dayClasses) ? "date" : null)"
                                             aria-pressed="@(MarksSelected(dayClasses) ? "true" : null)"
                                             @onclick="() => SelectDay(date)"
                                             @onmouseenter="() => HoverDay(date)">
-                                        @_months.DayOf(date)
+                                        @_calendar.GetDayOfMonth(date)
                                     </button>
                                 }
                             }

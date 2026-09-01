@@ -4,11 +4,11 @@ using Forma.Features.Composer.Documents;
 using Forma.Features.Composer.Editing;
 using Forma.Features.Sanitization;
 
-/// <summary>Builds a <see cref="ComposerState"/> over a fixed document, for exercising a plugin without a composer.</summary>
-public static class ComposerStates
+/// <summary>Builds a <see cref="ComposerContext"/> over a fixed document, for exercising a plugin without a composer.</summary>
+public static class ComposerContexts
 {
     /// <summary>A state over the given markup, defaulting every service to the shipped implementation.</summary>
-    public static ComposerState Create(string html = "<p>Test</p>", ComposerSelection? selection = null)
+    public static ComposerContext Create(string html = "<p>Test</p>", ComposerSelection? selection = null)
         => new()
         {
             ActiveEditorId = "rich-text",

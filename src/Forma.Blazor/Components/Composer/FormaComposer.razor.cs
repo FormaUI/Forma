@@ -23,12 +23,12 @@ using Microsoft.JSInterop;
 public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncDisposable, IComposerInteraction
 {
     private readonly string _generatedId = $"composer-{Guid.NewGuid():N}";
-    private readonly ComposerCommandRegistry _commands = new();
-    private readonly ComposerRegionRegistry _regions = new();
+    private readonly ComposerCommandRegistry _commandRegistry = new();
+    private readonly ComposerRegionRegistry _regionRegistry = new();
     private ComposerSelection _selection = ComposerSelection.Empty;
 
-    private ComposerPluginCatalog _catalog = default!;
-    private ComposerKeyMap _keyMap = ComposerKeyMap.Empty;
+    private ComposerPluginCatalog _pluginCatalog = default!;
+    private ComposerKeyBindingCatalog _keyBindingCatalog = ComposerKeyBindingCatalog.Empty;
     private ElementReference _composerElement;
     private DotNetObjectReference<FormaComposer>? _selfReference;
     private KeyBindings _keyBindings = default!;
@@ -78,10 +78,10 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
         => Options.ShowToolbar && !ReadOnly;
 
     private bool ShowTabs
-        => Options.ShowEditorSwitcher && (_catalog.Editors.Count > 1 || ActiveViews.Count > 0);
+        => Options.ShowEditorSwitcher && (_pluginCatalog.Editors.Count > 1 || ActiveViews.Count > 0);
 
     private IReadOnlyList<IComposerViewPlugin> ActiveViews
-        => _activeViews ??= _catalog.ViewsOf(_activeEditor.Id);
+        => _activeViews ??= _pluginCatalog.GetViewsForEditor(_activeEditor.Id);
 
     private string ActiveTabId
         => _activeView?.Id ?? _activeEditor.Id;
@@ -98,10 +98,10 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     private ComposerDocument CurrentDocument
         => Value ?? new ComposerDocument(ComposerDocumentFormat.Html, string.Empty);
 
-    private ComposerState? _state;
+    private ComposerContext? _context;
 
     // The same instance comes back until a member actually changes.
-    private ComposerState? State
+    private ComposerContext? Context
     {
         get
         {
@@ -110,18 +110,18 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
                 return null;
             }
 
-            var built = BuildState();
+            var built = BuildContext();
 
-            if (built != _state)
+            if (built != _context)
             {
-                _state = built;
+                _context = built;
             }
 
-            return _state;
+            return _context;
         }
     }
 
-    private ComposerState BuildState()
+    private ComposerContext BuildContext()
         => new()
         {
             ActiveEditorId = _activeEditor.Id,
@@ -134,7 +134,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
             History = _history,
             Sanitizer = _sanitizer,
             AssetLoader = _assetLoader,
-            Regions = _regions,
+            Regions = _regionRegistry,
             SyntaxHighlighter = _syntaxHighlighter,
         };
 
@@ -153,12 +153,12 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
         _sanitizer = injectedSanitizer ?? new AllowlistHtmlSanitizer();
         _syntaxHighlighter = (IComposerSyntaxHighlighter?)Services.GetService(typeof(IComposerSyntaxHighlighter));
 
-        _commands.RegisterEngineCommand(ComposerCommands.Undo, HandleUndoAsync);
-        _commands.RegisterEngineCommand(ComposerCommands.Redo, HandleRedoAsync);
-        _commands.RegisterEngineCommand(ComposerCommands.Maximize, HandleMaximizeAsync);
-        _commands.RegisterEngineCommand(ComposerCommands.SelectionBar, HandleSelectionBarAsync);
-        _commands.RegisterEngineCommand(ComposerCommands.Attach, HandleAttachAsync);
-        _regions.Changed += HandleRegionsChanged;
+        _commandRegistry.RegisterEngineCommand(ComposerCommands.Undo, HandleUndoAsync);
+        _commandRegistry.RegisterEngineCommand(ComposerCommands.Redo, HandleRedoAsync);
+        _commandRegistry.RegisterEngineCommand(ComposerCommands.Maximize, HandleMaximizeAsync);
+        _commandRegistry.RegisterEngineCommand(ComposerCommands.SelectionBar, HandleSelectionBarAsync);
+        _commandRegistry.RegisterEngineCommand(ComposerCommands.Attach, HandleAttachAsync);
+        _regionRegistry.Changed += HandleRegionsChanged;
 
         await LoadPluginsAsync();
 
@@ -224,13 +224,13 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
         var injected = (IEnumerable<IComposerPlugin>?)Services.GetService(typeof(IEnumerable<IComposerPlugin>)) ?? [];
         var candidates = (Plugins ?? []).Concat(injected);
 
-        _catalog = await ComposerPluginCatalog.CreateAsync(candidates, new PlainTextEditorPlugin());
-        _activeEditor = _catalog.Resolve(ActiveEditorId, Options.DefaultEditorId, CurrentDocument.Format);
+        _pluginCatalog = await ComposerPluginCatalog.CreateAsync(candidates, new PlainTextEditorPlugin());
+        _activeEditor = _pluginCatalog.ResolveEditor(ActiveEditorId, Options.DefaultEditorId, CurrentDocument.Format);
         _activeViews = null;
 
-        _commands.RegisterPlugins(_catalog.All);
-        _keyMap = new ComposerKeyMap([ComposerKeyBindingSource.Default, .. _catalog.All]);
-        _attachOptions = _catalog.FeaturePlugins.OfType<FileUploadPlugin>().FirstOrDefault()?.Options ?? FileUploadPluginOptions.Default;
+        _commandRegistry.RegisterPlugins(_pluginCatalog.Plugins);
+        _keyBindingCatalog = new ComposerKeyBindingCatalog([ComposerKeyBindingSource.Default, .. _pluginCatalog.Plugins]);
+        _attachOptions = _pluginCatalog.FeaturePlugins.OfType<FileUploadPlugin>().FirstOrDefault()?.Options ?? FileUploadPluginOptions.Default;
     }
 
     /// <inheritdoc />
@@ -258,7 +258,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
 
         _isJsStarted = true;
 
-        await _keyBindings.AttachAsync(_composerElement, _selfReference!, ToKeyBindings(_keyMap.Bindings));
+        await _keyBindings.AttachAsync(_composerElement, _selfReference!, ToKeyBindings(_keyBindingCatalog.Bindings));
         // The canvas is where focus lands first; Tab then reaches the composer's own commands before leaving it.
         await _focus.AttachAsync(_composerElement, order: [".forma-composer-canvas"]);
         await _assetLoader.LoadAssetsAsync(_activeEditor.Assets);
@@ -278,14 +278,14 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
             return;
         }
 
-        if (State is not { } state)
+        if (Context is not { } context)
         {
             return;
         }
 
         await InvokeAsync(async () =>
         {
-            if (await _commands.ExecuteAsync(command, state, this) is ComposerCommandResult.Plugin)
+            if (await _commandRegistry.ExecuteAsync(command, context, this) is ComposerCommandResult.Plugin)
             {
                 StateHasChanged();
             }
@@ -297,7 +297,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(targetEditorId);
 
-        var target = _catalog.Editors.FirstOrDefault(e => e.Id == targetEditorId);
+        var target = _pluginCatalog.Editors.FirstOrDefault(e => e.Id == targetEditorId);
 
         if (target is null)
         {
@@ -479,7 +479,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        _regions.Changed -= HandleRegionsChanged;
+        _regionRegistry.Changed -= HandleRegionsChanged;
 
         _selfReference?.Dispose();
         await _assetLoader.DisposeAsync();

@@ -31,7 +31,7 @@
                             OnSearchQueryChanged="HandleSearchQueryChangedAsync" />
 
     <!-- Action & View Toolbar -->
-    <FormaExplorerToolbar IsSelectMode="_selection.IsSelectMode"
+    <FormaExplorerToolbar IsSelectMode="_selection.IsSelectionModeActive"
                          CanLeaveSelectMode="@(!Options.SelectOnOpen)"
                          FileOptions="FileOptions"
                          SelectedCount="_selection.Count"
@@ -210,9 +210,9 @@
     }
 
     <!-- Rename Media Modal -->
-    @if (_rename.Resource is not null)
+    @if (_renameSession.Resource is not null)
     {
-        <FormaModal Opened="@(_rename.Resource is not null)"
+        <FormaModal Opened="@(_renameSession.Resource is not null)"
                     Size="ModalSize.Small"
                     Title="@L["Rename Media"]"
                     Options="DialogModalOptions"
@@ -220,7 +220,7 @@
             <Body>
                 <div class="forma-explorer-dialog-field">
                     <label class="forma-explorer-dialog-label" for="forma-explorer-rename-input">@L["New Name"]</label>
-                    <FormaTextBox Id="forma-explorer-rename-input" class="forma-explorer-dialog-input" @bind-Value="_rename.DraftName" />
+                    <FormaTextBox Id="forma-explorer-rename-input" class="forma-explorer-dialog-input" @bind-Value="_renameSession.DraftName" />
                 </div>
             </Body>
             <Footer>
@@ -257,9 +257,9 @@
     }
 
     <!-- Create Folder Modal -->
-    @if (_folderDraft.IsOpen)
+    @if (_folderDraft.IsActive)
     {
-        <FormaModal Opened="_folderDraft.IsOpen"
+        <FormaModal Opened="_folderDraft.IsActive"
                     Size="ModalSize.Small"
                     Title="@L["New Folder"]"
                     Options="DialogModalOptions"
@@ -282,9 +282,9 @@
     }
 
     <!-- Rename Folder Modal -->
-    @if (_rename.Folder is not null)
+    @if (_renameSession.Folder is not null)
     {
-        <FormaModal Opened="@(_rename.Folder is not null)"
+        <FormaModal Opened="@(_renameSession.Folder is not null)"
                     Size="ModalSize.Small"
                     Title="@L["Rename Folder"]"
                     Options="DialogModalOptions"
@@ -292,7 +292,7 @@
             <Body>
                 <div class="forma-explorer-dialog-field">
                     <label class="forma-explorer-dialog-label" for="forma-explorer-rename-folder-input">@L["Folder Name"]</label>
-                    <FormaTextBox Id="forma-explorer-rename-folder-input" class="forma-explorer-dialog-input" @bind-Value="_rename.DraftName" />
+                    <FormaTextBox Id="forma-explorer-rename-folder-input" class="forma-explorer-dialog-input" @bind-Value="_renameSession.DraftName" />
                 </div>
             </Body>
             <Footer>
