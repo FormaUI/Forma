@@ -43,8 +43,7 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
     private IComposerViewPlugin? _activeView;
     private bool _isInitialized;
     private bool _isJsStarted;
-    private bool _isMaximized;
-    private bool _isSelectionBarShown = true;
+    private readonly ComposerChrome _chrome = new();
     private bool _isAttachOpen;
 
     /// <summary>Options configuring toolbar display, editor switcher, and default editor.</summary>
@@ -99,7 +98,7 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
             Disabled ? "forma-composer-disabled" : null,
             ReadOnly ? "forma-composer-readonly" : null,
             Options.IsResizable && !Disabled ? "forma-composer-resizable" : null,
-            _isMaximized ? "forma-composer-maximized" : null);
+            _chrome.IsMaximized ? "forma-composer-maximized" : null);
 
     private ComposerDocument CurrentDocument
         => Value ?? new ComposerDocument(ComposerDocumentFormat.Html, string.Empty);
@@ -135,8 +134,8 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
             Selection = _selection,
             IsDisabled = Disabled,
             IsReadOnly = ReadOnly,
-            IsMaximized = _isMaximized,
-            IsSelectionBarShown = _isSelectionBarShown,
+            IsMaximized = _chrome.IsMaximized,
+            IsSelectionBarShown = _chrome.IsSelectionBarShown,
             History = _history,
             Sanitizer = Sanitizer,
             AssetLoader = _assetLoader,
@@ -169,7 +168,7 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
 
     private Task HandleMaximizeAsync()
     {
-        _isMaximized = !_isMaximized;
+        _chrome.ToggleMaximized();
         StateHasChanged();
         return Task.CompletedTask;
     }
@@ -196,7 +195,7 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
 
     private Task HandleSelectionBarAsync()
     {
-        _isSelectionBarShown = !_isSelectionBarShown;
+        _chrome.ToggleSelectionBar();
         StateHasChanged();
         return Task.CompletedTask;
     }
