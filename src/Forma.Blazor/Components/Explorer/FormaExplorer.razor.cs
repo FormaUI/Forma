@@ -162,17 +162,11 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
 
     private bool _isResizingSidebar;
 
-    private InfiniteScroll _infiniteScroll = default!;
+    private SentinelObserver<FormaExplorer> _sentinel = default!;
 
     private ElementReference _sentinelElement;
 
     private ElementReference _scrollElement;
-
-    private DotNetObjectReference<FormaExplorer>? _selfReference;
-
-    private bool _isSentinelObserved;
-
-    private bool _isSentinelStale;
 
     private bool _isLoadingPage;
 
@@ -322,7 +316,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _infiniteScroll = new InfiniteScroll(JS);
+        _sentinel = new SentinelObserver<FormaExplorer>(JS);
 
         _collection = new ExplorerCollectionView(this)
         {
@@ -729,32 +723,15 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
         => string.Create(CultureInfo.InvariantCulture, $"--forma-explorer-sidebar-size: {_sidebarWidth}rem");
 
     /// <inheritdoc />
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-        => await SyncSentinelAsync();
+    protected override Task OnAfterRenderAsync(bool firstRender)
+        => SyncSentinelAsync();
 
-    private async Task SyncSentinelAsync()
+    private Task SyncSentinelAsync()
     {
         // Only automatic scrolling watches the sentinel; the manual mode waits for the button to be pressed.
         var wantsSentinel = Options.InfiniteScroll == ExplorerInfiniteScrollMode.Automatic && HasMorePages;
 
-        if (wantsSentinel == _isSentinelObserved && !_isSentinelStale)
-        {
-            return;
-        }
-
-        if (wantsSentinel)
-        {
-            _selfReference ??= DotNetObjectReference.Create(this);
-
-            _isSentinelObserved = await _infiniteScroll.AttachAsync(_sentinelElement, _selfReference, _scrollElement);
-        }
-        else
-        {
-            await _infiniteScroll.DetachAsync();
-            _isSentinelObserved = false;
-        }
-
-        _isSentinelStale = false;
+        return _sentinel.SyncAsync(this, wantsSentinel, _sentinelElement, _scrollElement);
     }
 
     /// <summary>Appends the next page of media, as the reader scrolls toward the end of the current one.</summary>
@@ -769,7 +746,7 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
         _collection.PageNumber = EffectivePage + 1;
 
         // An observer reports crossings, not a standing state, so it is re-armed to keep filling a viewport the new page did not.
-        _isSentinelStale = true;
+        _sentinel.Invalidate();
         _isLoadingPage = true;
 
         StateHasChanged();
@@ -796,9 +773,8 @@ public sealed partial class FormaExplorer : ComponentBase, IAsyncDisposable, IEx
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        await _infiniteScroll.DisposeAsync();
+        await _sentinel.DisposeAsync();
 
-        _selfReference?.Dispose();
         _providerWindow.Dispose();
         _searchCancellation?.Dispose();
     }

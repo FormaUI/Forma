@@ -61,11 +61,9 @@ public sealed partial class FormaEmojiPicker(IEmojiCatalog? registeredCatalog = 
     private string _searchQuery = string.Empty;
     private string? _activeGroupId;
     private string _announcement = string.Empty;
-    private InfiniteScroll? _infiniteScroll;
-    private DotNetObjectReference<FormaEmojiPicker>? _selfReference;
+    private SentinelObserver<FormaEmojiPicker> _sentinel = default!;
     private ElementReference _sentinelElement;
     private ElementReference _panelElement;
-    private bool _isSentinelObserved;
 
     /// <summary>Raised with the chosen emoji's sequence.</summary>
     [Parameter] public EventCallback<string> OnSelect { get; set; }
@@ -150,6 +148,10 @@ public sealed partial class FormaEmojiPicker(IEmojiCatalog? registeredCatalog = 
         => RenderedEmojis.Count < MatchingEmojis.Count;
 
     /// <inheritdoc />
+    protected override void OnInitialized()
+        => _sentinel = new SentinelObserver<FormaEmojiPicker>(JS);
+
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(Options);
@@ -182,14 +184,7 @@ public sealed partial class FormaEmojiPicker(IEmojiCatalog? registeredCatalog = 
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
-    {
-        if (_infiniteScroll is not null)
-        {
-            await _infiniteScroll.DisposeAsync();
-        }
-
-        _selfReference?.Dispose();
-    }
+        => await _sentinel.DisposeAsync();
 
     private string TabElementId(string groupId)
         => $"{ElementId}-tab-{groupId}";
@@ -216,18 +211,8 @@ public sealed partial class FormaEmojiPicker(IEmojiCatalog? registeredCatalog = 
     private bool IsCompleted(string sheet)
         => _sheetLoadTracker.IsCompleted(sheet);
 
-    private async Task WatchSentinelAsync()
-    {
-        if (_isSentinelObserved || !HasMoreToLoad)
-        {
-            return;
-        }
-
-        _isSentinelObserved = true;
-        _selfReference ??= DotNetObjectReference.Create(this);
-        _infiniteScroll ??= new InfiniteScroll(JS);
-        await _infiniteScroll.AttachAsync(_sentinelElement, _selfReference, _panelElement);
-    }
+    private Task WatchSentinelAsync()
+        => _sentinel.SyncAsync(this, HasMoreToLoad, _sentinelElement, _panelElement);
 
     private async Task LoadNextSheetAsync()
     {
@@ -266,15 +251,9 @@ public sealed partial class FormaEmojiPicker(IEmojiCatalog? registeredCatalog = 
 
     private async Task ResetChunkWindowAsync()
     {
-        if (_infiniteScroll is not null)
-        {
-            await _infiniteScroll.DisposeAsync();
-            _infiniteScroll = null;
-        }
-
         // A sheet that failed is asked for again the next time its group is shown.
         _sheetLoadTracker.ClearFailures();
-        _isSentinelObserved = false;
+        _sentinel.Invalidate();
         InvalidateView();
         await LoadNextSheetAsync();
     }
