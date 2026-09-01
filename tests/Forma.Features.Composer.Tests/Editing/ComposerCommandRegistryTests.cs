@@ -6,19 +6,12 @@ using Forma.Features.Composer.Editing;
 using Forma.Features.Composer.Plugins;
 using Forma.Features.Sanitization;
 using Forma.Framework.Toolbar;
+using Forma.Tests.Composer;
 
 using Xunit;
 
 public sealed class ComposerCommandRegistryTests
 {
-    private sealed class NullAssetLoader : IComposerAssetLoader
-    {
-        public bool IsAssetLoaded(ComposerAsset asset) => false;
-        public ValueTask LoadAssetAsync(ComposerAsset asset, CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
-        public ValueTask LoadAssetsAsync(IEnumerable<ComposerAsset> assets, CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
-        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
-    }
-
     private sealed class RecordingPlugin(string id, params string[] commands) : IComposerPlugin
     {
         public string Id => id;
@@ -27,7 +20,7 @@ public sealed class ComposerCommandRegistryTests
             [new(ComposerRows.Plugins, [.. commands.Select(c => new FormaToolbarCommand { Id = c, Title = c, Command = c })])];
         public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
 
-        public ValueTask ExecuteAsync(string command, ComposerContext context, CancellationToken cancellationToken = default)
+        public ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
         {
             Executed.Add(command);
             return ValueTask.CompletedTask;
@@ -52,7 +45,7 @@ public sealed class ComposerCommandRegistryTests
         ];
         public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
 
-        public ValueTask ExecuteAsync(string command, ComposerContext context, CancellationToken cancellationToken = default)
+        public ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
         {
             Executed.Add(command);
             return ValueTask.CompletedTask;
@@ -66,31 +59,19 @@ public sealed class ComposerCommandRegistryTests
         public IReadOnlyList<string> CommandPrefixes => prefixes;
         public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
 
-        public ValueTask ExecuteAsync(string command, ComposerContext context, CancellationToken cancellationToken = default)
+        public ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
         {
             Executed.Add(command);
             return ValueTask.CompletedTask;
         }
     }
 
-    private static readonly NullAssetLoader AssetLoader = new();
-
-    private static ComposerContext CreateContext()
-        => new(
-            "editor",
-            new ComposerDocument(ComposerDocumentFormat.PlainText, "text"),
-            ComposerSelection.Empty,
-            new ComposerHistory(),
-            new AllowlistHtmlSanitizer(),
-            AssetLoader,
-            new ComposerRegionRegistry(),
-            _ => Task.CompletedTask,
-            () => Task.CompletedTask,
-            _ => Task.CompletedTask,
-            _ => Task.CompletedTask);
-
     private static Task<ComposerCommandResult> ExecuteAsync(ComposerCommandRegistry registry, string command)
-        => registry.ExecuteAsync(command, CreateContext(), TestContext.Current.CancellationToken);
+        => registry.ExecuteAsync(
+            command,
+            ComposerStates.Create(),
+            new RecordingComposerInteraction(),
+            TestContext.Current.CancellationToken);
 
     [Fact]
     public async Task Should_claim_a_command_a_toolbar_item_names_only_through_an_option()

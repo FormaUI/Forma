@@ -1,0 +1,201 @@
+namespace Forma.Features.Explorer;
+
+using Forma.Framework.Resources;
+
+/// <summary>The shaped view over a held resource collection: filtered by kind, searched by name, sorted, and cut to the visible page.</summary>
+public sealed class ExplorerCollectionView
+{
+    private readonly IResourceKindLabels _kindLabels;
+
+    private IReadOnlyList<ResourceInfo> _source = [];
+    private ExplorerResourceFilter? _accept;
+    private string _searchQuery = string.Empty;
+    private ExplorerSortField _sortField = ExplorerSortField.Name;
+    private ExplorerSortDirection _sortDirection = ExplorerSortDirection.Ascending;
+
+    private List<ResourceInfo>? _matching;
+    private List<ResourceInfo>? _visible;
+    private List<ResourceInfo>? _visibleSource;
+    private int _visibleSkip;
+    private int _visibleTake;
+
+    public ExplorerCollectionView(IResourceKindLabels kindLabels)
+    {
+        ArgumentNullException.ThrowIfNull(kindLabels);
+
+        _kindLabels = kindLabels;
+    }
+
+    /// <summary>The resources the view shapes.</summary>
+    public IReadOnlyList<ResourceInfo> Source
+    {
+        get => _source;
+        set
+        {
+            ArgumentNullException.ThrowIfNull(value);
+
+            if (!ReferenceEquals(_source, value))
+            {
+                _source = value;
+                _matching = null;
+            }
+        }
+    }
+
+    /// <summary>The kind filter a resource must pass to be listed, or null to list everything.</summary>
+    public ExplorerResourceFilter? Accept
+    {
+        get => _accept;
+        set
+        {
+            if (!ReferenceEquals(_accept, value))
+            {
+                _accept = value;
+                _matching = null;
+            }
+        }
+    }
+
+    /// <summary>The name fragment a resource must contain, compared case-insensitively.</summary>
+    public string SearchQuery
+    {
+        get => _searchQuery;
+        set
+        {
+            ArgumentNullException.ThrowIfNull(value);
+
+            if (!string.Equals(_searchQuery, value, StringComparison.Ordinal))
+            {
+                _searchQuery = value;
+                _matching = null;
+            }
+        }
+    }
+
+    /// <summary>The field the matching resources are ordered by.</summary>
+    public ExplorerSortField SortField
+    {
+        get => _sortField;
+        set
+        {
+            if (_sortField != value)
+            {
+                _sortField = value;
+                _matching = null;
+            }
+        }
+    }
+
+    /// <summary>The direction the matching resources are ordered in.</summary>
+    public ExplorerSortDirection SortDirection
+    {
+        get => _sortDirection;
+        set
+        {
+            if (_sortDirection != value)
+            {
+                _sortDirection = value;
+                _matching = null;
+            }
+        }
+    }
+
+    /// <summary>The requested one-based page; reads clamp it through <see cref="EffectivePage"/>.</summary>
+    public int Page { get; set; } = 1;
+
+    /// <summary>How many resources one page holds.</summary>
+    public int PageSize { get; set; } = 1;
+
+    /// <summary>Whether the visible window grows from the first page instead of moving, as infinite scrolling needs.</summary>
+    public bool IsAppending { get; set; }
+
+    /// <summary>The resources that pass the filter and the search, in sort order.</summary>
+    public IReadOnlyList<ResourceInfo> Matching
+        => MatchingList;
+
+    /// <summary>How many resources pass the filter and the search.</summary>
+    public int MatchingCount
+        => MatchingList.Count;
+
+    /// <summary>How many pages the matching resources fill, never less than one.</summary>
+    public int PageCount
+        => Math.Max(1, (int)Math.Ceiling(MatchingCount / (double)PageSize));
+
+    /// <summary>The requested page clamped to the pages that exist.</summary>
+    public int EffectivePage
+        => Math.Clamp(Page, 1, PageCount);
+
+    /// <summary>Whether pages remain beyond the visible window.</summary>
+    public bool HasMore
+        => IsAppending ? Visible.Count < MatchingCount : EffectivePage < PageCount;
+
+    /// <summary>The matching resources cut to the visible window.</summary>
+    public IReadOnlyList<ResourceInfo> Visible
+    {
+        get
+        {
+            var source = MatchingList;
+            var take = IsAppending ? EffectivePage * PageSize : PageSize;
+            var skip = IsAppending ? 0 : (EffectivePage - 1) * PageSize;
+
+            // Appending grows this window to thousands, and rendering reads it several times, so it is rebuilt only when it moves.
+            if (_visible is not null && ReferenceEquals(_visibleSource, source) && _visibleSkip == skip && _visibleTake == take)
+            {
+                return _visible;
+            }
+
+            _visibleSource = source;
+            _visibleSkip = skip;
+            _visibleTake = take;
+            _visible = [.. source.Skip(skip).Take(take)];
+
+            return _visible;
+        }
+    }
+
+    /// <summary>Drops the memoized shape, for a source list mutated in place.</summary>
+    public void Invalidate()
+        => _matching = null;
+
+    private List<ResourceInfo> MatchingList
+    {
+        get
+        {
+            if (_matching is not null)
+            {
+                return _matching;
+            }
+
+            IEnumerable<ResourceInfo> query = _source;
+
+            if (_accept is { } accepted)
+            {
+                query = query.Where(accepted.Accepts);
+            }
+
+            if (!string.IsNullOrWhiteSpace(_searchQuery))
+            {
+                query = query.Where(resource => resource.Name.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase));
+            }
+
+            query = (_sortField, _sortDirection) switch
+            {
+                (ExplorerSortField.Name, ExplorerSortDirection.Ascending) => query.OrderBy(resource => resource.Name, StringComparer.OrdinalIgnoreCase),
+                (ExplorerSortField.Name, ExplorerSortDirection.Descending) => query.OrderByDescending(resource => resource.Name, StringComparer.OrdinalIgnoreCase),
+                (ExplorerSortField.Size, ExplorerSortDirection.Ascending) => query.OrderBy(resource => resource.Size ?? 0),
+                (ExplorerSortField.Size, ExplorerSortDirection.Descending) => query.OrderByDescending(resource => resource.Size ?? 0),
+                (ExplorerSortField.Kind, ExplorerSortDirection.Ascending) => query.OrderBy(_kindLabels.LabelOf, StringComparer.CurrentCulture),
+                (ExplorerSortField.Kind, ExplorerSortDirection.Descending) => query.OrderByDescending(_kindLabels.LabelOf, StringComparer.CurrentCulture),
+                (ExplorerSortField.DateAdded, ExplorerSortDirection.Ascending) => query.OrderBy(resource => resource.CreatedAt ?? DateTimeOffset.MinValue),
+                (ExplorerSortField.DateAdded, ExplorerSortDirection.Descending) => query.OrderByDescending(resource => resource.CreatedAt ?? DateTimeOffset.MinValue),
+                (ExplorerSortField.DateModified, ExplorerSortDirection.Ascending) => query.OrderBy(resource => resource.ModifiedAt ?? DateTimeOffset.MinValue),
+                (ExplorerSortField.DateModified, ExplorerSortDirection.Descending) => query.OrderByDescending(resource => resource.ModifiedAt ?? DateTimeOffset.MinValue),
+                _ => query
+            };
+
+            _matching = [.. query];
+
+            return _matching;
+        }
+    }
+}

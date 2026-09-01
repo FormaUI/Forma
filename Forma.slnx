@@ -34,6 +34,7 @@
     <Project Path="tests\Forma.Features.Composer.Tests\Forma.Features.Composer.Tests.csproj" />
     <Project Path="tests\Forma.AddOns.Share.Targets.Tests\Forma.AddOns.Share.Targets.Tests.csproj" />
     <Project Path="tests\Forma.Features.Explorer.Tests\Forma.Features.Explorer.Tests.csproj" />
+    <Project Path="tests\Forma.Features.Files.Tests\Forma.Features.Files.Tests.csproj" />
     <Project Path="tests\Forma.AddOns.Emojis.Twemoji.Tests\Forma.AddOns.Emojis.Twemoji.Tests.csproj" />
     <Project Path="tests\Forma.AddOns.Resources.Office.Tests\Forma.AddOns.Resources.Office.Tests.csproj" />
     <Project Path="tests\Forma.AddOns.Resources.Markdown.Tests\Forma.AddOns.Resources.Markdown.Tests.csproj" />

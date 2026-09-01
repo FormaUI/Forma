@@ -14,7 +14,7 @@ public interface IComposerViewPlugin : IComposerPlugin
     /// <summary>The title of the view, in English, used as the localization key.</summary>
     string Title { get; }
 
-    /// <summary>The icon associated with the view.</summary>
+    /// <summary>The icon associated with the state.</summary>
     Icon Icon { get; }
 
     /// <summary>The component filling this view's canvas.</summary>

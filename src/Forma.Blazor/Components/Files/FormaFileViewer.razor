@@ -25,11 +25,11 @@
                      style="@(IsZoomed ? $"inline-size: {ZoomPercent}%;" : null)" />
             </div>
             <div class="forma-file-viewer-zoom" role="group" aria-label="@L["Zoom"]">
-                <FormaButton Variant="ButtonVariant.Tertiary" IconOnly="true" class="forma-file-viewer-zoom-button" Disabled="@(_zoomIndex == 0)" aria-label="@L["Zoom Out"]" OnClick="ZoomOut">
+                <FormaButton Variant="ButtonVariant.Tertiary" IconOnly="true" class="forma-file-viewer-zoom-button" Disabled="_zoom.AtMinimum" aria-label="@L["Zoom Out"]" OnClick="ZoomOut">
                     <FormaIcon Icon="Glyph.Minus" />
                 </FormaButton>
                 <span class="forma-file-viewer-zoom-level" role="status">@ZoomPercent%</span>
-                <FormaButton Variant="ButtonVariant.Tertiary" IconOnly="true" class="forma-file-viewer-zoom-button" Disabled="@(_zoomIndex == ZoomSteps.Length - 1)" aria-label="@L["Zoom In"]" OnClick="ZoomIn">
+                <FormaButton Variant="ButtonVariant.Tertiary" IconOnly="true" class="forma-file-viewer-zoom-button" Disabled="_zoom.AtMaximum" aria-label="@L["Zoom In"]" OnClick="ZoomIn">
                     <FormaIcon Icon="Glyph.Plus" />
                 </FormaButton>
             </div>

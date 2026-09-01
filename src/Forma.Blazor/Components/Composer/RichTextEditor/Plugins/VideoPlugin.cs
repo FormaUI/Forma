@@ -48,10 +48,11 @@ public sealed class VideoPlugin(RichTextEditorPlugin editor) : IComposerFeatureP
         => ValueTask.FromResult(true);
 
     /// <inheritdoc />
-    public ValueTask ExecuteAsync(string command, ComposerContext context, CancellationToken cancellationToken = default)
+    public ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
-        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(interaction);
 
         if (command == InsertVideoCommand)
         {

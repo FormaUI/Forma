@@ -10,7 +10,7 @@ using Forma.Framework.Toolbar;
 public sealed class MaximizePlugin : IComposerFeaturePlugin
 {
     /// <summary>The command toggling full-viewport maximized editor state.</summary>
-    public const string MaximizeCommand = "view.maximize";
+    public const string MaximizeCommand = "state.maximize";
 
     /// <inheritdoc />
     public string Id => "maximize";
@@ -46,14 +46,4 @@ public sealed class MaximizePlugin : IComposerFeaturePlugin
     /// <inheritdoc />
     public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default)
         => ValueTask.FromResult(true);
-
-    /// <inheritdoc />
-    public ValueTask ExecuteAsync(string command, ComposerContext context, CancellationToken cancellationToken = default)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(command);
-        ArgumentNullException.ThrowIfNull(context);
-
-        // The engine registers MaximizeCommand itself and claims it before any plugin is consulted.
-        return ValueTask.CompletedTask;
-    }
 }

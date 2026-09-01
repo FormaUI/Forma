@@ -14,8 +14,10 @@ public sealed partial class DemoSourceEditor : ComponentBase, IDisposable
     // A pattern built from what the author typed, so a pathological name cannot run away with the request.
     private static readonly TimeSpan MatchTimeout = TimeSpan.FromMilliseconds(250);
 
-    /// <summary>The shared composer context cascaded from the parent shell.</summary>
-    [CascadingParameter] public ComposerContext? Context { get; set; }
+    /// <summary>The composer state cascaded from the parent shell.</summary>
+    [CascadingParameter] public ComposerState? State { get; set; }
+
+    [CascadingParameter] public IComposerInteraction? Interaction { get; set; }
 
     /// <summary>The plugin this canvas belongs to, cascaded by the host so each composer drives its own.</summary>
     [CascadingParameter] public SourceEditorPlugin? Plugin { get; set; }
@@ -31,16 +33,16 @@ public sealed partial class DemoSourceEditor : ComponentBase, IDisposable
 
     // Rendering what the textarea already holds keeps an interleaved render from overwriting uncommitted typing.
     private string Content
-        => _typedContent ?? Context?.Document.Content ?? string.Empty;
+        => _typedContent ?? State?.Document.Content ?? string.Empty;
 
     private int LineCount
         => Content.Split('\n').Length;
 
     private bool IsDisabled
-        => Context?.IsDisabled ?? false;
+        => State?.IsDisabled ?? false;
 
     private bool IsReadOnly
-        => Context?.IsReadOnly ?? false;
+        => State?.IsReadOnly ?? false;
 
     private bool CanRename
         => !string.IsNullOrWhiteSpace(_oldName) && !string.IsNullOrWhiteSpace(_newName);
@@ -59,7 +61,7 @@ public sealed partial class DemoSourceEditor : ComponentBase, IDisposable
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        var documentContent = Context?.Document.Content;
+        var documentContent = State?.Document.Content;
 
         if (documentContent != _committedContent)
         {
@@ -115,7 +117,7 @@ public sealed partial class DemoSourceEditor : ComponentBase, IDisposable
 
     private async Task ApplyRenameAsync()
     {
-        if (Context is null || !CanRename)
+        if (State is null || Interaction is null || !CanRename)
         {
             return;
         }
@@ -156,7 +158,7 @@ public sealed partial class DemoSourceEditor : ComponentBase, IDisposable
 
     private async Task CommitAsync(string content)
     {
-        if (Context is null || Context.Document.Content == content)
+        if (State is null || Interaction is null || State.Document.Content == content)
         {
             return;
         }
@@ -164,7 +166,7 @@ public sealed partial class DemoSourceEditor : ComponentBase, IDisposable
         _typedContent = null;
         _committedContent = content;
 
-        await Context.ChangeDocumentAsync(Context.Document with { Content = content });
+        await Interaction.ChangeDocumentAsync(State.Document with { Content = content });
     }
 
     /// <inheritdoc />

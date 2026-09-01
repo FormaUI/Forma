@@ -21,7 +21,7 @@ public sealed class ComposerPluginCatalog
     /// <summary>The views available, each belonging to one editor.</summary>
     public IReadOnlyList<IComposerViewPlugin> Views { get; }
 
-    /// <summary>The plugins that contribute capabilities rather than an editor or a view.</summary>
+    /// <summary>The plugins that contribute capabilities rather than an editor or a state.</summary>
     public IReadOnlyList<IComposerPlugin> FeaturePlugins { get; }
 
     /// <summary>Every available plugin: editors, then views, then the rest.</summary>

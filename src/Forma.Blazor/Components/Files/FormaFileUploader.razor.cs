@@ -49,11 +49,7 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
 
     private long _lastProgressAt;
 
-    private TimeSpan? _setDuration;
-
-    private long _setStartedAt;
-
-    private readonly List<UploadFile> _uploads = [];
+    private readonly UploadSet _uploads = new();
 
     private Task _uploadTask = Task.CompletedTask;
 
@@ -62,7 +58,7 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
         => _cancellation is not null;
 
     private bool CanStart
-        => !IsUploading && _uploads.Exists(upload => upload.State == UploadState.Pending);
+        => !IsUploading && _uploads.HasPending;
 
     private bool ShowsMetrics
         => Options.ShowByteCount || ShowsTimeMetrics;
@@ -71,39 +67,27 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
     private bool ShowsTimeMetrics
         => Options.ShowElapsed || Options.ShowTransferRate || Options.ShowEstimate;
 
-    private TimeSpan SetElapsed
-        => _setDuration ?? (_setStartedAt == 0 ? TimeSpan.Zero : Stopwatch.GetElapsedTime(_setStartedAt));
-
-    private long TotalBytes
-        => _uploads.Sum(upload => upload.Size);
-
-    private long TransferredBytes
-        => _uploads.Sum(upload => upload.Transferred);
-
-    private TimeSpan? Estimate
-        => EstimateOf(TransferredBytes, TotalBytes, SetElapsed);
-
     private bool ShowsDuration
         => Options.ShowElapsed || Options.ShowEstimate;
 
     private string TotalByteCount
-        => ByteCountOf(TransferredBytes, TotalBytes);
+        => ByteCountOf(_uploads.TransferredBytes, _uploads.TotalBytes);
 
     private string TotalRate
-        => ResourceFormatter.FromTransferRate(RateOf(TransferredBytes, SetElapsed));
+        => ResourceFormatter.FromTransferRate(_uploads.Rate);
 
     private string TotalTime
     {
         get
         {
-            if (Options.ShowEstimate && IsUploading && Estimate is { } estimate)
+            if (Options.ShowEstimate && IsUploading && _uploads.Estimate is { } estimate)
             {
                 var remaining = ResourceFormatter.FromDuration(estimate);
 
                 return L["{Remaining} left", remaining];
             }
 
-            return Options.ShowElapsed ? ResourceFormatter.FromDuration(SetElapsed) : string.Empty;
+            return Options.ShowElapsed ? ResourceFormatter.FromDuration(_uploads.Elapsed) : string.Empty;
         }
     }
 
@@ -116,18 +100,12 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
                 return string.Empty;
             }
 
-            var total = _uploads.Count;
-
             if (IsUploading)
             {
-                var started = _uploads.Count(upload => upload.State > UploadState.Pending);
-
-                return L["Uploading {Started} of {Total}.", started, total];
+                return L["Uploading {Started} of {Total}.", _uploads.StartedCount, _uploads.Count];
             }
 
-            var stored = _uploads.Count(upload => upload.State == UploadState.Completed);
-
-            return L["Stored {Stored} of {Total}.", stored, total];
+            return L["Stored {Stored} of {Total}.", _uploads.CompletedCount, _uploads.Count];
         }
     }
 
@@ -151,13 +129,14 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
         Cancel();
         await _uploadTask;
 
-        _uploads.Clear();
-        _setStartedAt = 0;
-        _setDuration = null;
+        _uploads.Reset();
 
         if (Files is not null)
         {
-            _uploads.AddRange(Files.Select(file => new UploadFile(file.Name, file.Size)));
+            foreach (var file in Files)
+            {
+                _uploads.Add(file.Name, file.Size);
+            }
         }
 
         if (Options.AutoStart)
@@ -195,17 +174,6 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
             _ => Glyph.Clock
         };
 
-    private static double RateOf(long bytes, TimeSpan elapsed)
-        => elapsed.TotalSeconds > 0 ? bytes / elapsed.TotalSeconds : 0;
-
-    private static TimeSpan? EstimateOf(long transferred, long total, TimeSpan elapsed)
-    {
-        var rate = RateOf(transferred, elapsed);
-        var remaining = total - transferred;
-
-        return rate > 0 && remaining > 0 ? TimeSpan.FromSeconds(remaining / rate) : null;
-    }
-
     private void ReportProgress(int index, long totalRead)
     {
         var upload = _uploads[index];
@@ -218,10 +186,10 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
 
         _lastProgressAt = Stopwatch.GetTimestamp();
 
-        // Progress arrives on whichever thread the store's read continuation resumed on, and the renderer enumerates this list.
+        // Progress arrives on whichever thread the store's read continuation resumed on, and the renderer enumerates the set.
         _ = InvokeAsync(() =>
         {
-            _uploads[index] = _uploads[index] with { Percent = percent, Transferred = totalRead };
+            _uploads.Report(index, percent, totalRead);
             Rerender();
         });
     }
@@ -239,7 +207,7 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
     private static string FileRate(UploadFile upload)
         => upload.State == UploadState.Pending
             ? string.Empty
-            : ResourceFormatter.FromTransferRate(RateOf(upload.Transferred, upload.Elapsed));
+            : ResourceFormatter.FromTransferRate(upload.Rate);
 
     /// <summary>What one file has left to run while it is moving, and how long it took once it stopped.</summary>
     private string FileTime(UploadFile upload)
@@ -251,7 +219,7 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
 
         if (Options.ShowEstimate
             && upload.State == UploadState.Uploading
-            && EstimateOf(upload.Transferred, upload.Size, upload.Elapsed) is { } estimate)
+            && upload.Estimate is { } estimate)
         {
             var remaining = ResourceFormatter.FromDuration(estimate);
 
@@ -295,8 +263,7 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
     private async Task UploadAsync(IReadOnlyList<IBrowserFile> files, CancellationToken cancellationToken)
     {
         _cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        _setStartedAt = Stopwatch.GetTimestamp();
-        _setDuration = null;
+        _uploads.Begin();
 
         var token = _cancellation.Token;
         var failures = new List<UploadFailure>();
@@ -349,7 +316,7 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
         }
         finally
         {
-            _setDuration = Stopwatch.GetElapsedTime(_setStartedAt);
+            _uploads.End();
             _cancellation?.Dispose();
             _cancellation = null;
             Rerender();
@@ -400,17 +367,7 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
 
     private void SetUploadState(int index, UploadState state, int? percent = null)
     {
-        var upload = _uploads[index];
-        var starting = state == UploadState.Uploading;
-
-        _uploads[index] = upload with
-        {
-            State = state,
-            Percent = percent ?? upload.Percent,
-            StartedAt = starting ? Stopwatch.GetTimestamp() : upload.StartedAt,
-            Duration = starting || upload.StartedAt == 0 ? null : Stopwatch.GetElapsedTime(upload.StartedAt)
-        };
-
+        _uploads.Transition(index, state, percent);
         Rerender();
     }
 
@@ -428,14 +385,7 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
 
     private void MarkPendingFrom(int startIndex, UploadState state)
     {
-        for (var index = startIndex; index < _uploads.Count; index++)
-        {
-            if (_uploads[index].State == UploadState.Pending)
-            {
-                _uploads[index] = _uploads[index] with { State = state };
-            }
-        }
-
+        _uploads.MarkPendingFrom(startIndex, state);
         Rerender();
     }
 
@@ -489,27 +439,5 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
         Stored,
         Failed,
         Cancelled
-    }
-
-    private sealed record UploadFile(string Name, long Size)
-    {
-        /// <summary>How long the transfer ran, once it is no longer running.</summary>
-        public TimeSpan? Duration { get; init; }
-
-        /// <summary>How much of the file has reached the store, as a whole percentage.</summary>
-        public int Percent { get; init; }
-
-        /// <summary>When the transfer began, as a stopwatch timestamp.</summary>
-        public long StartedAt { get; init; }
-
-        /// <summary>Where this file has reached.</summary>
-        public UploadState State { get; init; }
-
-        /// <summary>How many of the file's bytes have reached the store.</summary>
-        public long Transferred { get; init; }
-
-        /// <summary>How long the transfer has been running, or ran in total.</summary>
-        public TimeSpan Elapsed
-            => Duration ?? (StartedAt == 0 ? TimeSpan.Zero : Stopwatch.GetElapsedTime(StartedAt));
     }
 }

@@ -15,8 +15,10 @@ using Microsoft.JSInterop;
 /// <summary>The visual rich text canvas, filling the surface the engine gives its editor.</summary>
 public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposable
 {
-    /// <summary>The shared composer context cascaded from the parent shell.</summary>
-    [CascadingParameter] public ComposerContext? Context { get; set; }
+    /// <summary>The composer state cascaded from the parent shell.</summary>
+    [CascadingParameter] public ComposerState? State { get; set; }
+
+    [CascadingParameter] public IComposerInteraction? Interaction { get; set; }
 
     /// <summary>The editor plugin cascaded by the composer surface.</summary>
     [CascadingParameter] public IComposerEditorPlugin? Editor { get; set; }
@@ -31,29 +33,23 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
     private string _blockAnnouncement = string.Empty;
     private bool _isAttached;
 
-    private bool _isLinkDialogOpen;
+    private RichTextDialog _dialog = RichTextDialog.None;
     private bool _isLinkAnchorMode;
-    private ComposerDialogResult? _reopening;
-    private bool _isTableDialogOpen;
-    private bool _isVideoDialogOpen;
-    private bool _isImageDialogOpen;
-    private bool _isExplorerDialogOpen;
     private ExplorerPluginOptions _explorerOptions = ExplorerPluginOptions.Default;
-    private bool _isEmbedDialogOpen;
 
     private RichTextEditorPlugin _plugin = default!;
 
     private bool IsDisabled
-        => Context?.IsDisabled ?? false;
+        => State?.IsDisabled ?? false;
 
     private bool IsReadOnly
-        => Context?.IsReadOnly ?? false;
+        => State?.IsReadOnly ?? false;
 
     private bool ContentEditable
         => !IsDisabled && !IsReadOnly;
 
     private bool IsSelectionBarShown
-        => Context?.IsSelectionBarShown ?? true;
+        => State?.IsSelectionBarShown ?? true;
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -76,7 +72,7 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
     /// <inheritdoc />
     protected override async Task OnParametersSetAsync()
     {
-        var documentContent = Context?.Document.Content;
+        var documentContent = State?.Document.Content;
 
         if (_isAttached && documentContent != _committedContent && documentContent is not null)
         {
@@ -92,7 +88,7 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
         {
             _isAttached = await _engine.AttachAsync(_editorElement, _selfReference!);
 
-            var initialContent = Context?.Document.Content;
+            var initialContent = State?.Document.Content;
             if (!string.IsNullOrEmpty(initialContent))
             {
                 _committedContent = initialContent;
@@ -107,22 +103,22 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
     [JSInvokable]
     public async Task HandleContentChangedAsync(string html)
     {
-        if (Context is null)
+        if (State is null || Interaction is null)
         {
             return;
         }
 
-        var sanitized = Context.Sanitizer.Sanitize(html);
+        var sanitized = State.Sanitizer.Sanitize(html);
         _committedContent = sanitized;
 
-        await Context.ChangeDocumentAsync(Context.Document with { Content = sanitized });
+        await Interaction.ChangeDocumentAsync(State.Document with { Content = sanitized });
     }
 
     /// <summary>Callback invoked from JS when the selection snapshot changes.</summary>
     [JSInvokable]
     public async Task HandleSelectionChangedAsync(RichTextSelectionDto dto)
     {
-        if (Context is null || dto is null)
+        if (State is null || Interaction is null || dto is null)
         {
             return;
         }
@@ -137,44 +133,52 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
             ActiveStyles = new HashSet<string>(dto.ActiveStyles, StringComparer.OrdinalIgnoreCase),
         };
 
-        await Context.ReportSelectionAsync(selection);
+        await Interaction.ReportSelectionAsync(selection);
     }
 
     /// <summary>Callback invoked from JS when the author double-clicks an image already in the document.</summary>
     /// <param name="image">What that image already holds.</param>
     [JSInvokable]
     public Task HandleImageActivatedAsync(ImageDialogResult image)
-        => ReopenAsync(image, () => _isImageDialogOpen = true);
+        => ReopenAsync(new RichTextDialog(RichTextDialogKind.Image, image));
 
     /// <summary>Callback invoked from JS when the author double-clicks a video already in the document.</summary>
     /// <param name="video">What that video already holds.</param>
     [JSInvokable]
     public Task HandleVideoActivatedAsync(VideoDialogResult video)
-        => ReopenAsync(video, () => _isVideoDialogOpen = true);
+        => ReopenAsync(new RichTextDialog(RichTextDialogKind.Video, video));
 
     /// <summary>Callback invoked from JS when the author double-clicks an embed already in the document.</summary>
     /// <param name="embed">What that embed already holds.</param>
     [JSInvokable]
     public Task HandleEmbedActivatedAsync(EmbedDialogResult embed)
-        => ReopenAsync(embed, () => _isEmbedDialogOpen = true);
+        => ReopenAsync(new RichTextDialog(RichTextDialogKind.Embed, embed));
 
     /// <summary>Callback invoked from JS when the author double-clicks a link or a named anchor.</summary>
     /// <param name="isAnchor">Whether it is a named anchor rather than a hyperlink.</param>
     [JSInvokable]
     public Task HandleLinkActivatedAsync(bool isAnchor)
-        // A link dialog fills its fields from the canvas, whichever way it was asked for.
-        => ReopenAsync(null, () => HandleLinkDialogRequested(isAnchor));
-
-    // The canvas has already selected the element whole, so confirming replaces it.
-    private Task ReopenAsync(ComposerDialogResult? reopening, Action open)
     {
-        if (Context is null || IsDisabled || IsReadOnly)
+        if (State is null || Interaction is null || IsDisabled || IsReadOnly)
         {
             return Task.CompletedTask;
         }
 
-        _reopening = reopening;
-        open();
+        // A link dialog fills its fields from the canvas, whichever way it was asked for.
+        HandleLinkDialogRequested(isAnchor);
+
+        return Task.CompletedTask;
+    }
+
+    // The canvas has already selected the element whole, so confirming replaces it.
+    private Task ReopenAsync(RichTextDialog dialog)
+    {
+        if (State is null || Interaction is null || IsDisabled || IsReadOnly)
+        {
+            return Task.CompletedTask;
+        }
+
+        _dialog = dialog;
         StateHasChanged();
 
         return Task.CompletedTask;
@@ -185,13 +189,13 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
 
-        if (Context is null || IsDisabled || IsReadOnly)
+        if (State is null || Interaction is null || IsDisabled || IsReadOnly)
         {
             return;
         }
 
         // These are plugin command names, so they route through the engine registry rather than straight at the canvas.
-        _ = Context.ExecuteCommandAsync(command);
+        _ = Interaction.ExecuteCommandAsync(command);
     }
 
     private void HandleLinkDialogRequested(bool isAnchor)
@@ -203,91 +207,91 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
             var target = await _engine.BeginLinkDialogAsync(isAnchor);
 
             // One link is being retargeted, so its address comes back; several share none, and the author names it.
-            _reopening = new LinkDialogResult(
-                isAnchor,
-                target?.Text ?? string.Empty,
-                target?.Count == 1 ? target.Href ?? string.Empty : string.Empty,
-                OpenInNewTab: false);
+            _dialog = new RichTextDialog(
+                RichTextDialogKind.Link,
+                new LinkDialogResult(
+                    isAnchor,
+                    target?.Text ?? string.Empty,
+                    target?.Count == 1 ? target.Href ?? string.Empty : string.Empty,
+                    OpenInNewTab: false));
 
-            _isLinkDialogOpen = true;
             StateHasChanged();
         });
     }
 
     private void HandleTableDialogRequested()
     {
-        _isTableDialogOpen = true;
+        _dialog = new RichTextDialog(RichTextDialogKind.Table);
         StateHasChanged();
     }
 
     private void HandleVideoDialogRequested()
     {
-        // Asked for from the toolbar, so nothing is being reopened.
-        _reopening = null;
-        _isVideoDialogOpen = true;
+        _dialog = new RichTextDialog(RichTextDialogKind.Video);
         StateHasChanged();
     }
 
     private void HandleImageDialogRequested()
     {
-        _reopening = null;
-        _isImageDialogOpen = true;
+        _dialog = new RichTextDialog(RichTextDialogKind.Image);
         StateHasChanged();
     }
 
     private void HandleExplorerDialogRequested(ExplorerPluginOptions options)
     {
         _explorerOptions = options;
-        _isExplorerDialogOpen = true;
+        _dialog = new RichTextDialog(RichTextDialogKind.Explorer);
         StateHasChanged();
     }
 
     private void HandleEmbedDialogRequested()
     {
-        _reopening = null;
-        _isEmbedDialogOpen = true;
+        _dialog = new RichTextDialog(RichTextDialogKind.Embed);
         StateHasChanged();
     }
 
+    private void CloseDialog()
+        => _dialog = RichTextDialog.None;
+
     private async Task HandleLinkInsertedAsync(LinkDialogResult result)
     {
-        _isLinkDialogOpen = false;
+        CloseDialog();
         await ExecCommandAsync("createLink", result);
     }
 
     private async Task HandleTableInsertedAsync(TableDialogResult result)
     {
-        _isTableDialogOpen = false;
+        CloseDialog();
         await ExecCommandAsync("insertTable", result);
     }
 
     private async Task HandleVideoInsertedAsync(VideoDialogResult result)
     {
-        _isVideoDialogOpen = false;
+        CloseDialog();
         await ExecCommandAsync("insertVideo", result);
     }
 
     private async Task HandleImageInsertedAsync(ImageDialogResult result)
     {
-        _isImageDialogOpen = false;
+        CloseDialog();
         await ExecCommandAsync("insertImage", result);
     }
 
     private async Task HandleResourceInsertedAsync(ResourceDialogResult result)
     {
-        _isExplorerDialogOpen = false;
+        CloseDialog();
         await ExecCommandAsync("insertResource", result);
     }
 
     private async Task HandleEmbedInsertedAsync(EmbedDialogResult result)
     {
-        _isEmbedDialogOpen = false;
+        CloseDialog();
         await ExecCommandAsync("insertEmbed", result);
     }
 
     private async Task ExecCommandAsync(string command, object? value = null)
     {
-        if (Context is null || IsDisabled || IsReadOnly)
+        if (State is null || Interaction is null || IsDisabled || IsReadOnly)
         {
             return;
         }
@@ -295,10 +299,10 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
         var result = await _engine.ExecAsync(command, value);
         if (result is not null)
         {
-            var sanitized = Context.Sanitizer.Sanitize(result.Html);
+            var sanitized = State.Sanitizer.Sanitize(result.Html);
             _committedContent = sanitized;
 
-            await Context.ChangeDocumentAsync(Context.Document with { Content = sanitized });
+            await Interaction.ChangeDocumentAsync(State.Document with { Content = sanitized });
 
             if (result.Selection is not null)
             {

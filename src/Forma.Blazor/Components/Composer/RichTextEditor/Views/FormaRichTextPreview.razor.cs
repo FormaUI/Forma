@@ -15,11 +15,11 @@ public sealed partial class FormaRichTextPreview : ComponentBase, IAsyncDisposab
     /// <summary>The class the document's container carries, on screen and on paper alike.</summary>
     private const string ProseClass = "forma-prose";
 
-    /// <summary>The shared composer context cascaded from the parent shell.</summary>
-    [CascadingParameter] public ComposerContext? Context { get; set; }
+    /// <summary>The composer state cascaded from the parent shell.</summary>
+    [CascadingParameter] public ComposerState? State { get; set; }
 
     /// <summary>The view plugin cascaded by the composer surface.</summary>
-    [CascadingParameter] public IComposerViewPlugin? View { get; set; }
+    [CascadingParameter] public IComposerViewPlugin? ViewPlugin { get; set; }
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
@@ -28,7 +28,7 @@ public sealed partial class FormaRichTextPreview : ComponentBase, IAsyncDisposab
     private Download _download = default!;
 
     private string Content
-        => Context?.Document.Content ?? string.Empty;
+        => State?.Document.Content ?? string.Empty;
 
     private string PageClass
         => _plugin.Page.IsSheet ? $"forma-composer-preview-page forma-composer-preview-sheet {ProseClass}" : $"forma-composer-preview-page {ProseClass}";
@@ -63,7 +63,7 @@ public sealed partial class FormaRichTextPreview : ComponentBase, IAsyncDisposab
         _print = new Print(JS);
         _download = new Download(JS);
 
-        _plugin = View as RichTextPreviewViewPlugin
+        _plugin = ViewPlugin as RichTextPreviewViewPlugin
             ?? throw new InvalidOperationException($"{nameof(FormaRichTextPreview)} requires a cascaded {nameof(RichTextPreviewViewPlugin)}.");
 
         _plugin.PrintRequested += HandlePrintRequested;

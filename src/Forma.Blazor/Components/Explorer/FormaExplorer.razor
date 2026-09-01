@@ -21,7 +21,7 @@
                             FolderTree="FolderTree"
                             ShowFolderMenu="Options.ShowFolderMenu"
                             Placeholder="@SearchPlaceholder"
-                            SearchQuery="@_searchQuery"
+                            SearchQuery="@_collection.SearchQuery"
                             OnBack="HandleBackAsync"
                             OnForward="HandleForwardAsync"
                             OnUp="HandleUpAsync"
@@ -35,8 +35,8 @@
                          CanLeaveSelectMode="@(!Options.SelectOnOpen)"
                          FileOptions="FileOptions"
                          SelectedCount="_selection.Count"
-                         SortDirection="_sortDirection"
-                         SortField="_sortField"
+                         SortDirection="_collection.SortDirection"
+                         SortField="_collection.SortField"
                          ViewMode="_viewMode"
                          OnClearSelection="ClearSelectionAsync"
                          OnDelete="() => OpenDeleteDialog()"
@@ -116,9 +116,9 @@
                         {
                             <p>@L["Loading media"]</p>
                         }
-                        else if (!string.IsNullOrWhiteSpace(_searchQuery))
+                        else if (!string.IsNullOrWhiteSpace(_collection.SearchQuery))
                         {
-                            <p>@L["No media matches \"{Query}\"", _searchQuery]</p>
+                            <p>@L["No media matches \"{Query}\"", _collection.SearchQuery]</p>
                         }
                         else if (CurrentFolder is not null)
                         {
@@ -210,9 +210,9 @@
     }
 
     <!-- Rename Media Modal -->
-    @if (_renamingResource is not null)
+    @if (_rename.Resource is not null)
     {
-        <FormaModal Opened="@(_renamingResource is not null)"
+        <FormaModal Opened="@(_rename.Resource is not null)"
                     Size="ModalSize.Small"
                     Title="@L["Rename Media"]"
                     Options="DialogModalOptions"
@@ -220,7 +220,7 @@
             <Body>
                 <div class="forma-explorer-dialog-field">
                     <label class="forma-explorer-dialog-label" for="forma-explorer-rename-input">@L["New Name"]</label>
-                    <FormaTextBox Id="forma-explorer-rename-input" class="forma-explorer-dialog-input" @bind-Value="_renamedResourceName" />
+                    <FormaTextBox Id="forma-explorer-rename-input" class="forma-explorer-dialog-input" @bind-Value="_rename.DraftName" />
                 </div>
             </Body>
             <Footer>
@@ -235,9 +235,9 @@
     }
 
     <!-- Delete Media Modal -->
-    @if (_deletingResources is not null)
+    @if (_deletion.Resources.Count > 0)
     {
-        <FormaModal Opened="@(_deletingResources is not null)"
+        <FormaModal Opened="@(_deletion.Resources.Count > 0)"
                     Size="ModalSize.Small"
                     Title="@L["Delete Media"]"
                     Options="DialogModalOptions"
@@ -257,9 +257,9 @@
     }
 
     <!-- Create Folder Modal -->
-    @if (_isNewFolderOpen)
+    @if (_folderDraft.IsOpen)
     {
-        <FormaModal Opened="_isNewFolderOpen"
+        <FormaModal Opened="_folderDraft.IsOpen"
                     Size="ModalSize.Small"
                     Title="@L["New Folder"]"
                     Options="DialogModalOptions"
@@ -267,7 +267,7 @@
             <Body>
                 <div class="forma-explorer-dialog-field">
                     <label class="forma-explorer-dialog-label" for="forma-explorer-folder-input">@L["Folder Name"]</label>
-                    <FormaTextBox Id="forma-explorer-folder-input" class="forma-explorer-dialog-input" @bind-Value="_newFolderName" />
+                    <FormaTextBox Id="forma-explorer-folder-input" class="forma-explorer-dialog-input" @bind-Value="_folderDraft.Name" />
                 </div>
             </Body>
             <Footer>
@@ -282,9 +282,9 @@
     }
 
     <!-- Rename Folder Modal -->
-    @if (_renamingFolder is not null)
+    @if (_rename.Folder is not null)
     {
-        <FormaModal Opened="@(_renamingFolder is not null)"
+        <FormaModal Opened="@(_rename.Folder is not null)"
                     Size="ModalSize.Small"
                     Title="@L["Rename Folder"]"
                     Options="DialogModalOptions"
@@ -292,7 +292,7 @@
             <Body>
                 <div class="forma-explorer-dialog-field">
                     <label class="forma-explorer-dialog-label" for="forma-explorer-rename-folder-input">@L["Folder Name"]</label>
-                    <FormaTextBox Id="forma-explorer-rename-folder-input" class="forma-explorer-dialog-input" @bind-Value="_renamedFolderName" />
+                    <FormaTextBox Id="forma-explorer-rename-folder-input" class="forma-explorer-dialog-input" @bind-Value="_rename.DraftName" />
                 </div>
             </Body>
             <Footer>
@@ -307,9 +307,9 @@
     }
 
     <!-- Delete Folder Modal -->
-    @if (_deletingFolders is { Count: > 0 })
+    @if (_deletion.Folders.Count > 0)
     {
-        <FormaModal Opened="@(_deletingFolders is { Count: > 0 })"
+        <FormaModal Opened="@(_deletion.Folders.Count > 0)"
                     Size="ModalSize.Small"
                     Title="@L["Delete Folder"]"
                     Options="DialogModalOptions"

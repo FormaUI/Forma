@@ -42,13 +42,4 @@ public sealed class FileUploadPlugin(FileUploadPluginOptions? options = null) : 
     public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default)
         => ValueTask.FromResult(true);
 
-    // Attachments belong to the document rather than to any one editor, so the engine runs the command and this never sees it.
-    /// <inheritdoc />
-    public ValueTask ExecuteAsync(string command, ComposerContext context, CancellationToken cancellationToken = default)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(command);
-        ArgumentNullException.ThrowIfNull(context);
-
-        return ValueTask.CompletedTask;
-    }
 }

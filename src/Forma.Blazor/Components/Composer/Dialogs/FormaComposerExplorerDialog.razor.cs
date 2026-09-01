@@ -24,7 +24,7 @@ public sealed partial class FormaComposerExplorerDialog : ComposerDialogBase
     private IFileStore? _store;
     private ExplorerFileOptions _fileOptions = ExplorerFileOptions.ReadOnly;
     private ExplorerConstraints _constraints = ExplorerConstraints.None;
-    private ExplorerPluginOptions? _syncedOptions;
+    private readonly ParameterState<ExplorerPluginOptions?> _optionsParameter = new();
     private IReadOnlyList<ResourceInfo> _selected = [];
 
     private static ExplorerOptions LibraryOptions
@@ -45,12 +45,10 @@ public sealed partial class FormaComposerExplorerDialog : ComposerDialogBase
 
         // The explorer reloads whenever the provider it was handed is a different object, so everything
         // passed to it is built once per distinct set of options rather than fresh on every render.
-        if (ReferenceEquals(_syncedOptions, Options))
+        if (!_optionsParameter.Update(Options))
         {
             return;
         }
-
-        _syncedOptions = Options;
 
         var provider = (IExplorerResourcesProvider?)Services.GetService(typeof(IExplorerResourcesProvider));
 

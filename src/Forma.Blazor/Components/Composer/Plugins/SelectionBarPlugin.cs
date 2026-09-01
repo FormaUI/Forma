@@ -10,7 +10,7 @@ using Forma.Framework.Toolbar;
 public sealed class SelectionBarPlugin : IComposerFeaturePlugin
 {
     /// <summary>The command toggling the selection bar.</summary>
-    public const string SelectionBarCommand = "view.selection-bar";
+    public const string SelectionBarCommand = "state.selection-bar";
 
     /// <inheritdoc />
     public string Id => "selection-bar";
@@ -41,14 +41,4 @@ public sealed class SelectionBarPlugin : IComposerFeaturePlugin
     /// <inheritdoc />
     public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default)
         => ValueTask.FromResult(true);
-
-    /// <inheritdoc />
-    public ValueTask ExecuteAsync(string command, ComposerContext context, CancellationToken cancellationToken = default)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(command);
-        ArgumentNullException.ThrowIfNull(context);
-
-        // The engine registers SelectionBarCommand itself and claims it before any plugin is consulted.
-        return ValueTask.CompletedTask;
-    }
 }

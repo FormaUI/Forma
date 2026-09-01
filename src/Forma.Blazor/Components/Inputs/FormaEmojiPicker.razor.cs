@@ -51,9 +51,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     };
 
     private readonly string _generatedId = $"emoji-picker-{Guid.NewGuid():N}";
-    private readonly HashSet<string> _loadedSheets = new(StringComparer.Ordinal);
-    private readonly HashSet<string> _loadingSheets = new(StringComparer.Ordinal);
-    private readonly HashSet<string> _failedSheets = new(StringComparer.Ordinal);
+    private readonly SpriteSheetProgress _sheets = new();
     private string _query = string.Empty;
     private string? _activeGroupId;
     private string _announcement = string.Empty;
@@ -244,7 +242,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
         => Provider.GetArtwork(info.Emoji) is EmojiSprite sprite ? sprite.Sheet : null;
 
     private bool IsSettled(string sheet)
-        => _loadedSheets.Contains(sheet) || _failedSheets.Contains(sheet);
+        => _sheets.IsSettled(sheet);
 
     private async Task WatchSentinelAsync()
     {
@@ -263,7 +261,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     {
         var next = RequiredSheets.FirstOrDefault(sheet => !IsSettled(sheet));
 
-        if (next is null || !_loadingSheets.Add(next))
+        if (next is null || !_sheets.Begin(next))
         {
             return;
         }
@@ -281,8 +279,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
         finally
         {
             // A sheet that failed still counts as settled: empty cells beat a spinner that never clears.
-            _loadingSheets.Remove(next);
-            (arrived ? _loadedSheets : _failedSheets).Add(next);
+            _sheets.Settle(next, arrived);
             InvalidateView();
             StateHasChanged();
         }
@@ -297,7 +294,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
         }
 
         // A sheet that failed is asked for again the next time its group is shown.
-        _failedSheets.Clear();
+        _sheets.ForgetFailures();
         _isSentinelObserved = false;
         InvalidateView();
         await LoadNextSheetAsync();

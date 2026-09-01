@@ -10,7 +10,7 @@ using Forma.Framework.Toolbar;
 /// <summary>The rich text document as a reader will see it, laid out at a chosen paper or screen size, printed or exported from there.</summary>
 public sealed class RichTextPreviewViewPlugin(RichTextEditorPlugin editor) : IComposerViewPlugin
 {
-    /// <summary>The identifier of this view.</summary>
+    /// <summary>The identifier of this state.</summary>
     public const string ViewId = "rich-text.preview";
 
     /// <summary>The row carrying the page's size, orientation and zoom.</summary>
@@ -162,10 +162,11 @@ public sealed class RichTextPreviewViewPlugin(RichTextEditorPlugin editor) : ICo
         => ValueTask.FromResult(true);
 
     /// <inheritdoc />
-    public ValueTask ExecuteAsync(string command, ComposerContext context, CancellationToken cancellationToken = default)
+    public ValueTask ExecuteAsync(string command, ComposerState state, IComposerInteraction interaction, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
-        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(interaction);
 
         if (command.StartsWith(PageCommandPrefix, StringComparison.Ordinal))
         {

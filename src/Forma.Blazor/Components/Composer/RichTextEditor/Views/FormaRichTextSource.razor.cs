@@ -11,11 +11,11 @@ using Microsoft.JSInterop;
 /// <summary>The rich text document's HTML laid out one block per line, numbered, for reading.</summary>
 public sealed partial class FormaRichTextSource : ComponentBase, IAsyncDisposable
 {
-    /// <summary>The shared composer context cascaded from the parent shell.</summary>
-    [CascadingParameter] public ComposerContext? Context { get; set; }
+    /// <summary>The composer state cascaded from the parent shell.</summary>
+    [CascadingParameter] public ComposerState? State { get; set; }
 
     /// <summary>The view plugin cascaded by the composer surface.</summary>
-    [CascadingParameter] public IComposerViewPlugin? View { get; set; }
+    [CascadingParameter] public IComposerViewPlugin? ViewPlugin { get; set; }
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
@@ -24,7 +24,7 @@ public sealed partial class FormaRichTextSource : ComponentBase, IAsyncDisposabl
     private Download _download = default!;
 
     private string Source
-        => HtmlSourceFormatter.Format(Context?.Document.Content ?? string.Empty);
+        => HtmlSourceFormatter.Format(State?.Document.Content ?? string.Empty);
 
     private IReadOnlyList<string> Lines
         => Source.Split('\n');
@@ -38,7 +38,7 @@ public sealed partial class FormaRichTextSource : ComponentBase, IAsyncDisposabl
         _clipboard = new Clipboard(JS);
         _download = new Download(JS);
 
-        _plugin = View as RichTextSourceViewPlugin
+        _plugin = ViewPlugin as RichTextSourceViewPlugin
             ?? throw new InvalidOperationException($"{nameof(FormaRichTextSource)} requires a cascaded {nameof(RichTextSourceViewPlugin)}.");
 
         _plugin.CopyRequested += HandleCopyRequested;

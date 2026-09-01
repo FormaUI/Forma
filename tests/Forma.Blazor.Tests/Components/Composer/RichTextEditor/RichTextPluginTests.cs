@@ -12,7 +12,6 @@ using Forma.Tests.Composer;
 
 public sealed class RichTextPluginTests
 {
-    private static readonly NullAssetLoader SharedAssetLoader = new();
 
     private static FormaToolbarMenu FindMenu(IReadOnlyList<ComposerToolbarItem> items, string id)
         => (FormaToolbarMenu)items.SelectMany(entry => entry.Items).SelectMany(Flatten).Single(item => item.Id == id);
@@ -20,28 +19,12 @@ public sealed class RichTextPluginTests
     private static IEnumerable<FormaToolbarItem> Flatten(FormaToolbarItem item)
         => item is FormaToolbarGroup group ? group.Items.SelectMany(Flatten) : [item];
 
-    private static ComposerContext CreateContext(string html = "<p>Test</p>", params string[] activeStyles)
-    {
-        var doc = new ComposerDocument(ComposerDocumentFormat.Html, html);
-        var history = new ComposerHistory();
-        var regions = new ComposerRegionRegistry();
-        var selection = activeStyles.Length == 0
-            ? ComposerSelection.Empty
-            : new ComposerSelection { ActiveStyles = new HashSet<string>(activeStyles, StringComparer.OrdinalIgnoreCase) };
-
-        return new ComposerContext(
-            "rich-text",
-            doc,
-            selection,
-            history,
-            new AllowlistHtmlSanitizer(),
-            SharedAssetLoader,
-            regions,
-            _ => Task.CompletedTask,
-            () => Task.CompletedTask,
-            _ => Task.CompletedTask,
-            _ => Task.CompletedTask);
-    }
+    private static ComposerState CreateState(string html = "<p>Test</p>", params string[] activeStyles)
+        => ComposerStates.Create(
+            html,
+            activeStyles.Length == 0
+                ? null
+                : new ComposerSelection { ActiveStyles = new HashSet<string>(activeStyles, StringComparer.OrdinalIgnoreCase) });
 
     [Fact]
     public async Task BasicFormattingPlugin_should_dispatch_formatting_commands()
@@ -49,12 +32,12 @@ public sealed class RichTextPluginTests
         // Arrange
         var editor = new RichTextEditorPlugin();
         var plugin = new BasicFormattingPlugin(editor);
-        var context = CreateContext();
+        var state = CreateState();
         string? requestedCommand = null;
         editor.CommandRequested += (cmd, _) => requestedCommand = cmd;
 
         // Act
-        await plugin.ExecuteAsync(BasicFormattingPlugin.BoldCommand, context, TestContext.Current.CancellationToken);
+        await plugin.ExecuteAsync(BasicFormattingPlugin.BoldCommand, state, new RecordingComposerInteraction(), TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal("bold", requestedCommand);
@@ -69,7 +52,7 @@ public sealed class RichTextPluginTests
         // Arrange
         var editor = new RichTextEditorPlugin();
         var plugin = new ParagraphFormatPlugin(editor);
-        var context = CreateContext();
+        var state = CreateState();
         string? requestedCommand = null;
         object? requestedValue = null;
         editor.CommandRequested += (cmd, val) =>
@@ -79,7 +62,7 @@ public sealed class RichTextPluginTests
         };
 
         // Act
-        await plugin.ExecuteAsync(ParagraphFormatPlugin.Heading1Command, context, TestContext.Current.CancellationToken);
+        await plugin.ExecuteAsync(ParagraphFormatPlugin.Heading1Command, state, new RecordingComposerInteraction(), TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal("formatBlock", requestedCommand);
@@ -93,12 +76,12 @@ public sealed class RichTextPluginTests
         // Arrange
         var editor = new RichTextEditorPlugin();
         var plugin = new ListPlugin(editor);
-        var context = CreateContext();
+        var state = CreateState();
         string? requestedCommand = null;
         editor.CommandRequested += (cmd, _) => requestedCommand = cmd;
 
         // Act
-        await plugin.ExecuteAsync(ListPlugin.BulletListCommand, context, TestContext.Current.CancellationToken);
+        await plugin.ExecuteAsync(ListPlugin.BulletListCommand, state, new RecordingComposerInteraction(), TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal("insertUnorderedList", requestedCommand);
@@ -111,7 +94,7 @@ public sealed class RichTextPluginTests
         // Arrange
         var editor = new RichTextEditorPlugin();
         var plugin = new AlignmentBidiPlugin(editor);
-        var context = CreateContext();
+        var state = CreateState();
         string? requestedCommand = null;
         object? requestedValue = null;
         editor.CommandRequested += (cmd, val) =>
@@ -121,10 +104,10 @@ public sealed class RichTextPluginTests
         };
 
         // Act
-        await plugin.ExecuteAsync(AlignmentBidiPlugin.AlignRightCommand, context, TestContext.Current.CancellationToken);
+        await plugin.ExecuteAsync(AlignmentBidiPlugin.AlignRightCommand, state, new RecordingComposerInteraction(), TestContext.Current.CancellationToken);
         Assert.Equal("justifyRight", requestedCommand);
 
-        await plugin.ExecuteAsync(AlignmentBidiPlugin.DirectionRtlCommand, context, TestContext.Current.CancellationToken);
+        await plugin.ExecuteAsync(AlignmentBidiPlugin.DirectionRtlCommand, state, new RecordingComposerInteraction(), TestContext.Current.CancellationToken);
         Assert.Equal("dir", requestedCommand);
         Assert.Equal("rtl", requestedValue);
     }
@@ -135,7 +118,7 @@ public sealed class RichTextPluginTests
         // Arrange
         var editor = new RichTextEditorPlugin();
         var plugin = new TypographyPlugin(editor);
-        var context = CreateContext();
+        var state = CreateState();
         string? requestedCommand = null;
         object? requestedValue = null;
         editor.CommandRequested += (cmd, val) =>
@@ -145,7 +128,7 @@ public sealed class RichTextPluginTests
         };
 
         // Act
-        await plugin.ExecuteAsync(TypographyPlugin.TextColorCommand, context, TestContext.Current.CancellationToken);
+        await plugin.ExecuteAsync(TypographyPlugin.TextColorCommand, state, new RecordingComposerInteraction(), TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal("foreColor", requestedCommand);
@@ -197,19 +180,19 @@ public sealed class RichTextPluginTests
         // Arrange
         var editor = new RichTextEditorPlugin();
         var plugin = new LinkPlugin(editor);
-        var context = CreateContext();
+        var state = CreateState();
         bool? isAnchorRequested = null;
 
         editor.LinkDialogRequested += isAnchor => isAnchorRequested = isAnchor;
 
         // Act
-        await plugin.ExecuteAsync(LinkPlugin.InsertLinkCommand, context, TestContext.Current.CancellationToken);
+        await plugin.ExecuteAsync(LinkPlugin.InsertLinkCommand, state, new RecordingComposerInteraction(), TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(isAnchorRequested);
 
         // Act
-        await plugin.ExecuteAsync(LinkPlugin.InsertAnchorCommand, context, TestContext.Current.CancellationToken);
+        await plugin.ExecuteAsync(LinkPlugin.InsertAnchorCommand, state, new RecordingComposerInteraction(), TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(isAnchorRequested);
@@ -232,7 +215,8 @@ public sealed class RichTextPluginTests
         // Act
         await plugin.ExecuteAsync(
             LinkPlugin.RemoveLinkCommand,
-            CreateContext(activeStyles: LinkPlugin.LinkStyle),
+            CreateState(activeStyles: LinkPlugin.LinkStyle),
+            new RecordingComposerInteraction(),
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -241,7 +225,8 @@ public sealed class RichTextPluginTests
         // Act
         await plugin.ExecuteAsync(
             LinkPlugin.RemoveAnchorCommand,
-            CreateContext(activeStyles: LinkPlugin.AnchorStyle),
+            CreateState(activeStyles: LinkPlugin.AnchorStyle),
+            new RecordingComposerInteraction(),
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -255,12 +240,12 @@ public sealed class RichTextPluginTests
         // Arrange
         var editor = new RichTextEditorPlugin();
         var plugin = new HorizontalRulePlugin(editor);
-        var context = CreateContext();
+        var state = CreateState();
         string? requestedCommand = null;
         editor.CommandRequested += (cmd, _) => requestedCommand = cmd;
 
         // Act
-        await plugin.ExecuteAsync(HorizontalRulePlugin.InsertRuleCommand, context, TestContext.Current.CancellationToken);
+        await plugin.ExecuteAsync(HorizontalRulePlugin.InsertRuleCommand, state, new RecordingComposerInteraction(), TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal("insertHorizontalRule", requestedCommand);
@@ -273,18 +258,18 @@ public sealed class RichTextPluginTests
         // Arrange
         var editor = new RichTextEditorPlugin();
         var plugin = new ClipboardPlugin(editor);
-        var context = CreateContext();
+        var state = CreateState();
         string? requestedCommand = null;
         editor.CommandRequested += (cmd, _) => requestedCommand = cmd;
 
         // Act & Assert
-        await plugin.ExecuteAsync(ClipboardPlugin.SelectAllCommand, context, TestContext.Current.CancellationToken);
+        await plugin.ExecuteAsync(ClipboardPlugin.SelectAllCommand, state, new RecordingComposerInteraction(), TestContext.Current.CancellationToken);
         Assert.Equal("selectAll", requestedCommand);
 
-        await plugin.ExecuteAsync(ClipboardPlugin.PasteTextCommand, context, TestContext.Current.CancellationToken);
+        await plugin.ExecuteAsync(ClipboardPlugin.PasteTextCommand, state, new RecordingComposerInteraction(), TestContext.Current.CancellationToken);
         Assert.Equal("pasteText", requestedCommand);
 
-        await plugin.ExecuteAsync(ClipboardPlugin.PasteWordCommand, context, TestContext.Current.CancellationToken);
+        await plugin.ExecuteAsync(ClipboardPlugin.PasteWordCommand, state, new RecordingComposerInteraction(), TestContext.Current.CancellationToken);
         Assert.Equal("pasteWord", requestedCommand);
         Assert.Equal("clipboard", plugin.Id);
     }
@@ -295,7 +280,7 @@ public sealed class RichTextPluginTests
         // Arrange
         var editor = new RichTextEditorPlugin();
         var plugin = new SpecialCharacterPlugin(editor);
-        var context = CreateContext();
+        var state = CreateState();
         string? requestedCommand = null;
         object? requestedValue = null;
         editor.CommandRequested += (cmd, val) =>
@@ -305,7 +290,7 @@ public sealed class RichTextPluginTests
         };
 
         // Act
-        await plugin.ExecuteAsync($"{SpecialCharacterPlugin.InsertCharacterPrefix}©", context, TestContext.Current.CancellationToken);
+        await plugin.ExecuteAsync($"{SpecialCharacterPlugin.InsertCharacterPrefix}©", state, new RecordingComposerInteraction(), TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal("insertText", requestedCommand);
@@ -319,7 +304,7 @@ public sealed class RichTextPluginTests
         // Arrange
         var editor = new RichTextEditorPlugin();
         var plugin = new EmojiPlugin(editor);
-        var context = CreateContext();
+        var state = CreateState();
         string? requestedCommand = null;
         object? requestedValue = null;
         editor.CommandRequested += (cmd, val) =>
@@ -329,7 +314,7 @@ public sealed class RichTextPluginTests
         };
 
         // Act
-        await plugin.ExecuteAsync($"{EmojiPlugin.InsertEmojiPrefix}🎉", context, TestContext.Current.CancellationToken);
+        await plugin.ExecuteAsync($"{EmojiPlugin.InsertEmojiPrefix}🎉", state, new RecordingComposerInteraction(), TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal("insertText", requestedCommand);
@@ -357,7 +342,7 @@ public sealed class RichTextPluginTests
         // Arrange
         var editor = new RichTextEditorPlugin();
         var plugin = new TablePlugin(editor);
-        var context = CreateContext();
+        var state = CreateState();
         var tableDialogRequested = false;
         string? requestedCommand = null;
 
@@ -365,13 +350,13 @@ public sealed class RichTextPluginTests
         editor.CommandRequested += (cmd, _) => requestedCommand = cmd;
 
         // Act & Assert
-        await plugin.ExecuteAsync(TablePlugin.InsertTableCommand, context, TestContext.Current.CancellationToken);
+        await plugin.ExecuteAsync(TablePlugin.InsertTableCommand, state, new RecordingComposerInteraction(), TestContext.Current.CancellationToken);
         Assert.True(tableDialogRequested);
 
-        await plugin.ExecuteAsync(TablePlugin.AddRowBeforeCommand, context, TestContext.Current.CancellationToken);
+        await plugin.ExecuteAsync(TablePlugin.AddRowBeforeCommand, state, new RecordingComposerInteraction(), TestContext.Current.CancellationToken);
         Assert.Equal("tableAddRowBefore", requestedCommand);
 
-        await plugin.ExecuteAsync(TablePlugin.DeleteTableCommand, context, TestContext.Current.CancellationToken);
+        await plugin.ExecuteAsync(TablePlugin.DeleteTableCommand, state, new RecordingComposerInteraction(), TestContext.Current.CancellationToken);
         Assert.Equal("tableDelete", requestedCommand);
         Assert.Equal("table", plugin.Id);
     }
@@ -382,12 +367,12 @@ public sealed class RichTextPluginTests
         // Arrange
         var editor = new RichTextEditorPlugin();
         var plugin = new ImagePlugin(editor);
-        var context = CreateContext();
+        var state = CreateState();
         var requested = false;
         editor.ImageDialogRequested += () => requested = true;
 
         // Act
-        await plugin.ExecuteAsync(ImagePlugin.InsertImageCommand, context, TestContext.Current.CancellationToken);
+        await plugin.ExecuteAsync(ImagePlugin.InsertImageCommand, state, new RecordingComposerInteraction(), TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(requested);
@@ -400,12 +385,12 @@ public sealed class RichTextPluginTests
         // Arrange
         var editor = new RichTextEditorPlugin();
         var plugin = new ExplorerPlugin(editor);
-        var context = CreateContext();
+        var state = CreateState();
         ExplorerPluginOptions? requestedOptions = null;
         editor.ExplorerDialogRequested += options => requestedOptions = options;
 
         // Act
-        await plugin.ExecuteAsync(ExplorerPlugin.BrowseCommand, context, TestContext.Current.CancellationToken);
+        await plugin.ExecuteAsync(ExplorerPlugin.BrowseCommand, state, new RecordingComposerInteraction(), TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Same(plugin.Options, requestedOptions);
@@ -424,12 +409,12 @@ public sealed class RichTextPluginTests
             AllowUpload = false,
             InsertMode = MediaInsertMode.Both,
         });
-        var context = CreateContext();
+        var state = CreateState();
         ExplorerPluginOptions? requestedOptions = null;
         editor.ExplorerDialogRequested += options => requestedOptions = options;
 
         // Act
-        await plugin.ExecuteAsync(ExplorerPlugin.BrowseCommand, context, TestContext.Current.CancellationToken);
+        await plugin.ExecuteAsync(ExplorerPlugin.BrowseCommand, state, new RecordingComposerInteraction(), TestContext.Current.CancellationToken);
 
         // Assert
         Assert.NotNull(requestedOptions);
@@ -457,12 +442,12 @@ public sealed class RichTextPluginTests
         // Arrange
         var editor = new RichTextEditorPlugin();
         var plugin = new VideoPlugin(editor);
-        var context = CreateContext();
+        var state = CreateState();
         var videoDialogRequested = false;
         editor.VideoDialogRequested += () => videoDialogRequested = true;
 
         // Act
-        await plugin.ExecuteAsync(VideoPlugin.InsertVideoCommand, context, TestContext.Current.CancellationToken);
+        await plugin.ExecuteAsync(VideoPlugin.InsertVideoCommand, state, new RecordingComposerInteraction(), TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(videoDialogRequested);
@@ -476,7 +461,7 @@ public sealed class RichTextPluginTests
         var editor = new RichTextEditorPlugin();
         var template = new ComposerTemplate("sample", "Sample", "Sample description", "<p>Sample</p>");
         var plugin = new TemplatePlugin(editor, new TemplatePluginOptions { Templates = [template] });
-        var context = CreateContext();
+        var state = CreateState();
         string? requestedCommand = null;
         object? requestedValue = null;
         editor.CommandRequested += (cmd, val) =>
@@ -486,7 +471,7 @@ public sealed class RichTextPluginTests
         };
 
         // Act
-        await plugin.ExecuteAsync($"{TemplatePlugin.InsertTemplatePrefix}sample", context, TestContext.Current.CancellationToken);
+        await plugin.ExecuteAsync($"{TemplatePlugin.InsertTemplatePrefix}sample", state, new RecordingComposerInteraction(), TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal("insertHtml", requestedCommand);
@@ -500,12 +485,12 @@ public sealed class RichTextPluginTests
         // Arrange
         var editor = new RichTextEditorPlugin();
         var plugin = new EmbedPlugin(editor);
-        var context = CreateContext();
+        var state = CreateState();
         var embedDialogRequested = false;
         editor.EmbedDialogRequested += () => embedDialogRequested = true;
 
         // Act
-        await plugin.ExecuteAsync(EmbedPlugin.InsertEmbedCommand, context, TestContext.Current.CancellationToken);
+        await plugin.ExecuteAsync(EmbedPlugin.InsertEmbedCommand, state, new RecordingComposerInteraction(), TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(embedDialogRequested);

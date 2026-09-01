@@ -34,16 +34,16 @@ public sealed partial class FormaComposerCommandBar : ComponentBase
     /// <summary>The toggles and options the bar's own plugin reports as active, beside what the selection reports.</summary>
     [Parameter] public IReadOnlyCollection<string> PluginStates { get; set; } = [];
 
-    /// <summary>The shared composer context cascaded from the parent shell.</summary>
-    [CascadingParameter] public ComposerContext? Context { get; set; }
+    /// <summary>The composer state cascaded from the parent shell.</summary>
+    [CascadingParameter] public ComposerState? State { get; set; }
 
     [Inject] private IStringLocale<FormaComposer> L { get; set; } = default!;
 
     private bool CanUndo
-        => Context?.History.CanUndo ?? false;
+        => State?.History.CanUndo ?? false;
 
     private bool CanRedo
-        => Context?.History.CanRedo ?? false;
+        => State?.History.CanRedo ?? false;
 
     /// <summary>What the bar actually renders: the history group first when shown, then Items localized and patched with live state.</summary>
     private IReadOnlyList<FormaToolbarItem> RenderedItems
@@ -130,18 +130,18 @@ public sealed partial class FormaComposerCommandBar : ComponentBase
         {
             var states = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            if (Context?.Selection.ActiveStyles is { } styles)
+            if (State?.Selection.ActiveStyles is { } styles)
             {
                 states.UnionWith(styles);
             }
 
             // Engine-owned chrome rather than a text style, so the selection never reports it.
-            if (Context?.IsMaximized ?? false)
+            if (State?.IsMaximized ?? false)
             {
                 states.Add(MaximizeToggleId);
             }
 
-            if (Context?.IsSelectionBarShown ?? true)
+            if (State?.IsSelectionBarShown ?? true)
             {
                 states.Add(SelectionBarToggleId);
             }

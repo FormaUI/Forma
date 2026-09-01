@@ -1,26 +1,13 @@
 @inherits FormaBunitContext
 @using Forma.Tests.Composer
 @using Forma.Blazor.Components.Composer.RichTextEditor.Plugins
-@using Forma.Features.Composer.Documents
 @using Forma.Features.Composer.Editing
-@using Forma.Features.Sanitization
 
 @code {
     public sealed class Component
     {
-        private static ComposerContext CreateContext(Func<string, Task>? executeCommandAsync = null)
-            => new(
-                "rich-text",
-                new ComposerDocument(ComposerDocumentFormat.Html, "<p>Test</p>"),
-                ComposerSelection.Empty,
-                new ComposerHistory(),
-                new AllowlistHtmlSanitizer(),
-                new NullAssetLoader(),
-                new ComposerRegionRegistry(),
-                _ => Task.CompletedTask,
-                () => Task.CompletedTask,
-                _ => Task.CompletedTask,
-                executeCommandAsync ?? (_ => Task.CompletedTask));
+        private static RenderFragment Host(IComposerInteraction interaction, RenderFragment content)
+            => @<CascadingValue Value="ComposerStates.Create()"><CascadingValue Value="interaction">@content</CascadingValue></CascadingValue>;
 
         [Fact]
         public void Should_render_a_button_named_emoji()
@@ -29,7 +16,7 @@
             using var ctx = new FormaComposerEmojiButtonTests();
 
             // Act
-            var cut = ctx.Render(@<CascadingValue Value="CreateContext()"><FormaComposerEmojiButton /></CascadingValue>);
+            var cut = ctx.Render(Host(new RecordingComposerInteraction(), @<FormaComposerEmojiButton />));
 
             // Assert
             var button = cut.Find("button");
@@ -41,7 +28,7 @@
         {
             // Arrange
             using var ctx = new FormaComposerEmojiButtonTests();
-            var cut = ctx.Render(@<CascadingValue Value="CreateContext()"><FormaComposerEmojiButton /></CascadingValue>);
+            var cut = ctx.Render(Host(new RecordingComposerInteraction(), @<FormaComposerEmojiButton />));
 
             // Act
             cut.Find("button").Click();
@@ -56,20 +43,15 @@
         {
             // Arrange
             using var ctx = new FormaComposerEmojiButtonTests();
-            string? dispatched = null;
-            var context = CreateContext(command =>
-            {
-                dispatched = command;
-                return Task.CompletedTask;
-            });
-            var cut = ctx.Render(@<CascadingValue Value="context"><FormaComposerEmojiButton /></CascadingValue>);
+            var interaction = new RecordingComposerInteraction();
+            var cut = ctx.Render(Host(interaction, @<FormaComposerEmojiButton />));
             cut.Find("button").Click();
 
             // Act
             cut.Find(".forma-emoji-picker-emoji").Click();
 
             // Assert
-            Assert.Equal($"{EmojiPlugin.InsertEmojiPrefix}😀", dispatched);
+            Assert.Equal($"{EmojiPlugin.InsertEmojiPrefix}😀", Assert.Single(interaction.ExecutedCommands));
             Assert.Empty(cut.FindAll(".forma-emoji-picker"));
         }
 
@@ -78,7 +60,7 @@
         {
             // Arrange
             using var ctx = new FormaComposerEmojiButtonTests();
-            var cut = ctx.Render(@<CascadingValue Value="CreateContext()"><FormaComposerEmojiButton /></CascadingValue>);
+            var cut = ctx.Render(Host(new RecordingComposerInteraction(), @<FormaComposerEmojiButton />));
             cut.Find("button").Click();
 
             // Act
@@ -93,7 +75,7 @@
         {
             // Arrange
             using var ctx = new FormaComposerEmojiButtonTests();
-            var cut = ctx.Render(@<CascadingValue Value="CreateContext()"><FormaComposerEmojiButton PickerOptions="@(new EmojiPickerOptions { MaxRecent = 5 })" /></CascadingValue>);
+            var cut = ctx.Render(Host(new RecordingComposerInteraction(), @<FormaComposerEmojiButton PickerOptions="@(new EmojiPickerOptions { MaxRecent = 5 })" />));
 
             // Act
             cut.Find("button").Click();

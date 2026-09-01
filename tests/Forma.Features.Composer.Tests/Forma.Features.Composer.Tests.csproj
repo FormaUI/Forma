@@ -22,6 +22,7 @@
         <ProjectReference Include="..\..\src\Forma.Features.Sanitization\Forma.Features.Sanitization.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Sanitization\Forma.Framework.Sanitization.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Icons\Forma.Framework.Icons.csproj" />
+        <ProjectReference Include="..\Forma.Tests.Support\Forma.Tests.Support.csproj" />
     </ItemGroup>
 
 </Project>

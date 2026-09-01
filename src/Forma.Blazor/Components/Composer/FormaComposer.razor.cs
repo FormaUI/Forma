@@ -20,7 +20,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 
 /// <summary>The composer engine, hosting rich text, Markdown, code, or page composition through extensible editor plugins.</summary>
-public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncDisposable
+public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncDisposable, IComposerInteraction
 {
     private readonly string _generatedId = $"composer-{Guid.NewGuid():N}";
     private readonly ComposerCommandRegistry _commands = new();
@@ -36,7 +36,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     private JsComposerAssetLoader _assetLoader = default!;
     private IComposerHistory _history = default!;
     private IHtmlSanitizer _sanitizer = default!;
-    private ComposerContext _context = default!;
+    private IComposerSyntaxHighlighter? _syntaxHighlighter;
     private IComposerEditorPlugin _activeEditor = default!;
     private IReadOnlyList<IComposerViewPlugin>? _activeViews;
     private IComposerViewPlugin? _activeView;
@@ -98,6 +98,46 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     private ComposerDocument CurrentDocument
         => Value ?? new ComposerDocument(ComposerDocumentFormat.Html, string.Empty);
 
+    private ComposerState? _state;
+
+    // The same instance comes back until a member actually changes.
+    private ComposerState? State
+    {
+        get
+        {
+            if (!_isInitialized)
+            {
+                return null;
+            }
+
+            var built = BuildState();
+
+            if (built != _state)
+            {
+                _state = built;
+            }
+
+            return _state;
+        }
+    }
+
+    private ComposerState BuildState()
+        => new()
+        {
+            ActiveEditorId = _activeEditor.Id,
+            Document = CurrentDocument,
+            Selection = _selection,
+            IsDisabled = Disabled,
+            IsReadOnly = ReadOnly,
+            IsMaximized = _isMaximized,
+            IsSelectionBarShown = _isSelectionBarShown,
+            History = _history,
+            Sanitizer = _sanitizer,
+            AssetLoader = _assetLoader,
+            Regions = _regions,
+            SyntaxHighlighter = _syntaxHighlighter,
+        };
+
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
@@ -111,6 +151,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
 
         _history = injectedHistory ?? new ComposerHistory(Options.HistoryCapacity);
         _sanitizer = injectedSanitizer ?? new AllowlistHtmlSanitizer();
+        _syntaxHighlighter = (IComposerSyntaxHighlighter?)Services.GetService(typeof(IComposerSyntaxHighlighter));
 
         _commands.RegisterEngineCommand(ComposerCommands.Undo, HandleUndoAsync);
         _commands.RegisterEngineCommand(ComposerCommands.Redo, HandleRedoAsync);
@@ -120,7 +161,6 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
         _regions.Changed += HandleRegionsChanged;
 
         await LoadPluginsAsync();
-        RebuildContext();
 
         _history.Record(CurrentDocument, _selection);
         _isInitialized = true;
@@ -129,7 +169,6 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     private Task HandleMaximizeAsync()
     {
         _isMaximized = !_isMaximized;
-        RebuildContext();
         StateHasChanged();
         return Task.CompletedTask;
     }
@@ -143,7 +182,6 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
             await _assetLoader.LoadAssetsAsync(view.Assets);
         }
 
-        RebuildContext();
         StateHasChanged();
     }
 
@@ -158,7 +196,6 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     private Task HandleSelectionBarAsync()
     {
         _isSelectionBarShown = !_isSelectionBarShown;
-        RebuildContext();
         StateHasChanged();
         return Task.CompletedTask;
     }
@@ -207,8 +244,6 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
             {
                 await SwitchEditorAsync(ActiveEditorId);
             }
-
-            RebuildContext();
         }
     }
 
@@ -243,11 +278,15 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
             return;
         }
 
+        if (State is not { } state)
+        {
+            return;
+        }
+
         await InvokeAsync(async () =>
         {
-            if (await _commands.ExecuteAsync(command, _context) is ComposerCommandResult.Plugin)
+            if (await _commands.ExecuteAsync(command, state, this) is ComposerCommandResult.Plugin)
             {
-                RebuildContext();
                 StateHasChanged();
             }
         });
@@ -291,7 +330,6 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
             await ActiveEditorIdChanged.InvokeAsync(target.Id);
         }
 
-        RebuildContext();
         StateHasChanged();
     }
 
@@ -319,30 +357,17 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
         return true;
     }
 
-    private void RebuildContext()
-    {
-        var injectedHighlighter = (IComposerSyntaxHighlighter?)Services.GetService(typeof(IComposerSyntaxHighlighter));
+    Task IComposerInteraction.ChangeDocumentAsync(ComposerDocument document)
+        => HandleDocumentChangedAsync(document);
 
-        _context = new ComposerContext(
-            _activeEditor.Id,
-            CurrentDocument,
-            _selection,
-            _history,
-            _sanitizer,
-            _assetLoader,
-            _regions,
-            HandleDocumentChangedAsync,
-            HandleRequestRenderAsync,
-            HandleSelectionChangedAsync,
-            HandleCommandAsync,
-            injectedHighlighter)
-        {
-            IsDisabled = Disabled,
-            IsReadOnly = ReadOnly,
-            IsMaximized = _isMaximized,
-            IsSelectionBarShown = _isSelectionBarShown,
-        };
-    }
+    Task IComposerInteraction.RequestRenderAsync()
+        => HandleRequestRenderAsync();
+
+    Task IComposerInteraction.ReportSelectionAsync(ComposerSelection selection)
+        => HandleSelectionChangedAsync(selection);
+
+    Task IComposerInteraction.ExecuteCommandAsync(string command)
+        => HandleCommandAsync(command);
 
     private Task HandleDocumentChangedAsync(ComposerDocument document)
     {
@@ -352,7 +377,6 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
 
         _history.Record(sanitized, _selection);
         CurrentValue = sanitized;
-        RebuildContext();
         StateHasChanged();
 
         return Task.CompletedTask;
@@ -378,7 +402,6 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
         }
 
         _selection = selection;
-        RebuildContext();
         StateHasChanged();
 
         return Task.CompletedTask;
@@ -397,7 +420,6 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
         if (undone is not null)
         {
             CurrentValue = undone;
-            RebuildContext();
             StateHasChanged();
         }
 
@@ -411,7 +433,6 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
         if (redone is not null)
         {
             CurrentValue = redone;
-            RebuildContext();
             StateHasChanged();
         }
 

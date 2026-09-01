@@ -21,7 +21,7 @@ public sealed partial class FormaComposerEmojiButton : ComponentBase, IAsyncDisp
     /// <summary>How the picker this button opens browses.</summary>
     [Parameter] public EmojiPickerOptions PickerOptions { get; set; } = EmojiPickerOptions.Default;
 
-    [CascadingParameter] private ComposerContext? Context { get; set; }
+    [CascadingParameter] private IComposerInteraction? Interaction { get; set; }
 
     [Inject] private IStringLocale<FormaComposer> L { get; set; } = default!;
 
@@ -47,9 +47,9 @@ public sealed partial class FormaComposerEmojiButton : ComponentBase, IAsyncDisp
 
     private async Task HandleSelectAsync(string emoji)
     {
-        if (Context is not null)
+        if (Interaction is not null)
         {
-            await Context.ExecuteCommandAsync($"{EmojiPlugin.InsertEmojiPrefix}{emoji}");
+            await Interaction.ExecuteCommandAsync($"{EmojiPlugin.InsertEmojiPrefix}{emoji}");
         }
 
         Close();

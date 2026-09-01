@@ -67,7 +67,7 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
 
     private bool _wheelAttached;
 
-    private int _zoomIndex;
+    private readonly SteppedZoom _zoom = new(ZoomSteps);
 
     private bool _zoomChanged;
 
@@ -77,10 +77,10 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
         => Siblings is { Count: > 1 };
 
     private bool IsZoomed
-        => _zoomIndex > 0;
+        => _zoom.IsZoomed;
 
     private int ZoomPercent
-        => ZoomSteps[_zoomIndex];
+        => _zoom.Percent;
 
     private string? DisplaySize
         => Resource?.DisplaySize;
@@ -109,7 +109,7 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
 
         var requested = Source;
 
-        _zoomIndex = 0;
+        _zoom.Reset();
         _dragAttached = false;
         _wheelAttached = false;
         _resolvedSource = requested;
@@ -194,26 +194,15 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
     public Task HandleWheelAsync(int direction)
         => InvokeAsync(() =>
         {
-            SetZoomIndex(_zoomIndex - direction);
+            _zoomChanged |= direction < 0 ? _zoom.In() : _zoom.Out();
             StateHasChanged();
         });
 
     private void ZoomIn()
-        => SetZoomIndex(_zoomIndex + 1);
+        => _zoomChanged |= _zoom.In();
 
     private void ZoomOut()
-        => SetZoomIndex(_zoomIndex - 1);
-
-    private void SetZoomIndex(int index)
-    {
-        if (index < 0 || index >= ZoomSteps.Length || index == _zoomIndex)
-        {
-            return;
-        }
-
-        _zoomIndex = index;
-        _zoomChanged = true;
-    }
+        => _zoomChanged |= _zoom.Out();
 
     private bool CanNavigate(int delta)
         => Siblings is { Count: > 1 } siblings && IndexOfSource(siblings) is { } index

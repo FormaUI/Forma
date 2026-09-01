@@ -61,11 +61,13 @@ public sealed class ComposerCommandRegistry
     /// <summary>Runs a command, reporting which layer claimed it.</summary>
     public async Task<ComposerCommandResult> ExecuteAsync(
         string command,
-        ComposerContext context,
+        ComposerState state,
+        IComposerInteraction interaction,
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
-        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(interaction);
 
         if (_engineCommands.TryGetValue(command, out var handler))
         {
@@ -75,7 +77,7 @@ public sealed class ComposerCommandRegistry
 
         if (_pluginCommands.TryGetValue(command, out var plugin))
         {
-            await plugin.ExecuteAsync(command, context, cancellationToken).ConfigureAwait(false);
+            await plugin.ExecuteAsync(command, state, interaction, cancellationToken).ConfigureAwait(false);
             return ComposerCommandResult.Plugin;
         }
 
@@ -83,7 +85,7 @@ public sealed class ComposerCommandRegistry
         {
             if (command.StartsWith(prefix, StringComparison.Ordinal))
             {
-                await prefixPlugin.ExecuteAsync(command, context, cancellationToken).ConfigureAwait(false);
+                await prefixPlugin.ExecuteAsync(command, state, interaction, cancellationToken).ConfigureAwait(false);
                 return ComposerCommandResult.Plugin;
             }
         }

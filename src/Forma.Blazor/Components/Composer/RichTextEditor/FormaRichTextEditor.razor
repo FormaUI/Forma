@@ -22,52 +22,52 @@
 
     @if (_isAttached)
     {
-        @if (_isLinkDialogOpen)
+        @if (_dialog.Kind == RichTextDialogKind.Link)
         {
-            <FormaComposerLinkDialog Opened="_isLinkDialogOpen"
+            <FormaComposerLinkDialog Opened="true"
                                      IsAnchor="_isLinkAnchorMode"
-                                     Reopening="_reopening"
+                                     Reopening="_dialog.Reopening"
                                      OnInsert="HandleLinkInsertedAsync"
-                                     OnCancel="() => _isLinkDialogOpen = false" />
+                                     OnCancel="CloseDialog" />
         }
 
-        @if (_isTableDialogOpen)
+        @if (_dialog.Kind == RichTextDialogKind.Table)
         {
-            <FormaComposerTableDialog Opened="_isTableDialogOpen"
+            <FormaComposerTableDialog Opened="true"
                                       OnInsert="HandleTableInsertedAsync"
-                                      OnCancel="() => _isTableDialogOpen = false" />
+                                      OnCancel="CloseDialog" />
         }
 
-        @if (_isVideoDialogOpen)
+        @if (_dialog.Kind == RichTextDialogKind.Video)
         {
-            <FormaComposerVideoDialog Opened="_isVideoDialogOpen"
-                                      Reopening="_reopening"
+            <FormaComposerVideoDialog Opened="true"
+                                      Reopening="_dialog.Reopening"
                                       OnInsert="HandleVideoInsertedAsync"
-                                      OnCancel="() => _isVideoDialogOpen = false" />
+                                      OnCancel="CloseDialog" />
         }
 
-        @if (_isImageDialogOpen)
+        @if (_dialog.Kind == RichTextDialogKind.Image)
         {
-            <FormaComposerImageDialog Opened="_isImageDialogOpen"
-                                      Reopening="_reopening"
+            <FormaComposerImageDialog Opened="true"
+                                      Reopening="_dialog.Reopening"
                                       OnInsert="HandleImageInsertedAsync"
-                                      OnCancel="() => _isImageDialogOpen = false" />
+                                      OnCancel="CloseDialog" />
         }
 
-        @if (_isExplorerDialogOpen)
+        @if (_dialog.Kind == RichTextDialogKind.Explorer)
         {
-            <FormaComposerExplorerDialog Opened="_isExplorerDialogOpen"
+            <FormaComposerExplorerDialog Opened="true"
                                          Options="_explorerOptions"
                                          OnInsert="HandleResourceInsertedAsync"
-                                         OnCancel="() => _isExplorerDialogOpen = false" />
+                                         OnCancel="CloseDialog" />
         }
 
-        @if (_isEmbedDialogOpen)
+        @if (_dialog.Kind == RichTextDialogKind.Embed)
         {
-            <FormaComposerEmbedDialog Opened="_isEmbedDialogOpen"
-                                      Reopening="_reopening"
+            <FormaComposerEmbedDialog Opened="true"
+                                      Reopening="_dialog.Reopening"
                                       OnInsert="HandleEmbedInsertedAsync"
-                                      OnCancel="() => _isEmbedDialogOpen = false" />
+                                      OnCancel="CloseDialog" />
         }
     }
 </div>

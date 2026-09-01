@@ -3,7 +3,7 @@
 
 <div class="forma-file-uploader" aria-busy="@(IsUploading ? "true" : "false")">
     <ul class="forma-file-uploader-list">
-        @foreach (var upload in _uploads)
+        @foreach (var upload in _uploads.Files)
         {
             <li class="forma-file-uploader-item forma-file-uploader-@upload.State.ToString().ToLowerInvariant()">
                 <span class="forma-file-uploader-mark" aria-hidden="true"><FormaIcon Icon="StateGlyph(upload.State)" Size="IconSize.Small" /></span>
