@@ -7,13 +7,10 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>Renders an emoji as inline artwork, drawing it from a host's chosen provider.</summary>
-public sealed partial class FormaEmoji : ComponentBase, IAsyncDisposable
+/// <param name="registeredProvider">The host's registered provider, or null when it registered none.</param>
+public sealed partial class FormaEmoji(IEmojiProvider? registeredProvider = null) : ComponentBase
 {
     private EmojiArtwork _artwork = default!;
-
-    private EmojiSpriteLoader? _ownedSpriteLoader;
-
-    private EmojiSpriteLoader? _activeSpriteLoader;
 
     private string? _requestedSheet;
 
@@ -29,11 +26,7 @@ public sealed partial class FormaEmoji : ComponentBase, IAsyncDisposable
     /// <summary>The provider supplying this emoji's artwork, taken from the surrounding subtree or the host's registration when unset.</summary>
     [Parameter] public IEmojiProvider? Provider { get; set; }
 
-    [Inject] private IServiceProvider Services { get; set; } = default!;
-
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-
-    [CascadingParameter] private EmojiSpriteLoader? SpriteLoader { get; set; }
+    [Inject] private EmojiSpriteLoader SpriteLoader { get; set; } = default!;
 
     [CascadingParameter] private IEmojiProvider? CascadingProvider { get; set; }
 
@@ -54,7 +47,7 @@ public sealed partial class FormaEmoji : ComponentBase, IAsyncDisposable
         // own font stands in.
         var provider = Provider
             ?? CascadingProvider
-            ?? (IEmojiProvider?)Services.GetService(typeof(IEmojiProvider))
+            ?? registeredProvider
             ?? UnicodeEmojiProvider.Default;
 
         _artwork = provider.GetArtwork(Emoji);
@@ -72,26 +65,11 @@ public sealed partial class FormaEmoji : ComponentBase, IAsyncDisposable
         // The symbol resolves the reference already rendered above it, so nothing has to re-render here.
         _requestedSheet = sprite.Sheet;
 
-        if (!await GetSpriteLoader().LoadAsync(sprite.Sheet))
+        if (!await SpriteLoader.LoadAsync(sprite.Sheet))
         {
             _requestedSheet = null;
         }
     }
-
-    /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-    {
-        if (_ownedSpriteLoader is not null)
-        {
-            await _ownedSpriteLoader.DisposeAsync();
-        }
-    }
-
-    // A sheet is fetched once however many emoji draw from it: a surface rendering many hands its own loader
-    // down, and the registered one covers the rest of the circuit. Only an emoji offered neither loads alone.
-    private EmojiSpriteLoader GetSpriteLoader()
-        => SpriteLoader
-            ?? (_activeSpriteLoader ??= (EmojiSpriteLoader?)Services.GetService(typeof(EmojiSpriteLoader)) ?? (_ownedSpriteLoader = new EmojiSpriteLoader(JS)));
 
     private static string SpriteHref(EmojiSprite sprite)
         => $"#{sprite.Symbol}";

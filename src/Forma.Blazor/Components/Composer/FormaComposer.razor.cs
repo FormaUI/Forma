@@ -20,7 +20,9 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 
 /// <summary>The composer engine, hosting rich text, Markdown, code, or page composition through extensible editor plugins.</summary>
-public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncDisposable, IComposerInteraction
+/// <param name="syntaxHighlighter">The host's registered highlighter, or null to classify no code.</param>
+public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHighlighter = null)
+    : InputBase<ComposerDocument>, IAsyncDisposable, IComposerInteraction
 {
     private readonly string _generatedId = $"composer-{Guid.NewGuid():N}";
     private readonly ComposerCommandRegistry _commandRegistry = new();
@@ -35,8 +37,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     private Focus _focus = default!;
     private JsComposerAssetLoader _assetLoader = default!;
     private IComposerHistory _history = default!;
-    private IHtmlSanitizer _sanitizer = default!;
-    private IComposerSyntaxHighlighter? _syntaxHighlighter;
+    private readonly IComposerSyntaxHighlighter _syntaxHighlighter = syntaxHighlighter ?? NullSyntaxHighlighter.Instance;
     private IComposerEditorPlugin _activeEditor = default!;
     private IReadOnlyList<IComposerViewPlugin>? _activeViews;
     private IComposerViewPlugin? _activeView;
@@ -67,8 +68,13 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     /// <summary>Whether the composer is in a read-only state.</summary>
     [Parameter] public bool ReadOnly { get; set; }
 
+    /// <summary>The undo and redo stack this composer uses, constructed from <see cref="ComposerOptions.HistoryCapacity"/> when unset.</summary>
+    [Parameter] public IComposerHistory? History { get; set; }
+
     [Inject] private IJSRuntime JS { get; set; } = default!;
-    [Inject] private IServiceProvider Services { get; set; } = default!;
+    [Inject] private IHtmlSanitizer Sanitizer { get; set; } = default!;
+    [Inject] private IEnumerable<IComposerPlugin> RegisteredPlugins { get; set; } = default!;
+    [Inject] private IEnumerable<IComposerDocumentConverter> RegisteredConverters { get; set; } = default!;
 
     private string ElementId
         => Id ?? _generatedId;
@@ -132,7 +138,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
             IsMaximized = _isMaximized,
             IsSelectionBarShown = _isSelectionBarShown,
             History = _history,
-            Sanitizer = _sanitizer,
+            Sanitizer = Sanitizer,
             AssetLoader = _assetLoader,
             Regions = _regionRegistry,
             SyntaxHighlighter = _syntaxHighlighter,
@@ -146,12 +152,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
         _assetLoader = new JsComposerAssetLoader(JS);
         _selfReference = DotNetObjectReference.Create(this);
 
-        var injectedHistory = (IComposerHistory?)Services.GetService(typeof(IComposerHistory));
-        var injectedSanitizer = (IHtmlSanitizer?)Services.GetService(typeof(IHtmlSanitizer));
-
-        _history = injectedHistory ?? new ComposerHistory(Options.HistoryCapacity);
-        _sanitizer = injectedSanitizer ?? new AllowlistHtmlSanitizer();
-        _syntaxHighlighter = (IComposerSyntaxHighlighter?)Services.GetService(typeof(IComposerSyntaxHighlighter));
+        _history = History ?? new ComposerHistory(Options.HistoryCapacity);
 
         _commandRegistry.RegisterEngineCommand(ComposerCommands.Undo, HandleUndoAsync);
         _commandRegistry.RegisterEngineCommand(ComposerCommands.Redo, HandleRedoAsync);
@@ -221,8 +222,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
 
     private async Task LoadPluginsAsync()
     {
-        var injected = (IEnumerable<IComposerPlugin>?)Services.GetService(typeof(IEnumerable<IComposerPlugin>)) ?? [];
-        var candidates = (Plugins ?? []).Concat(injected);
+        var candidates = (Plugins ?? []).Concat(RegisteredPlugins);
 
         _pluginCatalog = await ComposerPluginCatalog.CreateAsync(candidates, new PlainTextEditorPlugin());
         _activeEditor = _pluginCatalog.ResolveEditor(ActiveEditorId, Options.DefaultEditorId, CurrentDocument.Format);
@@ -335,8 +335,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
 
     private bool TryConvertTo(ComposerDocumentFormat format)
     {
-        var converters = (IEnumerable<IComposerDocumentConverter>?)Services.GetService(typeof(IEnumerable<IComposerDocumentConverter>)) ?? [];
-        var converter = converters.FirstOrDefault(c => c.Source == CurrentDocument.Format && c.Target == format);
+        var converter = RegisteredConverters.FirstOrDefault(c => c.Source == CurrentDocument.Format && c.Target == format);
 
         if (converter is null)
         {
@@ -410,7 +409,7 @@ public sealed partial class FormaComposer : InputBase<ComposerDocument>, IAsyncD
     // Sanitisation is mandatory on every crossing to the host, and applies to markup rather than to a format that carries none.
     private ComposerDocument Sanitize(ComposerDocument document)
         => document.Format == ComposerDocumentFormat.Html
-            ? document with { Content = _sanitizer.Sanitize(document.Content) }
+            ? document with { Content = Sanitizer.Sanitize(document.Content) }
             : document;
 
     private Task HandleUndoAsync()

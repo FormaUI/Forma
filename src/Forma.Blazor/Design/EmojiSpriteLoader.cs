@@ -12,7 +12,7 @@ using Microsoft.JSInterop;
 /// loader keeps a surface drawing hundreds of emoji from asking for the same sheet once per emoji. A navigation
 /// replaces the document's body, symbols included, so what the loader remembers is forgotten with it.
 /// </remarks>
-public sealed class EmojiSpriteLoader : IAsyncDisposable
+public sealed class EmojiSpriteLoader : IAsyncDisposable, IDisposable
 {
     private readonly Dictionary<string, Task<bool>> _loadsBySheet = new(StringComparer.Ordinal);
     private readonly IJSRuntime _js;
@@ -71,6 +71,10 @@ public sealed class EmojiSpriteLoader : IAsyncDisposable
             await _asset.DisposeAsync();
         }
     }
+
+    /// <summary>Releases the managed state alone; a scope disposing synchronously has no JS runtime left to talk to.</summary>
+    public void Dispose()
+        => _navigation?.LocationChanged -= HandleLocationChanged;
 
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs args)
         => _loadsBySheet.Clear();

@@ -41,6 +41,6 @@ public sealed record ComposerContext
     /// <summary>The status items and gutter markers plugins have pushed, shared by every editor.</summary>
     public required IComposerRegionRegistry Regions { get; init; }
 
-    /// <summary>The registered highlighter, or null when code renders unhighlighted.</summary>
-    public IComposerSyntaxHighlighter? SyntaxHighlighter { get; init; }
+    /// <summary>The highlighter code classification runs through.</summary>
+    public required IComposerSyntaxHighlighter SyntaxHighlighter { get; init; }
 }

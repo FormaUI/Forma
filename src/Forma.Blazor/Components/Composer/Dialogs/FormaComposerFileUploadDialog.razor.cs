@@ -9,7 +9,8 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>Dialog for choosing files, uploading them, and attaching what arrived to the document.</summary>
-public sealed partial class FormaComposerFileUploadDialog : ComposerDialogBase
+/// <param name="store">The host's registered store, or null to offer no upload.</param>
+public sealed partial class FormaComposerFileUploadDialog(IFileStore? store = null) : ComposerDialogBase
 {
     // Every measurement on, because a reader watching an upload wants to know how much is left.
     private static readonly FileUploaderOptions Detailed = FileUploaderOptions.Detailed;
@@ -20,10 +21,8 @@ public sealed partial class FormaComposerFileUploadDialog : ComposerDialogBase
     /// <summary>Callback invoked with the files that finished uploading.</summary>
     [Parameter] public EventCallback<IReadOnlyList<ResourceInfo>> OnAttach { get; set; }
 
-    [Inject] private IServiceProvider Services { get; set; } = default!;
-
     private FormaFileUploader? _uploader;
-    private IFileStore? _store;
+    private readonly IFileStore? _store = store;
     private IReadOnlyList<IBrowserFile> _files = [];
     private readonly List<ResourceInfo> _uploadedResources = [];
 
@@ -33,10 +32,6 @@ public sealed partial class FormaComposerFileUploadDialog : ComposerDialogBase
     /// <summary>The picker's options, single-select when only one file may be attached.</summary>
     private FilePickerOptions PickerOptions
         => Options.Picker.MaxFiles == 1 ? Options.Picker with { AllowMultipleFiles = false } : Options.Picker;
-
-    /// <inheritdoc />
-    protected override void OnInitialized()
-        => _store = (IFileStore?)Services.GetService(typeof(IFileStore));
 
     /// <inheritdoc />
     protected override void OnParametersSet()

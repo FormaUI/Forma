@@ -1,5 +1,6 @@
 namespace Forma.Blazor.Tests;
 
+using Forma.Blazor;
 using Forma.Framework.Emojis.Twemoji;
 
 /// <summary>A bUnit context with the services every Forma component expects already registered.</summary>
@@ -9,5 +10,6 @@ public abstract class FormaBunitContext : BunitContext
     protected FormaBunitContext()
     {
         Services.AddFormaTwemojiPack();
+        Services.AddFormaUI();
     }
 }

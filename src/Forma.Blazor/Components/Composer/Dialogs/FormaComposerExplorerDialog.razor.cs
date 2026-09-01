@@ -8,7 +8,10 @@ using Forma.Framework.Resources;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>Dialog for choosing one of the host's stored files and inserting it.</summary>
-public sealed partial class FormaComposerExplorerDialog : ComposerDialogBase
+/// <param name="resourcesProvider">The host's registered provider, or null to offer no browsing.</param>
+/// <param name="store">The host's registered store, or null to offer no upload.</param>
+public sealed partial class FormaComposerExplorerDialog(IExplorerResourcesProvider? resourcesProvider = null, IFileStore? store = null)
+    : ComposerDialogBase
 {
     private static readonly ExplorerOptions Library = new() { AsDialog = true, ShowFolderMenu = false, SelectOnOpen = true, MaxSelection = 1 };
 
@@ -18,10 +21,9 @@ public sealed partial class FormaComposerExplorerDialog : ComposerDialogBase
     /// <summary>Callback invoked when a file is chosen.</summary>
     [Parameter] public EventCallback<ResourceDialogResult> OnInsert { get; set; }
 
-    [Inject] private IServiceProvider Services { get; set; } = default!;
-
+    private readonly IExplorerResourcesProvider? _registeredResourcesProvider = resourcesProvider;
+    private readonly IFileStore? _store = store;
     private IExplorerResourcesProvider? _resourcesProvider;
-    private IFileStore? _store;
     private ExplorerFileOptions _fileOptions = ExplorerFileOptions.ReadOnly;
     private ExplorerConstraints _constraints = ExplorerConstraints.None;
     private readonly ParameterState<ExplorerPluginOptions?> _optionsParameter = new();
@@ -50,14 +52,11 @@ public sealed partial class FormaComposerExplorerDialog : ComposerDialogBase
             return;
         }
 
-        var provider = (IExplorerResourcesProvider?)Services.GetService(typeof(IExplorerResourcesProvider));
-
-        _store = (IFileStore?)Services.GetService(typeof(IFileStore));
-        _resourcesProvider = provider is null
+        _resourcesProvider = _registeredResourcesProvider is null
             ? null
             : ExplorerResourceFilter.Parse(Options.AcceptedResourceKinds) is { } filter
-                ? new FilteredResources(provider, filter)
-                : provider;
+                ? new FilteredResources(_registeredResourcesProvider, filter)
+                : _registeredResourcesProvider;
 
         _fileOptions = ExplorerFileOptions.ReadOnly with { AllowUpload = Options.AllowUpload && _store is not null };
 

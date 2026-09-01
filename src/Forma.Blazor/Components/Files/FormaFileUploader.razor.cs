@@ -10,10 +10,10 @@ using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.Extensions.DependencyInjection;
 
 /// <summary>Moves picked files into an <see cref="IFileStore"/>, reporting progress for each.</summary>
-public sealed partial class FormaFileUploader : ComponentBase, IDisposable
+/// <param name="registeredStore">The host's registered store, or null when it registered none.</param>
+public sealed partial class FormaFileUploader(IFileStore? registeredStore = null) : ComponentBase, IDisposable
 {
     // A percentage alone would move a byte counter in steps of one percent, which is ten megabytes in a gigabyte.
     private static readonly TimeSpan ProgressInterval = TimeSpan.FromMilliseconds(200);
@@ -35,9 +35,9 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
     /// <summary>Where the bytes are written; defaults to the store the host registered.</summary>
     [Parameter] public IFileStore? Store { get; set; }
 
-    [Inject] private IServiceProvider Services { get; set; } = default!;
-
     [Inject] private IStringLocale<FormaFileUploader> L { get; set; } = default!;
+
+    private readonly IFileStore? _registeredStore = registeredStore;
 
     private IFileStore _activeStore = default!;
 
@@ -115,7 +115,7 @@ public sealed partial class FormaFileUploader : ComponentBase, IDisposable
         ArgumentNullException.ThrowIfNull(Options);
 
         _activeStore = Store
-            ?? Services.GetService<IFileStore>()
+            ?? _registeredStore
             ?? throw new InvalidOperationException($"{nameof(FormaFileUploader)} needs an {nameof(IFileStore)}, either through its {nameof(Store)} parameter or registered with the host.");
 
         if (ReferenceEquals(Files, _currentFiles))

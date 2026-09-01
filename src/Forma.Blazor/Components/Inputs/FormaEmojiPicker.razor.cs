@@ -15,8 +15,14 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
 /// <summary>A categorized emoji palette with search, recently used entries, and a tab per category.</summary>
-public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
+/// <param name="registeredCatalog">The host's registered catalog, or null to browse nothing.</param>
+/// <param name="registeredProvider">The host's registered provider, or null to draw native emoji.</param>
+public sealed partial class FormaEmojiPicker(IEmojiCatalog? registeredCatalog = null, IEmojiProvider? registeredProvider = null)
+    : ComponentBase, IAsyncDisposable
 {
+    private readonly IEmojiCatalog _catalog = registeredCatalog ?? NullEmojiCatalog.Instance;
+    private readonly IEmojiProvider _provider = registeredProvider ?? UnicodeEmojiProvider.Default;
+
     /// <summary>The identifier of the tab holding recently chosen emoji.</summary>
     public const string RecentGroupId = "recent";
 
@@ -55,7 +61,6 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     private string _searchQuery = string.Empty;
     private string? _activeGroupId;
     private string _announcement = string.Empty;
-    private EmojiSpriteLoader? _ownedSpriteLoader;
     private InfiniteScroll? _infiniteScroll;
     private DotNetObjectReference<FormaEmojiPicker>? _selfReference;
     private ElementReference _sentinelElement;
@@ -88,34 +93,12 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
 
     [Inject] private IStringLocale<FormaEmojiPicker> L { get; set; } = default!;
 
-    [Inject] private IServiceProvider Services { get; set; } = default!;
+    [Inject] private EmojiSpriteLoader SpriteLoader { get; set; } = default!;
 
-    private IEmojiCatalog? _catalog;
-    private bool _isCatalogResolved;
-    private IEmojiProvider? _provider;
-    private EmojiSpriteLoader? _activeSpriteLoader;
     private List<EmojiGroup>? _tabs;
     private IReadOnlyList<EmojiInfo>? _matchingEmojis;
     private IReadOnlyList<string>? _requiredSheets;
     private IReadOnlyList<EmojiInfo>? _renderedEmojis;
-
-    // A catalog is data, so nothing can stand in for it; the picker shows its empty state instead.
-    private IEmojiCatalog? Catalog
-    {
-        get
-        {
-            if (!_isCatalogResolved)
-            {
-                _catalog = (IEmojiCatalog?)Services.GetService(typeof(IEmojiCatalog));
-                _isCatalogResolved = true;
-            }
-
-            return _catalog;
-        }
-    }
-
-    private IEmojiProvider Provider
-        => _provider ??= (IEmojiProvider?)Services.GetService(typeof(IEmojiProvider)) ?? UnicodeEmojiProvider.Default;
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
@@ -136,10 +119,9 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     private string ActiveGroupId => _activeGroupId ?? Tabs[0].Id;
 
     private IReadOnlyList<EmojiInfo> MatchingEmojis
-        => _matchingEmojis ??= Catalog is not { } catalog ? []
-            : IsSearching ? catalog.Find(_searchQuery)
+        => _matchingEmojis ??= IsSearching ? _catalog.Find(_searchQuery)
             : ActiveGroupId == RecentGroupId ? RecentEmoji()
-            : catalog.TryFindByGroupId(ActiveGroupId, out var emojis) ? emojis : [];
+            : _catalog.TryFindByGroupId(ActiveGroupId, out var emojis) ? emojis : [];
 
     private string HeadingText
         => IsSearching
@@ -206,11 +188,6 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
             await _infiniteScroll.DisposeAsync();
         }
 
-        if (_ownedSpriteLoader is not null)
-        {
-            await _ownedSpriteLoader.DisposeAsync();
-        }
-
         _selfReference?.Dispose();
     }
 
@@ -219,11 +196,6 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
 
     private static Icon TabIcon(string groupId)
         => TabGlyphs.TryGetValue(groupId, out var glyph) ? glyph : Glyph.Emoji;
-
-    // The registered loader is shared with every emoji it renders, so a sheet is fetched once between them.
-    private EmojiSpriteLoader GetSpriteLoader()
-        => _activeSpriteLoader ??= (EmojiSpriteLoader?)Services.GetService(typeof(EmojiSpriteLoader))
-            ?? (_ownedSpriteLoader ??= new EmojiSpriteLoader(JS));
 
     private int IndexOfTab(string groupId)
     {
@@ -239,7 +211,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     }
 
     private string? Sheet(EmojiInfo info)
-        => Provider.GetArtwork(info.Emoji) is EmojiSprite sprite ? sprite.Sheet : null;
+        => _provider.GetArtwork(info.Emoji) is EmojiSprite sprite ? sprite.Sheet : null;
 
     private bool IsCompleted(string sheet)
         => _sheetLoadTracker.IsCompleted(sheet);
@@ -270,7 +242,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
 
         try
         {
-            arrived = await GetSpriteLoader().LoadAsync(next);
+            arrived = await SpriteLoader.LoadAsync(next);
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
@@ -308,9 +280,7 @@ public sealed partial class FormaEmojiPicker : ComponentBase, IAsyncDisposable
     }
 
     private IReadOnlyList<EmojiInfo> RecentEmoji()
-        => Catalog is not { } catalog
-            ? []
-            : [.. Recent.Select(sequence => Emoji.TryCreate(sequence, out var emoji) && catalog.TryGetByEmoji(emoji, out var info) ? info : null).OfType<EmojiInfo>()];
+        => [.. Recent.Select(sequence => Emoji.TryCreate(sequence, out var emoji) && _catalog.TryGetByEmoji(emoji, out var info) ? info : null).OfType<EmojiInfo>()];
 
     private async Task OnQueryChangedAsync(string query)
     {

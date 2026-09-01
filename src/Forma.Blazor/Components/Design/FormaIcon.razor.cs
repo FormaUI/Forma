@@ -8,7 +8,8 @@ using Forma.Framework.Icons;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>Renders an icon as inline SVG, or as a single character set by the font, so no icon font has to be loaded.</summary>
-public sealed partial class FormaIcon : ComponentBase
+/// <param name="registeredProvider">The host's registered provider, or null when it registered none.</param>
+public sealed partial class FormaIcon(IIconProvider? registeredProvider = null) : ComponentBase
 {
     /// <summary>One vector path as the markup writes it: its data, its stroke width or null for a filled path, and its opacity.</summary>
     private readonly record struct VectorPathView(string Data, string? StrokeWidth, string? Opacity);
@@ -28,8 +29,6 @@ public sealed partial class FormaIcon : ComponentBase
 
     /// <summary>The provider supplying this icon's artwork, taken from the surrounding subtree or the host's registration when unset.</summary>
     [Parameter] public IIconProvider? Provider { get; set; }
-
-    [Inject] private IServiceProvider Services { get; set; } = default!;
 
     [CascadingParameter] private IIconProvider? CascadingProvider { get; set; }
 
@@ -59,7 +58,7 @@ public sealed partial class FormaIcon : ComponentBase
         // registration; the library's own artwork answers whatever none of those can.
         var provider = Provider
             ?? CascadingProvider
-            ?? (IIconProvider?)Services.GetService(typeof(IIconProvider));
+            ?? registeredProvider;
 
         _artwork = provider is not null && provider.TryGetArtwork(Icon, Size, out var supplied)
             ? supplied
