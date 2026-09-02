@@ -4,7 +4,6 @@ using System.Globalization;
 
 using Forma.Features.Explorer;
 using Forma.Framework.Localization;
-using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -13,7 +12,7 @@ using Microsoft.AspNetCore.Components.Web;
 public sealed partial class FormaExplorerSidebar : ComponentBase, IExplorerSidebarView, IExplorerSidebarInteraction
 {
     /// <summary>The currently active folder, or null for all media.</summary>
-    [Parameter] public FolderResourceInfo? CurrentFolder { get; set; }
+    [Parameter] public IExplorerFolderItem? CurrentFolder { get; set; }
 
     /// <summary>List of available explorer folders.</summary>
     [Parameter] public IReadOnlyList<IExplorerItem> Folders { get; set; } = [];
@@ -28,13 +27,13 @@ public sealed partial class FormaExplorerSidebar : ComponentBase, IExplorerSideb
     [CascadingParameter] private IExplorerItemInteraction ItemInteraction { get; set; } = default!;
 
     /// <summary>Raised when a folder is deleted.</summary>
-    [Parameter] public EventCallback<FolderResourceInfo> OnFolderDelete { get; set; }
+    [Parameter] public EventCallback<IExplorerFolderItem> OnFolderDelete { get; set; }
 
     /// <summary>Raised when a folder is selected.</summary>
-    [Parameter] public EventCallback<FolderResourceInfo?> OnFolderSelected { get; set; }
+    [Parameter] public EventCallback<IExplorerFolderItem?> OnFolderSelected { get; set; }
 
     /// <summary>Raised when a folder is to be created, under the folder given or at the root when none is.</summary>
-    [Parameter] public EventCallback<FolderResourceInfo?> OnFolderCreate { get; set; }
+    [Parameter] public EventCallback<IExplorerFolderItem?> OnFolderCreate { get; set; }
 
     /// <summary>Which folder operations the sidebar offers.</summary>
     [Parameter] public ExplorerItemOptions ItemOptions { get; set; } = ExplorerItemOptions.Default;
@@ -100,10 +99,10 @@ public sealed partial class FormaExplorerSidebar : ComponentBase, IExplorerSideb
     private IReadOnlyList<IExplorerFolderItem> ChildrenOf(string? parent)
         => FolderTree.ChildrenOf(parent);
 
-    private Task SelectFolderAsync(FolderResourceInfo? folder)
+    private Task SelectFolderAsync(IExplorerFolderItem? folder)
         => OnFolderSelected.InvokeAsync(folder);
 
-    private Task CreateFolderAsync(FolderResourceInfo? parent)
+    private Task CreateFolderAsync(IExplorerFolderItem? parent)
         => OnFolderCreate.InvokeAsync(parent);
 
     IExplorerSelectionView IExplorerSidebarView.Selection => Explorer.Selection;
@@ -112,7 +111,7 @@ public sealed partial class FormaExplorerSidebar : ComponentBase, IExplorerSideb
         => ChildrenOf(parent);
 
     bool IExplorerSidebarView.IsCurrent(IExplorerFolderItem item)
-        => CurrentFolder?.Source == item.Key;
+        => CurrentFolder?.Key == item.Key;
 
     // Folders start expanded so a nested tree is discoverable without a first click.
     bool IExplorerSidebarView.IsExpanded(string folderKey)
@@ -130,9 +129,7 @@ public sealed partial class FormaExplorerSidebar : ComponentBase, IExplorerSideb
     }
 
     Task IExplorerSidebarInteraction.SelectFolderAsync(IExplorerFolderItem? item)
-        => item is null
-            ? SelectFolderAsync(null)
-            : item.Resource is { } folder ? SelectFolderAsync(folder) : Task.CompletedTask;
+        => SelectFolderAsync(item);
 
     Task IExplorerSidebarInteraction.RenameFolderAsync(IExplorerFolderItem item)
     {
@@ -142,12 +139,10 @@ public sealed partial class FormaExplorerSidebar : ComponentBase, IExplorerSideb
     }
 
     Task IExplorerSidebarInteraction.DeleteFolderAsync(IExplorerFolderItem item)
-        => item.Resource is { } folder ? OnFolderDelete.InvokeAsync(folder) : Task.CompletedTask;
+        => OnFolderDelete.InvokeAsync(item);
 
     Task IExplorerSidebarInteraction.CreateFolderAsync(IExplorerFolderItem? parent)
-        => parent is null
-            ? CreateFolderAsync(null)
-            : parent.Resource is { } folder ? CreateFolderAsync(folder) : Task.CompletedTask;
+        => CreateFolderAsync(parent);
 
     Task IExplorerSidebarInteraction.DropOnFolderAsync(IExplorerFolderItem? item)
         => ItemInteraction.DropOnItemAsync(item);

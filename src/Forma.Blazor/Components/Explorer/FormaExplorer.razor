@@ -5,7 +5,6 @@
 @using Forma.Features.Files
 @using Forma.Blazor.Components.Layout
 @using Forma.Features.Explorer
-@using Forma.Framework.Resources
 
 <CascadingValue Value="(IExplorerView)this">
 <CascadingValue Value="(IExplorerInteraction)this" IsFixed="true">
@@ -87,7 +86,7 @@
     }
 
     <!-- Rename Modal -->
-    @if (_itemManager.PendingAction is ExplorerRenameAction<ResourceInfo> rename)
+    @if (_itemManager.PendingAction is ExplorerRenameAction<IExplorerItem> rename)
     {
         <FormaModal Opened="true"
                     Size="ModalSize.Small"
@@ -116,7 +115,7 @@
     }
 
     <!-- Delete Media Modal -->
-    @if (_itemManager.PendingAction is ExplorerBatchAction<ResourceInfo>)
+    @if (_itemManager.PendingAction is ExplorerBatchAction<IExplorerItem>)
     {
         <FormaModal Opened="true"
                     Size="ModalSize.Small"
@@ -167,7 +166,7 @@
     }
 
     <!-- Delete Folder Modal -->
-    @if (_itemManager.PendingAction is ExplorerBatchAction<FolderResourceInfo>)
+    @if (_itemManager.PendingAction is ExplorerBatchAction<IExplorerFolderItem>)
     {
         <FormaModal Opened="true"
                     Size="ModalSize.Small"

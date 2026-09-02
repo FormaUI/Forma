@@ -1,7 +1,5 @@
 namespace Forma.Features.Explorer;
 
-using Forma.Framework.Resources;
-
 /// <summary>The items an explorer has selected, and the rules deciding what a further choice does to them.</summary>
 public sealed class ExplorerSelection : IExplorerSelectionView
 {
@@ -11,8 +9,6 @@ public sealed class ExplorerSelection : IExplorerSelectionView
     private readonly Dictionary<string, IExplorerItem> _folderItems = new(StringComparer.Ordinal);
 
     private IReadOnlyList<IExplorerItem>? _resolvedItems;
-
-    private IReadOnlyList<ResourceInfo>? _resolvedResources;
 
     /// <inheritdoc />
     public bool IsSelectionModeActive { get; set; }
@@ -35,10 +31,6 @@ public sealed class ExplorerSelection : IExplorerSelectionView
     /// <summary>The selected items.</summary>
     public IReadOnlyList<IExplorerItem> ResolveItems()
         => _resolvedItems ??= [.. _folderItems.Values, .. _items.Values];
-
-    /// <summary>The selected resources.</summary>
-    public IReadOnlyList<ResourceInfo> ResolveResources()
-        => _resolvedResources ??= [.. _items.Values.Select(item => item.Resource).OfType<ResourceInfo>()];
 
     /// <summary>Adds the item to the selection, or removes it when it is already selected.</summary>
     public void Toggle(IExplorerItem item)
@@ -111,8 +103,5 @@ public sealed class ExplorerSelection : IExplorerSelectionView
     }
 
     private void Invalidate()
-    {
-        _resolvedItems = null;
-        _resolvedResources = null;
-    }
+        => _resolvedItems = null;
 }

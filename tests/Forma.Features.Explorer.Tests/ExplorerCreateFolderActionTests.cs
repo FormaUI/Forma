@@ -13,7 +13,7 @@ public sealed class ExplorerCreateFolderActionTests
         var create = new ExplorerCreateFolderAction();
 
         // Act
-        var parent = new FolderResourceInfo("/photos");
+        var parent = ExplorerItem.ForFolder(new FolderResourceInfo("/photos"));
         create.Request(parent);
 
         // Assert

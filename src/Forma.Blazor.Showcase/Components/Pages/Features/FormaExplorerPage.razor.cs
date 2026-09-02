@@ -154,10 +154,10 @@ public sealed partial class FormaExplorerPage : ComponentBase
 
         foreach (var key in new[] { "full", "readonly", "fixedfolders", "nosidebar", "nomenu" })
         {
-            _providers[key] = new FolderScopedProvider(_mediaStore, () => CurrentFolderFor(key)?.Source);
+            _providers[key] = new FolderScopedProvider(_mediaStore, () => CurrentFolderFor(key)?.Key);
         }
 
-        _providers["library"] = new FolderScopedProvider(_libraryStore, () => CurrentFolderFor("library")?.Source);
+        _providers["library"] = new FolderScopedProvider(_libraryStore, () => CurrentFolderFor("library")?.Key);
         _providers["paged"] = new FolderScopedProvider(_flatStore, () => null);
         _providers["infinite"] = new FolderScopedProvider(_flatStore, () => null);
     }
@@ -206,12 +206,14 @@ public sealed partial class FormaExplorerPage : ComponentBase
         _sampleFolderItems = ExplorerItem.ForAll(_sampleFolders);
     }
 
-    private FolderResourceInfo? CurrentFolderFor(string key)
-        => _currentFolderSources.GetValueOrDefault(key) is { } source ? _sampleFolders.Find(folder => folder.Source == source) : null;
+    private IExplorerFolderItem? CurrentFolderFor(string key)
+        => _currentFolderSources.GetValueOrDefault(key) is { } source
+            ? _sampleFolderItems.OfType<IExplorerFolderItem>().FirstOrDefault(folder => folder.Key == source)
+            : null;
 
-    private Task HandleFolderChangedAsync(string key, FolderResourceInfo? folder)
+    private Task HandleFolderChangedAsync(string key, IExplorerFolderItem? folder)
     {
-        _currentFolderSources[key] = folder?.Source;
+        _currentFolderSources[key] = folder?.Key;
         LogAction(key, folder is null ? L["Opened all media"] : L["Opened folder \"{Name}\"", folder.Name]);
 
         return Task.CompletedTask;
@@ -219,26 +221,30 @@ public sealed partial class FormaExplorerPage : ComponentBase
 
     private Task HandleDeleteAsync(string key, ExplorerDeleteRequest request)
     {
-        _mediaStore.Remove(request.Resources);
+        _mediaStore.Remove(ResourcesOf(request.Items));
         SyncFromStore();
-        LogAction(key, L["Deleted {Count} item(s)", request.Resources.Count]);
+        LogAction(key, L["Deleted {Count} item(s)", request.Items.Count]);
 
         return Task.CompletedTask;
     }
 
     private Task HandleDropAsync(string key, ExplorerDropRequest request)
     {
-        var count = request.Resources.Count;
+        var count = request.Items.Count;
         var folderName = FolderName(request.TargetFolder);
 
-        _mediaStore.Move(request.Resources, request.TargetFolder?.Source);
+        _mediaStore.Move(ResourcesOf(request.Items), request.TargetFolder?.Key);
         SyncFromStore();
         LogAction(key, L["Moved {Count} item(s) to \"{Folder}\"", count, folderName]);
 
         return Task.CompletedTask;
     }
 
-    private string FolderName(FolderResourceInfo? folder)
+    /// <summary>The resources behind the items, for the store that holds them.</summary>
+    private static List<ResourceInfo> ResourcesOf(IEnumerable<IExplorerItem> items)
+        => [.. items.Select(item => item.Resource).OfType<ResourceInfo>()];
+
+    private string FolderName(IExplorerFolderItem? folder)
         => folder?.Name ?? L["All media"].Value;
 
     private Task HandleFolderCreateAsync(string key, ExplorerFolderCreateRequest request)
@@ -246,7 +252,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
         var parent = request.ParentFolder;
         var source = $"folder-{Guid.NewGuid():N}";
 
-        _sampleFolders.Add(new FolderResourceInfo(source) { Name = request.Name, Parent = parent?.Source, Count = 0 });
+        _sampleFolders.Add(new FolderResourceInfo(source) { Name = request.Name, Parent = parent?.Key, Count = 0 });
         SyncFromStore();
 
         LogAction(key, L["Created folder \"{Name}\" in {Parent}", request.Name, FolderName(parent)]);
@@ -257,11 +263,11 @@ public sealed partial class FormaExplorerPage : ComponentBase
     private Task HandleFolderDeleteAsync(string key, ExplorerFolderDeleteRequest request)
     {
         var removed = request.Folder;
-        _sampleFolders.RemoveAll(folder => folder.Source == removed.Source);
-        _mediaStore.RemoveFolder(removed.Source);
+        _sampleFolders.RemoveAll(folder => folder.Source == removed.Key);
+        _mediaStore.RemoveFolder(removed.Key);
         SyncFromStore();
 
-        foreach (var demo in _currentFolderSources.Where(pair => pair.Value == removed.Source).Select(pair => pair.Key).ToList())
+        foreach (var demo in _currentFolderSources.Where(pair => pair.Value == removed.Key).Select(pair => pair.Key).ToList())
         {
             _currentFolderSources[demo] = null;
         }
@@ -273,11 +279,11 @@ public sealed partial class FormaExplorerPage : ComponentBase
 
     private Task HandleFolderDropAsync(string key, ExplorerFolderDropRequest request)
     {
-        var index = _sampleFolders.FindIndex(folder => folder.Source == request.SourceFolder.Source);
+        var index = _sampleFolders.FindIndex(folder => folder.Source == request.SourceFolder.Key);
 
         if (index >= 0)
         {
-            _sampleFolders[index] = _sampleFolders[index] with { Parent = request.TargetFolder?.Source };
+            _sampleFolders[index] = _sampleFolders[index] with { Parent = request.TargetFolder?.Key };
         }
 
         SyncFromStore();
@@ -288,7 +294,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
 
     private Task HandleFolderRenameAsync(string key, ExplorerFolderRenameRequest request)
     {
-        var index = _sampleFolders.FindIndex(folder => folder.Source == request.Folder.Source);
+        var index = _sampleFolders.FindIndex(folder => folder.Source == request.Folder.Key);
 
         if (index >= 0)
         {
@@ -303,9 +309,13 @@ public sealed partial class FormaExplorerPage : ComponentBase
 
     private Task HandleRenameAsync(string key, ExplorerRenameRequest request)
     {
-        _mediaStore.Rename(request.Resource, request.NewName);
-        SyncFromStore();
-        LogAction(key, L["Renamed \"{OldName}\" to \"{NewName}\"", request.Resource.Name, request.NewName]);
+        if (request.Item.Resource is { } resource)
+        {
+            _mediaStore.Rename(resource, request.NewName);
+            SyncFromStore();
+        }
+
+        LogAction(key, L["Renamed \"{OldName}\" to \"{NewName}\"", request.Item.Name, request.NewName]);
 
         return Task.CompletedTask;
     }

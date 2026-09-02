@@ -33,7 +33,7 @@ public sealed class ExplorerFolderTree
             // A host can repeat a key; the first folder claiming it wins, matching what the breadcrumb walk would find.
             _foldersByKey.TryAdd(folderItem.Key, folderItem);
 
-            if ((folderItem.Parent?.Key ?? folderItem.Resource?.Parent) is not { } parent)
+            if (ParentKeyOf(folderItem) is not { } parent)
             {
                 _roots.Add(folderItem);
                 continue;
@@ -63,6 +63,22 @@ public sealed class ExplorerFolderTree
     /// <summary>The folder at the key, or null when the tree has none.</summary>
     public IExplorerFolderItem? Find(string? key)
         => key is not null && _foldersByKey.TryGetValue(key, out var item) ? item : null;
+
+    /// <summary>The key of the folder the item sits inside, or null when it is top-level.</summary>
+    public static string? ParentKeyOf(IExplorerFolderItem item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+
+        return item.Parent?.Key ?? item.Resource?.Parent;
+    }
+
+    /// <summary>The folder the item sits inside, or null when it is top-level or the tree has none.</summary>
+    public IExplorerFolderItem? ParentOf(IExplorerFolderItem item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+
+        return item.Parent ?? Find(item.Resource?.Parent);
+    }
 
     /// <summary>Whether anything sits inside the folder.</summary>
     public bool HasChildren(string key)

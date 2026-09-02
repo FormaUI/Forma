@@ -6,14 +6,17 @@ using Xunit;
 
 public sealed class ExplorerBatchActionTests
 {
+    private static ExplorerItem Item(string source)
+        => ExplorerItem.For(new FileResourceInfo(source));
+
     [Fact]
     public void Should_hold_the_requested_targets()
     {
         // Arrange
-        var batch = new ExplorerBatchAction<ResourceInfo>();
+        var batch = new ExplorerBatchAction<IExplorerItem>();
 
         // Act
-        batch.Request([new FileResourceInfo("/media/photo.png")]);
+        batch.Request([Item("/media/photo.png")]);
 
         // Assert
         Assert.Multiple(
@@ -25,11 +28,11 @@ public sealed class ExplorerBatchActionTests
     public void Should_replace_the_previous_request_on_a_new_one()
     {
         // Arrange
-        var batch = new ExplorerBatchAction<ResourceInfo>();
-        batch.Request([new FileResourceInfo("/media/photo.png")]);
+        var batch = new ExplorerBatchAction<IExplorerItem>();
+        batch.Request([Item("/media/photo.png")]);
 
         // Act
-        batch.Request([new FileResourceInfo("/media/a.png"), new FileResourceInfo("/media/b.png")]);
+        batch.Request([Item("/media/a.png"), Item("/media/b.png")]);
 
         // Assert
         Assert.Equal(2, batch.Targets.Count);
@@ -37,14 +40,14 @@ public sealed class ExplorerBatchActionTests
 
     [Fact]
     public void Should_reject_an_empty_request()
-        => Assert.Throws<ArgumentException>(() => new ExplorerBatchAction<ResourceInfo>().Request([]));
+        => Assert.Throws<ArgumentException>(() => new ExplorerBatchAction<IExplorerItem>().Request([]));
 
     [Fact]
     public void Should_keep_its_own_copy_of_the_requested_targets()
     {
         // Arrange
-        var batch = new ExplorerBatchAction<ResourceInfo>();
-        var requested = new List<ResourceInfo> { new FileResourceInfo("/media/photo.png") };
+        var batch = new ExplorerBatchAction<IExplorerItem>();
+        var requested = new List<IExplorerItem> { Item("/media/photo.png") };
 
         // Act
         batch.Request(requested);
@@ -58,10 +61,10 @@ public sealed class ExplorerBatchActionTests
     public void Should_work_for_folder_targets()
     {
         // Arrange
-        var batch = new ExplorerBatchAction<FolderResourceInfo>();
+        var batch = new ExplorerBatchAction<IExplorerFolderItem>();
 
         // Act
-        batch.Request([new FolderResourceInfo("/photos")]);
+        batch.Request([ExplorerItem.ForFolder(new FolderResourceInfo("/photos"))]);
 
         // Assert
         Assert.Single(batch.Targets);

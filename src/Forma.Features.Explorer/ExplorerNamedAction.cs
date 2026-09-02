@@ -1,16 +1,14 @@
 namespace Forma.Features.Explorer;
 
-using Forma.Framework.Resources;
-
-/// <summary>A resource and an editable name, held from Set until Clear.</summary>
-public abstract class ExplorerNamedAction<TResource> : ExplorerPendingNamedAction
-    where TResource : ResourceInfo
+/// <summary>An item and an editable name, held from Set until Clear.</summary>
+public abstract class ExplorerNamedAction<TItem> : ExplorerPendingNamedAction
+    where TItem : class, IExplorerItem
 {
     private bool _isActive;
-    private TResource? _resource;
+    private TItem? _item;
 
-    /// <summary>The resource the action is scoped to, or null when it has none.</summary>
-    protected TResource? Resource => _resource;
+    /// <summary>The item the action is scoped to, or null when it has none.</summary>
+    protected TItem? Item => _item;
 
     /// <inheritdoc />
     public override string Name { get; protected internal set; } = string.Empty;
@@ -24,23 +22,23 @@ public abstract class ExplorerNamedAction<TResource> : ExplorerPendingNamedActio
     /// <summary>The name as a confirmation would apply it.</summary>
     public string NameToConfirm => Name.Trim();
 
-    /// <summary>Opens the action with the given resource and starting name.</summary>
-    protected void Set(TResource resource, string initialName = "")
+    /// <summary>Opens the action with the given item and starting name.</summary>
+    protected void Set(TItem item, string initialName = "")
     {
-        ArgumentNullException.ThrowIfNull(resource);
+        ArgumentNullException.ThrowIfNull(item);
         ArgumentNullException.ThrowIfNull(initialName);
 
-        _resource = resource;
+        _item = item;
 
         Name = initialName;
 
         _isActive = true;
     }
 
-    /// <summary>Opens the action with no resource and an empty starting name.</summary>
+    /// <summary>Opens the action with no item and an empty starting name.</summary>
     protected void Set()
     {
-        _resource = null;
+        _item = null;
 
         Name = string.Empty;
 
@@ -50,7 +48,7 @@ public abstract class ExplorerNamedAction<TResource> : ExplorerPendingNamedActio
     /// <inheritdoc />
     protected internal override void Clear()
     {
-        _resource = null;
+        _item = null;
 
         Name = string.Empty;
 

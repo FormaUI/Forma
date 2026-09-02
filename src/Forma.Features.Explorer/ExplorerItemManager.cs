@@ -1,15 +1,13 @@
 namespace Forma.Features.Explorer;
 
-using Forma.Framework.Resources;
-
 /// <summary>Actions, pending confirmations, and drag state shared by every region an explorer renders its items in.</summary>
 public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemInteraction
 {
-    private readonly ExplorerDrag _drag = new();
-    private readonly ExplorerRenameAction<ResourceInfo> _rename = new();
+    private readonly ExplorerDragItem _drag = new();
+    private readonly ExplorerRenameAction<IExplorerItem> _rename = new();
     private readonly ExplorerCreateFolderAction _createFolder = new();
-    private readonly ExplorerBatchAction<ResourceInfo> _resourceDeletion = new();
-    private readonly ExplorerBatchAction<FolderResourceInfo> _folderDeletion = new();
+    private readonly ExplorerBatchAction<IExplorerItem> _itemDeletion = new();
+    private readonly ExplorerBatchAction<IExplorerFolderItem> _folderDeletion = new();
 
     /// <inheritdoc />
     public IReadOnlyList<ExplorerItemAction> Actions { get; set; } = [];
@@ -26,23 +24,23 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
     /// <summary>Called to activate an item: preview it, or toggle its selection in selection mode.</summary>
     public Func<IExplorerItem, Task>? OnActivate { get; set; }
 
-    /// <summary>Called to apply a drop of the given dragged resource onto the given folder.</summary>
-    public Func<ResourceInfo, FolderResourceInfo?, Task>? OnDrop { get; set; }
+    /// <summary>Called to apply a drop of the given dragged item onto the given folder, or the top level when null.</summary>
+    public Func<IExplorerItem, IExplorerFolderItem?, Task>? OnDrop { get; set; }
 
     /// <summary>Called to open the new-folder dialog under the current folder.</summary>
     public Func<Task>? OnRequestNewFolder { get; set; }
 
     /// <summary>Called to apply a confirmed rename.</summary>
-    public Func<ResourceInfo, string, Task>? OnRenameConfirmed { get; set; }
+    public Func<IExplorerItem, string, Task>? OnRenameConfirmed { get; set; }
 
     /// <summary>Called to apply a confirmed folder creation.</summary>
-    public Func<FolderResourceInfo?, string, Task>? OnCreateFolderConfirmed { get; set; }
+    public Func<IExplorerFolderItem?, string, Task>? OnCreateFolderConfirmed { get; set; }
 
-    /// <summary>Called to apply a confirmed resource deletion.</summary>
-    public Func<IReadOnlyList<ResourceInfo>, Task>? OnDeleteConfirmed { get; set; }
+    /// <summary>Called to apply a confirmed item deletion.</summary>
+    public Func<IReadOnlyList<IExplorerItem>, Task>? OnDeleteConfirmed { get; set; }
 
     /// <summary>Called to apply a confirmed folder deletion.</summary>
-    public Func<IReadOnlyList<FolderResourceInfo>, Task>? OnFolderDeleteConfirmed { get; set; }
+    public Func<IReadOnlyList<IExplorerFolderItem>, Task>? OnFolderDeleteConfirmed { get; set; }
 
     /// <summary>Called to show or hide the upload panel.</summary>
     public Action? OnToggleUpload { get; set; }
@@ -63,10 +61,7 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        if (item.Resource is { } resource)
-        {
-            _drag.Begin(resource);
-        }
+        _drag.Begin(item);
     }
 
     /// <inheritdoc />
@@ -80,11 +75,11 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
             return Task.CompletedTask;
         }
 
-        // Only a folder the host can address can receive a drop; the null target is the top level.
+        // Only a folder can receive a drop; the null target is the top level.
         return target switch
         {
             null => OnDrop?.Invoke(dragged, null) ?? Task.CompletedTask,
-            IExplorerFolderItem { Resource: { } folder } => OnDrop?.Invoke(dragged, folder) ?? Task.CompletedTask,
+            IExplorerFolderItem folder => OnDrop?.Invoke(dragged, folder) ?? Task.CompletedTask,
             _ => Task.CompletedTask,
         };
     }
@@ -98,7 +93,7 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
         => OnRequestNewFolder?.Invoke() ?? Task.CompletedTask;
 
     /// <summary>Opens the new-folder dialog under the given parent, or the top level when null.</summary>
-    public void BeginCreateFolder(FolderResourceInfo? parent)
+    public void BeginCreateFolder(IExplorerFolderItem? parent)
     {
         _createFolder.Request(parent);
         PendingAction = _createFolder;
@@ -110,12 +105,7 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        if (item.Resource is not { } resource)
-        {
-            return;
-        }
-
-        _rename.Request(resource);
+        _rename.Request(item);
         PendingAction = _rename;
         OnChanged?.Invoke();
     }
@@ -130,7 +120,7 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
             return;
         }
 
-        List<FolderResourceInfo> folders = [.. items.OfType<IExplorerFolderItem>().Select(item => item.Resource).OfType<FolderResourceInfo>()];
+        List<IExplorerFolderItem> folders = [.. items.OfType<IExplorerFolderItem>()];
 
         if (folders.Count > 0)
         {
@@ -139,37 +129,31 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
         }
         else
         {
-            List<ResourceInfo> resources = [.. items.Where(item => item is not IExplorerFolderItem).Select(item => item.Resource).OfType<ResourceInfo>()];
-
-            if (resources.Count == 0)
-            {
-                return;
-            }
-
-            _resourceDeletion.Request(resources);
-            PendingAction = _resourceDeletion;
+            _itemDeletion.Request(items);
+            PendingAction = _itemDeletion;
         }
 
         OnChanged?.Invoke();
     }
 
-    /// <summary>Opens confirmation for deleting the single item.</summary>
+    /// <summary>Opens confirmation for deleting the single item, as a folder when it is one.</summary>
     public void RequestDelete(IExplorerItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        if (item.Resource is not { } resource)
+        if (item is IExplorerFolderItem folder)
         {
+            RequestFolderDelete(folder);
             return;
         }
 
-        _resourceDeletion.Request([resource]);
-        PendingAction = _resourceDeletion;
+        _itemDeletion.Request([item]);
+        PendingAction = _itemDeletion;
         OnChanged?.Invoke();
     }
 
     /// <summary>Opens confirmation for deleting the single folder.</summary>
-    public void RequestFolderDelete(FolderResourceInfo folder)
+    public void RequestFolderDelete(IExplorerFolderItem folder)
     {
         ArgumentNullException.ThrowIfNull(folder);
 
@@ -221,22 +205,22 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
                 await InvokeAsync(OnCreateFolderConfirmed, parent, folderName).ConfigureAwait(false);
                 break;
 
-            case ExplorerRenameAction<ResourceInfo> rename when rename.Target is { } target:
+            case ExplorerRenameAction<IExplorerItem> rename when rename.Target is { } target:
                 var newName = rename.NameToConfirm;
                 rename.Clear();
                 await InvokeAsync(OnRenameConfirmed, target, newName).ConfigureAwait(false);
                 break;
 
-            case ExplorerBatchAction<FolderResourceInfo> folders:
+            case ExplorerBatchAction<IExplorerFolderItem> folders:
                 var folderTargets = folders.Targets;
                 folders.Clear();
                 await InvokeAsync(OnFolderDeleteConfirmed, folderTargets).ConfigureAwait(false);
                 break;
 
-            case ExplorerBatchAction<ResourceInfo> resources:
-                var resourceTargets = resources.Targets;
-                resources.Clear();
-                await InvokeAsync(OnDeleteConfirmed, resourceTargets).ConfigureAwait(false);
+            case ExplorerBatchAction<IExplorerItem> items:
+                var itemTargets = items.Targets;
+                items.Clear();
+                await InvokeAsync(OnDeleteConfirmed, itemTargets).ConfigureAwait(false);
                 break;
         }
     }

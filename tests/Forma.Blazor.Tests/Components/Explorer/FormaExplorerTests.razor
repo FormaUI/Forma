@@ -27,7 +27,7 @@
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
-            var folder = new FolderResourceInfo("/photos");
+            var folder = ExplorerItem.ForFolder(new FolderResourceInfo("/photos"));
 
             // Act
             var cut = ctx.Render(@<FormaExplorer Items="[]" CurrentFolder="folder" />);
@@ -259,12 +259,12 @@
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
-            var parent = new FolderResourceInfo("races") { Name = "Races", Count = 10 };
-            var child = new FolderResourceInfo("2026") { Name = "2026", Parent = "races", Count = 5 };
-            IReadOnlyList<FolderResourceInfo> folders = [parent, child];
+            var parent = ExplorerItem.ForFolder(new FolderResourceInfo("races") { Name = "Races", Count = 10 });
+            var child = ExplorerItem.ForFolder(new FolderResourceInfo("2026") { Name = "2026", Parent = "races", Count = 5 });
+            IReadOnlyList<IExplorerItem> folders = [parent, child];
 
             // Act
-            var cut = ctx.Render(@<FormaExplorer Items="[]" Folders="@(ExplorerItem.ForAll(folders))" CurrentFolder="child" />);
+            var cut = ctx.Render(@<FormaExplorer Items="[]" Folders="folders" CurrentFolder="child" />);
 
             // Assert
             var breadcrumbs = cut.FindAll(".forma-breadcrumb-item");
@@ -313,13 +313,13 @@
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
-            var parent = new FolderResourceInfo("races") { Name = "Races", Count = 10 };
-            var child = new FolderResourceInfo("2026") { Name = "2026", Parent = "races", Count = 5 };
-            IReadOnlyList<FolderResourceInfo> folders = [parent, child];
-            FolderResourceInfo? activeFolder = null;
+            var parent = ExplorerItem.ForFolder(new FolderResourceInfo("races") { Name = "Races", Count = 10 });
+            var child = ExplorerItem.ForFolder(new FolderResourceInfo("2026") { Name = "2026", Parent = "races", Count = 5 });
+            IReadOnlyList<IExplorerItem> folders = [parent, child];
+            IExplorerFolderItem? activeFolder = null;
 
             var cut = ctx.Render(@<FormaExplorer Items="[]"
-                                                Folders="@(ExplorerItem.ForAll(folders))"
+                                                Folders="folders"
                                                 CurrentFolder="child"
                                                 OnFolderChanged="@(f => { activeFolder = f; return Task.CompletedTask; })" />);
 
@@ -330,7 +330,7 @@
 
             // Assert folder changed to parent
             Assert.NotNull(activeFolder);
-            Assert.Equal("races", activeFolder.Source);
+            Assert.Equal("races", activeFolder.Key);
         }
 
         [Fact]
@@ -529,8 +529,8 @@
 
             // Assert
             Assert.NotNull(dropRequest);
-            Assert.Equal("photo.jpg", Assert.Single(dropRequest.Resources).Name);
-            Assert.Equal("vacation", dropRequest.TargetFolder?.Source);
+            Assert.Equal("photo.jpg", Assert.Single(dropRequest.Items).Name);
+            Assert.Equal("vacation", dropRequest.TargetFolder?.Key);
         }
 
         [Fact]
@@ -575,8 +575,8 @@
 
             // Assert
             Assert.NotNull(folderDropRequest);
-            Assert.Equal("sub", folderDropRequest.SourceFolder.Source);
-            Assert.Equal("parent", folderDropRequest.TargetFolder?.Source);
+            Assert.Equal("sub", folderDropRequest.SourceFolder.Key);
+            Assert.Equal("parent", folderDropRequest.TargetFolder?.Key);
         }
 
         [Fact]
@@ -619,7 +619,7 @@
 
             // Assert
             Assert.NotNull(request);
-            Assert.Equal("old-name.jpg", request.Resource.Name);
+            Assert.Equal("old-name.jpg", request.Item.Name);
             Assert.Equal("new-name.jpg", request.NewName);
         }
 
@@ -643,7 +643,7 @@
 
             // Assert
             Assert.NotNull(request);
-            Assert.Equal("item.jpg", Assert.Single(request.Resources).Name);
+            Assert.Equal("item.jpg", Assert.Single(request.Items).Name);
         }
 
         [Fact]
@@ -688,7 +688,7 @@
 
             // Assert delete
             Assert.NotNull(deleteReq);
-            Assert.Equal("races", deleteReq.Folder.Source);
+            Assert.Equal("races", deleteReq.Folder.Key);
         }
 
         [Fact]
@@ -712,7 +712,7 @@
             // Assert
             Assert.NotNull(createReq);
             Assert.Equal("2027", createReq.Name);
-            Assert.Equal("races", createReq.ParentFolder?.Source);
+            Assert.Equal("races", createReq.ParentFolder?.Key);
         }
 
         [Fact]
@@ -720,11 +720,12 @@
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
-            var folder = new FolderResourceInfo("races") { Name = "Races" };
+            var folder = ExplorerItem.ForFolder(new FolderResourceInfo("races") { Name = "Races" });
+            IReadOnlyList<IExplorerItem> folders = [folder];
             ExplorerFolderCreateRequest? createReq = null;
 
             var cut = ctx.Render(@<FormaExplorer Items="[]"
-                                                Folders="@(ExplorerItem.ForAll([folder]))"
+                                                Folders="folders"
                                                 CurrentFolder="folder"
                                                 OnFolderCreate="@(req => { createReq = req; return Task.CompletedTask; })" />);
 
@@ -855,21 +856,49 @@
         }
 
         [Fact]
-        public void Should_not_navigate_to_a_folder_the_host_cannot_address()
+        public void Should_navigate_to_a_folder_that_has_no_resource()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
-            IReadOnlyList<IExplorerItem> folders = [new ExplorerFolderItem { Key = "ghost", Name = "Ghost" }];
-            var navigated = false;
+            var ghost = new ExplorerFolderItem { Key = "ghost", Name = "Ghost" };
+            IReadOnlyList<IExplorerItem> folders = [ghost];
+            IExplorerFolderItem? activeFolder = null;
             var cut = ctx.Render(@<FormaExplorer Items="[]"
                                                 Folders="folders"
-                                                OnFolderChanged="@(_ => { navigated = true; return Task.CompletedTask; })" />);
+                                                OnFolderChanged="@(f => { activeFolder = f; return Task.CompletedTask; })" />);
 
             // Act
             cut.FindAll(".forma-explorer-folder-target")[1].Click();
 
             // Assert
-            Assert.False(navigated);
+            Assert.Same(ghost, activeFolder);
+        }
+
+        [Fact]
+        public void Should_browse_a_current_folder_that_has_no_resource()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            var parent = new ExplorerFolderItem { Key = "ghosts", Name = "Ghosts" };
+            var child = new ExplorerFolderItem { Key = "ghost", Name = "Ghost", Parent = parent };
+            IReadOnlyList<IExplorerItem> folders = [parent, child];
+            IExplorerFolderItem? activeFolder = null;
+
+            // Act
+            var cut = ctx.Render(@<FormaExplorer Items="[]"
+                                                Folders="folders"
+                                                CurrentFolder="child"
+                                                OnFolderChanged="@(f => { activeFolder = f; return Task.CompletedTask; })" />);
+
+            // Assert
+            Assert.Equal(["All Media", "Ghosts", "Ghost"], cut.FindAll(".forma-breadcrumb-item").Select(b => b.TextContent.Trim()));
+            Assert.Contains("No media in this folder", cut.Find(".forma-explorer-empty").TextContent);
+
+            // Act
+            cut.FindAll(".forma-explorer-nav-button")[2].Click();
+
+            // Assert
+            Assert.Same(parent, activeFolder);
         }
 
         [Fact]
@@ -1137,7 +1166,7 @@
 
             // Assert
             Assert.NotNull(request);
-            Assert.Equal("races", request.Folder.Source);
+            Assert.Equal("races", request.Folder.Key);
         }
         [Fact]
         public void Should_keep_the_breadcrumb_menu_when_the_sidebar_is_switched_off()
@@ -1295,11 +1324,11 @@
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
-            var current = new FolderResourceInfo("races") { Name = "Races" };
-            IReadOnlyList<FolderResourceInfo> folders = [current, new FolderResourceInfo("races") { Name = "Races copy" }];
+            var current = ExplorerItem.ForFolder(new FolderResourceInfo("races") { Name = "Races" });
+            IReadOnlyList<IExplorerItem> folders = [current, ExplorerItem.ForFolder(new FolderResourceInfo("races") { Name = "Races copy" })];
 
             // Act
-            var cut = ctx.Render(@<FormaExplorer Items="[]" Folders="@(ExplorerItem.ForAll(folders))" CurrentFolder="current" />);
+            var cut = ctx.Render(@<FormaExplorer Items="[]" Folders="folders" CurrentFolder="current" />);
 
             // Assert
             Assert.Equal(["All Media", "Races"], cut.FindAll(".forma-breadcrumb-item").Select(b => b.TextContent.Trim()));
@@ -1310,11 +1339,11 @@
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
-            var child = new FolderResourceInfo("2026") { Name = "2026", Parent = "races" };
-            IReadOnlyList<FolderResourceInfo> folders = [new FolderResourceInfo("races") { Name = "Races", Parent = "2026" }, child];
+            var child = ExplorerItem.ForFolder(new FolderResourceInfo("2026") { Name = "2026", Parent = "races" });
+            IReadOnlyList<IExplorerItem> folders = [ExplorerItem.ForFolder(new FolderResourceInfo("races") { Name = "Races", Parent = "2026" }), child];
 
             // Act
-            var cut = ctx.Render(@<FormaExplorer Items="[]" Folders="@(ExplorerItem.ForAll(folders))" CurrentFolder="child" />);
+            var cut = ctx.Render(@<FormaExplorer Items="[]" Folders="folders" CurrentFolder="child" />);
 
             // Assert
             Assert.Equal(["All Media", "Races", "2026"], cut.FindAll(".forma-breadcrumb-item").Select(b => b.TextContent.Trim()));
@@ -1367,7 +1396,7 @@
             // Assert
             Assert.Null(folderRequest);
             Assert.NotNull(itemRequest);
-            Assert.Equal("covers", itemRequest.TargetFolder?.Source);
+            Assert.Equal("covers", itemRequest.TargetFolder?.Key);
         }
 
         [Fact]
@@ -1389,7 +1418,7 @@
             // Assert
             Assert.NotNull(request);
             Assert.Null(request.TargetFolder);
-            Assert.Equal("a.jpg", Assert.Single(request.Resources).Name);
+            Assert.Equal("a.jpg", Assert.Single(request.Items).Name);
         }
 
         [Fact]
@@ -1411,7 +1440,7 @@
 
             // Assert
             Assert.NotNull(request);
-            Assert.Equal("2026", request.SourceFolder.Source);
+            Assert.Equal("2026", request.SourceFolder.Key);
             Assert.Null(request.TargetFolder);
         }
 

@@ -1,15 +1,13 @@
 namespace Forma.Features.Explorer;
 
-using Forma.Framework.Resources;
-
-/// <summary>The single resource being renamed, and its draft name.</summary>
+/// <summary>The single item being renamed, and its draft name.</summary>
 public sealed class ExplorerRenameAction<TTarget> : ExplorerNamedAction<TTarget>
-    where TTarget : ResourceInfo
+    where TTarget : class, IExplorerItem
 {
-    /// <summary>The resource being renamed, or null when nothing is.</summary>
-    public TTarget? Target => Resource;
+    /// <summary>The item being renamed, or null when nothing is.</summary>
+    public TTarget? Target => Item;
 
-    /// <summary>Starts renaming the given resource, with its current name as the draft.</summary>
+    /// <summary>Starts renaming the given item, with its current name as the draft.</summary>
     public void Request(TTarget target)
     {
         ArgumentNullException.ThrowIfNull(target);

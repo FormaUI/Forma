@@ -3,7 +3,6 @@ namespace Forma.Blazor.Components.Explorer;
 using Forma.Blazor.Components.Navigation;
 using Forma.Features.Explorer;
 using Forma.Framework.Localization;
-using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
 
@@ -54,7 +53,7 @@ public sealed partial class FormaExplorerAddressBar : ComponentBase
                 items.Add(new BreadcrumbItem<IExplorerFolderItem>(segment.Name)
                 {
                     Value = segment,
-                    IsCurrent = Location.CurrentFolder?.Source == segment.Key,
+                    IsCurrent = Location.CurrentFolder?.Key == segment.Key,
                     Children = ChildrenAsItems(segment.Key)
                 });
             }

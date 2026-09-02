@@ -1,7 +1,5 @@
 namespace Forma.Features.Explorer;
 
-using Forma.Framework.Resources;
-
 /// <summary>What the components drawing an explorer may ask its location to do.</summary>
 public interface IExplorerLocationInteraction
 {
@@ -15,5 +13,5 @@ public interface IExplorerLocationInteraction
     Task GoUpAsync();
 
     /// <summary>Goes to the given folder, or the top level when null.</summary>
-    Task SelectFolderAsync(FolderResourceInfo? folder);
+    Task SelectFolderAsync(IExplorerFolderItem? folder);
 }

@@ -1,12 +1,10 @@
 namespace Forma.Features.Explorer;
 
-using Forma.Framework.Resources;
-
 /// <summary>An explorer's location in its folders, as the components drawing it read it.</summary>
 public interface IExplorerLocationView
 {
     /// <summary>The folder currently open, or null at the top level.</summary>
-    FolderResourceInfo? CurrentFolder { get; }
+    IExplorerFolderItem? CurrentFolder { get; }
 
     /// <summary>The path from the root to the current folder.</summary>
     IReadOnlyList<IExplorerFolderItem> Breadcrumbs { get; }
