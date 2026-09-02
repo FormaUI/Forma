@@ -320,7 +320,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         _itemManager.OnCreateFolderConfirmed = (parent, name) => RunAsync(() => ApplyCreateFolderAsync(parent, name));
         _itemManager.OnDeleteConfirmed = targets => RunAsync(() => ApplyDeleteAsync(targets));
         _itemManager.OnFolderDeleteConfirmed = folders => RunAsync(() => ApplyFolderDeleteAsync(folders));
-        _itemManager.OnToggleUpload = () => Run(ToggleUpload);
+        _itemManager.OnToggleUpload = () => Run(_uploadPanel.Toggle);
         _itemManager.SelectedItems = _selection.ResolveItems;
     }
 
@@ -467,7 +467,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
 
         foreach (var child in FolderTree.ChildrenOf(folder.Source))
         {
-            if (child.Resource is FolderResourceInfo childFolder)
+            if (child.Resource is { } childFolder)
             {
                 tallest = Math.Max(tallest, HeightOf(childFolder));
             }
@@ -635,24 +635,13 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     }
 
     Task IExplorerContentInteraction.SortByAsync(ExplorerSortField field)
-        => HandleSortRequestedAsync(field);
+        => RunAsync(() => HandleSortFieldChangedAsync(field));
 
     Task IExplorerContentInteraction.ChangeViewModeAsync(ExplorerViewMode mode)
         => RunAsync(() => HandleViewModeChangedAsync(mode));
 
-    async Task IExplorerContentInteraction.RequestNextPageAsync()
-    {
-        if (!IsInfiniteScrolling || !HasMorePages)
-        {
-            return;
-        }
-
-        _collection.PageNumber = EffectivePage + 1;
-
-        await QueryAsync(append: true);
-        await OnPageChanged.InvokeAsync(_collection.PageNumber);
-        StateHasChanged();
-    }
+    Task IExplorerContentInteraction.RequestNextPageAsync()
+        => RunAsync(HandleNextPageAsync);
 
     Task IExplorerContentInteraction.ChangePageAsync(int page)
         => RunAsync(() => HandlePageChangedAsync(page));
@@ -749,13 +738,6 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     private void AdoptSelection(IReadOnlyList<IExplorerItem> selected)
         => _selection.Replace(selected);
 
-    private async Task HandleSortRequestedAsync(ExplorerSortField field)
-    {
-        await HandleSortFieldChangedAsync(field);
-
-        StateHasChanged();
-    }
-
     private async Task ToggleSelectModeAsync()
     {
         _selection.IsSelectionModeActive = !_selection.IsSelectionModeActive;
@@ -784,12 +766,6 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         _providerWindow.Dispose();
         _searchDebouncer.Dispose();
     }
-
-    private void ClosePreview()
-        => _preview.Close();
-
-    private void CloseUpload()
-        => _uploadPanel.Close();
 
     private async Task HandleBackAsync()
     {
@@ -883,6 +859,19 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         // A move takes the resources out of the window they were dragged from, which only a re-read will show.
         await ClearSelectionAsync();
         await RefreshProviderAsync();
+    }
+
+    private async Task HandleNextPageAsync()
+    {
+        if (!IsInfiniteScrolling || !HasMorePages)
+        {
+            return;
+        }
+
+        _collection.PageNumber = EffectivePage + 1;
+
+        await QueryAsync(append: true);
+        await OnPageChanged.InvokeAsync(_collection.PageNumber);
     }
 
     private async Task HandlePageChangedAsync(int page)
@@ -1039,9 +1028,6 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         await ViewModeChanged.InvokeAsync(mode);
     }
 
-    private void OpenFolderDeleteDialog(FolderResourceInfo folder)
-        => _itemManager.RequestFolderDelete(folder);
-
     // Every caller names the parent it means, so no folder here is the root rather than wherever the reader happens to be.
     private async Task OpenFolderDialogAsync(FolderResourceInfo? parent)
     {
@@ -1074,10 +1060,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     private void OpenPreview(ResourceInfo resource)
     {
         // Captured once so the viewer is not handed a new list on every unrelated render.
-        IReadOnlyList<string> siblings = [.. VisibleItems.Select(sibling => sibling.Resource!.Source)];
+        IReadOnlyList<string> siblings = [.. VisibleItems.Select(sibling => sibling.Resource?.Source).OfType<string>()];
         _preview.Open(resource, siblings);
     }
-
-    private void ToggleUpload()
-        => _uploadPanel.Toggle();
 }

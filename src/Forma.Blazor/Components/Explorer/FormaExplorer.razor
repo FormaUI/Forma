@@ -31,7 +31,7 @@
         <div class="forma-explorer-upload-panel">
             <div class="forma-explorer-upload-header">
                 <h4 class="forma-explorer-upload-title">@L["Upload Media"]</h4>
-                <FormaCloseButton Label="@L["Close Upload"]" OnClick="CloseUpload" />
+                <FormaCloseButton Label="@L["Close Upload"]" OnClick="_uploadPanel.Close" />
             </div>
             <FormaFilePicker Options="UploadPickerOptions"
                              OnFilesSelected="HandleUploadFilesPickedAsync" />
@@ -53,7 +53,7 @@
                                  Folders="Folders"
                                  FolderTree="FolderTree"
                                  TotalCount="TotalCount ?? Items?.Count ?? MatchingCount ?? 0"
-                                 OnFolderDelete="OpenFolderDeleteDialog"
+                                 OnFolderDelete="_itemManager.RequestFolderDelete"
                                  OnFolderCreate="OpenFolderDialogAsync"
                                  OnFolderSelected="HandleFolderSelectedAsync" />
 
@@ -77,7 +77,7 @@
                     Size="ModalSize.ExtraLarge"
                     Title="@preview.Name"
                     Options="DialogModalOptions"
-                    OnClose="ClosePreview">
+                    OnClose="_preview.Close">
             <Body>
                 <FormaFileViewer Source="@preview.Source"
                                  Siblings="_preview.Siblings"
