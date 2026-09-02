@@ -6,7 +6,7 @@ using Forma.Framework.Resources;
 public sealed class ExplorerFolderItem : ExplorerItem, IExplorerFolderItem
 {
     /// <inheritdoc />
-    public IExplorerFolderItem? Parent { get; init; }
+    public string? ParentKey { get; init; }
 
     /// <inheritdoc />
     public int? Count { get; init; }

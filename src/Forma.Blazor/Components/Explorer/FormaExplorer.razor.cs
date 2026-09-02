@@ -878,7 +878,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     {
         if (target is null)
         {
-            return ExplorerFolderTree.ParentKeyOf(folder) is not null;
+            return folder.ParentKey is not null;
         }
 
         // Moving a folder inside its own subtree would leave the tree cyclic and unrenderable.

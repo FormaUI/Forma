@@ -880,7 +880,7 @@
             // Arrange
             using var ctx = new FormaExplorerTests();
             var parent = new ExplorerFolderItem { Key = "ghosts", Name = "Ghosts" };
-            var child = new ExplorerFolderItem { Key = "ghost", Name = "Ghost", Parent = parent };
+            var child = new ExplorerFolderItem { Key = "ghost", Name = "Ghost", ParentKey = parent.Key };
             IReadOnlyList<IExplorerItem> folders = [parent, child];
             IExplorerFolderItem? activeFolder = null;
 

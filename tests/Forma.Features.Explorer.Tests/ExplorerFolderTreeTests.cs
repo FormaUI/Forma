@@ -96,7 +96,7 @@ public sealed class ExplorerFolderTreeTests
     {
         // Arrange
         var top = new ExplorerFolderItem { Key = "top", Name = "Top" };
-        var nested = new ExplorerFolderItem { Key = "top/nested", Name = "Nested", Parent = top };
+        var nested = new ExplorerFolderItem { Key = "top/nested", Name = "Nested", ParentKey = "top" };
 
         // Act
         var tree = new ExplorerFolderTree([top, nested]);

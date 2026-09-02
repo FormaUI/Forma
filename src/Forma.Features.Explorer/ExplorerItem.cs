@@ -90,6 +90,7 @@ public class ExplorerItem : IExplorerItem
             Capabilities = FolderCapabilities,
             CreatedAt = folder.CreatedAt,
             ModifiedAt = folder.ModifiedAt,
+            ParentKey = folder.Parent,
             Count = folder.Count,
             Resource = folder
         };
