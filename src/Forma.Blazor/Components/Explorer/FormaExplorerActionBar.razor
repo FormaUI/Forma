@@ -5,7 +5,7 @@
 @if (AvailableActions.Count > 0)
 {
 <div class="forma-explorer-action-bar">
-    <FormaOverflowMenu Label="@Item.ActionsLabel(L)"
+    <FormaOverflowMenu Label="@Item.GetLocalizedLabels(L).ActionsLabel"
                        Orientation="MenuOrientation.Vertical"
                        TriggerOptions="ButtonOptions.MiniGhostIcon">
         <HeaderContent>

@@ -299,7 +299,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _collection = new ExplorerCollectionView(item => item.KindLabel(L))
+        _collection = new ExplorerCollectionView(item => item.GetLocalizedLabels(L).KindLabel)
         {
             PageNumber = CurrentPage,
             PageSize = PageSize,
