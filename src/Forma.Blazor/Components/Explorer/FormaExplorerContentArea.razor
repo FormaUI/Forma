@@ -2,7 +2,7 @@
 
 <div class="forma-explorer-content">
     <div class="forma-explorer-scroll @(View.IsFetching ? "is-busy" : "")" @ref="_scrollElement" aria-busy="@(View.IsFetching ? "true" : "false")">
-        @if (View.VisibleResources.Count == 0)
+        @if (View.VisibleItems.Count == 0)
         {
             <div class="forma-explorer-empty" role="status">
                 <span class="forma-explorer-empty-icon" aria-hidden="true"><FormaIcon Icon="Glyph.Images" Size="IconSize.Display" /></span>
@@ -28,15 +28,15 @@
         {
             @if (View.ViewMode == ExplorerViewMode.Thumbnails)
             {
-                <FormaExplorerThumbnailsView Resources="View.VisibleResources" />
+                <FormaExplorerThumbnailsView Items="View.VisibleItems" />
             }
             else if (View.ViewMode == ExplorerViewMode.Details)
             {
-                <FormaExplorerDetailsView Resources="View.VisibleResources" />
+                <FormaExplorerDetailsView Items="View.VisibleItems" />
             }
             else
             {
-                <FormaExplorerListView Resources="View.VisibleResources" />
+                <FormaExplorerListView Items="View.VisibleItems" />
             }
         }
 
@@ -61,16 +61,16 @@
         }
     </div>
 
-    @if (IsInfiniteScrolling && View.VisibleResources.Count > 0)
+    @if (IsInfiniteScrolling && View.VisibleItems.Count > 0)
     {
         <div class="forma-explorer-scroll-status" role="status">
             @if (View.MatchingCount is { } total)
             {
-                @L["Showing {Shown} of {Total}", View.VisibleResources.Count, total]
+                @L["Showing {Shown} of {Total}", View.VisibleItems.Count, total]
             }
             else
             {
-                @L["Showing {Shown}", View.VisibleResources.Count]
+                @L["Showing {Shown}", View.VisibleItems.Count]
             }
         </div>
     }

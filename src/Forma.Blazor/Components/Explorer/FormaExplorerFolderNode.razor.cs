@@ -2,15 +2,14 @@ namespace Forma.Blazor.Components.Explorer;
 
 using Forma.Features.Explorer;
 using Forma.Framework.Localization;
-using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>One folder in the sidebar tree, rendering its own descendants.</summary>
 public sealed partial class FormaExplorerFolderNode : ComponentBase
 {
-    /// <summary>The folder this node represents.</summary>
-    [Parameter, EditorRequired] public FolderResourceInfo Folder { get; set; } = default!;
+    /// <summary>The folder item this node represents.</summary>
+    [Parameter, EditorRequired] public IExplorerFolderItem Item { get; set; } = default!;
 
     /// <summary>How many levels below the root this node sits, driving its indent.</summary>
     [Parameter] public int Depth { get; set; }
@@ -24,7 +23,7 @@ public sealed partial class FormaExplorerFolderNode : ComponentBase
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        ArgumentNullException.ThrowIfNull(Folder);
+        ArgumentNullException.ThrowIfNull(Item);
         ArgumentOutOfRangeException.ThrowIfNegative(Depth);
 
         if (Sidebar is null || Interaction is null)

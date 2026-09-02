@@ -11,12 +11,14 @@ using Microsoft.AspNetCore.Components;
 /// <summary>Tabular details view for explorer media resources with sortable column headers.</summary>
 public sealed partial class FormaExplorerDetailsView : ComponentBase
 {
-    /// <summary>The collection of media resources to display.</summary>
-    [Parameter] public IReadOnlyList<ResourceInfo> Resources { get; set; } = [];
+    /// <summary>The collection of items to display.</summary>
+    [Parameter] public IReadOnlyList<IExplorerItem> Items { get; set; } = [];
 
     [CascadingParameter] private IExplorerView View { get; set; } = default!;
 
     [CascadingParameter] private IExplorerInteraction Interaction { get; set; } = default!;
+
+    [CascadingParameter] private IExplorerItemInteraction ItemInteraction { get; set; } = default!;
 
     [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
 
@@ -37,7 +39,7 @@ public sealed partial class FormaExplorerDetailsView : ComponentBase
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        if (View is null || Interaction is null)
+        if (View is null || Interaction is null || ItemInteraction is null)
         {
             throw new InvalidOperationException($"{nameof(FormaExplorerDetailsView)} must be rendered inside a {nameof(FormaExplorer)}.");
         }

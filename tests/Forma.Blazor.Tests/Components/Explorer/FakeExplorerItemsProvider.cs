@@ -4,12 +4,12 @@ using Forma.Features.Explorer;
 using Forma.Framework.Resources;
 
 /// <summary>An in-memory provider that records the queries it was asked, for tests about what an explorer fetches.</summary>
-public sealed class FakeExplorerResourcesProvider(IReadOnlyList<ResourceInfo> resources) : IExplorerResourcesProvider
+public sealed class FakeExplorerItemsProvider(IReadOnlyList<ResourceInfo> resources) : IExplorerItemsProvider
 {
     private readonly List<ResourceInfo> _resources = [.. resources];
 
     /// <summary>Every query the provider was asked, in order.</summary>
-    public List<ExplorerResourceQuery> Queries { get; } = [];
+    public List<ExplorerItemQuery> Queries { get; } = [];
 
     /// <summary>Held until released when set, so a test can observe the explorer mid-fetch.</summary>
     public TaskCompletionSource? Gate { get; set; }
@@ -18,7 +18,7 @@ public sealed class FakeExplorerResourcesProvider(IReadOnlyList<ResourceInfo> re
     public bool ReportsTotal { get; set; } = true;
 
     /// <summary>The window the query names, filtered by search and ordered by name alone.</summary>
-    public async ValueTask<ExplorerResourcePage> GetResourcesAsync(ExplorerResourceQuery query, CancellationToken cancellationToken)
+    public async ValueTask<ExplorerItemPage> GetItemsAsync(ExplorerItemQuery query, CancellationToken cancellationToken)
     {
         Queries.Add(query);
 
@@ -40,8 +40,8 @@ public sealed class FakeExplorerResourcesProvider(IReadOnlyList<ResourceInfo> re
 
         var ordered = matching.ToList();
 
-        return new ExplorerResourcePage(
-            [.. ordered.Skip(query.Skip).Take(query.Take)],
+        return new ExplorerItemPage(
+            ExplorerItem.ForAll(ordered.Skip(query.Skip).Take(query.Take)),
             ReportsTotal ? ordered.Count : null);
     }
 }

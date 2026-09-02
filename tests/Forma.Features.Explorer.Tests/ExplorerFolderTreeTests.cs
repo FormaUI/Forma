@@ -6,10 +6,10 @@ using Xunit;
 
 public sealed class ExplorerFolderTreeTests
 {
-    private static readonly FolderResourceInfo Photos = new("/photos");
-    private static readonly FolderResourceInfo Races = new("/photos/races") { Parent = "/photos" };
-    private static readonly FolderResourceInfo Stages = new("/photos/races/stages") { Parent = "/photos/races" };
-    private static readonly FolderResourceInfo Documents = new("/documents");
+    private static readonly IExplorerItem Photos = ExplorerItem.For(new FolderResourceInfo("/photos"));
+    private static readonly IExplorerItem Races = ExplorerItem.For(new FolderResourceInfo("/photos/races") { Parent = "/photos" });
+    private static readonly IExplorerItem Stages = ExplorerItem.For(new FolderResourceInfo("/photos/races/stages") { Parent = "/photos/races" });
+    private static readonly IExplorerItem Documents = ExplorerItem.For(new FolderResourceInfo("/documents"));
 
     [Fact]
     public void Should_hold_nothing_when_given_no_folders()
@@ -70,7 +70,7 @@ public sealed class ExplorerFolderTreeTests
     public void Should_let_the_first_folder_claiming_a_source_win()
     {
         // Arrange
-        var repeated = new FolderResourceInfo("/photos") { Name = "second" };
+        var repeated = ExplorerItem.For(new FolderResourceInfo("/photos") { Name = "second" });
 
         // Act
         var tree = new ExplorerFolderTree([Photos, repeated]);
@@ -89,6 +89,23 @@ public sealed class ExplorerFolderTreeTests
         Assert.Multiple(
             () => Assert.True(tree.HasChildren("/photos")),
             () => Assert.False(tree.HasChildren("/photos/races")));
+    }
+
+    [Fact]
+    public void Should_build_the_hierarchy_from_item_parents_without_resources()
+    {
+        // Arrange
+        var top = new ExplorerFolderItem { Key = "top", Name = "Top" };
+        var nested = new ExplorerFolderItem { Key = "top/nested", Name = "Nested", Parent = top };
+
+        // Act
+        var tree = new ExplorerFolderTree([top, nested]);
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal([top], tree.ChildrenOf(null)),
+            () => Assert.Equal([nested], tree.ChildrenOf("top")),
+            () => Assert.Same(nested, tree.Find("top/nested")));
     }
 
     [Fact]

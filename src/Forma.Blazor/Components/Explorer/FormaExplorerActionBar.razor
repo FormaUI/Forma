@@ -1,24 +1,27 @@
 @namespace Forma.Blazor.Components.Explorer
-@using Forma.Framework.Resources
 @using Forma.Blazor.Components.Menus
+@using Forma.Features.Explorer
 
+@if (AvailableActions.Count > 0)
+{
 <div class="forma-explorer-action-bar">
-    <FormaOverflowMenu Label="@Resource.ActionsLabel(L)"
+    <FormaOverflowMenu Label="@Item.ActionsLabel(L)"
                        Orientation="MenuOrientation.Vertical"
                        TriggerOptions="ButtonOptions.MiniGhostIcon">
         <HeaderContent>
-            <span title="@Resource.Name">@Resource.Name</span>
+            <span title="@Item.Name">@Item.Name</span>
         </HeaderContent>
         <ChildContent>
-            @foreach (var action in View.Actions)
+            @foreach (var action in AvailableActions)
             {
                 <FormaDropDownMenuItem IsDestructive="action.IsDestructive"
                                        data-action="@action.Id"
-                                       OnClick="() => action.Invoke(Resource)">
+                                       OnClick="() => action.InvokeAsync(Item)">
                     <FormaIcon Icon="action.Icon" Size="IconSize.Small" />
-                    <span>@action.Text()</span>
+                    <span>@action.Label()</span>
                 </FormaDropDownMenuItem>
             }
         </ChildContent>
     </FormaOverflowMenu>
 </div>
+}

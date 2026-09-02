@@ -13,13 +13,13 @@ public sealed class SampleMediaStore(IReadOnlyList<SampleResource> resources, Ti
     public int QueryCount { get; private set; }
 
     /// <summary>The last window asked for, so a demo can show what the explorer requested.</summary>
-    public ExplorerResourceQuery? LastQuery { get; private set; }
+    public ExplorerItemQuery? LastQuery { get; private set; }
 
     /// <summary>Raised once a window has been answered, so a demo can redraw its own reporting.</summary>
     public Func<Task>? Queried { get; set; }
 
     /// <summary>Answers for one window of the named folder, or of everything when none is named, after a delay standing in for the round trip.</summary>
-    public async ValueTask<ExplorerResourcePage> GetPageAsync(string? folder, ExplorerResourceQuery query, CancellationToken cancellationToken)
+    public async ValueTask<ExplorerItemPage> GetPageAsync(string? folder, ExplorerItemQuery query, CancellationToken cancellationToken)
     {
         QueryCount++;
         LastQuery = query;
@@ -53,8 +53,8 @@ public sealed class SampleMediaStore(IReadOnlyList<SampleResource> resources, Ti
         };
 
         var ordered = matching.ToList();
-        var page = new ExplorerResourcePage(
-            [.. ordered.Skip(query.Skip).Take(query.Take).Select(resource => resource.Resource)],
+        var page = new ExplorerItemPage(
+            ExplorerItem.ForAll(ordered.Skip(query.Skip).Take(query.Take).Select(resource => resource.Resource)),
             ordered.Count);
 
         if (Queried is { } queried)

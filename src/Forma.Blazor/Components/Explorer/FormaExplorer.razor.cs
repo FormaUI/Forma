@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 
 /// <summary>A server-side media library manager with thumbnail/details/list views, folders, navigation, drag-and-drop organization, upload, preview, rename, and delete.</summary>
-public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplorerView, IExplorerInteraction, IResourceKindLabels
+public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplorerView, IExplorerInteraction
 {
     private const int DefaultPageSize = 24;
 
@@ -33,14 +33,14 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     /// <summary>The active page, 1-based.</summary>
     [Parameter] public int CurrentPage { get; set; } = 1;
 
-    /// <summary>The media to display, held in full. Supply this or <see cref="ResourcesProvider"/>, not both.</summary>
-    [Parameter] public IReadOnlyList<ResourceInfo>? Resources { get; set; }
+    /// <summary>The items to display, held in full. Supply this or <see cref="ItemsProvider"/>, not both.</summary>
+    [Parameter] public IReadOnlyList<IExplorerItem>? Items { get; set; }
 
-    /// <summary>Answers for one window of media at a time, for collections too large to hold. Supply this or <see cref="Resources"/>, not both.</summary>
-    [Parameter] public IExplorerResourcesProvider? ResourcesProvider { get; set; }
+    /// <summary>Answers for one window of items at a time, for collections too large to hold. Supply this or <see cref="Items"/>, not both.</summary>
+    [Parameter] public IExplorerItemsProvider? ItemsProvider { get; set; }
 
     /// <summary>Available folders for grouping media.</summary>
-    [Parameter] public IReadOnlyList<FolderResourceInfo>? Folders { get; set; }
+    [Parameter] public IReadOnlyList<IExplorerItem>? Folders { get; set; }
 
     private bool ShowsSidebar
         => Options.ShowSidebar && Folders is { Count: > 0 };
@@ -60,8 +60,8 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     /// <summary>How the explorer presents itself and moves through the collection.</summary>
     [Parameter] public ExplorerOptions Options { get; set; } = ExplorerOptions.Default;
 
-    /// <summary>Which operations the explorer offers on the media and folders it lists.</summary>
-    [Parameter] public ExplorerFileOptions FileOptions { get; set; } = ExplorerFileOptions.Default;
+    /// <summary>Which operations the explorer offers on the items it lists.</summary>
+    [Parameter] public ExplorerItemOptions ItemOptions { get; set; } = ExplorerItemOptions.Default;
 
     /// <summary>Raised when media resources are deleted.</summary>
     [Parameter] public EventCallback<ExplorerDeleteRequest> OnDelete { get; set; }
@@ -102,11 +102,11 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     /// <summary>Custom search placeholder text.</summary>
     [Parameter] public string? SearchPlaceholder { get; set; }
 
-    /// <summary>The currently selected resources.</summary>
-    [Parameter] public IReadOnlyList<ResourceInfo> Selected { get; set; } = [];
+    /// <summary>The currently selected items.</summary>
+    [Parameter] public IReadOnlyList<IExplorerItem> Selected { get; set; } = [];
 
-    /// <summary>Raised when the selected resources change.</summary>
-    [Parameter] public EventCallback<IReadOnlyList<ResourceInfo>> SelectedChanged { get; set; }
+    /// <summary>Raised when the selected items change.</summary>
+    [Parameter] public EventCallback<IReadOnlyList<IExplorerItem>> SelectedChanged { get; set; }
 
     /// <summary>Active sort direction.</summary>
     [Parameter] public ExplorerSortDirection SortDirection { get; set; } = ExplorerSortDirection.Ascending;
@@ -125,15 +125,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
 
     [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
 
-    private readonly ExplorerBatchAction<ResourceInfo> _resourceDeletion = new();
-
-    private readonly ExplorerBatchAction<FolderResourceInfo> _folderDeletion = new();
-
-    private readonly ExplorerDrag _drag = new();
-
     private readonly ExplorerHistory _history = new();
-
-    private readonly ExplorerCreateFolderAction _folderDraft = new();
 
     private readonly ExplorerUploadPanel _uploadPanel = new();
 
@@ -143,9 +135,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
 
     private readonly ExplorerPreview _preview = new();
 
-    private readonly ExplorerRenameAction<ResourceInfo> _resourceRename = new();
-
-    private readonly ExplorerRenameAction<FolderResourceInfo> _folderRename = new();
+    private readonly ExplorerItemManager _itemManager = new();
 
     private readonly ExplorerSelection _selection = new();
 
@@ -157,7 +147,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
 
     private bool _isResizingSidebar;
 
-    private readonly ParameterState<IReadOnlyList<ResourceInfo>?> _selectedParameter = new();
+    private readonly ParameterState<IReadOnlyList<IExplorerItem>?> _selectedParameter = new();
 
     private readonly ParameterState<ExplorerViewMode> _viewModeParameter = new();
 
@@ -177,31 +167,35 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
 
     private readonly ExplorerQueryParameters _queryParameters = new();
 
-    private ExplorerFileOptions? _actionOptions;
+    private ExplorerItemOptions? _actionOptions;
 
-    private IReadOnlyList<ExplorerAction> _actions = [];
+    private IReadOnlyList<ExplorerItemAction> _actions = [];
 
     private ExplorerFolderTree? _folderTree;
 
-    private IReadOnlyList<FolderResourceInfo>? _breadcrumbs;
+    private IReadOnlyList<IExplorerFolderItem>? _breadcrumbs;
 
     /// <summary>The folder list indexed, rebuilt once per parameter set because a host may mutate the list it passed.</summary>
     private ExplorerFolderTree FolderTree
         => _folderTree ??= new ExplorerFolderTree(Folders);
 
-    private IReadOnlyList<FolderResourceInfo> Breadcrumbs
+    private IReadOnlyList<IExplorerFolderItem> Breadcrumbs
         => _breadcrumbs ??= CurrentFolder is null ? [] : BuildBreadcrumbs(FolderTree, CurrentFolder);
 
-    private static List<FolderResourceInfo> BuildBreadcrumbs(ExplorerFolderTree tree, FolderResourceInfo? current)
+    private FolderResourceInfo? FolderAt(string? source)
+        => FolderTree.Find(source)?.Resource;
+
+    private static List<IExplorerFolderItem> BuildBreadcrumbs(ExplorerFolderTree tree, FolderResourceInfo? current)
     {
-        var path = new List<FolderResourceInfo>();
+        var path = new List<IExplorerFolderItem>();
         var visited = new HashSet<string>(StringComparer.Ordinal);
+        var item = current is null ? null : tree.Find(current.Source) ?? ExplorerItem.ForFolder(current);
 
         // A host can supply a cyclic parent chain, so each folder is walked at most once.
-        while (current is not null && visited.Add(current.Source))
+        while (item is not null && visited.Add(item.Key))
         {
-            path.Insert(0, current);
-            current = tree.Find(current.Parent);
+            path.Insert(0, item);
+            item = item.Parent ?? tree.Find(item.Resource?.Parent);
         }
 
         return path;
@@ -217,19 +211,19 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     {
         get
         {
-            if (!_resourceDeletion.IsActive)
+            if (_itemManager.PendingAction is not ExplorerBatchAction<ResourceInfo> { IsActive: true } deletion)
             {
                 return string.Empty;
             }
 
-            if (_resourceDeletion.Targets.Count == 1)
+            if (deletion.Targets.Count == 1)
             {
-                var name = _resourceDeletion.Targets[0].Name;
+                var name = deletion.Targets[0].Name;
 
                 return L["Are you sure you want to delete \"{Name}\"?", name];
             }
 
-            var count = _resourceDeletion.Targets.Count;
+            var count = deletion.Targets.Count;
 
             return L["[$ plural; one: Are you sure you want to delete # item?; other: Are you sure you want to delete # items?; $]", count];
         }
@@ -238,30 +232,39 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     private int EffectivePage
         => Math.Clamp(_collection.PageNumber, 1, PageCount);
 
+    private ExplorerRenameAction<ResourceInfo>? PendingRename
+        => _itemManager.PendingAction as ExplorerRenameAction<ResourceInfo>;
+
+    private string RenameDialogTitle
+        => PendingRename?.Target is FolderResourceInfo ? L["Rename Folder"].Value : L["Rename Media"].Value;
+
+    private string RenameDialogFieldLabel
+        => PendingRename?.Target is FolderResourceInfo ? L["Folder Name"].Value : L["New Name"].Value;
+
     private string FolderDeleteConfirmMessage
     {
         get
         {
-            if (!_folderDeletion.IsActive)
+            if (_itemManager.PendingAction is not ExplorerBatchAction<FolderResourceInfo> { IsActive: true } deletion)
             {
                 return string.Empty;
             }
 
-            if (_folderDeletion.Targets.Count == 1)
+            if (deletion.Targets.Count == 1)
             {
-                var name = _folderDeletion.Targets[0].Name;
+                var name = deletion.Targets[0].Name;
 
                 return L["Are you sure you want to delete folder \"{Name}\"?", name];
             }
 
-            var count = _folderDeletion.Targets.Count;
+            var count = deletion.Targets.Count;
 
             return L["[$ plural; one: Are you sure you want to delete # folder?; other: Are you sure you want to delete # folders?; $]", count];
         }
     }
 
     private bool IsProviderMode
-        => ResourcesProvider is not null;
+        => ItemsProvider is not null;
 
     /// <summary>How many resources match the current search and sort, or null when the provider cannot say.</summary>
     private int? MatchingCount
@@ -279,27 +282,24 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
                 return EffectivePage < PageCount;
             }
 
-            return MatchingCount is { } total ? VisibleResources.Count < total : _providerWindow.WasFull;
+            return MatchingCount is { } total ? VisibleItems.Count < total : _providerWindow.WasFull;
         }
     }
 
     private bool IsInfiniteScrolling
         => Options.InfiniteScroll != ExplorerInfiniteScrollMode.Off;
 
-    /// <summary>The resources on screen; a provider supplies its own window, and a held collection is sliced into one.</summary>
-    private IReadOnlyList<ResourceInfo> VisibleResources
-        => IsProviderMode ? _providerWindow.Resources : _collection.VisibleResources;
+    /// <summary>The items on screen; a provider supplies its own window, and a held collection is sliced into one.</summary>
+    private IReadOnlyList<IExplorerItem> VisibleItems
+        => IsProviderMode ? _providerWindow.Items : _collection.VisibleItems;
 
     private IReadOnlyList<ResourceInfo> SelectedResources
         => _selection.ResolveResources();
 
-    private IReadOnlyList<FolderResourceInfo> SelectedFolders
-        => _selection.ResolveFolders();
-
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _collection = new ExplorerCollectionView(this)
+        _collection = new ExplorerCollectionView(item => item.KindLabel(L))
         {
             PageNumber = CurrentPage,
             PageSize = PageSize,
@@ -311,18 +311,29 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
 
         // Seeded once, so leaving selection mode afterwards is the reader's to decide.
         _selection.IsSelectionModeActive = Options.SelectOnOpen;
+
+        _itemManager.OnChanged = () => _ = InvokeAsync(StateHasChanged);
+        _itemManager.OnActivate = ActivateItemAsync;
+        _itemManager.OnDrop = (target, folder) => RunAsync(() => HandleDropOnFolderAsync(target, folder));
+        _itemManager.OnRequestNewFolder = () => RunAsync(() => OpenFolderDialogAsync(CurrentFolder));
+        _itemManager.OnRenameConfirmed = (target, newName) => RunAsync(() => ApplyRenameAsync(target, newName));
+        _itemManager.OnCreateFolderConfirmed = (parent, name) => RunAsync(() => ApplyCreateFolderAsync(parent, name));
+        _itemManager.OnDeleteConfirmed = targets => RunAsync(() => ApplyDeleteAsync(targets));
+        _itemManager.OnFolderDeleteConfirmed = folders => RunAsync(() => ApplyFolderDeleteAsync(folders));
+        _itemManager.OnToggleUpload = () => Run(ToggleUpload);
+        _itemManager.SelectedItems = _selection.ResolveItems;
     }
 
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        if (Resources is null == ResourcesProvider is null)
+        if (Items is null == ItemsProvider is null)
         {
             throw new InvalidOperationException(
-                $"{nameof(FormaExplorer)} requires exactly one of {nameof(Resources)} or {nameof(ResourcesProvider)}.");
+                $"{nameof(FormaExplorer)} requires exactly one of {nameof(Items)} or {nameof(ItemsProvider)}.");
         }
 
-        _collection.Source = Resources ?? [];
+        _collection.Source = Items ?? [];
         _collection.PageSize = PageSize;
         _collection.IsAppending = IsInfiniteScrolling;
         _collection.Invalidate();
@@ -361,6 +372,9 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         }
 
         _selection.SelectionLimit = Options.MaxSelection;
+
+        _itemManager.Actions = Actions;
+        _itemManager.ItemOptions = ItemOptions;
     }
 
     /// <inheritdoc />
@@ -372,7 +386,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         }
 
         // The folder is the host's to know, so it is watched for change rather than sent, and a move invalidates the window.
-        var moved = _queryParameters.Update(ResourcesProvider, CurrentFolder?.Source, PageSize);
+        var moved = _queryParameters.Update(ItemsProvider, CurrentFolder?.Source, PageSize);
 
         if (!moved)
         {
@@ -387,13 +401,13 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     /// <summary>Fetches a window from the provider, replacing what is shown or extending it while infinite scrolling.</summary>
     private Task QueryAsync(bool append)
     {
-        if (ResourcesProvider is not { } provider)
+        if (ItemsProvider is not { } provider)
         {
             return Task.CompletedTask;
         }
 
-        var query = new ExplorerResourceQuery(
-            append ? _providerWindow.Resources.Count : (EffectivePage - 1) * PageSize,
+        var query = new ExplorerItemQuery(
+            append ? _providerWindow.Items.Count : (EffectivePage - 1) * PageSize,
             PageSize,
             string.IsNullOrWhiteSpace(_collection.SearchQuery) ? null : _collection.SearchQuery,
             _collection.SortField,
@@ -422,18 +436,17 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     }
 
     private int RootFolderCount
-        => Folders?.Count(folder => folder.Parent is null) ?? 0;
+        => Folders?.Count(item => item is IExplorerFolderItem { Resource.Parent: null }) ?? 0;
 
     private int KnownResourceCount
-        => TotalCount ?? Resources?.Count ?? MatchingCount ?? 0;
+        => TotalCount ?? Items?.Count ?? MatchingCount ?? 0;
 
     private long KnownByteCount
-        => TotalBytes ?? Resources?.Sum(resource => resource.Size ?? 0) ?? 0;
+        => TotalBytes ?? Items?.Sum(item => item.Resource?.Size ?? 0) ?? 0;
 
     // A top-level folder counts as one, so the root itself is zero.
     private int DepthOf(FolderResourceInfo? folder)
     {
-        var tree = FolderTree;
         var visited = new HashSet<string>(StringComparer.Ordinal);
         var depth = 0;
         var current = folder;
@@ -441,7 +454,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         while (current is not null && visited.Add(current.Source))
         {
             depth++;
-            current = tree.Find(current.Parent);
+            current = FolderAt(current.Parent);
         }
 
         return depth;
@@ -454,7 +467,10 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
 
         foreach (var child in FolderTree.ChildrenOf(folder.Source))
         {
-            tallest = Math.Max(tallest, HeightOf(child));
+            if (child.Resource is FolderResourceInfo childFolder)
+            {
+                tallest = Math.Max(tallest, HeightOf(childFolder));
+            }
         }
 
         return tallest + 1;
@@ -543,13 +559,13 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     }
 
     // Only the options decide which actions exist, so the list and its closures survive an unrelated render.
-    private IReadOnlyList<ExplorerAction> Actions
+    private IReadOnlyList<ExplorerItemAction> Actions
     {
         get
         {
-            if (!ReferenceEquals(_actionOptions, FileOptions))
+            if (!ReferenceEquals(_actionOptions, ItemOptions))
             {
-                _actionOptions = FileOptions;
+                _actionOptions = ItemOptions;
                 _actions = BuildActions();
             }
 
@@ -559,15 +575,11 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
 
     ExplorerOptions IExplorerConfigurationView.Options => Options;
 
-    ExplorerFileOptions IExplorerConfigurationView.FileOptions => FileOptions;
-
     bool IExplorerConfigurationView.ShowsSidebar => ShowsSidebar;
-
-    IReadOnlyList<ExplorerAction> IExplorerConfigurationView.Actions => Actions;
 
     FolderResourceInfo? IExplorerLocationView.CurrentFolder => CurrentFolder;
 
-    IReadOnlyList<FolderResourceInfo> IExplorerLocationView.Breadcrumbs => Breadcrumbs;
+    IReadOnlyList<IExplorerFolderItem> IExplorerLocationView.Breadcrumbs => Breadcrumbs;
 
     ExplorerFolderTree IExplorerLocationView.FolderTree => FolderTree;
 
@@ -581,13 +593,13 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
 
     ExplorerSortDirection IExplorerContentView.SortDirection => _collection.SortDirection;
 
-    string IResourceKindLabels.LabelOf(ResourceInfo resource) => resource.KindLabel(L);
-
     ExplorerViewMode IExplorerContentView.ViewMode => _viewMode;
 
     IExplorerSelectionView IExplorerView.Selection => _selection;
 
-    IReadOnlyList<ResourceInfo> IExplorerContentView.VisibleResources => VisibleResources;
+    IExplorerItemView IExplorerView.Item => _itemManager;
+
+    IReadOnlyList<IExplorerItem> IExplorerContentView.VisibleItems => VisibleItems;
 
     bool IExplorerContentView.IsFetching => _providerWindow.IsFetching;
 
@@ -600,49 +612,30 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     string? IExplorerSearchView.SearchPlaceholder => SearchPlaceholder;
 
     // A cascaded interaction call is received by whichever descendant's own markup wired it, so its
-    // implicit render trigger lands there rather than here; the render this component needs is requested explicitly.
+    // implicit render trigger lands there rather than here; the render this component needs is requested
+    // explicitly, through the renderer rather than inline, since some callers are still mid-dispatch of
+    // their own event (a dropdown menu closing itself, for one) when the call reaches this component.
     private void Run(Action action)
     {
         action();
-        StateHasChanged();
+        _ = InvokeAsync(StateHasChanged);
     }
 
     private async Task RunAsync(Func<Task> action)
     {
         await action();
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
     }
 
-    Task IExplorerContentInteraction.ActivateAsync(ResourceInfo resource)
+    Task IExplorerSelectionInteraction.ToggleSelectionAsync(IExplorerItem item)
     {
-        ArgumentNullException.ThrowIfNull(resource);
+        ArgumentNullException.ThrowIfNull(item);
 
-        if (_selection.IsSelectionModeActive)
-        {
-            return ChangeSelectionAsync(selection => selection.Toggle(resource));
-        }
-
-        OpenPreview(resource);
-        StateHasChanged();
-
-        return Task.CompletedTask;
+        return ChangeSelectionAsync(selection => selection.Toggle(item));
     }
-
-    Task IExplorerSelectionInteraction.ToggleSelectionAsync(ResourceInfo resource)
-    {
-        ArgumentNullException.ThrowIfNull(resource);
-
-        return ChangeSelectionAsync(selection => selection.Toggle(resource));
-    }
-
-    Task IExplorerSelectionInteraction.ToggleFolderSelectAsync(FolderResourceInfo folder)
-        => ToggleFolderSelectAsync(folder);
 
     Task IExplorerContentInteraction.SortByAsync(ExplorerSortField field)
         => HandleSortRequestedAsync(field);
-
-    void IExplorerContentInteraction.BeginDrag(ResourceInfo resource)
-        => _drag.Begin(resource);
 
     Task IExplorerContentInteraction.ChangeViewModeAsync(ExplorerViewMode mode)
         => RunAsync(() => HandleViewModeChangedAsync(mode));
@@ -682,67 +675,59 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     Task IExplorerContentInteraction.SetSortDirectionAsync(ExplorerSortDirection direction)
         => RunAsync(() => HandleSortDirectionChangedAsync(direction));
 
-    Task IExplorerContentInteraction.DropOnFolderAsync(FolderResourceInfo? folder)
-        => RunAsync(() => HandleDropOnFolderAsync(folder));
-
     Task IExplorerSelectionInteraction.ToggleSelectionModeAsync()
         => RunAsync(ToggleSelectModeAsync);
 
     Task IExplorerSelectionInteraction.ClearSelectionAsync()
         => RunAsync(ClearSelectionAsync);
 
-    void IExplorerSelectionInteraction.RequestDeleteSelected()
-        => Run(() => OpenDeleteDialog());
-
-    Task IExplorerContentInteraction.RequestNewFolderAsync()
-        => RunAsync(() => OpenFolderDialogAsync(CurrentFolder));
-
-    void IExplorerContentInteraction.ToggleUpload()
-        => Run(ToggleUpload);
-
     Task IExplorerContentInteraction.RefreshAsync()
         => RunAsync(HandleRefreshAsync);
 
-    // The sidebar re-exposes this to its folder nodes, which never reach past it to the explorer.
-    internal Task ToggleFolderSelectAsync(FolderResourceInfo folder)
+    private List<ExplorerItemAction> BuildActions()
     {
-        ArgumentNullException.ThrowIfNull(folder);
-
-        return ChangeSelectionAsync(selection => selection.ToggleFolder(folder));
-    }
-
-    private List<ExplorerAction> BuildActions()
-    {
-        var actions = new List<ExplorerAction>
+        var actions = new List<ExplorerItemAction>
         {
             new()
             {
                 Id = "preview",
                 Icon = Glyph.Inspect,
-                Text = () => L["Preview"].Value,
-                Invoke = resource => { OpenPreview(resource); StateHasChanged(); return Task.CompletedTask; }
+                Label = () => L["Preview"].Value,
+                Requires = ExplorerItemCapabilities.View,
+                InvokeAsync = item =>
+                {
+                    if (item.Resource is { } resource)
+                    {
+                        OpenPreview(resource);
+                        StateHasChanged();
+                    }
+
+                    return Task.CompletedTask;
+                }
             }
         };
 
-        if (FileOptions.AllowRename)
+        if (ItemOptions.AllowedCapabilities.HasFlag(ExplorerItemCapabilities.Rename))
         {
-            actions.Add(new ExplorerAction
+            actions.Add(new ExplorerItemAction
             {
                 Id = "rename",
                 Icon = Glyph.Pen,
-                Text = () => L["Rename"].Value,
-                Invoke = resource => { OpenRenameDialog(resource); StateHasChanged(); return Task.CompletedTask; }
+                Label = () => L["Rename"].Value,
+                Requires = ExplorerItemCapabilities.Rename,
+                InvokeAsync = item => { _itemManager.RequestRename(item); return Task.CompletedTask; }
             });
         }
 
-        if (FileOptions.AllowDelete)
+        if (ItemOptions.AllowedCapabilities.HasFlag(ExplorerItemCapabilities.Delete))
         {
-            actions.Add(new ExplorerAction
+            actions.Add(new ExplorerItemAction
             {
                 Id = "delete",
                 Icon = Glyph.Delete,
-                Text = () => L["Delete"].Value,
-                Invoke = resource => { OpenDeleteDialog(resource); StateHasChanged(); return Task.CompletedTask; },
+                Label = () => L["Delete"].Value,
+                Requires = ExplorerItemCapabilities.Delete,
+                InvokeAsync = item => { _itemManager.RequestDelete(item); return Task.CompletedTask; },
                 IsDestructive = true
             });
         }
@@ -755,13 +740,13 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     {
         change(_selection);
 
-        await SelectedChanged.InvokeAsync(SelectedResources);
+        await SelectedChanged.InvokeAsync(_selection.ResolveItems());
 
         StateHasChanged();
     }
 
     // Adopting what the host already supplied must not report it straight back at them.
-    private void AdoptSelection(IReadOnlyList<ResourceInfo> selected)
+    private void AdoptSelection(IReadOnlyList<IExplorerItem> selected)
         => _selection.Replace(selected);
 
     private async Task HandleSortRequestedAsync(ExplorerSortField field)
@@ -800,23 +785,8 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         _searchDebouncer.Dispose();
     }
 
-    private void CloseDeleteDialog()
-        => _resourceDeletion.Clear();
-
-    private void CloseFolderDeleteDialog()
-        => _folderDeletion.Clear();
-
-    private void CloseFolderDialog()
-        => _folderDraft.Clear();
-
-    private void CloseFolderRenameDialog()
-        => _folderRename.Clear();
-
     private void ClosePreview()
         => _preview.Close();
-
-    private void CloseRenameDialog()
-        => _resourceRename.Clear();
 
     private void CloseUpload()
         => _uploadPanel.Close();
@@ -826,68 +796,37 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         if (CanGoBack)
         {
             _history.GoBack();
-            var folder = Folders?.FirstOrDefault(f => f.Source == _history.Current);
+            var folder = FolderAt(_history.Current);
             _collection.PageNumber = 1;
 
             await OnFolderChanged.InvokeAsync(folder);
         }
     }
 
-    private async Task HandleCreateFolderAsync()
+    private Task ApplyCreateFolderAsync(FolderResourceInfo? parent, string name)
+        => OnFolderCreate.InvokeAsync(new ExplorerFolderCreateRequest(parent, name));
+
+    private async Task ApplyDeleteAsync(IReadOnlyList<ResourceInfo> targets)
     {
-        if (!_folderDraft.CanConfirm)
+        await ChangeSelectionAsync(selection =>
         {
-            return;
-        }
-
-        var request = new ExplorerFolderCreateRequest(_folderDraft.Parent, _folderDraft.NameToConfirm);
-        _folderDraft.Clear();
-
-        await OnFolderCreate.InvokeAsync(request);
-    }
-
-    private async Task HandleDeleteConfirmedAsync()
-    {
-        if (_resourceDeletion.Targets is { Count: > 0 } targets)
-        {
-            _resourceDeletion.Clear();
-
-            await ChangeSelectionAsync(selection =>
+            foreach (var target in targets)
             {
-                foreach (var target in targets)
-                {
-                    selection.Remove(target);
-                }
-            });
-
-            await OnDelete.InvokeAsync(new ExplorerDeleteRequest(targets));
-            await RefreshProviderAsync();
-        }
-    }
-
-    private async Task HandleFolderDeleteConfirmedAsync()
-    {
-        if (_folderDeletion.Targets is { Count: > 0 } folders)
-        {
-            _folderDeletion.Clear();
-
-            await ClearSelectionAsync();
-
-            foreach (var folder in folders)
-            {
-                await OnFolderDelete.InvokeAsync(new ExplorerFolderDeleteRequest(folder));
+                selection.Remove(ExplorerItem.For(target));
             }
-        }
+        });
+
+        await OnDelete.InvokeAsync(new ExplorerDeleteRequest(targets));
+        await RefreshProviderAsync();
     }
 
-    private async Task HandleFolderRenameConfirmedAsync()
+    private async Task ApplyFolderDeleteAsync(IReadOnlyList<FolderResourceInfo> folders)
     {
-        if (_folderRename.Target is { } folder && _folderRename.CanConfirm)
-        {
-            var newName = _folderRename.NameToConfirm;
-            _folderRename.Clear();
+        await ClearSelectionAsync();
 
-            await OnFolderRename.InvokeAsync(new ExplorerFolderRenameRequest(folder, newName));
+        foreach (var folder in folders)
+        {
+            await OnFolderDelete.InvokeAsync(new ExplorerFolderDeleteRequest(folder));
         }
     }
 
@@ -909,21 +848,16 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         if (CanGoForward)
         {
             _history.GoForward();
-            var folder = Folders?.FirstOrDefault(f => f.Source == _history.Current);
+            var folder = FolderAt(_history.Current);
             _collection.PageNumber = 1;
 
             await OnFolderChanged.InvokeAsync(folder);
         }
     }
 
-    private async Task HandleDropOnFolderAsync(FolderResourceInfo? targetFolder)
+    private async Task HandleDropOnFolderAsync(ResourceInfo target, FolderResourceInfo? targetFolder)
     {
-        // The drag ends whatever the drop lands on, so a rejected target cannot leave a stale resource to move later.
-        var draggedFolder = _drag.Folder;
-        var draggedResource = _drag.Resource;
-        _drag.End();
-
-        if (draggedFolder is not null)
+        if (target is FolderResourceInfo draggedFolder)
         {
             if (CanMoveFolder(draggedFolder, targetFolder)
                 && await EnsureFolderFitsAsync(targetFolder, HeightOf(draggedFolder)))
@@ -935,23 +869,20 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
             return;
         }
 
-        if (draggedResource is not null)
+        var resources = _selection.IsSelected(ExplorerItem.For(target)) && SelectedResources.Count > 1
+            ? SelectedResources
+            : [target];
+
+        if (!await EnsureFolderHasRoomAsync(targetFolder, resources.Count))
         {
-            var resources = _selection.IsSelected(draggedResource) && SelectedResources.Count > 1
-                ? SelectedResources
-                : [draggedResource];
-
-            if (!await EnsureFolderHasRoomAsync(targetFolder, resources.Count))
-            {
-                return;
-            }
-
-            await OnDrop.InvokeAsync(new ExplorerDropRequest(resources, targetFolder));
-
-            // A move takes the resources out of the window they were dragged from, which only a re-read will show.
-            await ClearSelectionAsync();
-            await RefreshProviderAsync();
+            return;
         }
+
+        await OnDrop.InvokeAsync(new ExplorerDropRequest(resources, targetFolder));
+
+        // A move takes the resources out of the window they were dragged from, which only a re-read will show.
+        await ClearSelectionAsync();
+        await RefreshProviderAsync();
     }
 
     private async Task HandlePageChangedAsync(int page)
@@ -975,7 +906,6 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
 
     private bool IsSelfOrDescendant(FolderResourceInfo candidate, FolderResourceInfo ancestor)
     {
-        var tree = FolderTree;
         var visited = new HashSet<string>(StringComparer.Ordinal);
         var current = candidate;
 
@@ -986,7 +916,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
                 return true;
             }
 
-            current = tree.Find(current.Parent);
+            current = FolderAt(current.Parent);
         }
 
         return false;
@@ -994,25 +924,23 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
 
     private void HandlePreviewNavigate(string source)
     {
-        var next = VisibleResources.FirstOrDefault(resource => resource.Source == source);
+        var next = VisibleItems.FirstOrDefault(item => item.Resource?.Source == source);
 
-        if (next is not null)
+        if (next?.Resource is { } resource)
         {
-            _preview.NavigateTo(next);
+            _preview.NavigateTo(resource);
         }
     }
 
-    private async Task HandleRenameConfirmedAsync()
+    private async Task ApplyRenameAsync(ResourceInfo target, string newName)
     {
-        if (_resourceRename.Target is not { } resource || !_resourceRename.CanConfirm)
+        if (target is FolderResourceInfo folder)
         {
+            await OnFolderRename.InvokeAsync(new ExplorerFolderRenameRequest(folder, newName));
             return;
         }
 
-        var newName = _resourceRename.NameToConfirm;
-        _resourceRename.Clear();
-
-        await OnRename.InvokeAsync(new ExplorerRenameRequest(resource, newName));
+        await OnRename.InvokeAsync(new ExplorerRenameRequest(target, newName));
         await RefreshProviderAsync();
     }
 
@@ -1065,7 +993,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         if (CurrentFolder is not null)
         {
             var parent = CurrentFolder.Parent is { } parentSource
-                ? Folders?.FirstOrDefault(f => f.Source == parentSource)
+                ? FolderAt(parentSource)
                 : null;
 
             await HandleFolderSelectedAsync(parent);
@@ -1111,24 +1039,8 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         await ViewModeChanged.InvokeAsync(mode);
     }
 
-    private void OpenDeleteDialog(ResourceInfo? single = null)
-    {
-        if (single is not null)
-        {
-            _resourceDeletion.Request([single]);
-        }
-        else if (_selection.HasFolders)
-        {
-            _folderDeletion.Request(SelectedFolders);
-        }
-        else if (_selection.HasResources)
-        {
-            _resourceDeletion.Request(SelectedResources);
-        }
-    }
-
     private void OpenFolderDeleteDialog(FolderResourceInfo folder)
-        => _folderDeletion.Request([folder]);
+        => _itemManager.RequestFolderDelete(folder);
 
     // Every caller names the parent it means, so no folder here is the root rather than wherever the reader happens to be.
     private async Task OpenFolderDialogAsync(FolderResourceInfo? parent)
@@ -1140,21 +1052,31 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
             return;
         }
 
-        _folderDraft.Request(parent);
+        _itemManager.BeginCreateFolder(parent);
     }
 
-    private void OpenFolderRenameDialog(FolderResourceInfo folder)
-        => _folderRename.Request(folder);
+    private Task ActivateItemAsync(IExplorerItem item)
+    {
+        if (_selection.IsSelectionModeActive)
+        {
+            return ChangeSelectionAsync(selection => selection.Toggle(item));
+        }
+
+        if (item.Resource is { } resource)
+        {
+            OpenPreview(resource);
+            StateHasChanged();
+        }
+
+        return Task.CompletedTask;
+    }
 
     private void OpenPreview(ResourceInfo resource)
     {
         // Captured once so the viewer is not handed a new list on every unrelated render.
-        IReadOnlyList<string> siblings = [.. VisibleResources.Select(sibling => sibling.Source)];
+        IReadOnlyList<string> siblings = [.. VisibleItems.Select(sibling => sibling.Resource!.Source)];
         _preview.Open(resource, siblings);
     }
-
-    private void OpenRenameDialog(ResourceInfo resource)
-        => _resourceRename.Request(resource);
 
     private void ToggleUpload()
         => _uploadPanel.Toggle();

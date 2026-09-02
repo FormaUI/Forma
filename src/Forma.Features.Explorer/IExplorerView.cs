@@ -9,4 +9,7 @@ public interface IExplorerView :
 {
     /// <summary>What the explorer has selected.</summary>
     IExplorerSelectionView Selection { get; }
+
+    /// <summary>The explorer's items.</summary>
+    IExplorerItemView Item { get; }
 }

@@ -8,9 +8,9 @@ using Forma.Framework.Resources;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>Dialog for choosing one of the host's stored files and inserting it.</summary>
-/// <param name="resourcesProvider">The host's registered provider, or null to offer no browsing.</param>
+/// <param name="itemsProvider">The host's registered provider, or null to offer no browsing.</param>
 /// <param name="store">The host's registered store, or null to offer no upload.</param>
-public sealed partial class FormaComposerExplorerDialog(IExplorerResourcesProvider? resourcesProvider = null, IFileStore? store = null)
+public sealed partial class FormaComposerExplorerDialog(IExplorerItemsProvider? itemsProvider = null, IFileStore? store = null)
     : ComposerDialogBase
 {
     private static readonly ExplorerOptions Library = new() { AsDialog = true, ShowFolderMenu = false, SelectOnOpen = true, MaxSelection = 1 };
@@ -21,19 +21,19 @@ public sealed partial class FormaComposerExplorerDialog(IExplorerResourcesProvid
     /// <summary>Callback invoked when a file is chosen.</summary>
     [Parameter] public EventCallback<ResourceDialogResult> OnInsert { get; set; }
 
-    private readonly IExplorerResourcesProvider? _registeredResourcesProvider = resourcesProvider;
+    private readonly IExplorerItemsProvider? _registeredItemsProvider = itemsProvider;
     private readonly IFileStore? _store = store;
-    private IExplorerResourcesProvider? _resourcesProvider;
-    private ExplorerFileOptions _fileOptions = ExplorerFileOptions.ReadOnly;
+    private IExplorerItemsProvider? _itemsProvider;
+    private ExplorerItemOptions _itemOptions = ExplorerItemOptions.ReadOnly;
     private ExplorerConstraints _constraints = ExplorerConstraints.None;
     private readonly ParameterState<ExplorerPluginOptions?> _optionsParameter = new();
-    private IReadOnlyList<ResourceInfo> _selected = [];
+    private IReadOnlyList<IExplorerItem> _selected = [];
 
     private static ExplorerOptions LibraryOptions
         => Library;
 
-    private ExplorerFileOptions LibraryFileOptions
-        => _fileOptions;
+    private ExplorerItemOptions LibraryItemOptions
+        => _itemOptions;
 
     private ExplorerConstraints UploadConstraints
         => _constraints;
@@ -52,13 +52,13 @@ public sealed partial class FormaComposerExplorerDialog(IExplorerResourcesProvid
             return;
         }
 
-        _resourcesProvider = _registeredResourcesProvider is null
+        _itemsProvider = _registeredItemsProvider is null
             ? null
             : ExplorerResourceFilter.Parse(Options.AcceptedResourceKinds) is { } filter
-                ? new FilteredResources(_registeredResourcesProvider, filter)
-                : _registeredResourcesProvider;
+                ? new FilteredItems(_registeredItemsProvider, filter)
+                : _registeredItemsProvider;
 
-        _fileOptions = ExplorerFileOptions.ReadOnly with { AllowUpload = Options.AllowUpload && _store is not null };
+        _itemOptions = ExplorerItemOptions.ReadOnly with { AllowUpload = Options.AllowUpload && _store is not null };
 
         // What may be added falls back to what is listed, so a caller naming one kind is not asked to name it twice.
         _constraints = new() { AcceptedResourceKinds = Options.AcceptedUploadKinds ?? Options.AcceptedResourceKinds };
@@ -73,7 +73,7 @@ public sealed partial class FormaComposerExplorerDialog(IExplorerResourcesProvid
             _ => "file",
         };
 
-    private void HandleSelectedChanged(IReadOnlyList<ResourceInfo> selected)
+    private void HandleSelectedChanged(IReadOnlyList<IExplorerItem> selected)
     {
         _selected = selected;
 
@@ -94,7 +94,11 @@ public sealed partial class FormaComposerExplorerDialog(IExplorerResourcesProvid
             return;
         }
 
-        var chosen = _selected[0];
+        if (_selected[0].Resource is not { } chosen)
+        {
+            return;
+        }
+
         var kind = KindOf(chosen);
 
         // Only what the browser can render answers to the embed modes; everything else is a link whatever the mode says.
@@ -106,15 +110,15 @@ public sealed partial class FormaComposerExplorerDialog(IExplorerResourcesProvid
     }
 
     // The explorer lists whatever its provider answers, so limiting what may be browsed means limiting the answer.
-    private sealed class FilteredResources(IExplorerResourcesProvider inner, ExplorerResourceFilter filter) : IExplorerResourcesProvider
+    private sealed class FilteredItems(IExplorerItemsProvider inner, ExplorerResourceFilter filter) : IExplorerItemsProvider
     {
-        public async ValueTask<ExplorerResourcePage> GetResourcesAsync(ExplorerResourceQuery query, CancellationToken cancellationToken)
+        public async ValueTask<ExplorerItemPage> GetItemsAsync(ExplorerItemQuery query, CancellationToken cancellationToken)
         {
-            var page = await inner.GetResourcesAsync(query, cancellationToken).ConfigureAwait(false);
-            var accepted = page.Resources.Where(filter.Accepts).ToList();
+            var page = await inner.GetItemsAsync(query, cancellationToken).ConfigureAwait(false);
+            var accepted = page.Items.Where(item => item.Resource is { } resource && filter.Accepts(resource)).ToList();
 
             // A count taken before filtering would page past the end, so it is dropped rather than reported wrongly.
-            return new ExplorerResourcePage(accepted, accepted.Count == page.Resources.Count ? page.TotalCount : null);
+            return new ExplorerItemPage(accepted, accepted.Count == page.Items.Count ? page.TotalCount : null);
         }
     }
 }

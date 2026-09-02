@@ -3,7 +3,7 @@ namespace Forma.Features.Explorer;
 using Forma.Framework.Resources;
 
 /// <summary>A list of resources pending confirmation, replaced wholesale on each request.</summary>
-public sealed class ExplorerBatchAction<TTarget>
+public sealed class ExplorerBatchAction<TTarget> : ExplorerPendingAction
     where TTarget : ResourceInfo
 {
     /// <summary>The resources currently pending, or empty when none are.</summary>
@@ -11,6 +11,9 @@ public sealed class ExplorerBatchAction<TTarget>
 
     /// <summary>Whether any resources are pending.</summary>
     public bool IsActive => Targets.Count > 0;
+
+    /// <inheritdoc />
+    public override bool CanConfirm => IsActive;
 
     /// <summary>Requests confirmation for the given resources, replacing any already pending.</summary>
     public void Request(IReadOnlyList<TTarget> targets)
@@ -25,7 +28,7 @@ public sealed class ExplorerBatchAction<TTarget>
         Targets = [.. targets];
     }
 
-    /// <summary>Clears the pending resources.</summary>
-    public void Clear()
+    /// <inheritdoc />
+    protected internal override void Clear()
         => Targets = [];
 }

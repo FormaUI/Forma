@@ -6,13 +6,11 @@ using Xunit;
 
 public sealed class ExplorerCollectionViewTests
 {
-    private sealed class TypeNameKindLabels : IResourceKindLabels
-    {
-        public string LabelOf(ResourceInfo resource) => resource.GetType().Name;
-    }
+    private static string TypeNameKindLabel(IExplorerItem item)
+        => item.Resource?.GetType().Name ?? string.Empty;
 
     private static ExplorerCollectionView CreateView(params ResourceInfo[] resources)
-        => new(new TypeNameKindLabels()) { Source = resources, PageSize = 24 };
+        => new(TypeNameKindLabel) { Source = ExplorerItem.ForAll(resources), PageSize = 24 };
 
     private static FileResourceInfo File(string name, long? size = null, DateTimeOffset? createdAt = null, DateTimeOffset? modifiedAt = null)
         => new($"/media/{name}") { Size = size, CreatedAt = createdAt, ModifiedAt = modifiedAt };
@@ -24,7 +22,7 @@ public sealed class ExplorerCollectionViewTests
         var view = CreateView(File("cherry.png"), File("Apple.png"), File("banana.png"));
 
         // Assert
-        Assert.Equal(["Apple.png", "banana.png", "cherry.png"], view.MatchingResources.Select(resource => resource.Name));
+        Assert.Equal(["Apple.png", "banana.png", "cherry.png"], view.MatchingItems.Select(item => item.Name));
     }
 
     [Fact]
@@ -39,7 +37,7 @@ public sealed class ExplorerCollectionViewTests
         // Assert
         Assert.Multiple(
             () => Assert.Equal(2, view.MatchingCount),
-            () => Assert.All(view.MatchingResources, resource => Assert.Contains("tage", resource.Name, StringComparison.Ordinal)));
+            () => Assert.All(view.MatchingItems, item => Assert.Contains("tage", item.Name, StringComparison.Ordinal)));
     }
 
     [Fact]
@@ -54,7 +52,7 @@ public sealed class ExplorerCollectionViewTests
         view.Filter = ExplorerResourceFilter.Parse("contentType:image");
 
         // Assert
-        Assert.Equal(["photo.png"], view.MatchingResources.Select(resource => resource.Name));
+        Assert.Equal(["photo.png"], view.MatchingItems.Select(item => item.Name));
     }
 
     [Fact]
@@ -69,16 +67,16 @@ public sealed class ExplorerCollectionViewTests
 
         // Act & Assert
         view.SortField = ExplorerSortField.Size;
-        Assert.Equal([small, large], view.MatchingResources);
+        Assert.Equal([small, large], view.MatchingItems.Select(item => item.Resource));
 
         view.SortDirection = ExplorerSortDirection.Descending;
-        Assert.Equal([large, small], view.MatchingResources);
+        Assert.Equal([large, small], view.MatchingItems.Select(item => item.Resource));
 
         view.SortField = ExplorerSortField.DateAdded;
-        Assert.Equal([small, large], view.MatchingResources);
+        Assert.Equal([small, large], view.MatchingItems.Select(item => item.Resource));
 
         view.SortField = ExplorerSortField.DateModified;
-        Assert.Equal([large, small], view.MatchingResources);
+        Assert.Equal([large, small], view.MatchingItems.Select(item => item.Resource));
     }
 
     [Fact]
@@ -93,11 +91,11 @@ public sealed class ExplorerCollectionViewTests
         view.SortField = ExplorerSortField.Kind;
 
         // Assert
-        Assert.Equal([image, video], view.MatchingResources);
+        Assert.Equal([image, video], view.MatchingItems.Select(item => item.Resource));
     }
 
     [Fact]
-    public void Should_cut_the_matching_resources_to_the_requested_page()
+    public void Should_cut_the_matching_items_to_the_requested_page()
     {
         // Arrange
         var resources = Enumerable.Range(1, 25).Select(i => File($"file-{i:D2}.txt")).ToArray();
@@ -110,8 +108,8 @@ public sealed class ExplorerCollectionViewTests
         // Assert
         Assert.Multiple(
             () => Assert.Equal(3, view.PageCount),
-            () => Assert.Equal(5, view.VisibleResources.Count),
-            () => Assert.Equal("file-21.txt", view.VisibleResources[0].Name),
+            () => Assert.Equal(5, view.VisibleItems.Count),
+            () => Assert.Equal("file-21.txt", view.VisibleItems[0].Name),
             () => Assert.False(view.HasMorePages));
     }
 
@@ -129,8 +127,8 @@ public sealed class ExplorerCollectionViewTests
 
         // Assert
         Assert.Multiple(
-            () => Assert.Equal(20, view.VisibleResources.Count),
-            () => Assert.Equal("file-01.txt", view.VisibleResources[0].Name),
+            () => Assert.Equal(20, view.VisibleItems.Count),
+            () => Assert.Equal("file-01.txt", view.VisibleItems[0].Name),
             () => Assert.True(view.HasMorePages));
     }
 
@@ -147,7 +145,7 @@ public sealed class ExplorerCollectionViewTests
         // Assert
         Assert.Multiple(
             () => Assert.Equal(1, view.EffectivePageNumber),
-            () => Assert.Equal(2, view.VisibleResources.Count),
+            () => Assert.Equal(2, view.VisibleItems.Count),
             () => Assert.False(view.HasMorePages));
     }
 
@@ -159,24 +157,24 @@ public sealed class ExplorerCollectionViewTests
 
         // Act & Assert
         Assert.Multiple(
-            () => Assert.Same(view.MatchingResources, view.MatchingResources),
-            () => Assert.Same(view.VisibleResources, view.VisibleResources));
+            () => Assert.Same(view.MatchingItems, view.MatchingItems),
+            () => Assert.Same(view.VisibleItems, view.VisibleItems));
 
-        var shapedBefore = view.MatchingResources;
+        var shapedBefore = view.MatchingItems;
         view.SearchQuery = "one";
-        Assert.NotSame(shapedBefore, view.MatchingResources);
+        Assert.NotSame(shapedBefore, view.MatchingItems);
     }
 
     [Fact]
     public void Should_reshape_a_source_mutated_in_place_when_invalidated()
     {
         // Arrange
-        var resources = new List<ResourceInfo> { File("one.txt") };
-        var view = new ExplorerCollectionView(new TypeNameKindLabels()) { Source = resources, PageSize = 24 };
+        var items = new List<IExplorerItem> { ExplorerItem.For(File("one.txt")) };
+        var view = new ExplorerCollectionView(TypeNameKindLabel) { Source = items, PageSize = 24 };
         Assert.Equal(1, view.MatchingCount);
 
         // Act
-        resources.Add(File("two.txt"));
+        items.Add(ExplorerItem.For(File("two.txt")));
         view.Invalidate();
 
         // Assert

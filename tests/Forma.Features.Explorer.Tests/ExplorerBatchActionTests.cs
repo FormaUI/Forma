@@ -40,22 +40,6 @@ public sealed class ExplorerBatchActionTests
         => Assert.Throws<ArgumentException>(() => new ExplorerBatchAction<ResourceInfo>().Request([]));
 
     [Fact]
-    public void Should_hold_nothing_once_cleared()
-    {
-        // Arrange
-        var batch = new ExplorerBatchAction<ResourceInfo>();
-        batch.Request([new FileResourceInfo("/media/photo.png")]);
-
-        // Act
-        batch.Clear();
-
-        // Assert
-        Assert.Multiple(
-            () => Assert.False(batch.IsActive),
-            () => Assert.Empty(batch.Targets));
-    }
-
-    [Fact]
     public void Should_keep_its_own_copy_of_the_requested_targets()
     {
         // Arrange

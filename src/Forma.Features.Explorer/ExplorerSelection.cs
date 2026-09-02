@@ -2,130 +2,117 @@ namespace Forma.Features.Explorer;
 
 using Forma.Framework.Resources;
 
-/// <summary>The media resources an explorer has selected, and the rules deciding what a further choice does to them.</summary>
+/// <summary>The items an explorer has selected, and the rules deciding what a further choice does to them.</summary>
 public sealed class ExplorerSelection : IExplorerSelectionView
 {
-    // The selection outlives the window a provider-backed explorer holds, so it keeps the resources rather than keys into a list it may no longer have.
-    private readonly Dictionary<string, ResourceInfo> _resources = new(StringComparer.Ordinal);
+    // The selection outlives the window a provider-backed explorer holds, so it keeps the items rather than keys into a list it may no longer have.
+    private readonly Dictionary<string, IExplorerItem> _items = new(StringComparer.Ordinal);
 
-    private readonly Dictionary<string, FolderResourceInfo> _folders = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, IExplorerItem> _folderItems = new(StringComparer.Ordinal);
+
+    private IReadOnlyList<IExplorerItem>? _resolvedItems;
 
     private IReadOnlyList<ResourceInfo>? _resolvedResources;
-
-    private IReadOnlyList<FolderResourceInfo>? _resolvedFolders;
 
     /// <inheritdoc />
     public bool IsSelectionModeActive { get; set; }
 
-    /// <summary>How many resources may be selected at once; zero for unlimited.</summary>
+    /// <summary>How many items may be selected at once; zero for unlimited.</summary>
     public int SelectionLimit { get; set; }
 
     /// <inheritdoc />
     public int Count
-        => _resources.Count + _folders.Count;
+        => _items.Count + _folderItems.Count;
 
     /// <inheritdoc />
-    public bool HasResources
-        => _resources.Count > 0;
-
-    /// <inheritdoc />
-    public bool HasFolders
-        => _folders.Count > 0;
-
-    /// <inheritdoc />
-    public bool IsSelected(ResourceInfo resource)
+    public bool IsSelected(IExplorerItem item)
     {
-        ArgumentNullException.ThrowIfNull(resource);
+        ArgumentNullException.ThrowIfNull(item);
 
-        return _resources.ContainsKey(resource.Source);
+        return (item is IExplorerFolderItem ? _folderItems : _items).ContainsKey(item.Key);
     }
 
-    /// <inheritdoc />
-    public bool IsFolderSelected(FolderResourceInfo folder)
-    {
-        ArgumentNullException.ThrowIfNull(folder);
-
-        return _folders.ContainsKey(folder.Source);
-    }
-
-    /// <summary>The selected folders.</summary>
-    public IReadOnlyList<FolderResourceInfo> ResolveFolders()
-        => _resolvedFolders ??= [.. _folders.Values];
+    /// <summary>The selected items.</summary>
+    public IReadOnlyList<IExplorerItem> ResolveItems()
+        => _resolvedItems ??= [.. _folderItems.Values, .. _items.Values];
 
     /// <summary>The selected resources.</summary>
     public IReadOnlyList<ResourceInfo> ResolveResources()
-        => _resolvedResources ??= [.. _resources.Values];
+        => _resolvedResources ??= [.. _items.Values.Select(item => item.Resource).OfType<ResourceInfo>()];
 
-    public void Toggle(ResourceInfo resource)
+    /// <summary>Adds the item to the selection, or removes it when it is already selected.</summary>
+    public void Toggle(IExplorerItem item)
     {
-        ArgumentNullException.ThrowIfNull(resource);
+        ArgumentNullException.ThrowIfNull(item);
 
         Invalidate();
 
-        // Media and folders are deleted through different contracts, so only one kind is ever selected at a time.
-        _folders.Clear();
+        if (item is IExplorerFolderItem)
+        {
+            _items.Clear();
 
-        if (_resources.Remove(resource.Source))
+            if (!_folderItems.Remove(item.Key))
+            {
+                _folderItems[item.Key] = item;
+            }
+
+            return;
+        }
+
+        // Media and folders are deleted through different contracts, so only one kind is ever selected at a time.
+        _folderItems.Clear();
+
+        if (_items.Remove(item.Key))
         {
             return;
         }
 
         if (SelectionLimit == 1)
         {
-            _resources.Clear();
-            _resources[resource.Source] = resource;
+            _items.Clear();
+            _items[item.Key] = item;
         }
-        else if (SelectionLimit <= 0 || _resources.Count < SelectionLimit)
+        else if (SelectionLimit <= 0 || _items.Count < SelectionLimit)
         {
-            _resources[resource.Source] = resource;
+            _items[item.Key] = item;
         }
     }
 
-    public void ToggleFolder(FolderResourceInfo folder)
+    /// <summary>Removes the item from the selection.</summary>
+    public void Remove(IExplorerItem item)
     {
-        ArgumentNullException.ThrowIfNull(folder);
+        ArgumentNullException.ThrowIfNull(item);
 
         Invalidate();
-        _resources.Clear();
-
-        if (!_folders.Remove(folder.Source))
-        {
-            _folders[folder.Source] = folder;
-        }
+        (item is IExplorerFolderItem ? _folderItems : _items).Remove(item.Key);
     }
 
-    public void Remove(ResourceInfo resource)
-    {
-        ArgumentNullException.ThrowIfNull(resource);
-
-        Invalidate();
-        _resources.Remove(resource.Source);
-    }
-
+    /// <summary>Empties the selection.</summary>
     public void Clear()
     {
         Invalidate();
-        _resources.Clear();
-        _folders.Clear();
+        _items.Clear();
+        _folderItems.Clear();
     }
 
-    public void Replace(IEnumerable<ResourceInfo> resources)
+    /// <summary>Replaces the selection with the given items.</summary>
+    public void Replace(IEnumerable<IExplorerItem> items)
     {
-        ArgumentNullException.ThrowIfNull(resources);
+        ArgumentNullException.ThrowIfNull(items);
 
         Invalidate();
-        _resources.Clear();
-        _folders.Clear();
+        _items.Clear();
+        _folderItems.Clear();
 
-        foreach (var resource in resources)
+        foreach (var item in items)
         {
-            _resources[resource.Source] = resource;
+            (item is IExplorerFolderItem ? _folderItems : _items)[item.Key] = item;
         }
     }
 
     private void Invalidate()
     {
+        _resolvedItems = null;
         _resolvedResources = null;
-        _resolvedFolders = null;
     }
 }

@@ -14,6 +14,8 @@ public sealed partial class FormaExplorerToolbar : ComponentBase
 
     [CascadingParameter] private IExplorerInteraction Interaction { get; set; } = default!;
 
+    [CascadingParameter] private IExplorerItemInteraction ItemInteraction { get; set; } = default!;
+
     [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
 
     private static readonly ExplorerSortField[] SortFields = Enum.GetValues<ExplorerSortField>();
@@ -26,7 +28,7 @@ public sealed partial class FormaExplorerToolbar : ComponentBase
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        if (View is null || Interaction is null)
+        if (View is null || Interaction is null || ItemInteraction is null)
         {
             throw new InvalidOperationException($"{nameof(FormaExplorerToolbar)} must be rendered inside a {nameof(FormaExplorer)}.");
         }
@@ -39,7 +41,7 @@ public sealed partial class FormaExplorerToolbar : ComponentBase
         => !View.Options.SelectOnOpen;
 
     private bool ShowsNewFolderAction
-        => View.FileOptions.AllowFolderCreate && !View.ShowsSidebar;
+        => View.Item.ItemOptions.AllowedFolderCapabilities.HasFlag(ExplorerItemCapabilities.Create) && !View.ShowsSidebar;
 
     private string SelectionAnnouncement
         => SelectedCount > 0 ? L["{SelectedCount} selected", SelectedCount].Value : string.Empty;

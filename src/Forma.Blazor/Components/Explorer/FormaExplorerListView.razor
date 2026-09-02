@@ -2,41 +2,45 @@
 @using Forma.Features.Explorer
 
 <div class="forma-explorer-list" role="list">
-    @foreach (var resource in Resources)
+    @foreach (var item in Items)
     {
-        var selected = View.Selection.IsSelected(resource);
-        var selecting = View.Selection.IsSelectionModeActive && !View.Selection.HasFolders;
+        var selected = View.Selection.IsSelected(item);
+        var selecting = View.Selection.IsSelectionModeActive;
+        var draggable = (item.Capabilities & View.Item.ItemOptions.AllowedCapabilities).HasFlag(ExplorerItemCapabilities.Drag) ? "true" : "false";
 
         <div class="forma-explorer-list-item @(selected ? "is-selected" : "")"
              role="listitem"
-             draggable="true"
-             @ondragstart="() => Interaction.BeginDrag(resource)">
+             draggable="@draggable"
+             @ondragstart="() => ItemInteraction.BeginDrag(item)">
             @if (selecting)
             {
                 <button type="button"
                         class="forma-explorer-list-select @(selected ? "is-checked" : "")"
-                        aria-label="@resource.SelectLabel(L, View.Selection)"
+                        aria-label="@item.SelectLabel(L, View.Selection)"
                         aria-pressed="@(selected ? "true" : "false")"
-                        @onclick="() => Interaction.ToggleSelectionAsync(resource)">
+                        @onclick="() => Interaction.ToggleSelectionAsync(item)">
                     <FormaIcon Icon="Glyph.Check" Size="IconSize.Small" />
                 </button>
             }
             else
             {
-                <FormaExplorerActionBar Resource="resource" />
+                <FormaExplorerActionBar Item="item" />
             }
 
             <button type="button"
                     class="forma-explorer-list-main"
-                    aria-label="@resource.ActivateLabel(L, View.Selection)"
-                    @onclick="() => Interaction.ActivateAsync(resource)">
+                    aria-label="@item.ActivateLabel(L, View.Selection)"
+                    @onclick="() => ItemInteraction.ActivateAsync(item)">
                 <span class="forma-explorer-list-media">
-                    <FormaExplorerThumbnail Resource="resource" Size="ExplorerThumbnailSize.Row" />
+                    @if (item.Resource is { } resource)
+                    {
+                        <FormaExplorerThumbnail Resource="resource" Size="ExplorerThumbnailSize.Row" />
+                    }
                 </span>
 
                 <span class="forma-explorer-list-info">
-                    <span class="forma-explorer-list-name" title="@resource.Name">@resource.Name</span>
-                    @if (resource.DisplaySize is { } size)
+                    <span class="forma-explorer-list-name" title="@item.Name">@item.Name</span>
+                    @if (item.Resource?.DisplaySize is { } size)
                     {
                         <span class="forma-explorer-list-size" dir="auto">@size</span>
                     }

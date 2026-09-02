@@ -6,14 +6,14 @@ using Xunit;
 
 public sealed class ExplorerProviderWindowTests
 {
-    private sealed class FakeProvider(IReadOnlyList<ResourceInfo> all, TaskCompletionSource? gate = null) : IExplorerResourcesProvider
+    private sealed class FakeProvider(IReadOnlyList<ResourceInfo> all, TaskCompletionSource? gate = null) : IExplorerItemsProvider
     {
         private readonly IReadOnlyList<ResourceInfo> _all = all;
         private readonly TaskCompletionSource? _gate = gate;
 
         public int CallCount { get; private set; }
 
-        public async ValueTask<ExplorerResourcePage> GetResourcesAsync(ExplorerResourceQuery query, CancellationToken cancellationToken)
+        public async ValueTask<ExplorerItemPage> GetItemsAsync(ExplorerItemQuery query, CancellationToken cancellationToken)
         {
             CallCount++;
 
@@ -22,9 +22,7 @@ public sealed class ExplorerProviderWindowTests
                 await _gate.Task.WaitAsync(cancellationToken);
             }
 
-            var page = _all.Skip(query.Skip).Take(query.Take).ToList();
-
-            return new ExplorerResourcePage(page, _all.Count);
+            return new ExplorerItemPage(ExplorerItem.ForAll(_all.Skip(query.Skip).Take(query.Take)), _all.Count);
         }
     }
 
@@ -39,7 +37,7 @@ public sealed class ExplorerProviderWindowTests
 
         // Assert
         Assert.Multiple(
-            () => Assert.Empty(window.Resources),
+            () => Assert.Empty(window.Items),
             () => Assert.Null(window.Total),
             () => Assert.False(window.WasFull),
             () => Assert.False(window.IsFetching));
@@ -51,14 +49,14 @@ public sealed class ExplorerProviderWindowTests
         // Arrange
         using var window = new ExplorerProviderWindow();
         var provider = new FakeProvider([Resource("one"), Resource("two"), Resource("three")]);
-        var query = new ExplorerResourceQuery(0, 2, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
+        var query = new ExplorerItemQuery(0, 2, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
 
         // Act
         await window.FetchAsync(provider, onStateChanged: () => { }, query, filter: null, appendToWindow: false);
 
         // Assert
         Assert.Multiple(
-            () => Assert.Equal(["one", "two"], window.Resources.Select(resource => resource.Name)),
+            () => Assert.Equal(["one", "two"], window.Items.Select(resource => resource.Name)),
             () => Assert.Equal(3, window.Total),
             () => Assert.True(window.WasFull));
     }
@@ -69,8 +67,8 @@ public sealed class ExplorerProviderWindowTests
         // Arrange
         using var window = new ExplorerProviderWindow();
         var provider = new FakeProvider([Resource("one"), Resource("two"), Resource("three")]);
-        var firstPage = new ExplorerResourceQuery(0, 2, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
-        var secondPage = new ExplorerResourceQuery(2, 2, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
+        var firstPage = new ExplorerItemQuery(0, 2, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
+        var secondPage = new ExplorerItemQuery(2, 2, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
         await window.FetchAsync(provider, onStateChanged: () => { }, firstPage, filter: null, appendToWindow: false);
 
         // Act
@@ -78,7 +76,7 @@ public sealed class ExplorerProviderWindowTests
 
         // Assert
         Assert.Multiple(
-            () => Assert.Equal(["one", "two", "three"], window.Resources.Select(resource => resource.Name)),
+            () => Assert.Equal(["one", "two", "three"], window.Items.Select(resource => resource.Name)),
             () => Assert.False(window.WasFull));
     }
 
@@ -88,14 +86,14 @@ public sealed class ExplorerProviderWindowTests
         // Arrange
         using var window = new ExplorerProviderWindow();
         var provider = new FakeProvider([new ImageResourceInfo("/media/photo.png"), new FileResourceInfo("/media/notes.txt")]);
-        var query = new ExplorerResourceQuery(0, 10, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
+        var query = new ExplorerItemQuery(0, 10, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
         var filter = ExplorerResourceFilter.Parse("contentType:image");
 
         // Act
         await window.FetchAsync(provider, onStateChanged: () => { }, query, filter, appendToWindow: false);
 
         // Assert
-        Assert.Equal(["photo.png"], window.Resources.Select(resource => resource.Name));
+        Assert.Equal(["photo.png"], window.Items.Select(resource => resource.Name));
     }
 
     [Fact]
@@ -105,7 +103,7 @@ public sealed class ExplorerProviderWindowTests
         using var window = new ExplorerProviderWindow();
         var gate = new TaskCompletionSource();
         var provider = new FakeProvider([Resource("one")], gate);
-        var query = new ExplorerResourceQuery(0, 10, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
+        var query = new ExplorerItemQuery(0, 10, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
         var changes = new List<bool>();
 
         // Act
@@ -128,7 +126,7 @@ public sealed class ExplorerProviderWindowTests
         var firstGate = new TaskCompletionSource();
         var firstProvider = new FakeProvider([Resource("stale")], firstGate);
         var secondProvider = new FakeProvider([Resource("fresh")]);
-        var query = new ExplorerResourceQuery(0, 10, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
+        var query = new ExplorerItemQuery(0, 10, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
 
         // Act
         var stale = window.FetchAsync(firstProvider, onStateChanged: () => { }, query, filter: null, appendToWindow: false);
@@ -137,6 +135,6 @@ public sealed class ExplorerProviderWindowTests
         await stale;
 
         // Assert
-        Assert.Equal(["fresh"], window.Resources.Select(resource => resource.Name));
+        Assert.Equal(["fresh"], window.Items.Select(resource => resource.Name));
     }
 }

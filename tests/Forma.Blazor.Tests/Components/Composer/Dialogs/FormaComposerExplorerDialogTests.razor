@@ -8,10 +8,10 @@
 @code {
     public sealed class Component
     {
-        private sealed class StubLibrary(params ResourceInfo[] resources) : IExplorerResourcesProvider
+        private sealed class StubLibrary(params ResourceInfo[] resources) : IExplorerItemsProvider
         {
-            public ValueTask<ExplorerResourcePage> GetResourcesAsync(ExplorerResourceQuery query, CancellationToken cancellationToken)
-                => ValueTask.FromResult(new ExplorerResourcePage(resources, resources.Length));
+            public ValueTask<ExplorerItemPage> GetItemsAsync(ExplorerItemQuery query, CancellationToken cancellationToken)
+                => ValueTask.FromResult(new ExplorerItemPage(ExplorerItem.ForAll(resources), resources.Length));
         }
 
         private static readonly ResourceInfo Picture = new ImageResourceInfo("/media/podium.png");
@@ -29,7 +29,7 @@
         {
             // Arrange
             using var ctx = new FormaComposerExplorerDialogTests();
-            ctx.Services.AddScoped<IExplorerResourcesProvider>(_ => new StubLibrary(Picture));
+            ctx.Services.AddScoped<IExplorerItemsProvider>(_ => new StubLibrary(Picture));
 
             // Act
             var cut = ctx.Render(@<FormaComposerExplorerDialog Opened="true" />);
@@ -61,7 +61,7 @@
         {
             // Arrange
             using var ctx = new FormaComposerExplorerDialogTests();
-            ctx.Services.AddScoped<IExplorerResourcesProvider>(_ => new StubLibrary(Picture, Clip, Report));
+            ctx.Services.AddScoped<IExplorerItemsProvider>(_ => new StubLibrary(Picture, Clip, Report));
 
             // Act
             var cut = ctx.Render(@<FormaComposerExplorerDialog Opened="true" />);
@@ -75,7 +75,7 @@
         {
             // Arrange
             using var ctx = new FormaComposerExplorerDialogTests();
-            ctx.Services.AddScoped<IExplorerResourcesProvider>(_ => new StubLibrary(Picture, Clip, Report));
+            ctx.Services.AddScoped<IExplorerItemsProvider>(_ => new StubLibrary(Picture, Clip, Report));
             var options = new ExplorerPluginOptions { AcceptedResourceKinds = "contentType:image" };
 
             // Act
@@ -91,7 +91,7 @@
         {
             // Arrange
             using var ctx = new FormaComposerExplorerDialogTests();
-            ctx.Services.AddScoped<IExplorerResourcesProvider>(_ => new StubLibrary(Picture));
+            ctx.Services.AddScoped<IExplorerItemsProvider>(_ => new StubLibrary(Picture));
             var inserted = false;
             var cut = ctx.Render(@<FormaComposerExplorerDialog Opened="true" OnInsert="_ => inserted = true" />);
 
@@ -108,7 +108,7 @@
         {
             // Arrange
             using var ctx = new FormaComposerExplorerDialogTests();
-            ctx.Services.AddScoped<IExplorerResourcesProvider>(_ => new StubLibrary(Picture));
+            ctx.Services.AddScoped<IExplorerItemsProvider>(_ => new StubLibrary(Picture));
             ResourceDialogResult? result = null;
             var cut = ctx.Render(@<FormaComposerExplorerDialog Opened="true" OnInsert="value => result = value" />);
             Choose(cut, "podium.png");
@@ -128,7 +128,7 @@
         {
             // Arrange
             using var ctx = new FormaComposerExplorerDialogTests();
-            ctx.Services.AddScoped<IExplorerResourcesProvider>(_ => new StubLibrary(Clip));
+            ctx.Services.AddScoped<IExplorerItemsProvider>(_ => new StubLibrary(Clip));
             ResourceDialogResult? result = null;
             var options = new ExplorerPluginOptions { InsertMode = MediaInsertMode.Both };
             var cut = ctx.Render(@<FormaComposerExplorerDialog Opened="true" Options="options" OnInsert="value => result = value" />);
@@ -149,7 +149,7 @@
         {
             // Arrange
             using var ctx = new FormaComposerExplorerDialogTests();
-            ctx.Services.AddScoped<IExplorerResourcesProvider>(_ => new StubLibrary(Report));
+            ctx.Services.AddScoped<IExplorerItemsProvider>(_ => new StubLibrary(Report));
             ResourceDialogResult? result = null;
             var options = new ExplorerPluginOptions { InsertMode = MediaInsertMode.Embed };
             var cut = ctx.Render(@<FormaComposerExplorerDialog Opened="true" Options="options" OnInsert="value => result = value" />);

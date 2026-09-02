@@ -1,5 +1,7 @@
 @namespace Forma.Blazor.Components.Explorer
 @using Forma.Blazor.Components.Navigation
+@using Forma.Features.Explorer
+@using Forma.Framework.Resources
 
 <div class="forma-explorer-address-bar @(!string.IsNullOrEmpty(Search.SearchQuery) ? "has-search-query" : "")">
     <div class="forma-explorer-nav-buttons" role="group" aria-label="@L["Navigation"]">
@@ -21,8 +23,8 @@
         <FormaBreadcrumb Items="Items"
                         RootIcon="Glyph.FolderOpen"
                         AriaLabel="@L["Folder Path"]"
-                        OnItemClick="(FolderResourceInfo? folder) => LocationInteraction.SelectFolderAsync(folder)"
-                        OnItemDrop="(FolderResourceInfo? folder) => Interaction.DropOnFolderAsync(folder)" />
+                        OnItemClick="(IExplorerFolderItem? item) => item is null ? LocationInteraction.SelectFolderAsync(null) : item.Resource is { } folder ? LocationInteraction.SelectFolderAsync(folder) : Task.CompletedTask"
+                        OnItemDrop="(IExplorerFolderItem? item) => ItemInteraction.DropOnItemAsync(item)" />
     </div>
 
     <div class="forma-explorer-search-wrapper">

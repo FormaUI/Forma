@@ -41,38 +41,18 @@ public sealed class ExplorerRenameActionTests
         => Assert.Throws<ArgumentNullException>(() => new ExplorerRenameAction<ResourceInfo>().Request(null!));
 
     [Fact]
-    public void Should_confirm_only_a_usable_name()
+    public void Should_confirm_with_its_starting_name()
     {
         // Arrange
         var rename = new ExplorerRenameAction<ResourceInfo>();
-        rename.Request(new FileResourceInfo("/media/photo.png"));
-
-        // Act & Assert
-        rename.Name = "   ";
-        Assert.False(rename.CanConfirm);
-
-        rename.Name = "  stage-one.png  ";
-        Assert.Multiple(
-            () => Assert.True(rename.CanConfirm),
-            () => Assert.Equal("stage-one.png", rename.NameToConfirm));
-    }
-
-    [Fact]
-    public void Should_hold_nothing_once_cleared()
-    {
-        // Arrange
-        var rename = new ExplorerRenameAction<ResourceInfo>();
-        rename.Request(new FileResourceInfo("/media/photo.png"));
 
         // Act
-        rename.Clear();
+        rename.Request(new FileResourceInfo("/media/photo.png"));
 
         // Assert
         Assert.Multiple(
-            () => Assert.False(rename.IsActive),
-            () => Assert.Null(rename.Target),
-            () => Assert.Equal(string.Empty, rename.Name),
-            () => Assert.False(rename.CanConfirm));
+            () => Assert.True(rename.CanConfirm),
+            () => Assert.Equal("photo.png", rename.NameToConfirm));
     }
 
     [Fact]

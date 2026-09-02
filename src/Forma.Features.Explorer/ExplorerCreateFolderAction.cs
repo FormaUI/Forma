@@ -10,5 +10,13 @@ public sealed class ExplorerCreateFolderAction : ExplorerNamedAction<FolderResou
 
     /// <summary>Starts a fresh draft under the given parent, or the top level when null.</summary>
     public void Request(FolderResourceInfo? parent)
-        => Set(parent);
+    {
+        if (parent is null)
+        {
+            Set();
+            return;
+        }
+
+        Set(parent);
+    }
 }

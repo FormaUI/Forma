@@ -2,23 +2,27 @@
 @using Forma.Features.Explorer
 
 <div class="forma-explorer-grid" role="list">
-    @foreach (var resource in Resources)
+    @foreach (var item in Items)
     {
-        var selected = View.Selection.IsSelected(resource);
-        var selecting = View.Selection.IsSelectionModeActive && !View.Selection.HasFolders;
+        var selected = View.Selection.IsSelected(item);
+        var selecting = View.Selection.IsSelectionModeActive;
+        var draggable = (item.Capabilities & View.Item.ItemOptions.AllowedCapabilities).HasFlag(ExplorerItemCapabilities.Drag) ? "true" : "false";
 
         <div class="forma-explorer-item @(selected ? "is-selected" : "")"
              role="listitem"
-             draggable="true"
-             @ondragstart="() => Interaction.BeginDrag(resource)">
+             draggable="@draggable"
+             @ondragstart="() => ItemInteraction.BeginDrag(item)">
             <div class="forma-explorer-thumbnail-wrapper">
-                <FormaExplorerThumbnail Resource="resource" Size="ExplorerThumbnailSize.Tile" />
+                @if (item.Resource is { } resource)
+                {
+                    <FormaExplorerThumbnail Resource="resource" Size="ExplorerThumbnailSize.Tile" />
+                }
 
                 <button type="button"
                         class="forma-explorer-item-open"
-                        aria-label="@resource.ActivateLabel(L, View.Selection)"
+                        aria-label="@item.ActivateLabel(L, View.Selection)"
                         aria-pressed="@(View.Selection.IsSelectionModeActive ? (selected ? "true" : "false") : null)"
-                        @onclick="() => Interaction.ActivateAsync(resource)"></button>
+                        @onclick="() => ItemInteraction.ActivateAsync(item)"></button>
 
                 <span class="forma-explorer-item-lead">
                     @if (selecting)
@@ -29,14 +33,14 @@
                     }
                     else
                     {
-                        <FormaExplorerActionBar Resource="resource" />
+                        <FormaExplorerActionBar Item="item" />
                     }
                 </span>
             </div>
 
             <div class="forma-explorer-item-info">
-                <span class="forma-explorer-item-name" title="@resource.Name">@resource.Name</span>
-                @if (resource.DisplaySize is { } size)
+                <span class="forma-explorer-item-name" title="@item.Name">@item.Name</span>
+                @if (item.Resource?.DisplaySize is { } size)
                 {
                     <span class="forma-explorer-item-size" dir="auto">@size</span>
                 }

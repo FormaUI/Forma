@@ -11,17 +11,18 @@ using Microsoft.AspNetCore.Components;
 public sealed partial class FormaExplorerPage : ComponentBase
 {
     // The folder is the page's to know, so the explorer never has to send it back in a query.
-    private sealed class FolderScopedProvider(SampleMediaStore store, Func<string?> folder) : IExplorerResourcesProvider
+    private sealed class FolderScopedProvider(SampleMediaStore store, Func<string?> folder) : IExplorerItemsProvider
     {
-        public ValueTask<ExplorerResourcePage> GetResourcesAsync(ExplorerResourceQuery query, CancellationToken cancellationToken)
+        public ValueTask<ExplorerItemPage> GetItemsAsync(ExplorerItemQuery query, CancellationToken cancellationToken)
             => store.GetPageAsync(folder(), query, cancellationToken);
     }
 
-    private readonly ExplorerFileOptions _fixedFolderOptions = new()
+    private readonly ExplorerItemOptions _fixedFolderOptions = new()
     {
-        AllowFolderCreate = false,
-        AllowFolderDelete = false,
-        AllowFolderRename = false
+        AllowedFolderCapabilities = ExplorerItemCapabilities.Drag
+            | ExplorerItemCapabilities.Drop
+            | ExplorerItemCapabilities.Open
+            | ExplorerItemCapabilities.Move
     };
 
     private readonly Dictionary<string, List<string>> _logs = [];
@@ -38,7 +39,11 @@ public sealed partial class FormaExplorerPage : ComponentBase
 
     private List<ResourceInfo> _allMedia = [];
 
-    private readonly Dictionary<string, IExplorerResourcesProvider> _providers = [];
+    private IReadOnlyList<IExplorerItem> _allMediaItems = [];
+
+    private IReadOnlyList<IExplorerItem> _sampleFolderItems = [];
+
+    private readonly Dictionary<string, IExplorerItemsProvider> _providers = [];
 
     private SampleMediaStore _mediaStore = default!;
 
@@ -48,7 +53,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
 
     private int _libraryCount;
 
-    private IExplorerResourcesProvider ProviderFor(string key)
+    private IExplorerItemsProvider ProviderFor(string key)
         => _providers[key];
 
     private string LibraryQueryDescription
@@ -57,6 +62,12 @@ public sealed partial class FormaExplorerPage : ComponentBase
             : "none yet";
 
     private List<ResourceInfo> _singleSelectResources = [];
+
+    private IReadOnlyList<IExplorerItem> _singleSelectItems = [];
+
+    private IReadOnlyList<IExplorerItem> _constrainedItems = [];
+
+    private IReadOnlyList<IExplorerItem> _constrainedFolderItems = [];
 
     private static ExplorerDetailsColumns[] ColumnChoices
         => [ExplorerDetailsColumns.Kind, ExplorerDetailsColumns.Size, ExplorerDetailsColumns.Modified, ExplorerDetailsColumns.Added];
@@ -112,6 +123,10 @@ public sealed partial class FormaExplorerPage : ComponentBase
             new ImageResourceInfo("/media/sample-poster.svg?shot=2") { Size = 340000, CreatedAt = seeded.AddDays(-2), ModifiedAt = seeded.AddDays(-2) },
             new ImageResourceInfo("/media/sample-poster.svg?proof=1") { Size = 340000, CreatedAt = seeded.AddDays(-1), ModifiedAt = seeded.AddDays(-1) }
         ];
+
+        _singleSelectItems = ExplorerItem.ForAll(_singleSelectResources);
+        _constrainedItems = ExplorerItem.ForAll(_constrainedResources);
+        _constrainedFolderItems = ExplorerItem.ForAll(_constrainedFolders);
 
         // Every browsing demo reads through a store, so folder, search, sort and paging are answered the way a real library answers them.
         _mediaStore = Store(media);
@@ -180,12 +195,15 @@ public sealed partial class FormaExplorerPage : ComponentBase
     private void SyncFromStore()
     {
         _allMedia = [.. _mediaStore.All()];
+        _allMediaItems = ExplorerItem.ForAll(_allMedia);
 
         for (var index = 0; index < _sampleFolders.Count; index++)
         {
             var folder = _sampleFolders[index];
             _sampleFolders[index] = folder with { Count = _mediaStore.CountIn(folder.Source), Size = _mediaStore.SizeIn(folder.Source) };
         }
+
+        _sampleFolderItems = ExplorerItem.ForAll(_sampleFolders);
     }
 
     private FolderResourceInfo? CurrentFolderFor(string key)
@@ -229,6 +247,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
         var source = $"folder-{Guid.NewGuid():N}";
 
         _sampleFolders.Add(new FolderResourceInfo(source) { Name = request.Name, Parent = parent?.Source, Count = 0 });
+        SyncFromStore();
 
         LogAction(key, L["Created folder \"{Name}\" in {Parent}", request.Name, FolderName(parent)]);
 
@@ -261,6 +280,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
             _sampleFolders[index] = _sampleFolders[index] with { Parent = request.TargetFolder?.Source };
         }
 
+        SyncFromStore();
         LogAction(key, L["Moved folder \"{Source}\" into \"{Target}\"", request.SourceFolder.Name, FolderName(request.TargetFolder)]);
 
         return Task.CompletedTask;
@@ -275,6 +295,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
             _sampleFolders[index] = _sampleFolders[index] with { Name = request.NewName };
         }
 
+        SyncFromStore();
         LogAction(key, L["Renamed folder \"{OldName}\" to \"{NewName}\"", request.Folder.Name, request.NewName]);
 
         return Task.CompletedTask;
@@ -289,9 +310,9 @@ public sealed partial class FormaExplorerPage : ComponentBase
         return Task.CompletedTask;
     }
 
-    private Task HandleSelectedAsync(string key, IReadOnlyList<ResourceInfo> resources)
+    private Task HandleSelectedAsync(string key, IReadOnlyList<IExplorerItem> items)
     {
-        var names = string.Join(", ", resources.Select(resource => resource.Name));
+        var names = string.Join(", ", items.Select(item => item.Name));
         LogAction(key, L["Selected: {Names}", names]);
 
         return Task.CompletedTask;

@@ -5,9 +5,11 @@
 @using Forma.Features.Files
 @using Forma.Blazor.Components.Layout
 @using Forma.Features.Explorer
+@using Forma.Framework.Resources
 
 <CascadingValue Value="(IExplorerView)this">
 <CascadingValue Value="(IExplorerInteraction)this" IsFixed="true">
+<CascadingValue Value="(IExplorerItemInteraction)_itemManager" IsFixed="true">
 <div class="forma-explorer @(Options.Resizable ? "is-resizable" : "") @(Options.AsDialog ? "is-dialog" : "")">
 <FormaExplorerCommandArea />
 
@@ -47,15 +49,12 @@
         @if (ShowsSidebar)
         {
             <FormaExplorerSidebar CurrentFolder="CurrentFolder"
-                                 FileOptions="FileOptions"
+                                 ItemOptions="ItemOptions"
                                  Folders="Folders"
                                  FolderTree="FolderTree"
-                                 TotalCount="TotalCount ?? Resources?.Count ?? MatchingCount ?? 0"
+                                 TotalCount="TotalCount ?? Items?.Count ?? MatchingCount ?? 0"
                                  OnFolderDelete="OpenFolderDeleteDialog"
-                                 OnFolderDragStart="folder => _drag.Begin(folder)"
-                                 OnFolderDrop="HandleDropOnFolderAsync"
                                  OnFolderCreate="OpenFolderDialogAsync"
-                                 OnFolderRename="OpenFolderRenameDialog"
                                  OnFolderSelected="HandleFolderSelectedAsync" />
 
             <FormaSplitter Class="forma-explorer-splitter"
@@ -87,25 +86,29 @@
         </FormaModal>
     }
 
-    <!-- Rename Media Modal -->
-    @if (_resourceRename.Target is not null)
+    <!-- Rename Modal -->
+    @if (_itemManager.PendingAction is ExplorerRenameAction<ResourceInfo> rename)
     {
-        <FormaModal Opened="@(_resourceRename.Target is not null)"
+        <FormaModal Opened="true"
                     Size="ModalSize.Small"
-                    Title="@L["Rename Media"]"
+                    Title="@RenameDialogTitle"
                     Options="DialogModalOptions"
-                    OnClose="CloseRenameDialog">
+                    OnClose="_itemManager.CancelAction">
             <Body>
                 <div class="forma-explorer-dialog-field">
-                    <label class="forma-explorer-dialog-label" for="forma-explorer-rename-input">@L["New Name"]</label>
-                    <FormaTextBox Id="forma-explorer-rename-input" class="forma-explorer-dialog-input" @bind-Value="_resourceRename.Name" />
+                    <label class="forma-explorer-dialog-label" for="forma-explorer-rename-input">@RenameDialogFieldLabel</label>
+                    <FormaTextBox Id="forma-explorer-rename-input"
+                                  class="forma-explorer-dialog-input"
+                                  Value="@rename.Name"
+                                  ValueChanged="name => _itemManager.SetActionName(name)"
+                                  ValueExpression="() => rename.Name" />
                 </div>
             </Body>
             <Footer>
-                <FormaButton Variant="ButtonVariant.Secondary" OnClick="CloseRenameDialog">
+                <FormaButton Variant="ButtonVariant.Secondary" OnClick="_itemManager.CancelAction">
                     @L["Cancel"]
                 </FormaButton>
-                <FormaButton Variant="ButtonVariant.Primary" OnClick="HandleRenameConfirmedAsync">
+                <FormaButton Variant="ButtonVariant.Primary" OnClick="_itemManager.ConfirmActionAsync">
                     @L["Save"]
                 </FormaButton>
             </Footer>
@@ -113,21 +116,21 @@
     }
 
     <!-- Delete Media Modal -->
-    @if (_resourceDeletion.IsActive)
+    @if (_itemManager.PendingAction is ExplorerBatchAction<ResourceInfo>)
     {
-        <FormaModal Opened="@(_resourceDeletion.IsActive)"
+        <FormaModal Opened="true"
                     Size="ModalSize.Small"
                     Title="@L["Delete Media"]"
                     Options="DialogModalOptions"
-                    OnClose="CloseDeleteDialog">
+                    OnClose="_itemManager.CancelAction">
             <Body>
                 <p class="forma-explorer-delete-message">@DeleteConfirmMessage</p>
             </Body>
             <Footer>
-                <FormaButton Variant="ButtonVariant.Secondary" OnClick="CloseDeleteDialog">
+                <FormaButton Variant="ButtonVariant.Secondary" OnClick="_itemManager.CancelAction">
                     @L["Cancel"]
                 </FormaButton>
-                <FormaButton Variant="ButtonVariant.Danger" OnClick="HandleDeleteConfirmedAsync">
+                <FormaButton Variant="ButtonVariant.Danger" OnClick="_itemManager.ConfirmActionAsync">
                     @L["Delete"]
                 </FormaButton>
             </Footer>
@@ -135,76 +138,56 @@
     }
 
     <!-- Create Folder Modal -->
-    @if (_folderDraft.IsActive)
+    @if (_itemManager.PendingAction is ExplorerCreateFolderAction draft)
     {
-        <FormaModal Opened="_folderDraft.IsActive"
+        <FormaModal Opened="true"
                     Size="ModalSize.Small"
                     Title="@L["New Folder"]"
                     Options="DialogModalOptions"
-                    OnClose="CloseFolderDialog">
+                    OnClose="_itemManager.CancelAction">
             <Body>
                 <div class="forma-explorer-dialog-field">
                     <label class="forma-explorer-dialog-label" for="forma-explorer-folder-input">@L["Folder Name"]</label>
-                    <FormaTextBox Id="forma-explorer-folder-input" class="forma-explorer-dialog-input" @bind-Value="_folderDraft.Name" />
+                    <FormaTextBox Id="forma-explorer-folder-input"
+                                  class="forma-explorer-dialog-input"
+                                  Value="@draft.Name"
+                                  ValueChanged="name => _itemManager.SetActionName(name)"
+                                  ValueExpression="() => draft.Name" />
                 </div>
             </Body>
             <Footer>
-                <FormaButton Variant="ButtonVariant.Secondary" OnClick="CloseFolderDialog">
+                <FormaButton Variant="ButtonVariant.Secondary" OnClick="_itemManager.CancelAction">
                     @L["Cancel"]
                 </FormaButton>
-                <FormaButton Variant="ButtonVariant.Primary" OnClick="HandleCreateFolderAsync">
+                <FormaButton Variant="ButtonVariant.Primary" OnClick="_itemManager.ConfirmActionAsync">
                     @L["Create"]
                 </FormaButton>
             </Footer>
         </FormaModal>
     }
 
-    <!-- Rename Folder Modal -->
-    @if (_folderRename.Target is not null)
-    {
-        <FormaModal Opened="@(_folderRename.Target is not null)"
-                    Size="ModalSize.Small"
-                    Title="@L["Rename Folder"]"
-                    Options="DialogModalOptions"
-                    OnClose="CloseFolderRenameDialog">
-            <Body>
-                <div class="forma-explorer-dialog-field">
-                    <label class="forma-explorer-dialog-label" for="forma-explorer-rename-folder-input">@L["Folder Name"]</label>
-                    <FormaTextBox Id="forma-explorer-rename-folder-input" class="forma-explorer-dialog-input" @bind-Value="_folderRename.Name" />
-                </div>
-            </Body>
-            <Footer>
-                <FormaButton Variant="ButtonVariant.Secondary" OnClick="CloseFolderRenameDialog">
-                    @L["Cancel"]
-                </FormaButton>
-                <FormaButton Variant="ButtonVariant.Primary" OnClick="HandleFolderRenameConfirmedAsync">
-                    @L["Save"]
-                </FormaButton>
-            </Footer>
-        </FormaModal>
-    }
-
     <!-- Delete Folder Modal -->
-    @if (_folderDeletion.IsActive)
+    @if (_itemManager.PendingAction is ExplorerBatchAction<FolderResourceInfo>)
     {
-        <FormaModal Opened="@(_folderDeletion.IsActive)"
+        <FormaModal Opened="true"
                     Size="ModalSize.Small"
                     Title="@L["Delete Folder"]"
                     Options="DialogModalOptions"
-                    OnClose="CloseFolderDeleteDialog">
+                    OnClose="_itemManager.CancelAction">
             <Body>
                 <p class="forma-explorer-delete-message">@FolderDeleteConfirmMessage</p>
             </Body>
             <Footer>
-                <FormaButton Variant="ButtonVariant.Secondary" OnClick="CloseFolderDeleteDialog">
+                <FormaButton Variant="ButtonVariant.Secondary" OnClick="_itemManager.CancelAction">
                     @L["Cancel"]
                 </FormaButton>
-                <FormaButton Variant="ButtonVariant.Danger" OnClick="HandleFolderDeleteConfirmedAsync">
+                <FormaButton Variant="ButtonVariant.Danger" OnClick="_itemManager.ConfirmActionAsync">
                     @L["Delete"]
                 </FormaButton>
             </Footer>
         </FormaModal>
     }
 </div>
+</CascadingValue>
 </CascadingValue>
 </CascadingValue>

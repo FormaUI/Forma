@@ -1,33 +1,35 @@
 namespace Forma.Features.Explorer;
 
+using System.Globalization;
+
 using Forma.Framework.Resources;
 
-/// <summary>The shaped view over a held resource collection: filtered by kind, searched by name, sorted, and cut to the visible page.</summary>
+/// <summary>The shaped view over a held item collection: filtered by kind, searched by name, sorted, and cut to the visible page.</summary>
 public sealed class ExplorerCollectionView
 {
-    private readonly IResourceKindLabels _kindLabels;
+    private readonly Func<IExplorerItem, string> _kindLabel;
 
-    private IReadOnlyList<ResourceInfo> _source = [];
+    private IReadOnlyList<IExplorerItem> _source = [];
     private ExplorerResourceFilter? _filter;
     private string _searchQuery = string.Empty;
     private ExplorerSortField _sortField = ExplorerSortField.Name;
     private ExplorerSortDirection _sortDirection = ExplorerSortDirection.Ascending;
 
-    private List<ResourceInfo>? _matchingResources;
-    private List<ResourceInfo>? _visibleResources;
-    private List<ResourceInfo>? _visibleResourcesSource;
-    private int _visibleResourcesSkip;
-    private int _visibleResourcesTake;
+    private List<IExplorerItem>? _matchingItems;
+    private List<IExplorerItem>? _visibleItems;
+    private List<IExplorerItem>? _visibleItemsSource;
+    private int _visibleItemsSkip;
+    private int _visibleItemsTake;
 
-    public ExplorerCollectionView(IResourceKindLabels kindLabels)
+    public ExplorerCollectionView(Func<IExplorerItem, string> kindLabel)
     {
-        ArgumentNullException.ThrowIfNull(kindLabels);
+        ArgumentNullException.ThrowIfNull(kindLabel);
 
-        _kindLabels = kindLabels;
+        _kindLabel = kindLabel;
     }
 
-    /// <summary>The resources the view shapes.</summary>
-    public IReadOnlyList<ResourceInfo> Source
+    /// <summary>The items the view shapes.</summary>
+    public IReadOnlyList<IExplorerItem> Source
     {
         get => _source;
         set
@@ -37,12 +39,12 @@ public sealed class ExplorerCollectionView
             if (!ReferenceEquals(_source, value))
             {
                 _source = value;
-                _matchingResources = null;
+                _matchingItems = null;
             }
         }
     }
 
-    /// <summary>The kind filter a resource must pass to be listed, or null to list everything.</summary>
+    /// <summary>The kind filter an item must pass to be listed, or null to list everything.</summary>
     public ExplorerResourceFilter? Filter
     {
         get => _filter;
@@ -51,12 +53,12 @@ public sealed class ExplorerCollectionView
             if (!ReferenceEquals(_filter, value))
             {
                 _filter = value;
-                _matchingResources = null;
+                _matchingItems = null;
             }
         }
     }
 
-    /// <summary>The name fragment a resource must contain, compared case-insensitively.</summary>
+    /// <summary>The name fragment an item must contain, compared case-insensitively.</summary>
     public string SearchQuery
     {
         get => _searchQuery;
@@ -67,12 +69,12 @@ public sealed class ExplorerCollectionView
             if (!string.Equals(_searchQuery, value, StringComparison.Ordinal))
             {
                 _searchQuery = value;
-                _matchingResources = null;
+                _matchingItems = null;
             }
         }
     }
 
-    /// <summary>The field the matching resources are ordered by.</summary>
+    /// <summary>The field the matching items are ordered by.</summary>
     public ExplorerSortField SortField
     {
         get => _sortField;
@@ -81,12 +83,12 @@ public sealed class ExplorerCollectionView
             if (_sortField != value)
             {
                 _sortField = value;
-                _matchingResources = null;
+                _matchingItems = null;
             }
         }
     }
 
-    /// <summary>The direction the matching resources are ordered in.</summary>
+    /// <summary>The direction the matching items are ordered in.</summary>
     public ExplorerSortDirection SortDirection
     {
         get => _sortDirection;
@@ -95,7 +97,7 @@ public sealed class ExplorerCollectionView
             if (_sortDirection != value)
             {
                 _sortDirection = value;
-                _matchingResources = null;
+                _matchingItems = null;
             }
         }
     }
@@ -103,21 +105,21 @@ public sealed class ExplorerCollectionView
     /// <summary>The requested one-based page; reads clamp it through <see cref="EffectivePageNumber"/>.</summary>
     public int PageNumber { get; set; } = 1;
 
-    /// <summary>How many resources one page holds.</summary>
+    /// <summary>How many items one page holds.</summary>
     public int PageSize { get; set; } = 1;
 
     /// <summary>Whether the visible window grows from the first page instead of moving, as infinite scrolling needs.</summary>
     public bool IsAppending { get; set; }
 
-    /// <summary>The resources that pass the filter and the search, in sort order.</summary>
-    public IReadOnlyList<ResourceInfo> MatchingResources
+    /// <summary>The items that pass the filter and the search, in sort order.</summary>
+    public IReadOnlyList<IExplorerItem> MatchingItems
         => MatchingList;
 
-    /// <summary>How many resources pass the filter and the search.</summary>
+    /// <summary>How many items pass the filter and the search.</summary>
     public int MatchingCount
         => MatchingList.Count;
 
-    /// <summary>How many pages the matching resources fill, never less than one.</summary>
+    /// <summary>How many pages the matching items fill, never less than one.</summary>
     public int PageCount
         => Math.Max(1, (int)Math.Ceiling(MatchingCount / (double)PageSize));
 
@@ -127,10 +129,10 @@ public sealed class ExplorerCollectionView
 
     /// <summary>Whether pages remain beyond the visible window.</summary>
     public bool HasMorePages
-        => IsAppending ? VisibleResources.Count < MatchingCount : EffectivePageNumber < PageCount;
+        => IsAppending ? VisibleItems.Count < MatchingCount : EffectivePageNumber < PageCount;
 
-    /// <summary>The matching resources cut to the visible window.</summary>
-    public IReadOnlyList<ResourceInfo> VisibleResources
+    /// <summary>The matching items cut to the visible window.</summary>
+    public IReadOnlyList<IExplorerItem> VisibleItems
     {
         get
         {
@@ -139,63 +141,63 @@ public sealed class ExplorerCollectionView
             var skip = IsAppending ? 0 : (EffectivePageNumber - 1) * PageSize;
 
             // Appending grows this window to thousands, and rendering reads it several times, so it is rebuilt only when it moves.
-            if (_visibleResources is not null && ReferenceEquals(_visibleResourcesSource, source) && _visibleResourcesSkip == skip && _visibleResourcesTake == take)
+            if (_visibleItems is not null && ReferenceEquals(_visibleItemsSource, source) && _visibleItemsSkip == skip && _visibleItemsTake == take)
             {
-                return _visibleResources;
+                return _visibleItems;
             }
 
-            _visibleResourcesSource = source;
-            _visibleResourcesSkip = skip;
-            _visibleResourcesTake = take;
-            _visibleResources = [.. source.Skip(skip).Take(take)];
+            _visibleItemsSource = source;
+            _visibleItemsSkip = skip;
+            _visibleItemsTake = take;
+            _visibleItems = [.. source.Skip(skip).Take(take)];
 
-            return _visibleResources;
+            return _visibleItems;
         }
     }
 
     /// <summary>Drops the memoized shape, for a source list mutated in place.</summary>
     public void Invalidate()
-        => _matchingResources = null;
+        => _matchingItems = null;
 
-    private List<ResourceInfo> MatchingList
+    private List<IExplorerItem> MatchingList
     {
         get
         {
-            if (_matchingResources is not null)
+            if (_matchingItems is not null)
             {
-                return _matchingResources;
+                return _matchingItems;
             }
 
-            IEnumerable<ResourceInfo> query = _source;
+            IEnumerable<IExplorerItem> query = _source;
 
             if (_filter is { } accepted)
             {
-                query = query.Where(accepted.Accepts);
+                query = query.Where(item => item.Resource is not { } resource || accepted.Accepts(resource));
             }
 
             if (!string.IsNullOrWhiteSpace(_searchQuery))
             {
-                query = query.Where(resource => resource.Name.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(item => item.Name.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase));
             }
 
             query = (_sortField, _sortDirection) switch
             {
-                (ExplorerSortField.Name, ExplorerSortDirection.Ascending) => query.OrderBy(resource => resource.Name, StringComparer.OrdinalIgnoreCase),
-                (ExplorerSortField.Name, ExplorerSortDirection.Descending) => query.OrderByDescending(resource => resource.Name, StringComparer.OrdinalIgnoreCase),
-                (ExplorerSortField.Size, ExplorerSortDirection.Ascending) => query.OrderBy(resource => resource.Size ?? 0),
-                (ExplorerSortField.Size, ExplorerSortDirection.Descending) => query.OrderByDescending(resource => resource.Size ?? 0),
-                (ExplorerSortField.Kind, ExplorerSortDirection.Ascending) => query.OrderBy(_kindLabels.LabelOf, StringComparer.CurrentCulture),
-                (ExplorerSortField.Kind, ExplorerSortDirection.Descending) => query.OrderByDescending(_kindLabels.LabelOf, StringComparer.CurrentCulture),
-                (ExplorerSortField.DateAdded, ExplorerSortDirection.Ascending) => query.OrderBy(resource => resource.CreatedAt ?? DateTimeOffset.MinValue),
-                (ExplorerSortField.DateAdded, ExplorerSortDirection.Descending) => query.OrderByDescending(resource => resource.CreatedAt ?? DateTimeOffset.MinValue),
-                (ExplorerSortField.DateModified, ExplorerSortDirection.Ascending) => query.OrderBy(resource => resource.ModifiedAt ?? DateTimeOffset.MinValue),
-                (ExplorerSortField.DateModified, ExplorerSortDirection.Descending) => query.OrderByDescending(resource => resource.ModifiedAt ?? DateTimeOffset.MinValue),
+                (ExplorerSortField.Name, ExplorerSortDirection.Ascending) => query.OrderBy(item => item.Name, StringComparer.OrdinalIgnoreCase),
+                (ExplorerSortField.Name, ExplorerSortDirection.Descending) => query.OrderByDescending(item => item.Name, StringComparer.OrdinalIgnoreCase),
+                (ExplorerSortField.Size, ExplorerSortDirection.Ascending) => query.OrderBy(item => item.Resource?.Size ?? 0),
+                (ExplorerSortField.Size, ExplorerSortDirection.Descending) => query.OrderByDescending(item => item.Resource?.Size ?? 0),
+                (ExplorerSortField.Kind, ExplorerSortDirection.Ascending) => query.OrderBy(_kindLabel, StringComparer.Create(CultureInfo.CurrentUICulture, ignoreCase: false)),
+                (ExplorerSortField.Kind, ExplorerSortDirection.Descending) => query.OrderByDescending(_kindLabel, StringComparer.Create(CultureInfo.CurrentUICulture, ignoreCase: false)),
+                (ExplorerSortField.DateAdded, ExplorerSortDirection.Ascending) => query.OrderBy(item => item.CreatedAt ?? DateTimeOffset.MinValue),
+                (ExplorerSortField.DateAdded, ExplorerSortDirection.Descending) => query.OrderByDescending(item => item.CreatedAt ?? DateTimeOffset.MinValue),
+                (ExplorerSortField.DateModified, ExplorerSortDirection.Ascending) => query.OrderBy(item => item.ModifiedAt ?? DateTimeOffset.MinValue),
+                (ExplorerSortField.DateModified, ExplorerSortDirection.Descending) => query.OrderByDescending(item => item.ModifiedAt ?? DateTimeOffset.MinValue),
                 _ => query
             };
 
-            _matchingResources = [.. query];
+            _matchingItems = [.. query];
 
-            return _matchingResources;
+            return _matchingItems;
         }
     }
 }

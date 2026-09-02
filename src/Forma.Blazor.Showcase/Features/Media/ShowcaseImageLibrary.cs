@@ -4,7 +4,7 @@ using Forma.Features.Explorer;
 using Forma.Framework.Resources;
 
 /// <summary>The stored images the composer's insert dialog browses in this application.</summary>
-internal sealed class ShowcaseImageLibrary : IExplorerResourcesProvider
+internal sealed class ShowcaseImageLibrary : IExplorerItemsProvider
 {
     private static readonly DateTimeOffset Seeded = new(2026, 3, 14, 9, 30, 0, TimeSpan.Zero);
 
@@ -19,7 +19,7 @@ internal sealed class ShowcaseImageLibrary : IExplorerResourcesProvider
     ];
 
     /// <inheritdoc />
-    public ValueTask<ExplorerResourcePage> GetResourcesAsync(ExplorerResourceQuery query, CancellationToken cancellationToken)
+    public ValueTask<ExplorerItemPage> GetItemsAsync(ExplorerItemQuery query, CancellationToken cancellationToken)
     {
         IEnumerable<ResourceInfo> matching = Images;
 
@@ -44,8 +44,8 @@ internal sealed class ShowcaseImageLibrary : IExplorerResourcesProvider
 
         var ordered = matching.ToList();
 
-        return ValueTask.FromResult(new ExplorerResourcePage(
-            [.. ordered.Skip(query.Skip).Take(query.Take)],
+        return ValueTask.FromResult(new ExplorerItemPage(
+            ExplorerItem.ForAll(ordered.Skip(query.Skip).Take(query.Take)),
             ordered.Count));
     }
 }

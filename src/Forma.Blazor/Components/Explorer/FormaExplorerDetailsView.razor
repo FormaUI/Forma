@@ -2,7 +2,7 @@
 @using Forma.Features.Explorer
 
 @{
-    var selecting = View.Selection.IsSelectionModeActive && !View.Selection.HasFolders;
+    var selecting = View.Selection.IsSelectionModeActive;
 }
 
 <div class="forma-explorer-details-wrapper">
@@ -70,53 +70,57 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var resource in Resources)
+            @foreach (var item in Items)
             {
-                var selected = View.Selection.IsSelected(resource);
+                var selected = View.Selection.IsSelected(item);
+                var draggable = (item.Capabilities & View.Item.ItemOptions.AllowedCapabilities).HasFlag(ExplorerItemCapabilities.Drag) ? "true" : "false";
 
                 <tr class="forma-explorer-details-row @(selected ? "is-selected" : "")"
-                    draggable="true"
-                    @ondragstart="() => Interaction.BeginDrag(resource)">
+                    draggable="@draggable"
+                    @ondragstart="() => ItemInteraction.BeginDrag(item)">
                     <td class="forma-explorer-cell-actions">
                         @if (selecting)
                         {
                             <button type="button"
                                     class="forma-explorer-table-select @(selected ? "is-checked" : "")"
-                                    aria-label="@resource.SelectLabel(L, View.Selection)"
+                                    aria-label="@item.SelectLabel(L, View.Selection)"
                                     aria-pressed="@(selected ? "true" : "false")"
-                                    @onclick="() => Interaction.ToggleSelectionAsync(resource)">
+                                    @onclick="() => Interaction.ToggleSelectionAsync(item)">
                                 <FormaIcon Icon="Glyph.Check" Size="IconSize.Small" />
                             </button>
                         }
                         else
                         {
-                            <FormaExplorerActionBar Resource="resource" />
+                            <FormaExplorerActionBar Item="item" />
                         }
                     </td>
                     <td class="forma-explorer-cell-name">
                         <button type="button"
                                 class="forma-explorer-name-wrapper"
-                                aria-label="@resource.ActivateLabel(L, View.Selection)"
-                                @onclick="() => Interaction.ActivateAsync(resource)">
-                            <FormaExplorerThumbnail Resource="resource" Size="ExplorerThumbnailSize.Cell" />
-                            <span class="forma-explorer-details-name-text" title="@resource.Name">@resource.Name</span>
+                                aria-label="@item.ActivateLabel(L, View.Selection)"
+                                @onclick="() => ItemInteraction.ActivateAsync(item)">
+                            @if (item.Resource is { } resource)
+                            {
+                                <FormaExplorerThumbnail Resource="resource" Size="ExplorerThumbnailSize.Cell" />
+                            }
+                            <span class="forma-explorer-details-name-text" title="@item.Name">@item.Name</span>
                         </button>
                     </td>
                     @if (ShowsKind)
                     {
-                        <td class="forma-explorer-cell-kind">@resource.KindLabel(L)</td>
+                        <td class="forma-explorer-cell-kind">@item.KindLabel(L)</td>
                     }
                     @if (ShowsSize)
                     {
-                        <td class="forma-explorer-cell-size" dir="auto">@(resource.DisplaySize ?? Placeholder)</td>
+                        <td class="forma-explorer-cell-size" dir="auto">@(item.Resource?.DisplaySize ?? Placeholder)</td>
                     }
                     @if (ShowsModified)
                     {
-                        <td class="forma-explorer-cell-modified">@DisplayDate(resource.ModifiedAt)</td>
+                        <td class="forma-explorer-cell-modified">@DisplayDate(item.ModifiedAt)</td>
                     }
                     @if (ShowsAdded)
                     {
-                        <td class="forma-explorer-cell-added">@DisplayDate(resource.CreatedAt)</td>
+                        <td class="forma-explorer-cell-added">@DisplayDate(item.CreatedAt)</td>
                     }
                 </tr>
             }

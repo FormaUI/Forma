@@ -16,7 +16,7 @@ public sealed partial class FormaExplorerSidebar : ComponentBase, IExplorerSideb
     [Parameter] public FolderResourceInfo? CurrentFolder { get; set; }
 
     /// <summary>List of available explorer folders.</summary>
-    [Parameter] public IReadOnlyList<FolderResourceInfo> Folders { get; set; } = [];
+    [Parameter] public IReadOnlyList<IExplorerItem> Folders { get; set; } = [];
 
     /// <summary>Every known folder indexed, so a node does not rescan the list to find its children.</summary>
     [Parameter] public ExplorerFolderTree FolderTree { get; set; } = ExplorerFolderTree.Empty;
@@ -25,17 +25,10 @@ public sealed partial class FormaExplorerSidebar : ComponentBase, IExplorerSideb
 
     [CascadingParameter] private IExplorerInteraction ExplorerInteraction { get; set; } = default!;
 
+    [CascadingParameter] private IExplorerItemInteraction ItemInteraction { get; set; } = default!;
+
     /// <summary>Raised when a folder is deleted.</summary>
     [Parameter] public EventCallback<FolderResourceInfo> OnFolderDelete { get; set; }
-
-    /// <summary>Raised when a folder starts being dragged.</summary>
-    [Parameter] public EventCallback<FolderResourceInfo> OnFolderDragStart { get; set; }
-
-    /// <summary>Raised when dropped resources land on a folder target.</summary>
-    [Parameter] public EventCallback<FolderResourceInfo?> OnFolderDrop { get; set; }
-
-    /// <summary>Raised when a folder rename is requested.</summary>
-    [Parameter] public EventCallback<FolderResourceInfo> OnFolderRename { get; set; }
 
     /// <summary>Raised when a folder is selected.</summary>
     [Parameter] public EventCallback<FolderResourceInfo?> OnFolderSelected { get; set; }
@@ -44,7 +37,7 @@ public sealed partial class FormaExplorerSidebar : ComponentBase, IExplorerSideb
     [Parameter] public EventCallback<FolderResourceInfo?> OnFolderCreate { get; set; }
 
     /// <summary>Which folder operations the sidebar offers.</summary>
-    [Parameter] public ExplorerFileOptions FileOptions { get; set; } = ExplorerFileOptions.Default;
+    [Parameter] public ExplorerItemOptions ItemOptions { get; set; } = ExplorerItemOptions.Default;
 
     /// <summary>Total count of all resources across the explorer.</summary>
     [Parameter] public int TotalCount { get; set; }
@@ -55,18 +48,18 @@ public sealed partial class FormaExplorerSidebar : ComponentBase, IExplorerSideb
 
     private const double MaxTreeHeight = 30;
 
-    private readonly HashSet<string> _collapsedFolderSources = [];
+    private readonly HashSet<string> _collapsedFolderKeys = [];
 
     private readonly string _titleId = $"forma-explorer-folders-{Guid.NewGuid():N}";
 
-    private IEnumerable<FolderResourceInfo> ExpandableFolders
-        => FolderTree.Expandable();
+    private IEnumerable<string> ExpandableFolderKeys
+        => FolderTree.Expandable().Select(item => item.Key);
 
     private bool HasExpandableFolders
-        => ExpandableFolders.Any();
+        => ExpandableFolderKeys.Any();
 
     private bool IsFullyCollapsed
-        => ExpandableFolders.All(folder => _collapsedFolderSources.Contains(folder.Source));
+        => ExpandableFolderKeys.All(_collapsedFolderKeys.Contains);
 
     private void ToggleAll()
     {
@@ -80,13 +73,13 @@ public sealed partial class FormaExplorerSidebar : ComponentBase, IExplorerSideb
     }
 
     private void ExpandAll()
-        => _collapsedFolderSources.Clear();
+        => _collapsedFolderKeys.Clear();
 
     private void CollapseAll()
     {
-        foreach (var folder in ExpandableFolders)
+        foreach (var key in ExpandableFolderKeys)
         {
-            _collapsedFolderSources.Add(folder.Source);
+            _collapsedFolderKeys.Add(key);
         }
     }
 
@@ -104,7 +97,7 @@ public sealed partial class FormaExplorerSidebar : ComponentBase, IExplorerSideb
     internal static void HandleDragOver(DragEventArgs args)
         => args.DataTransfer.DropEffect = "move";
 
-    private IReadOnlyList<FolderResourceInfo> ChildrenOf(string? parent)
+    private IReadOnlyList<IExplorerFolderItem> ChildrenOf(string? parent)
         => FolderTree.ChildrenOf(parent);
 
     private Task SelectFolderAsync(FolderResourceInfo? folder)
@@ -113,50 +106,59 @@ public sealed partial class FormaExplorerSidebar : ComponentBase, IExplorerSideb
     private Task CreateFolderAsync(FolderResourceInfo? parent)
         => OnFolderCreate.InvokeAsync(parent);
 
-    private Task DropOnFolderAsync(FolderResourceInfo? folder)
-        => OnFolderDrop.InvokeAsync(folder);
-
     IExplorerSelectionView IExplorerSidebarView.Selection => Explorer.Selection;
 
-    IReadOnlyList<FolderResourceInfo> IExplorerSidebarView.ChildrenOf(string? parent)
+    IReadOnlyList<IExplorerFolderItem> IExplorerSidebarView.ChildrenOf(string? parent)
         => ChildrenOf(parent);
 
-    bool IExplorerSidebarView.IsCurrent(FolderResourceInfo folder)
-        => CurrentFolder?.Source == folder.Source;
+    bool IExplorerSidebarView.IsCurrent(IExplorerFolderItem item)
+        => CurrentFolder?.Source == item.Key;
 
     // Folders start expanded so a nested tree is discoverable without a first click.
-    bool IExplorerSidebarView.IsExpanded(string folderSource)
-        => !_collapsedFolderSources.Contains(folderSource);
+    bool IExplorerSidebarView.IsExpanded(string folderKey)
+        => !_collapsedFolderKeys.Contains(folderKey);
 
-    void IExplorerSidebarInteraction.ToggleExpanded(string folderSource)
+    void IExplorerSidebarInteraction.ToggleExpanded(string folderKey)
     {
-        if (!_collapsedFolderSources.Remove(folderSource))
+        if (!_collapsedFolderKeys.Remove(folderKey))
         {
-            _collapsedFolderSources.Add(folderSource);
+            _collapsedFolderKeys.Add(folderKey);
         }
 
         // The toolbar toggle reflects the whole tree, so the sidebar rerenders for a change made inside a node.
         StateHasChanged();
     }
 
-    Task IExplorerSidebarInteraction.SelectFolderAsync(FolderResourceInfo? folder)
-        => SelectFolderAsync(folder);
+    Task IExplorerSidebarInteraction.SelectFolderAsync(IExplorerFolderItem? item)
+        => item is null
+            ? SelectFolderAsync(null)
+            : item.Resource is { } folder ? SelectFolderAsync(folder) : Task.CompletedTask;
 
-    Task IExplorerSidebarInteraction.RenameFolderAsync(FolderResourceInfo folder)
-        => OnFolderRename.InvokeAsync(folder);
+    Task IExplorerSidebarInteraction.RenameFolderAsync(IExplorerFolderItem item)
+    {
+        ItemInteraction.RequestRename(item);
 
-    Task IExplorerSidebarInteraction.DeleteFolderAsync(FolderResourceInfo folder)
-        => OnFolderDelete.InvokeAsync(folder);
+        return Task.CompletedTask;
+    }
 
-    Task IExplorerSidebarInteraction.CreateFolderAsync(FolderResourceInfo? parent)
-        => CreateFolderAsync(parent);
+    Task IExplorerSidebarInteraction.DeleteFolderAsync(IExplorerFolderItem item)
+        => item.Resource is { } folder ? OnFolderDelete.InvokeAsync(folder) : Task.CompletedTask;
 
-    Task IExplorerSidebarInteraction.DropOnFolderAsync(FolderResourceInfo? folder)
-        => DropOnFolderAsync(folder);
+    Task IExplorerSidebarInteraction.CreateFolderAsync(IExplorerFolderItem? parent)
+        => parent is null
+            ? CreateFolderAsync(null)
+            : parent.Resource is { } folder ? CreateFolderAsync(folder) : Task.CompletedTask;
 
-    Task IExplorerSidebarInteraction.BeginFolderDragAsync(FolderResourceInfo folder)
-        => OnFolderDragStart.InvokeAsync(folder);
+    Task IExplorerSidebarInteraction.DropOnFolderAsync(IExplorerFolderItem? item)
+        => ItemInteraction.DropOnItemAsync(item);
 
-    Task IExplorerSidebarInteraction.ToggleFolderSelectAsync(FolderResourceInfo folder)
-        => ExplorerInteraction.ToggleFolderSelectAsync(folder);
+    Task IExplorerSidebarInteraction.BeginFolderDragAsync(IExplorerFolderItem item)
+    {
+        ItemInteraction.BeginDrag(item);
+
+        return Task.CompletedTask;
+    }
+
+    Task IExplorerSidebarInteraction.ToggleFolderSelectAsync(IExplorerFolderItem item)
+        => ExplorerInteraction.ToggleSelectionAsync(item);
 }

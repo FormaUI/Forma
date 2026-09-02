@@ -14,6 +14,8 @@ public sealed partial class FormaExplorerAddressBar : ComponentBase
 
     [CascadingParameter] private IExplorerContentInteraction Interaction { get; set; } = default!;
 
+    [CascadingParameter] private IExplorerItemInteraction ItemInteraction { get; set; } = default!;
+
     [CascadingParameter] private IExplorerLocationView Location { get; set; } = default!;
 
     [CascadingParameter] private IExplorerLocationInteraction LocationInteraction { get; set; } = default!;
@@ -27,18 +29,18 @@ public sealed partial class FormaExplorerAddressBar : ComponentBase
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        if (Configuration is null || Interaction is null || Location is null || LocationInteraction is null
+        if (Configuration is null || Interaction is null || ItemInteraction is null || Location is null || LocationInteraction is null
             || Search is null || SearchInteraction is null)
         {
             throw new InvalidOperationException($"{nameof(FormaExplorerAddressBar)} must be rendered inside a {nameof(FormaExplorer)}.");
         }
     }
 
-    private IReadOnlyList<BreadcrumbItem<FolderResourceInfo>> Items
+    private IReadOnlyList<BreadcrumbItem<IExplorerFolderItem>> Items
     {
         get
         {
-            var items = new List<BreadcrumbItem<FolderResourceInfo>>
+            var items = new List<BreadcrumbItem<IExplorerFolderItem>>
             {
                 new(L["All Media"].Value)
                 {
@@ -49,11 +51,11 @@ public sealed partial class FormaExplorerAddressBar : ComponentBase
 
             foreach (var segment in Location.Breadcrumbs)
             {
-                items.Add(new BreadcrumbItem<FolderResourceInfo>(segment.Name)
+                items.Add(new BreadcrumbItem<IExplorerFolderItem>(segment.Name)
                 {
                     Value = segment,
-                    IsCurrent = Location.CurrentFolder?.Source == segment.Source,
-                    Children = ChildrenAsItems(segment.Source)
+                    IsCurrent = Location.CurrentFolder?.Source == segment.Key,
+                    Children = ChildrenAsItems(segment.Key)
                 });
             }
 
@@ -61,7 +63,7 @@ public sealed partial class FormaExplorerAddressBar : ComponentBase
         }
     }
 
-    private List<BreadcrumbItem<FolderResourceInfo>>? ChildrenAsItems(string? folderKey)
+    private List<BreadcrumbItem<IExplorerFolderItem>>? ChildrenAsItems(string? folderKey)
     {
         if (!Configuration.Options.ShowFolderMenu)
         {
@@ -72,7 +74,7 @@ public sealed partial class FormaExplorerAddressBar : ComponentBase
 
         return children.Count == 0
             ? null
-            : [.. children.Select(child => new BreadcrumbItem<FolderResourceInfo>(child.Name) { Value = child })];
+            : [.. children.Select(child => new BreadcrumbItem<IExplorerFolderItem>(child.Name) { Value = child })];
     }
 
     private string SearchPlaceholder

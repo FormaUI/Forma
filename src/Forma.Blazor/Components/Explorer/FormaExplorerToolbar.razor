@@ -10,9 +10,9 @@
     {
         <div class="forma-explorer-selection-bar">
             <div class="forma-explorer-selection-actions">
-                @if (View.FileOptions.AllowDelete)
+                @if (View.Item.ItemOptions.AllowedCapabilities.HasFlag(ExplorerItemCapabilities.Delete))
                 {
-                    <FormaButton Variant="ButtonVariant.Danger" class="forma-explorer-delete-button" OnClick="Interaction.RequestDeleteSelected">
+                    <FormaButton Variant="ButtonVariant.Danger" class="forma-explorer-delete-button" OnClick="ItemInteraction.RequestDeleteSelected">
                         <FormaIcon Icon="Glyph.Delete" Size="IconSize.Small" />
                         @L["Delete"]
                     </FormaButton>
@@ -45,11 +45,11 @@
         }
         @if (ShowsNewFolderAction)
         {
-            <FormaToggleButton Icon="Glyph.FolderAdd" Label="@L["New Folder"]" ShowLabel="true" class="forma-explorer-new-folder-button" OnClick="Interaction.RequestNewFolderAsync" />
+            <FormaToggleButton Icon="Glyph.FolderAdd" Label="@L["New Folder"]" ShowLabel="true" class="forma-explorer-new-folder-button" OnClick="ItemInteraction.RequestNewFolderAsync" />
         }
-        @if (View.FileOptions.AllowUpload)
+        @if (View.Item.ItemOptions.AllowUpload)
         {
-            <FormaToggleButton Icon="Glyph.CloudUpload" Label="@L["Upload"]" ShowLabel="true" class="forma-explorer-upload-button" OnClick="Interaction.ToggleUpload" />
+            <FormaToggleButton Icon="Glyph.CloudUpload" Label="@L["Upload"]" ShowLabel="true" class="forma-explorer-upload-button" OnClick="ItemInteraction.ToggleUpload" />
         }
     </div>
 

@@ -9,7 +9,7 @@ public interface IExplorerLocationView
     FolderResourceInfo? CurrentFolder { get; }
 
     /// <summary>The path from the root to the current folder.</summary>
-    IReadOnlyList<FolderResourceInfo> Breadcrumbs { get; }
+    IReadOnlyList<IExplorerFolderItem> Breadcrumbs { get; }
 
     /// <summary>The indexed folder hierarchy used by the tree and breadcrumb.</summary>
     ExplorerFolderTree FolderTree { get; }

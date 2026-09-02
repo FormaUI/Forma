@@ -1,31 +1,29 @@
 namespace Forma.Features.Explorer;
 
-using Forma.Framework.Resources;
-
 /// <summary>What the nodes drawing an explorer's folder tree may ask it to do.</summary>
 public interface IExplorerSidebarInteraction
 {
     /// <summary>Shows what the folder holds, or hides it when it is already shown.</summary>
-    void ToggleExpanded(string folderSource);
+    void ToggleExpanded(string folderKey);
 
-    /// <summary>Browses the folder.</summary>
-    Task SelectFolderAsync(FolderResourceInfo? folder);
+    /// <summary>Browses the folder, or the top level when none is named.</summary>
+    Task SelectFolderAsync(IExplorerFolderItem? item);
 
     /// <summary>Asks for a new folder under the parent, or at the top level when none is named.</summary>
-    Task CreateFolderAsync(FolderResourceInfo? parent);
+    Task CreateFolderAsync(IExplorerFolderItem? parent);
 
     /// <summary>Asks to rename the folder.</summary>
-    Task RenameFolderAsync(FolderResourceInfo folder);
+    Task RenameFolderAsync(IExplorerFolderItem item);
 
     /// <summary>Asks to delete the folder.</summary>
-    Task DeleteFolderAsync(FolderResourceInfo folder);
+    Task DeleteFolderAsync(IExplorerFolderItem item);
 
     /// <summary>Reports what was dropped onto the folder.</summary>
-    Task DropOnFolderAsync(FolderResourceInfo? folder);
+    Task DropOnFolderAsync(IExplorerFolderItem? item);
 
     /// <summary>Records the folder as the one being dragged.</summary>
-    Task BeginFolderDragAsync(FolderResourceInfo folder);
+    Task BeginFolderDragAsync(IExplorerFolderItem item);
 
     /// <summary>Adds the folder to the selection, or removes it when it is already selected.</summary>
-    Task ToggleFolderSelectAsync(FolderResourceInfo folder);
+    Task ToggleFolderSelectAsync(IExplorerFolderItem item);
 }

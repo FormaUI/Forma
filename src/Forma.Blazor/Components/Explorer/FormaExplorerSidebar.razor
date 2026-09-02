@@ -9,7 +9,7 @@
         <span class="forma-explorer-sidebar-title" id="@_titleId">@L["Folders"]</span>
 
         <div class="forma-explorer-sidebar-tools">
-            @if (FileOptions.AllowFolderCreate)
+            @if (ItemOptions.AllowedFolderCapabilities.HasFlag(ExplorerItemCapabilities.Create))
             {
                 <FormaButton Variant="ButtonVariant.Ghost"
                              Size="ButtonSize.Mini"
@@ -38,7 +38,7 @@
                  style="--forma-explorer-folder-depth: 0"
                  @ondragover="HandleDragOver"
                  @ondragover:preventDefault="true"
-                 @ondrop="() => DropOnFolderAsync(null)">
+                 @ondrop="() => ItemInteraction.DropOnItemAsync(null)">
                 <span class="forma-explorer-folder-twisty is-empty" aria-hidden="true"></span>
                 <button type="button"
                         class="forma-explorer-folder-target"
@@ -50,9 +50,9 @@
             </div>
         </li>
 
-        @foreach (var folder in ChildrenOf(null))
+        @foreach (var item in ChildrenOf(null))
         {
-            <FormaExplorerFolderNode Folder="folder" Depth="0" />
+            <FormaExplorerFolderNode Item="item" Depth="0" />
         }
     </ul>
 

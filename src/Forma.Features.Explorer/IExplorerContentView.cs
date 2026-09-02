@@ -1,7 +1,5 @@
 namespace Forma.Features.Explorer;
 
-using Forma.Framework.Resources;
-
 /// <summary>What components presenting an explorer's current content may read.</summary>
 public interface IExplorerContentView
 {
@@ -14,15 +12,15 @@ public interface IExplorerContentView
     /// <summary>Which layout the content is shown in.</summary>
     ExplorerViewMode ViewMode { get; }
 
-    /// <summary>The resources currently shown.</summary>
-    IReadOnlyList<ResourceInfo> VisibleResources { get; }
+    /// <summary>The items currently shown.</summary>
+    IReadOnlyList<IExplorerItem> VisibleItems { get; }
 
     /// <summary>Whether a provider fetch is in flight.</summary>
     bool IsFetching { get; }
 
-    /// <summary>How many resources match the current query, or null when unknown.</summary>
+    /// <summary>How many items match the current query, or null when unknown.</summary>
     int? MatchingCount { get; }
 
-    /// <summary>How the currently shown resources are paged.</summary>
+    /// <summary>How the currently shown items are paged.</summary>
     ExplorerPagingInfo Paging { get; }
 }

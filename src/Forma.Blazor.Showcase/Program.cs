@@ -34,7 +34,7 @@ builder.Services.AddScoped<ShowcaseShareTarget>();
 builder.Services.AddScoped<IShareTarget>(services => services.GetRequiredService<ShowcaseShareTarget>());
 
 // What the composer's image dialog browses and uploads into; without these it offers an address alone.
-builder.Services.AddScoped<IExplorerResourcesProvider>(_ => new ShowcaseImageLibrary());
+builder.Services.AddScoped<IExplorerItemsProvider>(_ => new ShowcaseImageLibrary());
 builder.Services.AddScoped<IFileStore, DefaultFileStore>();
 
 // The statuses this application defines for itself — the library ships none.
