@@ -69,7 +69,7 @@ public sealed partial class FormaExplorerAddressBar : ComponentBase
             return null;
         }
 
-        var children = Location.FolderTree.ChildrenOf(folderKey);
+        var children = Location.FolderTree.ListedChildrenOf(folderKey);
 
         return children.Count == 0
             ? null

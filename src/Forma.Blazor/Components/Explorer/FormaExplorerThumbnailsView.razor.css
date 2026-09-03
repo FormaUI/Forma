@@ -35,11 +35,38 @@
 }
 
 @media (hover: hover) {
-    .forma-explorer-item:hover {
+    .forma-explorer-item:not(.is-disabled):hover {
         border-color: var(--dark-border-color);
         background: var(--hover-background-color);
         box-shadow: var(--shadow-small);
     }
+}
+
+/* A tile the explorer does not let the reader drag. */
+.forma-explorer-item[draggable="false"],
+.forma-explorer-item[draggable="false"]:active {
+    cursor: default;
+}
+
+/* A disabled tile: the disabled control colors, and a pointer that says so. */
+.forma-explorer-item.is-disabled,
+.forma-explorer-item.is-disabled .forma-explorer-thumbnail-wrapper {
+    background: var(--control-disabled-color);
+    cursor: not-allowed;
+}
+
+.forma-explorer-item.is-disabled .forma-explorer-item-name,
+.forma-explorer-item.is-disabled .forma-explorer-item-size {
+    color: var(--control-disabled-foreground-color);
+}
+
+.forma-explorer-item.is-disabled .forma-explorer-item-open {
+    cursor: not-allowed;
+}
+
+/* An invisible tile keeps its cell in the grid. */
+.forma-explorer-item.is-invisible {
+    visibility: hidden;
 }
 
 .forma-explorer-item.is-selected {

@@ -10,7 +10,7 @@
     {
         <div class="forma-explorer-selection-bar">
             <div class="forma-explorer-selection-actions">
-                @if (View.Item.ItemOptions.AllowedCapabilities.HasFlag(ExplorerItemCapabilities.Delete))
+                @if (ShowsDeleteAction)
                 {
                     <FormaButton Variant="ButtonVariant.Danger" class="forma-explorer-delete-button" OnClick="ItemInteraction.RequestDeleteSelected">
                         <FormaIcon Icon="Glyph.Delete" Size="IconSize.Small" />

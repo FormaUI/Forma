@@ -17,6 +17,9 @@ public sealed class FakeExplorerItemsProvider(IReadOnlyList<ResourceInfo> resour
     /// <summary>Reported instead of a count when set, standing in for a store that cannot total its contents.</summary>
     public bool ReportsTotal { get; set; } = true;
 
+    /// <summary>The sources of the resources the provider returns as hidden items.</summary>
+    public ISet<string> HiddenSources { get; } = new HashSet<string>(StringComparer.Ordinal);
+
     /// <summary>The window the query names, filtered by search and ordered by name alone.</summary>
     public async ValueTask<ExplorerItemPage> GetItemsAsync(ExplorerItemQuery query, CancellationToken cancellationToken)
     {
@@ -41,7 +44,12 @@ public sealed class FakeExplorerItemsProvider(IReadOnlyList<ResourceInfo> resour
         var ordered = matching.ToList();
 
         return new ExplorerItemPage(
-            ExplorerItem.ForAll(ordered.Skip(query.Skip).Take(query.Take)),
+            [.. ordered.Skip(query.Skip).Take(query.Take).Select(ToItem)],
             ReportsTotal ? ordered.Count : null);
     }
+
+    private IExplorerItem ToItem(ResourceInfo resource)
+        => HiddenSources.Contains(resource.Source)
+            ? new ExplorerItem { Key = resource.Source, Name = resource.Name, Visibility = ExplorerItemVisibility.Hidden, Resource = resource }
+            : ExplorerItem.For(resource);
 }

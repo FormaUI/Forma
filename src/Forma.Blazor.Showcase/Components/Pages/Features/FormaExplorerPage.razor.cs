@@ -69,6 +69,20 @@ public sealed partial class FormaExplorerPage : ComponentBase
 
     private IReadOnlyList<IExplorerItem> _constrainedFolderItems = [];
 
+    private IReadOnlyList<IExplorerItem> _stateItems = [];
+
+    private IReadOnlyList<IExplorerItem> _stateFolderItems = [];
+
+    private readonly ExplorerItemOptions _stateOptions = new()
+    {
+        AllowedFolderCapabilities = ExplorerItemCapabilities.Drag
+            | ExplorerItemCapabilities.Drop
+            | ExplorerItemCapabilities.Open
+            | ExplorerItemCapabilities.Move
+            | ExplorerItemCapabilities.Rename
+            | ExplorerItemCapabilities.Delete
+    };
+
     private static ExplorerDetailsColumns[] ColumnChoices
         => [ExplorerDetailsColumns.Kind, ExplorerDetailsColumns.Size, ExplorerDetailsColumns.Modified, ExplorerDetailsColumns.Added];
 
@@ -127,6 +141,77 @@ public sealed partial class FormaExplorerPage : ComponentBase
         _singleSelectItems = ExplorerItem.ForAll(_singleSelectResources);
         _constrainedItems = ExplorerItem.ForAll(_constrainedResources);
         _constrainedFolderItems = ExplorerItem.ForAll(_constrainedFolders);
+
+        const ExplorerItemCapabilities everyMediaCapability = ExplorerItemCapabilities.Drag
+            | ExplorerItemCapabilities.Open
+            | ExplorerItemCapabilities.View
+            | ExplorerItemCapabilities.Move
+            | ExplorerItemCapabilities.Rename
+            | ExplorerItemCapabilities.Delete;
+
+        const ExplorerItemCapabilities everyFolderCapability = ExplorerItemCapabilities.Drag
+            | ExplorerItemCapabilities.Drop
+            | ExplorerItemCapabilities.Open
+            | ExplorerItemCapabilities.Create
+            | ExplorerItemCapabilities.Move
+            | ExplorerItemCapabilities.Rename
+            | ExplorerItemCapabilities.Delete;
+
+        _stateItems =
+        [
+            ExplorerItem.For(new ImageResourceInfo("/media/sample-poster.svg?state=live") { Name = "live.svg", Size = 12400, CreatedAt = seeded.AddDays(-5), ModifiedAt = seeded.AddDays(-1) }),
+            new ExplorerItem
+            {
+                Key = "state-fixed",
+                Name = "fixed.svg",
+                Capabilities = ExplorerItemCapabilities.Drag | ExplorerItemCapabilities.Open | ExplorerItemCapabilities.View,
+                Resource = new ImageResourceInfo("/media/sample-poster.svg?state=fixed") { Name = "fixed.svg", Size = 9600, CreatedAt = seeded.AddDays(-4), ModifiedAt = seeded.AddDays(-4) }
+            },
+            new ExplorerItem
+            {
+                Key = "state-disabled",
+                Name = "disabled.svg",
+                Capabilities = everyMediaCapability,
+                IsDisabled = true,
+                Resource = new ImageResourceInfo("/media/sample-poster.svg?state=disabled") { Name = "disabled.svg", Size = 8200, CreatedAt = seeded.AddDays(-3), ModifiedAt = seeded.AddDays(-3) }
+            },
+            new ExplorerItem
+            {
+                Key = "state-invisible",
+                Name = "invisible.svg",
+                Capabilities = everyMediaCapability,
+                Visibility = ExplorerItemVisibility.Invisible,
+                Resource = new ImageResourceInfo("/media/sample-poster.svg?state=invisible") { Name = "invisible.svg", Size = 7100, CreatedAt = seeded.AddDays(-2), ModifiedAt = seeded.AddDays(-2) }
+            },
+            new ExplorerItem
+            {
+                Key = "state-hidden",
+                Name = "hidden.svg",
+                Capabilities = everyMediaCapability,
+                Visibility = ExplorerItemVisibility.Hidden,
+                Resource = new ImageResourceInfo("/media/sample-poster.svg?state=hidden") { Name = "hidden.svg", Size = 6400, CreatedAt = seeded.AddDays(-1), ModifiedAt = seeded.AddDays(-1) }
+            }
+        ];
+
+        _stateFolderItems =
+        [
+            ExplorerItem.ForFolder(new FolderResourceInfo("state-open") { Name = "Open", Count = 0 }),
+            new ExplorerFolderItem
+            {
+                Key = "state-sealed",
+                Name = "Sealed",
+                Capabilities = ExplorerItemCapabilities.Drag | ExplorerItemCapabilities.Move | ExplorerItemCapabilities.Rename | ExplorerItemCapabilities.Delete,
+                Resource = new FolderResourceInfo("state-sealed") { Name = "Sealed", Count = 0 }
+            },
+            new ExplorerFolderItem
+            {
+                Key = "state-disabled-folder",
+                Name = "Disabled",
+                Capabilities = everyFolderCapability,
+                IsDisabled = true,
+                Resource = new FolderResourceInfo("state-disabled-folder") { Name = "Disabled", Count = 0 }
+            }
+        ];
 
         // Every browsing demo reads through a store, so folder, search, sort and paging are answered the way a real library answers them.
         _mediaStore = Store(media);
@@ -208,8 +293,11 @@ public sealed partial class FormaExplorerPage : ComponentBase
 
     private IExplorerFolderItem? CurrentFolderFor(string key)
         => _currentFolderSources.GetValueOrDefault(key) is { } source
-            ? _sampleFolderItems.OfType<IExplorerFolderItem>().FirstOrDefault(folder => folder.Key == source)
+            ? FoldersFor(key).OfType<IExplorerFolderItem>().FirstOrDefault(folder => folder.Key == source)
             : null;
+
+    private IReadOnlyList<IExplorerItem> FoldersFor(string key)
+        => key == "states" ? _stateFolderItems : _sampleFolderItems;
 
     private Task HandleFolderChangedAsync(string key, IExplorerFolderItem? folder)
     {

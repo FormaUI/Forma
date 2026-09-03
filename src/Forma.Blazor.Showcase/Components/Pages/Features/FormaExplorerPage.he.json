@@ -25,6 +25,8 @@
   "Added": "נוסף",
   "Read-Only Explorer": "סייר לקריאה בלבד",
   "With ExplorerItemOptions.ReadOnly, browsing and selection remain while upload, rename, delete, and every folder action disappear.": "עם ExplorerItemOptions.ReadOnly נשמרים העיון והבחירה, ואילו העלאה, שינוי שם, מחיקה וכל פעולות התיקיות נעלמות.",
+  "Item States": "מצבי פריטים",
+  "Every item carries its own state. A disabled item is drawn but offers nothing, an invisible item keeps its place without being drawn, a hidden item leaves the listing, and an item's own capabilities decide which operations the explorer offers on it: here one file cannot be renamed, deleted or moved, one folder cannot be entered or receive a drop, and one folder is disabled.": "לכל פריט מצב משלו. פריט מושבת מצויר אך אינו מציע דבר, פריט בלתי נראה שומר על מקומו מבלי להיות מצויר, פריט מוסתר יוצא מהרשימה, והיכולות של הפריט עצמו קובעות אילו פעולות הסייר מציע עליו: כאן קובץ אחד אינו ניתן לשינוי שם, למחיקה או להעברה, תיקייה אחת אינה ניתנת לכניסה ואינה מקבלת גרירה, ותיקייה אחת מושבתת.",
   "Media without Folder Management": "מדיה ללא ניהול תיקיות",
   "Media stays fully editable while the folder tree is fixed, so items can be renamed and deleted but folders cannot.": "המדיה נותרת ניתנת לעריכה מלאה בעוד עץ התיקיות קבוע, כך שניתן לשנות שם ולמחוק פריטים אך לא תיקיות.",
   "Breadcrumb-Only Navigation": "ניווט באמצעות שובר הנתיב בלבד",

@@ -26,8 +26,76 @@ public sealed class ExplorerProviderWindowTests
         }
     }
 
+    private sealed class ItemProvider(IReadOnlyList<IExplorerItem> items, int? total = null) : IExplorerItemsProvider
+    {
+        public ValueTask<ExplorerItemPage> GetItemsAsync(ExplorerItemQuery query, CancellationToken cancellationToken)
+            => ValueTask.FromResult(new ExplorerItemPage(items, total ?? items.Count));
+    }
+
+    private static ExplorerItem Hidden(string name)
+        => new() { Key = name, Name = name, Visibility = ExplorerItemVisibility.Hidden };
+
     private static ResourceInfo Resource(string name)
         => new($"/media/{name}");
+
+    [Fact]
+    public async Task Should_leave_hidden_items_out_of_the_window()
+    {
+        // Arrange
+        using var window = new ExplorerProviderWindow();
+        var provider = new ItemProvider([ExplorerItem.For(Resource("shown")), Hidden("hidden")], total: 6);
+        var query = new ExplorerItemQuery(0, 10, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
+
+        // Act
+        await window.FetchAsync(provider, onStateChanged: () => { }, query, filter: null, appendToWindow: false);
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal(["shown"], window.Items.Select(item => item.Name)),
+            () => Assert.Equal(2, window.FetchedCount),
+            () => Assert.Equal(6, window.Total),
+            () => Assert.Equal(5, window.ListedTotal));
+    }
+
+    [Fact]
+    public async Task Should_count_what_it_fetched_and_left_out_across_appended_windows()
+    {
+        // Arrange
+        using var window = new ExplorerProviderWindow();
+        var provider = new ItemProvider([ExplorerItem.For(Resource("shown")), Hidden("hidden")], total: 6);
+        var firstPage = new ExplorerItemQuery(0, 2, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
+        var secondPage = new ExplorerItemQuery(2, 2, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
+        await window.FetchAsync(provider, onStateChanged: () => { }, firstPage, filter: null, appendToWindow: false);
+
+        // Act
+        await window.FetchAsync(provider, onStateChanged: () => { }, secondPage, filter: null, appendToWindow: true);
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal(2, window.Items.Count),
+            () => Assert.Equal(4, window.FetchedCount),
+            () => Assert.Equal(4, window.ListedTotal),
+            () => Assert.True(window.WasFull));
+    }
+
+    [Fact]
+    public async Task Should_start_the_counts_over_when_the_window_is_replaced()
+    {
+        // Arrange
+        using var window = new ExplorerProviderWindow();
+        var provider = new ItemProvider([ExplorerItem.For(Resource("shown")), Hidden("hidden")], total: 6);
+        var query = new ExplorerItemQuery(0, 2, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
+        await window.FetchAsync(provider, onStateChanged: () => { }, query, filter: null, appendToWindow: false);
+        await window.FetchAsync(provider, onStateChanged: () => { }, query, filter: null, appendToWindow: true);
+
+        // Act
+        await window.FetchAsync(provider, onStateChanged: () => { }, query, filter: null, appendToWindow: false);
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal(2, window.FetchedCount),
+            () => Assert.Equal(5, window.ListedTotal));
+    }
 
     [Fact]
     public void Should_hold_nothing_before_the_first_fetch()

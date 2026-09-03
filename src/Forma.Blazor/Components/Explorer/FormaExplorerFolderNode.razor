@@ -8,20 +8,23 @@
     var isCurrent = Sidebar.IsCurrent(Item);
     var selected = Sidebar.Selection.IsSelected(Item);
     var selectable = Sidebar.Selection.IsSelectionModeActive;
-    var allowed = Item.Capabilities & Sidebar.ItemOptions.AllowedFolderCapabilities;
+    var allowed = Item.GetCapabilities(Sidebar.ItemOptions);
     var hasActions = !selectable && (allowed & (ExplorerItemCapabilities.Create | ExplorerItemCapabilities.Rename | ExplorerItemCapabilities.Delete)) != ExplorerItemCapabilities.None;
     var draggable = allowed.HasFlag(ExplorerItemCapabilities.Drag) ? "true" : "false";
+    var acceptsDrop = allowed.HasFlag(ExplorerItemCapabilities.Drop);
+    var opens = allowed.HasFlag(ExplorerItemCapabilities.Open);
 }
 
 <li role="treeitem"
     aria-selected="@(isCurrent ? "true" : "false")"
-    aria-expanded="@(children.Count == 0 ? null : expanded ? "true" : "false")">
-    <div class="forma-explorer-folder-row @(isCurrent ? "is-active" : "") @(selected ? "is-selected" : "")"
+    aria-expanded="@(children.Count == 0 ? null : expanded ? "true" : "false")"
+    aria-disabled="@(Item.IsDisabled ? "true" : null)">
+    <div class="forma-explorer-folder-row @(isCurrent ? "is-active" : "") @(selected ? "is-selected" : "") @Item.GetStateClasses()"
          style="--forma-explorer-folder-depth: @Depth"
          draggable="@draggable"
          @ondragstart="() => Interaction.BeginFolderDragAsync(Item)"
          @ondragover="args => FormaExplorerSidebar.HandleDragOver(args)"
-         @ondragover:preventDefault="true"
+         @ondragover:preventDefault="acceptsDrop"
          @ondrop="() => Interaction.DropOnFolderAsync(Item)">
         @if (hasActions)
         {
@@ -65,6 +68,7 @@
                     class="forma-explorer-folder-select @(selected ? "is-checked" : "")"
                     aria-label="@(selected ? L["Deselect Folder \"{Name}\"", Item.Name] : L["Select Folder \"{Name}\"", Item.Name])"
                     aria-pressed="@(selected ? "true" : "false")"
+                    disabled="@Item.IsDisabled"
                     @onclick="() => Interaction.ToggleFolderSelectAsync(Item)">
                 <FormaIcon Icon="Glyph.Check" Size="IconSize.Small" />
             </button>
@@ -86,6 +90,7 @@
 
         <button type="button"
                 class="forma-explorer-folder-target"
+                disabled="@(!opens)"
                 @onclick="() => Interaction.SelectFolderAsync(Item)">
             <span class="forma-explorer-folder-icon" aria-hidden="true"><FormaIcon Icon="@(isCurrent ? Glyph.FolderOpen : Glyph.Folder)" Size="IconSize.Small" /></span>
             <span class="forma-explorer-folder-name" title="@Item.Name">@Item.Name</span>

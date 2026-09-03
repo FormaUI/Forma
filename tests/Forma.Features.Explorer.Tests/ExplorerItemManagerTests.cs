@@ -12,6 +12,31 @@ public sealed class ExplorerItemManagerTests
     private static ExplorerFolderItem FolderItem(string source)
         => ExplorerItem.ForFolder(new FolderResourceInfo(source));
 
+    private static ExplorerItem Item(string source, ExplorerItemCapabilities capabilities, bool isDisabled = false)
+    {
+        var resource = new FileResourceInfo(source);
+
+        return new ExplorerItem { Key = source, Name = resource.Name, Capabilities = capabilities, IsDisabled = isDisabled, Resource = resource };
+    }
+
+    private static ExplorerFolderItem FolderItem(string source, ExplorerItemCapabilities capabilities)
+    {
+        var folder = new FolderResourceInfo(source);
+
+        return new ExplorerFolderItem { Key = source, Name = folder.Name, Capabilities = capabilities, Resource = folder };
+    }
+
+    private static async Task<bool> DropsAsync(ExplorerItemManager manager, IExplorerItem dragged, IExplorerItem? target)
+    {
+        var dropped = false;
+        manager.OnDrop = (_, _) => { dropped = true; return Task.CompletedTask; };
+        manager.BeginDrag(dragged);
+
+        await manager.DropOnItemAsync(target);
+
+        return dropped;
+    }
+
     [Fact]
     public void Should_open_a_pending_rename_and_report_the_change()
     {
@@ -38,7 +63,7 @@ public sealed class ExplorerItemManagerTests
         var manager = new ExplorerItemManager();
 
         // Act
-        manager.RequestRename(new ExplorerItem { Key = "ghost", Name = "Ghost" });
+        manager.RequestRename(new ExplorerItem { Key = "ghost", Name = "Ghost", Capabilities = ExplorerItemCapabilities.Rename });
 
         // Assert
         var rename = Assert.IsType<ExplorerRenameAction<IExplorerItem>>(manager.PendingAction);
@@ -302,7 +327,7 @@ public sealed class ExplorerItemManagerTests
     {
         // Arrange
         var manager = new ExplorerItemManager();
-        var destination = new ExplorerFolderItem { Key = "ghost", Name = "Ghost" };
+        var destination = new ExplorerFolderItem { Key = "ghost", Name = "Ghost", Capabilities = ExplorerItemCapabilities.Drop };
         IExplorerFolderItem? droppedOn = null;
         manager.OnDrop = (_, folder) => { droppedOn = folder; return Task.CompletedTask; };
         manager.BeginDrag(Item("/media/photo.png"));
@@ -328,6 +353,176 @@ public sealed class ExplorerItemManagerTests
 
         // Assert
         Assert.False(dropped);
+    }
+
+    [Fact]
+    public async Task Should_not_begin_a_drag_of_an_item_that_cannot_be_dragged()
+    {
+        // Arrange
+        var manager = new ExplorerItemManager();
+
+        // Act
+        var dropped = await DropsAsync(manager, Item("/media/photo.png", ExplorerItemCapabilities.Move), FolderItem("/photos"));
+
+        // Assert
+        Assert.False(dropped);
+    }
+
+    [Fact]
+    public async Task Should_refuse_a_drop_of_an_item_that_cannot_move()
+    {
+        // Arrange
+        var manager = new ExplorerItemManager();
+
+        // Act
+        var dropped = await DropsAsync(manager, Item("/media/photo.png", ExplorerItemCapabilities.Drag), FolderItem("/photos"));
+
+        // Assert
+        Assert.False(dropped);
+    }
+
+    [Fact]
+    public async Task Should_refuse_a_drop_onto_a_folder_that_does_not_accept_drops()
+    {
+        // Arrange
+        var manager = new ExplorerItemManager();
+
+        // Act
+        var dropped = await DropsAsync(manager, Item("/media/photo.png"), FolderItem("/photos", ExplorerItemCapabilities.Open));
+
+        // Assert
+        Assert.False(dropped);
+    }
+
+    [Fact]
+    public async Task Should_refuse_a_drop_the_options_do_not_permit()
+    {
+        // Arrange
+        var manager = new ExplorerItemManager
+        {
+            ItemOptions = new ExplorerItemOptions { AllowedCapabilities = ExplorerItemCapabilities.Drag }
+        };
+
+        // Act
+        var dropped = await DropsAsync(manager, Item("/media/photo.png"), FolderItem("/photos"));
+
+        // Assert
+        Assert.False(dropped);
+    }
+
+    [Fact]
+    public async Task Should_refuse_every_operation_on_a_disabled_item()
+    {
+        // Arrange
+        var manager = new ExplorerItemManager();
+        var item = Item("/media/photo.png", ExplorerItemCapabilities.Drag | ExplorerItemCapabilities.Move | ExplorerItemCapabilities.Rename | ExplorerItemCapabilities.Delete, isDisabled: true);
+        var activated = false;
+        manager.OnActivate = _ => { activated = true; return Task.CompletedTask; };
+
+        // Act
+        await manager.ActivateAsync(item);
+        manager.RequestRename(item);
+        var renamePending = manager.PendingAction;
+        manager.RequestDelete(item);
+        var deletePending = manager.PendingAction;
+        var dropped = await DropsAsync(manager, item, FolderItem("/photos"));
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.False(activated),
+            () => Assert.Null(renamePending),
+            () => Assert.Null(deletePending),
+            () => Assert.False(dropped));
+    }
+
+    [Fact]
+    public void Should_not_open_a_rename_for_an_item_that_cannot_be_renamed()
+    {
+        // Arrange
+        var manager = new ExplorerItemManager();
+
+        // Act
+        manager.RequestRename(Item("/media/photo.png", ExplorerItemCapabilities.Delete));
+
+        // Assert
+        Assert.Null(manager.PendingAction);
+    }
+
+    [Fact]
+    public void Should_not_open_a_delete_for_an_item_that_cannot_be_deleted()
+    {
+        // Arrange
+        var manager = new ExplorerItemManager();
+
+        // Act
+        manager.RequestDelete(Item("/media/photo.png", ExplorerItemCapabilities.Rename));
+        var itemPending = manager.PendingAction;
+        manager.RequestFolderDelete(FolderItem("/photos", ExplorerItemCapabilities.Rename));
+        var folderPending = manager.PendingAction;
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Null(itemPending),
+            () => Assert.Null(folderPending));
+    }
+
+    [Fact]
+    public void Should_delete_only_the_selected_items_that_can_be_deleted()
+    {
+        // Arrange
+        var manager = new ExplorerItemManager();
+        var deletable = Item("/media/photo.png");
+        manager.SelectedItems = () => [deletable, Item("/media/fixed.png", ExplorerItemCapabilities.Rename)];
+
+        // Act
+        manager.RequestDeleteSelected();
+
+        // Assert
+        var deletion = Assert.IsType<ExplorerBatchAction<IExplorerItem>>(manager.PendingAction);
+        Assert.Same(deletable, Assert.Single(deletion.Targets));
+    }
+
+    [Fact]
+    public void Should_open_nothing_when_no_selected_item_can_be_deleted()
+    {
+        // Arrange
+        var manager = new ExplorerItemManager();
+        manager.SelectedItems = () => [Item("/media/fixed.png", ExplorerItemCapabilities.Rename)];
+
+        // Act
+        manager.RequestDeleteSelected();
+
+        // Assert
+        Assert.Null(manager.PendingAction);
+    }
+
+    [Fact]
+    public void Should_not_create_a_folder_under_a_parent_that_does_not_accept_one()
+    {
+        // Arrange
+        var manager = new ExplorerItemManager();
+
+        // Act
+        manager.BeginCreateFolder(FolderItem("/photos", ExplorerItemCapabilities.Open));
+
+        // Assert
+        Assert.Null(manager.PendingAction);
+    }
+
+    [Fact]
+    public void Should_not_create_a_top_level_folder_the_options_do_not_permit()
+    {
+        // Arrange
+        var manager = new ExplorerItemManager
+        {
+            ItemOptions = new ExplorerItemOptions { AllowedFolderCapabilities = ExplorerItemCapabilities.Open }
+        };
+
+        // Act
+        manager.BeginCreateFolder(null);
+
+        // Assert
+        Assert.Null(manager.PendingAction);
     }
 
     [Fact]

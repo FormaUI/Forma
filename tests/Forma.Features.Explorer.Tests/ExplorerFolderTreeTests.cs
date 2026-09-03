@@ -109,6 +109,27 @@ public sealed class ExplorerFolderTreeTests
     }
 
     [Fact]
+    public void Should_list_only_the_folders_that_are_not_hidden()
+    {
+        // Arrange
+        var shown = new ExplorerFolderItem { Key = "shown", Name = "Shown" };
+        var hidden = new ExplorerFolderItem { Key = "hidden", Name = "Hidden", Visibility = ExplorerItemVisibility.Hidden };
+        var nestedHidden = new ExplorerFolderItem { Key = "shown/hidden", Name = "Nested", Visibility = ExplorerItemVisibility.Hidden, ParentKey = "shown" };
+
+        // Act
+        var tree = new ExplorerFolderTree([shown, hidden, nestedHidden]);
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal([shown], tree.ListedChildrenOf(null)),
+            () => Assert.Equal([shown, hidden], tree.ChildrenOf(null)),
+            () => Assert.Empty(tree.ListedChildrenOf("shown")),
+            () => Assert.Equal([nestedHidden], tree.ChildrenOf("shown")),
+            () => Assert.Same(hidden, tree.Find("hidden")),
+            () => Assert.Empty(tree.Expandable()));
+    }
+
+    [Fact]
     public void Should_offer_only_the_folders_a_tree_can_collapse()
     {
         // Act

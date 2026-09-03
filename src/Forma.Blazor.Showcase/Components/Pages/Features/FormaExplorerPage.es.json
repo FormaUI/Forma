@@ -25,6 +25,8 @@
   "Added": "Incorporado",
   "Read-Only Explorer": "Explorador de Solo Lectura",
   "With ExplorerItemOptions.ReadOnly, browsing and selection remain while upload, rename, delete, and every folder action disappear.": "Con ExplorerItemOptions.ReadOnly se mantienen la exploración y la selección, mientras que la carga, el cambio de nombre, la eliminación y todas las acciones de carpeta desaparecen.",
+  "Item States": "Estados de los Elementos",
+  "Every item carries its own state. A disabled item is drawn but offers nothing, an invisible item keeps its place without being drawn, a hidden item leaves the listing, and an item's own capabilities decide which operations the explorer offers on it: here one file cannot be renamed, deleted or moved, one folder cannot be entered or receive a drop, and one folder is disabled.": "Cada elemento lleva su propio estado. Un elemento deshabilitado se dibuja pero no ofrece nada, uno invisible conserva su lugar sin dibujarse, uno oculto sale del listado, y las capacidades propias de cada elemento deciden qué operaciones le ofrece el explorador: aquí un archivo no se puede renombrar, eliminar ni mover, una carpeta no se puede abrir ni recibir un arrastre, y otra carpeta está deshabilitada.",
   "Media without Folder Management": "Medios sin Gestión de Carpetas",
   "Media stays fully editable while the folder tree is fixed, so items can be renamed and deleted but folders cannot.": "Los medios siguen siendo totalmente editables mientras el árbol de carpetas permanece fijo, de modo que los elementos se pueden renombrar y eliminar pero las carpetas no.",
   "Breadcrumb-Only Navigation": "Navegación Solo con Rutas de Navegación",

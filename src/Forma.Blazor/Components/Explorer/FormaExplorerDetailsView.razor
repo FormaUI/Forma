@@ -74,9 +74,11 @@
             {
                 var selected = View.Selection.IsSelected(item);
                 var labels = item.GetLocalizedLabels(L, View.Selection);
-                var draggable = (item.Capabilities & View.Item.ItemOptions.AllowedCapabilities).HasFlag(ExplorerItemCapabilities.Drag) ? "true" : "false";
+                var capabilities = item.GetCapabilities(View.Item.ItemOptions);
+                var draggable = capabilities.HasFlag(ExplorerItemCapabilities.Drag) ? "true" : "false";
 
-                <tr class="forma-explorer-details-row @(selected ? "is-selected" : "")"
+                <tr class="forma-explorer-details-row @(selected ? "is-selected" : "") @item.GetStateClasses()"
+                    aria-disabled="@(item.IsDisabled ? "true" : null)"
                     draggable="@draggable"
                     @ondragstart="() => ItemInteraction.BeginDrag(item)">
                     <td class="forma-explorer-cell-actions">
@@ -86,6 +88,7 @@
                                     class="forma-explorer-table-select @(selected ? "is-checked" : "")"
                                     aria-label="@labels.SelectionLabel"
                                     aria-pressed="@(selected ? "true" : "false")"
+                                    disabled="@item.IsDisabled"
                                     @onclick="() => Interaction.ToggleSelectionAsync(item)">
                                 <FormaIcon Icon="Glyph.Check" Size="IconSize.Small" />
                             </button>
@@ -99,6 +102,7 @@
                         <button type="button"
                                 class="forma-explorer-name-wrapper"
                                 aria-label="@labels.ActivationLabel"
+                                disabled="@item.IsDisabled"
                                 @onclick="() => ItemInteraction.ActivateAsync(item)">
                             @if (item.Resource is { } resource)
                             {

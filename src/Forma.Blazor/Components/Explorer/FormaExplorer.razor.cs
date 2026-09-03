@@ -167,9 +167,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
 
     private readonly ExplorerQueryParameters _queryParameters = new();
 
-    private ExplorerItemOptions? _actionOptions;
-
-    private IReadOnlyList<ExplorerItemAction> _actions = [];
+    private IReadOnlyList<ExplorerItemAction>? _actions;
 
     private ExplorerFolderTree? _folderTree;
 
@@ -263,9 +261,22 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     private bool IsProviderMode
         => ItemsProvider is not null;
 
-    /// <summary>How many resources match the current search and sort, or null when the provider cannot say.</summary>
+    /// <summary>
+    /// How many items match the current search and sort, or null when the provider cannot say. Pages are cut in the
+    /// provider's own count, so paging reads the reported total; an appended window counts what it lists.
+    /// </summary>
     private int? MatchingCount
-        => IsProviderMode ? _providerWindow.Total : _collection.MatchingCount;
+    {
+        get
+        {
+            if (!IsProviderMode)
+            {
+                return _collection.MatchingCount;
+            }
+
+            return IsInfiniteScrolling ? _providerWindow.ListedTotal : _providerWindow.Total;
+        }
+    }
 
     private int PageCount
         => MatchingCount is { } total ? Math.Max(1, (int)Math.Ceiling(total / (double)PageSize)) : 1;
@@ -279,7 +290,13 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
                 return EffectivePage < PageCount;
             }
 
-            return MatchingCount is { } total ? VisibleItems.Count < total : _providerWindow.WasFull;
+            if (!IsProviderMode)
+            {
+                return _collection.HasMorePages;
+            }
+
+            // The window's own fill decides, counted in the provider's items rather than the listed ones.
+            return _providerWindow.WasFull && (_providerWindow.Total is not { } total || _providerWindow.FetchedCount < total);
         }
     }
 
@@ -315,7 +332,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         _itemManager.OnDeleteConfirmed = targets => RunAsync(() => ApplyDeleteAsync(targets));
         _itemManager.OnFolderDeleteConfirmed = folders => RunAsync(() => ApplyFolderDeleteAsync(folders));
         _itemManager.OnToggleUpload = () => Run(_uploadPanel.Toggle);
-        _itemManager.SelectedItems = _selection.ResolveItems;
+        _itemManager.SelectedItems = () => _selection.Items;
     }
 
     /// <inheritdoc />
@@ -401,7 +418,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         }
 
         var query = new ExplorerItemQuery(
-            append ? _providerWindow.Items.Count : (EffectivePage - 1) * PageSize,
+            append ? _providerWindow.FetchedCount : (EffectivePage - 1) * PageSize,
             PageSize,
             string.IsNullOrWhiteSpace(_collection.SearchQuery) ? null : _collection.SearchQuery,
             _collection.SortField,
@@ -549,20 +566,8 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         return true;
     }
 
-    // Only the options decide which actions exist, so the list and its closures survive an unrelated render.
     private IReadOnlyList<ExplorerItemAction> Actions
-    {
-        get
-        {
-            if (!ReferenceEquals(_actionOptions, ItemOptions))
-            {
-                _actionOptions = ItemOptions;
-                _actions = BuildActions();
-            }
-
-            return _actions;
-        }
-    }
+        => _actions ??= BuildActions();
 
     ExplorerOptions IExplorerConfigurationView.Options => Options;
 
@@ -622,7 +627,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        return ChangeSelectionAsync(selection => selection.Toggle(item));
+        return item.IsDisabled ? Task.CompletedTask : ChangeSelectionAsync(selection => selection.Toggle(item));
     }
 
     Task IExplorerContentInteraction.SortByAsync(ExplorerSortField field)
@@ -665,9 +670,8 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         => RunAsync(HandleRefreshAsync);
 
     private List<ExplorerItemAction> BuildActions()
-    {
-        var actions = new List<ExplorerItemAction>
-        {
+        =>
+        [
             new()
             {
                 Id = "preview",
@@ -684,24 +688,16 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
 
                     return Task.CompletedTask;
                 }
-            }
-        };
-
-        if (ItemOptions.AllowedCapabilities.HasFlag(ExplorerItemCapabilities.Rename))
-        {
-            actions.Add(new ExplorerItemAction
+            },
+            new()
             {
                 Id = "rename",
                 Icon = Glyph.Pen,
                 Label = () => L["Rename"].Value,
                 Requires = ExplorerItemCapabilities.Rename,
                 InvokeAsync = item => { _itemManager.RequestRename(item); return Task.CompletedTask; }
-            });
-        }
-
-        if (ItemOptions.AllowedCapabilities.HasFlag(ExplorerItemCapabilities.Delete))
-        {
-            actions.Add(new ExplorerItemAction
+            },
+            new()
             {
                 Id = "delete",
                 Icon = Glyph.Delete,
@@ -709,18 +705,15 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
                 Requires = ExplorerItemCapabilities.Delete,
                 InvokeAsync = item => { _itemManager.RequestDelete(item); return Task.CompletedTask; },
                 IsDestructive = true
-            });
-        }
-
-        return actions;
-    }
+            }
+        ];
 
     /// <summary>Changes the selection and reports it, so no caller can do the one without the other.</summary>
     private async Task ChangeSelectionAsync(Action<ExplorerSelection> change)
     {
         change(_selection);
 
-        await SelectedChanged.InvokeAsync(_selection.ResolveItems());
+        await SelectedChanged.InvokeAsync(_selection.Items);
 
         StateHasChanged();
     }
@@ -799,7 +792,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
 
     private async Task HandleFolderSelectedAsync(IExplorerFolderItem? folder)
     {
-        if (CurrentFolder?.Key == folder?.Key)
+        if (CurrentFolder?.Key == folder?.Key || (folder is not null && !folder.Permits(ItemOptions, ExplorerItemCapabilities.Open)))
         {
             return;
         }
@@ -836,9 +829,9 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
             return;
         }
 
-        var selected = _selection.ResolveItems();
-        var items = _selection.IsSelected(target) && selected.Count > 1
-            ? selected
+        var selected = _selection.Items;
+        IReadOnlyList<IExplorerItem> items = _selection.IsSelected(target) && selected.Count > 1
+            ? [.. selected.Where(item => item.Permits(ItemOptions, ExplorerItemCapabilities.Move))]
             : [target];
 
         if (!await EnsureFolderHasRoomAsync(targetFolder, items.Count))
@@ -1036,7 +1029,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
             return ChangeSelectionAsync(selection => selection.Toggle(item));
         }
 
-        if (item.Resource is { } resource)
+        if (item.Resource is { } resource && item.Permits(ItemOptions, ExplorerItemCapabilities.View))
         {
             OpenPreview(resource);
             StateHasChanged();
@@ -1048,7 +1041,14 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     private void OpenPreview(ResourceInfo resource)
     {
         // Captured once so the viewer is not handed a new list on every unrelated render.
-        IReadOnlyList<string> siblings = [.. VisibleItems.Select(sibling => sibling.Resource?.Source).OfType<string>()];
+        IReadOnlyList<string> siblings =
+        [
+            .. VisibleItems
+                .Where(sibling => sibling.Permits(ItemOptions, ExplorerItemCapabilities.View))
+                .Select(sibling => sibling.Resource?.Source)
+                .OfType<string>()
+        ];
+
         _preview.Open(resource, siblings);
     }
 }

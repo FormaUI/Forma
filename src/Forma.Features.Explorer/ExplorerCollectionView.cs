@@ -111,11 +111,11 @@ public sealed class ExplorerCollectionView
     /// <summary>Whether the visible window grows from the first page instead of moving, as infinite scrolling needs.</summary>
     public bool IsAppending { get; set; }
 
-    /// <summary>The items that pass the filter and the search, in sort order.</summary>
+    /// <summary>The items that are not hidden and pass the filter and the search, in sort order.</summary>
     public IReadOnlyList<IExplorerItem> MatchingItems
         => MatchingList;
 
-    /// <summary>How many items pass the filter and the search.</summary>
+    /// <summary>How many items are not hidden and pass the filter and the search.</summary>
     public int MatchingCount
         => MatchingList.Count;
 
@@ -168,7 +168,7 @@ public sealed class ExplorerCollectionView
                 return _matchingItems;
             }
 
-            IEnumerable<IExplorerItem> query = _source;
+            IEnumerable<IExplorerItem> query = _source.Where(item => item.Visibility != ExplorerItemVisibility.Hidden);
 
             if (_filter is { } accepted)
             {

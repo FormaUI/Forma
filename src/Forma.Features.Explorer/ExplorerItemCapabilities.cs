@@ -4,7 +4,9 @@ namespace Forma.Features.Explorer;
 /// <remarks>
 /// <see cref="ExplorerItemOptions"/> determines what the explorer instance permits,
 /// while this value determines what the individual item supports. An operation is
-/// available only when both permit it.
+/// available only when both permit it. <see cref="Read"/>, <see cref="Write"/>, and
+/// <see cref="Execute"/> are not supported by the explorer yet and are reserved for
+/// future use; <see cref="Open"/> is supported for folders only.
 /// </remarks>
 [Flags]
 public enum ExplorerItemCapabilities

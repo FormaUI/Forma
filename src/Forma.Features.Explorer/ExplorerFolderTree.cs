@@ -9,7 +9,11 @@ public sealed class ExplorerFolderTree
 
     private readonly Dictionary<string, List<IExplorerFolderItem>> _childrenByParent = new(StringComparer.Ordinal);
 
+    private readonly Dictionary<string, List<IExplorerFolderItem>> _listedChildrenByParent = new(StringComparer.Ordinal);
+
     private readonly List<IExplorerFolderItem> _roots = [];
+
+    private readonly List<IExplorerFolderItem> _listedRoots = [];
 
     /// <summary>A tree over no folders at all.</summary>
     public static ExplorerFolderTree Empty { get; } = new(null);
@@ -33,19 +37,26 @@ public sealed class ExplorerFolderTree
             // A host can repeat a key; the first folder claiming it wins, matching what the breadcrumb walk would find.
             _foldersByKey.TryAdd(folderItem.Key, folderItem);
 
+            var isListed = folderItem.Visibility != ExplorerItemVisibility.Hidden;
+
             if (folderItem.ParentKey is not { } parent)
             {
                 _roots.Add(folderItem);
+
+                if (isListed)
+                {
+                    _listedRoots.Add(folderItem);
+                }
+
                 continue;
             }
 
-            if (!_childrenByParent.TryGetValue(parent, out var siblings))
-            {
-                siblings = [];
-                _childrenByParent[parent] = siblings;
-            }
+            Add(_childrenByParent, parent, folderItem);
 
-            siblings.Add(folderItem);
+            if (isListed)
+            {
+                Add(_listedChildrenByParent, parent, folderItem);
+            }
         }
     }
 
@@ -58,6 +69,17 @@ public sealed class ExplorerFolderTree
         }
 
         return _childrenByParent.TryGetValue(parent, out var children) ? children : NoChildren;
+    }
+
+    /// <summary>The folders directly inside the parent that are not hidden, or the top-level ones when none is named.</summary>
+    public IReadOnlyList<IExplorerFolderItem> ListedChildrenOf(string? parent)
+    {
+        if (parent is null)
+        {
+            return _listedRoots;
+        }
+
+        return _listedChildrenByParent.TryGetValue(parent, out var children) ? children : NoChildren;
     }
 
     /// <summary>The folder at the key, or null when the tree has none.</summary>
@@ -76,15 +98,26 @@ public sealed class ExplorerFolderTree
     public bool HasChildren(string key)
         => _childrenByParent.ContainsKey(key);
 
-    /// <summary>Every folder holding at least one other, which are the only ones a tree can collapse.</summary>
+    /// <summary>Every listed folder holding at least one listed folder, which are the only ones a tree can collapse.</summary>
     public IEnumerable<IExplorerFolderItem> Expandable()
     {
         foreach (var (key, item) in _foldersByKey)
         {
-            if (_childrenByParent.ContainsKey(key))
+            if (item.Visibility != ExplorerItemVisibility.Hidden && _listedChildrenByParent.ContainsKey(key))
             {
                 yield return item;
             }
         }
+    }
+
+    private static void Add(Dictionary<string, List<IExplorerFolderItem>> childrenByParent, string parent, IExplorerFolderItem child)
+    {
+        if (!childrenByParent.TryGetValue(parent, out var siblings))
+        {
+            siblings = [];
+            childrenByParent[parent] = siblings;
+        }
+
+        siblings.Add(child);
     }
 }

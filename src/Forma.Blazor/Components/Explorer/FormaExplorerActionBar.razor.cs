@@ -2,7 +2,6 @@ namespace Forma.Blazor.Components.Explorer;
 
 using Forma.Features.Explorer;
 using Forma.Framework.Localization;
-using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
 
@@ -17,7 +16,14 @@ public sealed partial class FormaExplorerActionBar : ComponentBase
     [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
 
     private IReadOnlyList<ExplorerItemAction> AvailableActions
-        => [.. View.Item.Actions.Where(action => (Item.Capabilities & action.Requires) == action.Requires)];
+    {
+        get
+        {
+            var capabilities = Item.GetCapabilities(View.Item.ItemOptions);
+
+            return [.. View.Item.Actions.Where(action => (capabilities & action.Requires) == action.Requires)];
+        }
+    }
 
     /// <inheritdoc />
     protected override void OnParametersSet()

@@ -129,9 +129,35 @@
 }
 
 @media (hover: hover) {
-    .forma-explorer-details-row:hover {
+    .forma-explorer-details-row:not(.is-disabled):hover {
         background: var(--hover-background-color);
     }
+}
+
+/* A row the explorer does not let the reader drag. */
+.forma-explorer-details-row[draggable="false"],
+.forma-explorer-details-row[draggable="false"]:active {
+    cursor: default;
+}
+
+/* A disabled row: the disabled control colors, and a pointer that says so. */
+.forma-explorer-details-row.is-disabled {
+    background: var(--control-disabled-color);
+    cursor: not-allowed;
+}
+
+.forma-explorer-details-row.is-disabled td,
+.forma-explorer-details-row.is-disabled .forma-explorer-details-name-text {
+    color: var(--control-disabled-foreground-color);
+}
+
+.forma-explorer-details-row.is-disabled .forma-explorer-name-wrapper {
+    cursor: not-allowed;
+}
+
+/* An invisible row keeps its place in the table. */
+.forma-explorer-details-row.is-invisible {
+    visibility: hidden;
 }
 
 .forma-explorer-details-row.is-selected {

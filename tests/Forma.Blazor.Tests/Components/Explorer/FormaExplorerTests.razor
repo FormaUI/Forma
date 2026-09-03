@@ -856,11 +856,217 @@
         }
 
         [Fact]
+        public void Should_leave_a_hidden_item_out_of_the_listing()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<IExplorerItem> items =
+            [
+                ExplorerItem.For(new ImageResourceInfo("https://example.com/shown.jpg")),
+                new ExplorerItem { Key = "hidden", Name = "hidden.jpg", Visibility = ExplorerItemVisibility.Hidden, Resource = new ImageResourceInfo("https://example.com/hidden.jpg") }
+            ];
+
+            // Act
+            var cut = ctx.Render(@<FormaExplorer Items="items" />);
+
+            // Assert
+            Assert.Equal(["shown.jpg"], cut.FindAll(".forma-explorer-item-name").Select(node => node.TextContent.Trim()));
+        }
+
+        [Fact]
+        public void Should_keep_an_invisible_items_place_in_the_grid()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<IExplorerItem> items =
+            [
+                ExplorerItem.For(new ImageResourceInfo("https://example.com/shown.jpg")),
+                new ExplorerItem { Key = "invisible", Name = "invisible.jpg", Visibility = ExplorerItemVisibility.Invisible, Resource = new ImageResourceInfo("https://example.com/invisible.jpg") }
+            ];
+
+            // Act
+            var cut = ctx.Render(@<FormaExplorer Items="items" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(2, cut.FindAll(".forma-explorer-item").Count),
+                () => Assert.Equal("invisible.jpg", cut.Find(".forma-explorer-item.is-invisible .forma-explorer-item-name").TextContent.Trim()));
+        }
+
+        [Fact]
+        public void Should_draw_a_disabled_item_without_any_operation()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<IExplorerItem> items =
+            [
+                new ExplorerItem
+                {
+                    Key = "locked",
+                    Name = "locked.jpg",
+                    IsDisabled = true,
+                    Capabilities = ExplorerItemCapabilities.Drag | ExplorerItemCapabilities.Open | ExplorerItemCapabilities.View | ExplorerItemCapabilities.Move | ExplorerItemCapabilities.Rename | ExplorerItemCapabilities.Delete,
+                    Resource = new ImageResourceInfo("https://example.com/locked.jpg")
+                }
+            ];
+            var reports = new List<IReadOnlyList<IExplorerItem>>();
+            var cut = ctx.Render(@<FormaExplorer Items="items"
+                                                SelectedChanged="@(selected => { reports.Add(selected); return Task.CompletedTask; })" />);
+
+            // Assert - drawn as disabled, with no operation offered
+            var tile = cut.Find(".forma-explorer-item");
+            Assert.Multiple(
+                () => Assert.Equal("false", tile.GetAttribute("draggable")),
+                () => Assert.Contains("is-disabled", tile.ClassList),
+                () => Assert.True(cut.Find(".forma-explorer-item-open").HasAttribute("disabled")),
+                () => Assert.Empty(cut.FindAll(".forma-explorer-action-bar")));
+
+            // Act - activation neither previews nor selects it
+            cut.Find(".forma-explorer-item-open").Click();
+            cut.Find(".forma-explorer-select-mode-button").Click();
+            cut.Find(".forma-explorer-item-open").Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll(".forma-modal")),
+                () => Assert.Empty(reports));
+        }
+
+        [Fact]
+        public void Should_not_enter_a_folder_that_cannot_be_opened()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<IExplorerItem> folders =
+            [
+                new ExplorerFolderItem { Key = "sealed", Name = "Sealed", Capabilities = ExplorerItemCapabilities.Drag | ExplorerItemCapabilities.Drop }
+            ];
+            var navigated = false;
+            var cut = ctx.Render(@<FormaExplorer Items="[]"
+                                                Folders="folders"
+                                                OnFolderChanged="@(_ => { navigated = true; return Task.CompletedTask; })" />);
+
+            // Act
+            var target = cut.FindAll(".forma-explorer-folder-target")[1];
+            target.Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(target.HasAttribute("disabled")),
+                () => Assert.False(navigated));
+        }
+
+        [Fact]
+        public void Should_refuse_a_drop_on_a_folder_that_does_not_accept_one()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/photo.jpg")];
+            IReadOnlyList<IExplorerItem> folders =
+            [
+                new ExplorerFolderItem { Key = "sealed", Name = "Sealed", Capabilities = ExplorerItemCapabilities.Open, Resource = new FolderResourceInfo("sealed") }
+            ];
+            ExplorerDropRequest? request = null;
+            var cut = ctx.Render(@<FormaExplorer Items="@(ExplorerItem.ForAll(resources))"
+                                                Folders="folders"
+                                                OnDrop="@(req => { request = req; return Task.CompletedTask; })" />);
+
+            // Act
+            cut.Find(".forma-explorer-item").DragStart();
+            cut.FindAll(".forma-explorer-folder-row")[1].Drop();
+
+            // Assert
+            Assert.Null(request);
+        }
+
+        [Fact]
+        public void Should_move_only_the_selected_items_that_can_move()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<IExplorerItem> items =
+            [
+                ExplorerItem.For(new ImageResourceInfo("https://example.com/a.jpg")),
+                new ExplorerItem
+                {
+                    Key = "b",
+                    Name = "b.jpg",
+                    Capabilities = ExplorerItemCapabilities.Drag | ExplorerItemCapabilities.Open | ExplorerItemCapabilities.View,
+                    Resource = new ImageResourceInfo("https://example.com/b.jpg")
+                }
+            ];
+            var folder = new FolderResourceInfo("races") { Name = "Races" };
+            ExplorerDropRequest? request = null;
+            var cut = ctx.Render(@<FormaExplorer Items="items"
+                                                Folders="@(ExplorerItem.ForAll([folder]))"
+                                                OnDrop="@(req => { request = req; return Task.CompletedTask; })" />);
+            cut.Find(".forma-explorer-select-mode-button").Click();
+            cut.FindAll(".forma-explorer-item-open")[0].Click();
+            cut.FindAll(".forma-explorer-item-open")[1].Click();
+
+            // Act
+            cut.FindAll(".forma-explorer-item")[0].DragStart();
+            cut.FindAll(".forma-explorer-folder-row")[1].Drop();
+
+            // Assert
+            Assert.NotNull(request);
+            Assert.Equal("a.jpg", Assert.Single(request.Items).Name);
+        }
+
+        [Fact]
+        public void Should_hide_the_selection_delete_when_nothing_selected_can_be_deleted()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<IExplorerItem> items =
+            [
+                new ExplorerItem
+                {
+                    Key = "fixed",
+                    Name = "fixed.jpg",
+                    Capabilities = ExplorerItemCapabilities.Open | ExplorerItemCapabilities.View,
+                    Resource = new ImageResourceInfo("https://example.com/fixed.jpg")
+                }
+            ];
+            var cut = ctx.Render(@<FormaExplorer Items="items" />);
+
+            // Act
+            cut.Find(".forma-explorer-select-mode-button").Click();
+            cut.Find(".forma-explorer-item-open").Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.NotNull(cut.Find(".forma-explorer-selection-bar")),
+                () => Assert.Empty(cut.FindAll(".forma-explorer-delete-button")));
+        }
+
+        [Fact]
+        public void Should_leave_a_hidden_folder_out_of_the_tree_and_the_breadcrumb_menu()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<IExplorerItem> folders =
+            [
+                ExplorerItem.ForFolder(new FolderResourceInfo("shown") { Name = "Shown" }),
+                new ExplorerFolderItem { Key = "hidden", Name = "Hidden", Visibility = ExplorerItemVisibility.Hidden }
+            ];
+
+            // Act
+            var cut = ctx.Render(@<FormaExplorer Items="[]" Folders="folders" />);
+            cut.Find(".forma-breadcrumb-chevron").Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["All Media", "Shown"], cut.FindAll(".forma-explorer-folder-name").Select(node => node.TextContent.Trim())),
+                () => Assert.Equal(["Shown"], cut.FindAll(".forma-breadcrumb-menu-item").Select(node => node.TextContent.Trim())));
+        }
+
+        [Fact]
         public void Should_navigate_to_a_folder_that_has_no_resource()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
-            var ghost = new ExplorerFolderItem { Key = "ghost", Name = "Ghost" };
+            var ghost = new ExplorerFolderItem { Key = "ghost", Name = "Ghost", Capabilities = ExplorerItemCapabilities.Open };
             IReadOnlyList<IExplorerItem> folders = [ghost];
             IExplorerFolderItem? activeFolder = null;
             var cut = ctx.Render(@<FormaExplorer Items="[]"
@@ -879,8 +1085,8 @@
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
-            var parent = new ExplorerFolderItem { Key = "ghosts", Name = "Ghosts" };
-            var child = new ExplorerFolderItem { Key = "ghost", Name = "Ghost", ParentKey = parent.Key };
+            var parent = new ExplorerFolderItem { Key = "ghosts", Name = "Ghosts", Capabilities = ExplorerItemCapabilities.Open };
+            var child = new ExplorerFolderItem { Key = "ghost", Name = "Ghost", Capabilities = ExplorerItemCapabilities.Open, ParentKey = parent.Key };
             IReadOnlyList<IExplorerItem> folders = [parent, child];
             IExplorerFolderItem? activeFolder = null;
 
@@ -1647,6 +1853,34 @@
             Assert.Equal(20, cut.FindAll(".forma-explorer-item").Count);
             Assert.Equal(10, provider.Queries[^1].Skip);
             Assert.Equal("Showing 20 of 50", cut.Find(".forma-explorer-scroll-status").TextContent.Trim());
+        }
+
+        [Fact]
+        public void Should_ask_the_provider_for_the_next_window_past_the_items_it_hid()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            var provider = new FakeExplorerItemsProvider([.. Enumerable.Range(1, 4)
+                .Select(i => new ImageResourceInfo($"https://example.com/{i:D4}.jpg"))]);
+            provider.HiddenSources.Add("https://example.com/0001.jpg");
+            var cut = ctx.Render(@<FormaExplorer ItemsProvider="provider"
+                                                PageSize="2"
+                                                Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Manual })" />);
+
+            // Assert - the hidden item is left out, and the progress counts against what will be listed
+            Assert.Multiple(
+                () => Assert.Equal(["0002.jpg"], cut.FindAll(".forma-explorer-item-name").Select(node => node.TextContent.Trim())),
+                () => Assert.Equal("Showing 1 of 3", cut.Find(".forma-explorer-scroll-status").TextContent.Trim()));
+
+            // Act
+            cut.Find(".forma-explorer-load-more-button").Click();
+
+            // Assert - the next window starts where the provider's last one ended, and nothing more is offered
+            Assert.Multiple(
+                () => Assert.Equal(2, provider.Queries[^1].Skip),
+                () => Assert.Equal(["0002.jpg", "0003.jpg", "0004.jpg"], cut.FindAll(".forma-explorer-item-name").Select(node => node.TextContent.Trim())),
+                () => Assert.Equal("Showing 3 of 3", cut.Find(".forma-explorer-scroll-status").TextContent.Trim()),
+                () => Assert.Empty(cut.FindAll(".forma-explorer-scroll-sentinel")));
         }
 
         [Fact]

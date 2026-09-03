@@ -53,6 +53,11 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
     {
         ArgumentNullException.ThrowIfNull(item);
 
+        if (item.IsDisabled)
+        {
+            return Task.CompletedTask;
+        }
+
         return OnActivate?.Invoke(item) ?? Task.CompletedTask;
     }
 
@@ -61,7 +66,10 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        _drag.Begin(item);
+        if (item.Permits(ItemOptions, ExplorerItemCapabilities.Drag))
+        {
+            _drag.Begin(item);
+        }
     }
 
     /// <inheritdoc />
@@ -70,16 +78,16 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
         var dragged = _drag.Target;
         _drag.End();
 
-        if (dragged is null)
+        if (dragged is null || !dragged.Permits(ItemOptions, ExplorerItemCapabilities.Move))
         {
             return Task.CompletedTask;
         }
 
-        // Only a folder can receive a drop; the null target is the top level.
+        // Only a folder that accepts drops can receive one; the null target is the top level.
         return target switch
         {
             null => OnDrop?.Invoke(dragged, null) ?? Task.CompletedTask,
-            IExplorerFolderItem folder => OnDrop?.Invoke(dragged, folder) ?? Task.CompletedTask,
+            IExplorerFolderItem folder when folder.Permits(ItemOptions, ExplorerItemCapabilities.Drop) => OnDrop?.Invoke(dragged, folder) ?? Task.CompletedTask,
             _ => Task.CompletedTask,
         };
     }
@@ -92,9 +100,18 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
     public Task RequestNewFolderAsync()
         => OnRequestNewFolder?.Invoke() ?? Task.CompletedTask;
 
-    /// <summary>Opens the new-folder dialog under the given parent, or the top level when null.</summary>
+    /// <summary>Opens the new-folder dialog under a parent that accepts new folders, or at a top level that does when null.</summary>
     public void BeginCreateFolder(IExplorerFolderItem? parent)
     {
+        var permitted = parent is null
+            ? ItemOptions.AllowedFolderCapabilities.HasFlag(ExplorerItemCapabilities.Create)
+            : parent.Permits(ItemOptions, ExplorerItemCapabilities.Create);
+
+        if (!permitted)
+        {
+            return;
+        }
+
         _createFolder.Request(parent);
         PendingAction = _createFolder;
         OnChanged?.Invoke();
@@ -104,6 +121,11 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
     public void RequestRename(IExplorerItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
+
+        if (!item.Permits(ItemOptions, ExplorerItemCapabilities.Rename))
+        {
+            return;
+        }
 
         _rename.Request(item);
         PendingAction = _rename;
@@ -115,12 +137,7 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
     {
         var items = SelectedItems?.Invoke() ?? [];
 
-        if (items.Count == 0)
-        {
-            return;
-        }
-
-        List<IExplorerFolderItem> folders = [.. items.OfType<IExplorerFolderItem>()];
+        List<IExplorerFolderItem> folders = [.. items.OfType<IExplorerFolderItem>().Where(folder => folder.Permits(ItemOptions, ExplorerItemCapabilities.Delete))];
 
         if (folders.Count > 0)
         {
@@ -129,14 +146,21 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
         }
         else
         {
-            _itemDeletion.Request(items);
+            List<IExplorerItem> deletable = [.. items.Where(item => item is not IExplorerFolderItem && item.Permits(ItemOptions, ExplorerItemCapabilities.Delete))];
+
+            if (deletable.Count == 0)
+            {
+                return;
+            }
+
+            _itemDeletion.Request(deletable);
             PendingAction = _itemDeletion;
         }
 
         OnChanged?.Invoke();
     }
 
-    /// <summary>Opens confirmation for deleting the single item, as a folder when it is one.</summary>
+    /// <summary>Opens confirmation for deleting the single item when it can be deleted, as a folder when it is one.</summary>
     public void RequestDelete(IExplorerItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -147,15 +171,25 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
             return;
         }
 
+        if (!item.Permits(ItemOptions, ExplorerItemCapabilities.Delete))
+        {
+            return;
+        }
+
         _itemDeletion.Request([item]);
         PendingAction = _itemDeletion;
         OnChanged?.Invoke();
     }
 
-    /// <summary>Opens confirmation for deleting the single folder.</summary>
+    /// <summary>Opens confirmation for deleting the single folder when it can be deleted.</summary>
     public void RequestFolderDelete(IExplorerFolderItem folder)
     {
         ArgumentNullException.ThrowIfNull(folder);
+
+        if (!folder.Permits(ItemOptions, ExplorerItemCapabilities.Delete))
+        {
+            return;
+        }
 
         _folderDeletion.Request([folder]);
         PendingAction = _folderDeletion;

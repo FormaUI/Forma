@@ -26,6 +26,30 @@ public sealed class ExplorerCollectionViewTests
     }
 
     [Fact]
+    public void Should_leave_hidden_items_out_and_keep_invisible_ones()
+    {
+        // Arrange
+        var view = new ExplorerCollectionView(TypeNameKindLabel)
+        {
+            Source =
+            [
+                Item("shown.png", ExplorerItemVisibility.Visible),
+                Item("hidden.png", ExplorerItemVisibility.Hidden),
+                Item("invisible.png", ExplorerItemVisibility.Invisible)
+            ],
+            PageSize = 24
+        };
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal(["invisible.png", "shown.png"], view.MatchingItems.Select(item => item.Name)),
+            () => Assert.Equal(2, view.MatchingCount));
+    }
+
+    private static ExplorerItem Item(string name, ExplorerItemVisibility visibility)
+        => new() { Key = name, Name = name, Visibility = visibility, Resource = File(name) };
+
+    [Fact]
     public void Should_search_names_case_insensitively()
     {
         // Arrange

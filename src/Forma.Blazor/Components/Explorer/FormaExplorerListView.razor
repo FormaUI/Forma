@@ -7,9 +7,10 @@
         var selected = View.Selection.IsSelected(item);
         var selecting = View.Selection.IsSelectionModeActive;
         var labels = item.GetLocalizedLabels(L, View.Selection);
-        var draggable = (item.Capabilities & View.Item.ItemOptions.AllowedCapabilities).HasFlag(ExplorerItemCapabilities.Drag) ? "true" : "false";
+        var capabilities = item.GetCapabilities(View.Item.ItemOptions);
+        var draggable = capabilities.HasFlag(ExplorerItemCapabilities.Drag) ? "true" : "false";
 
-        <div class="forma-explorer-list-item @(selected ? "is-selected" : "")"
+        <div class="forma-explorer-list-item @(selected ? "is-selected" : "") @item.GetStateClasses()"
              role="listitem"
              draggable="@draggable"
              @ondragstart="() => ItemInteraction.BeginDrag(item)">
@@ -19,6 +20,7 @@
                         class="forma-explorer-list-select @(selected ? "is-checked" : "")"
                         aria-label="@labels.SelectionLabel"
                         aria-pressed="@(selected ? "true" : "false")"
+                        disabled="@item.IsDisabled"
                         @onclick="() => Interaction.ToggleSelectionAsync(item)">
                     <FormaIcon Icon="Glyph.Check" Size="IconSize.Small" />
                 </button>
@@ -31,6 +33,7 @@
             <button type="button"
                     class="forma-explorer-list-main"
                     aria-label="@labels.ActivationLabel"
+                    disabled="@item.IsDisabled"
                     @onclick="() => ItemInteraction.ActivateAsync(item)">
                 <span class="forma-explorer-list-media">
                     @if (item.Resource is { } resource)

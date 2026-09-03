@@ -7,9 +7,10 @@
         var selected = View.Selection.IsSelected(item);
         var selecting = View.Selection.IsSelectionModeActive;
         var labels = item.GetLocalizedLabels(L, View.Selection);
-        var draggable = (item.Capabilities & View.Item.ItemOptions.AllowedCapabilities).HasFlag(ExplorerItemCapabilities.Drag) ? "true" : "false";
+        var capabilities = item.GetCapabilities(View.Item.ItemOptions);
+        var draggable = capabilities.HasFlag(ExplorerItemCapabilities.Drag) ? "true" : "false";
 
-        <div class="forma-explorer-item @(selected ? "is-selected" : "")"
+        <div class="forma-explorer-item @(selected ? "is-selected" : "") @item.GetStateClasses()"
              role="listitem"
              draggable="@draggable"
              @ondragstart="() => ItemInteraction.BeginDrag(item)">
@@ -23,6 +24,7 @@
                         class="forma-explorer-item-open"
                         aria-label="@labels.ActivationLabel"
                         aria-pressed="@(View.Selection.IsSelectionModeActive ? (selected ? "true" : "false") : null)"
+                        disabled="@item.IsDisabled"
                         @onclick="() => ItemInteraction.ActivateAsync(item)"></button>
 
                 <span class="forma-explorer-item-lead">

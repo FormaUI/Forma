@@ -3,13 +3,13 @@ namespace Forma.Features.Explorer;
 /// <summary>What components presenting an explorer's items may ask it to do.</summary>
 public interface IExplorerItemInteraction
 {
-    /// <summary>Toggles the item's selection in selection mode, and previews it otherwise.</summary>
+    /// <summary>Toggles the selection of an enabled item in selection mode, and previews it otherwise.</summary>
     Task ActivateAsync(IExplorerItem item);
 
-    /// <summary>Records the item as the one being dragged.</summary>
+    /// <summary>Records a draggable item as the one being dragged.</summary>
     void BeginDrag(IExplorerItem item);
 
-    /// <summary>Drops the item being dragged onto the target, or the top level when null.</summary>
+    /// <summary>Drops the movable item being dragged onto a folder that accepts drops, or the top level when null.</summary>
     Task DropOnItemAsync(IExplorerItem? target);
 
     /// <summary>Forgets the item being dragged.</summary>
@@ -18,10 +18,10 @@ public interface IExplorerItemInteraction
     /// <summary>Opens the new-folder dialog under the current folder.</summary>
     Task RequestNewFolderAsync();
 
-    /// <summary>Opens the rename dialog for the item, with its current name as the draft.</summary>
+    /// <summary>Opens the rename dialog for an item that can be renamed, with its current name as the draft.</summary>
     void RequestRename(IExplorerItem item);
 
-    /// <summary>Opens confirmation for deleting the currently selected items.</summary>
+    /// <summary>Opens confirmation for deleting those of the selected items that can be deleted.</summary>
     void RequestDeleteSelected();
 
     /// <summary>Sets the draft name of the pending named action.</summary>

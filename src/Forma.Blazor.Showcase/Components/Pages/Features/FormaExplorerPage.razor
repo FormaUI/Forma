@@ -93,6 +93,31 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["Item States"]</h2>
+    <p class="description">@L["Every item carries its own state. A disabled item is drawn but offers nothing, an invisible item keeps its place without being drawn, a hidden item leaves the listing, and an item's own capabilities decide which operations the explorer offers on it: here one file cannot be renamed, deleted or moved, one folder cannot be entered or receive a drop, and one folder is disabled."]</p>
+    <div class="demo-box">
+        <FormaExplorer Items="_stateItems"
+                      Folders="_stateFolderItems"
+                      CurrentFolder="@(CurrentFolderFor("states"))"
+                      ItemOptions="_stateOptions"
+                      OnFolderChanged="@(folder => HandleFolderChangedAsync("states", folder))"
+                      SelectedChanged="@(items => HandleSelectedAsync("states", items))"
+                      OnRename="@(req => HandleRenameAsync("states", req))"
+                      OnDelete="@(req => HandleDeleteAsync("states", req))"
+                      OnDrop="@(req => HandleDropAsync("states", req))"
+                      OnFolderDrop="@(req => HandleFolderDropAsync("states", req))"
+                      OnFolderRename="@(req => HandleFolderRenameAsync("states", req))"
+                      OnFolderDelete="@(req => HandleFolderDeleteAsync("states", req))" />
+        <ul class="demo-log">
+            @foreach (var entry in Log("states"))
+            {
+                <li>@entry</li>
+            }
+        </ul>
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["Constraints"]</h2>
     <p class="description">@L["This explorer accepts only images, holds two root folders, one subfolder each, nests two deep, and stops at four items or 1 MB. Trip any of them and the refusal is announced above the toolbar and reported to the host."]</p>
     <div class="demo-box">

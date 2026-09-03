@@ -21,6 +21,10 @@ public sealed class ExplorerSelection : IExplorerSelectionView
         => _items.Count + _folderItems.Count;
 
     /// <inheritdoc />
+    public IReadOnlyList<IExplorerItem> Items
+        => _resolvedItems ??= [.. _folderItems.Values, .. _items.Values];
+
+    /// <inheritdoc />
     public bool IsSelected(IExplorerItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -28,14 +32,15 @@ public sealed class ExplorerSelection : IExplorerSelectionView
         return (item is IExplorerFolderItem ? _folderItems : _items).ContainsKey(item.Key);
     }
 
-    /// <summary>The selected items.</summary>
-    public IReadOnlyList<IExplorerItem> ResolveItems()
-        => _resolvedItems ??= [.. _folderItems.Values, .. _items.Values];
-
-    /// <summary>Adds the item to the selection, or removes it when it is already selected.</summary>
+    /// <summary>Adds an enabled item to the selection, or removes it when it is already selected.</summary>
     public void Toggle(IExplorerItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
+
+        if (item.IsDisabled)
+        {
+            return;
+        }
 
         Invalidate();
 

@@ -97,7 +97,7 @@ public sealed partial class FormaExplorerSidebar : ComponentBase, IExplorerSideb
         => args.DataTransfer.DropEffect = "move";
 
     private IReadOnlyList<IExplorerFolderItem> ChildrenOf(string? parent)
-        => FolderTree.ChildrenOf(parent);
+        => FolderTree.ListedChildrenOf(parent);
 
     private Task SelectFolderAsync(IExplorerFolderItem? folder)
         => OnFolderSelected.InvokeAsync(folder);

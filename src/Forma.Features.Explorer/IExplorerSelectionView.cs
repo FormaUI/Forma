@@ -9,6 +9,9 @@ public interface IExplorerSelectionView
     /// <summary>How many items are selected together.</summary>
     int Count { get; }
 
+    /// <summary>The selected items.</summary>
+    IReadOnlyList<IExplorerItem> Items { get; }
+
     /// <summary>Whether the item is selected.</summary>
     bool IsSelected(IExplorerItem item);
 }

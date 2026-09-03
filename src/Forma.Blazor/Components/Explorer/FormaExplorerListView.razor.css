@@ -28,10 +28,38 @@
 }
 
 @media (hover: hover) {
-    .forma-explorer-list-item:hover {
+    .forma-explorer-list-item:not(.is-disabled):hover {
         background: var(--hover-background-color);
         border-color: var(--dark-border-color);
     }
+}
+
+/* A row the explorer does not let the reader drag. */
+.forma-explorer-list-item[draggable="false"],
+.forma-explorer-list-item[draggable="false"]:active {
+    cursor: default;
+}
+
+/* A disabled row: the disabled control colors, and a pointer that says so. */
+.forma-explorer-list-item.is-disabled {
+    background: var(--control-disabled-color);
+    cursor: not-allowed;
+}
+
+.forma-explorer-list-item.is-disabled .forma-explorer-list-name,
+.forma-explorer-list-item.is-disabled .forma-explorer-list-size {
+    color: var(--control-disabled-foreground-color);
+}
+
+.forma-explorer-list-item.is-disabled .forma-explorer-list-main,
+.forma-explorer-list-item.is-disabled .forma-explorer-list-media,
+.forma-explorer-list-item.is-disabled .forma-explorer-list-info {
+    cursor: not-allowed;
+}
+
+/* An invisible row keeps its place in the list. */
+.forma-explorer-list-item.is-invisible {
+    visibility: hidden;
 }
 
 .forma-explorer-list-item.is-selected {

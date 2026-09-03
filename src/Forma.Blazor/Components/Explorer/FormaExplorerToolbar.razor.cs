@@ -41,7 +41,15 @@ public sealed partial class FormaExplorerToolbar : ComponentBase
         => !View.Options.SelectOnOpen;
 
     private bool ShowsNewFolderAction
-        => View.Item.ItemOptions.AllowedFolderCapabilities.HasFlag(ExplorerItemCapabilities.Create) && !View.ShowsSidebar;
+        => !View.ShowsSidebar && CurrentFolderAcceptsNewFolders;
+
+    private bool CurrentFolderAcceptsNewFolders
+        => View.CurrentFolder is { } folder
+            ? folder.Permits(View.Item.ItemOptions, ExplorerItemCapabilities.Create)
+            : View.Item.ItemOptions.AllowedFolderCapabilities.HasFlag(ExplorerItemCapabilities.Create);
+
+    private bool ShowsDeleteAction
+        => View.Selection.Items.Any(item => item.Permits(View.Item.ItemOptions, ExplorerItemCapabilities.Delete));
 
     private string SelectionAnnouncement
         => SelectedCount > 0 ? L["{SelectedCount} selected", SelectedCount].Value : string.Empty;

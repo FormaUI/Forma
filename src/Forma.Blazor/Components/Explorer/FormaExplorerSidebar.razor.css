@@ -67,7 +67,7 @@
 }
 
 @media (hover: hover) {
-    .forma-explorer-folder-tree ::deep .forma-explorer-folder-row:hover {
+    .forma-explorer-folder-tree ::deep .forma-explorer-folder-row:not(.is-disabled):hover {
         background: var(--hover-background-color);
     }
 
@@ -93,6 +93,27 @@
 .forma-explorer-folder-tree ::deep .forma-explorer-folder-row.is-selected .forma-explorer-folder-name {
     color: var(--main-color);
     font-weight: 700;
+}
+
+/* A disabled folder: the disabled control colors, and a pointer that says so. */
+.forma-explorer-folder-tree ::deep .forma-explorer-folder-row.is-disabled {
+    cursor: not-allowed;
+}
+
+.forma-explorer-folder-tree ::deep .forma-explorer-folder-row.is-disabled .forma-explorer-folder-name,
+.forma-explorer-folder-tree ::deep .forma-explorer-folder-row.is-disabled .forma-explorer-folder-icon,
+.forma-explorer-folder-tree ::deep .forma-explorer-folder-row.is-disabled .forma-explorer-folder-count {
+    color: var(--control-disabled-foreground-color);
+}
+
+/* A folder the reader cannot enter. */
+.forma-explorer-folder-tree ::deep .forma-explorer-folder-target:disabled {
+    cursor: not-allowed;
+}
+
+/* An invisible folder keeps its row in the tree. */
+.forma-explorer-folder-tree ::deep .forma-explorer-folder-row.is-invisible {
+    visibility: hidden;
 }
 
 .forma-explorer-folder-tree ::deep .forma-explorer-folder-select {

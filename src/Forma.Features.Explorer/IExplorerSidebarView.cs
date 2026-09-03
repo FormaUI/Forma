@@ -9,7 +9,7 @@ public interface IExplorerSidebarView
     /// <summary>What the explorer has selected.</summary>
     IExplorerSelectionView Selection { get; }
 
-    /// <summary>The folders directly inside the parent, or the top-level folders when none is named.</summary>
+    /// <summary>The folders directly inside the parent that are not hidden, or the top-level ones when none is named.</summary>
     IReadOnlyList<IExplorerFolderItem> ChildrenOf(string? parent);
 
     /// <summary>Whether the folder shows what it holds.</summary>
