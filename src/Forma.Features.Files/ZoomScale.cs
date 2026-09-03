@@ -6,6 +6,7 @@ public sealed class ZoomScale
     private readonly IReadOnlyList<int> _steps;
     private int _index;
 
+    /// <summary>Creates a zoom over the given percentage steps, resting on the first.</summary>
     public ZoomScale(IReadOnlyList<int> steps)
     {
         ArgumentNullException.ThrowIfNull(steps);

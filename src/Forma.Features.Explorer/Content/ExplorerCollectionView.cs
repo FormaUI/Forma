@@ -23,6 +23,7 @@ public sealed class ExplorerCollectionView
     private int _visibleItemsSkip;
     private int _visibleItemsTake;
 
+    /// <summary>Creates a view over no items, ordering by kind through the given label of an item's kind.</summary>
     public ExplorerCollectionView(Func<IExplorerItem, string> kindLabel)
     {
         ArgumentNullException.ThrowIfNull(kindLabel);

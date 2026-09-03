@@ -20,6 +20,7 @@ public sealed class ExplorerFolderTree
     /// <summary>A tree over no folders at all.</summary>
     public static ExplorerFolderTree Empty { get; } = new(null);
 
+    /// <summary>Indexes the folders among the given items, or nothing when they are null.</summary>
     public ExplorerFolderTree(IReadOnlyList<IExplorerItem>? items)
     {
         if (items is null)
