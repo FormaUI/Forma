@@ -1,5 +1,8 @@
 namespace Forma.Features.Explorer;
 
+using Forma.Features.Explorer.Content;
+using Forma.Features.Explorer.Content.Queries;
+
 /// <summary>How a <see cref="FormaExplorer"/> presents itself: which surfaces it shows, and how it moves through a collection.</summary>
 public sealed record ExplorerOptions
 {

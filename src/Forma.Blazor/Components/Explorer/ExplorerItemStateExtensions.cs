@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Components.Explorer;
 
-using Forma.Features.Explorer;
+using Forma.Features.Explorer.Items;
 
 /// <summary>Reads an explorer item's state as the CSS classes that draw it.</summary>
 internal static class ExplorerItemStateExtensions

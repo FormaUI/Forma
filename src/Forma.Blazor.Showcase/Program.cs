@@ -4,7 +4,7 @@ using Forma.Blazor.Showcase;
 using Forma.Blazor.Showcase.Components.Pages.Menus;
 using Forma.Blazor.Showcase.Features.Media;
 using Forma.Blazor.Showcase.Features.Upload;
-using Forma.Features.Explorer;
+using Forma.Features.Explorer.Content.Queries;
 using Forma.Features.Feedback;
 using Forma.Features.Media;
 using Forma.Framework.Css;

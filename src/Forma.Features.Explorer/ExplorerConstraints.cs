@@ -1,5 +1,7 @@
 namespace Forma.Features.Explorer;
 
+using Forma.Features.Explorer.Requests;
+
 /// <summary>What an explorer refuses, each ceiling unlimited when left at zero. Every member pairs with a <see cref="ExplorerRejectionReason"/>.</summary>
 public sealed record ExplorerConstraints
 {

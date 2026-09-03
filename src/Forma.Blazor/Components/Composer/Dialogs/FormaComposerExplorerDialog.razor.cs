@@ -3,6 +3,8 @@ namespace Forma.Blazor.Components.Composer.Dialogs;
 using Forma.Blazor.Components.Composer.RichTextEditor.Plugins;
 using Forma.Blazor.Components.Explorer;
 using Forma.Features.Explorer;
+using Forma.Features.Explorer.Content.Queries;
+using Forma.Features.Explorer.Items;
 using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;

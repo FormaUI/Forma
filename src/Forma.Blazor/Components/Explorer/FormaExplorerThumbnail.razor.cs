@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Components.Explorer;
 
-using Forma.Features.Explorer;
+using Forma.Features.Explorer.Content;
 using Forma.Framework.Icons;
 using Forma.Framework.Resources;
 

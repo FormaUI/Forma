@@ -1,6 +1,7 @@
 namespace Forma.Blazor.Components.Explorer;
 
-using Forma.Features.Explorer;
+using Forma.Features.Explorer.Items;
+using Forma.Features.Explorer.Selection;
 using Forma.Framework.Localization;
 
 /// <summary>Creates localized presentation contexts for explorer items.</summary>
