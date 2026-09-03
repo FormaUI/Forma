@@ -1,6 +1,6 @@
 namespace Forma.Blazor;
 
-using Forma.Blazor.Design;
+using Forma.Blazor.Features.Emojis;
 using Forma.Features.Feedback;
 using Forma.Features.Sanitization;
 using Forma.Framework.Timing;

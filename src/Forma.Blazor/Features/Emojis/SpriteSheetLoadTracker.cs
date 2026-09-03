@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Design;
+namespace Forma.Blazor.Features.Emojis;
 
 /// <summary>Tracks the lifecycle of sprite sheets being loaded, where arriving and failing both complete a sheet.</summary>
 internal sealed class SpriteSheetLoadTracker

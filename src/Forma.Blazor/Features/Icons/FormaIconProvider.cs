@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Design;
+namespace Forma.Blazor.Features.Icons;
 
 using System.Collections.Frozen;
 using System.Globalization;
