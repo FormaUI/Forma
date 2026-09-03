@@ -129,7 +129,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
 
     private readonly ExplorerUploadPanel _uploadPanel = new();
 
-    private readonly ParameterState<string?> _acceptParameter = new();
+    private readonly ParameterStateTracker _paramStateTracker = new();
 
     private string? _rejectionMessage;
 
@@ -146,16 +146,6 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     private double _sidebarWidth = 18;
 
     private bool _isResizingSidebar;
-
-    private readonly ParameterState<IReadOnlyList<IExplorerItem>?> _selectedParameter = new();
-
-    private readonly ParameterState<ExplorerViewMode> _viewModeParameter = new();
-
-    private readonly ParameterState<ExplorerSortField> _sortFieldParameter = new();
-
-    private readonly ParameterState<ExplorerSortDirection> _sortDirectionParameter = new();
-
-    private readonly ParameterState<int> _currentPageParameter = new();
 
     private ExplorerViewMode _viewMode = ExplorerViewMode.Thumbnails;
 
@@ -320,6 +310,15 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
 
         _viewMode = ViewMode;
 
+        _paramStateTracker.Track(() => Constraints.AcceptedResourceKinds, accepted => _collection.Filter = ExplorerResourceFilter.Parse(accepted));
+        _paramStateTracker.Track(() => CurrentPage, page => _collection.PageNumber = page);
+        _paramStateTracker.Track(() => ViewMode, mode => _viewMode = mode);
+        _paramStateTracker.Track(() => SortField, field => _collection.SortField = field);
+        _paramStateTracker.Track(() => SortDirection, direction => _collection.SortDirection = direction);
+
+        // Resynced only when the host supplies a different list, so an unrelated parent render cannot discard the selection.
+        _paramStateTracker.Track(() => Selected, AdoptSelection);
+
         // Seeded once, so leaving selection mode afterwards is the reader's to decide.
         _selection.IsSelectionModeActive = Options.SelectOnOpen;
 
@@ -351,36 +350,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         _folderTree = null;
         _breadcrumbs = null;
 
-        if (_acceptParameter.Update(Constraints.AcceptedResourceKinds))
-        {
-            _collection.Filter = ExplorerResourceFilter.Parse(Constraints.AcceptedResourceKinds);
-        }
-
-        if (_currentPageParameter.Update(CurrentPage))
-        {
-            _collection.PageNumber = CurrentPage;
-        }
-
-        if (_viewModeParameter.Update(ViewMode))
-        {
-            _viewMode = ViewMode;
-        }
-
-        if (_sortFieldParameter.Update(SortField))
-        {
-            _collection.SortField = SortField;
-        }
-
-        if (_sortDirectionParameter.Update(SortDirection))
-        {
-            _collection.SortDirection = SortDirection;
-        }
-
-        // Resync only when the host supplies a different list, so an unrelated parent render cannot discard the selection.
-        if (_selectedParameter.Update(Selected))
-        {
-            AdoptSelection(Selected);
-        }
+        _paramStateTracker.Apply();
 
         _selection.SelectionLimit = Options.MaxSelection;
 
