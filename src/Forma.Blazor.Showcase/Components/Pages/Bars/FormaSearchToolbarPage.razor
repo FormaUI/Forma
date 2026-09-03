@@ -3,6 +3,7 @@
 @rendermode InteractiveServer
 @using Forma.Blazor.Components.Buttons
 @using Forma.Blazor.Components.Bars
+@using Forma.Blazor.Components.Inputs
 @using Forma.Framework.Icons
 @using Microsoft.AspNetCore.Components.Web
 @inject IStringLocale<FormaSearchToolbarPage> L
@@ -13,7 +14,7 @@
 <div class="demo-section">
     <h2>@L["Search Only"]</h2>
     <div class="demo-box">
-        <FormaSearchToolbar OnSearch="HandleSearchOnly" SearchPlaceholder="@L["Search..."]" />
+        <FormaSearchToolbar OnSearch="HandleSearchOnly" Search="Search" />
         <p class="demo-note">@L["Last search"]: <code>@_searchOnlyQuery</code></p>
     </div>
 </div>
@@ -21,7 +22,7 @@
 <div class="demo-section">
     <h2>@L["Search with Actions"]</h2>
     <div class="demo-box">
-        <FormaSearchToolbar OnSearch="HandleSearchWithActions" SearchPlaceholder="@L["Search..."]" Label="@L["List Actions"]" Items="Actions" OnCommand="HandleCommand" />
+        <FormaSearchToolbar OnSearch="HandleSearchWithActions" Search="Search" Label="@L["List Actions"]" Items="Actions" OnCommand="HandleCommand" />
         <p class="demo-note">@L["Last search"]: <code>@_withActionsQuery</code></p>
         <p class="demo-note">@L["Last command"]: <code>@_lastCommand</code></p>
     </div>
@@ -31,6 +32,9 @@
     private string _searchOnlyQuery = "";
     private string _withActionsQuery = "";
     private string _lastCommand = "";
+
+    private SearchBoxOptions Search
+        => new() { Placeholder = L["Search..."], DebounceDelay = TimeSpan.FromMilliseconds(300) };
 
     private IReadOnlyList<FormaToolbarItem> Actions =>
     [

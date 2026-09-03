@@ -33,22 +33,25 @@ public sealed class ExplorerProviderWindow : IDisposable
 
     /// <summary>
     /// Runs the query against the provider, replacing the window or extending it, leaving out hidden items and
-    /// a stray item the provider let through. A fetch still running when a newer one starts is abandoned rather than raced.
+    /// a stray item the provider let through. A fetch still running when a newer one starts, or when the given token
+    /// is cancelled, is abandoned rather than raced.
     /// </summary>
     public async Task FetchAsync(
         IExplorerItemsProvider provider,
         Action onStateChanged,
         ExplorerItemQuery query,
         ExplorerResourceFilter? filter,
-        bool appendToWindow)
+        bool appendToWindow,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(provider);
         ArgumentNullException.ThrowIfNull(onStateChanged);
 
         // A newer window makes an older one irrelevant rather than merely late, so the earlier request is abandoned.
         await CancelAsync().ConfigureAwait(false);
-        _fetchCancellation = new CancellationTokenSource();
-        var token = _fetchCancellation.Token;
+        var own = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        _fetchCancellation = own;
+        var token = own.Token;
 
         IsFetching = true;
         onStateChanged();
@@ -96,13 +99,12 @@ public sealed class ExplorerProviderWindow : IDisposable
         finally
         {
             // A superseded fetch leaves the flag to the one that replaced it; anything else, including a failure, clears it.
-            if (!token.IsCancellationRequested)
+            if (ReferenceEquals(_fetchCancellation, own))
             {
                 IsFetching = false;
+                onStateChanged();
             }
         }
-
-        onStateChanged();
     }
 
     private async Task CancelAsync()

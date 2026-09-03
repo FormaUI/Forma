@@ -1,5 +1,6 @@
 namespace Forma.Blazor.Components.Explorer;
 
+using Forma.Blazor.Components.Inputs;
 using Forma.Blazor.Components.Navigation;
 using Forma.Features.Explorer;
 using Forma.Features.Explorer.Content;
@@ -79,6 +80,9 @@ public sealed partial class FormaExplorerAddressBar : ComponentBase
             ? null
             : [.. children.Select(child => new BreadcrumbItem<IExplorerFolderItem>(child.Name) { Value = child })];
     }
+
+    private SearchBoxOptions SearchOptions
+        => new() { Placeholder = SearchPlaceholder };
 
     private string SearchPlaceholder
     {

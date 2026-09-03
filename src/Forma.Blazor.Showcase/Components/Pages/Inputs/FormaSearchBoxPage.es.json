@@ -5,7 +5,7 @@
   "Every keystroke reports instantly, filtering the list as you type. Clearing the field — by the button or by hand — reports an empty search right away.": "Cada pulsación se notifica al instante, filtrando la lista mientras escribes. Vaciar el campo, con el botón o a mano, notifica una búsqueda vacía de inmediato.",
   "Search fruit...": "Buscar fruta...",
   "Debounced Search": "Búsqueda con Retardo",
-  "SearchDebounce holds OnSearch back until typing pauses, so a handful of keystrokes reports once rather than once each. Pressing Enter searches immediately without waiting.": "SearchDebounce retiene OnSearch hasta que la escritura se detiene, de modo que varias pulsaciones se notifican una sola vez en lugar de una por cada una. Pulsar Enter busca de inmediato sin esperar.",
+  "DebounceDelay holds OnSearch back until typing pauses, so a handful of keystrokes reports once rather than once each. Pressing Enter searches immediately without waiting.": "DebounceDelay retiene OnSearch hasta que la escritura se detiene, de modo que varias pulsaciones se notifican una sola vez en lugar de una por cada una. Pulsar Enter busca de inmediato sin esperar.",
   "Last search": "Última búsqueda",
   "(none)": "(ninguna)",
   "Searches performed": "Búsquedas realizadas",

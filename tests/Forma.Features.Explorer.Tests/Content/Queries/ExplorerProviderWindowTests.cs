@@ -49,7 +49,7 @@ public sealed class ExplorerProviderWindowTests
         var query = new ExplorerItemQuery(0, 10, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
 
         // Act
-        await window.FetchAsync(provider, onStateChanged: () => { }, query, filter: null, appendToWindow: false);
+        await window.FetchAsync(provider, onStateChanged: () => { }, query, filter: null, appendToWindow: false, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Multiple(
@@ -67,10 +67,10 @@ public sealed class ExplorerProviderWindowTests
         var provider = new ItemProvider([ExplorerItem.For(Resource("shown")), Hidden("hidden")], total: 6);
         var firstPage = new ExplorerItemQuery(0, 2, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
         var secondPage = new ExplorerItemQuery(2, 2, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
-        await window.FetchAsync(provider, onStateChanged: () => { }, firstPage, filter: null, appendToWindow: false);
+        await window.FetchAsync(provider, onStateChanged: () => { }, firstPage, filter: null, appendToWindow: false, TestContext.Current.CancellationToken);
 
         // Act
-        await window.FetchAsync(provider, onStateChanged: () => { }, secondPage, filter: null, appendToWindow: true);
+        await window.FetchAsync(provider, onStateChanged: () => { }, secondPage, filter: null, appendToWindow: true, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Multiple(
@@ -87,11 +87,11 @@ public sealed class ExplorerProviderWindowTests
         using var window = new ExplorerProviderWindow();
         var provider = new ItemProvider([ExplorerItem.For(Resource("shown")), Hidden("hidden")], total: 6);
         var query = new ExplorerItemQuery(0, 2, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
-        await window.FetchAsync(provider, onStateChanged: () => { }, query, filter: null, appendToWindow: false);
-        await window.FetchAsync(provider, onStateChanged: () => { }, query, filter: null, appendToWindow: true);
+        await window.FetchAsync(provider, onStateChanged: () => { }, query, filter: null, appendToWindow: false, TestContext.Current.CancellationToken);
+        await window.FetchAsync(provider, onStateChanged: () => { }, query, filter: null, appendToWindow: true, TestContext.Current.CancellationToken);
 
         // Act
-        await window.FetchAsync(provider, onStateChanged: () => { }, query, filter: null, appendToWindow: false);
+        await window.FetchAsync(provider, onStateChanged: () => { }, query, filter: null, appendToWindow: false, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Multiple(
@@ -122,7 +122,7 @@ public sealed class ExplorerProviderWindowTests
         var query = new ExplorerItemQuery(0, 2, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
 
         // Act
-        await window.FetchAsync(provider, onStateChanged: () => { }, query, filter: null, appendToWindow: false);
+        await window.FetchAsync(provider, onStateChanged: () => { }, query, filter: null, appendToWindow: false, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Multiple(
@@ -139,10 +139,10 @@ public sealed class ExplorerProviderWindowTests
         var provider = new FakeProvider([Resource("one"), Resource("two"), Resource("three")]);
         var firstPage = new ExplorerItemQuery(0, 2, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
         var secondPage = new ExplorerItemQuery(2, 2, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
-        await window.FetchAsync(provider, onStateChanged: () => { }, firstPage, filter: null, appendToWindow: false);
+        await window.FetchAsync(provider, onStateChanged: () => { }, firstPage, filter: null, appendToWindow: false, TestContext.Current.CancellationToken);
 
         // Act
-        await window.FetchAsync(provider, onStateChanged: () => { }, secondPage, filter: null, appendToWindow: true);
+        await window.FetchAsync(provider, onStateChanged: () => { }, secondPage, filter: null, appendToWindow: true, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Multiple(
@@ -160,7 +160,7 @@ public sealed class ExplorerProviderWindowTests
         var filter = ExplorerResourceFilter.Parse("contentType:image");
 
         // Act
-        await window.FetchAsync(provider, onStateChanged: () => { }, query, filter, appendToWindow: false);
+        await window.FetchAsync(provider, onStateChanged: () => { }, query, filter, appendToWindow: false, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(["photo.png"], window.Items.Select(resource => resource.Name));
@@ -177,7 +177,7 @@ public sealed class ExplorerProviderWindowTests
         var changes = new List<bool>();
 
         // Act
-        var fetch = window.FetchAsync(provider, onStateChanged: () => changes.Add(window.IsFetching), query, filter: null, appendToWindow: false);
+        var fetch = window.FetchAsync(provider, onStateChanged: () => changes.Add(window.IsFetching), query, filter: null, appendToWindow: false, TestContext.Current.CancellationToken);
         Assert.True(window.IsFetching);
         gate.SetResult();
         await fetch;
@@ -199,12 +199,34 @@ public sealed class ExplorerProviderWindowTests
         var query = new ExplorerItemQuery(0, 10, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
 
         // Act
-        var stale = window.FetchAsync(firstProvider, onStateChanged: () => { }, query, filter: null, appendToWindow: false);
-        await window.FetchAsync(secondProvider, onStateChanged: () => { }, query, filter: null, appendToWindow: false);
+        var stale = window.FetchAsync(firstProvider, onStateChanged: () => { }, query, filter: null, appendToWindow: false, TestContext.Current.CancellationToken);
+        await window.FetchAsync(secondProvider, onStateChanged: () => { }, query, filter: null, appendToWindow: false, TestContext.Current.CancellationToken);
         firstGate.SetResult();
         await stale;
 
         // Assert
         Assert.Equal(["fresh"], window.Items.Select(resource => resource.Name));
+    }
+
+    [Fact]
+    public async Task Should_abandon_a_fetch_when_the_caller_cancels()
+    {
+        // Arrange
+        using var window = new ExplorerProviderWindow();
+        using var caller = new CancellationTokenSource();
+        var gate = new TaskCompletionSource();
+        var provider = new FakeProvider([Resource("late")], gate);
+        var query = new ExplorerItemQuery(0, 10, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
+
+        // Act
+        var fetch = window.FetchAsync(provider, onStateChanged: () => { }, query, filter: null, appendToWindow: false, caller.Token);
+        await caller.CancelAsync();
+        gate.SetResult();
+        await fetch;
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Empty(window.Items),
+            () => Assert.False(window.IsFetching));
     }
 }

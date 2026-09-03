@@ -1,9 +1,8 @@
 <div class="forma-search-toolbar">
     <div class="forma-search-toolbar-search">
-        <FormaSearchBox Placeholder="@SearchPlaceholder"
-                        SearchDebounce="SearchDelay"
+        <FormaSearchBox Options="Search"
                         OnSearch="OnSearch"
-                        aria-label="@SearchPlaceholder" />
+                        aria-label="@Search.Placeholder" />
     </div>
     @if (Items.Count > 0)
     {

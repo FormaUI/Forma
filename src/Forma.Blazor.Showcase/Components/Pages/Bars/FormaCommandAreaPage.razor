@@ -17,7 +17,7 @@
             <FormaCommandBar>
                 <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" IconOnly="true" aria-label="@L["Back"]"><FormaIcon Icon="Glyph.ArrowLeft" /></FormaButton>
                 <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" IconOnly="true" aria-label="@L["Up"]"><FormaIcon Icon="Glyph.ArrowUp" /></FormaButton>
-                <FormaSearchBox Value="@_query" ValueChanged="v => _query = v" Placeholder="@L["Search media..."]" aria-label="@L["Search media..."]" />
+                <FormaSearchBox Value="@_query" ValueChanged="v => _query = v" Options="@(new SearchBoxOptions { Placeholder = L["Search media..."] })" aria-label="@L["Search media..."]" />
             </FormaCommandBar>
             <FormaCommandBar>
                 <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini"><FormaIcon Icon="Glyph.CheckSquare" /> @L["Select"]</FormaButton>

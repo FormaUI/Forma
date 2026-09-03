@@ -36,7 +36,7 @@
                                     Class="forma-multi-select-search"
                                     Value="@_searchText"
                                     ValueChanged="value => _searchText = value"
-                                    Placeholder="@L["Search"]"
+                                    Options="SearchOptions"
                                     aria-label="@L["Search"]" />
                     @{ var filtered = FilteredOptions; }
                     <div class="forma-multi-select-options">

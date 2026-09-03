@@ -1,5 +1,6 @@
 namespace Forma.Blazor.Components.Bars;
 
+using Forma.Blazor.Components.Inputs;
 using Forma.Framework.Toolbar;
 
 using Microsoft.AspNetCore.Components;
@@ -19,17 +20,14 @@ public sealed partial class FormaSearchToolbar
     /// <summary>Raised with the search text once typing settles.</summary>
     [Parameter, EditorRequired] public EventCallback<string> OnSearch { get; set; }
 
-    /// <summary>The search field's placeholder and accessible name.</summary>
-    [Parameter, EditorRequired] public string SearchPlaceholder { get; set; } = default!;
-
-    /// <summary>How long typing must settle before OnSearch is raised.</summary>
-    [Parameter] public TimeSpan SearchDelay { get; set; } = TimeSpan.FromMilliseconds(300);
+    /// <summary>The search field's configuration. Its placeholder is required and is the field's accessible name.</summary>
+    [Parameter, EditorRequired] public SearchBoxOptions Search { get; set; } = default!;
 
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(SearchDelay, TimeSpan.Zero);
-        ArgumentException.ThrowIfNullOrWhiteSpace(SearchPlaceholder);
+        ArgumentNullException.ThrowIfNull(Search);
+        ArgumentException.ThrowIfNullOrWhiteSpace(Search.Placeholder, nameof(Search));
 
         if (!OnSearch.HasDelegate)
         {

@@ -147,6 +147,9 @@ public sealed partial class FormaEmojiPicker(IEmojiCatalog? registeredCatalog = 
     private bool HasMoreToLoad
         => RenderedEmojis.Count < MatchingEmojis.Count;
 
+    private SearchBoxOptions SearchOptions
+        => Options.Search.Placeholder is null ? Options.Search with { Placeholder = L["Search Emoji"].Value } : Options.Search;
+
     /// <inheritdoc />
     protected override void OnInitialized()
         => _sentinel = new SentinelObserver<FormaEmojiPicker>(JS);
@@ -156,6 +159,7 @@ public sealed partial class FormaEmojiPicker(IEmojiCatalog? registeredCatalog = 
     {
         ArgumentNullException.ThrowIfNull(Options);
         ArgumentOutOfRangeException.ThrowIfLessThan(Options.MaxRecent, 1);
+        ArgumentNullException.ThrowIfNull(Options.Search, nameof(Options));
 
         InvalidateView();
 

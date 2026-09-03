@@ -30,7 +30,7 @@
     @if (Options.ShowSearch)
     {
         <div class="forma-emoji-picker-search">
-            <FormaSearchBox Value="@_searchQuery" ValueChanged="OnQueryChangedAsync" Placeholder="@L["Search Emoji"]" SearchDebounce="Options.SearchDebounce" />
+            <FormaSearchBox Value="@_searchQuery" ValueChanged="OnQueryChangedAsync" Options="SearchOptions" />
         </div>
     }
 

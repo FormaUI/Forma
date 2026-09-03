@@ -34,5 +34,5 @@ public sealed record ExplorerOptions
     public ExplorerDetailsColumns DetailsColumns { get; init; } = ExplorerDetailsColumns.Kind | ExplorerDetailsColumns.Size | ExplorerDetailsColumns.Modified;
 
     /// <summary>How long typing pauses before a catalog is asked again; a held collection filters immediately.</summary>
-    public TimeSpan SearchDebounce { get; init; } = TimeSpan.FromMilliseconds(300);
+    public TimeSpan SearchDebounceDelay { get; init; } = TimeSpan.FromMilliseconds(300);
 }

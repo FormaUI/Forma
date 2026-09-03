@@ -3,7 +3,6 @@ namespace Forma.Blazor.Components.Explorer;
 using System.Globalization;
 
 using Forma.Blazor.Components.Feedback;
-using Forma.Blazor.Threading;
 using Forma.Features.Explorer;
 using Forma.Features.Explorer.Actions;
 using Forma.Features.Explorer.Content;
@@ -16,6 +15,7 @@ using Forma.Features.Files;
 using Forma.Framework.Icons;
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
+using Forma.Framework.Timing;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -132,6 +132,8 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
 
     [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
 
+    [Inject] private IDebounceable SearchDebouncer { get; set; } = default!;
+
     private readonly ExplorerHistory _history = new();
 
     private readonly ExplorerUploadPanel _uploadPanel = new();
@@ -159,8 +161,6 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     private ExplorerCollectionView _collection = default!;
 
     private readonly ExplorerProviderWindow _providerWindow = new();
-
-    private readonly Debouncer _searchDebouncer = new();
 
     private readonly ExplorerQueryParameters _queryParameters = new();
 
@@ -387,7 +387,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     }
 
     /// <summary>Fetches a window from the provider, replacing what is shown or extending it while infinite scrolling.</summary>
-    private Task QueryAsync(bool append)
+    private Task QueryAsync(bool append, CancellationToken cancellationToken = default)
     {
         if (ItemsProvider is not { } provider)
         {
@@ -403,7 +403,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
 
         // FetchAsync lives in a library that must ConfigureAwait(false), so its continuation is not
         // guaranteed to land back on the render thread; StateHasChanged needs InvokeAsync to get there.
-        return _providerWindow.FetchAsync(provider, onStateChanged: () => InvokeAsync(StateHasChanged), query, _collection.Filter, appendToWindow: append);
+        return _providerWindow.FetchAsync(provider, onStateChanged: () => InvokeAsync(StateHasChanged), query, _collection.Filter, appendToWindow: append, cancellationToken);
     }
 
     /// <summary>Re-reads the current window, after something the explorer does not own has changed the collection.</summary>
@@ -725,7 +725,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     public void Dispose()
     {
         _providerWindow.Dispose();
-        _searchDebouncer.Dispose();
+        SearchDebouncer.Cancel();
     }
 
     private async Task HandleBackAsync()
@@ -905,11 +905,8 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
             return;
         }
 
-        // A held collection filters as fast as it can render, but a provider would otherwise be asked once per keystroke.
-        if (await _searchDebouncer.WaitAsync(Options.SearchDebounce))
-        {
-            await QueryAsync(append: false);
-        }
+        // The debouncer resumes off the renderer, so the query is dispatched back onto it.
+        await SearchDebouncer.DebounceAsync(token => InvokeAsync(() => QueryAsync(append: false, token)), Options.SearchDebounceDelay);
     }
 
     private async Task HandleSortDirectionChangedAsync(ExplorerSortDirection direction)

@@ -52,6 +52,9 @@ public sealed partial class FormaMultiSelect<TValue> : InputBase<List<TValue>>, 
     private ElementReference _popupElement;
     private AnchoredPopup _popup = default!;
 
+    private SearchBoxOptions SearchOptions
+        => new() { Placeholder = L["Search"].Value };
+
     private List<TValue> SelectedValues
         => Value ?? [];
 

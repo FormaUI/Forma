@@ -1,4 +1,5 @@
 @inherits FormaBunitContext
+@using Microsoft.Extensions.DependencyInjection
 @code {
     public sealed class Component
     {
@@ -9,7 +10,7 @@
             using var ctx = new FormaSearchToolbarTests();
 
             // Act
-            var cut = ctx.Render(@<FormaSearchToolbar OnSearch="Noop" SearchPlaceholder="Search..." />);
+            var cut = ctx.Render(@<FormaSearchToolbar OnSearch="Noop" Search="Search" />);
 
             // Assert
             cut.Find(".forma-search-toolbar");
@@ -22,7 +23,7 @@
             using var ctx = new FormaSearchToolbarTests();
 
             // Act
-            var cut = ctx.Render(@<FormaSearchToolbar OnSearch="Noop" SearchPlaceholder="Search..." />);
+            var cut = ctx.Render(@<FormaSearchToolbar OnSearch="Noop" Search="Search" />);
 
             // Assert
             cut.Find(".forma-search-toolbar-search input");
@@ -35,7 +36,7 @@
             using var ctx = new FormaSearchToolbarTests();
 
             // Act
-            var cut = ctx.Render(@<FormaSearchToolbar OnSearch="Noop" SearchPlaceholder="Search..." />);
+            var cut = ctx.Render(@<FormaSearchToolbar OnSearch="Noop" Search="Search" />);
 
             // Assert
             var input = cut.Find("input");
@@ -51,7 +52,7 @@
             using var ctx = new FormaSearchToolbarTests();
 
             // Act
-            var cut = ctx.Render(@<FormaSearchToolbar OnSearch="Noop" SearchPlaceholder="Search..." />);
+            var cut = ctx.Render(@<FormaSearchToolbar OnSearch="Noop" Search="Search" />);
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-search-toolbar-items"));
@@ -64,39 +65,36 @@
             using var ctx = new FormaSearchToolbarTests();
             var received = new List<string>();
             var cut = ctx.Render(
-                @<FormaSearchToolbar OnSearch="@((string v) => { received.Add(v); return Task.CompletedTask; })" SearchPlaceholder="Search..." SearchDelay="@TimeSpan.Zero" />);
+                @<FormaSearchToolbar OnSearch="@((string v) => { received.Add(v); return Task.CompletedTask; })" Search="@(Search with { DebounceDelay = TimeSpan.Zero })" />);
 
             // Act
             await cut.Find("input").TriggerEventAsync("oninput", new ChangeEventArgs { Value = "hello" });
-            await Task.Delay(50, Xunit.TestContext.Current.CancellationToken);
-
-            // Assert
-            Assert.Multiple(() =>
-            {
-                Assert.Single(received);
-                Assert.Equal("hello", received[0]);
-            });
-        }
-
-        [Fact]
-        public async Task Should_raise_only_the_last_value_when_typing_does_not_settle()
-        {
-            // Arrange
-            using var ctx = new FormaSearchToolbarTests();
-            var received = new List<string>();
-            var cut = ctx.Render(
-                @<FormaSearchToolbar OnSearch="@((string v) => { received.Add(v); return Task.CompletedTask; })" SearchPlaceholder="Search..." SearchDelay="@TimeSpan.FromMilliseconds(40)" />);
-            var input = cut.Find("input");
-
-            // Act
-            var first = input.TriggerEventAsync("oninput", new ChangeEventArgs { Value = "h" });
-            var second = input.TriggerEventAsync("oninput", new ChangeEventArgs { Value = "he" });
-            var third = input.TriggerEventAsync("oninput", new ChangeEventArgs { Value = "hello" });
-            await Task.WhenAll(first, second, third);
-            await Task.Delay(200, Xunit.TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Equal(["hello"], received);
+        }
+
+        [Fact]
+        public async Task Should_debounce_each_keystroke_by_the_debounce_delay()
+        {
+            // Arrange
+            using var ctx = new FormaSearchToolbarTests();
+            var debouncer = new RecordingDebounceable();
+            ctx.Services.AddSingleton<IDebounceable>(debouncer);
+            var received = new List<string>();
+            var cut = ctx.Render(
+                @<FormaSearchToolbar OnSearch="@((string v) => { received.Add(v); return Task.CompletedTask; })" Search="@(Search with { DebounceDelay = TimeSpan.FromMilliseconds(40) })" />);
+            var input = cut.Find("input");
+
+            // Act
+            await input.TriggerEventAsync("oninput", new ChangeEventArgs { Value = "h" });
+            await input.TriggerEventAsync("oninput", new ChangeEventArgs { Value = "he" });
+            await input.TriggerEventAsync("oninput", new ChangeEventArgs { Value = "hello" });
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal([TimeSpan.FromMilliseconds(40), TimeSpan.FromMilliseconds(40), TimeSpan.FromMilliseconds(40)], debouncer.Delays),
+                () => Assert.Equal(["h", "he", "hello"], received));
         }
 
         [Fact]
@@ -107,7 +105,7 @@
             IReadOnlyList<FormaToolbarItem> actions = [new FormaToolbarCommand { Id = "add", Title = "Add", Command = "add" }];
 
             // Act
-            var cut = ctx.Render(@<FormaSearchToolbar OnSearch="Noop" SearchPlaceholder="Search..." Label="Actions" Items="actions" />);
+            var cut = ctx.Render(@<FormaSearchToolbar OnSearch="Noop" Search="Search" Label="Actions" Items="actions" />);
 
             // Assert
             cut.Find(".forma-search-toolbar-search input");
@@ -123,7 +121,7 @@
             string? invoked = null;
 
             // Act
-            var cut = ctx.Render(@<FormaSearchToolbar OnSearch="Noop" SearchPlaceholder="Search..." Label="Actions" Items="actions" OnCommand="c => invoked = c" />);
+            var cut = ctx.Render(@<FormaSearchToolbar OnSearch="Noop" Search="Search" Label="Actions" Items="actions" OnCommand="c => invoked = c" />);
             cut.Find(".forma-search-toolbar-items button").Click();
 
             // Assert
@@ -138,7 +136,7 @@
             IReadOnlyList<FormaToolbarItem> actions = [new FormaToolbarCommand { Id = "add", Title = "Add", Command = "add" }];
 
             // Act
-            var render = () => ctx.Render(@<FormaSearchToolbar OnSearch="Noop" SearchPlaceholder="Search..." Items="actions" />);
+            var render = () => ctx.Render(@<FormaSearchToolbar OnSearch="Noop" Search="Search" Items="actions" />);
 
             // Assert
             Assert.Throws<ArgumentNullException>(render);
@@ -152,14 +150,14 @@
 
             // Act
             var render = () => ctx.Render<FormaSearchToolbar>(parameters => parameters
-                .Add(p => p.SearchPlaceholder, "Search..."));
+                .Add(p => p.Search, Search));
 
             // Assert
             Assert.Throws<ArgumentException>(render);
         }
 
         [Fact]
-        public void Should_require_a_search_placeholder()
+        public void Should_require_search_options()
         {
             // Arrange
             using var ctx = new FormaSearchToolbarTests();
@@ -173,18 +171,33 @@
         }
 
         [Fact]
-        public void Should_reject_negative_search_delay()
+        public void Should_require_a_search_placeholder()
+        {
+            // Arrange
+            using var ctx = new FormaSearchToolbarTests();
+
+            // Act
+            var render = () => ctx.Render(@<FormaSearchToolbar OnSearch="Noop" Search="@(new SearchBoxOptions())" />);
+
+            // Assert
+            Assert.Throws<ArgumentNullException>(render);
+        }
+
+        [Fact]
+        public void Should_reject_a_negative_debounce_delay()
         {
             // Arrange
             using var ctx = new FormaSearchToolbarTests();
 
             // Act
             var render = () => ctx.Render(
-                @<FormaSearchToolbar OnSearch="Noop" SearchPlaceholder="Search..." SearchDelay="@TimeSpan.FromMilliseconds(-1)" />);
+                @<FormaSearchToolbar OnSearch="Noop" Search="@(Search with { DebounceDelay = TimeSpan.FromMilliseconds(-1) })" />);
 
             // Assert
             Assert.Throws<ArgumentOutOfRangeException>(render);
         }
+
+        private static readonly SearchBoxOptions Search = new() { Placeholder = "Search..." };
 
         private static Task Noop(string value)
             => Task.CompletedTask;

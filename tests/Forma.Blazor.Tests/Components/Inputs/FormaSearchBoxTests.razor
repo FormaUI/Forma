@@ -1,4 +1,5 @@
 @inherits FormaBunitContext
+@using Microsoft.Extensions.DependencyInjection
 @code {
     public sealed class Component
     {
@@ -48,7 +49,7 @@
             using var ctx = new FormaSearchBoxTests();
 
             // Act
-            var cut = ctx.Render(@<FormaSearchBox Placeholder="Search articles..." />);
+            var cut = ctx.Render(@<FormaSearchBox Options="@(new SearchBoxOptions { Placeholder = "Search articles..." })" />);
 
             // Assert
             Assert.Equal("Search articles...", cut.Find("input").GetAttribute("placeholder"));
@@ -98,23 +99,89 @@
         }
 
         [Fact]
-        public void Should_debounce_on_search_until_typing_pauses()
+        public async Task Should_debounce_the_search_by_the_configured_delay()
         {
             // Arrange
             using var ctx = new FormaSearchBoxTests();
+            var debouncer = new RecordingDebounceable();
+            ctx.Services.AddSingleton<IDebounceable>(debouncer);
             var searched = new List<string>();
             var delay = TimeSpan.FromMilliseconds(150);
+            var cut = ctx.Render(@<FormaSearchBox Options="@(new SearchBoxOptions { DebounceDelay = delay })" OnSearch="v => searched.Add(v)" />);
 
             // Act
-            var cut = ctx.Render(@<FormaSearchBox SearchDebounce="delay" OnSearch="v => searched.Add(v)" />);
-            cut.Find("input").Input("c");
-            cut.WaitForAssertion(() => Assert.Equal("c", cut.Find("input").GetAttribute("value")));
-            cut.Find("input").Input("co");
-            cut.WaitForAssertion(() => Assert.Equal("co", cut.Find("input").GetAttribute("value")));
-            cut.Find("input").Input("cov");
+            await cut.Find("input").TriggerEventAsync("oninput", new ChangeEventArgs { Value = "cov" });
 
             // Assert
-            cut.WaitForAssertion(() => Assert.Equal(["cov"], searched), TimeSpan.FromSeconds(2));
+            Assert.Multiple(
+                () => Assert.Equal([delay], debouncer.Delays),
+                () => Assert.Equal(["cov"], searched));
+        }
+
+        [Fact]
+        public async Task Should_search_at_once_without_a_debounce()
+        {
+            // Arrange
+            using var ctx = new FormaSearchBoxTests();
+            var debouncer = new RecordingDebounceable();
+            ctx.Services.AddSingleton<IDebounceable>(debouncer);
+            var searched = new List<string>();
+            var cut = ctx.Render(@<FormaSearchBox OnSearch="v => searched.Add(v)" />);
+
+            // Act
+            await cut.Find("input").TriggerEventAsync("oninput", new ChangeEventArgs { Value = "cov" });
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal([TimeSpan.Zero], debouncer.Delays),
+                () => Assert.Equal(["cov"], searched));
+        }
+
+        [Fact]
+        public async Task Should_abandon_a_pending_search_when_enter_commits_one()
+        {
+            // Arrange
+            using var ctx = new FormaSearchBoxTests();
+            var debouncer = new RecordingDebounceable();
+            ctx.Services.AddSingleton<IDebounceable>(debouncer);
+            var searched = new List<string>();
+            var cut = ctx.Render(@<FormaSearchBox Options="@(new SearchBoxOptions { DebounceDelay = TimeSpan.FromSeconds(30) })" OnSearch="v => searched.Add(v)" />);
+            var input = cut.Find("input");
+
+            // Act
+            await input.TriggerEventAsync("oninput", new ChangeEventArgs { Value = "cover" });
+            await input.KeyDownAsync(Key.Enter);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(1, debouncer.Cancellations),
+                () => Assert.Equal(["cover", "cover"], searched));
+        }
+
+        [Fact]
+        public void Should_reject_a_negative_debounce_delay()
+        {
+            // Arrange
+            using var ctx = new FormaSearchBoxTests();
+
+            // Act
+            var render = () => ctx.Render(@<FormaSearchBox Options="@(new SearchBoxOptions { DebounceDelay = TimeSpan.FromMilliseconds(-1) })" />);
+
+            // Assert
+            Assert.Throws<ArgumentOutOfRangeException>(render);
+        }
+
+        [Fact]
+        public void Should_reject_null_options()
+        {
+            // Arrange
+            using var ctx = new FormaSearchBoxTests();
+
+            // Act
+            var render = () => ctx.Render(@<FormaSearchBox Options="null" />);
+
+            // Assert
+            Assert.Throws<ArgumentNullException>(render);
         }
 
         [Fact]
@@ -153,7 +220,7 @@
             var delay = TimeSpan.FromSeconds(30);
 
             // Act
-            var cut = ctx.Render(@<FormaSearchBox Value="@bound" ValueChanged="v => bound = v" SearchDebounce="delay" OnSearch="v => searched.Add(v)" />);
+            var cut = ctx.Render(@<FormaSearchBox Value="@bound" ValueChanged="v => bound = v" Options="@(new SearchBoxOptions { DebounceDelay = delay })" OnSearch="v => searched.Add(v)" />);
             cut.Find(".forma-search-box-clear button").Click();
 
             // Assert
@@ -170,7 +237,7 @@
             var delay = TimeSpan.FromSeconds(30);
 
             // Act
-            var cut = ctx.Render(@<FormaSearchBox SearchDebounce="delay" OnSearch="v => searched.Add(v)" />);
+            var cut = ctx.Render(@<FormaSearchBox Options="@(new SearchBoxOptions { DebounceDelay = delay })" OnSearch="v => searched.Add(v)" />);
             var input = cut.Find("input");
             input.Input("cover");
             input.KeyDown(Key.Enter);
@@ -186,7 +253,7 @@
             using var ctx = new FormaSearchBoxTests();
 
             // Act
-            var cut = ctx.Render(@<FormaSearchBox Disabled="true" />);
+            var cut = ctx.Render(@<FormaSearchBox Options="@(new SearchBoxOptions { Disabled = true })" />);
 
             // Assert
             Assert.True(cut.Find("input").HasAttribute("disabled"));
@@ -199,7 +266,7 @@
             using var ctx = new FormaSearchBoxTests();
 
             // Act
-            var cut = ctx.Render(@<FormaSearchBox Value="banner" Disabled="true" />);
+            var cut = ctx.Render(@<FormaSearchBox Value="banner" Options="@(new SearchBoxOptions { Disabled = true })" />);
 
             // Assert
             Assert.True(cut.Find(".forma-search-box-clear button").HasAttribute("disabled"));

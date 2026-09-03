@@ -3,6 +3,7 @@ namespace Forma.Blazor;
 using Forma.Blazor.Design;
 using Forma.Features.Feedback;
 using Forma.Features.Sanitization;
+using Forma.Framework.Timing;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -18,6 +19,7 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
+        services.AddFormaTimingServices();
         services.AddFormaFeedbackServices();
         services.AddFormaSanitizationServices();
 

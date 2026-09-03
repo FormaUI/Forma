@@ -12,7 +12,7 @@
     <h2>@L["Basic Usage"]</h2>
     <p class="description">@L["Every keystroke reports instantly, filtering the list as you type. Clearing the field — by the button or by hand — reports an empty search right away."]</p>
     <div class="demo-box">
-        <FormaSearchBox Value="@_basicQuery" ValueChanged="v => _basicQuery = v" Placeholder="@L["Search fruit..."]" aria-label="@L["Search fruit..."]" />
+        <FormaSearchBox Value="@_basicQuery" ValueChanged="v => _basicQuery = v" Options="@(new SearchBoxOptions { Placeholder = L["Search fruit..."] })" aria-label="@L["Search fruit..."]" />
         <ul class="demo-list">
             @foreach (var fruit in FilteredFruits(_basicQuery))
             {
@@ -24,9 +24,9 @@
 
 <div class="demo-section">
     <h2>@L["Debounced Search"]</h2>
-    <p class="description">@L["SearchDebounce holds OnSearch back until typing pauses, so a handful of keystrokes reports once rather than once each. Pressing Enter searches immediately without waiting."]</p>
+    <p class="description">@L["DebounceDelay holds OnSearch back until typing pauses, so a handful of keystrokes reports once rather than once each. Pressing Enter searches immediately without waiting."]</p>
     <div class="demo-box">
-        <FormaSearchBox Value="@_debouncedQuery" ValueChanged="v => _debouncedQuery = v" SearchDebounce="TimeSpan.FromMilliseconds(400)" OnSearch="HandleDebouncedSearch" Placeholder="@L["Search fruit..."]" aria-label="@L["Search fruit..."]" />
+        <FormaSearchBox Value="@_debouncedQuery" ValueChanged="v => _debouncedQuery = v" Options="@(new SearchBoxOptions { Placeholder = L["Search fruit..."], DebounceDelay = TimeSpan.FromMilliseconds(400) })" OnSearch="HandleDebouncedSearch" aria-label="@L["Search fruit..."]" />
         <p class="demo-note">@L["Last search"]: <code>@(_lastSearchedTerm.Length == 0 ? L["(none)"] : _lastSearchedTerm)</code></p>
         <p class="demo-note">@L["Searches performed"]: <code>@_searchCount</code></p>
     </div>
@@ -44,7 +44,7 @@
     <h2>@L["Disabled"]</h2>
     <p class="description">@L["A disabled field is skipped by the keyboard and dimmed."]</p>
     <div class="demo-box">
-        <FormaSearchBox Value="@L["Archived"]" Disabled="true" aria-label="@L["Archived Search"]" />
+        <FormaSearchBox Value="@L["Archived"]" Options="@(new SearchBoxOptions { Disabled = true })" aria-label="@L["Archived Search"]" />
     </div>
 </div>
 
@@ -53,7 +53,7 @@
     <p class="description">@L["With no margin of its own, the field sits on one line beside a button."]</p>
     <div class="demo-box">
         <div class="demo-row">
-            <FormaSearchBox Value="@_toolbarQuery" ValueChanged="v => _toolbarQuery = v" Placeholder="@L["Filter..."]" aria-label="@L["Filter..."]" class="demo-row-field" />
+            <FormaSearchBox Value="@_toolbarQuery" ValueChanged="v => _toolbarQuery = v" Options="@(new SearchBoxOptions { Placeholder = L["Filter..."] })" aria-label="@L["Filter..."]" class="demo-row-field" />
             <FormaButton Variant="ButtonVariant.Secondary">@L["Filter"]</FormaButton>
         </div>
     </div>

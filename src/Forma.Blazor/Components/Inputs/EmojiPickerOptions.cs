@@ -12,8 +12,8 @@ public sealed record EmojiPickerOptions
     /// <summary>Whether the category tab strip is shown.</summary>
     public bool ShowGroupTabs { get; init; } = true;
 
-    /// <summary>How long typing pauses before the search runs.</summary>
-    public TimeSpan? SearchDebounce { get; init; } = TimeSpan.FromMilliseconds(200);
+    /// <summary>The search box's configuration; a null placeholder takes the picker's own.</summary>
+    public SearchBoxOptions Search { get; init; } = new() { DebounceDelay = TimeSpan.FromMilliseconds(200) };
 
     /// <summary>Options showing the search box and every category tab, keeping two dozen recents.</summary>
     public static EmojiPickerOptions Default { get; } = new();

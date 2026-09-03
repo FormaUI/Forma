@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Components.Inputs;
 
-using Forma.Blazor.Threading;
 using Forma.Framework.Localization;
+using Forma.Framework.Timing;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -15,20 +15,14 @@ public sealed partial class FormaSearchBox : ComponentBase, IAsyncDisposable
     /// <summary>Raised on every keystroke, so a caller can keep a bound value in step as the user types.</summary>
     [Parameter] public EventCallback<string> ValueChanged { get; set; }
 
-    /// <summary>Raised with the committed search term: instantly, or after SearchDebounce once typing pauses. Pressing Enter or clearing the field bypasses the wait.</summary>
+    /// <summary>Raised with the committed search term: instantly, or after the configured debounce delay once typing pauses. Pressing Enter or clearing the field bypasses the wait.</summary>
     [Parameter] public EventCallback<string> OnSearch { get; set; }
 
-    /// <summary>How long to wait after the last keystroke before raising OnSearch. Null, the default, reports on every keystroke.</summary>
-    [Parameter] public TimeSpan? SearchDebounce { get; set; }
-
-    /// <summary>Placeholder text shown when the field is empty.</summary>
-    [Parameter] public string? Placeholder { get; set; }
+    /// <summary>How the field presents itself and when it reports a search.</summary>
+    [Parameter] public SearchBoxOptions Options { get; set; } = SearchBoxOptions.Default;
 
     /// <summary>The HTML element identifier.</summary>
     [Parameter] public string? Id { get; set; }
-
-    /// <summary>Whether the field is disabled and ignores user input.</summary>
-    [Parameter] public bool Disabled { get; set; }
 
     /// <summary>Extra classes applied alongside forma-search-box.</summary>
     [Parameter] public string? Class { get; set; }
@@ -42,20 +36,27 @@ public sealed partial class FormaSearchBox : ComponentBase, IAsyncDisposable
 
     [Inject] private IStringLocale<FormaSearchBox> L { get; set; } = default!;
 
-    private readonly Debouncer _debouncer = new();
+    [Inject] private IDebounceable Debouncer { get; set; } = default!;
 
     private string InputClass
         => string.IsNullOrWhiteSpace(Class) ? "forma-search-box" : $"forma-search-box {Class}";
 
     private string EffectivePlaceholder
-        => Placeholder ?? L["Search..."].Value;
+        => Options.Placeholder ?? L["Search..."].Value;
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        ArgumentNullException.ThrowIfNull(Options);
+        ArgumentOutOfRangeException.ThrowIfLessThan(Options.DebounceDelay, TimeSpan.Zero, nameof(Options));
+    }
 
     private async Task HandleInputAsync(ChangeEventArgs args)
     {
         Value = args.Value?.ToString() ?? string.Empty;
 
         await ValueChanged.InvokeAsync(Value);
-        await RaiseSearchAsync(Value);
+        await Debouncer.DebounceAsync(_ => OnSearch.InvokeAsync(Value), Options.DebounceDelay);
     }
 
     private async Task HandleKeyDownAsync(KeyboardEventArgs args)
@@ -65,7 +66,7 @@ public sealed partial class FormaSearchBox : ComponentBase, IAsyncDisposable
             return;
         }
 
-        _debouncer.Cancel();
+        Debouncer.Cancel();
         await OnSearch.InvokeAsync(Value);
     }
 
@@ -74,29 +75,14 @@ public sealed partial class FormaSearchBox : ComponentBase, IAsyncDisposable
         Value = string.Empty;
 
         await ValueChanged.InvokeAsync(Value);
-        _debouncer.Cancel();
+        Debouncer.Cancel();
         await OnSearch.InvokeAsync(Value);
-    }
-
-    private async Task RaiseSearchAsync(string value)
-    {
-        if (SearchDebounce is not { } delay || delay <= TimeSpan.Zero)
-        {
-            _debouncer.Cancel();
-            await OnSearch.InvokeAsync(value);
-            return;
-        }
-
-        if (await _debouncer.WaitAsync(delay))
-        {
-            await OnSearch.InvokeAsync(value);
-        }
     }
 
     /// <inheritdoc />
     public ValueTask DisposeAsync()
     {
-        _debouncer.Dispose();
+        Debouncer.Cancel();
 
         return ValueTask.CompletedTask;
     }
