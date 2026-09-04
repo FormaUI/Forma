@@ -1,4 +1,4 @@
-namespace Forma.Features.Feedback;
+namespace Forma.Framework.Feedback;
 
 
 /// <summary>Manages the transient toast notifications shown to the user.</summary>

@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <IsPackable>false</IsPackable>
-        <RootNamespace>Forma.Features.Feedback</RootNamespace>
+        <RootNamespace>Forma.Framework.Feedback</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

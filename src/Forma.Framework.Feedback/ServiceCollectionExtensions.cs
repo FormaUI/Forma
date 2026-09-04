@@ -1,4 +1,4 @@
-namespace Forma.Features.Feedback;
+namespace Forma.Framework.Feedback;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;

@@ -1,4 +1,4 @@
-namespace Forma.Features.Feedback;
+namespace Forma.Framework.Feedback;
 
 /// <summary>Notifies subscribers when the implementing object's state changes.</summary>
 public interface INotifyStateChanged

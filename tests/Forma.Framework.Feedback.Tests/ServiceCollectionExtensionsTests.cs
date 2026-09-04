@@ -1,4 +1,4 @@
-namespace Forma.Features.Feedback.Tests;
+namespace Forma.Framework.Feedback.Tests;
 
 using Microsoft.Extensions.DependencyInjection;
 

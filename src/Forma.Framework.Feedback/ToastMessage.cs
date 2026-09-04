@@ -1,4 +1,4 @@
-namespace Forma.Features.Feedback;
+namespace Forma.Framework.Feedback;
 
 /// <summary>A single toast notification and its display metadata.</summary>
 public sealed record ToastMessage

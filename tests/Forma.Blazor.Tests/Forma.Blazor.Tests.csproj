@@ -21,7 +21,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\Forma.Blazor\Forma.Blazor.csproj" />
         <ProjectReference Include="..\..\src\Forma.Features.Files\Forma.Features.Files.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Features.Feedback\Forma.Features.Feedback.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Feedback\Forma.Framework.Feedback.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Toolbar\Forma.Framework.Toolbar.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Explorer\Forma.Framework.Explorer.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />

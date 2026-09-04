@@ -18,7 +18,7 @@
         <ProjectReference Include="..\Forma.AddOns.Resources.Office\Forma.AddOns.Resources.Office.csproj" />
         <ProjectReference Include="..\Forma.AddOns.Resources.Markdown\Forma.AddOns.Resources.Markdown.csproj" />
         <ProjectReference Include="..\Forma.Features.Files\Forma.Features.Files.csproj" />
-        <ProjectReference Include="..\Forma.Features.Feedback\Forma.Features.Feedback.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Feedback\Forma.Framework.Feedback.csproj" />
         <ProjectReference Include="..\Forma.Features.Media\Forma.Features.Media.csproj" />
         <ProjectReference Include="..\Forma.Framework.Explorer\Forma.Framework.Explorer.csproj" />
         <ProjectReference Include="..\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />

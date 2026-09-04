@@ -1,4 +1,4 @@
-namespace Forma.Features.Feedback;
+namespace Forma.Framework.Feedback;
 
 using System.Collections;
 using System.Collections.Concurrent;

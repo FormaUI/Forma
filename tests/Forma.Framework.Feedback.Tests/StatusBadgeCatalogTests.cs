@@ -1,7 +1,7 @@
-namespace Forma.Features.Feedback.Tests;
+namespace Forma.Framework.Feedback.Tests;
 
-using Forma.Features.Feedback;
 using Forma.Framework.Css;
+using Forma.Framework.Feedback;
 
 using Xunit;
 

@@ -1,4 +1,4 @@
-namespace Forma.Features.Feedback;
+namespace Forma.Framework.Feedback;
 
 /// <summary>Describes an active confirmation dialog and carries its pending result.</summary>
 public sealed class ConfirmDialogRequest

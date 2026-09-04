@@ -215,7 +215,7 @@ These components form the shell of a page. Build first.
 | **Old pattern** | `AreYouSure(this, 'message')` — custom confirm that returns bool. Used on delete buttons, destructive actions |
 | **Used in** | Every page with delete/remove actions (list pages bulk delete, individual row delete, design change, template swap) |
 | **Parameters** | Component is service-driven (no public message/label parameters). Dialog requests are sent via `IConfirmDialogService.ConfirmAsync(string message, string confirmText, string cancelText)` — all arguments validated non-empty |
-| **Blazor approach** | Built on `FormaDialog` with explicit confirm/cancel actions supplied by the confirm component (the dialog's default actions disabled for this case). Uses `IConfirmDialogService : INotifyStateChanged` beside its `ConfirmDialogService` in `Forma.Features.Feedback`, registered via DI, returning `Task<bool>`. Service composes `StateNotifier` for async subscriber notification. Sealed `IDisposable` component with code-behind in `.razor.cs` |
+| **Blazor approach** | Built on `FormaDialog` with explicit confirm/cancel actions supplied by the confirm component (the dialog's default actions disabled for this case). Uses `IConfirmDialogService : INotifyStateChanged` beside its `ConfirmDialogService` in `Forma.Framework.Feedback`, registered via DI, returning `Task<bool>`. Service composes `StateNotifier` for async subscriber notification. Sealed `IDisposable` component with code-behind in `.razor.cs` |
 
 ### 6. `FormaToast` ✅
 
@@ -224,7 +224,7 @@ These components form the shell of a page. Build first.
 | **Old pattern** | `ShowInfo('message')` → Toastr-style slide-in notification + `BtnDone(btn)` save-confirmation animation (button text changes to ✓ briefly) |
 | **Used in** | All admin pages — after save, delete, update, import, export |
 | **Parameters** | Service-driven (no public component parameters). Toast requests sent via `IToastService.ShowAsync(string message, ToastType type = Success, TimeSpan? duration = null)` (default 3s). `ToastType` enum: `Success`, `Error`, `Info`, `Warning`. `IToastService` also exposes `IReadOnlyList<ToastMessage> Toasts`, `Task RemoveAsync(string id)`. Arguments validated (message non-empty, duration non-negative, id non-empty). |
-| **Blazor approach** | `IToastService : INotifyStateChanged` beside its `ToastService` in `Forma.Features.Feedback`, registered via DI. Service composes `StateNotifier` for async `Func<Task>` subscriber notification. A `FormaToastContainer` (sealed `IDisposable`, code-behind in `.razor.cs`) component at layout level subscribes and renders active toasts. Auto-dismissal via `System.Threading.Timer` per toast. CSS `@keyframes` slide-in animation, type-based color variants. No JS needed |
+| **Blazor approach** | `IToastService : INotifyStateChanged` beside its `ToastService` in `Forma.Framework.Feedback`, registered via DI. Service composes `StateNotifier` for async `Func<Task>` subscriber notification. A `FormaToastContainer` (sealed `IDisposable`, code-behind in `.razor.cs`) component at layout level subscribes and renders active toasts. Auto-dismissal via `System.Threading.Timer` per toast. CSS `@keyframes` slide-in animation, type-based color variants. No JS needed |
 
 ---
 

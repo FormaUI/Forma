@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <IsPackable>false</IsPackable>
-        <RootNamespace>Forma.Features.Feedback.Tests</RootNamespace>
+        <RootNamespace>Forma.Framework.Feedback.Tests</RootNamespace>
         <NoWarn>CA1707</NoWarn>
     </PropertyGroup>
 
@@ -17,7 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Forma.Features.Feedback\Forma.Features.Feedback.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Feedback\Forma.Framework.Feedback.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Css\Forma.Framework.Css.csproj" />
     </ItemGroup>
 

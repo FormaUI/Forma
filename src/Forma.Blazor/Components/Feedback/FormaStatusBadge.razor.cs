@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Components.Feedback;
 
-using Forma.Features.Feedback;
 using Forma.Framework.Css;
+using Forma.Framework.Feedback;
 using Forma.Framework.Icons;
 
 using Microsoft.AspNetCore.Components;

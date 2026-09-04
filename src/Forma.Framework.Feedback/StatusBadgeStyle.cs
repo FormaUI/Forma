@@ -1,4 +1,4 @@
-namespace Forma.Features.Feedback;
+namespace Forma.Framework.Feedback;
 
 using Forma.Framework.Css;
 using Forma.Framework.Icons;

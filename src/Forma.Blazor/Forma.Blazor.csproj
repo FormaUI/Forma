@@ -35,7 +35,7 @@
         <ProjectReference Include="..\Forma.Framework.Composer\Forma.Framework.Composer.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Explorer\Forma.Framework.Explorer.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Features.Files\Forma.Features.Files.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Features.Feedback\Forma.Features.Feedback.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Feedback\Forma.Framework.Feedback.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Features.Media\Forma.Features.Media.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Sanitization.Allowlist\Forma.Framework.Sanitization.Allowlist.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Share\Forma.Framework.Share.csproj" PrivateAssets="all" />

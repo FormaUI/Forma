@@ -1,4 +1,4 @@
-namespace Forma.Features.Feedback;
+namespace Forma.Framework.Feedback;
 
 /// <summary>The status badges an application defines.</summary>
 public interface IStatusBadgeCatalog : IEnumerable<StatusBadgeStyle>

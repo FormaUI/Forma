@@ -2,7 +2,7 @@ namespace Forma.Blazor;
 
 using Forma.Blazor.Features.Emojis;
 using Forma.Blazor.Features.Input;
-using Forma.Features.Feedback;
+using Forma.Framework.Feedback;
 using Forma.Framework.Sanitization.Allowlist;
 using Forma.Framework.Timing;
 

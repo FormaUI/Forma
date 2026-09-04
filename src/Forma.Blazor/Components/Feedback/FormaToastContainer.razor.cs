@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Components.Feedback;
 
-using Forma.Features.Feedback;
+using Forma.Framework.Feedback;
 using Forma.Framework.Icons;
 using Forma.Framework.Localization;
 

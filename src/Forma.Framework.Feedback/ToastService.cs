@@ -1,4 +1,4 @@
-namespace Forma.Features.Feedback;
+namespace Forma.Framework.Feedback;
 
 
 /// <summary>In-memory <see cref="IToastService"/> that tracks active toasts and notifies subscribers on change.</summary>

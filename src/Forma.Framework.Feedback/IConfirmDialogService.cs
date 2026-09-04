@@ -1,4 +1,4 @@
-namespace Forma.Features.Feedback;
+namespace Forma.Framework.Feedback;
 
 
 /// <summary>Coordinates a single active confirmation dialog and its awaited result.</summary>

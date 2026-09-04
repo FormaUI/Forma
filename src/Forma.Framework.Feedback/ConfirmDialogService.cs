@@ -1,4 +1,4 @@
-namespace Forma.Features.Feedback;
+namespace Forma.Framework.Feedback;
 
 
 /// <summary><see cref="IConfirmDialogService"/> that tracks the active request and notifies subscribers on change.</summary>
