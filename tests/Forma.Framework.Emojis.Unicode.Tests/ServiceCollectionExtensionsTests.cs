@@ -1,4 +1,4 @@
-namespace Forma.Features.Emojis.Tests;
+namespace Forma.Framework.Emojis.Unicode.Tests;
 
 using Microsoft.Extensions.DependencyInjection;
 

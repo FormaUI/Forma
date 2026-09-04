@@ -1,6 +1,6 @@
 namespace Forma.Blazor;
 
-using Forma.Features.Emojis;
+using Forma.Framework.Emojis.Unicode;
 using Forma.Framework.Feedback;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;

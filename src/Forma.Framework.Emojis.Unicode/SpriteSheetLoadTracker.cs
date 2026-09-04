@@ -1,4 +1,4 @@
-namespace Forma.Features.Emojis;
+namespace Forma.Framework.Emojis.Unicode;
 
 /// <summary>Tracks the lifecycle of sprite sheets being loaded, where arriving and failing both complete a sheet.</summary>
 public sealed class SpriteSheetLoadTracker

@@ -49,7 +49,7 @@
         <ProjectReference Include="..\Forma.Framework.Icons\Forma.Framework.Icons.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Features.Icons\Forma.Features.Icons.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Features.Emojis\Forma.Features.Emojis.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Emojis.Unicode\Forma.Framework.Emojis.Unicode.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Features.Globalization\Forma.Features.Globalization.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Localization\Forma.Framework.Localization.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Resources\Forma.Framework.Resources.csproj" PrivateAssets="all" />

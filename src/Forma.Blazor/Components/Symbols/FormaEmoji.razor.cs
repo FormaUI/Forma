@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Components.Symbols;
 
-using Forma.Features.Emojis;
+using Forma.Framework.Emojis.Unicode;
 using Forma.Framework.Emojis;
 
 using Microsoft.AspNetCore.Components;

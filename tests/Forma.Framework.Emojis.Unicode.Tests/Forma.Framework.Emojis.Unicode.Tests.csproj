@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <IsPackable>false</IsPackable>
-        <RootNamespace>Forma.Features.Emojis.Tests</RootNamespace>
+        <RootNamespace>Forma.Framework.Emojis.Unicode.Tests</RootNamespace>
         <NoWarn>CA1707</NoWarn>
     </PropertyGroup>
 
@@ -19,7 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Forma.Features.Emojis\Forma.Features.Emojis.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Emojis.Unicode\Forma.Framework.Emojis.Unicode.csproj" />
     </ItemGroup>
 
 </Project>

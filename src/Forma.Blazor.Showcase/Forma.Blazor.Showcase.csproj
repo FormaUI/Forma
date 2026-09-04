@@ -26,7 +26,7 @@
         <ProjectReference Include="..\Forma.Framework.Css\Forma.Framework.Css.csproj" />
         <ProjectReference Include="..\Forma.Framework.Icons\Forma.Framework.Icons.csproj" />
         <ProjectReference Include="..\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" />
-        <ProjectReference Include="..\Forma.Features.Emojis\Forma.Features.Emojis.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Emojis.Unicode\Forma.Framework.Emojis.Unicode.csproj" />
         <ProjectReference Include="..\Forma.Features.Globalization\Forma.Features.Globalization.csproj" />
         <ProjectReference Include="..\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
         <ProjectReference Include="..\Forma.AddOns.Emojis.Twemoji\Forma.AddOns.Emojis.Twemoji.csproj" />

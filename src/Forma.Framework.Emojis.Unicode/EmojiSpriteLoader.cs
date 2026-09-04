@@ -1,4 +1,4 @@
-namespace Forma.Features.Emojis;
+namespace Forma.Framework.Emojis.Unicode;
 
 using Forma.Framework.Interop.Operations;
 
