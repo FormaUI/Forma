@@ -4,11 +4,11 @@ using System.Globalization;
 
 using Forma.Blazor.Interop.Behaviours;
 using Forma.Blazor.Interop.Operations;
-using Forma.Blazor.Resources;
 using Forma.Framework.Files;
 using Forma.Framework.Files.Providers;
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
+using Forma.Framework.Resources.Extensions;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
