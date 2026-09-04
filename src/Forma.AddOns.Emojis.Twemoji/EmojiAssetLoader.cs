@@ -11,7 +11,7 @@ using Forma.Framework.Emojis;
 internal static class EmojiAssetLoader
 {
     /// <summary>The path each category's sprite sheet is served from.</summary>
-    public const string SpriteBasePath = "_content/Forma.AddOns.Emojis.Twemoji";
+    public const string SpriteBasePath = "_content/Forma.AddOns.Emojis.Twemoji/assets";
 
     /// <summary>The categories, in the order the picker presents them.</summary>
     public static IReadOnlyList<EmojiGroup> Groups { get; } =
@@ -27,7 +27,7 @@ internal static class EmojiAssetLoader
         new() { Id = "flags", Title = "Flags" },
     ];
 
-    private const string ResourceFolder = "Forma.Framework.Emojis.Twemoji.Assets";
+    private const string ResourceFolder = "Forma.Framework.Emojis.Twemoji._assets";
 
     private static readonly ConcurrentDictionary<string, IReadOnlyList<EmojiAsset>> Loaded = new(StringComparer.Ordinal);
 

@@ -19,7 +19,7 @@ public sealed class TwemojiEmojiProviderTests
         // Assert
         var sprite = Assert.IsType<EmojiSprite>(artwork);
         Assert.Matches("^emoji-[0-9a-f]+(-[0-9a-f]+)*$", sprite.Symbol);
-        Assert.Matches("^_content/Forma.AddOns.Emojis.Twemoji/smileys-\\d+\\.svg$", sprite.Sheet);
+        Assert.Matches("^_content/Forma.AddOns.Emojis.Twemoji/assets/smileys-\\d+\\.svg$", sprite.Sheet);
     }
 
     [Fact]
