@@ -1,4 +1,4 @@
-namespace Forma.Features.Globalization;
+namespace Forma.Framework.Globalization;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;

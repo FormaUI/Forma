@@ -1,4 +1,4 @@
-namespace Forma.Features.Globalization;
+namespace Forma.Framework.Globalization;
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;

@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <IsPackable>false</IsPackable>
-        <RootNamespace>Forma.Features.Globalization.Tests</RootNamespace>
+        <RootNamespace>Forma.Framework.Globalization.Tests</RootNamespace>
         <NoWarn>CA1707</NoWarn>
     </PropertyGroup>
 
@@ -17,7 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Forma.Features.Globalization\Forma.Features.Globalization.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Globalization\Forma.Framework.Globalization.csproj" />
         <ProjectReference Include="..\Forma.Tests.Support\Forma.Tests.Support.csproj" />
     </ItemGroup>
 

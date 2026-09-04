@@ -1,4 +1,4 @@
-namespace Forma.Features.Globalization;
+namespace Forma.Framework.Globalization;
 
 /// <summary>The cultures an application serves and how they are addressed.</summary>
 public sealed class CultureRouterOptions

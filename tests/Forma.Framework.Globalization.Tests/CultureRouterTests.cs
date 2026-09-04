@@ -1,4 +1,4 @@
-namespace Forma.Features.Globalization.Tests;
+namespace Forma.Framework.Globalization.Tests;
 
 using Forma.Tests.Shared;
 

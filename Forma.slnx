@@ -24,7 +24,7 @@
     <Project Path="src\Forma.Framework.Explorer\Forma.Framework.Explorer.csproj" />
     <Project Path="src\Forma.Framework.Emojis.Unicode\Forma.Framework.Emojis.Unicode.csproj" />
     <Project Path="src\Forma.Framework.Icons.Glyphs\Forma.Framework.Icons.Glyphs.csproj" />
-    <Project Path="src\Forma.Features.Globalization\Forma.Features.Globalization.csproj" />
+    <Project Path="src\Forma.Framework.Globalization\Forma.Framework.Globalization.csproj" />
     <Project Path="src\Forma.Blazor\Forma.Blazor.csproj" />
     <Project Path="src\Forma.AddOns.Resources.Office\Forma.AddOns.Resources.Office.csproj" />
     <Project Path="src\Forma.AddOns.Resources.Markdown\Forma.AddOns.Resources.Markdown.csproj" />
@@ -41,7 +41,7 @@
     <Project Path="tests\Forma.Framework.Emojis.Tests\Forma.Framework.Emojis.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Emojis.Unicode.Tests\Forma.Framework.Emojis.Unicode.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Icons.Glyphs.Tests\Forma.Framework.Icons.Glyphs.Tests.csproj" />
-    <Project Path="tests\Forma.Features.Globalization.Tests\Forma.Features.Globalization.Tests.csproj" />
+    <Project Path="tests\Forma.Framework.Globalization.Tests\Forma.Framework.Globalization.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Resources.Tests\Forma.Framework.Resources.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Feedback.Tests\Forma.Framework.Feedback.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Sanitization.Allowlist.Tests\Forma.Framework.Sanitization.Allowlist.Tests.csproj" />

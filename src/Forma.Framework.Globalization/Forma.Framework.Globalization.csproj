@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <IsPackable>false</IsPackable>
-        <RootNamespace>Forma.Features.Globalization</RootNamespace>
+        <RootNamespace>Forma.Framework.Globalization</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

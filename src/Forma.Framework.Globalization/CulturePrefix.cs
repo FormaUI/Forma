@@ -1,4 +1,4 @@
-namespace Forma.Features.Globalization;
+namespace Forma.Framework.Globalization;
 
 /// <summary>Where a culture token appears in a URL.</summary>
 public enum CulturePrefix
