@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Showcase.Components.Pages.Features;
 
-using Forma.Features.Composer.Editing;
+using Forma.Framework.Composer.Editing;
 
 using Microsoft.AspNetCore.Components;
 

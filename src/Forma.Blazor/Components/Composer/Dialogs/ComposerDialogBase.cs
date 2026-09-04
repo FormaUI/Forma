@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Components.Composer.Dialogs;
 
-using Forma.Features.Composer.Editing;
 using Forma.Features.Sanitization;
+using Forma.Framework.Composer.Editing;
 using Forma.Framework.Localization;
 using Forma.Framework.Sanitization;
 

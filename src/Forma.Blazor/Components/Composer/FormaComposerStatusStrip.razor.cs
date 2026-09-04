@@ -3,7 +3,7 @@ namespace Forma.Blazor.Components.Composer;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
-using Forma.Features.Composer.Editing;
+using Forma.Framework.Composer.Editing;
 using Forma.Framework.Localization;
 using Forma.Framework.Toolbar;
 

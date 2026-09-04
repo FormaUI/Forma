@@ -1,8 +1,8 @@
 namespace Forma.Blazor.Components.Composer.PlainTextEditor;
 
-using Forma.Features.Composer.Assets;
-using Forma.Features.Composer.Documents;
-using Forma.Features.Composer.Plugins;
+using Forma.Framework.Composer.Assets;
+using Forma.Framework.Composer.Documents;
+using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Icons;
 
 /// <summary>Proof-of-routing and fallback editor plugin, authoring plain text.</summary>

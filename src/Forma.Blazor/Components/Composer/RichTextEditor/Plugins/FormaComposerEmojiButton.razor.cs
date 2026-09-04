@@ -3,7 +3,7 @@ namespace Forma.Blazor.Components.Composer.RichTextEditor.Plugins;
 using Forma.Blazor.Components.Buttons;
 using Forma.Blazor.Components.Feedback;
 using Forma.Blazor.Components.Inputs;
-using Forma.Features.Composer.Editing;
+using Forma.Framework.Composer.Editing;
 using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;

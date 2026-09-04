@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Components.Composer;
 
-using Forma.Features.Composer.Editing;
-using Forma.Features.Composer.Plugins;
+using Forma.Framework.Composer.Editing;
+using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Toolbar;
 
 using Microsoft.AspNetCore.Components;

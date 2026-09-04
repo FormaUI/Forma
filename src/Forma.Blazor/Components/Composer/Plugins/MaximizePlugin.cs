@@ -1,8 +1,8 @@
 namespace Forma.Blazor.Components.Composer.Plugins;
 
-using Forma.Features.Composer.Assets;
-using Forma.Features.Composer.Editing;
-using Forma.Features.Composer.Plugins;
+using Forma.Framework.Composer.Assets;
+using Forma.Framework.Composer.Editing;
+using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Icons;
 using Forma.Framework.Toolbar;
 

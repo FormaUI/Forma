@@ -1,9 +1,9 @@
 namespace Forma.Tests.Composer;
 
-using Forma.Features.Composer.Documents;
-using Forma.Features.Composer.Editing;
-using Forma.Features.Composer.Syntax;
 using Forma.Features.Sanitization;
+using Forma.Framework.Composer.Documents;
+using Forma.Framework.Composer.Editing;
+using Forma.Framework.Composer.Syntax;
 
 /// <summary>Builds a <see cref="ComposerContext"/> over a fixed document, for exercising a plugin without a composer.</summary>
 public static class ComposerContexts

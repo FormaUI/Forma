@@ -1,7 +1,7 @@
 namespace Forma.Tests.Composer;
 
-using Forma.Features.Composer.Documents;
-using Forma.Features.Composer.Editing;
+using Forma.Framework.Composer.Documents;
+using Forma.Framework.Composer.Editing;
 
 /// <summary>An <see cref="IComposerInteraction"/> that records everything a plugin invoked.</summary>
 public sealed class RecordingComposerInteraction : IComposerInteraction

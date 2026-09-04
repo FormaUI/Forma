@@ -29,7 +29,7 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 
 ## Solution structure
 
-- Do name every project family + concept, with the family one of `Framework`, `AddOns`, or nothing for the product: `Forma.Framework.Icons`, `Forma.AddOns.Emojis.Twemoji`, `Forma.Blazor`, `Forma.Features.Composer`.
+- Do name every project family + concept, with the family one of `Framework`, `AddOns`, or nothing for the product: `Forma.Framework.Icons`, `Forma.AddOns.Emojis.Twemoji`, `Forma.Blazor`, `Forma.Framework.Composer`.
 - Do put in `Forma.Framework.*` what other Forma assemblies build on — contracts, base shells, design vocabulary, horizontal concerns — whether or not it is visual; a Framework assembly references only Framework.
 - Do keep the product to `Forma.Blazor` plus the `Forma.Features.*` slices its components cannot run without, and give a feature one assembly holding its contracts and the default implementation together, because the components cannot function without that default.
 - Do make a `Forma.AddOns.*` project a host opt-in extending something: the host references and registers it itself, and it ships as its own NuGet package rather than inside the product's.

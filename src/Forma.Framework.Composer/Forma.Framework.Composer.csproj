@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <IsPackable>false</IsPackable>
+        <RootNamespace>Forma.Framework.Composer</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Sanitization\Forma.Framework.Sanitization.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Icons\Forma.Framework.Icons.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Toolbar\Forma.Framework.Toolbar.csproj" />
+    </ItemGroup>
+
+</Project>

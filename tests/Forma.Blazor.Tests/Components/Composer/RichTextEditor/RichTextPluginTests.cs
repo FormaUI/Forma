@@ -3,10 +3,10 @@ namespace Forma.Blazor.Tests.Components.Composer.RichTextEditor;
 using Forma.Blazor.Components.Composer.RichTextEditor;
 using Forma.Blazor.Components.Composer.RichTextEditor.Plugins;
 using Forma.Blazor.Components.Inputs;
-using Forma.Features.Composer.Documents;
-using Forma.Features.Composer.Editing;
-using Forma.Features.Composer.Plugins;
 using Forma.Features.Sanitization;
+using Forma.Framework.Composer.Documents;
+using Forma.Framework.Composer.Editing;
+using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Toolbar;
 using Forma.Tests.Composer;
 

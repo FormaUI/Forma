@@ -66,15 +66,15 @@ Two Coi behaviours are deliberately **not** reproduced as-authored:
 
 ## 2. Assembly layout
 
-The composer is one assembly, `Forma.Features.Composer`, carrying its contracts and the engine that implements them. The components cannot render a composer without that engine, so splitting the two would only add a reference to get wrong. A capability resting on an external dependency is the exception, and ships as a satellite package a host adds deliberately.
+The composer is one assembly, `Forma.Framework.Composer`, carrying its contracts and the engine that implements them. The components cannot render a composer without that engine, so splitting the two would only add a reference to get wrong. A capability resting on an external dependency is the exception, and ships as a satellite package a host adds deliberately.
 
 | Project | Namespace | References |
 |---|---|---|
-| `Forma.Features.Composer` | `Forma.Features.Composer` | `Forma.Framework.Icons`, `Forma.Framework.Toolbar`, `Forma.Framework.Resources`, `Forma.Framework.Sanitization` |
-| `Forma.AddOns.Composer.Markdown` | `Forma.Features.Composer.Markdown` | the composer + Markdig |
-| `Forma.AddOns.Composer.TextMate` | `Forma.Features.Composer.TextMate` | the composer + TextMateSharp |
-| `Forma.AddOns.Composer.KaTeX` | `Forma.Features.Composer.KaTeX` | the composer + KaTeX browser assets |
-| `Forma.Blazor` | `Forma.Blazor.Components.Composer` | adds `Forma.Features.Composer` |
+| `Forma.Framework.Composer` | `Forma.Framework.Composer` | `Forma.Framework.Icons`, `Forma.Framework.Toolbar`, `Forma.Framework.Resources`, `Forma.Framework.Sanitization` |
+| `Forma.AddOns.Composer.Markdown` | `Forma.Framework.Composer.Markdown` | the composer + Markdig |
+| `Forma.AddOns.Composer.TextMate` | `Forma.Framework.Composer.TextMate` | the composer + TextMateSharp |
+| `Forma.AddOns.Composer.KaTeX` | `Forma.Framework.Composer.KaTeX` | the composer + KaTeX browser assets |
+| `Forma.Blazor` | `Forma.Blazor.Components.Composer` | adds `Forma.Framework.Composer` |
 
 Sanitization is not the composer's own concern. Anything holding markup to a policy needs it, so the contract sits in `Forma.Framework.Sanitization` and the allowlist implementation in `Forma.Features.Sanitization`; a host replacing it with a hardened library registers its own `IHtmlSanitizer` and the composer takes it.
 
@@ -91,7 +91,7 @@ The composer ships inside the components' own package, because a host installing
 ### 3.1 Plugin contracts
 
 ```csharp
-namespace Forma.Features.Composer;
+namespace Forma.Framework.Composer;
 
 /// <summary>A capability contributed to the composer, whatever it is implemented in.</summary>
 public interface IComposerPlugin
@@ -641,7 +641,7 @@ src/Forma.Features.Sanitization/
 ├── RichContentMarkupPolicy.cs             # the markup policy the sanitiser applies
 └── ServiceCollectionExtensions.cs
 
-src/Forma.Features.Composer/
+src/Forma.Framework.Composer/
 ├── Assets/                                # namespace …Composer.Assets
 │   ├── ComposerAsset.cs
 │   ├── ComposerAssetKind.cs

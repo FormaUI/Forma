@@ -3,7 +3,7 @@ namespace Forma.Blazor.Showcase.Components.Pages.Features;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-using Forma.Features.Composer.Editing;
+using Forma.Framework.Composer.Editing;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;

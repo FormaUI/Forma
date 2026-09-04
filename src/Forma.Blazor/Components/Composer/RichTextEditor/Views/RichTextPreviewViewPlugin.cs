@@ -2,8 +2,8 @@ namespace Forma.Blazor.Components.Composer.RichTextEditor.Views;
 
 using System.Globalization;
 
-using Forma.Features.Composer.Editing;
-using Forma.Features.Composer.Plugins;
+using Forma.Framework.Composer.Editing;
+using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Icons;
 using Forma.Framework.Toolbar;
 

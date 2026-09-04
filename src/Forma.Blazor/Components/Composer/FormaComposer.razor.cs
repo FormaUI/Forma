@@ -6,12 +6,12 @@ using Forma.Blazor.Components.Composer.Assets;
 using Forma.Blazor.Components.Composer.PlainTextEditor;
 using Forma.Blazor.Components.Composer.Plugins;
 using Forma.Blazor.Interop.Behaviours;
-using Forma.Features.Composer.Assets;
-using Forma.Features.Composer.Documents;
-using Forma.Features.Composer.Editing;
-using Forma.Features.Composer.Plugins;
-using Forma.Features.Composer.Syntax;
 using Forma.Features.Sanitization;
+using Forma.Framework.Composer.Assets;
+using Forma.Framework.Composer.Documents;
+using Forma.Framework.Composer.Editing;
+using Forma.Framework.Composer.Plugins;
+using Forma.Framework.Composer.Syntax;
 using Forma.Framework.Resources;
 using Forma.Framework.Sanitization;
 

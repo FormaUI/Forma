@@ -1,9 +1,9 @@
 namespace Forma.Blazor.Components.Composer.RichTextEditor;
 
 using Forma.Blazor.Components.Composer.RichTextEditor.Plugins;
-using Forma.Features.Composer.Assets;
-using Forma.Features.Composer.Documents;
-using Forma.Features.Composer.Plugins;
+using Forma.Framework.Composer.Assets;
+using Forma.Framework.Composer.Documents;
+using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Icons;
 
 /// <summary>The visual rich text editor for FormaComposer.</summary>

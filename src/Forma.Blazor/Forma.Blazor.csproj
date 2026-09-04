@@ -32,7 +32,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Forma.Features.Composer\Forma.Features.Composer.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Composer\Forma.Framework.Composer.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Features.Explorer\Forma.Features.Explorer.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Features.Files\Forma.Features.Files.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Features.Feedback\Forma.Features.Feedback.csproj" PrivateAssets="all" />

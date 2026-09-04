@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Tests.Components.Composer.Plugins;
 
 using Forma.Blazor.Components.Composer.Plugins;
-using Forma.Features.Composer.Plugins;
+using Forma.Framework.Composer.Plugins;
 
 public sealed class ComposerPluginTests
 {

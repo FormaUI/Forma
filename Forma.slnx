@@ -14,7 +14,7 @@
     <Project Path="src\Forma.Features.Media\Forma.Features.Media.csproj" />
     <Project Path="src\Forma.Framework.Toolbar\Forma.Framework.Toolbar.csproj" />
     <Project Path="src\Forma.Features.Sanitization\Forma.Features.Sanitization.csproj" />
-    <Project Path="src\Forma.Features.Composer\Forma.Features.Composer.csproj" />
+    <Project Path="src\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />
     <Project Path="src\Forma.Framework.Share\Forma.Framework.Share.csproj" />
     <Project Path="src\Forma.AddOns.Share.Targets\Forma.AddOns.Share.Targets.csproj" />
     <Project Path="src\Forma.Features.Explorer\Forma.Features.Explorer.csproj" />
@@ -33,7 +33,7 @@
     <Project Path="tests\Forma.Framework.Resources.Tests\Forma.Framework.Resources.Tests.csproj" />
     <Project Path="tests\Forma.Features.Feedback.Tests\Forma.Features.Feedback.Tests.csproj" />
     <Project Path="tests\Forma.Features.Sanitization.Tests\Forma.Features.Sanitization.Tests.csproj" />
-    <Project Path="tests\Forma.Features.Composer.Tests\Forma.Features.Composer.Tests.csproj" />
+    <Project Path="tests\Forma.Framework.Composer.Tests\Forma.Framework.Composer.Tests.csproj" />
     <Project Path="tests\Forma.AddOns.Share.Targets.Tests\Forma.AddOns.Share.Targets.Tests.csproj" />
     <Project Path="tests\Forma.Features.Explorer.Tests\Forma.Features.Explorer.Tests.csproj" />
     <Project Path="tests\Forma.Features.Files.Tests\Forma.Features.Files.Tests.csproj" />
