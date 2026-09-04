@@ -1,6 +1,6 @@
 ---
 name: forma-js-interop
-description: Forma's JavaScript and interop standard — when JS is allowed at all, the behaviours/operations/components split that decides where a script lives and how it is written, the three module contracts, how C# reaches a module through JsInterop and JsModule, and the external-library carve-out for FormaComposer. Use when adding or changing anything under wwwroot/scripts/ or Interop/, naming a script or wrapper, or deciding whether a capability needs JS.
+description: Forma's JavaScript and interop standard — when JS is allowed at all, the behaviours/operations/components/services split that decides where a script lives and how it is written, the four module contracts, how C# reaches a module through JsInterop and JsModule, and the external-library carve-out for FormaComposer. Use when adding or changing anything under wwwroot/scripts/ or Interop/, naming a script or wrapper, or deciding whether a capability needs JS.
 ---
 
 # JavaScript
@@ -17,14 +17,15 @@ JS-free is the default, not a prohibition.
 - Don't contort a component or ship a worse experience merely to remain script-free.
 - Don't treat the amount of JS required as a reason to leave a rough edge unresolved.
 
-## Behaviours, operations and components
+## Behaviours, operations, components and services
 
-Every script is one of three kinds, and the kind decides its shape and its home.
+Every script is one of four kinds, and the kind decides its shape and its home.
 
 ```text
 behaviours/  → reusable attached behaviour
 operations/  → reusable stateless operation
 components/  → interop owned by a specific Forma component
+services/    → one instance per document that many callers register with
 ```
 
 | Kind | What it is | Script | C# wrapper |
@@ -32,10 +33,13 @@ components/  → interop owned by a specific Forma component
 | Behaviour | binds to an element, holds listeners or observers, needs teardown | `wwwroot/scripts/behaviours/{Capability}.js` | `Interop/Behaviours/{Capability}.cs`, when C# attaches it |
 | Operation | a stateless call against an element or a value | `wwwroot/scripts/operations/{Concern}.js` | `Interop/Operations/{Concern}.cs`, when C# calls it |
 | Component | the whole browser side of one component, both kinds together | `wwwroot/scripts/components/{Component}.js` | `Interop/Components/{Component}.cs` |
+| Service | one instance per document, holding state across every caller that registers with it, configured by the host and queryable | `wwwroot/scripts/services/{Service}.js` | `Features/{Name}/{Service}.cs`, a scoped service owning the module and the host's policy |
 
 - Do put a script in `behaviours/` when it attaches to an element for a lifetime and is later torn down.
 - Do put a script in `operations/` when it is a stateless DOM operation, or a set of related ones.
 - Do put a script in `components/` when it owns the browser-side interop for one component and naturally holds both kinds; keep that interop together rather than splitting it by implementation shape.
+- Do put a script in `services/` when there is one of it per document and its callers register with it rather than attach it: `InputRouter` keeps every scope's routes and the active ordering across the whole page.
+- Do name a service for what it is to the page: `InputRouter`.
 - Do name a component script after the component it supports with the `Forma` prefix dropped, so `FormaModal` is served by `components/Modal.js` and `FormaRichTextEditor` by `components/RichTextEditor.js`.
 - Do split a component script that has grown past one concern into `components/{Name}/*.mjs` modules behind a `components/{Name}.js` entry point; the entry keeps its path, so no wrapper changes, and it composes the modules rather than re-exporting them.
 - Do shape each such module as one concept expressed as a class — a formatter, a memory, an inspector — taking its collaborators once in the constructor, with `#`-private mechanics; not a bag of exported functions threaded the same context parameter.
@@ -87,16 +91,34 @@ export function capture(element, pointerId) {
 - Do write each exported part to the contract above that fits it; the folder decides where the module lives, not how its parts are written.
 - Don't reimplement a shared behaviour or operation inside a component module; import it.
 
+## Service contract
+
+```js
+export function register(element, profile = {}, owner = null) {
+    return scopeFor(element).add(profile, owner);
+}
+
+export function configure(options = {}) { … }
+export function resolve(event) { … }
+```
+
+- Do export `register(...)` returning a registration with `dispose()`, beside `configure(options)` for the host and the queries anyone may ask; a service has no `attach`.
+- Do keep state at module level, because there is one service per document and the registrations are its records; this is the one kind where a module-level `Map` is the design.
+- Do let many registrations coexist, each disposed on its own, and let the service outlive any one of them.
+- Do install the service's own listeners on first registration and remove them when the last registration goes.
+- Don't turn a behaviour into a service because two components share it; a service exists only where the page needs one arbiter.
+
 ## Reaching a script from C#
 
 - Do derive a behaviour wrapper from `JsInterop`, give it the module path, and expose a typed `AttachAsync`.
 - Do give an operation wrapper a `JsModule` field rather than deriving from it, so only its own typed methods can be called.
 - Do derive a component wrapper from `JsInterop` when its module attaches a surface, and give it a `JsModule` field when the module is operations alone.
+- Do make a service's wrapper a scoped service under `Features/{Name}/` with a `JsModule` field, registered in `AddFormaUI`, that pushes the host's policy once per circuit and hands out registration handles; it is not an `Interop/` wrapper, because it owns policy as well as the module.
 - Do call an operation through `TryInvoke*`, so a dropped circuit leaves the call absent rather than throwing into a render.
 - Do name a wrapper after the module it owns, with no `Bridge`, `Helper`, or `Interop` suffix.
 - Do let `JsModule` and `JsInterop` handle importing, `JSException`, `JSDisconnectedException`, and disposal rather than repeating any of it.
 - Do dispose the wrapper from the component's `DisposeAsync`.
-- Do import from `./_content/Forma.Blazor/scripts/{behaviours|operations|components}/{Name}.js`.
+- Do import from `./_content/Forma.Blazor/scripts/{behaviours|operations|components|services}/{Name}.js`.
 - Do suppress CA1812 on a private record that exists only to receive a JS return shape, since nothing constructs it in C#.
 - Don't make a wrapper static; `IJSRuntime` is scoped per circuit and the module reference has to be disposed with it.
 - Don't import a module by hand with `JS.InvokeAsync<IJSObjectReference>("import", …)`.

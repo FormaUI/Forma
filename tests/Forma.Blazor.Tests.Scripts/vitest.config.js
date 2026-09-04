@@ -12,6 +12,7 @@ export default defineConfig({
             '#behaviours/': resolved(`${scripts}behaviours/`),
             '#operations/': resolved(`${scripts}operations/`),
             '#components/': resolved(`${scripts}components/`),
+            '#services/': resolved(`${scripts}services/`),
             '#support/': resolved('./support/'),
         },
     },

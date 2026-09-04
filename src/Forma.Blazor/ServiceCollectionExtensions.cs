@@ -1,6 +1,7 @@
 namespace Forma.Blazor;
 
 using Forma.Blazor.Features.Emojis;
+using Forma.Blazor.Features.Input;
 using Forma.Features.Feedback;
 using Forma.Features.Sanitization;
 using Forma.Framework.Timing;
@@ -13,9 +14,10 @@ public static class ServiceCollectionExtensions
 {
     /// <summary>Registers every default the components rely on, leaving in place whatever a host registered first.</summary>
     /// <param name="services">The collection to register into.</param>
+    /// <param name="inputRouting">The application-wide input policy; <see langword="null"/> takes <see cref="InputRouterOptions.Default"/>.</param>
     /// <returns>The same collection, for chaining.</returns>
     /// <remarks>Artwork is not registered here; an icon or emoji pack is a package a host adds and calls for itself.</remarks>
-    public static IServiceCollection AddFormaUI(this IServiceCollection services)
+    public static IServiceCollection AddFormaUI(this IServiceCollection services, InputRouterOptions? inputRouting = null)
     {
         ArgumentNullException.ThrowIfNull(services);
 
@@ -25,6 +27,11 @@ public static class ServiceCollectionExtensions
 
         // Scoped, because the sheets it has adopted are the ones in this circuit's own document.
         services.TryAddScoped<EmojiSpriteLoader>();
+
+        services.TryAddSingleton(inputRouting ?? InputRouterOptions.Default);
+
+        // Scoped, because the policy it pushes lands in this circuit's own document.
+        services.TryAddScoped<InputRouter>();
 
         return services;
     }

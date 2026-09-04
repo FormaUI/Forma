@@ -1,0 +1,79 @@
+namespace Forma.Blazor.Features.Input;
+
+using Microsoft.JSInterop;
+
+/// <summary>A registration on an input scope, holding the scope active while its surface is open and disposed when the registrant goes.</summary>
+internal sealed class InputRegistration(IJSObjectReference handle) : IAsyncDisposable
+{
+    private IJSObjectReference? _handle = handle;
+
+    /// <summary>Whether this registration holds the scope active.</summary>
+    public bool IsActive { get; private set; }
+
+    /// <summary>Holds the scope active, reporting whether the call ran.</summary>
+    public async ValueTask<bool> ActivateAsync()
+    {
+        var ran = await InvokeAsync("activate");
+        IsActive = IsActive || ran;
+
+        return ran;
+    }
+
+    /// <summary>Releases the hold, reporting whether the call ran.</summary>
+    public async ValueTask<bool> ReleaseAsync()
+    {
+        var ran = await InvokeAsync("release");
+        IsActive = IsActive && !ran;
+
+        return ran;
+    }
+
+    /// <summary>Replaces what the registration contributes, reporting whether the call ran.</summary>
+    public ValueTask<bool> UpdateAsync(InputProfile profile)
+    {
+        ArgumentNullException.ThrowIfNull(profile);
+
+        return InvokeAsync("update", profile);
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        var handle = _handle;
+        _handle = null;
+        IsActive = false;
+
+        if (handle is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await handle.InvokeVoidAsync("dispose");
+            await handle.DisposeAsync();
+        }
+        catch (Exception ex) when (ex is JSDisconnectedException or JSException)
+        {
+            // Circuit dropped or the scope is gone; there is nothing left to release.
+        }
+    }
+
+    private async ValueTask<bool> InvokeAsync(string identifier, params object?[] args)
+    {
+        if (_handle is null)
+        {
+            return false;
+        }
+
+        try
+        {
+            await _handle.InvokeVoidAsync(identifier, args);
+            return true;
+        }
+        catch (Exception ex) when (ex is JSDisconnectedException or JSException)
+        {
+            return false;
+        }
+    }
+}

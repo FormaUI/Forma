@@ -20,6 +20,7 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 - Do use [COMPONENTS.md](COMPONENTS.md) for the component inventory, build order, and completion status.
 - Do use [README.md](README.md) for host consumption — install, service registration, stylesheets, and localization from the consumer's side.
 - Do use [docs/composer-design.md](docs/composer-design.md) for `FormaComposer`'s architecture, plugin model, assemblies, and phases.
+- Do use [docs/input-routing.md](docs/input-routing.md) for how input is owned and routed between nested components — scopes, routes, active ordering, and the native table — before adding or changing any key, pointer, wheel, drag, or dismissal handling.
 - Do put a component's own design document in `docs/` when it is large enough to own a plan, and treat it as authoritative for that component over the inventory's summary row.
 - Do read `.editorconfig` before writing C#; it is the authority on style, and the root file and `src/Forma.Blazor/.editorconfig` differ deliberately.
 - Do use `EpicaDeportiva/docs/forma-components.md` for Épica Deportiva's required and optional subset and remaining work.
@@ -187,7 +188,7 @@ A description is wrong the moment the thing it describes widens, and nothing in 
 - Do drop a "no JavaScript" or "pure CSS" banner the moment the component gains interop, and keep it where it is still true.
 - Do rewrite a `COMPONENTS.md` **Parameters** row when a parameter is added, removed, renamed, or changes type or required-ness.
 - Do rewrite a **Blazor approach** row once the component is built, so it records what shipped rather than the plan; a row still reading "Use Blazor `InputDate`" for a bespoke calendar is worse than no row.
-- Do update a JS module path in prose when the script moves between `behaviours/`, `operations/`, and `components/`.
+- Do update a JS module path in prose when the script moves between `behaviours/`, `operations/`, `components/`, and `services/`.
 - Do delete a sentence saying another component *should* adopt something once it has.
 - Don't trust a search for renamed identifiers to find this; the drift is in wording that still compiles and still reads plausibly.
 
