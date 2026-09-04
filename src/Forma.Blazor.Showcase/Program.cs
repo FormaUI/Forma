@@ -1,6 +1,4 @@
 using Forma.Blazor;
-using Forma.Blazor.Features.Input;
-using Forma.Blazor.Features.Input.Keyboard;
 using Forma.Blazor.Globalization;
 using Forma.Blazor.Showcase;
 using Forma.Blazor.Showcase.Components.Pages.Menus;
@@ -11,6 +9,8 @@ using Forma.Framework.Emojis.Twemoji;
 using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Feedback;
 using Forma.Framework.Icons;
+using Forma.Framework.Input;
+using Forma.Framework.Input.Keyboard;
 using Forma.Framework.Localization;
 using Forma.Framework.Localization.Json;
 using Forma.Framework.Media;

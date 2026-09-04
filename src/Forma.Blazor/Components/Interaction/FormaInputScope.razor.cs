@@ -1,6 +1,7 @@
 namespace Forma.Blazor.Components.Interaction;
 
 using Forma.Blazor.Features.Input;
+using Forma.Framework.Input;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -20,6 +21,12 @@ public sealed partial class FormaInputScope : ComponentBase, IAsyncDisposable
 
     /// <summary>Whether the scope is in the active ordering, receiving Escape, a press away, and close requests while foremost.</summary>
     [Parameter] public bool Active { get; set; }
+
+    /// <summary>The scope this one stands inside for active ordering; <see langword="null"/> takes the nearest scope containing it.</summary>
+    [Parameter] public ElementReference? Parent { get; set; }
+
+    /// <summary>Elements outside the scope's element that count as inside it, such as the trigger that opened it.</summary>
+    [Parameter] public IReadOnlyList<ElementReference> Within { get; set; } = [];
 
     /// <summary>The content the scope owns input within.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -110,7 +117,7 @@ public sealed partial class FormaInputScope : ComponentBase, IAsyncDisposable
 
         if (_registration is null)
         {
-            var registration = await Router.RegisterAsync(_element, Profile, _selfReference);
+            var registration = await Router.RegisterAsync(_element, Profile, _selfReference, Parent, Within);
 
             // The component may have gone while the registration was being made; a scope on a gone element is released at once.
             if (_disposed)

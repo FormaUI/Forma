@@ -125,18 +125,22 @@ export function configure(options = {}) {
  * @param {Profile} profile What this registration contributes.
  * @param {Owner | null} owner
  *   A .NET reference that receives actions no route handles in script, through HandleInputActionAsync, and dismissals through HandleDismissAsync.
+ * @param {{ parent?: Element | null, within?: Element[] } | null} placement
+ *   The parent and the elements counted as inside, given apart from the profile when the profile is shared between instances.
  */
-export function register(element, profile = {}, owner = null) {
+export function register(element, profile = {}, owner = null, placement = null) {
+    // The parent and the elements counted as inside are per instance, so a .NET caller passes them beside its reusable profile.
+    const contributed = placement ? { ...profile, ...placement } : profile;
     let scope = scopes.get(element);
 
     if (!scope) {
         scope = new Scope(element);
-        scope.validate(profile);
+        scope.validate(contributed);
         scopes.set(element, scope);
         ensureDocumentListeners();
     }
 
-    return scope.add(profile, owner);
+    return scope.add(contributed, owner);
 }
 
 /**

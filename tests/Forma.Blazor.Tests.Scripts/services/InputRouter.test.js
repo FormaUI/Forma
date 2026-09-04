@@ -709,6 +709,22 @@ describe('InputRouter active routing', () => {
         expect(outerDismiss).not.toHaveBeenCalled();
     });
 
+    it('takes a parent and the elements within from a placement given beside the profile', () => {
+        const popupDismiss = vi.fn();
+        const dragDismiss = vi.fn();
+        const shared = { onDismiss: dragDismiss };
+        scope(popup(), { onDismiss: popupDismiss }).activate();
+        handles.push(register(elsewhere(), shared, null, { parent: popup(), within: [trigger()] }));
+        handles.at(-1).activate();
+
+        key(cell(), 'Escape');
+        press(trigger());
+
+        expect(dragDismiss).toHaveBeenCalledTimes(1);
+        expect(popupDismiss).not.toHaveBeenCalled();
+        expect(shared.parent).toBeUndefined();
+    });
+
     it('ranks a registration above the parent it declares even outside it', () => {
         const popupDismiss = vi.fn();
         const dragDismiss = vi.fn();

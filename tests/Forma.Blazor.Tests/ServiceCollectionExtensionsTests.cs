@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Tests;
 
-using Forma.Blazor.Features.Input;
-using Forma.Blazor.Features.Input.Keyboard;
+using Forma.Framework.Input;
+using Forma.Framework.Input.Keyboard;
 
 public sealed class ServiceCollectionExtensionsTests
 {

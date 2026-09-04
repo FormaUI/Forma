@@ -4,7 +4,7 @@
 
 Design for input ownership and precedence across Forma components. Authoritative for
 `InputRouter.js`, the `InputRoute`/`InputProfile`/`InputRouterOptions` records and the
-binding and input records of each family under `Features/Input`, the scoped
+binding and input records of each family in `Forma.Framework.Input`, the scoped
 bridge that carries host policy to the script, and every component's participation.
 
 Step 1 of the implementation plan is built: the router script, the records, the bridge and
@@ -436,7 +436,7 @@ a component default does not silently defeat explicit host policy.
 
 ### Public surface
 
-A type under `Features/Input` is public only because a host or a component author reaches
+A type in `Forma.Framework.Input` is public only because a host or a component author reaches
 it from one of three doors: `InputRouterOptions` and `IInputActionHandler` for the host,
 `FormaInputScope` for the author, and the inspector's `Decision` for anyone debugging.
 The router service and the registration handle stand behind those doors and stay

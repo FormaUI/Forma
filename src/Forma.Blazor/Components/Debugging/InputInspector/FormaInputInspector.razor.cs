@@ -2,11 +2,11 @@ namespace Forma.Blazor.Components.Debugging.InputInspector;
 
 using System.Globalization;
 
-using Forma.Blazor.Features.Input;
-using Forma.Blazor.Features.Input.Keyboard;
-using Forma.Blazor.Features.Input.Pointer;
-using Forma.Blazor.Features.Input.Wheel;
 using Forma.Framework.Icons;
+using Forma.Framework.Input;
+using Forma.Framework.Input.Keyboard;
+using Forma.Framework.Input.Pointer;
+using Forma.Framework.Input.Wheel;
 using Forma.Framework.Localization;
 using Forma.Framework.Toolbar;
 

@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Showcase;
 
-using Forma.Blazor.Features.Input;
+using Forma.Framework.Input;
 
 /// <summary>The showcase's own answer to its host routes: it remembers the last action and tells the page showing it.</summary>
 public sealed class ShowcaseInputActions : IInputActionHandler

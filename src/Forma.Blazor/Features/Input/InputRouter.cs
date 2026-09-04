@@ -2,6 +2,7 @@ namespace Forma.Blazor.Features.Input;
 
 using System.Diagnostics.CodeAnalysis;
 
+using Forma.Framework.Input;
 using Forma.Framework.Interop;
 
 using Microsoft.AspNetCore.Components;
@@ -16,8 +17,8 @@ internal sealed class InputRouter(IJSRuntime js, InputRouterOptions options, IIn
     private Task<bool>? _configuration;
     private InputRegistration? _hostRegistration;
 
-    /// <summary>Registers <paramref name="element"/> as a scope, or adds to the scope it already is, yielding <see langword="null"/> when the circuit cannot register it; the <paramref name="owner"/> receives actions through <c>HandleInputActionAsync</c> and dismissals through <c>HandleDismissAsync</c>.</summary>
-    public async ValueTask<InputRegistration?> RegisterAsync<TOwner>(ElementReference element, InputProfile profile, DotNetObjectReference<TOwner>? owner = null)
+    /// <summary>Registers <paramref name="element"/> as a scope, or adds to the scope it already is, yielding <see langword="null"/> when the circuit cannot register it; the <paramref name="owner"/> receives actions through <c>HandleInputActionAsync</c> and dismissals through <c>HandleDismissAsync</c>, the scope stands inside <paramref name="parent"/> for active ordering, and the <paramref name="within"/> elements count as inside it.</summary>
+    public async ValueTask<InputRegistration?> RegisterAsync<TOwner>(ElementReference element, InputProfile profile, DotNetObjectReference<TOwner>? owner = null, ElementReference? parent = null, IReadOnlyList<ElementReference>? within = null)
         where TOwner : class
     {
         ArgumentNullException.ThrowIfNull(profile);
@@ -27,7 +28,7 @@ internal sealed class InputRouter(IJSRuntime js, InputRouterOptions options, IIn
             return null;
         }
 
-        var handle = await _module.TryInvokeAsync<IJSObjectReference>("register", element, profile, owner);
+        var handle = await _module.TryInvokeAsync<IJSObjectReference>("register", element, profile, owner, new { parent, within = within ?? [] });
 
         return handle is null ? null : new InputRegistration(handle);
     }

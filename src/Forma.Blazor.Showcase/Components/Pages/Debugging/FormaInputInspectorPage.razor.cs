@@ -2,10 +2,10 @@ namespace Forma.Blazor.Showcase.Components.Pages.Debugging;
 
 using Forma.Blazor.Components.Inputs;
 using Forma.Blazor.Components.Interaction;
-using Forma.Blazor.Features.Input;
-using Forma.Blazor.Features.Input.Keyboard;
-using Forma.Blazor.Features.Input.Pointer;
-using Forma.Blazor.Features.Input.Wheel;
+using Forma.Framework.Input;
+using Forma.Framework.Input.Keyboard;
+using Forma.Framework.Input.Pointer;
+using Forma.Framework.Input.Wheel;
 
 using Microsoft.AspNetCore.Components;
 

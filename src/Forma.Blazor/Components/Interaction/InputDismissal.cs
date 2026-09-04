@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Components.Interaction;
 
-using Forma.Blazor.Features.Input;
+using Forma.Framework.Input;
 
 /// <summary>A dismissal the input router delivered to a scope while it was foremost.</summary>
 /// <param name="Action">What the scope declared for the reason: dismiss or cancel.</param>

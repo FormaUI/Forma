@@ -20,6 +20,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Forma.Blazor\Forma.Blazor.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Input\Forma.Framework.Input.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Files\Forma.Framework.Files.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Feedback\Forma.Framework.Feedback.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Toolbar\Forma.Framework.Toolbar.csproj" />

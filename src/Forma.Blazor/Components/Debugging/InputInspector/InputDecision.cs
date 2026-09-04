@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Components.Debugging.InputInspector;
 
-using Forma.Blazor.Features.Input;
+using Forma.Framework.Input;
 
 /// <summary>One resolution of the input router, as the inspector shows it.</summary>
 public sealed record InputDecision
