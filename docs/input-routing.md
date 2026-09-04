@@ -376,7 +376,7 @@ first.
 ## Dialog integration
 
 `FormaDialog` registers a scope with `modal: true` while open; modality is declared by
-`Modal.js`, since `showModal()` leaves no DOM trace. The dialog keeps native modality,
+`Dialog.js`, since `showModal()` leaves no DOM trace. The dialog keeps native modality,
 background inertness, focus containment, top-layer rendering, and native close requests.
 
 Two entry points feed the router:
@@ -384,7 +384,7 @@ Two entry points feed the router:
 - Escape arrives as a keydown the router sees first. If a scope is active above the dialog,
   the press is consumed there and the dialog never receives its `cancel`.
 - A platform close request — a back gesture, an assistive-technology dismiss — arrives only
-  as the dialog's `cancel` event. `Modal.js` offers it through `requestDismiss(dialog,
+  as the dialog's `cancel` event. `Dialog.js` offers it through `requestDismiss(dialog,
   'close-request')`. The request enters at the dialog but resolves to the foremost active
   registration: the dialog when it is foremost, else the popup or drag above it, which is
   dismissed instead. Either way the decision says to prevent the native cancellation, so

@@ -1,5 +1,5 @@
 /**
- * Modal — opening and closing a native dialog as a modal
+ * Dialog — opening and closing a native dialog as a modal
  *
  * showModal and close are imperative DOM calls with no HTML-attribute equivalent, and the
  * backdrop is part of the dialog element itself, so a click landing on the dialog rather
@@ -10,10 +10,10 @@
  * @param {HTMLDialogElement} target
  */
 export function attach(target) {
-    return new Modal(target);
+    return new Dialog(target);
 }
 
-class Modal {
+class Dialog {
     #dialog;
     #controller = null;
 

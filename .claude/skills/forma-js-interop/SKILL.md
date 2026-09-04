@@ -54,7 +54,7 @@ assembly root, as `Forma.Framework.Input.Interop` serves `scripts/InputRouter.js
 - Do file a script as a component when it owns the browser-side interop for one component and naturally holds both kinds; keep that interop together rather than splitting it by implementation shape.
 - Do file a script as a service when there is one of it per document and its callers register with it rather than attach it: `InputRouter` keeps every scope's routes and the active ordering across the whole page.
 - Do name a service for what it is to the page: `InputRouter`.
-- Do name a component script after the component it supports with the `Forma` prefix dropped, so `FormaModal` is served by `Modal.js` and `FormaRichTextEditor` by `RichTextEditor.js`.
+- Do name a component script after the component it supports with the `Forma` prefix dropped, so `FormaDialog` is served by `Dialog.js` and `FormaRichTextEditor` by `RichTextEditor.js`.
 - Do split a component script that has grown past one concern into `{Name}/*.mjs` modules behind a `{Name}.js` entry point beside them; the entry keeps its path, so no wrapper changes, and it composes the modules rather than re-exporting them.
 - Do shape each such module as one concept expressed as a class — a formatter, a memory, an inspector — taking its collaborators once in the constructor, with `#`-private mechanics; not a bag of exported functions threaded the same context parameter.
 - Do give a family of pure helpers a named class with static members rather than loose exports, so a caller imports the concept, not stray functions.

@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>Opens and closes a native dialog as a modal.</summary>
-public sealed class Modal(IJSRuntime js)
-    : JsInterop(js, "./_content/Forma.Framework.Interop/scripts/components/Modal.js")
+public sealed class Dialog(IJSRuntime js)
+    : JsInterop(js, "./_content/Forma.Framework.Interop/scripts/components/Dialog.js")
 {
-    /// <summary>Attaches the modal to the dialog.</summary>
+    /// <summary>Attaches to the dialog.</summary>
     public ValueTask<bool> AttachAsync(ElementReference dialog)
         => AttachCoreAsync(dialog);
 

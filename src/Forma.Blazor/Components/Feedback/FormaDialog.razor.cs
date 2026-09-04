@@ -12,7 +12,7 @@ using Microsoft.JSInterop;
 public sealed partial class FormaDialog : IAsyncDisposable
 {
     private ElementReference _dialogElement;
-    private Modal _modal = default!;
+    private Dialog _dialog = default!;
     private bool _isOpen;
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
@@ -62,7 +62,7 @@ public sealed partial class FormaDialog : IAsyncDisposable
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _modal = new Modal(JS);
+        => _dialog = new Dialog(JS);
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -73,7 +73,7 @@ public sealed partial class FormaDialog : IAsyncDisposable
     {
         if (firstRender)
         {
-            await _modal.AttachAsync(_dialogElement);
+            await _dialog.AttachAsync(_dialogElement);
         }
 
         if (Opened && !_isOpen)
@@ -81,12 +81,12 @@ public sealed partial class FormaDialog : IAsyncDisposable
             // Content that renders again while the attach round-trip is still in flight brings a
             // second pass through here, and a call made before the module answered never ran. Only
             // a call that did run counts as open, so the pass that follows it opens the dialog.
-            _isOpen = await _modal.OpenAsync(Options.CloseOnBackdropClick);
+            _isOpen = await _dialog.OpenAsync(Options.CloseOnBackdropClick);
         }
         else if (!Opened && _isOpen)
         {
             _isOpen = false;
-            await _modal.CloseAsync();
+            await _dialog.CloseAsync();
         }
     }
 
@@ -105,7 +105,7 @@ public sealed partial class FormaDialog : IAsyncDisposable
 
     private async Task RequestCloseAsync()
     {
-        if (await _modal.CloseAsync())
+        if (await _dialog.CloseAsync())
         {
             return;
         }
@@ -147,5 +147,5 @@ public sealed partial class FormaDialog : IAsyncDisposable
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
-        => await _modal.DisposeAsync();
+        => await _dialog.DisposeAsync();
 }
