@@ -2,11 +2,11 @@ namespace Forma.Blazor.Components.Explorer;
 
 using Forma.Blazor.Components.Inputs;
 using Forma.Blazor.Components.Navigation;
-using Forma.Features.Explorer;
-using Forma.Features.Explorer.Content;
-using Forma.Features.Explorer.Content.Queries;
-using Forma.Features.Explorer.Items;
-using Forma.Features.Explorer.Navigation;
+using Forma.Framework.Explorer;
+using Forma.Framework.Explorer.Content;
+using Forma.Framework.Explorer.Content.Queries;
+using Forma.Framework.Explorer.Items;
+using Forma.Framework.Explorer.Navigation;
 using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;

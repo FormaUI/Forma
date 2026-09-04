@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Tests.Components.Explorer;
 
-using Forma.Features.Explorer.Content.Queries;
-using Forma.Features.Explorer.Items;
+using Forma.Framework.Explorer.Content.Queries;
+using Forma.Framework.Explorer.Items;
 using Forma.Framework.Resources;
 
 /// <summary>An in-memory provider that records the queries it was asked, for tests about what an explorer fetches.</summary>

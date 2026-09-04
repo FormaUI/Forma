@@ -1,11 +1,11 @@
 namespace Forma.Blazor.Showcase.Components.Pages.Features;
 
 using Forma.Blazor.Components.Explorer;
-using Forma.Features.Explorer;
-using Forma.Features.Explorer.Content;
-using Forma.Features.Explorer.Content.Queries;
-using Forma.Features.Explorer.Items;
-using Forma.Features.Explorer.Requests;
+using Forma.Framework.Explorer;
+using Forma.Framework.Explorer.Content;
+using Forma.Framework.Explorer.Content.Queries;
+using Forma.Framework.Explorer.Items;
+using Forma.Framework.Explorer.Requests;
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
 

@@ -143,7 +143,7 @@ Forma.Blazor/Components/
 │   └── ExplorerResourceExtensions.cs     # the labels a view puts on a resource
 │                                         # everything else the explorer speaks in — the view and
 │                                         # interaction pair, options, actions, selection, enums —
-│                                         # lives in Forma.Features.Explorer
+│                                         # lives in Forma.Framework.Explorer
 ├── (1 / 4) Media/
 │   ├── FormaImageEditor.razor / .razor.js
 │   ├── ✅ FormaVideoPlayer.razor

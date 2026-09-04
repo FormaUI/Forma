@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Components.Explorer;
 
-using Forma.Features.Explorer.Items;
-using Forma.Features.Explorer.Selection;
+using Forma.Framework.Explorer.Items;
+using Forma.Framework.Explorer.Selection;
 using Forma.Framework.Localization;
 
 /// <summary>Produces localized selection labels for an explorer item.</summary>

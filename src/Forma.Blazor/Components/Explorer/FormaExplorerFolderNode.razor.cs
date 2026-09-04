@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Components.Explorer;
 
-using Forma.Features.Explorer.Items;
-using Forma.Features.Explorer.Navigation;
+using Forma.Framework.Explorer.Items;
+using Forma.Framework.Explorer.Navigation;
 using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;

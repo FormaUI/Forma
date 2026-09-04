@@ -1,0 +1,25 @@
+namespace Forma.Framework.Explorer.Content;
+
+using Forma.Framework.Explorer.Content.Queries;
+
+/// <summary>What components presenting an explorer's current content may ask it to do.</summary>
+public interface IExplorerContentInteraction
+{
+    /// <summary>Sorts by the field, reversing the direction when it is already the sorted field.</summary>
+    Task SortByAsync(ExplorerSortField field);
+
+    /// <summary>Sets the sort direction outright.</summary>
+    Task SetSortDirectionAsync(ExplorerSortDirection direction);
+
+    /// <summary>Switches which layout the content is shown in.</summary>
+    Task ChangeViewModeAsync(ExplorerViewMode mode);
+
+    /// <summary>Fetches the next page, appending it to what is already shown.</summary>
+    Task RequestNextPageAsync();
+
+    /// <summary>Replaces what is shown with the given page.</summary>
+    Task ChangePageAsync(int page);
+
+    /// <summary>Refreshes the explorer's content.</summary>
+    Task RefreshAsync();
+}

@@ -23,7 +23,7 @@
         <ProjectReference Include="..\..\src\Forma.Features.Files\Forma.Features.Files.csproj" />
         <ProjectReference Include="..\..\src\Forma.Features.Feedback\Forma.Features.Feedback.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Toolbar\Forma.Framework.Toolbar.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Features.Explorer\Forma.Features.Explorer.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Explorer\Forma.Framework.Explorer.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />
         <ProjectReference Include="..\..\src\Forma.Features.Media\Forma.Features.Media.csproj" />
         <ProjectReference Include="..\..\src\Forma.Features.Sanitization\Forma.Features.Sanitization.csproj" />
