@@ -46,6 +46,8 @@ public sealed partial class FormaPopup : ComponentBase, IAsyncDisposable
     private AnchoredPopup _popup = default!;
     private DotNetObjectReference<FormaPopup> _selfReference = default!;
     private InputRegistration? _registration;
+    private InputProfile? _registeredProfile;
+    private int _opening;
     private Task _sync = Task.CompletedTask;
     private ElementReference _element;
     private ElementReference _trigger;
@@ -93,6 +95,7 @@ public sealed partial class FormaPopup : ComponentBase, IAsyncDisposable
         }
 
         _trigger = trigger;
+        _opening++;
         await SetOpenAsync(true);
     }
 
@@ -156,34 +159,41 @@ public sealed partial class FormaPopup : ComponentBase, IAsyncDisposable
     {
         await previous;
 
-        if (IsOpen && _registration is null)
+        if (!IsOpen)
+        {
+            await ReleaseAsync();
+        }
+        else if (_registration is null)
         {
             await RegisterAsync();
         }
-        else if (!IsOpen)
+        else if (_registeredProfile != Profile && await _registration.UpdateAsync(Profile))
         {
-            await ReleaseAsync();
+            _registeredProfile = Profile;
         }
     }
 
     // The popup is a scope only while open, with its trigger counted as inside it so a press there toggles rather than dismisses.
     private async Task RegisterAsync()
     {
-        var registration = await Router.RegisterAsync(_element, Profile, _selfReference, within: [_trigger]);
+        var opening = _opening;
+        var profile = Profile;
+        var registration = await Router.RegisterAsync(_element, profile, _selfReference, within: [_trigger]);
 
         if (registration is null)
         {
             return;
         }
 
-        // The popup may have closed while the registration was being made.
-        if (!IsOpen)
+        // The popup may have closed, or closed and reopened from another trigger, while the registration was being made.
+        if (!IsOpen || opening != _opening)
         {
             await registration.DisposeAsync();
             return;
         }
 
         _registration = registration;
+        _registeredProfile = profile;
         await registration.ActivateAsync();
     }
 
@@ -192,6 +202,7 @@ public sealed partial class FormaPopup : ComponentBase, IAsyncDisposable
         if (_registration is { } registration)
         {
             _registration = null;
+            _registeredProfile = null;
             await registration.DisposeAsync();
         }
     }
