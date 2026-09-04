@@ -188,7 +188,7 @@ A description is wrong the moment the thing it describes widens, and nothing in 
 - Do drop a "no JavaScript" or "pure CSS" banner the moment the component gains interop, and keep it where it is still true.
 - Do rewrite a `COMPONENTS.md` **Parameters** row when a parameter is added, removed, renamed, or changes type or required-ness.
 - Do rewrite a **Blazor approach** row once the component is built, so it records what shipped rather than the plan; a row still reading "Use Blazor `InputDate`" for a bespoke calendar is worse than no row.
-- Do update a JS module path in prose when the script moves between `behaviours/`, `operations/`, `components/`, and `services/`.
+- Do update a JS module path in prose when the script moves between assemblies, or between `behaviours/`, `operations/`, and `components/`.
 - Do delete a sentence saying another component *should* adopt something once it has.
 - Don't trust a search for renamed identifiers to find this; the drift is in wording that still compiles and still reads plausibly.
 

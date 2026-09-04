@@ -1,6 +1,6 @@
 ---
 name: forma-js-interop
-description: Forma's JavaScript and interop standard — when JS is allowed at all, the behaviours/operations/components/services split that decides where a script lives and how it is written, the four module contracts, how C# reaches a module through JsInterop and JsModule, and the external-library carve-out for FormaComposer. Use when adding or changing anything under wwwroot/scripts/ or Interop/, naming a script or wrapper, or deciding whether a capability needs JS.
+description: Forma's JavaScript and interop standard — when JS is allowed at all, the behaviours/operations/components/services split that decides where a script lives and how it is written, the four module contracts, how C# reaches a module through JsInterop and JsModule, and the external-library carve-out for FormaComposer. Use when adding or changing anything under wwwroot/scripts/ or in an interop assembly, naming a script or wrapper, or deciding whether a capability needs JS.
 ---
 
 # JavaScript
@@ -19,13 +19,13 @@ JS-free is the default, not a prohibition.
 
 ## Behaviours, operations, components and services
 
-Every script is one of four kinds, and the kind decides its shape and its home.
+Every script is one of four kinds. The kind decides its shape; the assembly that ships it decides its home.
 
 ```text
-behaviours/  → reusable attached behaviour
-operations/  → reusable stateless operation
-components/  → interop owned by a specific Forma component
-services/    → one instance per document that many callers register with
+behaviour  → reusable attached behaviour
+operation  → reusable stateless operation
+component  → interop owned by a specific Forma component
+service    → one instance per document that many callers register with
 ```
 
 Scripts and their wrappers ship together in an interop assembly, never in `Forma.Blazor`.
@@ -35,33 +35,40 @@ belong to no feature. A feature with scripts of its own ships them, and their wr
 `Forma.Framework.{Feature}.Interop`, built on `Forma.Framework.Interop`. Each assembly
 serves its scripts under `_content/{its assembly name}/scripts/`.
 
+`Forma.Framework.Interop` serves many concepts, so it sorts by kind: a script lives in
+`wwwroot/scripts/behaviours/`, `operations/` or `components/`, and its wrapper in the matching
+`Behaviours/`, `Operations/` or `Components/` folder. A feature interop assembly is named for
+its one concept, so its scripts sit directly under `wwwroot/scripts/` and its wrappers at the
+assembly root, as `Forma.Framework.Input.Interop` serves `scripts/InputRouter.js` beside
+`InputRouter.cs`.
+
 | Kind | What it is | Script | C# wrapper |
 |---|---|---|---|
-| Behaviour | binds to an element, holds listeners or observers, needs teardown | `wwwroot/scripts/behaviours/{Capability}.js` | `Behaviours/{Capability}.cs` in the same assembly, when C# attaches it |
-| Operation | a stateless call against an element or a value | `wwwroot/scripts/operations/{Concern}.js` | `Operations/{Concern}.cs` in the same assembly, when C# calls it |
-| Component | the whole browser side of one component, both kinds together | `wwwroot/scripts/components/{Component}.js` | `Components/{Component}.cs` in the same assembly |
-| Service | one instance per document, holding state across every caller that registers with it, configured by the host and queryable | `wwwroot/scripts/services/{Service}.js` | `{Service}.cs` at the root of the same assembly, a scoped service owning the module and the host's policy |
+| Behaviour | binds to an element, holds listeners or observers, needs teardown | `{Capability}.js` | `{Capability}.cs`, when C# attaches it |
+| Operation | a stateless call against an element or a value | `{Concern}.js` | `{Concern}.cs`, when C# calls it |
+| Component | the whole browser side of one component, both kinds together | `{Component}.js` | `{Component}.cs` |
+| Service | one instance per document, holding state across every caller that registers with it, configured by the host and queryable | `{Service}.js` | `{Service}.cs`, a scoped service owning the module and the host's policy |
 
-- Do put a script in `behaviours/` when it attaches to an element for a lifetime and is later torn down.
-- Do put a script in `operations/` when it is a stateless DOM operation, or a set of related ones.
-- Do put a script in `components/` when it owns the browser-side interop for one component and naturally holds both kinds; keep that interop together rather than splitting it by implementation shape.
-- Do put a script in `services/` when there is one of it per document and its callers register with it rather than attach it: `InputRouter` keeps every scope's routes and the active ordering across the whole page.
+- Do file a script as a behaviour when it attaches to an element for a lifetime and is later torn down.
+- Do file a script as an operation when it is a stateless DOM operation, or a set of related ones.
+- Do file a script as a component when it owns the browser-side interop for one component and naturally holds both kinds; keep that interop together rather than splitting it by implementation shape.
+- Do file a script as a service when there is one of it per document and its callers register with it rather than attach it: `InputRouter` keeps every scope's routes and the active ordering across the whole page.
 - Do name a service for what it is to the page: `InputRouter`.
-- Do name a component script after the component it supports with the `Forma` prefix dropped, so `FormaModal` is served by `components/Modal.js` and `FormaRichTextEditor` by `components/RichTextEditor.js`.
-- Do split a component script that has grown past one concern into `components/{Name}/*.mjs` modules behind a `components/{Name}.js` entry point; the entry keeps its path, so no wrapper changes, and it composes the modules rather than re-exporting them.
+- Do name a component script after the component it supports with the `Forma` prefix dropped, so `FormaModal` is served by `Modal.js` and `FormaRichTextEditor` by `RichTextEditor.js`.
+- Do split a component script that has grown past one concern into `{Name}/*.mjs` modules behind a `{Name}.js` entry point beside them; the entry keeps its path, so no wrapper changes, and it composes the modules rather than re-exporting them.
 - Do shape each such module as one concept expressed as a class — a formatter, a memory, an inspector — taking its collaborators once in the constructor, with `#`-private mechanics; not a bag of exported functions threaded the same context parameter.
 - Do give a family of pure helpers a named class with static members rather than loose exports, so a caller imports the concept, not stray functions.
 - Do name a behaviour for what the target can do while it is attached: `DropZone`, `NavigationScrollGuard`, `ScrollBoundaryWatcher`, `DragGesture`, `FocusTrap`, `InfiniteScroll`.
 - Do settle that name by asking what `attach(target)` leaves the target able to do, and naming that.
 - Do name an operation module for the browser concern it serves: `Text.js`, `Pointer.js`, `Playback.js`, `Clipboard.js`, `Asset.js`.
-- Do lift a capability another component could want out into `behaviours/` or `operations/`, however it arrived; `components/` is for what only its own component wants.
+- Do lift a capability another component could want out into a behaviour or an operation in `Forma.Framework.Interop`, however it arrived; a component script is for what only its own component wants.
 - Do compose behaviours in JS, `FileDropZone` over `DropZone` and `ReorderInteraction` over `DragGesture`, so C# only ever holds the outermost one.
 - Do leave a behaviour no C# wrapper when only JS attaches it, as `DragGesture` has none; where a capability sits never depends on who consumes it.
-- Do read `wwwroot/scripts/behaviours/` before writing a new behaviour; capability names make the folder its own inventory.
+- Do read `Forma.Framework.Interop`'s `wwwroot/scripts/behaviours/` before writing a new behaviour; capability names make the folder its own inventory.
 - Don't name a behaviour after the browser primitive implementing it: something holding no state and needing no teardown, such as pointer capture or asset loading, is an operation.
 - Don't name an operation module after the DOM type it receives; `MediaElement.js` accretes everything taking a `<video>`, where `Playback.js` and `Geometry.js` divide by what the calls are for.
-- Don't name a shared behaviour or operation after a component that calls it. A consumer-shaped file in those folders hides the capabilities inside it, which is how the same key guard, pointer capture, and asset loader each came to be written twice.
-- Don't place a script beside the component that uses it; a component's own interop belongs in `components/`, not in its folder.
+- Don't name a shared behaviour or operation after a component that calls it. A consumer-shaped file in the shared assembly hides the capabilities inside it, which is how the same key guard, pointer capture, and asset loader each came to be written twice.
+- Don't place a script beside the component that uses it; a component's own interop belongs in an interop assembly, not in the component's folder.
 - Don't group unrelated capabilities in one file because one component happens to use both.
 
 ## Behaviour contract
@@ -120,12 +127,12 @@ export function resolve(event) { … }
 - Do derive a behaviour wrapper from `JsInterop`, give it the module path, and expose a typed `AttachAsync`.
 - Do give an operation wrapper a `JsModule` field rather than deriving from it, so only its own typed methods can be called.
 - Do derive a component wrapper from `JsInterop` when its module attaches a surface, and give it a `JsModule` field when the module is operations alone.
-- Do make a service's wrapper a scoped service at the root of its interop assembly with a `JsModule` field, registered in `AddFormaUI`, that pushes the host's policy once per circuit and hands out registration handles; it is not an `Interop/` wrapper, because it owns policy as well as the module.
+- Do make a service's wrapper a scoped service at the root of its interop assembly with a `JsModule` field, registered in `AddFormaUI`, that pushes the host's policy once per circuit and hands out registration handles; it is not a plain wrapper, because it owns policy as well as the module.
 - Do call an operation through `TryInvoke*`, so a dropped circuit leaves the call absent rather than throwing into a render.
 - Do name a wrapper after the module it owns, with no `Bridge`, `Helper`, or `Interop` suffix.
 - Do let `JsModule` and `JsInterop` handle importing, `JSException`, `JSDisconnectedException`, and disposal rather than repeating any of it.
 - Do dispose the wrapper from the component's `DisposeAsync`.
-- Do import from `./_content/{Assembly}/scripts/{behaviours|operations|components|services}/{Name}.js`, where the assembly is the one that ships the script, so the base path follows the assembly name exactly.
+- Do import from `./_content/{Assembly}/scripts/{Name}.js`, or `scripts/{behaviours|operations|components}/{Name}.js` when the assembly is `Forma.Framework.Interop`, where the assembly is the one that ships the script, so the base path follows the assembly name exactly.
 - Do suppress CA1812 on a private record that exists only to receive a JS return shape, since nothing constructs it in C#.
 - Don't make a wrapper static; `IJSRuntime` is scoped per circuit and the module reference has to be disposed with it.
 - Don't import a module by hand with `JS.InvokeAsync<IJSObjectReference>("import", …)`.
