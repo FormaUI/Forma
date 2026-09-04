@@ -1,4 +1,4 @@
-namespace Forma.Features.Files;
+namespace Forma.Framework.Files;
 
 using System.Diagnostics;
 

@@ -2,7 +2,7 @@ namespace Forma.Blazor.Showcase.Components.Pages.Files;
 
 using Forma.Blazor.Components.Files;
 using Forma.Blazor.Showcase.Features.Upload;
-using Forma.Features.Files;
+using Forma.Framework.Files;
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
 

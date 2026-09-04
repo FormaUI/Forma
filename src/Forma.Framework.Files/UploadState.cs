@@ -1,4 +1,4 @@
-namespace Forma.Features.Files;
+namespace Forma.Framework.Files;
 
 /// <summary>Where one file has reached in an upload.</summary>
 public enum UploadState

@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Showcase.Components.Pages.Files;
 
 using Forma.Blazor.Components.Files;
-using Forma.Features.Files;
+using Forma.Framework.Files;
 using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;

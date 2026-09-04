@@ -1,4 +1,4 @@
-namespace Forma.Features.Files.Tests;
+namespace Forma.Framework.Files.Tests;
 
 using Xunit;
 

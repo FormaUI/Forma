@@ -3,7 +3,6 @@ namespace Forma.Blazor.Components.Explorer;
 using System.Globalization;
 
 using Forma.Blazor.Components.Feedback;
-using Forma.Features.Files;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Actions;
 using Forma.Framework.Explorer.Content;
@@ -12,6 +11,7 @@ using Forma.Framework.Explorer.Items;
 using Forma.Framework.Explorer.Navigation;
 using Forma.Framework.Explorer.Requests;
 using Forma.Framework.Explorer.Selection;
+using Forma.Framework.Files;
 using Forma.Framework.Icons;
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;

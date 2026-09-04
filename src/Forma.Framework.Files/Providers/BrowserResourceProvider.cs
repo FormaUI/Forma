@@ -1,4 +1,4 @@
-namespace Forma.Features.Files.Providers;
+namespace Forma.Framework.Files.Providers;
 
 using System.Diagnostics.CodeAnalysis;
 

@@ -5,8 +5,8 @@ using System.Globalization;
 using Forma.Blazor.Interop.Behaviours;
 using Forma.Blazor.Interop.Operations;
 using Forma.Blazor.Resources;
-using Forma.Features.Files;
-using Forma.Features.Files.Providers;
+using Forma.Framework.Files;
+using Forma.Framework.Files.Providers;
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
 

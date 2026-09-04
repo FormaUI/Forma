@@ -1,4 +1,4 @@
-namespace Forma.Features.Files;
+namespace Forma.Framework.Files;
 
 /// <summary>How an uploader runs a set of files, and which measurements it shows beside each one.</summary>
 public sealed record FileUploaderOptions

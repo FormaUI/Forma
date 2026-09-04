@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <IsPackable>false</IsPackable>
-        <RootNamespace>Forma.Features.Files</RootNamespace>
+        <RootNamespace>Forma.Framework.Files</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

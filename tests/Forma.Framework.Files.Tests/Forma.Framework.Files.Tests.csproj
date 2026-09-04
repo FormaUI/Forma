@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <IsPackable>false</IsPackable>
-        <RootNamespace>Forma.Features.Files.Tests</RootNamespace>
+        <RootNamespace>Forma.Framework.Files.Tests</RootNamespace>
         <NoWarn>CA1707</NoWarn>
     </PropertyGroup>
 
@@ -17,7 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Forma.Features.Files\Forma.Features.Files.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Files\Forma.Framework.Files.csproj" />
     </ItemGroup>
 
 </Project>

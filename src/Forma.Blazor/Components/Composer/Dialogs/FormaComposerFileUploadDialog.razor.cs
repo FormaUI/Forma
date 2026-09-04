@@ -2,7 +2,7 @@ namespace Forma.Blazor.Components.Composer.Dialogs;
 
 using Forma.Blazor.Components.Composer.Plugins;
 using Forma.Blazor.Components.Files;
-using Forma.Features.Files;
+using Forma.Framework.Files;
 using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;

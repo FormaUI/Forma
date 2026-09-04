@@ -3,7 +3,7 @@ namespace Forma.Blazor.Components.Files;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
-using Forma.Features.Files;
+using Forma.Framework.Files;
 using Forma.Framework.Icons;
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;

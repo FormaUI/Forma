@@ -1,4 +1,4 @@
-namespace Forma.Features.Files;
+namespace Forma.Framework.Files;
 
 /// <summary>Projects how long a transfer's remainder needs from what it has moved so far.</summary>
 internal static class TransferTimeEstimator

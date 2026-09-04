@@ -121,7 +121,7 @@ Forma.Blazor/Components/
 │   ├── ✅ FormaOverflowMenu.razor
 │   ├── FormaContextMenu.razor
 │   └── FormaSortMenu.razor
-├── (4 / 6) Files/                        # vocabulary in Forma.Features.Files
+├── (4 / 6) Files/                        # vocabulary in Forma.Framework.Files
 │   ├── ✅ FormaFilePicker.razor / .razor.cs / .razor.css / .razor.js
 │   ├── ✅ FormaFileUploader.razor / .razor.cs / .razor.css
 │   ├── UploadFileStream.cs               # counts bytes read to drive per-file progress

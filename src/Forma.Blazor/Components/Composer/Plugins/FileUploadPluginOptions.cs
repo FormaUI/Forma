@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Components.Composer.Plugins;
 
-using Forma.Features.Files;
+using Forma.Framework.Files;
 
 /// <summary>Options configuring which files may be attached to a document.</summary>
 public sealed record FileUploadPluginOptions

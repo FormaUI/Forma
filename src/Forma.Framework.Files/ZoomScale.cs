@@ -1,4 +1,4 @@
-namespace Forma.Features.Files;
+namespace Forma.Framework.Files;
 
 /// <summary>A zoom that moves along a fixed run of percentage steps, resting on the first.</summary>
 public sealed class ZoomScale

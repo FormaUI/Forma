@@ -1,4 +1,4 @@
-namespace Forma.Features.Files;
+namespace Forma.Framework.Files;
 
 /// <summary>Why a picker declined a file.</summary>
 public enum FileRejectionReason
