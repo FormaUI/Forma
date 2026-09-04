@@ -23,6 +23,22 @@
         </ItemGroup>
     </Target>
 
+    <!-- The static web assets of the bundled Framework assemblies ship in this package too, each under its own base path. -->
+    <Target Name="IncludeReferencedStaticWebAssetsInPackage" BeforeTargets="GenerateStaticWebAssetsPackFiles">
+        <ItemGroup>
+            <_BundledStaticWebAsset Include="@(StaticWebAsset)" Condition="$([System.String]::Copy('%(StaticWebAsset.SourceId)').StartsWith('Forma.Framework.')) and '%(StaticWebAsset.AssetTraitName)' != 'Content-Encoding'" />
+            <StaticWebAsset Remove="@(_BundledStaticWebAsset)" />
+            <StaticWebAsset Include="@(_BundledStaticWebAsset)" SourceId="$(PackageId)" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="RestoreReferencedStaticWebAssetsAfterPackage" AfterTargets="GenerateStaticWebAssetsPackFiles">
+        <ItemGroup>
+            <StaticWebAsset Remove="@(_BundledStaticWebAsset)" />
+            <StaticWebAsset Include="@(_BundledStaticWebAsset)" />
+        </ItemGroup>
+    </Target>
+
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
