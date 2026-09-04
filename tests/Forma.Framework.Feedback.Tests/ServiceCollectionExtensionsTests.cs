@@ -39,13 +39,30 @@ public sealed class ServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public void Should_register_no_status_badge_catalog()
+    public void Should_register_an_empty_status_badge_catalog()
     {
         // Act
         var services = new ServiceCollection().AddFormaFeedbackServices();
 
         // Assert
-        // The statuses are an application's to define, so an empty default would only hide a missing registration.
-        Assert.DoesNotContain(services, descriptor => descriptor.ServiceType == typeof(IStatusBadgeCatalog));
+        var descriptor = Assert.Single(services, descriptor => descriptor.ServiceType == typeof(IStatusBadgeCatalog));
+        var catalog = Assert.IsType<StatusBadgeCatalog>(descriptor.ImplementationInstance);
+        Assert.Empty(catalog.Statuses);
+    }
+
+    [Fact]
+    public void Should_leave_a_status_badge_catalog_the_host_registered_first()
+    {
+        // Arrange
+        var catalog = new StatusBadgeCatalog();
+        var services = new ServiceCollection();
+        services.AddSingleton<IStatusBadgeCatalog>(catalog);
+
+        // Act
+        services.AddFormaFeedbackServices();
+
+        // Assert
+        var descriptor = Assert.Single(services, descriptor => descriptor.ServiceType == typeof(IStatusBadgeCatalog));
+        Assert.Same(catalog, descriptor.ImplementationInstance);
     }
 }
