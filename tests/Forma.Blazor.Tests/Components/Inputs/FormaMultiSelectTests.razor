@@ -251,7 +251,7 @@
             cut.Find(".forma-multi-select-trigger").Click();
 
             // Act
-            cut.Find(".forma-multi-select-backdrop").Click();
+            cut.Find(".forma-popup-backdrop").Click();
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-multi-select-popup"));
@@ -293,7 +293,7 @@
         }
 
         [Fact]
-        public void Should_close_the_popup_on_escape()
+        public async Task Should_close_the_popup_and_collapse_the_trigger_when_escape_is_reported()
         {
             // Arrange
             using var ctx = new FormaMultiSelectTests();
@@ -304,10 +304,12 @@
             cut.Find(".forma-multi-select-trigger").Click();
 
             // Act
-            cut.Find(".forma-multi-select").KeyDown(Key.Escape);
+            await cut.InvokeAsync(cut.FindComponent<FormaPopup>().Instance.HandleEscapeAsync);
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-multi-select-popup"));
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll(".forma-multi-select-popup")),
+                () => Assert.Equal("false", cut.Find(".forma-multi-select-trigger").GetAttribute("aria-expanded")));
         }
 
         [Fact]

@@ -56,6 +56,23 @@
         }
 
         [Fact]
+        public async Task Should_close_and_collapse_the_button_when_escape_is_reported()
+        {
+            // Arrange
+            using var ctx = new FormaComposerEmojiButtonTests();
+            var cut = ctx.Render(Host(new RecordingComposerInteraction(), @<FormaComposerEmojiButton />));
+            cut.Find("button").Click();
+
+            // Act
+            await cut.InvokeAsync(cut.FindComponent<FormaPopup>().Instance.HandleEscapeAsync);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll(".forma-emoji-picker")),
+                () => Assert.Equal("false", cut.Find("button").GetAttribute("aria-expanded")));
+        }
+
+        [Fact]
         public void Should_close_when_the_backdrop_is_clicked()
         {
             // Arrange
@@ -64,7 +81,7 @@
             cut.Find("button").Click();
 
             // Act
-            cut.Find(".forma-composer-emoji-backdrop").Click();
+            cut.Find(".forma-popup-backdrop").Click();
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-emoji-picker"));

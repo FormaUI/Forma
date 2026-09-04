@@ -1,38 +1,5 @@
-/* FormaComposerEmojiButton — a toolbar trigger opening FormaEmojiPicker in an anchored popover. */
+/* FormaComposerEmojiButton — a toolbar trigger opening FormaEmojiPicker in an anchored popup. */
 
 .forma-composer-emoji-anchor {
     display: inline-flex;
-}
-
-.forma-composer-emoji-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 999;
-}
-
-/* A popover in the top layer, so no scrolling or clipping ancestor can cut the picker off.
-   The top layer keeps no layout tie to the trigger, so the script sets left/top; the UA's
-   own inset and margin are cleared to let those land. FormaEmojiPicker draws its own box. */
-.forma-composer-emoji-popup {
-    position: fixed;
-    inset: auto;
-    margin: 0;
-    padding: 0;
-    /* A top-layer popover is laid out against the viewport, so that is the one width to cap it by. */
-    max-inline-size: calc(100vw - var(--space-4));
-    z-index: 1000;
-    border: none;
-    background: none;
-}
-
-.forma-composer-emoji-popup:popover-open {
-    display: block;
-}
-
-/* Without popover support the element is never display:none to begin with, so it needs
-   its layout unconditionally — the script still positions it. */
-@supports not selector(:popover-open) {
-    .forma-composer-emoji-popup {
-        display: block;
-    }
 }

@@ -72,7 +72,21 @@
             cut.Find(".forma-date-picker-trigger").Click();
 
             // Manual, because the backdrop owns dismissal rather than light-dismiss.
-            Assert.Equal("manual", cut.Find(".forma-date-picker-popup").GetAttribute("popover"));
+            Assert.Equal("manual", cut.Find(".forma-popup").GetAttribute("popover"));
+        }
+
+        [Fact]
+        public async Task Should_close_the_popup_and_collapse_the_trigger_when_escape_is_reported()
+        {
+            using var ctx = new FormaDatePickerTests();
+            var cut = ctx.Render(@<FormaDatePicker Label="Start date" />);
+            cut.Find(".forma-date-picker-trigger").Click();
+
+            await cut.InvokeAsync(cut.FindComponent<FormaPopup>().Instance.HandleEscapeAsync);
+
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll(".forma-date-picker-popup")),
+                () => Assert.Equal("false", cut.Find(".forma-date-picker-trigger").GetAttribute("aria-expanded")));
         }
 
         [Fact]
@@ -82,7 +96,7 @@
             var cut = ctx.Render(@<FormaDatePicker Label="Start date" />);
 
             cut.Find(".forma-date-picker-trigger").Click();
-            cut.Find(".forma-date-picker-backdrop").Click();
+            cut.Find(".forma-popup-backdrop").Click();
 
             Assert.Empty(cut.FindAll(".forma-date-picker-popup"));
         }

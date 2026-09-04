@@ -103,6 +103,59 @@ describe('AnchoredPopup', () => {
         expect(observer.isConnected).toBe(false);
     });
 
+    it('hides the popover once closed, so an element that stays in the document disappears', () => {
+        popup.hidePopover = vi.fn();
+        const handle = attach(popup, { anchor });
+        handle.open();
+        popup.matches = selector => selector === ':popover-open';
+
+        handle.close();
+
+        expect(popup.hidePopover).toHaveBeenCalledOnce();
+    });
+
+    it('does not hide a popover that is not showing', () => {
+        popup.hidePopover = vi.fn();
+        const handle = attach(popup, { anchor });
+
+        handle.close();
+
+        expect(popup.hidePopover).not.toHaveBeenCalled();
+    });
+
+    it('returns focus to the trigger on a close that asks for it while focus is inside', () => {
+        popup.innerHTML = '<button id="inside">Inside</button>';
+        const handle = attach(popup, { anchor });
+        handle.open(anchor);
+        popup.querySelector('#inside').focus();
+
+        handle.close(true);
+
+        expect(document.activeElement).toBe(anchor);
+    });
+
+    it('leaves focus alone on a close that asks for it while focus is elsewhere', () => {
+        document.body.insertAdjacentHTML('beforeend', '<button id="elsewhere">Elsewhere</button>');
+        const handle = attach(popup, { anchor });
+        handle.open(anchor);
+        document.querySelector('#elsewhere').focus();
+
+        handle.close(true);
+
+        expect(document.activeElement.id).toBe('elsewhere');
+    });
+
+    it('leaves focus alone on a close that does not ask for it', () => {
+        popup.innerHTML = '<button id="inside">Inside</button>';
+        const handle = attach(popup, { anchor });
+        handle.open(anchor);
+        popup.querySelector('#inside').focus();
+
+        handle.close();
+
+        expect(document.activeElement.id).toBe('inside');
+    });
+
     it('repositions when the window scrolls or resizes', () => {
         const handle = attach(popup, { anchor });
         handle.open();
@@ -157,5 +210,63 @@ describe('AnchoredPopup keeping focus', () => {
         const event = tab();
 
         expect(event.defaultPrevented).toBe(false);
+    });
+});
+
+describe('AnchoredPopup answering Escape', () => {
+    let owner;
+    let handle;
+
+    beforeEach(() => {
+        stubResizeObserver();
+        document.body.innerHTML = '<button id="anchor">Open</button><div id="popup"><button id="one">One</button></div><button id="after">After</button>';
+        owner = { invokeMethodAsync: vi.fn() };
+        handle = attach(document.querySelector('#popup'), { anchor: document.querySelector('#anchor'), owner });
+    });
+
+    // The listener lives on the document, so a popup left open would answer the next test's press.
+    afterEach(() => handle.dispose());
+
+    function escape(target) {
+        const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+        target.dispatchEvent(event);
+
+        return event;
+    }
+
+    it('tells the owner when Escape is pressed on the trigger, and consumes the press', () => {
+        handle.open();
+
+        const event = escape(document.querySelector('#anchor'));
+
+        expect(owner.invokeMethodAsync).toHaveBeenCalledWith('HandleEscapeAsync');
+        expect(event.defaultPrevented).toBe(true);
+    });
+
+    it('tells the owner when Escape is pressed inside the popup', () => {
+        handle.open();
+
+        escape(document.querySelector('#one'));
+
+        expect(owner.invokeMethodAsync).toHaveBeenCalledOnce();
+    });
+
+    it('leaves a press another surface already answered', () => {
+        handle.open();
+        const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+        event.preventDefault();
+
+        document.querySelector('#one').dispatchEvent(event);
+
+        expect(owner.invokeMethodAsync).not.toHaveBeenCalled();
+    });
+
+    it('stops listening once closed', () => {
+        handle.open();
+        handle.close();
+
+        escape(document.querySelector('#anchor'));
+
+        expect(owner.invokeMethodAsync).not.toHaveBeenCalled();
     });
 });

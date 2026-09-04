@@ -11,28 +11,25 @@
                     class="forma-field-input forma-select-trigger @CssClass"
                     disabled="@Disabled"
                     aria-haspopup="listbox"
-                    aria-expanded="@(_isOpen ? "true" : "false")"
-                    aria-controls="@(_isOpen ? _popupId : null)"
+                    aria-expanded="@(IsOpen ? "true" : "false")"
+                    aria-controls="@(IsOpen ? _popupId : null)"
                     aria-required="@(Required ? "true" : null)"
                     @ref="_triggerElement"
-                    @onclick="Toggle"
-                    @onkeydown="HandleTriggerKeyDown">
+                    @onclick="ToggleAsync"
+                    @onkeydown="HandleTriggerKeyDownAsync">
                 <span class="forma-select-trigger-text@(FindSelectedOption() is null ? " placeholder" : "")">@TriggerText</span>
                 <span class="forma-select-arrow" aria-hidden="true">&#9662;</span>
             </button>
         </div>
-        @if (_isOpen)
-        {
-            <div class="forma-select-backdrop" @onclick="Close"></div>
-            @* Manual rather than auto: the backdrop above owns dismissal, which also sidesteps
-               the iOS 17–18.2 bug where a popover ignores a tap outside it. *@
+        <FormaPopup @ref="Popup"
+                    Anchor="_anchorElement"
+                    OnOpenChanged="_ => { }"
+                    OnOpened="HandleOpenedAsync"
+                    OnKeyDown="HandlePopupKeyDownAsync">
             <div class="forma-select-popup"
                  id="@_popupId"
                  role="listbox"
-                 aria-label="@Label"
-                 popover="manual"
-                 @ref="_popupElement"
-                 @onkeydown="HandlePopupKeyDownAsync">
+                 aria-label="@Label">
                 @for (var i = 0; i < Options.Count; i++)
                 {
                     var optionIndex = i;
@@ -57,7 +54,7 @@
                     <div class="forma-select-empty">@L["No options available yet"]</div>
                 }
             </div>
-        }
+        </FormaPopup>
     </ChildContent>
     <Validation>
         <ValidationMessage For="@ValueExpression" />

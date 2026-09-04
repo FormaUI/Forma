@@ -4,7 +4,7 @@
 
 <FormaField Label="@Label" TargetId="@_triggerId" Required="@Required" LabelMode="FieldLabelMode.Pinned">
     <ChildContent>
-        <div class="forma-multi-select" @onkeydown="HandleKeyDownAsync">
+        <div class="forma-multi-select">
             <div class="forma-multi-select-trigger-wrapper" @ref="_anchorElement">
                 <button @attributes="AdditionalAttributes"
                         type="button"
@@ -12,26 +12,23 @@
                         class="forma-field-input forma-multi-select-trigger @CssClass"
                         disabled="@Disabled"
                         aria-haspopup="dialog"
-                        aria-expanded="@(_isOpen ? "true" : "false")"
-                        aria-controls="@(_isOpen ? _popupId : null)"
+                        aria-expanded="@(IsOpen ? "true" : "false")"
+                        aria-controls="@(IsOpen ? _popupId : null)"
                         aria-required="@(Required ? "true" : null)"
                         @ref="_triggerElement"
-                        @onclick="Toggle">
+                        @onclick="ToggleAsync">
                     <span class="forma-multi-select-trigger-text@(SelectedValues.Count == 0 ? " placeholder" : "")">@TriggerText</span>
                     <span class="forma-multi-select-arrow" aria-hidden="true">&#9662;</span>
                 </button>
             </div>
-            @if (_isOpen)
-            {
-                <div class="forma-multi-select-backdrop" @onclick="Close"></div>
-                @* Manual rather than auto: the backdrop above owns dismissal, which also sidesteps
-                   the iOS 17–18.2 bug where a popover ignores a tap outside it. *@
+            <FormaPopup @ref="Popup"
+                        Anchor="_anchorElement"
+                        OnOpenChanged="_ => { }"
+                        OnOpened="FocusSearchAsync">
                 <div class="forma-multi-select-popup"
                      id="@_popupId"
                      role="dialog"
-                     aria-label="@Label"
-                     popover="manual"
-                     @ref="_popupElement">
+                     aria-label="@Label">
                     <FormaSearchBox @ref="SearchBox"
                                     Class="forma-multi-select-search"
                                     Value="@_searchText"
@@ -60,7 +57,7 @@
                         </FormaButton>
                     }
                 </div>
-            }
+            </FormaPopup>
             @* Below the box rather than above it, so the floating label has the trigger to sit over. *@
             @if (SelectedValues.Count > 0)
             {

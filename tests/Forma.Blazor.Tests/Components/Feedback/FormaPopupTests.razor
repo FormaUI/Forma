@@ -1,0 +1,177 @@
+@inherits FormaBunitContext
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_a_manual_popover_with_nothing_inside_while_closed()
+        {
+            // Arrange
+            using var ctx = new FormaPopupTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaPopup Anchor="default"><p>Content</p></FormaPopup>);
+
+            // Assert
+            var root = cut.Find(".forma-popup");
+            Assert.Multiple(
+                () => Assert.Equal("manual", root.GetAttribute("popover")),
+                () => Assert.Empty(root.Children),
+                () => Assert.Empty(cut.FindAll(".forma-popup-backdrop")),
+                () => Assert.False(cut.FindComponent<FormaPopup>().Instance.IsOpen));
+        }
+
+        [Fact]
+        public async Task Should_render_the_content_and_the_backdrop_once_opened()
+        {
+            // Arrange
+            using var ctx = new FormaPopupTests();
+            var cut = ctx.Render(@<FormaPopup Anchor="default"><p>Content</p></FormaPopup>);
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopup>().Instance.OpenAsync(default));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("Content", cut.Find(".forma-popup p").TextContent),
+                () => Assert.NotNull(cut.Find(".forma-popup-backdrop")),
+                () => Assert.Contains("forma-popup-open", cut.Find(".forma-popup").ClassList),
+                () => Assert.True(cut.FindComponent<FormaPopup>().Instance.IsOpen));
+        }
+
+        [Fact]
+        public async Task Should_close_when_the_backdrop_is_clicked()
+        {
+            // Arrange
+            using var ctx = new FormaPopupTests();
+            var cut = ctx.Render(@<FormaPopup Anchor="default"><p>Content</p></FormaPopup>);
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopup>().Instance.OpenAsync(default));
+
+            // Act
+            cut.Find(".forma-popup-backdrop").Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll(".forma-popup p")),
+                () => Assert.False(cut.FindComponent<FormaPopup>().Instance.IsOpen));
+        }
+
+        [Fact]
+        public async Task Should_close_when_the_script_reports_escape()
+        {
+            // Arrange
+            using var ctx = new FormaPopupTests();
+            var cut = ctx.Render(@<FormaPopup Anchor="default"><p>Content</p></FormaPopup>);
+            var popup = cut.FindComponent<FormaPopup>().Instance;
+            await cut.InvokeAsync(() => popup.OpenAsync(default));
+
+            // Act
+            await cut.InvokeAsync(popup.HandleEscapeAsync);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.False(popup.IsOpen),
+                () => Assert.Empty(cut.FindAll(".forma-popup p")));
+        }
+
+        [Fact]
+        public async Task Should_toggle_between_open_and_closed()
+        {
+            // Arrange
+            using var ctx = new FormaPopupTests();
+            var cut = ctx.Render(@<FormaPopup Anchor="default"><p>Content</p></FormaPopup>);
+            var popup = cut.FindComponent<FormaPopup>().Instance;
+
+            // Act
+            await cut.InvokeAsync(() => popup.ToggleAsync(default));
+            var openedOnce = popup.IsOpen;
+            await cut.InvokeAsync(() => popup.ToggleAsync(default));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(openedOnce),
+                () => Assert.False(popup.IsOpen));
+        }
+
+        [Fact]
+        public async Task Should_ignore_a_close_while_already_closed()
+        {
+            // Arrange
+            using var ctx = new FormaPopupTests();
+            var changes = new List<bool>();
+            var cut = ctx.Render(@<FormaPopup Anchor="default" OnOpenChanged="isOpen => changes.Add(isOpen)" />);
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopup>().Instance.CloseAsync());
+
+            // Assert
+            Assert.Empty(changes);
+        }
+
+        [Fact]
+        public async Task Should_leave_escape_to_the_script_rather_than_forwarding_it()
+        {
+            // Arrange
+            using var ctx = new FormaPopupTests();
+            var keys = new List<string>();
+            var cut = ctx.Render(@<FormaPopup Anchor="default" OnKeyDown="args => keys.Add(args.Key)"><p>Content</p></FormaPopup>);
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopup>().Instance.OpenAsync(default));
+
+            // Act
+            cut.Find(".forma-popup").KeyDown("Escape");
+
+            // Assert
+            Assert.Empty(keys);
+        }
+
+        [Fact]
+        public async Task Should_forward_every_other_key()
+        {
+            // Arrange
+            using var ctx = new FormaPopupTests();
+            var keys = new List<string>();
+            var cut = ctx.Render(@<FormaPopup Anchor="default" OnKeyDown="args => keys.Add(args.Key)"><p>Content</p></FormaPopup>);
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopup>().Instance.OpenAsync(default));
+
+            // Act
+            cut.Find(".forma-popup").KeyDown("ArrowDown");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["ArrowDown"], keys),
+                () => Assert.True(cut.FindComponent<FormaPopup>().Instance.IsOpen));
+        }
+
+        [Fact]
+        public async Task Should_report_each_change_of_open_state()
+        {
+            // Arrange
+            using var ctx = new FormaPopupTests();
+            var changes = new List<bool>();
+            var cut = ctx.Render(@<FormaPopup Anchor="default" OnOpenChanged="isOpen => changes.Add(isOpen)" />);
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopup>().Instance.OpenAsync(default));
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopup>().Instance.OpenAsync(default));
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopup>().Instance.CloseAsync());
+
+            // Assert
+            Assert.Equal([true, false], changes);
+        }
+
+        [Fact]
+        public void Should_merge_the_host_class_and_pass_other_attributes_through()
+        {
+            // Arrange
+            using var ctx = new FormaPopupTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaPopup Anchor="default" class="host-popup" id="host-id" />);
+
+            // Assert
+            var root = cut.Find(".forma-popup");
+            Assert.Multiple(
+                () => Assert.Contains("host-popup", root.ClassList),
+                () => Assert.Equal("host-id", root.Id));
+        }
+    }
+}

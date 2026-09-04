@@ -17,23 +17,10 @@
     z-index: 1000;
 }
 
-/* ---------- backdrop ---------- */
-.forma-dropdown-menu-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 999;
-}
-
 /* ---------- popup ---------- */
-/* A popover in the top layer, so no scrolling or clipping ancestor can cut the menu off.
-   The top layer keeps no layout tie to the trigger, so the script sets left/top; the UA's
-   own inset and margin are cleared to let those land. */
+/* The menu inside the FormaPopup, which owns the top-layer placement and the backdrop. */
 .forma-dropdown-menu {
-    position: fixed;
-    inset: auto;
-    margin: 0;
     padding: var(--space-2);
-    z-index: 1000;
     display: flex;
     flex-direction: column;
     gap: var(--space-1);
@@ -45,12 +32,6 @@
     border-radius: var(--radius-md);
     background: var(--input-background-color);
     box-shadow: var(--shadow-medium);
-}
-
-/* Held back until the popover opens so it cannot flash at the top-left corner in the
-   frame between being rendered and being positioned. */
-.forma-dropdown-menu:popover-open {
-    display: flex;
 }
 
 /* ---------- header ---------- */
@@ -65,14 +46,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-}
-
-/* Without popover support the element is never display:none to begin with, so it needs
-   its layout unconditionally — the script still positions it. */
-@supports not selector(:popover-open) {
-    .forma-dropdown-menu {
-        display: flex;
-    }
 }
 
 /* ---------- item ---------- */

@@ -9,7 +9,9 @@
                         type="button"
                         id="@_triggerId"
                         class="forma-field-input forma-date-picker-trigger"
-                        @onclick="Toggle">
+                        aria-expanded="@(IsOpen ? "true" : "false")"
+                        @ref="_triggerElement"
+                        @onclick="ToggleAsync">
                     <span class="forma-date-picker-arrow">&#9662;</span>
                     <span class="forma-date-picker-value@(HasValue ? "" : " placeholder")">@(HasValue ? DisplayText : Placeholder)</span>
                 </button>
@@ -26,12 +28,8 @@
                     </FormaButton>
                 }
             </div>
-    @if (_isOpen)
-    {
-        <div class="forma-date-picker-backdrop" @onclick="Close"></div>
-        @* Manual rather than auto: the backdrop above owns dismissal, which also sidesteps
-           the iOS 17–18.2 bug where a popover ignores a tap outside it. *@
-        <div class="forma-date-picker-popup" popover="manual" @ref="_popupElement">
+    <FormaPopup @ref="Popup" Anchor="_anchorElement" OnOpenChanged="_ => { }">
+        <div class="forma-date-picker-popup">
             <div class="forma-date-picker-calendars">
                 @for (var i = 0; i < CalendarCount; i++)
                 {
@@ -149,7 +147,7 @@
                 </div>
             }
         </div>
-    }
+    </FormaPopup>
         </div>
     </ChildContent>
 </FormaField>

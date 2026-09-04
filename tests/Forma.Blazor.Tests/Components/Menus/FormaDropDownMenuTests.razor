@@ -123,7 +123,7 @@
             cut.Find(".forma-dropdown-menu-trigger").Click();
 
             // Act
-            cut.Find(".forma-dropdown-menu-backdrop").Click();
+            cut.Find(".forma-popup-backdrop").Click();
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-dropdown-menu"));
@@ -151,7 +151,7 @@
         }
 
         [Fact]
-        public void Should_close_the_popup_on_escape()
+        public async Task Should_close_the_popup_and_collapse_the_trigger_when_escape_is_reported()
         {
             // Arrange
             using var ctx = new FormaDropDownMenuTests();
@@ -163,10 +163,12 @@
             cut.Find(".forma-dropdown-menu-trigger").Click();
 
             // Act
-            cut.Find(".forma-dropdown-menu").KeyDown("Escape");
+            await cut.InvokeAsync(cut.FindComponent<FormaPopup>().Instance.HandleEscapeAsync);
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-dropdown-menu"));
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll(".forma-dropdown-menu")),
+                () => Assert.Equal("false", cut.Find(".forma-dropdown-menu-trigger").GetAttribute("aria-expanded")));
         }
 
         [Fact]

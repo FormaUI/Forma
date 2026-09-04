@@ -2,14 +2,13 @@ namespace Forma.Blazor.Components.Inputs;
 
 using System.Globalization;
 
-using Forma.Blazor.Interop.Behaviours;
+using Forma.Blazor.Components.Feedback;
 using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 
 /// <summary>A calendar for picking a single date, or a date range when the range parameters are bound.</summary>
-public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
+public sealed partial class FormaDatePicker : ComponentBase
 {
     // The rolling windows the Last7Days and Last30Days presets cover, ending today.
     private const int ShortRangeDays = 7;
@@ -63,18 +62,16 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
 
     [Inject] private IStringLocale<FormaDatePicker> L { get; set; } = default!;
 
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-
-    private bool _isOpen;
     private readonly string _triggerId = $"dp-trigger-{Guid.NewGuid():N}";
     private ElementReference _anchorElement;
-    private ElementReference _popupElement;
-    private AnchoredPopup _popup = default!;
+    private ElementReference _triggerElement;
+    private FormaPopup Popup { get; set; } = default!;
     private DateOnly _leftMonth;
     private DateOnly _rightMonth;
     private readonly DateRangeDraft _draft = new();
     private CalendarMonthWindow _calendar = default!;
 
+    private bool IsOpen => Popup is { IsOpen: true };
     private bool IsRangeMode => StartDateChanged.HasDelegate || EndDateChanged.HasDelegate;
     private int CalendarCount => IsRangeMode ? 2 : 1;
 
@@ -116,18 +113,6 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
         GetPanelMonth(panelIndex) < (IsRangeMode && panelIndex == 0 ? _calendar.AddMonths(_calendar.MaxMonth, -1) : _calendar.MaxMonth);
 
     // ── Lifecycle ────────────────────────────────────
-
-    /// <inheritdoc />
-    protected override void OnInitialized()
-        => _popup = new AnchoredPopup(JS);
-
-    /// <inheritdoc />
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-        => await _popup.SyncAsync(_isOpen, _popupElement, _anchorElement);
-
-    /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-        => await _popup.DisposeAsync();
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -185,17 +170,18 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
 
     // ── Popup ────────────────────────────────────────
 
-    private void Toggle()
+    private async Task ToggleAsync()
     {
-        _isOpen = !_isOpen;
-        if (_isOpen)
+        if (IsOpen)
         {
-            _draft.Clear();
-            ResetDisplayMonth();
+            await Popup.CloseAsync();
+            return;
         }
-    }
 
-    private void Close() => _isOpen = false;
+        _draft.Clear();
+        ResetDisplayMonth();
+        await Popup.OpenAsync(_triggerElement);
+    }
 
     // ── Navigation ───────────────────────────────────
 
@@ -297,7 +283,7 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
                 await StartDateChanged.InvokeAsync(start);
                 await EndDateChanged.InvokeAsync(end);
                 await OnSelectionComplete.InvokeAsync();
-                _isOpen = false;
+                await Popup.CloseAsync();
             }
         }
         else
@@ -305,7 +291,7 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
             Value = date;
             await ValueChanged.InvokeAsync(date);
             await OnSelectionComplete.InvokeAsync();
-            _isOpen = false;
+            await Popup.CloseAsync();
         }
     }
 
@@ -327,7 +313,7 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
             await ValueChanged.InvokeAsync(null);
         }
         _draft.Clear();
-        _isOpen = false;
+        await Popup.CloseAsync();
     }
 
     // ── Calendar grid ────────────────────────────────
@@ -437,7 +423,7 @@ public sealed partial class FormaDatePicker : ComponentBase, IAsyncDisposable
         await StartDateChanged.InvokeAsync(start);
         await EndDateChanged.InvokeAsync(end);
         await OnSelectionComplete.InvokeAsync();
-        _isOpen = false;
+        await Popup.CloseAsync();
     }
 
     private (DateOnly start, DateOnly end) ComputePresetRange(Preset preset, DateOnly today) =>

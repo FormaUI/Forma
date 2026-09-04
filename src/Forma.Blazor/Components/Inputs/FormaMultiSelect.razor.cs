@@ -3,16 +3,14 @@ namespace Forma.Blazor.Components.Inputs;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
-using Forma.Blazor.Interop.Behaviours;
+using Forma.Blazor.Components.Feedback;
 using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.JSInterop;
 
 /// <summary>A multi-select component whose chosen values render as removable tags above a searchable checkbox-list popup.</summary>
-public sealed partial class FormaMultiSelect<TValue> : InputBase<List<TValue>>, IAsyncDisposable
+public sealed partial class FormaMultiSelect<TValue> : InputBase<List<TValue>>
     where TValue : notnull
 {
     /// <summary>The options offered in the dropdown.</summary>
@@ -38,19 +36,18 @@ public sealed partial class FormaMultiSelect<TValue> : InputBase<List<TValue>>, 
 
     [Inject] private IStringLocale<FormaMultiSelect> L { get; set; } = default!;
 
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-
     private readonly string _triggerId = $"ms-trigger-{Guid.NewGuid():N}";
     private readonly string _popupId = $"ms-popup-{Guid.NewGuid():N}";
 
-    private bool _isOpen;
     private string _searchText = "";
     private ElementReference _anchorElement;
     private ElementReference _triggerElement;
     // The popup's search box; the reference focuses it.
     private FormaSearchBox SearchBox { get; set; } = default!;
-    private ElementReference _popupElement;
-    private AnchoredPopup _popup = default!;
+    private FormaPopup Popup { get; set; } = default!;
+
+    private bool IsOpen
+        => Popup is { IsOpen: true };
 
     private SearchBoxOptions SearchOptions
         => new() { Placeholder = L["Search"].Value };
@@ -82,10 +79,6 @@ public sealed partial class FormaMultiSelect<TValue> : InputBase<List<TValue>>, 
     }
 
     /// <inheritdoc />
-    protected override void OnInitialized()
-        => _popup = new AnchoredPopup(JS);
-
-    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(Label);
@@ -109,33 +102,21 @@ public sealed partial class FormaMultiSelect<TValue> : InputBase<List<TValue>>, 
     private void RemoveValue(TValue value)
         => CurrentValue = [.. SelectedValues.Where(v => !EqualityComparer<TValue>.Default.Equals(v, value))];
 
-    private void Toggle()
+    private async Task ToggleAsync()
     {
         if (Disabled)
         {
             return;
         }
 
-        _isOpen = !_isOpen;
-
-        if (_isOpen)
+        if (IsOpen)
         {
-            _searchText = "";
-        }
-    }
-
-    private void Close()
-        => _isOpen = false;
-
-    private async Task HandleKeyDownAsync(KeyboardEventArgs args)
-    {
-        if (!_isOpen || args.Key != "Escape")
-        {
+            await Popup.CloseAsync();
             return;
         }
 
-        Close();
-        await _triggerElement.FocusAsync();
+        _searchText = "";
+        await Popup.OpenAsync(_triggerElement);
     }
 
     private async Task HandleAddNewAsync()
@@ -144,13 +125,8 @@ public sealed partial class FormaMultiSelect<TValue> : InputBase<List<TValue>>, 
         _searchText = "";
     }
 
-    /// <inheritdoc />
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-        => await _popup.SyncAsync(_isOpen, _popupElement, _anchorElement, () => SearchBox.Element.FocusAsync());
-
-    /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-        => await _popup.DisposeAsync();
+    private Task FocusSearchAsync()
+        => SearchBox.Element.FocusAsync().AsTask();
 
     /// <inheritdoc />
     protected override bool TryParseValueFromString(

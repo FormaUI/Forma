@@ -2,6 +2,7 @@ namespace Forma.Blazor.Components.Inputs;
 
 using System.Diagnostics.CodeAnalysis;
 
+using Forma.Blazor.Components.Feedback;
 using Forma.Blazor.Interop.Behaviours;
 using Forma.Framework.Localization;
 
@@ -36,24 +37,22 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
     private readonly string _triggerId = $"sel-trigger-{Guid.NewGuid():N}";
     private readonly string _popupId = $"sel-popup-{Guid.NewGuid():N}";
 
-    private bool _isOpen;
     private int _focusedIndex = -1;
     private ElementReference _anchorElement;
     private ElementReference _triggerElement;
-    private ElementReference _popupElement;
     private ElementReference[] _optionElements = [];
-    private AnchoredPopup _popup = default!;
+    private FormaPopup Popup { get; set; } = default!;
     private NavigationScrollGuard _keyGuard = default!;
+
+    private bool IsOpen
+        => Popup is { IsOpen: true };
 
     private string TriggerText
         => FindSelectedOption()?.Label ?? Placeholder ?? L["Select an Option"];
 
     /// <inheritdoc />
     protected override void OnInitialized()
-    {
-        _popup = new AnchoredPopup(JS);
-        _keyGuard = new NavigationScrollGuard(JS);
-    }
+        => _keyGuard = new NavigationScrollGuard(JS);
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -76,32 +75,30 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
     private async Task SelectAsync(SelectOption<TValue> option)
     {
         CurrentValue = option.Value;
-        await CloseAndFocusTriggerAsync();
+        await Popup.CloseAsync();
     }
 
-    private void Toggle()
+    private async Task ToggleAsync()
     {
         if (Disabled)
         {
             return;
         }
 
-        if (_isOpen)
+        if (IsOpen)
         {
-            Close();
+            await Popup.CloseAsync();
         }
         else
         {
-            Open();
+            await OpenAsync();
         }
     }
 
     // Opens focused on the current selection, the way a native <select> does, rather than
     // always at the first option.
-    private void Open()
+    private async Task OpenAsync()
     {
-        _isOpen = true;
-
         var selectedIndex = -1;
         for (var i = 0; i < Options.Count; i++)
         {
@@ -113,20 +110,12 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
         }
 
         _focusedIndex = selectedIndex >= 0 ? selectedIndex : 0;
+        await Popup.OpenAsync(_triggerElement);
     }
 
-    private void Close()
-        => _isOpen = false;
-
-    private async Task CloseAndFocusTriggerAsync()
+    private async Task HandleTriggerKeyDownAsync(KeyboardEventArgs args)
     {
-        Close();
-        await _triggerElement.FocusAsync();
-    }
-
-    private void HandleTriggerKeyDown(KeyboardEventArgs args)
-    {
-        if (_isOpen || Disabled)
+        if (IsOpen || Disabled)
         {
             return;
         }
@@ -135,7 +124,7 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
         {
             case "ArrowDown":
             case "ArrowUp":
-                Open();
+                await OpenAsync();
                 break;
         }
     }
@@ -156,13 +145,16 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
             case "End":
                 await FocusIndexAsync(Options.Count - 1);
                 break;
-            case "Escape":
-                await CloseAndFocusTriggerAsync();
-                break;
             case "Tab":
-                Close();
+                await Popup.CloseAsync();
                 break;
         }
+    }
+
+    private async Task HandleOpenedAsync()
+    {
+        await _keyGuard.AttachAsync(Popup.Element);
+        await FocusIndexAsync(_focusedIndex);
     }
 
     private Task MoveFocusAsync(int delta)
@@ -187,19 +179,8 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
     }
 
     /// <inheritdoc />
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-        => await _popup.SyncAsync(_isOpen, _popupElement, _anchorElement, async () =>
-        {
-            await _keyGuard.AttachAsync(_popupElement);
-            await FocusIndexAsync(_focusedIndex);
-        });
-
-    /// <inheritdoc />
     public async ValueTask DisposeAsync()
-    {
-        await _popup.DisposeAsync();
-        await _keyGuard.DisposeAsync();
-    }
+        => await _keyGuard.DisposeAsync();
 
     /// <inheritdoc />
     protected override bool TryParseValueFromString(

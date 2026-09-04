@@ -399,6 +399,24 @@ body {
     gap: var(--space-1);
 }
 
+/* The wrapper a popup demo measures its anchor from. */
+.demo-anchor {
+    display: inline-flex;
+}
+
+/* The box a popup demo draws, since FormaPopup itself draws none. */
+.demo-popup {
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--input-background-color);
+    box-shadow: var(--shadow-medium);
+}
+
+.demo-popup-actions {
+    display: flex;
+    gap: var(--space-2);
+}
+
 /* Examples shown side by side. */
 .demo-row {
     display: flex;
