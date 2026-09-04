@@ -7,7 +7,7 @@
         <LangVersion>latest</LangVersion>
         <RootNamespace>Forma.Framework.Emojis.Twemoji</RootNamespace>
         <PackageId>2Site.Forma.AddOns.Emojis.Twemoji</PackageId>
-        <StaticWebAssetBasePath>_content/Forma.AddOns.Emojis.Twemoji</StaticWebAssetBasePath>
+        <StaticWebAssetBasePath>_content/$(AssemblyName)</StaticWebAssetBasePath>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeReferencedProjectsInPackage</TargetsForTfmSpecificBuildOutput>
     </PropertyGroup>
