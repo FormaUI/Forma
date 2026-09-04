@@ -3,7 +3,7 @@
  * Each editing concern is a concept of its own under RichTextEditor/, composed here.
  */
 
-import { sanitize } from '../operations/Html.js';
+import { sanitize } from './Html.js';
 import { Canvas } from './RichTextEditor/Canvas.mjs';
 import { SelectionMemory } from './RichTextEditor/SelectionMemory.mjs';
 import { InlineFormatter } from './RichTextEditor/InlineFormatter.mjs';

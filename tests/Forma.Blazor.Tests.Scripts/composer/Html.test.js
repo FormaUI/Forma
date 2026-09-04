@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { sanitize } from '#composer/operations/Html.js';
+import { sanitize } from '#composer/Html.js';
 
 describe('Html', () => {
     it('keeps allowed elements and their formatting', () => {
