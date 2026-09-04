@@ -20,7 +20,7 @@ Forma.Blazor/Components/
 ├── ✅ FormaField.razor / .razor.cs / .razor.css
 ├── ✅ FormaVisibility.razor / .razor.cs / .razor.css  # collapses content to nothing without unmounting it
 ├── FieldLabelMode.cs                     # enum: Floating, Pinned, Above, Inline
-├── (2 / 2) Design/
+├── (2 / 2) Symbols/
 │   ├── ✅ FormaIcon.razor / .razor.cs / .razor.css   # draws an Icon — a glyph, a brand mark or a character — as inline SVG or symbol-font text
 │   └── ✅ FormaEmoji.razor / .razor.cs / .razor.css  # draws a Forma.Framework.Emojis.Emoji from a host's provider
 ├── (6 / 6) Bars/

@@ -34,7 +34,7 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 - Do make a `Forma.AddOns.*` project a host opt-in extending something: the host references and registers it itself, and it ships as its own NuGet package rather than inside the product's.
 - Do answer "required or optional?" by family alone: Framework and Features are required, AddOns are optional.
 - Do decide by ownership, not by how many assemblies consume it: a contract a single feature owns stays with that feature no matter how many projects reference it, such as `IToastService` in `Feedback`.
-- Do keep a folder and its namespace in step, so `Forma.Blazor/Components/Design/` holds `Forma.Blazor.Components.Design` and `Forma.Features.Media/Providers/` holds `Forma.Features.Media.Providers` — the namespace is the root namespace plus the folder path.
+- Do keep a folder and its namespace in step, so `Forma.Blazor/Components/Symbols/` holds `Forma.Blazor.Components.Symbols` and `Forma.Features.Media/Providers/` holds `Forma.Features.Media.Providers` — the namespace is the root namespace plus the folder path.
 - Don't reference an AddOn from anywhere inside Forma — the Showcase and tests demonstrate AddOns, nothing else touches them — and don't let a dependency point upward: the product references Framework and the product, an AddOn references Framework and whatever it extends.
 
 - Do make components depend on abstractions such as `IToastService`; let the host choose implementations through DI.

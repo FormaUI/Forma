@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Components.Design;
+namespace Forma.Blazor.Components.Symbols;
 
 using System.Globalization;
 

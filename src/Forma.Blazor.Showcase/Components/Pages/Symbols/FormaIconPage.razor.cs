@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Showcase.Components.Pages.Design;
+namespace Forma.Blazor.Showcase.Components.Pages.Symbols;
 
 using Forma.Framework.Icons;
 

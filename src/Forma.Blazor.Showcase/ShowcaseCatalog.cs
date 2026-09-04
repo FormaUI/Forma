@@ -96,12 +96,12 @@ public static class ShowcaseCatalog
         return space.Contains('.', StringComparison.Ordinal) ? space[(space.LastIndexOf('.', StringComparison.Ordinal) + 1)..] : space;
     }
 
-    // Design leads as the library's own vocabulary, Features and Libraries group the composite demos,
+    // Symbols leads as the library's own vocabulary, Features and Libraries group the composite demos,
     // and everything else follows alphabetically.
     private static int CategoryRank(string category)
         => category switch
         {
-            "Design" => 0,
+            "Symbols" => 0,
             "Features" => 1,
             "Libraries" => 2,
             _ => 3,
