@@ -6,7 +6,7 @@ using Forma.Blazor.Components.Inputs;
 using Forma.Framework.Composer.Documents;
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Composer.Plugins;
-using Forma.Framework.Sanitization.Allowlist;
+using Forma.Framework.Sanitization;
 using Forma.Framework.Toolbar;
 using Forma.Tests.Composer;
 

@@ -1,6 +1,4 @@
-namespace Forma.Framework.Sanitization.Allowlist;
-
-using Forma.Framework.Sanitization;
+namespace Forma.Framework.Sanitization;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;

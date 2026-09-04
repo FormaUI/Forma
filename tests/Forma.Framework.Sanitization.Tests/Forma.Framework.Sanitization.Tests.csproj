@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <IsPackable>false</IsPackable>
-        <RootNamespace>Forma.Framework.Sanitization.Allowlist.Tests</RootNamespace>
+        <RootNamespace>Forma.Framework.Sanitization.Tests</RootNamespace>
         <NoWarn>CA1707</NoWarn>
     </PropertyGroup>
 
@@ -18,7 +18,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Forma.Framework.Sanitization\Forma.Framework.Sanitization.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Framework.Sanitization.Allowlist\Forma.Framework.Sanitization.Allowlist.csproj" />
     </ItemGroup>
 
 </Project>

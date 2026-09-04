@@ -13,7 +13,6 @@ using Forma.Framework.Composer.Syntax;
 using Forma.Framework.Interop.Behaviours;
 using Forma.Framework.Resources;
 using Forma.Framework.Sanitization;
-using Forma.Framework.Sanitization.Allowlist;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;

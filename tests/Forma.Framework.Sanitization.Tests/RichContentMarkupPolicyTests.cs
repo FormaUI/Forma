@@ -1,6 +1,4 @@
-namespace Forma.Framework.Sanitization.Allowlist.Tests;
-
-using Forma.Framework.Sanitization;
+namespace Forma.Framework.Sanitization.Tests;
 
 using Xunit;
 

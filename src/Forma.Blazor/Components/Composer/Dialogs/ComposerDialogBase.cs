@@ -3,7 +3,6 @@ namespace Forma.Blazor.Components.Composer.Dialogs;
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Localization;
 using Forma.Framework.Sanitization;
-using Forma.Framework.Sanitization.Allowlist;
 
 using Microsoft.AspNetCore.Components;
 

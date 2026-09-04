@@ -4,7 +4,7 @@ using Forma.Framework.Emojis.Unicode;
 using Forma.Framework.Feedback;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
-using Forma.Framework.Sanitization.Allowlist;
+using Forma.Framework.Sanitization;
 using Forma.Framework.Timing;
 
 using Microsoft.Extensions.DependencyInjection;

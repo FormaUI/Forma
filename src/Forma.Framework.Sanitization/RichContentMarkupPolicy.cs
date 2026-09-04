@@ -1,6 +1,4 @@
-namespace Forma.Framework.Sanitization.Allowlist;
-
-using Forma.Framework.Sanitization;
+namespace Forma.Framework.Sanitization;
 
 /// <summary>The markup the built-in plugins produce, and nothing else.</summary>
 public sealed class RichContentMarkupPolicy : IMarkupPolicy

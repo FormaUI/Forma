@@ -1,9 +1,7 @@
-namespace Forma.Framework.Sanitization.Allowlist;
+namespace Forma.Framework.Sanitization;
 
 using System.Buffers;
 using System.Text;
-
-using Forma.Framework.Sanitization;
 
 /// <summary>
 /// Allowlist sanitizer covering the markup the built-in plugins produce, with no external dependency.

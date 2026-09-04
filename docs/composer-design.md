@@ -76,7 +76,7 @@ The composer is one assembly, `Forma.Framework.Composer`, carrying its contracts
 | `Forma.AddOns.Composer.KaTeX` | `Forma.Framework.Composer.KaTeX` | the composer + KaTeX browser assets |
 | `Forma.Blazor` | `Forma.Blazor.Components.Composer` | adds `Forma.Framework.Composer` |
 
-Sanitization is not the composer's own concern. Anything holding markup to a policy needs it, so the contract sits in `Forma.Framework.Sanitization` and the allowlist implementation in `Forma.Framework.Sanitization.Allowlist`; a host replacing it with a hardened library registers its own `IHtmlSanitizer` and the composer takes it.
+Sanitization is not the composer's own concern. Anything holding markup to a policy needs it, so the contract and the allowlist implementation sit together in `Forma.Framework.Sanitization`; a host replacing it with a hardened library registers its own `IHtmlSanitizer` and the composer takes it.
 
 **The composer project must not take `FrameworkReference Microsoft.AspNetCore.App`.** The repository confines that to `Forma.Blazor` and `Forma.Tests.Support`, so no contract may mention `RenderFragment`, `EventCallback` or `ComponentBase`. Editor plugins therefore surface a `Type` and the composer hosts it in `<DynamicComponent>`; a plugin that needs custom toolbar markup supplies a `Type` too. This is a constraint on the design, not an inconvenience — it keeps every contract testable from a plain class library.
 
@@ -578,7 +578,7 @@ public interface IHtmlSanitizer
 }
 ```
 
-- Forma ships `AllowlistHtmlSanitizer` in `Forma.Framework.Sanitization.Allowlist` with no external dependency, covering the element and attribute set the built-in plugins can produce. The composer builds one for itself when a host has registered none, so a composer is never unsanitised.
+- Forma ships `AllowlistHtmlSanitizer` in `Forma.Framework.Sanitization` with no external dependency, covering the element and attribute set the built-in plugins can produce. The composer builds one for itself when a host has registered none, so a composer is never unsanitised.
 - A host may replace it — a satellite wrapping Ganss.Xss suits a host wanting a hardened, widely-reviewed implementation, and any registration overrides the default.
 - A host wanting only different *rules* rather than a different implementation supplies an `IMarkupPolicy` to the sanitiser instead, wrapping `RichContentMarkupPolicy.Default` to widen or narrow what it permits. Event handler attributes are refused by the sanitiser itself, so no policy can re-admit them.
 - Sanitisation runs at **four** points, and none is optional: content loaded into the composer, content pasted in, content leaving the code editor, and content raised to the host. In a widget tree that means every node's `Content` (§4.2); the settings JSON is never sanitised as markup.
@@ -632,12 +632,10 @@ These are correctness requirements for every Forma component, and the composer i
 
 ```text
 src/Forma.Framework.Sanitization/
+├── AllowlistHtmlSanitizer.cs
 ├── HtmlSubject.cs
 ├── IHtmlSanitizer.cs
-└── IMarkupPolicy.cs
-
-src/Forma.Framework.Sanitization.Allowlist/
-├── AllowlistHtmlSanitizer.cs
+├── IMarkupPolicy.cs
 ├── RichContentMarkupPolicy.cs             # the markup policy the sanitiser applies
 └── ServiceCollectionExtensions.cs
 
