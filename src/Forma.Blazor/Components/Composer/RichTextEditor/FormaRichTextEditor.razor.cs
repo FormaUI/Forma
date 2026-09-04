@@ -4,8 +4,8 @@ using System.Globalization;
 
 using Forma.Blazor.Components.Composer.Dialogs;
 using Forma.Blazor.Components.Composer.RichTextEditor.Plugins;
-using Forma.Blazor.Interop.Components;
 using Forma.Framework.Composer.Editing;
+using Forma.Framework.Composer.Interop.Components;
 using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Localization;
 

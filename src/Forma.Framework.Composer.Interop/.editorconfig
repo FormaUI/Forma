@@ -1,0 +1,15 @@
+[*.cs]
+# ------------------------------------------------------------
+# Diagnostics that do not apply to JS interop wrappers
+# ------------------------------------------------------------
+
+# Disable CA2007 - ConfigureAwait(false) escapes Blazor's synchronization context, after
+# which touching component state requires ComponentBase.InvokeAsync to marshal back.
+dotnet_diagnostic.CA2007.severity = none
+
+# Disable CA1054, CA1055 and CA1056 - a static web asset is addressed by a relative path
+# such as _content/Forma.Blazor/..., which the platform hands the browser as a string
+# and which System.Uri cannot represent without a base it does not have.
+dotnet_diagnostic.CA1054.severity = none
+dotnet_diagnostic.CA1055.severity = none
+dotnet_diagnostic.CA1056.severity = none
