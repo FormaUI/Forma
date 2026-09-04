@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { attach } from '#input/components/InputInspector.js';
-import { register } from '#input/services/InputRouter.js';
+import { attach } from '#input/InputInspector.js';
+import { register } from '#input/InputRouter.js';
 import { fakeOwner } from '#support/owner.js';
 
 let owner;

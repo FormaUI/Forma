@@ -6,7 +6,7 @@
  * panel can show. Wheel turns are reported at most once per interval.
  */
 
-import { resolve, stack } from '../services/InputRouter.js';
+import { resolve, stack } from './InputRouter.js';
 
 const ObservedTypes = ['keydown', 'pointerdown', 'wheel'];
 
