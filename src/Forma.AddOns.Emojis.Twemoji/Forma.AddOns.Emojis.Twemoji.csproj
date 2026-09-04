@@ -35,8 +35,8 @@
 
     <!-- Embedded in the assembly, so packing it again as content only duplicates it. -->
     <ItemGroup>
-        <EmbeddedResource Include="Assets\**\*.json" />
-        <Content Remove="Assets\**\*.json" />
+        <EmbeddedResource Include="_assets\**\*.json" />
+        <Content Remove="_assets\**\*.json" />
     </ItemGroup>
 
 </Project>

@@ -41,4 +41,4 @@ package.
 ## Regenerating the artwork
 
 `scripts/Get-TwemojiPack.ps1` rebuilds both halves: the sprite sheets into `wwwroot/assets/` and the catalog
-JSON into `Assets/` in this project. Run it to move to a newer Twemoji or CLDR release.
+JSON into `_assets/` in this project. Run it to move to a newer Twemoji or CLDR release.
