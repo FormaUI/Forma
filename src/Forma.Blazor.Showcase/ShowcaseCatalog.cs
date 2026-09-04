@@ -103,10 +103,10 @@ public static class ShowcaseCatalog
     private static int CategoryRank(string category)
         => category switch
         {
-            "Symbols" => 0,
-            "Features" => 1,
-            "Libraries" => 2,
-            "Debugging" => 4,
-            _ => 3,
+            "Features" => 0,
+            "Libraries" => 1,
+            "Debugging" => 2,
+            "Symbols" => 3,
+            _ => 4,
         };
 }
