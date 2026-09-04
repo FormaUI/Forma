@@ -1,0 +1,85 @@
+@inherits FormaBunitContext
+@using Forma.Blazor.Components.Interaction
+@using Forma.Blazor.Features.Input
+@using Forma.Blazor.Features.Input.Keyboard
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_its_content_inside_the_scope_element()
+        {
+            // Arrange
+            using var ctx = new FormaInputScopeTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaInputScope id="scope"><p>Content</p></FormaInputScope>);
+
+            // Assert
+            var root = cut.Find(".forma-input-scope");
+            Assert.Multiple(
+                () => Assert.Equal("scope", root.Id),
+                () => Assert.Equal("Content", root.QuerySelector("p")!.TextContent),
+                () => Assert.DoesNotContain("forma-input-scope-active", root.ClassList));
+        }
+
+        [Fact]
+        public void Should_mark_the_element_while_active()
+        {
+            // Arrange
+            using var ctx = new FormaInputScopeTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaInputScope Active="true"><p>Content</p></FormaInputScope>);
+
+            // Assert
+            Assert.Contains("forma-input-scope-active", cut.Find(".forma-input-scope").ClassList);
+        }
+
+        [Fact]
+        public void Should_reject_a_missing_profile()
+        {
+            // Arrange
+            using var ctx = new FormaInputScopeTests();
+
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => ctx.Render(@<FormaInputScope Profile="null!" />));
+        }
+    }
+
+    public sealed class Reports
+    {
+        [Fact]
+        public async Task Should_raise_OnAction_with_the_action_and_input_the_script_reports()
+        {
+            // Arrange
+            using var ctx = new FormaInputScopeTests();
+            InputAction? received = null;
+            var cut = ctx.Render(@<FormaInputScope OnAction="action => received = action"><p>Content</p></FormaInputScope>);
+            var input = new InputKeyInfo { Type = "keydown", Key = "ArrowDown" };
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaInputScope>().Instance.HandleInputActionAsync("list.next", input));
+
+            // Assert
+            Assert.NotNull(received);
+            Assert.Multiple(
+                () => Assert.Equal("list.next", received.Action),
+                () => Assert.Same(input, received.Input));
+        }
+
+        [Fact]
+        public async Task Should_raise_OnDismiss_with_the_action_and_reason_the_script_reports()
+        {
+            // Arrange
+            using var ctx = new FormaInputScopeTests();
+            InputDismissal? received = null;
+            var cut = ctx.Render(@<FormaInputScope OnDismiss="dismissal => received = dismissal"><p>Content</p></FormaInputScope>);
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaInputScope>().Instance.HandleDismissAsync(DismissBehavior.Cancel, DismissReason.CloseRequest));
+
+            // Assert
+            Assert.Equal(new InputDismissal(DismissBehavior.Cancel, DismissReason.CloseRequest), received);
+        }
+    }
+}

@@ -8,9 +8,12 @@ binding and input records of each family under `Features/Input`, the scoped
 bridge that carries host policy to the script, and every component's participation.
 
 Step 1 of the implementation plan is built: the router script, the records, the bridge and
-its registration in `AddFormaUI`, host routes, and the script tests. No component registers
-a scope yet. The `focus` field of a profile is not read until `Focus.js` moves onto the
-router in step 3.
+its registration in `AddFormaUI`, host routes, and the script tests. `FormaInputScope`
+declares a scope from markup and `FormaInputInspector` shows the router's decisions live;
+the Showcase's `FormaInputInspector` page uses both, and its visible-browser walk covers the native
+table, nesting, dismissal, the modal barrier, host routes, shadow roots, wheel, and pointer
+input against real events. No library component registers a scope yet. The `focus` field
+of a profile is not read until `Focus.js` moves onto the router in step 3.
 
 ## Purpose
 

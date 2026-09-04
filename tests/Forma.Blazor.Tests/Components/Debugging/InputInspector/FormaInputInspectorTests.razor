@@ -1,0 +1,152 @@
+@inherits FormaBunitContext
+@using Forma.Blazor.Components.Debugging.InputInspector
+@using Forma.Blazor.Features.Input.Keyboard
+@using Forma.Blazor.Features.Input.Wheel
+@code {
+    private static InputDecision Routed()
+        => new()
+        {
+            Input = new InputKeyInfo { Type = "keydown", Key = "ArrowDown", Modifiers = new() { Shift = true } },
+            Owner = "div#list",
+            Action = "list.extend",
+            Precedence = "structural",
+            Source = "default",
+            Tie = "specificity",
+            Reason = "route list.extend, chosen by specificity",
+            PreventDefault = true,
+            Propagation = "stop",
+            Stack =
+            [
+                new InputLayer { Element = "div#grid", Layer = 1, Reason = "first eligible" },
+                new InputLayer { Element = "dialog", Layer = 2, Modal = true, Parent = "div#grid", Reason = "modal barrier" },
+            ],
+        };
+
+    private static InputDecision Unowned()
+        => new()
+        {
+            Input = new InputWheelInfo { Type = "wheel", DeltaY = 40 },
+            Precedence = "none",
+            Reason = "no scope routes it",
+            Propagation = "continue",
+        };
+
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_invite_input_while_nothing_has_been_resolved()
+        {
+            // Arrange
+            using var ctx = new FormaInputInspectorTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaInputInspector />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Contains("Press a key", cut.Find(".forma-input-inspector-latest .forma-input-inspector-empty").TextContent, StringComparison.Ordinal),
+                () => Assert.Equal("Nothing active", cut.Find(".forma-input-inspector-empty-small").TextContent),
+                () => Assert.Null(cut.FindComponent<FormaInputInspector>().Instance.Decision),
+                () => Assert.Empty(cut.FindAll(".forma-input-inspector-history")));
+        }
+
+        [Fact]
+        public async Task Should_show_the_reported_decision_as_keycaps_a_badge_and_the_stack_foremost_first()
+        {
+            // Arrange
+            using var ctx = new FormaInputInspectorTests();
+            var cut = ctx.Render(@<FormaInputInspector />);
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaInputInspector>().Instance.ReportAsync(Routed()));
+
+            // Assert
+            var keycaps = cut.FindAll(".forma-input-inspector-summary kbd").Select(kbd => kbd.TextContent).ToList();
+            var values = cut.FindAll(".forma-input-inspector-decision dd").Select(dd => dd.TextContent).ToList();
+            var layers = cut.FindAll(".forma-input-inspector-layer");
+            Assert.Multiple(
+                () => Assert.Equal(["Shift", "↓"], keycaps),
+                () => Assert.Equal("structural", cut.Find(".forma-input-inspector-summary .forma-status-badge").TextContent),
+                () => Assert.Contains("forma-input-inspector-badge-structural", cut.Find(".forma-input-inspector-summary .forma-status-badge").ClassList),
+                () => Assert.Equal("div#list", values[0]),
+                () => Assert.Equal("list.extend", values[1]),
+                () => Assert.Equal("specificity", values[3]),
+                () => Assert.Equal("the route's defaults", values[4]),
+                () => Assert.Equal("prevented", values[5]),
+                () => Assert.Equal("stops at the owner", values[6]),
+                () => Assert.Equal("2", cut.Find(".forma-input-inspector-count").TextContent),
+                () => Assert.Equal(2, layers.Count),
+                () => Assert.Contains("forma-input-inspector-layer-foremost", layers[0].ClassList),
+                () => Assert.Contains("dialog", layers[0].TextContent, StringComparison.Ordinal),
+                () => Assert.Equal("modal", layers[0].QuerySelector(".forma-status-badge")!.TextContent),
+                () => Assert.Contains("div#grid", layers[1].TextContent, StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public async Task Should_say_nothing_is_active_and_nothing_owns_an_unowned_input()
+        {
+            // Arrange
+            using var ctx = new FormaInputInspectorTests();
+            var cut = ctx.Render(@<FormaInputInspector />);
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaInputInspector>().Instance.ReportAsync(Unowned()));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["↓ 40"], cut.FindAll(".forma-input-inspector-summary kbd").Select(kbd => kbd.TextContent).ToList()),
+                () => Assert.Equal("nothing", cut.FindAll(".forma-input-inspector-decision dd")[0].TextContent),
+                () => Assert.Equal("none", cut.FindAll(".forma-input-inspector-decision dd")[1].TextContent),
+                () => Assert.Equal("Nothing active", cut.Find(".forma-input-inspector-empty-small").TextContent));
+        }
+    }
+
+    public sealed class History
+    {
+        [Fact]
+        public async Task Should_keep_the_decisions_before_the_latest_most_recent_first()
+        {
+            // Arrange
+            using var ctx = new FormaInputInspectorTests();
+            var cut = ctx.Render(@<FormaInputInspector />);
+            var inspector = cut.FindComponent<FormaInputInspector>().Instance;
+
+            // Act
+            await cut.InvokeAsync(() => inspector.ReportAsync(Unowned()));
+            await cut.InvokeAsync(() => inspector.ReportAsync(Routed()));
+
+            // Assert
+            var recent = cut.FindAll(".forma-input-inspector-history li");
+            Assert.Multiple(
+                () => Assert.Same(inspector.Decision!.Action, "list.extend"),
+                () => Assert.Single(recent),
+                () => Assert.Contains("none", recent[0].TextContent, StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public async Task Should_drop_reports_while_paused_and_forget_them_when_cleared()
+        {
+            // Arrange
+            using var ctx = new FormaInputInspectorTests();
+            var cut = ctx.Render(@<FormaInputInspector />);
+            var inspector = cut.FindComponent<FormaInputInspector>().Instance;
+            await cut.InvokeAsync(() => inspector.ReportAsync(Routed()));
+
+            // Act
+            cut.Find(".forma-toolbar [aria-pressed]").Click();
+            await cut.InvokeAsync(() => inspector.ReportAsync(Unowned()));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(inspector.IsPaused),
+                () => Assert.Equal("list.extend", inspector.Decision!.Action),
+                () => Assert.Contains("forma-input-inspector-paused", cut.Find(".forma-input-inspector").ClassList));
+
+            // Act
+            cut.FindAll(".forma-toolbar button").Last().Click();
+
+            // Assert
+            Assert.Null(inspector.Decision);
+        }
+    }
+}

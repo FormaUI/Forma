@@ -1,0 +1,123 @@
+@page "/input-inspector"
+@attribute [ShowcasePage("FormaInputInspector")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Buttons
+@using Forma.Blazor.Components.Inputs
+@inject IStringLocale<FormaInputInspectorPage> L
+@implements IDisposable
+
+<h1>FormaInputInspector</h1>
+<p class="description">@L["Every key, press, wheel turn and drop on the page is resolved by one router to one owner. The panel on the side shows each decision as it is made: who owns the input, by which rule, and what stands active above what."]</p>
+
+<div class="demo-routing">
+    <div class="demo-routing-cases">
+        <div class="demo-section">
+            <h2>@L["Nested scopes"]</h2>
+            <p class="description">@L["A grid routes the arrows, Home and End. Inside it, native controls keep the keys they consume, and a popup that is open keeps every key inside itself: its list routes the arrows, and nothing reaches the grid."]</p>
+            <div class="demo-box">
+                <FormaInputScope id="demo-grid" class="demo-scope" Profile="_gridProfile" OnAction="action => Record(ref _lastGridAction, action)">
+                    <div class="demo-scope-header">
+                        <span class="demo-scope-name"><FormaIcon Icon="Glyph.GridView" Size="IconSize.Small" /> @L["Grid"]</span>
+                        <FormaStatusBadge Text="@(_lastGridAction ?? L["idle"])" Marker="Glyph.ArrowTurnDownRight" class="@ReadoutClass(_lastGridAction)" />
+                    </div>
+                    <EditForm Model="_model">
+                        <div class="demo-row demo-controls">
+                            <FormaTextBox @bind-Value="_model.Name" Placeholder="@L["Text"]" aria-label="@L["Text"]" class="demo-control" />
+                            <input type="number" value="1" aria-label="@L["Number"]" class="forma-text-box demo-control demo-control-narrow" />
+                            <input type="date" aria-label="@L["Date"]" class="forma-text-box demo-control" />
+                            <select aria-label="@L["Select"]" class="forma-text-box demo-control demo-control-narrow">
+                                <option>@L["One"]</option>
+                                <option>@L["Two"]</option>
+                            </select>
+                            <FormaCheckBox @bind-Checked="_model.Agreed">@L["Check"]</FormaCheckBox>
+                            <FormaButton Variant="ButtonVariant.Secondary">@L["Button"]</FormaButton>
+                        </div>
+                        <div class="demo-row demo-controls">
+                            <FormaSlider @bind-Value="_model.Level" Label="@L["Slider"]" Min="0" Max="10" />
+                            <FormaTextArea @bind-Value="_model.Notes" Label="@L["Text area"]" Rows="2" />
+                            <div class="demo-editable" contenteditable="true" aria-label="@L["Editable"]">@L["Editable text"]</div>
+                        </div>
+                    </EditForm>
+                    <div class="demo-row">
+                        <FormaToggleButton Label="@L["Popup"]" ShowLabel="true" Icon="Glyph.LayoutBottom" Pressed="_popupOpen" OnClick="() => _popupOpen = !_popupOpen" />
+                    </div>
+                    <FormaInputScope id="demo-popup" class="demo-scope demo-scope-popup" Profile="_popupProfile" Active="_popupOpen" OnDismiss="dismissal => Dismiss(ref _popupOpen, ref _lastPopupDismissal, dismissal)">
+                        <div class="demo-scope-header">
+                            <span class="demo-scope-name"><FormaIcon Icon="Glyph.LayoutBottom" Size="IconSize.Small" /> @L["Popup"]</span>
+                            <FormaStatusBadge Text="@(_popupOpen ? L["open"] : _lastPopupDismissal ?? L["closed"])" class="@(_popupOpen ? "demo-readout demo-readout-live" : "demo-readout")" />
+                        </div>
+                        @if (_popupOpen)
+                        {
+                            <FormaTextBox @bind-Value="_model.Search" Placeholder="@L["Search"]" aria-label="@L["Search"]" Options="_searchOptions" class="demo-control" />
+                            <FormaInputScope id="demo-list" class="demo-scope" Profile="_listProfile" OnAction="action => Record(ref _lastListAction, action)">
+                                <div class="demo-scope-header">
+                                    <span class="demo-scope-name"><FormaIcon Icon="Glyph.List" Size="IconSize.Small" /> @L["List"]</span>
+                                    <FormaStatusBadge Text="@(_lastListAction ?? L["idle"])" Marker="Glyph.ArrowTurnDownRight" class="@ReadoutClass(_lastListAction)" />
+                                </div>
+                                <div class="demo-row">
+                                    <FormaButton Variant="ButtonVariant.Secondary">@L["Option"]</FormaButton>
+                                    <FormaButton Variant="ButtonVariant.Secondary">@L["Another option"]</FormaButton>
+                                </div>
+                            </FormaInputScope>
+                        }
+                    </FormaInputScope>
+                </FormaInputScope>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>@L["Modal barrier"]</h2>
+            <p class="description">@L["A modal scope stands above everything that is not inside it. A popup opened inside the modal stands above the modal, so Escape closes the popup first and the modal second, and a popup left open behind the modal is not offered anything."]</p>
+            <div class="demo-box">
+                <div class="demo-row">
+                    <FormaToggleButton Label="@L["Modal"]" ShowLabel="true" Icon="Glyph.Layout" Pressed="_modalOpen" OnClick="() => _modalOpen = !_modalOpen" />
+                </div>
+                <FormaInputScope id="demo-modal" class="demo-scope demo-scope-modal" Profile="_modalProfile" Active="_modalOpen" OnDismiss="dismissal => Dismiss(ref _modalOpen, ref _lastModalDismissal, dismissal)">
+                    <div class="demo-scope-header">
+                        <span class="demo-scope-name"><FormaIcon Icon="Glyph.Layout" Size="IconSize.Small" /> @L["Modal"]</span>
+                        <FormaStatusBadge Text="@(_modalOpen ? L["open"] : _lastModalDismissal ?? L["closed"])" class="@(_modalOpen ? "demo-readout demo-readout-live" : "demo-readout")" />
+                    </div>
+                    @if (_modalOpen)
+                    {
+                        <div class="demo-row">
+                            <FormaToggleButton Label="@L["Inner popup"]" ShowLabel="true" Icon="Glyph.LayoutBottom" Pressed="_innerOpen" OnClick="() => _innerOpen = !_innerOpen" />
+                        </div>
+                        <FormaInputScope id="demo-inner" class="demo-scope demo-scope-popup" Profile="_popupProfile" Active="_innerOpen" OnDismiss="dismissal => Dismiss(ref _innerOpen, ref _lastInnerDismissal, dismissal)">
+                            <div class="demo-scope-header">
+                                <span class="demo-scope-name"><FormaIcon Icon="Glyph.LayoutBottom" Size="IconSize.Small" /> @L["Inner popup"]</span>
+                                <FormaStatusBadge Text="@(_innerOpen ? L["open"] : _lastInnerDismissal ?? L["closed"])" class="@(_innerOpen ? "demo-readout demo-readout-live" : "demo-readout")" />
+                            </div>
+                            @if (_innerOpen)
+                            {
+                                <div class="demo-row">
+                                    <FormaButton Variant="ButtonVariant.Secondary">@L["Option"]</FormaButton>
+                                </div>
+                            }
+                        </FormaInputScope>
+                    }
+                </FormaInputScope>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>@L["Host routes"]</h2>
+            <p class="description">@L["The showcase declares two routes of its own. Ctrl+K is preemptive: it opens the palette from anywhere, a text field or an open popup included. F1 is a fallback: it reaches the host only when no scope on the way claims it."]</p>
+            <div class="demo-box">
+                <dl class="demo-shortcuts">
+                    <dt><kbd>Ctrl</kbd> <kbd>K</kbd></dt>
+                    <dd><code>app.palette</code> — @L["preemptive"]</dd>
+                    <dt><kbd>F1</kbd></dt>
+                    <dd><code>app.help</code> — @L["fallback"]</dd>
+                </dl>
+                <div class="demo-scope-header">
+                    <span class="demo-scope-name"><FormaIcon Icon="Glyph.Home" Size="IconSize.Small" /> @L["Last host action"]</span>
+                    <FormaStatusBadge Text="@(HostActions.LastAction ?? L["idle"])" Marker="Glyph.ArrowTurnDownRight" class="@ReadoutClass(HostActions.LastAction)" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <aside class="demo-routing-inspector">
+        <FormaInputInspector />
+    </aside>
+</div>

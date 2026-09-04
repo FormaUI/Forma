@@ -9,7 +9,7 @@ using Microsoft.JSInterop;
 
 /// <summary>The circuit's input router: carries the host's policy and routes to the script once, and registers the scopes components own.</summary>
 [SuppressMessage("Performance", "CA1812", Justification = "Constructed by dependency injection.")]
-internal sealed class InputRouter(IJSRuntime js, InputRouterOptions options, IInputActionHandler? hostHandler = null) : IAsyncDisposable
+internal sealed class InputRouter(IJSRuntime js, InputRouterOptions options, IInputActionHandler? hostHandler = null) : IAsyncDisposable, IDisposable
 {
     private readonly JsModule _module = new(js, "./_content/Forma.Blazor/scripts/services/InputRouter.js");
     private DotNetObjectReference<InputRouter>? _selfReference;
@@ -54,6 +54,10 @@ internal sealed class InputRouter(IJSRuntime js, InputRouterOptions options, IIn
             _selfReference?.Dispose();
         }
     }
+
+    /// <summary>Releases the managed state alone; a scope disposing synchronously has no JS runtime left to talk to.</summary>
+    public void Dispose()
+        => _selfReference?.Dispose();
 
     // A push that failed is retried by the next registration.
     private async Task<bool> ConfigureAsync()

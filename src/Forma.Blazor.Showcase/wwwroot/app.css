@@ -412,6 +412,127 @@ body {
     box-shadow: var(--shadow-medium);
 }
 
+/* The input-routing page: the cases on one side, the inspector kept in view on the other. */
+.demo-routing {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(16rem, 22rem);
+    gap: var(--space-5);
+    align-items: start;
+}
+
+.demo-routing-inspector {
+    position: sticky;
+    inset-block-start: var(--space-4);
+}
+
+/* A scope is drawn as a bordered region with its name and readout on top, and lit while it is active. */
+.demo-scope {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border: 1px dashed var(--dark-border-color);
+    border-radius: var(--radius-md);
+}
+
+.demo-scope-active {
+    border-style: solid;
+    border-color: var(--main-color);
+    box-shadow: var(--focus-ring);
+}
+
+.demo-scope-popup {
+    background: var(--input-background-color);
+}
+
+.demo-scope-modal {
+    background: var(--modal-background-color);
+}
+
+.demo-scope-modal.demo-scope-active {
+    box-shadow: var(--shadow-medium);
+}
+
+.demo-scope-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+}
+
+.demo-scope-name {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-secondary-color);
+}
+
+/* A readout is muted until its scope has something to say. */
+.demo-readout {
+    --forma-status-badge-background-color: var(--muted-background-color);
+    --forma-status-badge-foreground-color: var(--text-secondary-color);
+}
+
+.demo-readout-live {
+    --forma-status-badge-background-color: color-mix(in srgb, var(--main-color) 14%, transparent);
+    --forma-status-badge-foreground-color: var(--main-dark-color);
+}
+
+.demo-controls {
+    align-items: flex-end;
+}
+
+.demo-control {
+    inline-size: 11rem;
+}
+
+.demo-control-narrow {
+    inline-size: 7rem;
+}
+
+.demo-editable {
+    min-inline-size: 12rem;
+    min-block-size: var(--control-size-md);
+    padding: var(--space-2);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--input-background-color);
+}
+
+.demo-editable:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+}
+
+/* The host's routes, each as the keys that raise it. */
+.demo-shortcuts {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    column-gap: var(--space-4);
+    row-gap: var(--space-2);
+    align-items: center;
+    margin: 0;
+}
+
+.demo-shortcuts dd {
+    margin: 0;
+}
+
+.demo-shortcuts kbd {
+    display: inline-block;
+    padding-inline: var(--space-2);
+    border: 1px solid var(--dark-border-color);
+    border-block-end-width: 2px;
+    border-radius: var(--radius-sm);
+    background: var(--input-background-color);
+    font-family: inherit;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    line-height: var(--control-size-sm);
+}
+
 .demo-popup-actions {
     display: flex;
     gap: var(--space-2);

@@ -89,21 +89,24 @@ public static class ShowcaseCatalog
         return pages;
     }
 
+    // The category is the folder directly under Pages; a page may sit deeper, in a folder of its own.
     private static string Category(Type type)
     {
-        var space = type.Namespace ?? string.Empty;
+        var segments = (type.Namespace ?? string.Empty).Split('.');
+        var pages = Array.IndexOf(segments, "Pages");
 
-        return space.Contains('.', StringComparison.Ordinal) ? space[(space.LastIndexOf('.', StringComparison.Ordinal) + 1)..] : space;
+        return pages >= 0 && pages + 1 < segments.Length ? segments[pages + 1] : segments[^1];
     }
 
     // Symbols leads as the library's own vocabulary, Features and Libraries group the composite demos,
-    // and everything else follows alphabetically.
+    // everything else follows alphabetically, and Debugging closes the list as tooling rather than a component.
     private static int CategoryRank(string category)
         => category switch
         {
             "Symbols" => 0,
             "Features" => 1,
             "Libraries" => 2,
+            "Debugging" => 4,
             _ => 3,
         };
 }

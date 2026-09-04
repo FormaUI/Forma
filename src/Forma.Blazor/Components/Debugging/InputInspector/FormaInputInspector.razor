@@ -1,0 +1,109 @@
+@namespace Forma.Blazor.Components.Debugging.InputInspector
+
+<section @attributes="RootAttributes" @ref="_element" aria-label="@L["Input router"]">
+    <header class="forma-input-inspector-header">
+        <span class="forma-input-inspector-title">
+            <FormaIcon Icon="Glyph.Inspect" Size="IconSize.Small" />
+            <span>@L["Input router"]</span>
+        </span>
+        <FormaToolbar Label="@L["Inspector"]" Items="_tools" OnCommand="HandleToolAsync" Scrollable="false" />
+    </header>
+
+    <div class="forma-input-inspector-latest" aria-live="polite">
+        @if (Decision is null)
+        {
+            <p class="forma-input-inspector-empty">
+                <FormaIcon Icon="Glyph.Keyboard" Size="IconSize.Medium" />
+                <span>@(_paused ? L["Paused"] : L["Press a key, click, or scroll to see how the router resolves it."])</span>
+            </p>
+        }
+        else
+        {
+            <div class="forma-input-inspector-summary">
+                <span class="forma-input-inspector-input">
+                    <FormaIcon Icon="FamilyIcon(Decision.Input)" Size="IconSize.Small" />
+                    @foreach (var keycap in Keycaps(Decision.Input))
+                    {
+                        <kbd>@keycap</kbd>
+                    }
+                </span>
+                <FormaStatusBadge Text="@Decision.Precedence" class="@PrecedenceClass(Decision.Precedence)" />
+            </div>
+
+            <dl class="forma-input-inspector-decision">
+                <dt>@L["Owner"]</dt>
+                <dd>@if (Decision.Owner is null) { @L["nothing"] } else { <code>@Decision.Owner</code> }</dd>
+                <dt>@L["Action"]</dt>
+                <dd>@if (Decision.Action is null) { @L["none"] } else { <code>@Decision.Action</code> }</dd>
+                <dt>@L["Reason"]</dt>
+                <dd>@Decision.Reason</dd>
+                @if (Decision.Tie is not null)
+                {
+                    <dt>@L["Decided by"]</dt>
+                    <dd>@Decision.Tie</dd>
+                }
+                @if (Decision.Source is not null)
+                {
+                    <dt>@L["Bindings"]</dt>
+                    <dd>@(Decision.Source == "host" ? L["remapped by the host"] : L["the route's defaults"])</dd>
+                }
+                <dt>@L["Browser default"]</dt>
+                <dd>@(Decision.PreventDefault ? L["prevented"] : L["allowed"])</dd>
+                <dt>@L["Propagation"]</dt>
+                <dd>@(Decision.Propagation == "stop" ? L["stops at the owner"] : L["continues"])</dd>
+            </dl>
+        }
+    </div>
+
+    <h3 class="forma-input-inspector-heading">
+        <span>@L["Active stack"]</span>
+        @if (Decision is { Stack.Count: > 0 })
+        {
+            <span class="forma-input-inspector-count">@Decision.Stack.Count</span>
+        }
+    </h3>
+    @if (Decision is null || Decision.Stack.Count == 0)
+    {
+        <p class="forma-input-inspector-empty forma-input-inspector-empty-small">@L["Nothing active"]</p>
+    }
+    else
+    {
+        <ol class="forma-input-inspector-stack">
+            @foreach (var layer in Decision.Stack.Reverse())
+            {
+                <li class="@(layer.Layer == Decision.Stack.Count ? "forma-input-inspector-layer forma-input-inspector-layer-foremost" : "forma-input-inspector-layer")">
+                    <span class="forma-input-inspector-layer-number" aria-hidden="true">@layer.Layer</span>
+                    <span class="forma-input-inspector-layer-body">
+                        <code>@layer.Element</code>
+                        <span class="forma-input-inspector-layer-placement">@Placement(layer.Reason)</span>
+                    </span>
+                    @if (layer.Modal)
+                    {
+                        <FormaStatusBadge Text="@L["modal"]" class="forma-input-inspector-badge-modal" />
+                    }
+                </li>
+            }
+        </ol>
+    }
+
+    @if (_history.Count > 1)
+    {
+        <h3 class="forma-input-inspector-heading">@L["Recent"]</h3>
+        <ol class="forma-input-inspector-history">
+            @foreach (var past in _history.Skip(1))
+            {
+                <li>
+                    <span class="forma-input-inspector-input">
+                        <FormaIcon Icon="FamilyIcon(past.Input)" Size="IconSize.Inline" />
+                        @foreach (var keycap in Keycaps(past.Input))
+                        {
+                            <kbd>@keycap</kbd>
+                        }
+                    </span>
+                    <span class="forma-input-inspector-history-outcome">@(past.Action ?? L["none"])</span>
+                    <FormaStatusBadge Text="@past.Precedence" class="@PrecedenceClass(past.Precedence)" />
+                </li>
+            }
+        </ol>
+    }
+</section>

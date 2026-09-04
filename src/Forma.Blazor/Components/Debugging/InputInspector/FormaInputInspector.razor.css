@@ -1,0 +1,242 @@
+/* ============================================================
+   FormaInputInspector — CSS isolation
+   A panel in three parts: the latest decision with its input
+   drawn as keycaps and its precedence as a badge, the active
+   ordering foremost first, and the decisions before it.
+   Logical properties throughout for RTL/LTR parity.
+   ============================================================ */
+
+.forma-input-inspector {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background-color: var(--input-background-color);
+    color: var(--text-color);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-prose);
+}
+
+.forma-input-inspector-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+}
+
+.forma-input-inspector-title {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+}
+
+/* The latest decision sits on a tinted slab, so it reads apart from the lists below. */
+.forma-input-inspector-latest {
+    padding: var(--space-3);
+    border-radius: var(--radius-sm);
+    background-color: var(--muted-background-color);
+}
+
+.forma-input-inspector-paused .forma-input-inspector-latest {
+    opacity: 0.6;
+}
+
+.forma-input-inspector-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    margin-block-end: var(--space-3);
+}
+
+.forma-input-inspector-input {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-inline-size: 0;
+}
+
+.forma-input-inspector-input kbd {
+    display: inline-block;
+    padding-block: 0;
+    padding-inline: var(--space-2);
+    border: 1px solid var(--dark-border-color);
+    border-block-end-width: 2px;
+    border-radius: var(--radius-sm);
+    background-color: var(--input-background-color);
+    font-family: inherit;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    line-height: var(--control-size-sm);
+    white-space: nowrap;
+}
+
+.forma-input-inspector-decision {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    column-gap: var(--space-3);
+    row-gap: var(--space-1);
+    margin: 0;
+}
+
+.forma-input-inspector-decision dt {
+    color: var(--text-secondary-color);
+}
+
+.forma-input-inspector-decision dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.forma-input-inspector-heading {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-secondary-color);
+}
+
+.forma-input-inspector-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: var(--control-size-sm);
+    padding-inline: var(--space-1);
+    border-radius: var(--radius-pill);
+    background-color: var(--muted-background-color);
+    color: var(--text-color);
+    font-size: var(--font-size-xs);
+    line-height: var(--control-size-sm);
+}
+
+.forma-input-inspector-stack,
+.forma-input-inspector-history {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.forma-input-inspector-layer {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding-block: var(--space-1);
+    padding-inline: var(--space-2);
+    border-radius: var(--radius-sm);
+}
+
+.forma-input-inspector-layer-foremost {
+    background-color: color-mix(in srgb, var(--main-color) 8%, transparent);
+}
+
+.forma-input-inspector-layer-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    inline-size: var(--control-size-sm);
+    block-size: var(--control-size-sm);
+    border-radius: var(--radius-pill);
+    background-color: var(--muted-background-color);
+    color: var(--text-secondary-color);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+}
+
+.forma-input-inspector-layer-foremost .forma-input-inspector-layer-number {
+    background-color: var(--main-color);
+    color: var(--main-foreground-color);
+}
+
+.forma-input-inspector-layer-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-inline-size: 0;
+}
+
+.forma-input-inspector-layer-body code {
+    overflow-wrap: anywhere;
+}
+
+.forma-input-inspector-layer-placement {
+    color: var(--text-secondary-color);
+    font-size: var(--font-size-xs);
+}
+
+.forma-input-inspector-history li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding-inline: var(--space-2);
+    color: var(--text-secondary-color);
+}
+
+.forma-input-inspector-history-outcome {
+    flex: 1;
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-xs);
+}
+
+.forma-input-inspector-empty {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    color: var(--text-secondary-color);
+}
+
+.forma-input-inspector-empty-small {
+    padding-inline: var(--space-2);
+    font-size: var(--font-size-xs);
+}
+
+/* Each precedence has its own tint, set on the badge through its custom properties. */
+.forma-input-inspector ::deep .forma-input-inspector-badge {
+    flex-shrink: 0;
+}
+
+.forma-input-inspector ::deep .forma-input-inspector-badge-preemptive {
+    --forma-status-badge-background-color: color-mix(in srgb, var(--warning-color) 22%, transparent);
+    --forma-status-badge-foreground-color: var(--text-color);
+}
+
+.forma-input-inspector ::deep .forma-input-inspector-badge-structural {
+    --forma-status-badge-background-color: color-mix(in srgb, var(--main-color) 14%, transparent);
+    --forma-status-badge-foreground-color: var(--main-dark-color);
+}
+
+.forma-input-inspector ::deep .forma-input-inspector-badge-active {
+    --forma-status-badge-background-color: color-mix(in srgb, var(--info-color) 14%, transparent);
+    --forma-status-badge-foreground-color: var(--info-color);
+}
+
+.forma-input-inspector ::deep .forma-input-inspector-badge-native {
+    --forma-status-badge-background-color: color-mix(in srgb, var(--success-color) 14%, transparent);
+    --forma-status-badge-foreground-color: var(--success-color);
+}
+
+.forma-input-inspector ::deep .forma-input-inspector-badge-none {
+    --forma-status-badge-background-color: var(--muted-background-color);
+    --forma-status-badge-foreground-color: var(--text-secondary-color);
+}
+
+.forma-input-inspector ::deep .forma-input-inspector-badge-modal {
+    --forma-status-badge-background-color: color-mix(in srgb, var(--danger-color) 12%, transparent);
+    --forma-status-badge-foreground-color: var(--danger-color);
+}

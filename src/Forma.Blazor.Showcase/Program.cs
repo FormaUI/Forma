@@ -1,4 +1,6 @@
 using Forma.Blazor;
+using Forma.Blazor.Features.Input;
+using Forma.Blazor.Features.Input.Keyboard;
 using Forma.Blazor.Globalization;
 using Forma.Blazor.Showcase;
 using Forma.Blazor.Showcase.Components.Pages.Menus;
@@ -22,7 +24,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddJsonLocalization();
 builder.Services.AddFormaTwemojiPack();
 builder.Services.AddSingleton(new SandboxAssets(builder.Environment.ContentRootPath));
-builder.Services.AddFormaUI();
+// The showcase's own input routes: a preemptive palette shortcut and a fallback help key.
+builder.Services.AddFormaUI(new InputRouterOptions
+{
+    PreemptiveRoutes = [new InputRoute("app.palette", KeyBinding.Shortcut("k"))],
+    Routes = [new InputRoute("app.help", new KeyBinding("F1"))],
+});
+builder.Services.AddScoped<ShowcaseInputActions>();
+builder.Services.AddScoped<IInputActionHandler>(services => services.GetRequiredService<ShowcaseInputActions>());
 builder.Services.AddFormaShareNetworks();
 builder.Services.AddScoped<IResourceContentReader, WebRootContentReader>();
 builder.Services.AddScoped<IResourceProvider, OfficeResourceProvider>();

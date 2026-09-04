@@ -54,7 +54,8 @@ project.lock.json
 project.fragment.lock.json
 
 # Configuration-specific
-[Dd]ebug*/
+[Dd]ebug/
+[Dd]ebugPublic/
 [Rr]elease*/
 [Ww][Ii][Nn]32/
 [Aa][Rr][Mm]*/

@@ -60,6 +60,15 @@ Forma.Blazor/Components/
 │   ├── SpinnerSize.cs
 │   ├── ✅ FormaStatusBadge.razor
 │   └── FormaCapacityIndicator.razor
+├── (1 / 1) Interaction/
+│   ├── ✅ FormaInputScope.razor / .razor.cs        # an element registered with the input router as a scope
+│   ├── InputAction.cs                         # an action resolved to a scope, with the input that raised it
+│   └── InputDismissal.cs                      # a dismissal delivered to a scope: dismiss or cancel, and why
+├── (1 / 1) Debugging/
+│   └── InputInspector/
+│       ├── ✅ FormaInputInspector.razor / .razor.cs / .razor.css  # the router's latest decision and active ordering, live
+│       ├── InputDecision.cs                   # one resolution as the inspector shows it
+│       └── InputLayer.cs                      # one active registration's place in the ordering
 ├── (2 / 2) Collections/
 │   ├── ✅ FormaDataGrid.razor
 │   └── ✅ FormaSortableList.razor
@@ -874,6 +883,26 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Parameters** | `ElementReference Anchor` (required), `bool KeepsFocus`, `bool ReturnsFocus` (default `true`), `RenderFragment? ChildContent`, `EventCallback<bool> OnOpenChanged`, `EventCallback OnOpened`, `EventCallback<KeyboardEventArgs> OnKeyDown`, plus captured pass-through attributes for the popup element. Public `IsOpen`, `Element`, `OpenAsync(trigger)`, `CloseAsync()` and `ToggleAsync(trigger)` |
 | **Blazor approach** | Owns the whole popup contract once: a `popover="manual"` element in the top layer that stays mounted and shows its content only while open, the backdrop that dismisses it, and `AnchoredPopup.js` keeping it against its anchor. One `CloseAsync`: with `ReturnsFocus` it returns focus to the trigger when focus is inside the popup at the time — Escape, a chosen option, a picked day — and leaves focus alone otherwise, so Tab moving on and a trigger click closing its own popup never have focus pulled back; the backdrop's own dismissal never moves focus. Escape is answered by the script's document listener while the popup is open, wherever focus is, so a consumer cannot leave it unwired and a dialog hosting the popup keeps its own Escape; every other key is forwarded through `OnKeyDown` for the consumer's own arrow, Home and End navigation. `KeepsFocus` wraps Tab among the popup's controls for a menu; a list that closes on Tab leaves it off. Content decides its own look — the popup draws no box of its own, and the backdrop is a sibling of the popup element rather than a child, so a `role` a host puts on the popup never claims it |
 | **Notes** | Distinct from `FormaDialog` by mechanism and by meaning: the dialog is a native `<dialog>` that gets its backdrop, focus trap, Escape and focus restoration from the browser and makes the page inert; the popup is a `manual` popover that gets only the top layer from the browser and hangs from a control while the page stays live. `popover="auto"` would hand back light-dismiss for free, but is not used because iOS 17–18.2 ignores a tap outside a popover, so the backdrop owns dismissal. The `hidePopover()` call on close is what lets the element stay mounted between openings |
+
+### 70. `FormaInputScope` ✅
+
+| | |
+|---|---|
+| **Old pattern** | None — input ownership was decided per component by whichever listener ran first |
+| **Used in** | A host or a component that declares an input scope declaratively: a region that routes its own keys, a surface held active while it is open, a modal barrier. The library's own components register with the router from their code-behind and do not need it |
+| **Parameters** | `InputProfile Profile`, `bool Active`, `RenderFragment? ChildContent`, `EventCallback<InputAction> OnAction`, `EventCallback<InputDismissal> OnDismiss`, plus captured pass-through attributes for the element. Public `Element` |
+| **Blazor approach** | Renders one element and registers it with the input router as a scope carrying the profile's routes, boundaries and ambient behaviour. While `Active`, the scope is in the active ordering and receives Escape, a press away and close requests when it is foremost; each resolved action arrives through `OnAction` with the input described by its family, and each dismissal through `OnDismiss` with the action the profile declared and the reason. A changed profile is pushed to the router; renders that overlap are serialized so the scope never registers twice |
+| **Notes** | The design lives in `docs/input-routing.md`. A profile is a record, so a page holds it as a static field rather than building one per render |
+
+### 71. `FormaInputInspector` ✅
+
+| | |
+|---|---|
+| **Old pattern** | None |
+| **Used in** | The Showcase's `FormaInputInspector` page under Debugging, and any host debugging why an input went where it did |
+| **Parameters** | Captured pass-through attributes for the panel. Public `Decision` and `IsPaused` |
+| **Blazor approach** | Its script re-resolves every key, press and wheel turn on the page without dispatching it and reports the decision — owner, precedence, action, reason, what broke a tie, whether the bindings are defaults or the host's, suppression — together with the active ordering and the rule that placed each entry. The panel draws the input as keycaps with its family's glyph, the precedence as a tinted `FormaStatusBadge`, the active ordering foremost first with the foremost entry lit, and the eight decisions before it as a recent list; a `FormaToolbar` pauses and clears it. The latest decision is a live region |
+| **Notes** | Wheel turns are reported at most ten times a second so the panel stays readable during a scroll. The panel is read-only and registers no scope of its own |
 
 ---
 
