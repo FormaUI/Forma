@@ -44,7 +44,7 @@
             var cut = ctx.Render(@<FormaComposerImageDialog Opened="true" />);
 
             // Assert
-            Assert.False(cut.FindComponent<FormaModal>().Instance.Options.CloseOnConfirm);
+            Assert.False(cut.FindComponent<FormaDialog>().Instance.Options.CloseOnConfirm);
         }
 
         [Theory]

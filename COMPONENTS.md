@@ -7,7 +7,7 @@
 >
 > Target location: `Forma.Blazor/Components/`
 >
-> **Naming convention:** All components use the `Forma` prefix for their tag names (e.g., `<FormaModal>`,
+> **Naming convention:** All components use the `Forma` prefix for their tag names (e.g., `<FormaDialog>`,
 > `<FormaTabs>`) to avoid clashes with third-party libraries. CSS classes use the `forma-` prefix.
 > C# types (enums, services) rely on namespaces for disambiguation and don't carry the prefix.
 
@@ -48,9 +48,9 @@ Forma.Blazor/Components/
 │   ├── ✅ FormaPageTitle.razor / .razor.cs
 │   └── ✅ FormaPageHead.razor / .razor.cs
 ├── (5 / 6) Feedback/
-│   ├── ✅ FormaModal.razor / .razor.cs / .razor.js
-│   ├── ✅ FormaModal.razor.css
-│   ├── ModalSize.cs
+│   ├── ✅ FormaDialog.razor / .razor.cs
+│   ├── ✅ FormaDialog.razor.css
+│   ├── DialogSize.cs
 │   ├── ✅ FormaConfirmDialog.razor / .razor.cs
 │   ├── ✅ FormaConfirmDialog.razor.css
 │   ├── ✅ FormaToastContainer.razor / .razor.cs
@@ -189,14 +189,14 @@ These components form the shell of a page. Build first.
 | **Parameters** | `RenderFragment ChildContent` containing `FormaTab` children, `string? ActiveTabId` and `EventCallback<string> ActiveTabIdChanged` for caller-controlled selection, `string? Label`. Each `FormaTab` has `string Title` (required, validated), `Icon? Icon` (drawn by `FormaIcon`), `string? TabId` (generated when omitted), `bool Trailing` (sits the header at the far end of the strip, with every trailing tab after it), `RenderFragment ChildContent` |
 | **Blazor approach** | Interactive component. `FormaTabs` provides `CascadingValue` of itself; `FormaTab` children register/unregister via `CascadingParameter`. WAI-ARIA `tablist`/`tab`/`tabpanel` roles, `aria-selected`, `aria-controls`. Show/hide panes with CSS `::deep`. No JS needed. Code-behind in `.razor.cs` |
 
-### 4. `FormaModal` ✅
+### 4. `FormaDialog` ✅
 
 | | |
 |---|---|
 | **Old pattern** | `Modal('#divId')` / `CloseModal()` — shows a `<div>` overlay with content from hidden divs. Stacking z-index, Escape key to close |
 | **Used in** | Every admin page — new page modal, help modals, notes modals, folder dialogs, invoice modals, options editor |
-| **Parameters** | `bool Opened` (required), `EventCallback OnClose` (required), `string? Title`, `ModalSize Size` (Small/Medium/Large/ExtraLarge/Full, default Medium), `RenderFragment? Body`, `RenderFragment? Footer`, `string? ConfirmText`, `string? CancelText`, `EventCallback OnConfirm`, `EventCallback OnCancel`, `ModalOptions Options` (`CloseOnBackdropClick`, `ShowCancelAction`, `ShowConfirmAction`, `CloseOnCancel`, `CloseOnConfirm` — all default `true`) |
-| **Blazor approach** | Uses native `<dialog>` element with minimal JS interop (`FormaModal.razor.js`). Supports custom footer content, built-in localized footer actions, or both together. Uses logical CSS so footer/action alignment works in both RTL and LTR. Sealed `IAsyncDisposable` component with code-behind in `.razor.cs` |
+| **Parameters** | `bool Opened` (required), `EventCallback OnClose` (required), `string? Title`, `DialogSize Size` (Small/Medium/Large/ExtraLarge/Full, default Medium), `RenderFragment? Body`, `RenderFragment? Footer`, `string? ConfirmText`, `string? CancelText`, `EventCallback OnConfirm`, `EventCallback OnCancel`, `DialogOptions Options` (`CloseOnBackdropClick`, `ShowCancelAction`, `ShowConfirmAction`, `CloseOnCancel`, `CloseOnConfirm` — all default `true`) |
+| **Blazor approach** | Uses native `<dialog>` element with minimal JS interop (`Modal.js`). Supports custom footer content, built-in localized footer actions, or both together. Uses logical CSS so footer/action alignment works in both RTL and LTR. Sealed `IAsyncDisposable` component with code-behind in `.razor.cs` |
 
 ### 5. `FormaConfirmDialog` ✅
 
@@ -205,7 +205,7 @@ These components form the shell of a page. Build first.
 | **Old pattern** | `AreYouSure(this, 'message')` — custom confirm that returns bool. Used on delete buttons, destructive actions |
 | **Used in** | Every page with delete/remove actions (list pages bulk delete, individual row delete, design change, template swap) |
 | **Parameters** | Component is service-driven (no public message/label parameters). Dialog requests are sent via `IConfirmDialogService.ConfirmAsync(string message, string confirmText, string cancelText)` — all arguments validated non-empty |
-| **Blazor approach** | Built on `FormaModal` with explicit confirm/cancel actions supplied by the confirm component (modal default actions disabled for this case). Uses `IConfirmDialogService : INotifyStateChanged` beside its `ConfirmDialogService` in `Forma.Features.Feedback`, registered via DI, returning `Task<bool>`. Service composes `StateNotifier` for async subscriber notification. Sealed `IDisposable` component with code-behind in `.razor.cs` |
+| **Blazor approach** | Built on `FormaDialog` with explicit confirm/cancel actions supplied by the confirm component (the dialog's default actions disabled for this case). Uses `IConfirmDialogService : INotifyStateChanged` beside its `ConfirmDialogService` in `Forma.Features.Feedback`, registered via DI, returning `Task<bool>`. Service composes `StateNotifier` for async subscriber notification. Sealed `IDisposable` component with code-behind in `.razor.cs` |
 
 ### 6. `FormaToast` ✅
 
@@ -330,7 +330,7 @@ These components form the shell of a page. Build first.
 | **Old pattern** | EasePick CDN library with Hebrew locale, year dropdown, reset button, min-date lock |
 | **Used in** | coupons (start/end dates) |
 | **Parameters** | `@bind-Value` (DateOnly?), `@bind-StartDate` / `@bind-EndDate` (DateOnly?), `string Label` (required, validated), `DateOnly? MinDate`, `DateOnly? MaxDate`, `bool ShowPresets` (default true), `EventCallback OnSelectionComplete`, `bool UseNonGregorianMonths`, `AdditionalAttributes` |
-| **Popup placement** | The calendar is a `popover`, so it renders in the **top layer** and no scrolling or clipping ancestor can cut it off — it works inside a grid's scroll region, a modal body, or any `overflow: auto` box. The top layer keeps no layout tie to the trigger, so the shared `wwwroot/scripts/behaviours/AnchoredPopup.js` behaviour measures and applies the position: it hangs from the trigger's inline-start edge (mirrored in RTL), flips above when there is no room below, clamps into the viewport, and follows scroll and resize. One positioning path for every browser rather than a CSS/JS split. That behaviour is deliberately component-agnostic, and `FormaSelect`, `FormaMultiSelect` and `FormaDropDownMenu` share it. `popover="manual"` keeps the existing backdrop as the dismissal mechanism, which also sidesteps the iOS 17–18.2 bug where a popover ignores a tap outside it |
+| **Popup placement** | The calendar is a `popover`, so it renders in the **top layer** and no scrolling or clipping ancestor can cut it off — it works inside a grid's scroll region, a dialog body, or any `overflow: auto` box. The top layer keeps no layout tie to the trigger, so the shared `wwwroot/scripts/behaviours/AnchoredPopup.js` behaviour measures and applies the position: it hangs from the trigger's inline-start edge (mirrored in RTL), flips above when there is no room below, clamps into the viewport, and follows scroll and resize. One positioning path for every browser rather than a CSS/JS split. That behaviour is deliberately component-agnostic, and `FormaSelect`, `FormaMultiSelect` and `FormaDropDownMenu` share it. `popover="manual"` keeps the existing backdrop as the dismissal mechanism, which also sidesteps the iOS 17–18.2 bug where a popover ignores a tap outside it |
 | **Blazor approach** | A bespoke calendar rather than `InputDate`, because a native `<input type="date">` offers no range selection, no presets, and no non-Gregorian months. A `<button>` trigger opens an anchored popover holding one calendar panel, or two side by side once `StartDateChanged` or `EndDateChanged` is bound, which is what puts the picker in range mode. Months come from `CultureInfo.CurrentCulture`, and `UseNonGregorianMonths` switches to the culture's own calendar — the Hebrew calendar under `he` — by cloning `DateTimeFormatInfo` onto it. `MinDate` greater than `MaxDate` throws from `OnParametersSet` |
 
 ### 16. `FormaSlider` ✅
@@ -446,7 +446,7 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Old pattern** | Modal with `<textarea>` for admin notes on orders/leads, save button, timestamp display |
 | **Used in** | order detail, lead detail |
 | **Parameters** | `string? Notes`, `EventCallback<string> OnSave` |
-| **Blazor approach** | `FormaModal` containing `FormaTextArea` + save button. Simple composition |
+| **Blazor approach** | `FormaDialog` containing `FormaTextArea` + save button. Simple composition |
 
 ### 26. `FormaPermissionMatrix`
 
@@ -500,14 +500,14 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Old pattern** | Google Fonts grid with Hebrew sample text preview, click-to-select |
 | **Used in** | design settings, page editor |
 | **Parameters** | `@bind-Value` (string font name), `IEnumerable<FontInfo> Fonts` |
-| **Blazor approach** | Searchable grid inside `FormaModal`. Each cell shows font name + sample text styled with that font. Load font CSS on-demand |
+| **Blazor approach** | Searchable grid inside `FormaDialog`. Each cell shows font name + sample text styled with that font. Load font CSS on-demand |
 
 ### 32. `FormaButton` ✅
 
 | | |
 |---|---|
 | **Old pattern** | `.btn`, `.btn-primary`, `.btn-sec`, `.btn-thrd`, `.btn-mini`, `.btn-load` (fa-3.6.5.css) — the shared button vocabulary every admin page's action bar, modal footer, and grid row built on top of |
-| **Used in** | Single source of truth for buttons across the library — `FormaDataGrid` row/inline-edit actions, and the retrofit target for `FormaModal`, `FormaConfirmDialog`, `FormaPagination`, and `FormaDatePicker` |
+| **Used in** | Single source of truth for buttons across the library — `FormaDataGrid` row/inline-edit actions, and the retrofit target for `FormaDialog`, `FormaConfirmDialog`, `FormaPagination`, and `FormaDatePicker` |
 | **Parameters** | `ButtonVariant Variant` (Secondary/Primary/Tertiary/Danger/Ghost, default Secondary), `ButtonSize Size` (Normal/Mini, default Normal), `ButtonType Type` (Button/Submit/Reset, default Button), `bool IconOnly`, `bool Busy`, `bool Disabled`, `EventCallback<MouseEventArgs> OnClick`, `RenderFragment? ChildContent`, plus captured pass-through attributes |
 | **Blazor approach** | Plain `<button>` with a computed CSS class per variant/size. `Busy` announces itself via `aria-busy`/`aria-disabled` and blocks the click handler instead of using the native `disabled` attribute, so a busy button stays focusable and keeps its place in the tab order. Sealed component with code-behind in `.razor.cs` |
 
@@ -563,7 +563,7 @@ These are more complex, possibly page-specific, but still benefit from being com
 | | |
 |---|---|
 | **Old pattern** | The `×` dismiss control repeated across `admin/pops/*.aspx` modal headers and notification strips |
-| **Used in** | Single source of truth for dismiss controls — `FormaModal`'s header, `FormaToastContainer`'s toasts, `FormaSelectionToolbar`'s clear-selection control |
+| **Used in** | Single source of truth for dismiss controls — `FormaDialog`'s header, `FormaToastContainer`'s toasts, `FormaSelectionToolbar`'s clear-selection control |
 | **Parameters** | `string Label` (required — the accessible name, which differs per use: close, dismiss, clear selection), `ButtonSize Size`, `bool Disabled`, `EventCallback<MouseEventArgs> OnClick`, plus captured pass-through attributes |
 | **Blazor approach** | A thin wrapper over `<FormaButton Variant="Ghost" IconOnly>` supplying the one X glyph, so it owns no colours of its own and inherits the ghost variant's treatment and the icon-only square sizing. `Label` is required rather than defaulted because a wrong accessible name is worse than an obvious compile error, and the three call sites genuinely differ. Ships no `.razor.css` — every visual decision belongs to `FormaButton` |
 | **Notes** | Before this existed the three call sites had each reimplemented `.forma-button-ghost` verbatim and drifted: two drew a 14×14 SVG while the toast used the `&times;` entity, and the focus ring was `--focus-color` against `FormaButton`'s `--main-color`. Retinting for a saturated surface (the toast) goes through `--forma-button-ghost-*-color` knobs rather than a fork |
@@ -738,7 +738,7 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Old pattern** | The preview pane of `pops/images.aspx` — clicking a library entry to actually look at it |
 | **Used in** | The promise #35 already makes and does not own: showing whatever a chosen resource turns out to be. That belongs here, so the picker, the manager (#54) and the explorer's enlarge (#53) show one preview implementation rather than three |
 | **Parameters** | `string Source` (required), `IReadOnlyList<string>? Siblings`, `EventCallback<string> OnNavigate`, `bool ShowMetadata`, `bool ZoomOnWheelGesture = true`, `RenderFragment<string>? UnsupportedTemplate`. The caller passes an address, not a resolved resource — a component handed a `ResourceInfo` would need every caller to resolve one first, which is the provider's job. `ResourceInfo` (`Source`, `Name`, `Size`, `CreatedAt`, `ModifiedAt`) and `IResourceProvider` live in `Forma.Framework.Resources`, which carries no ASP.NET Core reference — so a converting package stays a plain class library. Sizes and durations are written for a reader by `ResourceFormatter`, which a view calls when it displays one rather than the model carrying a preformatted string. What a resource **is** is carried by its type rather than by an enum: `FolderResourceInfo` and `FileResourceInfo` split container from content, and `ImageResourceInfo`, `VideoResourceInfo`, `AudioResourceInfo`, `DocumentResourceInfo` and `ArchiveResourceInfo` refine the file branch, each owning the detail it alone has. `IVisualResource` and `ITimedResource` cross the branch for consumers that care only about pixels or running time. Named for resources rather than media because the viewer renders documents too |
-| **Blazor approach** | An ordered chain of `IResourceProvider`s resolves the address into a `ResourceInfo`, mirroring `FormaVideoPlayer`'s provider chain: the first to claim it decides what the resource is, and the viewer owns the markup for every kind, so a converting package never ships Razor or CSS. Resolution runs once per address rather than once per render. Providers the host registered are tried first; `BrowserResourceProvider` comes last and claims only what a browser renders unaided, mapping the media type onto the matching resource type, so **an address no provider claims degrades to a type glyph, the name, the size when one is known, and a download link** rather than a broken embed. A `MarkupResourceInfo` is rendered as trusted markup, so a converting provider must sanitise its output. A `DocumentResourceInfo` whose content type is `text/*` is framed with `sandbox=""` — an opaque origin, withholding scripts, forms and navigation — because uploaded HTML is untrusted; anything else goes to `<object>` with a new-tab link as fallback content. With `Siblings` supplied the viewer steps through the set, resolving the horizontal arrow keys through `IsRightToLeft`; the host modal keeps `Escape` |
+| **Blazor approach** | An ordered chain of `IResourceProvider`s resolves the address into a `ResourceInfo`, mirroring `FormaVideoPlayer`'s provider chain: the first to claim it decides what the resource is, and the viewer owns the markup for every kind, so a converting package never ships Razor or CSS. Resolution runs once per address rather than once per render. Providers the host registered are tried first; `BrowserResourceProvider` comes last and claims only what a browser renders unaided, mapping the media type onto the matching resource type, so **an address no provider claims degrades to a type glyph, the name, the size when one is known, and a download link** rather than a broken embed. A `MarkupResourceInfo` is rendered as trusted markup, so a converting provider must sanitise its output. A `DocumentResourceInfo` whose content type is `text/*` is framed with `sandbox=""` — an opaque origin, withholding scripts, forms and navigation — because uploaded HTML is untrusted; anything else goes to `<object>` with a new-tab link as fallback content. With `Siblings` supplied the viewer steps through the set, resolving the horizontal arrow keys through `IsRightToLeft`; the host dialog keeps `Escape` |
 | **Converting packages** | `Forma.AddOns.Resources.Markdown` (Markdig) and `Forma.AddOns.Resources.Office` (OfficeIMO) ship separately and return `MarkupResourceInfo`, so neither Markdig nor OfficeIMO lands in the package every consumer downloads. Each reads its bytes through an `IResourceContentReader` the host implements, so a converting package never assumes where a file lives, and sanitises its output with `HtmlSanitizer` before returning it. A host registers them like any other service — `AddScoped<IResourceProvider, …>()` — and without them a `DocumentResourceInfo` still works for whatever the browser handles natively |
 | **Zoom and pan** | Settled: the frame is a plain scrollable region (`overflow: auto`) rather than a transform-driven canvas. Touch and pen pan it natively, and `touch-action: pan-x pan-y pinch-zoom` hands pinch-to-zoom to the platform itself — the exact case CSS was expected to handle worst turned out not to need JS at all. The one gap native scrolling doesn't cover is a mouse click-drag, so a small colocated `.razor.js` adds that, gated to `pointerType === 'mouse'` so it never fights the browser's own touch scrolling. Zoom level moves in five fixed steps (100–400%) through on-screen +/− buttons and Ctrl with a wheel rolled over the image, through the shared wheel behaviour; the plain wheel keeps scrolling a zoomed image, as it does anywhere |
 | **Notes** | **Viewing only — crop, rotate and resize are editing** and belong to `FormaImageEditor` (#57), even though Coi's `jcrop` widget sat on this same preview. A viewer that quietly mutates the file is a different component with a different contract, and folding it in here is how this one would stop being safe to open on anything |
@@ -888,16 +888,16 @@ Components are ordered by dependency and reuse frequency:
 
 | Phase | Components | Rationale |
 |---|---|---|
-| **Phase 1** | `FormaModal` ✅, `FormaConfirmDialog` ✅, `FormaToast` ✅ | Infrastructure — everything depends on modals and notifications |
+| **Phase 1** | `FormaDialog` ✅, `FormaConfirmDialog` ✅, `FormaToast` ✅ | Infrastructure — everything depends on dialogs and notifications |
 | **Phase 2** | `FormaPageTitle` ✅, `FormaSearchToolbar` ✅, `FormaTabs` ✅ | Layout — the shell of a page |
 | **Phase 3** | `FormaInput` ✅, `FormaToggleSwitch` ✅, `FormaPasswordBox` ✅, `FormaCurrencyInput`, `FormaSlider` ✅, `FormaDatePicker` ✅, `FormaSelect` ✅ | Form inputs — needed before building any edit forms |
 | **Phase 4** | `FormaDataGrid<TItem>` ✅, `FormaSelectionToolbar` ✅, `FormaStatusBadge` ✅, `FormaCapacityIndicator`, `FormaPagination` ✅ | Data display — needed for list pages |
 | **Phase 5** | `FormaSortableList<TItem>` ✅, `FormaMultiSelect`  ✅, `FormaCategorySelector`, `FormaDropDownMenu` ✅, `FormaColorPicker` ✅ | Interactive widgets — needed for editor pages |
 | **Phase 6** | `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components — built when their feature pages are built |
 | **Phase 7** | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor` | Complex editors — built alongside their specific pages |
-| **Phase 8** | `FormaButton` ✅ | Shared button primitive — built after the fact and retrofitted onto `FormaDataGrid`, `FormaModal`, `FormaConfirmDialog`, `FormaPagination`, `FormaDatePicker` as the single source of truth for buttons |
+| **Phase 8** | `FormaButton` ✅ | Shared button primitive — built after the fact and retrofitted onto `FormaDataGrid`, `FormaDialog`, `FormaConfirmDialog`, `FormaPagination`, `FormaDatePicker` as the single source of truth for buttons |
 | **Phase 9** | `FormaCheckBox` ✅ | Shared checkbox primitive — built after the fact and retrofitted onto `FormaDataGrid` and `FormaMultiSelect` as the single source of truth for checkboxes |
-| **Phase 10** | `FormaCloseButton` ✅ | Shared dismiss primitive — built after the fact and retrofitted onto `FormaModal`, `FormaToastContainer` and `FormaSelectionToolbar` as the single source of truth for the `×` control |
+| **Phase 10** | `FormaCloseButton` ✅ | Shared dismiss primitive — built after the fact and retrofitted onto `FormaDialog`, `FormaToastContainer` and `FormaSelectionToolbar` as the single source of truth for the `×` control |
 | **Phase 11** | `FormaField` ✅, `FormaTextArea` ✅ | Shared field chrome — extracted from `FormaInput` so the floating label, focus ring and validation styling live once, then `FormaTextArea` built on it. `FormaPasswordBox` ✅ composes it; `FormaCurrencyInput` will too rather than restating it |
 | **Phase 12** | `FormaEyeButton` ✅ | Shared reveal primitive — built after the fact and retrofitted onto `FormaPasswordBox`, which had hand-rolled the ghost icon button it now uses |
 | **Phase 13** | `FormaDeleteButton`, `FormaUpdateButton`, `FormaEditButton`, `FormaAddButton`, `FormaDuplicateButton`, `FormaRefreshButton`, `FormaShareButton`, `FormaPublishButton` | The rest of the icon-button vocabulary — the same thin wrapper over `FormaButton`, one glyph each, so a row's actions stop being ad-hoc markup per page |

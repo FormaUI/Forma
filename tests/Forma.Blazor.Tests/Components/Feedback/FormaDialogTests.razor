@@ -2,21 +2,21 @@
 @code {
     public sealed class Component
     {
-        private static readonly ModalOptions HideConfirmAction =
+        private static readonly DialogOptions HideConfirmAction =
             new() { ShowConfirmAction = false };
 
-        private static readonly ModalOptions HideFooterActions =
+        private static readonly DialogOptions HideFooterActions =
             new() { ShowCancelAction = false, ShowConfirmAction = false };
 
         [Fact]
         public void Should_render_dialog_element()
         {
             // Arrange
-            using var ctx = new FormaModalTests();
+            using var ctx = new FormaDialogTests();
 
             // Act
             var cut = ctx.Render(
-                @<FormaModal Opened="false" OnClose="@(() => { })" />);
+                @<FormaDialog Opened="false" OnClose="@(() => { })" />);
 
             // Assert
             cut.Find("dialog");
@@ -26,12 +26,12 @@
         public void Should_render_title_in_header_when_provided()
         {
             // Arrange
-            using var ctx = new FormaModalTests();
+            using var ctx = new FormaDialogTests();
 
             // Act
             var cut = ctx.Render(
-                @<FormaModal Opened="false" OnClose="@(() => { })" Title="Test Title" />);
-            var header = cut.Find(".forma-modal-header h5");
+                @<FormaDialog Opened="false" OnClose="@(() => { })" Title="Test Title" />);
+            var header = cut.Find(".forma-dialog-header h5");
 
             // Assert
             Assert.Equal("Test Title", header.TextContent);
@@ -41,28 +41,28 @@
         public void Should_not_render_header_when_title_is_null()
         {
             // Arrange
-            using var ctx = new FormaModalTests();
+            using var ctx = new FormaDialogTests();
 
             // Act
             var cut = ctx.Render(
-                @<FormaModal Opened="false" OnClose="@(() => { })" />);
+                @<FormaDialog Opened="false" OnClose="@(() => { })" />);
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-modal-header"));
+            Assert.Empty(cut.FindAll(".forma-dialog-header"));
         }
 
         [Fact]
         public void Should_render_child_content()
         {
             // Arrange
-            using var ctx = new FormaModalTests();
+            using var ctx = new FormaDialogTests();
 
             // Act
             var cut = ctx.Render(
-                @<FormaModal Opened="false" OnClose="@(() => { })">
+                @<FormaDialog Opened="false" OnClose="@(() => { })">
                     <Body><p>Hello Modal</p></Body>
-                </FormaModal>);
-            var body = cut.Find(".forma-modal-body");
+                </FormaDialog>);
+            var body = cut.Find(".forma-dialog-body");
 
             // Assert
             Assert.Contains("Hello Modal", body.InnerHtml, StringComparison.Ordinal);
@@ -72,14 +72,14 @@
         public void Should_render_footer_content_when_provided()
         {
             // Arrange
-            using var ctx = new FormaModalTests();
+            using var ctx = new FormaDialogTests();
 
             // Act
             var cut = ctx.Render(
-                @<FormaModal Opened="false" OnClose="@(() => { })">
+                @<FormaDialog Opened="false" OnClose="@(() => { })">
                     <Footer><button>Save</button></Footer>
-                </FormaModal>);
-            var footer = cut.Find(".forma-modal-footer");
+                </FormaDialog>);
+            var footer = cut.Find(".forma-dialog-footer");
 
             // Assert
             Assert.Contains("Save", footer.InnerHtml, StringComparison.Ordinal);
@@ -89,26 +89,26 @@
         public void Should_not_render_footer_when_not_provided()
         {
             // Arrange
-            using var ctx = new FormaModalTests();
+            using var ctx = new FormaDialogTests();
 
             // Act
             var cut = ctx.Render(
-                @<FormaModal Opened="false" OnClose="@(() => { })" Options="HideFooterActions" />);
+                @<FormaDialog Opened="false" OnClose="@(() => { })" Options="HideFooterActions" />);
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-modal-footer"));
+            Assert.Empty(cut.FindAll(".forma-dialog-footer"));
         }
 
         [Fact]
         public void Should_render_default_footer_actions_when_enabled()
         {
             // Arrange
-            using var ctx = new FormaModalTests();
+            using var ctx = new FormaDialogTests();
 
             // Act
             var cut = ctx.Render(
-                @<FormaModal Opened="false" OnClose="@(() => { })" />);
-            var footer = cut.Find(".forma-modal-footer");
+                @<FormaDialog Opened="false" OnClose="@(() => { })" />);
+            var footer = cut.Find(".forma-dialog-footer");
 
             // Assert
             Assert.Multiple(() =>
@@ -122,14 +122,14 @@
         public void Should_render_footer_content_and_default_actions_together_when_enabled()
         {
             // Arrange
-            using var ctx = new FormaModalTests();
+            using var ctx = new FormaDialogTests();
 
             // Act
             var cut = ctx.Render(
-                @<FormaModal Opened="false" OnClose="@(() => { })">
+                @<FormaDialog Opened="false" OnClose="@(() => { })">
                     <Footer><span>Custom</span></Footer>
-                </FormaModal>);
-            var footer = cut.Find(".forma-modal-footer");
+                </FormaDialog>);
+            var footer = cut.Find(".forma-dialog-footer");
 
             // Assert
             Assert.Multiple(() =>
@@ -144,12 +144,12 @@
         public void Should_render_close_only_when_confirm_action_is_hidden()
         {
             // Arrange
-            using var ctx = new FormaModalTests();
+            using var ctx = new FormaDialogTests();
 
             // Act
             var cut = ctx.Render(
-                @<FormaModal Opened="false" OnClose="@(() => { })" Options="HideConfirmAction" />);
-            var footer = cut.Find(".forma-modal-footer");
+                @<FormaDialog Opened="false" OnClose="@(() => { })" Options="HideConfirmAction" />);
+            var footer = cut.Find(".forma-dialog-footer");
 
             // Assert
             Assert.Multiple(() =>
@@ -163,31 +163,31 @@
         public void Should_add_no_header_class_when_title_is_null()
         {
             // Arrange
-            using var ctx = new FormaModalTests();
+            using var ctx = new FormaDialogTests();
 
             // Act
             var cut = ctx.Render(
-                @<FormaModal Opened="false" OnClose="@(() => { })" />);
-            var body = cut.Find(".forma-modal-body");
+                @<FormaDialog Opened="false" OnClose="@(() => { })" />);
+            var body = cut.Find(".forma-dialog-body");
 
             // Assert
             Assert.Contains("no-header", body.ClassList);
         }
 
         [Theory]
-        [InlineData(ModalSize.Small, "forma-modal-small")]
-        [InlineData(ModalSize.Medium, "forma-modal-medium")]
-        [InlineData(ModalSize.Large, "forma-modal-large")]
-        [InlineData(ModalSize.ExtraLarge, "forma-modal-extralarge")]
-        [InlineData(ModalSize.Full, "forma-modal-full")]
-        public void Should_apply_size_class(ModalSize size, string expectedClass)
+        [InlineData(DialogSize.Small, "forma-dialog-small")]
+        [InlineData(DialogSize.Medium, "forma-dialog-medium")]
+        [InlineData(DialogSize.Large, "forma-dialog-large")]
+        [InlineData(DialogSize.ExtraLarge, "forma-dialog-extralarge")]
+        [InlineData(DialogSize.Full, "forma-dialog-full")]
+        public void Should_apply_size_class(DialogSize size, string expectedClass)
         {
             // Arrange
-            using var ctx = new FormaModalTests();
+            using var ctx = new FormaDialogTests();
 
             // Act
             var cut = ctx.Render(
-                @<FormaModal Opened="false" OnClose="@(() => { })" Size="@size" />);
+                @<FormaDialog Opened="false" OnClose="@(() => { })" Size="@size" />);
             var dialog = cut.Find("dialog");
 
             // Assert
@@ -198,27 +198,27 @@
         public void Should_default_to_medium_size()
         {
             // Arrange
-            using var ctx = new FormaModalTests();
+            using var ctx = new FormaDialogTests();
 
             // Act
             var cut = ctx.Render(
-                @<FormaModal Opened="false" OnClose="@(() => { })" />);
+                @<FormaDialog Opened="false" OnClose="@(() => { })" />);
             var dialog = cut.Find("dialog");
 
             // Assert
-            Assert.Contains("forma-modal-medium", dialog.ClassList);
+            Assert.Contains("forma-dialog-medium", dialog.ClassList);
         }
 
         [Fact]
         public void Should_have_close_button_with_aria_label()
         {
             // Arrange
-            using var ctx = new FormaModalTests();
+            using var ctx = new FormaDialogTests();
 
             // Act
             var cut = ctx.Render(
-                @<FormaModal Opened="false" OnClose="@(() => { })" Title="Test" />);
-            var closeBtn = cut.Find(".forma-modal-header button");
+                @<FormaDialog Opened="false" OnClose="@(() => { })" Title="Test" />);
+            var closeBtn = cut.Find(".forma-dialog-header button");
 
             // Assert
             Assert.Equal("Close", closeBtn.GetAttribute("aria-label"));

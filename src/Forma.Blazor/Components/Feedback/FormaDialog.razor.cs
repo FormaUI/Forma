@@ -9,31 +9,31 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>A dialog rendered in the browser's top layer, with an optional header, footer actions, and backdrop dismissal.</summary>
-public sealed partial class FormaModal : IAsyncDisposable
+public sealed partial class FormaDialog : IAsyncDisposable
 {
     private ElementReference _dialogElement;
     private Modal _modal = default!;
     private bool _isOpen;
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
-    [Inject] private IStringLocale<FormaModal> L { get; set; } = default!;
+    [Inject] private IStringLocale<FormaDialog> L { get; set; } = default!;
 
-    /// <summary>Whether the modal is currently open.</summary>
+    /// <summary>Whether the dialog is currently open.</summary>
     [Parameter, EditorRequired] public bool Opened { get; set; }
 
-    /// <summary>Fired when the modal is closed (by Escape, backdrop click, or close button).</summary>
+    /// <summary>Fired when the dialog is closed (by Escape, backdrop click, or close button).</summary>
     [Parameter, EditorRequired] public EventCallback OnClose { get; set; }
 
-    /// <summary>Modal title shown in the header. If null, the header is hidden.</summary>
+    /// <summary>Title shown in the header. If null, the header is hidden.</summary>
     [Parameter] public string? Title { get; set; }
 
     /// <summary>Size variant controlling the dialog width.</summary>
-    [Parameter] public ModalSize Size { get; set; } = ModalSize.Medium;
+    [Parameter] public DialogSize Size { get; set; } = DialogSize.Medium;
 
     /// <summary>Default close and footer-action behavior.</summary>
-    [Parameter] public ModalOptions Options { get; set; } = ModalOptions.Default;
+    [Parameter] public DialogOptions Options { get; set; } = DialogOptions.Default;
 
-    /// <summary>Main content of the modal.</summary>
+    /// <summary>Main content of the dialog.</summary>
     [Parameter] public RenderFragment? Body { get; set; }
 
     /// <summary>Optional footer content (typically action buttons).</summary>
@@ -55,7 +55,7 @@ public sealed partial class FormaModal : IAsyncDisposable
     private bool HasDefaultFooterActions => Options.ShowCancelAction || Options.ShowConfirmAction;
     private bool ShowFooter => Footer is not null || HasDefaultFooterActions;
     [SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase")]
-    private string SizeClass => $"forma-modal-{Size.ToString().ToLowerInvariant()}";
+    private string SizeClass => $"forma-dialog-{Size.ToString().ToLowerInvariant()}";
     private string ConfirmLabel => ConfirmText ?? L["Confirm"];
     private string CancelLabel =>
         CancelText ?? (Options.ShowCancelAction && !Options.ShowConfirmAction ? L["Close"] : L["Cancel"]);

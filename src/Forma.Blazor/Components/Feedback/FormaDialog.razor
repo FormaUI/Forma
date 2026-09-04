@@ -1,31 +1,31 @@
 <dialog @ref="_dialogElement"
-        class="forma-modal @SizeClass"
+        class="forma-dialog @SizeClass"
         @onclose="HandleDialogClose">
-    <div class="forma-modal-dialog">
+    <div class="forma-dialog-dialog">
         @if (ShowHeader)
         {
-            <header class="forma-modal-header">
+            <header class="forma-dialog-header">
                 <h5>@Title</h5>
                 <FormaCloseButton Label="@L["Close"]" OnClick="RequestCloseAsync" />
             </header>
         }
 
-        <div class="forma-modal-body @(ShowHeader ? "" : "no-header")">
+        <div class="forma-dialog-body @(ShowHeader ? "" : "no-header")">
             @Body
         </div>
 
         @if (ShowFooter)
         {
-            <footer class="forma-modal-footer">
+            <footer class="forma-dialog-footer">
                 @if (Footer is not null)
                 {
-                    <div class="forma-modal-footer-extra">
+                    <div class="forma-dialog-footer-extra">
                         @Footer
                     </div>
                 }
                 @if (HasDefaultFooterActions)
                 {
-                    <div class="forma-modal-footer-actions">
+                    <div class="forma-dialog-footer-actions">
                         @if (Options.ShowCancelAction)
                         {
                             <FormaButton Variant="ButtonVariant.Secondary" OnClick="HandleDefaultCancelAsync">

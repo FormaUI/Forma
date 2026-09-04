@@ -1,14 +1,14 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "A dialog that holds the page until it is answered. It is the browser's own dialog underneath, so focus stays inside it, Escape closes it and a screen reader treats it as modal without the library reimplementing any of that.": "דו-שיח שמחזיק את העמוד עד שנענה. מתחתיו זהו הדו-שיח של הדפדפן עצמו, ולכן המיקוד נשאר בתוכו, Escape סוגר אותו וקורא מסך מתייחס אליו כמודאלי בלי שהספרייה תממש דבר מזה מחדש.",
-  "Basic Modal": "מודאל בסיסי",
-  "Open Basic Modal": "פתח מודאל בסיסי",
-  "This is a basic modal with a title and child content.": "זהו מודאל בסיסי עם כותרת ותוכן פנימי.",
+  "Basic Dialog": "דו-שיח בסיסי",
+  "Open Basic Dialog": "פתח דו-שיח בסיסי",
+  "This is a basic dialog with a title and child content.": "זהו דו-שיח בסיסי עם כותרת ותוכן פנימי.",
   "No Header (Title = null)": "ללא כותרת (Title = null)",
-  "Open Headerless Modal": "פתח מודאל ללא כותרת",
-  "This modal has no header - useful for simple alerts or custom layouts.": "למודאל הזה אין כותרת - שימושי להתראות פשוטות או לפריסות מותאמות.",
+  "Open Headerless Dialog": "פתח דו-שיח ללא כותרת",
+  "This dialog has no header - useful for simple alerts or custom layouts.": "לדו-שיח הזה אין כותרת - שימושי להתראות פשוטות או לפריסות מותאמות.",
   "Size Variants": "וריאציות גודל",
-  "This modal uses": "המודאל הזה משתמש ב-",
+  "This dialog uses": "הדו-שיח הזה משתמש ב-",
   "Custom Footer": "פוטר מותאם",
   "Open Footer Only": "פתח פוטר בלבד",
   "Open Footer + Actions": "פתח פוטר + כפתורים",
@@ -21,9 +21,9 @@
   "No Footer": "ללא פוטר",
   "Open (no footer)": "פתח (ללא פוטר)",
   "Information": "מידע",
-  "This modal has no footer - close it with Escape, backdrop click, or the X button.": "למודאל הזה אין פוטר - אפשר לסגור עם Escape, לחיצה על הרקע או כפתור X.",
+  "This dialog has no footer - close it with Escape, backdrop click, or the X button.": "לדו-שיח הזה אין פוטר - אפשר לסגור עם Escape, לחיצה על הרקע או כפתור X.",
   "Backdrop Click Disabled": "לחיצה על הרקע מבוטלת",
   "Open (no backdrop close)": "פתח (ללא סגירה בלחיצה על הרקע)",
   "Must Use X or Button": "יש להשתמש ב-X או בכפתור",
-  "Clicking the backdrop does not close this modal. Use the X button or the button below.": "לחיצה על הרקע לא סוגרת את המודאל הזה. השתמשו בכפתור X או בכפתור למטה."
+  "Clicking the backdrop does not close this dialog. Use the X button or the button below.": "לחיצה על הרקע לא סוגרת את הדו-שיח הזה. השתמשו בכפתור X או בכפתור למטה."
 }

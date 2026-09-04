@@ -26,7 +26,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
 {
     private const int DefaultPageSize = 24;
 
-    private static readonly ModalOptions DialogModalOptions = new()
+    private static readonly DialogOptions DialogOptions = new()
     {
         ShowCancelAction = false,
         ShowConfirmAction = false

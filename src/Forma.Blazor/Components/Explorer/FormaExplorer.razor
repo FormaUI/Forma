@@ -71,29 +71,29 @@
         <FormaExplorerContentArea />
     </div>
 
-    <!-- Preview Lightbox Modal -->
+    <!-- Preview Lightbox Dialog -->
     @if (_preview.Resource is { } preview)
     {
-        <FormaModal Opened="true"
-                    Size="ModalSize.ExtraLarge"
+        <FormaDialog Opened="true"
+                    Size="DialogSize.ExtraLarge"
                     Title="@preview.Name"
-                    Options="DialogModalOptions"
+                    Options="DialogOptions"
                     OnClose="_preview.Close">
             <Body>
                 <FormaFileViewer Source="@preview.Source"
                                  Siblings="_preview.Siblings"
                                  OnNavigate="HandlePreviewNavigate" />
             </Body>
-        </FormaModal>
+        </FormaDialog>
     }
 
-    <!-- Rename Modal -->
+    <!-- Rename Dialog -->
     @if (_itemManager.PendingAction is ExplorerRenameAction<IExplorerItem> rename)
     {
-        <FormaModal Opened="true"
-                    Size="ModalSize.Small"
+        <FormaDialog Opened="true"
+                    Size="DialogSize.Small"
                     Title="@RenameDialogTitle"
-                    Options="DialogModalOptions"
+                    Options="DialogOptions"
                     OnClose="_itemManager.CancelAction">
             <Body>
                 <div class="forma-explorer-dialog-field">
@@ -113,16 +113,16 @@
                     @L["Save"]
                 </FormaButton>
             </Footer>
-        </FormaModal>
+        </FormaDialog>
     }
 
-    <!-- Delete Media Modal -->
+    <!-- Delete Media Dialog -->
     @if (_itemManager.PendingAction is ExplorerBatchAction<IExplorerItem>)
     {
-        <FormaModal Opened="true"
-                    Size="ModalSize.Small"
+        <FormaDialog Opened="true"
+                    Size="DialogSize.Small"
                     Title="@L["Delete Media"]"
-                    Options="DialogModalOptions"
+                    Options="DialogOptions"
                     OnClose="_itemManager.CancelAction">
             <Body>
                 <p class="forma-explorer-delete-message">@DeleteConfirmMessage</p>
@@ -135,16 +135,16 @@
                     @L["Delete"]
                 </FormaButton>
             </Footer>
-        </FormaModal>
+        </FormaDialog>
     }
 
-    <!-- Create Folder Modal -->
+    <!-- Create Folder Dialog -->
     @if (_itemManager.PendingAction is ExplorerCreateFolderAction draft)
     {
-        <FormaModal Opened="true"
-                    Size="ModalSize.Small"
+        <FormaDialog Opened="true"
+                    Size="DialogSize.Small"
                     Title="@L["New Folder"]"
-                    Options="DialogModalOptions"
+                    Options="DialogOptions"
                     OnClose="_itemManager.CancelAction">
             <Body>
                 <div class="forma-explorer-dialog-field">
@@ -164,16 +164,16 @@
                     @L["Create"]
                 </FormaButton>
             </Footer>
-        </FormaModal>
+        </FormaDialog>
     }
 
-    <!-- Delete Folder Modal -->
+    <!-- Delete Folder Dialog -->
     @if (_itemManager.PendingAction is ExplorerBatchAction<IExplorerFolderItem>)
     {
-        <FormaModal Opened="true"
-                    Size="ModalSize.Small"
+        <FormaDialog Opened="true"
+                    Size="DialogSize.Small"
                     Title="@L["Delete Folder"]"
-                    Options="DialogModalOptions"
+                    Options="DialogOptions"
                     OnClose="_itemManager.CancelAction">
             <Body>
                 <p class="forma-explorer-delete-message">@FolderDeleteConfirmMessage</p>
@@ -186,7 +186,7 @@
                     @L["Delete"]
                 </FormaButton>
             </Footer>
-        </FormaModal>
+        </FormaDialog>
     }
 </div>
 </CascadingValue>

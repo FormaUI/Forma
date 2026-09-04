@@ -30,7 +30,7 @@
             var cut = ctx.Render(@<FormaComposerEmbedDialog Opened="true" />);
 
             // Assert
-            Assert.False(cut.FindComponent<FormaModal>().Instance.Options.CloseOnConfirm);
+            Assert.False(cut.FindComponent<FormaDialog>().Instance.Options.CloseOnConfirm);
         }
 
         [Fact]

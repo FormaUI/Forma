@@ -1,32 +1,32 @@
-@page "/modal"
-@attribute [ShowcasePage("FormaModal")]
+@page "/dialog"
+@attribute [ShowcasePage("FormaDialog")]
 @rendermode InteractiveServer
-@inject IStringLocale<FormaModalPage> L
+@inject IStringLocale<FormaDialogPage> L
 
-<h1>FormaModal</h1>
+<h1>FormaDialog</h1>
 <p class="description">@L["A dialog that holds the page until it is answered. It is the browser's own dialog underneath, so focus stays inside it, Escape closes it and a screen reader treats it as modal without the library reimplementing any of that."]</p>
 
 <div class="demo-section">
-    <h2>@L["Basic Modal"]</h2>
+    <h2>@L["Basic Dialog"]</h2>
     <div class="demo-box">
-        <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _showBasic = true">@L["Open Basic Modal"]</FormaButton>
-        <FormaModal Opened="_showBasic" OnClose="() => _showBasic = false" Title="@L["Basic Modal"]">
+        <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _showBasic = true">@L["Open Basic Dialog"]</FormaButton>
+        <FormaDialog Opened="_showBasic" OnClose="() => _showBasic = false" Title="@L["Basic Dialog"]">
             <Body>
-                <p>@L["This is a basic modal with a title and child content."]</p>
+                <p>@L["This is a basic dialog with a title and child content."]</p>
             </Body>
-        </FormaModal>
+        </FormaDialog>
     </div>
 </div>
 
 <div class="demo-section">
     <h2>@L["No Header (Title = null)"]</h2>
     <div class="demo-box">
-        <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _showNoHeader = true">@L["Open Headerless Modal"]</FormaButton>
-        <FormaModal Opened="_showNoHeader" OnClose="() => _showNoHeader = false" Options="HideConfirmAction">
+        <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _showNoHeader = true">@L["Open Headerless Dialog"]</FormaButton>
+        <FormaDialog Opened="_showNoHeader" OnClose="() => _showNoHeader = false" Options="HideConfirmAction">
             <Body>
-                <p>@L["This modal has no header - useful for simple alerts or custom layouts."]</p>
+                <p>@L["This dialog has no header - useful for simple alerts or custom layouts."]</p>
             </Body>
-        </FormaModal>
+        </FormaDialog>
     </div>
 </div>
 
@@ -40,12 +40,12 @@
         }
         @if (_activeSize is not null)
         {
-            <FormaModal Opened="true" OnClose="() => _activeSize = null" Title="@($"Size: {_activeSize}")" Size="@_activeSize.Value"
+            <FormaDialog Opened="true" OnClose="() => _activeSize = null" Title="@($"Size: {_activeSize}")" Size="@_activeSize.Value"
                       Options="HideConfirmAction">
                 <Body>
-                    <p>@L["This modal uses"] <code>Size="@_activeSize"</code>.</p>
+                    <p>@L["This dialog uses"] <code>Size="@_activeSize"</code>.</p>
                 </Body>
-            </FormaModal>
+            </FormaDialog>
         }
     </div>
 </div>
@@ -56,7 +56,7 @@
         <FormaButton OnClick="() => _showFooterOnly = true">@L["Open Footer Only"]</FormaButton>
         <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _showFooterWithActions = true">@L["Open Footer + Actions"]</FormaButton>
 
-        <FormaModal Opened="_showFooterOnly" OnClose="() => _showFooterOnly = false" Title="@L["Footer Only"]"
+        <FormaDialog Opened="_showFooterOnly" OnClose="() => _showFooterOnly = false" Title="@L["Footer Only"]"
                   Options="HideFooterActions">
             <Body>
                 <p>@L["This example shows footer content only, without default actions."]</p>
@@ -64,16 +64,16 @@
             <Footer>
                 <span class="demo-note">@L["Last updated: just now"]</span>
             </Footer>
-        </FormaModal>
+        </FormaDialog>
 
-        <FormaModal Opened="_showFooterWithActions" OnClose="() => _showFooterWithActions = false" Title="@L["Footer + Actions"]">
+        <FormaDialog Opened="_showFooterWithActions" OnClose="() => _showFooterWithActions = false" Title="@L["Footer + Actions"]">
             <Body>
                 <p>@L["This example shows both custom footer content and default actions."]</p>
             </Body>
             <Footer>
                 <span class="demo-note">@L["Tip: you can place any custom content here"]</span>
             </Footer>
-        </FormaModal>
+        </FormaDialog>
     </div>
 </div>
 
@@ -81,11 +81,11 @@
     <h2>@L["No Footer"]</h2>
     <div class="demo-box">
         <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _showNoFooter = true">@L["Open (no footer)"]</FormaButton>
-        <FormaModal Opened="_showNoFooter" OnClose="() => _showNoFooter = false" Title="@L["Information"]">
+        <FormaDialog Opened="_showNoFooter" OnClose="() => _showNoFooter = false" Title="@L["Information"]">
             <Body>
-                <p>@L["This modal has no footer - close it with Escape, backdrop click, or the X button."]</p>
+                <p>@L["This dialog has no footer - close it with Escape, backdrop click, or the X button."]</p>
             </Body>
-        </FormaModal>
+        </FormaDialog>
     </div>
 </div>
 
@@ -93,23 +93,23 @@
     <h2>@L["Backdrop Click Disabled"]</h2>
     <div class="demo-box">
         <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _showNoBackdrop = true">@L["Open (no backdrop close)"]</FormaButton>
-        <FormaModal Opened="_showNoBackdrop" OnClose="() => _showNoBackdrop = false"
+        <FormaDialog Opened="_showNoBackdrop" OnClose="() => _showNoBackdrop = false"
                     Title="@L["Must Use X or Button"]" Options="RequireExplicitClose">
             <Body>
-                <p>@L["Clicking the backdrop does not close this modal. Use the X button or the button below."]</p>
+                <p>@L["Clicking the backdrop does not close this dialog. Use the X button or the button below."]</p>
             </Body>
-        </FormaModal>
+        </FormaDialog>
     </div>
 </div>
 
 @code {
-    private static readonly ModalOptions HideConfirmAction =
+    private static readonly DialogOptions HideConfirmAction =
         new() { ShowConfirmAction = false };
 
-    private static readonly ModalOptions HideFooterActions =
+    private static readonly DialogOptions HideFooterActions =
         new() { ShowCancelAction = false, ShowConfirmAction = false };
 
-    private static readonly ModalOptions RequireExplicitClose =
+    private static readonly DialogOptions RequireExplicitClose =
         new() { CloseOnBackdropClick = false, ShowConfirmAction = false };
 
     private bool _showBasic;
@@ -118,7 +118,7 @@
     private bool _showNoBackdrop;
     private bool _showFooterOnly;
     private bool _showFooterWithActions;
-    private ModalSize? _activeSize;
+    private DialogSize? _activeSize;
 
-    private static readonly ModalSize[] _sizes = [ModalSize.Small, ModalSize.Medium, ModalSize.Large, ModalSize.ExtraLarge, ModalSize.Full];
+    private static readonly DialogSize[] _sizes = [DialogSize.Small, DialogSize.Medium, DialogSize.Large, DialogSize.ExtraLarge, DialogSize.Full];
 }

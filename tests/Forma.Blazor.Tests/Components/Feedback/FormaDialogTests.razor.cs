@@ -1,8 +1,8 @@
 namespace Forma.Blazor.Tests.Components.Feedback;
 
-public sealed partial class FormaModalTests
+public sealed partial class FormaDialogTests
 {
-    public FormaModalTests()
+    public FormaDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddJsonLocalization();

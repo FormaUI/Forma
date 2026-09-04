@@ -89,7 +89,7 @@
         }
 
         [Fact]
-        public void Should_not_render_modal_default_footer_actions()
+        public void Should_not_render_dialog_default_footer_actions()
         {
             // Arrange
             using var ctx = new FormaConfirmDialogTests();
@@ -101,7 +101,7 @@
             cut.WaitForState(() => cut.FindAll(".forma-button-danger").Count > 0);
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-modal-action"));
+            Assert.Empty(cut.FindAll(".forma-dialog-action"));
         }
 
         [Fact]
@@ -141,7 +141,7 @@
         }
 
         [Fact]
-        public async Task Should_return_false_when_closed_via_modal()
+        public async Task Should_return_false_when_closed_via_dialog()
         {
             // Arrange
             using var ctx = new FormaConfirmDialogTests();

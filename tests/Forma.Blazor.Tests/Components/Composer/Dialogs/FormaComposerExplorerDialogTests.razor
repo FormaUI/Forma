@@ -35,7 +35,7 @@
             var cut = ctx.Render(@<FormaComposerExplorerDialog Opened="true" />);
 
             // Assert
-            var modal = cut.FindComponent<Forma.Blazor.Components.Feedback.FormaModal>().Instance;
+            var modal = cut.FindComponent<Forma.Blazor.Components.Feedback.FormaDialog>().Instance;
             Assert.True(modal.Opened);
             Assert.False(modal.Options.CloseOnConfirm);
         }

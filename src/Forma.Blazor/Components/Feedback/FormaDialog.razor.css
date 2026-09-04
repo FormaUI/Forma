@@ -1,10 +1,10 @@
 /*
-    FormaModal — scoped styles
+    FormaDialog — scoped styles
     Uses the native <dialog> element for backdrop, focus trap, and Escape handling.
 */
 
 /* ── Dialog reset ── */
-dialog.forma-modal {
+dialog.forma-dialog {
     border: none;
     border-radius: var(--radius-lg);
     padding: 0;
@@ -18,56 +18,56 @@ dialog.forma-modal {
                 display 180ms ease allow-discrete;
 }
 
-dialog.forma-modal[open] {
+dialog.forma-dialog[open] {
     opacity: 1;
     transform: translateY(0) scale(1);
 }
 
 /* ── Backdrop ── */
-dialog.forma-modal::backdrop {
+dialog.forma-dialog::backdrop {
     background-color: color-mix(in srgb, var(--media-background-color) 45%, transparent);
 }
 
 @starting-style {
-    dialog.forma-modal[open] {
+    dialog.forma-dialog[open] {
         opacity: 0;
         transform: translateY(-12px) scale(0.98);
     }
 }
 
 /* ── Size variants ── */
-.forma-modal-small      { width: min(400px, 95vw); }
-.forma-modal-medium     { width: min(600px, 95vw); }
-.forma-modal-large      { width: min(800px, 95vw); }
-.forma-modal-extralarge { width: min(1000px, 95vw); }
-.forma-modal-full {
+.forma-dialog-small      { width: min(400px, 95vw); }
+.forma-dialog-medium     { width: min(600px, 95vw); }
+.forma-dialog-large      { width: min(800px, 95vw); }
+.forma-dialog-extralarge { width: min(1000px, 95vw); }
+.forma-dialog-full {
     width: 95vw;
     max-height: 95vh;
 }
 
 /* ── Inner layout ── */
-.forma-modal-dialog {
+.forma-dialog-dialog {
     display: flex;
     flex-direction: column;
     max-height: 90vh;
 }
 
-.forma-modal-full .forma-modal-dialog {
+.forma-dialog-full .forma-dialog-dialog {
     max-height: 95vh;
 }
 
 /* ── Header ── */
-.forma-modal-header {
+.forma-dialog-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: var(--space-3) var(--space-5);
     border-bottom: 1px solid var(--border-color);
-    background: var(--forma-modal-chrome-background-color, var(--modal-background-color));
+    background: var(--forma-dialog-chrome-background-color, var(--modal-background-color));
     flex-shrink: 0;
 }
 
-.forma-modal-header h5 {
+.forma-dialog-header h5 {
     margin: 0;
     font-size: var(--font-size-lg);
     font-weight: 600;
@@ -75,39 +75,39 @@ dialog.forma-modal::backdrop {
 }
 
 /* ── Body ── */
-.forma-modal-body {
+.forma-dialog-body {
     padding: var(--space-5);
-    background: var(--forma-modal-background-color, var(--input-background-color));
+    background: var(--forma-dialog-background-color, var(--input-background-color));
     overflow-y: auto;
     flex: 1 1 auto;
 }
 
-.forma-modal-body.no-header {
+.forma-dialog-body.no-header {
     padding-top: var(--space-5);
 }
 
 /* ── Footer ── */
-.forma-modal-footer {
+.forma-dialog-footer {
     display: flex;
     align-items: center;
     gap: var(--space-2);
     padding: var(--space-3) var(--space-5);
     border-top: 1px solid var(--border-color);
-    background: var(--forma-modal-chrome-background-color, var(--modal-background-color));
+    background: var(--forma-dialog-chrome-background-color, var(--modal-background-color));
     flex-shrink: 0;
 }
 
-.forma-modal-footer-extra {
+.forma-dialog-footer-extra {
     margin-inline-end: auto;
     min-width: 0;
 }
 
-.forma-modal-footer-extra:only-child {
+.forma-dialog-footer-extra:only-child {
     margin-inline-end: 0;
     margin-inline-start: auto;
 }
 
-.forma-modal-footer-actions {
+.forma-dialog-footer-actions {
     display: flex;
     align-items: center;
     gap: var(--space-2);

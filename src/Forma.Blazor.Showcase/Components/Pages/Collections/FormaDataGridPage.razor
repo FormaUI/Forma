@@ -128,11 +128,11 @@
     </div>
 </div>
 
-<div class="demo-section">    <h2>@L["Modal Details"]</h2>
-    <p class="description">@L["A single FormaModal instance is shared by every row; the action column tells it which row to show."]</p>
+<div class="demo-section">    <h2>@L["Dialog Details"]</h2>
+    <p class="description">@L["A single FormaDialog instance is shared by every row; the action column tells it which row to show."]</p>
     <div class="demo-box">
         <FormaDataGrid TGridItem="Employee" Items="_employees" PageSize="5"
-                       QueryParameterNamePrefix="modal">
+                       QueryParameterNamePrefix="dialog">
             <Columns>
                 <PropertyColumn Property="@(e => e.Id)" />
                 <PropertyColumn Property="@(e => e.Name)" />
@@ -144,7 +144,7 @@
             </Columns>
         </FormaDataGrid>
 
-        <FormaModal Opened="_isDetailsOpen" OnClose="CloseDetails" Title="@_detailsEmployee?.Name">
+        <FormaDialog Opened="_isDetailsOpen" OnClose="CloseDetails" Title="@_detailsEmployee?.Name">
             <Body>
                 @if (_detailsEmployee is { } employee)
                 {
@@ -158,7 +158,7 @@
                     </dl>
                 }
             </Body>
-        </FormaModal>
+        </FormaDialog>
     </div>
 </div>
 

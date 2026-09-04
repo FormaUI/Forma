@@ -24,7 +24,7 @@
             var cut = ctx.Render(@<FormaComposerVideoDialog Opened="true" />);
 
             // Assert
-            Assert.False(cut.FindComponent<FormaModal>().Instance.Options.CloseOnConfirm);
+            Assert.False(cut.FindComponent<FormaDialog>().Instance.Options.CloseOnConfirm);
         }
 
         [Fact]

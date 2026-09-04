@@ -59,7 +59,7 @@ Two Coi behaviours are deliberately **not** reproduced as-authored:
 
 - **Font size** in `rem`/`em`, not `px`/`pt`: `0.75rem`, `0.875rem`, `1rem`, `1.125rem`, `1.25rem`, `1.5rem`, `2rem`, `2.5rem`, and relative `0.875em`/`1.25em`.
 - **Line height** as unitless multipliers: `1.2`, `1.4`, `1.6`, `1.8`, `2.0` — replacing Coi's 72 pixel values.
-- **Composition over reimplementation:** `FormaSelect` for the format/font/size pickers, `FormaButton` and `FormaDropDownMenu` for the toolbar and its overflow, `FormaColorPicker` for colour, `FormaExplorer` (#53) for stored media, `FormaFilePicker` (#34) + `FormaFileUploader` (#35) for uploads, `FormaVideoPlayer` (#55) for embeds, `FormaModal` for dialogs.
+- **Composition over reimplementation:** `FormaSelect` for the format/font/size pickers, `FormaButton` and `FormaDropDownMenu` for the toolbar and its overflow, `FormaColorPicker` for colour, `FormaExplorer` (#53) for stored media, `FormaFilePicker` (#34) + `FormaFileUploader` (#35) for uploads, `FormaVideoPlayer` (#55) for embeds, `FormaDialog` for dialogs.
 - **Logical CSS** throughout, and per-block `dir` so bidi is a first-class property of the document rather than a toolbar afterthought.
 
 ---

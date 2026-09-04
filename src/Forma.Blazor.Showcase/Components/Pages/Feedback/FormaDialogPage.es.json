@@ -1,14 +1,14 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "A dialog that holds the page until it is answered. It is the browser's own dialog underneath, so focus stays inside it, Escape closes it and a screen reader treats it as modal without the library reimplementing any of that.": "Un diálogo que retiene la página hasta que se responde. Por debajo es el diálogo propio del navegador, así que el foco se queda dentro, Escape lo cierra y un lector de pantalla lo trata como modal sin que la biblioteca reimplemente nada de eso.",
-  "Basic Modal": "Modal básico",
-  "Open Basic Modal": "Abrir modal básico",
-  "This is a basic modal with a title and child content.": "Este es un modal básico con un título y contenido secundario.",
+  "Basic Dialog": "Diálogo básico",
+  "Open Basic Dialog": "Abrir diálogo básico",
+  "This is a basic dialog with a title and child content.": "Este es un diálogo básico con un título y contenido secundario.",
   "No Header (Title = null)": "Sin encabezado (Title = null)",
-  "Open Headerless Modal": "Abrir modal sin encabezado",
-  "This modal has no header - useful for simple alerts or custom layouts.": "Este modal no tiene encabezado: útil para alertas simples o diseños personalizados.",
+  "Open Headerless Dialog": "Abrir diálogo sin encabezado",
+  "This dialog has no header - useful for simple alerts or custom layouts.": "Este diálogo no tiene encabezado: útil para alertas simples o diseños personalizados.",
   "Size Variants": "Variantes de tamaño",
-  "This modal uses": "Este modal usa",
+  "This dialog uses": "Este diálogo usa",
   "Custom Footer": "Pie de página personalizado",
   "Open Footer Only": "Abrir solo pie de página",
   "Open Footer + Actions": "Abrir pie de página + acciones",
@@ -21,9 +21,9 @@
   "No Footer": "Sin pie de página",
   "Open (no footer)": "Abrir (sin pie de página)",
   "Information": "Información",
-  "This modal has no footer - close it with Escape, backdrop click, or the X button.": "Este modal no tiene pie de página: ciérrelo con Escape, haciendo clic en el fondo o con el botón X.",
+  "This dialog has no footer - close it with Escape, backdrop click, or the X button.": "Este diálogo no tiene pie de página: ciérrelo con Escape, haciendo clic en el fondo o con el botón X.",
   "Backdrop Click Disabled": "Clic en el fondo deshabilitado",
   "Open (no backdrop close)": "Abrir (sin cierre por fondo)",
   "Must Use X or Button": "Debe usar X o el botón",
-  "Clicking the backdrop does not close this modal. Use the X button or the button below.": "Hacer clic en el fondo no cierra este modal. Use el botón X o el botón de abajo."
+  "Clicking the backdrop does not close this dialog. Use the X button or the button below.": "Hacer clic en el fondo no cierra este diálogo. Use el botón X o el botón de abajo."
 }

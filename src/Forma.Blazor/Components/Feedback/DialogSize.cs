@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Components.Feedback;
 
-/// <summary>How wide a modal is, every width capped at 95vw.</summary>
-public enum ModalSize
+/// <summary>How wide a dialog is, every width capped at 95vw.</summary>
+public enum DialogSize
 {
     /// <summary>400px.</summary>
     Small,

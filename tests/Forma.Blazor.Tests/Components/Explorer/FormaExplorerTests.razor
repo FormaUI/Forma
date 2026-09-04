@@ -615,7 +615,7 @@
             cut.Find(".forma-explorer-action-bar .forma-dropdown-menu-trigger").Click();
             cut.Find("[data-action='rename']").Click();
             cut.Find("#forma-explorer-rename-input").Input("new-name.jpg");
-            cut.Find(".forma-modal-footer .forma-button-primary").Click();
+            cut.Find(".forma-dialog-footer .forma-button-primary").Click();
 
             // Assert
             Assert.NotNull(request);
@@ -639,7 +639,7 @@
             // Act
             cut.Find(".forma-explorer-action-bar .forma-dropdown-menu-trigger").Click();
             cut.Find("[data-action='delete']").Click();
-            cut.Find(".forma-modal-footer .forma-button-danger").Click();
+            cut.Find(".forma-dialog-footer .forma-button-danger").Click();
 
             // Assert
             Assert.NotNull(request);
@@ -665,7 +665,7 @@
             // Act - Create Folder
             cut.Find(".forma-explorer-new-folder-tool").Click();
             cut.Find("#forma-explorer-folder-input").Input("New Album");
-            cut.Find(".forma-modal-footer .forma-button-primary").Click();
+            cut.Find(".forma-dialog-footer .forma-button-primary").Click();
 
             // Assert create
             Assert.NotNull(createReq);
@@ -675,7 +675,7 @@
             cut.Find("button[aria-label='Actions for Races']").Click();
             cut.Find("[data-action='folder-rename']").Click();
             cut.Find("#forma-explorer-rename-input").Input("Updated Races");
-            cut.Find(".forma-modal-footer .forma-button-primary").Click();
+            cut.Find(".forma-dialog-footer .forma-button-primary").Click();
 
             // Assert rename
             Assert.NotNull(renameReq);
@@ -684,7 +684,7 @@
             // Act - Delete Folder
             cut.Find("button[aria-label='Actions for Races']").Click();
             cut.Find("[data-action='folder-delete']").Click();
-            cut.Find(".forma-modal-footer .forma-button-danger").Click();
+            cut.Find(".forma-dialog-footer .forma-button-danger").Click();
 
             // Assert delete
             Assert.NotNull(deleteReq);
@@ -707,7 +707,7 @@
             cut.Find("button[aria-label='Actions for Races']").Click();
             cut.Find("[data-action='folder-create']").Click();
             cut.Find("#forma-explorer-folder-input").Input("2027");
-            cut.Find(".forma-modal-footer .forma-button-primary").Click();
+            cut.Find(".forma-dialog-footer .forma-button-primary").Click();
 
             // Assert
             Assert.NotNull(createReq);
@@ -732,7 +732,7 @@
             // Act
             cut.Find(".forma-explorer-new-folder-tool").Click();
             cut.Find("#forma-explorer-folder-input").Input("Archive");
-            cut.Find(".forma-modal-footer .forma-button-primary").Click();
+            cut.Find(".forma-dialog-footer .forma-button-primary").Click();
 
             // Assert
             Assert.NotNull(createReq);
@@ -928,7 +928,7 @@
 
             // Assert
             Assert.Multiple(
-                () => Assert.Empty(cut.FindAll(".forma-modal")),
+                () => Assert.Empty(cut.FindAll(".forma-dialog")),
                 () => Assert.Empty(reports));
         }
 
@@ -1267,7 +1267,7 @@
             cut.Find(".forma-explorer-item-open").Click();
 
             // Assert
-            Assert.NotNull(cut.Find(".forma-modal"));
+            Assert.NotNull(cut.Find(".forma-dialog"));
             Assert.Empty(cut.FindAll(".forma-explorer-selection-bar"));
         }
 
@@ -1368,7 +1368,7 @@
 
             // Act
             cut.Find(".forma-explorer-delete-button").Click();
-            cut.Find(".forma-modal-footer .forma-button-danger").Click();
+            cut.Find(".forma-dialog-footer .forma-button-danger").Click();
 
             // Assert
             Assert.NotNull(request);
@@ -1452,14 +1452,14 @@
             IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
             var cut = ctx.Render(@<FormaExplorer Items="@(ExplorerItem.ForAll(resources))" />);
             cut.Find(".forma-explorer-item-open").Click();
-            Assert.NotNull(cut.Find(".forma-modal"));
+            Assert.NotNull(cut.Find(".forma-dialog"));
 
             // Act
-            cut.Find(".forma-modal button[aria-label='Close']").Click();
+            cut.Find(".forma-dialog button[aria-label='Close']").Click();
             cut.Find(".forma-explorer-item-open").Click();
 
             // Assert
-            Assert.NotNull(cut.Find(".forma-modal"));
+            Assert.NotNull(cut.Find(".forma-dialog"));
             Assert.NotNull(cut.Find(".forma-file-viewer"));
         }
         [Fact]

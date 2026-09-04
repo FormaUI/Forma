@@ -63,7 +63,7 @@ app.MapRazorComponents<App>()
     .AddAdditionalAssemblies(typeof(Forma.Blazor._Imports).Assembly);
 ```
 
-Components that use JS interop, such as `FormaModal` and `FormaTextBox`, need the Interactive Server
+Components that use JS interop, such as `FormaDialog` and `FormaTextBox`, need the Interactive Server
 render mode.
 
 ## Components
