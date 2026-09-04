@@ -1,4 +1,4 @@
-namespace Forma.Features.Icons.Tests;
+namespace Forma.Framework.Icons.Glyphs.Tests;
 
 using System.Text;
 

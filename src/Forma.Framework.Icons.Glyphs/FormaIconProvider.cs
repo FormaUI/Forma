@@ -1,4 +1,4 @@
-namespace Forma.Features.Icons;
+namespace Forma.Framework.Icons.Glyphs;
 
 using System.Collections.Frozen;
 using System.Globalization;
@@ -11,8 +11,8 @@ using Forma.Framework.Icons;
 /// <summary>Provides the library's own artwork: every glyph and brand mark embedded in this assembly, and any character.</summary>
 public sealed class FormaIconProvider : IIconProvider
 {
-    private const string GlyphResourceName = "Forma.Features.Icons._assets.glyphs.json";
-    private const string BrandResourceName = "Forma.Features.Icons._assets.brands.json";
+    private const string GlyphResourceName = "Forma.Framework.Icons.Glyphs._assets.glyphs.json";
+    private const string BrandResourceName = "Forma.Framework.Icons.Glyphs._assets.brands.json";
 
     private static readonly Lazy<FrozenDictionary<(Glyph Glyph, int Grid), IconArtwork[]>> Glyphs = new(LoadGlyphs);
     private static readonly Lazy<FrozenDictionary<Brand, IconArtwork>> Brands = new(LoadBrands);

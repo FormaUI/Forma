@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <IsPackable>false</IsPackable>
-        <RootNamespace>Forma.Features.Icons.Tests</RootNamespace>
+        <RootNamespace>Forma.Framework.Icons.Glyphs.Tests</RootNamespace>
         <NoWarn>CA1707</NoWarn>
     </PropertyGroup>
 
@@ -17,7 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Forma.Features.Icons\Forma.Features.Icons.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Icons.Glyphs\Forma.Framework.Icons.Glyphs.csproj" />
     </ItemGroup>
 
 </Project>

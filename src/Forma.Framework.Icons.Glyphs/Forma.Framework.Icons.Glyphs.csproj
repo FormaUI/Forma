@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <IsPackable>false</IsPackable>
-        <RootNamespace>Forma.Features.Icons</RootNamespace>
+        <RootNamespace>Forma.Framework.Icons.Glyphs</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

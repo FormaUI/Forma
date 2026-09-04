@@ -2,7 +2,7 @@ namespace Forma.Blazor.Components.Symbols;
 
 using System.Globalization;
 
-using Forma.Features.Icons;
+using Forma.Framework.Icons.Glyphs;
 using Forma.Framework.Icons;
 
 using Microsoft.AspNetCore.Components;
