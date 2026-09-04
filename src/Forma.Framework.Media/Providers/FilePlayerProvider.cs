@@ -1,4 +1,4 @@
-namespace Forma.Features.Media.Providers;
+namespace Forma.Framework.Media.Providers;
 
 /// <summary>Plays a file the browser can fetch, through its own player.</summary>
 public sealed class FilePlayerProvider : IPlayerProvider

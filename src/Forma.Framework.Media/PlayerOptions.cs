@@ -1,4 +1,4 @@
-namespace Forma.Features.Media;
+namespace Forma.Framework.Media;
 
 /// <summary>How a caller asked the player to behave, and what the page can tell it about itself.</summary>
 public sealed record PlayerOptions

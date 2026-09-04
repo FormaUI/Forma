@@ -1,6 +1,6 @@
 namespace Forma.Tests.Media;
 
-using Forma.Features.Media;
+using Forma.Framework.Media;
 
 /// <summary>A player provider that claims addresses starting with one prefix, standing in for a host's own service.</summary>
 public sealed class FakePlayerProvider(string prefix, Func<string, PlayerFrame> resolve) : IPlayerProvider

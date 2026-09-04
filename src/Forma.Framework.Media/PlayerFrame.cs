@@ -1,4 +1,4 @@
-namespace Forma.Features.Media;
+namespace Forma.Framework.Media;
 
 using System.Diagnostics.CodeAnalysis;
 

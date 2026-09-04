@@ -11,7 +11,7 @@
     <Project Path="src\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
     <Project Path="src\Forma.Framework.Feedback\Forma.Framework.Feedback.csproj" />
     <Project Path="src\Forma.Framework.Files\Forma.Framework.Files.csproj" />
-    <Project Path="src\Forma.Features.Media\Forma.Features.Media.csproj" />
+    <Project Path="src\Forma.Framework.Media\Forma.Framework.Media.csproj" />
     <Project Path="src\Forma.Framework.Toolbar\Forma.Framework.Toolbar.csproj" />
     <Project Path="src\Forma.Framework.Sanitization.Allowlist\Forma.Framework.Sanitization.Allowlist.csproj" />
     <Project Path="src\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />

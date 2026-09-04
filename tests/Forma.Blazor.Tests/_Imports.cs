@@ -4,10 +4,10 @@ global using System.Threading.Tasks;
 global using Bunit;
 
 global using Forma.Blazor.Components.Feedback;
-global using Forma.Features.Media;
 global using Forma.Framework.Feedback;
 global using Forma.Framework.Localization;
 global using Forma.Framework.Localization.Json;
+global using Forma.Framework.Media;
 global using Forma.Framework.Resources;
 
 global using Microsoft.AspNetCore.Components;

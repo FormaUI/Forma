@@ -1,4 +1,4 @@
-namespace Forma.Features.Media.Providers;
+namespace Forma.Framework.Media.Providers;
 
 using System.Net;
 using System.Text.RegularExpressions;

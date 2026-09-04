@@ -1,4 +1,4 @@
-namespace Forma.Features.Media;
+namespace Forma.Framework.Media;
 
 /// <summary>Turns an address into the frame a player loads, or null when the address is not its own.</summary>
 public interface IPlayerProvider

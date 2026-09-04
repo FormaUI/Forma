@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Showcase;
 
 using Forma.Blazor.Components.Media;
-using Forma.Features.Media;
+using Forma.Framework.Media;
 
 /// <summary>
 /// Claims the Showcase's own <c>custom:</c> addresses and resolves them against its storage,
