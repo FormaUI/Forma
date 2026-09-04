@@ -1,7 +1,7 @@
-namespace Forma.Blazor.Features.Emojis;
+namespace Forma.Features.Emojis;
 
 /// <summary>Tracks the lifecycle of sprite sheets being loaded, where arriving and failing both complete a sheet.</summary>
-internal sealed class SpriteSheetLoadTracker
+public sealed class SpriteSheetLoadTracker
 {
     private readonly HashSet<string> _loadedSheets = new(StringComparer.Ordinal);
     private readonly HashSet<string> _loadingSheets = new(StringComparer.Ordinal);

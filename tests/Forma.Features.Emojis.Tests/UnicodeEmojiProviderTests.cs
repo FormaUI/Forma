@@ -1,6 +1,5 @@
-namespace Forma.Blazor.Tests.Features.Emojis;
+namespace Forma.Features.Emojis.Tests;
 
-using Forma.Blazor.Features.Emojis;
 using Forma.Framework.Emojis;
 
 public sealed class UnicodeEmojiProviderTests

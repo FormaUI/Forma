@@ -1,6 +1,4 @@
-namespace Forma.Blazor.Tests.Features.Emojis;
-
-using Forma.Blazor.Features.Emojis;
+namespace Forma.Features.Emojis.Tests;
 
 using Microsoft.AspNetCore.Components;
 

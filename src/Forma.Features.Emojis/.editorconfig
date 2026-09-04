@@ -1,0 +1,8 @@
+[*.cs]
+# ------------------------------------------------------------
+# Diagnostics that do not apply to services running inside a circuit
+# ------------------------------------------------------------
+
+# Disable CA2007 - ConfigureAwait(false) escapes Blazor's synchronization context, after
+# which touching state the circuit's components share requires marshalling back.
+dotnet_diagnostic.CA2007.severity = none
