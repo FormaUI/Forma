@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Globalization;
+namespace Forma.Features.Globalization;
 
 using System.Globalization;
 

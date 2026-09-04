@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Showcase.Components.Metadata;
 
-using Forma.Blazor.Globalization;
+using Forma.Features.Globalization;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http;

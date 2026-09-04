@@ -1,9 +1,9 @@
 using Forma.Blazor;
-using Forma.Blazor.Globalization;
 using Forma.Blazor.Showcase;
 using Forma.Blazor.Showcase.Components.Pages.Menus;
 using Forma.Blazor.Showcase.Features.Media;
 using Forma.Blazor.Showcase.Features.Upload;
+using Forma.Features.Globalization;
 using Forma.Framework.Css;
 using Forma.Framework.Emojis.Twemoji;
 using Forma.Framework.Explorer.Content.Queries;

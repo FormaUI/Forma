@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Globalization;
+namespace Forma.Features.Globalization;
 
 /// <summary>The cultures an application serves and how they are addressed.</summary>
 public sealed class CultureRouterOptions
