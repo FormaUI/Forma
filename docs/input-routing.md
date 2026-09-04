@@ -12,8 +12,10 @@ its registration in `AddFormaUI`, host routes, and the script tests. `FormaInput
 declares a scope from markup and `FormaInputInspector` shows the router's decisions live;
 the Showcase's `FormaInputInspector` page uses both, and its visible-browser walk covers the native
 table, nesting, dismissal, the modal barrier, host routes, shadow roots, wheel, and pointer
-input against real events. No library component registers a scope yet. The `focus` field
-of a profile is not read until `Focus.js` moves onto the router in step 3.
+input against real events. Resolution with a hundred registered scopes, ten of them active,
+costs a few hundredths of a millisecond, so parent lookup scans the scopes as they are.
+No library component registers a scope yet. The `focus` field of a profile is not read
+until `Focus.js` moves onto the router in step 3.
 
 ## Purpose
 
@@ -431,6 +433,14 @@ Three roles, not an override chain:
 
 The resolver combines them into one decision. A host cannot casually override an invariant;
 a component default does not silently defeat explicit host policy.
+
+### Public surface
+
+A type under `Features/Input` is public only because a host or a component author reaches
+it from one of three doors: `InputRouterOptions` and `IInputActionHandler` for the host,
+`FormaInputScope` for the author, and the inspector's `Decision` for anyone debugging.
+The router service and the registration handle stand behind those doors and stay
+internal; a type nothing outside the library reaches goes internal with them.
 
 ### Preemptive routes are absolute
 
