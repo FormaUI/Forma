@@ -2,6 +2,7 @@ namespace Forma.Blazor;
 
 using Forma.Framework.Emojis.Unicode;
 using Forma.Framework.Feedback;
+using Forma.Framework.Icons.Glyphs;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
 using Forma.Framework.Sanitization;
@@ -17,7 +18,7 @@ public static class ServiceCollectionExtensions
     /// <param name="services">The collection to register into.</param>
     /// <param name="inputRouting">The application-wide input policy; <see langword="null"/> takes <see cref="InputRouterOptions.Default"/>.</param>
     /// <returns>The same collection, for chaining.</returns>
-    /// <remarks>Artwork is not registered here; an icon or emoji pack is a package a host adds and calls for itself.</remarks>
+    /// <remarks>The bundled glyphs and the reader's font are the icon and emoji providers unless the host registered its own or added an artwork pack first.</remarks>
     public static IServiceCollection AddFormaUI(this IServiceCollection services, InputRouterOptions? inputRouting = null)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -27,6 +28,7 @@ public static class ServiceCollectionExtensions
         services.AddFormaSanitizationServices();
 
         services.AddFormaEmojiServices();
+        services.AddFormaGlyphServices();
 
         services.AddFormaInputRouter(inputRouting);
 

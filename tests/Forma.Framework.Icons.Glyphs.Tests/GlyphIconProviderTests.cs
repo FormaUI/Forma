@@ -6,8 +6,10 @@ using Forma.Framework.Icons;
 
 using Xunit;
 
-public sealed class FormaIconProviderTests
+public sealed class GlyphIconProviderTests
 {
+    private static readonly GlyphIconProvider Provider = new();
+
     private static IEnumerable<Glyph> DrawableGlyphs
         => Enum.GetValues<Glyph>().Where(glyph => glyph is not Glyph.None);
 
@@ -24,7 +26,7 @@ public sealed class FormaIconProviderTests
             {
                 foreach (var size in Enum.GetValues<IconSize>())
                 {
-                    var artwork = FormaIconProvider.Default.GetArtwork(Icon.FromGlyph(glyph, variant), size);
+                    var artwork = Provider.GetArtwork(Icon.FromGlyph(glyph, variant), size);
 
                     Assert.NotEmpty(Assert.IsType<IconVector>(artwork, exactMatch: false).Paths);
                 }
@@ -36,7 +38,7 @@ public sealed class FormaIconProviderTests
     public void Should_draw_a_stroke_glyph_with_its_stroke_width()
     {
         // Act
-        var artwork = Assert.IsType<IconVector>(FormaIconProvider.Default.GetArtwork(Glyph.Check, IconSize.Inline));
+        var artwork = Assert.IsType<IconVector>(Provider.GetArtwork(Glyph.Check, IconSize.Inline));
 
         // Assert
         Assert.All(artwork.Paths, path => Assert.Equal(2, path.StrokeWidth));
@@ -46,7 +48,7 @@ public sealed class FormaIconProviderTests
     public void Should_draw_a_filled_alternate_without_a_stroke()
     {
         // Act
-        var artwork = Assert.IsType<IconVector>(FormaIconProvider.Default.GetArtwork(Icon.FromGlyph(Glyph.Heart, GlyphVariant.Alternate), IconSize.Inline));
+        var artwork = Assert.IsType<IconVector>(Provider.GetArtwork(Icon.FromGlyph(Glyph.Heart, GlyphVariant.Alternate), IconSize.Inline));
 
         // Assert
         Assert.All(artwork.Paths, path => Assert.Equal(0, path.StrokeWidth));
@@ -56,7 +58,7 @@ public sealed class FormaIconProviderTests
     public void Should_fill_a_solid_dot_inside_a_stroke_glyph()
     {
         // Act
-        var artwork = Assert.IsType<IconVector>(FormaIconProvider.Default.GetArtwork(Glyph.CircleInfo, IconSize.Inline));
+        var artwork = Assert.IsType<IconVector>(Provider.GetArtwork(Glyph.CircleInfo, IconSize.Inline));
 
         // Assert
         // The stem is stroked; the dot above it is a solid shape a stroke cannot draw.
@@ -69,8 +71,8 @@ public sealed class FormaIconProviderTests
     public void Should_draw_the_alternate_of_a_glyph_with_nothing_to_fill_heavier()
     {
         // Act
-        var primary = Assert.IsType<IconVector>(FormaIconProvider.Default.GetArtwork(Glyph.ArrowRight, IconSize.Inline));
-        var alternate = Assert.IsType<IconVector>(FormaIconProvider.Default.GetArtwork(Icon.FromGlyph(Glyph.ArrowRight, GlyphVariant.Alternate), IconSize.Inline));
+        var primary = Assert.IsType<IconVector>(Provider.GetArtwork(Glyph.ArrowRight, IconSize.Inline));
+        var alternate = Assert.IsType<IconVector>(Provider.GetArtwork(Icon.FromGlyph(Glyph.ArrowRight, GlyphVariant.Alternate), IconSize.Inline));
 
         // Assert
         Assert.Multiple(
@@ -87,7 +89,7 @@ public sealed class FormaIconProviderTests
     public void Should_draw_the_grid_whose_stroke_lands_on_pixels_at_the_size(IconSize size, string viewBox)
     {
         // Act
-        var artwork = Assert.IsType<IconVector>(FormaIconProvider.Default.GetArtwork(Glyph.Check, size));
+        var artwork = Assert.IsType<IconVector>(Provider.GetArtwork(Glyph.Check, size));
 
         // Assert
         Assert.Equal(viewBox, artwork.ViewBox);
@@ -95,7 +97,7 @@ public sealed class FormaIconProviderTests
 
     [Fact]
     public void Should_refuse_the_absent_glyph()
-        => Assert.Throws<ArgumentOutOfRangeException>(() => FormaIconProvider.Default.GetArtwork(Glyph.None, IconSize.Inline));
+        => Assert.Throws<ArgumentOutOfRangeException>(() => Provider.GetArtwork(Glyph.None, IconSize.Inline));
 
     [Fact]
     public void Should_carry_a_titled_mark_for_every_brand_at_every_size()
@@ -105,7 +107,7 @@ public sealed class FormaIconProviderTests
         {
             foreach (var size in Enum.GetValues<IconSize>())
             {
-                var artwork = Assert.IsType<BrandIconArtwork>(FormaIconProvider.Default.GetArtwork(brand, size));
+                var artwork = Assert.IsType<BrandIconArtwork>(Provider.GetArtwork(brand, size));
 
                 Assert.Multiple(
                     () => Assert.Single(artwork.Paths),
@@ -118,7 +120,7 @@ public sealed class FormaIconProviderTests
     public void Should_draw_a_brand_mark_as_one_solid_path()
     {
         // Act
-        var artwork = Assert.IsType<BrandIconArtwork>(FormaIconProvider.Default.GetArtwork(Brand.GitHub, IconSize.Inline));
+        var artwork = Assert.IsType<BrandIconArtwork>(Provider.GetArtwork(Brand.GitHub, IconSize.Inline));
 
         // Assert
         Assert.Multiple(
@@ -134,7 +136,7 @@ public sealed class FormaIconProviderTests
         var unknown = (Brand)int.MaxValue;
 
         // Act
-        var found = FormaIconProvider.Default.TryGetArtwork(unknown, IconSize.Inline, out var artwork);
+        var found = Provider.TryGetArtwork(unknown, IconSize.Inline, out var artwork);
 
         // Assert
         Assert.Multiple(
@@ -144,13 +146,13 @@ public sealed class FormaIconProviderTests
 
     [Fact]
     public void Should_refuse_the_absent_brand()
-        => Assert.Throws<ArgumentOutOfRangeException>(() => FormaIconProvider.Default.GetArtwork(Brand.None, IconSize.Inline));
+        => Assert.Throws<ArgumentOutOfRangeException>(() => Provider.GetArtwork(Brand.None, IconSize.Inline));
 
     [Fact]
     public void Should_answer_any_character_with_itself()
     {
         // Act
-        var artwork = FormaIconProvider.Default.GetArtwork(new Rune('Ω'), IconSize.Small);
+        var artwork = Provider.GetArtwork(new Rune('Ω'), IconSize.Small);
 
         // Assert
         Assert.Equal(new Rune('Ω'), Assert.IsType<IconCharacter>(artwork).Value);

@@ -1,5 +1,6 @@
 @inherits FormaBunitContext
 @using System.Text
+@using Forma.Framework.Icons.Glyphs
 @code {
     public sealed class Component
     {
@@ -215,7 +216,7 @@
 
             // Act
             var cut = ctx.Render(@<CascadingValue Value="(IIconProvider)marker" IsFixed="true">
-                                      <FormaIcon Icon="Glyph.Check" Provider="Forma.Framework.Icons.Glyphs.FormaIconProvider.Default" />
+                                      <FormaIcon Icon="Glyph.Check" Provider="new GlyphIconProvider()" />
                                   </CascadingValue>);
 
             // Assert

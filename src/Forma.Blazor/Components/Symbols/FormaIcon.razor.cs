@@ -3,13 +3,12 @@ namespace Forma.Blazor.Components.Symbols;
 using System.Globalization;
 
 using Forma.Framework.Icons;
-using Forma.Framework.Icons.Glyphs;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>Renders an icon as inline SVG, or as a single character set by the font, so no icon font has to be loaded.</summary>
-/// <param name="registeredProvider">The host's registered provider, or null when it registered none.</param>
-public sealed partial class FormaIcon(IIconProvider? registeredProvider = null) : ComponentBase
+/// <param name="iconProvider">The registered provider: the host's own, or the library's glyphs when it registered none.</param>
+public sealed partial class FormaIcon(IIconProvider iconProvider) : ComponentBase
 {
     /// <summary>One vector path as the markup writes it: its data, its stroke width or null for a filled path, and its opacity.</summary>
     private readonly record struct VectorPathView(string Data, string? StrokeWidth, string? Opacity);
@@ -27,7 +26,7 @@ public sealed partial class FormaIcon(IIconProvider? registeredProvider = null) 
     /// <summary>Extra classes applied to the rendered element.</summary>
     [Parameter] public string? Class { get; set; }
 
-    /// <summary>The provider supplying this icon's artwork, taken from the surrounding subtree or the host's registration when unset.</summary>
+    /// <summary>The provider supplying this icon's artwork, taken from the surrounding subtree or the registered provider when unset.</summary>
     [Parameter] public IIconProvider? Provider { get; set; }
 
     [CascadingParameter] private IIconProvider? CascadingProvider { get; set; }
@@ -54,15 +53,13 @@ public sealed partial class FormaIcon(IIconProvider? registeredProvider = null) 
     {
         ArgumentNullException.ThrowIfNull(Icon);
 
-        // Nearest wins: this icon's own provider, then the one a surrounding subtree draws from, then the host's
-        // registration; the library's own artwork answers whatever none of those can.
-        var provider = Provider
-            ?? CascadingProvider
-            ?? registeredProvider;
+        // Nearest wins: this icon's own provider, then the one a surrounding subtree draws from; the registered
+        // provider answers whatever those decline.
+        var provider = Provider ?? CascadingProvider;
 
         _artwork = provider is not null && provider.TryGetArtwork(Icon, Size, out var supplied)
             ? supplied
-            : FormaIconProvider.Default.TryGetArtwork(Icon, Size, out var bundled) ? bundled : IconArtwork.None;
+            : iconProvider.TryGetArtwork(Icon, Size, out var registered) ? registered : IconArtwork.None;
 
         // The path attributes are written once here rather than formatted again on every render.
         _vectorPaths = _artwork is IconVector vector

@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>Renders an emoji as inline artwork, drawing it from a host's chosen provider.</summary>
-/// <param name="registeredProvider">The host's registered provider, or null when it registered none.</param>
-public sealed partial class FormaEmoji(IEmojiProvider? registeredProvider = null) : ComponentBase
+/// <param name="emojiProvider">The registered provider: the host's own, or the reader's font when it registered none.</param>
+public sealed partial class FormaEmoji(IEmojiProvider emojiProvider) : ComponentBase
 {
     private EmojiArtwork _artwork = default!;
 
@@ -23,7 +23,7 @@ public sealed partial class FormaEmoji(IEmojiProvider? registeredProvider = null
     /// <summary>Extra classes applied to the root element.</summary>
     [Parameter] public string? Class { get; set; }
 
-    /// <summary>The provider supplying this emoji's artwork, taken from the surrounding subtree or the host's registration when unset.</summary>
+    /// <summary>The provider supplying this emoji's artwork, taken from the surrounding subtree or the registered provider when unset.</summary>
     [Parameter] public IEmojiProvider? Provider { get; set; }
 
     [Inject] private EmojiSpriteLoader SpriteLoader { get; set; } = default!;
@@ -42,13 +42,11 @@ public sealed partial class FormaEmoji(IEmojiProvider? registeredProvider = null
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        // Nearest wins: this emoji's own provider, then the one a surrounding subtree draws from, then the host's
-        // registration. Absent all three is a host that wants no artwork package, not a fault, and the reader's
-        // own font stands in.
+        // Nearest wins: this emoji's own provider, then the one a surrounding subtree draws from, then the
+        // registered provider.
         var provider = Provider
             ?? CascadingProvider
-            ?? registeredProvider
-            ?? UnicodeEmojiProvider.Default;
+            ?? emojiProvider;
 
         _artwork = provider.GetArtwork(Emoji);
     }

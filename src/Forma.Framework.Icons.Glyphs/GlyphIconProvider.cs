@@ -9,16 +9,13 @@ using System.Text.Json.Serialization;
 using Forma.Framework.Icons;
 
 /// <summary>Provides the library's own artwork: every glyph and brand mark embedded in this assembly, and any character.</summary>
-public sealed class FormaIconProvider : IIconProvider
+public sealed class GlyphIconProvider : IIconProvider
 {
     private const string GlyphResourceName = "Forma.Framework.Icons.Glyphs._assets.glyphs.json";
     private const string BrandResourceName = "Forma.Framework.Icons.Glyphs._assets.brands.json";
 
     private static readonly Lazy<FrozenDictionary<(Glyph Glyph, int Grid), IconArtwork[]>> Glyphs = new(LoadGlyphs);
     private static readonly Lazy<FrozenDictionary<Brand, IconArtwork>> Brands = new(LoadBrands);
-
-    /// <summary>The shared provider, which holds no state of its own.</summary>
-    public static FormaIconProvider Default { get; } = new();
 
     /// <inheritdoc />
     public bool TryGetArtwork(Icon icon, IconSize size, out IconArtwork artwork)
@@ -86,7 +83,7 @@ public sealed class FormaIconProvider : IIconProvider
         => size is IconSize.Small or IconSize.Large ? [24, 32] : [32, 24];
 
     private static Stream OpenResource(string name, string script)
-        => typeof(FormaIconProvider).GetTypeInfo().Assembly.GetManifestResourceStream(name)
+        => typeof(GlyphIconProvider).GetTypeInfo().Assembly.GetManifestResourceStream(name)
             ?? throw new InvalidOperationException($"The resource '{name}' is missing; rebuild it with {script}.");
 
     private static FrozenDictionary<(Glyph, int), IconArtwork[]> LoadGlyphs()

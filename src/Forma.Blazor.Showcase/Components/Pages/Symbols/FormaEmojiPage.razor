@@ -47,5 +47,5 @@
 <PageLocalization />
 
 @code {
-    private static readonly IEmojiProvider Fallback = UnicodeEmojiProvider.Default;
+    private static readonly IEmojiProvider Fallback = new UnicodeEmojiProvider();
 }

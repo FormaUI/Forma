@@ -8,7 +8,7 @@ public sealed class UnicodeEmojiProviderTests
     public void Should_draw_every_emoji_with_the_platform_font()
     {
         // Act
-        var artwork = UnicodeEmojiProvider.Default.GetArtwork("😀");
+        var artwork = new UnicodeEmojiProvider().GetArtwork("😀");
 
         // Assert
         Assert.Same(EmojiArtwork.Unicode, artwork);
@@ -18,7 +18,7 @@ public sealed class UnicodeEmojiProviderTests
     public void Should_answer_for_an_emoji_no_catalog_knows()
     {
         // Act
-        var artwork = UnicodeEmojiProvider.Default.GetArtwork("🫠");
+        var artwork = new UnicodeEmojiProvider().GetArtwork("🫠");
 
         // Assert
         // The reader's own font decides what it can draw, so the provider never has to know the character.

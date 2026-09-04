@@ -16,12 +16,12 @@ using Microsoft.JSInterop;
 
 /// <summary>A categorized emoji palette with search, recently used entries, and a tab per category.</summary>
 /// <param name="registeredCatalog">The host's registered catalog, or null to browse nothing.</param>
-/// <param name="registeredProvider">The host's registered provider, or null to draw native emoji.</param>
-public sealed partial class FormaEmojiPicker(IEmojiCatalog? registeredCatalog = null, IEmojiProvider? registeredProvider = null)
+/// <param name="emojiProvider">The registered provider: the host's own, or the reader's font when it registered none.</param>
+public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmojiCatalog? registeredCatalog = null)
     : ComponentBase, IAsyncDisposable
 {
     private readonly IEmojiCatalog _catalog = registeredCatalog ?? NullEmojiCatalog.Instance;
-    private readonly IEmojiProvider _provider = registeredProvider ?? UnicodeEmojiProvider.Default;
+    private readonly IEmojiProvider _provider = emojiProvider;
 
     /// <summary>The identifier of the tab holding recently chosen emoji.</summary>
     public const string RecentGroupId = "recent";
