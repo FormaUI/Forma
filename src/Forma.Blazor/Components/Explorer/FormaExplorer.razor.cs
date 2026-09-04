@@ -3,6 +3,7 @@ namespace Forma.Blazor.Components.Explorer;
 using System.Globalization;
 
 using Forma.Blazor.Components.Feedback;
+using Forma.Blazor.Components.Files;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Actions;
 using Forma.Framework.Explorer.Content;

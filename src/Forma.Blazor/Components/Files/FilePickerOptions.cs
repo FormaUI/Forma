@@ -1,4 +1,4 @@
-namespace Forma.Framework.Files;
+namespace Forma.Blazor.Components.Files;
 
 /// <summary>The files a picker accepts: their types, their size, and how many one selection may carry.</summary>
 public sealed record FilePickerOptions

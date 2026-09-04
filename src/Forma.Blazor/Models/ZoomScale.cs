@@ -1,4 +1,4 @@
-namespace Forma.Framework.Files;
+namespace Forma.Blazor.Models;
 
 /// <summary>A zoom that moves along a fixed run of percentage steps, resting on the first.</summary>
 public sealed class ZoomScale

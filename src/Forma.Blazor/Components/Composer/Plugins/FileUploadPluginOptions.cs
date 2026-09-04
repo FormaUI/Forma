@@ -1,5 +1,6 @@
 namespace Forma.Blazor.Components.Composer.Plugins;
 
+using Forma.Blazor.Components.Files;
 using Forma.Framework.Files;
 
 /// <summary>Options configuring which files may be attached to a document.</summary>

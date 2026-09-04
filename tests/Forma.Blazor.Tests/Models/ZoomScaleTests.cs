@@ -1,6 +1,6 @@
-namespace Forma.Framework.Files.Tests;
+namespace Forma.Blazor.Tests.Models;
 
-using Xunit;
+using Forma.Blazor.Models;
 
 public sealed class ZoomScaleTests
 {

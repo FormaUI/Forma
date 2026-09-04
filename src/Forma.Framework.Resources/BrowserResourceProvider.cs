@@ -1,8 +1,6 @@
-namespace Forma.Framework.Files.Providers;
+namespace Forma.Framework.Resources;
 
 using System.Diagnostics.CodeAnalysis;
-
-using Forma.Framework.Resources;
 
 /// <summary>Resolves the addresses a browser can render unaided, by the media type their extension implies.</summary>
 [SuppressMessage("Design", "CA1054:URI parameters should not be strings")]
