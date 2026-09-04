@@ -47,6 +47,7 @@
         <ProjectReference Include="..\Forma.Framework.Composer.Interop\Forma.Framework.Composer.Interop.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Timing\Forma.Framework.Timing.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Icons\Forma.Framework.Icons.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Features.Icons\Forma.Features.Icons.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Features.Emojis\Forma.Features.Emojis.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Localization\Forma.Framework.Localization.csproj" PrivateAssets="all" />
@@ -57,9 +58,7 @@
     <!-- These ship embedded in the assembly, so packing them again as content only duplicates them. -->
     <ItemGroup>
         <EmbeddedResource Include="Components\**\*.json" />
-        <EmbeddedResource Include="Assets\**\*.json" />
         <Content Remove="Components\**\*.json" />
-        <Content Remove="Assets\**\*.json" />
     </ItemGroup>
 
 </Project>

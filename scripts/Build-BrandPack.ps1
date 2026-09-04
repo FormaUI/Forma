@@ -6,7 +6,7 @@ $ErrorActionPreference = 'Stop'
 #
 #   src/Forma.Framework.Icons/Brand.cs     the brands the library draws (hand-maintained)
 #   assets/Brands/*.svg                    the official marks, fetched by scripts/Get-SimpleIconsPack.ps1
-#   src/Forma.Blazor/Assets/brands.json    the compiled asset (generated, this script writes it)
+#   src/Forma.Features.Icons/Assets/brands.json    the compiled asset (generated, this script writes it)
 #
 # The enum and the marks on hand must agree: a member without a mark and a mark without a member
 # both fail the build. The asset is written compact; -Format writes it indented for reading.
@@ -14,7 +14,7 @@ $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $enumPath = Join-Path $root 'src' 'Forma.Framework.Icons' 'Brand.cs'
 $brandsDir = Join-Path $root 'assets' 'Brands'
-$target = Join-Path $root 'src' 'Forma.Blazor' 'Assets' 'brands.json'
+$target = Join-Path $root 'src' 'Forma.Features.Icons' 'Assets' 'brands.json'
 
 $members = [regex]::Matches((Get-Content -LiteralPath $enumPath -Raw), '^\s+(?<name>[A-Z]\w*)(?:\s*=\s*\d+)?,\s*$', 'Multiline') |
     ForEach-Object { $_.Groups['name'].Value } |

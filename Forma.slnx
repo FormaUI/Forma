@@ -23,6 +23,7 @@
     <Project Path="src\Forma.AddOns.Share.Targets\Forma.AddOns.Share.Targets.csproj" />
     <Project Path="src\Forma.Framework.Explorer\Forma.Framework.Explorer.csproj" />
     <Project Path="src\Forma.Features.Emojis\Forma.Features.Emojis.csproj" />
+    <Project Path="src\Forma.Features.Icons\Forma.Features.Icons.csproj" />
     <Project Path="src\Forma.Blazor\Forma.Blazor.csproj" />
     <Project Path="src\Forma.AddOns.Resources.Office\Forma.AddOns.Resources.Office.csproj" />
     <Project Path="src\Forma.AddOns.Resources.Markdown\Forma.AddOns.Resources.Markdown.csproj" />
@@ -38,6 +39,7 @@
     <Project Path="tests\Forma.Framework.Icons.Tests\Forma.Framework.Icons.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Emojis.Tests\Forma.Framework.Emojis.Tests.csproj" />
     <Project Path="tests\Forma.Features.Emojis.Tests\Forma.Features.Emojis.Tests.csproj" />
+    <Project Path="tests\Forma.Features.Icons.Tests\Forma.Features.Icons.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Resources.Tests\Forma.Framework.Resources.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Feedback.Tests\Forma.Framework.Feedback.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Sanitization.Allowlist.Tests\Forma.Framework.Sanitization.Allowlist.Tests.csproj" />

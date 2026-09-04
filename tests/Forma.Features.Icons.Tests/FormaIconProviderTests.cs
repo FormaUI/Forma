@@ -1,9 +1,10 @@
-namespace Forma.Blazor.Tests.Features.Icons;
+namespace Forma.Features.Icons.Tests;
 
 using System.Text;
 
-using Forma.Blazor.Features.Icons;
 using Forma.Framework.Icons;
+
+using Xunit;
 
 public sealed class FormaIconProviderTests
 {
