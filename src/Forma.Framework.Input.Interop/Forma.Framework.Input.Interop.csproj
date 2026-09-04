@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <IsPackable>false</IsPackable>
+        <RootNamespace>Forma.Framework.Input.Interop</RootNamespace>
+        <StaticWebAssetBasePath>_content/$(AssemblyName)</StaticWebAssetBasePath>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Framework.Input\Forma.Framework.Input.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Interop\Forma.Framework.Interop.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -10,6 +10,7 @@ export default defineConfig({
         alias: {
             '#interop/': resolved('../../src/Forma.Framework.Interop/wwwroot/scripts/'),
             '#composer/': resolved('../../src/Forma.Framework.Composer.Interop/wwwroot/scripts/'),
+            '#input/': resolved('../../src/Forma.Framework.Input.Interop/wwwroot/scripts/'),
             '#blazor/': resolved('../../src/Forma.Blazor/wwwroot/scripts/'),
             '#support/': resolved('./support/'),
         },

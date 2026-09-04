@@ -5,7 +5,7 @@
 Design for input ownership and precedence across Forma components. Authoritative for
 `InputRouter.js`, the `InputRoute`/`InputProfile`/`InputRouterOptions` records and the
 binding and input records of each family in `Forma.Framework.Input`, the scoped
-bridge that carries host policy to the script, and every component's participation.
+bridge in `Forma.Framework.Input.Interop` that carries host policy to the script, and every component's participation.
 
 Step 1 of the implementation plan is built: the router script, the records, the bridge and
 its registration in `AddFormaUI`, host routes, and the script tests. `FormaInputScope`

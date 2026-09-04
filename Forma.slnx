@@ -16,6 +16,7 @@
     <Project Path="src\Forma.Framework.Input\Forma.Framework.Input.csproj" />
     <Project Path="src\Forma.Framework.Interop\Forma.Framework.Interop.csproj" />
     <Project Path="src\Forma.Framework.Composer.Interop\Forma.Framework.Composer.Interop.csproj" />
+    <Project Path="src\Forma.Framework.Input.Interop\Forma.Framework.Input.Interop.csproj" />
     <Project Path="src\Forma.Framework.Sanitization.Allowlist\Forma.Framework.Sanitization.Allowlist.csproj" />
     <Project Path="src\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />
     <Project Path="src\Forma.Framework.Share\Forma.Framework.Share.csproj" />
@@ -32,6 +33,7 @@
     <Project Path="tests\Forma.Framework.Css.Tests\Forma.Framework.Css.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Timing.Tests\Forma.Framework.Timing.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Input.Tests\Forma.Framework.Input.Tests.csproj" />
+    <Project Path="tests\Forma.Framework.Input.Interop.Tests\Forma.Framework.Input.Interop.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Icons.Tests\Forma.Framework.Icons.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Emojis.Tests\Forma.Framework.Emojis.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Resources.Tests\Forma.Framework.Resources.Tests.csproj" />

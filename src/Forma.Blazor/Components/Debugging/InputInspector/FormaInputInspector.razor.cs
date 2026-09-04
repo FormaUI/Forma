@@ -13,7 +13,7 @@ using Forma.Framework.Toolbar;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-using Inspector = Interop.Components.InputInspector;
+using Inspector = Framework.Input.Interop.Components.InputInspector;
 
 /// <summary>A panel showing the input router's latest decision, the active ordering behind it, and the decisions before it, as each key, press, or wheel turn on the page is resolved.</summary>
 public sealed partial class FormaInputInspector : ComponentBase, IAsyncDisposable

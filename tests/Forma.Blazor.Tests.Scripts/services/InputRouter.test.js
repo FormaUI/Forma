@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { register, registerHost, resolve, requestDismiss, owns, ownerOf, describe as describeScope, stack, configure } from '#blazor/services/InputRouter.js';
+import { register, registerHost, resolve, requestDismiss, owns, ownerOf, describe as describeScope, stack, configure } from '#input/services/InputRouter.js';
 import { fakeOwner } from '#support/owner.js';
 
 const handles = [];

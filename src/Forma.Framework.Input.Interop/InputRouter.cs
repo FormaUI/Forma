@@ -1,18 +1,14 @@
-namespace Forma.Blazor.Features.Input;
+namespace Forma.Framework.Input.Interop;
 
-using System.Diagnostics.CodeAnalysis;
-
-using Forma.Framework.Input;
 using Forma.Framework.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>The circuit's input router: carries the host's policy and routes to the script once, and registers the scopes components own.</summary>
-[SuppressMessage("Performance", "CA1812", Justification = "Constructed by dependency injection.")]
-internal sealed class InputRouter(IJSRuntime js, InputRouterOptions options, IInputActionHandler? hostHandler = null) : IAsyncDisposable, IDisposable
+public sealed class InputRouter(IJSRuntime js, InputRouterOptions options, IInputActionHandler? hostHandler = null) : IAsyncDisposable, IDisposable
 {
-    private readonly JsModule _module = new(js, "./_content/Forma.Blazor/scripts/services/InputRouter.js");
+    private readonly JsModule _module = new(js, "./_content/Forma.Framework.Input.Interop/scripts/services/InputRouter.js");
     private DotNetObjectReference<InputRouter>? _selfReference;
     private Task<bool>? _configuration;
     private InputRegistration? _hostRegistration;

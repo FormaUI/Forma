@@ -1,11 +1,10 @@
-namespace Forma.Blazor.Features.Input;
+namespace Forma.Framework.Input.Interop;
 
-using Forma.Framework.Input;
 
 using Microsoft.JSInterop;
 
 /// <summary>A registration on an input scope, holding the scope active while its surface is open and disposed when the registrant goes.</summary>
-internal sealed class InputRegistration(IJSObjectReference handle) : IAsyncDisposable
+public sealed class InputRegistration(IJSObjectReference handle) : IAsyncDisposable
 {
     private IJSObjectReference? _handle = handle;
 

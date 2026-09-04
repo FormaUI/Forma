@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Components.Interaction;
 
-using Forma.Blazor.Features.Input;
 using Forma.Framework.Input;
+using Forma.Framework.Input.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;

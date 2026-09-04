@@ -42,6 +42,7 @@
         <ProjectReference Include="..\Forma.Framework.Toolbar\Forma.Framework.Toolbar.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Css\Forma.Framework.Css.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Input\Forma.Framework.Input.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Input.Interop\Forma.Framework.Input.Interop.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Interop\Forma.Framework.Interop.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Composer.Interop\Forma.Framework.Composer.Interop.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Timing\Forma.Framework.Timing.csproj" PrivateAssets="all" />

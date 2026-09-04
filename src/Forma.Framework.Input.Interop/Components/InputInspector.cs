@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Interop.Components;
+namespace Forma.Framework.Input.Interop.Components;
 
 using Forma.Framework.Interop;
 
@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>Reports every key, press, and wheel turn on the page to its owner as the input router resolves it.</summary>
-internal sealed class InputInspector(IJSRuntime js)
-    : JsInterop(js, "./_content/Forma.Blazor/scripts/components/InputInspector.js")
+public sealed class InputInspector(IJSRuntime js)
+    : JsInterop(js, "./_content/Forma.Framework.Input.Interop/scripts/components/InputInspector.js")
 {
     /// <summary>Starts reporting to <paramref name="owner"/> through <c>ReportAsync</c>.</summary>
     public ValueTask<bool> AttachAsync<TOwner>(ElementReference element, DotNetObjectReference<TOwner> owner)
