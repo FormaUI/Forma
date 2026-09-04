@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { attach } from '#behaviours/KeyBindings.js';
+import { attach } from '#interop/behaviours/KeyBindings.js';
 import { fakeOwner } from '#support/owner.js';
 
 describe('KeyBindings', () => {

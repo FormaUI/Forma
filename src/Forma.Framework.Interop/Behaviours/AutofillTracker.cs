@@ -1,0 +1,13 @@
+namespace Forma.Framework.Interop.Behaviours;
+
+using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
+
+/// <summary>Marks a field the browser filled in without the user typing.</summary>
+public sealed class AutofillTracker(IJSRuntime js)
+    : JsInterop(js, "./_content/Forma.Framework.Interop/scripts/behaviours/AutofillTracker.js")
+{
+    /// <summary>Attaches tracking to the field.</summary>
+    public ValueTask<bool> AttachAsync(ElementReference input)
+        => AttachCoreAsync(input);
+}

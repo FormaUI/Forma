@@ -2,6 +2,8 @@ namespace Forma.Blazor.Interop.Components;
 
 using System.Diagnostics.CodeAnalysis;
 
+using Forma.Framework.Interop;
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 

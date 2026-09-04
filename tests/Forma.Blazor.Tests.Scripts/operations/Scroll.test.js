@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { byPage, toCenter } from '#operations/Scroll.js';
+import { byPage, toCenter } from '#interop/operations/Scroll.js';
 import { sizeScroller } from '#support/platform.js';
 
 describe('Scroll', () => {

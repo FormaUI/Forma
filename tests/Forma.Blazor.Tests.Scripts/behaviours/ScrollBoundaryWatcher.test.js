@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { attach } from '#behaviours/ScrollBoundaryWatcher.js';
+import { attach } from '#interop/behaviours/ScrollBoundaryWatcher.js';
 import { fakeOwner } from '#support/owner.js';
 import { sizeScroller, stubAnimationFrames, stubMutationObserver, stubResizeObserver } from '#support/platform.js';
 

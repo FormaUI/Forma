@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { attach } from '#behaviours/ImplicitSubmitGuard.js';
+import { attach } from '#interop/behaviours/ImplicitSubmitGuard.js';
 
 describe('ImplicitSubmitGuard', () => {
     /** @type {HTMLInputElement} */

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { setIndeterminate } from '#operations/CheckBox.js';
+import { setIndeterminate } from '#interop/operations/CheckBox.js';
 
 describe('CheckBox', () => {
     /** @type {HTMLInputElement} */

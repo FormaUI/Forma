@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Components.Composer.Assets;
 
-using Forma.Blazor.Interop.Operations;
 using Forma.Framework.Composer.Assets;
+using Forma.Framework.Interop.Operations;
 
 using Microsoft.JSInterop;
 

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { attach } from '#components/InputInspector.js';
-import { register } from '#services/InputRouter.js';
+import { attach } from '#blazor/components/InputInspector.js';
+import { register } from '#blazor/services/InputRouter.js';
 import { fakeOwner } from '#support/owner.js';
 
 let owner;

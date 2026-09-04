@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Components.Feedback;
 
-using Forma.Blazor.Interop.Behaviours;
+using Forma.Framework.Interop.Behaviours;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;

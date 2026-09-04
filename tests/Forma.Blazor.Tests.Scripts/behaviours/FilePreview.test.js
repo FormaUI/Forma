@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { attach } from '#behaviours/FilePreview.js';
+import { attach } from '#interop/behaviours/FilePreview.js';
 import { stubObjectUrls } from '#support/platform.js';
 
 describe('FilePreview', () => {

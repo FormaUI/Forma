@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { attach } from '#components/Modal.js';
+import { attach } from '#interop/components/Modal.js';
 
 describe('Modal', () => {
     /** @type {HTMLDialogElement} */

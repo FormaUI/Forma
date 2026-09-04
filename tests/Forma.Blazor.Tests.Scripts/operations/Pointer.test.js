@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { capture, release } from '#operations/Pointer.js';
+import { capture, release } from '#interop/operations/Pointer.js';
 
 describe('Pointer', () => {
     /** @type {HTMLElement} */

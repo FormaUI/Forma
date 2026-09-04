@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { attach } from '#behaviours/SelectionInteraction.js';
+import { attach } from '#interop/behaviours/SelectionInteraction.js';
 import { fakeOwner } from '#support/owner.js';
 
 describe('SelectionInteraction', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { attach, focusablesIn } from '#behaviours/Focus.js';
+import { attach, focusablesIn } from '#interop/behaviours/Focus.js';
 
 function tab(shiftKey = false) {
     const event = new KeyboardEvent('keydown', { key: 'Tab', shiftKey, bubbles: true, cancelable: true });

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { attach } from '#behaviours/SelectionFollower.js';
+import { attach } from '#interop/behaviours/SelectionFollower.js';
 import { pointerEvent, stubPointerCapture, stubResizeObserver } from '#support/platform.js';
 
 describe('SelectionFollower', () => {

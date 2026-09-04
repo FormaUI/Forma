@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { attach } from '#behaviours/WheelScroll.js';
+import { attach } from '#interop/behaviours/WheelScroll.js';
 import { sizeScroller } from '#support/platform.js';
 
 describe('WheelScroll', () => {

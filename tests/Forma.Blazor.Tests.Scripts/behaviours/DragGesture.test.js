@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { attach } from '#behaviours/DragGesture.js';
+import { attach } from '#interop/behaviours/DragGesture.js';
 import { pointerEvent, stubPointerCapture } from '#support/platform.js';
 
 describe('DragGesture', () => {

@@ -2,10 +2,10 @@ namespace Forma.Blazor.Components.Files;
 
 using System.Globalization;
 
-using Forma.Blazor.Interop.Behaviours;
-using Forma.Blazor.Interop.Operations;
 using Forma.Framework.Files;
 using Forma.Framework.Files.Providers;
+using Forma.Framework.Interop.Behaviours;
+using Forma.Framework.Interop.Operations;
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
 using Forma.Framework.Resources.Extensions;

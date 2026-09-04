@@ -1,5 +1,7 @@
 namespace Forma.Blazor.Interop.Components;
 
+using Forma.Framework.Interop;
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 

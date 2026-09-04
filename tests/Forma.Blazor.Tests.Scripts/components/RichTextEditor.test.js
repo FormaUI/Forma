@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { attach } from '#components/RichTextEditor.js';
+import { attach } from '#blazor/components/RichTextEditor.js';
 import { fakeOwner } from '#support/owner.js';
 
 describe('RichTextEditor', () => {

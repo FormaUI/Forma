@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { readSelection, take, writeSelection } from '#operations/Text.js';
+import { readSelection, take, writeSelection } from '#interop/operations/Text.js';
 
 describe('Text', () => {
     /** @type {HTMLInputElement} */

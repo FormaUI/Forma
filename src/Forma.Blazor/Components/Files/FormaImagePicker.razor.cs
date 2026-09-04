@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Components.Files;
 
-using Forma.Blazor.Interop.Behaviours;
 using Forma.Framework.Files;
+using Forma.Framework.Interop.Behaviours;
 using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;

@@ -4,10 +4,10 @@ using System.Globalization;
 
 using Forma.Blazor.Components.Feedback;
 using Forma.Blazor.Features.Emojis;
-using Forma.Blazor.Interop.Behaviours;
-using Forma.Blazor.Interop.Operations;
 using Forma.Framework.Emojis;
 using Forma.Framework.Icons;
+using Forma.Framework.Interop.Behaviours;
+using Forma.Framework.Interop.Operations;
 using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;

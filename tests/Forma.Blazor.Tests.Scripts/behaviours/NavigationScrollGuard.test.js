@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { attach } from '#behaviours/NavigationScrollGuard.js';
+import { attach } from '#interop/behaviours/NavigationScrollGuard.js';
 
 describe('NavigationScrollGuard', () => {
     /** @type {HTMLElement} */

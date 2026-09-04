@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { attach } from '#behaviours/InfiniteScroll.js';
+import { attach } from '#interop/behaviours/InfiniteScroll.js';
 import { fakeOwner } from '#support/owner.js';
 import { stubIntersectionObserver } from '#support/platform.js';
 

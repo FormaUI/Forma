@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { attach } from '#behaviours/DropZone.js';
+import { attach } from '#interop/behaviours/DropZone.js';
 
 describe('DropZone', () => {
     /** @type {HTMLElement} */

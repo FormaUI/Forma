@@ -28,12 +28,19 @@ components/  → interop owned by a specific Forma component
 services/    → one instance per document that many callers register with
 ```
 
+Scripts and their wrappers ship together in an interop assembly, never in `Forma.Blazor`.
+`Forma.Framework.Interop` holds the interop base, `JsModule` and `JsInterop`, and every
+behaviour and operation any component may attach, with the wrappers of components that
+belong to no feature. A feature with scripts of its own ships them, and their wrappers, in
+`Forma.Framework.{Feature}.Interop`, built on `Forma.Framework.Interop`. Each assembly
+serves its scripts under `_content/{its assembly name}/scripts/`.
+
 | Kind | What it is | Script | C# wrapper |
 |---|---|---|---|
-| Behaviour | binds to an element, holds listeners or observers, needs teardown | `wwwroot/scripts/behaviours/{Capability}.js` | `Interop/Behaviours/{Capability}.cs`, when C# attaches it |
-| Operation | a stateless call against an element or a value | `wwwroot/scripts/operations/{Concern}.js` | `Interop/Operations/{Concern}.cs`, when C# calls it |
-| Component | the whole browser side of one component, both kinds together | `wwwroot/scripts/components/{Component}.js` | `Interop/Components/{Component}.cs` |
-| Service | one instance per document, holding state across every caller that registers with it, configured by the host and queryable | `wwwroot/scripts/services/{Service}.js` | `Features/{Name}/{Service}.cs`, a scoped service owning the module and the host's policy |
+| Behaviour | binds to an element, holds listeners or observers, needs teardown | `wwwroot/scripts/behaviours/{Capability}.js` | `Behaviours/{Capability}.cs` in the same assembly, when C# attaches it |
+| Operation | a stateless call against an element or a value | `wwwroot/scripts/operations/{Concern}.js` | `Operations/{Concern}.cs` in the same assembly, when C# calls it |
+| Component | the whole browser side of one component, both kinds together | `wwwroot/scripts/components/{Component}.js` | `Components/{Component}.cs` in the same assembly |
+| Service | one instance per document, holding state across every caller that registers with it, configured by the host and queryable | `wwwroot/scripts/services/{Service}.js` | `{Service}.cs` at the root of the same assembly, a scoped service owning the module and the host's policy |
 
 - Do put a script in `behaviours/` when it attaches to an element for a lifetime and is later torn down.
 - Do put a script in `operations/` when it is a stateless DOM operation, or a set of related ones.
@@ -113,12 +120,12 @@ export function resolve(event) { … }
 - Do derive a behaviour wrapper from `JsInterop`, give it the module path, and expose a typed `AttachAsync`.
 - Do give an operation wrapper a `JsModule` field rather than deriving from it, so only its own typed methods can be called.
 - Do derive a component wrapper from `JsInterop` when its module attaches a surface, and give it a `JsModule` field when the module is operations alone.
-- Do make a service's wrapper a scoped service under `Features/{Name}/` with a `JsModule` field, registered in `AddFormaUI`, that pushes the host's policy once per circuit and hands out registration handles; it is not an `Interop/` wrapper, because it owns policy as well as the module.
+- Do make a service's wrapper a scoped service at the root of its interop assembly with a `JsModule` field, registered in `AddFormaUI`, that pushes the host's policy once per circuit and hands out registration handles; it is not an `Interop/` wrapper, because it owns policy as well as the module.
 - Do call an operation through `TryInvoke*`, so a dropped circuit leaves the call absent rather than throwing into a render.
 - Do name a wrapper after the module it owns, with no `Bridge`, `Helper`, or `Interop` suffix.
 - Do let `JsModule` and `JsInterop` handle importing, `JSException`, `JSDisconnectedException`, and disposal rather than repeating any of it.
 - Do dispose the wrapper from the component's `DisposeAsync`.
-- Do import from `./_content/Forma.Blazor/scripts/{behaviours|operations|components|services}/{Name}.js`.
+- Do import from `./_content/{Assembly}/scripts/{behaviours|operations|components|services}/{Name}.js`, where the assembly is the one that ships the script, so the base path follows the assembly name exactly.
 - Do suppress CA1812 on a private record that exists only to receive a JS return shape, since nothing constructs it in C#.
 - Don't make a wrapper static; `IJSRuntime` is scoped per circuit and the module reference has to be disposed with it.
 - Don't import a module by hand with `JS.InvokeAsync<IJSObjectReference>("import", …)`.

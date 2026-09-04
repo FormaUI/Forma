@@ -9,7 +9,7 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 | Skill | Read it before |
 |---|---|
 | `forma-legacy-coi` | Designing any component that replaces a legacy Coi admin screen or widget |
-| `forma-js-interop` | Writing or changing anything under `wwwroot/scripts/` or `Interop/` |
+| `forma-js-interop` | Writing or changing anything under `wwwroot/scripts/` or in an interop assembly |
 | `forma-a11y-touch-rtl` | Finishing or reviewing a component — the three gates it must pass |
 | `forma-localization` | Adding user-facing strings or `.he.json` / `.es.json` files |
 | `forma-tests` | Writing bUnit tests or `wwwroot/scripts/` Vitest tests |
@@ -29,9 +29,9 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 
 ## Solution structure
 
-- Do name every project family + concept, with the family one of `Framework`, `AddOns`, or nothing for the product: `Forma.Framework.Icons`, `Forma.AddOns.Emojis.Twemoji`, `Forma.Blazor`, `Forma.Framework.Composer`.
-- Do put in `Forma.Framework.*` what other Forma assemblies build on — contracts, base shells, design vocabulary, horizontal concerns — whether or not it is visual; a Framework assembly references only Framework.
-- Do keep the product to `Forma.Blazor` plus the `Forma.Features.*` slices its components cannot run without, and give a feature one assembly holding its contracts and the default implementation together, because the components cannot function without that default.
+- Do name every project family + concept, with the family one of `Framework`, `Features`, `AddOns`, or nothing for the product: `Forma.Framework.Icons`, `Forma.Framework.Interop`, `Forma.AddOns.Emojis.Twemoji`, `Forma.Blazor`, `Forma.Framework.Composer`.
+- Do put in `Forma.Framework.*` what other Forma assemblies build on — contracts, defaults, base shells, design vocabulary, horizontal concerns — whether or not it is visual; a Framework assembly references only Framework. A concept's browser side, its scripts and the wrappers that reach them, is a `Forma.Framework.{Concept}.Interop` assembly built on `Forma.Framework.Interop`, which holds the interop base and the behaviours and operations every component may attach.
+- Do keep the product to `Forma.Blazor` plus the `Forma.Features.*` assemblies holding the Blazor-side implementations its components cannot run without and a host does not choose, such as emoji loading, the library's own artwork, and culture routing; a feature's contracts and default implementation live together in one assembly, because the components cannot function without that default.
 - Do make a `Forma.AddOns.*` project a host opt-in extending something: the host references and registers it itself, and it ships as its own NuGet package rather than inside the product's.
 - Do answer "required or optional?" by family alone: Framework and Features are required, AddOns are optional.
 - Do decide by ownership, not by how many assemblies consume it: a contract a single feature owns stays with that feature no matter how many projects reference it, such as `IToastService` in `Feedback`.
@@ -42,7 +42,7 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 - Do represent colours and other CSS values with typed values such as `CssColor.FromRgba(...)` and `CssColor.FromHex(...)`.
 - Do give every assembly one root namespace unique to it: its project name, so `Forma.Blazor` holds `Forma.Blazor.*` and `Forma.Framework.Icons` holds `Forma.Framework.Icons.*`.
 - Do map an AddOn's namespace to what it extends — an AddOn owns no namespace of its own — so `Forma.AddOns.Share.Targets` compiles into `Forma.Framework.Share.Targets` and `AddOns` never appears in code; an AddOn whose namespace has nothing to map to extends nothing and is mis-filed.
-- Do keep these identities distinct: assembly and namespace `Forma.Blazor`, package ID `2Site.Forma.Blazor`, static asset base path `_content/Forma.Blazor`.
+- Do keep these identities distinct: assembly and namespace `Forma.Blazor`, package ID `2Site.Forma.Blazor`, and one static asset base path per assembly that ships assets, `_content/{assembly name}`.
 - Do let `Forma.Blazor` reference the feature assemblies its components need and no more; anything a component works without belongs behind a package a host opts into.
 - Do ship a feature as a package of its own only when it is optional — interchangeable content such as an artwork set, which a host adds deliberately — carrying its own assets, with the contracts it needs travelling inside it through `PrivateAssets="all"`.
 - Do let the components' own package carry the features they depend on, so a host installing the library needs nothing else to render.
@@ -51,7 +51,7 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 - Do let a component whose optional contract is unregistered fall back to a default the library carries rather than failing, as `FormaIcon` does with the library's own glyph artwork; a contract carrying data nobody can synthesise, such as an emoji catalog, instead leaves the component in its empty state.
 - Don't represent typed CSS values as arbitrary strings.
 - Don't set `AssemblyName` where it would only repeat the project name, and don't give a project a `PackageId` unless a host is meant to install it by name; everything else ships inside whichever package needs it.
-- Don't rename or conflate these identities; `_content/Forma.Blazor` is pinned and hardcoded by markup and JS, and deliberately does not track the namespace.
+- Don't rename or conflate these identities; a static asset base path is hardcoded by markup and JS, so it follows its assembly's name exactly and never a namespace.
 
 ## Dependencies
 
@@ -209,7 +209,7 @@ Components/{Category}/
 - Do give a component a category of its own, such as `Explorer`, when it is large enough to grow sub-components and supporting types of its own; the category then owns its folder and namespace.
 - Do place supporting types such as `ModalSize`, `BreadcrumbItem`, and `SortableDragFrom` beside the component that owns them.
 - Do put a supporting type in the feature assembly instead once the concern has one, because a type a host names in a callback or an options parameter is the feature's vocabulary rather than one component's detail; what stays beside the component is what no caller ever names, such as a stream wrapper driving a progress bar.
-- Do put script a component needs in `wwwroot/scripts/`, never beside the component.
+- Do put script a component needs in the `wwwroot/scripts/` of the assembly that ships it, never beside the component.
 - Do add the translation pair only when the component invents user-facing text.
 - Don't use `@code` blocks in library components.
 - Don't file such a component under a category naming its subject matter instead, the way `Files` would swallow `Explorer`.
@@ -254,7 +254,7 @@ A component whose sub-components only work inside it still has to hand them stat
 - Do specialize by composition, not by widening a general component: a context that needs its own kind of control gets a component that composes the base and exposes only what that context means (`FormaToggleButton` over `FormaButton`, carrying a toggle's pressed state and the toolbar's look), and the base takes a new parameter only when its meaning is general to every use of the base.
 - Don't place component logic in markup.
 - Don't use `.ConfigureAwait(false)` in `Forma.Blazor` components; leaving the synchronization context means state touched after an await has to be marshalled back through `InvokeAsync`. `src/Forma.Blazor/.editorconfig` sets `CA2007` to `none`, so nothing will flag it for you.
-- Don't omit `.ConfigureAwait(false)` from awaited service code in a `Forma.Features.*` project, which runs off the renderer and where the root `.editorconfig` sets `CA2007` to `error`.
+- Don't omit `.ConfigureAwait(false)` from awaited service code in a `Forma.Framework.*` or `Forma.Features.*` project, which runs off the renderer and where the root `.editorconfig` sets `CA2007` to `error`; an interop assembly relaxes that rule as `Forma.Blazor` does, because its wrappers marshal back through the renderer.
 
 ## Options records
 

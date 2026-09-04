@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { attach } from '#behaviours/AnchoredPopup.js';
+import { attach } from '#interop/behaviours/AnchoredPopup.js';
 import { stubResizeObserver } from '#support/platform.js';
 
 describe('AnchoredPopup', () => {

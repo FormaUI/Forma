@@ -4,15 +4,12 @@ import { defineConfig } from 'vitest/config';
 // arrives percent-encoded, so the URL is decoded rather than converted by fileURLToPath.
 const resolved = path => decodeURIComponent(new URL(path, import.meta.url).pathname);
 
-const scripts = '../../src/Forma.Blazor/wwwroot/scripts/';
-
+// One alias per assembly that ships scripts, each pointing at that assembly's scripts root.
 export default defineConfig({
     resolve: {
         alias: {
-            '#behaviours/': resolved(`${scripts}behaviours/`),
-            '#operations/': resolved(`${scripts}operations/`),
-            '#components/': resolved(`${scripts}components/`),
-            '#services/': resolved(`${scripts}services/`),
+            '#interop/': resolved('../../src/Forma.Framework.Interop/wwwroot/scripts/'),
+            '#blazor/': resolved('../../src/Forma.Blazor/wwwroot/scripts/'),
             '#support/': resolved('./support/'),
         },
     },

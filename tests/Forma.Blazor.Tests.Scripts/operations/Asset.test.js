@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { stubAssetLoading } from '#support/platform.js';
 
 describe('Asset', () => {
-    /** @type {typeof import('#operations/Asset.js')} */
+    /** @type {typeof import('#interop/operations/Asset.js')} */
     let assets;
     /** @type {ReturnType<typeof stubAssetLoading>} */
     let head;
@@ -11,7 +11,7 @@ describe('Asset', () => {
         head = stubAssetLoading();
         // The load cache is module state, so each test gets a fresh module.
         vi.resetModules();
-        assets = await import('#operations/Asset.js');
+        assets = await import('#interop/operations/Asset.js');
     });
 
     afterEach(() => head.restore());

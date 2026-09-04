@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components;
 
 public sealed class EmojiSpriteLoaderTests
 {
-    private const string Module = "./_content/Forma.Blazor/scripts/operations/Asset.js";
+    private const string Module = "./_content/Forma.Framework.Interop/scripts/operations/Asset.js";
 
     [Fact]
     public async Task Should_share_a_load_still_in_flight()

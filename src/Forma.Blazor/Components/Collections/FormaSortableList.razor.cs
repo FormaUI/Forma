@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Components.Collections;
 
-using Forma.Blazor.Interop.Behaviours;
+using Forma.Framework.Interop.Behaviours;
 using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;

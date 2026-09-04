@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { attach } from '#behaviours/AutofillTracker.js';
+import { attach } from '#interop/behaviours/AutofillTracker.js';
 
 describe('AutofillTracker', () => {
     /** @type {HTMLInputElement} */

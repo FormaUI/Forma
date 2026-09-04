@@ -2,7 +2,7 @@ namespace Forma.Blazor.Features.Input;
 
 using System.Diagnostics.CodeAnalysis;
 
-using Forma.Blazor.Interop;
+using Forma.Framework.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { attach } from '#behaviours/ReorderInteraction.js';
+import { attach } from '#interop/behaviours/ReorderInteraction.js';
 import { fakeOwner } from '#support/owner.js';
 import { pointerEvent, stackRows, stubPointerCapture } from '#support/platform.js';
 
