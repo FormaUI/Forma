@@ -3,19 +3,16 @@ namespace Forma.Framework.Interop.Behaviours;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>A popup kept positioned against its anchor for as long as it is open, telling its owner when Escape is pressed anywhere while it is.</summary>
+/// <summary>A popup kept positioned against its anchor for as long as it is open.</summary>
 public sealed class AnchoredPopup(IJSRuntime js)
     : JsInterop(js, "./_content/Forma.Framework.Interop/scripts/behaviours/AnchoredPopup.js")
 {
     private bool _isOpen;
     private Task? _transition;
 
-    /// <summary>Brings the popup into line with whether it is open, running <paramref name="onOpened"/> once it is positioned; a popup that <paramref name="keepsFocus"/> moves Tab between its own controls, the <paramref name="trigger"/> is where focus returns on close, and the <paramref name="owner"/> is told through <c>HandleEscapeAsync</c> when Escape is pressed while it is open.</summary>
-    public async ValueTask SyncAsync<TOwner>(DotNetObjectReference<TOwner> owner, bool isOpen, ElementReference popup, ElementReference anchor, ElementReference trigger, Func<ValueTask>? onOpened = null, bool keepsFocus = false)
-        where TOwner : class
+    /// <summary>Brings the popup into line with whether it is open, running <paramref name="onOpened"/> once it is positioned; a popup that <paramref name="keepsFocus"/> moves Tab between its own controls, and the <paramref name="trigger"/> is where focus returns on close.</summary>
+    public async ValueTask SyncAsync(bool isOpen, ElementReference popup, ElementReference anchor, ElementReference trigger, Func<ValueTask>? onOpened = null, bool keepsFocus = false)
     {
-        ArgumentNullException.ThrowIfNull(owner);
-
         // A sync that arrives while an earlier one is still attaching waits for it, so one open
         // cannot attach twice and strand the first attachment's listeners.
         if (_transition is { } transition)
@@ -28,7 +25,7 @@ public sealed class AnchoredPopup(IJSRuntime js)
             return;
         }
 
-        var next = isOpen ? OpenAsync(owner, popup, anchor, trigger, onOpened, keepsFocus) : DetachAsync().AsTask();
+        var next = isOpen ? OpenAsync(popup, anchor, trigger, onOpened, keepsFocus) : DetachAsync().AsTask();
         _isOpen = isOpen;
         _transition = next;
 
@@ -46,11 +43,10 @@ public sealed class AnchoredPopup(IJSRuntime js)
     public ValueTask<bool> CloseAsync(bool returnsFocus)
         => InvokeAsync("close", returnsFocus);
 
-    private async Task OpenAsync<TOwner>(DotNetObjectReference<TOwner> owner, ElementReference popup, ElementReference anchor, ElementReference trigger, Func<ValueTask>? onOpened, bool keepsFocus)
-        where TOwner : class
+    private async Task OpenAsync(ElementReference popup, ElementReference anchor, ElementReference trigger, Func<ValueTask>? onOpened, bool keepsFocus)
     {
         // Each open gets its own attachment, so a failed attach is retried on the next sync.
-        _isOpen = await AttachCoreAsync(popup, new { anchor, keepsFocus, owner });
+        _isOpen = await AttachCoreAsync(popup, new { anchor, keepsFocus });
 
         if (!_isOpen)
         {

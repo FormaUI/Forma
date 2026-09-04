@@ -14,8 +14,11 @@ the Showcase's `FormaInputInspector` page uses both, and its visible-browser wal
 table, nesting, dismissal, the modal barrier, host routes, shadow roots, wheel, and pointer
 input against real events. Resolution with a hundred registered scopes, ten of them active,
 costs a few hundredths of a millisecond, so parent lookup scans the scopes as they are.
-No library component registers a scope yet. The `focus` field of a profile is not read
-until `Focus.js` moves onto the router in step 3.
+`FormaPopup` is the first library component on the router: it registers its root and
+activates while open, with its trigger counted as inside it, so Escape and a press away
+dismiss it through the router rather than through a document listener and a backdrop of
+its own. The `focus` field of a profile is not read until `Focus.js` moves onto the router
+in step 3.
 
 ## Purpose
 

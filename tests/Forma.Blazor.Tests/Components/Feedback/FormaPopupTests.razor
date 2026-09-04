@@ -16,12 +16,11 @@
             Assert.Multiple(
                 () => Assert.Equal("manual", root.GetAttribute("popover")),
                 () => Assert.Empty(root.Children),
-                () => Assert.Empty(cut.FindAll(".forma-popup-backdrop")),
                 () => Assert.False(cut.FindComponent<FormaPopup>().Instance.IsOpen));
         }
 
         [Fact]
-        public async Task Should_render_the_content_and_the_backdrop_once_opened()
+        public async Task Should_render_the_content_once_opened()
         {
             // Arrange
             using var ctx = new FormaPopupTests();
@@ -33,13 +32,12 @@
             // Assert
             Assert.Multiple(
                 () => Assert.Equal("Content", cut.Find(".forma-popup p").TextContent),
-                () => Assert.NotNull(cut.Find(".forma-popup-backdrop")),
                 () => Assert.Contains("forma-popup-open", cut.Find(".forma-popup").ClassList),
                 () => Assert.True(cut.FindComponent<FormaPopup>().Instance.IsOpen));
         }
 
         [Fact]
-        public async Task Should_close_when_the_backdrop_is_clicked()
+        public async Task Should_close_when_dismissed_by_a_press_away()
         {
             // Arrange
             using var ctx = new FormaPopupTests();
@@ -47,7 +45,7 @@
             await cut.InvokeAsync(() => cut.FindComponent<FormaPopup>().Instance.OpenAsync(default));
 
             // Act
-            cut.Find(".forma-popup-backdrop").Click();
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopup>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.PressAway));
 
             // Assert
             Assert.Multiple(
@@ -56,7 +54,7 @@
         }
 
         [Fact]
-        public async Task Should_close_when_the_script_reports_escape()
+        public async Task Should_close_when_dismissed_by_escape()
         {
             // Arrange
             using var ctx = new FormaPopupTests();
@@ -65,12 +63,47 @@
             await cut.InvokeAsync(() => popup.OpenAsync(default));
 
             // Act
-            await cut.InvokeAsync(popup.HandleEscapeAsync);
+            await cut.InvokeAsync(() => popup.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.Escape));
 
             // Assert
             Assert.Multiple(
                 () => Assert.False(popup.IsOpen),
                 () => Assert.Empty(cut.FindAll(".forma-popup p")));
+        }
+
+        [Fact]
+        public async Task Should_register_a_scope_with_its_trigger_inside_once_open()
+        {
+            // Arrange
+            using var ctx = new FormaPopupTests();
+            var router = ctx.JSInterop.SetupModule("./_content/Forma.Framework.Input.Interop/scripts/InputRouter.js");
+            var cut = ctx.Render(@<FormaPopup Anchor="default"><p>Content</p></FormaPopup>);
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopup>().Instance.OpenAsync(default));
+
+            // Assert
+            var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
+            Assert.Multiple(
+                () => Assert.Same(cut.FindComponent<FormaPopup>().Instance, Assert.IsType<DotNetObjectReference<FormaPopup>>(registration.Arguments[2]).Value),
+                () => Assert.Equal(DismissBehavior.Dismiss, Assert.IsType<InputProfile>(registration.Arguments[1]).Escape),
+                () => Assert.Equal(PressAwayBehavior.Dismiss, Assert.IsType<InputProfile>(registration.Arguments[1]).PressAway));
+        }
+
+        [Fact]
+        public async Task Should_declare_no_press_away_dismissal_when_turned_off()
+        {
+            // Arrange
+            using var ctx = new FormaPopupTests();
+            var router = ctx.JSInterop.SetupModule("./_content/Forma.Framework.Input.Interop/scripts/InputRouter.js");
+            var cut = ctx.Render(@<FormaPopup Anchor="default" PressAway="false"><p>Content</p></FormaPopup>);
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopup>().Instance.OpenAsync(default));
+
+            // Assert
+            var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
+            Assert.Equal(PressAwayBehavior.Ignore, Assert.IsType<InputProfile>(registration.Arguments[1]).PressAway);
         }
 
         [Fact]
@@ -108,7 +141,7 @@
         }
 
         [Fact]
-        public async Task Should_leave_escape_to_the_script_rather_than_forwarding_it()
+        public async Task Should_leave_escape_to_the_router_rather_than_forwarding_it()
         {
             // Arrange
             using var ctx = new FormaPopupTests();

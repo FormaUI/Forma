@@ -5,6 +5,7 @@ global using Bunit;
 
 global using Forma.Blazor.Components.Feedback;
 global using Forma.Framework.Feedback;
+global using Forma.Framework.Input;
 global using Forma.Framework.Localization;
 global using Forma.Framework.Localization.Json;
 global using Forma.Framework.Media;

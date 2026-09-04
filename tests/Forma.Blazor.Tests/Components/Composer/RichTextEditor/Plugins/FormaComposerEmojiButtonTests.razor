@@ -56,7 +56,7 @@
         }
 
         [Fact]
-        public async Task Should_close_and_collapse_the_button_when_escape_is_reported()
+        public async Task Should_close_and_collapse_the_button_when_dismissed_by_escape()
         {
             // Arrange
             using var ctx = new FormaComposerEmojiButtonTests();
@@ -64,7 +64,7 @@
             cut.Find("button").Click();
 
             // Act
-            await cut.InvokeAsync(cut.FindComponent<FormaPopup>().Instance.HandleEscapeAsync);
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopup>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.Escape));
 
             // Assert
             Assert.Multiple(
@@ -73,7 +73,7 @@
         }
 
         [Fact]
-        public void Should_close_when_the_backdrop_is_clicked()
+        public async Task Should_close_when_pressed_away()
         {
             // Arrange
             using var ctx = new FormaComposerEmojiButtonTests();
@@ -81,7 +81,7 @@
             cut.Find("button").Click();
 
             // Act
-            cut.Find(".forma-popup-backdrop").Click();
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopup>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.PressAway));
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-emoji-picker"));

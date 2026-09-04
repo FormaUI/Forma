@@ -1,12 +1,14 @@
 namespace Forma.Blazor.Components.Feedback;
 
+using Forma.Framework.Input;
+using Forma.Framework.Input.Interop;
 using Forma.Framework.Interop.Behaviours;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
-/// <summary>An anchored popup shown in the browser's top layer, dismissed by Escape or an outside click, and returning focus to its trigger after keyboard dismissal.</summary>
+/// <summary>An anchored popup shown in the browser's top layer, registered with the input router while open so Escape and a press away dismiss it, and returning focus to its trigger after keyboard dismissal.</summary>
 public sealed partial class FormaPopup : ComponentBase, IAsyncDisposable
 {
     /// <summary>The element the popup hangs from.</summary>
@@ -15,8 +17,11 @@ public sealed partial class FormaPopup : ComponentBase, IAsyncDisposable
     /// <summary>Whether Tab moves between the popup's own controls instead of leaving it.</summary>
     [Parameter] public bool KeepsFocus { get; set; }
 
-    /// <summary>Whether closing returns focus to the trigger when focus is inside the popup at the time. An outside click never moves focus.</summary>
+    /// <summary>Whether closing returns focus to the trigger when focus is inside the popup at the time. A press away never moves focus.</summary>
     [Parameter] public bool ReturnsFocus { get; set; } = true;
+
+    /// <summary>Whether a press away from the popup and its trigger dismisses it.</summary>
+    [Parameter] public bool PressAway { get; set; } = true;
 
     /// <summary>The popup's content, rendered only while it is open.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -27,7 +32,7 @@ public sealed partial class FormaPopup : ComponentBase, IAsyncDisposable
     /// <summary>Raised once the popup is open and positioned, for content that takes focus or attaches a behaviour of its own.</summary>
     [Parameter] public EventCallback OnOpened { get; set; }
 
-    /// <summary>Raised for every key pressed inside the popup other than Escape, which closes it wherever focus is.</summary>
+    /// <summary>Raised for every key pressed inside the popup other than Escape, which the router answers by dismissing it.</summary>
     [Parameter] public EventCallback<KeyboardEventArgs> OnKeyDown { get; set; }
 
     /// <summary>Additional attributes applied to the popup element.</summary>
@@ -36,8 +41,12 @@ public sealed partial class FormaPopup : ComponentBase, IAsyncDisposable
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
+    [Inject] private InputRouter Router { get; set; } = default!;
+
     private AnchoredPopup _popup = default!;
     private DotNetObjectReference<FormaPopup> _selfReference = default!;
+    private InputRegistration? _registration;
+    private Task _sync = Task.CompletedTask;
     private ElementReference _element;
     private ElementReference _trigger;
 
@@ -60,6 +69,13 @@ public sealed partial class FormaPopup : ComponentBase, IAsyncDisposable
             return attributes;
         }
     }
+
+    private InputProfile Profile
+        => new()
+        {
+            Escape = DismissBehavior.Dismiss,
+            PressAway = PressAway ? PressAwayBehavior.Dismiss : PressAwayBehavior.Ignore,
+        };
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -88,13 +104,12 @@ public sealed partial class FormaPopup : ComponentBase, IAsyncDisposable
     public Task ToggleAsync(ElementReference trigger)
         => IsOpen ? CloseAsync() : OpenAsync(trigger);
 
-    /// <summary>Closes the popup and returns focus to its trigger; called by the script when Escape is pressed while the popup is open.</summary>
+    /// <summary>Closes the popup as the router dismissed it: a press away leaves focus where it is, and anything else returns it to the trigger.</summary>
     [JSInvokable]
-    public Task HandleEscapeAsync()
-        => CloseAsync();
-
-    private Task DismissAsync()
-        => CloseAsync(returnsFocus: false);
+    public Task HandleDismissAsync(DismissBehavior action, DismissReason reason)
+        => action is DismissBehavior.Ignore
+            ? Task.CompletedTask
+            : CloseAsync(ReturnsFocus && reason is not DismissReason.PressAway);
 
     private async Task CloseAsync(bool returnsFocus)
     {
@@ -102,6 +117,8 @@ public sealed partial class FormaPopup : ComponentBase, IAsyncDisposable
         {
             return;
         }
+
+        await ReleaseAsync();
 
         // Focus is moved while the content is still in the document, so where it is can be seen.
         await _popup.CloseAsync(returnsFocus);
@@ -115,7 +132,7 @@ public sealed partial class FormaPopup : ComponentBase, IAsyncDisposable
         await OnOpenChanged.InvokeAsync(isOpen);
     }
 
-    // Escape reaches the script's own listener, which closes the popup wherever focus is.
+    // Escape belongs to the router, which dismisses the popup wherever focus is.
     private async Task HandleKeyDownAsync(KeyboardEventArgs args)
     {
         if (args.Key != "Escape")
@@ -124,15 +141,67 @@ public sealed partial class FormaPopup : ComponentBase, IAsyncDisposable
         }
     }
 
+    // Renders can overlap, so each sync waits for the one before it and none registers twice.
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
-        => await _popup.SyncAsync(_selfReference, IsOpen, _element, Anchor, _trigger, async () => await OnOpened.InvokeAsync(), KeepsFocus);
+    {
+        await _popup.SyncAsync(IsOpen, _element, Anchor, _trigger, async () => await OnOpened.InvokeAsync(), KeepsFocus);
+
+        var previous = _sync;
+        _sync = SyncRegistrationAsync(previous);
+        await _sync;
+    }
+
+    private async Task SyncRegistrationAsync(Task previous)
+    {
+        await previous;
+
+        if (IsOpen && _registration is null)
+        {
+            await RegisterAsync();
+        }
+        else if (!IsOpen)
+        {
+            await ReleaseAsync();
+        }
+    }
+
+    // The popup is a scope only while open, with its trigger counted as inside it so a press there toggles rather than dismisses.
+    private async Task RegisterAsync()
+    {
+        var registration = await Router.RegisterAsync(_element, Profile, _selfReference, within: [_trigger]);
+
+        if (registration is null)
+        {
+            return;
+        }
+
+        // The popup may have closed while the registration was being made.
+        if (!IsOpen)
+        {
+            await registration.DisposeAsync();
+            return;
+        }
+
+        _registration = registration;
+        await registration.ActivateAsync();
+    }
+
+    private async Task ReleaseAsync()
+    {
+        if (_registration is { } registration)
+        {
+            _registration = null;
+            await registration.DisposeAsync();
+        }
+    }
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
         try
         {
+            await ReleaseAsync();
             await _popup.DisposeAsync();
         }
         finally

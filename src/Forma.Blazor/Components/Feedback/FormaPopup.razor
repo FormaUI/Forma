@@ -1,11 +1,6 @@
 @namespace Forma.Blazor.Components.Feedback
 
-@if (IsOpen)
-{
-    @* The backdrop takes the click that dismisses the popup and nothing else: no focus, so the selection under it stands. *@
-    <div class="forma-popup-backdrop" @onclick="DismissAsync" @onmousedown:preventDefault></div>
-}
-@* Manual rather than auto: the backdrop owns dismissal, which also sidesteps the iOS 17–18.2 bug where a popover ignores a tap outside it. *@
+@* Manual rather than auto: dismissal belongs to the input router, which also sidesteps the iOS 17–18.2 bug where a popover ignores a tap outside it. *@
 <div @attributes="RootAttributes"
      popover="manual"
      @ref="_element"
