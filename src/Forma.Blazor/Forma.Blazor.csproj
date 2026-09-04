@@ -37,7 +37,7 @@
         <ProjectReference Include="..\Forma.Features.Files\Forma.Features.Files.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Features.Feedback\Forma.Features.Feedback.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Features.Media\Forma.Features.Media.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Features.Sanitization\Forma.Features.Sanitization.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Sanitization.Allowlist\Forma.Framework.Sanitization.Allowlist.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Share\Forma.Framework.Share.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Toolbar\Forma.Framework.Toolbar.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Css\Forma.Framework.Css.csproj" PrivateAssets="all" />

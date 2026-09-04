@@ -1,10 +1,10 @@
 namespace Forma.Framework.Composer.Tests.Editing;
 
-using Forma.Features.Sanitization;
 using Forma.Framework.Composer.Assets;
 using Forma.Framework.Composer.Documents;
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Composer.Plugins;
+using Forma.Framework.Sanitization.Allowlist;
 using Forma.Framework.Toolbar;
 using Forma.Tests.Composer;
 

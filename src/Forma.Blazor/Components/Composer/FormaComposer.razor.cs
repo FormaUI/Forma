@@ -6,7 +6,6 @@ using Forma.Blazor.Components.Composer.Assets;
 using Forma.Blazor.Components.Composer.PlainTextEditor;
 using Forma.Blazor.Components.Composer.Plugins;
 using Forma.Blazor.Interop.Behaviours;
-using Forma.Features.Sanitization;
 using Forma.Framework.Composer.Assets;
 using Forma.Framework.Composer.Documents;
 using Forma.Framework.Composer.Editing;
@@ -14,6 +13,7 @@ using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Composer.Syntax;
 using Forma.Framework.Resources;
 using Forma.Framework.Sanitization;
+using Forma.Framework.Sanitization.Allowlist;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;

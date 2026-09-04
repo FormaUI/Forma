@@ -17,7 +17,7 @@
         <ProjectReference Include="..\..\src\Forma.Features.Feedback\Forma.Features.Feedback.csproj" />
         <ProjectReference Include="..\..\src\Forma.Features.Media\Forma.Features.Media.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />
-        <ProjectReference Include="..\..\src\Forma.Features.Sanitization\Forma.Features.Sanitization.csproj" />
+        <ProjectReference Include="..\..\src\Forma.Framework.Sanitization.Allowlist\Forma.Framework.Sanitization.Allowlist.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Timing\Forma.Framework.Timing.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
         <ProjectReference Include="..\..\src\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />

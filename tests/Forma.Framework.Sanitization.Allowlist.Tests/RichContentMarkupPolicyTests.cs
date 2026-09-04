@@ -1,4 +1,4 @@
-namespace Forma.Features.Sanitization.Tests;
+namespace Forma.Framework.Sanitization.Allowlist.Tests;
 
 using Forma.Framework.Sanitization;
 

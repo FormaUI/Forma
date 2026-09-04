@@ -1,4 +1,4 @@
-namespace Forma.Features.Sanitization;
+namespace Forma.Framework.Sanitization.Allowlist;
 
 using Forma.Framework.Sanitization;
 
