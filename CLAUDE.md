@@ -29,11 +29,11 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 
 ## Solution structure
 
-- Do name every project family + concept, with the family one of `Framework`, `Features`, `AddOns`, or nothing for the product: `Forma.Framework.Icons`, `Forma.Framework.Interop`, `Forma.AddOns.Emojis.Twemoji`, `Forma.Blazor`, `Forma.Framework.Composer`.
+- Do name every project family + concept, with the family one of `Framework`, `AddOns`, or nothing for the product: `Forma.Framework.Icons`, `Forma.Framework.Interop`, `Forma.AddOns.Emojis.Twemoji`, `Forma.Blazor`, `Forma.Framework.Composer`.
 - Do put in `Forma.Framework.*` what other Forma assemblies build on — contracts, defaults, base shells, design vocabulary, horizontal concerns — whether or not it is visual; a Framework assembly references only Framework. A concept's browser side, its scripts and the wrappers that reach them, is a `Forma.Framework.{Concept}.Interop` assembly built on `Forma.Framework.Interop`, which holds the interop base and the behaviours and operations every component may attach.
-- Do keep the product to `Forma.Blazor` plus the `Forma.Features.*` assemblies holding the Blazor-side implementations its components cannot run without and a host does not choose, such as emoji loading, the library's own artwork, and culture routing; a feature's contracts and default implementation live together in one assembly, because the components cannot function without that default.
+- Do keep the product to `Forma.Blazor`; what its components cannot run without and a host does not choose is a Framework assembly, either a default shipped beside its contract and named for the contract plus what it supplies, `Forma.Framework.{Concept}.{Supply}`, such as Unicode emoji or the library's own artwork, or a concept of its own, such as culture routing.
 - Do make a `Forma.AddOns.*` project a host opt-in extending something: the host references and registers it itself, and it ships as its own NuGet package rather than inside the product's.
-- Do answer "required or optional?" by family alone: Framework and Features are required, AddOns are optional.
+- Do answer "required or optional?" by family alone: Framework is required, AddOns are optional.
 - Do decide by ownership, not by how many assemblies consume it: a contract a single feature owns stays with that feature no matter how many projects reference it, such as `IToastService` in `Feedback`.
 - Do keep a folder and its namespace in step, so `Forma.Blazor/Components/Symbols/` holds `Forma.Blazor.Components.Symbols` and `Forma.Framework.Media/Providers/` holds `Forma.Framework.Media.Providers` — the namespace is the root namespace plus the folder path.
 - Don't reference an AddOn from anywhere inside Forma — the Showcase and tests demonstrate AddOns, nothing else touches them — and don't let a dependency point upward: the product references Framework and the product, an AddOn references Framework and whatever it extends.
@@ -223,7 +223,7 @@ A component whose sub-components only work inside it still has to hand them stat
 - Do have the subject implement both itself, so a member returns the field or parameter the subject already owns and there is nothing to copy and nothing to keep in step.
 - Do implement the members explicitly, which keeps a public component from growing public surface for an internal contract.
 - Do route every member that changes state through one private helper on the subject that changes it and then reports it, so a call site cannot do the one without the other.
-- Do put the pair with the feature the subject belongs to rather than beside the component implementing it, so the component folder holds components and the vocabulary they speak lives in `Forma.Features.{Feature}`.
+- Do put the pair with the feature the subject belongs to rather than beside the component implementing it, so the component folder holds components and the vocabulary they speak lives in `Forma.Framework.{Feature}`.
 - Do give the pair the visibility its assembly implies: `internal` while it sits beside its only implementer, `public` once it ships from the feature assembly a component reads it from.
 - Do let a consumer talk to its immediate subject alone, and have a subject that is itself a consumer re-expose what its own consumers need.
 - Do let a consumer resolve its own localization through `IStringLocale<T>`.
@@ -254,7 +254,7 @@ A component whose sub-components only work inside it still has to hand them stat
 - Do specialize by composition, not by widening a general component: a context that needs its own kind of control gets a component that composes the base and exposes only what that context means (`FormaToggleButton` over `FormaButton`, carrying a toggle's pressed state and the toolbar's look), and the base takes a new parameter only when its meaning is general to every use of the base.
 - Don't place component logic in markup.
 - Don't use `.ConfigureAwait(false)` in `Forma.Blazor` components; leaving the synchronization context means state touched after an await has to be marshalled back through `InvokeAsync`. `src/Forma.Blazor/.editorconfig` sets `CA2007` to `none`, so nothing will flag it for you.
-- Don't omit `.ConfigureAwait(false)` from awaited service code in a `Forma.Framework.*` or `Forma.Features.*` project, which runs off the renderer and where the root `.editorconfig` sets `CA2007` to `error`; an interop assembly relaxes that rule as `Forma.Blazor` does, because its wrappers marshal back through the renderer.
+- Don't omit `.ConfigureAwait(false)` from awaited service code in a `Forma.Framework.*` project, which runs off the renderer and where the root `.editorconfig` sets `CA2007` to `error`; an interop assembly relaxes that rule as `Forma.Blazor` does, because its wrappers marshal back through the renderer.
 
 ## Options records
 
@@ -334,7 +334,7 @@ A component is handed a width, never a device: it sits in a phone's full column,
 
 ## Services
 
-- Do place a contract and the sealed implementation shipped with it in `Forma.Features.{Feature}/{Category}/`, `IXService.cs` beside `XService.cs`.
+- Do place a contract and the sealed implementation shipped with it in `Forma.Framework.{Feature}/{Category}/`, `IXService.cs` beside `XService.cs`.
 - Do extend `INotifyStateChanged` when a component must rerender after service state changes.
 - Do compose `StateNotifier` for `Func<Task>` subscribers, validate arguments, and put an optional `CancellationToken` last.
 - Do subscribe from the component in `OnInitialized` and unsubscribe in `Dispose`.
