@@ -2,21 +2,34 @@ namespace Forma.Blazor.Components.Feedback;
 
 using System.Diagnostics.CodeAnalysis;
 
+using Forma.Framework.Input;
+using Forma.Framework.Input.Interop;
 using Forma.Framework.Interop.Components;
 using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>A dialog rendered in the browser's top layer, with an optional header, footer actions, and backdrop dismissal.</summary>
+/// <summary>A dialog rendered in the browser's top layer, with an optional header, footer actions, and backdrop dismissal, registered with the input router as a modal scope while open so Escape and a platform close request are decided there.</summary>
 public sealed partial class FormaDialog : IAsyncDisposable
 {
+    private static readonly InputProfile ModalProfile = new()
+    {
+        Modal = true,
+        Escape = DismissBehavior.Dismiss,
+        CloseRequest = DismissBehavior.Dismiss,
+        PressAway = PressAwayBehavior.Ignore,
+    };
+
     private ElementReference _dialogElement;
     private Dialog _dialog = default!;
+    private DotNetObjectReference<FormaDialog> _selfReference = default!;
+    private InputScope? _inputScope;
     private bool _isOpen;
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
     [Inject] private IStringLocale<FormaDialog> L { get; set; } = default!;
+    [Inject] private InputRouter InputRouter { get; set; } = default!;
 
     /// <summary>Whether the dialog is currently open.</summary>
     [Parameter, EditorRequired] public bool Opened { get; set; }
@@ -62,7 +75,10 @@ public sealed partial class FormaDialog : IAsyncDisposable
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _dialog = new Dialog(JS);
+    {
+        _dialog = new Dialog(JS);
+        _selfReference = DotNetObjectReference.Create(this);
+    }
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -82,13 +98,29 @@ public sealed partial class FormaDialog : IAsyncDisposable
             // second pass through here, and a call made before the module answered never ran. Only
             // a call that did run counts as open, so the pass that follows it opens the dialog.
             _isOpen = await _dialog.OpenAsync(Options.CloseOnBackdropClick);
+
+            if (_isOpen && _inputScope is null)
+            {
+                await RegisterAsync();
+            }
         }
         else if (!Opened && _isOpen)
         {
-            _isOpen = false;
+            await SetClosedAsync();
             await _dialog.CloseAsync();
         }
     }
+
+    /// <summary>Closes the dialog as the router dismissed it, or runs the default cancel action when told to cancel.</summary>
+    [JSInvokable]
+    [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "The router hands every owner the action and the reason.")]
+    public Task HandleDismissAsync(DismissBehavior action, DismissReason reason)
+        => action switch
+        {
+            DismissBehavior.Dismiss => RequestCloseAsync(),
+            DismissBehavior.Cancel => HandleDefaultCancelAsync(),
+            _ => Task.CompletedTask,
+        };
 
     /// <summary>
     /// Called when the native dialog fires its <c>close</c> event (Escape key or <c>.close()</c>).
@@ -98,7 +130,7 @@ public sealed partial class FormaDialog : IAsyncDisposable
     {
         if (_isOpen)
         {
-            _isOpen = false;
+            await SetClosedAsync();
             await OnClose.InvokeAsync();
         }
     }
@@ -114,7 +146,7 @@ public sealed partial class FormaDialog : IAsyncDisposable
         // is closed here instead.
         if (_isOpen)
         {
-            _isOpen = false;
+            await SetClosedAsync();
             await OnClose.InvokeAsync();
         }
     }
@@ -145,7 +177,43 @@ public sealed partial class FormaDialog : IAsyncDisposable
         }
     }
 
+    // The dialog is a scope only while open, active the whole time so it stands as the modal barrier.
+    private async Task RegisterAsync()
+    {
+        var inputScope = await InputRouter.RegisterAsync(_dialogElement, ModalProfile, _selfReference);
+
+        if (inputScope is null)
+        {
+            return;
+        }
+
+        // The dialog may have closed, or another pass may have registered it, while the registration was being made.
+        if (!_isOpen || _inputScope is not null)
+        {
+            await inputScope.DisposeAsync();
+            return;
+        }
+
+        _inputScope = inputScope;
+        await inputScope.ActivateAsync();
+    }
+
+    private async Task SetClosedAsync()
+    {
+        _isOpen = false;
+
+        if (_inputScope is { } inputScope)
+        {
+            _inputScope = null;
+            await inputScope.DisposeAsync();
+        }
+    }
+
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
-        => await _dialog.DisposeAsync();
+    {
+        await SetClosedAsync();
+        await _dialog.DisposeAsync();
+        _selfReference.Dispose();
+    }
 }

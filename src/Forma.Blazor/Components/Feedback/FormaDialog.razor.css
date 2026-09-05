@@ -1,6 +1,6 @@
 /*
     FormaDialog — scoped styles
-    Uses the native <dialog> element for backdrop, focus trap, and Escape handling.
+    Uses the native <dialog> element for backdrop and focus trap; Escape belongs to the input router.
 */
 
 /* ── Dialog reset ── */

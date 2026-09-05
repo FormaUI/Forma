@@ -666,6 +666,16 @@ function ensureDocumentListeners() {
     document.addEventListener('pointerdown', event => dispatch(event), { signal, capture: true });
     document.addEventListener('pointercancel', event => forgetSuppressedClick(event.pointerId), { signal, capture: true });
     document.addEventListener('click', event => swallowSuppressedClick(event), { signal, capture: true });
+    document.addEventListener('cancel', event => offerCloseRequest(event), { signal, capture: true });
+}
+
+// A platform close request does not bubble, so it is heard in the capture phase and offered from the element it was raised at.
+function offerCloseRequest(event) {
+    const decision = event.target instanceof Element ? requestDismiss(event.target) : null;
+
+    if (decision?.preventDefault) {
+        event.preventDefault();
+    }
 }
 
 // An event reaches the router through more than one listener; the first decides for all of them.

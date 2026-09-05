@@ -18,7 +18,9 @@ costs a few hundredths of a millisecond, so parent lookup scans the scopes as th
 activates while open, with its trigger counted as inside it, so Escape and a press away
 dismiss it through the router rather than through a document listener and a backdrop of
 its own, and `FormaBreadcrumb`'s segment menus are `FormaDropDownMenu`s over it, so its own
-key handler and backdrop are gone. The composer's and the toolbar's shortcuts are routes: the
+key handler and backdrop are gone. `FormaDialog` is a modal scope while open, so Escape and a
+platform close request go to whatever is foremost, and the dialog closes only when that is
+itself. The composer's and the toolbar's shortcuts are routes: the
 composer registers its
 catalog on its root and each editor registers it on its editable element, where the native
 table would otherwise claim the keys, and the toolbar registers its actions' shortcuts on its
@@ -385,17 +387,19 @@ first.
 
 ## Dialog integration
 
-`FormaDialog` registers a scope with `modal: true` while open; modality is declared by
-`Dialog.js`, since `showModal()` leaves no DOM trace. The dialog keeps native modality,
-background inertness, focus containment, top-layer rendering, and native close requests.
+`FormaDialog` registers a scope with `modal: true` while open; modality is declared in the
+profile it registers, since `showModal()` leaves no DOM trace. The dialog keeps native
+modality, background inertness, focus containment, top-layer rendering, and native close
+requests.
 
 Two entry points feed the router:
 
 - Escape arrives as a keydown the router sees first. If a scope is active above the dialog,
   the press is consumed there and the dialog never receives its `cancel`.
 - A platform close request — a back gesture, an assistive-technology dismiss — arrives only
-  as the dialog's `cancel` event. `Dialog.js` offers it through `requestDismiss(dialog,
-  'close-request')`. The request enters at the dialog but resolves to the foremost active
+  as the dialog's `cancel` event, which does not bubble. The router hears it in the capture
+  phase at the document and offers it through `requestDismiss(dialog, 'close-request')`, so
+  `Dialog.js` stays unaware of the router. The request enters at the dialog but resolves to the foremost active
   registration: the dialog when it is foremost, else the popup or drag above it, which is
   dismissed instead. Either way the decision says to prevent the native cancellation, so
   the dialog never closes underneath what stands above it.
@@ -523,10 +527,10 @@ existing components, landing as several coherent commits.
    per-class listener strategies, `resolve` and its views. The .NET records and the scoped
    bridge. Vitest for nested resolution through a top-layer popover, the native table, the
    modal barrier, containment, activation order, top-only dismissal, and release.
-2. **Dismissal.** `FormaPopup` (done), `FormaDialog` with both entry points, active drags,
-   the selection bar while focused, `FormaBreadcrumb` rebuilt on `FormaPopup` (done, as a
-   `FormaDropDownMenu` per segment). The per-popup document listener, both backdrops, and
-   the backdrop z-indexes go.
+2. **Dismissal.** `FormaPopup` (done), `FormaDialog` with both entry points (done), active
+   drags, the selection bar while focused, `FormaBreadcrumb` rebuilt on `FormaPopup` (done,
+   as a `FormaDropDownMenu` per segment). The per-popup document listener, both backdrops,
+   and the backdrop z-indexes go.
 3. **Owners onto routes.** `SelectionInteraction`, both shortcut sets (done: the composer's
    and the toolbar's shortcuts are routes, and `KeyBindings` is retired), the three
    wheel tracks of `Scroll.js`, `PanGesture`, `DropZone` and the explorer drop targets,

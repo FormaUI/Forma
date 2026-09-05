@@ -210,7 +210,7 @@ These components form the shell of a page. Build first.
 | **Old pattern** | `Modal('#divId')` / `CloseModal()` — shows a `<div>` overlay with content from hidden divs. Stacking z-index, Escape key to close |
 | **Used in** | Every admin page — new page modal, help modals, notes modals, folder dialogs, invoice modals, options editor |
 | **Parameters** | `bool Opened` (required), `EventCallback OnClose` (required), `string? Title`, `DialogSize Size` (Small/Medium/Large/ExtraLarge/Full, default Medium), `RenderFragment? Body`, `RenderFragment? Footer`, `string? ConfirmText`, `string? CancelText`, `EventCallback OnConfirm`, `EventCallback OnCancel`, `DialogOptions Options` (`CloseOnBackdropClick`, `ShowCancelAction`, `ShowConfirmAction`, `CloseOnCancel`, `CloseOnConfirm` — all default `true`) |
-| **Blazor approach** | Uses native `<dialog>` element with minimal JS interop (`Dialog.js`). Supports custom footer content, built-in localized footer actions, or both together. Uses logical CSS so footer/action alignment works in both RTL and LTR. Sealed `IAsyncDisposable` component with code-behind in `.razor.cs` |
+| **Blazor approach** | Uses native `<dialog>` element with minimal JS interop (`Dialog.js`). Supports custom footer content, built-in localized footer actions, or both together. Uses logical CSS so footer/action alignment works in both RTL and LTR. Sealed `IAsyncDisposable` component with code-behind in `.razor.cs`. Registers a modal scope with the input router while open, so Escape and a platform close request are decided there: a popup open above the dialog closes first, and the dialog closes only when it is foremost |
 
 ### 5. `FormaConfirmDialog` ✅
 

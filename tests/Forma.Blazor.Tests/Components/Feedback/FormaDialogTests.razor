@@ -223,5 +223,98 @@
             // Assert
             Assert.Equal("Close", closeBtn.GetAttribute("aria-label"));
         }
+
+        [Fact]
+        public void Should_register_a_modal_scope_while_open()
+        {
+            // Arrange
+            using var ctx = new FormaDialogTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDialog Opened="true" OnClose="@(() => { })" />);
+
+            // Assert
+            cut.WaitForAssertion(() =>
+            {
+                var profile = Assert.Single(Registrations(ctx));
+                Assert.Multiple(
+                    () => Assert.True(profile.Modal),
+                    () => Assert.Equal(DismissBehavior.Dismiss, profile.Escape),
+                    () => Assert.Equal(DismissBehavior.Dismiss, profile.CloseRequest),
+                    () => Assert.Equal(PressAwayBehavior.Ignore, profile.PressAway));
+            });
+        }
+
+        [Fact]
+        public void Should_not_register_a_scope_while_closed()
+        {
+            // Arrange
+            using var ctx = new FormaDialogTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDialog Opened="false" OnClose="@(() => { })" />);
+
+            // Assert
+            Assert.Empty(Registrations(ctx));
+        }
+
+        [Fact]
+        public async Task Should_close_the_dialog_when_the_router_dismisses_it()
+        {
+            // Arrange
+            using var ctx = new FormaDialogTests();
+            var cut = ctx.Render(
+                @<FormaDialog Opened="true" OnClose="@(() => { })" />);
+            cut.WaitForAssertion(() => Assert.Single(Registrations(ctx)));
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaDialog>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.Escape));
+
+            // Assert
+            Assert.Contains(ctx.Dialog.Invocations, invocation => invocation.Identifier == "close");
+        }
+
+        [Fact]
+        public async Task Should_run_the_default_cancel_action_when_the_router_cancels_it()
+        {
+            // Arrange
+            using var ctx = new FormaDialogTests();
+            var cancelled = false;
+            var cut = ctx.Render(
+                @<FormaDialog Opened="true" OnClose="@(() => { })" OnCancel="() => cancelled = true" />);
+            cut.WaitForAssertion(() => Assert.Single(Registrations(ctx)));
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaDialog>().Instance.HandleDismissAsync(DismissBehavior.Cancel, DismissReason.CloseRequest));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(cancelled),
+                () => Assert.Contains(ctx.Dialog.Invocations, invocation => invocation.Identifier == "close"));
+        }
+
+        [Fact]
+        public async Task Should_leave_the_dialog_open_when_the_router_ignores_the_request()
+        {
+            // Arrange
+            using var ctx = new FormaDialogTests();
+            var cut = ctx.Render(
+                @<FormaDialog Opened="true" OnClose="@(() => { })" />);
+            cut.WaitForAssertion(() => Assert.Single(Registrations(ctx)));
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaDialog>().Instance.HandleDismissAsync(DismissBehavior.Ignore, DismissReason.Escape));
+
+            // Assert
+            Assert.DoesNotContain(ctx.Dialog.Invocations, invocation => invocation.Identifier == "close");
+        }
+
+        /// <summary>The profile of every scope the dialog registered with the router.</summary>
+        private static List<InputProfile> Registrations(FormaDialogTests ctx)
+            => [.. ctx.Router.Invocations
+                     .Where(invocation => invocation.Identifier == "register")
+                     .Select(invocation => (InputProfile)invocation.Arguments[1]!)];
     }
 }

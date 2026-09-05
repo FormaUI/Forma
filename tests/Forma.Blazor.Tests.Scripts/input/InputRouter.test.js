@@ -79,7 +79,7 @@ afterEach(() => {
         handles.pop().dispose();
     }
 
-    configure({ bindings: {} });
+    configure({ bindings: {}, closeRequest: null });
 });
 
 const grid = () => document.querySelector('#grid');
@@ -990,6 +990,47 @@ describe('InputRouter close requests', () => {
 
         expect(dismissed).toHaveBeenLastCalledWith('cancel', 'close-request');
         expect(describeScope(popup()).entries[0].closeRequest).toEqual({ value: 'cancel', source: 'host' });
+    });
+
+    it('offers a cancel event raised on an active scope as a close request and prevents the native cancellation', () => {
+        const dismissed = vi.fn();
+        const dialog = dialogWith();
+        scope(dialog, { modal: true, onDismiss: dismissed }).activate();
+
+        const event = new Event('cancel', { cancelable: true });
+        dialog.dispatchEvent(event);
+
+        expect(dismissed).toHaveBeenCalledWith('dismiss', 'close-request');
+        expect(event.defaultPrevented).toBe(true);
+    });
+
+    it('resolves a cancel event on a dialog to the popup open above it, leaving the dialog open', () => {
+        const dialogDismiss = vi.fn();
+        const popupDismiss = vi.fn();
+        const dialog = dialogWith('<div id="inner-popup"></div>');
+        scope(dialog, { modal: true, onDismiss: dialogDismiss }).activate();
+        scope(dialog.querySelector('#inner-popup'), { onDismiss: popupDismiss }).activate();
+
+        const event = new Event('cancel', { cancelable: true });
+        dialog.dispatchEvent(event);
+
+        expect(popupDismiss).toHaveBeenCalledWith('dismiss', 'close-request');
+        expect(dialogDismiss).not.toHaveBeenCalled();
+        expect(event.defaultPrevented).toBe(true);
+    });
+
+    it('leaves a cancel event alone on an element that is not an active scope', () => {
+        scope(grid(), { onDismiss: vi.fn() }).activate();
+        const idle = dialogWith();
+        scope(idle, { modal: true, onDismiss: vi.fn() });
+
+        const unregistered = new Event('cancel', { cancelable: true });
+        elsewhere().dispatchEvent(unregistered);
+        const inactive = new Event('cancel', { cancelable: true });
+        idle.dispatchEvent(inactive);
+
+        expect(unregistered.defaultPrevented).toBe(false);
+        expect(inactive.defaultPrevented).toBe(false);
     });
 });
 
