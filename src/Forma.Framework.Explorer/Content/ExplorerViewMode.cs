@@ -9,6 +9,6 @@ public enum ExplorerViewMode
     /// <summary>A detailed tabular list with sortable columns.</summary>
     Details,
 
-    /// <summary>A compact multi-column list view.</summary>
+    /// <summary>Names alone, flowing down the height and on into further columns.</summary>
     List
 }

@@ -46,7 +46,7 @@
    column takes what they leave, between a floor that keeps a thumbnail and a few characters and its natural width.
    A name that no longer fits is cut with an ellipsis and carried whole in its tooltip. */
 .forma-explorer-column-name {
-    inline-size: 12rem;
+    inline-size: var(--forma-explorer-name-column-size);
     min-inline-size: 6rem;
 }
 
@@ -59,9 +59,9 @@
     background: linear-gradient(var(--forma-explorer-row-tint), var(--forma-explorer-row-tint)) var(--input-background-color);
 }
 
-/* With no header to hold the name column open, the brief table gives the name the rest of the row. */
-.forma-explorer-list .forma-explorer-cell-name {
-    inline-size: 100%;
+/* A hidden header row keeps its columns' widths while taking no height of its own. */
+.forma-explorer-details-table.is-headerless thead tr {
+    visibility: collapse;
 }
 
 .forma-explorer-column-kind {
@@ -160,30 +160,6 @@
 
 .forma-explorer-details-row.is-selected {
     --forma-explorer-row-tint: color-mix(in srgb, var(--main-color) 12%, transparent);
-}
-
-.forma-explorer-table-select {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    inline-size: var(--forma-explorer-check-size);
-    block-size: var(--forma-explorer-check-size);
-    min-inline-size: var(--control-size-sm);
-    min-block-size: var(--control-size-sm);
-    flex-shrink: 0;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--dark-border-color);
-    background: var(--input-background-color);
-    color: transparent;
-    cursor: pointer;
-    font-size: var(--forma-explorer-check-glyph-size);
-    touch-action: manipulation;
-}
-
-.forma-explorer-table-select.is-checked {
-    background: var(--main-color);
-    border-color: var(--main-color);
-    color: var(--forma-explorer-check-foreground-color);
 }
 
 .forma-explorer-name-wrapper {

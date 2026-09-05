@@ -63,4 +63,8 @@
         </FormaDropDownMenuItem>
     </FormaDropDownMenuGroup>
     <FormaExplorerSortMenuItems />
+    @if (View.ViewMode == ExplorerViewMode.Details)
+    {
+        <FormaExplorerColumnsMenuItems />
+    }
 </FormaOverflowMenu>

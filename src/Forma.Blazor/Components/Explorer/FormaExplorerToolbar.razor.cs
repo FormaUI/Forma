@@ -22,6 +22,9 @@ public sealed partial class FormaExplorerToolbar : ComponentBase
     private static readonly ButtonOptions SortTriggerOptions =
         new() { Variant = ButtonVariant.Ghost };
 
+    private static readonly ButtonOptions ColumnsTriggerOptions =
+        new() { Variant = ButtonVariant.Ghost, IconOnly = true };
+
     /// <inheritdoc />
     protected override void OnInitialized()
     {

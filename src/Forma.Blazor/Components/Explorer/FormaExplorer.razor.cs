@@ -131,6 +131,12 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     /// <summary>Raised when the view mode changes.</summary>
     [Parameter] public EventCallback<ExplorerViewMode> ViewModeChanged { get; set; }
 
+    /// <summary>Raised when the reader adds or removes a details column.</summary>
+    [Parameter] public EventCallback<ExplorerDetailsColumns> DetailsColumnsChanged { get; set; }
+
+    /// <summary>Raised when the reader shows or hides the details column header.</summary>
+    [Parameter] public EventCallback<bool> DetailsHeaderVisibleChanged { get; set; }
+
     [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
 
     [Inject] private IDebounceable SearchDebouncer { get; set; } = default!;
@@ -158,6 +164,10 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     private bool _isResizingSidebar;
 
     private ExplorerViewMode _viewMode = ExplorerViewMode.Thumbnails;
+
+    private ExplorerDetailsColumns _detailsColumns;
+
+    private bool _showsDetailsHeader = true;
 
     private ExplorerCollectionView _collection = default!;
 
@@ -317,10 +327,14 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         };
 
         _viewMode = ViewMode;
+        _detailsColumns = Options.DetailsColumns;
+        _showsDetailsHeader = Options.ShowDetailsHeader;
 
         _paramStateTracker.Track(() => Constraints.AcceptedResourceKinds, accepted => _collection.Filter = ExplorerResourceFilter.Parse(accepted));
         _paramStateTracker.Track(() => CurrentPage, page => _collection.PageNumber = page);
         _paramStateTracker.Track(() => ViewMode, mode => _viewMode = mode);
+        _paramStateTracker.Track(() => Options.DetailsColumns, columns => _detailsColumns = columns);
+        _paramStateTracker.Track(() => Options.ShowDetailsHeader, shows => _showsDetailsHeader = shows);
         _paramStateTracker.Track(() => SortField, field => _collection.SortField = field);
         _paramStateTracker.Track(() => SortDirection, direction => _collection.SortDirection = direction);
 
@@ -569,6 +583,10 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
 
     ExplorerViewMode IExplorerContentView.ViewMode => _viewMode;
 
+    ExplorerDetailsColumns IExplorerContentView.DetailsColumns => _detailsColumns;
+
+    bool IExplorerContentView.ShowsDetailsHeader => _showsDetailsHeader;
+
     IExplorerSelectionView IExplorerView.Selection => _selection;
 
     IExplorerItemView IExplorerView.Item => _itemManager;
@@ -613,6 +631,12 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
 
     Task IExplorerContentInteraction.ChangeViewModeAsync(ExplorerViewMode mode)
         => RunAsync(() => HandleViewModeChangedAsync(mode));
+
+    Task IExplorerContentInteraction.ToggleDetailsColumnAsync(ExplorerDetailsColumns column)
+        => RunAsync(() => HandleDetailsColumnToggledAsync(column));
+
+    Task IExplorerContentInteraction.SetDetailsHeaderVisibleAsync(bool isVisible)
+        => RunAsync(() => HandleDetailsHeaderVisibleChangedAsync(isVisible));
 
     Task IExplorerContentInteraction.RequestNextPageAsync()
         => RunAsync(HandleNextPageAsync);
@@ -982,6 +1006,25 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         _viewMode = mode;
 
         await ViewModeChanged.InvokeAsync(mode);
+    }
+
+    private async Task HandleDetailsColumnToggledAsync(ExplorerDetailsColumns column)
+    {
+        _detailsColumns ^= column;
+
+        await DetailsColumnsChanged.InvokeAsync(_detailsColumns);
+    }
+
+    private async Task HandleDetailsHeaderVisibleChangedAsync(bool isVisible)
+    {
+        if (_showsDetailsHeader == isVisible)
+        {
+            return;
+        }
+
+        _showsDetailsHeader = isVisible;
+
+        await DetailsHeaderVisibleChanged.InvokeAsync(isVisible);
     }
 
     // Every caller names the parent it means, so no folder here is the root rather than wherever the reader happens to be.

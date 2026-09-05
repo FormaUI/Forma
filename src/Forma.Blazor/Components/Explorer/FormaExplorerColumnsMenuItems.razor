@@ -1,0 +1,22 @@
+@namespace Forma.Blazor.Components.Explorer
+@using Forma.Blazor.Components.Menus
+@using Forma.Framework.Explorer.Content
+
+<FormaDropDownMenuGroup Label="@L["Columns"]">
+    @foreach (var column in Columns)
+    {
+        <FormaDropDownMenuItem IsSelected="@View.DetailsColumns.HasFlag(column)"
+                               KeepsOpen="true"
+                               data-column="@column"
+                               OnClick="() => Interaction.ToggleDetailsColumnAsync(column)">
+            <span>@ColumnLabel(column)</span>
+        </FormaDropDownMenuItem>
+    }
+</FormaDropDownMenuGroup>
+<FormaDropDownMenuDivider />
+<FormaDropDownMenuItem IsSelected="View.ShowsDetailsHeader"
+                       KeepsOpen="true"
+                       data-column="header"
+                       OnClick="() => Interaction.SetDetailsHeaderVisibleAsync(!View.ShowsDetailsHeader)">
+    <span>@L["Show Header"]</span>
+</FormaDropDownMenuItem>

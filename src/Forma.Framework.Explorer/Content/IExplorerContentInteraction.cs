@@ -14,6 +14,12 @@ public interface IExplorerContentInteraction
     /// <summary>Switches which layout the content is shown in.</summary>
     Task ChangeViewModeAsync(ExplorerViewMode mode);
 
+    /// <summary>Shows the details column when it is hidden and hides it when it is shown.</summary>
+    Task ToggleDetailsColumnAsync(ExplorerDetailsColumns column);
+
+    /// <summary>Shows or hides the details view's column header.</summary>
+    Task SetDetailsHeaderVisibleAsync(bool isVisible);
+
     /// <summary>Fetches the next page, appending it to what is already shown.</summary>
     Task RequestNextPageAsync();
 

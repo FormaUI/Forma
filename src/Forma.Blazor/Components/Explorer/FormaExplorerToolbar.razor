@@ -52,6 +52,20 @@
                                 OnClick="() => Interaction.ChangeViewModeAsync(ExplorerViewMode.List)" />
         </div>
 
+        @if (View.ViewMode == ExplorerViewMode.Details)
+        {
+            <FormaDropDownMenu class="forma-explorer-columns-trigger"
+                               TriggerOptions="ColumnsTriggerOptions"
+                               aria-label="@L["Columns"]">
+                <Trigger>
+                    <FormaIcon Icon="Glyph.Columns" Size="IconSize.Small" />
+                </Trigger>
+                <ChildContent>
+                    <FormaExplorerColumnsMenuItems />
+                </ChildContent>
+            </FormaDropDownMenu>
+        }
+
         <!-- Sort Menu -->
         <FormaDropDownMenu class="forma-explorer-sort-trigger"
                            TriggerOptions="SortTriggerOptions"

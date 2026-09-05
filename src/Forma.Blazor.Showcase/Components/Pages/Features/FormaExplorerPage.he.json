@@ -18,7 +18,7 @@
   "Automatic Infinite Scrolling": "גלילה אין-סופית אוטומטית",
   "ExplorerInfiniteScrollMode.Automatic drops the button entirely: pages arrive as the reader scrolls, marked by a spinner while each one loads, with the running count left as the reader's sense of position.": "ExplorerInfiniteScrollMode.Automatic מבטל את הכפתור לגמרי: העמודים מגיעים תוך כדי גלילה, עם חיוון טעינה לכל עמוד, והמונה המתעדכן נשאר כתחושת המיקום של הקורא.",
   "ExplorerInfiniteScrollMode.Manual appends the next page as the reader nears the end, and offers a button for anyone not using a pointer. The media scrolls inside the panel, so the toolbar and folder tree stay put.": "ExplorerInfiniteScrollMode.Manual מוסיף את העמוד הבא כשהקורא מתקרב לסוף, ומציע כפתור למי שאינו משתמש במצביע. המדיה נגללת בתוך הלוח, ולכן סרגל הכלים ועץ התיקיות נשארים במקומם.",
-  "DetailsColumns picks which optional columns the details view renders beside the name. Nothing wraps, so a narrow explorer scrolls sideways rather than squeezing a column out.": "DetailsColumns קובע אילו עמודות רשות מוצגות בתצוגת הפרטים לצד השם. שום טקסט אינו נשבר לשורות, ולכן סייר צר נגלל לצדדים במקום לדחוק עמודה החוצה.",
+  "DetailsColumns picks which optional columns the details view opens with beside the name; the columns menu in the toolbar lets the reader add or remove them and hide the header afterwards. Nothing wraps, so a narrow explorer scrolls sideways rather than squeezing a column out.": "DetailsColumns קובע עם אילו עמודות רשות נפתחת תצוגת הפרטים לצד השם; תפריט העמודות בסרגל הכלים מאפשר לקורא להוסיף או להסיר אותן ולהסתיר את הכותרת לאחר מכן. שום טקסט אינו נשבר לשורות, ולכן סייר צר נגלל לצדדים במקום לדחוק עמודה החוצה.",
   "Columns": "עמודות",
   "All media": "כל המדיה",
   "Type": "סוג",

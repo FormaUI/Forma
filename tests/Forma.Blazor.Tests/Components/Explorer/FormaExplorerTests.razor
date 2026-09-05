@@ -1389,6 +1389,89 @@
         }
 
         [Fact]
+        public void Should_let_the_reader_remove_and_add_details_columns()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
+            var reported = new List<ExplorerDetailsColumns>();
+            var cut = ctx.Render(@<FormaExplorer Items="@(ExplorerItem.ForAll(resources))" ViewMode="ExplorerViewMode.Details" DetailsColumnsChanged="@(columns => reported.Add(columns))" />);
+            Assert.NotNull(cut.Find("th.forma-explorer-column-size"));
+
+            // Act
+            cut.Find(".forma-explorer-columns-trigger").Click();
+            cut.Find(".forma-explorer-toolbar [data-column='Size']").Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll("th.forma-explorer-column-size")),
+                () => Assert.Equal([ExplorerDetailsColumns.Kind | ExplorerDetailsColumns.Modified], reported));
+
+            // Act
+            cut.Find(".forma-explorer-toolbar [data-column='Added']").Click();
+
+            // Assert
+            Assert.NotNull(cut.Find("th.forma-explorer-column-added"));
+        }
+
+        [Fact]
+        public void Should_let_the_reader_hide_the_details_header()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
+            var reported = new List<bool>();
+            var cut = ctx.Render(@<FormaExplorer Items="@(ExplorerItem.ForAll(resources))" ViewMode="ExplorerViewMode.Details" DetailsHeaderVisibleChanged="@(shown => reported.Add(shown))" />);
+
+            // Act
+            cut.Find(".forma-explorer-columns-trigger").Click();
+            cut.Find(".forma-explorer-toolbar [data-column='header']").Click();
+
+            // Assert - the header row stays for its widths and its names, collapsed rather than removed
+            Assert.Multiple(
+                () => Assert.Contains("is-headerless", cut.Find(".forma-explorer-details-table").ClassList),
+                () => Assert.NotNull(cut.Find("th.forma-explorer-column-name")),
+                () => Assert.Equal([false], reported));
+        }
+
+        [Fact]
+        public void Should_start_the_details_view_from_the_options_columns_and_header()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
+            var options = new ExplorerOptions { DetailsColumns = ExplorerDetailsColumns.Size, ShowDetailsHeader = false };
+
+            // Act
+            var cut = ctx.Render(@<FormaExplorer Items="@(ExplorerItem.ForAll(resources))" Options="options" ViewMode="ExplorerViewMode.Details" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.NotNull(cut.Find("th.forma-explorer-column-size")),
+                () => Assert.Empty(cut.FindAll("th.forma-explorer-column-kind")),
+                () => Assert.Contains("is-headerless", cut.Find(".forma-explorer-details-table").ClassList));
+        }
+
+        [Fact]
+        public void Should_list_names_as_stops_on_a_scrolling_pane_in_list_view()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg"), new ImageResourceInfo("https://example.com/poster.jpg")];
+
+            // Act
+            var cut = ctx.Render(@<FormaExplorer Items="@(ExplorerItem.ForAll(resources))" ViewMode="ExplorerViewMode.List" />);
+
+            // Assert
+            var items = cut.FindAll(".forma-explorer-list .forma-explorer-list-item");
+            Assert.Multiple(
+                () => Assert.Equal(2, items.Count),
+                () => Assert.All(items, item => Assert.Contains("forma-freeze-pane-stop", item.ClassList)),
+                () => Assert.Equal("cover.jpg", cut.Find(".forma-explorer-list-item-name").TextContent),
+                () => Assert.Empty(cut.FindAll(".forma-explorer-list th")));
+        }
+
+        [Fact]
         public void Should_keep_details_cells_aligned_with_their_headers_in_both_modes()
         {
             // Arrange
@@ -1571,7 +1654,7 @@
             cut.Find(".forma-explorer-select-mode-button").Click();
 
             // Act
-            cut.Find(".forma-explorer-list .forma-explorer-name-wrapper").Click();
+            cut.Find(".forma-explorer-list .forma-explorer-list-item-open").Click();
 
             // Assert
             Assert.NotNull(cut.Find(".forma-explorer-list"));

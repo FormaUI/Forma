@@ -1,0 +1,28 @@
+/* ============================================================
+   FormaExplorerItemLead — CSS isolation
+   The checkbox that leads an item while selecting
+   ============================================================ */
+
+.forma-explorer-table-select {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: var(--forma-explorer-check-size);
+    block-size: var(--forma-explorer-check-size);
+    min-inline-size: var(--control-size-sm);
+    min-block-size: var(--control-size-sm);
+    flex-shrink: 0;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--dark-border-color);
+    background: var(--input-background-color);
+    color: transparent;
+    cursor: pointer;
+    font-size: var(--forma-explorer-check-glyph-size);
+    touch-action: manipulation;
+}
+
+.forma-explorer-table-select.is-checked {
+    background: var(--main-color);
+    border-color: var(--main-color);
+    color: var(--forma-explorer-check-foreground-color);
+}

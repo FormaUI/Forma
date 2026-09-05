@@ -6,6 +6,7 @@
 
 .forma-explorer {
     --forma-explorer-check-size: 1.5rem;
+    --forma-explorer-name-column-size: 12rem;
     --forma-explorer-check-glyph-size: var(--font-size-xs);
     --forma-explorer-check-foreground-color: var(--main-foreground-color);
     --forma-explorer-block-size: 40rem;

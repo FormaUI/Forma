@@ -29,6 +29,12 @@
     scrollbar-width: thin;
 }
 
+/* The list view's pane takes the panel's whole height, so its flow of names knows where to turn into the next column. */
+.forma-explorer-scroll ::deep .forma-explorer-list,
+.forma-explorer-scroll ::deep .forma-explorer-list > .forma-freeze-pane-viewport {
+    block-size: 100%;
+}
+
 /* --- Empty State --- */
 .forma-explorer-empty {
     display: flex;

@@ -12,14 +12,11 @@ using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Tabular details view for explorer media resources with sortable column headers, its actions and name columns staying put while the rest scroll sideways, or in its brief form the name and the size alone with no header.</summary>
+/// <summary>Tabular details view for explorer media resources with sortable column headers, its actions and name columns staying put while the columns the reader has chosen scroll sideways.</summary>
 public sealed partial class FormaExplorerDetailsView : ComponentBase
 {
     /// <summary>The collection of items to display.</summary>
     [Parameter] public IReadOnlyList<IExplorerItem> Items { get; set; } = [];
-
-    /// <summary>Whether the table shows the name and the size alone, without a header.</summary>
-    [Parameter] public bool Brief { get; set; }
 
     [CascadingParameter] private IExplorerView View { get; set; } = default!;
 
@@ -42,7 +39,7 @@ public sealed partial class FormaExplorerDetailsView : ComponentBase
         };
 
     private ExplorerDetailsColumns Columns
-        => Brief ? ExplorerDetailsColumns.Size : View.Options.DetailsColumns;
+        => View.DetailsColumns;
 
     private bool ShowsKind
         => Columns.HasFlag(ExplorerDetailsColumns.Kind);

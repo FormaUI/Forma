@@ -15,6 +15,12 @@ public interface IExplorerContentView
     /// <summary>Which layout the content is shown in.</summary>
     ExplorerViewMode ViewMode { get; }
 
+    /// <summary>Which optional columns the details view shows beside the name.</summary>
+    ExplorerDetailsColumns DetailsColumns { get; }
+
+    /// <summary>Whether the details view shows its column header.</summary>
+    bool ShowsDetailsHeader { get; }
+
     /// <summary>The items currently shown.</summary>
     IReadOnlyList<IExplorerItem> VisibleItems { get; }
 

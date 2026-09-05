@@ -1,0 +1,106 @@
+/* ============================================================
+   FormaExplorerListView — CSS isolation
+   Names flowing down the height and on into further columns
+   ============================================================ */
+
+/* Each column is as wide as the details view's name column. Given a height by the panel, the flow fills it and
+   continues past the pane's end into further columns, where the pane scrolls to them; unbounded, it balances into
+   as many columns as the width holds and grows downward instead. */
+.forma-explorer-list-flow {
+    block-size: 100%;
+    columns: var(--forma-explorer-name-column-size);
+    column-gap: var(--space-3);
+}
+
+.forma-explorer-list-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-block-size: var(--control-size-md);
+    padding-inline: var(--space-1);
+    border-radius: var(--radius-sm);
+    break-inside: avoid;
+    cursor: grab;
+    transition: background-color 0.15s ease;
+}
+
+.forma-explorer-list-item:active {
+    cursor: grabbing;
+}
+
+@media (hover: hover) {
+    .forma-explorer-list-item:not(.is-disabled):hover {
+        background: var(--hover-background-color);
+    }
+}
+
+/* An item the explorer does not let the reader drag. */
+.forma-explorer-list-item[draggable="false"],
+.forma-explorer-list-item[draggable="false"]:active {
+    cursor: default;
+}
+
+.forma-explorer-list-item.is-selected {
+    background: color-mix(in srgb, var(--main-color) 12%, transparent);
+}
+
+/* A disabled item: the disabled control colors, and a pointer that says so. */
+.forma-explorer-list-item.is-disabled {
+    background: var(--control-disabled-color);
+    cursor: not-allowed;
+}
+
+.forma-explorer-list-item.is-disabled .forma-explorer-list-item-name {
+    color: var(--control-disabled-foreground-color);
+}
+
+/* An invisible item keeps its place in the flow. */
+.forma-explorer-list-item.is-invisible {
+    visibility: hidden;
+}
+
+/* The lead is exactly the actions trigger or the checkbox, so every name starts one small control in. */
+.forma-explorer-list-item-lead {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: var(--control-size-sm);
+    flex-shrink: 0;
+}
+
+.forma-explorer-list-item-open {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex: 1;
+    min-inline-size: 0;
+    min-block-size: var(--control-size-md);
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: var(--font-size-sm);
+    text-align: start;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.forma-explorer-list-item.is-disabled .forma-explorer-list-item-open {
+    cursor: not-allowed;
+}
+
+/* Isolated but not self-directed: deriving direction from the name would align a Latin one against the reading direction. */
+.forma-explorer-list-item-name {
+    font-weight: 500;
+    color: var(--text-color);
+    unicode-bidi: isolate;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.forma-explorer-list-item.is-selected .forma-explorer-list-item-name {
+    color: var(--main-color);
+    font-weight: 700;
+}

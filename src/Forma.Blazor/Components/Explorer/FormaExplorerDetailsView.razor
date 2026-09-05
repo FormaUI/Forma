@@ -8,11 +8,9 @@
     var selecting = View.Selection.IsSelectionModeActive;
 }
 
-<div class="forma-explorer-details-wrapper @(Brief ? "forma-explorer-list" : "")">
+<div class="forma-explorer-details-wrapper">
     <FormaFreezePane Options="PaneOptions">
-    <table class="forma-explorer-details-table" role="table">
-        @if (!Brief)
-        {
+    <table class="forma-explorer-details-table @(View.ShowsDetailsHeader ? "" : "is-headerless")" role="table">
         <thead>
             <tr>
                 <th class="forma-explorer-column-actions @FormaFreezePane.FrozenClass"><span class="forma-explorer-visually-hidden">@(selecting ? L["Select"] : L["Actions"])</span></th>
@@ -75,7 +73,6 @@
                 }
             </tr>
         </thead>
-        }
         <tbody>
             @foreach (var item in Items)
             {
@@ -89,21 +86,7 @@
                     draggable="@draggable"
                     @ondragstart="() => ItemInteraction.BeginDrag(item)">
                     <td class="forma-explorer-cell-actions @FormaFreezePane.FrozenClass">
-                        @if (selecting)
-                        {
-                            <button type="button"
-                                    class="forma-explorer-table-select @(selected ? "is-checked" : "")"
-                                    aria-label="@labels.SelectionLabel"
-                                    aria-pressed="@(selected ? "true" : "false")"
-                                    disabled="@item.IsDisabled"
-                                    @onclick="() => Interaction.ToggleSelectionAsync(item)">
-                                <FormaIcon Icon="Glyph.Check" Size="IconSize.Small" />
-                            </button>
-                        }
-                        else
-                        {
-                            <FormaExplorerActionBar Item="item" />
-                        }
+                        <FormaExplorerItemLead Item="item" />
                     </td>
                     <td class="forma-explorer-cell-name @FormaFreezePane.FrozenClass">
                         <button type="button"

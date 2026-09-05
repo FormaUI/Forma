@@ -30,8 +30,11 @@ public sealed record ExplorerOptions
     /// <summary>Whether reaching the end of the list appends the next page, and whether a button does so instead.</summary>
     public ExplorerInfiniteScrollMode InfiniteScroll { get; init; } = ExplorerInfiniteScrollMode.Off;
 
-    /// <summary>Which optional columns the details view shows beside the name.</summary>
+    /// <summary>Which optional columns the details view shows beside the name when it opens; the reader may change them afterwards.</summary>
     public ExplorerDetailsColumns DetailsColumns { get; init; } = ExplorerDetailsColumns.Kind | ExplorerDetailsColumns.Size | ExplorerDetailsColumns.Modified;
+
+    /// <summary>Whether the details view shows its column header when it opens; the reader may change it afterwards.</summary>
+    public bool ShowDetailsHeader { get; init; } = true;
 
     /// <summary>How long typing pauses before a catalog is asked again; a held collection filters immediately.</summary>
     public TimeSpan SearchDebounceDelay { get; init; } = TimeSpan.FromMilliseconds(300);
