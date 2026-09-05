@@ -37,6 +37,38 @@
         }
 
         [Fact]
+        public void Should_head_a_labeled_group_with_a_band_that_names_it()
+        {
+            // Arrange
+            using var ctx = new FormaDropDownMenuTests();
+            var cut = ctx.Render(
+                @<FormaDropDownMenu>
+                    <Trigger>Options</Trigger>
+                    <ChildContent>
+                        <FormaDropDownMenuGroup Label="Invoice">
+                            <FormaDropDownMenuItem>Create invoice</FormaDropDownMenuItem>
+                        </FormaDropDownMenuGroup>
+                        <FormaDropDownMenuGroup aria-label="Other">
+                            <FormaDropDownMenuItem>Print</FormaDropDownMenuItem>
+                        </FormaDropDownMenuGroup>
+                    </ChildContent>
+                </FormaDropDownMenu>);
+
+            // Act
+            cut.Find(".forma-dropdown-menu-trigger").Click();
+
+            // Assert
+            var groups = cut.FindAll(".forma-dropdown-menu-group[role='group']");
+            var band = cut.Find(".forma-dropdown-menu-group-label");
+            Assert.Multiple(
+                () => Assert.Equal(2, groups.Count),
+                () => Assert.Equal("Invoice", band.TextContent),
+                () => Assert.Equal(band.Id, groups[0].GetAttribute("aria-labelledby")),
+                () => Assert.Null(groups[1].GetAttribute("aria-labelledby")),
+                () => Assert.Single(cut.FindAll(".forma-dropdown-menu-group-label")));
+        }
+
+        [Fact]
         public void Should_render_the_header_content_when_provided()
         {
             // Arrange

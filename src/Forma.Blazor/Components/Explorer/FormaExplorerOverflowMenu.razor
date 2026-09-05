@@ -4,7 +4,7 @@
 @using Forma.Framework.Interop.Behaviours
 
 <FormaOverflowMenu Label="@L["More"]" Orientation="MenuOrientation.Vertical" Alignment="PopupAlignment.End" class="forma-explorer-overflow-menu">
-    <div role="group" aria-label="@L["Navigation"]">
+    <FormaDropDownMenuGroup Label="@L["Navigation"]">
         <FormaDropDownMenuItem Disabled="@(!Location.CanGoBack)" OnClick="LocationInteraction.GoBackAsync">
             <span class="forma-explorer-nav-arrow" aria-hidden="true"><FormaIcon Icon="Glyph.ArrowLeft" Size="IconSize.Small" /></span>
             <span>@L["Back"]</span>
@@ -21,11 +21,10 @@
             <FormaIcon Icon="Glyph.Refresh" Size="IconSize.Small" />
             <span>@L["Refresh"]</span>
         </FormaDropDownMenuItem>
-    </div>
+    </FormaDropDownMenuGroup>
     @if (View.CanLeaveSelectMode() || View.ShowsNewFolderAction() || View.Item.ItemOptions.AllowUpload)
     {
-        <FormaDropDownMenuDivider />
-        <div role="group" aria-label="@L["Actions"]">
+        <FormaDropDownMenuGroup Label="@L["Actions"]">
             @if (View.CanLeaveSelectMode())
             {
                 <FormaDropDownMenuItem data-action="select" OnClick="Interaction.ToggleSelectionModeAsync">
@@ -47,10 +46,9 @@
                     <span>@L["Upload"]</span>
                 </FormaDropDownMenuItem>
             }
-        </div>
+        </FormaDropDownMenuGroup>
     }
-    <FormaDropDownMenuDivider />
-    <div role="group" aria-label="@L["View Mode"]">
+    <FormaDropDownMenuGroup Label="@L["View Mode"]">
         <FormaDropDownMenuItem IsSelected="@(View.ViewMode == ExplorerViewMode.Thumbnails)" data-view-mode="@ExplorerViewMode.Thumbnails" OnClick="() => Interaction.ChangeViewModeAsync(ExplorerViewMode.Thumbnails)">
             <FormaIcon Icon="Glyph.GridView" Size="IconSize.Small" />
             <span>@L["Thumbnails"]</span>
@@ -63,7 +61,6 @@
             <FormaIcon Icon="Glyph.List" Size="IconSize.Small" />
             <span>@L["List"]</span>
         </FormaDropDownMenuItem>
-    </div>
-    <FormaDropDownMenuDivider />
+    </FormaDropDownMenuGroup>
     <FormaExplorerSortMenuItems />
 </FormaOverflowMenu>

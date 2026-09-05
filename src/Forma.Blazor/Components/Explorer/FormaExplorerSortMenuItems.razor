@@ -2,7 +2,7 @@
 @using Forma.Blazor.Components.Menus
 @using Forma.Framework.Explorer.Content.Queries
 
-<div role="group" aria-label="@L["Sort By"]">
+<FormaDropDownMenuGroup Label="@L["Sort By"]">
     @foreach (var field in SortFields)
     {
         <FormaDropDownMenuItem IsSelected="@(View.SortField == field)"
@@ -11,9 +11,8 @@
             <span>@ExplorerSortPresentation.FieldLabel(L, field)</span>
         </FormaDropDownMenuItem>
     }
-</div>
-<FormaDropDownMenuDivider />
-<div role="group" aria-label="@L["Sort Direction"]">
+</FormaDropDownMenuGroup>
+<FormaDropDownMenuGroup Label="@L["Sort Direction"]">
     @foreach (var direction in SortDirections)
     {
         <FormaDropDownMenuItem IsSelected="@(View.SortDirection == direction)"
@@ -23,4 +22,4 @@
             <span>@ExplorerSortPresentation.DirectionLabel(L, direction)</span>
         </FormaDropDownMenuItem>
     }
-</div>
+</FormaDropDownMenuGroup>

@@ -121,6 +121,7 @@ Forma.Blazor/Components/
 │   ├── ✅ FormaDropDownMenu.razor
 │   ├── ✅ FormaDropDownMenuItem.razor
 │   ├── ✅ FormaDropDownMenuDivider.razor
+│   ├── ✅ FormaDropDownMenuGroup.razor
 │   ├── ✅ FormaOverflowMenu.razor
 │   ├── FormaContextMenu.razor
 │   └── FormaSortMenu.razor
@@ -442,7 +443,7 @@ These components form the shell of a page. Build first.
 |---|---|
 | **Old pattern** | `Info('divId', '#buttonId', 's')` → shows a `dropdown-menu dropdown-menu-arrow` positioned below a button. Click outside to close |
 | **Used in** | order detail (options: print, notes, invoice), and various action menus |
-| **Parameters** | `RenderFragment Trigger` (required — the trigger's content), `RenderFragment ChildContent` (required — menu items), `RenderFragment? HeaderContent`, `ButtonOptions TriggerOptions`. `FormaDropDownMenuItem` takes `string? Href`, `bool Disabled`, `EventCallback OnClick`, `bool KeepsOpen` (activation leaves the menu open, for an item that changes the menu rather than completing it); `FormaDropDownMenuDivider` takes none |
+| **Parameters** | `RenderFragment Trigger` (required — the trigger's content), `RenderFragment ChildContent` (required — menu items), `RenderFragment? HeaderContent`, `ButtonOptions TriggerOptions`. `FormaDropDownMenuItem` takes `string? Href`, `bool Disabled`, `EventCallback OnClick`, `bool KeepsOpen` (activation leaves the menu open, for an item that changes the menu rather than completing it); `FormaDropDownMenuDivider` takes none; `FormaDropDownMenuGroup` takes `string? Label` and heads its items with a label band |
 | **Blazor approach** | The component renders its own trigger as a `FormaButton` rather than accepting a whole button from the caller, so it owns `aria-haspopup`, `aria-expanded` and `aria-controls` instead of hoping a supplied fragment carries them; a wrapper span gives the popup something to measure and catches the keydown that a component tag cannot. The panel is a `FormaPopup` (#69), which owns the top-layer placement and the dismissal. Items register with the menu through a `CascadingValue`, as `FormaTab` does with `FormaTabs`, so arrow, Home and End navigation works over whatever the caller nested, and Tab moves between the items rather than leaving the menu. A colocated `.razor.js` cancels only the four navigation keys, since Blazor fixes `preventDefault` at render time and a blanket one would also block Enter, Space and Tab |
 | **Notes** | An item's activation closes the menu and returns focus to the trigger, which needs an explicit `StateHasChanged` because the state being changed belongs to the parent, not the child whose handler ran. Which item to focus on open is resolved after the render that creates them — indexing the list beforehand reads an empty one |
 

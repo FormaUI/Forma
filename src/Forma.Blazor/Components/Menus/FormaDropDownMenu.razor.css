@@ -132,6 +132,28 @@
     cursor: not-allowed;
 }
 
+/* ---------- group ---------- */
+::deep .forma-dropdown-menu-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+/* The label band reaches the panel's edges across the panel's own padding, and its text starts where the items' text
+   does: the panel's padding plus an item's. */
+::deep .forma-dropdown-menu-group-label {
+    margin-inline: calc(-1 * var(--space-2));
+    padding-block: var(--space-1);
+    padding-inline: calc(var(--space-2) + var(--space-3));
+    background: var(--muted-background-color);
+    color: var(--text-muted-color);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 /* ---------- divider ---------- */
 ::deep .forma-dropdown-menu-divider {
     block-size: 0;

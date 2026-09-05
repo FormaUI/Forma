@@ -40,6 +40,26 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["Labeled Groups"]</h2>
+    <p class="description">@L["A group with a label heads its items with a band naming them, so a long menu reads in sections without a divider between them."]</p>
+    <div class="demo-box">
+        <FormaDropDownMenu>
+            <Trigger>@L["Options"]</Trigger>
+            <ChildContent>
+                <FormaDropDownMenuGroup Label="@L["Order"]">
+                    <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Print"])">@L["Print"]</FormaDropDownMenuItem>
+                    <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Notes"])">@L["Notes"]</FormaDropDownMenuItem>
+                </FormaDropDownMenuGroup>
+                <FormaDropDownMenuGroup Label="@L["Invoice"]">
+                    <FormaDropDownMenuItem OnClick="@(() => _lastAction = L["Create invoice"])">@L["Create invoice"]</FormaDropDownMenuItem>
+                    <FormaDropDownMenuItem Href="#">@L["Download invoice"]</FormaDropDownMenuItem>
+                </FormaDropDownMenuGroup>
+            </ChildContent>
+        </FormaDropDownMenu>
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["Disabled Item"]</h2>
     <div class="demo-box">
         <FormaDropDownMenu>

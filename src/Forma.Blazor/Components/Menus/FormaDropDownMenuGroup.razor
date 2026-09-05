@@ -1,0 +1,11 @@
+@namespace Forma.Blazor.Components.Menus
+<div @attributes="AdditionalAttributes"
+     class="forma-dropdown-menu-group"
+     role="group"
+     aria-labelledby="@(Label is null ? null : _labelId)">
+    @if (Label is not null)
+    {
+        <div class="forma-dropdown-menu-group-label" id="@_labelId">@Label</div>
+    }
+    @ChildContent
+</div>
