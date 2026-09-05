@@ -1,3 +1,3 @@
-namespace Forma.Blazor.Tests.Components.Bars;
+namespace Forma.Blazor.Tests.Components.Layout;
 
 public sealed partial class FormaCommandAreaTests;

@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Components.Bars;
+namespace Forma.Blazor.Components.Layout;
 
 using Microsoft.AspNetCore.Components;
 

@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Components.Bars;
+namespace Forma.Blazor.Components.Layout;
 
 using Forma.Framework.Interop.Behaviours;
 using Forma.Framework.Interop.Operations;

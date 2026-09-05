@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Components.Bars;
+namespace Forma.Blazor.Components.Layout;
 
 /// <summary>How a command bar's track scrolls: the wheel over it, and the names its scroll buttons carry.</summary>
 public sealed record CommandBarOptions

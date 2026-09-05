@@ -23,9 +23,7 @@ Forma.Blazor/Components/
 ├── (2 / 2) Symbols/
 │   ├── ✅ FormaIcon.razor / .razor.cs / .razor.css   # draws an Icon — a glyph, a brand mark or a character — as inline SVG or symbol-font text
 │   └── ✅ FormaEmoji.razor / .razor.cs / .razor.css  # draws a Forma.Framework.Emojis.Emoji from a host's provider
-├── (6 / 6) Bars/
-│   ├── ✅ FormaCommandArea.razor / .razor.cs / .razor.css
-│   ├── ✅ FormaCommandBar.razor / .razor.cs / .razor.css
+├── (4 / 4) Bars/
 │   ├── ✅ FormaSearchToolbar.razor / .razor.cs / .razor.css
 │   ├── ✅ FormaToolbar.razor / .razor.cs / .razor.css
 │   ├── FormaToolbarItem.cs                    # abstract base: Id, Title, Tooltip?, Icon?, IsDisabled
@@ -39,7 +37,10 @@ Forma.Blazor/Components/
 │   ├── FormaToolbarOption.cs
 │   ├── ✅ FormaSelectionToolbar.razor / .razor.cs / .razor.css
 │   └── ✅ FormaStatusStrip.razor / .razor.cs / .razor.css
-├── (2 / 2) Layout/
+├── (4 / 4) Layout/
+│   ├── ✅ FormaCommandArea.razor / .razor.cs / .razor.css
+│   ├── ✅ FormaCommandBar.razor / .razor.cs / .razor.css
+│   ├── CommandBarOptions.cs
 │   ├── ✅ FormaSplitter.razor / .razor.cs / .razor.css / .razor.js
 │   ├── SplitterOrientation.cs                 # enum: Vertical, Horizontal
 │   ├── ✅ FormaTabs.razor / .razor.cs
