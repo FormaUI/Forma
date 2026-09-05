@@ -1234,6 +1234,27 @@
         }
 
         [Fact]
+        public void Should_freeze_the_details_actions_and_name_columns_in_an_arrow_pane()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
+
+            // Act
+            var cut = ctx.Render(@<FormaExplorer Items="@(ExplorerItem.ForAll(resources))" ViewMode="ExplorerViewMode.Details" />);
+
+            // Assert
+            var pane = cut.Find(".forma-explorer-details-wrapper .forma-freeze-pane");
+            Assert.Multiple(
+                () => Assert.Contains("forma-freeze-pane-arrows", pane.ClassList),
+                () => Assert.NotNull(pane.QuerySelector("th.forma-explorer-column-actions.forma-freeze-pane-frozen")),
+                () => Assert.NotNull(pane.QuerySelector("th.forma-explorer-column-name.forma-freeze-pane-frozen")),
+                () => Assert.NotNull(pane.QuerySelector("td.forma-explorer-cell-actions.forma-freeze-pane-frozen")),
+                () => Assert.NotNull(pane.QuerySelector("td.forma-explorer-cell-name.forma-freeze-pane-frozen")),
+                () => Assert.Null(pane.QuerySelector("td.forma-explorer-cell-kind.forma-freeze-pane-frozen")));
+        }
+
+        [Fact]
         public void Should_keep_details_cells_aligned_with_their_headers_in_both_modes()
         {
             // Arrange

@@ -7,7 +7,8 @@
     inline-size: 100%;
 }
 
-/* The table keeps every column it is configured with; when they outgrow the pane, the pane scrolls sideways. */
+/* The table keeps every column it is configured with; when they outgrow the pane, the other columns scroll
+   sideways beneath the frozen actions and name. */
 .forma-explorer-details-table {
     min-inline-size: 100%;
     border-collapse: collapse;
@@ -23,15 +24,22 @@
     white-space: nowrap;
 }
 
-/* A header starts where its column's cells start; the browser would center it on its own. */
+/* A header starts where its column's cells start; the browser would center it on its own. Its tint is laid over
+   the panel's base, so a frozen header is opaque over the headers sliding beneath it. */
 .forma-explorer-details-table th {
     font-weight: 600;
     color: var(--text-color);
-    background: var(--hover-background-color);
+    background: linear-gradient(var(--hover-background-color), var(--hover-background-color)) var(--input-background-color);
     text-align: start;
     white-space: nowrap;
     user-select: none;
     cursor: pointer;
+}
+
+/* The name stands behind the actions column, one small control and its padding in from the start. */
+.forma-explorer-column-name,
+.forma-explorer-cell-name {
+    --forma-freeze-pane-frozen-offset: calc(var(--control-size-sm) + 2 * var(--space-1));
 }
 
 .forma-explorer-column-name {
@@ -40,6 +48,11 @@
 
 .forma-explorer-cell-name {
     max-inline-size: 0;
+}
+
+/* A frozen cell lays its row's tint over the panel's base, so the cells sliding beneath it do not show through. */
+.forma-explorer-details-table td.forma-freeze-pane-frozen {
+    background: linear-gradient(var(--forma-explorer-row-tint), var(--forma-explorer-row-tint)) var(--input-background-color);
 }
 
 /* With no header to hold the name column open, the brief table gives the name the rest of the row. */
@@ -90,9 +103,19 @@
     color: var(--main-color);
 }
 
+/* A row carries its state as a tint, painted across the row and layered onto its frozen cells. The tint is a
+   registered color, so a change of state fades across the row and its frozen cells alike. */
+@property --forma-explorer-row-tint {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: transparent;
+}
+
 .forma-explorer-details-row {
+    --forma-explorer-row-tint: transparent;
+    background: var(--forma-explorer-row-tint);
     cursor: grab;
-    transition: background-color 0.15s ease;
+    transition: --forma-explorer-row-tint 0.15s ease;
 }
 
 .forma-explorer-details-row:active {
@@ -101,7 +124,7 @@
 
 @media (hover: hover) {
     .forma-explorer-details-row:not(.is-disabled):hover {
-        background: var(--hover-background-color);
+        --forma-explorer-row-tint: var(--hover-background-color);
     }
 }
 
@@ -113,7 +136,7 @@
 
 /* A disabled row: the disabled control colors, and a pointer that says so. */
 .forma-explorer-details-row.is-disabled {
-    background: var(--control-disabled-color);
+    --forma-explorer-row-tint: var(--control-disabled-color);
     cursor: not-allowed;
 }
 
@@ -132,7 +155,7 @@
 }
 
 .forma-explorer-details-row.is-selected {
-    background: color-mix(in srgb, var(--main-color) 12%, transparent);
+    --forma-explorer-row-tint: color-mix(in srgb, var(--main-color) 12%, transparent);
 }
 
 .forma-explorer-table-select {

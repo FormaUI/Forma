@@ -20,7 +20,7 @@
     }
 }
 
-/* The media scrolls inside the panel, sideways too when a table outgrows it, so the toolbar, folder tree and pager stay put. */
+/* The media scrolls inside the panel, so the toolbar, folder tree and pager stay put; a table that outgrows the width scrolls sideways inside its own freeze pane. */
 .forma-explorer-scroll {
     flex: 1;
     min-block-size: 0;

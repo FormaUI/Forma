@@ -76,6 +76,8 @@
   "Rename": "שינוי שם",
   "Delete {Name}": "מחיקת {Name}",
   "Actions": "פעולות",
+  "Scroll Columns Back": "גלילת עמודות אחורה",
+  "Scroll Columns Forward": "גלילת עמודות קדימה",
   "Rename Media": "שינוי שם מדיה",
   "New Name": "שם חדש",
   "Cancel": "ביטול",

@@ -6,6 +6,7 @@
    ============================================================ */
 
 .forma-freeze-pane {
+    --forma-freeze-pane-frozen-offset: 0px;
     position: relative;
     display: flex;
     min-inline-size: 0;
@@ -41,18 +42,19 @@
     display: none;
 }
 
-/* A frozen part sticks to the start of the axis, drawn over the content sliding beneath it. */
+/* A frozen part sticks to the start of the axis, drawn over the content sliding beneath it; a part standing behind
+   another frozen part carries its distance from the start in --forma-freeze-pane-frozen-offset. */
 .forma-freeze-pane-viewport ::deep .forma-freeze-pane-frozen {
     position: sticky;
     z-index: 1;
 }
 
 .forma-freeze-pane-inline > .forma-freeze-pane-viewport ::deep .forma-freeze-pane-frozen {
-    inset-inline-start: 0;
+    inset-inline-start: var(--forma-freeze-pane-frozen-offset);
 }
 
 .forma-freeze-pane-block > .forma-freeze-pane-viewport ::deep .forma-freeze-pane-frozen {
-    inset-block-start: 0;
+    inset-block-start: var(--forma-freeze-pane-frozen-offset);
 }
 
 /* The arrows take the muted tone and sit in the flow at either end of the viewport as a strip across it: the full

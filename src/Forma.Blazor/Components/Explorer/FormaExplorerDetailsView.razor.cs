@@ -2,6 +2,7 @@ namespace Forma.Blazor.Components.Explorer;
 
 using System.Globalization;
 
+using Forma.Blazor.Components.Layout;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Content;
 using Forma.Framework.Explorer.Content.Queries;
@@ -11,7 +12,7 @@ using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Tabular details view for explorer media resources with sortable column headers, or in its brief form the name and the size alone with no header.</summary>
+/// <summary>Tabular details view for explorer media resources with sortable column headers, its actions and name columns staying put while the rest scroll sideways, or in its brief form the name and the size alone with no header.</summary>
 public sealed partial class FormaExplorerDetailsView : ComponentBase
 {
     /// <summary>The collection of items to display.</summary>
@@ -29,6 +30,16 @@ public sealed partial class FormaExplorerDetailsView : ComponentBase
     [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
 
     private const string Placeholder = "—";
+
+    // The wheel is left to the panel, which scrolls the rows; the columns move by the arrows alone.
+    private FreezePaneOptions PaneOptions
+        => new()
+        {
+            Navigation = ScrollNavigation.Arrows,
+            PageOnWheelGesture = false,
+            ScrollBackLabel = L["Scroll Columns Back"],
+            ScrollForwardLabel = L["Scroll Columns Forward"],
+        };
 
     private ExplorerDetailsColumns Columns
         => Brief ? ExplorerDetailsColumns.Size : View.Options.DetailsColumns;
