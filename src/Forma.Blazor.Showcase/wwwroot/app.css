@@ -20,23 +20,32 @@ body {
     min-block-size: 100vh;
 }
 
+/* The page list is a viewport-tall column that scrolls on its own, so it keeps its place while the content
+   beside it changes and scrolls. */
 .showcase-sidebar {
+    position: sticky;
+    inset-block-start: 0;
     flex-shrink: 0;
+    box-sizing: border-box;
     inline-size: 15rem;
+    block-size: 100vh;
     padding: var(--space-5) 0;
+    overflow-y: auto;
     background: var(--input-background-color);
     border-inline-end: 1px solid var(--border-color);
 }
 
-/* The brand: heads the page list and links home. */
-.showcase-brand {
+/* The brand: the wordmark heads the page list and links home, filling the width between the sidebar's insets. */
+.showcase-sidebar .showcase-brand {
     display: block;
     margin: 0 var(--space-5) var(--space-4);
-    font-size: var(--font-size-xl);
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    color: var(--text-color);
-    text-decoration: none;
+    padding: 0;
+}
+
+.showcase-brand img {
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
 }
 
 .showcase-sidebar h3 {
@@ -134,7 +143,10 @@ body {
 
     .showcase-sidebar {
         display: none;
+        position: static;
         inline-size: auto;
+        block-size: auto;
+        overflow-y: visible;
         border-inline-end: none;
         border-block-end: 1px solid var(--border-color);
     }
