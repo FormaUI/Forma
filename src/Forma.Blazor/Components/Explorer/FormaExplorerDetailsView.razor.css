@@ -3,7 +3,10 @@
    Tabular data grid with sortable columns and item operations
    ============================================================ */
 
+/* The frozen region is the actions column and the name column; dragging its edge sets the extent, and the name
+   column is sized from it. */
 .forma-explorer-details-wrapper {
+    --forma-explorer-frozen-extent: calc(var(--forma-explorer-name-column-size) + var(--control-size-sm) + 2 * var(--space-1));
     inline-size: 100%;
 }
 
@@ -46,8 +49,13 @@
    column takes what they leave, between a floor that keeps a thumbnail and a few characters and its natural width.
    A name that no longer fits is cut with an ellipsis and carried whole in its tooltip. */
 .forma-explorer-column-name {
-    inline-size: var(--forma-explorer-name-column-size);
+    inline-size: calc(var(--forma-explorer-frozen-extent) - var(--control-size-sm) - 2 * var(--space-1));
     min-inline-size: 6rem;
+}
+
+/* A width the reader chose holds, so the other columns scroll rather than squeezing it back. */
+.has-frozen-extent .forma-explorer-column-name {
+    min-inline-size: max(6rem, calc(var(--forma-explorer-frozen-extent) - var(--control-size-sm) - 2 * var(--space-1)));
 }
 
 .forma-explorer-cell-name {

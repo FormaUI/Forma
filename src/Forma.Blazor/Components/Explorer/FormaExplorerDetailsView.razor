@@ -8,8 +8,8 @@
     var selecting = View.Selection.IsSelectionModeActive;
 }
 
-<div class="forma-explorer-details-wrapper">
-    <FormaFreezePane Options="PaneOptions">
+<div class="forma-explorer-details-wrapper @(_frozenExtent is null ? "" : "has-frozen-extent")" style="@FrozenStyle">
+    <FormaFreezePane Options="PaneOptions" FrozenExtentChanged="HandleFrozenExtentChanged">
     <table class="forma-explorer-details-table @(View.ShowsDetailsHeader ? "" : "is-headerless")" role="table">
         <thead>
             <tr>

@@ -28,6 +28,8 @@ public sealed partial class FormaExplorerDetailsView : ComponentBase
 
     private const string Placeholder = "—";
 
+    private double? _frozenExtent;
+
     // The wheel is left to the panel, which scrolls the rows; the columns move by the arrows alone.
     private FreezePaneOptions PaneOptions
         => new()
@@ -36,7 +38,17 @@ public sealed partial class FormaExplorerDetailsView : ComponentBase
             PageOnWheelGesture = false,
             ScrollBackLabel = L["Scroll Columns Back"],
             ScrollForwardLabel = L["Scroll Columns Forward"],
+            FrozenEdgeLabel = L["Resize Name Column"],
         };
+
+    // The frozen region the reader asked for; the name column is what gives way to honour it.
+    private string? FrozenStyle
+        => _frozenExtent is { } extent
+            ? string.Create(CultureInfo.InvariantCulture, $"--forma-explorer-frozen-extent: {extent}px")
+            : null;
+
+    private void HandleFrozenExtentChanged(double extent)
+        => _frozenExtent = extent;
 
     private ExplorerDetailsColumns Columns
         => View.DetailsColumns;
