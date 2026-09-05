@@ -17,7 +17,10 @@ costs a few hundredths of a millisecond, so parent lookup scans the scopes as th
 `FormaPopup` is the first library component on the router: it registers its root and
 activates while open, with its trigger counted as inside it, so Escape and a press away
 dismiss it through the router rather than through a document listener and a backdrop of
-its own. The `focus` field of a profile is not read until `Focus.js` moves onto the router
+its own. The composer's and the toolbar's shortcuts are routes: the composer registers its
+catalog on its root and each editor registers it on its editable element, where the native
+table would otherwise claim the keys, and the toolbar registers its actions' shortcuts on its
+target. The `focus` field of a profile is not read until `Focus.js` moves onto the router
 in step 3.
 
 ## Purpose
@@ -95,7 +98,9 @@ prevents page scrolling for two of them.
 
 ### Shortcuts and modifiers
 
-`KeyBindings` handles shortcuts on the composer and on the rich-text editor;
+The composer registers its shortcut catalog as routes on its own scope and on each editor's
+editable element, and the toolbar registers the shortcuts its actions carry as routes on its
+`Target`; a command is its own action, so a host remaps either by the command's name.
 `FormaDataGrid` handles Ctrl/Shift-click and Shift+Arrow selection;
 `ImplicitSubmitGuard` controls implicit submission; `FormaSearchBox` and
 `FormaPagination` assign behavior to Enter.
@@ -121,7 +126,7 @@ draws it in the top layer, because it remains a DOM descendant of whatever opene
 | Conflict | What happens today |
 | --- | --- |
 | Select inside a data-grid cell | The grid's capture-phase listener moves row selection before the select receives ArrowDown. Only text-entry targets are excluded. |
-| Emoji picker over the composer | Ctrl+B pressed in the picker's search box bolds the document behind the popup. |
+| Emoji picker over the composer | Resolved: the composer's shortcuts are routes, and a popup over it is an active scope that Ctrl+B pressed inside it stops at. |
 | Popup opened from a toolbar | Wheel input bubbling from the popup scrolls the toolbar track behind it. |
 | Drag started inside a popup | Escape reaches the popup's document listener before the drag's element listener. |
 | Nested drop targets | A folder node inside the sidebar's drop area lets both targets receive the drop unless the inner one stops propagation. |
@@ -489,7 +494,7 @@ Tests assert resolutions directly. The Showcase carries an inspector that shows 
 | Conflict | Mode | Owner | Migration |
 | --- | --- | --- | --- |
 | Select in a grid cell receives ArrowDown | Structural | `FormaSelect` | Both register scopes; the grid's capture handler acts only as owner |
-| Emoji-picker search receives Ctrl+B | Structural | The picker's scope | Composer bindings become routes on the editor scope and do not act inside a nested scope |
+| Emoji-picker search receives Ctrl+B | Structural | The picker's scope | Done: composer bindings are routes on the composer's and the editor's scopes and do not act inside a nested scope |
 | Popup content receives wheel over a toolbar | Structural | The popup's scope | The wheel acts only as owner |
 | Drag inside a popup receives Escape | Active | The drag | The drag activates above the popup |
 | Folder node receives a drop inside the sidebar | Structural | The folder's scope | The sidebar does not act on a drop owned by the nested scope |
@@ -519,7 +524,8 @@ existing components, landing as several coherent commits.
 2. **Dismissal.** `FormaPopup`, `FormaDialog` with both entry points, active drags, the
    selection bar while focused, `FormaBreadcrumb` rebuilt on `FormaPopup`. The per-popup
    document listener, both backdrops, and the backdrop z-indexes go.
-3. **Owners onto routes.** `SelectionInteraction`, both `KeyBindings` sets, the three
+3. **Owners onto routes.** `SelectionInteraction`, both shortcut sets (done: the composer's
+   and the toolbar's shortcuts are routes, and `KeyBindings` is retired), the three
    wheel tracks of `Scroll.js`, `PanGesture`, `DropZone` and the explorer drop targets,
    `Focus.js`, and the components that own navigation keys — `FormaSelect`,
    `FormaDropDownMenu`, `FormaEmojiPicker`, `FormaFileViewer`, `FormaSplitter`,
