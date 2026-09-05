@@ -45,7 +45,7 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
     [Parameter] public bool Scrollable { get; set; } = true;
 
     /// <summary>How the track carrying the items scrolls.</summary>
-    [Parameter] public CommandBarOptions CommandBarOptions { get; set; } = CommandBarOptions.Default;
+    [Parameter] public FreezePaneOptions CommandBarOptions { get; set; } = FreezePaneOptions.Arrows;
 
     /// <summary>Extra classes applied to the toolbar's root element.</summary>
     [Parameter] public string? Class { get; set; }

@@ -43,6 +43,10 @@ public abstract class JsInterop(IJSRuntime js, string path) : IAsyncDisposable
         }
     }
 
+    /// <summary>Invokes a function the module exports beside <c>attach</c>, reporting whether the call ran.</summary>
+    protected ValueTask<bool> InvokeModuleAsync(string identifier, params object?[] args)
+        => _module.TryInvokeVoidAsync(identifier, args);
+
     /// <summary>Invokes a void-returning method on the attached instance, reporting whether the call ran.</summary>
     protected async ValueTask<bool> InvokeAsync(string identifier, params object?[] args)
     {

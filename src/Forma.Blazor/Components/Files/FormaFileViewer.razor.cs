@@ -5,7 +5,6 @@ using System.Globalization;
 using Forma.Blazor.Models;
 using Forma.Framework.Files;
 using Forma.Framework.Interop.Behaviours;
-using Forma.Framework.Interop.Operations;
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
 using Forma.Framework.Resources.Extensions;
@@ -51,7 +50,6 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
 
     private PanGesture _pan = default!;
 
-    private WheelScroll _wheelScroll = default!;
 
     private Scroll _scroll = default!;
 
@@ -92,7 +90,6 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
     protected override void OnInitialized()
     {
         _pan = new PanGesture(JS);
-        _wheelScroll = new WheelScroll(JS);
         _scroll = new Scroll(JS);
     }
 
@@ -174,12 +171,12 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
         if (ZoomOnWheelGesture && !_isWheelAttached)
         {
             _selfReference ??= DotNetObjectReference.Create(this);
-            _isWheelAttached = await _wheelScroll.AttachAsync(_imageFrameElement, _selfReference, WheelModifier.Ctrl);
+            _isWheelAttached = await _scroll.AttachAsync(_imageFrameElement, new ScrollBehaviours { Wheel = ScrollWheel.Tells(WheelModifier.Ctrl) }, _selfReference);
         }
         else if (!ZoomOnWheelGesture && _isWheelAttached)
         {
             _isWheelAttached = false;
-            await _wheelScroll.DetachAsync();
+            await _scroll.DetachAsync();
         }
 
         if (_hasZoomChanged)
@@ -260,7 +257,6 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
         _resolveCancellation?.Dispose();
 
         await _pan.DisposeAsync();
-        await _wheelScroll.DisposeAsync();
         await _scroll.DisposeAsync();
         _selfReference?.Dispose();
     }

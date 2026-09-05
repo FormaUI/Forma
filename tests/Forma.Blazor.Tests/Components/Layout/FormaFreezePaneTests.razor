@@ -1,0 +1,203 @@
+@inherits FormaBunitContext
+@using Forma.Framework.Interop.Behaviours
+@code {
+    private static readonly FreezePaneOptions BlockArrows = new() { Axis = ScrollAxis.Block, Navigation = ScrollNavigation.Arrows };
+
+    private static Task Report<TComponent>(IRenderedComponent<TComponent> cut, bool canScrollBack, bool canScrollForward, double frozenExtent = 0, double cornerExtent = 0)
+        where TComponent : class, IComponent
+        => cut.InvokeAsync(() => cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(canScrollBack, canScrollForward, frozenExtent, cornerExtent));
+
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_the_content_in_an_inline_scrollbar_viewport_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaFreezePaneTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFreezePane><button>One</button></FormaFreezePane>);
+
+            // Assert
+            var root = cut.Find(".forma-freeze-pane");
+            Assert.Multiple(
+                () => Assert.Contains("forma-freeze-pane-inline", root.ClassList),
+                () => Assert.Contains("forma-freeze-pane-scrollbar", root.ClassList),
+                () => Assert.Equal("One", cut.Find(".forma-freeze-pane-viewport button").TextContent),
+                () => Assert.Empty(cut.FindAll(".forma-freeze-pane-arrow")));
+        }
+
+        [Fact]
+        public async Task Should_render_no_arrows_in_the_scrollbar_form_however_far_the_content_goes()
+        {
+            // Arrange
+            using var ctx = new FormaFreezePaneTests();
+            var cut = ctx.Render(@<FormaFreezePane><button>One</button></FormaFreezePane>);
+
+            // Act
+            await Report(cut, canScrollBack: true, canScrollForward: true);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-freeze-pane-arrow"));
+        }
+
+        [Fact]
+        public void Should_mark_the_arrow_form_and_hide_its_arrows_while_the_content_fits()
+        {
+            // Arrange
+            using var ctx = new FormaFreezePaneTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFreezePane Options="FreezePaneOptions.Arrows"><button>One</button></FormaFreezePane>);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Contains("forma-freeze-pane-arrows", cut.Find(".forma-freeze-pane").ClassList),
+                () => Assert.Empty(cut.FindAll(".forma-freeze-pane-arrow")));
+        }
+
+        [Fact]
+        public async Task Should_show_only_the_forward_arrow_at_the_start()
+        {
+            // Arrange
+            using var ctx = new FormaFreezePaneTests();
+            var cut = ctx.Render(@<FormaFreezePane Options="FreezePaneOptions.Arrows"><button>One</button></FormaFreezePane>);
+
+            // Act
+            await Report(cut, canScrollBack: false, canScrollForward: true);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll(".forma-freeze-pane-arrow-back")),
+                () => Assert.NotNull(cut.Find(".forma-freeze-pane-arrow-forward")));
+        }
+
+        [Fact]
+        public async Task Should_show_both_arrows_from_the_middle()
+        {
+            // Arrange
+            using var ctx = new FormaFreezePaneTests();
+            var cut = ctx.Render(@<FormaFreezePane Options="FreezePaneOptions.Arrows"><button>One</button></FormaFreezePane>);
+
+            // Act
+            await Report(cut, canScrollBack: true, canScrollForward: true);
+
+            // Assert
+            Assert.Equal(2, cut.FindAll(".forma-freeze-pane-arrow").Count);
+        }
+
+        [Fact]
+        public async Task Should_show_only_the_back_arrow_at_the_end()
+        {
+            // Arrange
+            using var ctx = new FormaFreezePaneTests();
+            var cut = ctx.Render(@<FormaFreezePane Options="FreezePaneOptions.Arrows"><button>One</button></FormaFreezePane>);
+
+            // Act
+            await Report(cut, canScrollBack: true, canScrollForward: false);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.NotNull(cut.Find(".forma-freeze-pane-arrow-back")),
+                () => Assert.Empty(cut.FindAll(".forma-freeze-pane-arrow-forward")));
+        }
+
+        [Fact]
+        public async Task Should_drop_both_arrows_once_the_content_fits_again()
+        {
+            // Arrange
+            using var ctx = new FormaFreezePaneTests();
+            var cut = ctx.Render(@<FormaFreezePane Options="FreezePaneOptions.Arrows"><button>One</button></FormaFreezePane>);
+            await Report(cut, canScrollBack: true, canScrollForward: true);
+
+            // Act
+            await Report(cut, canScrollBack: false, canScrollForward: false);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-freeze-pane-arrow"));
+        }
+
+        [Fact]
+        public async Task Should_name_the_inline_arrows_from_the_localizer()
+        {
+            // Arrange
+            using var ctx = new FormaFreezePaneTests();
+            var cut = ctx.Render(@<FormaFreezePane Options="FreezePaneOptions.Arrows"><button>One</button></FormaFreezePane>);
+
+            // Act
+            await Report(cut, canScrollBack: true, canScrollForward: true);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("Scroll Back", cut.Find(".forma-freeze-pane-arrow-back").GetAttribute("aria-label")),
+                () => Assert.Equal("Scroll Forward", cut.Find(".forma-freeze-pane-arrow-forward").GetAttribute("aria-label")));
+        }
+
+        [Fact]
+        public async Task Should_name_the_block_arrows_up_and_down()
+        {
+            // Arrange
+            using var ctx = new FormaFreezePaneTests();
+            var cut = ctx.Render(@<FormaFreezePane Options="BlockArrows"><button>One</button></FormaFreezePane>);
+
+            // Act
+            await Report(cut, canScrollBack: true, canScrollForward: true);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Contains("forma-freeze-pane-block", cut.Find(".forma-freeze-pane").ClassList),
+                () => Assert.Equal("Scroll Up", cut.Find(".forma-freeze-pane-arrow-back").GetAttribute("aria-label")),
+                () => Assert.Equal("Scroll Down", cut.Find(".forma-freeze-pane-arrow-forward").GetAttribute("aria-label")));
+        }
+
+        [Fact]
+        public async Task Should_let_the_caller_name_the_arrows()
+        {
+            // Arrange
+            using var ctx = new FormaFreezePaneTests();
+            var options = new FreezePaneOptions { Navigation = ScrollNavigation.Arrows, ScrollBackLabel = "Earlier", ScrollForwardLabel = "Later" };
+            var cut = ctx.Render(@<FormaFreezePane Options="options"><button>One</button></FormaFreezePane>);
+
+            // Act
+            await Report(cut, canScrollBack: true, canScrollForward: true);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("Earlier", cut.Find(".forma-freeze-pane-arrow-back").GetAttribute("aria-label")),
+                () => Assert.Equal("Later", cut.Find(".forma-freeze-pane-arrow-forward").GetAttribute("aria-label")));
+        }
+
+        [Fact]
+        public async Task Should_carry_the_frozen_extents_for_the_back_arrow_to_stand_in()
+        {
+            // Arrange
+            using var ctx = new FormaFreezePaneTests();
+            var cut = ctx.Render(@<FormaFreezePane Options="FreezePaneOptions.Arrows"><button>One</button></FormaFreezePane>);
+
+            // Act
+            await Report(cut, canScrollBack: true, canScrollForward: true, frozenExtent: 120.5, cornerExtent: 32);
+
+            // Assert
+            var root = cut.Find(".forma-freeze-pane");
+            Assert.Multiple(
+                () => Assert.Contains("has-frozen", root.ClassList),
+                () => Assert.Equal("--forma-freeze-pane-frozen-extent: 120.5px; --forma-freeze-pane-corner-extent: 32px", root.GetAttribute("style")));
+        }
+
+        [Fact]
+        public void Should_merge_the_host_class_and_pass_other_attributes_through()
+        {
+            // Arrange
+            using var ctx = new FormaFreezePaneTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFreezePane Class="demo-track" aria-label="Filters" />);
+
+            // Assert
+            var root = cut.Find(".forma-freeze-pane");
+            Assert.Multiple(
+                () => Assert.Contains("demo-track", root.ClassList),
+                () => Assert.Equal("Filters", root.GetAttribute("aria-label")));
+        }
+    }
+}

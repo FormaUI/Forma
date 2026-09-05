@@ -1,35 +1,9 @@
 @namespace Forma.Blazor.Components.Layout
 <FormaVisibility Hidden="Hidden" Animated="Animated">
-    <div class="@CssClass" @attributes="AdditionalAttributes" @ref="_barElement">
-        @if (_canScrollBack || _canScrollForward)
-        {
-            <FormaButton Variant="ButtonVariant.Ghost"
-                         Size="ButtonSize.Mini"
-                         IconOnly="true"
-                         class="forma-command-bar-scroll forma-command-bar-scroll-back"
-                         Disabled="@(!_canScrollBack)"
-                         aria-label="@(Options.ScrollBackLabel ?? L["Scroll Commands Back"].Value)"
-                         OnClick="() => ScrollAsync(-1)">
-                <FormaIcon Icon="Glyph.ChevronRight" />
-            </FormaButton>
-        }
-
-        <div class="forma-command-bar-track" @ref="_trackElement">
+    <div class="@CssClass" @attributes="AdditionalAttributes">
+        <FormaFreezePane Class="forma-command-bar-track" Options="TrackOptions">
             @ChildContent
-        </div>
-
-        @if (_canScrollBack || _canScrollForward)
-        {
-            <FormaButton Variant="ButtonVariant.Ghost"
-                         Size="ButtonSize.Mini"
-                         IconOnly="true"
-                         class="forma-command-bar-scroll forma-command-bar-scroll-forward"
-                         Disabled="@(!_canScrollForward)"
-                         aria-label="@(Options.ScrollForwardLabel ?? L["Scroll Commands Forward"].Value)"
-                         OnClick="() => ScrollAsync(1)">
-                <FormaIcon Icon="Glyph.ChevronRight" />
-            </FormaButton>
-        }
+        </FormaFreezePane>
 
         @TrailingContent
     </div>

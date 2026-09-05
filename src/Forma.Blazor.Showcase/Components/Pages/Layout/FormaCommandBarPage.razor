@@ -6,7 +6,7 @@
 @inject IStringLocale<FormaCommandBarPage> L
 
 <h1>FormaCommandBar</h1>
-<p class="description">@L["One bar of commands. It lays them on a track that scrolls behind arrows once they outgrow the width, each arrow disabled at the edge it can no longer travel toward."]</p>
+<p class="description">@L["One bar of commands. It lays them on a track that scrolls behind arrows once they outgrow the width, each arrow shown only while there is somewhere left to go that way."]</p>
 
 <div class="demo-section">
     <h2>@L["Commands That Outgrow the Bar"]</h2>
@@ -81,7 +81,7 @@
     <p class="description">@L["A caller naming the arrows for its own domain, rather than the generic default."]</p>
     <div class="demo-box demo-box-flush demo-command-bar-narrow">
         <FormaCommandArea>
-            <FormaCommandBar Options="@(new CommandBarOptions { ScrollBackLabel = L["Earlier Filters"], ScrollForwardLabel = L["Later Filters"] })">
+            <FormaCommandBar Options="@(new FreezePaneOptions { ScrollBackLabel = L["Earlier Filters"], ScrollForwardLabel = L["Later Filters"] })">
                 @foreach (var filter in ManyFilters)
                 {
                     <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini">@filter</FormaButton>

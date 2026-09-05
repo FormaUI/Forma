@@ -603,7 +603,7 @@
         {
             // Arrange
             using var ctx = new FormaPaginationTests();
-            var module = ctx.JSInterop.SetupModule("./_content/Forma.Framework.Interop/scripts/behaviours/WheelScroll.js");
+            var module = ctx.JSInterop.SetupModule("./_content/Forma.Framework.Interop/scripts/behaviours/Scroll.js");
             module.SetupVoid("attach", _ => true).SetVoidResult();
 
             // Act

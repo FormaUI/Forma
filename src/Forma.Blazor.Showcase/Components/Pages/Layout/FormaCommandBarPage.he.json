@@ -1,6 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
-  "One bar of commands. It lays them on a track that scrolls behind arrows once they outgrow the width, each arrow disabled at the edge it can no longer travel toward.": "סרגל פקודות אחד. הוא פורש את הפקודות על מסילה שנגללת מאחורי חצים ברגע שהן חורגות מהרוחב; כל חץ מושבת בקצה שאליו אינו יכול עוד להתקדם.",
+  "One bar of commands. It lays them on a track that scrolls behind arrows once they outgrow the width, each arrow shown only while there is somewhere left to go that way.": "סרגל פקודות אחד. הוא פורש את הפקודות על מסילה שנגללת מאחורי חצים ברגע שהן חורגות מהרוחב; כל חץ מוצג רק כל עוד נותר לאן להתקדם בכיוונו.",
   "Commands That Outgrow the Bar": "פקודות שחורגות מהסרגל",
   "Once the commands no longer fit, an arrow appears at each end, and the pair also reads as how far along the bar you are.": "ברגע שהפקודות כבר אינן נכנסות, חץ מופיע בכל קצה, והצמד גם נקרא כמידת ההתקדמות שלכם לאורך הסרגל.",
   "New": "חדש",

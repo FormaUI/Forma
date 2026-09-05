@@ -1,7 +1,7 @@
 /* ============================================================
    FormaCommandBar — CSS isolation
-   A bar of commands on a scrolling track, flanked by arrows
-   that appear only once the commands outgrow the width.
+   A bar of commands on a scrollable track, with trailing
+   content standing past the track's end.
    ============================================================ */
 
 .forma-command-bar {
@@ -11,49 +11,17 @@
     min-inline-size: 0;
 }
 
-.forma-command-bar-track {
+::deep .forma-command-bar-track {
+    flex: 1;
+}
+
+/* The commands sit in a row on the track, each keeping its width; the track scrolls what overflows. */
+::deep .forma-command-bar-track .forma-freeze-pane-viewport {
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    flex: 1;
-    min-inline-size: 0;
-    overflow-x: auto;
-    scroll-behavior: smooth;
-    /* The arrows drive the track, so its own bar would only add a second control for the same thing. */
-    scrollbar-width: none;
-    /* Vertical panning stays with the page; the track claims the horizontal axis alone. */
-    touch-action: pan-y;
 }
 
-.forma-command-bar-track::-webkit-scrollbar {
-    display: none;
-}
-
-/* A command keeps its width; the arrows scroll what overflows. */
-.forma-command-bar-track > ::deep * {
+::deep .forma-command-bar-track .forma-freeze-pane-viewport > * {
     flex-shrink: 0;
-}
-
-/* The arrows take the muted tone. */
-::deep .forma-command-bar-scroll {
-    --forma-button-ghost-color: var(--text-muted-color);
-}
-
-/* The chevron is not bidi-mirrored, so each arrow is turned to point the way it scrolls. */
-::deep .forma-command-bar-scroll-back {
-    rotate: 180deg;
-}
-
-::deep .forma-command-bar-scroll-back:dir(rtl) {
-    rotate: 0deg;
-}
-
-::deep .forma-command-bar-scroll-forward:dir(rtl) {
-    rotate: 180deg;
-}
-
-/* The arrows ring inward. */
-::deep .forma-command-bar-scroll:focus-visible {
-    outline: none;
-    box-shadow: var(--focus-ring-inset);
 }

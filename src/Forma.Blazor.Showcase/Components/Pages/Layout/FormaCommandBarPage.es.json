@@ -1,6 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
-  "One bar of commands. It lays them on a track that scrolls behind arrows once they outgrow the width, each arrow disabled at the edge it can no longer travel toward.": "Una barra de comandos. Tiende los comandos sobre un riel que se desplaza tras unas flechas en cuanto superan el ancho; cada flecha se deshabilita en el borde hacia el que ya no puede avanzar.",
+  "One bar of commands. It lays them on a track that scrolls behind arrows once they outgrow the width, each arrow shown only while there is somewhere left to go that way.": "Una barra de comandos. Tiende los comandos sobre un riel que se desplaza tras unas flechas en cuanto superan el ancho; cada flecha se deshabilita en el borde hacia el que ya no puede avanzar.",
   "Commands That Outgrow the Bar": "Comandos Que Superan la Barra",
   "Once the commands no longer fit, an arrow appears at each end, and the pair also reads as how far along the bar you are.": "En cuanto los comandos dejan de caber, aparece una flecha en cada extremo, y el par también se lee como cuánto has recorrido de la barra.",
   "New": "Nuevo",

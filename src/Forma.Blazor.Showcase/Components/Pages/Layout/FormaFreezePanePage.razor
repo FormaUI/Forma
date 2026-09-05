@@ -1,0 +1,190 @@
+@page "/freeze-pane"
+@attribute [ShowcasePage("FormaFreezePane")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Buttons
+@using Forma.Blazor.Components.Layout
+@using Forma.Framework.Interop.Behaviours
+@inject IStringLocale<FormaFreezePanePage> L
+
+<h1>FormaFreezePane</h1>
+<p class="description">@L["A scroll box along one axis. Content marked as frozen stays at its start while the rest slides beneath it, and the content moves either by the browser's scrollbar or by an arrow at each end, each shown only while there is somewhere left to go that way."]</p>
+
+<div class="demo-section">
+    <h2>@L["Scrollbar"]</h2>
+    <p class="description">@L["The default form: the browser's own scrollbar, and a wheel turned over the content moves it sideways."]</p>
+    <div class="demo-box demo-box-flush demo-command-bar-narrow">
+        <FormaFreezePane Class="demo-scroll-row">
+            @foreach (var month in Months)
+            {
+                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini">@month</FormaButton>
+            }
+        </FormaFreezePane>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Arrows"]</h2>
+    <p class="description">@L["Arrows instead of a scrollbar. Only the forward arrow shows at the start, both from the middle, and only the back arrow at the end; when everything fits there is none."]</p>
+    <div class="demo-box demo-box-flush demo-command-bar-narrow">
+        <FormaFreezePane Class="demo-scroll-row" Options="FreezePaneOptions.Arrows">
+            @foreach (var month in Months)
+            {
+                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini">@month</FormaButton>
+            }
+        </FormaFreezePane>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Content That Fits"]</h2>
+    <p class="description">@L["With room to spare there is nothing to scroll, so neither form draws any control."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaFreezePane Class="demo-scroll-row" Options="FreezePaneOptions.Arrows">
+            <FormaButton Variant="ButtonVariant.Primary" Size="ButtonSize.Mini">@L["Save"]</FormaButton>
+            <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini">@L["Cancel"]</FormaButton>
+        </FormaFreezePane>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A Frozen Column"]</h2>
+    <p class="description">@L["The first column of this table is frozen, so it stays put while the other columns scroll, and the back arrow stands where it ends rather than beneath it."]</p>
+    <div class="demo-box demo-box-flush demo-command-bar-narrow">
+        <FormaFreezePane Options="FreezePaneOptions.Arrows">
+            <table class="demo-scroll-table">
+                <thead>
+                    <tr>
+                        <th class="@FormaFreezePane.FrozenClass">@L["Rider"]</th>
+                        @foreach (var stage in Stages)
+                        {
+                            <th>@stage</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var rider in Riders)
+                    {
+                        <tr>
+                            <td class="@FormaFreezePane.FrozenClass">@rider</td>
+                            @foreach (var stage in Stages)
+                            {
+                                <td>@Time(rider, stage)</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </FormaFreezePane>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Up and Down"]</h2>
+    <p class="description">@L["The same box along the block axis, by the scrollbar and by arrows. The header row is frozen, so it stays at the top while the rows scroll under it."]</p>
+    <div class="demo-row">
+        <div class="demo-box demo-box-flush demo-box-bounded">
+            <FormaFreezePane Options="@(new FreezePaneOptions { Axis = ScrollAxis.Block })">
+                <table class="demo-scroll-table">
+                    <thead>
+                        <tr>
+                            <th class="@FormaFreezePane.FrozenClass">@L["Rider"]</th>
+                            <th class="@FormaFreezePane.FrozenClass">@L["Team"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var rider in ManyRiders)
+                        {
+                            <tr>
+                                <td>@rider</td>
+                                <td>@Team(rider)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </FormaFreezePane>
+        </div>
+        <div class="demo-box demo-box-flush demo-box-bounded">
+            <FormaFreezePane Options="@(new FreezePaneOptions { Axis = ScrollAxis.Block, Navigation = ScrollNavigation.Arrows })">
+                <table class="demo-scroll-table">
+                    <thead>
+                        <tr>
+                            <th class="@FormaFreezePane.FrozenClass">@L["Rider"]</th>
+                            <th class="@FormaFreezePane.FrozenClass">@L["Team"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var rider in ManyRiders)
+                        {
+                            <tr>
+                                <td>@rider</td>
+                                <td>@Team(rider)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </FormaFreezePane>
+        </div>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Custom Arrow Labels"]</h2>
+    <p class="description">@L["A caller naming the arrows for its own domain, rather than the generic default."]</p>
+    <div class="demo-box demo-box-flush demo-command-bar-narrow">
+        <FormaFreezePane Class="demo-scroll-row" Options="@(new FreezePaneOptions { Navigation = ScrollNavigation.Arrows, ScrollBackLabel = L["Earlier Months"], ScrollForwardLabel = L["Later Months"] })">
+            @foreach (var month in Months)
+            {
+                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini">@month</FormaButton>
+            }
+        </FormaFreezePane>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Wheel Left to the Page"]</h2>
+    <p class="description">@L["With the wheel gesture off, a wheel turned over the content scrolls the page as usual and only the arrows or a drag move the content."]</p>
+    <div class="demo-box demo-box-flush demo-command-bar-narrow">
+        <FormaFreezePane Class="demo-scroll-row" Options="@(new FreezePaneOptions { Navigation = ScrollNavigation.Arrows, PageOnWheelGesture = false })">
+            @foreach (var month in Months)
+            {
+                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini">@month</FormaButton>
+            }
+        </FormaFreezePane>
+    </div>
+</div>
+
+@code {
+    private string[] Months =>
+    [
+        L["January"], L["February"], L["March"], L["April"], L["May"], L["June"],
+        L["July"], L["August"], L["September"], L["October"], L["November"], L["December"]
+    ];
+
+    private string[] Stages =>
+    [
+        L["Stage {Number}", 1], L["Stage {Number}", 2], L["Stage {Number}", 3], L["Stage {Number}", 4],
+        L["Stage {Number}", 5], L["Stage {Number}", 6], L["Stage {Number}", 7], L["Stage {Number}", 8]
+    ];
+
+    private static readonly string[] Riders = ["Pogačar", "Vingegaard", "Evenepoel", "Roglič"];
+
+    private static readonly string[] ManyRiders =
+    [
+        "Pogačar", "Vingegaard", "Evenepoel", "Roglič", "Almeida", "Yates", "Mas", "Landa",
+        "Carapaz", "Gaudu", "Bardet", "Hindley", "Ayuso", "Rodríguez", "Jorgenson", "Skjelmose"
+    ];
+
+    private static string Time(string rider, string stage)
+    {
+        var seed = rider.Length * 7 + stage.Length * 13;
+        return $"{4 + seed % 2}:{10 + seed % 40:00}:{seed * 3 % 60:00}";
+    }
+
+    private string Team(string rider)
+        => (rider.Length % 3) switch
+        {
+            0 => L["Emirates"],
+            1 => L["Visma"],
+            _ => L["Soudal"],
+        };
+}

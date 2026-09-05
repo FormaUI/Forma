@@ -1,0 +1,31 @@
+@namespace Forma.Blazor.Components.Layout
+
+<div class="@CssClass" style="@FrozenStyle" @attributes="AdditionalAttributes">
+    @if (_canScrollBack && ShowsArrows)
+    {
+        <FormaButton Variant="ButtonVariant.Ghost"
+                     Size="ButtonSize.Mini"
+                     IconOnly="true"
+                     class="forma-freeze-pane-arrow forma-freeze-pane-arrow-back"
+                     aria-label="@BackLabel"
+                     OnClick="() => ScrollAsync(-1)">
+            <FormaIcon Icon="@BackGlyph" />
+        </FormaButton>
+    }
+
+    <div class="forma-freeze-pane-viewport" @ref="_viewport">
+        @ChildContent
+    </div>
+
+    @if (_canScrollForward && ShowsArrows)
+    {
+        <FormaButton Variant="ButtonVariant.Ghost"
+                     Size="ButtonSize.Mini"
+                     IconOnly="true"
+                     class="forma-freeze-pane-arrow forma-freeze-pane-arrow-forward"
+                     aria-label="@ForwardLabel"
+                     OnClick="() => ScrollAsync(1)">
+            <FormaIcon Icon="@ForwardGlyph" />
+        </FormaButton>
+    }
+</div>

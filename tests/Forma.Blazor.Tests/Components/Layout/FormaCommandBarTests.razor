@@ -89,7 +89,7 @@
                 </FormaCommandBar>);
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-command-bar-scroll"));
+            Assert.Empty(cut.FindAll(".forma-freeze-pane-arrow"));
         }
 
         [Fact]
@@ -103,14 +103,14 @@
                 </FormaCommandBar>);
 
             // Act
-            _ = cut.FindComponent<FormaCommandBar>().Instance.HandleOverflowAsync(canScrollBack: false, canScrollForward: true);
+            _ = cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(canScrollBack: true, canScrollForward: true, frozenExtent: 0, cornerExtent: 0);
 
             // Assert
-            cut.WaitForAssertion(() => Assert.Equal(2, cut.FindAll(".forma-command-bar-scroll").Count));
+            cut.WaitForAssertion(() => Assert.Equal(2, cut.FindAll(".forma-freeze-pane-arrow").Count));
         }
 
         [Fact]
-        public void Should_disable_the_back_arrow_at_the_start_of_the_bar()
+        public void Should_show_only_the_forward_arrow_at_the_start_of_the_bar()
         {
             // Arrange
             using var ctx = new FormaCommandBarTests();
@@ -120,18 +120,18 @@
                 </FormaCommandBar>);
 
             // Act
-            _ = cut.FindComponent<FormaCommandBar>().Instance.HandleOverflowAsync(canScrollBack: false, canScrollForward: true);
+            _ = cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(canScrollBack: false, canScrollForward: true, frozenExtent: 0, cornerExtent: 0);
 
             // Assert
             cut.WaitForAssertion(() =>
             {
-                Assert.True(cut.Find(".forma-command-bar-scroll-back").HasAttribute("disabled"));
-                Assert.False(cut.Find(".forma-command-bar-scroll-forward").HasAttribute("disabled"));
+                Assert.Empty(cut.FindAll(".forma-freeze-pane-arrow-back"));
+                Assert.NotNull(cut.Find(".forma-freeze-pane-arrow-forward"));
             });
         }
 
         [Fact]
-        public void Should_disable_the_forward_arrow_at_the_end_of_the_bar()
+        public void Should_show_only_the_back_arrow_at_the_end_of_the_bar()
         {
             // Arrange
             using var ctx = new FormaCommandBarTests();
@@ -141,13 +141,13 @@
                 </FormaCommandBar>);
 
             // Act
-            _ = cut.FindComponent<FormaCommandBar>().Instance.HandleOverflowAsync(canScrollBack: true, canScrollForward: false);
+            _ = cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(canScrollBack: true, canScrollForward: false, frozenExtent: 0, cornerExtent: 0);
 
             // Assert
             cut.WaitForAssertion(() =>
             {
-                Assert.False(cut.Find(".forma-command-bar-scroll-back").HasAttribute("disabled"));
-                Assert.True(cut.Find(".forma-command-bar-scroll-forward").HasAttribute("disabled"));
+                Assert.NotNull(cut.Find(".forma-freeze-pane-arrow-back"));
+                Assert.Empty(cut.FindAll(".forma-freeze-pane-arrow-forward"));
             });
         }
 
@@ -160,14 +160,14 @@
                 @<FormaCommandBar>
                     <button>Upload</button>
                 </FormaCommandBar>);
-            _ = cut.FindComponent<FormaCommandBar>().Instance.HandleOverflowAsync(canScrollBack: true, canScrollForward: true);
-            cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".forma-command-bar-scroll")));
+            _ = cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(canScrollBack: true, canScrollForward: true, frozenExtent: 0, cornerExtent: 0);
+            cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".forma-freeze-pane-arrow")));
 
             // Act
-            _ = cut.FindComponent<FormaCommandBar>().Instance.HandleOverflowAsync(canScrollBack: false, canScrollForward: false);
+            _ = cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(canScrollBack: false, canScrollForward: false, frozenExtent: 0, cornerExtent: 0);
 
             // Assert
-            cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".forma-command-bar-scroll")));
+            cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".forma-freeze-pane-arrow")));
         }
 
         [Fact]
@@ -181,13 +181,13 @@
                 </FormaCommandBar>);
 
             // Act
-            _ = cut.FindComponent<FormaCommandBar>().Instance.HandleOverflowAsync(canScrollBack: true, canScrollForward: true);
+            _ = cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(canScrollBack: true, canScrollForward: true, frozenExtent: 0, cornerExtent: 0);
 
             // Assert
             cut.WaitForAssertion(() =>
             {
-                Assert.Equal("Scroll Commands Back", cut.Find(".forma-command-bar-scroll-back").GetAttribute("aria-label"));
-                Assert.Equal("Scroll Commands Forward", cut.Find(".forma-command-bar-scroll-forward").GetAttribute("aria-label"));
+                Assert.Equal("Scroll Commands Back", cut.Find(".forma-freeze-pane-arrow-back").GetAttribute("aria-label"));
+                Assert.Equal("Scroll Commands Forward", cut.Find(".forma-freeze-pane-arrow-forward").GetAttribute("aria-label"));
             });
         }
 
@@ -197,18 +197,18 @@
             // Arrange
             using var ctx = new FormaCommandBarTests();
             var cut = ctx.Render(
-                @<FormaCommandBar Options="@(new CommandBarOptions { ScrollBackLabel = "Earlier filters", ScrollForwardLabel = "Later filters" })">
+                @<FormaCommandBar Options="@(new FreezePaneOptions { ScrollBackLabel = "Earlier filters", ScrollForwardLabel = "Later filters" })">
                     <button>Upload</button>
                 </FormaCommandBar>);
 
             // Act
-            _ = cut.FindComponent<FormaCommandBar>().Instance.HandleOverflowAsync(canScrollBack: true, canScrollForward: true);
+            _ = cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(canScrollBack: true, canScrollForward: true, frozenExtent: 0, cornerExtent: 0);
 
             // Assert
             cut.WaitForAssertion(() =>
             {
-                Assert.Equal("Earlier filters", cut.Find(".forma-command-bar-scroll-back").GetAttribute("aria-label"));
-                Assert.Equal("Later filters", cut.Find(".forma-command-bar-scroll-forward").GetAttribute("aria-label"));
+                Assert.Equal("Earlier filters", cut.Find(".forma-freeze-pane-arrow-back").GetAttribute("aria-label"));
+                Assert.Equal("Later filters", cut.Find(".forma-freeze-pane-arrow-forward").GetAttribute("aria-label"));
             });
         }
 

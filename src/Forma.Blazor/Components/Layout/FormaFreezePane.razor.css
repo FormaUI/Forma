@@ -1,0 +1,110 @@
+/* ============================================================
+   FormaFreezePane — CSS isolation
+   A scroll box along one axis; its frozen parts stay at the
+   start, and in the arrow form an arrow floats at each end
+   only while the content can still move that way.
+   ============================================================ */
+
+.forma-freeze-pane {
+    position: relative;
+    display: flex;
+    min-inline-size: 0;
+    min-block-size: 0;
+}
+
+.forma-freeze-pane-viewport {
+    flex: 1;
+    min-inline-size: 0;
+    min-block-size: 0;
+    scroll-behavior: smooth;
+}
+
+/* The viewport claims its own axis alone; panning along the other stays with the page. */
+.forma-freeze-pane-inline > .forma-freeze-pane-viewport {
+    overflow-x: auto;
+    overflow-y: hidden;
+    touch-action: pan-y;
+}
+
+.forma-freeze-pane-block > .forma-freeze-pane-viewport {
+    overflow-x: hidden;
+    overflow-y: auto;
+    touch-action: pan-x;
+}
+
+/* The arrows drive the content, so a scrollbar would be a second control for the same thing. */
+.forma-freeze-pane-arrows > .forma-freeze-pane-viewport {
+    scrollbar-width: none;
+}
+
+.forma-freeze-pane-arrows > .forma-freeze-pane-viewport::-webkit-scrollbar {
+    display: none;
+}
+
+/* A frozen part sticks to the start of the axis, drawn over the content sliding beneath it. */
+.forma-freeze-pane-viewport ::deep .forma-freeze-pane-frozen {
+    position: sticky;
+    z-index: 1;
+}
+
+.forma-freeze-pane-inline > .forma-freeze-pane-viewport ::deep .forma-freeze-pane-frozen {
+    inset-inline-start: 0;
+}
+
+.forma-freeze-pane-block > .forma-freeze-pane-viewport ::deep .forma-freeze-pane-frozen {
+    inset-block-start: 0;
+}
+
+/* The arrows take the muted tone and sit in the flow at either end of the viewport as a strip across it: the full
+   width along the block axis, the full height along the inline one. With frozen columns both inline arrows stand
+   in the band of the frozen corner instead, as tall as it is, and the back arrow floats at the end of the frozen
+   region over the frozen part that ends there. */
+::deep .forma-freeze-pane-arrow {
+    --forma-button-ghost-color: var(--text-muted-color);
+    flex-shrink: 0;
+    align-self: stretch;
+}
+
+.forma-freeze-pane.forma-freeze-pane-inline > ::deep .forma-freeze-pane-arrow {
+    block-size: auto;
+}
+
+.forma-freeze-pane.forma-freeze-pane-block > ::deep .forma-freeze-pane-arrow {
+    inline-size: auto;
+}
+
+.forma-freeze-pane-block {
+    flex-direction: column;
+    block-size: 100%;
+}
+
+.forma-freeze-pane-inline.has-frozen > ::deep .forma-freeze-pane-arrow {
+    align-self: flex-start;
+    block-size: var(--forma-freeze-pane-corner-extent);
+}
+
+.forma-freeze-pane-inline.has-frozen > ::deep .forma-freeze-pane-arrow-back {
+    position: absolute;
+    z-index: 2;
+    inset-block-start: 0;
+    inset-inline-start: calc(var(--forma-freeze-pane-frozen-extent) - var(--control-size-sm));
+}
+
+/* The chevron is not bidi-mirrored, so each inline arrow is turned to point the way it scrolls. */
+.forma-freeze-pane-inline > ::deep .forma-freeze-pane-arrow-back {
+    rotate: 180deg;
+}
+
+.forma-freeze-pane-inline > ::deep .forma-freeze-pane-arrow-back:dir(rtl) {
+    rotate: 0deg;
+}
+
+.forma-freeze-pane-inline > ::deep .forma-freeze-pane-arrow-forward:dir(rtl) {
+    rotate: 180deg;
+}
+
+/* The arrows ring inward. */
+::deep .forma-freeze-pane-arrow:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring-inset);
+}

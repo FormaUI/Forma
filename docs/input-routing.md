@@ -85,7 +85,7 @@ Escape and press-away behavior are decided in several unrelated ways today:
 Arrow, Home, and End are handled independently by `FormaSelect`, `FormaDropDownMenu`,
 `FormaEmojiPicker` tabs, `FormaFileViewer` sibling navigation, `FormaSplitter`,
 `FormaDataGrid` through `SelectionInteraction`, `FormaSortableList` through
-`ReorderInteraction`, and the selection bar's nudge handle; `NavigationScrollGuard`
+`ReorderInteraction`, and the selection bar's nudge handle; `Scroll.js`'s navigation guard
 prevents page scrolling for two of them.
 
 ### Tab
@@ -109,7 +109,7 @@ HTML5 drag and drop spans four views and the sidebar; `DropZone` supports file i
 
 ### Wheel
 
-`WheelScroll` is used by the command bar, the toolbar, and the file viewer, optionally
+`Scroll.js`'s wheel is used by the command bar, the toolbar, and the file viewer, optionally
 requiring a modifier.
 
 ## Existing conflicts
@@ -490,7 +490,7 @@ Tests assert resolutions directly. The Showcase carries an inspector that shows 
 | --- | --- | --- | --- |
 | Select in a grid cell receives ArrowDown | Structural | `FormaSelect` | Both register scopes; the grid's capture handler acts only as owner |
 | Emoji-picker search receives Ctrl+B | Structural | The picker's scope | Composer bindings become routes on the editor scope and do not act inside a nested scope |
-| Popup content receives wheel over a toolbar | Structural | The popup's scope | `WheelScroll` acts only as owner |
+| Popup content receives wheel over a toolbar | Structural | The popup's scope | The wheel acts only as owner |
 | Drag inside a popup receives Escape | Active | The drag | The drag activates above the popup |
 | Folder node receives a drop inside the sidebar | Structural | The folder's scope | The sidebar does not act on a drop owned by the nested scope |
 | Inner popup receives Escape | Active | The inner popup | Router ordering replaces per-popup listeners |
@@ -520,10 +520,10 @@ existing components, landing as several coherent commits.
    selection bar while focused, `FormaBreadcrumb` rebuilt on `FormaPopup`. The per-popup
    document listener, both backdrops, and the backdrop z-indexes go.
 3. **Owners onto routes.** `SelectionInteraction`, both `KeyBindings` sets, the three
-   `WheelScroll` tracks, `PanGesture`, `DropZone` and the explorer drop targets,
+   wheel tracks of `Scroll.js`, `PanGesture`, `DropZone` and the explorer drop targets,
    `Focus.js`, and the components that own navigation keys — `FormaSelect`,
    `FormaDropDownMenu`, `FormaEmojiPicker`, `FormaFileViewer`, `FormaSplitter`,
-   `FormaSortableList`, `FormaTabs`. `NavigationScrollGuard` and the per-component
+   `FormaSortableList`, `FormaTabs`. `Scroll.js`'s navigation guard and the per-component
    text-entry exclusions are retired in favour of the router's `preventDefault` and native
    table.
 4. **Verification** across combinations, in a visible browser: select in a grid cell; popup

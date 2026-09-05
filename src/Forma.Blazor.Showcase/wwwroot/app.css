@@ -316,6 +316,10 @@ body {
     margin-block-start: var(--space-4);
 }
 
+.demo-row > .demo-box + * {
+    margin-block-start: 0;
+}
+
 /* Lets a region reach the box's own edges, the way it would seat in a real surface. */
 .demo-box-flush {
     gap: 0;
@@ -750,4 +754,36 @@ body {
    them is allowed to break anywhere rather than running off the side of a phone. */
 .showcase-main :is(h1, h2, h3, p, li, code, bdi, strong) {
     overflow-wrap: anywhere;
+}
+/* A freeze pane demo: a row of chips, or a table whose frozen cells cover what slides beneath them. */
+.demo-scroll-row .forma-freeze-pane-viewport {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.demo-scroll-row .forma-freeze-pane-viewport > * {
+    flex-shrink: 0;
+}
+
+.demo-scroll-table {
+    border-collapse: collapse;
+    font-size: var(--font-size-sm);
+    text-align: start;
+}
+
+.demo-scroll-table th,
+.demo-scroll-table td {
+    padding-inline: var(--space-3);
+    padding-block: var(--space-2);
+    border-block-end: 1px solid var(--light-border-color);
+    white-space: nowrap;
+}
+
+.demo-scroll-table thead th {
+    background: var(--modal-background-color);
+}
+
+.demo-scroll-table td.forma-freeze-pane-frozen {
+    background: var(--input-background-color);
 }

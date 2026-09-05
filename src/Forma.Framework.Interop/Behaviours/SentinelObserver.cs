@@ -4,13 +4,13 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>
-/// Attaches a sentinel element to an <see cref="InfiniteScroll"/> observer only while it is wanted, so a caller
-/// states what it currently wants watched rather than tracking whether that is already the case.
+/// Watches a sentinel element only while it is wanted, so a caller states what it currently wants watched rather
+/// than tracking whether that is already the case.
 /// </summary>
 public sealed class SentinelObserver<TOwner>(IJSRuntime js) : IAsyncDisposable
     where TOwner : class
 {
-    private readonly InfiniteScroll _infiniteScroll = new(js);
+    private readonly Scroll _scroll = new(js);
     private DotNetObjectReference<TOwner>? _ownerReference;
     private bool _isStale;
 
@@ -19,7 +19,7 @@ public sealed class SentinelObserver<TOwner>(IJSRuntime js) : IAsyncDisposable
     {
         ArgumentNullException.ThrowIfNull(owner);
 
-        if (shouldObserve == _infiniteScroll.IsAttached && !_isStale)
+        if (shouldObserve == _scroll.IsAttached && !_isStale)
         {
             return;
         }
@@ -27,11 +27,11 @@ public sealed class SentinelObserver<TOwner>(IJSRuntime js) : IAsyncDisposable
         if (shouldObserve)
         {
             _ownerReference ??= DotNetObjectReference.Create(owner);
-            await _infiniteScroll.AttachAsync(sentinel, _ownerReference, root);
+            await _scroll.AttachAsync(sentinel, new ScrollBehaviours { Sentinel = new ScrollSentinel(root) }, _ownerReference);
         }
         else
         {
-            await _infiniteScroll.DetachAsync();
+            await _scroll.DetachAsync();
         }
 
         _isStale = false;
@@ -44,7 +44,7 @@ public sealed class SentinelObserver<TOwner>(IJSRuntime js) : IAsyncDisposable
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        await _infiniteScroll.DisposeAsync();
+        await _scroll.DisposeAsync();
         _ownerReference?.Dispose();
     }
 }

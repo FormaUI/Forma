@@ -37,10 +37,12 @@ Forma.Blazor/Components/
 │   ├── FormaToolbarOption.cs
 │   ├── ✅ FormaSelectionToolbar.razor / .razor.cs / .razor.css
 │   └── ✅ FormaStatusStrip.razor / .razor.cs / .razor.css
-├── (4 / 4) Layout/
+├── (5 / 5) Layout/
 │   ├── ✅ FormaCommandArea.razor / .razor.cs / .razor.css
 │   ├── ✅ FormaCommandBar.razor / .razor.cs / .razor.css
-│   ├── CommandBarOptions.cs
+│   ├── ✅ FormaFreezePane.razor / .razor.cs / .razor.css  # a scroll box along one axis with frozen parts, moved by scrollbar or per-side arrows
+│   ├── FreezePaneOptions.cs          # record: Axis, Navigation, PageOnWheelGesture, arrow labels
+│   ├── ScrollNavigation.cs                    # enum: Scrollbar, Arrows
 │   ├── ✅ FormaSplitter.razor / .razor.cs / .razor.css / .razor.js
 │   ├── SplitterOrientation.cs                 # enum: Vertical, Horizontal
 │   ├── ✅ FormaTabs.razor / .razor.cs
@@ -411,7 +413,7 @@ These components form the shell of a page. Build first.
 |---|---|
 | **Old pattern** | The browse button in `pops/images.aspx`'s upload panel, filtered to image types |
 | **Used in** | Anywhere a *new* image comes off the user's device — page editor (cover image, OG image), product editor (images, gallery), design (logo, bg, top image), slider (slide bg, elements) |
-| **Parameters** | The same set as `FormaFilePicker` (#34); its `Options.Accept` is pinned |
+| **Parameters** | The same set as `FormaFilePicker` (#34); its `Options.Accept` is frozen |
 | **Blazor approach** | A thin skin over `FormaFilePicker` that pins `Accept` to image types and renders a thumbnail preview per accepted file. Carries no dialog, drop, validation or transfer logic of its own |
 | **Notes** | Picks from the **device**, not the library. Choosing an image that is already on the server is `FormaExplorer` (#53) — the two are different questions and answering both with one component is what made the old naming wrong |
 
@@ -421,7 +423,7 @@ These components form the shell of a page. Build first.
 |---|---|
 | **Old pattern** | None — Coi's library was images-only, and video arrived as a pasted YouTube URL |
 | **Used in** | Surfaces taking either an image or a video off the device — Épica's Videos module, article media, and `FormaComposer` (#36) |
-| **Parameters** | The same set as `FormaFilePicker` (#34); its `Options.Accept` is pinned |
+| **Parameters** | The same set as `FormaFilePicker` (#34); its `Options.Accept` is frozen |
 | **Blazor approach** | The same thin skin as `FormaImagePicker` with a wider pin: image, video and audio types. Preview per accepted file goes through `FormaFileViewer` (#56), so a picked video shows as a player rather than a filename |
 | **Notes** | Exists so "media" is one decision made once, rather than each caller writing its own `accept` string and drifting. **To settle when built:** whether audio belongs in the same pin as image and video, or earns its own skin |
 
@@ -804,10 +806,10 @@ These are more complex, possibly page-specific, but still benefit from being com
 |---|---|
 | **Old pattern** | The header region of `FormaExplorer` — the surface, the rule beneath it and the stacked bars — written into the explorer's own stylesheet |
 | **Used in** | The region above any page's content: an explorer header, a list page's action strip, an editor's publish bar. `FormaExplorer` composes it for its own header |
-| **Parameters** | `FormaCommandArea`: `RenderFragment? ChildContent`, `string? Class`, plus captured pass-through attributes. `FormaCommandBar`: `RenderFragment? ChildContent`, `RenderFragment? TrailingContent`, `CommandBarOptions Options` (`PageOnWheelGesture`, `ScrollBackLabel`, `ScrollForwardLabel`), `bool Hidden`, `bool Animated`, `string? Class`, plus captured pass-through attributes |
-| **Blazor approach** | A pair, split by what each owns. The area is the surface and the stack — a flex column carrying the background, the rule and the padding, holding as many bars as a caller writes into it. Each bar lays its commands on a horizontally scrolling track and, once they outgrow the width, flanks them with an arrow at either end, each disabled at the edge it can no longer travel toward; `TrailingContent` pins content such as an overflow menu past the track, outside the scrolling region. `Hidden`/`Animated` forward straight to a wrapping `FormaVisibility`, so a favorites or plugin bar shown and hidden on demand keeps its scroll position and never has its own track measured mid-collapse. Retune with `--forma-command-area-padding` and `--forma-command-area-background-color` |
-| **Why it needs JS** | Whether a bar overflows is a measurement only the browser holds, so a colocated module reports it back rather than C# guessing. A `ResizeObserver` watches the track and each command, and a `MutationObserver` watches the track's child list — **commands can be added or removed without the track's own box changing, which no `ResizeObserver` reports**, so watching size alone leaves the arrows stale the moment a caller's commands change. Reports are coalesced to one a frame and sent only when the answer changes, so scrolling never floods the circuit. Adding the arrows narrows the track, which re-triggers the observer — the loop settles because the second measurement changes nothing |
-| **Notes** | **It dictates where things go, never what they are.** No selection state, no bulk actions, no count readout — an explorer's select-mode bar stays the explorer's business, and the area itself owns no strings at all. Scroll offsets are read through `Math.abs` because a right-to-left bar counts `scrollLeft` downwards from zero, and the chevrons are turned per direction since they are not bidi-mirrored. Reached from a host's stylesheet through `::deep`, since the element belongs to this component's scope rather than the caller's |
+| **Parameters** | `FormaCommandArea`: `RenderFragment? ChildContent`, `string? Class`, plus captured pass-through attributes. `FormaCommandBar`: `RenderFragment? ChildContent`, `RenderFragment? TrailingContent`, `FreezePaneOptions Options` (`PageOnWheelGesture`, `ScrollBackLabel`, `ScrollForwardLabel`; the axis and the arrow form are the bar's own), `bool Hidden`, `bool Animated`, `string? Class`, plus captured pass-through attributes |
+| **Blazor approach** | A pair, split by what each owns. The area is the surface and the stack — a flex column carrying the background, the rule and the padding, holding as many bars as a caller writes into it. Each bar lays its commands on a `FormaFreezePane` (#72) in its arrow form, so once they outgrow the width an arrow stands at whichever end they still continue past and none where they do not; `TrailingContent` pins content such as an overflow menu past the track, outside the scrolling region. `Hidden`/`Animated` forward straight to a wrapping `FormaVisibility`, so a favorites or plugin bar shown and hidden on demand keeps its scroll position and never has its own track measured mid-collapse. Retune with `--forma-command-area-padding` and `--forma-command-area-background-color` |
+| **Why it needs JS** | Nothing of its own: the measuring, the wheel and the paging belong to the container it composes (#72) |
+| **Notes** | **It dictates where things go, never what they are.** No selection state, no bulk actions, no count readout — an explorer's select-mode bar stays the explorer's business, and the area itself owns no strings at all. Reached from a host's stylesheet through `::deep`, since the element belongs to this component's scope rather than the caller's |
 
 ### 63. `FormaSplitter` ✅
 
@@ -904,6 +906,17 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Parameters** | Captured pass-through attributes for the panel. Public `Decision` and `IsPaused` |
 | **Blazor approach** | Its script re-resolves every key, press and wheel turn on the page without dispatching it and reports the decision — owner, precedence, action, reason, what broke a tie, whether the bindings are defaults or the host's, suppression — together with the active ordering and the rule that placed each entry. The panel draws the input as keycaps with its family's glyph, the precedence as a tinted `FormaStatusBadge`, the active ordering foremost first with the foremost entry lit, and the eight decisions before it as a recent list; a `FormaToolbar` pauses and clears it. The latest decision is a live region |
 | **Notes** | Wheel turns are reported at most ten times a second so the panel stays readable during a scroll. The panel is read-only and registers no scope of its own |
+
+### 72. `FormaFreezePane` ✅
+
+| | |
+|---|---|
+| **Old pattern** | The command bar's own track, arrows and measuring, written into the bar |
+| **Used in** | `FormaCommandBar` for its track, and any surface whose content outgrows its box along one axis while part of it must stay put: a table with frozen columns or a frozen header, a strip of chips, a tab list |
+| **Parameters** | `RenderFragment? ChildContent`, `FreezePaneOptions Options` (`Axis`, `Navigation`, `PageOnWheelGesture`, `ScrollBackLabel`, `ScrollForwardLabel`), `string? Class`, plus captured pass-through attributes. Content marks what stays put with the `FrozenClass` constant |
+| **Blazor approach** | One scroll box along the inline or the block axis. Parts of the content carrying the frozen class stick to the axis start, drawn over what slides beneath them, so a table keeps one element per row rather than splitting into a frozen table and a scrolling one. The content moves either by the browser's scrollbar or, in the arrow form, by a `FormaButton` at each end shown only while the content can still move that way: at the start only the forward arrow exists, from the middle both, at the end only the back arrow, and none when everything fits. The arrows sit in the flow at either end as a strip across the content, its full width along the block axis and its full height along the inline one; with frozen columns both stand in the band of the frozen corner, as tall as a frozen header, and the back arrow floats at the frozen region's end over the frozen part that ends there. Along the inline axis a wheel turned over the content moves it sideways |
+| **Why it needs JS** | How far the content can still move, how far its frozen parts reach in from the start and how far the frozen corner reaches across the axis are measurements only the browser holds; `Scroll.js` reports them, coalesced to one a frame and only when they change, pages the box, and turns a vertical wheel into inline movement |
+| **Notes** | Inline offsets are read through `Math.abs` because a right-to-left box counts `scrollLeft` downwards from zero, the frozen extent is measured from the right edge there, and the inline chevrons are turned per direction since they are not bidi-mirrored. Reached from a host's stylesheet through `::deep` |
 
 ---
 
