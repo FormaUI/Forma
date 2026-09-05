@@ -24,7 +24,10 @@ export class ListFormatter {
         const allInKind = blocks.every(block => block.tagName === 'LI' && block.parentElement?.tagName === tag);
 
         if (allInKind) {
-            this.#focusEnd(this.#dissolveItems(blocks));
+            const last = this.#dissolveItems(blocks);
+            if (last) {
+                this.#canvas.placeCaretAtEnd(last);
+            }
             return;
         }
 
@@ -32,25 +35,9 @@ export class ListFormatter {
         for (const group of ListFormatter.#groupConsecutive(blocks)) {
             last = this.#convertGroup(group, tag) ?? last;
         }
-        this.#focusEnd(last);
-    }
-
-    /** Collapses the caret to the end of an element, so what follows types instead of replacing. */
-    #focusEnd(element) {
-        if (!element) {
-            return;
+        if (last) {
+            this.#canvas.placeCaretAtEnd(last);
         }
-
-        const selection = window.getSelection();
-        if (!selection) {
-            return;
-        }
-
-        const caret = document.createRange();
-        caret.selectNodeContents(element);
-        caret.collapse(false);
-        selection.removeAllRanges();
-        selection.addRange(caret);
     }
 
     /** Nests each touched list item under its predecessor, or pushes any other block one step inward. */
@@ -66,7 +53,9 @@ export class ListFormatter {
         }
 
         // Moving a node collapses any live range that pointed into it, so the caret is placed back inside.
-        this.#focusEnd(moved);
+        if (moved) {
+            this.#canvas.placeCaretAtEnd(moved);
+        }
     }
 
     /** Lifts each touched list item out one level, or pulls any other block one step back. */
@@ -81,7 +70,9 @@ export class ListFormatter {
             }
         }
 
-        this.#focusEnd(moved);
+        if (moved) {
+            this.#canvas.placeCaretAtEnd(moved);
+        }
     }
 
     /** Splits blocks into runs of adjacent siblings, so each run becomes one list rather than one list per block. */

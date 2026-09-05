@@ -53,11 +53,7 @@ export class BlockFormatter {
 
         // Converting an empty block detaches the node the caret sat on, so the caret moves into the replacement.
         if (!selection.anchorNode || !selection.anchorNode.isConnected) {
-            const caret = document.createRange();
-            caret.selectNodeContents(last);
-            caret.collapse(false);
-            selection.removeAllRanges();
-            selection.addRange(caret);
+            this.#canvas.placeCaretAtEnd(last);
         }
     }
 
@@ -109,12 +105,9 @@ export class BlockFormatter {
 
         range.deleteContents();
 
-        const node = Canvas.elementOf(range.startContainer);
-        const block = node && node !== this.#canvas.element && this.#canvas.contains(node)
-            ? node.closest(Canvas.BlockSelector)
-            : null;
+        const block = this.#canvas.closest(range.startContainer, Canvas.BlockSelector);
 
-        if (!block || !this.#canvas.contains(block)) {
+        if (!block || block === this.#canvas.element) {
             range.insertNode(rule);
             return;
         }

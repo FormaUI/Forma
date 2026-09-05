@@ -7,6 +7,7 @@
  */
 
 import { Canvas } from './Canvas.mjs';
+import { Fragments } from './Fragments.mjs';
 
 export class InlineFormatter {
     /** The zero-width space carrying a pending format at a collapsed caret until something is typed into it. */
@@ -198,7 +199,7 @@ export class InlineFormatter {
             tail.setStart(range.endContainer, range.endOffset);
             tail.setEnd(holder, holder.childNodes.length);
             const after = tail.extractContents();
-            if (after.textContent.length > 0 || after.querySelector('*')) {
+            if (Fragments.hasContent(after)) {
                 const tailClone = holder.cloneNode(false);
                 tailClone.appendChild(after);
                 holder.after(tailClone);
@@ -208,7 +209,7 @@ export class InlineFormatter {
             head.setStart(holder, 0);
             head.setEnd(range.startContainer, range.startOffset);
             const before = head.extractContents();
-            if (before.textContent.length > 0 || before.querySelector('*')) {
+            if (Fragments.hasContent(before)) {
                 const headClone = holder.cloneNode(false);
                 headClone.appendChild(before);
                 holder.before(headClone);
@@ -274,7 +275,7 @@ export class InlineFormatter {
 
         inside.after(outermost);
 
-        if (rest.textContent.length > 0 || rest.querySelector('*')) {
+        if (Fragments.hasContent(rest)) {
             const tailClone = inside.cloneNode(false);
             tailClone.appendChild(rest);
             outermost.after(tailClone);

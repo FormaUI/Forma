@@ -53,6 +53,13 @@ export class Canvas {
         return found && this.contains(found) ? found : null;
     }
 
+    /** The nearest matching ancestor of the selection's anchor, but only while it stays inside the canvas. */
+    closestToSelection(selector) {
+        const selection = window.getSelection();
+
+        return selection && selection.rangeCount > 0 ? this.closest(selection.anchorNode, selector) : null;
+    }
+
     /** The current selection's first range, or null when there is none. */
     currentRange() {
         const selection = window.getSelection();
@@ -142,6 +149,20 @@ export class Canvas {
         range.collapse(true);
         selection.removeAllRanges();
         selection.addRange(range);
+    }
+
+    /** Collapses the caret to the end of an element's content, so what is typed next follows it. */
+    placeCaretAtEnd(element) {
+        const selection = window.getSelection();
+        if (!selection) {
+            return;
+        }
+
+        const caret = document.createRange();
+        caret.selectNodeContents(element);
+        caret.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(caret);
     }
 
     /** Selects a whole node, so what replaces the selection replaces that node entirely. */

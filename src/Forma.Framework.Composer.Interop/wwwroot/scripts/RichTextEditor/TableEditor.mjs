@@ -2,7 +2,6 @@
  * TableEditor — building a table and reshaping the one the caret sits in.
  */
 
-import { Canvas } from './Canvas.mjs';
 import { Escape } from './Markup.mjs';
 
 export class TableEditor {
@@ -164,9 +163,6 @@ export class TableEditor {
 
     /** The nearest table part holding the selection, or null when the caret is not in one. */
     #closestPart(selector) {
-        const selection = window.getSelection();
-        const node = Canvas.elementOf((selection && selection.rangeCount > 0) ? selection.anchorNode : null);
-
-        return node && this.#canvas.contains(node) ? node.closest(selector) : null;
+        return this.#canvas.closestToSelection(selector);
     }
 }
