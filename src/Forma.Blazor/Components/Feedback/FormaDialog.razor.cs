@@ -2,9 +2,9 @@ namespace Forma.Blazor.Components.Feedback;
 
 using System.Diagnostics.CodeAnalysis;
 
+using Forma.Framework.Common.Interop.Components;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
-using Forma.Framework.Interop.Components;
 using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;

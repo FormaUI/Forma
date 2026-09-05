@@ -12,7 +12,7 @@ public sealed partial class FormaEmojiPickerTests
 
         // Configured explicitly even under Loose, so a test can hold the load pending.
         var handler = JSInterop
-            .SetupModule("./_content/Forma.Framework.Interop/scripts/operations/Asset.js")
+            .SetupModule("./_content/Forma.Framework.Common.Interop/scripts/operations/Asset.js")
             .Setup<bool>("loadSprite", _ => true);
 
         if (autoResolveSpriteLoad)

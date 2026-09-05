@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using Forma.Blazor.Components.Composer.Assets;
 using Forma.Blazor.Components.Composer.PlainTextEditor;
 using Forma.Blazor.Components.Composer.Plugins;
+using Forma.Framework.Common.Interop.Behaviours;
 using Forma.Framework.Composer.Assets;
 using Forma.Framework.Composer.Documents;
 using Forma.Framework.Composer.Editing;
@@ -12,7 +13,6 @@ using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Composer.Syntax;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
-using Forma.Framework.Interop.Behaviours;
 using Forma.Framework.Resources;
 using Forma.Framework.Sanitization;
 

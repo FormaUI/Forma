@@ -2,7 +2,7 @@ namespace Forma.Blazor.Components.Layout;
 
 using System.Globalization;
 
-using Forma.Framework.Interop.Operations;
+using Forma.Framework.Common.Interop.Operations;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;

@@ -1,6 +1,6 @@
 namespace Forma.Framework.Emojis.Unicode;
 
-using Forma.Framework.Interop.Operations;
+using Forma.Framework.Common.Interop.Operations;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;

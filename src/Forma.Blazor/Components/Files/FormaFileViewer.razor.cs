@@ -3,8 +3,8 @@ namespace Forma.Blazor.Components.Files;
 using System.Globalization;
 
 using Forma.Blazor.Models;
+using Forma.Framework.Common.Interop.Behaviours;
 using Forma.Framework.Files;
-using Forma.Framework.Interop.Behaviours;
 using Forma.Framework.Localization;
 using Forma.Framework.Resources;
 using Forma.Framework.Resources.Extensions;

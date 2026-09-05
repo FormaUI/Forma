@@ -1,9 +1,9 @@
 namespace Forma.Blazor.Components.Composer.PlainTextEditor;
 
+using Forma.Framework.Common.Interop.Operations;
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
-using Forma.Framework.Interop.Operations;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;

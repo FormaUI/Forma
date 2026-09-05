@@ -3,7 +3,7 @@ namespace Forma.Blazor.Components.Collections;
 using System.Diagnostics.CodeAnalysis;
 
 using Forma.Blazor.Components.Navigation;
-using Forma.Framework.Interop.Behaviours;
+using Forma.Framework.Common.Interop.Behaviours;
 using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;

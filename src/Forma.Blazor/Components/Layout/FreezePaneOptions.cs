@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Components.Layout;
 
-using Forma.Framework.Interop.Behaviours;
+using Forma.Framework.Common.Interop.Behaviours;
 
 /// <summary>How a freeze pane moves its content: along which axis, by what, and the names its arrows carry.</summary>
 public sealed record FreezePaneOptions

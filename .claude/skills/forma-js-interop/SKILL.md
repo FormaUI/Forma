@@ -29,13 +29,14 @@ service    → one instance per document that many callers register with
 ```
 
 Scripts and their wrappers ship together in an interop assembly, never in `Forma.Blazor`.
-`Forma.Framework.Interop` holds the interop base, `JsModule` and `JsInterop`, and every
-behaviour and operation any component may attach, with the wrappers of components that
-belong to no feature. A feature with scripts of its own ships them, and their wrappers, in
-`Forma.Framework.{Feature}.Interop`, built on `Forma.Framework.Interop`. Each assembly
-serves its scripts under `_content/{its assembly name}/scripts/`.
+`Forma.Framework.Interop` holds the interop base alone, `JsModule` and `JsInterop`, and ships
+no scripts. `Forma.Framework.Common.Interop` holds every behaviour and operation any component
+may attach, with the wrappers of components that belong to no feature. A feature with scripts
+of its own ships them, and their wrappers, in `Forma.Framework.{Feature}.Interop`. Every
+interop assembly is built on `Forma.Framework.Interop`. Each assembly serves its scripts under
+`_content/{its assembly name}/scripts/`.
 
-`Forma.Framework.Interop` serves many concepts, so it sorts by kind: a script lives in
+`Forma.Framework.Common.Interop` serves many concepts, so it sorts by kind: a script lives in
 `wwwroot/scripts/behaviours/`, `operations/` or `components/`, and its wrapper in the matching
 `Behaviours/`, `Operations/` or `Components/` folder. What the scripts share among themselves
 and no C# calls — the report to a .NET owner, the selectors of the controls a list leaves
@@ -64,10 +65,10 @@ assembly root, as `Forma.Framework.Input.Interop` serves `scripts/InputRouter.js
 - Do name a behaviour for what the target can do while it is attached: `DropZone`, `DragGesture`, `Focus`, `Scroll`, `Breakpoint`, `AnchoredPopup`.
 - Do settle that name by asking what `attach(target)` leaves the target able to do, and naming that.
 - Do name an operation module for the browser concern it serves: `Text.js`, `Pointer.js`, `Playback.js`, `Clipboard.js`, `Asset.js`.
-- Do lift a capability another component could want out into a behaviour or an operation in `Forma.Framework.Interop`, however it arrived; a component script is for what only its own component wants.
+- Do lift a capability another component could want out into a behaviour or an operation in `Forma.Framework.Common.Interop`, however it arrived; a component script is for what only its own component wants.
 - Do compose behaviours in JS, `FileDropZone` over `DropZone` and `ReorderInteraction` over `DragGesture`, so C# only ever holds the outermost one.
 - Do leave a behaviour no C# wrapper when only JS attaches it, as `DragGesture` has none; where a capability sits never depends on who consumes it.
-- Do read `Forma.Framework.Interop`'s `wwwroot/scripts/behaviours/` before writing a new behaviour; capability names make the folder its own inventory.
+- Do read `Forma.Framework.Common.Interop`'s `wwwroot/scripts/behaviours/` before writing a new behaviour; capability names make the folder its own inventory.
 - Don't name a behaviour after the browser primitive implementing it: something holding no state and needing no teardown, such as pointer capture or asset loading, is an operation.
 - Don't name an operation module after the DOM type it receives; `MediaElement.js` accretes everything taking a `<video>`, where `Playback.js` and `Geometry.js` divide by what the calls are for.
 - Don't name a shared behaviour or operation after a component that calls it. A consumer-shaped file in the shared assembly hides the capabilities inside it, which is how the same key guard, pointer capture, and asset loader each came to be written twice.
@@ -135,7 +136,7 @@ export function resolve(event) { … }
 - Do name a wrapper after the module it owns, with no `Bridge`, `Helper`, or `Interop` suffix.
 - Do let `JsModule` and `JsInterop` handle importing, `JSException`, `JSDisconnectedException`, and disposal rather than repeating any of it.
 - Do dispose the wrapper from the component's `DisposeAsync`.
-- Do import from `./_content/{Assembly}/scripts/{Name}.js`, or `scripts/{behaviours|operations|components}/{Name}.js` when the assembly is `Forma.Framework.Interop`, where the assembly is the one that ships the script, so the base path follows the assembly name exactly.
+- Do import from `./_content/{Assembly}/scripts/{Name}.js`, or `scripts/{behaviours|operations|components}/{Name}.js` when the assembly is `Forma.Framework.Common.Interop`, where the assembly is the one that ships the script, so the base path follows the assembly name exactly.
 - Do suppress CA1812 on a private record that exists only to receive a JS return shape, since nothing constructs it in C#.
 - Don't make a wrapper static; `IJSRuntime` is scoped per circuit and the module reference has to be disposed with it.
 - Don't import a module by hand with `JS.InvokeAsync<IJSObjectReference>("import", …)`.

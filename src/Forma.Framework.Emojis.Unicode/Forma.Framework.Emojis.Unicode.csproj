@@ -15,7 +15,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" />
-        <ProjectReference Include="..\Forma.Framework.Interop\Forma.Framework.Interop.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Common.Interop\Forma.Framework.Common.Interop.csproj" />
     </ItemGroup>
 
 </Project>

@@ -1,10 +1,10 @@
 namespace Forma.Blazor.Components.Explorer;
 
+using Forma.Framework.Common.Interop.Behaviours;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Content;
 using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Navigation;
-using Forma.Framework.Interop.Behaviours;
 using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
