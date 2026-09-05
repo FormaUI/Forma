@@ -3,9 +3,9 @@
 @code {
     private static readonly FreezePaneOptions BlockArrows = new() { Axis = ScrollAxis.Block, Navigation = ScrollNavigation.Arrows };
 
-    private static Task Report<TComponent>(IRenderedComponent<TComponent> cut, bool canScrollBack, bool canScrollForward, double frozenExtent = 0, double cornerExtent = 0)
+    private static Task Report<TComponent>(IRenderedComponent<TComponent> cut, bool canScrollBack, bool canScrollForward, double frozenExtent = 0, double cornerExtent = 0, double viewportExtent = 600)
         where TComponent : class, IComponent
-        => cut.InvokeAsync(() => cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(canScrollBack, canScrollForward, frozenExtent, cornerExtent));
+        => cut.InvokeAsync(() => cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(new ScrollBoundaryReport(canScrollBack, canScrollForward, frozenExtent, cornerExtent, viewportExtent)));
 
     public sealed class Component
     {
@@ -197,6 +197,32 @@
 
             // Assert
             Assert.Contains("is-measured", cut.Find(".forma-freeze-pane").ClassList);
+        }
+
+        [Fact]
+        public async Task Should_draw_the_frozen_edge_only_for_content_that_answers_it()
+        {
+            // Arrange
+            using var ctx = new FormaFreezePaneTests();
+            var asked = new List<double>();
+            var silent = ctx.Render(@<FormaFreezePane Options="FreezePaneOptions.Arrows"><button>One</button></FormaFreezePane>);
+            var answering = ctx.Render(@<FormaFreezePane Options="FreezePaneOptions.Arrows" FrozenExtentChanged="@(extent => asked.Add(extent))"><button>One</button></FormaFreezePane>);
+
+            // Act
+            await Report(silent, canScrollBack: false, canScrollForward: true, frozenExtent: 120, cornerExtent: 32);
+            await Report(answering, canScrollBack: false, canScrollForward: true, frozenExtent: 120, cornerExtent: 32, viewportExtent: 500);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(silent.FindAll(".forma-freeze-pane-edge")),
+                () => Assert.Equal("120", answering.Find(".forma-freeze-pane-edge").GetAttribute("aria-valuenow")),
+                () => Assert.Equal("500", answering.Find(".forma-freeze-pane-edge").GetAttribute("aria-valuemax")));
+
+            // Act - a key press on the edge asks the content for a wider frozen region
+            answering.Find(".forma-freeze-pane-edge").KeyDown("ArrowRight");
+
+            // Assert
+            Assert.Equal([128], asked);
         }
 
         [Fact]

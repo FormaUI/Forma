@@ -24,6 +24,9 @@ public sealed partial class FormaFreezePane : ComponentBase, IAsyncDisposable
     /// <summary>How the content moves.</summary>
     [Parameter] public FreezePaneOptions Options { get; set; } = FreezePaneOptions.Default;
 
+    /// <summary>Raised as the reader drags or keys the frozen region's edge, with the extent asked for in pixels; the content decides what to resize to honour it, and the edge is drawn only while this is set.</summary>
+    [Parameter] public EventCallback<double> FrozenExtentChanged { get; set; }
+
     /// <summary>Extra classes applied alongside forma-freeze-pane.</summary>
     [Parameter] public string? Class { get; set; }
 
@@ -35,19 +38,39 @@ public sealed partial class FormaFreezePane : ComponentBase, IAsyncDisposable
 
     [Inject] private IStringLocale<FormaFreezePane> L { get; set; } = default!;
 
+    // One small spacing step, the distance an arrow key moves the frozen edge.
+    private const double FrozenEdgeKeyStep = 8;
+
+    private static readonly ScrollBoundaryReport Unmeasured = new(false, false, 0, 0, 0);
+
     private Scroll _scroll = default!;
     private DotNetObjectReference<FormaFreezePane>? _selfReference;
     private ElementReference _viewport;
-    private bool _canScrollBack;
-    private bool _canScrollForward;
     private bool _isMeasured;
-    private double _frozenExtent;
-    private double _cornerExtent;
+    private ScrollBoundaryReport _report = Unmeasured;
     private ScrollBehaviours? _attached;
     private bool _isSyncing;
 
     private bool ShowsArrows
         => Options.Navigation == ScrollNavigation.Arrows;
+
+    private bool CanScrollBack
+        => _report.CanScrollBack;
+
+    private bool CanScrollForward
+        => _report.CanScrollForward;
+
+    private double FrozenExtent
+        => _report.FrozenExtent;
+
+    private double CornerExtent
+        => _report.CornerExtent;
+
+    private bool ShowsFrozenEdge
+        => !IsBlockAxis && FrozenExtent > 0 && FrozenExtentChanged.HasDelegate;
+
+    private string FrozenEdgeLabel
+        => Options.FrozenEdgeLabel ?? L["Resize Frozen Region"];
 
     private bool IsBlockAxis
         => Options.Axis == ScrollAxis.Block;
@@ -59,7 +82,7 @@ public sealed partial class FormaFreezePane : ComponentBase, IAsyncDisposable
             var axis = IsBlockAxis ? "forma-freeze-pane-block" : "forma-freeze-pane-inline";
             var navigation = ShowsArrows ? "forma-freeze-pane-arrows" : "forma-freeze-pane-scrollbar";
             var measured = _isMeasured ? " is-measured" : string.Empty;
-            var frozen = _frozenExtent > 0 ? " has-frozen" : string.Empty;
+            var frozen = FrozenExtent > 0 ? " has-frozen" : string.Empty;
             var classes = $"forma-freeze-pane {axis} {navigation}{measured}{frozen}";
 
             return string.IsNullOrWhiteSpace(Class) ? classes : $"{classes} {Class}";
@@ -67,8 +90,8 @@ public sealed partial class FormaFreezePane : ComponentBase, IAsyncDisposable
     }
 
     private string? FrozenStyle
-        => _frozenExtent > 0
-            ? string.Create(CultureInfo.InvariantCulture, $"--forma-freeze-pane-frozen-extent: {_frozenExtent}px; --forma-freeze-pane-corner-extent: {_cornerExtent}px")
+        => FrozenExtent > 0
+            ? string.Create(CultureInfo.InvariantCulture, $"--forma-freeze-pane-frozen-extent: {FrozenExtent}px; --forma-freeze-pane-corner-extent: {CornerExtent}px")
             : null;
 
     private string BackLabel
@@ -91,20 +114,19 @@ public sealed partial class FormaFreezePane : ComponentBase, IAsyncDisposable
             Wheel = !IsBlockAxis && Options.PageOnWheelGesture ? ScrollWheel.MovesTarget : null,
         };
 
-    /// <summary>Takes how far the content can still move each way, how far its frozen parts reach in from the start and how far the frozen corner reaches across the axis; called from the script when that changes.</summary>
+    /// <summary>Takes how far the content can still move each way, how far its frozen parts reach and how much of the viewport is in view; called from the script when that changes.</summary>
     [JSInvokable]
-    public Task HandleOverflowAsync(bool canScrollBack, bool canScrollForward, double frozenExtent, double cornerExtent)
+    public Task HandleOverflowAsync(ScrollBoundaryReport report)
     {
-        if (_isMeasured && _canScrollBack == canScrollBack && _canScrollForward == canScrollForward && _frozenExtent == frozenExtent && _cornerExtent == cornerExtent)
+        ArgumentNullException.ThrowIfNull(report);
+
+        if (_isMeasured && _report == report)
         {
             return Task.CompletedTask;
         }
 
         _isMeasured = true;
-        _canScrollBack = canScrollBack;
-        _canScrollForward = canScrollForward;
-        _frozenExtent = frozenExtent;
-        _cornerExtent = cornerExtent;
+        _report = report;
 
         // The report arrives off the renderer, so the rerender has to be marshalled back onto it.
         return InvokeAsync(StateHasChanged);
@@ -155,7 +177,7 @@ public sealed partial class FormaFreezePane : ComponentBase, IAsyncDisposable
     }
 
     private async Task ScrollAsync(int direction)
-        => await _scroll.StepAsync(_viewport, direction, Options.Axis, new ScrollStops($".{StopClass}", _frozenExtent));
+        => await _scroll.StepAsync(_viewport, direction, Options.Axis, new ScrollStops($".{StopClass}", FrozenExtent));
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()

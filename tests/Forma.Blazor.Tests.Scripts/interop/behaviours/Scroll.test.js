@@ -51,7 +51,16 @@ describe('Scroll watching a boundary', () => {
 
         frames.flush();
 
-        reported().toHaveBeenLastCalledWith('HandleOverflowAsync', false, false, 0, 0);
+        reported().toHaveBeenLastCalledWith('HandleOverflowAsync', expect.objectContaining({ canScrollBack: false, canScrollForward: false, frozenExtent: 0, cornerExtent: 0 }));
+    });
+
+    it('reports how much of the track is in view', () => {
+        sizeScroller(track, { scrollLeft: 0, scrollWidth: 900, clientWidth: 300 });
+        attach(track, { boundary: { owner } });
+
+        frames.flush();
+
+        reported().toHaveBeenLastCalledWith('HandleOverflowAsync', expect.objectContaining({ viewportExtent: 300 }));
     });
 
     it('reports more ahead when the track starts at its beginning', () => {
@@ -60,7 +69,7 @@ describe('Scroll watching a boundary', () => {
 
         frames.flush();
 
-        reported().toHaveBeenLastCalledWith('HandleOverflowAsync', false, true, 0, 0);
+        reported().toHaveBeenLastCalledWith('HandleOverflowAsync', expect.objectContaining({ canScrollBack: false, canScrollForward: true, frozenExtent: 0, cornerExtent: 0 }));
     });
 
     it('reports both directions from the middle of the track', () => {
@@ -69,7 +78,7 @@ describe('Scroll watching a boundary', () => {
 
         frames.flush();
 
-        reported().toHaveBeenLastCalledWith('HandleOverflowAsync', true, true, 0, 0);
+        reported().toHaveBeenLastCalledWith('HandleOverflowAsync', expect.objectContaining({ canScrollBack: true, canScrollForward: true, frozenExtent: 0, cornerExtent: 0 }));
     });
 
     it('reports nothing ahead at the end of the track', () => {
@@ -78,7 +87,7 @@ describe('Scroll watching a boundary', () => {
 
         frames.flush();
 
-        reported().toHaveBeenLastCalledWith('HandleOverflowAsync', true, false, 0, 0);
+        reported().toHaveBeenLastCalledWith('HandleOverflowAsync', expect.objectContaining({ canScrollBack: true, canScrollForward: false, frozenExtent: 0, cornerExtent: 0 }));
     });
 
     // A right-to-left track counts scrollLeft downwards from zero.
@@ -88,7 +97,7 @@ describe('Scroll watching a boundary', () => {
 
         frames.flush();
 
-        reported().toHaveBeenLastCalledWith('HandleOverflowAsync', true, true, 0, 0);
+        reported().toHaveBeenLastCalledWith('HandleOverflowAsync', expect.objectContaining({ canScrollBack: true, canScrollForward: true, frozenExtent: 0, cornerExtent: 0 }));
     });
 
     it('treats a sub-pixel remainder as nothing to scroll', () => {
@@ -97,7 +106,7 @@ describe('Scroll watching a boundary', () => {
 
         frames.flush();
 
-        reported().toHaveBeenLastCalledWith('HandleOverflowAsync', false, false, 0, 0);
+        reported().toHaveBeenLastCalledWith('HandleOverflowAsync', expect.objectContaining({ canScrollBack: false, canScrollForward: false, frozenExtent: 0, cornerExtent: 0 }));
     });
 
     it('coalesces a burst of scrolling into one report', () => {
@@ -151,7 +160,7 @@ describe('Scroll watching a boundary', () => {
         resizes.latest().deliver([]);
         frames.flush();
 
-        reported().toHaveBeenLastCalledWith('HandleOverflowAsync', false, true, 0, 0);
+        reported().toHaveBeenLastCalledWith('HandleOverflowAsync', expect.objectContaining({ canScrollBack: false, canScrollForward: true, frozenExtent: 0, cornerExtent: 0 }));
     });
 
     it('stops watching once disposed', () => {
@@ -190,7 +199,7 @@ describe('Scroll watching a boundary', () => {
             attach(track, { boundary: { owner, axis: 'block' } });
             frames.flush();
 
-            reported().toHaveBeenLastCalledWith('HandleOverflowAsync', true, true, 0, 0);
+            reported().toHaveBeenLastCalledWith('HandleOverflowAsync', expect.objectContaining({ canScrollBack: true, canScrollForward: true, frozenExtent: 0, cornerExtent: 0 }));
         });
 
         it('reports nothing ahead at the bottom', () => {
@@ -198,7 +207,7 @@ describe('Scroll watching a boundary', () => {
             attach(track, { boundary: { owner, axis: 'block' } });
             frames.flush();
 
-            reported().toHaveBeenLastCalledWith('HandleOverflowAsync', true, false, 0, 0);
+            reported().toHaveBeenLastCalledWith('HandleOverflowAsync', expect.objectContaining({ canScrollBack: true, canScrollForward: false, frozenExtent: 0, cornerExtent: 0 }));
         });
     });
 
@@ -219,7 +228,7 @@ describe('Scroll watching a boundary', () => {
             attach(track, { boundary: { owner, frozen: '.pinned' } });
             frames.flush();
 
-            reported().toHaveBeenLastCalledWith('HandleOverflowAsync', false, true, 120, 0);
+            reported().toHaveBeenLastCalledWith('HandleOverflowAsync', expect.objectContaining({ canScrollBack: false, canScrollForward: true, frozenExtent: 120, cornerExtent: 0 }));
         });
 
         it('reports how far the frozen corner reaches across the axis', () => {
@@ -234,7 +243,7 @@ describe('Scroll watching a boundary', () => {
             attach(track, { boundary: { owner, frozen: '.pinned' } });
             frames.flush();
 
-            reported().toHaveBeenLastCalledWith('HandleOverflowAsync', false, true, 60, 32);
+            reported().toHaveBeenLastCalledWith('HandleOverflowAsync', expect.objectContaining({ canScrollBack: false, canScrollForward: true, frozenExtent: 60, cornerExtent: 32 }));
         });
 
         it('measures a right-to-left track from its right edge', () => {
@@ -247,7 +256,7 @@ describe('Scroll watching a boundary', () => {
             attach(track, { boundary: { owner, frozen: '.pinned' } });
             frames.flush();
 
-            reported().toHaveBeenLastCalledWith('HandleOverflowAsync', false, true, 60, 0);
+            reported().toHaveBeenLastCalledWith('HandleOverflowAsync', expect.objectContaining({ canScrollBack: false, canScrollForward: true, frozenExtent: 60, cornerExtent: 0 }));
         });
 
         it('measures a frozen header row from the top', () => {
@@ -260,7 +269,7 @@ describe('Scroll watching a boundary', () => {
             attach(track, { boundary: { owner, axis: 'block', frozen: '.pinned' } });
             frames.flush();
 
-            reported().toHaveBeenLastCalledWith('HandleOverflowAsync', false, true, 32, 0);
+            reported().toHaveBeenLastCalledWith('HandleOverflowAsync', expect.objectContaining({ canScrollBack: false, canScrollForward: true, frozenExtent: 32, cornerExtent: 0 }));
         });
 
         it('reports again when only the frozen extent changes', () => {
@@ -278,7 +287,7 @@ describe('Scroll watching a boundary', () => {
             frames.flush();
 
             expect(owner.invokeMethodAsync).toHaveBeenCalledTimes(2);
-            reported().toHaveBeenLastCalledWith('HandleOverflowAsync', false, true, 80, 0);
+            reported().toHaveBeenLastCalledWith('HandleOverflowAsync', expect.objectContaining({ canScrollBack: false, canScrollForward: true, frozenExtent: 80, cornerExtent: 0 }));
         });
     });
 });

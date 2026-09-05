@@ -109,6 +109,15 @@
     inset-inline-start: calc(var(--forma-freeze-pane-frozen-extent) - var(--control-size-sm));
 }
 
+/* The frozen region's edge is a splitter standing over the seam between the frozen parts and the scrolling content,
+   the full height of the viewport, centred on the seam. */
+.forma-freeze-pane-inline.has-frozen > ::deep .forma-freeze-pane-edge {
+    position: absolute;
+    z-index: 2;
+    inset-block: 0;
+    inset-inline-start: calc(var(--forma-freeze-pane-frozen-extent) - var(--forma-splitter-thickness, var(--space-3)) / 2);
+}
+
 /* The chevron is not bidi-mirrored, so each inline arrow is turned to point the way it scrolls. */
 .forma-freeze-pane-inline > ::deep .forma-freeze-pane-arrow-back {
     rotate: 180deg;

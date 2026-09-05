@@ -1,7 +1,7 @@
 @namespace Forma.Blazor.Components.Layout
 
 <div class="@CssClass" style="@FrozenStyle" @attributes="AdditionalAttributes">
-    @if (_canScrollBack && ShowsArrows)
+    @if (CanScrollBack && ShowsArrows)
     {
         <FormaButton Variant="ButtonVariant.Ghost"
                      Size="ButtonSize.Mini"
@@ -17,7 +17,19 @@
         @ChildContent
     </div>
 
-    @if (_canScrollForward && ShowsArrows)
+    @if (ShowsFrozenEdge)
+    {
+        <FormaSplitter Class="forma-freeze-pane-edge"
+                       Label="@FrozenEdgeLabel"
+                       Value="FrozenExtent"
+                       ValueChanged="FrozenExtentChanged"
+                       Min="0"
+                       Max="_report.ViewportExtent"
+                       Step="FrozenEdgeKeyStep"
+                       PixelsPerUnit="1" />
+    }
+
+    @if (CanScrollForward && ShowsArrows)
     {
         <FormaButton Variant="ButtonVariant.Ghost"
                      Size="ButtonSize.Mini"

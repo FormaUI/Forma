@@ -20,7 +20,7 @@ public sealed class Scroll(IJSRuntime js)
         return AttachCoreAsync(target, Describe<object>(behaviours, null));
     }
 
-    /// <summary>Attaches the behaviours to <paramref name="target"/>; the <paramref name="owner"/> is told through <c>HandleOverflowAsync</c> how far the target can still scroll, how far its frozen parts reach in and how far the frozen corner reaches across the axis, through <c>HandleWheelAsync</c> which way a wheel turned, and through <c>HandleReachedAsync</c> when the target comes into view.</summary>
+    /// <summary>Attaches the behaviours to <paramref name="target"/>; the <paramref name="owner"/> is told through <c>HandleOverflowAsync</c>, with a <see cref="ScrollBoundaryReport"/>, how far the target can still scroll and how far its frozen parts reach, through <c>HandleWheelAsync</c> which way a wheel turned, and through <c>HandleReachedAsync</c> when the target comes into view.</summary>
     public ValueTask<bool> AttachAsync<TOwner>(ElementReference target, ScrollBehaviours behaviours, DotNetObjectReference<TOwner> owner)
         where TOwner : class
     {

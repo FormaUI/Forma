@@ -1,4 +1,5 @@
 @inherits FormaBunitContext
+@using Forma.Framework.Interop.Behaviours
 @code {
     public sealed class Component
     {
@@ -103,7 +104,7 @@
                 </FormaCommandBar>);
 
             // Act
-            _ = cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(canScrollBack: true, canScrollForward: true, frozenExtent: 0, cornerExtent: 0);
+            _ = cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(new ScrollBoundaryReport(true, true, 0, 0, 0));
 
             // Assert
             cut.WaitForAssertion(() => Assert.Equal(2, cut.FindAll(".forma-freeze-pane-arrow").Count));
@@ -120,7 +121,7 @@
                 </FormaCommandBar>);
 
             // Act
-            _ = cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(canScrollBack: false, canScrollForward: true, frozenExtent: 0, cornerExtent: 0);
+            _ = cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(new ScrollBoundaryReport(false, true, 0, 0, 0));
 
             // Assert
             cut.WaitForAssertion(() =>
@@ -141,7 +142,7 @@
                 </FormaCommandBar>);
 
             // Act
-            _ = cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(canScrollBack: true, canScrollForward: false, frozenExtent: 0, cornerExtent: 0);
+            _ = cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(new ScrollBoundaryReport(true, false, 0, 0, 0));
 
             // Assert
             cut.WaitForAssertion(() =>
@@ -160,11 +161,11 @@
                 @<FormaCommandBar>
                     <button>Upload</button>
                 </FormaCommandBar>);
-            _ = cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(canScrollBack: true, canScrollForward: true, frozenExtent: 0, cornerExtent: 0);
+            _ = cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(new ScrollBoundaryReport(true, true, 0, 0, 0));
             cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".forma-freeze-pane-arrow")));
 
             // Act
-            _ = cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(canScrollBack: false, canScrollForward: false, frozenExtent: 0, cornerExtent: 0);
+            _ = cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(new ScrollBoundaryReport(false, false, 0, 0, 0));
 
             // Assert
             cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".forma-freeze-pane-arrow")));
@@ -181,7 +182,7 @@
                 </FormaCommandBar>);
 
             // Act
-            _ = cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(canScrollBack: true, canScrollForward: true, frozenExtent: 0, cornerExtent: 0);
+            _ = cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(new ScrollBoundaryReport(true, true, 0, 0, 0));
 
             // Assert
             cut.WaitForAssertion(() =>
@@ -202,7 +203,7 @@
                 </FormaCommandBar>);
 
             // Act
-            _ = cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(canScrollBack: true, canScrollForward: true, frozenExtent: 0, cornerExtent: 0);
+            _ = cut.FindComponent<FormaFreezePane>().Instance.HandleOverflowAsync(new ScrollBoundaryReport(true, true, 0, 0, 0));
 
             // Assert
             cut.WaitForAssertion(() =>

@@ -20,6 +20,9 @@ public sealed record FreezePaneOptions
     /// <summary>Accessible name for the arrow scrolling toward the end, replacing the pane's own.</summary>
     public string? ScrollForwardLabel { get; init; }
 
+    /// <summary>Accessible name for the draggable edge of the frozen region, replacing the pane's own.</summary>
+    public string? FrozenEdgeLabel { get; init; }
+
     /// <summary>Inline scrolling by the scrollbar, with the pane's own arrow names.</summary>
     public static FreezePaneOptions Default { get; } = new();
 

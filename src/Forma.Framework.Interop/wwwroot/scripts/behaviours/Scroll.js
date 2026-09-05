@@ -42,9 +42,9 @@ function tell(owner, method, ...args) {
  *   sentinel?: { owner: Owner, root?: HTMLElement | null, rootMargin?: string },
  *   guard?: boolean
  * }} options
- *   What the handle does for the target: report through HandleOverflowAsync how far it can still
+ *   What the handle does for the target: report through HandleOverflowAsync, in one object, how far it can still
  *   scroll along the axis, how far the parts matching the frozen selector reach in from its
- *   start and how far across the axis the frozen corner reaches; answer a wheel over it by
+ *   start, how far across the axis the frozen corner reaches and how much of it is in view; answer a wheel over it by
  *   moving the track, the target when none is named, or by telling the owner the direction
  *   through HandleWheelAsync, only with the modifier key held when one is named; treat the
  *   target as a sentinel and tell the owner through HandleReachedAsync as it comes into view of
@@ -253,12 +253,13 @@ class BoundaryWatch {
             && this.#last.canScrollBack === next.canScrollBack
             && this.#last.canScrollForward === next.canScrollForward
             && this.#last.frozenExtent === next.frozenExtent
-            && this.#last.cornerExtent === next.cornerExtent) {
+            && this.#last.cornerExtent === next.cornerExtent
+            && this.#last.viewportExtent === next.viewportExtent) {
             return;
         }
 
         this.#last = next;
-        tell(this.#owner, 'HandleOverflowAsync', next.canScrollBack, next.canScrollForward, next.frozenExtent, next.cornerExtent);
+        tell(this.#owner, 'HandleOverflowAsync', next);
     }
 
     #measure() {
@@ -274,6 +275,7 @@ class BoundaryWatch {
             canScrollForward: slack > 1 && offset < slack - 1,
             frozenExtent: frozen.extent,
             cornerExtent: frozen.corner,
+            viewportExtent: isBlock ? this.#track.clientHeight : this.#track.clientWidth,
         };
     }
 
