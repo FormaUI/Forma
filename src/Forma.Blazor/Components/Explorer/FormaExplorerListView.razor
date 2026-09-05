@@ -37,10 +37,35 @@
 }
 
 <FormaFreezePane Class="forma-explorer-list" Options="PaneOptions">
-    <div class="forma-explorer-list-flow" role="list">
-        @foreach (var item in Items)
-        {
-            @entry(item)
-        }
-    </div>
+    @if (View.GroupField == ExplorerGroupField.None)
+    {
+        <div class="forma-explorer-list-flow" role="list">
+            @foreach (var item in Items)
+            {
+                @entry(item)
+            }
+        </div>
+    }
+    else
+    {
+        <div class="forma-explorer-list-groups">
+            @foreach (var group in View.VisibleGroups)
+            {
+                var collapsed = View.IsCollapsed(group);
+
+                <section class="forma-explorer-list-group" @key="group.Key">
+                    <FormaExplorerGroupHeading Group="group" Collapsed="collapsed" OnToggle="() => Interaction.ToggleGroupAsync(group)" />
+                    @if (!collapsed)
+                    {
+                        <div class="forma-explorer-list-flow" role="list">
+                            @foreach (var item in group.Items)
+                            {
+                                @entry(item)
+                            }
+                        </div>
+                    }
+                </section>
+            }
+        </div>
+    }
 </FormaFreezePane>

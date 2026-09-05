@@ -23,3 +23,13 @@
         </FormaDropDownMenuItem>
     }
 </FormaDropDownMenuGroup>
+<FormaDropDownMenuGroup Label="@L["Group By"]">
+    @foreach (var field in GroupFields)
+    {
+        <FormaDropDownMenuItem IsSelected="@(View.GroupField == field)"
+                               data-group-field="@field"
+                               OnClick="() => Interaction.GroupByAsync(field)">
+            <span>@ExplorerGroupPresentation.FieldLabel(L, field)</span>
+        </FormaDropDownMenuItem>
+    }
+</FormaDropDownMenuGroup>

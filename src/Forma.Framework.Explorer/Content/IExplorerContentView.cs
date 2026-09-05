@@ -21,8 +21,17 @@ public interface IExplorerContentView
     /// <summary>Whether the details view shows its column header.</summary>
     bool ShowsDetailsHeader { get; }
 
+    /// <summary>The field the shown items are gathered into groups by, or none.</summary>
+    ExplorerGroupField GroupField { get; }
+
     /// <summary>The items currently shown.</summary>
     IReadOnlyList<IExplorerItem> VisibleItems { get; }
+
+    /// <summary>The shown items gathered by <see cref="GroupField"/>; empty while nothing groups them.</summary>
+    IReadOnlyList<ExplorerItemGroup> VisibleGroups { get; }
+
+    /// <summary>Whether the group's items are folded away.</summary>
+    bool IsCollapsed(ExplorerItemGroup group);
 
     /// <summary>Whether a provider fetch is in flight.</summary>
     bool IsFetching { get; }

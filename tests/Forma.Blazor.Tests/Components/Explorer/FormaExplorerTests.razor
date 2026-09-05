@@ -1471,6 +1471,78 @@
         }
 
         [Fact]
+        public void Should_gather_details_rows_under_group_headings_that_fold()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg"), new VideoResourceInfo("https://example.com/clip.mp4"), new ImageResourceInfo("https://example.com/poster.jpg")];
+            var reported = new List<ExplorerGroupField>();
+            var cut = ctx.Render(@<FormaExplorer Items="@(ExplorerItem.ForAll(resources))" ViewMode="ExplorerViewMode.Details" GroupFieldChanged="@(field => reported.Add(field))" />);
+
+            // Act - choose a grouping from the sort menu
+            cut.Find(".forma-explorer-sort-trigger").Click();
+            cut.Find(".forma-explorer-toolbar [data-group-field='Kind']").Click();
+
+            // Assert
+            var headings = cut.FindAll(".forma-explorer-details-table .forma-explorer-group-heading");
+            Assert.Multiple(
+                () => Assert.Equal(["Image", "Video"], headings.Select(heading => heading.QuerySelector(".forma-explorer-group-label")!.TextContent)),
+                () => Assert.Equal(["2", "1"], headings.Select(heading => heading.QuerySelector(".forma-explorer-group-count")!.TextContent)),
+                () => Assert.Equal(3, cut.FindAll(".forma-explorer-details-row").Count),
+                () => Assert.Equal([ExplorerGroupField.Kind], reported));
+
+            // Act - fold the first group away
+            headings[0].Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Single(cut.FindAll(".forma-explorer-details-row")),
+                () => Assert.Equal("false", cut.FindAll(".forma-explorer-group-heading")[0].GetAttribute("aria-expanded")));
+        }
+
+        [Fact]
+        public void Should_gather_thumbnails_into_one_grid_per_group()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg"), new VideoResourceInfo("https://example.com/clip.mp4")];
+
+            // Act
+            var cut = ctx.Render(@<FormaExplorer Items="@(ExplorerItem.ForAll(resources))" GroupField="ExplorerGroupField.Kind" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(2, cut.FindAll(".forma-explorer-groups .forma-explorer-grid").Count),
+                () => Assert.Equal(2, cut.FindAll(".forma-explorer-group-heading").Count),
+                () => Assert.Equal(2, cut.FindAll(".forma-explorer-item").Count));
+        }
+
+        [Fact]
+        public void Should_keep_a_folded_group_folded_across_views_and_open_it_on_a_new_grouping()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg"), new VideoResourceInfo("https://example.com/clip.mp4")];
+            var cut = ctx.Render(@<FormaExplorer Items="@(ExplorerItem.ForAll(resources))" GroupField="ExplorerGroupField.Kind" />);
+            cut.FindAll(".forma-explorer-group-heading")[0].Click();
+
+            // Act - the same groups in the details view
+            cut.FindAll(".forma-explorer-view-button")[1].Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("false", cut.FindAll(".forma-explorer-group-heading")[0].GetAttribute("aria-expanded")),
+                () => Assert.Single(cut.FindAll(".forma-explorer-details-row")));
+
+            // Act - a new grouping starts with every group open
+            cut.Find(".forma-explorer-sort-trigger").Click();
+            cut.Find(".forma-explorer-toolbar [data-group-field='Name']").Click();
+
+            // Assert
+            Assert.All(cut.FindAll(".forma-explorer-group-heading"), heading => Assert.Equal("true", heading.GetAttribute("aria-expanded")));
+        }
+
+        [Fact]
         public void Should_list_names_as_stops_on_a_scrolling_pane_in_list_view()
         {
             // Arrange

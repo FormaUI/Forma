@@ -12,6 +12,23 @@
     column-gap: var(--space-3);
 }
 
+/* Grouped, each group flows on its own under its heading, the groups standing one below the other. */
+.forma-explorer-list-groups {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.forma-explorer-list-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.forma-explorer-list-group .forma-explorer-list-flow {
+    block-size: auto;
+}
+
 .forma-explorer-list-item {
     display: flex;
     align-items: center;

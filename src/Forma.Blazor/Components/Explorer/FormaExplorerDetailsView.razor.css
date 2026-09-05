@@ -67,6 +67,21 @@
     background: linear-gradient(var(--forma-explorer-row-tint), var(--forma-explorer-row-tint)) var(--input-background-color);
 }
 
+/* A group's cell spans the row; the heading inside it stays in view at the row's start as the columns scroll. */
+.forma-explorer-details-table .forma-explorer-group-cell {
+    padding-block: var(--space-1);
+    background: var(--input-background-color);
+    border-block-end: 1px solid var(--border-color);
+    cursor: default;
+}
+
+.forma-explorer-details-table .forma-explorer-group-cell > ::deep .forma-explorer-group-heading {
+    position: sticky;
+    inset-inline-start: var(--space-3);
+    inline-size: max-content;
+    max-inline-size: 100%;
+}
+
 /* A hidden header row keeps its columns' widths while taking no height of its own. */
 .forma-explorer-details-table.is-headerless thead tr {
     visibility: collapse;

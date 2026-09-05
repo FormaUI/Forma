@@ -131,6 +131,12 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     /// <summary>Raised when the view mode changes.</summary>
     [Parameter] public EventCallback<ExplorerViewMode> ViewModeChanged { get; set; }
 
+    /// <summary>The field the shown items are gathered into groups by, or none.</summary>
+    [Parameter] public ExplorerGroupField GroupField { get; set; }
+
+    /// <summary>Raised when the reader changes what the items are grouped by.</summary>
+    [Parameter] public EventCallback<ExplorerGroupField> GroupFieldChanged { get; set; }
+
     /// <summary>Raised when the reader adds or removes a details column.</summary>
     [Parameter] public EventCallback<ExplorerDetailsColumns> DetailsColumnsChanged { get; set; }
 
@@ -140,6 +146,8 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
 
     [Inject] private IDebounceable SearchDebouncer { get; set; } = default!;
+
+    [Inject] private TimeProvider Clock { get; set; } = default!;
 
     private readonly ExplorerHistory _history = new();
 
@@ -168,6 +176,10 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     private ExplorerDetailsColumns _detailsColumns;
 
     private bool _showsDetailsHeader = true;
+
+    private ExplorerGroupField _groupField;
+
+    private readonly HashSet<string> _collapsedGroups = new(StringComparer.Ordinal);
 
     private ExplorerCollectionView _collection = default!;
 
@@ -327,12 +339,18 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         };
 
         _viewMode = ViewMode;
+        _groupField = GroupField;
         _detailsColumns = Options.DetailsColumns;
         _showsDetailsHeader = Options.ShowDetailsHeader;
 
         _paramStateTracker.Track(() => Constraints.AcceptedResourceKinds, accepted => _collection.Filter = ExplorerResourceFilter.Parse(accepted));
         _paramStateTracker.Track(() => CurrentPage, page => _collection.PageNumber = page);
         _paramStateTracker.Track(() => ViewMode, mode => _viewMode = mode);
+        _paramStateTracker.Track(() => GroupField, field =>
+        {
+            _groupField = field;
+            _collapsedGroups.Clear();
+        });
         _paramStateTracker.Track(() => Options.DetailsColumns, columns => _detailsColumns = columns);
         _paramStateTracker.Track(() => Options.ShowDetailsHeader, shows => _showsDetailsHeader = shows);
         _paramStateTracker.Track(() => SortField, field => _collection.SortField = field);
@@ -587,6 +605,24 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
 
     bool IExplorerContentView.ShowsDetailsHeader => _showsDetailsHeader;
 
+    ExplorerGroupField IExplorerContentView.GroupField => _groupField;
+
+    IReadOnlyList<ExplorerItemGroup> IExplorerContentView.VisibleGroups
+        => ExplorerGrouping.GroupBy(
+            VisibleItems,
+            _groupField,
+            _collection.SortDirection,
+            item => item.GetLocalizedLabels(L).KindLabel,
+            Clock.GetLocalNow(),
+            CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek);
+
+    bool IExplorerContentView.IsCollapsed(ExplorerItemGroup group)
+    {
+        ArgumentNullException.ThrowIfNull(group);
+
+        return _collapsedGroups.Contains(group.Key);
+    }
+
     IExplorerSelectionView IExplorerView.Selection => _selection;
 
     IExplorerItemView IExplorerView.Item => _itemManager;
@@ -631,6 +667,21 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
 
     Task IExplorerContentInteraction.ChangeViewModeAsync(ExplorerViewMode mode)
         => RunAsync(() => HandleViewModeChangedAsync(mode));
+
+    Task IExplorerContentInteraction.GroupByAsync(ExplorerGroupField field)
+        => RunAsync(() => HandleGroupFieldChangedAsync(field));
+
+    Task IExplorerContentInteraction.ToggleGroupAsync(ExplorerItemGroup group)
+    {
+        ArgumentNullException.ThrowIfNull(group);
+
+        if (!_collapsedGroups.Remove(group.Key))
+        {
+            _collapsedGroups.Add(group.Key);
+        }
+
+        return InvokeAsync(StateHasChanged);
+    }
 
     Task IExplorerContentInteraction.ToggleDetailsColumnAsync(ExplorerDetailsColumns column)
         => RunAsync(() => HandleDetailsColumnToggledAsync(column));
@@ -1006,6 +1057,19 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         _viewMode = mode;
 
         await ViewModeChanged.InvokeAsync(mode);
+    }
+
+    private async Task HandleGroupFieldChangedAsync(ExplorerGroupField field)
+    {
+        if (_groupField == field)
+        {
+            return;
+        }
+
+        _groupField = field;
+        _collapsedGroups.Clear();
+
+        await GroupFieldChanged.InvokeAsync(field);
     }
 
     private async Task HandleDetailsColumnToggledAsync(ExplorerDetailsColumns column)

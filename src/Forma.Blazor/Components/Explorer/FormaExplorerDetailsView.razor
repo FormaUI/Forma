@@ -6,6 +6,53 @@
 
 @{
     var selecting = View.Selection.IsSelectionModeActive;
+
+    RenderFragment<IExplorerItem> row = item =>
+        @<text>
+        @{
+            var selected = View.Selection.IsSelected(item);
+            var labels = item.GetLocalizedLabels(L, View.Selection);
+            var capabilities = item.GetCapabilities(View.Item.ItemOptions);
+            var draggable = capabilities.HasFlag(ExplorerItemCapabilities.Drag) ? "true" : "false";
+        }
+        <tr class="forma-explorer-details-row @(selected ? "is-selected" : "") @item.GetStateClasses()"
+            aria-disabled="@(item.IsDisabled ? "true" : null)"
+            draggable="@draggable"
+            @ondragstart="() => ItemInteraction.BeginDrag(item)">
+            <td class="forma-explorer-cell-actions @FormaFreezePane.FrozenClass">
+                <FormaExplorerItemLead Item="item" />
+            </td>
+            <td class="forma-explorer-cell-name @FormaFreezePane.FrozenClass">
+                <button type="button"
+                        class="forma-explorer-name-wrapper"
+                        aria-label="@labels.ActivationLabel"
+                        disabled="@item.IsDisabled"
+                        @onclick="() => ItemInteraction.ActivateAsync(item)">
+                    @if (item.Resource is { } resource)
+                    {
+                        <FormaExplorerThumbnail Resource="resource" Size="ExplorerThumbnailSize.Cell" />
+                    }
+                    <span class="forma-explorer-details-name-text" title="@item.Name">@item.Name</span>
+                </button>
+            </td>
+            @if (ShowsKind)
+            {
+                <td class="forma-explorer-cell-kind @FormaFreezePane.StopClass">@item.GetLocalizedLabels(L).KindLabel</td>
+            }
+            @if (ShowsSize)
+            {
+                <td class="forma-explorer-cell-size @FormaFreezePane.StopClass" dir="auto">@(item.Resource?.DisplaySize ?? Placeholder)</td>
+            }
+            @if (ShowsModified)
+            {
+                <td class="forma-explorer-cell-modified @FormaFreezePane.StopClass">@DisplayDate(item.ModifiedAt)</td>
+            }
+            @if (ShowsAdded)
+            {
+                <td class="forma-explorer-cell-added @FormaFreezePane.StopClass">@DisplayDate(item.CreatedAt)</td>
+            }
+        </tr>
+        </text>;
 }
 
 <div class="forma-explorer-details-wrapper @(_frozenExtent is null ? "" : "has-frozen-extent")" style="@FrozenStyle">
@@ -73,53 +120,37 @@
                 }
             </tr>
         </thead>
-        <tbody>
-            @foreach (var item in Items)
+        @if (View.GroupField == ExplorerGroupField.None)
+        {
+            <tbody>
+                @foreach (var item in Items)
+                {
+                    @row(item)
+                }
+            </tbody>
+        }
+        else
+        {
+            @foreach (var group in View.VisibleGroups)
             {
-                var selected = View.Selection.IsSelected(item);
-                var labels = item.GetLocalizedLabels(L, View.Selection);
-                var capabilities = item.GetCapabilities(View.Item.ItemOptions);
-                var draggable = capabilities.HasFlag(ExplorerItemCapabilities.Drag) ? "true" : "false";
+                var collapsed = View.IsCollapsed(group);
 
-                <tr class="forma-explorer-details-row @(selected ? "is-selected" : "") @item.GetStateClasses()"
-                    aria-disabled="@(item.IsDisabled ? "true" : null)"
-                    draggable="@draggable"
-                    @ondragstart="() => ItemInteraction.BeginDrag(item)">
-                    <td class="forma-explorer-cell-actions @FormaFreezePane.FrozenClass">
-                        <FormaExplorerItemLead Item="item" />
-                    </td>
-                    <td class="forma-explorer-cell-name @FormaFreezePane.FrozenClass">
-                        <button type="button"
-                                class="forma-explorer-name-wrapper"
-                                aria-label="@labels.ActivationLabel"
-                                disabled="@item.IsDisabled"
-                                @onclick="() => ItemInteraction.ActivateAsync(item)">
-                            @if (item.Resource is { } resource)
-                            {
-                                <FormaExplorerThumbnail Resource="resource" Size="ExplorerThumbnailSize.Cell" />
-                            }
-                            <span class="forma-explorer-details-name-text" title="@item.Name">@item.Name</span>
-                        </button>
-                    </td>
-                    @if (ShowsKind)
+                <tbody class="forma-explorer-group" @key="group.Key">
+                    <tr class="forma-explorer-group-row">
+                        <th class="forma-explorer-group-cell" colspan="@ColumnCount" scope="rowgroup">
+                            <FormaExplorerGroupHeading Group="group" Collapsed="collapsed" OnToggle="() => Interaction.ToggleGroupAsync(group)" />
+                        </th>
+                    </tr>
+                    @if (!collapsed)
                     {
-                        <td class="forma-explorer-cell-kind @FormaFreezePane.StopClass">@item.GetLocalizedLabels(L).KindLabel</td>
+                        @foreach (var item in group.Items)
+                        {
+                            @row(item)
+                        }
                     }
-                    @if (ShowsSize)
-                    {
-                        <td class="forma-explorer-cell-size @FormaFreezePane.StopClass" dir="auto">@(item.Resource?.DisplaySize ?? Placeholder)</td>
-                    }
-                    @if (ShowsModified)
-                    {
-                        <td class="forma-explorer-cell-modified @FormaFreezePane.StopClass">@DisplayDate(item.ModifiedAt)</td>
-                    }
-                    @if (ShowsAdded)
-                    {
-                        <td class="forma-explorer-cell-added @FormaFreezePane.StopClass">@DisplayDate(item.CreatedAt)</td>
-                    }
-                </tr>
+                </tbody>
             }
-        </tbody>
+        }
     </table>
     </FormaFreezePane>
 </div>

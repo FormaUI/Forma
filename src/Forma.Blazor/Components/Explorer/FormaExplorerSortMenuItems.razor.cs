@@ -6,12 +6,14 @@ using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>The items of a sort menu: every field with the current one checked, then both directions with the current one checked.</summary>
+/// <summary>The items of a sort menu: every field with the current one checked, both directions with the current one checked, and every grouping with the current one checked.</summary>
 public sealed partial class FormaExplorerSortMenuItems : ComponentBase
 {
     private static readonly ExplorerSortField[] SortFields = Enum.GetValues<ExplorerSortField>();
 
     private static readonly ExplorerSortDirection[] SortDirections = Enum.GetValues<ExplorerSortDirection>();
+
+    private static readonly ExplorerGroupField[] GroupFields = Enum.GetValues<ExplorerGroupField>();
 
     [CascadingParameter] private IExplorerView View { get; set; } = default!;
 

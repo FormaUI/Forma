@@ -30,6 +30,10 @@ public sealed partial class FormaExplorerDetailsView : ComponentBase
 
     private double? _frozenExtent;
 
+    // The actions and name columns, then whichever optional columns are shown.
+    private int ColumnCount
+        => 2 + (ShowsKind ? 1 : 0) + (ShowsSize ? 1 : 0) + (ShowsModified ? 1 : 0) + (ShowsAdded ? 1 : 0);
+
     // The wheel is left to the panel, which scrolls the rows; the columns move by the arrows alone.
     private FreezePaneOptions PaneOptions
         => new()

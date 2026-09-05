@@ -15,6 +15,8 @@ public sealed partial class FormaExplorerListView : ComponentBase
 
     [CascadingParameter] private IExplorerView View { get; set; } = default!;
 
+    [CascadingParameter] private IExplorerInteraction Interaction { get; set; } = default!;
+
     [CascadingParameter] private IExplorerItemInteraction ItemInteraction { get; set; } = default!;
 
     [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
@@ -32,7 +34,7 @@ public sealed partial class FormaExplorerListView : ComponentBase
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        if (View is null || ItemInteraction is null)
+        if (View is null || Interaction is null || ItemInteraction is null)
         {
             throw new InvalidOperationException($"{nameof(FormaExplorerListView)} must be rendered inside a {nameof(FormaExplorer)}.");
         }

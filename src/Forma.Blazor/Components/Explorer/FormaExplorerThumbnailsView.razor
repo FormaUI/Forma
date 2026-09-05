@@ -1,16 +1,18 @@
 @namespace Forma.Blazor.Components.Explorer
 @using Forma.Framework.Explorer.Content
+@using Forma.Framework.Explorer.Content.Queries
 @using Forma.Framework.Explorer.Items
 
-<div class="forma-explorer-grid" role="list">
-    @foreach (var item in Items)
-    {
-        var selected = View.Selection.IsSelected(item);
-        var selecting = View.Selection.IsSelectionModeActive;
-        var labels = item.GetLocalizedLabels(L, View.Selection);
-        var capabilities = item.GetCapabilities(View.Item.ItemOptions);
-        var draggable = capabilities.HasFlag(ExplorerItemCapabilities.Drag) ? "true" : "false";
-
+@{
+    RenderFragment<IExplorerItem> tile = item =>
+        @<text>
+        @{
+            var selected = View.Selection.IsSelected(item);
+            var selecting = View.Selection.IsSelectionModeActive;
+            var labels = item.GetLocalizedLabels(L, View.Selection);
+            var capabilities = item.GetCapabilities(View.Item.ItemOptions);
+            var draggable = capabilities.HasFlag(ExplorerItemCapabilities.Drag) ? "true" : "false";
+        }
         <div class="forma-explorer-item @(selected ? "is-selected" : "") @item.GetStateClasses()"
              role="listitem"
              draggable="@draggable"
@@ -50,5 +52,37 @@
                 }
             </div>
         </div>
-    }
-</div>
+        </text>;
+}
+
+@if (View.GroupField == ExplorerGroupField.None)
+{
+    <div class="forma-explorer-grid" role="list">
+        @foreach (var item in Items)
+        {
+            @tile(item)
+        }
+    </div>
+}
+else
+{
+    <div class="forma-explorer-groups">
+        @foreach (var group in View.VisibleGroups)
+        {
+            var collapsed = View.IsCollapsed(group);
+
+            <section class="forma-explorer-group" @key="group.Key">
+                <FormaExplorerGroupHeading Group="group" Collapsed="collapsed" OnToggle="() => Interaction.ToggleGroupAsync(group)" />
+                @if (!collapsed)
+                {
+                    <div class="forma-explorer-grid" role="list">
+                        @foreach (var item in group.Items)
+                        {
+                            @tile(item)
+                        }
+                    </div>
+                }
+            </section>
+        }
+    </div>
+}
