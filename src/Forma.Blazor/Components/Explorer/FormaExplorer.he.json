@@ -1,6 +1,11 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "Navigation": "ניווט",
+  "More": "עוד",
+  "Search": "חיפוש",
+  "Up": "למעלה",
+  "Toolbar": "סרגל כלים",
+  "Selection": "בחירה",
   "Back": "אחורה",
   "Forward": "קדימה",
   "Up to Parent Folder": "למעלה לתיקיית האב",

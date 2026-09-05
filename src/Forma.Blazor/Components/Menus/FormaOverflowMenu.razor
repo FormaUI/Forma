@@ -1,6 +1,7 @@
 @namespace Forma.Blazor.Components.Menus
 <FormaDropDownMenu @attributes="AdditionalAttributes"
                    TriggerOptions="@(TriggerOptions with { IconOnly = true })"
+                   Alignment="Alignment"
                    HeaderContent="HeaderContent"
                    aria-label="@Label"
                    disabled="@(Disabled ? true : null)">

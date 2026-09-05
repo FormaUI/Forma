@@ -1,0 +1,13 @@
+@namespace Forma.Blazor.Components.Explorer
+
+<div class="forma-explorer-compact-bar">
+    @if (!IsSearching)
+    {
+        <FormaExplorerBreadcrumb />
+    }
+    <FormaExplorerSearch Collapsible="true" SearchingChanged="searching => _isSearching = searching" />
+    @if (!IsSearching)
+    {
+        <FormaExplorerOverflowMenu />
+    }
+</div>

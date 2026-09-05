@@ -1,24 +1,20 @@
 namespace Forma.Blazor.Components.Explorer;
 
-using Forma.Blazor.Components.Inputs;
-using Forma.Blazor.Components.Navigation;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Content;
 using Forma.Framework.Explorer.Content.Queries;
-using Forma.Framework.Explorer.Items;
 using Forma.Framework.Explorer.Navigation;
 using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Address bar and navigation controls for a media explorer.</summary>
+/// <summary>The explorer's address bar: navigation buttons, the folder path, and a search box that takes the row over while it is in use.</summary>
 public sealed partial class FormaExplorerAddressBar : ComponentBase
 {
-    [CascadingParameter] private IExplorerConfigurationView Configuration { get; set; } = default!;
+    /// <summary>Whether the search stands as a glyph until pressed, where the row has no room for the box.</summary>
+    [Parameter] public bool CollapsesSearch { get; set; }
 
     [CascadingParameter] private IExplorerContentInteraction Interaction { get; set; } = default!;
-
-    [CascadingParameter] private IExplorerItemInteraction ItemInteraction { get; set; } = default!;
 
     [CascadingParameter] private IExplorerLocationView Location { get; set; } = default!;
 
@@ -26,82 +22,14 @@ public sealed partial class FormaExplorerAddressBar : ComponentBase
 
     [CascadingParameter] private IExplorerSearchView Search { get; set; } = default!;
 
-    [CascadingParameter] private IExplorerSearchInteraction SearchInteraction { get; set; } = default!;
-
     [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
 
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        if (Configuration is null || Interaction is null || ItemInteraction is null || Location is null || LocationInteraction is null
-            || Search is null || SearchInteraction is null)
+        if (Interaction is null || Location is null || LocationInteraction is null || Search is null)
         {
             throw new InvalidOperationException($"{nameof(FormaExplorerAddressBar)} must be rendered inside a {nameof(FormaExplorer)}.");
         }
     }
-
-    private IReadOnlyList<BreadcrumbItem<IExplorerFolderItem>> Items
-    {
-        get
-        {
-            var items = new List<BreadcrumbItem<IExplorerFolderItem>>
-            {
-                new(L["All Media"].Value)
-                {
-                    IsCurrent = Location.CurrentFolder is null,
-                    Children = ChildrenAsItems(null)
-                }
-            };
-
-            foreach (var segment in Location.Breadcrumbs)
-            {
-                items.Add(new BreadcrumbItem<IExplorerFolderItem>(segment.Name)
-                {
-                    Value = segment,
-                    IsCurrent = Location.CurrentFolder?.Key == segment.Key,
-                    Children = ChildrenAsItems(segment.Key)
-                });
-            }
-
-            return items;
-        }
-    }
-
-    private List<BreadcrumbItem<IExplorerFolderItem>>? ChildrenAsItems(string? folderKey)
-    {
-        if (!Configuration.Options.ShowFolderMenu)
-        {
-            return null;
-        }
-
-        var children = Location.FolderTree.ListedChildrenOf(folderKey);
-
-        return children.Count == 0
-            ? null
-            : [.. children.Select(child => new BreadcrumbItem<IExplorerFolderItem>(child.Name) { Value = child })];
-    }
-
-    private SearchBoxOptions SearchOptions
-        => new() { Placeholder = SearchPlaceholder };
-
-    private string SearchPlaceholder
-    {
-        get
-        {
-            if (!string.IsNullOrEmpty(Search.SearchPlaceholder))
-            {
-                return Search.SearchPlaceholder;
-            }
-
-            if (Location.CurrentFolder is not null)
-            {
-                return L["Search {Name}...", Location.CurrentFolder.Name].Value;
-            }
-
-            return L["Search media..."].Value;
-        }
-    }
-
-    private Task HandleSearchValueChangedAsync(string query)
-        => SearchInteraction.SetSearchQueryAsync(query);
 }

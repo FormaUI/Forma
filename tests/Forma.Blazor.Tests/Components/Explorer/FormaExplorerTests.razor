@@ -267,7 +267,7 @@
             var cut = ctx.Render(@<FormaExplorer Items="[]" Folders="folders" CurrentFolder="child" />);
 
             // Assert
-            var breadcrumbs = cut.FindAll(".forma-breadcrumb-item");
+            var breadcrumbs = cut.FindAll(".forma-explorer-header-wide .forma-breadcrumb-item");
             Assert.Equal(3, breadcrumbs.Count); // "All Media" > "Races" > "2026"
             Assert.Equal("All Media", breadcrumbs[0].TextContent.Trim());
             Assert.Equal("Races", breadcrumbs[1].TextContent.Trim());
@@ -1097,7 +1097,7 @@
                                                 OnFolderChanged="@(f => { activeFolder = f; return Task.CompletedTask; })" />);
 
             // Assert
-            Assert.Equal(["All Media", "Ghosts", "Ghost"], cut.FindAll(".forma-breadcrumb-item").Select(b => b.TextContent.Trim()));
+            Assert.Equal(["All Media", "Ghosts", "Ghost"], cut.FindAll(".forma-explorer-header-wide .forma-breadcrumb-item").Select(b => b.TextContent.Trim()));
             Assert.Contains("No media in this folder", cut.Find(".forma-explorer-empty").TextContent);
 
             // Act
@@ -1251,7 +1251,141 @@
                 () => Assert.NotNull(pane.QuerySelector("th.forma-explorer-column-name.forma-freeze-pane-frozen")),
                 () => Assert.NotNull(pane.QuerySelector("td.forma-explorer-cell-actions.forma-freeze-pane-frozen")),
                 () => Assert.NotNull(pane.QuerySelector("td.forma-explorer-cell-name.forma-freeze-pane-frozen")),
-                () => Assert.Null(pane.QuerySelector("td.forma-explorer-cell-kind.forma-freeze-pane-frozen")));
+                () => Assert.Null(pane.QuerySelector("td.forma-explorer-cell-kind.forma-freeze-pane-frozen")),
+                () => Assert.NotNull(pane.QuerySelector("th.forma-explorer-column-kind.forma-freeze-pane-stop")),
+                () => Assert.NotNull(pane.QuerySelector("td.forma-explorer-cell-kind.forma-freeze-pane-stop")),
+                () => Assert.Null(pane.QuerySelector("td.forma-explorer-cell-name.forma-freeze-pane-stop")));
+        }
+
+        [Fact]
+        public void Should_lay_the_whole_toolbar_on_a_command_bar_track()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
+
+            // Act
+            var cut = ctx.Render(@<FormaExplorer Items="@(ExplorerItem.ForAll(resources))" />);
+
+            // Assert
+            var bar = cut.Find(".forma-explorer-toolbar .forma-command-bar");
+            Assert.Multiple(
+                () => Assert.Equal("toolbar", bar.GetAttribute("role")),
+                () => Assert.NotNull(bar.QuerySelector(".forma-freeze-pane .forma-explorer-toolbar-left")),
+                () => Assert.NotNull(bar.QuerySelector(".forma-freeze-pane .forma-explorer-toolbar-right")));
+        }
+
+        [Fact]
+        public void Should_render_both_header_layouts_until_the_width_is_known()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
+
+            // Act
+            var cut = ctx.Render(@<FormaExplorer Items="@(ExplorerItem.ForAll(resources))" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.NotNull(cut.Find(".forma-explorer-header-wide .forma-explorer-address-bar")),
+                () => Assert.NotNull(cut.Find(".forma-explorer-header-wide .forma-explorer-toolbar")),
+                () => Assert.NotNull(cut.Find(".forma-explorer-header-compact .forma-explorer-compact-bar")));
+        }
+
+        [Fact]
+        public async Task Should_keep_only_the_header_layout_the_stylesheet_names()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
+            var cut = ctx.Render(@<FormaExplorer Items="@(ExplorerItem.ForAll(resources))" />);
+            var area = cut.FindComponent<FormaExplorerCommandArea>().Instance;
+
+            // Act
+            await cut.InvokeAsync(() => area.HandleBreakpointAsync("compact"));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll(".forma-explorer-header-wide")),
+                () => Assert.NotNull(cut.Find(".forma-explorer-header-compact")));
+
+            // Act
+            await cut.InvokeAsync(() => area.HandleBreakpointAsync("wide"));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.NotNull(cut.Find(".forma-explorer-header-wide")),
+                () => Assert.Empty(cut.FindAll(".forma-explorer-header-compact")));
+        }
+
+        [Fact]
+        public async Task Should_stand_the_search_as_a_glyph_at_the_medium_width()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
+            var cut = ctx.Render(@<FormaExplorer Items="@(ExplorerItem.ForAll(resources))" />);
+            var area = cut.FindComponent<FormaExplorerCommandArea>().Instance;
+
+            // Act
+            await cut.InvokeAsync(() => area.HandleBreakpointAsync("medium"));
+
+            // Assert - the two rows stay, the search box gives way to its glyph
+            Assert.Multiple(
+                () => Assert.NotNull(cut.Find(".forma-explorer-header-wide .forma-explorer-toolbar")),
+                () => Assert.NotNull(cut.Find(".forma-explorer-address-bar .forma-explorer-search-button")),
+                () => Assert.Empty(cut.FindAll(".forma-explorer-address-bar .forma-search-box")));
+
+            // Act
+            cut.Find(".forma-explorer-address-bar .forma-explorer-search-button").Click();
+
+            // Assert - pressing the glyph opens the box in its place
+            Assert.Multiple(
+                () => Assert.NotNull(cut.Find(".forma-explorer-address-bar .forma-search-box")),
+                () => Assert.Empty(cut.FindAll(".forma-explorer-address-bar .forma-explorer-search-button")));
+        }
+
+        [Fact]
+        public void Should_open_the_search_across_the_compact_row()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
+            var cut = ctx.Render(@<FormaExplorer Items="@(ExplorerItem.ForAll(resources))" />);
+
+            // Act
+            cut.Find(".forma-explorer-compact-bar .forma-explorer-search-button").Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.NotNull(cut.Find(".forma-explorer-compact-bar .forma-search-box")),
+                () => Assert.Empty(cut.FindAll(".forma-explorer-compact-bar .forma-explorer-breadcrumb-bar")),
+                () => Assert.Empty(cut.FindAll(".forma-explorer-compact-bar .forma-explorer-overflow-menu")));
+        }
+
+        [Fact]
+        public void Should_hold_navigation_actions_view_and_sort_in_the_compact_menu()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
+            var cut = ctx.Render(@<FormaExplorer Items="@(ExplorerItem.ForAll(resources))" ViewMode="ExplorerViewMode.Details" />);
+
+            // Act
+            cut.Find(".forma-explorer-compact-bar .forma-explorer-overflow-menu").Click();
+
+            // Assert
+            var labels = cut.FindAll(".forma-explorer-compact-bar .forma-dropdown-menu-item").Select(item => item.TextContent.Trim()).ToList();
+            Assert.Multiple(
+                () => Assert.Contains("Back", labels),
+                () => Assert.Contains("Refresh", labels),
+                () => Assert.Contains("Select", labels),
+                () => Assert.Contains("Upload", labels),
+                () => Assert.Contains("Thumbnails", labels),
+                () => Assert.NotNull(cut.Find(".forma-explorer-compact-bar [data-sort-direction='Ascending']")),
+                () => Assert.NotNull(cut.Find(".forma-explorer-compact-bar [data-view-mode='Details'] .forma-dropdown-menu-item-check")),
+                () => Assert.Empty(cut.FindAll(".forma-explorer-compact-bar [data-view-mode='List'] .forma-dropdown-menu-item-check")),
+                () => Assert.NotNull(cut.Find(".forma-explorer-compact-bar [data-sort-field='Name'] .forma-dropdown-menu-item-check")));
         }
 
         [Fact]
@@ -1558,7 +1692,7 @@
             var cut = ctx.Render(@<FormaExplorer Items="[]" Folders="folders" CurrentFolder="current" />);
 
             // Assert
-            Assert.Equal(["All Media", "Races"], cut.FindAll(".forma-breadcrumb-item").Select(b => b.TextContent.Trim()));
+            Assert.Equal(["All Media", "Races"], cut.FindAll(".forma-explorer-header-wide .forma-breadcrumb-item").Select(b => b.TextContent.Trim()));
         }
 
         [Fact]
@@ -1573,7 +1707,7 @@
             var cut = ctx.Render(@<FormaExplorer Items="[]" Folders="folders" CurrentFolder="child" />);
 
             // Assert
-            Assert.Equal(["All Media", "Races", "2026"], cut.FindAll(".forma-breadcrumb-item").Select(b => b.TextContent.Trim()));
+            Assert.Equal(["All Media", "Races", "2026"], cut.FindAll(".forma-explorer-header-wide .forma-breadcrumb-item").Select(b => b.TextContent.Trim()));
         }
 
         [Fact]

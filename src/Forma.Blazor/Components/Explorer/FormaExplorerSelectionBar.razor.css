@@ -1,0 +1,48 @@
+/* ============================================================
+   FormaExplorerSelectionBar — CSS isolation
+   The tinted bar standing in for the toolbar while items are
+   selected
+   ============================================================ */
+
+.forma-explorer-selection {
+    min-inline-size: 0;
+}
+
+/* Tinted, at the toolbar row's height, so entering selection never moves the content below; the count stands at the
+   far end while there is room. */
+.forma-explorer-selection ::deep .forma-explorer-selection-bar {
+    box-sizing: border-box;
+    min-block-size: var(--control-size-md);
+    background: var(--hover-background-color);
+    padding-inline: var(--space-2);
+    border-radius: var(--radius-md);
+}
+
+.forma-explorer-selection-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.forma-explorer-selection-status {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-inline-start: auto;
+}
+
+.forma-explorer-selection-label {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+/* A glyph's ink is taller than a capital, so it is lowered onto the label's cap-height centre. */
+.forma-explorer-delete-button [class*="fa-"],
+.forma-explorer-clear-button [class*="fa-"] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    translate: 0 0.064em;
+}

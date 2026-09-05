@@ -1,6 +1,7 @@
 namespace Forma.Blazor.Components.Menus;
 
 using Forma.Blazor.Components.Buttons;
+using Forma.Framework.Interop.Behaviours;
 
 using Microsoft.AspNetCore.Components;
 
@@ -15,6 +16,9 @@ public sealed partial class FormaOverflowMenu : ComponentBase
 
     /// <summary>Appearance of the trigger button, always drawn icon-only around the ellipsis.</summary>
     [Parameter] public ButtonOptions TriggerOptions { get; set; } = ButtonOptions.GhostIcon;
+
+    /// <summary>The inline edge of the trigger the menu lines up with.</summary>
+    [Parameter] public PopupAlignment Alignment { get; set; }
 
     /// <summary>Blocks interaction with the trigger button.</summary>
     [Parameter] public bool Disabled { get; set; }

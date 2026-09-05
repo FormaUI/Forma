@@ -17,6 +17,9 @@ public sealed partial class FormaPopup : ComponentBase, IAsyncDisposable
     /// <summary>Whether Tab moves between the popup's own controls instead of leaving it.</summary>
     [Parameter] public bool KeepsFocus { get; set; }
 
+    /// <summary>The inline edge of the anchor the popup lines up with.</summary>
+    [Parameter] public PopupAlignment Alignment { get; set; }
+
     /// <summary>Whether closing returns focus to the trigger when focus is inside the popup at the time. A press away never moves focus.</summary>
     [Parameter] public bool ReturnsFocus { get; set; } = true;
 
@@ -148,7 +151,7 @@ public sealed partial class FormaPopup : ComponentBase, IAsyncDisposable
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await _popup.SyncAsync(IsOpen, _element, Anchor, _trigger, async () => await OnOpened.InvokeAsync(), KeepsFocus);
+        await _popup.SyncAsync(IsOpen, _element, Anchor, _trigger, async () => await OnOpened.InvokeAsync(), KeepsFocus, Alignment);
 
         var previous = _sync;
         _sync = SyncRegistrationAsync(previous);

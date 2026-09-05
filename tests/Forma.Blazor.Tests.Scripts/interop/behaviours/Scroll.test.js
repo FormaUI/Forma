@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { attach, byPage, toCenter } from '#interop/behaviours/Scroll.js';
+import { attach, step, toCenter } from '#interop/behaviours/Scroll.js';
 import { fakeOwner } from '#support/owner.js';
 import { sizeScroller, stubAnimationFrames, stubIntersectionObserver, stubMutationObserver, stubResizeObserver } from '#support/platform.js';
 
@@ -31,6 +31,19 @@ describe('Scroll watching a boundary', () => {
     });
 
     const reported = () => expect(owner.invokeMethodAsync);
+
+    it('stays quiet once the track has left the document', () => {
+        sizeScroller(track, { scrollLeft: 0, scrollWidth: 900, clientWidth: 300 });
+        attach(track, { boundary: { owner } });
+        frames.flush();
+
+        track.remove();
+        sizeScroller(track, { scrollLeft: 0, scrollWidth: 0, clientWidth: 0 });
+        resizes.latest().deliver([]);
+        frames.flush();
+
+        expect(owner.invokeMethodAsync).toHaveBeenCalledTimes(1);
+    });
 
     it('reports nothing scrollable when everything fits', () => {
         sizeScroller(track, { scrollLeft: 0, scrollWidth: 300, clientWidth: 300 });
@@ -651,47 +664,137 @@ describe('Scroll moving a container', () => {
         });
     });
 
-    describe('byPage', () => {
-        it('steps most of a page towards the end', () => {
+    describe('step without stops', () => {
+        it('moves most of a page towards the end', () => {
             sizeScroller(container, { clientWidth: 500 });
 
-            byPage(container, 1);
+            step(container, 1);
 
             expect(container.scrollBy).toHaveBeenCalledExactlyOnceWith({ left: 400, behavior: 'smooth' });
         });
 
-        it('steps most of a page towards the start', () => {
+        it('moves most of a page towards the start', () => {
             sizeScroller(container, { clientWidth: 500 });
 
-            byPage(container, -1);
+            step(container, -1);
 
             expect(container.scrollBy).toHaveBeenCalledExactlyOnceWith({ left: -400, behavior: 'smooth' });
         });
 
         // A right-to-left container counts scrollLeft downwards from zero.
-        it('mirrors the step in a right-to-left container', () => {
+        it('mirrors the page in a right-to-left container', () => {
             container.style.direction = 'rtl';
             sizeScroller(container, { clientWidth: 500 });
 
-            byPage(container, 1);
+            step(container, 1);
 
             expect(container.scrollBy).toHaveBeenCalledExactlyOnceWith({ left: -400, behavior: 'smooth' });
         });
 
-        it('steps most of a page down along the block axis', () => {
+        it('moves most of a page down along the block axis', () => {
             sizeScroller(container, { clientHeight: 400 });
 
-            byPage(container, 1, 'block');
+            step(container, 1, 'block');
 
             expect(container.scrollBy).toHaveBeenCalledExactlyOnceWith({ top: 320, behavior: 'smooth' });
         });
 
-        it('steps most of a page up along the block axis', () => {
+        it('moves most of a page up along the block axis', () => {
             sizeScroller(container, { clientHeight: 400 });
 
-            byPage(container, -1, 'block');
+            step(container, -1, 'block');
 
             expect(container.scrollBy).toHaveBeenCalledExactlyOnceWith({ top: -320, behavior: 'smooth' });
+        });
+
+        it('falls back to a page when the selector matches nothing', () => {
+            sizeScroller(container, { clientWidth: 500 });
+
+            step(container, 1, 'inline', { selector: '.stop', inset: 0 });
+
+            expect(container.scrollBy).toHaveBeenCalledExactlyOnceWith({ left: 400, behavior: 'smooth' });
+        });
+    });
+
+    describe('step between stops', () => {
+        // Three columns of 100px past a 120px frozen region, in a container scrolled to its start.
+        const rect = (element, left, right) => { element.getBoundingClientRect = () => ({ left, right, top: 0, bottom: 40 }); };
+
+        beforeEach(() => {
+            container.innerHTML = '<span class="stop" id="a"></span><span class="stop" id="b"></span><span class="stop" id="c"></span><span class="stop" id="c2"></span>';
+            container.scrollTo = vi.fn();
+            rect(container, 0, 300);
+            rect(container.querySelector('#a'), 120, 220);
+            rect(container.querySelector('#b'), 220, 320);
+            rect(container.querySelector('#c'), 320, 420);
+            rect(container.querySelector('#c2'), 320, 420);
+            sizeScroller(container, { scrollLeft: 0, scrollWidth: 420, clientWidth: 300 });
+        });
+
+        it('brings the next stop up to the inset', () => {
+            step(container, 1, 'inline', { selector: '.stop', inset: 120 });
+
+            expect(container.scrollTo).toHaveBeenCalledExactlyOnceWith({ left: 100, behavior: 'smooth' });
+        });
+
+        it('brings the previous stop back to the inset', () => {
+            sizeScroller(container, { scrollLeft: 200 });
+            for (const stop of container.querySelectorAll('.stop')) {
+                const { left, right } = stop.getBoundingClientRect();
+                rect(stop, left - 200, right - 200);
+            }
+
+            step(container, -1, 'inline', { selector: '.stop', inset: 120 });
+
+            expect(container.scrollTo).toHaveBeenCalledExactlyOnceWith({ left: 100, behavior: 'smooth' });
+        });
+
+        it('goes on to the end past the last stop', () => {
+            sizeScroller(container, { scrollLeft: 100, scrollWidth: 420, clientWidth: 300 });
+            for (const stop of container.querySelectorAll('.stop')) {
+                const { left, right } = stop.getBoundingClientRect();
+                rect(stop, left - 100, right - 100);
+            }
+
+            step(container, 1, 'inline', { selector: '.stop', inset: 120 });
+
+            expect(container.scrollTo).toHaveBeenCalledExactlyOnceWith({ left: 120, behavior: 'smooth' });
+        });
+
+        it('stays put at the end', () => {
+            sizeScroller(container, { scrollLeft: 120, scrollWidth: 420, clientWidth: 300 });
+            for (const stop of container.querySelectorAll('.stop')) {
+                const { left, right } = stop.getBoundingClientRect();
+                rect(stop, left - 120, right - 120);
+            }
+
+            step(container, 1, 'inline', { selector: '.stop', inset: 120 });
+
+            expect(container.scrollTo).not.toHaveBeenCalled();
+        });
+
+        it('comes back to the start from before the first stop', () => {
+            sizeScroller(container, { scrollLeft: 50, scrollWidth: 420, clientWidth: 300 });
+            for (const stop of container.querySelectorAll('.stop')) {
+                const { left, right } = stop.getBoundingClientRect();
+                rect(stop, left - 50, right - 50);
+            }
+
+            step(container, -1, 'inline', { selector: '.stop', inset: 120 });
+
+            expect(container.scrollTo).toHaveBeenCalledExactlyOnceWith({ left: 0, behavior: 'smooth' });
+        });
+
+        it('mirrors the stops in a right-to-left container', () => {
+            container.style.direction = 'rtl';
+            rect(container.querySelector('#a'), 80, 180);
+            rect(container.querySelector('#b'), -20, 80);
+            rect(container.querySelector('#c'), -120, -20);
+            rect(container.querySelector('#c2'), -120, -20);
+
+            step(container, 1, 'inline', { selector: '.stop', inset: 120 });
+
+            expect(container.scrollTo).toHaveBeenCalledExactlyOnceWith({ left: -100, behavior: 'smooth' });
         });
     });
 });

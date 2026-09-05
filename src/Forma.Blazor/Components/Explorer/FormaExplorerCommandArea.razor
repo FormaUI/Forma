@@ -1,6 +1,26 @@
 @namespace Forma.Blazor.Components.Explorer
 
+@using Forma.Blazor.Components.Layout
+
 <FormaCommandArea Class="forma-explorer-header">
-    <FormaExplorerAddressBar />
-    <FormaExplorerToolbar />
+    <span class="forma-explorer-visually-hidden" role="status" aria-live="polite">@SelectionAnnouncement</span>
+    <div class="forma-explorer-header-rows" @ref="_rows">
+        @if (_layout is not ExplorerHeaderLayout.Compact)
+        {
+            <div class="forma-explorer-header-wide">
+                <FormaExplorerAddressBar CollapsesSearch="_layout == ExplorerHeaderLayout.Medium" />
+                <FormaExplorerToolbar />
+            </div>
+        }
+        @if (_layout is not ExplorerHeaderLayout.Wide)
+        {
+            <div class="forma-explorer-header-compact">
+                <FormaExplorerCompactBar />
+                @if (View.Selection.Count > 0)
+                {
+                    <FormaExplorerSelectionBar />
+                }
+            </div>
+        }
+    </div>
 </FormaCommandArea>

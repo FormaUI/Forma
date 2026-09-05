@@ -42,8 +42,12 @@
     --forma-freeze-pane-frozen-offset: calc(var(--control-size-sm) + 2 * var(--space-1));
 }
 
+/* The other columns keep their widths, so a table wider than the pane scrolls rather than squeezing them; the name
+   column takes what they leave, between a floor that keeps a thumbnail and a few characters and its natural width.
+   A name that no longer fits is cut with an ellipsis and carried whole in its tooltip. */
 .forma-explorer-column-name {
-    min-inline-size: 12rem;
+    inline-size: 12rem;
+    min-inline-size: 6rem;
 }
 
 .forma-explorer-cell-name {
@@ -61,16 +65,16 @@
 }
 
 .forma-explorer-column-kind {
-    inline-size: 6rem;
+    min-inline-size: 6rem;
 }
 
 .forma-explorer-column-size {
-    inline-size: 5.5rem;
+    min-inline-size: 5.5rem;
 }
 
 .forma-explorer-column-modified,
 .forma-explorer-column-added {
-    inline-size: 9.5rem;
+    min-inline-size: 9.5rem;
 }
 
 /* The leading slot is exactly the actions trigger or the checkbox, so the name starts one small control in. */

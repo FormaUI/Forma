@@ -23,6 +23,9 @@ public sealed partial class FormaDropDownMenu : ComponentBase, IAsyncDisposable
     /// <summary>Appearance of the trigger button.</summary>
     [Parameter] public ButtonOptions TriggerOptions { get; set; } = ButtonOptions.Default;
 
+    /// <summary>The inline edge of the trigger the menu lines up with.</summary>
+    [Parameter] public PopupAlignment Alignment { get; set; }
+
     /// <summary>Additional attributes applied to the trigger button, such as aria-label for an icon-only trigger.</summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }

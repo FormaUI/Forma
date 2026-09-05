@@ -241,7 +241,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
         _libraryCount = libraryResources.Count;
         _libraryStore = Store(libraryResources);
 
-        foreach (var key in new[] { "full", "readonly", "fixedfolders", "nosidebar", "nomenu" })
+        foreach (var key in new[] { "full", "phone", "readonly", "fixedfolders", "nosidebar", "nomenu" })
         {
             _providers[key] = new FolderScopedProvider(_mediaStore, () => CurrentFolderFor(key)?.Key);
         }

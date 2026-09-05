@@ -1,0 +1,9 @@
+@namespace Forma.Blazor.Components.Explorer
+@using Forma.Blazor.Components.Inputs
+
+<FormaSearchBox @ref="_searchBox"
+                Value="@Search.SearchQuery"
+                ValueChanged="HandleValueChangedAsync"
+                Options="Options"
+                aria-label="@Placeholder"
+                @attributes="AdditionalAttributes" />

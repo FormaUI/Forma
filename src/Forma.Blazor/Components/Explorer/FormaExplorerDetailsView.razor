@@ -27,7 +27,7 @@
                 </th>
                 @if (ShowsKind)
                 {
-                    <th class="forma-explorer-column-kind @(View.SortField == ExplorerSortField.Kind ? "is-sorted" : "")"
+                    <th class="forma-explorer-column-kind @FormaFreezePane.StopClass @(View.SortField == ExplorerSortField.Kind ? "is-sorted" : "")"
                         aria-sort="@SortState(ExplorerSortField.Kind)"
                         @onclick="() => Interaction.SortByAsync(ExplorerSortField.Kind)">
                         <span>@L["Type"]</span>
@@ -39,7 +39,7 @@
                 }
                 @if (ShowsSize)
                 {
-                    <th class="forma-explorer-column-size @(View.SortField == ExplorerSortField.Size ? "is-sorted" : "")"
+                    <th class="forma-explorer-column-size @FormaFreezePane.StopClass @(View.SortField == ExplorerSortField.Size ? "is-sorted" : "")"
                         aria-sort="@SortState(ExplorerSortField.Size)"
                         @onclick="() => Interaction.SortByAsync(ExplorerSortField.Size)">
                         <span>@L["Size"]</span>
@@ -51,7 +51,7 @@
                 }
                 @if (ShowsModified)
                 {
-                    <th class="forma-explorer-column-modified @(View.SortField == ExplorerSortField.DateModified ? "is-sorted" : "")"
+                    <th class="forma-explorer-column-modified @FormaFreezePane.StopClass @(View.SortField == ExplorerSortField.DateModified ? "is-sorted" : "")"
                         aria-sort="@SortState(ExplorerSortField.DateModified)"
                         @onclick="() => Interaction.SortByAsync(ExplorerSortField.DateModified)">
                         <span>@L["Modified"]</span>
@@ -63,7 +63,7 @@
                 }
                 @if (ShowsAdded)
                 {
-                    <th class="forma-explorer-column-added @(View.SortField == ExplorerSortField.DateAdded ? "is-sorted" : "")"
+                    <th class="forma-explorer-column-added @FormaFreezePane.StopClass @(View.SortField == ExplorerSortField.DateAdded ? "is-sorted" : "")"
                         aria-sort="@SortState(ExplorerSortField.DateAdded)"
                         @onclick="() => Interaction.SortByAsync(ExplorerSortField.DateAdded)">
                         <span>@L["Added"]</span>
@@ -120,19 +120,19 @@
                     </td>
                     @if (ShowsKind)
                     {
-                        <td class="forma-explorer-cell-kind">@item.GetLocalizedLabels(L).KindLabel</td>
+                        <td class="forma-explorer-cell-kind @FormaFreezePane.StopClass">@item.GetLocalizedLabels(L).KindLabel</td>
                     }
                     @if (ShowsSize)
                     {
-                        <td class="forma-explorer-cell-size" dir="auto">@(item.Resource?.DisplaySize ?? Placeholder)</td>
+                        <td class="forma-explorer-cell-size @FormaFreezePane.StopClass" dir="auto">@(item.Resource?.DisplaySize ?? Placeholder)</td>
                     }
                     @if (ShowsModified)
                     {
-                        <td class="forma-explorer-cell-modified">@DisplayDate(item.ModifiedAt)</td>
+                        <td class="forma-explorer-cell-modified @FormaFreezePane.StopClass">@DisplayDate(item.ModifiedAt)</td>
                     }
                     @if (ShowsAdded)
                     {
-                        <td class="forma-explorer-cell-added">@DisplayDate(item.CreatedAt)</td>
+                        <td class="forma-explorer-cell-added @FormaFreezePane.StopClass">@DisplayDate(item.CreatedAt)</td>
                     }
                 </tr>
             }

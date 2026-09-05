@@ -1,0 +1,27 @@
+@namespace Forma.Blazor.Components.Explorer
+@using Forma.Blazor.Components.Buttons
+@using Forma.Blazor.Components.Layout
+
+<div class="forma-explorer-selection">
+    <FormaCommandBar Class="forma-explorer-selection-bar" role="toolbar" aria-label="@L["Selection"]">
+        <div class="forma-explorer-selection-actions">
+            @if (View.ShowsDeleteAction())
+            {
+                <FormaButton Variant="ButtonVariant.Danger" class="forma-explorer-delete-button" OnClick="ItemInteraction.RequestDeleteSelected">
+                    <FormaIcon Icon="Glyph.Delete" Size="IconSize.Small" />
+                    @L["Delete"]
+                </FormaButton>
+            }
+            <FormaToggleButton Icon="Glyph.SelectNone" Label="@L["Clear"]" ShowLabel="true" class="forma-explorer-clear-button" OnClick="Interaction.ClearSelectionAsync" />
+        </div>
+        <div class="forma-explorer-selection-status">
+            <span class="forma-explorer-selection-label">@L["{SelectedCount} selected", View.Selection.Count]</span>
+            @if (View.CanLeaveSelectMode())
+            {
+                <FormaCloseButton class="forma-explorer-exit-select-button"
+                                  Label="@L["Leave Selection Mode"]"
+                                  OnClick="Interaction.ToggleSelectionModeAsync" />
+            }
+        </div>
+    </FormaCommandBar>
+</div>

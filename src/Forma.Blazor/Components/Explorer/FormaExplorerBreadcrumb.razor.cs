@@ -1,0 +1,73 @@
+namespace Forma.Blazor.Components.Explorer;
+
+using Forma.Blazor.Components.Navigation;
+using Forma.Framework.Explorer;
+using Forma.Framework.Explorer.Items;
+using Forma.Framework.Explorer.Navigation;
+using Forma.Framework.Localization;
+
+using Microsoft.AspNetCore.Components;
+
+/// <summary>The explorer's folder path as a breadcrumb, from the root through the current folder, each crumb opening a menu of its subfolders where the options allow.</summary>
+public sealed partial class FormaExplorerBreadcrumb : ComponentBase
+{
+    [CascadingParameter] private IExplorerConfigurationView Configuration { get; set; } = default!;
+
+    [CascadingParameter] private IExplorerItemInteraction ItemInteraction { get; set; } = default!;
+
+    [CascadingParameter] private IExplorerLocationView Location { get; set; } = default!;
+
+    [CascadingParameter] private IExplorerLocationInteraction LocationInteraction { get; set; } = default!;
+
+    [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        if (Configuration is null || ItemInteraction is null || Location is null || LocationInteraction is null)
+        {
+            throw new InvalidOperationException($"{nameof(FormaExplorerBreadcrumb)} must be rendered inside a {nameof(FormaExplorer)}.");
+        }
+    }
+
+    private IReadOnlyList<BreadcrumbItem<IExplorerFolderItem>> Items
+    {
+        get
+        {
+            var items = new List<BreadcrumbItem<IExplorerFolderItem>>
+            {
+                new(L["All Media"].Value)
+                {
+                    IsCurrent = Location.CurrentFolder is null,
+                    Children = ChildrenAsItems(null)
+                }
+            };
+
+            foreach (var segment in Location.Breadcrumbs)
+            {
+                items.Add(new BreadcrumbItem<IExplorerFolderItem>(segment.Name)
+                {
+                    Value = segment,
+                    IsCurrent = Location.CurrentFolder?.Key == segment.Key,
+                    Children = ChildrenAsItems(segment.Key)
+                });
+            }
+
+            return items;
+        }
+    }
+
+    private List<BreadcrumbItem<IExplorerFolderItem>>? ChildrenAsItems(string? folderKey)
+    {
+        if (!Configuration.Options.ShowFolderMenu)
+        {
+            return null;
+        }
+
+        var children = Location.FolderTree.ListedChildrenOf(folderKey);
+
+        return children.Count == 0
+            ? null
+            : [.. children.Select(child => new BreadcrumbItem<IExplorerFolderItem>(child.Name) { Value = child })];
+    }
+}

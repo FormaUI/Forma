@@ -1,0 +1,13 @@
+/* ============================================================
+   FormaExplorerOverflowMenu — CSS isolation
+   The arrows the navigation items carry
+   ============================================================ */
+
+/* An arrow glyph is not bidi-mirrored, so back and forward are turned to follow the reading direction. */
+.forma-explorer-nav-arrow {
+    display: inline-flex;
+}
+
+.forma-explorer-nav-arrow:dir(rtl) {
+    rotate: 180deg;
+}

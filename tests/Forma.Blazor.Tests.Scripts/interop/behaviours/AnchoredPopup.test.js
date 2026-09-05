@@ -65,6 +65,25 @@ describe('AnchoredPopup', () => {
         expect(popup.style.left).toBe('200px');
     });
 
+    it('lines the popup up with the anchor end edge when aligned to the end', () => {
+        setAnchorRect({ top: 100, bottom: 130, left: 360, right: 400, width: 40, height: 30 });
+        const handle = attach(popup, { anchor, align: 'end' });
+
+        handle.open();
+
+        expect(popup.style.left).toBe('200px');
+    });
+
+    it('mirrors the end alignment for a right-to-left anchor', () => {
+        anchor.style.direction = 'rtl';
+        const handle = attach(popup, { anchor, align: 'end' });
+
+        handle.open();
+
+        // The reading-end edge is the anchor's left edge, so the popup starts there.
+        expect(popup.style.left).toBe('50px');
+    });
+
     it('clamps the inline start so the popup never opens off-screen', () => {
         setAnchorRect({ top: 100, bottom: 130, left: 5, right: 45, width: 40, height: 30 });
         anchor.style.direction = 'rtl';

@@ -1,0 +1,69 @@
+@namespace Forma.Blazor.Components.Explorer
+@using Forma.Blazor.Components.Menus
+@using Forma.Framework.Explorer.Content
+@using Forma.Framework.Interop.Behaviours
+
+<FormaOverflowMenu Label="@L["More"]" Orientation="MenuOrientation.Vertical" Alignment="PopupAlignment.End" class="forma-explorer-overflow-menu">
+    <div role="group" aria-label="@L["Navigation"]">
+        <FormaDropDownMenuItem Disabled="@(!Location.CanGoBack)" OnClick="LocationInteraction.GoBackAsync">
+            <span class="forma-explorer-nav-arrow" aria-hidden="true"><FormaIcon Icon="Glyph.ArrowLeft" Size="IconSize.Small" /></span>
+            <span>@L["Back"]</span>
+        </FormaDropDownMenuItem>
+        <FormaDropDownMenuItem Disabled="@(!Location.CanGoForward)" OnClick="LocationInteraction.GoForwardAsync">
+            <span class="forma-explorer-nav-arrow" aria-hidden="true"><FormaIcon Icon="Glyph.ArrowRight" Size="IconSize.Small" /></span>
+            <span>@L["Forward"]</span>
+        </FormaDropDownMenuItem>
+        <FormaDropDownMenuItem Disabled="@(!Location.CanGoUp)" OnClick="LocationInteraction.GoUpAsync">
+            <FormaIcon Icon="Glyph.ArrowUp" Size="IconSize.Small" />
+            <span>@L["Up"]</span>
+        </FormaDropDownMenuItem>
+        <FormaDropDownMenuItem OnClick="Interaction.RefreshAsync">
+            <FormaIcon Icon="Glyph.Refresh" Size="IconSize.Small" />
+            <span>@L["Refresh"]</span>
+        </FormaDropDownMenuItem>
+    </div>
+    @if (View.CanLeaveSelectMode() || View.ShowsNewFolderAction() || View.Item.ItemOptions.AllowUpload)
+    {
+        <FormaDropDownMenuDivider />
+        <div role="group" aria-label="@L["Actions"]">
+            @if (View.CanLeaveSelectMode())
+            {
+                <FormaDropDownMenuItem data-action="select" OnClick="Interaction.ToggleSelectionModeAsync">
+                    <FormaIcon Icon="@(View.Selection.IsSelectionModeActive ? Glyph.Cross : Glyph.Select)" Size="IconSize.Small" />
+                    <span>@(View.Selection.IsSelectionModeActive ? L["Cancel"] : L["Select"])</span>
+                </FormaDropDownMenuItem>
+            }
+            @if (View.ShowsNewFolderAction())
+            {
+                <FormaDropDownMenuItem OnClick="ItemInteraction.RequestNewFolderAsync">
+                    <FormaIcon Icon="Glyph.FolderAdd" Size="IconSize.Small" />
+                    <span>@L["New Folder"]</span>
+                </FormaDropDownMenuItem>
+            }
+            @if (View.Item.ItemOptions.AllowUpload)
+            {
+                <FormaDropDownMenuItem OnClick="ItemInteraction.ToggleUpload">
+                    <FormaIcon Icon="Glyph.CloudUpload" Size="IconSize.Small" />
+                    <span>@L["Upload"]</span>
+                </FormaDropDownMenuItem>
+            }
+        </div>
+    }
+    <FormaDropDownMenuDivider />
+    <div role="group" aria-label="@L["View Mode"]">
+        <FormaDropDownMenuItem IsSelected="@(View.ViewMode == ExplorerViewMode.Thumbnails)" data-view-mode="@ExplorerViewMode.Thumbnails" OnClick="() => Interaction.ChangeViewModeAsync(ExplorerViewMode.Thumbnails)">
+            <FormaIcon Icon="Glyph.GridView" Size="IconSize.Small" />
+            <span>@L["Thumbnails"]</span>
+        </FormaDropDownMenuItem>
+        <FormaDropDownMenuItem IsSelected="@(View.ViewMode == ExplorerViewMode.Details)" data-view-mode="@ExplorerViewMode.Details" OnClick="() => Interaction.ChangeViewModeAsync(ExplorerViewMode.Details)">
+            <FormaIcon Icon="Glyph.DetailsView" Size="IconSize.Small" />
+            <span>@L["Details"]</span>
+        </FormaDropDownMenuItem>
+        <FormaDropDownMenuItem IsSelected="@(View.ViewMode == ExplorerViewMode.List)" data-view-mode="@ExplorerViewMode.List" OnClick="() => Interaction.ChangeViewModeAsync(ExplorerViewMode.List)">
+            <FormaIcon Icon="Glyph.List" Size="IconSize.Small" />
+            <span>@L["List"]</span>
+        </FormaDropDownMenuItem>
+    </div>
+    <FormaDropDownMenuDivider />
+    <FormaExplorerSortMenuItems />
+</FormaOverflowMenu>

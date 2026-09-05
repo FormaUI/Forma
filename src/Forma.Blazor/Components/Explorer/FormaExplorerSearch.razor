@@ -1,0 +1,17 @@
+@namespace Forma.Blazor.Components.Explorer
+@using Forma.Blazor.Components.Buttons
+
+@if (!Collapsible || IsSearching)
+{
+    <FormaExplorerSearchBox @ref="_box" onfocus="@Focus" onblur="@Blur" />
+}
+else
+{
+    <FormaButton Variant="ButtonVariant.Ghost"
+                 IconOnly="true"
+                 class="forma-explorer-search-button"
+                 aria-label="@L["Search"]"
+                 OnClick="BeginSearchAsync">
+        <FormaIcon Icon="Glyph.Search" />
+    </FormaButton>
+}

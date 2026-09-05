@@ -1,6 +1,11 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "Navigation": "Navegación",
+  "More": "Más",
+  "Search": "Buscar",
+  "Up": "Arriba",
+  "Toolbar": "Barra de Herramientas",
+  "Selection": "Selección",
   "Back": "Atrás",
   "Forward": "Adelante",
   "Up to Parent Folder": "Subir a la Carpeta Superior",

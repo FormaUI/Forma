@@ -1,0 +1,18 @@
+/* ============================================================
+   FormaExplorerBreadcrumb — CSS isolation
+   The bordered bar the folder path sits in
+   ============================================================ */
+
+/* A path longer than the bar is clipped at its edge, so it never runs under what stands beside it. */
+.forma-explorer-breadcrumb-bar {
+    min-inline-size: 0;
+    overflow: hidden;
+    min-block-size: var(--control-size-md);
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding-inline: var(--space-3);
+    border: 1px solid var(--forma-explorer-field-border-color, var(--border-color));
+    border-radius: var(--radius-sm);
+    background: var(--input-background-color);
+}

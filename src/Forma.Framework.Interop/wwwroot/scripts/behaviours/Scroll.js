@@ -6,9 +6,9 @@
  * frozen corner reaches across it; turning a wheel that reports vertically into movement along
  * a track, or telling an owner which way it turned; asking for the next page as a sentinel
  * comes into view; and keeping the arrow, Home and End keys from scrolling the page under a
- * list that owns them. Moving a container to a position it cannot express declaratively is
- * exported beside it. Inline offsets are read through Math.abs where a right-to-left container
- * counts scrollLeft downwards from zero.
+ * list that owns them. Moving a container to a position it cannot express declaratively, to its
+ * centre or one step along an axis, is exported beside it. Inline offsets are read through
+ * Math.abs where a right-to-left container counts scrollLeft downwards from zero.
  */
 
 /** Pixels a line is taken to be, for the wheels that report in lines rather than pixels. */
@@ -28,6 +28,11 @@ const NotchDistance = 40;
 const NavigationKeys = new Set(['ArrowUp', 'ArrowDown', 'Home', 'End']);
 
 /** @typedef {{ invokeMethodAsync: (name: string, ...args: unknown[]) => Promise<unknown> }} Owner */
+
+/** Reports to an owner that may already have been disposed by the time the report lands. */
+function tell(owner, method, ...args) {
+    owner.invokeMethodAsync(method, ...args).catch(() => {});
+}
 
 /**
  * @param {HTMLElement} target The surface.
@@ -56,11 +61,67 @@ export function toCenter(container) {
 }
 
 /**
+ * Moves the container one step along the axis: to the next of the stops its content marks, drawn up to the
+ * inset from the container's start, or by most of a page when the content marks none.
  * @param {HTMLElement} container
  * @param {number} direction -1 toward the start of the container, 1 toward its end.
  * @param {'inline' | 'block'} axis The axis to move along.
+ * @param {{ selector: string, inset?: number } | null} stops The parts the content marks as stops, and how far in from the start a stop comes to rest.
  */
-export function byPage(container, direction, axis = 'inline') {
+export function step(container, direction, axis = 'inline', stops = null) {
+    const positions = stops ? stopPositions(container, axis, stops.selector) : [];
+
+    if (positions.length === 0) {
+        byPage(container, direction, axis);
+        return;
+    }
+
+    const isBlock = axis === 'block';
+    const offset = isBlock ? container.scrollTop : Math.abs(container.scrollLeft);
+    const inset = stops.inset ?? 0;
+
+    // The stop in place stands at the inset; the step goes to the nearest stop past it, and past the last stop to
+    // the container's end, so the rest of the last stop can still be brought into view.
+    const target = direction > 0
+        ? positions.find(position => position - inset > offset + 1)
+        : positions.findLast(position => position - inset < offset - 1);
+    const end = isBlock ? container.scrollHeight - container.clientHeight : container.scrollWidth - container.clientWidth;
+    const destination = target === undefined
+        ? (direction > 0 ? end : 0)
+        : Math.min(end, Math.max(0, target - inset));
+
+    if (Math.abs(destination - offset) < 1) {
+        return;
+    }
+
+    if (isBlock) {
+        container.scrollTo({ top: destination, behavior: 'smooth' });
+        return;
+    }
+
+    // A right-to-left container counts scrollLeft downwards from zero, so the destination mirrors with it.
+    const isRightToLeft = getComputedStyle(container).direction === 'rtl';
+    container.scrollTo({ left: isRightToLeft ? -destination : destination, behavior: 'smooth' });
+}
+
+// The distinct starts of the stops, measured along the axis from the content's start and sorted.
+function stopPositions(container, axis, selector) {
+    const box = container.getBoundingClientRect();
+    const isBlock = axis === 'block';
+    const isRightToLeft = getComputedStyle(container).direction === 'rtl';
+    const offset = isBlock ? container.scrollTop : Math.abs(container.scrollLeft);
+    const starts = new Set();
+
+    for (const stop of container.querySelectorAll(selector)) {
+        const rect = stop.getBoundingClientRect();
+        const start = isBlock ? rect.top - box.top : isRightToLeft ? box.right - rect.right : rect.left - box.left;
+        starts.add(Math.round(start + offset));
+    }
+
+    return [...starts].sort((first, second) => first - second);
+}
+
+function byPage(container, direction, axis) {
     if (axis === 'block') {
         container.scrollBy({ top: container.clientHeight * 0.8 * direction, behavior: 'smooth' });
         return;
@@ -68,9 +129,9 @@ export function byPage(container, direction, axis = 'inline') {
 
     // A right-to-left container counts scrollLeft downwards from zero, so the step mirrors with it.
     const isRightToLeft = getComputedStyle(container).direction === 'rtl';
-    const step = container.clientWidth * 0.8 * direction;
+    const distance = container.clientWidth * 0.8 * direction;
 
-    container.scrollBy({ left: isRightToLeft ? -step : step, behavior: 'smooth' });
+    container.scrollBy({ left: isRightToLeft ? -distance : distance, behavior: 'smooth' });
 }
 
 /** The parts a surface asked for, disposed together. */
@@ -181,7 +242,8 @@ class BoundaryWatch {
         this.#isQueued = false;
         this.#frame = null;
 
-        if (this.#isDisposed) {
+        // A track taken out of the document collapses to nothing, and its owner is on its way out with it.
+        if (this.#isDisposed || !this.#track.isConnected) {
             return;
         }
 
@@ -196,7 +258,7 @@ class BoundaryWatch {
         }
 
         this.#last = next;
-        this.#owner.invokeMethodAsync('HandleOverflowAsync', next.canScrollBack, next.canScrollForward, next.frozenExtent, next.cornerExtent);
+        tell(this.#owner, 'HandleOverflowAsync', next.canScrollBack, next.canScrollForward, next.frozenExtent, next.cornerExtent);
     }
 
     #measure() {
@@ -366,7 +428,7 @@ class DirectionSink {
         }
 
         this.#isGestureReported = !isNotch;
-        this.#owner.invokeMethodAsync('HandleWheelAsync', Math.sign(delta));
+        tell(this.#owner, 'HandleWheelAsync', Math.sign(delta));
     }
 }
 
@@ -380,7 +442,7 @@ class Sentinel {
         this.#observer = new IntersectionObserver(observations => {
             // Observations already queued still run after disconnect, and the owner may be gone by then.
             if (!this.#isDisposed && observations.some(observation => observation.isIntersecting)) {
-                owner.invokeMethodAsync('HandleReachedAsync');
+                tell(owner, 'HandleReachedAsync');
             }
         }, { root, rootMargin });
 

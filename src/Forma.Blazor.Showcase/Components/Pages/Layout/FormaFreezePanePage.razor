@@ -48,7 +48,7 @@
 
 <div class="demo-section">
     <h2>@L["A Frozen Column"]</h2>
-    <p class="description">@L["The first column of this table is frozen, so it stays put while the other columns scroll, and the back arrow stands where it ends rather than beneath it."]</p>
+    <p class="description">@L["The first column of this table is frozen, so it stays put while the other columns scroll, and the back arrow stands where it ends rather than beneath it, and each arrow press brings the next column into place."]</p>
     <div class="demo-box demo-box-flush demo-command-bar-narrow">
         <FormaFreezePane Options="FreezePaneOptions.Arrows">
             <table class="demo-scroll-table">
@@ -57,7 +57,7 @@
                         <th class="@FormaFreezePane.FrozenClass">@L["Rider"]</th>
                         @foreach (var stage in Stages)
                         {
-                            <th>@stage</th>
+                            <th class="@FormaFreezePane.StopClass">@stage</th>
                         }
                     </tr>
                 </thead>
@@ -68,7 +68,7 @@
                             <td class="@FormaFreezePane.FrozenClass">@rider</td>
                             @foreach (var stage in Stages)
                             {
-                                <td>@Time(rider, stage)</td>
+                                <td class="@FormaFreezePane.StopClass">@Time(rider, stage)</td>
                             }
                         </tr>
                     }

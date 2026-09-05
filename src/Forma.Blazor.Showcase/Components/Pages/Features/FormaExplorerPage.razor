@@ -38,6 +38,18 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["A Phone-Width Explorer"]</h2>
+    <p class="description">@L["Held to a phone's width, the header collapses to one row: the folder path, a search glyph that opens the search across the row, and a menu holding navigation, actions, view mode and sorting."]</p>
+    <div class="demo-box demo-box-phone">
+        <FormaExplorer ItemsProvider="@(ProviderFor("phone"))"
+                      Folders="_sampleFolderItems"
+                      CurrentFolder="@(CurrentFolderFor("phone"))"
+                      TotalCount="_allMedia.Count"
+                      OnFolderChanged="@(folder => HandleFolderChangedAsync("phone", folder))" />
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["Single Selection for a Cover Image"]</h2>
     <p class="description">@L["With MaxSelection set to 1, picking any item immediately selects it alone. This one holds its collection through Resources, which is the simpler half of the contract and the right choice for a handful of items."]</p>
     <div class="demo-box">

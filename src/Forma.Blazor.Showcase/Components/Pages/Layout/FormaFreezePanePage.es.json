@@ -10,7 +10,7 @@
   "Save": "Guardar",
   "Cancel": "Cancelar",
   "A Frozen Column": "Una Columna Fijada",
-  "The first column of this table is frozen, so it stays put while the other columns scroll, and the back arrow stands where it ends rather than beneath it.": "La primera columna de esta tabla está fijada, así que se queda en su lugar mientras las demás se desplazan, y la flecha de retroceso se sitúa donde termina en vez de debajo de ella.",
+  "The first column of this table is frozen, so it stays put while the other columns scroll, and the back arrow stands where it ends rather than beneath it, and each arrow press brings the next column into place.": "La primera columna de esta tabla está fijada, así que se queda en su lugar mientras las demás se desplazan, y la flecha de retroceso se sitúa donde termina en vez de debajo de ella, y cada pulsación de una flecha trae la siguiente columna a su lugar.",
   "Rider": "Ciclista",
   "Up and Down": "Arriba y Abajo",
   "The same box along the block axis, by the scrollbar and by arrows. The header row is frozen, so it stays at the top while the rows scroll under it.": "La misma caja a lo largo del eje de bloque, con barra de desplazamiento y con flechas. La fila de encabezado está fijada, así que permanece arriba mientras las filas se desplazan debajo.",

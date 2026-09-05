@@ -1,40 +1,19 @@
 @namespace Forma.Blazor.Components.Explorer
 @using Forma.Blazor.Components.Buttons
+@using Forma.Blazor.Components.Layout
 @using Forma.Blazor.Components.Menus
 @using Forma.Framework.Explorer.Content
 
 <div class="forma-explorer-toolbar">
-    <span class="forma-explorer-visually-hidden" role="status" aria-live="polite">@SelectionAnnouncement</span>
-
-    @if (SelectedCount > 0)
+    @if (View.Selection.Count > 0)
     {
-        <div class="forma-explorer-selection-bar">
-            <div class="forma-explorer-selection-actions">
-                @if (ShowsDeleteAction)
-                {
-                    <FormaButton Variant="ButtonVariant.Danger" class="forma-explorer-delete-button" OnClick="ItemInteraction.RequestDeleteSelected">
-                        <FormaIcon Icon="Glyph.Delete" Size="IconSize.Small" />
-                        @L["Delete"]
-                    </FormaButton>
-                }
-                <FormaToggleButton Icon="Glyph.SelectNone" Label="@L["Clear"]" ShowLabel="true" class="forma-explorer-clear-button" OnClick="Interaction.ClearSelectionAsync" />
-            </div>
-
-            <div class="forma-explorer-selection-status">
-                <span class="forma-explorer-selection-label">@L["{SelectedCount} selected", SelectedCount]</span>
-                @if (CanLeaveSelectMode)
-                {
-                    <FormaCloseButton class="forma-explorer-exit-select-button"
-                                      Label="@L["Leave Selection Mode"]"
-                                      OnClick="Interaction.ToggleSelectionModeAsync" />
-                }
-            </div>
-        </div>
+        <FormaExplorerSelectionBar />
     }
     else
     {
+    <FormaCommandBar Class="forma-explorer-toolbar-bar" role="toolbar" aria-label="@L["Toolbar"]">
     <div class="forma-explorer-toolbar-left">
-        @if (CanLeaveSelectMode)
+        @if (View.CanLeaveSelectMode())
         {
             <FormaToggleButton Icon="@(View.Selection.IsSelectionModeActive ? Glyph.Cross : Glyph.Select)"
                                 Label="@(View.Selection.IsSelectionModeActive ? L["Cancel"] : L["Select"])"
@@ -43,7 +22,7 @@
                                 class="forma-explorer-select-mode-button"
                                 OnClick="Interaction.ToggleSelectionModeAsync" />
         }
-        @if (ShowsNewFolderAction)
+        @if (View.ShowsNewFolderAction())
         {
             <FormaToggleButton Icon="Glyph.FolderAdd" Label="@L["New Folder"]" ShowLabel="true" class="forma-explorer-new-folder-button" OnClick="ItemInteraction.RequestNewFolderAsync" />
         }
@@ -79,34 +58,14 @@
                            aria-label="@L["Sort By"]">
             <Trigger>
                 <FormaIcon Icon="@DirectionGlyph" Size="IconSize.Small" />
-                <span class="forma-explorer-sort-trigger-text">@SortFieldLabel(View.SortField)</span>
+                <span class="forma-explorer-sort-trigger-text">@ExplorerSortPresentation.FieldLabel(L, View.SortField)</span>
                 <span class="forma-explorer-sort-trigger-caret" aria-hidden="true"><FormaIcon Icon="Glyph.ChevronDown" /></span>
             </Trigger>
             <ChildContent>
-                <div role="group" aria-label="@L["Sort By"]">
-                    @foreach (var field in SortFields)
-                    {
-                        <FormaDropDownMenuItem IsSelected="@(View.SortField == field)"
-                                               data-sort-field="@field"
-                                               OnClick="() => Interaction.SortByAsync(field)">
-                            <span>@SortFieldLabel(field)</span>
-                        </FormaDropDownMenuItem>
-                    }
-                </div>
-                <FormaDropDownMenuDivider />
-                <div role="group" aria-label="@L["Sort Direction"]">
-                    @foreach (var direction in SortDirections)
-                    {
-                        <FormaDropDownMenuItem IsSelected="@(View.SortDirection == direction)"
-                                               data-sort-direction="@direction"
-                                               OnClick="() => Interaction.SetSortDirectionAsync(direction)">
-                            <FormaIcon Icon="@GlyphFor(View.SortField, direction)" Size="IconSize.Small" />
-                            <span>@DirectionLabel(direction)</span>
-                        </FormaDropDownMenuItem>
-                    }
-                </div>
+                <FormaExplorerSortMenuItems />
             </ChildContent>
         </FormaDropDownMenu>
     </div>
+    </FormaCommandBar>
     }
 </div>

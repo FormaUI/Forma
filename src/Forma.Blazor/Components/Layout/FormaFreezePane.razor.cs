@@ -9,11 +9,14 @@ using Forma.Framework.Localization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>A scroll box whose content moves along one axis while the parts marked <see cref="FrozenClass"/> stay at its start, moved by the scrollbar or by an arrow at each end shown only while there is somewhere to go.</summary>
+/// <summary>A scroll box whose content moves along one axis while the parts marked <see cref="FrozenClass"/> stay at its start, moved by the scrollbar or by an arrow at each end shown only while there is somewhere to go; parts marked <see cref="StopClass"/> are where the content comes to rest.</summary>
 public sealed partial class FormaFreezePane : ComponentBase, IAsyncDisposable
 {
     /// <summary>The class a part of the content carries to stay put at the pane's start while the rest scrolls.</summary>
     public const string FrozenClass = "forma-freeze-pane-frozen";
+
+    /// <summary>The class a part of the content carries to be a stop: scrolling comes to rest with it drawn up to the frozen parts, and each arrow press moves to the next one.</summary>
+    public const string StopClass = "forma-freeze-pane-stop";
 
     /// <summary>The content that scrolls.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -37,6 +40,7 @@ public sealed partial class FormaFreezePane : ComponentBase, IAsyncDisposable
     private ElementReference _viewport;
     private bool _canScrollBack;
     private bool _canScrollForward;
+    private bool _isMeasured;
     private double _frozenExtent;
     private double _cornerExtent;
     private ScrollBehaviours? _attached;
@@ -54,8 +58,9 @@ public sealed partial class FormaFreezePane : ComponentBase, IAsyncDisposable
         {
             var axis = IsBlockAxis ? "forma-freeze-pane-block" : "forma-freeze-pane-inline";
             var navigation = ShowsArrows ? "forma-freeze-pane-arrows" : "forma-freeze-pane-scrollbar";
+            var measured = _isMeasured ? " is-measured" : string.Empty;
             var frozen = _frozenExtent > 0 ? " has-frozen" : string.Empty;
-            var classes = $"forma-freeze-pane {axis} {navigation}{frozen}";
+            var classes = $"forma-freeze-pane {axis} {navigation}{measured}{frozen}";
 
             return string.IsNullOrWhiteSpace(Class) ? classes : $"{classes} {Class}";
         }
@@ -82,7 +87,7 @@ public sealed partial class FormaFreezePane : ComponentBase, IAsyncDisposable
     private ScrollBehaviours Behaviours
         => new()
         {
-            Boundary = ShowsArrows ? new ScrollBoundary(Options.Axis, $".{FrozenClass}") : null,
+            Boundary = new ScrollBoundary(Options.Axis, $".{FrozenClass}"),
             Wheel = !IsBlockAxis && Options.PageOnWheelGesture ? ScrollWheel.MovesTarget : null,
         };
 
@@ -90,11 +95,12 @@ public sealed partial class FormaFreezePane : ComponentBase, IAsyncDisposable
     [JSInvokable]
     public Task HandleOverflowAsync(bool canScrollBack, bool canScrollForward, double frozenExtent, double cornerExtent)
     {
-        if (_canScrollBack == canScrollBack && _canScrollForward == canScrollForward && _frozenExtent == frozenExtent && _cornerExtent == cornerExtent)
+        if (_isMeasured && _canScrollBack == canScrollBack && _canScrollForward == canScrollForward && _frozenExtent == frozenExtent && _cornerExtent == cornerExtent)
         {
             return Task.CompletedTask;
         }
 
+        _isMeasured = true;
         _canScrollBack = canScrollBack;
         _canScrollForward = canScrollForward;
         _frozenExtent = frozenExtent;
@@ -143,23 +149,13 @@ public sealed partial class FormaFreezePane : ComponentBase, IAsyncDisposable
 
     private async ValueTask<bool> AttachAsync(ScrollBehaviours behaviours)
     {
-        if (behaviours.Boundary is not null)
-        {
-            _selfReference ??= DotNetObjectReference.Create(this);
-            return await _scroll.AttachAsync(_viewport, behaviours, _selfReference);
-        }
+        _selfReference ??= DotNetObjectReference.Create(this);
 
-        if (behaviours.Wheel is not null)
-        {
-            return await _scroll.AttachAsync(_viewport, behaviours);
-        }
-
-        await _scroll.DetachAsync();
-        return true;
+        return await _scroll.AttachAsync(_viewport, behaviours, _selfReference);
     }
 
     private async Task ScrollAsync(int direction)
-        => await _scroll.ByPageAsync(_viewport, direction, Options.Axis);
+        => await _scroll.StepAsync(_viewport, direction, Options.Axis, new ScrollStops($".{StopClass}", _frozenExtent));
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()

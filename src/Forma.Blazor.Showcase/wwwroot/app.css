@@ -410,6 +410,12 @@ body {
     block-size: 20rem;
 }
 
+/* Holds an explorer at a phone's width: its 20rem floor plus the box's padding, under the header's 25.75rem tier. */
+.demo-box-phone {
+    box-sizing: border-box;
+    max-inline-size: 24rem;
+}
+
 .demo-row-actions {
     display: flex;
     gap: var(--space-1);

@@ -1,0 +1,18 @@
+/* ============================================================
+   FormaExplorerCompactBar — CSS isolation
+   One row: the breadcrumb, a search glyph and the menu
+   ============================================================ */
+
+.forma-explorer-compact-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-inline-size: 0;
+    min-block-size: var(--control-size-md);
+}
+
+/* The breadcrumb takes the row's remaining width; while searching, the search box does. */
+.forma-explorer-compact-bar ::deep .forma-explorer-breadcrumb-bar,
+.forma-explorer-compact-bar ::deep .forma-search-box-wrapper {
+    flex: 1;
+}

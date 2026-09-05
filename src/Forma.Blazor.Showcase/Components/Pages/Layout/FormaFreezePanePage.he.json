@@ -10,7 +10,7 @@
   "Save": "שמירה",
   "Cancel": "ביטול",
   "A Frozen Column": "עמודה מוצמדת",
-  "The first column of this table is frozen, so it stays put while the other columns scroll, and the back arrow stands where it ends rather than beneath it.": "העמודה הראשונה בטבלה זו מוצמדת, ולכן היא נשארת במקומה בזמן ששאר העמודות נגללות, וחץ האחורה עומד במקום שבו היא מסתיימת ולא מתחתיה.",
+  "The first column of this table is frozen, so it stays put while the other columns scroll, and the back arrow stands where it ends rather than beneath it, and each arrow press brings the next column into place.": "העמודה הראשונה בטבלה זו מוצמדת, ולכן היא נשארת במקומה בזמן ששאר העמודות נגללות, וחץ האחורה עומד במקום שבו היא מסתיימת ולא מתחתיה, וכל לחיצה על חץ מביאה את העמודה הבאה למקומה.",
   "Rider": "רוכב",
   "Up and Down": "למעלה ולמטה",
   "The same box along the block axis, by the scrollbar and by arrows. The header row is frozen, so it stays at the top while the rows scroll under it.": "אותה תיבה לאורך ציר הבלוק, בפס גלילה ובחצים. שורת הכותרת מוצמדת, ולכן היא נשארת למעלה בזמן שהשורות נגללות מתחתיה.",

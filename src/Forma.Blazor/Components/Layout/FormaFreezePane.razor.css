@@ -7,6 +7,7 @@
 
 .forma-freeze-pane {
     --forma-freeze-pane-frozen-offset: 0px;
+    --forma-freeze-pane-frozen-extent: 0px;
     position: relative;
     display: flex;
     min-inline-size: 0;
@@ -25,12 +26,28 @@
     overflow-x: auto;
     overflow-y: hidden;
     touch-action: pan-y;
+    scroll-padding-inline-start: var(--forma-freeze-pane-frozen-extent);
 }
 
 .forma-freeze-pane-block > .forma-freeze-pane-viewport {
     overflow-x: hidden;
     overflow-y: auto;
     touch-action: pan-x;
+    scroll-padding-block-start: var(--forma-freeze-pane-frozen-extent);
+}
+
+/* Once the frozen region has been measured, scrolling comes to rest on the stops the content marks, each drawn up
+   to the region's end; content marking none scrolls freely. */
+.forma-freeze-pane-inline.is-measured > .forma-freeze-pane-viewport {
+    scroll-snap-type: inline mandatory;
+}
+
+.forma-freeze-pane-block.is-measured > .forma-freeze-pane-viewport {
+    scroll-snap-type: block mandatory;
+}
+
+.forma-freeze-pane-viewport ::deep .forma-freeze-pane-stop {
+    scroll-snap-align: start;
 }
 
 /* The arrows drive the content, so a scrollbar would be a second control for the same thing. */

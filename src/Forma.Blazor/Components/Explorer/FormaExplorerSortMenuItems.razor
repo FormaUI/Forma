@@ -1,0 +1,26 @@
+@namespace Forma.Blazor.Components.Explorer
+@using Forma.Blazor.Components.Menus
+@using Forma.Framework.Explorer.Content.Queries
+
+<div role="group" aria-label="@L["Sort By"]">
+    @foreach (var field in SortFields)
+    {
+        <FormaDropDownMenuItem IsSelected="@(View.SortField == field)"
+                               data-sort-field="@field"
+                               OnClick="() => Interaction.SortByAsync(field)">
+            <span>@ExplorerSortPresentation.FieldLabel(L, field)</span>
+        </FormaDropDownMenuItem>
+    }
+</div>
+<FormaDropDownMenuDivider />
+<div role="group" aria-label="@L["Sort Direction"]">
+    @foreach (var direction in SortDirections)
+    {
+        <FormaDropDownMenuItem IsSelected="@(View.SortDirection == direction)"
+                               data-sort-direction="@direction"
+                               OnClick="() => Interaction.SetSortDirectionAsync(direction)">
+            <FormaIcon Icon="@ExplorerSortPresentation.GlyphFor(View.SortField, direction)" Size="IconSize.Small" />
+            <span>@ExplorerSortPresentation.DirectionLabel(L, direction)</span>
+        </FormaDropDownMenuItem>
+    }
+</div>

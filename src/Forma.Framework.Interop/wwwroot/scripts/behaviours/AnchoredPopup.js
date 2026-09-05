@@ -16,10 +16,11 @@ const GAP = 4;
  * @param {HTMLElement} target The popup.
  * @param {{
  *   anchor: HTMLElement,
- *   keepsFocus?: boolean
+ *   keepsFocus?: boolean,
+ *   align?: 'start' | 'end'
  * }} options
- *   The element the popup hangs from, and whether Tab moves between the popup's own controls instead of
- *   leaving it.
+ *   The element the popup hangs from, whether Tab moves between the popup's own controls instead of
+ *   leaving it, and which inline edge of the anchor the popup lines up with.
  */
 export function attach(target, options) {
     return new AnchoredPopup(target, options);
@@ -29,14 +30,16 @@ class AnchoredPopup {
     #popup;
     #anchor;
     #keepsFocus;
+    #align;
     #trigger = null;
     #placement = null;
     #resizeObserver = null;
 
-    constructor(popup, { anchor, keepsFocus = false }) {
+    constructor(popup, { anchor, keepsFocus = false, align = 'start' }) {
         this.#popup = popup;
         this.#anchor = anchor;
         this.#keepsFocus = keepsFocus;
+        this.#align = align;
     }
 
     /** Shows the popup and keeps it positioned against its anchor until closed; focus returns to the trigger on a close that asks for it. */
@@ -70,8 +73,10 @@ class AnchoredPopup {
 
     /** Hides the popup and releases the listeners held for it, first returning focus to the trigger when asked and focus is inside the popup. Safe to call when none are held. */
     close(returnsFocus = false) {
+        // A trigger standing in a sticky part is focused where it stands; scrolling it into view would
+        // move its scroller back to the part's unstuck position.
         if (returnsFocus && this.#trigger && this.#popup.contains(document.activeElement)) {
-            this.#trigger.focus();
+            this.#trigger.focus({ preventScroll: true });
         }
 
         this.#placement?.abort();
@@ -93,10 +98,11 @@ class AnchoredPopup {
         const width = this.#popup.offsetWidth;
         const height = this.#popup.offsetHeight;
 
-        // Mirrored, not different: the popup hangs from the anchor's reading-start edge in
-        // both directions, so RTL is the mirror image rather than the same side.
+        // Mirrored, not different: the popup lines up with the anchor's reading-start edge, or its
+        // reading-end edge when aligned to the end, so RTL is the mirror image rather than the same side.
         const isRightToLeft = getComputedStyle(this.#anchor).direction === 'rtl';
-        const preferredInlineStart = isRightToLeft ? anchor.right - width : anchor.left;
+        const fromLeftEdge = this.#align === 'end' ? isRightToLeft : !isRightToLeft;
+        const preferredInlineStart = fromLeftEdge ? anchor.left : anchor.right - width;
         const inlineStart = Math.max(GAP, Math.min(preferredInlineStart, innerWidth - width - GAP));
 
         const below = anchor.bottom + GAP;
