@@ -19,10 +19,7 @@
     .forma-explorer-item:has(.forma-dropdown-menu) .forma-explorer-action-bar,
     .forma-explorer-details-row:hover .forma-explorer-action-bar,
     .forma-explorer-details-row:focus-within .forma-explorer-action-bar,
-    .forma-explorer-details-row:has(.forma-dropdown-menu) .forma-explorer-action-bar,
-    .forma-explorer-list-item:hover .forma-explorer-action-bar,
-    .forma-explorer-list-item:focus-within .forma-explorer-action-bar,
-    .forma-explorer-list-item:has(.forma-dropdown-menu) .forma-explorer-action-bar {
+    .forma-explorer-details-row:has(.forma-dropdown-menu) .forma-explorer-action-bar {
         opacity: 1;
     }
 }

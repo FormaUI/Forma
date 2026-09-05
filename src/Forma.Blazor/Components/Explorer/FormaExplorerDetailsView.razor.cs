@@ -11,11 +11,14 @@ using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Tabular details view for explorer media resources with sortable column headers.</summary>
+/// <summary>Tabular details view for explorer media resources with sortable column headers, or in its brief form the name and the size alone with no header.</summary>
 public sealed partial class FormaExplorerDetailsView : ComponentBase
 {
     /// <summary>The collection of items to display.</summary>
     [Parameter] public IReadOnlyList<IExplorerItem> Items { get; set; } = [];
+
+    /// <summary>Whether the table shows the name and the size alone, without a header.</summary>
+    [Parameter] public bool Brief { get; set; }
 
     [CascadingParameter] private IExplorerView View { get; set; } = default!;
 
@@ -27,17 +30,20 @@ public sealed partial class FormaExplorerDetailsView : ComponentBase
 
     private const string Placeholder = "—";
 
+    private ExplorerDetailsColumns Columns
+        => Brief ? ExplorerDetailsColumns.Size : View.Options.DetailsColumns;
+
     private bool ShowsKind
-        => View.Options.DetailsColumns.HasFlag(ExplorerDetailsColumns.Kind);
+        => Columns.HasFlag(ExplorerDetailsColumns.Kind);
 
     private bool ShowsSize
-        => View.Options.DetailsColumns.HasFlag(ExplorerDetailsColumns.Size);
+        => Columns.HasFlag(ExplorerDetailsColumns.Size);
 
     private bool ShowsModified
-        => View.Options.DetailsColumns.HasFlag(ExplorerDetailsColumns.Modified);
+        => Columns.HasFlag(ExplorerDetailsColumns.Modified);
 
     private bool ShowsAdded
-        => View.Options.DetailsColumns.HasFlag(ExplorerDetailsColumns.Added);
+        => Columns.HasFlag(ExplorerDetailsColumns.Added);
 
     /// <inheritdoc />
     protected override void OnInitialized()

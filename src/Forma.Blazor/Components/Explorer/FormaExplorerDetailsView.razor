@@ -7,8 +7,10 @@
     var selecting = View.Selection.IsSelectionModeActive;
 }
 
-<div class="forma-explorer-details-wrapper">
+<div class="forma-explorer-details-wrapper @(Brief ? "forma-explorer-list" : "")">
     <table class="forma-explorer-details-table" role="table">
+        @if (!Brief)
+        {
         <thead>
             <tr>
                 <th class="forma-explorer-column-actions"><span class="forma-explorer-visually-hidden">@(selecting ? L["Select"] : L["Actions"])</span></th>
@@ -71,6 +73,7 @@
                 }
             </tr>
         </thead>
+        }
         <tbody>
             @foreach (var item in Items)
             {

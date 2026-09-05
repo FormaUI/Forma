@@ -168,17 +168,6 @@
     user-select: none;
 }
 
-/* --- Content Container --- */
-.forma-explorer-content {
-    flex: 1;
-    min-inline-size: 0;
-    min-block-size: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-    padding-inline-start: var(--space-3);
-}
-
 @container (max-width: 40rem) {
     .forma-explorer-body {
         flex-direction: column;
@@ -188,41 +177,6 @@
     ::deep .forma-explorer-splitter {
         display: none;
     }
-
-    .forma-explorer-content {
-        padding-inline-start: 0;
-    }
-}
-
-/* The media scrolls inside the panel so the toolbar, folder tree and pager stay put. */
-.forma-explorer-scroll {
-    flex: 1;
-    min-block-size: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    scrollbar-width: thin;
-}
-
-/* --- Empty State --- */
-.forma-explorer-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding-block: var(--space-6);
-    padding-inline: var(--space-4);
-    color: var(--text-muted-color);
-    gap: var(--space-2);
-    text-align: center;
-}
-
-.forma-explorer-empty-icon {
-    opacity: 0.6;
-}
-
-.forma-explorer-empty p {
-    margin: 0;
-    font-size: var(--font-size-sm);
 }
 
 /* --- Dialog Form Fields --- */
@@ -243,93 +197,4 @@
     margin: 0;
     font-size: var(--font-size-sm);
     color: var(--text-color);
-}
-
-/* --- Pagination --- */
-.forma-explorer-pagination {
-    display: flex;
-    margin-block-start: var(--space-2);
-}
-
-.forma-explorer-pagination ::deep .forma-pagination {
-    flex: 1;
-    justify-content: space-between;
-}
-
-/* --- Infinite Scroll --- */
-.forma-explorer-scroll-status {
-    text-align: center;
-    font-size: var(--font-size-xs);
-    color: var(--text-muted-color);
-}
-
-/* The button is the path to the next page in the manual mode. */
-.forma-explorer-scroll-sentinel {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-block-size: calc(var(--control-size-md) + var(--space-2));
-    padding-block-end: var(--space-2);
-}
-
-.forma-explorer-spinner {
-    inline-size: var(--icon-size-md);
-    block-size: var(--icon-size-md);
-    border: 3px solid var(--light-border-color);
-    border-block-start-color: var(--main-color);
-    border-radius: 50%;
-    animation: forma-explorer-spin 0.7s linear infinite;
-}
-
-@keyframes forma-explorer-spin {
-    to {
-        rotate: 360deg;
-    }
-}
-
-/* The ring stops; the count beside it states progress. */
-@media (prefers-reduced-motion: reduce) {
-    .forma-explorer-spinner {
-        animation: none;
-    }
-}
-
-.forma-explorer-scroll-sentinel ::deep .forma-explorer-load-more-button {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    min-block-size: var(--control-size-md);
-    padding-inline: var(--space-3);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-pill);
-    background: var(--input-background-color);
-    color: var(--text-muted-color);
-    font-size: var(--font-size-sm);
-    touch-action: manipulation;
-    transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
-}
-
-@media (hover: hover) {
-    .forma-explorer-scroll-sentinel ::deep .forma-explorer-load-more-button:hover {
-        border-color: var(--main-color);
-        background: var(--hover-background-color);
-        color: var(--main-color);
-    }
-}
-
-.forma-explorer-load-more-icon {
-    font-size: var(--font-size-xs);
-    transition: translate 0.15s ease;
-}
-
-@media (hover: hover) {
-    .forma-explorer-scroll-sentinel ::deep .forma-explorer-load-more-button:hover .forma-explorer-load-more-icon {
-        translate: 0 2px;
-    }
-}
-
-@media (pointer: coarse) {
-    .forma-explorer-scroll-sentinel ::deep .forma-explorer-load-more-button {
-        min-block-size: var(--control-size-touch);
-    }
 }

@@ -18,7 +18,6 @@ public sealed partial class FormaExplorerThumbnail : ComponentBase
     private string SizeClass
         => Size switch
         {
-            ExplorerThumbnailSize.Row => "is-row",
             ExplorerThumbnailSize.Cell => "is-cell",
             _ => "is-tile"
         };

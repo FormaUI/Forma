@@ -7,41 +7,7 @@
     inline-size: 100%;
 }
 
-/* The table gives up columns by priority as the explorer narrows, so it never scrolls sideways.
-   Each threshold is the sum of what remains: name 12rem, kind 6rem, size 6rem, a date 8rem each,
-   the actions column 3rem, and 1.5rem of cell padding per column. */
-@container (max-width: 48rem) {
-    .forma-explorer-column-added,
-    .forma-explorer-cell-added {
-        display: none;
-    }
-}
-
-@container (max-width: 40rem) {
-    .forma-explorer-column-modified,
-    .forma-explorer-cell-modified {
-        display: none;
-    }
-}
-
-@container (max-width: 32rem) {
-    .forma-explorer-column-size,
-    .forma-explorer-cell-size {
-        display: none;
-    }
-}
-
-@container (max-width: 26rem) {
-    .forma-explorer-column-kind,
-    .forma-explorer-cell-kind {
-        display: none;
-    }
-
-    .forma-explorer-column-name {
-        min-inline-size: 0;
-    }
-}
-
+/* The table keeps every column it is configured with; when they outgrow the pane, the pane scrolls sideways. */
 .forma-explorer-details-table {
     min-inline-size: 100%;
     border-collapse: collapse;
@@ -74,6 +40,11 @@
 
 .forma-explorer-cell-name {
     max-inline-size: 0;
+}
+
+/* With no header to hold the name column open, the brief table gives the name the rest of the row. */
+.forma-explorer-list .forma-explorer-cell-name {
+    inline-size: 100%;
 }
 
 .forma-explorer-column-kind {

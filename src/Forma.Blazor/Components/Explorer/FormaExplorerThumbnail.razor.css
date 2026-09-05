@@ -21,16 +21,6 @@
     font-size: var(--icon-size-display);
 }
 
-.forma-explorer-thumbnail.is-row {
-    inline-size: var(--icon-size-md);
-    block-size: var(--icon-size-md);
-    border-radius: var(--radius-sm);
-}
-
-.forma-explorer-thumbnail-glyph.is-row {
-    font-size: var(--icon-size-md);
-}
-
 .forma-explorer-thumbnail.is-cell {
     inline-size: var(--icon-size-sm);
     block-size: var(--icon-size-sm);
