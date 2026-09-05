@@ -17,10 +17,11 @@ const GAP = 4;
  * @param {{
  *   anchor: HTMLElement,
  *   keepsFocus?: boolean,
- *   align?: 'start' | 'end'
+ *   align?: 'auto' | 'start' | 'end'
  * }} options
  *   The element the popup hangs from, whether Tab moves between the popup's own controls instead of
- *   leaving it, and which inline edge of the anchor the popup lines up with.
+ *   leaving it, and which inline edge of the anchor the popup lines up with: its reading-start edge,
+ *   its reading-end edge, or by default the edge away from the nearer side of the viewport.
  */
 export function attach(target, options) {
     return new AnchoredPopup(target, options);
@@ -35,7 +36,7 @@ class AnchoredPopup {
     #placement = null;
     #resizeObserver = null;
 
-    constructor(popup, { anchor, keepsFocus = false, align = 'start' }) {
+    constructor(popup, { anchor, keepsFocus = false, align = 'auto' }) {
         this.#popup = popup;
         this.#anchor = anchor;
         this.#keepsFocus = keepsFocus;
@@ -98,11 +99,7 @@ class AnchoredPopup {
         const width = this.#popup.offsetWidth;
         const height = this.#popup.offsetHeight;
 
-        // Mirrored, not different: the popup lines up with the anchor's reading-start edge, or its
-        // reading-end edge when aligned to the end, so RTL is the mirror image rather than the same side.
-        const isRightToLeft = getComputedStyle(this.#anchor).direction === 'rtl';
-        const fromLeftEdge = this.#align === 'end' ? isRightToLeft : !isRightToLeft;
-        const preferredInlineStart = fromLeftEdge ? anchor.left : anchor.right - width;
+        const preferredInlineStart = this.#hangsFromLeftEdge(anchor) ? anchor.left : anchor.right - width;
         const inlineStart = Math.max(GAP, Math.min(preferredInlineStart, innerWidth - width - GAP));
 
         const below = anchor.bottom + GAP;
@@ -111,5 +108,26 @@ class AnchoredPopup {
 
         this.#popup.style.left = `${Math.round(inlineStart)}px`;
         this.#popup.style.top = `${Math.round(blockStart)}px`;
+    }
+
+    // Whether the popup's left edge meets the anchor's left edge, extending rightward; otherwise its right edge
+    // meets the anchor's right edge, extending leftward. The reading-start and reading-end edges are mirrored in
+    // right-to-left text; the automatic choice extends toward the wider side of the viewport, and from dead
+    // center toward the reading start.
+    #hangsFromLeftEdge(anchorBounds) {
+        const isRightToLeft = getComputedStyle(this.#anchor).direction === 'rtl';
+
+        switch (this.#align) {
+            case 'start':
+                return !isRightToLeft;
+            case 'end':
+                return isRightToLeft;
+            default: {
+                const anchorCenter = (anchorBounds.left + anchorBounds.right) / 2;
+                const viewportCenter = innerWidth / 2;
+
+                return anchorCenter === viewportCenter ? isRightToLeft : anchorCenter < viewportCenter;
+            }
+        }
     }
 }

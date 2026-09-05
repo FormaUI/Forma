@@ -10,8 +10,8 @@ public sealed class AnchoredPopup(IJSRuntime js)
     private bool _isOpen;
     private Task? _transition;
 
-    /// <summary>Brings the popup into line with whether it is open, running <paramref name="onOpened"/> once it is positioned; a popup that <paramref name="keepsFocus"/> moves Tab between its own controls, the <paramref name="trigger"/> is where focus returns on close, and <paramref name="alignment"/> names the anchor's inline edge it lines up with.</summary>
-    public async ValueTask SyncAsync(bool isOpen, ElementReference popup, ElementReference anchor, ElementReference trigger, Func<ValueTask>? onOpened = null, bool keepsFocus = false, PopupAlignment alignment = PopupAlignment.Start)
+    /// <summary>Brings the popup into line with whether it is open, running <paramref name="onOpened"/> once it is positioned; a popup that <paramref name="keepsFocus"/> moves Tab between its own controls, the <paramref name="trigger"/> is where focus returns on close, and <paramref name="alignment"/> names the anchor's inline edge it lines up with, by default the one away from the nearer side of the viewport.</summary>
+    public async ValueTask SyncAsync(bool isOpen, ElementReference popup, ElementReference anchor, ElementReference trigger, Func<ValueTask>? onOpened = null, bool keepsFocus = false, PopupAlignment alignment = PopupAlignment.Auto)
     {
         // A sync that arrives while an earlier one is still attaching waits for it, so one open
         // cannot attach twice and strand the first attachment's listeners.
@@ -46,7 +46,7 @@ public sealed class AnchoredPopup(IJSRuntime js)
     private async Task OpenAsync(ElementReference popup, ElementReference anchor, ElementReference trigger, Func<ValueTask>? onOpened, bool keepsFocus, PopupAlignment alignment)
     {
         // Each open gets its own attachment, so a failed attach is retried on the next sync.
-        _isOpen = await AttachCoreAsync(popup, new { anchor, keepsFocus, align = alignment == PopupAlignment.End ? "end" : "start" });
+        _isOpen = await AttachCoreAsync(popup, new { anchor, keepsFocus, align = alignment switch { PopupAlignment.Start => "start", PopupAlignment.End => "end", _ => "auto" } });
 
         if (!_isOpen)
         {

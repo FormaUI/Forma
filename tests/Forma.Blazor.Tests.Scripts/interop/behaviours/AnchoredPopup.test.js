@@ -57,12 +57,47 @@ describe('AnchoredPopup', () => {
     it('mirrors the inline start for a right-to-left anchor', () => {
         setAnchorRect({ top: 100, bottom: 130, left: 360, right: 400, width: 40, height: 30 });
         anchor.style.direction = 'rtl';
-        const handle = attach(popup, { anchor });
+        const handle = attach(popup, { anchor, align: 'start' });
 
         handle.open();
 
         // Hangs from the anchor's right edge minus the popup's width, not its left edge.
         expect(popup.style.left).toBe('200px');
+    });
+
+    // By default the popup extends toward the wider side of the viewport, whichever way the text runs.
+    it('extends leftward from an anchor in the right half by default', () => {
+        setAnchorRect({ top: 100, bottom: 130, left: 900, right: 940, width: 40, height: 30 });
+        const handle = attach(popup, { anchor });
+
+        handle.open();
+
+        expect(popup.style.left).toBe('740px');
+    });
+
+    it('extends rightward from a right-to-left anchor in the left half by default', () => {
+        setAnchorRect({ top: 100, bottom: 130, left: 360, right: 400, width: 40, height: 30 });
+        anchor.style.direction = 'rtl';
+        const handle = attach(popup, { anchor });
+
+        handle.open();
+
+        expect(popup.style.left).toBe('360px');
+    });
+
+    it('extends toward the reading start from an anchor at dead center', () => {
+        setAnchorRect({ top: 100, bottom: 130, left: 492, right: 532, width: 40, height: 30 });
+        const leftToRight = attach(popup, { anchor });
+        leftToRight.open();
+        const leftToRightPosition = popup.style.left;
+        leftToRight.close();
+
+        anchor.style.direction = 'rtl';
+        const rightToLeft = attach(popup, { anchor });
+        rightToLeft.open();
+
+        expect(leftToRightPosition).toBe('332px');
+        expect(popup.style.left).toBe('492px');
     });
 
     it('lines the popup up with the anchor end edge when aligned to the end', () => {
@@ -87,7 +122,7 @@ describe('AnchoredPopup', () => {
     it('clamps the inline start so the popup never opens off-screen', () => {
         setAnchorRect({ top: 100, bottom: 130, left: 5, right: 45, width: 40, height: 30 });
         anchor.style.direction = 'rtl';
-        const handle = attach(popup, { anchor });
+        const handle = attach(popup, { anchor, align: 'start' });
 
         handle.open();
 
