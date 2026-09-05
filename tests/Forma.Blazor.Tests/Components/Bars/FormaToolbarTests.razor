@@ -1,4 +1,6 @@
 @inherits FormaBunitContext
+@using Forma.Framework.Input
+@using Forma.Framework.Input.Keyboard
 @code {
     public sealed class Component
     {
@@ -655,13 +657,11 @@
                 Options = [new() { Id = $"{id}-only", Title = id, Command = $"{id}.pick", IsActive = true }],
             };
 
-        /// <summary>The bound key-combination lists from every "attach" call that carries one.</summary>
-        private static List<List<object>> KeyBindingAttachments(FormaToolbarTests ctx)
-            => [.. ctx.JSInterop.Invocations["attach"]
-                     .Select(invocation => invocation.Arguments.Count > 1 ? invocation.Arguments[1] : null)
-                     .Select(options => options?.GetType().GetProperty("bindings")?.GetValue(options))
-                     .OfType<System.Collections.IEnumerable>()
-                     .Select(bindings => bindings.Cast<object>().ToList())];
+        /// <summary>The profile of every scope the toolbar registered with the router.</summary>
+        private static List<InputProfile> Registrations(FormaToolbarTests ctx)
+            => [.. ctx.Router.Invocations
+                     .Where(invocation => invocation.Identifier == "register")
+                     .Select(invocation => (InputProfile)invocation.Arguments[1]!)];
 
         [Fact]
         public void Should_not_attach_shortcuts_without_a_target()
@@ -674,7 +674,7 @@
             ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
 
             // Assert
-            Assert.Empty(KeyBindingAttachments(ctx));
+            Assert.Empty(Registrations(ctx));
         }
 
         [Fact]
@@ -689,7 +689,7 @@
             ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Target="target" Hidden="true" />);
 
             // Assert
-            Assert.Empty(KeyBindingAttachments(ctx));
+            Assert.Empty(Registrations(ctx));
         }
 
         [Fact]
@@ -786,7 +786,7 @@
             ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Target="unrendered" />);
 
             // Assert
-            Assert.Empty(KeyBindingAttachments(ctx));
+            Assert.Empty(Registrations(ctx));
         }
 
         [Fact]
@@ -803,7 +803,7 @@
                .Render(parameters => parameters.Add(p => p.Target, new ElementReference("rendered-later")));
 
             // Assert
-            Assert.Single(KeyBindingAttachments(ctx));
+            Assert.Single(Registrations(ctx));
         }
 
         [Fact]
@@ -820,7 +820,7 @@
                .Render(parameters => parameters.Add(p => p.Target, new ElementReference("second")));
 
             // Assert
-            Assert.Equal(2, KeyBindingAttachments(ctx).Count);
+            Assert.Equal(2, Registrations(ctx).Count);
         }
 
         [Fact]
@@ -834,15 +834,16 @@
             // Act
             ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Target="target" />);
 
-            // Assert
-            var bindings = Assert.Single(KeyBindingAttachments(ctx));
-            var binding = Assert.Single(bindings);
+            // Assert - the command becomes the toolbar's action, and Control stands for the platform's shortcut key
+            var profile = Assert.Single(Registrations(ctx));
+            var route = Assert.Single(profile.Routes);
+            var binding = Assert.IsType<KeyBinding>(Assert.Single(route.Bindings));
             Assert.Multiple(
-                () => Assert.Equal("B", binding.GetType().GetProperty("Key")!.GetValue(binding)),
-                () => Assert.Equal("bold", binding.GetType().GetProperty("Command")!.GetValue(binding)),
-                () => Assert.Equal(true, binding.GetType().GetProperty("Control")!.GetValue(binding)),
-                () => Assert.Equal(true, binding.GetType().GetProperty("Shift")!.GetValue(binding)),
-                () => Assert.Equal(false, binding.GetType().GetProperty("Alt")!.GetValue(binding)));
+                () => Assert.Equal("toolbar.bold", route.Action),
+                () => Assert.Equal("B", binding.Key),
+                () => Assert.True(binding.Modifiers.Primary),
+                () => Assert.Equal(true, binding.Modifiers.Shift),
+                () => Assert.Equal(false, binding.Modifiers.Alt));
         }
 
         [Fact]
@@ -859,8 +860,8 @@
             ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Target="target" />);
 
             // Assert
-            var bindings = Assert.Single(KeyBindingAttachments(ctx));
-            Assert.Single(bindings);
+            var profile = Assert.Single(Registrations(ctx));
+            Assert.Single(profile.Routes);
         }
 
         [Fact]

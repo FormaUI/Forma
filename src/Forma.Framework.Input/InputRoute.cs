@@ -1,5 +1,6 @@
 namespace Forma.Framework.Input;
 
+using System.Text;
 using System.Text.RegularExpressions;
 
 /// <summary>A semantic action a scope answers, and the bindings that raise it unless the host remaps them.</summary>
@@ -36,6 +37,38 @@ public sealed partial record InputRoute
 
     /// <summary>Whether the input continues past the scope once the route consumes it; <see langword="null"/> takes the input class's default.</summary>
     public InputPropagation? Propagation { get; init; }
+
+    /// <summary>Qualifies a name under an owner as an action identifier, <c>{owner}.{name}</c>, the name lowered and every run of characters outside letters, digits and hyphens written as one hyphen.</summary>
+    public static string Qualify(string owner, string name)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(owner);
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+        var slug = new StringBuilder(name.Length);
+
+        foreach (var character in name)
+        {
+            var lowered = char.ToLowerInvariant(character);
+
+            if (lowered is (>= 'a' and <= 'z') or (>= '0' and <= '9') or '-')
+            {
+                slug.Append(lowered);
+            }
+            else if (slug.Length > 0 && slug[^1] != '-')
+            {
+                slug.Append('-');
+            }
+        }
+
+        var action = $"{owner}.{slug.ToString().Trim('-')}";
+
+        if (!ActionIdentifier().IsMatch(action))
+        {
+            throw new ArgumentException($"'{name}' under '{owner}' leaves no action identifier.", nameof(name));
+        }
+
+        return action;
+    }
 
     [GeneratedRegex("^[a-z0-9-]+(\\.[a-z0-9-]+)+$")]
     private static partial Regex ActionIdentifier();
