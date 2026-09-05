@@ -166,6 +166,22 @@ describe('DragGesture', () => {
             expect(reported).toEqual([]);
         });
 
+        it('installs no touch listener when it answers the mouse alone', () => {
+            const listening = vi.spyOn(container, 'addEventListener');
+
+            start({ pointerType: 'mouse' });
+
+            expect(listening.mock.calls.map(([type]) => type)).not.toContain('touchmove');
+        });
+
+        it('installs its touch listener when it answers every pointer', () => {
+            const listening = vi.spyOn(container, 'addEventListener');
+
+            start();
+
+            expect(listening.mock.calls.map(([type]) => type)).toContain('touchmove');
+        });
+
         it('makes the first movement a drag when the threshold is zero', () => {
             start({ threshold: 0 });
 

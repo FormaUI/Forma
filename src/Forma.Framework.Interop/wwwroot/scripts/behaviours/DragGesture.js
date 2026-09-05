@@ -95,12 +95,15 @@ class DragGesture {
 
         // Pointer capture does not stop the compositor scrolling a touch that began on a
         // scrollable area; it cancels the pointer instead. Only refusing the touchmove
-        // keeps a drag alive, and only once one is under way.
-        container.addEventListener('touchmove', event => {
-            if (this.#isDragging) {
-                event.preventDefault();
-            }
-        }, { signal, passive: false });
+        // keeps a drag alive, and only once one is under way. A gesture that answers no
+        // touch installs no such listener, so the browser keeps touch scrolling passive.
+        if (this.#pointerType === null || this.#pointerType === 'touch') {
+            container.addEventListener('touchmove', event => {
+                if (this.#isDragging) {
+                    event.preventDefault();
+                }
+            }, { signal, passive: false });
+        }
     }
 
     /** Stops listening and abandons any gesture in flight. */
