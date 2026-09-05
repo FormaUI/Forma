@@ -44,11 +44,11 @@ public sealed partial class FormaPopup : ComponentBase, IAsyncDisposable
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
-    [Inject] private InputRouter Router { get; set; } = default!;
+    [Inject] private InputRouter InputRouter { get; set; } = default!;
 
     private AnchoredPopup _popup = default!;
     private DotNetObjectReference<FormaPopup> _selfReference = default!;
-    private InputRegistration? _registration;
+    private InputScope? _inputScope;
     private InputProfile? _registeredProfile;
     private int _opening;
     private Task _sync = Task.CompletedTask;
@@ -166,11 +166,11 @@ public sealed partial class FormaPopup : ComponentBase, IAsyncDisposable
         {
             await ReleaseAsync();
         }
-        else if (_registration is null)
+        else if (_inputScope is null)
         {
             await RegisterAsync();
         }
-        else if (_registeredProfile != Profile && await _registration.UpdateAsync(Profile))
+        else if (_registeredProfile != Profile && await _inputScope.UpdateAsync(Profile))
         {
             _registeredProfile = Profile;
         }
@@ -181,9 +181,9 @@ public sealed partial class FormaPopup : ComponentBase, IAsyncDisposable
     {
         var opening = _opening;
         var profile = Profile;
-        var registration = await Router.RegisterAsync(_element, profile, _selfReference, within: [_trigger]);
+        var inputScope = await InputRouter.RegisterAsync(_element, profile, _selfReference, within: [_trigger]);
 
-        if (registration is null)
+        if (inputScope is null)
         {
             return;
         }
@@ -191,22 +191,22 @@ public sealed partial class FormaPopup : ComponentBase, IAsyncDisposable
         // The popup may have closed, or closed and reopened from another trigger, while the registration was being made.
         if (!IsOpen || opening != _opening)
         {
-            await registration.DisposeAsync();
+            await inputScope.DisposeAsync();
             return;
         }
 
-        _registration = registration;
+        _inputScope = inputScope;
         _registeredProfile = profile;
-        await registration.ActivateAsync();
+        await inputScope.ActivateAsync();
     }
 
     private async Task ReleaseAsync()
     {
-        if (_registration is { } registration)
+        if (_inputScope is { } inputScope)
         {
-            _registration = null;
+            _inputScope = null;
             _registeredProfile = null;
-            await registration.DisposeAsync();
+            await inputScope.DisposeAsync();
         }
     }
 

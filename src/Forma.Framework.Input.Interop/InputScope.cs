@@ -1,14 +1,13 @@
 namespace Forma.Framework.Input.Interop;
 
-
 using Microsoft.JSInterop;
 
-/// <summary>A registration on an input scope, holding the scope active while its surface is open and disposed when the registrant goes.</summary>
-public sealed class InputRegistration(IJSObjectReference handle) : IAsyncDisposable
+/// <summary>An input scope registered with the router, held active while its surface is open and disposed when its owner goes.</summary>
+public sealed class InputScope(IJSObjectReference handle) : IAsyncDisposable
 {
     private IJSObjectReference? _handle = handle;
 
-    /// <summary>Whether this registration holds the scope active.</summary>
+    /// <summary>Whether the scope is held active.</summary>
     public bool IsActive { get; private set; }
 
     /// <summary>Holds the scope active, reporting whether the call ran.</summary>
@@ -29,7 +28,7 @@ public sealed class InputRegistration(IJSObjectReference handle) : IAsyncDisposa
         return ran;
     }
 
-    /// <summary>Replaces what the registration contributes, reporting whether the call ran.</summary>
+    /// <summary>Replaces what the scope contributes, reporting whether the call ran.</summary>
     public ValueTask<bool> UpdateAsync(InputProfile profile)
     {
         ArgumentNullException.ThrowIfNull(profile);

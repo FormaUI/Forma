@@ -11,10 +11,10 @@ public sealed class InputRouter(IJSRuntime js, InputRouterOptions options, IInpu
     private readonly JsModule _module = new(js, "./_content/Forma.Framework.Input.Interop/scripts/InputRouter.js");
     private DotNetObjectReference<InputRouter>? _selfReference;
     private Task<bool>? _configuration;
-    private InputRegistration? _hostRegistration;
+    private InputScope? _hostScope;
 
     /// <summary>Registers <paramref name="element"/> as a scope, or adds to the scope it already is, yielding <see langword="null"/> when the circuit cannot register it; the <paramref name="owner"/> receives actions through <c>HandleInputActionAsync</c> and dismissals through <c>HandleDismissAsync</c>, the scope stands inside <paramref name="parent"/> for active ordering, and the <paramref name="within"/> elements count as inside it.</summary>
-    public async ValueTask<InputRegistration?> RegisterAsync<TOwner>(ElementReference element, InputProfile profile, DotNetObjectReference<TOwner>? owner = null, ElementReference? parent = null, IReadOnlyList<ElementReference>? within = null)
+    public async ValueTask<InputScope?> RegisterAsync<TOwner>(ElementReference element, InputProfile profile, DotNetObjectReference<TOwner>? owner = null, ElementReference? parent = null, IReadOnlyList<ElementReference>? within = null)
         where TOwner : class
     {
         ArgumentNullException.ThrowIfNull(profile);
@@ -26,7 +26,7 @@ public sealed class InputRouter(IJSRuntime js, InputRouterOptions options, IInpu
 
         var handle = await _module.TryInvokeAsync<IJSObjectReference>("register", element, profile, owner, new { parent, within = within ?? [] });
 
-        return handle is null ? null : new InputRegistration(handle);
+        return handle is null ? null : new InputScope(handle);
     }
 
     /// <summary>Performs a host route's action through the host's handler.</summary>
@@ -39,9 +39,9 @@ public sealed class InputRouter(IJSRuntime js, InputRouterOptions options, IInpu
     {
         try
         {
-            if (_hostRegistration is { } hostRegistration)
+            if (_hostScope is { } hostScope)
             {
-                await hostRegistration.DisposeAsync();
+                await hostScope.DisposeAsync();
             }
 
             await _module.DisposeAsync();
@@ -89,7 +89,7 @@ public sealed class InputRouter(IJSRuntime js, InputRouterOptions options, IInpu
 
         _selfReference ??= DotNetObjectReference.Create(this);
         var handle = await _module.TryInvokeAsync<IJSObjectReference>("registerHost", new { options.Routes, options.PreemptiveRoutes }, _selfReference);
-        _hostRegistration = handle is null ? null : new InputRegistration(handle);
+        _hostScope = handle is null ? null : new InputScope(handle);
 
         return handle is not null;
     }

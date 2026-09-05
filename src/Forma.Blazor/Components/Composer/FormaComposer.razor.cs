@@ -34,7 +34,7 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
     private ComposerKeyBindingCatalog _keyBindingCatalog = ComposerKeyBindingCatalog.Empty;
     private ElementReference _composerElement;
     private DotNetObjectReference<FormaComposer>? _selfReference;
-    private InputRegistration? _registration;
+    private InputScope? _inputScope;
     private Focus _focus = default!;
     private JsComposerAssetLoader _assetLoader = default!;
     private IComposerHistory _history = default!;
@@ -72,7 +72,7 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
     [Parameter] public IComposerHistory? History { get; set; }
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
-    [Inject] private InputRouter Router { get; set; } = default!;
+    [Inject] private InputRouter InputRouter { get; set; } = default!;
     [Inject] private IHtmlSanitizer Sanitizer { get; set; } = default!;
     [Inject] private IEnumerable<IComposerPlugin> RegisteredPlugins { get; set; } = default!;
     [Inject] private IEnumerable<IComposerDocumentConverter> RegisteredConverters { get; set; } = default!;
@@ -260,7 +260,7 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
         _isJsStarted = true;
 
         // The composer's shortcuts route through its scope wherever focus rests inside it; the active editor registers them on its editable element as well, where a native control would otherwise claim them.
-        _registration = await Router.RegisterAsync(_composerElement, new InputProfile { Routes = _keyBindingCatalog.ToInputRoutes() }, _selfReference);
+        _inputScope = await InputRouter.RegisterAsync(_composerElement, new InputProfile { Routes = _keyBindingCatalog.ToInputRoutes() }, _selfReference);
         // The canvas is where focus lands first; Tab then reaches the composer's own commands before leaving it.
         await _focus.AttachAsync(_composerElement, order: [".forma-composer-canvas"]);
         await _assetLoader.LoadAssetsAsync(_activeEditor.Assets);
@@ -487,10 +487,10 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
     {
         _regionRegistry.Changed -= HandleRegionsChanged;
 
-        if (_registration is { } registration)
+        if (_inputScope is { } inputScope)
         {
-            _registration = null;
-            await registration.DisposeAsync();
+            _inputScope = null;
+            await inputScope.DisposeAsync();
         }
 
         _selfReference?.Dispose();

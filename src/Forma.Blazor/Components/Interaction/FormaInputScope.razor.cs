@@ -11,7 +11,7 @@ public sealed partial class FormaInputScope : ComponentBase, IAsyncDisposable
 {
     private ElementReference _element;
     private DotNetObjectReference<FormaInputScope> _selfReference = default!;
-    private InputRegistration? _registration;
+    private InputScope? _inputScope;
     private InputProfile? _registeredProfile;
     private Task _sync = Task.CompletedTask;
     private bool _disposed;
@@ -41,7 +41,7 @@ public sealed partial class FormaInputScope : ComponentBase, IAsyncDisposable
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
-    [Inject] private InputRouter Router { get; set; } = default!;
+    [Inject] private InputRouter InputRouter { get; set; } = default!;
 
     /// <summary>The scope's element, for a sibling scope that declares it as parent.</summary>
     public ElementReference Element => _element;
@@ -94,10 +94,10 @@ public sealed partial class FormaInputScope : ComponentBase, IAsyncDisposable
 
         try
         {
-            if (_registration is { } registration)
+            if (_inputScope is { } inputScope)
             {
-                _registration = null;
-                await registration.DisposeAsync();
+                _inputScope = null;
+                await inputScope.DisposeAsync();
             }
         }
         finally
@@ -115,42 +115,42 @@ public sealed partial class FormaInputScope : ComponentBase, IAsyncDisposable
             return;
         }
 
-        if (_registration is null)
+        if (_inputScope is null)
         {
-            var registration = await Router.RegisterAsync(_element, Profile, _selfReference, Parent, Within);
+            var inputScope = await InputRouter.RegisterAsync(_element, Profile, _selfReference, Parent, Within);
 
             // The component may have gone while the registration was being made; a scope on a gone element is released at once.
             if (_disposed)
             {
-                if (registration is not null)
+                if (inputScope is not null)
                 {
-                    await registration.DisposeAsync();
+                    await inputScope.DisposeAsync();
                 }
 
                 return;
             }
 
-            _registration = registration;
+            _inputScope = inputScope;
             _registeredProfile = Profile;
         }
 
-        if (_registration is null)
+        if (_inputScope is null)
         {
             return;
         }
 
-        if (!ReferenceEquals(_registeredProfile, Profile) && await _registration.UpdateAsync(Profile))
+        if (!ReferenceEquals(_registeredProfile, Profile) && await _inputScope.UpdateAsync(Profile))
         {
             _registeredProfile = Profile;
         }
 
-        if (Active && !_registration.IsActive)
+        if (Active && !_inputScope.IsActive)
         {
-            await _registration.ActivateAsync();
+            await _inputScope.ActivateAsync();
         }
-        else if (!Active && _registration.IsActive)
+        else if (!Active && _inputScope.IsActive)
         {
-            await _registration.ReleaseAsync();
+            await _inputScope.ReleaseAsync();
         }
     }
 }

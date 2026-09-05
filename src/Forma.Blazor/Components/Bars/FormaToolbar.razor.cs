@@ -21,7 +21,7 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
     private const string ActionOwner = "toolbar";
 
     private DotNetObjectReference<FormaToolbar>? _selfReference;
-    private InputRegistration? _registration;
+    private InputScope? _inputScope;
     private IReadOnlyList<(string Command, string Shortcut)> _registeredShortcuts = [];
     private string? _registeredTargetId;
 
@@ -64,7 +64,7 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
     /// <summary>The states the host currently reports, by item id, which drive toggle state and action availability.</summary>
     [Parameter] public IReadOnlySet<string> ActiveStates { get; set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-    [Inject] private InputRouter Router { get; set; } = default!;
+    [Inject] private InputRouter InputRouter { get; set; } = default!;
 
     private string CssClass
         => string.IsNullOrWhiteSpace(Class) ? "forma-toolbar" : $"forma-toolbar {Class}";
@@ -118,10 +118,10 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
 
         var profile = new InputProfile { Routes = ToRoutes(shortcuts) };
 
-        // The same element keeps its registration and takes the new shortcuts; another element starts afresh.
-        if (_registration is { } registration && target.Id == _registeredTargetId)
+        // The same element keeps its scope and takes the new shortcuts; another element starts afresh.
+        if (_inputScope is { } inputScope && target.Id == _registeredTargetId)
         {
-            if (await registration.UpdateAsync(profile))
+            if (await inputScope.UpdateAsync(profile))
             {
                 _registeredShortcuts = shortcuts;
             }
@@ -132,9 +132,9 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
         await ReleaseAsync();
         _selfReference ??= DotNetObjectReference.Create(this);
 
-        if (await Router.RegisterAsync(target, profile, _selfReference) is { } registered)
+        if (await InputRouter.RegisterAsync(target, profile, _selfReference) is { } registered)
         {
-            _registration = registered;
+            _inputScope = registered;
             _registeredTargetId = target.Id;
             _registeredShortcuts = shortcuts;
         }
@@ -176,16 +176,16 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
         _selfReference?.Dispose();
     }
 
-    /// <summary>Releases the current registration, so a cleared target leaves no routes behind on the element it named.</summary>
+    /// <summary>Releases the current scope, so a cleared target leaves no routes behind on the element it named.</summary>
     private async Task ReleaseAsync()
     {
         _registeredShortcuts = [];
         _registeredTargetId = null;
 
-        if (_registration is { } registration)
+        if (_inputScope is { } inputScope)
         {
-            _registration = null;
-            await registration.DisposeAsync();
+            _inputScope = null;
+            await inputScope.DisposeAsync();
         }
     }
 
