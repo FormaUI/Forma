@@ -2,8 +2,11 @@
  * PanGesture — dragging a scroll container's contents with the pointer
  *
  * Mouse users get click-drag panning; touch and pen already pan a scrollable frame
- * natively, so they are left alone.
+ * natively, so they are left alone. The press-move-release itself belongs to DragGesture;
+ * what remains here is what the drag means, a scroll offset following the pointer.
  */
+
+import { attach as attachDragGesture } from './DragGesture.js';
 
 /**
  * @param {HTMLElement} target
@@ -16,64 +19,51 @@ export function attach(target, options = {}) {
 class PanGesture {
     #target;
     #whileClass;
-    #controller = new AbortController();
-    #drag = null;
+    #gesture;
+
+    /** Where the target was scrolled to when the pan began. */
+    #origin = null;
 
     constructor(target, { whileClass }) {
         this.#target = target;
         this.#whileClass = whileClass;
 
-        const { signal } = this.#controller;
-        const end = event => this.#handleEnd(event);
-
-        target.addEventListener('pointerdown', event => this.#handleDown(event), { signal });
-        target.addEventListener('pointermove', event => this.#handleMove(event), { signal });
-        target.addEventListener('pointerup', end, { signal });
-        target.addEventListener('pointercancel', end, { signal });
+        // The container is its own subject, dragged by the mouse alone from its first movement.
+        this.#gesture = attachDragGesture(target, {
+            pointerType: 'mouse',
+            threshold: 0,
+            axis: 'any',
+            autoScroll: false,
+            findSubject: () => this.#isPannable() ? target : null,
+            onStart: () => this.#begin(),
+            onMove: context => this.#pan(context),
+            onDrop: () => this.#end(),
+            onCancel: () => this.#end(),
+        });
     }
 
     dispose() {
-        this.#controller.abort();
-
-        if (this.#drag && this.#target.hasPointerCapture(this.#drag.pointerId)) {
-            this.#target.releasePointerCapture(this.#drag.pointerId);
-        }
-
-        this.#drag = null;
+        this.#gesture.dispose();
     }
 
-    #handleDown(event) {
-        if (event.pointerType !== 'mouse') {
+    #isPannable() {
+        return !this.#whileClass || this.#target.classList.contains(this.#whileClass);
+    }
+
+    #begin() {
+        this.#origin = { left: this.#target.scrollLeft, top: this.#target.scrollTop };
+    }
+
+    #pan({ clientX, clientY, startX, startY }) {
+        if (!this.#origin) {
             return;
         }
 
-        if (this.#whileClass && !this.#target.classList.contains(this.#whileClass)) {
-            return;
-        }
-
-        this.#drag = {
-            pointerId: event.pointerId,
-            x: event.clientX,
-            y: event.clientY,
-            left: this.#target.scrollLeft,
-            top: this.#target.scrollTop,
-        };
-
-        this.#target.setPointerCapture(event.pointerId);
+        this.#target.scrollLeft = this.#origin.left - (clientX - startX);
+        this.#target.scrollTop = this.#origin.top - (clientY - startY);
     }
 
-    #handleMove(event) {
-        if (!this.#drag || event.pointerId !== this.#drag.pointerId) {
-            return;
-        }
-
-        this.#target.scrollLeft = this.#drag.left - (event.clientX - this.#drag.x);
-        this.#target.scrollTop = this.#drag.top - (event.clientY - this.#drag.y);
-    }
-
-    #handleEnd(event) {
-        if (this.#drag?.pointerId === event.pointerId) {
-            this.#drag = null;
-        }
+    #end() {
+        this.#origin = null;
     }
 }

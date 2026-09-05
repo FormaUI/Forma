@@ -13,6 +13,7 @@
 
 import { Frame } from '../core/Frame.js';
 import { Scrolling } from '../core/Scrolling.js';
+import { capture, release } from '../operations/Pointer.js';
 
 /**
  * @param {HTMLElement} target
@@ -25,8 +26,12 @@ import { Scrolling } from '../core/Scrolling.js';
  *   threshold?: number,
  *   axis?: 'vertical' | 'any',
  *   autoScroll?: boolean,
- *   holdDelay?: number
+ *   holdDelay?: number,
+ *   pointerType?: 'mouse' | 'pen' | 'touch'
  * }} options
+ *   How far a press travels before it is a drag, a threshold of zero making the first movement one; which
+ *   axis that travel is measured along; whether a drag held at a scrolling edge scrolls; how long a touch
+ *   rests before it lifts; and the one pointer type the gesture answers, every type when unset.
  */
 export function attach(target, options) {
     return new DragGesture(target, options);
@@ -52,6 +57,7 @@ class DragGesture {
     #axis;
     #autoScroll;
     #holdDelay;
+    #pointerType;
 
     #subject = null;
     #pointerId = null;
@@ -77,6 +83,7 @@ class DragGesture {
         this.#axis = options.axis ?? 'vertical';
         this.#autoScroll = options.autoScroll ?? true;
         this.#holdDelay = options.holdDelay ?? 0;
+        this.#pointerType = options.pointerType ?? null;
 
         const { signal } = this.#listeners;
 
@@ -135,8 +142,8 @@ class DragGesture {
 
         this.#stopAutoScroll();
 
-        if (this.#pointerId !== null && this.#element.hasPointerCapture(this.#pointerId)) {
-            this.#element.releasePointerCapture(this.#pointerId);
+        if (this.#pointerId !== null) {
+            release(this.#element, this.#pointerId);
         }
 
         this.#subject = null;
@@ -145,7 +152,7 @@ class DragGesture {
     }
 
     #handlePointerDown(event) {
-        if (event.button !== 0 || this.#subject) {
+        if (event.button !== 0 || this.#subject || (this.#pointerType && event.pointerType !== this.#pointerType)) {
             return;
         }
 
@@ -173,7 +180,7 @@ class DragGesture {
 
         // Captured on the container rather than whatever was pressed, so the gesture
         // survives both the pointer leaving that element and the element itself going away.
-        this.#element.setPointerCapture(event.pointerId);
+        capture(this.#element, event.pointerId);
     }
 
     // A held touch lifts straight into a drag: the rest has already made the intent clear,
@@ -184,7 +191,7 @@ class DragGesture {
             return;
         }
 
-        this.#element.setPointerCapture(this.#pointerId);
+        capture(this.#element, this.#pointerId);
         this.#isDragging = true;
         this.#onStart?.(this.#context());
     }

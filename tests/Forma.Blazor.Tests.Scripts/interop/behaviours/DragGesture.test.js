@@ -156,6 +156,25 @@ describe('DragGesture', () => {
             expect(reported).toEqual([]);
         });
 
+        it('ignores a press from a pointer type it was not asked for', () => {
+            start({ pointerType: 'mouse' });
+
+            press({ pointerId: 9, pointerType: 'touch' });
+            move({ pointerId: 9, pointerType: 'touch', clientY: 340 });
+
+            expect(captured.has(9)).toBe(false);
+            expect(reported).toEqual([]);
+        });
+
+        it('makes the first movement a drag when the threshold is zero', () => {
+            start({ threshold: 0 });
+
+            press();
+            move({ clientY: 301 });
+
+            expect(stages()).toEqual(['start', 'move']);
+        });
+
         it('ignores a press from a button other than the primary', () => {
             start();
 
