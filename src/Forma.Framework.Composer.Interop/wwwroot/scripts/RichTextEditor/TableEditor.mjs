@@ -13,11 +13,9 @@ export class TableEditor {
     }
 
     /** The markup a table request builds. */
-    static markup(data = {}) {
-        const rows = Math.max(1, data.rows ?? data.Rows ?? 3);
-        const cols = Math.max(1, data.columns ?? data.Columns ?? 3);
-        const includeHeader = data.includeHeader ?? data.IncludeHeader ?? true;
-        const caption = data.caption ?? data.Caption ?? '';
+    static markup({ rows: rowCount = 3, columns: columnCount = 3, includeHeader = true, caption = '' } = {}) {
+        const rows = Math.max(1, rowCount);
+        const cols = Math.max(1, columnCount);
 
         let html = '<table class="forma-composer-table">';
         if (caption) {

@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { attach } from '#interop/behaviours/SelectionFollower.js';
-import { pointerEvent, stubPointerCapture, stubResizeObserver } from '#support/platform.js';
+import { pointerEvent, stubAnimationFrames, stubPointerCapture, stubResizeObserver } from '#support/platform.js';
 
 describe('SelectionFollower', () => {
     /** @type {HTMLElement} */
@@ -9,9 +9,12 @@ describe('SelectionFollower', () => {
     let menu;
     /** @type {ReturnType<typeof stubResizeObserver>} */
     let resizes;
+    /** @type {ReturnType<typeof stubAnimationFrames>} */
+    let frames;
 
     beforeEach(() => {
         resizes = stubResizeObserver();
+        frames = stubAnimationFrames();
         document.body.innerHTML = `
             <div id="editor" contenteditable="true">
                 <p id="text">Selected content</p>
@@ -35,6 +38,8 @@ describe('SelectionFollower', () => {
         globalThis.innerWidth = 1024;
         globalThis.innerHeight = 768;
     });
+
+    afterEach(() => frames.restore());
 
     const selectText = (collapsed = false, outside = false) => {
         const textNode = (outside ? document.body : document.querySelector('#text')).firstChild;
@@ -64,6 +69,7 @@ describe('SelectionFollower', () => {
     const select = () => {
         const range = selectText(false, false);
         document.dispatchEvent(new Event('selectionchange'));
+        frames.flush();
 
         return range;
     };
@@ -100,6 +106,7 @@ describe('SelectionFollower', () => {
 
         selectText(true, false);
         document.dispatchEvent(new Event('selectionchange'));
+        frames.flush();
 
         expect(menu.classList.contains('is-visible')).toBe(false);
     });
@@ -109,6 +116,7 @@ describe('SelectionFollower', () => {
         selectText(false, true);
 
         document.dispatchEvent(new Event('selectionchange'));
+        frames.flush();
 
         expect(menu.classList.contains('is-visible')).toBe(false);
     });
@@ -121,6 +129,7 @@ describe('SelectionFollower', () => {
         });
 
         document.dispatchEvent(new Event('selectionchange'));
+        frames.flush();
 
         expect(menu.style.top).toBe('692px'); // 730 (top) - 30 (height) - 8 (gap)
     });
@@ -133,6 +142,7 @@ describe('SelectionFollower', () => {
         });
 
         document.dispatchEvent(new Event('selectionchange'));
+        frames.flush();
 
         expect(menu.style.top).toBe('38px'); // 30 (bottom) + 8 (gap)
     });
@@ -188,6 +198,7 @@ describe('SelectionFollower', () => {
         pointer('pointermove', menu, 50, 180);
         selectText(true, false);
         document.dispatchEvent(new Event('selectionchange'));
+        frames.flush();
 
         expect(menu.classList.contains('is-visible')).toBe(true);
         expect(menu.style.top).toBe('168px');
@@ -204,6 +215,7 @@ describe('SelectionFollower', () => {
         const shown = menu.getBoundingClientRect;
         selectText(true, false);
         document.dispatchEvent(new Event('selectionchange'));
+        frames.flush();
         menu.getBoundingClientRect = () => ({ top: 0, bottom: 0, left: 0, right: 0, width: 0, height: 0, x: 0, y: 0 });
 
         const handle = document.querySelector('#handle');
@@ -251,6 +263,7 @@ describe('SelectionFollower', () => {
             top: 300, bottom: 320, left: 200, right: 280, width: 80, height: 20, x: 200, y: 300,
         });
         resizes.latest().deliver([]);
+        frames.flush();
 
         expect(menu.style.top).toBe('328px'); // 320 (bottom) + 8 (gap)
     });
@@ -274,6 +287,7 @@ describe('SelectionFollower', () => {
         Object.defineProperty(window, 'getSelection', { value: () => ({ rangeCount: 1, isCollapsed: false, anchorNode: text.firstChild, getRangeAt: () => range }), configurable: true });
 
         document.dispatchEvent(new Event('selectionchange'));
+        frames.flush();
 
         Object.defineProperty(window, 'getSelection', { value: getSelection, configurable: true });
         expect(menu.classList.contains('is-visible')).toBe(false);
@@ -289,6 +303,7 @@ describe('SelectionFollower', () => {
         expect(menu.classList.contains('is-visible')).toBe(false);
 
         document.dispatchEvent(new Event('selectionchange'));
+        frames.flush();
         expect(menu.classList.contains('is-visible')).toBe(false);
     });
 });

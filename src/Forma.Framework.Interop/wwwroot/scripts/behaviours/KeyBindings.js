@@ -2,10 +2,12 @@
  * KeyBindings — dispatching a command when its key combination is pressed
  */
 
+import { tell } from '../core/Owner.js';
+
 /**
  * @param {HTMLElement} target
  * @param {{
- *   owner: { invokeMethodAsync: (name: string, ...args: unknown[]) => Promise<unknown> },
+ *   owner: import('../core/Owner.js').Owner,
  *   bindings?: { key: string, control: boolean, alt: boolean, shift: boolean, command: string }[]
  * }} options
  */
@@ -17,9 +19,13 @@ class KeyBindings {
     #controller = new AbortController();
 
     constructor(target, { owner, bindings = [] }) {
+        // Keys compare without case; each binding's is lowered once.
+        const lowered = bindings.map(binding => ({ ...binding, key: binding.key.toLowerCase() }));
+
         target.addEventListener('keydown', event => {
-            const match = bindings.find(binding =>
-                binding.key.toLowerCase() === event.key.toLowerCase() &&
+            const key = event.key.toLowerCase();
+            const match = lowered.find(binding =>
+                binding.key === key &&
                 binding.control === (event.ctrlKey || event.metaKey) &&
                 binding.alt === event.altKey &&
                 binding.shift === event.shiftKey);
@@ -30,7 +36,7 @@ class KeyBindings {
 
             // The browser's own undo would otherwise run alongside the caller's and diverge from its history.
             event.preventDefault();
-            owner.invokeMethodAsync('HandleCommandAsync', match.command);
+            tell(owner, 'HandleCommandAsync', match.command);
         }, { signal: this.#controller.signal });
     }
 

@@ -31,7 +31,12 @@ export function focusablesIn(root) {
     return [...root.querySelectorAll(FocusableSelector)].filter(isDisplayed);
 }
 
+/** Whether an element is drawn: neither it nor an ancestor is hidden through display or visibility. */
 function isDisplayed(element) {
+    if (typeof element.checkVisibility === 'function') {
+        return element.checkVisibility({ visibilityProperty: true });
+    }
+
     for (let node = element; node; node = node.parentElement) {
         const style = getComputedStyle(node);
         if (style.display === 'none' || style.visibility === 'hidden') {

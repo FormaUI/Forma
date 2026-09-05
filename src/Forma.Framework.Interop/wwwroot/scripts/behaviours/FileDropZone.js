@@ -16,11 +16,11 @@ export function attach(target, options = {}) {
 }
 
 class FileDropZone {
-    #input;
+    #target;
     #zone;
 
     constructor(target, { activeClass }) {
-        this.#input = target.querySelector('input[type="file"]');
+        this.#target = target;
         this.#zone = attachDropZone(target, {
             activeClass,
             onDrop: transfer => this.#handleDrop(transfer),
@@ -32,11 +32,14 @@ class FileDropZone {
     }
 
     #handleDrop(transfer) {
-        if (!this.#input || this.#input.disabled || transfer.files.length === 0) {
+        // The target's file input as it stands at the drop.
+        const input = this.#target.querySelector('input[type="file"]');
+
+        if (!input || input.disabled || transfer.files.length === 0) {
             return;
         }
 
-        this.#input.files = transfer.files;
-        this.#input.dispatchEvent(new Event('change', { bubbles: true }));
+        input.files = transfer.files;
+        input.dispatchEvent(new Event('change', { bubbles: true }));
     }
 }

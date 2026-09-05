@@ -11,6 +11,9 @@
  * Math.abs where a right-to-left container counts scrollLeft downwards from zero.
  */
 
+import { Controls } from '../core/Controls.js';
+import { tell } from '../core/Owner.js';
+
 /** Pixels a line is taken to be, for the wheels that report in lines rather than pixels. */
 const LineHeight = 16;
 
@@ -24,15 +27,7 @@ const GestureGap = 150;
  */
 const NotchDistance = 40;
 
-/** The keys a list owns, whose default would scroll the page. */
-const NavigationKeys = new Set(['ArrowUp', 'ArrowDown', 'Home', 'End']);
-
-/** @typedef {{ invokeMethodAsync: (name: string, ...args: unknown[]) => Promise<unknown> }} Owner */
-
-/** Reports to an owner that may already have been disposed by the time the report lands. */
-function tell(owner, method, ...args) {
-    owner.invokeMethodAsync(method, ...args).catch(() => {});
-}
+/** @typedef {import('../core/Owner.js').Owner} Owner */
 
 /**
  * @param {HTMLElement} target The surface.
@@ -69,14 +64,16 @@ export function toCenter(container) {
  * @param {{ selector: string, inset?: number } | null} stops The parts the content marks as stops, and how far in from the start a stop comes to rest.
  */
 export function step(container, direction, axis = 'inline', stops = null) {
-    const positions = stops ? stopPositions(container, axis, stops.selector) : [];
+    const isBlock = axis === 'block';
+    // A right-to-left container counts scrollLeft downwards from zero, so every inline position mirrors with it.
+    const isRightToLeft = !isBlock && getComputedStyle(container).direction === 'rtl';
+    const positions = stops ? stopPositions(container, isBlock, isRightToLeft, stops.selector) : [];
 
     if (positions.length === 0) {
-        byPage(container, direction, axis);
+        byPage(container, direction, isBlock, isRightToLeft);
         return;
     }
 
-    const isBlock = axis === 'block';
     const offset = isBlock ? container.scrollTop : Math.abs(container.scrollLeft);
     const inset = stops.inset ?? 0;
 
@@ -99,16 +96,12 @@ export function step(container, direction, axis = 'inline', stops = null) {
         return;
     }
 
-    // A right-to-left container counts scrollLeft downwards from zero, so the destination mirrors with it.
-    const isRightToLeft = getComputedStyle(container).direction === 'rtl';
     container.scrollTo({ left: isRightToLeft ? -destination : destination, behavior: 'smooth' });
 }
 
 // The distinct starts of the stops, measured along the axis from the content's start and sorted.
-function stopPositions(container, axis, selector) {
+function stopPositions(container, isBlock, isRightToLeft, selector) {
     const box = container.getBoundingClientRect();
-    const isBlock = axis === 'block';
-    const isRightToLeft = getComputedStyle(container).direction === 'rtl';
     const offset = isBlock ? container.scrollTop : Math.abs(container.scrollLeft);
     const starts = new Set();
 
@@ -121,14 +114,12 @@ function stopPositions(container, axis, selector) {
     return [...starts].sort((first, second) => first - second);
 }
 
-function byPage(container, direction, axis) {
-    if (axis === 'block') {
+function byPage(container, direction, isBlock, isRightToLeft) {
+    if (isBlock) {
         container.scrollBy({ top: container.clientHeight * 0.8 * direction, behavior: 'smooth' });
         return;
     }
 
-    // A right-to-left container counts scrollLeft downwards from zero, so the step mirrors with it.
-    const isRightToLeft = getComputedStyle(container).direction === 'rtl';
     const distance = container.clientWidth * 0.8 * direction;
 
     container.scrollBy({ left: isRightToLeft ? -distance : distance, behavior: 'smooth' });
@@ -468,7 +459,7 @@ class NavigationGuard {
 
     constructor(target) {
         target.addEventListener('keydown', event => {
-            if (NavigationKeys.has(event.key)) {
+            if (Controls.NavigationKeys.has(event.key)) {
                 event.preventDefault();
             }
         }, { signal: this.#controller.signal });

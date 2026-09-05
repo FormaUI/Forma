@@ -31,13 +31,13 @@ export function attach(target, options) {
 
 class DragGesture {
     /** How far a pointer travels before a press counts as a drag rather than a click. */
-    static #DEFAULT_THRESHOLD = 4;
+    static #DefaultThreshold = 4;
 
     /** Distance from a scrolling edge at which a held drag starts scrolling. */
-    static #SCROLL_EDGE = 48;
+    static #ScrollEdge = 48;
 
     /** Pixels scrolled per frame while a drag is held at an edge. */
-    static #SCROLL_STEP = 8;
+    static #ScrollStep = 8;
 
     #element;
     #findSubject;
@@ -70,7 +70,7 @@ class DragGesture {
         this.#onMove = options.onMove;
         this.#onDrop = options.onDrop;
         this.#onCancel = options.onCancel;
-        this.#threshold = options.threshold ?? DragGesture.#DEFAULT_THRESHOLD;
+        this.#threshold = options.threshold ?? DragGesture.#DefaultThreshold;
         this.#axis = options.axis ?? 'vertical';
         this.#autoScroll = options.autoScroll ?? true;
         this.#holdDelay = options.holdDelay ?? 0;
@@ -271,10 +271,10 @@ class DragGesture {
             ? this.#scroller.getBoundingClientRect()
             : { top: 0, bottom: window.innerHeight };
 
-        if (this.#lastY < rect.top + DragGesture.#SCROLL_EDGE) {
-            this.#scrollStep = -DragGesture.#SCROLL_STEP;
-        } else if (this.#lastY > rect.bottom - DragGesture.#SCROLL_EDGE) {
-            this.#scrollStep = DragGesture.#SCROLL_STEP;
+        if (this.#lastY < rect.top + DragGesture.#ScrollEdge) {
+            this.#scrollStep = -DragGesture.#ScrollStep;
+        } else if (this.#lastY > rect.bottom - DragGesture.#ScrollEdge) {
+            this.#scrollStep = DragGesture.#ScrollStep;
         } else {
             this.#scrollStep = 0;
         }

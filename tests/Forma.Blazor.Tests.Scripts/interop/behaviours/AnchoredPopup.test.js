@@ -1,10 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { attach } from '#interop/behaviours/AnchoredPopup.js';
-import { stubResizeObserver } from '#support/platform.js';
+import { stubAnimationFrames, stubResizeObserver } from '#support/platform.js';
 
 describe('AnchoredPopup', () => {
     /** @type {ReturnType<typeof stubResizeObserver>} */
     let resizes;
+    /** @type {ReturnType<typeof stubAnimationFrames>} */
+    let frames;
     /** @type {HTMLElement} */
     let anchor;
     /** @type {HTMLElement} */
@@ -20,6 +22,7 @@ describe('AnchoredPopup', () => {
 
     beforeEach(() => {
         resizes = stubResizeObserver();
+        frames = stubAnimationFrames();
         document.body.innerHTML = '<button id="anchor">Open</button><div id="popup"></div>';
         anchor = document.querySelector('#anchor');
         popup = document.querySelector('#popup');
@@ -34,7 +37,10 @@ describe('AnchoredPopup', () => {
         popup.matches = () => false;
     });
 
-    afterEach(() => resizes.restore());
+    afterEach(() => {
+        resizes.restore();
+        frames.restore();
+    });
 
     it('places the popup below the anchor when it fits', () => {
         const handle = attach(popup, { anchor });
@@ -143,6 +149,7 @@ describe('AnchoredPopup', () => {
         // The picker finished loading and is now far taller than the tiny box measured at open time.
         setPopupHeight(200);
         resizes.latest().deliver([{ target: popup }]);
+        frames.flush();
 
         expect(popup.style.top).toBe('496px');
     });
@@ -216,6 +223,7 @@ describe('AnchoredPopup', () => {
 
         setAnchorRect({ top: 700, bottom: 730, left: 50, right: 90, width: 40, height: 30 });
         dispatchEvent(new Event('scroll'));
+        frames.flush();
 
         expect(popup.style.top).toBe('546px');
     });

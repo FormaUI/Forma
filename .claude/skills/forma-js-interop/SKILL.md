@@ -37,7 +37,9 @@ serves its scripts under `_content/{its assembly name}/scripts/`.
 
 `Forma.Framework.Interop` serves many concepts, so it sorts by kind: a script lives in
 `wwwroot/scripts/behaviours/`, `operations/` or `components/`, and its wrapper in the matching
-`Behaviours/`, `Operations/` or `Components/` folder. A feature interop assembly is named for
+`Behaviours/`, `Operations/` or `Components/` folder. What the scripts share among themselves
+and no C# calls — the report to a .NET owner, the selectors of the controls a list leaves
+alone — lives in `wwwroot/scripts/core/` with no wrapper. A feature interop assembly is named for
 its one concept, so its scripts sit directly under `wwwroot/scripts/` and its wrappers at the
 assembly root, as `Forma.Framework.Input.Interop` serves `scripts/InputRouter.js` beside
 `InputRouter.cs`.
@@ -53,6 +55,7 @@ assembly root, as `Forma.Framework.Input.Interop` serves `scripts/InputRouter.js
 - Do file a script as an operation when it is a stateless DOM operation, or a set of related ones.
 - Do file a script as a component when it owns the browser-side interop for one component and naturally holds both kinds; keep that interop together rather than splitting it by implementation shape.
 - Do file a script as a service when there is one of it per document and its callers register with it rather than attach it: `InputRouter` keeps every scope's routes and the active ordering across the whole page.
+- Do file what several scripts share, and nothing in C# reaches, under `core/`: `Owner.js` tells a .NET owner what happened, `Controls.js` names what native controls claim for themselves. A shared piece is never filed as an operation merely because it is stateless.
 - Do name a service for what it is to the page: `InputRouter`.
 - Do name a component script after the component it supports with the `Forma` prefix dropped, so `FormaDialog` is served by `Dialog.js` and `FormaRichTextEditor` by `RichTextEditor.js`.
 - Do split a component script that has grown past one concern into `{Name}/*.mjs` modules behind a `{Name}.js` entry point beside them; the entry keeps its path, so no wrapper changes, and it composes the modules rather than re-exporting them.

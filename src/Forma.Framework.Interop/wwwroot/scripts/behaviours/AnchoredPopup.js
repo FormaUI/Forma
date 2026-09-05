@@ -10,7 +10,7 @@
 import { Focus } from './Focus.js';
 
 /** Distance between the anchor and the popup. */
-const GAP = 4;
+const Gap = 4;
 
 /**
  * @param {HTMLElement} target The popup.
@@ -35,6 +35,8 @@ class AnchoredPopup {
     #trigger = null;
     #placement = null;
     #resizeObserver = null;
+    #frame = null;
+    #isRightToLeft = false;
 
     constructor(popup, { anchor, keepsFocus = false, align = 'auto' }) {
         this.#popup = popup;
@@ -53,12 +55,16 @@ class AnchoredPopup {
         }
 
         this.#placement = new AbortController();
-        const place = () => this.#position();
+        const { signal } = this.#placement;
+        const place = () => this.#schedule();
+
+        // The anchor's direction holds for as long as the popup is open.
+        this.#isRightToLeft = getComputedStyle(this.#anchor).direction === 'rtl';
 
         // Captured because the anchor may sit in any scrolling ancestor, and scroll events
         // from those do not bubble.
-        addEventListener('scroll', place, { capture: true, passive: true, signal: this.#placement.signal });
-        addEventListener('resize', place, { passive: true, signal: this.#placement.signal });
+        addEventListener('scroll', place, { capture: true, passive: true, signal });
+        addEventListener('resize', place, { passive: true, signal });
 
         // The popup's own content can grow after it opens — a progressively loaded picker, a
         // search result count, a category switch — so its size alone must trigger repositioning.
@@ -66,10 +72,10 @@ class AnchoredPopup {
         this.#resizeObserver.observe(this.#popup);
 
         if (this.#keepsFocus) {
-            new Focus(this.#popup, { wrap: true }, this.#placement.signal);
+            new Focus(this.#popup, { wrap: true }, signal);
         }
 
-        place();
+        this.#position();
     }
 
     /** Hides the popup and releases the listeners held for it, first returning focus to the trigger when asked and focus is inside the popup. Safe to call when none are held. */
@@ -78,6 +84,11 @@ class AnchoredPopup {
         // move its scroller back to the part's unstuck position.
         if (returnsFocus && this.#trigger && this.#popup.contains(document.activeElement)) {
             this.#trigger.focus({ preventScroll: true });
+        }
+
+        if (this.#frame !== null) {
+            cancelAnimationFrame(this.#frame);
+            this.#frame = null;
         }
 
         this.#placement?.abort();
@@ -94,17 +105,29 @@ class AnchoredPopup {
         this.close();
     }
 
+    // Scroll and resize events arrive faster than frames are painted, so repositions are coalesced to one a frame.
+    #schedule() {
+        if (this.#frame !== null) {
+            return;
+        }
+
+        this.#frame = requestAnimationFrame(() => {
+            this.#frame = null;
+            this.#position();
+        });
+    }
+
     #position() {
         const anchor = this.#anchor.getBoundingClientRect();
         const width = this.#popup.offsetWidth;
         const height = this.#popup.offsetHeight;
 
         const preferredInlineStart = this.#hangsFromLeftEdge(anchor) ? anchor.left : anchor.right - width;
-        const inlineStart = Math.max(GAP, Math.min(preferredInlineStart, innerWidth - width - GAP));
+        const inlineStart = Math.max(Gap, Math.min(preferredInlineStart, innerWidth - width - Gap));
 
-        const below = anchor.bottom + GAP;
-        const above = anchor.top - height - GAP;
-        const blockStart = below + height <= innerHeight || above < GAP ? below : above;
+        const below = anchor.bottom + Gap;
+        const above = anchor.top - height - Gap;
+        const blockStart = below + height <= innerHeight || above < Gap ? below : above;
 
         this.#popup.style.left = `${Math.round(inlineStart)}px`;
         this.#popup.style.top = `${Math.round(blockStart)}px`;
@@ -115,18 +138,16 @@ class AnchoredPopup {
     // right-to-left text; the automatic choice extends toward the wider side of the viewport, and from dead
     // center toward the reading start.
     #hangsFromLeftEdge(anchorBounds) {
-        const isRightToLeft = getComputedStyle(this.#anchor).direction === 'rtl';
-
         switch (this.#align) {
             case 'start':
-                return !isRightToLeft;
+                return !this.#isRightToLeft;
             case 'end':
-                return isRightToLeft;
+                return this.#isRightToLeft;
             default: {
                 const anchorCenter = (anchorBounds.left + anchorBounds.right) / 2;
                 const viewportCenter = innerWidth / 2;
 
-                return anchorCenter === viewportCenter ? isRightToLeft : anchorCenter < viewportCenter;
+                return anchorCenter === viewportCenter ? this.#isRightToLeft : anchorCenter < viewportCenter;
             }
         }
     }

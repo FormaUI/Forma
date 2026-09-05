@@ -7,7 +7,9 @@
  * the stylesheet, and the component renders what the tier names.
  */
 
-/** @typedef {{ invokeMethodAsync: (name: string, ...args: unknown[]) => Promise<unknown> }} Owner */
+import { tell } from '../core/Owner.js';
+
+/** @typedef {import('../core/Owner.js').Owner} Owner */
 
 /**
  * @param {HTMLElement} target The element whose computed property names the tier.
@@ -51,7 +53,6 @@ class Breakpoint {
         }
 
         this.#last = tier;
-        // The owner may already have been disposed by the time the report lands.
-        this.#owner.invokeMethodAsync('HandleBreakpointAsync', tier).catch(() => {});
+        tell(this.#owner, 'HandleBreakpointAsync', tier);
     }
 }

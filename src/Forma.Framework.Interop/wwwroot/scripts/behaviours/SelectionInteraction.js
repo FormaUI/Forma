@@ -8,18 +8,13 @@
  * reconstructed on this side.
  */
 
-/** Elements that own their own clicks and keys, so an item never consumes them. */
-const INTERACTIVE = 'a[href], button, input, select, textarea, label, [role="button"], [role="link"], [contenteditable="true"]';
-
-/** Fields where the arrow, home and end keys move a caret rather than the focused item. */
-const TEXT_ENTRY = 'select, textarea, [contenteditable="true"], input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"])';
-
-const NAVIGATION_KEYS = ['ArrowUp', 'ArrowDown', 'Home', 'End'];
+import { Controls } from '../core/Controls.js';
+import { tell } from '../core/Owner.js';
 
 /**
  * @param {HTMLElement} target
  * @param {{
- *   owner: { invokeMethodAsync: (name: string, ...args: unknown[]) => Promise<unknown> },
+ *   owner: import('../core/Owner.js').Owner,
  *   keyAttribute?: string,
  *   itemSelector?: string
  * }} options
@@ -32,6 +27,7 @@ class SelectionInteraction {
     #target;
     #owner;
     #keyAttribute;
+    #markerSelector;
     #itemSelector;
     #controller = new AbortController();
     #anchor = null;
@@ -40,6 +36,7 @@ class SelectionInteraction {
         this.#target = target;
         this.#owner = owner;
         this.#keyAttribute = keyAttribute;
+        this.#markerSelector = `[${keyAttribute}]`;
         this.#itemSelector = itemSelector;
 
         const { signal } = this.#controller;
@@ -54,7 +51,7 @@ class SelectionInteraction {
     }
 
     #markers() {
-        return [...this.#target.querySelectorAll(`[${this.#keyAttribute}]`)];
+        return [...this.#target.querySelectorAll(this.#markerSelector)];
     }
 
     #tokenOf(marker) {
@@ -62,7 +59,7 @@ class SelectionInteraction {
     }
 
     #markerIn(node) {
-        return node?.closest(this.#itemSelector)?.querySelector(`[${this.#keyAttribute}]`) ?? null;
+        return node?.closest(this.#itemSelector)?.querySelector(this.#markerSelector) ?? null;
     }
 
     #rangeTokens(from, to) {
@@ -79,8 +76,8 @@ class SelectionInteraction {
         return all.slice(start, end + 1).map(marker => this.#tokenOf(marker));
     }
 
-    #focusMarker(marker) {
-        for (const candidate of this.#markers()) {
+    #focusMarker(marker, all) {
+        for (const candidate of all) {
             candidate.tabIndex = candidate === marker ? 0 : -1;
         }
 
@@ -94,7 +91,7 @@ class SelectionInteraction {
             return;
         }
 
-        if (event.target.closest(INTERACTIVE) || !this.#markerIn(event.target)) {
+        if (event.target.closest(Controls.Interactive) || !this.#markerIn(event.target)) {
             return;
         }
 
@@ -108,7 +105,7 @@ class SelectionInteraction {
 
         // A checkbox, an action icon or a link inside a cell is the click's real target;
         // consuming it here would leave that element dead.
-        if (event.target.closest(INTERACTIVE)) {
+        if (event.target.closest(Controls.Interactive)) {
             return;
         }
 
@@ -123,16 +120,16 @@ class SelectionInteraction {
         const toggle = event.ctrlKey || event.metaKey;
 
         if (event.shiftKey && this.#anchor) {
-            this.#owner.invokeMethodAsync('HandleRangeSelectAsync', this.#rangeTokens(this.#anchor, marker), toggle);
+            tell(this.#owner, 'HandleRangeSelectAsync', this.#rangeTokens(this.#anchor, marker), toggle);
             return;
         }
 
         this.#anchor = marker;
-        this.#owner.invokeMethodAsync('HandleSelectAsync', this.#tokenOf(marker), toggle);
+        tell(this.#owner, 'HandleSelectAsync', this.#tokenOf(marker), toggle);
     }
 
     #handleKeyDown(event) {
-        if (!NAVIGATION_KEYS.includes(event.key) || event.target.closest(TEXT_ENTRY)) {
+        if (!Controls.NavigationKeys.has(event.key) || event.target.closest(Controls.TextEntry)) {
             return;
         }
 
@@ -144,7 +141,7 @@ class SelectionInteraction {
 
         // Focus is the source of truth for "which item", not the roving tabindex: tabbing
         // straight onto one sets the former and leaves the latter wherever it was.
-        const focused = document.activeElement?.closest(`[${this.#keyAttribute}]`);
+        const focused = document.activeElement?.closest(this.#markerSelector);
         const currentIndex = focused ? all.indexOf(focused) : -1;
         let nextIndex;
 
@@ -167,18 +164,18 @@ class SelectionInteraction {
         event.preventDefault();
 
         const next = all[nextIndex];
-        this.#focusMarker(next);
+        this.#focusMarker(next, all);
 
         if (event.ctrlKey || event.metaKey) {
             return;
         }
 
         if (event.shiftKey && this.#anchor) {
-            this.#owner.invokeMethodAsync('HandleRangeSelectAsync', this.#rangeTokens(this.#anchor, next), false);
+            tell(this.#owner, 'HandleRangeSelectAsync', this.#rangeTokens(this.#anchor, next), false);
             return;
         }
 
         this.#anchor = next;
-        this.#owner.invokeMethodAsync('HandleSelectAsync', this.#tokenOf(next), false);
+        tell(this.#owner, 'HandleSelectAsync', this.#tokenOf(next), false);
     }
 }

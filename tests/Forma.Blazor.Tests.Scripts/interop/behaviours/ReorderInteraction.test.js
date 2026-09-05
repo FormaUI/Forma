@@ -176,6 +176,19 @@ describe('ReorderInteraction', () => {
             expect(marked(AFTER)).toBe(2);
         });
 
+        it('moves the landing to the other side of an item as the pointer crosses its middle', () => {
+            attach(list, { owner });
+            press(handleOf(0), rowOf(0).middle);
+
+            move(rowOf(1).top + 5);
+            expect(marked(BEFORE)).toBe(1);
+
+            move(rowOf(1).middle + 10);
+
+            expect(marked(AFTER)).toBe(1);
+            expect(marked(BEFORE)).toBe(-1);
+        });
+
         it('shows no landing over the item being dragged', () => {
             attach(list, { owner });
 

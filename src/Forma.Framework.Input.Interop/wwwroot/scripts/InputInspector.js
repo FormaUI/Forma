@@ -49,7 +49,8 @@ class InputInspector {
             this.#lastWheel = now;
         }
 
-        this.#owner.invokeMethodAsync('ReportAsync', describeDecision(resolve(event)))?.catch?.(() => {});
+        // The owner may already have been disposed by the time the report lands.
+        this.#owner.invokeMethodAsync('ReportAsync', describeDecision(resolve(event))).catch(() => {});
     }
 }
 

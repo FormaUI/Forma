@@ -6,11 +6,7 @@ import { Escape } from './Markup.mjs';
 
 export class MediaMarkup {
     /** The markup an image request builds, or null when it names no source. */
-    static image(data = {}) {
-        const src = data.source ?? data.Source ?? '';
-        const alt = data.altText ?? data.AltText ?? '';
-        const caption = data.caption ?? data.Caption ?? '';
-
+    static image({ source: src = '', altText: alt = '', caption = '' } = {}) {
         if (!src) {
             return null;
         }
@@ -21,12 +17,8 @@ export class MediaMarkup {
     }
 
     /** The markup a picked resource builds, or null when it names no source. */
-    static resource(data = {}) {
-        const src = data.source ?? data.Source ?? '';
-        const name = data.name ?? data.Name ?? '';
-        const kind = (data.kind ?? data.Kind ?? 'file').toLowerCase();
-        const embed = data.embed ?? data.Embed ?? false;
-        const link = data.link ?? data.Link ?? false;
+    static resource({ source: src = '', name = '', kind: kindName = 'file', embed = false, link = false } = {}) {
+        const kind = kindName.toLowerCase();
 
         if (!src) {
             return null;
@@ -52,11 +44,7 @@ export class MediaMarkup {
     }
 
     /** The markup a video placeholder builds, or null when it names no address. */
-    static video(data = {}) {
-        const url = data.source ?? data.Source ?? data.url ?? data.Url ?? '';
-        const title = data.title ?? data.Title ?? '';
-        const autoplay = data.autoplay ?? data.Autoplay ?? false;
-
+    static video({ source: url = '', title = '', autoplay = false } = {}) {
         if (!url) {
             return null;
         }
@@ -68,11 +56,7 @@ export class MediaMarkup {
     }
 
     /** The markup an embed placeholder builds, or null when it names neither a type nor an identifier. */
-    static embed(data = {}) {
-        const type = data.embedType ?? data.EmbedType ?? '';
-        const id = data.identifier ?? data.Identifier ?? '';
-        const settings = data.settings ?? data.Settings ?? '';
-
+    static embed({ embedType: type = '', identifier: id = '', settings = '' } = {}) {
         if (!type && !id) {
             return null;
         }

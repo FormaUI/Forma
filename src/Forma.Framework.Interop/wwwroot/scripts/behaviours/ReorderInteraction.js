@@ -9,19 +9,16 @@
  */
 
 import { attach as attachDragGesture } from './DragGesture.js';
-
-/** Elements that own their own press, so an item never takes it for a drag. */
-const INTERACTIVE = 'a[href], button, input, select, textarea, label, [role="button"], [role="link"], [contenteditable="true"]';
+import { Controls } from '../core/Controls.js';
+import { tell } from '../core/Owner.js';
 
 /** How long a touch rests on an item before it lifts, leaving shorter swipes to scroll. */
-const TOUCH_HOLD = 400;
-
-const NAVIGATION_KEYS = ['ArrowUp', 'ArrowDown', 'Home', 'End'];
+const TouchHold = 400;
 
 /**
  * @param {HTMLElement} target
  * @param {{
- *   owner: { invokeMethodAsync: (name: string, ...args: unknown[]) => Promise<unknown> },
+ *   owner: import('../core/Owner.js').Owner,
  *   dragFromItem?: boolean,
  *   handleSelector?: string,
  *   itemClass?: string,
@@ -50,6 +47,9 @@ class ReorderInteraction {
     #controller = new AbortController();
     #sourceIndex = -1;
 
+    /** The item currently marked as the drop target, or null. */
+    #indicated = null;
+
     constructor(list, {
         owner,
         dragFromItem = false,
@@ -74,7 +74,7 @@ class ReorderInteraction {
         this.#gesture = attachDragGesture(list, {
             // Only whole-item dragging needs the hold: a handle carries touch-action: none,
             // so it never competes with a scroll in the first place.
-            holdDelay: dragFromItem ? TOUCH_HOLD : 0,
+            holdDelay: dragFromItem ? TouchHold : 0,
             findSubject: event => this.#findSubject(event),
             onStart: ({ subject }) => this.#handleStart(subject),
             onMove: ({ subject, clientY }) => this.#handleMove(subject, clientY),
@@ -113,7 +113,7 @@ class ReorderInteraction {
             return handle.disabled ? null : this.#ownItemOf(handle);
         }
 
-        if (!this.#dragFromItem || event.target.closest(INTERACTIVE)) {
+        if (!this.#dragFromItem || event.target.closest(Controls.Interactive)) {
             return null;
         }
 
@@ -123,23 +123,22 @@ class ReorderInteraction {
         return item && !item.querySelector(this.#handleSelector)?.disabled ? item : null;
     }
 
-    #clearIndicators() {
-        for (const item of this.#items()) {
-            item.classList.remove(this.#beforeClass, this.#afterClass);
-        }
+    /** Marks the target's item on the side the item would land, unmarking whatever was marked before. */
+    #indicate(target) {
+        this.#indicated?.classList.remove(this.#beforeClass, this.#afterClass);
+        this.#indicated = target?.item ?? null;
+        this.#indicated?.classList.add(target.insertAfter ? this.#afterClass : this.#beforeClass);
     }
 
     // Which item the pointer rests on and which side of its midpoint. Below the last item
     // it still resolves to "after the last", so releasing in the empty space under the list
     // sends the item to the end instead of doing nothing.
-    #dropTargetAt(clientY) {
-        const all = this.#items();
-
-        if (all.length === 0) {
+    #dropTargetAt(clientY, items) {
+        if (items.length === 0) {
             return null;
         }
 
-        for (const item of all) {
+        for (const item of items) {
             const rect = item.getBoundingClientRect();
 
             if (clientY < rect.bottom) {
@@ -147,7 +146,7 @@ class ReorderInteraction {
             }
         }
 
-        return { item: all[all.length - 1], insertAfter: true };
+        return { item: items[items.length - 1], insertAfter: true };
     }
 
     #handleStart(subject) {
@@ -159,33 +158,29 @@ class ReorderInteraction {
     }
 
     #handleMove(subject, clientY) {
-        this.#clearIndicators();
+        const target = this.#dropTargetAt(clientY, this.#items());
 
-        const target = this.#dropTargetAt(clientY);
-
-        if (target && target.item !== subject) {
-            target.item.classList.add(target.insertAfter ? this.#afterClass : this.#beforeClass);
-        }
+        this.#indicate(target && target.item !== subject ? target : null);
     }
 
     #handleDrop(subject, clientY) {
-        const target = this.#dropTargetAt(clientY);
+        const items = this.#items();
+        const target = this.#dropTargetAt(clientY, items);
         this.#endDrag(subject);
 
         if (target && target.item !== subject) {
-            this.#owner.invokeMethodAsync(
-                'HandleReorderAsync', this.#sourceIndex, this.#items().indexOf(target.item), target.insertAfter);
+            tell(this.#owner, 'HandleReorderAsync', this.#sourceIndex, items.indexOf(target.item), target.insertAfter);
         }
     }
 
     #endDrag(subject) {
-        this.#clearIndicators();
+        this.#indicate(null);
         subject.classList.remove(this.#draggingClass);
         this.#list.classList.remove(this.#activeClass);
     }
 
     #handleKeyDown(event) {
-        if (!NAVIGATION_KEYS.includes(event.key)) {
+        if (!Controls.NavigationKeys.has(event.key)) {
             return;
         }
 
@@ -222,6 +217,6 @@ class ReorderInteraction {
         }
 
         event.preventDefault();
-        this.#owner.invokeMethodAsync('HandleReorderAsync', currentIndex, targetIndex, insertAfter);
+        tell(this.#owner, 'HandleReorderAsync', currentIndex, targetIndex, insertAfter);
     }
 }

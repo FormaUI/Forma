@@ -6,10 +6,10 @@ import { attach as attachDragGesture } from './DragGesture.js';
 import { Focus } from './Focus.js';
 
 /** Space kept between the element and the selection, and between the element and the viewport's edge. */
-const GAP = 8;
+const Gap = 8;
 
 /** How far an arrow key on the handle moves the element. */
-const NUDGE = 8;
+const Nudge = 8;
 
 /**
  * @param {HTMLElement} target The element that follows the selection.
@@ -44,6 +44,7 @@ class SelectionFollower {
     #offset = { x: 0, y: 0 };
 
     #dragOrigin = null;
+    #frame = null;
 
     constructor(target, owner = null, options = {}) {
         this.#target = target;
@@ -70,12 +71,12 @@ class SelectionFollower {
             });
         }
 
-        document.addEventListener('selectionchange', () => this.update(), { signal });
-        window.addEventListener('resize', () => this.update(), { signal });
-        window.addEventListener('scroll', () => this.update(), { signal, capture: true, passive: true });
+        document.addEventListener('selectionchange', () => this.#schedule(), { signal });
+        window.addEventListener('resize', () => this.#schedule(), { signal });
+        window.addEventListener('scroll', () => this.#schedule(), { signal, capture: true, passive: true });
 
         // The owner's own box changing — maximizing, a layout shift — moves the selection without any of the events above firing.
-        this.#resizeObserver = new ResizeObserver(() => this.update());
+        this.#resizeObserver = new ResizeObserver(() => this.#schedule());
         this.#resizeObserver.observe(target);
         if (owner) {
             this.#resizeObserver.observe(owner);
@@ -105,10 +106,10 @@ class SelectionFollower {
 
     static #nudgeOf(key) {
         switch (key) {
-            case 'ArrowUp': return { x: 0, y: -NUDGE };
-            case 'ArrowDown': return { x: 0, y: NUDGE };
-            case 'ArrowLeft': return { x: -NUDGE, y: 0 };
-            case 'ArrowRight': return { x: NUDGE, y: 0 };
+            case 'ArrowUp': return { x: 0, y: -Nudge };
+            case 'ArrowDown': return { x: 0, y: Nudge };
+            case 'ArrowLeft': return { x: -Nudge, y: 0 };
+            case 'ArrowRight': return { x: Nudge, y: 0 };
             default: return null;
         }
     }
@@ -149,10 +150,28 @@ class SelectionFollower {
 
     dispose() {
         this.#isDisposed = true;
+
+        if (this.#frame !== null) {
+            cancelAnimationFrame(this.#frame);
+            this.#frame = null;
+        }
+
         this.#gesture?.dispose();
         this.#resizeObserver?.disconnect();
         this.#controller.abort();
         this.#hide();
+    }
+
+    // Selection changes, scrolls and resizes arrive faster than frames are painted, so updates are coalesced to one a frame.
+    #schedule() {
+        if (this.#frame !== null) {
+            return;
+        }
+
+        this.#frame = requestAnimationFrame(() => {
+            this.#frame = null;
+            this.update();
+        });
     }
 
     update() {
@@ -192,14 +211,14 @@ class SelectionFollower {
 
         const { width, height } = this.#target.getBoundingClientRect();
         const left = rangeRect.left + (rangeRect.width / 2) - (width / 2);
-        const above = rangeRect.top - height - GAP;
-        const below = rangeRect.bottom + GAP;
+        const above = rangeRect.top - height - Gap;
+        const below = rangeRect.bottom + Gap;
 
         // The preferred side gives way to the other only when the element would leave the viewport there.
         let top = this.#placement === 'above' ? above : below;
-        if (this.#placement === 'above' && above < GAP) {
+        if (this.#placement === 'above' && above < Gap) {
             top = below;
-        } else if (this.#placement === 'below' && below + height > window.innerHeight - GAP) {
+        } else if (this.#placement === 'below' && below + height > window.innerHeight - Gap) {
             top = above;
         }
 
@@ -216,8 +235,8 @@ class SelectionFollower {
             return this.#offset;
         }
 
-        const left = SelectionFollower.#clamp(this.#base.left + this.#offset.x, GAP, window.innerWidth - width - GAP);
-        const top = SelectionFollower.#clamp(this.#base.top + this.#offset.y, GAP, window.innerHeight - height - GAP);
+        const left = SelectionFollower.#clamp(this.#base.left + this.#offset.x, Gap, window.innerWidth - width - Gap);
+        const top = SelectionFollower.#clamp(this.#base.top + this.#offset.y, Gap, window.innerHeight - height - Gap);
 
         this.#target.style.top = `${top}px`;
         this.#target.style.left = `${left}px`;

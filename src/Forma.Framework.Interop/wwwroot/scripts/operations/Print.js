@@ -33,6 +33,11 @@ export function print(html, title, className) {
     printed.body.firstElementChild.className = className;
     printed.body.firstElementChild.innerHTML = html;
 
+    // The page's inline style blocks travel as copies; its linked sheets are loaded again and waited for.
+    for (const style of document.querySelectorAll('style')) {
+        printed.head.appendChild(printed.importNode(style, true));
+    }
+
     const sheets = [...document.styleSheets]
         .map(sheet => sheet.href)
         .filter(Boolean)
@@ -40,8 +45,8 @@ export function print(html, title, className) {
             const link = printed.createElement('link');
             link.rel = 'stylesheet';
             link.href = href;
-            link.onload = resolve;
-            link.onerror = resolve;
+            link.addEventListener('load', resolve, { once: true });
+            link.addEventListener('error', resolve, { once: true });
             printed.head.appendChild(link);
         }));
 

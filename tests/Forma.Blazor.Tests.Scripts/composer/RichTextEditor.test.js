@@ -516,6 +516,33 @@ describe('RichTextEditor', () => {
         expect(editor.querySelector('a').getAttribute('href')).toBe('/media/report.pdf');
     });
 
+    it('reports a selection once until it changes', () => {
+        attach(editor, { owner });
+        const text = editor.querySelector('p').firstChild;
+        const selection = window.getSelection();
+        const place = (start, end) => {
+            const range = document.createRange();
+            range.setStart(text, start);
+            range.setEnd(text, end);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        };
+        const reports = () => owner.invokeMethodAsync.mock.calls.filter(([method]) => method === 'HandleSelectionChangedAsync');
+
+        place(0, 5);
+        document.dispatchEvent(new Event('selectionchange'));
+        editor.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }));
+        editor.dispatchEvent(new Event('click', { bubbles: true }));
+
+        expect(reports()).toHaveLength(1);
+
+        place(0, 11);
+        document.dispatchEvent(new Event('selectionchange'));
+
+        expect(reports()).toHaveLength(2);
+        expect(reports()[1][1]).toMatchObject({ start: 0, end: 11 });
+    });
+
     it('stops reporting after disposal', () => {
         const handle = attach(editor, { owner, debounceDelay: 300 });
 

@@ -44,6 +44,9 @@ class RichTextEditor {
     #isDisposed = false;
     #lastHtml = null;
 
+    /** The selection the owner was last told of, as its snapshot serializes. */
+    #lastSelectionKey = null;
+
     constructor(target, { owner, debounceDelay = 400 }) {
         this.#canvas = new Canvas(target);
         this.#memory = new SelectionMemory(this.#canvas);
@@ -99,12 +102,17 @@ class RichTextEditor {
         this.#memory.freeze();
 
         if (found.kind === 'link' || found.kind === 'anchor') {
-            this.#owner?.invokeMethodAsync('HandleLinkActivatedAsync', found.kind === 'anchor');
+            this.#tell('HandleLinkActivatedAsync', found.kind === 'anchor');
 
             return;
         }
 
-        this.#owner?.invokeMethodAsync(RichTextEditor.#Activations[found.kind], MediaMarkup.read(found.kind, found.element));
+        this.#tell(RichTextEditor.#Activations[found.kind], MediaMarkup.read(found.kind, found.element));
+    }
+
+    /** Reports to the owner, letting go of the rejection a disposed owner answers with. */
+    #tell(method, ...args) {
+        this.#owner?.invokeMethodAsync(method, ...args).catch(() => {});
     }
 
     dispose() {
@@ -124,6 +132,7 @@ class RichTextEditor {
         if (InlineFormatter.stripMarkers(this.#canvas.html) !== html) {
             this.#canvas.html = html;
             this.#lastHtml = html;
+            this.#lastSelectionKey = null;
             // The rewrite detached every node the remembered selection pointed into, so restoring it would land the next edit somewhere unrelated.
             this.#memory.forget();
         }
@@ -348,6 +357,7 @@ class RichTextEditor {
         const html = InlineFormatter.stripMarkers(this.#canvas.html);
         this.#lastHtml = html;
         const selection = this.#inspector.snapshot();
+        this.#lastSelectionKey = selection ? JSON.stringify(selection) : null;
 
         return { html, selection };
     }
@@ -391,7 +401,7 @@ class RichTextEditor {
         const currentHtml = InlineFormatter.stripMarkers(this.#canvas.html);
         if (currentHtml !== this.#lastHtml) {
             this.#lastHtml = currentHtml;
-            this.#owner?.invokeMethodAsync('HandleContentChangedAsync', currentHtml);
+            this.#tell('HandleContentChangedAsync', currentHtml);
         }
     }
 
@@ -404,11 +414,11 @@ class RichTextEditor {
         const element = Canvas.elementOf(selection.anchorNode);
 
         if (element && this.#canvas.contains(element)) {
-            this.#memory.save();
             this.#reportSelection();
         }
     }
 
+    /** Remembers the selection and tells the owner of it, once per distinct snapshot. */
     #reportSelection() {
         if (this.#isDisposed) {
             return;
@@ -416,9 +426,17 @@ class RichTextEditor {
 
         this.#memory.save();
         const snapshot = this.#inspector.snapshot();
-        if (snapshot) {
-            this.#owner?.invokeMethodAsync('HandleSelectionChangedAsync', snapshot);
+        if (!snapshot) {
+            return;
         }
+
+        const key = JSON.stringify(snapshot);
+        if (key === this.#lastSelectionKey) {
+            return;
+        }
+
+        this.#lastSelectionKey = key;
+        this.#tell('HandleSelectionChangedAsync', snapshot);
     }
 
     /**
@@ -454,8 +472,7 @@ class RichTextEditor {
 
         // Whatever the selection already covered becomes one link, so the links it replaces go first.
         // Their text nodes survive the unwrapping, which leaves the range covering the same words.
-        const isAnchor = (data.isAnchor ?? data.IsAnchor ?? false);
-        if (!isAnchor && range && !range.collapsed) {
+        if (!data.isAnchor && range && !range.collapsed) {
             this.#links.unwrapTouching(range, 'a[href]');
         }
 

@@ -113,15 +113,23 @@ export class SelectionInspector {
         };
     }
 
+    /** Which state each resolved alignment reports. */
+    static #AlignmentStates = new Map([
+        ['left', 'align-left'],
+        ['center', 'align-center'],
+        ['right', 'align-right'],
+        ['justify', 'align-justify'],
+    ]);
+
     /** Which alignment state a block reports, resolving start and end through its direction. */
     #alignmentOf(block) {
         const style = window.getComputedStyle(block);
         const alignment = style.textAlign === 'start' ? (style.direction === 'rtl' ? 'right' : 'left')
             : style.textAlign === 'end' ? (style.direction === 'rtl' ? 'left' : 'right')
             : style.textAlign;
-        const alignmentStyles = { left: 'align-left', center: 'align-center', right: 'align-right', justify: 'align-justify' };
+        const state = SelectionInspector.#AlignmentStates.get(alignment);
 
-        return alignmentStyles[alignment] ? [alignmentStyles[alignment]] : [];
+        return state ? [state] : [];
     }
 
     /** The nearest explicitly set inline value for a property, walking outward to the canvas. */

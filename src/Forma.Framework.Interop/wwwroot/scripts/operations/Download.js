@@ -2,6 +2,9 @@
  * Download — handing the reader a file to save
  */
 
+/** How long the file's address stays valid after the click that queues its download. */
+const RevokeDelay = 40_000;
+
 /**
  * Saves text as a file through the browser's download path.
  * @param {string} name The file name offered.
@@ -15,6 +18,6 @@ export function save(name, content, type) {
     link.download = name;
     link.click();
 
-    // The address stays valid until the browser has started the download, which a click only queues.
-    setTimeout(() => URL.revokeObjectURL(url));
+    // A click only queues the download; the browser reads the address when it starts it.
+    setTimeout(() => URL.revokeObjectURL(url), RevokeDelay);
 }

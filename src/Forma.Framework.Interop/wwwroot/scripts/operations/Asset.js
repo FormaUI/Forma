@@ -2,9 +2,9 @@
  * Loads document-wide assets once, sharing concurrent requests and allowing retries after failure.
  */
 
-const SPRITE_TIMEOUT_MS = 15_000;
-const SPRITE_HOST_ID = 'forma-sprite-definitions';
-const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+const SpriteTimeout = 15_000;
+const SpriteHostId = 'forma-sprite-definitions';
+const SvgNamespace = 'http://www.w3.org/2000/svg';
 
 const loads = new Map();
 const sheets = new Map();
@@ -77,14 +77,14 @@ export function loadStyle(url) {
 }
 
 function getSpriteHost() {
-    const existing = document.getElementById(SPRITE_HOST_ID);
+    const existing = document.getElementById(SpriteHostId);
 
     if (existing?.isConnected) {
         return existing;
     }
 
-    const host = document.createElementNS(SVG_NAMESPACE, 'svg');
-    host.id = SPRITE_HOST_ID;
+    const host = document.createElementNS(SvgNamespace, 'svg');
+    host.id = SpriteHostId;
     host.setAttribute('aria-hidden', 'true');
     host.setAttribute('focusable', 'false');
     host.style.cssText = 'position:absolute;inline-size:0;block-size:0;overflow:hidden';
@@ -119,7 +119,7 @@ function fetchSheet(url, timeoutMs) {
  * The sheet is fetched and parsed once, while adoption is repeated whenever necessary
  * because navigation may replace the document-owned sprite host.
  */
-export function loadSprite(url, timeoutMs = SPRITE_TIMEOUT_MS) {
+export function loadSprite(url, timeoutMs = SpriteTimeout) {
     return attempt(async () => {
         const symbols = await fetchSheet(url, timeoutMs);
         const host = getSpriteHost();

@@ -1,6 +1,6 @@
 // Sanitizes untrusted markup before it reaches a live DOM, and strips the artefacts a word processor leaves behind.
 
-const ALLOWED_TAGS = new Set([
+const AllowedTags = new Set([
     'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'pre', 'code',
     'b', 'strong', 'i', 'em', 'u', 's', 'strike', 'sub', 'sup', 'mark', 'small',
     'ul', 'ol', 'li',
@@ -11,27 +11,27 @@ const ALLOWED_TAGS = new Set([
     'details', 'summary', 'figure', 'figcaption',
 ]);
 
-const DISCARDED_WITH_CONTENT = new Set([
+const DiscardedWithContent = new Set([
     'script', 'style', 'iframe', 'object', 'svg', 'math', 'noscript', 'template', 'applet', 'frameset',
 ]);
 
-const GLOBAL_ATTRIBUTES = new Set(['class', 'id', 'style', 'dir', 'title', 'lang']);
+const GlobalAttributes = new Set(['class', 'id', 'style', 'dir', 'title', 'lang']);
 
-const TAG_ATTRIBUTES = {
-    a: new Set(['href', 'target', 'rel', 'download', 'name']),
-    img: new Set(['src', 'alt', 'width', 'height', 'loading']),
-    video: new Set(['src', 'poster', 'controls', 'autoplay', 'loop', 'muted', 'preload', 'width', 'height']),
-    audio: new Set(['src', 'controls', 'autoplay', 'loop', 'muted', 'preload']),
-    source: new Set(['src', 'type']),
-    th: new Set(['colspan', 'rowspan', 'scope', 'headers', 'align']),
-    td: new Set(['colspan', 'rowspan', 'headers', 'align']),
-    table: new Set(['border', 'cellpadding', 'cellspacing']),
-    ol: new Set(['start', 'type', 'reversed']),
-    li: new Set(['value']),
-};
+const TagAttributes = new Map([
+    ['a', new Set(['href', 'target', 'rel', 'download', 'name'])],
+    ['img', new Set(['src', 'alt', 'width', 'height', 'loading'])],
+    ['video', new Set(['src', 'poster', 'controls', 'autoplay', 'loop', 'muted', 'preload', 'width', 'height'])],
+    ['audio', new Set(['src', 'controls', 'autoplay', 'loop', 'muted', 'preload'])],
+    ['source', new Set(['src', 'type'])],
+    ['th', new Set(['colspan', 'rowspan', 'scope', 'headers', 'align'])],
+    ['td', new Set(['colspan', 'rowspan', 'headers', 'align'])],
+    ['table', new Set(['border', 'cellpadding', 'cellspacing'])],
+    ['ol', new Set(['start', 'type', 'reversed'])],
+    ['li', new Set(['value'])],
+]);
 
-const URL_ATTRIBUTES = new Set(['href', 'src', 'poster']);
-const SAFE_SCHEMES = new Set(['http:', 'https:', 'mailto:', 'tel:', 'data:']);
+const UrlAttributes = new Set(['href', 'src', 'poster']);
+const SafeSchemes = new Set(['http:', 'https:', 'mailto:', 'tel:', 'data:']);
 
 function isSafeUrl(value) {
     const trimmed = value.trim();
@@ -47,7 +47,7 @@ function isSafeUrl(value) {
 
     try {
         const scheme = new URL(trimmed, 'https://invalid.example').protocol;
-        return SAFE_SCHEMES.has(scheme) && !(scheme === 'data:' && !/^data:image\//i.test(trimmed));
+        return SafeSchemes.has(scheme) && !(scheme === 'data:' && !/^data:image\//i.test(trimmed));
     } catch {
         return false;
     }
@@ -55,13 +55,13 @@ function isSafeUrl(value) {
 
 function cleanAttributes(element) {
     const tag = element.tagName.toLowerCase();
-    const permitted = TAG_ATTRIBUTES[tag];
+    const permitted = TagAttributes.get(tag);
 
     for (const attribute of Array.from(element.attributes)) {
         const name = attribute.name.toLowerCase();
-        const allowed = GLOBAL_ATTRIBUTES.has(name) || (permitted?.has(name) ?? false);
+        const allowed = GlobalAttributes.has(name) || (permitted?.has(name) ?? false);
 
-        if (!allowed || (URL_ATTRIBUTES.has(name) && !isSafeUrl(attribute.value))) {
+        if (!allowed || (UrlAttributes.has(name) && !isSafeUrl(attribute.value))) {
             element.removeAttribute(attribute.name);
             continue;
         }
@@ -107,18 +107,18 @@ export function sanitize(html) {
 
     for (const element of Array.from(template.content.querySelectorAll('*'))) {
         // A previous iteration may already have discarded an ancestor.
-        if (!element.isConnected && !template.content.contains(element)) {
+        if (!template.content.contains(element)) {
             continue;
         }
 
         const tag = element.tagName.toLowerCase();
 
-        if (DISCARDED_WITH_CONTENT.has(tag) || tag.includes(':')) {
+        if (DiscardedWithContent.has(tag) || tag.includes(':')) {
             element.remove();
             continue;
         }
 
-        if (!ALLOWED_TAGS.has(tag)) {
+        if (!AllowedTags.has(tag)) {
             element.replaceWith(...element.childNodes);
             continue;
         }

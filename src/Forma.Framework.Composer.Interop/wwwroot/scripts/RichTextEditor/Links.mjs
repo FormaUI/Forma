@@ -69,29 +69,27 @@ export class Links {
             return null;
         }
 
-        const { name, Name, href, Href, openInNewTab, OpenInNewTab, isAnchor, IsAnchor } = data;
-        const effectiveName = name ?? Name ?? '';
+        const { name = '', href = '', openInNewTab = false, isAnchor = false } = data;
 
-        if (isAnchor ?? IsAnchor ?? false) {
-            if (!effectiveName) {
+        if (isAnchor) {
+            if (!name) {
                 return null;
             }
 
-            const anchorAttrs = `id="${Escape.attribute(effectiveName)}" name="${Escape.attribute(effectiveName)}"`;
+            const anchorAttrs = `id="${Escape.attribute(name)}" name="${Escape.attribute(name)}"`;
 
             return selectedText
                 ? `<a ${anchorAttrs}>${Escape.html(selectedText)}</a>`
                 : `<a ${anchorAttrs}></a>`;
         }
 
-        const effectiveHref = href ?? Href ?? '';
-        if (!effectiveHref) {
+        if (!href) {
             return null;
         }
 
-        const effectiveText = effectiveName || selectedText || effectiveHref;
-        const targetAttr = (openInNewTab ?? OpenInNewTab ?? false) ? ' target="_blank" rel="noopener noreferrer"' : '';
+        const text = name || selectedText || href;
+        const targetAttr = openInNewTab ? ' target="_blank" rel="noopener noreferrer"' : '';
 
-        return `<a href="${Escape.attribute(effectiveHref)}"${targetAttr}>${Escape.html(effectiveText)}</a>`;
+        return `<a href="${Escape.attribute(href)}"${targetAttr}>${Escape.html(text)}</a>`;
     }
 }

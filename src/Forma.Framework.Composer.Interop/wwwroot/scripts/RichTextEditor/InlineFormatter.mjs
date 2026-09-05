@@ -12,15 +12,17 @@ export class InlineFormatter {
     /** The zero-width space carrying a pending format at a collapsed caret until something is typed into it. */
     static PendingMarker = '\u200B';
 
+    /** An inline wrapper with nothing inside it, as markup. */
+    static #EmptyWrapper = /<(b|strong|i|em|u|s|strike|del|sub|sup|code|span)((?:\s[^>]*)?)><\/\1>/g;
+
     /** Strips pending-format markers and the wrappers armed around them from outgoing HTML, so neither reaches the document a host stores. */
     static stripMarkers(html) {
         let out = (html ?? '').replaceAll(InlineFormatter.PendingMarker, '');
-        const emptyWrapper = /<(b|strong|i|em|u|s|strike|del|sub|sup|code|span)((?:\s[^>]*)?)><\/\1>/g;
 
         let before;
         do {
             before = out;
-            out = out.replace(emptyWrapper, '');
+            out = out.replace(InlineFormatter.#EmptyWrapper, '');
         } while (out !== before);
 
         return out;

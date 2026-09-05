@@ -259,6 +259,7 @@ export function describe(element) {
 /** The active ordering, foremost last, with the rule that placed each registration above the one before. */
 export function stack() {
     const ordered = orderedActive();
+    const chains = ancestorChains(ordered);
     const barrier = activeEntries.filter(entry => entry.modal).at(-1) ?? null;
 
     return ordered.map((entry, index) => ({
@@ -267,16 +268,16 @@ export function stack() {
         modal: entry.modal,
         parent: entry.parentScope?.element ?? null,
         activation: entry.activation,
-        reason: placement(entry, ordered[index - 1], barrier, ordered),
+        reason: placement(entry, ordered[index - 1], barrier, ordered, chains),
     }));
 }
 
-function placement(entry, below, barrier, ordered) {
+function placement(entry, below, barrier, ordered, chains) {
     if (!below) {
         return entry === barrier ? 'modal barrier' : 'first eligible';
     }
 
-    if (depthOf(entry, ordered) > depthOf(below, ordered)) {
+    if (depthOf(entry, ordered, chains) > depthOf(below, ordered, chains)) {
         return 'inside its parent';
     }
 
@@ -425,6 +426,7 @@ class Scope {
     #controller = new AbortController();
     #routes = [];
     #preemptiveRoutes = [];
+    #boundary = new Set();
 
     constructor(element) {
         this.element = element;
@@ -459,8 +461,9 @@ class Scope {
         return this.registrations.some(registration => registration.modal);
     }
 
+    /** The input types this scope is a boundary for, gathered from every registration. */
     get boundary() {
-        return new Set(this.registrations.flatMap(registration => registration.profile.boundary ?? []));
+        return this.#boundary;
     }
 
     /** The parent a registration declares, else the nearest registered scope containing this one. */
@@ -548,6 +551,7 @@ class Scope {
     refresh() {
         this.#routes = this.registrations.flatMap(registration => (registration.profile.routes ?? []).map(route => normalizeRoute(route, registration)));
         this.#preemptiveRoutes = this.registrations.flatMap(registration => (registration.profile.preemptiveRoutes ?? []).map(route => normalizeRoute(route, registration)));
+        this.#boundary = new Set(this.registrations.flatMap(registration => registration.profile.boundary ?? []));
 
         this.#controller.abort();
         this.#controller = new AbortController();
@@ -829,27 +833,33 @@ function foremostEntry() {
 // the registrations whose parent chain reaches its scope are eligible.
 function orderedActive() {
     const barrier = activeEntries.filter(entry => entry.modal).at(-1) ?? null;
+    const chains = ancestorChains(activeEntries);
     const eligible = barrier
-        ? activeEntries.filter(entry => entry.scope === barrier.scope || entry.ancestors().includes(barrier.scope))
+        ? activeEntries.filter(entry => entry.scope === barrier.scope || chains.get(entry).includes(barrier.scope))
         : [...activeEntries];
 
     return eligible.sort((left, right) =>
-        rankOf(left, eligible) - rankOf(right, eligible)
-        || depthOf(left, eligible) - depthOf(right, eligible)
+        rankOf(left, eligible, chains) - rankOf(right, eligible, chains)
+        || depthOf(left, eligible, chains) - depthOf(right, eligible, chains)
         || left.activation - right.activation
         || left.order - right.order);
 }
 
+/** Each registration's ancestor scopes, walked once for a whole ordering. */
+function ancestorChains(entries) {
+    return new Map(entries.map(entry => [entry, entry.ancestors()]));
+}
+
 // A registration stands no lower than the ancestors it is inside, so a child outranks its own
 // parent and nothing else that was activated after it.
-function rankOf(entry, among) {
-    const ancestors = entry.ancestors();
+function rankOf(entry, among, chains) {
+    const ancestors = chains.get(entry);
 
     return Math.max(entry.activation, ...among.filter(other => ancestors.includes(other.scope)).map(other => other.activation));
 }
 
-function depthOf(entry, among) {
-    return entry.ancestors().filter(ancestor => among.some(other => other.scope === ancestor)).length;
+function depthOf(entry, among, chains) {
+    return chains.get(entry).filter(ancestor => among.some(other => other.scope === ancestor)).length;
 }
 
 function refreshLayers() {
