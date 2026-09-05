@@ -185,7 +185,7 @@
             cut.Find(".forma-breadcrumb-chevron").Click();
 
             // Assert
-            var menuItems = cut.FindAll(".forma-breadcrumb-menu-item").Select(i => i.TextContent.Trim()).ToList();
+            var menuItems = cut.FindAll(".forma-dropdown-menu-item").Select(i => i.TextContent.Trim()).ToList();
             Assert.Equal(["Races", "Covers"], menuItems);
             Assert.Equal("true", cut.Find(".forma-breadcrumb-chevron").GetAttribute("aria-expanded"));
         }
@@ -208,7 +208,7 @@
             // Assert
             var controls = cut.Find(".forma-breadcrumb-chevron").GetAttribute("aria-controls");
             Assert.False(string.IsNullOrEmpty(controls));
-            Assert.Equal(controls, cut.Find(".forma-breadcrumb-menu").GetAttribute("id"));
+            Assert.Equal(controls, cut.Find(".forma-dropdown-menu").GetAttribute("id"));
         }
 
         [Fact]
@@ -225,11 +225,11 @@
             cut.Find(".forma-breadcrumb-chevron").Click();
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-breadcrumb-menu"));
+            Assert.Empty(cut.FindAll(".forma-dropdown-menu"));
         }
 
         [Fact]
-        public void Should_close_children_menu_when_backdrop_is_clicked()
+        public async Task Should_close_children_menu_on_a_press_away()
         {
             // Arrange
             using var ctx = new FormaBreadcrumbTests();
@@ -239,14 +239,14 @@
             cut.Find(".forma-breadcrumb-chevron").Click();
 
             // Act
-            cut.Find(".forma-breadcrumb-backdrop").Click();
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopup>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.PressAway));
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-breadcrumb-menu"));
+            Assert.Empty(cut.FindAll(".forma-dropdown-menu"));
         }
 
         [Fact]
-        public void Should_close_children_menu_on_escape()
+        public async Task Should_close_children_menu_on_escape()
         {
             // Arrange
             using var ctx = new FormaBreadcrumbTests();
@@ -256,10 +256,10 @@
             cut.Find(".forma-breadcrumb-chevron").Click();
 
             // Act
-            cut.Find(".forma-breadcrumb").KeyDown("Escape");
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopup>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.Escape));
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-breadcrumb-menu"));
+            Assert.Empty(cut.FindAll(".forma-dropdown-menu"));
         }
 
         [Fact]
@@ -274,11 +274,11 @@
             cut.Find(".forma-breadcrumb-chevron").Click();
 
             // Act
-            cut.Find(".forma-breadcrumb-menu-item").Click();
+            cut.Find(".forma-dropdown-menu-item").Click();
 
             // Assert
             Assert.Equal("races", clicked);
-            Assert.Empty(cut.FindAll(".forma-breadcrumb-menu"));
+            Assert.Empty(cut.FindAll(".forma-dropdown-menu"));
         }
 
         [Fact]

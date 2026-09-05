@@ -26,26 +26,8 @@ public sealed partial class FormaBreadcrumb<TItem> : ComponentBase
 
     [Inject] private IStringLocale<FormaBreadcrumb> L { get; set; } = default!;
 
-    private readonly string _menuIdPrefix = $"breadcrumb-menu-{Guid.NewGuid():N}";
-
-    private int? _openIndex;
-
     private string EffectiveAriaLabel
         => AriaLabel ?? L["Breadcrumb"].Value;
-
-    private void ToggleChildren(int index)
-        => _openIndex = _openIndex == index ? null : index;
-
-    private void CloseChildren()
-        => _openIndex = null;
-
-    private void HandleKeyDown(KeyboardEventArgs args)
-    {
-        if (args.Key == "Escape")
-        {
-            CloseChildren();
-        }
-    }
 
     private static void HandleDragOver(DragEventArgs args)
         => args.DataTransfer.DropEffect = "move";
@@ -55,13 +37,6 @@ public sealed partial class FormaBreadcrumb<TItem> : ComponentBase
 
     private async Task HandleItemDropAsync(BreadcrumbItem<TItem> item)
         => await OnItemDrop.InvokeAsync(item.Value);
-
-    private async Task HandleChildSelectedAsync(BreadcrumbItem<TItem> child)
-    {
-        _openIndex = null;
-
-        await OnItemClick.InvokeAsync(child.Value);
-    }
 }
 
 /// <summary>Non-generic marker so the localizer can be keyed independently of TItem.</summary>

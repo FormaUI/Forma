@@ -1,6 +1,6 @@
 @typeparam TItem
 @namespace Forma.Blazor.Components.Navigation
-<nav class="forma-breadcrumb" aria-label="@EffectiveAriaLabel" @onkeydown="HandleKeyDown">
+<nav class="forma-breadcrumb" aria-label="@EffectiveAriaLabel">
     @if (RootIcon is { } icon)
     {
         <span class="forma-breadcrumb-root-icon" aria-hidden="true"><FormaIcon Icon="icon" Size="IconSize.Small" /></span>
@@ -10,9 +10,7 @@
         @for (var index = 0; index < Items.Count; index++)
         {
             var item = Items[index];
-            var currentIndex = index;
             var isLast = index == Items.Count - 1;
-            var isOpen = _openIndex == index;
 
             <li class="forma-breadcrumb-level">
                 @if (item.Url is not null)
@@ -51,37 +49,19 @@
 
                 @if (item.Children is { Count: > 0 } children)
                 {
-                    var menuId = $"{_menuIdPrefix}-{currentIndex}";
-
-                    <span class="forma-breadcrumb-menu-anchor">
-                        <FormaButton Variant="ButtonVariant.Ghost"
-                                     Size="ButtonSize.Mini"
-                                     IconOnly="true"
-                                     class="@(isOpen ? "forma-breadcrumb-chevron is-open" : "forma-breadcrumb-chevron")"
-                                     aria-expanded="@(isOpen ? "true" : "false")"
-                                     aria-controls="@(isOpen ? menuId : null)"
-                                     aria-label="@L["Show options for {Label}", item.Label]"
-                                     OnClick="() => ToggleChildren(currentIndex)">
+                    <FormaDropDownMenu class="forma-breadcrumb-chevron"
+                                       TriggerOptions="ButtonOptions.MiniGhostIcon"
+                                       aria-label="@L["Show options for {Label}", item.Label]">
+                        <Trigger>
                             <FormaIcon Icon="Glyph.ChevronRight" />
-                        </FormaButton>
-
-                        @if (isOpen)
-                        {
-                            <span class="forma-breadcrumb-backdrop" @onclick="CloseChildren"></span>
-                            @* A group of ordinary buttons rather than role="menu", which would promise arrow-key navigation this does not implement. *@
-                            <span class="forma-breadcrumb-menu"
-                                  id="@menuId"
-                                  role="group"
-                                  aria-label="@L["Show options for {Label}", item.Label]">
-                                @foreach (var child in children)
-                                {
-                                    <FormaButton Variant="ButtonVariant.Ghost" class="forma-breadcrumb-menu-item" OnClick="() => HandleChildSelectedAsync(child)">
-                                        @child.Label
-                                    </FormaButton>
-                                }
-                            </span>
-                        }
-                    </span>
+                        </Trigger>
+                        <ChildContent>
+                            @foreach (var child in children)
+                            {
+                                <FormaDropDownMenuItem OnClick="() => HandleItemClickAsync(child)">@child.Label</FormaDropDownMenuItem>
+                            }
+                        </ChildContent>
+                    </FormaDropDownMenu>
                 }
                 else if (!isLast)
                 {

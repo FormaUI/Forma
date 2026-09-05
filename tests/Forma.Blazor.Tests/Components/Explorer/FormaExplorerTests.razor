@@ -1059,7 +1059,7 @@
             // Assert
             Assert.Multiple(
                 () => Assert.Equal(["All Media", "Shown"], cut.FindAll(".forma-explorer-folder-name").Select(node => node.TextContent.Trim())),
-                () => Assert.Equal(["Shown"], cut.FindAll(".forma-breadcrumb-menu-item").Select(node => node.TextContent.Trim())));
+                () => Assert.Equal(["Shown"], cut.FindAll(".forma-dropdown-menu-item").Select(node => node.TextContent.Trim())));
         }
 
         [Fact]
@@ -1635,7 +1635,7 @@
             cut.Find(".forma-breadcrumb-chevron").Click();
 
             // Assert
-            var items = cut.FindAll(".forma-breadcrumb-menu-item").Select(item => item.TextContent.Trim()).ToList();
+            var items = cut.FindAll(".forma-dropdown-menu-item").Select(item => item.TextContent.Trim()).ToList();
             Assert.Equal(["Races", "Covers"], items);
             Assert.Equal("true", cut.Find(".forma-breadcrumb-chevron").GetAttribute("aria-expanded"));
         }

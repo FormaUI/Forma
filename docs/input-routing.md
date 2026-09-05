@@ -17,7 +17,9 @@ costs a few hundredths of a millisecond, so parent lookup scans the scopes as th
 `FormaPopup` is the first library component on the router: it registers its root and
 activates while open, with its trigger counted as inside it, so Escape and a press away
 dismiss it through the router rather than through a document listener and a backdrop of
-its own. The composer's and the toolbar's shortcuts are routes: the composer registers its
+its own, and `FormaBreadcrumb`'s segment menus are `FormaDropDownMenu`s over it, so its own
+key handler and backdrop are gone. The composer's and the toolbar's shortcuts are routes: the
+composer registers its
 catalog on its root and each editor registers it on its editable element, where the native
 table would otherwise claim the keys, and the toolbar registers its actions' shortcuts on its
 target. The `focus` field of a profile is not read until `Focus.js` moves onto the router
@@ -521,9 +523,10 @@ existing components, landing as several coherent commits.
    per-class listener strategies, `resolve` and its views. The .NET records and the scoped
    bridge. Vitest for nested resolution through a top-layer popover, the native table, the
    modal barrier, containment, activation order, top-only dismissal, and release.
-2. **Dismissal.** `FormaPopup`, `FormaDialog` with both entry points, active drags, the
-   selection bar while focused, `FormaBreadcrumb` rebuilt on `FormaPopup`. The per-popup
-   document listener, both backdrops, and the backdrop z-indexes go.
+2. **Dismissal.** `FormaPopup` (done), `FormaDialog` with both entry points, active drags,
+   the selection bar while focused, `FormaBreadcrumb` rebuilt on `FormaPopup` (done, as a
+   `FormaDropDownMenu` per segment). The per-popup document listener, both backdrops, and
+   the backdrop z-indexes go.
 3. **Owners onto routes.** `SelectionInteraction`, both shortcut sets (done: the composer's
    and the toolbar's shortcuts are routes, and `KeyBindings` is retired), the three
    wheel tracks of `Scroll.js`, `PanGesture`, `DropZone` and the explorer drop targets,

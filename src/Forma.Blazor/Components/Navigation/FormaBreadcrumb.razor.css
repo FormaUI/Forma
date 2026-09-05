@@ -2,7 +2,7 @@
    FormaBreadcrumb — CSS isolation
    A trail of segments — links, buttons, or static text depending
    on what the caller wires up — chevron-separated, with an
-   optional dropdown of alternatives per segment.
+   optional menu of alternatives per segment.
    ============================================================ */
 
 .forma-breadcrumb {
@@ -92,12 +92,6 @@ span.forma-breadcrumb-item {
     rotate: 180deg;
 }
 
-.forma-breadcrumb-menu-anchor {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-}
-
 /* The chevron turns to follow the reading direction, and down to open. */
 ::deep .forma-breadcrumb-chevron {
     --forma-button-ghost-color: var(--text-muted-color);
@@ -109,38 +103,8 @@ span.forma-breadcrumb-item {
 }
 
 /* Down reads the same in both directions, so the open state is not mirrored. */
-::deep .forma-breadcrumb-chevron.is-open {
+::deep .forma-breadcrumb-chevron[aria-expanded="true"] {
     --forma-button-ghost-color: var(--main-color);
     rotate: 90deg;
-}
-
-.forma-breadcrumb-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 20;
-}
-
-.forma-breadcrumb-menu {
-    position: absolute;
-    inset-block-start: calc(100% + var(--space-1));
-    inset-inline-start: 0;
-    z-index: 21;
-    display: flex;
-    flex-direction: column;
-    min-inline-size: 10rem;
-    max-inline-size: calc(100vw - var(--space-4));
-    max-block-size: 16rem;
-    overflow-y: auto;
-    padding: var(--space-1);
-    border: 1px solid var(--light-border-color);
-    border-radius: var(--radius-md);
-    background: var(--input-background-color);
-    box-shadow: var(--shadow-medium);
-}
-
-/* A menu entry is set at the start, like a list. */
-::deep .forma-breadcrumb-menu-item {
-    justify-content: flex-start;
-    font-weight: inherit;
 }
 
