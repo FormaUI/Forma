@@ -8,6 +8,8 @@
  */
 
 import { Focus } from './Focus.js';
+import { Direction } from '../core/Direction.js';
+import { Frame } from '../core/Frame.js';
 
 /** Distance between the anchor and the popup. */
 const Gap = 4;
@@ -35,7 +37,7 @@ class AnchoredPopup {
     #trigger = null;
     #placement = null;
     #resizeObserver = null;
-    #frame = null;
+    #frame = new Frame();
     #isRightToLeft = false;
 
     constructor(popup, { anchor, keepsFocus = false, align = 'auto' }) {
@@ -59,7 +61,7 @@ class AnchoredPopup {
         const place = () => this.#schedule();
 
         // The anchor's direction holds for as long as the popup is open.
-        this.#isRightToLeft = getComputedStyle(this.#anchor).direction === 'rtl';
+        this.#isRightToLeft = Direction.isRightToLeft(this.#anchor);
 
         // Captured because the anchor may sit in any scrolling ancestor, and scroll events
         // from those do not bubble.
@@ -86,11 +88,7 @@ class AnchoredPopup {
             this.#trigger.focus({ preventScroll: true });
         }
 
-        if (this.#frame !== null) {
-            cancelAnimationFrame(this.#frame);
-            this.#frame = null;
-        }
-
+        this.#frame.cancel();
         this.#placement?.abort();
         this.#placement = null;
         this.#resizeObserver?.disconnect();
@@ -107,14 +105,7 @@ class AnchoredPopup {
 
     // Scroll and resize events arrive faster than frames are painted, so repositions are coalesced to one a frame.
     #schedule() {
-        if (this.#frame !== null) {
-            return;
-        }
-
-        this.#frame = requestAnimationFrame(() => {
-            this.#frame = null;
-            this.#position();
-        });
+        this.#frame.request(() => this.#position());
     }
 
     #position() {

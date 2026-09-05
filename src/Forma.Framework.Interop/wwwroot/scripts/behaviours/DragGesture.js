@@ -11,6 +11,9 @@
  * dragged, where it may land, and what landing there means are all the caller's to answer.
  */
 
+import { Frame } from '../core/Frame.js';
+import { Scrolling } from '../core/Scrolling.js';
+
 /**
  * @param {HTMLElement} target
  * @param {{
@@ -60,7 +63,7 @@ class DragGesture {
     #holdTimer = null;
     #scroller = null;
     #scrollStep = 0;
-    #scrollFrame = null;
+    #scrollFrame = new Frame();
     #listeners = new AbortController();
 
     constructor(container, options) {
@@ -158,7 +161,7 @@ class DragGesture {
         this.#lastX = event.clientX;
         this.#lastY = event.clientY;
         this.#isDragging = false;
-        this.#scroller = this.#autoScroll ? DragGesture.#findScroller(this.#element) : null;
+        this.#scroller = this.#autoScroll ? Scrolling.nearestScroller(this.#element) : null;
 
         // A touch that could equally have been a scroll has to rest before it lifts,
         // otherwise every swipe across the container would drag instead of scrolling.
@@ -249,19 +252,6 @@ class DragGesture {
         }
     }
 
-    /** The container or nearest ancestor that scrolls vertically, or null when the page itself does. */
-    static #findScroller(element) {
-        for (let candidate = element; candidate; candidate = candidate.parentElement) {
-            const overflow = getComputedStyle(candidate).overflowY;
-            if ((overflow === 'auto' || overflow === 'scroll' || overflow === 'overlay')
-                && candidate.scrollHeight > candidate.clientHeight) {
-                return candidate;
-            }
-        }
-
-        return null;
-    }
-
     #updateAutoScroll() {
         if (!this.#autoScroll) {
             return;
@@ -281,8 +271,8 @@ class DragGesture {
 
         if (this.#scrollStep === 0) {
             this.#stopAutoScroll();
-        } else if (this.#scrollFrame === null) {
-            this.#scrollFrame = requestAnimationFrame(() => this.#scrollTick());
+        } else if (!this.#scrollFrame.isPending) {
+            this.#scrollFrame.request(() => this.#scrollTick());
         }
     }
 
@@ -291,15 +281,11 @@ class DragGesture {
         // The pointer can sit still while content moves under it, so the caller is asked to
         // re-evaluate each frame rather than only on the next pointermove.
         this.#onMove?.(this.#context());
-        this.#scrollFrame = requestAnimationFrame(() => this.#scrollTick());
+        this.#scrollFrame.request(() => this.#scrollTick());
     }
 
     #stopAutoScroll() {
-        if (this.#scrollFrame !== null) {
-            cancelAnimationFrame(this.#scrollFrame);
-            this.#scrollFrame = null;
-        }
-
+        this.#scrollFrame.cancel();
         this.#scrollStep = 0;
     }
 }

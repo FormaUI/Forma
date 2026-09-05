@@ -12,6 +12,9 @@
  */
 
 import { Controls } from '../core/Controls.js';
+import { Direction } from '../core/Direction.js';
+import { Frame } from '../core/Frame.js';
+import { Scrolling } from '../core/Scrolling.js';
 import { tell } from '../core/Owner.js';
 
 /** Pixels a line is taken to be, for the wheels that report in lines rather than pixels. */
@@ -66,7 +69,7 @@ export function toCenter(container) {
 export function step(container, direction, axis = 'inline', stops = null) {
     const isBlock = axis === 'block';
     // A right-to-left container counts scrollLeft downwards from zero, so every inline position mirrors with it.
-    const isRightToLeft = !isBlock && getComputedStyle(container).direction === 'rtl';
+    const isRightToLeft = !isBlock && Direction.isRightToLeft(container);
     const positions = stops ? stopPositions(container, isBlock, isRightToLeft, stops.selector) : [];
 
     if (positions.length === 0) {
@@ -167,8 +170,7 @@ class BoundaryWatch {
     #mutations;
     #watched = [];
     #last = null;
-    #isQueued = false;
-    #frame = null;
+    #frame = new Frame();
     #isDisposed = false;
 
     constructor(track, { owner, axis = 'inline', frozen = null }) {
@@ -195,12 +197,7 @@ class BoundaryWatch {
 
     dispose() {
         this.#isDisposed = true;
-
-        if (this.#frame !== null) {
-            cancelAnimationFrame(this.#frame);
-            this.#frame = null;
-        }
-
+        this.#frame.cancel();
         this.#controller.abort();
         this.#resize.disconnect();
         this.#mutations.disconnect();
@@ -221,18 +218,12 @@ class BoundaryWatch {
 
     // Scrolling fires far faster than the circuit can answer, so reports are coalesced to one a frame.
     #schedule() {
-        if (this.#isQueued || this.#isDisposed) {
-            return;
+        if (!this.#isDisposed) {
+            this.#frame.request(() => this.#report());
         }
-
-        this.#isQueued = true;
-        this.#frame = requestAnimationFrame(() => this.#report());
     }
 
     #report() {
-        this.#isQueued = false;
-        this.#frame = null;
-
         // A track taken out of the document collapses to nothing, and its owner is on its way out with it.
         if (this.#isDisposed || !this.#track.isConnected) {
             return;
@@ -275,7 +266,7 @@ class BoundaryWatch {
     #frozenRegion() {
         const box = this.#track.getBoundingClientRect();
         const isBlock = this.#axis === 'block';
-        const isRightToLeft = getComputedStyle(this.#track).direction === 'rtl';
+        const isRightToLeft = Direction.isRightToLeft(this.#track);
         const inlineEnd = rect => isRightToLeft ? box.right - rect.left : rect.right - box.left;
         const blockEnd = rect => rect.bottom - box.top;
         const along = isBlock ? blockEnd : inlineEnd;
@@ -337,14 +328,10 @@ class WheelTurn {
                 return true;
             }
 
-            const { overflowY, position } = getComputedStyle(node);
+            const style = getComputedStyle(node);
 
             // A fixed element takes the page's turn.
-            if (position === 'fixed') {
-                return true;
-            }
-
-            if ((overflowY === 'auto' || overflowY === 'scroll') && node.scrollHeight > node.clientHeight) {
+            if (style.position === 'fixed' || Scrolling.isScroller(node, style)) {
                 return true;
             }
         }
@@ -374,7 +361,7 @@ class TrackSink {
             return;
         }
 
-        const isRightToLeft = getComputedStyle(this.#track).direction === 'rtl';
+        const isRightToLeft = Direction.isRightToLeft(this.#track);
         const distance = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? event.deltaY * LineHeight : event.deltaY;
         const offset = this.#track.scrollLeft;
         const wanted = offset + (isRightToLeft ? -distance : distance);

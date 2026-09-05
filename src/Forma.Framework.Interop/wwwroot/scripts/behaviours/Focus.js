@@ -8,8 +8,7 @@
  * order, then leaves for whatever follows or precedes it in the page.
  */
 
-/** What Tab moves between. */
-const FocusableSelector = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+import { Controls } from '../core/Controls.js';
 
 /**
  * @param {HTMLElement} target The surface whose Tab order is decided.
@@ -28,7 +27,7 @@ export function attach(target, options = {}) {
  * @returns {HTMLElement[]}
  */
 export function focusablesIn(root) {
-    return [...root.querySelectorAll(FocusableSelector)].filter(isDisplayed);
+    return [...root.querySelectorAll(Controls.Focusable)].filter(isDisplayed);
 }
 
 /** Whether an element is drawn: neither it nor an ancestor is hidden through display or visibility. */
