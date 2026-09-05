@@ -127,10 +127,10 @@ public sealed partial class FormaDropDownMenu : ComponentBase, IAsyncDisposable
                 await MoveFocusAsync(-1);
                 break;
             case "Home":
-                await FocusIndexAsync(0);
+                await FocusIndexAsync(EnabledIndexFrom(0, 1));
                 break;
             case "End":
-                await FocusIndexAsync(_items.Count - 1);
+                await FocusIndexAsync(EnabledIndexFrom(_items.Count - 1, -1));
                 break;
         }
     }
@@ -138,27 +138,36 @@ public sealed partial class FormaDropDownMenu : ComponentBase, IAsyncDisposable
     private async Task HandleOpenedAsync()
     {
         await _keyGuard.AttachAsync(Popup.Element, ScrollBehaviours.NavigationGuard);
-        await FocusIndexAsync(_openAtLastItem ? _items.Count - 1 : 0);
+        await FocusIndexAsync(_openAtLastItem ? EnabledIndexFrom(_items.Count - 1, -1) : EnabledIndexFrom(0, 1));
     }
 
     private Task MoveFocusAsync(int delta)
+        => FocusIndexAsync(EnabledIndexFrom(_focusedIndex + delta, delta));
+
+    /// <summary>The index of the first enabled item at or past <paramref name="start"/> in the direction of <paramref name="step"/>, wrapping around the ends; null when no item is enabled.</summary>
+    private int? EnabledIndexFrom(int start, int step)
     {
-        if (_items.Count == 0)
+        for (var visited = 0; visited < _items.Count; visited++)
         {
-            return Task.CompletedTask;
+            var index = ((start + visited * step) % _items.Count + _items.Count) % _items.Count;
+
+            if (!_items[index].Disabled)
+            {
+                return index;
+            }
         }
 
-        return FocusIndexAsync(((_focusedIndex + delta) % _items.Count + _items.Count) % _items.Count);
+        return null;
     }
 
-    private async Task FocusIndexAsync(int index)
+    private async Task FocusIndexAsync(int? index)
     {
-        if (index < 0 || index >= _items.Count)
+        if (index is not { } target)
         {
             return;
         }
 
-        _focusedIndex = index;
+        _focusedIndex = target;
         await _items[_focusedIndex].FocusAsync();
     }
 
