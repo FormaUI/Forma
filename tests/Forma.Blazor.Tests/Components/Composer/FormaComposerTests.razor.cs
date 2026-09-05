@@ -8,5 +8,9 @@ public sealed partial class FormaComposerTests
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddJsonLocalization();
+        Router = JSInterop.SetupModule("./_content/Forma.Framework.Input.Interop/scripts/InputRouter.js");
     }
+
+    /// <summary>The input router module, set up before any render so the composer's registrations on it are recorded.</summary>
+    internal BunitJSModuleInterop Router { get; }
 }

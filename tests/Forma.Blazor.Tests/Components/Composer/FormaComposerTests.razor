@@ -2,6 +2,7 @@
 @using Forma.Blazor.Components.Composer.Plugins
 @using Forma.Blazor.Components.Composer.RichTextEditor
 @using Forma.Blazor.Components.Composer.RichTextEditor.Views
+@using Forma.Framework.Input
 
 @code {
     public sealed class Component
@@ -273,6 +274,30 @@
             // Assert
             var textarea = cut.Find("textarea.forma-composer-plain-text-textarea");
             Assert.Equal("Initial Content", textarea.GetAttribute("value") ?? textarea.TextContent);
+        }
+
+        [Fact]
+        public void Should_register_its_shortcuts_on_its_root_and_on_the_editor()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComposer @bind-Value="model.Body" />
+            </FakeFormHost>);
+            cut.WaitForAssertion(() => Assert.Single(cut.FindAll("textarea")));
+
+            // Assert - the composer registers its catalog on its own scope, and the plain text editor registers it on the textarea
+            var profiles = ctx.Router.Invocations
+                .Where(invocation => invocation.Identifier == "register")
+                .Select(invocation => (InputProfile)invocation.Arguments[1]!)
+                .ToList();
+            Assert.Multiple(
+                () => Assert.Equal(2, profiles.Count),
+                () => Assert.All(profiles, profile => Assert.Contains(profile.Routes, route => route.Action == ComposerCommands.Undo)),
+                () => Assert.All(profiles, profile => Assert.Contains(profile.Routes, route => route.Action == ComposerCommands.Redo && route.Bindings.Count == 2)));
         }
 
         [Fact]
