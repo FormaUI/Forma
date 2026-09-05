@@ -620,6 +620,20 @@ describe('InputRouter native controls', () => {
         expect(paged).not.toHaveBeenCalled();
     });
 
+    // The composer's shortcuts are routes on its scope; a popup opened over it is an active scope of its own.
+    it('leaves a shortcut pressed inside an active nested scope to that scope, never to the routes around it', () => {
+        const bold = vi.fn();
+        scope(grid(), { routes: [route('composer.bold', bold, keyBinding('b', { primary: true }))] });
+        scope(popup(), {}).activate();
+
+        const inPopup = key(field(), 'b', { ctrlKey: true });
+        const outside = key(cell(), 'b', { ctrlKey: true });
+
+        expect(resolve(inPopup)).toMatchObject({ owner: popup(), action: null, reason: 'active boundary' });
+        expect(bold).toHaveBeenCalledOnce();
+        expect(bold).toHaveBeenCalledWith(outside, expect.objectContaining({ action: 'composer.bold' }));
+    });
+
     it('lets a scope registered on an editable route a shortcut the editable would otherwise consume', () => {
         const editor = document.createElement('div');
         editor.setAttribute('contenteditable', 'true');

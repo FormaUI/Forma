@@ -10,6 +10,8 @@ using Forma.Framework.Composer.Documents;
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Composer.Syntax;
+using Forma.Framework.Input;
+using Forma.Framework.Input.Interop;
 using Forma.Framework.Interop.Behaviours;
 using Forma.Framework.Resources;
 using Forma.Framework.Sanitization;
@@ -32,7 +34,7 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
     private ComposerKeyBindingCatalog _keyBindingCatalog = ComposerKeyBindingCatalog.Empty;
     private ElementReference _composerElement;
     private DotNetObjectReference<FormaComposer>? _selfReference;
-    private KeyBindings _keyBindings = default!;
+    private InputRegistration? _registration;
     private Focus _focus = default!;
     private JsComposerAssetLoader _assetLoader = default!;
     private IComposerHistory _history = default!;
@@ -70,6 +72,7 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
     [Parameter] public IComposerHistory? History { get; set; }
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
+    [Inject] private InputRouter Router { get; set; } = default!;
     [Inject] private IHtmlSanitizer Sanitizer { get; set; } = default!;
     [Inject] private IEnumerable<IComposerPlugin> RegisteredPlugins { get; set; } = default!;
     [Inject] private IEnumerable<IComposerDocumentConverter> RegisteredConverters { get; set; } = default!;
@@ -140,12 +143,12 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
             AssetLoader = _assetLoader,
             Regions = _regionRegistry,
             SyntaxHighlighter = _syntaxHighlighter,
+            KeyBindings = _keyBindingCatalog,
         };
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
-        _keyBindings = new KeyBindings(JS);
         _focus = new Focus(JS);
         _assetLoader = new JsComposerAssetLoader(JS);
         _selfReference = DotNetObjectReference.Create(this);
@@ -256,17 +259,23 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
 
         _isJsStarted = true;
 
-        await _keyBindings.AttachAsync(_composerElement, _selfReference!, ToKeyBindings(_keyBindingCatalog.Bindings));
+        // The composer's shortcuts route through its scope wherever focus rests inside it; the active editor registers them on its editable element as well, where a native control would otherwise claim them.
+        _registration = await Router.RegisterAsync(_composerElement, new InputProfile { Routes = _keyBindingCatalog.ToInputRoutes() }, _selfReference);
         // The canvas is where focus lands first; Tab then reaches the composer's own commands before leaving it.
         await _focus.AttachAsync(_composerElement, order: [".forma-composer-canvas"]);
         await _assetLoader.LoadAssetsAsync(_activeEditor.Assets);
     }
 
-    private static IReadOnlyList<KeyBinding> ToKeyBindings(IReadOnlyList<ComposerKeyBinding> bindings)
-        => [.. bindings.Select(b => new KeyBinding { Key = b.Key, Command = b.Command, Control = b.Control, Alt = b.Alt, Shift = b.Shift })];
+    /// <summary>Runs the command whose shortcut the router matched; a composer command is its own action.</summary>
+    [JSInvokable]
+    public Task HandleInputActionAsync(string action, InputInfo input)
+    {
+        ArgumentNullException.ThrowIfNull(input);
+
+        return HandleCommandAsync(action);
+    }
 
     /// <summary>Runs a composer command by name, whether the engine or a plugin owns it.</summary>
-    [JSInvokable]
     public async Task HandleCommandAsync(string command)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
@@ -478,9 +487,14 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
     {
         _regionRegistry.Changed -= HandleRegionsChanged;
 
+        if (_registration is { } registration)
+        {
+            _registration = null;
+            await registration.DisposeAsync();
+        }
+
         _selfReference?.Dispose();
         await _assetLoader.DisposeAsync();
         await _focus.DisposeAsync();
-        await _keyBindings.DisposeAsync();
     }
 }

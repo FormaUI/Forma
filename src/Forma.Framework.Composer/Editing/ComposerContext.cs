@@ -43,4 +43,7 @@ public sealed record ComposerContext
 
     /// <summary>The highlighter code classification runs through.</summary>
     public required IComposerSyntaxHighlighter SyntaxHighlighter { get; init; }
+
+    /// <summary>The shortcuts the composer and its plugins answer, which an editor registers on its own editable element.</summary>
+    public ComposerKeyBindingCatalog KeyBindings { get; init; } = ComposerKeyBindingCatalog.Empty;
 }

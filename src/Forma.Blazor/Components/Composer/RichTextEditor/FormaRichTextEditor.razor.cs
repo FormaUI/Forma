@@ -7,6 +7,8 @@ using Forma.Blazor.Components.Composer.RichTextEditor.Plugins;
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Composer.Interop;
 using Forma.Framework.Composer.Plugins;
+using Forma.Framework.Input;
+using Forma.Framework.Input.Interop;
 using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
@@ -25,10 +27,12 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
     [Inject] private IStringLocale<FormaComposer> L { get; set; } = default!;
+    [Inject] private InputRouter Router { get; set; } = default!;
 
     private ElementReference _editorElement;
     private DotNetObjectReference<FormaRichTextEditor>? _selfReference;
     private RichTextCanvas _canvas = default!;
+    private InputRegistration? _registration;
     private string? _committedContent;
     private string _blockAnnouncement = string.Empty;
     private bool _isAttached;
@@ -88,6 +92,12 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
         {
             _isAttached = await _canvas.AttachAsync(_editorElement, _selfReference!);
 
+            // An editable claims its shortcuts natively, so the composer's routes are registered on it to be answered first.
+            if (Context is { } context)
+            {
+                _registration = await Router.RegisterAsync(_editorElement, new InputProfile { Routes = context.KeyBindings.ToInputRoutes() }, _selfReference);
+            }
+
             var initialContent = Context?.Document.Content;
             if (!string.IsNullOrEmpty(initialContent))
             {
@@ -97,6 +107,15 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
 
             StateHasChanged();
         }
+    }
+
+    /// <summary>Runs the composer command whose shortcut the router matched inside the canvas; a command is its own action.</summary>
+    [JSInvokable]
+    public Task HandleInputActionAsync(string action, InputInfo input)
+    {
+        ArgumentNullException.ThrowIfNull(input);
+
+        return Interaction?.ExecuteCommandAsync(action) ?? Task.CompletedTask;
     }
 
     /// <summary>Callback invoked from JS when content changes via debounced typing or blur.</summary>
@@ -353,6 +372,12 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
             _editorPlugin.ImageDialogRequested -= HandleImageDialogRequested;
             _editorPlugin.ExplorerDialogRequested -= HandleExplorerDialogRequested;
             _editorPlugin.EmbedDialogRequested -= HandleEmbedDialogRequested;
+        }
+
+        if (_registration is { } registration)
+        {
+            _registration = null;
+            await registration.DisposeAsync();
         }
 
         _selfReference?.Dispose();
