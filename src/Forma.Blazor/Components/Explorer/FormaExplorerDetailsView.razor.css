@@ -23,16 +23,15 @@
 .forma-explorer-details-table td {
     padding-inline: var(--space-3);
     padding-block: var(--space-2);
-    border-block-end: 1px solid var(--light-border-color);
     white-space: nowrap;
 }
 
-/* A header starts where its column's cells start; the browser would center it on its own. Its tint is laid over
-   the panel's base, so a frozen header is opaque over the headers sliding beneath it. */
+/* A header starts where its column's cells start; the browser would center it on its own. The header row is a strip
+   set back into the surface, opaque so a frozen header covers the headers sliding beneath it. */
 .forma-explorer-details-table th {
     font-weight: 600;
     color: var(--text-color);
-    background: linear-gradient(var(--hover-background-color), var(--hover-background-color)) var(--input-background-color);
+    background: var(--surface-sunken-color);
     text-align: start;
     white-space: nowrap;
     user-select: none;
@@ -62,16 +61,15 @@
     max-inline-size: 0;
 }
 
-/* A frozen cell lays its row's tint over the panel's base, so the cells sliding beneath it do not show through. */
+/* A frozen cell lays its row's tint over the surface, so the cells sliding beneath it do not show through. */
 .forma-explorer-details-table td.forma-freeze-pane-frozen {
-    background: linear-gradient(var(--forma-explorer-row-tint), var(--forma-explorer-row-tint)) var(--input-background-color);
+    background: linear-gradient(var(--forma-explorer-row-tint), var(--forma-explorer-row-tint)) var(--surface-color);
 }
 
 /* A group's cell spans the row; the heading inside it stays in view at the row's start as the columns scroll. */
 .forma-explorer-details-table .forma-explorer-group-cell {
     padding-block: var(--space-1);
-    background: var(--input-background-color);
-    border-block-end: 1px solid var(--border-color);
+    background: var(--surface-sunken-color);
     cursor: default;
 }
 

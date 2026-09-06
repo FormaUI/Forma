@@ -3,14 +3,17 @@
    Hierarchical folder tree with drop targets and action buttons
    ============================================================ */
 
+/* A card on the explorer's canvas. */
 .forma-explorer-sidebar {
     inline-size: var(--forma-explorer-sidebar-size, 18rem);
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
     min-block-size: 0;
-    border-inline-end: 1px solid var(--border-color);
-    padding-inline-end: var(--space-2);
+    padding: var(--space-2);
+    background: var(--surface-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-small);
 }
 
 /* Stacked above the media in a narrow explorer, capped so the media still shows beneath it. */
@@ -18,17 +21,15 @@
     .forma-explorer-sidebar {
         inline-size: auto;
         max-block-size: 11rem;
-        padding-inline-end: 0;
-        padding-block-end: var(--space-2);
-        border-inline-end: none;
-        border-block-end: 1px solid var(--border-color);
     }
 }
 
+/* The tree is a section of the sidebar and ends in the line between sections, drawn across the card; the sash
+   below stands on that line. */
 .forma-explorer-folder-tree {
     list-style: none;
-    padding: 0;
-    margin: 0;
+    padding: 0 var(--space-2) var(--space-2);
+    margin: 0 calc(-1 * var(--space-2));
     display: flex;
     flex-direction: column;
     flex: 0 1 auto;
@@ -38,6 +39,7 @@
     overflow-x: hidden;
     overscroll-behavior: contain;
     scrollbar-width: thin;
+    border-block-end: 1px solid var(--border-color);
 }
 
 /* Sits between the tree and its footer so the tree's height can be dragged, like an Explorer section sash.

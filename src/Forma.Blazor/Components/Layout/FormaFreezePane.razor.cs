@@ -84,7 +84,8 @@ public sealed partial class FormaFreezePane : ComponentBase, IAsyncDisposable
             var navigation = ShowsArrows ? "forma-freeze-pane-arrows" : "forma-freeze-pane-scrollbar";
             var measured = _isMeasured ? " is-measured" : string.Empty;
             var frozen = FrozenExtent > 0 ? " has-frozen" : string.Empty;
-            var classes = $"forma-freeze-pane {axis} {navigation}{measured}{frozen}";
+            var scrolled = CanScrollBack ? " is-scrolled" : string.Empty;
+            var classes = $"forma-freeze-pane {axis} {navigation}{measured}{frozen}{scrolled}";
 
             return string.IsNullOrWhiteSpace(Class) ? classes : $"{classes} {Class}";
         }

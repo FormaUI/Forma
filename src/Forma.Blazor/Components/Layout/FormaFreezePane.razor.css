@@ -108,13 +108,40 @@
     inset-inline-start: calc(var(--forma-freeze-pane-frozen-extent) - var(--control-size-sm));
 }
 
+/* Once content has slid beneath the frozen region, the region casts a shadow onto it: a fade from its edge, the full
+   extent of the pane across the axis, and nothing while the content is at its start. */
+.forma-freeze-pane.has-frozen.is-scrolled::after {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.forma-freeze-pane-inline.has-frozen.is-scrolled::after {
+    inset-block: 0;
+    inset-inline-start: var(--forma-freeze-pane-frozen-extent);
+    inline-size: var(--space-3);
+    background: linear-gradient(to right, var(--shadow-color), transparent);
+}
+
+.forma-freeze-pane-inline.has-frozen.is-scrolled:dir(rtl)::after {
+    background: linear-gradient(to left, var(--shadow-color), transparent);
+}
+
+.forma-freeze-pane-block.has-frozen.is-scrolled::after {
+    inset-inline: 0;
+    inset-block-start: var(--forma-freeze-pane-frozen-extent);
+    block-size: var(--space-3);
+    background: linear-gradient(to bottom, var(--shadow-color), transparent);
+}
+
 /* The frozen region's edge is a splitter standing over the seam between the frozen parts and the scrolling content,
-   the full height of the viewport, centred on the seam. */
+   the full height of the viewport; the splitter centres itself on the seam it is given. */
 .forma-freeze-pane-inline.has-frozen > ::deep .forma-freeze-pane-edge {
     position: absolute;
     z-index: 2;
     inset-block: 0;
-    inset-inline-start: calc(var(--forma-freeze-pane-frozen-extent) - var(--forma-splitter-thickness, var(--space-3)) / 2);
+    inset-inline-start: var(--forma-freeze-pane-frozen-extent);
 }
 
 /* The chevron is not bidi-mirrored, so each inline arrow is turned to point the way it scrolls. */

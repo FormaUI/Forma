@@ -384,9 +384,15 @@ body {
     overflow: hidden;
 }
 
+/* The first pane is set back into the surface, so the seam the splitter stands on is a change of tone. */
 .demo-split-row > .demo-pane:first-child {
     inline-size: var(--demo-pane-size);
     flex-shrink: 0;
+    background: var(--surface-sunken-color);
+}
+
+.demo-split-column > .demo-pane:first-child {
+    background: var(--surface-sunken-color);
 }
 
 .demo-pane-fill {

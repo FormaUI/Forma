@@ -10,15 +10,15 @@
     --forma-explorer-check-glyph-size: var(--font-size-xs);
     --forma-explorer-check-foreground-color: var(--main-foreground-color);
     --forma-explorer-block-size: 40rem;
-    --forma-explorer-padding: var(--space-3);
+    --forma-explorer-gap: var(--space-1);
     --forma-explorer-radius: var(--radius-md);
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
-    border: 1px solid var(--border-color);
+    gap: var(--forma-explorer-gap);
     border-radius: var(--forma-explorer-radius);
-    background: var(--input-background-color);
-    padding: var(--forma-explorer-padding);
+    /* The explorer paints its own canvas, so its cards stand apart wherever it is placed. */
+    background: var(--canvas-color);
+    padding: var(--forma-explorer-gap);
     min-inline-size: min(20rem, 100%);
     min-block-size: 18rem;
     max-block-size: var(--forma-explorer-block-size);
@@ -27,14 +27,12 @@
     container-type: inline-size;
 }
 
-/* The command region is FormaCommandBar's, retuned through its variables. */
+/* The command region is a card on the canvas; FormaCommandArea's own knobs set its fill and padding. */
 ::deep .forma-explorer-header {
-    --forma-command-area-padding: var(--forma-explorer-padding);
-    --forma-command-area-background-color: var(--forma-explorer-header-background-color, var(--modal-background-color));
-    margin-block-start: calc(-1 * var(--forma-explorer-padding));
-    margin-inline: calc(-1 * var(--forma-explorer-padding));
-    border-start-start-radius: var(--forma-explorer-radius);
-    border-start-end-radius: var(--forma-explorer-radius);
+    --forma-command-area-padding: var(--space-3);
+    --forma-command-area-background-color: var(--forma-explorer-header-background-color, var(--surface-color));
+    border-radius: var(--forma-explorer-radius);
+    box-shadow: var(--shadow-small);
 }
 
 .forma-explorer.is-resizable {
@@ -74,11 +72,7 @@
 }
 
 .forma-explorer.is-dialog {
-    --forma-explorer-padding: 0rem;
     --forma-explorer-radius: 0;
-    border: none;
-    padding: 0;
-    background: transparent;
 }
 
 /* --- Upload Panel --- */
@@ -150,17 +144,21 @@
 }
 
 /* --- Body Layout --- */
+/* The sidebar and the content are two cards; the canvas shows between them as the gap, and the splitter stands on
+   that seam taking no room of its own. */
 .forma-explorer-body {
     display: flex;
-    gap: 0;
+    gap: var(--forma-explorer-gap);
     flex: 1;
     min-block-size: 0;
     overflow: hidden;
 }
 
 /* --- Sidebar Splitter --- */
-/* The divider's place in the row. */
-::deep .forma-explorer-splitter {
+/* The divider's place in the row: it is told the gap it stands in, so it centres in it and the gaps on either side
+   of it add up to one. */
+.forma-explorer-body > ::deep .forma-explorer-splitter {
+    --forma-splitter-gap: var(--forma-explorer-gap);
     align-self: stretch;
 }
 
@@ -172,10 +170,9 @@
 @container (max-width: 40rem) {
     .forma-explorer-body {
         flex-direction: column;
-        gap: var(--space-3);
     }
 
-    ::deep .forma-explorer-splitter {
+    .forma-explorer-body > ::deep .forma-explorer-splitter {
         display: none;
     }
 }

@@ -1,7 +1,9 @@
 /* ============================================================
    FormaSplitter — CSS isolation
-   An invisible hit area that reveals an accent grip on hover,
-   focus, or while dragging, in either orientation.
+   An invisible hit area standing over the seam the layout
+   draws, taking no room of its own, that reveals an accent
+   grip on that seam on hover, focus, or while dragging, in
+   either orientation.
    ============================================================ */
 
 .forma-splitter {
@@ -23,8 +25,11 @@
     transition: background-color 0.1s ease;
 }
 
+/* Centred on the seam by pulling half its thickness back over each neighbour, and half of any flex gap the host lays
+   around it, named in --forma-splitter-gap, so the gap it stands in stays one gap. */
 .forma-splitter-vertical {
     inline-size: var(--forma-splitter-thickness, var(--space-3));
+    margin-inline: calc((var(--forma-splitter-thickness, var(--space-3)) + var(--forma-splitter-gap, 0px)) / -2);
     cursor: col-resize;
 }
 
@@ -35,6 +40,7 @@
 
 .forma-splitter-horizontal {
     block-size: var(--forma-splitter-thickness, var(--space-3));
+    margin-block: calc((var(--forma-splitter-thickness, var(--space-3)) + var(--forma-splitter-gap, 0px)) / -2);
     align-items: center;
     cursor: row-resize;
 }
@@ -82,9 +88,11 @@
 @media (pointer: coarse) {
     .forma-splitter-vertical {
         inline-size: var(--forma-splitter-coarse-thickness, var(--control-size-touch));
+        margin-inline: calc((var(--forma-splitter-coarse-thickness, var(--control-size-touch)) + var(--forma-splitter-gap, 0px)) / -2);
     }
 
     .forma-splitter-horizontal {
         block-size: var(--forma-splitter-coarse-thickness, var(--control-size-touch));
+        margin-block: calc((var(--forma-splitter-coarse-thickness, var(--control-size-touch)) + var(--forma-splitter-gap, 0px)) / -2);
     }
 }

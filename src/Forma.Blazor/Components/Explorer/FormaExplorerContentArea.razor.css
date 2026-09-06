@@ -4,6 +4,7 @@
    state, the infinite-scroll sentinel and the pager
    ============================================================ */
 
+/* A card on the explorer's canvas; the views inside it reach its edges, so a header strip runs the card's width. */
 .forma-explorer-content {
     flex: 1;
     min-inline-size: 0;
@@ -11,13 +12,10 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
-    padding-inline-start: var(--space-3);
-}
-
-@container (max-width: 40rem) {
-    .forma-explorer-content {
-        padding-inline-start: 0;
-    }
+    background: var(--surface-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-small);
+    overflow: hidden;
 }
 
 /* The media scrolls inside the panel, so the toolbar, folder tree and pager stay put; a table that outgrows the width scrolls sideways inside its own freeze pane. */
@@ -58,9 +56,12 @@
 }
 
 /* --- Pagination --- */
+/* The pager sits inside the card's inset; the views above it decide their own. */
 .forma-explorer-pagination {
     display: flex;
     margin-block-start: var(--space-2);
+    padding-inline: var(--space-3);
+    padding-block-end: var(--space-3);
 }
 
 .forma-explorer-pagination ::deep .forma-pagination {
