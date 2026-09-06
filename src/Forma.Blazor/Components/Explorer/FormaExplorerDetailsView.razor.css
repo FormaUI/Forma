@@ -6,7 +6,7 @@
 /* The frozen region is the actions column and the name column; dragging its edge sets the extent, and the name
    column is sized from it. */
 .forma-explorer-details-wrapper {
-    --forma-explorer-frozen-extent: calc(var(--forma-explorer-name-column-size) + var(--control-size-sm) + 2 * var(--space-1));
+    --forma-explorer-frozen-extent: calc(var(--forma-explorer-name-column-size) + var(--target-size-sm) + 2 * var(--space-1));
     inline-size: 100%;
 }
 
@@ -30,8 +30,8 @@
    set back into the frame, opaque so a frozen header covers the headers sliding beneath it. */
 .forma-explorer-details-table th {
     font-weight: 600;
-    color: var(--text-color);
-    background: var(--frame-inset-background-color);
+    color: var(--text-primary-color);
+    background: var(--frame-inset-bg-color);
     text-align: start;
     white-space: nowrap;
     user-select: none;
@@ -41,20 +41,20 @@
 /* The name stands behind the actions column, one small control and its padding in from the start. */
 .forma-explorer-column-name,
 .forma-explorer-cell-name {
-    --forma-freeze-pane-frozen-offset: calc(var(--control-size-sm) + 2 * var(--space-1));
+    --forma-freeze-pane-frozen-offset: calc(var(--target-size-sm) + 2 * var(--space-1));
 }
 
 /* The other columns keep their widths, so a table wider than the pane scrolls rather than squeezing them; the name
    column takes what they leave, between a floor that keeps a thumbnail and a few characters and its natural width.
    A name that no longer fits is cut with an ellipsis and carried whole in its tooltip. */
 .forma-explorer-column-name {
-    inline-size: calc(var(--forma-explorer-frozen-extent) - var(--control-size-sm) - 2 * var(--space-1));
+    inline-size: calc(var(--forma-explorer-frozen-extent) - var(--target-size-sm) - 2 * var(--space-1));
     min-inline-size: 6rem;
 }
 
 /* A width the reader chose holds, so the other columns scroll rather than squeezing it back. */
 .has-frozen-extent .forma-explorer-column-name {
-    min-inline-size: max(6rem, calc(var(--forma-explorer-frozen-extent) - var(--control-size-sm) - 2 * var(--space-1)));
+    min-inline-size: max(6rem, calc(var(--forma-explorer-frozen-extent) - var(--target-size-sm) - 2 * var(--space-1)));
 }
 
 .forma-explorer-cell-name {
@@ -63,13 +63,13 @@
 
 /* A frozen cell lays its row's tint over the frame's fill, so the cells sliding beneath it do not show through. */
 .forma-explorer-details-table td.forma-freeze-pane-frozen {
-    background: linear-gradient(var(--forma-explorer-row-tint), var(--forma-explorer-row-tint)) var(--frame-flat-background-color);
+    background: linear-gradient(var(--forma-explorer-row-tint), var(--forma-explorer-row-tint)) var(--frame-flat-bg-color);
 }
 
 /* A group's cell spans the row; the heading inside it stays in view at the row's start as the columns scroll. */
 .forma-explorer-details-table .forma-explorer-group-cell {
     padding-block: var(--space-1);
-    background: var(--frame-inset-background-color);
+    background: var(--frame-inset-bg-color);
     cursor: default;
 }
 
@@ -100,7 +100,7 @@
 
 /* The leading slot is exactly the actions trigger or the checkbox, so the name starts one small control in. */
 .forma-explorer-column-actions {
-    inline-size: var(--control-size-sm);
+    inline-size: var(--target-size-sm);
     text-align: start;
     cursor: default !important;
 }
@@ -125,7 +125,7 @@
 .forma-explorer-sort-arrow {
     font-size: var(--font-size-xs);
     margin-inline-start: var(--space-1);
-    color: var(--main-color);
+    color: var(--primary-color);
 }
 
 /* A row carries its state as a tint, painted across the row and layered onto its frozen cells. The tint is a
@@ -149,7 +149,7 @@
 
 @media (hover: hover) {
     .forma-explorer-details-row:not(.is-disabled):hover {
-        --forma-explorer-row-tint: var(--hover-background-color);
+        --forma-explorer-row-tint: var(--hover-bg-color);
     }
 }
 
@@ -161,13 +161,13 @@
 
 /* A disabled row: the disabled control colors, and a pointer that says so. */
 .forma-explorer-details-row.is-disabled {
-    --forma-explorer-row-tint: var(--control-disabled-color);
+    --forma-explorer-row-tint: var(--disabled-bg-color);
     cursor: not-allowed;
 }
 
 .forma-explorer-details-row.is-disabled td,
 .forma-explorer-details-row.is-disabled .forma-explorer-details-name-text {
-    color: var(--control-disabled-foreground-color);
+    color: var(--disabled-text-color);
 }
 
 .forma-explorer-details-row.is-disabled .forma-explorer-name-wrapper {
@@ -180,7 +180,7 @@
 }
 
 .forma-explorer-details-row.is-selected {
-    --forma-explorer-row-tint: color-mix(in srgb, var(--main-color) 12%, transparent);
+    --forma-explorer-row-tint: color-mix(in srgb, var(--primary-color) 12%, transparent);
 }
 
 .forma-explorer-name-wrapper {
@@ -188,7 +188,7 @@
     align-items: center;
     gap: var(--space-2);
     inline-size: 100%;
-    min-block-size: var(--control-size-md);
+    min-block-size: var(--target-size-md);
     padding: 0;
     border: none;
     background: transparent;
@@ -202,7 +202,7 @@
 /* Isolated but not self-directed: deriving direction from the name would align a Latin one against the reading direction. */
 .forma-explorer-details-name-text {
     font-weight: 500;
-    color: var(--text-color);
+    color: var(--text-primary-color);
     unicode-bidi: isolate;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -210,6 +210,6 @@
 }
 
 .forma-explorer-details-row.is-selected .forma-explorer-details-name-text {
-    color: var(--main-color);
+    color: var(--primary-color);
     font-weight: 700;
 }

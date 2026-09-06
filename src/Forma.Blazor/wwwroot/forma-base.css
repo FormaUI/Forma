@@ -14,11 +14,11 @@ body {
     font-size: var(--font-size-base);
     font-weight: 400;
     line-height: var(--line-height-prose);
-    color: var(--text-color);
+    color: var(--text-primary-color);
 }
 
 a {
-    color: var(--main-dark-color);
+    color: var(--primary-dark-color);
     text-decoration: none;
 }
 
@@ -38,6 +38,6 @@ a {
 
 @media (hover: hover) {
     a:hover {
-        color: var(--main-light-color);
+        color: var(--primary-light-color);
     }
 }

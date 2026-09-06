@@ -7,11 +7,11 @@
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    min-block-size: var(--control-size-md);
+    min-block-size: var(--target-size-md);
     padding: 0;
     border: none;
     background: transparent;
-    color: var(--text-color);
+    color: var(--text-primary-color);
     font: inherit;
     font-size: var(--font-size-sm);
     font-weight: 600;
@@ -22,7 +22,7 @@
 
 .forma-explorer-group-chevron {
     display: inline-flex;
-    color: var(--control-quiet-foreground-color);
+    color: var(--quiet-text-color);
 }
 
 /* The chevron pointing along the reading direction is turned to point the other way in right-to-left text. */

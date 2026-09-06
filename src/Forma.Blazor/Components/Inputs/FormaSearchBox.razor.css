@@ -35,8 +35,8 @@
 }
 
 .forma-search-box:disabled {
-    color: var(--forma-input-disabled-color, var(--control-disabled-foreground-color));
-    background-color: var(--forma-input-disabled-background-color, var(--hover-background-color));
+    color: var(--forma-input-disabled-color, var(--disabled-text-color));
+    background-color: var(--forma-input-disabled-bg-color, var(--hover-bg-color));
     cursor: not-allowed;
 }
 
@@ -52,6 +52,6 @@
 
 @media (pointer: coarse) {
     .forma-search-box {
-        min-block-size: var(--control-size-touch);
+        min-block-size: var(--target-size-touch);
     }
 }

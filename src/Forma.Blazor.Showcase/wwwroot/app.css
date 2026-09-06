@@ -12,7 +12,7 @@
    ============================================================ */
 
 body {
-    background: var(--frame-canvas-background-color);
+    background: var(--frame-canvas-bg-color);
 }
 
 .showcase-layout {
@@ -31,7 +31,7 @@ body {
     block-size: 100vh;
     padding: var(--space-5) 0;
     overflow-y: auto;
-    background: var(--input-background-color);
+    background: var(--input-bg-color);
     border-inline-end: 1px solid var(--border-color);
 }
 
@@ -60,18 +60,18 @@ body {
     display: block;
     padding: var(--space-2) var(--space-5);
     font-size: var(--font-size-sm);
-    color: var(--text-color);
+    color: var(--text-primary-color);
     text-decoration: none;
 }
 
 .showcase-sidebar a:hover {
-    background: var(--hover-background-color);
+    background: var(--hover-bg-color);
 }
 
 .showcase-sidebar a.active {
     font-weight: 600;
-    background: color-mix(in srgb, var(--main-color) 8%, transparent);
-    color: var(--main-color);
+    background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+    color: var(--primary-color);
 }
 
 .culture-switcher {
@@ -93,13 +93,13 @@ body {
 }
 
 .culture-switcher a.active {
-    background: color-mix(in srgb, var(--main-color) 8%, transparent);
-    border-color: color-mix(in srgb, var(--main-color) 30%, transparent);
-    color: var(--main-color);
+    background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+    border-color: color-mix(in srgb, var(--primary-color) 30%, transparent);
+    color: var(--primary-color);
 }
 
 .culture-switcher a:hover:not(.active) {
-    background: var(--hover-background-color);
+    background: var(--hover-bg-color);
 }
 
 .showcase-main {
@@ -131,8 +131,8 @@ body {
         margin: var(--space-2);
         border: 1px solid var(--border-color);
         border-radius: var(--radius-sm);
-        background: var(--input-background-color);
-        color: var(--text-color);
+        background: var(--input-bg-color);
+        color: var(--text-primary-color);
         cursor: pointer;
     }
 
@@ -178,7 +178,7 @@ body {
     gap: var(--space-2);
     padding: var(--space-3);
     border-radius: var(--radius-md);
-    background: var(--hover-background-color);
+    background: var(--hover-bg-color);
     font-size: var(--font-size-xl);
 }
 
@@ -247,14 +247,14 @@ body {
 
 /* The active variant is marked by its underline as well as its colour, so the strip reads without it. */
 .showcase-tabs a.active {
-    color: var(--main-color);
+    color: var(--primary-color);
     font-weight: 600;
-    border-block-end-color: var(--main-color);
+    border-block-end-color: var(--primary-color);
 }
 
 @media (hover: hover) {
     .showcase-tabs a:hover {
-        color: var(--main-color);
+        color: var(--primary-color);
     }
 }
 
@@ -309,7 +309,7 @@ body {
     align-items: stretch;
     gap: var(--space-3);
     padding: var(--space-5);
-    background: var(--frame-flat-background-color);
+    background: var(--frame-flat-bg-color);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-small);
 }
@@ -341,7 +341,7 @@ body {
 
 .demo-command-area-tinted {
     --forma-command-area-padding: var(--space-5);
-    --forma-command-area-background-color: var(--hover-background-color);
+    --forma-command-area-bg-color: var(--hover-bg-color);
 }
 
 /* Forces the overflow case without needing the window resized. */
@@ -358,7 +358,7 @@ body {
 }
 
 .demo-shortcut-surface:focus-visible {
-    outline: 2px solid var(--main-color);
+    outline: 2px solid var(--primary-color);
     outline-offset: -2px;
 }
 
@@ -366,7 +366,7 @@ body {
 .demo-split {
     display: flex;
     block-size: 12rem;
-    background: var(--input-background-color);
+    background: var(--input-bg-color);
 }
 
 .demo-split-column {
@@ -380,7 +380,7 @@ body {
     padding: var(--space-3);
     font-size: var(--font-size-sm);
     color: var(--text-secondary-color);
-    background: var(--hover-background-color);
+    background: var(--hover-bg-color);
     overflow: hidden;
 }
 
@@ -388,11 +388,11 @@ body {
 .demo-split-row > .demo-pane:first-child {
     inline-size: var(--demo-pane-size);
     flex-shrink: 0;
-    background: var(--frame-inset-background-color);
+    background: var(--frame-inset-bg-color);
 }
 
 .demo-split-column > .demo-pane:first-child {
-    background: var(--frame-inset-background-color);
+    background: var(--frame-inset-bg-color);
 }
 
 .demo-pane-fill {
@@ -443,7 +443,7 @@ body {
 .demo-popup {
     padding: var(--space-3);
     border-radius: var(--radius-md);
-    background: var(--input-background-color);
+    background: var(--input-bg-color);
     box-shadow: var(--shadow-medium);
 }
 
@@ -472,16 +472,16 @@ body {
 
 .demo-scope-active {
     border-style: solid;
-    border-color: var(--main-color);
+    border-color: var(--primary-color);
     box-shadow: var(--focus-ring);
 }
 
 .demo-scope-popup {
-    background: var(--input-background-color);
+    background: var(--input-bg-color);
 }
 
 .demo-scope-modal {
-    background: var(--modal-background-color);
+    background: var(--dialog-top-bg-color);
 }
 
 .demo-scope-modal.demo-scope-active {
@@ -506,13 +506,13 @@ body {
 
 /* A readout is muted until its scope has something to say. */
 .demo-readout {
-    --forma-status-badge-background-color: var(--muted-background-color);
-    --forma-status-badge-foreground-color: var(--text-secondary-color);
+    --forma-status-badge-bg-color: var(--muted-bg-color);
+    --forma-status-badge-fg-color: var(--text-secondary-color);
 }
 
 .demo-readout-live {
-    --forma-status-badge-background-color: color-mix(in srgb, var(--main-color) 14%, transparent);
-    --forma-status-badge-foreground-color: var(--main-dark-color);
+    --forma-status-badge-bg-color: color-mix(in srgb, var(--primary-color) 14%, transparent);
+    --forma-status-badge-fg-color: var(--primary-dark-color);
 }
 
 .demo-controls {
@@ -529,11 +529,11 @@ body {
 
 .demo-editable {
     min-inline-size: 12rem;
-    min-block-size: var(--control-size-md);
+    min-block-size: var(--target-size-md);
     padding: var(--space-2);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
-    background: var(--input-background-color);
+    background: var(--input-bg-color);
 }
 
 .demo-editable:focus-visible {
@@ -561,11 +561,11 @@ body {
     border: 1px solid var(--dark-border-color);
     border-block-end-width: 2px;
     border-radius: var(--radius-sm);
-    background: var(--input-background-color);
+    background: var(--input-bg-color);
     font-family: inherit;
     font-size: var(--font-size-xs);
     font-weight: 600;
-    line-height: var(--control-size-sm);
+    line-height: var(--target-size-sm);
 }
 
 .demo-popup-actions {
@@ -587,8 +587,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    inline-size: var(--control-size-md);
-    block-size: var(--control-size-md);
+    inline-size: var(--target-size-md);
+    block-size: var(--target-size-md);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
 }
@@ -611,11 +611,11 @@ body {
 .showcase-index a {
     display: flex;
     align-items: center;
-    min-block-size: var(--control-size-touch);
+    min-block-size: var(--target-size-touch);
     padding: var(--space-2) var(--space-3);
     border-radius: var(--radius-md);
-    background: var(--hover-background-color);
-    color: var(--text-color);
+    background: var(--hover-bg-color);
+    color: var(--text-primary-color);
     font-size: var(--font-size-sm);
     font-weight: 500;
     text-decoration: none;
@@ -623,8 +623,8 @@ body {
 
 @media (hover: hover) {
     .showcase-index a:hover {
-        background: color-mix(in srgb, var(--main-color) 8%, transparent);
-        color: var(--main-color);
+        background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+        color: var(--primary-color);
     }
 }
 
@@ -699,10 +699,10 @@ body {
     padding: var(--space-3) var(--space-4);
     border-radius: var(--radius-md);
     background: var(--info-color);
-    color: var(--main-foreground-color);
+    color: var(--primary-fg-color);
     --forma-button-ghost-color: rgba(255, 255, 255, 0.85);
-    --forma-button-ghost-hover-color: var(--main-foreground-color);
-    --forma-button-ghost-hover-background-color: rgba(255, 255, 255, 0.18);
+    --forma-button-ghost-hover-color: var(--primary-fg-color);
+    --forma-button-ghost-hover-bg-color: rgba(255, 255, 255, 0.18);
 }
 
 /* The dismiss sits at the end of the row, where the toast keeps its own. */
@@ -737,7 +737,7 @@ body {
 
 .demo-number {
     inline-size: 6rem;
-    min-block-size: var(--control-size-md);
+    min-block-size: var(--target-size-md);
     padding-inline: var(--space-2);
 }
 
@@ -746,7 +746,7 @@ body {
     padding: var(--space-1) var(--space-3);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-pill);
-    background: var(--hover-background-color);
+    background: var(--hover-bg-color);
     font-size: var(--font-size-sm);
 }
 
@@ -812,11 +812,11 @@ body {
 }
 
 .demo-scroll-table thead th {
-    background: var(--modal-background-color);
+    background: var(--frame-inset-bg-color);
 }
 
 .demo-scroll-table td.forma-freeze-pane-frozen {
-    background: var(--input-background-color);
+    background: var(--input-bg-color);
 }
 
 /* A region standing in for real content on the frame and layout pages: a label centred in a card or a strip. */

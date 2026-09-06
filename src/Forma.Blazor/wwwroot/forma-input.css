@@ -12,13 +12,13 @@
     display: block;
     inline-size: 100%;
     /* An input stands exactly as tall as the button beside it. */
-    min-block-size: var(--control-size-md);
+    min-block-size: var(--target-size-md);
     padding-block: var(--space-1);
     padding-inline: var(--space-3);
     font-size: var(--font-size-sm);
     line-height: var(--line-height-prose);
-    color: var(--forma-input-color, var(--text-color));
-    background-color: var(--forma-input-background-color, var(--input-background-color));
+    color: var(--forma-input-color, var(--text-primary-color));
+    background-color: var(--forma-input-bg-color, var(--input-bg-color));
     border: 1px solid var(--forma-input-border-color, var(--dark-border-color));
     border-radius: var(--radius-sm);
     outline: none;
@@ -45,7 +45,7 @@
     .forma-field-input,
     .forma-text-box,
     .forma-search-box {
-        min-block-size: var(--control-size-touch);
+        min-block-size: var(--target-size-touch);
     }
 }
 

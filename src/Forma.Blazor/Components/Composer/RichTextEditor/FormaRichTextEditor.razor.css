@@ -18,8 +18,8 @@
     border: none;
     outline: none;
     background: transparent;
-    color: var(--forma-composer-color, var(--text-color, inherit));
-    font-family: var(--font-family-base, inherit);
+    color: var(--forma-composer-color, var(--text-primary-color));
+    font-family: var(--font-family);
     font-size: var(--font-size-base);
     line-height: var(--line-height-prose);
     overflow-y: auto;

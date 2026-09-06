@@ -34,4 +34,4 @@ Say **canvas** when the subject is where content is typed, selected, or inserted
 
 Everything around the canvas — the toolbar rows above it, the gutter beside it, the status strip below it. A region takes contributions from plugins by name rather than by category.
 
-**Surface** means this and only this. A background plane is a **fill**, and the CSS custom property painting one follows the library's `{purpose}-background-color` convention.
+**Surface** means this and only this. A background plane is a **fill**, and the CSS custom property painting one follows the library's `{purpose}-bg-color` convention.

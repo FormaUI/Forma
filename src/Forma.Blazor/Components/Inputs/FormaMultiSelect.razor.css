@@ -23,10 +23,10 @@
     gap: var(--space-1);
     padding-inline: var(--space-2);
     padding-block: 0;
-    min-block-size: var(--control-size-sm);
+    min-block-size: var(--target-size-sm);
     border-radius: var(--radius-pill);
-    background: var(--hover-background-color);
-    color: var(--forma-input-color, var(--text-color));
+    background: var(--hover-bg-color);
+    color: var(--forma-input-color, var(--text-primary-color));
     font-size: var(--font-size-sm);
 }
 
@@ -53,7 +53,7 @@
 
 @media (hover: hover) {
     .forma-multi-select-trigger:hover:not(:disabled) {
-        border-color: var(--main-color);
+        border-color: var(--primary-color);
     }
 }
 
@@ -89,7 +89,7 @@
     max-inline-size: 20rem;
     max-block-size: 16rem;
     border-radius: var(--radius-md);
-    background: var(--input-background-color);
+    background: var(--input-bg-color);
     box-shadow: var(--shadow-medium);
 }
 
@@ -109,7 +109,7 @@
 
 @media (hover: hover) {
     .forma-multi-select-options ::deep .forma-checkbox-label:hover {
-        background: var(--hover-background-color);
+        background: var(--hover-bg-color);
     }
 }
 
@@ -129,13 +129,13 @@
 /* Add is set at the start, like the options. */
 ::deep .forma-multi-select-add {
     justify-content: flex-start;
-    color: var(--main-color);
+    color: var(--primary-color);
 }
 
 @media (pointer: coarse) {
     .forma-multi-select-trigger,
     .forma-multi-select-search,
     .forma-multi-select-options ::deep .forma-checkbox-label {
-        min-block-size: var(--control-size-touch);
+        min-block-size: var(--target-size-touch);
     }
 }

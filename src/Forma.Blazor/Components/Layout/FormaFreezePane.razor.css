@@ -105,7 +105,7 @@
     position: absolute;
     z-index: 2;
     inset-block-start: 0;
-    inset-inline-start: calc(var(--forma-freeze-pane-frozen-extent) - var(--control-size-sm));
+    inset-inline-start: calc(var(--forma-freeze-pane-frozen-extent) - var(--target-size-sm));
 }
 
 /* Once content has slid beneath the frozen region, the region casts a shadow onto it: a fade from its edge, the full

@@ -12,15 +12,15 @@
     align-items: center;
     justify-content: center;
     gap: var(--space-1);
-    min-block-size: var(--control-size-md);
+    min-block-size: var(--target-size-md);
     padding-block: 0;
     padding-inline: var(--space-3);
     font-family: inherit;
     font-size: var(--font-size-sm);
     font-weight: 600;
-    line-height: var(--line-height-control);
+    line-height: var(--line-height-target);
     white-space: nowrap;
-    color: var(--main-foreground-color);
+    color: var(--primary-fg-color);
     border: 1px solid transparent;
     border-radius: var(--forma-button-radius, var(--radius-sm));
     overflow: hidden;
@@ -32,8 +32,8 @@
 
 /* Disabled is one neutral treatment for every variant; busy dims the variant's own color under the progress, disabled or not. */
 .forma-button:disabled {
-    background-color: var(--control-disabled-color);
-    color: var(--control-disabled-foreground-color);
+    background-color: var(--disabled-bg-color);
+    color: var(--disabled-text-color);
     cursor: not-allowed;
 }
 
@@ -42,43 +42,43 @@
 }
 
 .forma-button-primary[data-busy="true"] {
-    background-color: color-mix(in srgb, var(--main-color) 65%, var(--input-background-color));
-    color: var(--main-foreground-color);
+    background-color: color-mix(in srgb, var(--button-primary-color) 65%, var(--input-bg-color));
+    color: var(--primary-fg-color);
 }
 
 .forma-button-secondary[data-busy="true"] {
-    background-color: color-mix(in srgb, var(--control-neutral-color) 65%, var(--input-background-color));
-    color: var(--main-foreground-color);
+    background-color: color-mix(in srgb, var(--button-secondary-color) 65%, var(--input-bg-color));
+    color: var(--primary-fg-color);
 }
 
 .forma-button-danger[data-busy="true"] {
-    background-color: color-mix(in srgb, var(--danger-color) 65%, var(--input-background-color));
-    color: var(--main-foreground-color);
+    background-color: color-mix(in srgb, var(--danger-color) 65%, var(--input-bg-color));
+    color: var(--primary-fg-color);
 }
 
 /* A busy quiet variant takes the disabled gray on its label. */
 .forma-button-tertiary[data-busy="true"] {
-    background-color: var(--control-quiet-color);
-    color: var(--control-disabled-foreground-color);
+    background-color: var(--button-quiet-color);
+    color: var(--disabled-text-color);
 }
 
 .forma-button-ghost[data-busy="true"] {
     background-color: transparent;
-    color: var(--control-disabled-foreground-color);
+    color: var(--disabled-text-color);
 }
 
 /* ---------- variants ---------- */
 .forma-button-primary {
-    background-color: var(--main-color);
+    background-color: var(--button-primary-color);
 }
 
 .forma-button-secondary {
-    background-color: var(--control-neutral-color);
+    background-color: var(--button-secondary-color);
 }
 
 .forma-button-tertiary {
-    background-color: var(--control-quiet-color);
-    color: var(--control-quiet-foreground-color);
+    background-color: var(--button-quiet-color);
+    color: var(--quiet-text-color);
 }
 
 .forma-button-danger {
@@ -87,8 +87,8 @@
 
 /* Hooks for a composing component's own state. */
 .forma-button-ghost {
-    background-color: var(--forma-button-ghost-background-color, transparent);
-    color: var(--forma-button-ghost-color, var(--control-quiet-foreground-color));
+    background-color: var(--forma-button-ghost-bg-color, transparent);
+    color: var(--forma-button-ghost-color, var(--quiet-text-color));
 }
 
 .forma-button-ghost:disabled {
@@ -98,15 +98,15 @@
 /* Hover and press darken the fill; a busy button holds still. */
 @media (hover: hover) {
     .forma-button-primary:hover:not(:disabled):not([data-busy="true"]) {
-        background-color: var(--main-dark-color);
+        background-color: var(--button-primary-hover-color);
     }
 
     .forma-button-secondary:hover:not(:disabled):not([data-busy="true"]) {
-        background-color: var(--control-neutral-hover-color);
+        background-color: var(--button-secondary-hover-color);
     }
 
     .forma-button-tertiary:hover:not(:disabled):not([data-busy="true"]) {
-        background-color: var(--control-quiet-hover-color);
+        background-color: var(--button-quiet-hover-color);
     }
 
     .forma-button-danger:hover:not(:disabled):not([data-busy="true"]) {
@@ -114,21 +114,21 @@
     }
 
     .forma-button-ghost:hover:not(:disabled):not([data-busy="true"]) {
-        background-color: var(--forma-button-ghost-hover-background-color, var(--control-quiet-hover-color));
-        color: var(--forma-button-ghost-hover-color, var(--control-quiet-foreground-color));
+        background-color: var(--forma-button-ghost-hover-bg-color, var(--button-quiet-hover-color));
+        color: var(--forma-button-ghost-hover-color, var(--quiet-text-color));
     }
 }
 
 .forma-button-primary:active:not(:disabled):not([data-busy="true"]) {
-    background-color: color-mix(in srgb, var(--main-color) 72%, black);
+    background-color: var(--button-primary-active-color);
 }
 
 .forma-button-secondary:active:not(:disabled):not([data-busy="true"]) {
-    background-color: var(--control-neutral-active-color);
+    background-color: var(--button-secondary-active-color);
 }
 
 .forma-button-tertiary:active:not(:disabled):not([data-busy="true"]) {
-    background-color: var(--control-quiet-active-color);
+    background-color: var(--button-quiet-active-color);
 }
 
 .forma-button-danger:active:not(:disabled):not([data-busy="true"]) {
@@ -136,13 +136,13 @@
 }
 
 .forma-button-ghost:active:not(:disabled):not([data-busy="true"]) {
-    background-color: var(--control-quiet-active-color);
+    background-color: var(--button-quiet-active-color);
 }
 
 /* ---------- size ---------- */
 /* No border: the small step is the small glyph's own size. */
 .forma-button-mini {
-    min-block-size: var(--control-size-sm);
+    min-block-size: var(--target-size-sm);
     padding-inline: var(--space-2);
     border-width: 0;
     font-size: var(--font-size-xs);
@@ -156,14 +156,14 @@
 /* ---------- icon only ---------- */
 .forma-button-icon {
     padding: 0;
-    inline-size: var(--control-size-md);
-    block-size: var(--control-size-md);
+    inline-size: var(--target-size-md);
+    block-size: var(--target-size-md);
     flex-shrink: 0;
 }
 
 .forma-button-icon.forma-button-mini {
-    inline-size: var(--control-size-sm);
-    block-size: var(--control-size-sm);
+    inline-size: var(--target-size-sm);
+    block-size: var(--target-size-sm);
 }
 
 .forma-button-icon ::deep .forma-icon:not([class*="forma-icon-"]) {
@@ -285,12 +285,12 @@
 @media (pointer: coarse) {
     .forma-button,
     .forma-button-mini {
-        min-block-size: var(--control-size-touch);
+        min-block-size: var(--target-size-touch);
     }
 
     .forma-button-icon,
     .forma-button-icon.forma-button-mini {
-        inline-size: var(--control-size-touch);
-        block-size: var(--control-size-touch);
+        inline-size: var(--target-size-touch);
+        block-size: var(--target-size-touch);
     }
 }

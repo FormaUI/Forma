@@ -10,7 +10,7 @@
     block-size: 1rem;
     flex-shrink: 0;
     margin: 0;
-    accent-color: var(--main-color);
+    accent-color: var(--primary-color);
     touch-action: manipulation;
 }
 
@@ -29,7 +29,7 @@
 }
 
 .forma-checkbox-label:has(.forma-checkbox:disabled) {
-    color: var(--control-disabled-foreground-color);
+    color: var(--disabled-text-color);
     cursor: not-allowed;
 }
 

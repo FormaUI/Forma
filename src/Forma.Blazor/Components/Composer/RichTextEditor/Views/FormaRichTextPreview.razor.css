@@ -7,7 +7,7 @@
     align-items: flex-start;
     min-block-size: 12rem;
     padding: var(--space-4);
-    background-color: var(--muted-background-color);
+    background-color: var(--muted-bg-color);
     overflow: auto;
     box-sizing: border-box;
 }
@@ -17,8 +17,8 @@
     inline-size: 100%;
     max-inline-size: 100%;
     padding: var(--space-4);
-    background-color: var(--input-background-color);
-    color: var(--text-color);
+    background-color: var(--input-bg-color);
+    color: var(--text-primary-color);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     box-sizing: border-box;

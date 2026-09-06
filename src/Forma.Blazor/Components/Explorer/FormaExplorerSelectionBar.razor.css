@@ -12,8 +12,8 @@
    far end while there is room. */
 .forma-explorer-selection ::deep .forma-explorer-selection-bar {
     box-sizing: border-box;
-    min-block-size: var(--control-size-md);
-    background: var(--hover-background-color);
+    min-block-size: var(--target-size-md);
+    background: var(--hover-bg-color);
     padding-inline: var(--space-2);
     border-radius: var(--radius-md);
 }
@@ -34,7 +34,7 @@
 .forma-explorer-selection-label {
     font-size: var(--font-size-sm);
     font-weight: 600;
-    color: var(--text-color);
+    color: var(--text-primary-color);
 }
 
 /* A glyph's ink is taller than a capital, so it is lowered onto the label's cap-height centre. */

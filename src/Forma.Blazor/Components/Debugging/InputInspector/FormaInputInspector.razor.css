@@ -13,8 +13,8 @@
     padding: var(--space-4);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
-    background-color: var(--input-background-color);
-    color: var(--text-color);
+    background-color: var(--input-bg-color);
+    color: var(--text-primary-color);
     font-size: var(--font-size-sm);
     line-height: var(--line-height-prose);
 }
@@ -38,7 +38,7 @@
 .forma-input-inspector-latest {
     padding: var(--space-3);
     border-radius: var(--radius-sm);
-    background-color: var(--muted-background-color);
+    background-color: var(--muted-bg-color);
 }
 
 .forma-input-inspector-paused .forma-input-inspector-latest {
@@ -67,11 +67,11 @@
     border: 1px solid var(--dark-border-color);
     border-block-end-width: 2px;
     border-radius: var(--radius-sm);
-    background-color: var(--input-background-color);
+    background-color: var(--input-bg-color);
     font-family: inherit;
     font-size: var(--font-size-xs);
     font-weight: 600;
-    line-height: var(--control-size-sm);
+    line-height: var(--target-size-sm);
     white-space: nowrap;
 }
 
@@ -108,13 +108,13 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-inline-size: var(--control-size-sm);
+    min-inline-size: var(--target-size-sm);
     padding-inline: var(--space-1);
     border-radius: var(--radius-pill);
-    background-color: var(--muted-background-color);
-    color: var(--text-color);
+    background-color: var(--muted-bg-color);
+    color: var(--text-primary-color);
     font-size: var(--font-size-xs);
-    line-height: var(--control-size-sm);
+    line-height: var(--target-size-sm);
 }
 
 .forma-input-inspector-stack,
@@ -137,7 +137,7 @@
 }
 
 .forma-input-inspector-layer-foremost {
-    background-color: color-mix(in srgb, var(--main-color) 8%, transparent);
+    background-color: color-mix(in srgb, var(--primary-color) 8%, transparent);
 }
 
 .forma-input-inspector-layer-number {
@@ -145,18 +145,18 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    inline-size: var(--control-size-sm);
-    block-size: var(--control-size-sm);
+    inline-size: var(--target-size-sm);
+    block-size: var(--target-size-sm);
     border-radius: var(--radius-pill);
-    background-color: var(--muted-background-color);
+    background-color: var(--muted-bg-color);
     color: var(--text-secondary-color);
     font-size: var(--font-size-xs);
     font-weight: 600;
 }
 
 .forma-input-inspector-layer-foremost .forma-input-inspector-layer-number {
-    background-color: var(--main-color);
-    color: var(--main-foreground-color);
+    background-color: var(--primary-color);
+    color: var(--primary-fg-color);
 }
 
 .forma-input-inspector-layer-body {
@@ -212,31 +212,31 @@
 }
 
 .forma-input-inspector ::deep .forma-input-inspector-badge-preemptive {
-    --forma-status-badge-background-color: color-mix(in srgb, var(--warning-color) 22%, transparent);
-    --forma-status-badge-foreground-color: var(--text-color);
+    --forma-status-badge-bg-color: color-mix(in srgb, var(--warning-color) 22%, transparent);
+    --forma-status-badge-fg-color: var(--text-primary-color);
 }
 
 .forma-input-inspector ::deep .forma-input-inspector-badge-structural {
-    --forma-status-badge-background-color: color-mix(in srgb, var(--main-color) 14%, transparent);
-    --forma-status-badge-foreground-color: var(--main-dark-color);
+    --forma-status-badge-bg-color: color-mix(in srgb, var(--primary-color) 14%, transparent);
+    --forma-status-badge-fg-color: var(--primary-dark-color);
 }
 
 .forma-input-inspector ::deep .forma-input-inspector-badge-active {
-    --forma-status-badge-background-color: color-mix(in srgb, var(--info-color) 14%, transparent);
-    --forma-status-badge-foreground-color: var(--info-color);
+    --forma-status-badge-bg-color: color-mix(in srgb, var(--info-color) 14%, transparent);
+    --forma-status-badge-fg-color: var(--info-color);
 }
 
 .forma-input-inspector ::deep .forma-input-inspector-badge-native {
-    --forma-status-badge-background-color: color-mix(in srgb, var(--success-color) 14%, transparent);
-    --forma-status-badge-foreground-color: var(--success-color);
+    --forma-status-badge-bg-color: color-mix(in srgb, var(--success-color) 14%, transparent);
+    --forma-status-badge-fg-color: var(--success-color);
 }
 
 .forma-input-inspector ::deep .forma-input-inspector-badge-none {
-    --forma-status-badge-background-color: var(--muted-background-color);
-    --forma-status-badge-foreground-color: var(--text-secondary-color);
+    --forma-status-badge-bg-color: var(--muted-bg-color);
+    --forma-status-badge-fg-color: var(--text-secondary-color);
 }
 
 .forma-input-inspector ::deep .forma-input-inspector-badge-modal {
-    --forma-status-badge-background-color: color-mix(in srgb, var(--danger-color) 12%, transparent);
-    --forma-status-badge-foreground-color: var(--danger-color);
+    --forma-status-badge-bg-color: color-mix(in srgb, var(--danger-color) 12%, transparent);
+    --forma-status-badge-fg-color: var(--danger-color);
 }

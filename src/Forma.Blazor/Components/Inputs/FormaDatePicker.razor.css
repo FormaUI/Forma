@@ -4,12 +4,12 @@
 
 /* ---------- root ---------- */
 .forma-date-picker {
-    --forma-date-picker-primary-color: var(--main-color);
-    --forma-date-picker-primary-foreground-color: var(--main-foreground-color);
-    --forma-date-picker-range-background-color: color-mix(in srgb, var(--forma-date-picker-primary-color) 8%, transparent);
+    --forma-date-picker-primary-color: var(--primary-color);
+    --forma-date-picker-primary-fg-color: var(--primary-fg-color);
+    --forma-date-picker-range-bg-color: color-mix(in srgb, var(--forma-date-picker-primary-color) 8%, transparent);
     --forma-date-picker-border-color: var(--light-border-color);
-    --forma-date-picker-day-width: var(--control-size-md);
-    --forma-date-picker-day-height: var(--control-size-md);
+    --forma-date-picker-day-width: var(--target-size-md);
+    --forma-date-picker-day-height: var(--target-size-md);
     --forma-date-picker-radius: var(--radius-md);
 
     position: relative;
@@ -59,7 +59,7 @@
 /* Clear floats at the end of the trigger, in the danger color. */
 ::deep .forma-date-picker-clear {
     --forma-button-ghost-hover-color: var(--danger-color);
-    --forma-button-ghost-hover-background-color: color-mix(in srgb, var(--danger-color) 10%, transparent);
+    --forma-button-ghost-hover-bg-color: color-mix(in srgb, var(--danger-color) 10%, transparent);
     position: absolute;
     inset-inline-end: var(--space-2);
     border-radius: var(--radius-pill);
@@ -71,7 +71,7 @@
     display: flex;
     flex-wrap: wrap;
     overflow: visible;
-    background: var(--input-background-color);
+    background: var(--input-bg-color);
     border-radius: var(--forma-date-picker-radius);
     box-shadow: var(--shadow-medium);
 }
@@ -112,7 +112,7 @@
     padding: var(--space-1);
     border: 1px solid var(--light-border-color);
     border-radius: var(--radius-sm);
-    background: var(--muted-background-color);
+    background: var(--muted-bg-color);
     font: inherit;
     font-size: var(--font-size-sm);
     cursor: pointer;
@@ -132,13 +132,13 @@
     border-radius: 50%;
     font-size: var(--font-size-xs);
     font-weight: inherit;
-    color: var(--text-color);
+    color: var(--text-primary-color);
     flex-shrink: 0;
 }
 
 @media (hover: hover) {
     ::deep .forma-date-picker-nav.forma-date-picker-nav:hover:not(:disabled) {
-        background: var(--hover-background-color);
+        background: var(--hover-bg-color);
     }
 }
 
@@ -184,7 +184,7 @@
 
 @media (hover: hover) {
     .forma-date-picker-day:not(.empty):not(:disabled):hover {
-        background: var(--hover-background-color);
+        background: var(--hover-bg-color);
     }
 }
 
@@ -206,14 +206,14 @@
 /* selected */
 .forma-date-picker-day.selected {
     background: var(--forma-date-picker-primary-color);
-    color: var(--forma-date-picker-primary-foreground-color);
+    color: var(--forma-date-picker-primary-fg-color);
     border-radius: var(--radius-sm);
     font-weight: 700;
 }
 
 /* range — underlined so the span reads without relying on the fill colour */
 .forma-date-picker-day.in-range {
-    background: var(--forma-date-picker-range-background-color);
+    background: var(--forma-date-picker-range-bg-color);
     border-radius: 0;
     text-decoration: underline;
     text-underline-offset: 2px;
@@ -263,7 +263,7 @@
 
 @media (hover: hover) {
     ::deep .forma-date-picker-preset.forma-date-picker-preset:hover:not(:disabled) {
-        background: var(--hover-background-color);
+        background: var(--hover-bg-color);
         border-color: var(--forma-date-picker-primary-color);
         color: var(--forma-date-picker-primary-color);
     }
@@ -284,17 +284,17 @@
 
 @media (pointer: coarse) {
     .forma-date-picker {
-        --forma-date-picker-day-width: var(--control-size-touch);
-        --forma-date-picker-day-height: var(--control-size-touch);
+        --forma-date-picker-day-width: var(--target-size-touch);
+        --forma-date-picker-day-height: var(--target-size-touch);
     }
 
     .forma-date-picker-trigger,
     .forma-date-picker-select {
-        min-block-size: var(--control-size-touch);
+        min-block-size: var(--target-size-touch);
     }
 
     ::deep .forma-date-picker-nav.forma-date-picker-nav {
-        inline-size: var(--control-size-touch);
-        block-size: var(--control-size-touch);
+        inline-size: var(--target-size-touch);
+        block-size: var(--target-size-touch);
     }
 }

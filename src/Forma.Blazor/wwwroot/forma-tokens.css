@@ -1,7 +1,9 @@
 /*
     forma-tokens.css — The design tokens every Forma component reads.
 
-    Values only, no selectors. Every custom property that carries a colour ends in -color.
+    Values only, no selectors. The gray scale is the one source of shading; every other token
+    names a role and points at a step on it rather than carrying its own hex. A background ends
+    in -bg-color, a foreground in -fg-color, and the readable content of a control in -text-color.
 */
 
 :root {
@@ -14,21 +16,21 @@
 
     /* Type scale, in rem so a reader's own font size carries through. Each step has one job. */
     --font-size-xs: 0.75rem;    /* a caption, a badge, a keyboard hint */
-    --font-size-sm: 0.875rem;   /* a control's label, dense data such as a grid cell or a menu item */
+    --font-size-sm: 0.875rem;   /* a target's label, dense data such as a grid cell or a menu item */
     --font-size-base: 1rem;     /* prose and the text inside an input */
     --font-size-lg: 1.125rem;   /* a section heading, a dialog title */
     --font-size-xl: 1.25rem;    /* a page title */
     --font-size-2xl: 1.5rem;    /* a display figure, an empty state's headline */
 
-    /* Line height: prose breathes, a control stays tight so its box comes out on the grid. */
+    /* Line height: prose breathes, a target stays tight so its box comes out on the grid. */
     --line-height-prose: 1.5;
-    --line-height-control: 1.25;
+    --line-height-target: 1.25;
 
     /* Spacing scale on a 4px grid, in rem so padding and gaps grow with the text they surround.
        Each step has one job, so two components that make the same decision pick the same value. */
-    --space-1: 0.25rem;   /* inside one control: a glyph beside its label, a badge's padding; between the frames laid on a canvas */
-    --space-2: 0.5rem;    /* between controls in a row; a control's block padding */
-    --space-3: 0.75rem;   /* a control's inline padding; between groups in a row */
+    --space-1: 0.25rem;   /* inside one target: a glyph beside its label, a badge's padding; between the frames laid on a canvas */
+    --space-2: 0.5rem;    /* between targets in a row; a target's block padding */
+    --space-3: 0.75rem;   /* a target's inline padding; between groups in a row */
     --space-4: 1rem;      /* between blocks; a panel's or a card's padding */
     --space-5: 1.5rem;    /* between sections; a dialog's padding */
     --space-6: 2rem;      /* between page regions */
@@ -40,86 +42,155 @@
     --icon-size-lg: 3rem;       /* 48px, the 24 grid: a section's figure */
     --icon-size-display: 4rem;  /* 64px, the 32 grid: the figure of an empty state, a drop zone, a media facade */
 
-    /* The box a control is pressed on, one height for a button and the input beside it. Each step is a
-       line of 14px text at the control line height (17.5px) plus padding and a 1px border, rounded up
+    /* The box a target is pressed or focused on, one height for a button and the input beside it. Each step is a
+       line of 14px text at the target line height (17.5px) plus padding and a 1px border, rounded up
        to the 4px grid: one line tight, one line comfortable, a label over a value, and the finger. */
-    --control-size-sm: 1.5rem;      /* 24px: an icon button, a compact toolbar cell, a dense row; WCAG's 24×24 floor */
-    --control-size-md: 2rem;        /* 32px: a button, an input, a toolbar button, a menu item */
-    --control-size-lg: 2.5rem;      /* 40px: a prominent action, a row that carries two lines */
-    --control-size-xl: 3rem;        /* 48px: a field that stacks its label over its value (15 + 21 + 8 + 2) */
-    --control-size-touch: 2.75rem;  /* 44px: any control under a coarse pointer; WCAG 2.5.5 and Apple */
+    --target-size-sm: 1.5rem;      /* 24px: an icon button, a compact toolbar cell, a dense row; WCAG's 24×24 floor */
+    --target-size-md: 2rem;        /* 32px: a button, an input, a toolbar button, a menu item */
+    --target-size-lg: 2.5rem;      /* 40px: a prominent action, a row that carries two lines */
+    --target-size-xl: 3rem;        /* 48px: a field that stacks its label over its value (15 + 21 + 8 + 2) */
+    --target-size-touch: 2.75rem;  /* 44px: any target under a coarse pointer; WCAG 2.5.5 and Apple */
 
     /* Radii, one per kind of surface. */
-    --radius-sm: 0.25rem;   /* a control: button, input, checkbox, cell */
+    --radius-sm: 0.25rem;   /* a target: button, input, checkbox, cell */
     --radius-md: 0.375rem;  /* a card, a popup, a panel */
     --radius-lg: 0.5rem;    /* a dialog, a toast */
     --radius-pill: 9999px;  /* a badge, a chip, a tab pill; intentionally oversized; CSS caps it to form fully rounded ends */
 
-    /* Text tones, one per role. Content and every enabled control take the text tone or the quiet control
-       foreground below, both past 7:1 on the surface; supporting text — a caption, a count, a placeholder, an
-       empty state, a hint — takes the secondary tone, which still meets WCAG AA at 4.5:1; only a disabled
-       control takes the disabled foreground, so a grey that weak always means "unavailable". */
-    --text-color: rgba(44, 56, 74, 0.95);
-    --text-secondary-color: #6c757d;
-    --gray-color: rgba(44, 56, 74, 0.45);
+    /* ============================================================
+       Neutral scale — the one gray ramp. Every other gray-ish token below points at a step here
+       rather than carrying its own hex, so two tokens that land on the same step are visibly the
+       same decision instead of a coincidence you'd have to eyeball. White and black are the two
+       fixed ends and are named on their own, the way a scale's paper and ink are not steps of it.
+       ============================================================ */
+    --white-color: #fff;
+    --black-color: #000;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6c757d;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
 
-    /* Brand / accent */
-    --main-color: #0066bf;
-    --main-dark-color: color-mix(in srgb, var(--main-color) 82%, black);
-    --main-light-color: color-mix(in srgb, var(--main-color) 60%, white);
-    --main-foreground-color: #fff;  /* text and marks on an accent or status fill */
+    /* ============================================================
+       Roles — the small set of colors a theme actually swaps. Primary is the one brand accent;
+       Secondary is the neutral fill beside it; Success/Danger/Warning/Info are status. Every role
+       a component reaches for by name (a button variant, a badge, a link) is one of these six.
+       ============================================================ */
+    --primary-color: #0066bf;
+    --primary-dark-color: color-mix(in srgb, var(--primary-color) 82%, black);
+    --primary-light-color: color-mix(in srgb, var(--primary-color) 60%, white);
+    --primary-fg-color: var(--white-color);  /* text and marks on a primary or status fill */
+    --secondary-color: var(--gray-600);      /* the neutral fill beside primary: a secondary button, an unaccented mark */
+    --secondary-hover-color: var(--gray-700);
+    --secondary-active-color: var(--gray-800);
+    --success-color: #28a745;
+    --danger-color: #c4314b;
+    --warning-color: #ffc107;
+    --info-color: #307fdd;
 
-    /* Focus ring — a gap in the surface color, then a band of the accent, drawn as shadows so it follows the
-       corner; --focus-ring-inset is the same ring turned inward, for a control that clips its own box. */
-    --focus-color: color-mix(in srgb, var(--main-color) 35%, transparent);
+    /* Focus ring — a gap in the frame color, then a band of the accent, drawn as shadows so it follows the
+       corner; --focus-ring-inset is the same ring turned inward, for a target that clips its own box. */
+    --focus-color: color-mix(in srgb, var(--primary-color) 35%, transparent);
     --focus-ring-gap: 2px;
     --focus-ring-width: 2px;
-    --focus-ring: 0 0 0 var(--focus-ring-gap) var(--input-background-color), 0 0 0 calc(var(--focus-ring-gap) + var(--focus-ring-width)) var(--focus-color);
-    --focus-ring-inset: inset 0 0 0 var(--focus-ring-width) var(--focus-color), inset 0 0 0 calc(var(--focus-ring-gap) + var(--focus-ring-width)) var(--input-background-color);
+    --focus-ring: 0 0 0 var(--focus-ring-gap) var(--input-bg-color), 0 0 0 calc(var(--focus-ring-gap) + var(--focus-ring-width)) var(--focus-color);
+    --focus-ring-inset: inset 0 0 0 var(--focus-ring-width) var(--focus-color), inset 0 0 0 calc(var(--focus-ring-gap) + var(--focus-ring-width)) var(--input-bg-color);
 
-    /* Links — hover darkens, so pointing at a link raises its emphasis. */
-    --link-color: var(--main-dark-color);
-    --link-hover-color: color-mix(in srgb, var(--main-color) 62%, black);
+    /* Links — a darkened primary, so a link reads as accent text over prose rather than as the
+       full-strength fill a primary button wears; hover darkens further to raise its emphasis. */
+    --link-color: var(--primary-dark-color);
+    --link-hover-color: color-mix(in srgb, var(--primary-color) 62%, black);
 
     /* Borders */
     --border-color: rgba(98, 105, 118, 0.16);
     --light-border-color: #d9dbde;
     --dark-border-color: rgba(98, 105, 118, 0.31);
 
-    /* Frames — the canvas a page paints, the frames laid on it, and the tone a region takes inside a frame, one
-       token per FrameVariant. Regions are told apart by tone and by a frame's own edge, never by a line drawn across
-       a frame. Values come from the neutral ramp the controls already use, and a theme redefines this set on its scope. */
-    --frame-canvas-background-color: #f3f4f6;  /* the canvas: the frame other frames are laid on */
-    --frame-flat-background-color: #fff;       /* a flat frame: a panel, a sheet, a content area */
-    --frame-inset-background-color: #f9fafb;   /* an inset frame: a header strip, a toolbar band, a table header */
-    --frame-raised-background-color: #fff;     /* a raised frame: a card on the canvas, a popup, a dialog */
+    /* ============================================================
+       Text — two tones, primary and secondary. Content and every enabled target's label or
+       glyph take the primary tone or the quiet text tone below, both past 7:1 on the frame;
+       supporting text — a caption, a count, a placeholder, an empty state, a hint — takes
+       the secondary tone, which still meets WCAG AA at 4.5:1.
+       ============================================================ */
+    --text-primary-color: rgba(44, 56, 74, 0.95);
+    --text-primary-quiet-color: rgba(44, 56, 74, 0.45);  /* the same ink, thinned for a large inert fill rather than for reading */
+    --text-secondary-color: var(--gray-500);
+
+    /* ============================================================
+       Buttons — one fill family per variant, each with its rest, hover and active step, so a
+       theme restyles every button by redefining this family. Quiet is the one with no
+       primary/secondary pair of its own: it is the receding look a tertiary button rests in
+       and a ghost button reaches on hover.
+       ============================================================ */
+    --button-primary-color: var(--primary-color);
+    --button-primary-hover-color: var(--primary-dark-color);
+    --button-primary-active-color: color-mix(in srgb, var(--button-primary-color) 72%, black);
+    --button-secondary-color: var(--secondary-color);
+    --button-secondary-hover-color: var(--secondary-hover-color);
+    --button-secondary-active-color: var(--secondary-active-color);
+    --button-quiet-color: var(--gray-100);
+    --button-quiet-hover-color: var(--gray-200);
+    --button-quiet-active-color: var(--gray-300);
+
+    /* ============================================================
+       Interactive states — two axes, both distinct from Buttons above. Quiet is an emphasis
+       level on something still usable: the label or glyph of an enabled target on a quiet fill
+       or on no fill at all, such as a ghost button or a toolbar icon. Disabled is a state: every
+       disabled target, whatever it was when live, so a gray that weak always means "unavailable."
+       Neither is Muted below, which decorates content rather than describing a target.
+       ============================================================ */
+    --quiet-text-color: var(--gray-600);
+    --disabled-bg-color: var(--gray-100);
+    --disabled-text-color: var(--gray-400);
+
+    /* ============================================================
+       Frames — the canvas a page paints, the frames laid on it, and the tone a region takes
+       inside a frame, one token per FrameVariant. Regions are told apart by tone and by a
+       frame's own edge, never by a line drawn across a frame.
+       ============================================================ */
+    --frame-canvas-bg-color: var(--gray-100);   /* the canvas: the frame other frames are laid on */
+    --frame-flat-bg-color: var(--white-color);  /* a flat frame: a panel, a sheet, a content area */
+    --frame-inset-bg-color: var(--gray-50);     /* an inset frame: a header strip, a toolbar band, a table header */
+    --frame-raised-bg-color: var(--white-color);/* a raised frame: a card on the canvas, a popup, a dialog */
 
     /* Backgrounds */
-    --input-background-color: #fff;
-    --modal-background-color: #fafbfc;
-    --muted-background-color: #f3f4f6;
-    --hover-background-color: rgba(98, 105, 118, 0.06);
-    --media-background-color: #000;
-    --media-foreground-color: #fff;
-    --media-muted-foreground-color: rgba(255, 255, 255, 0.72);
+    --input-bg-color: var(--white-color);
+    --inactive-bg-color: var(--gray-50);  /* a whole surface gone inactive: a disabled or a read-only composer */
+    --muted-bg-color: var(--gray-100);    /* content decoration, not a target: inline code, a quote, a placeholder box */
+    --hover-bg-color: rgba(98, 105, 118, 0.06);
+
+    /* ============================================================
+       Media — the chrome for viewing a photo, a video or a document. Locked to a dark viewer
+       look regardless of the app's own theme, the way a photo viewer stays dark in light mode.
+       ============================================================ */
+    --media-bg-color: var(--black-color);
+    --media-fg-color: var(--white-color);
+    --media-muted-fg-color: rgba(255, 255, 255, 0.72);
     --media-scrim-color: rgba(0, 0, 0, 0.7);
 
-    /* Controls — the fills a pressable surface takes when it carries no accent, and the one state every control shares. */
-    --control-neutral-color: #4b5563;             /* a filled control with no accent, such as a secondary button */
-    --control-neutral-hover-color: #374151;
-    --control-neutral-active-color: #1f2937;
-    --control-quiet-color: #f2f4f7;               /* a control that recedes: a tertiary button, a ghost button under the pointer */
-    --control-quiet-hover-color: #e5e7eb;
-    --control-quiet-active-color: #d1d5db;
-    --control-quiet-foreground-color: #4b5563;    /* the label or glyph of an enabled control on a quiet fill or on no fill at all */
-    --control-disabled-color: #f2f4f7;            /* every disabled control, whatever it was when live */
-    --control-disabled-foreground-color: #9ca3af; /* the label or glyph of a disabled control, and nothing enabled */
+    /* ============================================================
+       Chrome — the band a specific kind of surface paints for itself, each independently themable even where
+       today's value happens to match another. A dialog's top and bottom bands read as inset frames, its
+       content as a flat one; a toolbar and a status strip read as a stronger, more visible muted tone so
+       they stay legible beside a dimmed, inactive surface.
+       ============================================================ */
+    --toolbar-bg-color: var(--muted-bg-color);
+    --command-area-bg-color: var(--frame-inset-bg-color);
+    --status-strip-bg-color: var(--muted-bg-color);
+    --dialog-top-bg-color: var(--frame-inset-bg-color);
+    --dialog-content-bg-color: var(--frame-flat-bg-color);
+    --dialog-bottom-bg-color: var(--frame-inset-bg-color);
 
-    /* Status colors */
-    --success-color: #28a745;
-    --danger-color: #c4314b;
-    --warning-color: #ffc107;
-    --info-color: #307fdd;
+    /* Layers — what stacks over the page, on Bootstrap's scale so the numbers mean the same thing
+       they do elsewhere. A dialog needs none: the native element sits in the top layer above all of these.
+       Stacking inside one component uses its own small integers and is not a layer. */
+    --z-index-popup: 1000;    /* a popup, a drop-down menu, a maximized composer: over the page */
+    --z-index-popover: 1060;  /* a bar floating over a popup, such as the selection bar */
+    --z-index-toast: 1080;    /* a toast, over everything in flow */
 
     /* Shadows */
     --shadow-color: rgba(30, 41, 59, 0.12);  /* what a raised frame casts onto what slides beneath it, drawn as a fade */

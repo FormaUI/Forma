@@ -10,7 +10,7 @@
     font-size: clamp(var(--font-size-xl), 1rem + 1.5vw, var(--font-size-2xl));
     font-weight: 600;
     margin: 0;
-    line-height: var(--line-height-control);
+    line-height: var(--line-height-target);
 }
 
 .forma-page-title-actions {

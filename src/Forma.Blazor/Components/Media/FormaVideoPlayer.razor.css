@@ -7,7 +7,7 @@
     position: relative;
     inline-size: 100%;
     aspect-ratio: 16 / 9;
-    background-color: var(--forma-video-player-background-color, var(--media-background-color));
+    background-color: var(--forma-video-player-bg-color, var(--media-bg-color));
     border-radius: var(--radius-sm);
     overflow: hidden;
 }
@@ -43,7 +43,7 @@
     padding-block: var(--space-3);
     font-size: var(--font-size-sm);
     text-align: center;
-    color: var(--forma-video-player-fallback-color, var(--main-color));
+    color: var(--forma-video-player-fallback-color, var(--primary-color));
 }
 /* The service replaces its own markup with an iframe, and that player stands in for the link. */
 [role="group"]:has(iframe) > .forma-video-player-fallback {
@@ -62,7 +62,7 @@
     padding: var(--space-4);
     border: 0;
     background-color: transparent;
-    color: var(--forma-video-player-facade-color, var(--media-foreground-color));
+    color: var(--forma-video-player-facade-color, var(--media-fg-color));
     text-align: center;
     cursor: pointer;
     touch-action: manipulation;
@@ -103,7 +103,7 @@
 
 .forma-video-player-facade-note {
     font-size: var(--font-size-xs);
-    color: var(--forma-video-player-facade-note-color, var(--media-muted-foreground-color));
+    color: var(--forma-video-player-facade-note-color, var(--media-muted-fg-color));
 }
 
 .forma-video-player-facade:focus-visible {

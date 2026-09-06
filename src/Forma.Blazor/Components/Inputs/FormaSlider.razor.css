@@ -11,19 +11,19 @@
     position: absolute;
     inset-block-start: 0;
     inset-inline-end: 0;
-    color: var(--forma-slider-value-color, var(--text-color));
+    color: var(--forma-slider-value-color, var(--text-primary-color));
     font-size: var(--font-size-sm);
 }
 
 .forma-slider {
     display: block;
     inline-size: 100%;
-    accent-color: var(--forma-slider-accent-color, var(--main-color));
+    accent-color: var(--forma-slider-accent-color, var(--primary-color));
     touch-action: manipulation;
 }
 
 .forma-slider:disabled {
-    accent-color: var(--forma-slider-disabled-accent-color, var(--control-disabled-foreground-color));
+    accent-color: var(--forma-slider-disabled-accent-color, var(--disabled-text-color));
     opacity: 0.65;
     cursor: not-allowed;
 }
@@ -32,6 +32,6 @@
    touch target is the input's own height rather than a larger drawn thumb. */
 @media (pointer: coarse) {
     .forma-slider {
-        block-size: var(--control-size-touch);
+        block-size: var(--target-size-touch);
     }
 }

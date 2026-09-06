@@ -7,7 +7,7 @@
    and the whole row scrolls behind arrows at the bar's ends once it outgrows the width. */
 .forma-explorer-toolbar {
     min-inline-size: 0;
-    min-block-size: var(--control-size-md);
+    min-block-size: var(--target-size-md);
 }
 
 /* A glyph's ink is taller than a capital, so it is lowered onto the label's cap-height centre. */

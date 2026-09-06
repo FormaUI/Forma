@@ -34,7 +34,7 @@
 
 @media (hover: hover) {
     .forma-color-picker-swatch-wrapper:hover .forma-color-picker-swatch {
-        border-color: var(--main-color);
+        border-color: var(--primary-color);
     }
 }
 
@@ -89,15 +89,15 @@
 
 @media (pointer: coarse) {
     .forma-color-picker-swatch-wrapper {
-        inline-size: var(--control-size-touch);
-        block-size: var(--control-size-touch);
+        inline-size: var(--target-size-touch);
+        block-size: var(--target-size-touch);
     }
 
     .forma-color-picker-hex-input {
-        min-block-size: var(--control-size-touch);
+        min-block-size: var(--target-size-touch);
     }
 
     .forma-color-picker-alpha {
-        block-size: var(--control-size-touch);
+        block-size: var(--target-size-touch);
     }
 }

@@ -7,7 +7,7 @@
     max-inline-size: 100%;
     border: 1px solid var(--forma-emoji-picker-border-color, var(--border-color));
     border-radius: var(--radius-md);
-    background: var(--forma-emoji-picker-background-color, var(--input-background-color));
+    background: var(--forma-emoji-picker-bg-color, var(--input-bg-color));
     overflow: hidden;
 }
 
@@ -24,22 +24,22 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-inline-size: var(--control-size-md);
-    min-block-size: var(--control-size-md);
+    min-inline-size: var(--target-size-md);
+    min-block-size: var(--target-size-md);
     padding: 0 var(--space-1);
     border: none;
     border-block-end: 2px solid transparent;
     border-radius: var(--radius-sm);
     background: none;
-    color: var(--forma-emoji-picker-tab-color, var(--control-quiet-foreground-color));
+    color: var(--forma-emoji-picker-tab-color, var(--quiet-text-color));
     cursor: pointer;
     touch-action: manipulation;
 }
 
 /* The underline keeps the selected tab legible with colour removed. */
 .forma-emoji-picker-tab[aria-selected="true"] {
-    border-block-end-color: var(--forma-emoji-picker-tab-active-color, var(--main-color));
-    color: var(--forma-emoji-picker-tab-active-color, var(--main-color));
+    border-block-end-color: var(--forma-emoji-picker-tab-active-color, var(--primary-color));
+    color: var(--forma-emoji-picker-tab-active-color, var(--primary-color));
 }
 
 .forma-emoji-picker-tab:focus-visible {
@@ -63,7 +63,7 @@
     inset-block-start: 0;
     margin: 0;
     padding-block: var(--space-2) var(--space-1);
-    background: var(--forma-emoji-picker-background-color, var(--input-background-color));
+    background: var(--forma-emoji-picker-bg-color, var(--input-bg-color));
     color: var(--forma-emoji-picker-heading-color, var(--text-secondary-color));
     font-size: var(--font-size-xs);
     font-weight: 600;
@@ -96,8 +96,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-inline-size: var(--control-size-md);
-    min-block-size: var(--control-size-md);
+    min-inline-size: var(--target-size-md);
+    min-block-size: var(--target-size-md);
     padding: 0;
     border: none;
     border-radius: var(--radius-sm);
@@ -134,23 +134,23 @@
 
 @media (hover: hover) {
     .forma-emoji-picker-tab:hover {
-        background: var(--forma-emoji-picker-hover-background-color, var(--hover-background-color));
+        background: var(--forma-emoji-picker-hover-bg-color, var(--hover-bg-color));
     }
 
     .forma-emoji-picker-emoji:hover {
-        background: var(--forma-emoji-picker-hover-background-color, var(--hover-background-color));
+        background: var(--forma-emoji-picker-hover-bg-color, var(--hover-bg-color));
     }
 }
 
 @media (pointer: coarse) {
     .forma-emoji-picker-tab {
-        min-inline-size: var(--control-size-touch);
-        min-block-size: var(--control-size-touch);
+        min-inline-size: var(--target-size-touch);
+        min-block-size: var(--target-size-touch);
     }
 
     .forma-emoji-picker-emoji {
-        min-inline-size: var(--control-size-touch);
-        min-block-size: var(--control-size-touch);
+        min-inline-size: var(--target-size-touch);
+        min-block-size: var(--target-size-touch);
     }
 
     .forma-emoji-picker-grid {

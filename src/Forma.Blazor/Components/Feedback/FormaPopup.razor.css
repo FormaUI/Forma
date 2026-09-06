@@ -15,7 +15,7 @@
     background: none;
     color: inherit;
     overflow: visible;
-    z-index: 1000;
+    z-index: var(--z-index-popup);
     /* A top-layer popover is laid out against the viewport, so that is the one width to cap it by. */
     max-inline-size: calc(100vw - var(--space-4));
 }

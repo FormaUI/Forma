@@ -7,7 +7,7 @@
     position: fixed;
     inset-block-start: var(--space-5);
     inset-inline-end: var(--space-5);
-    z-index: 9999;
+    z-index: var(--z-index-toast);
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
@@ -26,7 +26,7 @@
     border-radius: var(--radius-lg);
     font-size: var(--font-size-sm);
     line-height: var(--line-height-prose);
-    color: var(--main-foreground-color);
+    color: var(--primary-fg-color);
     pointer-events: auto;
     position: relative;
     animation: forma-toast-in 300ms ease forwards;
@@ -47,9 +47,9 @@
 /* Custom properties cascade into the nested button's own scope, which plain
    selectors cannot reach. */
 .forma-toast {
-    --forma-button-ghost-color: color-mix(in srgb, var(--main-foreground-color) 75%, transparent);
-    --forma-button-ghost-hover-color: var(--main-foreground-color);
-    --forma-button-ghost-hover-background-color: color-mix(in srgb, var(--main-foreground-color) 18%, transparent);
+    --forma-button-ghost-color: color-mix(in srgb, var(--primary-fg-color) 75%, transparent);
+    --forma-button-ghost-hover-color: var(--primary-fg-color);
+    --forma-button-ghost-hover-bg-color: color-mix(in srgb, var(--primary-fg-color) 18%, transparent);
 }
 
 /* ── Type variants ── */

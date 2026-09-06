@@ -29,8 +29,8 @@
 
 @media (hover: hover) {
     .forma-file-picker-drop-zone:hover {
-        border-color: var(--main-color);
-        background-color: var(--hover-background-color);
+        border-color: var(--primary-color);
+        background-color: var(--hover-bg-color);
     }
 }
 
@@ -42,9 +42,9 @@
 /* The second, colour-independent channel for the drag state: the border changes shape, not only colour. */
 .forma-file-picker-drop-zone.forma-file-picker-dragging {
     border-style: solid;
-    border-color: var(--main-color);
-    background-color: var(--hover-background-color);
-    color: var(--text-color);
+    border-color: var(--primary-color);
+    background-color: var(--hover-bg-color);
+    color: var(--text-primary-color);
 }
 
 .forma-file-picker-drop-zone.forma-file-picker-busy {

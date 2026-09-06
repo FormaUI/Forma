@@ -53,14 +53,14 @@
 /* A deliberate pause before the accent appears, so sweeping across the divider does not flash it. */
 @media (hover: hover) {
     .forma-splitter:hover .forma-splitter-grip {
-        background: var(--forma-splitter-color, var(--main-color));
+        background: var(--forma-splitter-color, var(--primary-color));
         transition-delay: 0.25s;
     }
 }
 
 .forma-splitter.is-resizing .forma-splitter-grip,
 .forma-splitter:focus-visible .forma-splitter-grip {
-    background: var(--forma-splitter-color, var(--main-color));
+    background: var(--forma-splitter-color, var(--primary-color));
     transition-delay: 0s;
 }
 
@@ -87,12 +87,12 @@
 
 @media (pointer: coarse) {
     .forma-splitter-vertical {
-        inline-size: var(--forma-splitter-coarse-thickness, var(--control-size-touch));
-        margin-inline: calc((var(--forma-splitter-coarse-thickness, var(--control-size-touch)) + var(--forma-splitter-gap, 0px)) / -2);
+        inline-size: var(--forma-splitter-coarse-thickness, var(--target-size-touch));
+        margin-inline: calc((var(--forma-splitter-coarse-thickness, var(--target-size-touch)) + var(--forma-splitter-gap, 0px)) / -2);
     }
 
     .forma-splitter-horizontal {
-        block-size: var(--forma-splitter-coarse-thickness, var(--control-size-touch));
-        margin-block: calc((var(--forma-splitter-coarse-thickness, var(--control-size-touch)) + var(--forma-splitter-gap, 0px)) / -2);
+        block-size: var(--forma-splitter-coarse-thickness, var(--target-size-touch));
+        margin-block: calc((var(--forma-splitter-coarse-thickness, var(--target-size-touch)) + var(--forma-splitter-gap, 0px)) / -2);
     }
 }

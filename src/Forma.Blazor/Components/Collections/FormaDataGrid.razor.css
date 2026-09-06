@@ -74,7 +74,7 @@
     position: sticky;
     inset-block-start: 0;
     z-index: 1;
-    background: var(--forma-data-grid-header-background-color, var(--input-background-color));
+    background: var(--forma-data-grid-header-bg-color, var(--input-bg-color));
     box-shadow: 0 1px 0 var(--border-color);
 }
 
@@ -97,7 +97,7 @@
    its box starts on the line the values beside it start on. */
 ::deep .forma-data-grid-select-column {
     /* The box's target plus the column's gutter on either side. */
-    inline-size: calc(var(--control-size-sm) + 2 * var(--space-3));
+    inline-size: calc(var(--target-size-sm) + 2 * var(--space-3));
     padding-inline: var(--space-3);
     text-align: start;
 }
@@ -141,12 +141,12 @@
 /* A tinted background reads as "selected" without depending on the checkbox column,
    so it still shows on a row selected through EnableRowSelection alone. */
 ::deep .forma-data-grid-row-selected {
-    background: var(--forma-data-grid-row-selected-background-color, color-mix(in srgb, var(--main-color) 8%, transparent));
+    background: var(--forma-data-grid-row-selected-bg-color, color-mix(in srgb, var(--primary-color) 8%, transparent));
 }
 
 /* A disabled row stays legible. */
 ::deep .forma-data-grid-row-disabled {
-    color: var(--control-disabled-foreground-color);
+    color: var(--disabled-text-color);
 }
 
 /* An editor fills its cell so the row keeps its column widths while switching to edit. */
@@ -176,7 +176,7 @@
 
 /* The caption is a ghost button with no inline padding, so it starts on the gutter the boxes below it sit on. */
 ::deep .forma-data-grid-master-caption {
-    --forma-button-ghost-color: var(--main-color);
+    --forma-button-ghost-color: var(--primary-color);
     padding-inline: 0;
     font-weight: inherit;
 }

@@ -77,7 +77,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    min-block-size: calc(var(--control-size-md) + var(--space-2));
+    min-block-size: calc(var(--target-size-md) + var(--space-2));
     padding-block-end: var(--space-2);
 }
 
@@ -85,7 +85,7 @@
     inline-size: var(--icon-size-md);
     block-size: var(--icon-size-md);
     border: 3px solid var(--light-border-color);
-    border-block-start-color: var(--main-color);
+    border-block-start-color: var(--primary-color);
     border-radius: 50%;
     animation: forma-explorer-spin 0.7s linear infinite;
 }
@@ -107,11 +107,11 @@
     display: inline-flex;
     align-items: center;
     gap: var(--space-1);
-    min-block-size: var(--control-size-md);
+    min-block-size: var(--target-size-md);
     padding-inline: var(--space-3);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-pill);
-    background: var(--input-background-color);
+    background: var(--input-bg-color);
     color: var(--text-secondary-color);
     font-size: var(--font-size-sm);
     touch-action: manipulation;
@@ -120,9 +120,9 @@
 
 @media (hover: hover) {
     .forma-explorer-scroll-sentinel ::deep .forma-explorer-load-more-button:hover {
-        border-color: var(--main-color);
-        background: var(--hover-background-color);
-        color: var(--main-color);
+        border-color: var(--primary-color);
+        background: var(--hover-bg-color);
+        color: var(--primary-color);
     }
 }
 
@@ -139,6 +139,6 @@
 
 @media (pointer: coarse) {
     .forma-explorer-scroll-sentinel ::deep .forma-explorer-load-more-button {
-        min-block-size: var(--control-size-touch);
+        min-block-size: var(--target-size-touch);
     }
 }

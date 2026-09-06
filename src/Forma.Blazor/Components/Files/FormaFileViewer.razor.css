@@ -27,7 +27,7 @@
     align-items: center;
     justify-content: center;
     overflow: auto;
-    background-color: var(--forma-file-viewer-background-color, var(--media-background-color));
+    background-color: var(--forma-file-viewer-bg-color, var(--media-bg-color));
     border-radius: var(--radius-sm);
     /* Native touch scrolling already pans; this only adds the platform's own pinch-zoom. */
     touch-action: pan-x pan-y pinch-zoom;
@@ -91,7 +91,7 @@
     min-block-size: 0;
     overflow: auto;
     padding: var(--space-4);
-    background-color: var(--input-background-color);
+    background-color: var(--input-bg-color);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
 }
@@ -114,7 +114,7 @@
 .forma-file-viewer-unsupported-name {
     margin: 0;
     font-weight: 600;
-    color: var(--text-color);
+    color: var(--text-primary-color);
     overflow-wrap: anywhere;
 }
 
@@ -143,16 +143,16 @@
 
 /* The arrows float over the media on its scrim. */
 ::deep .forma-file-viewer-nav {
-    --forma-button-ghost-color: var(--forma-file-viewer-nav-color, var(--media-foreground-color));
-    --forma-button-ghost-hover-color: var(--forma-file-viewer-nav-color, var(--media-foreground-color));
-    --forma-button-ghost-hover-background-color: var(--forma-file-viewer-nav-hover-background-color, var(--main-dark-color));
+    --forma-button-ghost-color: var(--forma-file-viewer-nav-color, var(--media-fg-color));
+    --forma-button-ghost-hover-color: var(--forma-file-viewer-nav-color, var(--media-fg-color));
+    --forma-button-ghost-hover-bg-color: var(--forma-file-viewer-nav-hover-bg-color, var(--primary-dark-color));
     position: absolute;
     inset-block-start: 50%;
     transform: translateY(-50%);
-    inline-size: var(--control-size-touch);
-    block-size: var(--control-size-touch);
+    inline-size: var(--target-size-touch);
+    block-size: var(--target-size-touch);
     border-radius: var(--radius-pill);
-    background-color: var(--forma-file-viewer-nav-background-color, var(--media-scrim-color));
+    background-color: var(--forma-file-viewer-nav-bg-color, var(--media-scrim-color));
 }
 
 ::deep .forma-file-viewer-nav-previous {

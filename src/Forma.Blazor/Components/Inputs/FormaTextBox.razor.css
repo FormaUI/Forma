@@ -7,15 +7,15 @@
    ============================================================ */
 
 .forma-text-box:disabled {
-    color: var(--forma-input-disabled-color, var(--control-disabled-foreground-color));
-    background-color: var(--forma-input-disabled-background-color, var(--hover-background-color));
+    color: var(--forma-input-disabled-color, var(--disabled-text-color));
+    background-color: var(--forma-input-disabled-bg-color, var(--hover-bg-color));
     cursor: not-allowed;
 }
 
 /* :read-only also matches a disabled input, which has its own treatment above. */
 .forma-text-box:read-only:not(:disabled),
 .forma-field-input:read-only:not(:disabled) {
-    background-color: var(--forma-text-box-readonly-background-color, var(--hover-background-color));
+    background-color: var(--forma-text-box-readonly-bg-color, var(--hover-bg-color));
 }
 
 /* Valid waits for an edit so an untouched form is not all green; invalid does not, since

@@ -19,7 +19,7 @@
 .forma-field {
     /* The room a floated label takes above the value: its offset from the top and its line. */
     --forma-field-label-offset: var(--space-1);
-    --forma-field-padding-block-start: calc(var(--forma-field-label-offset) + var(--font-size-xs) * var(--line-height-control));
+    --forma-field-padding-block-start: calc(var(--forma-field-label-offset) + var(--font-size-xs) * var(--line-height-target));
     --forma-field-padding-block-end: var(--space-1);
     position: relative;
     margin-block-end: var(--space-4);
@@ -28,25 +28,25 @@
 /* ---------- input element ---------- */
 /* A field stands one step taller than an input, holding a label over its value. */
 ::deep .forma-field-input {
-    min-block-size: var(--control-size-xl);
+    min-block-size: var(--target-size-xl);
     padding-block: var(--forma-field-padding-block-start) var(--forma-field-padding-block-end);
 }
 
 /* ---------- disabled ---------- */
 ::deep .forma-field-input:disabled {
-    color: var(--forma-input-disabled-color, var(--control-disabled-foreground-color));
-    background-color: var(--forma-input-disabled-background-color, var(--hover-background-color));
+    color: var(--forma-input-disabled-color, var(--disabled-text-color));
+    background-color: var(--forma-input-disabled-bg-color, var(--hover-bg-color));
     cursor: not-allowed;
 }
 
 .forma-field:has(.forma-field-input:disabled) .forma-field-label {
-    color: var(--forma-label-disabled-color, var(--control-disabled-foreground-color));
+    color: var(--forma-label-disabled-color, var(--disabled-text-color));
 }
 
 /* The borderless modes carry no forma-field-input, and hold no input but their own. */
 .forma-field-label-above:has(input:disabled) .forma-field-label,
 .forma-field-label-inline:has(input:disabled) .forma-field-label {
-    color: var(--forma-label-disabled-color, var(--control-disabled-foreground-color));
+    color: var(--forma-label-disabled-color, var(--disabled-text-color));
 }
 
 /* Autofill detection — triggers animationstart event */
@@ -102,8 +102,8 @@
     inset-block-start: var(--forma-field-label-offset);
     transform: none;
     font-size: var(--font-size-xs);
-    line-height: var(--line-height-control);
-    color: var(--forma-label-color, var(--text-color));
+    line-height: var(--line-height-target);
+    color: var(--forma-label-color, var(--text-primary-color));
 }
 
 /* Above and Inline: a static label ahead of an element that draws no box for one to float over.
@@ -128,7 +128,7 @@
     max-inline-size: none;
     font-size: var(--font-size-sm);
     font-weight: 500;
-    color: var(--forma-label-color, var(--text-color));
+    color: var(--forma-label-color, var(--text-primary-color));
     pointer-events: auto;
 }
 

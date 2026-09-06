@@ -8,7 +8,7 @@
     --forma-explorer-check-size: 1.5rem;
     --forma-explorer-name-column-size: 12rem;
     --forma-explorer-check-glyph-size: var(--font-size-xs);
-    --forma-explorer-check-foreground-color: var(--main-foreground-color);
+    --forma-explorer-check-fg-color: var(--primary-fg-color);
     --forma-explorer-block-size: 40rem;
     --forma-explorer-radius: var(--radius-md);
     display: flex;
@@ -30,7 +30,7 @@
 /* The command region fills the header's card; FormaCommandArea's own knobs set its fill and padding. */
 ::deep .forma-explorer-header {
     --forma-command-area-padding: var(--space-3);
-    --forma-command-area-background-color: var(--forma-explorer-header-background-color, var(--frame-flat-background-color));
+    --forma-command-area-bg-color: var(--forma-explorer-header-bg-color, var(--frame-flat-bg-color));
 }
 
 .forma-explorer.is-resizable {
@@ -79,7 +79,7 @@
     flex-direction: column;
     gap: var(--space-3);
     padding: var(--space-4);
-    background: var(--modal-background-color);
+    background: var(--muted-bg-color);
     border: 1px dashed var(--dark-border-color);
     border-radius: var(--radius-md);
 }
@@ -94,7 +94,7 @@
     margin: 0;
     font-size: var(--font-size-base);
     font-weight: 600;
-    color: var(--text-color);
+    color: var(--text-primary-color);
 }
 
 /* --- Preview --- */
@@ -104,7 +104,7 @@
 }
 
 .forma-explorer ::deep .forma-dialog .forma-file-viewer-image-frame {
-    background: var(--media-background-color);
+    background: var(--media-bg-color);
     border-radius: var(--radius-md);
 }
 
@@ -119,7 +119,7 @@
     justify-content: center;
     inline-size: 100%;
     flex: 1;
-    background: var(--media-background-color);
+    background: var(--media-bg-color);
     border-radius: var(--radius-md);
 }
 
@@ -188,12 +188,12 @@
 .forma-explorer-dialog-label {
     font-size: var(--font-size-sm);
     font-weight: 500;
-    color: var(--text-color);
+    color: var(--text-primary-color);
 }
 
 /* --- Delete Message --- */
 .forma-explorer-delete-message {
     margin: 0;
     font-size: var(--font-size-sm);
-    color: var(--text-color);
+    color: var(--text-primary-color);
 }

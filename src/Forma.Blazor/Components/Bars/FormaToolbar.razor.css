@@ -13,7 +13,7 @@
 /* A row and a group stand one control tall. */
 .forma-toolbar,
 .forma-toolbar-group {
-    min-block-size: var(--control-size-md);
+    min-block-size: var(--target-size-md);
 }
 
 .forma-toolbar-group {
@@ -50,7 +50,7 @@
 .forma-toolbar-readout {
     display: inline-flex;
     align-items: center;
-    min-block-size: var(--control-size-sm);
+    min-block-size: var(--target-size-sm);
     padding-inline: var(--space-2);
     font-size: var(--font-size-sm);
     color: var(--text-secondary-color);
@@ -59,7 +59,7 @@
 @media (pointer: coarse) {
     .forma-toolbar,
     .forma-toolbar-group {
-        min-block-size: var(--control-size-touch);
+        min-block-size: var(--target-size-touch);
     }
 }
 
@@ -67,7 +67,7 @@
 .forma-toolbar-group ::deep .forma-toolbar-menu,
 .forma-toolbar-loose ::deep .forma-toolbar-menu {
     gap: var(--space-1);
-    min-block-size: var(--control-size-md);
+    min-block-size: var(--target-size-md);
     padding-inline: var(--space-2);
     font-size: var(--font-size-xs);
     font-weight: 500;
@@ -77,7 +77,7 @@
 @media (pointer: coarse) {
     .forma-toolbar-group ::deep .forma-toolbar-menu,
     .forma-toolbar-loose ::deep .forma-toolbar-menu {
-        min-block-size: var(--control-size-touch);
+        min-block-size: var(--target-size-touch);
     }
 }
 
@@ -106,7 +106,7 @@
     block-size: var(--icon-size-sm);
     margin-inline-end: var(--space-1);
     vertical-align: -0.125rem;
-    color: var(--control-quiet-foreground-color);
+    color: var(--quiet-text-color);
 }
 
 .forma-toolbar-swatch {

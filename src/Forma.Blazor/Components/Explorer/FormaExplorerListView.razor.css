@@ -40,7 +40,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-1);
-    min-block-size: var(--control-size-md);
+    min-block-size: var(--target-size-md);
     padding-inline: var(--space-1);
     border-radius: var(--radius-sm);
     break-inside: avoid;
@@ -54,7 +54,7 @@
 
 @media (hover: hover) {
     .forma-explorer-list-item:not(.is-disabled):hover {
-        background: var(--hover-background-color);
+        background: var(--hover-bg-color);
     }
 }
 
@@ -65,17 +65,17 @@
 }
 
 .forma-explorer-list-item.is-selected {
-    background: color-mix(in srgb, var(--main-color) 12%, transparent);
+    background: color-mix(in srgb, var(--primary-color) 12%, transparent);
 }
 
 /* A disabled item: the disabled control colors, and a pointer that says so. */
 .forma-explorer-list-item.is-disabled {
-    background: var(--control-disabled-color);
+    background: var(--disabled-bg-color);
     cursor: not-allowed;
 }
 
 .forma-explorer-list-item.is-disabled .forma-explorer-list-item-name {
-    color: var(--control-disabled-foreground-color);
+    color: var(--disabled-text-color);
 }
 
 /* An invisible item keeps its place in the flow. */
@@ -88,7 +88,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    inline-size: var(--control-size-sm);
+    inline-size: var(--target-size-sm);
     flex-shrink: 0;
 }
 
@@ -98,7 +98,7 @@
     gap: var(--space-2);
     flex: 1;
     min-inline-size: 0;
-    min-block-size: var(--control-size-md);
+    min-block-size: var(--target-size-md);
     padding: 0;
     border: none;
     background: transparent;
@@ -117,7 +117,7 @@
 /* Isolated but not self-directed: deriving direction from the name would align a Latin one against the reading direction. */
 .forma-explorer-list-item-name {
     font-weight: 500;
-    color: var(--text-color);
+    color: var(--text-primary-color);
     unicode-bidi: isolate;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -125,6 +125,6 @@
 }
 
 .forma-explorer-list-item.is-selected .forma-explorer-list-item-name {
-    color: var(--main-color);
+    color: var(--primary-color);
     font-weight: 700;
 }

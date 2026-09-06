@@ -75,7 +75,7 @@
     align-items: center;
     justify-content: center;
     inline-size: var(--forma-pagination-step-width);
-    min-block-size: var(--control-size-md);
+    min-block-size: var(--target-size-md);
     padding-inline: 0;
     font-size: var(--font-size-sm);
 }
@@ -194,10 +194,10 @@
     ::deep .forma-pagination-navigation-button,
     ::deep .forma-pagination-navigation-step,
     ::deep .forma-pagination-go-button {
-        min-inline-size: var(--control-size-touch);
+        min-inline-size: var(--target-size-touch);
     }
 
     ::deep .forma-pagination-navigation-input-box {
-        min-block-size: var(--control-size-touch);
+        min-block-size: var(--target-size-touch);
     }
 }

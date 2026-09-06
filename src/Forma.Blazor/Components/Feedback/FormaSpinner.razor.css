@@ -10,7 +10,7 @@
     inline-size: var(--forma-spinner-size, var(--icon-size-sm));
     block-size: var(--forma-spinner-size, var(--icon-size-sm));
     border: 0.2em solid var(--forma-spinner-track-color, var(--light-border-color));
-    border-block-start-color: var(--forma-spinner-color, var(--main-color));
+    border-block-start-color: var(--forma-spinner-color, var(--primary-color));
     border-radius: 50%;
     animation: forma-spinner-spin 0.7s linear infinite;
 }

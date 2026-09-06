@@ -23,7 +23,7 @@
     margin: 0;
     padding: var(--space-3) var(--space-2);
     border-inline-end: 1px solid var(--border-color);
-    background: var(--muted-background-color);
+    background: var(--muted-bg-color);
     color: var(--text-secondary-color);
     text-align: end;
     list-style: none;
@@ -41,7 +41,7 @@
     border: none;
     outline: none;
     background: transparent;
-    color: var(--text-color, inherit);
+    color: var(--text-primary-color, inherit);
     font: inherit;
 
     /* The gutter counts rows, so the textarea must never wrap one line onto two or scroll on its own. */
@@ -60,7 +60,7 @@
     gap: var(--space-2);
     padding: var(--space-2);
     border-block-end: 1px solid var(--border-color);
-    background: var(--muted-background-color);
+    background: var(--muted-bg-color);
 }
 
 .demo-source-rename-field {

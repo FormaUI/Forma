@@ -40,8 +40,8 @@
 .forma-textarea-count bdi {
     padding-inline: var(--space-1);
     border-radius: var(--radius-sm);
-    background: var(--forma-input-background-color, var(--input-background-color));
-    color: var(--forma-textarea-count-color, var(--text-color));
+    background: var(--forma-input-bg-color, var(--input-bg-color));
+    color: var(--forma-textarea-count-color, var(--text-primary-color));
 }
 
 /* The glyphs read poorly aloud, so a screen reader is given this sentence instead. */
@@ -55,6 +55,6 @@
 }
 
 .forma-textarea:disabled ~ .forma-textarea-count bdi {
-    background: var(--forma-input-disabled-background-color, var(--hover-background-color));
-    color: var(--forma-input-disabled-color, var(--control-disabled-foreground-color));
+    background: var(--forma-input-disabled-bg-color, var(--hover-bg-color));
+    color: var(--forma-input-disabled-color, var(--disabled-text-color));
 }

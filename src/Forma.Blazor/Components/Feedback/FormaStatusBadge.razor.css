@@ -17,8 +17,8 @@
     font-weight: 600;
     line-height: var(--line-height-prose);
     white-space: nowrap;
-    background-color: var(--forma-status-badge-background-color, color-mix(in srgb, var(--text-secondary-color) 12%, transparent));
-    color: var(--forma-status-badge-foreground-color, var(--text-color));
+    background-color: var(--forma-status-badge-bg-color, color-mix(in srgb, var(--text-secondary-color) 12%, transparent));
+    color: var(--forma-status-badge-fg-color, var(--text-primary-color));
 }
 
 .forma-status-badge-marker {

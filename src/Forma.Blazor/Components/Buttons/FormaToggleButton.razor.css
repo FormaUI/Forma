@@ -10,9 +10,9 @@
 
 /* A pressed toggle: the hover fill and the accent color. */
 ::deep .forma-toggle-button-pressed {
-    --forma-button-ghost-background-color: var(--control-quiet-hover-color);
-    --forma-button-ghost-color: var(--main-color);
-    --forma-button-ghost-hover-color: var(--main-color);
+    --forma-button-ghost-bg-color: var(--button-quiet-hover-color);
+    --forma-button-ghost-color: var(--primary-color);
+    --forma-button-ghost-hover-color: var(--primary-color);
 }
 
 @media (forced-colors: active) {

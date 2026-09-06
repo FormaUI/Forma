@@ -6,8 +6,8 @@
 
 .forma-status-strip {
     padding-inline: var(--space-2);
-    min-block-size: var(--control-size-sm);
-    background-color: var(--modal-background-color);
+    min-block-size: var(--target-size-sm);
+    background-color: var(--status-strip-bg-color);
     border-block-start: 1px solid var(--border-color);
 }
 
