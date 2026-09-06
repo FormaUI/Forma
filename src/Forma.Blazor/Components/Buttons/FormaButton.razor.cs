@@ -3,7 +3,7 @@ namespace Forma.Blazor.Components.Buttons;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-/// <summary>A button with a visual variant, a size, and a busy state.</summary>
+/// <summary>A button with a visual variant, a size, and a busy state; a button with a click handler is disabled until its renderer is interactive, so a press can never be lost to a page that is not yet listening.</summary>
 public sealed partial class FormaButton : ComponentBase
 {
     /// <summary>Visual weight the button is drawn with.</summary>
@@ -39,6 +39,9 @@ public sealed partial class FormaButton : ComponentBase
 
     /// <summary>The rendered button element, for a composing component that must anchor to it or focus it.</summary>
     public ElementReference Element { get; private set; }
+
+    // A click handler needs the interactive renderer; until it is there the button is disabled rather than silently inert.
+    private bool IsDisabled => Disabled || (OnClick.HasDelegate && !RendererInfo.IsInteractive);
 
     // Busy is announced, not disabled, so the button keeps focus.
     private string? AriaDisabled => Busy ? "true" : null;

@@ -23,7 +23,7 @@ public sealed partial class FormaPopup : ComponentBase, IAsyncDisposable
     /// <summary>Whether closing returns focus to the trigger when focus is inside the popup at the time. A press away never moves focus.</summary>
     [Parameter] public bool ReturnsFocus { get; set; } = true;
 
-    /// <summary>Whether a press away from the popup and its trigger dismisses it.</summary>
+    /// <summary>Whether a press away from the popup and its trigger dismisses it; the press then belongs to whatever was pressed, so one press closes the popup and acts.</summary>
     [Parameter] public bool PressAway { get; set; } = true;
 
     /// <summary>The popup's content, rendered only while it is open.</summary>
@@ -79,7 +79,7 @@ public sealed partial class FormaPopup : ComponentBase, IAsyncDisposable
         => new()
         {
             Escape = DismissBehavior.Dismiss,
-            PressAway = PressAway ? PressAwayBehavior.Dismiss : PressAwayBehavior.Ignore,
+            PressAway = PressAway ? PressAwayBehavior.PassThrough : PressAwayBehavior.Ignore,
         };
 
     /// <inheritdoc />

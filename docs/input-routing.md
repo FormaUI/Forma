@@ -413,10 +413,12 @@ Escape already answered by the router never closes the dialog as a second action
 
 `FormaPopup` registers its root and activates while open. Its options remain its own:
 whether it keeps focus within itself (`KeepsFocus`), whether closing returns focus to its
-trigger (`ReturnsFocus`), whether a press away dismisses it (`PressAway`,
-mirroring `DialogOptions.CloseOnBackdropClick`), and how open state is reported. Its
-document Escape listener and its backdrop element move into the router; the trigger is
-declared `within`, so a press on it toggles rather than dismisses.
+trigger (`ReturnsFocus`), whether a press away dismisses it (`PressAway`), and how open
+state is reported. A press away passes through: it dismisses the popup and then belongs to
+whatever was pressed, so one press on another control closes the popup and acts on the
+control, and a press on another popup's trigger swaps the popups. Its document Escape
+listener and its backdrop element move into the router; the trigger is declared `within`,
+so a press on it toggles rather than dismisses.
 
 ## Focus and Tab
 

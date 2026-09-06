@@ -87,7 +87,7 @@
             Assert.Multiple(
                 () => Assert.Same(cut.FindComponent<FormaPopup>().Instance, Assert.IsType<DotNetObjectReference<FormaPopup>>(registration.Arguments[2]).Value),
                 () => Assert.Equal(DismissBehavior.Dismiss, Assert.IsType<InputProfile>(registration.Arguments[1]).Escape),
-                () => Assert.Equal(PressAwayBehavior.Dismiss, Assert.IsType<InputProfile>(registration.Arguments[1]).PressAway));
+                () => Assert.Equal(PressAwayBehavior.PassThrough, Assert.IsType<InputProfile>(registration.Arguments[1]).PressAway));
         }
 
         [Fact]

@@ -250,5 +250,47 @@
             // Assert
             Assert.Equal("Delete row", cut.Find(".forma-button").GetAttribute("aria-label"));
         }
+
+        [Fact]
+        public void Should_be_disabled_before_the_renderer_is_interactive_when_it_has_a_click_handler()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+            // Act
+            var cut = ctx.Render(@<FormaButton OnClick="() => { }">Save</FormaButton>);
+
+            // Assert
+            Assert.True(cut.Find(".forma-button").HasAttribute("disabled"));
+        }
+
+        [Fact]
+        public void Should_stay_enabled_before_the_renderer_is_interactive_without_a_click_handler()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+            // Act
+            var cut = ctx.Render(@<FormaButton Type="ButtonType.Submit">Save</FormaButton>);
+
+            // Assert
+            Assert.False(cut.Find(".forma-button").HasAttribute("disabled"));
+        }
+
+        [Fact]
+        public void Should_be_enabled_once_the_renderer_is_interactive()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+            ctx.SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+
+            // Act
+            var cut = ctx.Render(@<FormaButton OnClick="() => { }">Save</FormaButton>);
+
+            // Assert
+            Assert.False(cut.Find(".forma-button").HasAttribute("disabled"));
+        }
     }
 }

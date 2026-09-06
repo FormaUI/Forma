@@ -1,15 +1,63 @@
 namespace Forma.Blazor.Tests;
 
+using Bunit.Rendering;
+
 using Forma.Blazor;
 using Forma.Framework.Emojis.Twemoji;
 
-/// <summary>A bUnit context with the services every Forma component expects already registered.</summary>
+using Microsoft.AspNetCore.Components;
+
+/// <summary>A bUnit context with the services every Forma component expects already registered, rendering as an interactive server circuit unless a test says otherwise.</summary>
 public abstract class FormaBunitContext : BunitContext
 {
+    private static readonly RendererInfo InteractiveServer = new("Server", isInteractive: true);
+
+    private bool _isRendererInfoSet;
+
     /// <summary>Creates a context carrying Forma's own service registrations.</summary>
     protected FormaBunitContext()
     {
         Services.AddFormaTwemojiPack();
         Services.AddFormaUI();
+    }
+
+    /// <summary>Sets the renderer a test renders under, in place of the interactive server default.</summary>
+    public new void SetRendererInfo(RendererInfo rendererInfo)
+    {
+        _isRendererInfoSet = true;
+        base.SetRendererInfo(rendererInfo);
+    }
+
+    /// <inheritdoc />
+    public override IRenderedComponent<TComponent> Render<TComponent>(RenderFragment renderFragment)
+    {
+        EnsureRendererInfo();
+
+        return base.Render<TComponent>(renderFragment);
+    }
+
+    /// <inheritdoc />
+    public override IRenderedComponent<TComponent> Render<TComponent>(Action<ComponentParameterCollectionBuilder<TComponent>>? parameterBuilder = null)
+    {
+        EnsureRendererInfo();
+
+        return base.Render(parameterBuilder);
+    }
+
+    /// <inheritdoc />
+    public override IRenderedComponent<ContainerFragment> Render(RenderFragment renderFragment)
+    {
+        EnsureRendererInfo();
+
+        return base.Render(renderFragment);
+    }
+
+    // The renderer is created on the first render, after every service a test registers, so the default is applied there.
+    private void EnsureRendererInfo()
+    {
+        if (!_isRendererInfoSet)
+        {
+            SetRendererInfo(InteractiveServer);
+        }
     }
 }
