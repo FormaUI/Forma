@@ -12,7 +12,11 @@
 <CascadingValue Value="(IExplorerInteraction)this" IsFixed="true">
 <CascadingValue Value="(IExplorerItemInteraction)_itemManager" IsFixed="true">
 <div class="forma-explorer @(Options.Resizable ? "is-resizable" : "") @(Options.AsDialog ? "is-dialog" : "")">
-<FormaExplorerCommandArea />
+<FormaFrame Variant="FrameVariant.Canvas" class="forma-explorer-canvas">
+<FormaStackLayout>
+    <FormaFrame Variant="FrameVariant.Raised" class="forma-explorer-header-frame">
+        <FormaExplorerCommandArea />
+    </FormaFrame>
 
     <!-- Refusal notice; the region stays in the DOM so a message inserted into it is announced -->
     <div class="forma-explorer-rejection-region" role="alert">
@@ -46,17 +50,19 @@
     }
 
     <!-- Main Layout: Sidebar & Content -->
-    <div class="forma-explorer-body @(_isResizingSidebar ? "is-resizing" : "")" style="@SidebarSizeStyle">
+    <FormaStackLayout Orientation="StackOrientation.Horizontal" class="@BodyCssClass" style="@SidebarSizeStyle">
         @if (ShowsSidebar)
         {
-            <FormaExplorerSidebar CurrentFolder="CurrentFolder"
-                                 ItemOptions="ItemOptions"
-                                 Folders="Folders"
-                                 FolderTree="FolderTree"
-                                 TotalCount="TotalCount ?? Items?.Count ?? MatchingCount ?? 0"
-                                 OnFolderDelete="_itemManager.RequestFolderDelete"
-                                 OnFolderCreate="OpenFolderDialogAsync"
-                                 OnFolderSelected="HandleFolderSelectedAsync" />
+            <FormaFrame Variant="FrameVariant.Raised" class="forma-explorer-sidebar-frame">
+                <FormaExplorerSidebar CurrentFolder="CurrentFolder"
+                                     ItemOptions="ItemOptions"
+                                     Folders="Folders"
+                                     FolderTree="FolderTree"
+                                     TotalCount="TotalCount ?? Items?.Count ?? MatchingCount ?? 0"
+                                     OnFolderDelete="_itemManager.RequestFolderDelete"
+                                     OnFolderCreate="OpenFolderDialogAsync"
+                                     OnFolderSelected="HandleFolderSelectedAsync" />
+            </FormaFrame>
 
             <FormaSplitter Class="forma-explorer-splitter"
                            Orientation="SplitterOrientation.Vertical"
@@ -68,8 +74,12 @@
                            OnResizingChanged="resizing => _isResizingSidebar = resizing" />
         }
 
-        <FormaExplorerContentArea />
-    </div>
+        <FormaFrame Variant="FrameVariant.Raised" class="forma-explorer-content-frame">
+            <FormaExplorerContentArea />
+        </FormaFrame>
+    </FormaStackLayout>
+</FormaStackLayout>
+</FormaFrame>
 
     <!-- Preview Lightbox Dialog -->
     @if (_preview.Resource is { } preview)

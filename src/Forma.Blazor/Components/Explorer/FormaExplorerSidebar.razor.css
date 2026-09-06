@@ -3,25 +3,13 @@
    Hierarchical folder tree with drop targets and action buttons
    ============================================================ */
 
-/* A card on the explorer's canvas. */
+/* Fills the frame the explorer gives it. */
 .forma-explorer-sidebar {
-    inline-size: var(--forma-explorer-sidebar-size, 18rem);
-    flex-shrink: 0;
     display: flex;
     flex-direction: column;
+    min-inline-size: 0;
     min-block-size: 0;
     padding: var(--space-2);
-    background: var(--surface-color);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-small);
-}
-
-/* Stacked above the media in a narrow explorer, capped so the media still shows beneath it. */
-@container (max-width: 40rem) {
-    .forma-explorer-sidebar {
-        inline-size: auto;
-        max-block-size: 11rem;
-    }
 }
 
 /* The tree is a section of the sidebar and ends in the line between sections, drawn across the card; the sash

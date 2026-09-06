@@ -1,0 +1,17 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "Lays frames along one axis, one seam apart. The seam is one spacing step of the parent showing between them; a splitter placed between two frames stands in it and takes no room of its own.": "מניח מסגרות לאורך ציר אחד, במרחק תפר אחד זו מזו. התפר הוא צעד ריווח אחד של ההורה הנראה ביניהן; מפריד המונח בין שתי מסגרות עומד בו ואינו תופס מקום משלו.",
+  "Vertical": "אנכי",
+  "Frames one above the next.": "מסגרות זו מעל זו.",
+  "Header": "כותרת",
+  "Content": "תוכן",
+  "Horizontal": "אופקי",
+  "Frames one beside the next along the reading direction.": "מסגרות זו לצד זו לאורך כיוון הקריאה.",
+  "Sidebar": "סרגל צד",
+  "With a Splitter": "עם מפריד",
+  "A splitter between two frames stands in the seam between them. The seam stays one step wide while the splitter is dragged.": "מפריד בין שתי מסגרות עומד בתפר שביניהן. התפר נשאר ברוחב צעד אחד בזמן שהמפריד נגרר.",
+  "Resize Sidebar": "שינוי גודל סרגל הצד",
+  "Width": "רוחב",
+  "Nested": "מקונן",
+  "A stack inside a stack takes the room it is given, so a header can stand above a sidebar and content laid side by side.": "ערימה בתוך ערימה תופסת את המקום הניתן לה, כך שכותרת יכולה לעמוד מעל סרגל צד ותוכן המונחים זה לצד זה."
+}

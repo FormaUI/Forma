@@ -37,7 +37,11 @@ Forma.Blazor/Components/
 │   ├── FormaToolbarOption.cs
 │   ├── ✅ FormaSelectionToolbar.razor / .razor.cs / .razor.css
 │   └── ✅ FormaStatusStrip.razor / .razor.cs / .razor.css
-├── (5 / 5) Layout/
+├── (7 / 7) Layout/
+│   ├── ✅ FormaFrame.razor / .razor.cs / .razor.css    # a region of the page in one of four looks: flat, raised, inset or canvas
+│   ├── FrameVariant.cs                        # enum: Flat, Raised, Inset, Canvas
+│   ├── ✅ FormaStackLayout.razor / .razor.cs / .razor.css  # frames along one axis, one seam apart; a splitter between two stands in the seam
+│   ├── StackOrientation.cs                    # enum: Vertical, Horizontal
 │   ├── ✅ FormaCommandArea.razor / .razor.cs / .razor.css
 │   ├── ✅ FormaCommandBar.razor / .razor.cs / .razor.css
 │   ├── ✅ FormaFreezePane.razor / .razor.cs / .razor.css  # a scroll box along one axis with frozen parts, moved by scrollbar or per-side arrows
@@ -918,6 +922,26 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Blazor approach** | One scroll box along the inline or the block axis. Parts of the content carrying the frozen class stick to the axis start, drawn over what slides beneath them, so a table keeps one element per row rather than splitting into a frozen table and a scrolling one. The content moves either by the browser's scrollbar or, in the arrow form, by a `FormaButton` at each end shown only while the content can still move that way: at the start only the forward arrow exists, from the middle both, at the end only the back arrow, and none when everything fits. Content marking stops scrolls stop to stop: an arrow press moves to the next one and the browser snaps to them, each drawn up to the end of the frozen region; content marking none moves by most of a page. The arrows sit in the flow at either end as a strip across the content, its full width along the block axis and its full height along the inline one; with frozen columns both stand in the band of the frozen corner, as tall as a frozen header, and the back arrow floats at the frozen region's end over the frozen part that ends there. Along the inline axis a wheel turned over the content moves it sideways |
 | **Why it needs JS** | How far the content can still move, how far its frozen parts reach in from the start and how far the frozen corner reaches across the axis are measurements only the browser holds; `Scroll.js` reports them, coalesced to one a frame and only when they change, pages the box, and turns a vertical wheel into inline movement |
 | **Notes** | Inline offsets are read through `Math.abs` because a right-to-left box counts `scrollLeft` downwards from zero, the frozen extent is measured from the right edge there, and the inline chevrons are turned per direction since they are not bidi-mirrored. Reached from a host's stylesheet through `::deep` |
+
+### 73. `FormaFrame` ✅
+
+| | |
+|---|---|
+| **Old pattern** | Every panel drawing its own fill, border, corner and shadow, and the page background behind them |
+| **Used in** | `FormaExplorer` for its canvas and its header, folder tree and content cards, the Showcase's frame and layout pages, and any region of a page |
+| **Parameters** | `FrameVariant Variant` (`Flat`, `Raised`, `Inset`, `Canvas`), `RenderFragment? ChildContent`, plus captured pass-through attributes |
+| **Blazor approach** | One element painting the token of its variant, `--frame-{variant}-background-color`. Flat lies in its parent, told apart from the frame beside it by tone alone; Inset is set back a tone, as a header strip or a toolbar band; Raised stands off the canvas as a card, with the corner radius, the small shadow and its content clipped to its corners; Canvas is the frame other frames are laid on, painting the canvas tone with one spacing step of it showing around what it holds. No variant draws a line |
+| **Notes** | Sizing is the host's: a frame takes the room its layout gives it, and a host sets its width or flex through the pass-through `class` and `style`. The step a canvas shows around its frames is the seam, `--space-1`, the same one a `FormaStackLayout` (#74) shows between frames, so cards read as one whole |
+
+### 74. `FormaStackLayout` ✅
+
+| | |
+|---|---|
+| **Old pattern** | A flex row or column written into each host with its own gap |
+| **Used in** | `FormaExplorer` for its vertical stack of header and body and its horizontal stack of folder tree and content, the Showcase's frame and layout pages, and any host stacking frames along one axis |
+| **Parameters** | `StackOrientation Orientation` (`Vertical`, `Horizontal`), `RenderFragment? ChildContent`, plus captured pass-through attributes |
+| **Blazor approach** | A flex column or row with the seam as its gap. A `FormaSplitter` (#63) placed between two frames is told the seam so it stands in it, absorbing the gap on either side of it, and the seam stays one step wide while it is dragged. A stack inside a stack takes the room it is given |
+| **Notes** | Which frame grows and which keeps its size is the host's, set through the pass-through `class` and `style`; the stack lays them and nothing else |
 
 ---
 

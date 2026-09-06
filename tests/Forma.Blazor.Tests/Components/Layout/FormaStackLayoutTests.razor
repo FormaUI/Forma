@@ -1,0 +1,55 @@
+@inherits FormaBunitContext
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_stack_vertically_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaStackLayoutTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaStackLayout><FormaFrame>One</FormaFrame><FormaFrame>Two</FormaFrame></FormaStackLayout>);
+            var layout = cut.Find(".forma-stack-layout");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("forma-stack-layout-vertical", layout.ClassList);
+                Assert.Equal(2, cut.FindAll(".forma-stack-layout > .forma-frame").Count);
+            });
+        }
+
+        [Fact]
+        public void Should_stack_horizontally_when_asked()
+        {
+            // Arrange
+            using var ctx = new FormaStackLayoutTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaStackLayout Orientation="StackOrientation.Horizontal" />);
+
+            // Assert
+            Assert.Contains("forma-stack-layout-horizontal", cut.Find(".forma-stack-layout").ClassList);
+        }
+
+        [Fact]
+        public void Should_merge_the_host_class_and_pass_attributes_through()
+        {
+            // Arrange
+            using var ctx = new FormaStackLayoutTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaStackLayout class="host-body" style="--host-size: 18rem" />);
+            var layout = cut.Find(".forma-stack-layout");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("host-body", layout.ClassList);
+                Assert.Equal("--host-size: 18rem", layout.GetAttribute("style"));
+            });
+        }
+    }
+}

@@ -1,0 +1,18 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "A region of the page. Its variant decides its look: flat in its parent, raised off the canvas as a card, inset a tone, or the canvas other frames are laid on. It draws no line.": "אזור בעמוד. הווריאנט שלו קובע את מראהו: שטוח בתוך הורהו, מורם מעל הקנבס ככרטיס, שקוע בגוון, או הקנבס שמסגרות אחרות מונחות עליו. הוא אינו מצייר קו.",
+  "Flat and Inset": "שטוח ושקוע",
+  "Two frames inside one frame are told apart by tone alone: the inset frame sets a header strip or a toolbar band back from the flat frame beside it.": "שתי מסגרות בתוך מסגרת אחת נבדלות זו מזו בגוון בלבד: המסגרת השקועה מרחיקה רצועת כותרת או פס סרגל כלים מהמסגרת השטוחה שלצדם.",
+  "Inset: a header strip": "שקוע: רצועת כותרת",
+  "Flat: the content": "שטוח: התוכן",
+  "Raised on a Canvas": "מורם על קנבס",
+  "A raised frame stands off the canvas as a card, lifted by a soft shadow with the canvas showing around it.": "מסגרת מורמת עומדת מעל הקנבס ככרטיס, מורמת בצל רך כשהקנבס נראה סביבה.",
+  "Raised: a card on the canvas": "מורם: כרטיס על הקנבס",
+  "Flat inside a Card": "שטוח בתוך כרטיס",
+  "Inside a raised frame, the frames it holds lie flat and are told apart by tone, so the card reads as one whole.": "בתוך מסגרת מורמת, המסגרות שהיא מכילה שוכבות שטוחות ונבדלות בגוון, כך שהכרטיס נקרא כשלם אחד.",
+  "Cards on One Canvas": "כרטיסים על קנבס אחד",
+  "Several raised frames stacked on one canvas. The seam shows between them, one step wide, the same step the canvas shows around them.": "כמה מסגרות מורמות מוערמות על קנבס אחד. התפר נראה ביניהן, ברוחב צעד אחד, אותו צעד שהקנבס מראה סביבן.",
+  "Header": "כותרת",
+  "Sidebar": "סרגל צד",
+  "Content": "תוכן"
+}

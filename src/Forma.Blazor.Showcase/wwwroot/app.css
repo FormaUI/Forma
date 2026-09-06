@@ -12,7 +12,7 @@
    ============================================================ */
 
 body {
-    background: var(--modal-background-color);
+    background: var(--frame-canvas-background-color);
 }
 
 .showcase-layout {
@@ -309,9 +309,9 @@ body {
     align-items: stretch;
     gap: var(--space-3);
     padding: var(--space-5);
-    background: var(--input-background-color);
-    border: 1px solid var(--border-color);
+    background: var(--frame-flat-background-color);
     border-radius: var(--radius-md);
+    box-shadow: var(--shadow-small);
 }
 
 .demo-box > p {
@@ -332,7 +332,7 @@ body {
     margin-block-start: 0;
 }
 
-/* Lets a region reach the box's own edges, the way it would seat in a real surface. */
+/* Lets a region reach the box's own edges, the way it would seat in a real frame. */
 .demo-box-flush {
     gap: 0;
     padding: 0;
@@ -384,15 +384,15 @@ body {
     overflow: hidden;
 }
 
-/* The first pane is set back into the surface, so the seam the splitter stands on is a change of tone. */
+/* The first pane is set back into the frame, so the seam the splitter stands on is a change of tone. */
 .demo-split-row > .demo-pane:first-child {
     inline-size: var(--demo-pane-size);
     flex-shrink: 0;
-    background: var(--surface-sunken-color);
+    background: var(--frame-inset-background-color);
 }
 
 .demo-split-column > .demo-pane:first-child {
-    background: var(--surface-sunken-color);
+    background: var(--frame-inset-background-color);
 }
 
 .demo-pane-fill {
@@ -817,4 +817,30 @@ body {
 
 .demo-scroll-table td.forma-freeze-pane-frozen {
     background: var(--input-background-color);
+}
+
+/* A region standing in for real content on the frame and layout pages: a label centred in a card or a strip. */
+.demo-frame {
+    place-items: center;
+    padding: var(--space-3);
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary-color);
+}
+
+.demo-frame-tall {
+    block-size: 8rem;
+}
+
+.demo-frame-side {
+    inline-size: var(--demo-frame-side-size, 10rem);
+    flex-shrink: 0;
+}
+
+.demo-frame-fill {
+    flex: 1;
+}
+
+/* A drag must not leave the regions selecting text as the pointer sweeps across them. */
+.forma-stack-layout.is-resizing {
+    user-select: none;
 }

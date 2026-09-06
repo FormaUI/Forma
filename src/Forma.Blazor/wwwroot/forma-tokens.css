@@ -26,7 +26,7 @@
 
     /* Spacing scale on a 4px grid, in rem so padding and gaps grow with the text they surround.
        Each step has one job, so two components that make the same decision pick the same value. */
-    --space-1: 0.25rem;   /* inside one control: a glyph beside its label, a badge's padding; between the surfaces laid on a canvas */
+    --space-1: 0.25rem;   /* inside one control: a glyph beside its label, a badge's padding; between the frames laid on a canvas */
     --space-2: 0.5rem;    /* between controls in a row; a control's block padding */
     --space-3: 0.75rem;   /* a control's inline padding; between groups in a row */
     --space-4: 1rem;      /* between blocks; a panel's or a card's padding */
@@ -86,13 +86,13 @@
     --light-border-color: #d9dbde;
     --dark-border-color: rgba(98, 105, 118, 0.31);
 
-    /* Surfaces — the canvas a page paints, the surfaces laid on it, and the tone a region takes on a surface. Regions
-       are told apart by tone and by a surface's own edge, never by a line drawn across a surface. Values come from the
-       neutral ramp the controls already use, and a theme redefines this set on its scope. */
-    --canvas-color: #f3f4f6;          /* the page behind every surface */
-    --surface-color: #fff;            /* a panel, a sheet, a content area */
-    --surface-sunken-color: #f9fafb;  /* a region set back into its surface: a sidebar, a toolbar strip, a table header */
-    --surface-raised-color: #fff;     /* a popup, a dialog, a card lifted off its surface, under --shadow-medium */
+    /* Frames — the canvas a page paints, the frames laid on it, and the tone a region takes inside a frame, one
+       token per FrameVariant. Regions are told apart by tone and by a frame's own edge, never by a line drawn across
+       a frame. Values come from the neutral ramp the controls already use, and a theme redefines this set on its scope. */
+    --frame-canvas-background-color: #f3f4f6;  /* the canvas: the frame other frames are laid on */
+    --frame-flat-background-color: #fff;       /* a flat frame: a panel, a sheet, a content area */
+    --frame-inset-background-color: #f9fafb;   /* an inset frame: a header strip, a toolbar band, a table header */
+    --frame-raised-background-color: #fff;     /* a raised frame: a card on the canvas, a popup, a dialog */
 
     /* Backgrounds */
     --input-background-color: #fff;
@@ -122,7 +122,7 @@
     --info-color: #307fdd;
 
     /* Shadows */
-    --shadow-color: rgba(30, 41, 59, 0.12);  /* what a surface casts onto what slides beneath it, drawn as a fade */
+    --shadow-color: rgba(30, 41, 59, 0.12);  /* what a raised frame casts onto what slides beneath it, drawn as a fade */
     --shadow-small: rgba(30, 41, 59, 0.04) 0 2px 4px 0;
     --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.12);
     --shadow-large: 0 8px 30px rgba(0, 0, 0, 0.18);

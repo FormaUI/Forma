@@ -4,17 +4,13 @@
    state, the infinite-scroll sentinel and the pager
    ============================================================ */
 
-/* A card on the explorer's canvas; the views inside it reach its edges, so a header strip runs the card's width. */
+/* Fills the frame the explorer gives it; the views inside reach its edges, so a header strip runs the frame's width. */
 .forma-explorer-content {
-    flex: 1;
     min-inline-size: 0;
     min-block-size: 0;
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
-    background: var(--surface-color);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-small);
     overflow: hidden;
 }
 

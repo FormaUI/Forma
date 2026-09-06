@@ -1,0 +1,32 @@
+/* ============================================================
+   FormaStackLayout — CSS isolation
+   Frames along one axis, one seam apart. The seam is one
+   spacing step of the parent showing between them; a splitter
+   placed between two frames is told the seam so it stands in it.
+   ============================================================ */
+
+.forma-stack-layout {
+    display: flex;
+    gap: var(--space-1);
+    min-inline-size: 0;
+    min-block-size: 0;
+}
+
+.forma-stack-layout-vertical {
+    flex-direction: column;
+}
+
+.forma-stack-layout-horizontal {
+    flex-direction: row;
+}
+
+/* A stack inside a stack takes the room it is given. */
+.forma-stack-layout .forma-stack-layout {
+    flex: 1;
+}
+
+/* A splitter between two frames absorbs the seam on either side of it, so the two seams read as one. */
+.forma-stack-layout > ::deep .forma-splitter {
+    --forma-splitter-gap: var(--space-1);
+    align-self: stretch;
+}
