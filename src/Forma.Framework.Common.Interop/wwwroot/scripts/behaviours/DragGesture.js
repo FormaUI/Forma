@@ -11,8 +11,8 @@
  * dragged, where it may land, and what landing there means are all the caller's to answer.
  */
 
-import { Frame } from '../core/Frame.js';
-import { Scrolling } from '../core/Scrolling.js';
+import { Frame } from '../../../core/scripts/Frame.js';
+import { Scrolling } from '../../../core/scripts/Scrolling.js';
 import { capture, release } from '../operations/Pointer.js';
 
 /**

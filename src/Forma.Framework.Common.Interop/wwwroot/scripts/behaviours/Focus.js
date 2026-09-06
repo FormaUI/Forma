@@ -8,7 +8,7 @@
  * order, then leaves for whatever follows or precedes it in the page.
  */
 
-import { Controls } from '../core/Controls.js';
+import { Controls } from '../../../core/scripts/Controls.js';
 
 /**
  * @param {HTMLElement} target The surface whose Tab order is decided.

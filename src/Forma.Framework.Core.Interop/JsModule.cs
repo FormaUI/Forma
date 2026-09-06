@@ -1,4 +1,4 @@
-namespace Forma.Framework.Interop;
+namespace Forma.Framework.Core.Interop;
 
 using System.Diagnostics.CodeAnalysis;
 

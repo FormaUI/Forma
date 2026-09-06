@@ -6,8 +6,8 @@ public sealed partial class FormaDialogTests
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddJsonLocalization();
-        Router = JSInterop.SetupModule("./_content/Forma.Framework.Input.Interop/scripts/InputRouter.js");
-        Dialog = JSInterop.SetupModule("./_content/Forma.Framework.Common.Interop/scripts/components/Dialog.js").SetupModule("attach", _ => true);
+        Router = JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+        Dialog = JSInterop.SetupModule("./_content/forma/common/scripts/components/Dialog.js").SetupModule("attach", _ => true);
     }
 
     /// <summary>The input router module, set up before any render so the dialog's registrations on it are recorded.</summary>

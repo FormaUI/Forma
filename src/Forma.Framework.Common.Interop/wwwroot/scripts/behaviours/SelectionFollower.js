@@ -4,7 +4,7 @@
 
 import { attach as attachDragGesture } from './DragGesture.js';
 import { Focus } from './Focus.js';
-import { Frame } from '../core/Frame.js';
+import { Frame } from '../../../core/scripts/Frame.js';
 
 /** Space kept between the element and the selection, and between the element and the viewport's edge. */
 const Gap = 8;

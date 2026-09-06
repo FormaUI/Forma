@@ -53,6 +53,8 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
 
     private Scroll _scroll = default!;
 
+    private Wheel _wheel = default!;
+
     private DotNetObjectReference<FormaFileViewer>? _selfReference;
 
     private ElementReference _imageFrameElement;
@@ -91,6 +93,7 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
     {
         _pan = new PanGesture(JS);
         _scroll = new Scroll(JS);
+        _wheel = new Wheel(JS);
     }
 
     /// <inheritdoc />
@@ -171,12 +174,12 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
         if (ZoomOnWheelGesture && !_isWheelAttached)
         {
             _selfReference ??= DotNetObjectReference.Create(this);
-            _isWheelAttached = await _scroll.AttachAsync(_imageFrameElement, new ScrollBehaviours { Wheel = ScrollWheel.Tells(WheelModifier.Ctrl) }, _selfReference);
+            _isWheelAttached = await _wheel.AttachAsync(_imageFrameElement, ScrollWheel.Tells(WheelModifier.Ctrl), _selfReference);
         }
         else if (!ZoomOnWheelGesture && _isWheelAttached)
         {
             _isWheelAttached = false;
-            await _scroll.DetachAsync();
+            await _wheel.DetachAsync();
         }
 
         if (_hasZoomChanged)
@@ -258,6 +261,7 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
 
         await _pan.DisposeAsync();
         await _scroll.DisposeAsync();
+        await _wheel.DisposeAsync();
         _selfReference?.Dispose();
     }
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { Frame } from '#common/core/Frame.js';
+import { Frame } from '#core/Frame.js';
 import { stubAnimationFrames } from '#support/platform.js';
 
 describe('Frame', () => {

@@ -8,8 +8,8 @@
  */
 
 import { Focus } from './Focus.js';
-import { Direction } from '../core/Direction.js';
-import { Frame } from '../core/Frame.js';
+import { Direction } from '../../../core/scripts/Direction.js';
+import { Frame } from '../../../core/scripts/Frame.js';
 
 /** Distance between the anchor and the popup. */
 const Gap = 4;

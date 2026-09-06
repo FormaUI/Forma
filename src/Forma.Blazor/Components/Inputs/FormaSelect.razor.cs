@@ -42,7 +42,7 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
     private ElementReference _triggerElement;
     private ElementReference[] _optionElements = [];
     private FormaPopup Popup { get; set; } = default!;
-    private Scroll _keyGuard = default!;
+    private NavigationGuard _keyGuard = default!;
 
     private bool IsOpen
         => Popup is { IsOpen: true };
@@ -52,7 +52,7 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _keyGuard = new Scroll(JS);
+        => _keyGuard = new NavigationGuard(JS);
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -153,7 +153,7 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
 
     private async Task HandleOpenedAsync()
     {
-        await _keyGuard.AttachAsync(Popup.Element, ScrollBehaviours.NavigationGuard);
+        await _keyGuard.AttachAsync(Popup.Element);
         await FocusIndexAsync(_focusedIndex);
     }
 

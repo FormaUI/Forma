@@ -6,7 +6,7 @@ public sealed partial class FormaToolbarTests
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddJsonLocalization();
-        Router = JSInterop.SetupModule("./_content/Forma.Framework.Input.Interop/scripts/InputRouter.js");
+        Router = JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
     }
 
     /// <summary>The input router module, set up before any render so the toolbar's registrations on it are recorded.</summary>

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { Scrolling } from '#common/core/Scrolling.js';
+import { Scrolling } from '#core/Scrolling.js';
 import { sizeScroller } from '#support/platform.js';
 
 describe('Scrolling', () => {

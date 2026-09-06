@@ -1,13 +1,13 @@
 namespace Forma.Framework.Common.Interop.Behaviours;
 
-using Forma.Framework.Interop;
+using Forma.Framework.Core.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>A popup kept positioned against its anchor for as long as it is open.</summary>
 public sealed class AnchoredPopup(IJSRuntime js)
-    : JsInterop(js, "./_content/Forma.Framework.Common.Interop/scripts/behaviours/AnchoredPopup.js")
+    : JsInterop(js, "./_content/forma/common/scripts/behaviours/AnchoredPopup.js")
 {
     private bool _isOpen;
     private Task? _transition;

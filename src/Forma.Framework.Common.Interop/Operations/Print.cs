@@ -1,13 +1,13 @@
 namespace Forma.Framework.Common.Interop.Operations;
 
-using Forma.Framework.Interop;
+using Forma.Framework.Core.Interop;
 
 using Microsoft.JSInterop;
 
 /// <summary>Sends a document alone to the printer.</summary>
 public sealed class Print(IJSRuntime js) : IAsyncDisposable
 {
-    private readonly JsModule _module = new(js, "./_content/Forma.Framework.Common.Interop/scripts/operations/Print.js");
+    private readonly JsModule _module = new(js, "./_content/forma/common/scripts/operations/Print.js");
 
     /// <summary>Prints the markup by itself, dressed in the page's own stylesheets.</summary>
     public ValueTask<bool> PrintAsync(string html, string title, string className)

@@ -29,21 +29,26 @@ service    → one instance per document that many callers register with
 ```
 
 Scripts and their wrappers ship together in an interop assembly, never in `Forma.Blazor`.
-`Forma.Framework.Interop` holds the interop base alone, `JsModule` and `JsInterop`, and ships
-no scripts. `Forma.Framework.Common.Interop` holds every behaviour and operation any component
-may attach, with the wrappers of components that belong to no feature. A feature with scripts
-of its own ships them, and their wrappers, in `Forma.Framework.{Feature}.Interop`. Every
-interop assembly is built on `Forma.Framework.Interop`. Each assembly serves its scripts under
-`_content/{its assembly name}/scripts/`.
+`Forma.Framework.Core.Interop` is the floor: the interop base every wrapper builds on, `JsModule`
+and `JsInterop`, and the scripts every other script builds on — the report to a .NET owner, the
+selectors of the controls a list leaves alone, the frame, the reading direction, the scroller
+lookup — directly under its `wwwroot/scripts/` with no wrapper. `Forma.Framework.Common.Interop`
+holds every behaviour and operation any component may attach, with the wrappers of components
+that belong to no feature. A feature with scripts of its own ships them, and their wrappers, in
+`Forma.Framework.{Feature}.Interop`, as `Forma.Framework.Input.Interop` ships the router and its
+inspector. Every interop assembly is built on the core one, and a dependency between two others
+is declared as a project reference, so the graph stays visible.
+
+The assemblies are served side by side as `_content/forma/core`, `_content/forma/common`,
+`_content/forma/input` and `_content/forma/composer`, each with its scripts under `scripts/`.
+A script reaches another assembly's script by climbing to that root — `../../../core/scripts/Frame.js`
+from a behaviour — so the import stays relative to the module and survives a host path base.
 
 `Forma.Framework.Common.Interop` serves many concepts, so it sorts by kind: a script lives in
 `wwwroot/scripts/behaviours/`, `operations/` or `components/`, and its wrapper in the matching
-`Behaviours/`, `Operations/` or `Components/` folder. What the scripts share among themselves
-and no C# calls — the report to a .NET owner, the selectors of the controls a list leaves
-alone — lives in `wwwroot/scripts/core/` with no wrapper. A feature interop assembly is named for
-its one concept, so its scripts sit directly under `wwwroot/scripts/` and its wrappers at the
-assembly root, as `Forma.Framework.Input.Interop` serves `scripts/InputRouter.js` beside
-`InputRouter.cs`.
+`Behaviours/`, `Operations/` or `Components/` folder. A feature interop assembly is named for its
+one concept, so its scripts sit directly under `wwwroot/scripts/` and its wrappers at the assembly
+root, as `Forma.Framework.Input.Interop` serves `scripts/InputRouter.js` beside `InputRouter.cs`.
 
 | Kind | What it is | Script | C# wrapper |
 |---|---|---|---|
@@ -56,7 +61,7 @@ assembly root, as `Forma.Framework.Input.Interop` serves `scripts/InputRouter.js
 - Do file a script as an operation when it is a stateless DOM operation, or a set of related ones.
 - Do file a script as a component when it owns the browser-side interop for one component and naturally holds both kinds; keep that interop together rather than splitting it by implementation shape.
 - Do file a script as a service when there is one of it per document and its callers register with it rather than attach it: `InputRouter` keeps every scope's routes and the active ordering across the whole page.
-- Do file what several scripts share, and nothing in C# reaches, under `core/`: `Owner.js` tells a .NET owner what happened, `Controls.js` names what native controls claim for themselves. A shared piece is never filed as an operation merely because it is stateless.
+- Do file what several scripts share, and nothing in C# reaches, in `Forma.Framework.Core.Interop`: `Owner.js` tells a .NET owner what happened, `Controls.js` names what native controls claim for themselves. A shared piece is never filed as an operation merely because it is stateless.
 - Do name a service for what it is to the page: `InputRouter`.
 - Do name a component script after the component it supports with the `Forma` prefix dropped, so `FormaDialog` is served by `Dialog.js` and `FormaRichTextEditor` by `RichTextEditor.js`.
 - Do split a component script that has grown past one concern into `{Name}/*.mjs` modules behind a `{Name}.js` entry point beside them; the entry keeps its path, so no wrapper changes, and it composes the modules rather than re-exporting them.
@@ -136,7 +141,7 @@ export function resolve(event) { … }
 - Do name a wrapper after the module it owns, with no `Bridge`, `Helper`, or `Interop` suffix.
 - Do let `JsModule` and `JsInterop` handle importing, `JSException`, `JSDisconnectedException`, and disposal rather than repeating any of it.
 - Do dispose the wrapper from the component's `DisposeAsync`.
-- Do import from `./_content/{Assembly}/scripts/{Name}.js`, or `scripts/{behaviours|operations|components}/{Name}.js` when the assembly is `Forma.Framework.Common.Interop`, where the assembly is the one that ships the script, so the base path follows the assembly name exactly.
+- Do import from `./_content/forma/{core|common|input|composer}/scripts/{Name}.js`, with the kind folder in the path where the assembly sorts by kind, so the wrapper names the assembly that ships the script.
 - Do suppress CA1812 on a private record that exists only to receive a JS return shape, since nothing constructs it in C#.
 - Don't make a wrapper static; `IJSRuntime` is scoped per circuit and the module reference has to be disposed with it.
 - Don't import a module by hand with `JS.InvokeAsync<IJSObjectReference>("import", …)`.

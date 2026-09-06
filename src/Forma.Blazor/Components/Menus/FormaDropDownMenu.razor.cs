@@ -40,14 +40,14 @@ public sealed partial class FormaDropDownMenu : ComponentBase, IAsyncDisposable
     private ElementReference _anchorElement;
     private FormaButton _trigger = default!;
     private FormaPopup Popup { get; set; } = default!;
-    private Scroll _keyGuard = default!;
+    private NavigationGuard _keyGuard = default!;
 
     private bool IsOpen
         => Popup is { IsOpen: true };
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _keyGuard = new Scroll(JS);
+        => _keyGuard = new NavigationGuard(JS);
 
     internal void RegisterItem(FormaDropDownMenuItem item)
         => _items.Add(item);
@@ -137,7 +137,7 @@ public sealed partial class FormaDropDownMenu : ComponentBase, IAsyncDisposable
 
     private async Task HandleOpenedAsync()
     {
-        await _keyGuard.AttachAsync(Popup.Element, ScrollBehaviours.NavigationGuard);
+        await _keyGuard.AttachAsync(Popup.Element);
         await FocusIndexAsync(_openAtLastItem ? EnabledIndexFrom(_items.Count - 1, -1) : EnabledIndexFrom(0, 1));
     }
 

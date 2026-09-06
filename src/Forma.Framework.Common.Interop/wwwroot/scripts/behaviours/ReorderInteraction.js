@@ -9,8 +9,8 @@
  */
 
 import { attach as attachDragGesture } from './DragGesture.js';
-import { Controls } from '../core/Controls.js';
-import { tell } from '../core/Owner.js';
+import { Controls } from '../../../core/scripts/Controls.js';
+import { tell } from '../../../core/scripts/Owner.js';
 
 /** How long a touch rests on an item before it lifts, leaving shorter swipes to scroll. */
 const TouchHold = 400;
@@ -18,7 +18,7 @@ const TouchHold = 400;
 /**
  * @param {HTMLElement} target
  * @param {{
- *   owner: import('../core/Owner.js').Owner,
+ *   owner: import('../../../core/scripts/Owner.js').Owner,
  *   dragFromItem?: boolean,
  *   handleSelector?: string,
  *   itemClass?: string,

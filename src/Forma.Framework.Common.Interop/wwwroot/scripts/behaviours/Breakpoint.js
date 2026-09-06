@@ -7,9 +7,9 @@
  * the stylesheet, and the component renders what the tier names.
  */
 
-import { tell } from '../core/Owner.js';
+import { tell } from '../../../core/scripts/Owner.js';
 
-/** @typedef {import('../core/Owner.js').Owner} Owner */
+/** @typedef {import('../../../core/scripts/Owner.js').Owner} Owner */
 
 /**
  * @param {HTMLElement} target The element whose computed property names the tier.

@@ -31,7 +31,7 @@ bUnit renders markup and drives its own synchronous JS interop, so a green suite
 
 ## JavaScript tests
 
-`tests/Forma.Blazor.Tests.Scripts` runs the `wwwroot/scripts/` modules of every assembly that ships scripts under Vitest and happy-dom. It reaches each assembly through an alias named for it, `#common/`, `#composer/` and `#input/`, and holds that assembly's tests in a folder of the same name, `common/`, `composer/` and `input/`, laid out as the assembly's `wwwroot/scripts/` is.
+`tests/Forma.Blazor.Tests.Scripts` runs the `wwwroot/scripts/` modules of every assembly that ships scripts under Vitest and happy-dom. It reaches each assembly through an alias named for it, `#core/`, `#common/`, `#input/` and `#composer/`, and holds that assembly's tests in a folder of the same name, `core/`, `common/`, `input/` and `composer/`, laid out as the assembly's `wwwroot/scripts/` is.
 
 - Do add a `{Name}.test.js` beside its siblings whenever you add or change a behaviour, operation, or component module.
 - Do drive it with `npm test` from that folder; it is a separate runner and `dotnet test` does not reach it.

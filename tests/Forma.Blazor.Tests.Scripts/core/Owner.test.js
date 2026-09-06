@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { tell } from '#common/core/Owner.js';
+import { tell } from '#core/Owner.js';
 import { fakeOwner } from '#support/owner.js';
 
 describe('Owner', () => {

@@ -44,6 +44,7 @@ public sealed partial class FormaFreezePane : ComponentBase, IAsyncDisposable
     private static readonly ScrollBoundaryReport Unmeasured = new(false, false, 0, 0, 0);
 
     private Scroll _scroll = default!;
+    private Wheel _wheel = default!;
     private DotNetObjectReference<FormaFreezePane>? _selfReference;
     private ElementReference _viewport;
     private bool _isMeasured;
@@ -106,13 +107,12 @@ public sealed partial class FormaFreezePane : ComponentBase, IAsyncDisposable
     private Glyph ForwardGlyph
         => IsBlockAxis ? Glyph.ChevronDown : Glyph.ChevronRight;
 
-    // The wheel moves inline content only; along the block axis the browser already scrolls by it.
     private ScrollBehaviours Behaviours
-        => new()
-        {
-            Boundary = new ScrollBoundary(Options.Axis, $".{FrozenClass}"),
-            Wheel = !IsBlockAxis && Options.PageOnWheelGesture ? ScrollWheel.MovesTarget : null,
-        };
+        => new() { Boundary = new ScrollBoundary(Options.Axis, $".{FrozenClass}") };
+
+    // The wheel moves inline content only; along the block axis the browser already scrolls by it.
+    private bool WantsWheel
+        => !IsBlockAxis && Options.PageOnWheelGesture;
 
     /// <summary>Takes how far the content can still move each way, how far its frozen parts reach and how much of the viewport is in view; called from the script when that changes.</summary>
     [JSInvokable]
@@ -134,7 +134,10 @@ public sealed partial class FormaFreezePane : ComponentBase, IAsyncDisposable
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _scroll = new Scroll(JS);
+    {
+        _scroll = new Scroll(JS);
+        _wheel = new Wheel(JS);
+    }
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -162,6 +165,15 @@ public sealed partial class FormaFreezePane : ComponentBase, IAsyncDisposable
 
                 _attached = behaviours;
             }
+
+            if (WantsWheel && !_wheel.IsAttached)
+            {
+                await _wheel.AttachAsync(_viewport, ScrollWheel.MovesTarget);
+            }
+            else if (!WantsWheel && _wheel.IsAttached)
+            {
+                await _wheel.DetachAsync();
+            }
         }
         finally
         {
@@ -183,6 +195,7 @@ public sealed partial class FormaFreezePane : ComponentBase, IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await _scroll.DisposeAsync();
+        await _wheel.DisposeAsync();
         _selfReference?.Dispose();
     }
 }

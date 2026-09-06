@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { Direction } from '#common/core/Direction.js';
+import { Direction } from '#core/Direction.js';
 
 describe('Direction', () => {
     /** @type {HTMLElement} */

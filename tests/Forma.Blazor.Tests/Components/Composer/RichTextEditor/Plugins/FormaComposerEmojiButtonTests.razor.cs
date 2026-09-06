@@ -8,7 +8,7 @@ public sealed partial class FormaComposerEmojiButtonTests
         JSInterop.Mode = JSRuntimeMode.Loose;
 
         JSInterop
-            .SetupModule("./_content/Forma.Framework.Common.Interop/scripts/operations/Asset.js")
+            .SetupModule("./_content/forma/common/scripts/operations/Asset.js")
             .Setup<bool>("loadSprite", _ => true)
             .SetResult(true);
     }

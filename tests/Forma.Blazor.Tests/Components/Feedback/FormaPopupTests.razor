@@ -76,7 +76,7 @@
         {
             // Arrange
             using var ctx = new FormaPopupTests();
-            var router = ctx.JSInterop.SetupModule("./_content/Forma.Framework.Input.Interop/scripts/InputRouter.js");
+            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
             var cut = ctx.Render(@<FormaPopup Anchor="default"><p>Content</p></FormaPopup>);
 
             // Act
@@ -95,7 +95,7 @@
         {
             // Arrange
             using var ctx = new FormaPopupTests();
-            var router = ctx.JSInterop.SetupModule("./_content/Forma.Framework.Input.Interop/scripts/InputRouter.js");
+            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
             var cut = ctx.Render(@<FormaPopup Anchor="default" PressAway="false"><p>Content</p></FormaPopup>);
 
             // Act

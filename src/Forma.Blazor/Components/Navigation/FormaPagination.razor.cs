@@ -26,7 +26,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
     private readonly string _navigationInputId = $"forma-pagination-input-{Guid.NewGuid():N}";
 
     private ImplicitSubmitGuard _submitGuard = default!;
-    private Scroll _scroll = default!;
+    private Wheel _wheel = default!;
     private TextEntry _textEntry = default!;
     private DotNetObjectReference<FormaPagination>? _selfReference;
     private ElementReference _navElement;
@@ -99,7 +99,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
     protected override void OnInitialized()
     {
         _submitGuard = new ImplicitSubmitGuard(JS);
-        _scroll = new Scroll(JS);
+        _wheel = new Wheel(JS);
         _textEntry = new TextEntry(JS);
     }
 
@@ -125,7 +125,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
         {
             _isSubmitGuardAttached = false;
             await _submitGuard.DetachAsync();
-            await _scroll.DetachAsync();
+            await _wheel.DetachAsync();
             return;
         }
 
@@ -134,14 +134,14 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
             _isSubmitGuardAttached = await _submitGuard.AttachAsync(NavigationInput.Element);
         }
 
-        if (Options.PageOnWheelGesture && !_scroll.IsAttached)
+        if (Options.PageOnWheelGesture && !_wheel.IsAttached)
         {
             _selfReference ??= DotNetObjectReference.Create(this);
-            await _scroll.AttachAsync(_navElement, new ScrollBehaviours { Wheel = ScrollWheel.Tells() }, _selfReference);
+            await _wheel.AttachAsync(_navElement, ScrollWheel.Tells(), _selfReference);
         }
-        else if (!Options.PageOnWheelGesture && _scroll.IsAttached)
+        else if (!Options.PageOnWheelGesture && _wheel.IsAttached)
         {
-            await _scroll.DetachAsync();
+            await _wheel.DetachAsync();
         }
     }
 
@@ -149,7 +149,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await _submitGuard.DisposeAsync();
-        await _scroll.DisposeAsync();
+        await _wheel.DisposeAsync();
         await _textEntry.DisposeAsync();
         _selfReference?.Dispose();
     }

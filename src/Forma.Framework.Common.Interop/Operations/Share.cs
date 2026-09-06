@@ -1,13 +1,13 @@
 namespace Forma.Framework.Common.Interop.Operations;
 
-using Forma.Framework.Interop;
+using Forma.Framework.Core.Interop;
 
 using Microsoft.JSInterop;
 
 /// <summary>Hands a subject to the platform's own share surface.</summary>
 public sealed class Share(IJSRuntime js) : IAsyncDisposable
 {
-    private readonly JsModule _module = new(js, "./_content/Forma.Framework.Common.Interop/scripts/operations/Share.js");
+    private readonly JsModule _module = new(js, "./_content/forma/common/scripts/operations/Share.js");
 
     /// <summary>Whether the browser offers a native share surface.</summary>
     public async ValueTask<bool> IsAvailableAsync()

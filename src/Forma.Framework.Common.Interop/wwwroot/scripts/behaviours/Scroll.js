@@ -3,50 +3,29 @@
  *
  * One handle covers whichever of these a surface asks for: watching how far its content can
  * still move along an axis, how far its frozen parts reach in from the start and how far the
- * frozen corner reaches across it; turning a wheel that reports vertically into movement along
- * a track, or telling an owner which way it turned; asking for the next page as a sentinel
- * comes into view; and keeping the arrow, Home and End keys from scrolling the page under a
- * list that owns them. Moving a container to a position it cannot express declaratively, to its
- * centre or one step along an axis, is exported beside it. Inline offsets are read through
- * Math.abs where a right-to-left container counts scrollLeft downwards from zero.
+ * frozen corner reaches across it; and asking for the next page as a sentinel comes into view.
+ * Moving a container to a position it cannot express declaratively, to its centre or one step
+ * along an axis, is exported beside it. Inline offsets are read through Math.abs where a
+ * right-to-left container counts scrollLeft downwards from zero.
  */
 
-import { Controls } from '../core/Controls.js';
-import { Direction } from '../core/Direction.js';
-import { Frame } from '../core/Frame.js';
-import { Scrolling } from '../core/Scrolling.js';
-import { tell } from '../core/Owner.js';
+import { Direction } from '../../../core/scripts/Direction.js';
+import { Frame } from '../../../core/scripts/Frame.js';
+import { tell } from '../../../core/scripts/Owner.js';
 
-/** Pixels a line is taken to be, for the wheels that report in lines rather than pixels. */
-const LineHeight = 16;
-
-/** Milliseconds between events that still belong to one gesture. */
-const GestureGap = 150;
-
-/**
- * Pixels below which a delta is a trackpad's rather than a wheel notch's. A notch reports whole
- * lines, or in pixels no fewer than the 48 of three lines, while a trackpad reports the pointer's
- * own movement, a few pixels at a time.
- */
-const NotchDistance = 40;
-
-/** @typedef {import('../core/Owner.js').Owner} Owner */
+/** @typedef {import('../../../core/scripts/Owner.js').Owner} Owner */
 
 /**
  * @param {HTMLElement} target The surface.
  * @param {{
  *   boundary?: { owner: Owner, axis?: 'inline' | 'block', frozen?: string | null },
- *   wheel?: { track?: HTMLElement, owner?: Owner, modifier?: string },
- *   sentinel?: { owner: Owner, root?: HTMLElement | null, rootMargin?: string },
- *   guard?: boolean
+ *   sentinel?: { owner: Owner, root?: HTMLElement | null, rootMargin?: string }
  * }} options
  *   What the handle does for the target: report through HandleOverflowAsync, in one object, how far it can still
  *   scroll along the axis, how far the parts matching the frozen selector reach in from its
- *   start, how far across the axis the frozen corner reaches and how much of it is in view; answer a wheel over it by
- *   moving the track, the target when none is named, or by telling the owner the direction
- *   through HandleWheelAsync, only with the modifier key held when one is named; treat the
+ *   start, how far across the axis the frozen corner reaches and how much of it is in view; and treat the
  *   target as a sentinel and tell the owner through HandleReachedAsync as it comes into view of
- *   the root; and keep the navigation keys from scrolling the page.
+ *   the root.
  */
 export function attach(target, options = {}) {
     return new Scroll(target, options);
@@ -132,21 +111,13 @@ function byPage(container, direction, isBlock, isRightToLeft) {
 export class Scroll {
     #parts = [];
 
-    constructor(target, { boundary, wheel, sentinel, guard } = {}) {
+    constructor(target, { boundary, sentinel } = {}) {
         if (boundary) {
             this.#parts.push(new BoundaryWatch(target, boundary));
         }
 
-        if (wheel) {
-            this.#parts.push(new WheelTurn(target, wheel));
-        }
-
         if (sentinel) {
             this.#parts.push(new Sentinel(target, sentinel));
-        }
-
-        if (guard) {
-            this.#parts.push(new NavigationGuard(target));
         }
     }
 
@@ -284,134 +255,6 @@ class BoundaryWatch {
     }
 }
 
-/** Answers a wheel turned over the target, which reports vertically alone: a track moves by it, or an owner is told its direction. */
-class WheelTurn {
-    #target;
-    #sink;
-    #modifier;
-    #controller = new AbortController();
-
-    constructor(target, { track, owner, modifier }) {
-        this.#target = target;
-        this.#sink = owner ? new DirectionSink(owner) : new TrackSink(track ?? target);
-        this.#modifier = modifier ? `${modifier}Key` : null;
-
-        // A passive listener cannot call preventDefault, which keeps the turn from the page.
-        target.addEventListener('wheel', event => this.#handle(event), { signal: this.#controller.signal, passive: false });
-    }
-
-    dispose() {
-        this.#controller.abort();
-    }
-
-    #handle(event) {
-        // Without its key held the turn is not answered.
-        if (this.#modifier && !event[this.#modifier]) {
-            return;
-        }
-
-        // A popup or scrolling panel over the target takes the turn.
-        if (this.#nearerScroller(event.target)) {
-            return;
-        }
-
-        this.#sink.move(event);
-    }
-
-    /**
-     * Whether the pointer is over something that only lives in the target's markup: a popover, a
-     * backdrop or anything else taken out of flow, or a panel that scrolls on its own.
-     */
-    #nearerScroller(from) {
-        for (let node = from instanceof Element ? from : from?.parentElement; node && node !== this.#target; node = node.parentElement) {
-            if (node.hasAttribute('popover')) {
-                return true;
-            }
-
-            const style = getComputedStyle(node);
-
-            // A fixed element takes the page's turn.
-            if (style.position === 'fixed' || Scrolling.isScroller(node, style)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-}
-
-/** Scrolls a track by the movement until it reaches either end. */
-class TrackSink {
-    #track;
-
-    constructor(track) {
-        this.#track = track;
-    }
-
-    move(event) {
-        // A sideways delta is left to the browser.
-        if (event.deltaX !== 0) {
-            return;
-        }
-
-        const slack = this.#track.scrollWidth - this.#track.clientWidth;
-
-        // A sub-pixel track width leaves a fractional remainder, so a pixel is the smallest real slack.
-        if (slack <= 1) {
-            return;
-        }
-
-        const isRightToLeft = Direction.isRightToLeft(this.#track);
-        const distance = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? event.deltaY * LineHeight : event.deltaY;
-        const offset = this.#track.scrollLeft;
-        const wanted = offset + (isRightToLeft ? -distance : distance);
-        const next = isRightToLeft ? Math.min(0, Math.max(-slack, wanted)) : Math.max(0, Math.min(slack, wanted));
-
-        // The turn is consumed at either end too.
-        event.preventDefault();
-
-        if (Math.abs(next - offset) < 1) {
-            return;
-        }
-
-        // Each notch lands at once.
-        this.#track.scrollTo({ left: next, behavior: 'instant' });
-    }
-}
-
-/** Tells an owner which way the wheel moved: every notch of a wheel, and each gesture of a trackpad once. */
-class DirectionSink {
-    #owner;
-    #lastAt = Number.NEGATIVE_INFINITY;
-    #isGestureReported = false;
-
-    constructor(owner) {
-        this.#owner = owner;
-    }
-
-    move(event) {
-        const delta = event.deltaX !== 0 ? event.deltaX : event.deltaY;
-
-        if (delta === 0) {
-            return;
-        }
-
-        // The turn is consumed.
-        event.preventDefault();
-
-        const isNotch = event.deltaMode !== WheelEvent.DOM_DELTA_PIXEL || Math.abs(delta) >= NotchDistance;
-        const isSameGesture = event.timeStamp - this.#lastAt < GestureGap;
-        this.#lastAt = event.timeStamp;
-
-        if (!isNotch && isSameGesture && this.#isGestureReported) {
-            return;
-        }
-
-        this.#isGestureReported = !isNotch;
-        tell(this.#owner, 'HandleWheelAsync', Math.sign(delta));
-    }
-}
-
 /** Asks for the next page as the target comes into view; the handle keeps the observer, so the target can be released before it leaves the DOM. */
 class Sentinel {
     #observer;
@@ -432,27 +275,5 @@ class Sentinel {
     dispose() {
         this.#isDisposed = true;
         this.#observer.disconnect();
-    }
-}
-
-/**
- * Stops the page scrolling under a list that owns its arrow, Home and End keys. Blazor fixes
- * preventDefault at render time and cannot choose per key, so the default is suppressed here for
- * those keys alone, leaving Enter, Space and Tab to act normally; the keys themselves are still
- * handled in C#.
- */
-class NavigationGuard {
-    #controller = new AbortController();
-
-    constructor(target) {
-        target.addEventListener('keydown', event => {
-            if (Controls.NavigationKeys.has(event.key)) {
-                event.preventDefault();
-            }
-        }, { signal: this.#controller.signal });
-    }
-
-    dispose() {
-        this.#controller.abort();
     }
 }

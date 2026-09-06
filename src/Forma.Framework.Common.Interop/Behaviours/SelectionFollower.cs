@@ -1,6 +1,6 @@
 namespace Forma.Framework.Common.Interop.Behaviours;
 
-using Forma.Framework.Interop;
+using Forma.Framework.Core.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -17,7 +17,7 @@ public enum SelectionFollowerPlacement
 
 /// <summary>Keeps an element positioned beside the text selection inside its owner, holding focus while it shows.</summary>
 public sealed class SelectionFollower(IJSRuntime js)
-    : JsInterop(js, "./_content/Forma.Framework.Common.Interop/scripts/behaviours/SelectionFollower.js")
+    : JsInterop(js, "./_content/forma/common/scripts/behaviours/SelectionFollower.js")
 {
     /// <summary>Attaches to the element that follows the selection; a class marks it while a selection inside the owner is active, and a handle inside it drags or arrow-keys it to a new place.</summary>
     public ValueTask<bool> AttachAsync(

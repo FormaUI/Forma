@@ -2,7 +2,7 @@ namespace Forma.Framework.Common.Interop.Operations;
 
 using System.Diagnostics.CodeAnalysis;
 
-using Forma.Framework.Interop;
+using Forma.Framework.Core.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -10,7 +10,7 @@ using Microsoft.JSInterop;
 /// <summary>The value and selected range of a text entry.</summary>
 public sealed class TextEntry(IJSRuntime js) : IAsyncDisposable
 {
-    private readonly JsModule _module = new(js, "./_content/Forma.Framework.Common.Interop/scripts/operations/Text.js");
+    private readonly JsModule _module = new(js, "./_content/forma/common/scripts/operations/Text.js");
 
     /// <summary>Reads what is currently typed and empties the entry.</summary>
     public ValueTask<string?> ReadAndClearAsync(ElementReference input)

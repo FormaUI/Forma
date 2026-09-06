@@ -7,7 +7,7 @@
         <LangVersion>latest</LangVersion>
         <IsPackable>false</IsPackable>
         <RootNamespace>Forma.Framework.Common.Interop</RootNamespace>
-        <StaticWebAssetBasePath>_content/$(AssemblyName)</StaticWebAssetBasePath>
+        <StaticWebAssetBasePath>_content/forma/common</StaticWebAssetBasePath>
     </PropertyGroup>
 
     <ItemGroup>
@@ -15,7 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Forma.Framework.Interop\Forma.Framework.Interop.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Core.Interop\Forma.Framework.Core.Interop.csproj" />
     </ItemGroup>
 
 </Project>

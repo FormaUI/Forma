@@ -92,7 +92,7 @@ Escape and press-away behavior are decided in several unrelated ways today:
 Arrow, Home, and End are handled independently by `FormaSelect`, `FormaDropDownMenu`,
 `FormaEmojiPicker` tabs, `FormaFileViewer` sibling navigation, `FormaSplitter`,
 `FormaDataGrid` through `SelectionInteraction`, `FormaSortableList` through
-`ReorderInteraction`, and the selection bar's nudge handle; `Scroll.js`'s navigation guard
+`ReorderInteraction`, and the selection bar's nudge handle; `NavigationGuard`
 prevents page scrolling for two of them.
 
 ### Tab
@@ -118,7 +118,7 @@ HTML5 drag and drop spans four views and the sidebar; `DropZone` supports file i
 
 ### Wheel
 
-`Scroll.js`'s wheel is used by the command bar, the toolbar, and the file viewer, optionally
+`Wheel` is used by the command bar, the toolbar, and the file viewer, optionally
 requiring a modifier.
 
 ## Existing conflicts
@@ -533,10 +533,10 @@ existing components, landing as several coherent commits.
    and the backdrop z-indexes go.
 3. **Owners onto routes.** `SelectionInteraction`, both shortcut sets (done: the composer's
    and the toolbar's shortcuts are routes, and `KeyBindings` is retired), the three
-   wheel tracks of `Scroll.js`, `PanGesture`, `DropZone` and the explorer drop targets,
+   wheel tracks of `Wheel`, `PanGesture`, `DropZone` and the explorer drop targets,
    `Focus.js`, and the components that own navigation keys — `FormaSelect`,
    `FormaDropDownMenu`, `FormaEmojiPicker`, `FormaFileViewer`, `FormaSplitter`,
-   `FormaSortableList`, `FormaTabs`. `Scroll.js`'s navigation guard and the per-component
+   `FormaSortableList`, `FormaTabs`. `NavigationGuard` and the per-component
    text-entry exclusions are retired in favour of the router's `preventDefault` and native
    table.
 4. **Verification** across combinations, in a visible browser: select in a grid cell; popup

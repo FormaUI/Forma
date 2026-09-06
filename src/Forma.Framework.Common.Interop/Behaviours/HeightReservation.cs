@@ -1,13 +1,13 @@
 namespace Forma.Framework.Common.Interop.Behaviours;
 
-using Forma.Framework.Interop;
+using Forma.Framework.Core.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>Holds a container at the tallest height its content has needed, so a short page does not shrink it.</summary>
 public sealed class HeightReservation(IJSRuntime js)
-    : JsInterop(js, "./_content/Forma.Framework.Common.Interop/scripts/behaviours/HeightReservation.js")
+    : JsInterop(js, "./_content/forma/common/scripts/behaviours/HeightReservation.js")
 {
     /// <summary>Attaches the reservation to a container holding a table.</summary>
     public ValueTask<bool> AttachAsync(ElementReference container)

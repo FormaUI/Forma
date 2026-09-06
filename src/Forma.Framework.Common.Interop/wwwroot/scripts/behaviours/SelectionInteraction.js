@@ -8,13 +8,13 @@
  * reconstructed on this side.
  */
 
-import { Controls } from '../core/Controls.js';
-import { tell } from '../core/Owner.js';
+import { Controls } from '../../../core/scripts/Controls.js';
+import { tell } from '../../../core/scripts/Owner.js';
 
 /**
  * @param {HTMLElement} target
  * @param {{
- *   owner: import('../core/Owner.js').Owner,
+ *   owner: import('../../../core/scripts/Owner.js').Owner,
  *   keyAttribute?: string,
  *   itemSelector?: string
  * }} options

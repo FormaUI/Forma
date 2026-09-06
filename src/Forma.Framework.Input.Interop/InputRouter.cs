@@ -1,6 +1,6 @@
 namespace Forma.Framework.Input.Interop;
 
-using Forma.Framework.Interop;
+using Forma.Framework.Core.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -8,7 +8,7 @@ using Microsoft.JSInterop;
 /// <summary>The circuit's input router: carries the host's policy and routes to the script once, and registers the scopes components own.</summary>
 public sealed class InputRouter(IJSRuntime js, InputRouterOptions options, IInputActionHandler? hostHandler = null) : IAsyncDisposable, IDisposable
 {
-    private readonly JsModule _module = new(js, "./_content/Forma.Framework.Input.Interop/scripts/InputRouter.js");
+    private readonly JsModule _module = new(js, "./_content/forma/input/scripts/InputRouter.js");
     private DotNetObjectReference<InputRouter>? _selfReference;
     private Task<bool>? _configuration;
     private InputScope? _hostScope;

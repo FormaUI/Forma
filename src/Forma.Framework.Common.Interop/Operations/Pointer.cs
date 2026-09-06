@@ -2,7 +2,7 @@ namespace Forma.Framework.Common.Interop.Operations;
 
 using System.Diagnostics.CodeAnalysis;
 
-using Forma.Framework.Interop;
+using Forma.Framework.Core.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -11,7 +11,7 @@ using Microsoft.JSInterop;
 [SuppressMessage("Naming", "CA1720", Justification = "Named after the pointer capture module it owns; the pointer is the subject, not a pointer type.")]
 public sealed class Pointer(IJSRuntime js) : IAsyncDisposable
 {
-    private readonly JsModule _module = new(js, "./_content/Forma.Framework.Common.Interop/scripts/operations/Pointer.js");
+    private readonly JsModule _module = new(js, "./_content/forma/common/scripts/operations/Pointer.js");
 
     /// <summary>Routes the pointer with the given id to <paramref name="target"/> until released.</summary>
     public ValueTask<bool> CaptureAsync(ElementReference target, long pointerId)

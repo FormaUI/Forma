@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
         <TargetFramework>net11.0</TargetFramework>
@@ -6,7 +6,8 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <IsPackable>false</IsPackable>
-        <RootNamespace>Forma.Framework.Interop</RootNamespace>
+        <RootNamespace>Forma.Framework.Core.Interop</RootNamespace>
+        <StaticWebAssetBasePath>_content/forma/core</StaticWebAssetBasePath>
     </PropertyGroup>
 
     <ItemGroup>
