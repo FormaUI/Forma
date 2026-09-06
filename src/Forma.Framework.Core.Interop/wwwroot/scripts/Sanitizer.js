@@ -1,4 +1,9 @@
-// Sanitizes untrusted markup before it reaches a live DOM, and strips the artefacts a word processor leaves behind.
+/**
+ * Sanitizer — untrusted markup reduced to what a document may carry
+ *
+ * Strips the elements, attributes and URL schemes a document may not carry, and the artefacts a
+ * word processor leaves behind, before the markup reaches a live DOM.
+ */
 
 const AllowedTags = new Set([
     'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'pre', 'code',

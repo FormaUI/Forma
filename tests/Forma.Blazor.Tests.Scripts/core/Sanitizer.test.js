@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 
-import { sanitize } from '#composer/Html.js';
+import { sanitize } from '#core/Sanitizer.js';
 
-describe('Html', () => {
+describe('Sanitizer', () => {
     it('keeps allowed elements and their formatting', () => {
         const result = sanitize('<p>Base <b>Bold bit</b> and <em>emphasis</em></p>');
 

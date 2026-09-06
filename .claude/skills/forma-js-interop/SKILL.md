@@ -32,7 +32,7 @@ Scripts and their wrappers ship together in an interop assembly, never in `Forma
 `Forma.Framework.Core.Interop` is the floor: the interop base every wrapper builds on, `JsModule`
 and `JsInterop`, and the scripts every other script builds on — the report to a .NET owner, the
 selectors of the controls a list leaves alone, the frame, the reading direction, the scroller
-lookup — directly under its `wwwroot/scripts/` with no wrapper. `Forma.Framework.Common.Interop`
+lookup, the markup sanitizer — directly under its `wwwroot/scripts/` with no wrapper. `Forma.Framework.Common.Interop`
 holds every behaviour and operation any component may attach, with the wrappers of components
 that belong to no feature. A feature with scripts of its own ships them, and their wrappers, in
 `Forma.Framework.{Feature}.Interop`, as `Forma.Framework.Input.Interop` ships the router and its
