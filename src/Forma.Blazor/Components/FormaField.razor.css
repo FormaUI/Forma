@@ -34,19 +34,19 @@
 
 /* ---------- disabled ---------- */
 ::deep .forma-field-input:disabled {
-    color: var(--forma-input-disabled-color, var(--text-muted-color));
+    color: var(--forma-input-disabled-color, var(--control-disabled-foreground-color));
     background-color: var(--forma-input-disabled-background-color, var(--hover-background-color));
     cursor: not-allowed;
 }
 
 .forma-field:has(.forma-field-input:disabled) .forma-field-label {
-    color: var(--forma-label-disabled-color, var(--text-muted-color));
+    color: var(--forma-label-disabled-color, var(--control-disabled-foreground-color));
 }
 
 /* The borderless modes carry no forma-field-input, and hold no input but their own. */
 .forma-field-label-above:has(input:disabled) .forma-field-label,
 .forma-field-label-inline:has(input:disabled) .forma-field-label {
-    color: var(--forma-label-disabled-color, var(--text-muted-color));
+    color: var(--forma-label-disabled-color, var(--control-disabled-foreground-color));
 }
 
 /* Autofill detection — triggers animationstart event */

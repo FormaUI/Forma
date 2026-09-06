@@ -55,9 +55,11 @@
     --radius-lg: 0.5rem;    /* a dialog, a toast */
     --radius-pill: 9999px;  /* a badge, a chip, a tab pill; intentionally oversized; CSS caps it to form fully rounded ends */
 
-    /* Text colors */
+    /* Text tones, one per role. Content and every enabled control take the text tone or the quiet control
+       foreground below, both past 7:1 on the surface; supporting text — a caption, a count, a placeholder, an
+       empty state, a hint — takes the secondary tone, which still meets WCAG AA at 4.5:1; only a disabled
+       control takes the disabled foreground, so a grey that weak always means "unavailable". */
     --text-color: rgba(44, 56, 74, 0.95);
-    --text-muted-color: #889097;
     --text-secondary-color: #6c757d;
     --gray-color: rgba(44, 56, 74, 0.45);
 
@@ -101,9 +103,9 @@
     --control-quiet-color: #f2f4f7;               /* a control that recedes: a tertiary button, a ghost button under the pointer */
     --control-quiet-hover-color: #e5e7eb;
     --control-quiet-active-color: #d1d5db;
-    --control-quiet-foreground-color: #4b5563;    /* the label on a quiet fill or on no fill at all */
+    --control-quiet-foreground-color: #4b5563;    /* the label or glyph of an enabled control on a quiet fill or on no fill at all */
     --control-disabled-color: #f2f4f7;            /* every disabled control, whatever it was when live */
-    --control-disabled-foreground-color: #9ca3af;
+    --control-disabled-foreground-color: #9ca3af; /* the label or glyph of a disabled control, and nothing enabled */
 
     /* Status colors */
     --success-color: #28a745;

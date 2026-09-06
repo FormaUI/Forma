@@ -15,6 +15,8 @@ A component is not finished until it works without colour, without a mouse, and 
 - Do treat existing text that states the condition as a valid second channel.
 - Do meet 4.5:1 text contrast, 3:1 for large text, and 3:1 for meaningful non-text indicators.
 - Do expose both sides of a state indicator as tokens so a host can retune contrast without forking CSS.
+- Do take a text tone from its role and nowhere else: content and every enabled control's label or glyph from `--text-color` or `--control-quiet-foreground-color`, supporting text — a caption, a count, a placeholder, an empty state, a hint — from `--text-secondary-color`, and a disabled control alone from `--control-disabled-foreground-color`.
+- Don't paint an enabled control in a grey near the disabled tone, and don't invent a fourth grey; an enabled control that reads as disabled is a defect, whatever each tone measures on its own.
 - Don't rely on colour or opacity alone to communicate on/off, selected, current, validity, severity, disabled, sorted, or dragging states.
 
 Opacity changes lightness while preserving shape, so it is too weak for anything more important than a disabled affordance. White on a mid-grey track measures roughly 2:1 and fails; darken the glyph instead of lightening the track.

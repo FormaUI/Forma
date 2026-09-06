@@ -24,7 +24,7 @@
     padding: var(--space-3) var(--space-2);
     border-inline-end: 1px solid var(--border-color);
     background: var(--muted-background-color);
-    color: var(--text-muted-color);
+    color: var(--text-secondary-color);
     text-align: end;
     list-style: none;
     user-select: none;
@@ -75,7 +75,7 @@
 }
 
 .demo-source-rename-arrow {
-    color: var(--text-muted-color);
+    color: var(--text-secondary-color);
 }
 
 @media (pointer: coarse) {

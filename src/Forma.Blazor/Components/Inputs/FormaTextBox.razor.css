@@ -7,7 +7,7 @@
    ============================================================ */
 
 .forma-text-box:disabled {
-    color: var(--forma-input-disabled-color, var(--text-muted-color));
+    color: var(--forma-input-disabled-color, var(--control-disabled-foreground-color));
     background-color: var(--forma-input-disabled-background-color, var(--hover-background-color));
     cursor: not-allowed;
 }

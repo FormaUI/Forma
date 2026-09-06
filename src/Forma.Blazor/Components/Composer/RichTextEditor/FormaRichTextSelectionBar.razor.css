@@ -27,7 +27,6 @@
 
 /* The drag is driven by pointer events, so the handle takes no touch gesture. */
 ::deep .forma-composer-selection-bar-handle {
-    --forma-button-ghost-color: var(--text-muted-color);
     flex-shrink: 0;
     cursor: grab;
     touch-action: none;

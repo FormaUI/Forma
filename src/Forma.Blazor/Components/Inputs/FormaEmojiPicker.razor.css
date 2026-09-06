@@ -31,7 +31,7 @@
     border-block-end: 2px solid transparent;
     border-radius: var(--radius-sm);
     background: none;
-    color: var(--forma-emoji-picker-tab-color, var(--text-muted-color));
+    color: var(--forma-emoji-picker-tab-color, var(--control-quiet-foreground-color));
     cursor: pointer;
     touch-action: manipulation;
 }
@@ -64,7 +64,7 @@
     margin: 0;
     padding-block: var(--space-2) var(--space-1);
     background: var(--forma-emoji-picker-background-color, var(--input-background-color));
-    color: var(--forma-emoji-picker-heading-color, var(--text-muted-color));
+    color: var(--forma-emoji-picker-heading-color, var(--text-secondary-color));
     font-size: var(--font-size-xs);
     font-weight: 600;
     text-transform: uppercase;
@@ -115,7 +115,7 @@
 .forma-emoji-picker-empty {
     margin: 0;
     padding-block: var(--space-5);
-    color: var(--forma-emoji-picker-heading-color, var(--text-muted-color));
+    color: var(--forma-emoji-picker-heading-color, var(--text-secondary-color));
     font-size: var(--font-size-sm);
     text-align: center;
 }

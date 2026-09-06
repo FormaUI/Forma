@@ -28,7 +28,7 @@
 }
 
 .forma-spinner-label {
-    color: var(--text-muted-color);
+    color: var(--text-secondary-color);
     font-size: var(--font-size-sm);
 }
 

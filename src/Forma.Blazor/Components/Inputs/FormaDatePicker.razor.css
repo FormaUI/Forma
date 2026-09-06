@@ -52,7 +52,7 @@
 }
 
 .forma-date-picker-value.placeholder {
-    color: var(--text-muted-color);
+    color: var(--text-secondary-color);
 }
 
 /* ---------- clear ---------- */
@@ -152,7 +152,7 @@
     grid-template-columns: repeat(7, var(--forma-date-picker-day-width));
     justify-items: center;
     font-size: var(--font-size-xs);
-    color: var(--text-muted-color);
+    color: var(--text-secondary-color);
     font-weight: 700;
     margin-bottom: var(--space-1);
     height: var(--forma-date-picker-day-height);

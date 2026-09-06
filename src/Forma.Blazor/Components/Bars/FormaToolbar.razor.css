@@ -106,7 +106,7 @@
     block-size: var(--icon-size-sm);
     margin-inline-end: var(--space-1);
     vertical-align: -0.125rem;
-    color: var(--text-secondary-color);
+    color: var(--control-quiet-foreground-color);
 }
 
 .forma-toolbar-swatch {

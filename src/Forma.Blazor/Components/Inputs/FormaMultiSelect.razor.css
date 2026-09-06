@@ -69,7 +69,7 @@
 }
 
 .forma-multi-select-trigger-text.placeholder {
-    color: var(--text-muted-color);
+    color: var(--text-secondary-color);
 }
 
 .forma-multi-select-arrow {
@@ -121,7 +121,7 @@
 .forma-multi-select-empty {
     padding-block: var(--space-2);
     padding-inline: var(--space-2);
-    color: var(--text-muted-color);
+    color: var(--text-secondary-color);
     font-size: var(--font-size-sm);
     text-align: center;
 }

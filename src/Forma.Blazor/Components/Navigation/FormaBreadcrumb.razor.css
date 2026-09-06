@@ -68,11 +68,10 @@ a.forma-breadcrumb-item {
 }
 
 span.forma-breadcrumb-item {
-    color: var(--text-muted-color);
+    color: var(--text-secondary-color);
 }
 
 ::deep button.forma-breadcrumb-item {
-    --forma-button-ghost-color: var(--text-muted-color);
     --forma-button-ghost-hover-color: var(--main-color);
 }
 
@@ -83,7 +82,7 @@ span.forma-breadcrumb-item {
 
 .forma-breadcrumb-separator {
     font-size: var(--font-size-xs);
-    color: var(--text-muted-color);
+    color: var(--text-secondary-color);
     flex-shrink: 0;
 }
 
@@ -94,7 +93,6 @@ span.forma-breadcrumb-item {
 
 /* The chevron turns to follow the reading direction, and down to open. */
 ::deep .forma-breadcrumb-chevron {
-    --forma-button-ghost-color: var(--text-muted-color);
     transition: rotate 0.15s ease;
 }
 

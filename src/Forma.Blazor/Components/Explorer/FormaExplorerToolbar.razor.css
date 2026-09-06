@@ -54,5 +54,5 @@
 
 .forma-explorer-sort-trigger-caret {
     font-size: var(--font-size-xs);
-    color: var(--text-muted-color);
+    color: inherit;
 }

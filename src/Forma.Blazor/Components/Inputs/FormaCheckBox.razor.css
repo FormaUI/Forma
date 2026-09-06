@@ -29,7 +29,7 @@
 }
 
 .forma-checkbox-label:has(.forma-checkbox:disabled) {
-    color: var(--text-muted-color);
+    color: var(--control-disabled-foreground-color);
     cursor: not-allowed;
 }
 

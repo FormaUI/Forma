@@ -70,7 +70,6 @@
 
 /* The drag is driven by pointer events, so the handle takes no touch gesture. */
 ::deep .forma-sortable-list-handle {
-    --forma-button-ghost-color: var(--text-muted-color);
     cursor: grab;
     touch-action: none;
 }

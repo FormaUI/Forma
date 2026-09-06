@@ -35,7 +35,7 @@
     padding-inline: var(--space-4);
     font-size: var(--font-size-sm);
     text-align: center;
-    color: var(--forma-video-player-unavailable-color, var(--text-muted-color));
+    color: var(--forma-video-player-unavailable-color, var(--text-secondary-color));
 }
 
 .forma-video-player-fallback {

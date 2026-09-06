@@ -15,7 +15,7 @@
     position: absolute;
     inset-inline-start: var(--space-3);
     display: inline-flex;
-    color: var(--text-muted-color);
+    color: var(--text-secondary-color);
     pointer-events: none;
 }
 
@@ -35,7 +35,7 @@
 }
 
 .forma-search-box:disabled {
-    color: var(--forma-input-disabled-color, var(--text-muted-color));
+    color: var(--forma-input-disabled-color, var(--control-disabled-foreground-color));
     background-color: var(--forma-input-disabled-background-color, var(--hover-background-color));
     cursor: not-allowed;
 }

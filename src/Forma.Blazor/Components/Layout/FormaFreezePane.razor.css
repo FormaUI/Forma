@@ -74,12 +74,11 @@
     inset-block-start: var(--forma-freeze-pane-frozen-offset);
 }
 
-/* The arrows take the muted tone and sit in the flow at either end of the viewport as a strip across it: the full
+/* The arrows sit in the flow at either end of the viewport as a strip across it: the full
    width along the block axis, the full height along the inline one. With frozen columns both inline arrows stand
    in the band of the frozen corner instead, as tall as it is, and the back arrow floats at the end of the frozen
    region over the frozen part that ends there. */
 ::deep .forma-freeze-pane-arrow {
-    --forma-button-ghost-color: var(--text-muted-color);
     flex-shrink: 0;
     align-self: stretch;
 }

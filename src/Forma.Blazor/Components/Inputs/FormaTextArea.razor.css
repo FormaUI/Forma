@@ -56,5 +56,5 @@
 
 .forma-textarea:disabled ~ .forma-textarea-count bdi {
     background: var(--forma-input-disabled-background-color, var(--hover-background-color));
-    color: var(--forma-input-disabled-color, var(--text-muted-color));
+    color: var(--forma-input-disabled-color, var(--control-disabled-foreground-color));
 }

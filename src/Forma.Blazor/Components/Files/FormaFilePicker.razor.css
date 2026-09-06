@@ -20,7 +20,7 @@
     padding: var(--space-6) var(--space-4);
     border: 2px dashed var(--light-border-color);
     border-radius: var(--radius-md);
-    color: var(--text-muted-color);
+    color: var(--text-secondary-color);
     text-align: center;
     cursor: pointer;
     touch-action: manipulation;

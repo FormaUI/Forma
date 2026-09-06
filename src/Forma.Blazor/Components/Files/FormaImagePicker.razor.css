@@ -36,7 +36,7 @@
     block-size: 5rem;
     border-radius: var(--radius-md);
     border: 1px solid var(--light-border-color);
-    color: var(--text-muted-color);
+    color: var(--text-secondary-color);
 }
 
 .forma-image-picker-thumbnail {
@@ -65,5 +65,5 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: var(--font-size-xs);
-    color: var(--text-muted-color);
+    color: var(--text-secondary-color);
 }

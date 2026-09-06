@@ -28,7 +28,7 @@
 
 .forma-share-menu-item-meta {
     font-weight: 400;
-    color: var(--text-muted-color);
+    color: var(--text-secondary-color);
 }
 
 /* The primary actions ride the command bar's scrolling track, each a column of mark over name. */

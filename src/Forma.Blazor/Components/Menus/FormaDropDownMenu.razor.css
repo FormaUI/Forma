@@ -75,7 +75,7 @@
 /* Keeps labels aligned when only some items carry a glyph; a glyph the item left unsized takes the row's size. */
 ::deep .forma-dropdown-menu-item .forma-icon {
     inline-size: 1em;
-    color: var(--text-muted-color);
+    color: var(--control-quiet-foreground-color);
 }
 
 ::deep .forma-dropdown-menu-item .forma-icon:not([class*="forma-icon-"]) {
@@ -130,7 +130,7 @@
 
 ::deep .forma-dropdown-menu-item:disabled,
 ::deep .forma-dropdown-menu-item[aria-disabled="true"] {
-    color: var(--text-muted-color);
+    color: var(--control-disabled-foreground-color);
     cursor: not-allowed;
 }
 
@@ -148,7 +148,7 @@
     padding-block: var(--space-1);
     padding-inline: calc(var(--space-2) + var(--space-3));
     background: var(--muted-background-color);
-    color: var(--text-muted-color);
+    color: var(--text-secondary-color);
     font-size: var(--font-size-xs);
     font-weight: 600;
     overflow: hidden;

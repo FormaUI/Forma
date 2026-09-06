@@ -86,7 +86,7 @@
 }
 
 .forma-pagination-navigation-gap {
-    color: var(--text-muted-color);
+    color: var(--text-secondary-color);
 }
 
 /* ── The navigation input ── */
@@ -176,9 +176,9 @@
     }
 }
 
-/* The watermark takes the muted color. */
+/* The watermark takes the secondary tone. */
 ::deep .forma-pagination-navigation-input-box::placeholder {
-    color: var(--text-muted-color);
+    color: var(--text-secondary-color);
 }
 
 /* Without the option, the Go button shows for a touch keypad alone. */

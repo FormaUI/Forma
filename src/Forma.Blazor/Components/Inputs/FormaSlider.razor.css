@@ -23,7 +23,7 @@
 }
 
 .forma-slider:disabled {
-    accent-color: var(--forma-slider-disabled-accent-color, var(--text-muted-color));
+    accent-color: var(--forma-slider-disabled-accent-color, var(--control-disabled-foreground-color));
     opacity: 0.65;
     cursor: not-allowed;
 }
