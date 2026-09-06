@@ -3,6 +3,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>@Title</title>
 <base href="@BaseHref" />
+@if (!string.IsNullOrWhiteSpace(IconHref))
+{
+    <link rel="icon" href="@IconHref" />
+}
 <link rel="stylesheet" href="@Assets["_content/Forma.Blazor/forma-tokens.css"]" />
 <link rel="stylesheet" href="@Assets["_content/Forma.Blazor/forma-reset.css"]" />
 <link rel="stylesheet" href="@Assets["_content/Forma.Blazor/forma-base.css"]" />

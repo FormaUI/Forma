@@ -44,6 +44,32 @@
         }
 
         [Fact]
+        public void Should_link_the_icon_given()
+        {
+            // Arrange
+            using var ctx = new FormaPageHeadTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaPageHead PreloadAssets="false" Title="Admin Console" IconHref="favicon.svg" />);
+
+            // Assert
+            Assert.Equal("favicon.svg", cut.Find("link[rel=icon]").GetAttribute("href"));
+        }
+
+        [Fact]
+        public void Should_link_no_icon_when_none_is_given()
+        {
+            // Arrange
+            using var ctx = new FormaPageHeadTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaPageHead PreloadAssets="false" Title="Admin Console" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll("link[rel=icon]"));
+        }
+
+        [Fact]
         public void Should_declare_the_character_set_and_viewport()
         {
             // Arrange

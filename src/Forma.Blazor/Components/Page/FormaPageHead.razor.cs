@@ -11,6 +11,9 @@ public sealed partial class FormaPageHead : ComponentBase
     /// <summary>The address every relative URL resolves against, for a host mounted below the site root.</summary>
     [Parameter] public string BaseHref { get; set; } = "/";
 
+    /// <summary>The address of the icon a browser shows for the page in its tab and bookmarks; no icon is linked when unset.</summary>
+    [Parameter] public string? IconHref { get; set; }
+
     /// <summary>Head content rendered after Forma's stylesheets, so a host's own styles win over them.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 

@@ -39,14 +39,14 @@ untouched.
 
 ```razor
 <head>
-    <FormaPageHead Title="My App">
+    <FormaPageHead Title="My App" IconHref="@Assets["favicon.svg"]">
         <link rel="stylesheet" href="@Assets["app.css"]" />
         <link rel="stylesheet" href="@Assets["MyApp.styles.css"]" />
     </FormaPageHead>
 </head>
 ```
 
-It declares the character set, viewport, title and base address, links Forma's stylesheets in cascade
+It declares the character set, viewport, title, base address and icon, links Forma's stylesheets in cascade
 order, and closes with the framework's own `ResourcePreloader`, `ImportMap` and `HeadOutlet`
 — so a host adds none of those itself. A host's own head content goes in the child content, where
 its styles land after Forma's and win. `HeadOutlet` renders last, so a page's `PageTitle` still
