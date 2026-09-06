@@ -43,7 +43,7 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    border: 1px solid var(--light-border-color);
+    border: 1px solid var(--border-subtle-color);
     border-radius: var(--radius-md);
     background: var(--input-bg-color);
     overflow: hidden;
@@ -57,7 +57,7 @@
 
 @media (hover: hover) {
     .forma-explorer-item:not(.is-disabled):hover {
-        border-color: var(--dark-border-color);
+        border-color: var(--border-emphasis-color);
         background: var(--hover-bg-color);
         box-shadow: var(--shadow-small);
     }
@@ -91,7 +91,7 @@
 }
 
 .forma-explorer-item.is-selected {
-    background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+    background: var(--primary-subtle-color);
 }
 
 .forma-explorer-item.is-selected .forma-explorer-thumbnail-wrapper {
@@ -151,7 +151,7 @@
     min-block-size: var(--target-size-sm);
     flex-shrink: 0;
     border-radius: var(--radius-sm);
-    border: 1px solid var(--dark-border-color);
+    border: 1px solid var(--border-emphasis-color);
     background: color-mix(in srgb, var(--input-bg-color) 95%, transparent);
     color: transparent;
     pointer-events: none;

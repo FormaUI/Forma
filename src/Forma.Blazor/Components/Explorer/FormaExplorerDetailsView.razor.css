@@ -180,7 +180,7 @@
 }
 
 .forma-explorer-details-row.is-selected {
-    --forma-explorer-row-tint: color-mix(in srgb, var(--primary-color) 12%, transparent);
+    --forma-explorer-row-tint: var(--primary-subtle-color);
 }
 
 .forma-explorer-name-wrapper {

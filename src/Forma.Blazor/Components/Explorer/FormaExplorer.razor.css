@@ -51,11 +51,11 @@
     gap: var(--space-2);
     border: 1px solid var(--danger-color);
     border-radius: var(--radius-md);
-    background: color-mix(in srgb, var(--danger-color) 8%, transparent);
+    background: var(--danger-subtle-color);
     padding-block: var(--space-2);
     padding-inline: var(--space-3);
     /* Darkened because the plain token on its own tint measures 4.16:1, under the 4.5:1 text floor. */
-    color: color-mix(in srgb, var(--danger-color) 82%, black);
+    color: var(--danger-emphasis-color);
     font-size: var(--font-size-sm);
 }
 
@@ -80,7 +80,7 @@
     gap: var(--space-3);
     padding: var(--space-4);
     background: var(--muted-bg-color);
-    border: 1px dashed var(--dark-border-color);
+    border: 1px dashed var(--border-emphasis-color);
     border-radius: var(--radius-md);
 }
 
@@ -100,7 +100,7 @@
 /* --- Preview --- */
 /* The preview darkens further and mattes the image against the media surface. */
 .forma-explorer ::deep .forma-dialog:has(.forma-file-viewer)::backdrop {
-    background: var(--media-scrim-color);
+    background: var(--media-shade-color);
 }
 
 .forma-explorer ::deep .forma-dialog .forma-file-viewer-image-frame {

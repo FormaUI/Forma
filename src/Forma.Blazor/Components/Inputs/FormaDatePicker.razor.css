@@ -7,7 +7,7 @@
     --forma-date-picker-primary-color: var(--primary-color);
     --forma-date-picker-primary-fg-color: var(--primary-fg-color);
     --forma-date-picker-range-bg-color: color-mix(in srgb, var(--forma-date-picker-primary-color) 8%, transparent);
-    --forma-date-picker-border-color: var(--light-border-color);
+    --forma-date-picker-border-color: var(--border-subtle-color);
     --forma-date-picker-day-width: var(--target-size-md);
     --forma-date-picker-day-height: var(--target-size-md);
     --forma-date-picker-radius: var(--radius-md);
@@ -59,7 +59,7 @@
 /* Clear floats at the end of the trigger, in the danger color. */
 ::deep .forma-date-picker-clear {
     --forma-button-ghost-hover-color: var(--danger-color);
-    --forma-button-ghost-hover-bg-color: color-mix(in srgb, var(--danger-color) 10%, transparent);
+    --forma-button-ghost-hover-bg-color: var(--danger-subtle-color);
     position: absolute;
     inset-inline-end: var(--space-2);
     border-radius: var(--radius-pill);
@@ -110,7 +110,7 @@
 
 .forma-date-picker-select {
     padding: var(--space-1);
-    border: 1px solid var(--light-border-color);
+    border: 1px solid var(--border-subtle-color);
     border-radius: var(--radius-sm);
     background: var(--muted-bg-color);
     font: inherit;

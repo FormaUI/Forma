@@ -82,12 +82,12 @@
     object-fit: cover;
 }
 
-/* A still can be any colour, so the text sits on a scrim rather than on the picture. */
+/* A still can be any colour, so the text sits on a shade rather than on the picture. */
 .forma-video-player-facade:has(.forma-video-player-facade-placeholder)::after {
     content: '';
     position: absolute;
     inset: 0;
-    background-color: var(--forma-video-player-facade-scrim-color, var(--media-scrim-color));
+    background-color: var(--forma-video-player-facade-shade-color, var(--media-shade-color));
 }
 
 .forma-video-player-facade-label,

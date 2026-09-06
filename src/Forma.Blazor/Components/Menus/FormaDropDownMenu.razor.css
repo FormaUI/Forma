@@ -109,7 +109,7 @@
     }
 
     ::deep .forma-dropdown-menu-item.is-destructive:hover:not(:disabled) {
-        background: var(--forma-dropdown-menu-destructive-bg-color, color-mix(in srgb, var(--danger-color) 10%, transparent));
+        background: var(--forma-dropdown-menu-destructive-bg-color, var(--danger-subtle-color));
         color: var(--forma-dropdown-menu-destructive-color, var(--danger-color));
     }
 }

@@ -45,7 +45,7 @@
     display: inline-block;
     width: calc(2 * var(--target-size-sm));
     height: var(--target-size-sm);
-    background-color: var(--forma-toggle-switch-off-bg-color, var(--text-primary-quiet-color));
+    background-color: var(--forma-toggle-switch-off-bg-color, var(--gray-400));
     border-radius: var(--radius-pill);
     transition: background-color 0.2s ease;
 }

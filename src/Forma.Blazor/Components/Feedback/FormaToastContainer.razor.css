@@ -26,7 +26,6 @@
     border-radius: var(--radius-lg);
     font-size: var(--font-size-sm);
     line-height: var(--line-height-prose);
-    color: var(--primary-fg-color);
     pointer-events: auto;
     position: relative;
     animation: forma-toast-in 300ms ease forwards;
@@ -47,27 +46,31 @@
 /* Custom properties cascade into the nested button's own scope, which plain
    selectors cannot reach. */
 .forma-toast {
-    --forma-button-ghost-color: color-mix(in srgb, var(--primary-fg-color) 75%, transparent);
-    --forma-button-ghost-hover-color: var(--primary-fg-color);
-    --forma-button-ghost-hover-bg-color: color-mix(in srgb, var(--primary-fg-color) 18%, transparent);
+    --forma-button-ghost-color: color-mix(in srgb, currentColor 75%, transparent);
+    --forma-button-ghost-hover-color: currentColor;
+    --forma-button-ghost-hover-bg-color: color-mix(in srgb, currentColor 18%, transparent);
 }
 
 /* ── Type variants ── */
 
 .forma-toast-success {
     background: var(--success-color);
+    color: var(--success-fg-color);
 }
 
 .forma-toast-error {
     background: var(--danger-color);
+    color: var(--danger-fg-color);
 }
 
 .forma-toast-info {
     background: var(--info-color);
+    color: var(--info-fg-color);
 }
 
 .forma-toast-warning {
     background: var(--warning-color);
+    color: var(--warning-fg-color);
 }
 
 /* ── Animations ── */

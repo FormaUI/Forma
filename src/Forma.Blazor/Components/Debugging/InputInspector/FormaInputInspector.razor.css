@@ -64,7 +64,7 @@
     display: inline-block;
     padding-block: 0;
     padding-inline: var(--space-2);
-    border: 1px solid var(--dark-border-color);
+    border: 1px solid var(--border-emphasis-color);
     border-block-end-width: 2px;
     border-radius: var(--radius-sm);
     background-color: var(--input-bg-color);
@@ -137,7 +137,7 @@
 }
 
 .forma-input-inspector-layer-foremost {
-    background-color: color-mix(in srgb, var(--primary-color) 8%, transparent);
+    background-color: var(--primary-subtle-color);
 }
 
 .forma-input-inspector-layer-number {
@@ -217,8 +217,8 @@
 }
 
 .forma-input-inspector ::deep .forma-input-inspector-badge-structural {
-    --forma-status-badge-bg-color: color-mix(in srgb, var(--primary-color) 14%, transparent);
-    --forma-status-badge-fg-color: var(--primary-dark-color);
+    --forma-status-badge-bg-color: var(--primary-subtle-color);
+    --forma-status-badge-fg-color: var(--primary-emphasis-color);
 }
 
 .forma-input-inspector ::deep .forma-input-inspector-badge-active {

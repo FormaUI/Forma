@@ -77,7 +77,7 @@
 }
 
 .forma-explorer-folder-tree ::deep .forma-explorer-folder-row.is-selected {
-    background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+    background: var(--primary-subtle-color);
 }
 
 .forma-explorer-folder-tree ::deep .forma-explorer-folder-row.is-selected .forma-explorer-folder-name {
@@ -116,7 +116,7 @@
     min-block-size: var(--target-size-sm);
     flex-shrink: 0;
     border-radius: var(--radius-sm);
-    border: 1px solid var(--dark-border-color);
+    border: 1px solid var(--border-emphasis-color);
     background: var(--input-bg-color);
     color: transparent;
     cursor: pointer;

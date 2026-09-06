@@ -65,7 +65,7 @@
 }
 
 .forma-explorer-list-item.is-selected {
-    background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+    background: var(--primary-subtle-color);
 }
 
 /* A disabled item: the disabled control colors, and a pointer that says so. */

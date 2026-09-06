@@ -141,18 +141,18 @@
     white-space: nowrap;
 }
 
-/* The arrows float over the media on its scrim. */
+/* The arrows float over the media on its shade. */
 ::deep .forma-file-viewer-nav {
     --forma-button-ghost-color: var(--forma-file-viewer-nav-color, var(--media-fg-color));
     --forma-button-ghost-hover-color: var(--forma-file-viewer-nav-color, var(--media-fg-color));
-    --forma-button-ghost-hover-bg-color: var(--forma-file-viewer-nav-hover-bg-color, var(--primary-dark-color));
+    --forma-button-ghost-hover-bg-color: var(--forma-file-viewer-nav-hover-bg-color, var(--primary-emphasis-color));
     position: absolute;
     inset-block-start: 50%;
     transform: translateY(-50%);
     inline-size: var(--target-size-touch);
     block-size: var(--target-size-touch);
     border-radius: var(--radius-pill);
-    background-color: var(--forma-file-viewer-nav-bg-color, var(--media-scrim-color));
+    background-color: var(--forma-file-viewer-nav-bg-color, var(--media-shade-color));
 }
 
 ::deep .forma-file-viewer-nav-previous {

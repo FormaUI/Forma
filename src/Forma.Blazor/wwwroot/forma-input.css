@@ -19,7 +19,7 @@
     line-height: var(--line-height-prose);
     color: var(--forma-input-color, var(--text-primary-color));
     background-color: var(--forma-input-bg-color, var(--input-bg-color));
-    border: 1px solid var(--forma-input-border-color, var(--dark-border-color));
+    border: 1px solid var(--forma-input-border-color, var(--border-emphasis-color));
     border-radius: var(--radius-sm);
     outline: none;
     box-sizing: border-box;

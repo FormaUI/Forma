@@ -93,7 +93,7 @@
 .forma-toolbar-menu-bar {
     inline-size: 1rem;
     block-size: 0.25rem;
-    border: 1px solid var(--dark-border-color);
+    border: 1px solid var(--border-emphasis-color);
     border-radius: var(--radius-sm);
 }
 
@@ -114,7 +114,7 @@
     inline-size: var(--icon-size-sm);
     block-size: var(--icon-size-sm);
     margin-inline-end: var(--space-1);
-    border: 1px solid var(--dark-border-color);
+    border: 1px solid var(--border-emphasis-color);
     border-radius: var(--radius-sm);
     vertical-align: -0.125rem;
 }

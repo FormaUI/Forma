@@ -42,7 +42,7 @@
     padding-inline: var(--space-2);
     font-size: var(--font-size-sm);
     background-color: var(--forma-composer-attachment-bg-color, var(--input-bg-color));
-    border: 1px solid var(--forma-composer-attachment-border-color, var(--light-border-color));
+    border: 1px solid var(--forma-composer-attachment-border-color, var(--border-subtle-color));
     border-radius: var(--radius-md);
 }
 

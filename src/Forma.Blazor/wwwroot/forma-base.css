@@ -18,7 +18,7 @@ body {
 }
 
 a {
-    color: var(--primary-dark-color);
+    color: var(--link-color);
     text-decoration: none;
 }
 
@@ -38,6 +38,6 @@ a {
 
 @media (hover: hover) {
     a:hover {
-        color: var(--primary-light-color);
+        color: var(--link-hover-color);
     }
 }

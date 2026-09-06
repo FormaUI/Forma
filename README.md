@@ -100,8 +100,8 @@ itself:
 | `forma-input.css` | The input box every field draws — border, radius, colours, focus ring | Whenever you use any Forma input |
 | `forma-prose.css` | The look of a document the composer authored — headings, quotes, code, lists, tables, figures, links | Whenever you render composer content, in the editor or to readers |
 
-Retheming is one token: override `--primary-color` in a stylesheet loaded after Forma's, and the hover,
-focus, and link shades follow.
+Retheming is two things: redefine the gray scale and the six role solids in a stylesheet loaded
+after Forma's, and every other token — hover, focus, links, frames, borders — follows.
 
 ## Icons
 

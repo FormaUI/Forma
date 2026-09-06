@@ -70,7 +70,7 @@ body {
 
 .showcase-sidebar a.active {
     font-weight: 600;
-    background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+    background: var(--primary-subtle-color);
     color: var(--primary-color);
 }
 
@@ -93,7 +93,7 @@ body {
 }
 
 .culture-switcher a.active {
-    background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+    background: var(--primary-subtle-color);
     border-color: color-mix(in srgb, var(--primary-color) 30%, transparent);
     color: var(--primary-color);
 }
@@ -466,7 +466,7 @@ body {
     flex-direction: column;
     gap: var(--space-3);
     padding: var(--space-3);
-    border: 1px dashed var(--dark-border-color);
+    border: 1px dashed var(--border-emphasis-color);
     border-radius: var(--radius-md);
 }
 
@@ -511,8 +511,8 @@ body {
 }
 
 .demo-readout-live {
-    --forma-status-badge-bg-color: color-mix(in srgb, var(--primary-color) 14%, transparent);
-    --forma-status-badge-fg-color: var(--primary-dark-color);
+    --forma-status-badge-bg-color: var(--primary-subtle-color);
+    --forma-status-badge-fg-color: var(--primary-emphasis-color);
 }
 
 .demo-controls {
@@ -558,7 +558,7 @@ body {
 .demo-shortcuts kbd {
     display: inline-block;
     padding-inline: var(--space-2);
-    border: 1px solid var(--dark-border-color);
+    border: 1px solid var(--border-emphasis-color);
     border-block-end-width: 2px;
     border-radius: var(--radius-sm);
     background: var(--input-bg-color);
@@ -623,7 +623,7 @@ body {
 
 @media (hover: hover) {
     .showcase-index a:hover {
-        background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+        background: var(--primary-subtle-color);
         color: var(--primary-color);
     }
 }
@@ -699,9 +699,9 @@ body {
     padding: var(--space-3) var(--space-4);
     border-radius: var(--radius-md);
     background: var(--info-color);
-    color: var(--primary-fg-color);
+    color: var(--info-fg-color);
     --forma-button-ghost-color: rgba(255, 255, 255, 0.85);
-    --forma-button-ghost-hover-color: var(--primary-fg-color);
+    --forma-button-ghost-hover-color: var(--info-fg-color);
     --forma-button-ghost-hover-bg-color: rgba(255, 255, 255, 0.18);
 }
 
@@ -807,7 +807,7 @@ body {
 .demo-scroll-table td {
     padding-inline: var(--space-3);
     padding-block: var(--space-2);
-    border-block-end: 1px solid var(--light-border-color);
+    border-block-end: 1px solid var(--border-subtle-color);
     white-space: nowrap;
 }
 

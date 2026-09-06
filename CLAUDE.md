@@ -292,7 +292,7 @@ A component whose sub-components only work inside it still has to hand them stat
 - Do read colours, fonts, and shadows from `src/Forma.Blazor/wwwroot/forma-tokens.css`.
 - Do end every custom property containing a colour with `-color`.
 - Do make component-local colour knobs fall back to a token: `var(--forma-toggle-switch-on-bg-color, var(--primary-color))`.
-- Do reuse existing tokens such as `--primary-color` and `--focus-color`; `--primary-dark-color`, `--primary-light-color`, and `--focus-color` derive from `--primary-color`.
+- Do reuse existing tokens such as `--primary-color` and `--focus-color`; a role's `-emphasis`, `-subtle` and `-fg` members and `--focus-color` derive from its solid, and every gray points at a step of the scale.
 - Do keep `forma-tokens.css` value-only, `forma-reset.css` limited to cross-browser normalization, and `forma-base.css` limited to the opt-in element-level look.
 - Do keep component rules in the component's isolated stylesheet.
 - Do rely on the reset's `font: inherit` for form elements, set only the needed `font-size`, and use `var(--font-family-mono)` instead of bare `monospace`.

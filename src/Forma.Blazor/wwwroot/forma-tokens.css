@@ -1,9 +1,14 @@
 /*
     forma-tokens.css — The design tokens every Forma component reads.
 
-    Values only, no selectors. The gray scale is the one source of shading; every other token
-    names a role and points at a step on it rather than carrying its own hex. A background ends
-    in -bg-color, a foreground in -fg-color, and the readable content of a control in -text-color.
+    Values only, no selectors. A background ends in -bg-color, a foreground in -fg-color, and the
+    readable content of a control in -text-color.
+
+    The theme contract. A theme is a selector that redefines two things and nothing else: the gray
+    scale, and the solid of each role. Every other token derives from those by name, so it follows
+    without being touched. A token that points at a scale step or a role changes with the theme; a
+    token that points at --white-color or --black-color is the same in every theme, and only what
+    must stay fixed — the media viewer — points there.
 */
 
 :root {
@@ -58,13 +63,26 @@
     --radius-pill: 9999px;  /* a badge, a chip, a tab pill; intentionally oversized; CSS caps it to form fully rounded ends */
 
     /* ============================================================
-       Neutral scale — the one gray ramp. Every other gray-ish token below points at a step here
-       rather than carrying its own hex, so two tokens that land on the same step are visibly the
-       same decision instead of a coincidence you'd have to eyeball. White and black are the two
-       fixed ends and are named on their own, the way a scale's paper and ink are not steps of it.
+       Constants — the same in every theme. Only what must stay fixed points here.
        ============================================================ */
     --white-color: #fff;
     --black-color: #000;
+
+    /* ============================================================
+       Scale — the one gray ramp, paper to ink. A theme redefines these values; every gray-ish
+       token below points at a step by name and follows. Each step has one job:
+         0    paper: a flat or raised frame, an input
+         50   an inset frame, a surface gone inactive
+         100  the canvas, muted content, a disabled fill, a quiet button at rest
+         200  a quiet button under the pointer
+         300  a quiet button pressed, a subtle border
+         400  disabled text
+         500  secondary text
+         600  the secondary solid, quiet text, the hue a border and a hover tint are cut from
+         700  the secondary solid under the pointer
+         800  ink: primary text
+       ============================================================ */
+    --gray-0: #fff;
     --gray-50: #f9fafb;
     --gray-100: #f3f4f6;
     --gray-200: #e5e7eb;
@@ -76,21 +94,109 @@
     --gray-800: #1f2937;
 
     /* ============================================================
-       Roles — the small set of colors a theme actually swaps. Primary is the one brand accent;
-       Secondary is the neutral fill beside it; Success/Danger/Warning/Info are status. Every role
-       a component reaches for by name (a button variant, a badge, a link) is one of these six.
+       Roles — the six colors a component reaches for by name. A theme redefines each solid; the
+       rest of the family derives. Every role has the same four members:
+         -color           the solid
+         -emphasis-color  stronger than the solid: what hover and active are cut from
+         -subtle-color    the tint behind a selected row, an active tab, a badge
+         -fg-color        text and marks drawn on the solid
+       Primary is the brand accent; Secondary is the neutral solid beside it; the other four are status.
        ============================================================ */
     --primary-color: #0066bf;
-    --primary-dark-color: color-mix(in srgb, var(--primary-color) 82%, black);
-    --primary-light-color: color-mix(in srgb, var(--primary-color) 60%, white);
-    --primary-fg-color: var(--white-color);  /* text and marks on a primary or status fill */
-    --secondary-color: var(--gray-600);      /* the neutral fill beside primary: a secondary button, an unaccented mark */
-    --secondary-hover-color: var(--gray-700);
-    --secondary-active-color: var(--gray-800);
+    --primary-emphasis-color: color-mix(in srgb, var(--primary-color) 82%, black);
+    --primary-subtle-color: color-mix(in srgb, var(--primary-color) 10%, transparent);
+    --primary-fg-color: var(--white-color);
+
+    --secondary-color: var(--gray-600);
+    --secondary-emphasis-color: var(--gray-700);
+    --secondary-subtle-color: var(--gray-100);
+    --secondary-fg-color: var(--white-color);
+
     --success-color: #28a745;
+    --success-emphasis-color: color-mix(in srgb, var(--success-color) 82%, black);
+    --success-subtle-color: color-mix(in srgb, var(--success-color) 10%, transparent);
+    --success-fg-color: var(--white-color);
+
     --danger-color: #c4314b;
+    --danger-emphasis-color: color-mix(in srgb, var(--danger-color) 82%, black);
+    --danger-subtle-color: color-mix(in srgb, var(--danger-color) 10%, transparent);
+    --danger-fg-color: var(--white-color);
+
     --warning-color: #ffc107;
+    --warning-emphasis-color: color-mix(in srgb, var(--warning-color) 82%, black);
+    --warning-subtle-color: color-mix(in srgb, var(--warning-color) 10%, transparent);
+    --warning-fg-color: var(--gray-800);  /* dark on yellow; white would not read */
+
     --info-color: #307fdd;
+    --info-emphasis-color: color-mix(in srgb, var(--info-color) 82%, black);
+    --info-subtle-color: color-mix(in srgb, var(--info-color) 10%, transparent);
+    --info-fg-color: var(--white-color);
+
+    /* ============================================================
+       Text — primary and secondary. Content and every enabled target's label or glyph take the
+       primary tone or the quiet text tone below, both past 7:1 on the frame; supporting text —
+       a caption, a count, a placeholder, an empty state, a hint — takes the secondary tone,
+       which still meets WCAG AA at 4.5:1.
+       ============================================================ */
+    --text-primary-color: var(--gray-800);
+    --text-secondary-color: var(--gray-500);
+
+    /* ============================================================
+       Interactive states — two axes, both distinct from Buttons below. Quiet is an emphasis
+       level on something still usable: the label or glyph of an enabled target on a quiet fill
+       or on no fill at all, such as a ghost button or a toolbar icon. It is the secondary role
+       worn as text and as a subtle fill — a tertiary button rests in it, a ghost button reaches
+       it on hover — and it points at secondary so that reads as one decision. Disabled is a state:
+       every disabled target, whatever it was when live, so a gray that weak always means
+       "unavailable." Neither is Muted below, which decorates content rather than describing a target.
+       ============================================================ */
+    --quiet-text-color: var(--secondary-color);
+    --disabled-bg-color: var(--gray-100);
+    --disabled-text-color: var(--gray-400);
+
+    /* ============================================================
+       Frames — the canvas a page paints, the frames laid on it, and the tone a region takes
+       inside a frame, one token per FrameVariant. Regions are told apart by tone and by a
+       frame's own edge, never by a line drawn across a frame.
+       ============================================================ */
+    --frame-canvas-bg-color: var(--gray-100);  /* the canvas: the frame other frames are laid on */
+    --frame-flat-bg-color: var(--gray-0);      /* a flat frame: a panel, a sheet, a content area */
+    --frame-inset-bg-color: var(--gray-50);    /* an inset frame: a header strip, a toolbar band, a table header */
+    --frame-raised-bg-color: var(--gray-0);    /* a raised frame: a card on the canvas, a popup, a dialog */
+
+    /* Backgrounds */
+    --input-bg-color: var(--gray-0);
+    --inactive-bg-color: var(--gray-50);  /* a whole surface gone inactive: a disabled or a read-only composer */
+    --muted-bg-color: var(--gray-100);    /* content decoration, not a target: inline code, a quote, a placeholder box */
+    --hover-bg-color: color-mix(in srgb, var(--gray-600) 6%, transparent);
+
+    /* ============================================================
+       Buttons — one family per variant, each the same four members: the fill at rest, under the
+       pointer, pressed, and the label on it. Each maps a state to its role: hover is the role's
+       emphasis, active is the emphasis darkened one step further, the label is the role's fg.
+       Quiet is the secondary role worn as a subtle fill — the look a tertiary button rests in and
+       a ghost button reaches on hover — so it rests on the secondary subtle and steps down the
+       scale from there for hover and active.
+       ============================================================ */
+    --button-primary-color: var(--primary-color);
+    --button-primary-hover-color: var(--primary-emphasis-color);
+    --button-primary-active-color: color-mix(in srgb, var(--primary-emphasis-color) 88%, black);
+    --button-primary-text-color: var(--primary-fg-color);
+
+    --button-secondary-color: var(--secondary-color);
+    --button-secondary-hover-color: var(--secondary-emphasis-color);
+    --button-secondary-active-color: color-mix(in srgb, var(--secondary-emphasis-color) 88%, black);
+    --button-secondary-text-color: var(--secondary-fg-color);
+
+    --button-danger-color: var(--danger-color);
+    --button-danger-hover-color: var(--danger-emphasis-color);
+    --button-danger-active-color: color-mix(in srgb, var(--danger-emphasis-color) 88%, black);
+    --button-danger-text-color: var(--danger-fg-color);
+
+    --button-quiet-color: var(--secondary-subtle-color);
+    --button-quiet-hover-color: var(--gray-200);
+    --button-quiet-active-color: var(--gray-300);
+    --button-quiet-text-color: var(--quiet-text-color);
 
     /* Focus ring — a gap in the frame color, then a band of the accent, drawn as shadows so it follows the
        corner; --focus-ring-inset is the same ring turned inward, for a target that clips its own box. */
@@ -100,77 +206,28 @@
     --focus-ring: 0 0 0 var(--focus-ring-gap) var(--input-bg-color), 0 0 0 calc(var(--focus-ring-gap) + var(--focus-ring-width)) var(--focus-color);
     --focus-ring-inset: inset 0 0 0 var(--focus-ring-width) var(--focus-color), inset 0 0 0 calc(var(--focus-ring-gap) + var(--focus-ring-width)) var(--input-bg-color);
 
-    /* Links — a darkened primary, so a link reads as accent text over prose rather than as the
-       full-strength fill a primary button wears; hover darkens further to raise its emphasis. */
-    --link-color: var(--primary-dark-color);
+    /* Links — the primary emphasis, so a link reads as accent text over prose rather than as the
+       full-strength solid a primary button wears; hover darkens further to raise its emphasis. */
+    --link-color: var(--primary-emphasis-color);
     --link-hover-color: color-mix(in srgb, var(--primary-color) 62%, black);
 
-    /* Borders */
-    --border-color: rgba(98, 105, 118, 0.16);
-    --light-border-color: #d9dbde;
-    --dark-border-color: rgba(98, 105, 118, 0.31);
+    /* Borders — cut from the scale, so they follow the theme. */
+    --border-color: color-mix(in srgb, var(--gray-600) 16%, transparent);
+    --border-subtle-color: var(--gray-300);
+    --border-emphasis-color: color-mix(in srgb, var(--gray-600) 31%, transparent);
 
     /* ============================================================
-       Text — two tones, primary and secondary. Content and every enabled target's label or
-       glyph take the primary tone or the quiet text tone below, both past 7:1 on the frame;
-       supporting text — a caption, a count, a placeholder, an empty state, a hint — takes
-       the secondary tone, which still meets WCAG AA at 4.5:1.
-       ============================================================ */
-    --text-primary-color: rgba(44, 56, 74, 0.95);
-    --text-primary-quiet-color: rgba(44, 56, 74, 0.45);  /* the same ink, thinned for a large inert fill rather than for reading */
-    --text-secondary-color: var(--gray-500);
-
-    /* ============================================================
-       Buttons — one fill family per variant, each with its rest, hover and active step, so a
-       theme restyles every button by redefining this family. Quiet is the one with no
-       primary/secondary pair of its own: it is the receding look a tertiary button rests in
-       and a ghost button reaches on hover.
-       ============================================================ */
-    --button-primary-color: var(--primary-color);
-    --button-primary-hover-color: var(--primary-dark-color);
-    --button-primary-active-color: color-mix(in srgb, var(--button-primary-color) 72%, black);
-    --button-secondary-color: var(--secondary-color);
-    --button-secondary-hover-color: var(--secondary-hover-color);
-    --button-secondary-active-color: var(--secondary-active-color);
-    --button-quiet-color: var(--gray-100);
-    --button-quiet-hover-color: var(--gray-200);
-    --button-quiet-active-color: var(--gray-300);
-
-    /* ============================================================
-       Interactive states — two axes, both distinct from Buttons above. Quiet is an emphasis
-       level on something still usable: the label or glyph of an enabled target on a quiet fill
-       or on no fill at all, such as a ghost button or a toolbar icon. Disabled is a state: every
-       disabled target, whatever it was when live, so a gray that weak always means "unavailable."
-       Neither is Muted below, which decorates content rather than describing a target.
-       ============================================================ */
-    --quiet-text-color: var(--gray-600);
-    --disabled-bg-color: var(--gray-100);
-    --disabled-text-color: var(--gray-400);
-
-    /* ============================================================
-       Frames — the canvas a page paints, the frames laid on it, and the tone a region takes
-       inside a frame, one token per FrameVariant. Regions are told apart by tone and by a
-       frame's own edge, never by a line drawn across a frame.
-       ============================================================ */
-    --frame-canvas-bg-color: var(--gray-100);   /* the canvas: the frame other frames are laid on */
-    --frame-flat-bg-color: var(--white-color);  /* a flat frame: a panel, a sheet, a content area */
-    --frame-inset-bg-color: var(--gray-50);     /* an inset frame: a header strip, a toolbar band, a table header */
-    --frame-raised-bg-color: var(--white-color);/* a raised frame: a card on the canvas, a popup, a dialog */
-
-    /* Backgrounds */
-    --input-bg-color: var(--white-color);
-    --inactive-bg-color: var(--gray-50);  /* a whole surface gone inactive: a disabled or a read-only composer */
-    --muted-bg-color: var(--gray-100);    /* content decoration, not a target: inline code, a quote, a placeholder box */
-    --hover-bg-color: rgba(98, 105, 118, 0.06);
-
-    /* ============================================================
-       Media — the chrome for viewing a photo, a video or a document. Locked to a dark viewer
-       look regardless of the app's own theme, the way a photo viewer stays dark in light mode.
+       Media — the chrome for viewing a photo, a video or a document. Fixed to a dark viewer in
+       every theme, the way a photo viewer stays dark in light mode, so it points at the constants.
        ============================================================ */
     --media-bg-color: var(--black-color);
     --media-fg-color: var(--white-color);
-    --media-muted-fg-color: rgba(255, 255, 255, 0.72);
-    --media-scrim-color: rgba(0, 0, 0, 0.7);
+    --media-muted-fg-color: color-mix(in srgb, var(--white-color) 72%, transparent);
+    /* A shade is a translucent dark layer laid over a picture so that what is drawn on top of it — a
+       caption, the viewer's arrows, a preview's surroundings — stays readable whatever the picture's
+       colors are. It is not a background: a background is what a thing sits on, a shade is what it
+       is seen through. A layer behind a dialog would be a backdrop; a generic positioned layer an overlay. */
+    --media-shade-color: color-mix(in srgb, var(--black-color) 70%, transparent);
 
     /* ============================================================
        Chrome — the band a specific kind of surface paints for itself, each independently themable even where
@@ -184,6 +241,9 @@
     --dialog-top-bg-color: var(--frame-inset-bg-color);
     --dialog-content-bg-color: var(--frame-flat-bg-color);
     --dialog-bottom-bg-color: var(--frame-inset-bg-color);
+    /* The layer behind a dialog, dimming the page it holds. A see-through layer, not a surface, so it is
+       named like the shade rather than as a -bg-color; fixed dark in every theme, so it points at the constant. */
+    --dialog-backdrop-color: color-mix(in srgb, var(--black-color) 45%, transparent);
 
     /* Layers — what stacks over the page, on Bootstrap's scale so the numbers mean the same thing
        they do elsewhere. A dialog needs none: the native element sits in the top layer above all of these.
@@ -192,9 +252,9 @@
     --z-index-popover: 1060;  /* a bar floating over a popup, such as the selection bar */
     --z-index-toast: 1080;    /* a toast, over everything in flow */
 
-    /* Shadows */
-    --shadow-color: rgba(30, 41, 59, 0.12);  /* what a raised frame casts onto what slides beneath it, drawn as a fade */
-    --shadow-small: rgba(30, 41, 59, 0.04) 0 2px 4px 0;
-    --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.12);
-    --shadow-large: 0 8px 30px rgba(0, 0, 0, 0.18);
+    /* Shadows — cut from the ink, so they follow the theme. */
+    --shadow-color: color-mix(in srgb, var(--gray-800) 12%, transparent);  /* what a raised frame casts onto what slides beneath it, drawn as a fade */
+    --shadow-small: color-mix(in srgb, var(--gray-800) 4%, transparent) 0 2px 4px 0;
+    --shadow-medium: 0 4px 16px color-mix(in srgb, var(--black-color) 12%, transparent);
+    --shadow-large: 0 8px 30px color-mix(in srgb, var(--black-color) 18%, transparent);
 }

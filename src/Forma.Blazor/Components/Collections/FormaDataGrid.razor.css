@@ -141,7 +141,7 @@
 /* A tinted background reads as "selected" without depending on the checkbox column,
    so it still shows on a row selected through EnableRowSelection alone. */
 ::deep .forma-data-grid-row-selected {
-    background: var(--forma-data-grid-row-selected-bg-color, color-mix(in srgb, var(--primary-color) 8%, transparent));
+    background: var(--forma-data-grid-row-selected-bg-color, var(--primary-subtle-color));
 }
 
 /* A disabled row stays legible. */

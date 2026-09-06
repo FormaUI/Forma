@@ -84,7 +84,7 @@
 .forma-explorer-spinner {
     inline-size: var(--icon-size-md);
     block-size: var(--icon-size-md);
-    border: 3px solid var(--light-border-color);
+    border: 3px solid var(--border-subtle-color);
     border-block-start-color: var(--primary-color);
     border-radius: 50%;
     animation: forma-explorer-spin 0.7s linear infinite;
