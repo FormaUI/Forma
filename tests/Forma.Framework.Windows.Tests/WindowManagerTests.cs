@@ -345,6 +345,44 @@ public sealed class WindowManagerTests
         }
 
         private sealed class OtherSelector : IWindowSelector;
+
+        [Fact]
+        public async Task Should_scope_a_selector_to_a_window_and_its_descendants()
+        {
+            // Arrange
+            var manager = new WindowManager();
+            var window = await AddAsync(manager, "Window");
+            var child = await AddAsync(manager, "Child", window);
+            await AddAsync(manager, "Properties", child);
+            await AddAsync(manager, "Properties");
+
+            // Act
+            manager.TryFindWindows(manager.Within(window), out var itself);
+            manager.TryFindWindows(manager.Within(window, WindowSelector.All), out var everyDescendant);
+            manager.TryFindWindows(manager.Within(window, new WindowSelector { Title = "Properties" }), out var titled);
+            manager.TryFindWindows(manager.Within(window, new WindowSelector { Parent = child }), out var underChild);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal([window], itself),
+                () => Assert.Equal(["Child", "Properties"], Titles(everyDescendant)),
+                () => Assert.Single(titled),
+                () => Assert.Equal(["Properties"], Titles(underChild)));
+        }
+
+        [Fact]
+        public async Task Should_refuse_to_scope_past_the_window()
+        {
+            // Arrange
+            var manager = new WindowManager();
+            var window = await AddAsync(manager, "Window");
+            var sibling = await AddAsync(manager, "Sibling");
+
+            // Act & Assert
+            Assert.Multiple(
+                () => Assert.Throws<ArgumentException>(() => manager.Within(window, new WindowSelector { Parent = sibling })),
+                () => Assert.Throws<ArgumentException>(() => manager.Within(window, WindowSelector.Current)));
+        }
     }
 
     public sealed class Activation
@@ -549,6 +587,24 @@ public sealed class WindowManagerTests
                 () => Assert.Equal(["raise"], back.Log),
                 () => Assert.Equal(["raise"], front.Log),
                 () => Assert.DoesNotContain("raise", docked.Log));
+        }
+
+        [Fact]
+        public async Task Should_tolerate_a_window_registering_while_another_is_raised()
+        {
+            // Arrange
+            var manager = new WindowManager();
+            var first = await AddAsync(manager, "First");
+            await AddAsync(manager, "Second");
+            first.WhileRaising = async () => await manager.RegisterAsync(new FakeWindow("Late"));
+
+            // Act
+            var result = await manager.ActivateAsync(Only(first));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(result.Succeeded),
+                () => Assert.Equal(3, manager.Windows.Count));
         }
 
         [Fact]

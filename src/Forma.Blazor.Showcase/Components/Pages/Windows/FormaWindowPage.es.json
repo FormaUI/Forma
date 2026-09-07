@@ -30,5 +30,15 @@
   "Refresh": "Actualizar",
   "Upload": "Subir",
   "Last command": "Último comando",
-  "none yet": "ninguno aún"
+  "none yet": "ninguno aún",
+  "Current": "Actual",
+  "Every window belongs to a workspace that knows which one is current and which windows another opened. Properties is a child of Library: minimizing Library hides it, closing Library asks it first, and with unsaved work it declines and keeps both open.": "Cada ventana pertenece a un espacio de trabajo que sabe cuál es la actual y qué ventanas abrió otra. Propiedades es hija de Biblioteca: minimizar Biblioteca la oculta, cerrar Biblioteca le pregunta primero, y con trabajo sin guardar se niega y mantiene ambas abiertas.",
+  "Library": "Biblioteca",
+  "Open Properties": "Abrir Propiedades",
+  "Properties": "Propiedades",
+  "Restore Every Window": "Restaurar Todas las Ventanas",
+  "Reopen Library": "Reabrir Biblioteca",
+  "Unsaved work": "Trabajo sin guardar",
+  "Workspace": "Espacio de Trabajo",
+  "none": "ninguna"
 }

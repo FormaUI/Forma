@@ -7,6 +7,7 @@ using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
 using Forma.Framework.Sanitization;
 using Forma.Framework.Timing;
+using Forma.Framework.Windows;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -24,6 +25,7 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddFormaTimingServices();
+        services.AddFormaWindowServices();
         services.AddFormaFeedbackServices();
         services.AddFormaSanitizationServices();
 

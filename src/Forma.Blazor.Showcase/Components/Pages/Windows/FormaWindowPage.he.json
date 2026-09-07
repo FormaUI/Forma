@@ -30,5 +30,15 @@
   "Refresh": "רענון",
   "Upload": "העלאה",
   "Last command": "פקודה אחרונה",
-  "none yet": "עדיין אין"
+  "none yet": "עדיין אין",
+  "Current": "נוכחי",
+  "Every window belongs to a workspace that knows which one is current and which windows another opened. Properties is a child of Library: minimizing Library hides it, closing Library asks it first, and with unsaved work it declines and keeps both open.": "כל חלון שייך לסביבת עבודה היודעת איזה חלון נוכחי ואילו חלונות נפתחו על ידי אחר. מאפיינים הוא צאצא של ספרייה: מזעור ספרייה מסתיר אותו, סגירת ספרייה שואלת אותו תחילה, ועם עבודה שלא נשמרה הוא מסרב ומשאיר את שניהם פתוחים.",
+  "Library": "ספרייה",
+  "Open Properties": "פתיחת מאפיינים",
+  "Properties": "מאפיינים",
+  "Restore Every Window": "שחזור כל החלונות",
+  "Reopen Library": "פתיחת הספרייה מחדש",
+  "Unsaved work": "עבודה שלא נשמרה",
+  "Workspace": "סביבת עבודה",
+  "none": "אין"
 }

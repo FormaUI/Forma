@@ -16,9 +16,13 @@ options. Step 1 of the plan is built: `Forma.Framework.Windows` holds `IWindow`,
 `WindowOperationResult`, and `WindowManager` with its registry, parent validation,
 stacking order, activation history, modal ordering, inherited hiding, and the
 ask-everyone-first close, registered as a scoped service by `AddFormaWindowServices`.
-Its tests drive the manager through a fake window. Nothing in `FormaWindow` uses it
-yet; that is step 2. The implementation plan at the end records what lands as each
-step is taken.
+Its tests drive the manager through a fake window. Step 2 is built: `FormaWindow` is a
+managed window of its workspace, registered for its lifetime with the parent and origin
+it declares, with `Active`, `Minimized`, `Modal` and `Disabled`, a cancelable `OnClosing`
+checked across the subtree before `OnClose`, a minimize command in its chrome, its own
+operations scoped to its descendants, stacking asserted by re-showing its popover, and
+focus remembered and returned on activation. Modality's blocking, press-away and bounds
+are step 3. The implementation plan at the end records what lands as each step is taken.
 
 ## Purpose
 
@@ -400,6 +404,13 @@ or `InstanceId`; grouping is presentation and never changes parentage.
 
 The area stands alone or inside `FormaLauncherbar`, laid out as a row, a column, or a grid.
 It follows the manager whose windows it presents.
+
+## Integration with the renderer
+
+The manager is Framework code and awaits off the renderer, as every `Forma.Framework.*`
+service does. `FormaWindow` therefore carries each request the manager makes onto its
+dispatcher before touching state or raising a callback, and never refreshes the manager
+from inside such a request: a change the manager made is one the manager already knows.
 
 ## Integration with input routing
 

@@ -9,12 +9,13 @@ using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
 using Forma.Framework.Localization;
 using Forma.Framework.Toolbar;
+using Forma.Framework.Windows;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>A raised frame with chrome: a title bar carrying the title, an icon and commands, then an optional header band, the body, and an optional footer band. It stands docked in its parent's layout or floats over the page, where the reader moves it by its title bar, resizes it at its edges, and maximizes it to the viewport.</summary>
-public sealed partial class FormaWindow : ComponentBase, IAsyncDisposable
+/// <summary>A raised frame with chrome: a title bar carrying the title, an icon and commands, then an optional header band, the body, and an optional footer band. It stands docked in its parent's layout or floats over the page, where the reader moves it by its title bar, resizes it at its edges, and maximizes it to the viewport. It is a window of its workspace: activated, stacked, minimized and closed with the windows around it and the windows it opened.</summary>
+public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncDisposable
 {
     /// <summary>The class the resize handles carry, one per edge and corner.</summary>
     public const string HandleClass = "forma-window-handle";
@@ -22,6 +23,7 @@ public sealed partial class FormaWindow : ComponentBase, IAsyncDisposable
     private const string TitleBarClass = "forma-window-titlebar";
     private const string CloseCommand = "window.close";
     private const string MaximizeCommand = "window.maximize";
+    private const string MinimizeCommand = "window.minimize";
     private const string DockCommand = "window.dock";
 
     /// <summary>How far one arrow press moves or resizes a floating window, in CSS pixels: one spacing step of four.</summary>
@@ -29,8 +31,8 @@ public sealed partial class FormaWindow : ComponentBase, IAsyncDisposable
 
     private static readonly string[] Edges = ["n", "s", "e", "w", "ne", "nw", "se", "sw"];
 
-    // A floating window is a scope only while it floats, active while focus is inside it, so Escape closes the
-    // focused window and nothing else; it never bars the page.
+    // A floating window is a scope only while it floats, active while it is the workspace's current window and focus
+    // is inside it, so Escape closes the focused window and nothing else; it never bars the page.
     private static readonly InputProfile FloatingProfile = new()
     {
         Escape = DismissBehavior.Dismiss,
@@ -43,17 +45,34 @@ public sealed partial class FormaWindow : ComponentBase, IAsyncDisposable
     private Window _window = default!;
     private DotNetObjectReference<FormaWindow> _selfReference = default!;
     private InputScope? _inputScope;
-    private bool _isAttached;
+    private WindowMode? _attachedMode;
+    private WindowOrigin _origin = default!;
+    private WindowDeclaration? _declaration;
+    private bool _isHidden;
+    private bool _isApplying;
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
     [Inject] private IStringLocale<FormaWindow> L { get; set; } = default!;
     [Inject] private InputRouter InputRouter { get; set; } = default!;
+    [Inject] private WindowManager InjectedManager { get; set; } = default!;
+
+    [CascadingParameter] private WindowManager? CascadedManager { get; set; }
+    [CascadingParameter] private WindowOrigin? CascadedOrigin { get; set; }
+
+    /// <inheritdoc />
+    public Guid Id { get; } = Guid.NewGuid();
 
     /// <summary>The title shown in the title bar and read as the window's name.</summary>
     [Parameter, EditorRequired] public string Title { get; set; } = default!;
 
     /// <summary>The icon shown before the title.</summary>
     [Parameter] public Icon? Icon { get; set; }
+
+    /// <summary>The application or feature instance the window belongs to; unset, it is the parent's, else the cascaded one, else the workspace's own.</summary>
+    [Parameter] public WindowOrigin? Origin { get; set; }
+
+    /// <summary>The window that opened this one; it closes and minimizes with it.</summary>
+    [Parameter] public IWindow? Parent { get; set; }
 
     /// <summary>Whether the window is docked in its parent's layout or floats over the page.</summary>
     [Parameter] public WindowMode Mode { get; set; } = WindowMode.Docked;
@@ -73,6 +92,24 @@ public sealed partial class FormaWindow : ComponentBase, IAsyncDisposable
     /// <summary>Raised when the reader maximizes or restores the window from its title bar.</summary>
     [Parameter] public EventCallback<bool> MaximizedChanged { get; set; }
 
+    /// <summary>Whether the window is minimized: out of its presentation, its content kept, its descendants hidden with it.</summary>
+    [Parameter] public bool Minimized { get; set; }
+
+    /// <summary>Raised when the window is minimized or restored.</summary>
+    [Parameter] public EventCallback<bool> MinimizedChanged { get; set; }
+
+    /// <summary>Whether this is the workspace's current window.</summary>
+    [Parameter] public bool Active { get; set; }
+
+    /// <summary>Raised when the window becomes the current one or stops being so.</summary>
+    [Parameter] public EventCallback<bool> ActiveChanged { get; set; }
+
+    /// <summary>Whether the window blocks its parent's windows, or the whole workspace as a root, while it is shown.</summary>
+    [Parameter] public bool Modal { get; set; }
+
+    /// <summary>Whether the window refuses interaction.</summary>
+    [Parameter] public bool Disabled { get; set; }
+
     /// <summary>The host's own commands, shown in the title bar before the window's.</summary>
     [Parameter] public IReadOnlyList<FormaToolbarItem> Commands { get; set; } = [];
 
@@ -82,7 +119,10 @@ public sealed partial class FormaWindow : ComponentBase, IAsyncDisposable
     /// <summary>What the reader may do to the window from its chrome.</summary>
     [Parameter] public WindowOptions Options { get; set; } = WindowOptions.Default;
 
-    /// <summary>Raised when the reader closes the window from its title bar or with Escape.</summary>
+    /// <summary>Raised before the window closes, on its own or with a window above it; setting <see cref="WindowClosingEventArgs.Cancel"/> keeps every window of that close open.</summary>
+    [Parameter] public EventCallback<WindowClosingEventArgs> OnClosing { get; set; }
+
+    /// <summary>Raised once the window closes, from its title bar, with Escape, with its parent, or through its workspace.</summary>
     [Parameter] public EventCallback OnClose { get; set; }
 
     /// <summary>The band beneath the title bar, generally text.</summary>
@@ -98,11 +138,33 @@ public sealed partial class FormaWindow : ComponentBase, IAsyncDisposable
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
+    /// <summary>The workspace the window belongs to: the one cascaded to it, else the circuit's.</summary>
+    public WindowManager Manager
+        => CascadedManager ?? InjectedManager;
+
+    WindowOrigin IWindow.Origin
+        => _origin;
+
+    bool IWindow.IsMinimized
+        => Minimized;
+
+    bool IWindow.IsDisabled
+        => Disabled;
+
+    bool IWindow.IsModal
+        => Modal;
+
+    bool IWindow.IsFloating
+        => IsFloating;
+
     private bool IsFloating
         => Mode is WindowMode.Floating;
 
     private bool IsMaximized
         => IsFloating && Maximized;
+
+    private bool IsPresented
+        => !Minimized && !_isHidden;
 
     private bool ShowsHandles
         => IsFloating && Options.Resizable && !Maximized;
@@ -114,6 +176,7 @@ public sealed partial class FormaWindow : ComponentBase, IAsyncDisposable
         => AdditionalAttributes.MergeClass(
             "forma-window",
             IsFloating ? "forma-window-floating" : "forma-window-docked",
+            Active ? "is-active" : null,
             IsMaximized ? "is-maximized" : null,
             IsFloating && Placement is not null ? "has-placement" : null);
 
@@ -178,7 +241,7 @@ public sealed partial class FormaWindow : ComponentBase, IAsyncDisposable
     {
         get
         {
-            var items = new List<FormaToolbarItem>(Commands.Count + 3);
+            var items = new List<FormaToolbarItem>(Commands.Count + 4);
             items.AddRange(Commands);
 
             if (Options.Dockable)
@@ -192,6 +255,17 @@ public sealed partial class FormaWindow : ComponentBase, IAsyncDisposable
                     IsActive = IsFloating,
                     AlternateTitle = L["Dock"],
                     AlternateIcon = Glyph.Pin,
+                });
+            }
+
+            if (Options.Minimizable)
+            {
+                items.Add(new FormaToolbarCommand
+                {
+                    Id = MinimizeCommand,
+                    Command = MinimizeCommand,
+                    Title = L["Minimize"],
+                    Icon = Glyph.WindowMinimize,
                 });
             }
 
@@ -224,6 +298,30 @@ public sealed partial class FormaWindow : ComponentBase, IAsyncDisposable
         }
     }
 
+    /// <summary>Makes this window current, or exactly one window among its descendants when <paramref name="selector"/> is given.</summary>
+    public ValueTask<WindowOperationResult> ActivateAsync(IWindowSelector? selector = null)
+        => Manager.ActivateAsync(Manager.Within(this, selector));
+
+    /// <summary>Minimizes this window, or the windows among its descendants that <paramref name="selector"/> describes.</summary>
+    public ValueTask<WindowOperationResult> MinimizeAsync(IWindowSelector? selector = null)
+        => Manager.MinimizeAsync(Manager.Within(this, selector));
+
+    /// <summary>Restores this window from minimization, or the windows among its descendants that <paramref name="selector"/> describes.</summary>
+    public ValueTask<WindowOperationResult> RestoreAsync(IWindowSelector? selector = null)
+        => Manager.RestoreAsync(Manager.Within(this, selector));
+
+    /// <summary>Closes this window and its descendants, or the windows among its descendants that <paramref name="selector"/> describes, once every window affected has agreed.</summary>
+    public ValueTask<WindowOperationResult> CloseAsync(IWindowSelector? selector = null)
+        => Manager.CloseAsync(Manager.Within(this, selector));
+
+    /// <summary>Moves this window to the front of the stacking order without activating it.</summary>
+    public ValueTask<WindowOperationResult> BringToFrontAsync()
+        => Manager.BringToFrontAsync(Manager.Within(this));
+
+    /// <summary>Moves this window to the back of the stacking order.</summary>
+    public ValueTask<WindowOperationResult> SendToBackAsync()
+        => Manager.SendToBackAsync(Manager.Within(this));
+
     /// <inheritdoc />
     protected override void OnInitialized()
     {
@@ -232,7 +330,7 @@ public sealed partial class FormaWindow : ComponentBase, IAsyncDisposable
     }
 
     /// <inheritdoc />
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(Title);
 
@@ -240,29 +338,48 @@ public sealed partial class FormaWindow : ComponentBase, IAsyncDisposable
         {
             throw new ArgumentOutOfRangeException(nameof(Options), maximum, $"{nameof(WindowOptions.MaxResizeSize)} cannot be smaller than {nameof(WindowOptions.MinResizeSize)}.");
         }
+
+        var declaration = Declare();
+
+        if (_declaration is null)
+        {
+            _declaration = declaration;
+            _origin = ResolveOrigin();
+            await Manager.RegisterAsync(this);
+        }
+        else if (!_isApplying && declaration != _declaration)
+        {
+            _declaration = declaration;
+            _origin = ResolveOrigin();
+            await Manager.RefreshAsync(this);
+        }
     }
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (IsFloating && !_isAttached)
+        if (_attachedMode == Mode)
         {
-            _isAttached = await _window.AttachAsync(_element, _selfReference, TitleBarClass, HandleClass, StepPixels);
-
-            if (_isAttached && Placement is null)
-            {
-                await _window.MeasureAsync();
-            }
-
-            if (_inputScope is null)
-            {
-                await RegisterAsync();
-            }
+            return;
         }
-        else if (!IsFloating && _isAttached)
+
+        _attachedMode = Mode;
+        await _window.DetachAsync();
+        await ReleaseScopeAsync();
+
+        var attached = await _window.AttachAsync(_element, _selfReference, TitleBarClass, HandleClass, StepPixels, IsFloating, IsPresented);
+
+        if (!attached || !IsFloating)
         {
-            await LeaveFloatingAsync();
+            return;
         }
+
+        if (Placement is null)
+        {
+            await _window.MeasureAsync();
+        }
+
+        await RegisterScopeAsync();
     }
 
     /// <summary>Takes the window's placement as the browser reports it, after a drag, a keyboard step, or the first measurement.</summary>
@@ -284,17 +401,96 @@ public sealed partial class FormaWindow : ComponentBase, IAsyncDisposable
     /// <summary>Closes the window as the router dismissed it.</summary>
     [JSInvokable]
     [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "The router hands every owner the action and the reason.")]
-    public Task HandleDismissAsync(DismissBehavior action, DismissReason reason)
-        => action is DismissBehavior.Dismiss && Options.Closable ? OnClose.InvokeAsync() : Task.CompletedTask;
-
-    private Task HandleCommandAsync(string command)
-        => command switch
+    public async Task HandleDismissAsync(DismissBehavior action, DismissReason reason)
+    {
+        if (action is DismissBehavior.Dismiss && Options.Closable)
         {
-            CloseCommand => OnClose.InvokeAsync(),
-            MaximizeCommand => SetMaximizedAsync(!Maximized),
-            DockCommand => SetModeAsync(IsFloating ? WindowMode.Docked : WindowMode.Floating),
-            _ => OnCommand.InvokeAsync(command),
-        };
+            await CloseAsync();
+        }
+    }
+
+    // The workspace calls in from off the renderer, so each of its requests is carried onto the dispatcher first.
+    ValueTask IManagedWindow.SetActiveAsync(bool active)
+        => new(InvokeAsync(async () =>
+        {
+            if (Active != active)
+            {
+                Active = active;
+                await RaiseAsync(ActiveChanged, active);
+            }
+
+            if (active)
+            {
+                if (_inputScope is { } inputScope)
+                {
+                    await inputScope.ActivateAsync();
+                }
+
+                await _window.FocusAsync();
+            }
+            else if (_inputScope is { } inputScope)
+            {
+                await inputScope.ReleaseAsync();
+            }
+
+            StateHasChanged();
+        }));
+
+    ValueTask IManagedWindow.SetMinimizedAsync(bool minimized)
+        => new(InvokeAsync(async () =>
+        {
+            if (Minimized != minimized)
+            {
+                Minimized = minimized;
+                await RaiseAsync(MinimizedChanged, minimized);
+            }
+
+            await PresentAsync();
+        }));
+
+    ValueTask IManagedWindow.SetHiddenAsync(bool hidden)
+        => new(InvokeAsync(() =>
+        {
+            _isHidden = hidden;
+
+            return PresentAsync();
+        }));
+
+    ValueTask IManagedWindow.RaiseAsync()
+        => IsFloating && IsPresented ? new(InvokeAsync(() => _window.RaiseAsync().AsTask())) : ValueTask.CompletedTask;
+
+    async ValueTask<bool> IManagedWindow.RequestCloseAsync()
+    {
+        var args = new WindowClosingEventArgs();
+        await InvokeAsync(() => OnClosing.InvokeAsync(args));
+
+        return !args.Cancel;
+    }
+
+    ValueTask IManagedWindow.PerformCloseAsync()
+        => new(InvokeAsync(OnClose.InvokeAsync));
+
+    private async Task HandleCommandAsync(string command)
+    {
+        switch (command)
+        {
+            case CloseCommand:
+                await CloseAsync();
+                break;
+            case MinimizeCommand:
+                await MinimizeAsync();
+                break;
+            case MaximizeCommand:
+                await SetMaximizedAsync(!Maximized);
+                break;
+            case DockCommand:
+                await SetModeAsync(IsFloating ? WindowMode.Docked : WindowMode.Floating);
+                break;
+            default:
+                await OnCommand.InvokeAsync(command);
+                break;
+        }
+    }
 
     private async Task SetMaximizedAsync(bool maximized)
     {
@@ -308,13 +504,68 @@ public sealed partial class FormaWindow : ComponentBase, IAsyncDisposable
         await ModeChanged.InvokeAsync(mode);
     }
 
-    private Task HandleFocusInAsync()
-        => _inputScope is { } inputScope ? inputScope.ActivateAsync().AsTask() : Task.CompletedTask;
+    // A press anywhere inside makes the window current, whether or not what was pressed can take focus.
+    private async Task HandlePointerDownAsync()
+    {
+        if (!Active && !Disabled)
+        {
+            await ActivateAsync();
+        }
+    }
+
+    // Focus arriving makes the window current; focus already current only re-arms its scope.
+    private async Task HandleFocusInAsync()
+    {
+        if (!Active)
+        {
+            await ActivateAsync();
+        }
+        else if (_inputScope is { } inputScope)
+        {
+            await inputScope.ActivateAsync();
+        }
+    }
 
     private Task HandleFocusOutAsync()
         => _inputScope is { } inputScope ? inputScope.ReleaseAsync().AsTask() : Task.CompletedTask;
 
-    private async Task RegisterAsync()
+    private WindowDeclaration Declare()
+        => new(Title, Icon, Parent?.Id, Origin, CascadedOrigin, Mode, Minimized, Disabled, Modal);
+
+    private WindowOrigin ResolveOrigin()
+        => Origin ?? Parent?.Origin ?? CascadedOrigin ?? Manager.Origin;
+
+    // A change the workspace makes is reported through the callback with the refresh held off, since the workspace already knows.
+    private async Task RaiseAsync<TValue>(EventCallback<TValue> callback, TValue value)
+    {
+        _isApplying = true;
+
+        try
+        {
+            await callback.InvokeAsync(value);
+        }
+        finally
+        {
+            _isApplying = false;
+        }
+    }
+
+    private async Task PresentAsync()
+    {
+        if (_attachedMode is not null)
+        {
+            await _window.PresentAsync(IsPresented);
+        }
+
+        if (!IsPresented && _inputScope is { } inputScope)
+        {
+            await inputScope.ReleaseAsync();
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task RegisterScopeAsync()
     {
         var inputScope = await InputRouter.RegisterAsync(_element, FloatingProfile, _selfReference);
 
@@ -333,11 +584,8 @@ public sealed partial class FormaWindow : ComponentBase, IAsyncDisposable
         _inputScope = inputScope;
     }
 
-    private async Task LeaveFloatingAsync()
+    private async Task ReleaseScopeAsync()
     {
-        _isAttached = false;
-        await _window.DetachAsync();
-
         if (_inputScope is { } inputScope)
         {
             _inputScope = null;
@@ -348,7 +596,12 @@ public sealed partial class FormaWindow : ComponentBase, IAsyncDisposable
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        await LeaveFloatingAsync();
+        if (_declaration is not null)
+        {
+            await Manager.UnregisterAsync(this);
+        }
+
+        await ReleaseScopeAsync();
         await _window.DisposeAsync();
         _selfReference.Dispose();
     }

@@ -2,6 +2,7 @@
 @using Forma.Framework.Icons
 @using Forma.Framework.Input
 @using Forma.Framework.Toolbar
+@using Forma.Framework.Windows
 
 @code {
     public sealed class Component
@@ -261,7 +262,7 @@
             using var ctx = new FormaWindowTests();
 
             // Act
-            var cut = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" Options="new() { Closable = false, Maximizable = false, Dockable = false }" />);
+            var cut = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" Options="new() { Closable = false, Maximizable = false, Minimizable = false, Dockable = false }" />);
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-window-commands button"));
@@ -416,6 +417,237 @@
 
             // Act & Assert
             Assert.Throws<ArgumentException>(() => ctx.Render(@<FormaWindow Title=" " />));
+        }
+    }
+
+    public sealed class Workspace
+    {
+        private static WindowManager ManagerOf(FormaWindowTests ctx)
+            => ctx.Services.GetRequiredService<WindowManager>();
+
+        [Fact]
+        public async Task Should_register_while_rendered_and_leave_when_disposed()
+        {
+            // Arrange
+            using var ctx = new FormaWindowTests();
+            var manager = ManagerOf(ctx);
+
+            // Act
+            ctx.Render(@<FormaWindow Title="Folders" />);
+            var registered = manager.Windows.Select(window => window.Title).ToList();
+            await ctx.DisposeComponentsAsync();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["Folders"], registered),
+                () => Assert.Empty(manager.Windows));
+        }
+
+        [Fact]
+        public void Should_take_a_cascaded_workspace_over_the_circuits()
+        {
+            // Arrange
+            using var ctx = new FormaWindowTests();
+            var nested = new WindowManager();
+
+            // Act
+            ctx.Render(@<CascadingValue Value="nested"><FormaWindow Title="Folders" /></CascadingValue>);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Single(nested.Windows),
+                () => Assert.Empty(ManagerOf(ctx).Windows));
+        }
+
+        [Fact]
+        public void Should_resolve_its_origin_from_itself_then_its_parent_then_the_cascade_then_the_workspace()
+        {
+            // Arrange
+            using var ctx = new FormaWindowTests();
+            var manager = ManagerOf(ctx);
+            var own = WindowOrigin.NewInstance("explorer", "Explorer");
+            var cascaded = WindowOrigin.NewInstance("shell", "Shell");
+            FormaWindow? parent = null;
+
+            // Act
+            ctx.Render(@<CascadingValue Value="cascaded"><FormaWindow @ref="parent" Title="Parent" Origin="own" /></CascadingValue>);
+            ctx.Render(
+                @<CascadingValue Value="cascaded">
+                    <FormaWindow Title="Child" Parent="parent" />
+                    <FormaWindow Title="Cascaded" />
+                </CascadingValue>);
+            ctx.Render(@<FormaWindow Title="Lone" />);
+
+            // Assert
+            IWindow Named(string title) => manager.Windows.Single(window => window.Title == title);
+            Assert.Multiple(
+                () => Assert.Equal(own, Named("Parent").Origin),
+                () => Assert.Equal(own, Named("Child").Origin),
+                () => Assert.Equal(cascaded, Named("Cascaded").Origin),
+                () => Assert.Equal(manager.Origin, Named("Lone").Origin));
+        }
+
+        [Fact]
+        public void Should_offer_a_minimize_command_that_takes_the_window_out_of_its_presentation()
+        {
+            // Arrange
+            using var ctx = new FormaWindowTests();
+            bool? minimized = null;
+
+            // Act
+            var cut = ctx.Render(@<FormaWindow Title="Folders" MinimizedChanged="value => minimized = value"><Body>Kept</Body></FormaWindow>);
+            cut.Find("button[aria-label=Minimize]").Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(minimized),
+                () => Assert.True(cut.Find(".forma-window").HasAttribute("hidden")),
+                () => Assert.Equal("Kept", cut.Find(".forma-window-body").TextContent));
+        }
+
+        [Fact]
+        public async Task Should_mark_the_window_the_workspace_makes_current()
+        {
+            // Arrange
+            using var ctx = new FormaWindowTests();
+            var manager = ManagerOf(ctx);
+            bool? active = null;
+            var cut = ctx.Render(@<FormaWindow Title="Folders" ActiveChanged="value => active = value" />);
+
+            // Act
+            await manager.ActivateAsync(new WindowSelector { Title = "Folders" });
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(active),
+                () => Assert.Contains("is-active", cut.Find(".forma-window").ClassList),
+                () => Assert.Equal("Folders", manager.Current?.Title));
+        }
+
+        [Fact]
+        public void Should_become_current_on_a_press_inside_it()
+        {
+            // Arrange
+            using var ctx = new FormaWindowTests();
+            var manager = ManagerOf(ctx);
+            var cut = ctx.Render(@<FormaWindow Title="Folders"><Body>Plain text</Body></FormaWindow>);
+
+            // Act
+            cut.Find(".forma-window").PointerDown();
+
+            // Assert
+            Assert.Equal("Folders", manager.Current?.Title);
+        }
+
+        [Fact]
+        public void Should_hide_its_children_when_minimized()
+        {
+            // Arrange
+            using var ctx = new FormaWindowTests();
+            FormaWindow? parent = null;
+            var parentCut = ctx.Render(@<FormaWindow @ref="parent" Title="Parent" />);
+            var childCut = ctx.Render(@<FormaWindow Title="Child" Parent="parent" />);
+
+            // Act
+            parentCut.Find("button[aria-label=Minimize]").Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(parentCut.Find(".forma-window").HasAttribute("hidden")),
+                () => Assert.True(childCut.Find(".forma-window").HasAttribute("hidden")),
+                () => Assert.Equal(0, childCut.FindAll("button[aria-label=Minimize]").Count(button => button.HasAttribute("aria-pressed"))));
+        }
+
+        [Fact]
+        public void Should_be_inert_while_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaWindowTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaWindow Title="Folders" Disabled="true" />);
+
+            // Assert
+            Assert.True(cut.Find(".forma-window").HasAttribute("inert"));
+        }
+
+        [Fact]
+        public void Should_ask_before_closing_and_stay_open_when_declined()
+        {
+            // Arrange
+            using var ctx = new FormaWindowTests();
+            var closed = 0;
+            var decline = true;
+
+            // Act
+            var cut = ctx.Render(@<FormaWindow Title="Folders" OnClosing="args => args.Cancel = decline" OnClose="() => closed++" />);
+            cut.Find("button[aria-label=Close]").Click();
+            var afterDecline = closed;
+            decline = false;
+            cut.Find("button[aria-label=Close]").Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(0, afterDecline),
+                () => Assert.Equal(1, closed));
+        }
+
+        [Fact]
+        public void Should_close_the_windows_it_opened_when_it_closes()
+        {
+            // Arrange
+            using var ctx = new FormaWindowTests();
+            var childClosed = false;
+            FormaWindow? parent = null;
+            var parentCut = ctx.Render(@<FormaWindow @ref="parent" Title="Parent" />);
+            ctx.Render(@<FormaWindow Title="Child" Parent="parent" OnClose="() => childClosed = true" />);
+
+            // Act
+            parentCut.Find("button[aria-label=Close]").Click();
+
+            // Assert
+            Assert.True(childClosed);
+        }
+
+        [Fact]
+        public void Should_keep_the_parent_open_when_a_child_declines()
+        {
+            // Arrange
+            using var ctx = new FormaWindowTests();
+            var parentClosed = false;
+            FormaWindow? parent = null;
+            var parentCut = ctx.Render(@<FormaWindow @ref="parent" Title="Parent" OnClose="() => parentClosed = true" />);
+            ctx.Render(@<FormaWindow Title="Child" Parent="parent" OnClosing="args => args.Cancel = true" />);
+
+            // Act
+            parentCut.Find("button[aria-label=Close]").Click();
+
+            // Assert
+            Assert.False(parentClosed);
+        }
+
+        [Fact]
+        public async Task Should_scope_its_own_operations_to_its_descendants()
+        {
+            // Arrange
+            using var ctx = new FormaWindowTests();
+            var manager = ManagerOf(ctx);
+            FormaWindow? parent = null;
+            ctx.Render(@<FormaWindow @ref="parent" Title="Parent" />);
+            ctx.Render(
+                @<div>
+                    <FormaWindow Title="Properties" Parent="parent" />
+                    <FormaWindow Title="Properties" />
+                </div>);
+
+            // Act
+            var result = await parent!.MinimizeAsync(new WindowSelector { Title = "Properties" });
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(result.Succeeded),
+                () => Assert.Single(result.Windows),
+                () => Assert.Same(parent, manager.ParentOf(result.Windows[0])));
         }
     }
 }

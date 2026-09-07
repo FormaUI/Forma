@@ -129,6 +129,41 @@ public sealed class WindowManager
         }
     }
 
+    /// <summary>Scopes a selector to a window: none selects the window itself, criteria without a parent reach its descendants, and a parent given must be the window or one of its descendants.</summary>
+    /// <exception cref="ArgumentException">The window is not registered here, the selector's parent lies outside the window's subtree, or the selector is a standing selection of the workspace other than <see cref="WindowSelector.All"/>.</exception>
+    public IWindowSelector Within(IWindow window, IWindowSelector? selector = null)
+    {
+        var registered = Registered(window, nameof(window));
+
+        switch (selector)
+        {
+            case null:
+                return new WindowSelector { Window = registered };
+
+            case StandingWindowSelector { Selection: StandingWindowSelection.All }:
+                return new WindowSelector { Parent = registered, Recursive = true };
+
+            case StandingWindowSelector:
+                throw new ArgumentException("A standing selection belongs to the workspace, not to a window.", nameof(selector));
+
+            case WindowSelector { Parent: null } criteria:
+                return criteria with { Parent = registered, Recursive = true };
+
+            case WindowSelector { Parent: { } parent } criteria:
+                var registeredParent = Registered(parent, nameof(selector));
+
+                if (registeredParent.Id != registered.Id && !IsDescendant(registeredParent, of: registered))
+                {
+                    throw new ArgumentException("The selector's parent lies outside the window.", nameof(selector));
+                }
+
+                return criteria;
+
+            default:
+                throw new ArgumentException("The selector is not one this workspace understands.", nameof(selector));
+        }
+    }
+
     /// <summary>The window with the given identity.</summary>
     /// <exception cref="KeyNotFoundException">No such window is registered here.</exception>
     public IWindow GetWindowById(Guid id)
@@ -541,7 +576,8 @@ public sealed class WindowManager
             }
         }
 
-        foreach (var window in _order.Where(window => window.IsFloating && IsVisible(window)))
+        // A window may register while another is being raised, so the order is taken before the first raise.
+        foreach (var window in _order.Where(window => window.IsFloating && IsVisible(window)).ToList())
         {
             await window.RaiseAsync().ConfigureAwait(false);
         }

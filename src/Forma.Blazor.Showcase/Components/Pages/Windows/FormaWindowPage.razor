@@ -7,7 +7,11 @@
 @using Forma.Blazor.Components.Windows
 @using Forma.Framework.Icons
 @using Forma.Framework.Toolbar
+@using Forma.Framework.Windows
+@using Forma.Blazor.Components.Inputs
 @inject IStringLocale<FormaWindowPage> L
+@inject WindowManager Manager
+@implements IDisposable
 
 <h1>FormaWindow</h1>
 <p class="description">@L["A raised frame with chrome: a title bar carrying the title, an icon and commands, then an optional header band, the body, and an optional footer band. It stands docked in its parent's layout or floats over the page, where it can be moved by its title bar, resized at its edges and maximized."]</p>
@@ -86,6 +90,48 @@
     <p class="demo-note">@L["Last command"]: <code>@(_lastCommand ?? L["none yet"])</code></p>
 </div>
 
+<div class="demo-section">
+    <h2>@L["Workspace"]</h2>
+    <p class="description">@L["Every window belongs to a workspace that knows which one is current and which windows another opened. Properties is a child of Library: minimizing Library hides it, closing Library asks it first, and with unsaved work it declines and keeps both open."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaFrame Variant="FrameVariant.Canvas" class="demo-window-canvas">
+            <FormaStackLayout>
+                @if (_isLibraryOpen)
+                {
+                    <FormaWindow @ref="_library" Title="@L["Library"]" Icon="Glyph.Pin" Options="new() { Dockable = false }" OnClose="() => _isLibraryOpen = false" class="demo-window-fill">
+                        <Body>
+                            <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _isPropertiesOpen = true" Disabled="_isPropertiesOpen">@L["Open Properties"]</FormaButton>
+                        </Body>
+                    </FormaWindow>
+                }
+                else
+                {
+                    <div class="demo-window-fill demo-window-empty">
+                        <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _isLibraryOpen = true">@L["Reopen Library"]</FormaButton>
+                    </div>
+                }
+            </FormaStackLayout>
+        </FormaFrame>
+    </div>
+    @if (_isLibraryOpen && _isPropertiesOpen && _library is not null)
+    {
+        <FormaWindow Title="@L["Properties"]"
+                     Parent="_library"
+                     Mode="WindowMode.Floating"
+                     Options="new() { Dockable = false, Maximizable = false }"
+                     OnClosing="args => args.Cancel = _hasUnsavedWork"
+                     OnClose="() => _isPropertiesOpen = false">
+            <Body>
+                <FormaCheckBox @bind-Checked="_hasUnsavedWork">@L["Unsaved work"]</FormaCheckBox>
+            </Body>
+        </FormaWindow>
+    }
+    <p class="demo-note">
+        @L["Current"]: <code>@(Manager.Current?.Title ?? L["none"])</code>
+        <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="RestoreAllAsync">@L["Restore Every Window"]</FormaButton>
+    </p>
+</div>
+
 @code {
     private double _foldersWidth = 14;
     private bool _isFloatingOpen;
@@ -93,6 +139,22 @@
     private bool _isMaximized;
     private WindowMode _outputMode = WindowMode.Docked;
     private string? _lastCommand;
+    private FormaWindow? _library;
+    private bool _isLibraryOpen = true;
+    private bool _isPropertiesOpen;
+    private bool _hasUnsavedWork;
+
+    protected override void OnInitialized()
+        => Manager.Changed += HandleWorkspaceChanged;
+
+    public void Dispose()
+        => Manager.Changed -= HandleWorkspaceChanged;
+
+    private void HandleWorkspaceChanged(object? sender, EventArgs args)
+        => _ = InvokeAsync(StateHasChanged);
+
+    private Task RestoreAllAsync()
+        => Manager.RestoreAsync(WindowSelector.All).AsTask();
 
     private string FoldersStyle => FormattableString.Invariant($"--demo-window-side-size: {_foldersWidth}rem");
 

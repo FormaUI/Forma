@@ -51,6 +51,9 @@ public sealed class FakeWindow(string title, WindowOrigin? origin = null) : IMan
     /// <summary>Runs while the window is being asked whether it may close, before it answers.</summary>
     public Func<ValueTask>? WhileClosing { get; set; }
 
+    /// <summary>Runs while the window is being raised.</summary>
+    public Func<ValueTask>? WhileRaising { get; set; }
+
     /// <summary>How many times the window was asked whether it may close.</summary>
     public int CloseRequests { get; private set; }
 
@@ -82,11 +85,14 @@ public sealed class FakeWindow(string title, WindowOrigin? origin = null) : IMan
     }
 
     /// <inheritdoc />
-    public ValueTask RaiseAsync()
+    public async ValueTask RaiseAsync()
     {
         Log.Add("raise");
 
-        return ValueTask.CompletedTask;
+        if (WhileRaising is { } whileRaising)
+        {
+            await whileRaising().ConfigureAwait(false);
+        }
     }
 
     /// <inheritdoc />

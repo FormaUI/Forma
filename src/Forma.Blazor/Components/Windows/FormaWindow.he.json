@@ -2,6 +2,7 @@
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "Close": "סגור",
   "Maximize": "הגדל",
+  "Minimize": "מזער",
   "Restore": "שחזר",
   "Dock": "קבע",
   "Undock": "נתק",

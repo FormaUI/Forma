@@ -859,3 +859,10 @@ body {
 .demo-window-fill {
     flex: 1;
 }
+
+/* Where a closed demo window stood, the way back to it. */
+.demo-window-empty {
+    display: grid;
+    place-items: center;
+    padding: var(--space-4);
+}

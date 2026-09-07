@@ -54,6 +54,7 @@
         <ProjectReference Include="..\Forma.Framework.Feedback\Forma.Framework.Feedback.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Media\Forma.Framework.Media.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Share\Forma.Framework.Share.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Windows\Forma.Framework.Windows.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Toolbar\Forma.Framework.Toolbar.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Css\Forma.Framework.Css.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Input\Forma.Framework.Input.csproj" PrivateAssets="all" />

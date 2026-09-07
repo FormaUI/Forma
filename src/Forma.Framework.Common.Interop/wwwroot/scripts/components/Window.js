@@ -1,5 +1,6 @@
 /**
- * Window — a floating window shown in the top layer, moved by its title bar and resized at its edges
+ * Window — a window's browser side: floating, it is shown in the top layer, moved by its title bar
+ * and resized at its edges; either way it remembers where focus was inside it and takes focus back.
  *
  * The press-move-release is DragGesture's; what remains here is what the drag means for a
  * window: which of its edges the press took hold of, the box that results, and the viewport
@@ -8,24 +9,31 @@
  */
 
 import { attach as attachDragGesture } from '../behaviours/DragGesture.js';
+import { focusablesIn } from '../behaviours/Focus.js';
 import { tell } from '../../../core/scripts/Owner.js';
 
 /**
- * @param {HTMLElement} target The window element, positioned against the viewport.
+ * @param {HTMLElement} target The window element; floating, it is positioned against the viewport.
  * @param {{
  *   owner: import('../../../core/scripts/Owner.js').Owner,
  *   titleBarClass: string,
  *   handleClass: string,
- *   stepPixels: number
+ *   stepPixels: number,
+ *   floating: boolean,
+ *   presented: boolean
  * }} options
  *   The .NET owner told where the window came to rest; the class of the element a drag moves
  *   the window by, which takes the arrow keys while focused; the class of the elements a drag
  *   resizes it by, each naming its edge in data-edge as one of n, s, e, w, ne, nw, se, sw; how
- *   far one arrow press moves or resizes the window.
+ *   far one arrow press moves or resizes the window; whether the window floats over the page;
+ *   whether it is shown at all rather than minimized or hidden.
  */
 export function attach(target, options) {
     return new Window(target, options);
 }
+
+/** The window shown last, which the top layer keeps in front until another is shown. */
+let topmost = null;
 
 class Window {
     /** The class the window carries while a drag is in progress. */
@@ -47,17 +55,31 @@ class Window {
     #titleBarClass;
     #handleClass;
     #stepPixels;
-    #gesture;
+    #floating;
+    #presented;
+    #gesture = null;
     #listeners = new AbortController();
     #edge = null;
     #origin = null;
+    #lastFocused = null;
+    #raiseAfterDrop = false;
 
-    constructor(window, { owner, titleBarClass, handleClass, stepPixels }) {
+    constructor(window, { owner, titleBarClass, handleClass, stepPixels, floating, presented }) {
         this.#window = window;
         this.#owner = owner;
         this.#titleBarClass = titleBarClass;
         this.#handleClass = handleClass;
         this.#stepPixels = stepPixels;
+        this.#floating = floating;
+        this.#presented = presented;
+
+        const { signal } = this.#listeners;
+        window.addEventListener('focusout', event => this.#remember(event.target), { signal });
+
+        if (!floating) {
+            return;
+        }
+
         this.#gesture = attachDragGesture(window, {
             threshold: 0,
             axis: 'any',
@@ -69,23 +91,78 @@ class Window {
             onCancel: () => this.#handleDrop(),
         });
 
-        this.#show();
-        this.#fit();
+        if (presented) {
+            this.#show();
+            this.#fit();
+        }
 
-        const { signal } = this.#listeners;
         window.addEventListener('keydown', event => this.#handleKeyDown(event), { signal });
         globalThis.addEventListener('resize', () => this.#fit(), { passive: true, signal });
     }
 
     dispose() {
         this.#listeners.abort();
-        this.#gesture.dispose();
+        this.#gesture?.dispose();
         this.#hide();
     }
 
     /** Tells the owner where the window stands now. */
     measure() {
         this.#report();
+    }
+
+    /** Moves focus into the window unless a control inside it already holds it: to the element last focused inside it, else its first control, else the window itself. A docked window is scrolled into view. */
+    focus() {
+        const active = document.activeElement;
+
+        if (active !== this.#window && this.#window.contains(active)) {
+            return;
+        }
+
+        const remembered = this.#lastFocused;
+        const target = remembered?.isConnected && this.#window.contains(remembered)
+            ? remembered
+            : focusablesIn(this.#window)[0] ?? this.#window;
+
+        target.focus();
+
+        if (!this.#floating) {
+            this.#window.scrollIntoView({ block: 'nearest' });
+        }
+    }
+
+    /** Puts a presented floating window on top of every other floating window; one being dragged is raised once the drag ends, since hiding it would end its pointer capture. */
+    raise() {
+        if (!this.#floating || !this.#presented || topmost === this) {
+            return;
+        }
+
+        if (this.#window.classList.contains(Window.#DraggingClass)) {
+            this.#raiseAfterDrop = true;
+            return;
+        }
+
+        this.#hide();
+        this.#show();
+    }
+
+    /**
+     * Shows a floating window in the top layer, or takes it out while it is minimized or hidden.
+     * @param {boolean} presented
+     */
+    present(presented) {
+        this.#presented = presented;
+
+        if (!this.#floating) {
+            return;
+        }
+
+        if (presented) {
+            this.#show();
+            this.#fit();
+        } else {
+            this.#hide();
+        }
     }
 
     /**
@@ -96,7 +173,7 @@ class Window {
      * @param {boolean} resize
      */
     nudge(dx, dy, resize) {
-        if (this.#isMaximized) {
+        if (!this.#floating || this.#isMaximized) {
             return;
         }
 
@@ -114,6 +191,13 @@ class Window {
     /** Whether the window carries resize handles, which it does only while it may be resized. */
     get #isResizable() {
         return this.#window.querySelector(`.${this.#handleClass}`) !== null;
+    }
+
+    /** Keeps the element focus is leaving, so focus can return there when the window is activated again. */
+    #remember(element) {
+        if (element instanceof HTMLElement && this.#window.contains(element)) {
+            this.#lastFocused = element;
+        }
     }
 
     /** An arrow pressed on the focused title bar steps the window, or resizes it with Shift, and never scrolls the page. */
@@ -144,6 +228,7 @@ class Window {
     #show() {
         if (typeof this.#window.showPopover === 'function' && !this.#window.matches(':popover-open')) {
             this.#window.showPopover();
+            topmost = this;
         }
     }
 
@@ -151,11 +236,15 @@ class Window {
         if (typeof this.#window.hidePopover === 'function' && this.#window.matches(':popover-open')) {
             this.#window.hidePopover();
         }
+
+        if (topmost === this) {
+            topmost = null;
+        }
     }
 
     /** Holds a placed window within the viewport, shrinking it to fit where it must, and reports a box that changed. */
     #fit() {
-        if (this.#isMaximized || !this.#isPlaced) {
+        if (!this.#presented || this.#isMaximized || !this.#isPlaced) {
             return;
         }
 
@@ -211,6 +300,11 @@ class Window {
         this.#window.classList.remove(Window.#DraggingClass);
         this.#origin = null;
         this.#report();
+
+        if (this.#raiseAfterDrop) {
+            this.#raiseAfterDrop = false;
+            this.raise();
+        }
     }
 
     #report() {

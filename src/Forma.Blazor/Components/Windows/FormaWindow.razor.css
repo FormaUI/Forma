@@ -12,6 +12,16 @@
     min-block-size: 0;
 }
 
+/* Minimized or hidden under a minimized ancestor, the window leaves its presentation and keeps its content. */
+.forma-window[hidden] {
+    display: none;
+}
+
+/* A floating window that is not the workspace's current one wears its title in the secondary tone. */
+.forma-window-floating:not(.is-active) .forma-window-title {
+    color: var(--text-secondary-color);
+}
+
 /* Floating, the window is a manual popover in the top layer, so no ancestor's margin, transform or stacking
    reaches its box; the layer token stands in where the top layer is unavailable. Until it is placed it opens
    centered at a default size; once placed, the inline left, top, width and height govern. The popover's own

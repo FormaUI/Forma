@@ -9,9 +9,13 @@
      style="@Style"
      @ref="_element"
      role="@Role"
+     tabindex="-1"
      popover="@(IsFloating ? "manual" : null)"
+     hidden="@(!IsPresented)"
+     inert="@Disabled"
      aria-modal="@(IsFloating ? "false" : null)"
      aria-labelledby="@_titleId"
+     @onpointerdown="HandlePointerDownAsync"
      @onfocusin="HandleFocusInAsync"
      @onfocusout="HandleFocusOutAsync">
     <FormaFrame Variant="FrameVariant.Raised" class="forma-window-frame">

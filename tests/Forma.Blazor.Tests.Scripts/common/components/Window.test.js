@@ -8,7 +8,7 @@ describe('Window', () => {
     /** @type {{ invokeMethodAsync: import('vitest').Mock }} */
     let owner;
 
-    const options = () => ({ owner, titleBarClass: 'titlebar', handleClass: 'handle', stepPixels: 16 });
+    const options = (overrides = {}) => ({ owner, titleBarClass: 'titlebar', handleClass: 'handle', stepPixels: 16, floating: true, presented: true, ...overrides });
 
     beforeEach(() => {
         document.body.innerHTML = `
@@ -259,6 +259,133 @@ describe('Window', () => {
         expect(box.style.left).toBe('50px');
         expect(box.style.top).toBe('0px');
         expect(box.style.height).toBe('250px');
+    });
+
+    it('neither shows nor moves a docked window', () => {
+        box.showPopover = vi.fn();
+        box.matches = () => false;
+        attach(box, options({ floating: false }));
+
+        drag('.titlebar span', { clientX: 200, clientY: 90 }, { clientX: 260, clientY: 90 });
+
+        expect(box.showPopover).not.toHaveBeenCalled();
+        expect(box.style.left).toBe('100px');
+        expect(reported()).toEqual([]);
+    });
+
+    it('stays out of the top layer while not presented, and enters it when presented', () => {
+        let open = false;
+        box.showPopover = vi.fn(() => { open = true; });
+        box.hidePopover = vi.fn(() => { open = false; });
+        box.matches = selector => selector === ':popover-open' && open;
+
+        const handle = attach(box, options({ presented: false }));
+        expect(box.showPopover).not.toHaveBeenCalled();
+
+        handle.present(true);
+        expect(open).toBe(true);
+
+        handle.present(false);
+        expect(open).toBe(false);
+    });
+
+    const popoverOf = element => {
+        let open = false;
+        element.showPopover = vi.fn(() => { open = true; });
+        element.hidePopover = vi.fn(() => { open = false; });
+        element.matches = selector => selector === ':popover-open' && open;
+        return () => open;
+    };
+
+    it('raises a presented window that another was shown after by showing it again on top', () => {
+        const isOpen = popoverOf(box);
+        const handle = attach(box, options());
+        document.body.insertAdjacentHTML('beforeend', '<div id="other"></div>');
+        const other = document.querySelector('#other');
+        popoverOf(other);
+        stubPointerCapture(other);
+        attach(other, options());
+
+        handle.raise();
+
+        expect(box.hidePopover).toHaveBeenCalledOnce();
+        expect(box.showPopover).toHaveBeenCalledTimes(2);
+        expect(isOpen()).toBe(true);
+    });
+
+    it('leaves the window shown last alone when raised', () => {
+        popoverOf(box);
+        const handle = attach(box, options());
+
+        handle.raise();
+
+        expect(box.hidePopover).not.toHaveBeenCalled();
+        expect(box.showPopover).toHaveBeenCalledOnce();
+    });
+
+    it('waits for a drag to end before raising', () => {
+        popoverOf(box);
+        const handle = attach(box, options());
+        document.body.insertAdjacentHTML('beforeend', '<div id="other"></div>');
+        const other = document.querySelector('#other');
+        popoverOf(other);
+        stubPointerCapture(other);
+        attach(other, options());
+
+        point('pointerdown', '.titlebar span', { clientX: 200, clientY: 90 });
+        point('pointermove', '.titlebar span', { clientX: 220, clientY: 90 });
+        handle.raise();
+        const hiddenDuringDrag = box.hidePopover.mock.calls.length;
+        point('pointerup', '.titlebar span', { clientX: 220, clientY: 90 });
+
+        expect(hiddenDuringDrag).toBe(0);
+        expect(box.hidePopover).toHaveBeenCalledOnce();
+        expect(box.showPopover).toHaveBeenCalledTimes(2);
+    });
+
+    it('takes focus back to where it last was inside the window', () => {
+        document.body.insertAdjacentHTML('beforeend', '<button id="outside">Outside</button>');
+        box.querySelector('.titlebar').insertAdjacentHTML('beforeend', '<input id="field">');
+        const handle = attach(box, options());
+        const field = document.querySelector('#field');
+
+        field.focus();
+        document.querySelector('#outside').focus();
+        handle.focus();
+
+        expect(document.activeElement).toBe(field);
+    });
+
+    it('focuses the first control when nothing inside was focused before', () => {
+        document.body.insertAdjacentHTML('beforeend', '<button id="outside">Outside</button>');
+        const handle = attach(box, options());
+        document.querySelector('#outside').focus();
+
+        handle.focus();
+
+        expect(document.activeElement).toBe(document.querySelector('#close'));
+    });
+
+    it('moves focus from the window itself to the control last focused inside it', () => {
+        box.setAttribute('tabindex', '-1');
+        box.querySelector('.titlebar').insertAdjacentHTML('beforeend', '<input id="field">');
+        const handle = attach(box, options());
+        document.querySelector('#field').focus();
+        box.focus();
+
+        handle.focus();
+
+        expect(document.activeElement).toBe(document.querySelector('#field'));
+    });
+
+    it('leaves focus alone when it is already inside the window', () => {
+        box.querySelector('.titlebar').insertAdjacentHTML('beforeend', '<input id="field">');
+        const handle = attach(box, options());
+        document.querySelector('#field').focus();
+
+        handle.focus();
+
+        expect(document.activeElement).toBe(document.querySelector('#field'));
     });
 
     it('stops listening once disposed', () => {
