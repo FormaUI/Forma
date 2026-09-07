@@ -11,8 +11,14 @@ component's participation in a workspace.
 `FormaWindow` is built: a raised frame with chrome that docks in a layout or floats in
 the top layer, moved by its title bar, resized at its edges and from the keyboard,
 maximized to the viewport, with a placement a host binds and resize limits in its
-options. None of the extensions below is built yet. The implementation plan at the end
-records what lands as each step is taken.
+options. Step 1 of the plan is built: `Forma.Framework.Windows` holds `IWindow`,
+`IManagedWindow`, `WindowOrigin`, `WindowSelector` with its standing selections,
+`WindowOperationResult`, and `WindowManager` with its registry, parent validation,
+stacking order, activation history, modal ordering, inherited hiding, and the
+ask-everyone-first close, registered as a scoped service by `AddFormaWindowServices`.
+Its tests drive the manager through a fake window. Nothing in `FormaWindow` uses it
+yet; that is step 2. The implementation plan at the end records what lands as each
+step is taken.
 
 ## Purpose
 
@@ -128,9 +134,10 @@ own origin, which the manager supplies. A window always has one.
 
 ### Parentage
 
-`Parent` is a direct reference the manager validates: no self-parenting, no cycles, no
-window from another workspace, and no assignment that bypasses the manager. Roots have
-no parent. Origin never implies parentage: two windows sharing an instance are not
+`Parent` is a direct reference the window declares and the manager validates, at
+registration and again whenever the window refreshes: no self-parenting, no cycles, no
+window from another workspace. The manager keeps the tree it validated, so a declaration
+it rejected never takes effect. Roots have no parent. Origin never implies parentage: two windows sharing an instance are not
 parent and child, closing one root leaves the other open, and a descendant follows its
 parent's lifecycle whatever its origin.
 
@@ -196,14 +203,23 @@ WindowSelector.All
 ### Results
 
 ```csharp
-public enum WindowOperationOutcome { Applied, NoMatch, Ambiguous, Declined }
+public enum WindowOperationOutcome { Applied, NoMatch, Ambiguous, Ineligible, Declined }
 
 public sealed record WindowOperationResult(WindowOperationOutcome Outcome, IReadOnlyList<IWindow> Windows);
 ```
 
-No match, ambiguity, and a declined close are ordinary answers a caller branches on. An
-invalid selector, a foreign window reference, or an unregistered window is a bug at the
-call site and throws.
+No match, ambiguity, a match with no eligible window, and a declined close are ordinary
+answers a caller branches on. An invalid selector, a foreign window reference, or an
+unregistered window is a bug at the call site and throws. `Windows` holds what the
+operation changed when it applied, and who declined when it was declined.
+
+### The managed window
+
+`IWindow` is what the workspace and a handle read. `IManagedWindow` adds what the
+manager drives: it tells the window when it becomes active, minimized, hidden by an
+ancestor, or raised to the top of the floating windows, asks whether it may close, and
+tells it to close once every affected window has accepted. `FormaWindow` implements
+both; a test drives the manager with a fake.
 
 ## The manager
 
@@ -222,6 +238,10 @@ window area inside that cascade belongs to it.
 ### API
 
 ```csharp
+manager.RegisterAsync(window)      // for the component's lifetime
+manager.RefreshAsync(window)       // after its title, icon, parent, or state changed
+manager.UnregisterAsync(window)    // when the host disposes it
+
 manager.Windows
 manager.GetWindowById(id)
 manager.TryGetWindowById(id, out window)
@@ -235,8 +255,11 @@ manager.RestoreAsync(selector)
 manager.CloseAsync(selector)
 ```
 
-`GetWindowById` throws when absent; `TryGetWindowById` reports false with null;
-`TryFindWindows` reports false with an empty collection. Selectors replace separate
+A refresh re-validates the declared parent, brings the descendants' hiding into line,
+moves a window that became modal in front of what it blocks, and lets a current window
+that is no longer eligible give way. `GetWindowById` throws when absent;
+`TryGetWindowById` reports false with null; `TryFindWindows` reports false with an empty
+collection. Selectors replace separate
 title, origin, instance, child, and descendant queries, and separate single and bulk
 operation overloads.
 

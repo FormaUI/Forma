@@ -12,6 +12,7 @@
     <Project Path="src\Forma.Framework.Feedback\Forma.Framework.Feedback.csproj" />
     <Project Path="src\Forma.Framework.Files\Forma.Framework.Files.csproj" />
     <Project Path="src\Forma.Framework.Media\Forma.Framework.Media.csproj" />
+    <Project Path="src\Forma.Framework.Windows\Forma.Framework.Windows.csproj" />
     <Project Path="src\Forma.Framework.Toolbar\Forma.Framework.Toolbar.csproj" />
     <Project Path="src\Forma.Framework.Input\Forma.Framework.Input.csproj" />
     <Project Path="src\Forma.Framework.Core.Interop\Forma.Framework.Core.Interop.csproj" />
@@ -33,6 +34,7 @@
     <Project Path="tests\Forma.Tests.Support\Forma.Tests.Support.csproj" />
     <Project Path="tests\Forma.Blazor.Tests\Forma.Blazor.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Css.Tests\Forma.Framework.Css.Tests.csproj" />
+    <Project Path="tests\Forma.Framework.Windows.Tests\Forma.Framework.Windows.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Timing.Tests\Forma.Framework.Timing.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Input.Tests\Forma.Framework.Input.Tests.csproj" />
     <Project Path="tests\Forma.Framework.Input.Interop.Tests\Forma.Framework.Input.Interop.Tests.csproj" />
