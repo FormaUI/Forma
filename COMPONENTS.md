@@ -51,11 +51,12 @@ Forma.Blazor/Components/
 │   ├── SplitterOrientation.cs                 # enum: Vertical, Horizontal
 │   ├── ✅ FormaTabs.razor / .razor.cs
 │   └── ✅ FormaTab.razor / .razor.cs
-├── (1 / 1) Windows/
+├── (1 / 2) Windows/                          # see docs/window-design.md
 │   ├── ✅ FormaWindow.razor / .razor.cs / .razor.css  # a raised frame with chrome: title bar, header, body, footer; docked in a layout or floating over the page
 │   ├── WindowMode.cs                          # enum: Docked, Floating
 │   ├── WindowPlacement.cs                     # record: Left, Top, Width, Height of a floating window, in CSS pixels
-│   └── WindowOptions.cs                       # record: Closable, Maximizable, Dockable, Resizable, MinResizeSize, MaxResizeSize
+│   ├── WindowOptions.cs                       # record: Closable, Maximizable, Dockable, Resizable, MinResizeSize, MaxResizeSize
+│   └── FormaWindowArea.razor                  # one persistent handle per window in the workspace, whatever its state
 ├── (2 / 2) Page/
 │   ├── ✅ FormaPageTitle.razor / .razor.cs
 │   └── ✅ FormaPageHead.razor / .razor.cs
@@ -950,6 +951,8 @@ These are more complex, possibly page-specific, but still benefit from being com
 
 ---
 ### 75. `FormaWindow` ✅
+
+> **[docs/window-design.md](docs/window-design.md) is authoritative for this component.** The rows below are the summary; the design document owns the window-management model, the manager, and the plan.
 
 | | |
 |---|---|
