@@ -231,16 +231,18 @@
 
     /* ============================================================
        Chrome — the band a specific kind of surface paints for itself, each independently themable even where
-       today's value happens to match another. A dialog's top and bottom bands read as inset frames, its
-       content as a flat one; a toolbar and a status strip read as a stronger, more visible muted tone so
-       they stay legible beside a dimmed, inactive surface.
+       today's value happens to match another. A window is a raised frame with chrome: a title bar, an
+       optional header band, the body, an optional footer band; a dialog is a modal window and reads the same
+       tokens. The bands read as inset frames and the body as a flat one; a toolbar and a status strip read
+       as a stronger, more visible muted tone so they stay legible beside a dimmed, inactive surface.
        ============================================================ */
     --toolbar-bg-color: var(--muted-bg-color);
     --command-area-bg-color: var(--frame-inset-bg-color);
     --status-strip-bg-color: var(--muted-bg-color);
-    --dialog-top-bg-color: var(--frame-inset-bg-color);
-    --dialog-content-bg-color: var(--frame-flat-bg-color);
-    --dialog-bottom-bg-color: var(--frame-inset-bg-color);
+    --window-titlebar-bg-color: var(--frame-inset-bg-color);
+    --window-header-bg-color: var(--frame-inset-bg-color);
+    --window-body-bg-color: var(--frame-flat-bg-color);
+    --window-footer-bg-color: var(--frame-inset-bg-color);
     /* The layer behind a dialog, dimming the page it holds. A see-through layer, not a surface, so it is
        named like the shade rather than as a -bg-color; fixed dark in every theme, so it points at the constant. */
     --dialog-backdrop-color: color-mix(in srgb, var(--black-color) 45%, transparent);
@@ -249,6 +251,7 @@
        they do elsewhere. A dialog needs none: the native element sits in the top layer above all of these.
        Stacking inside one component uses its own small integers and is not a layer. */
     --z-index-popup: 1000;    /* a popup, a drop-down menu, a maximized composer: over the page */
+    --z-index-window: 1030;   /* a floating window: over the page and its popups, which live in the top layer regardless */
     --z-index-popover: 1060;  /* a bar floating over a popup, such as the selection bar */
     --z-index-toast: 1080;    /* a toast, over everything in flow */
 

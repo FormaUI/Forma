@@ -1,0 +1,12 @@
+namespace Forma.Blazor.Tests.Components.Layout;
+
+public sealed partial class FormaWindowTests
+{
+    public FormaWindowTests()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        Services.AddJsonLocalization();
+        JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+        JSInterop.SetupModule("./_content/forma/common/scripts/components/Window.js").SetupModule("attach", _ => true);
+    }
+}

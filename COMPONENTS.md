@@ -37,7 +37,11 @@ Forma.Blazor/Components/
 │   ├── FormaToolbarOption.cs
 │   ├── ✅ FormaSelectionToolbar.razor / .razor.cs / .razor.css
 │   └── ✅ FormaStatusStrip.razor / .razor.cs / .razor.css
-├── (7 / 7) Layout/
+├── (8 / 8) Layout/
+│   ├── ✅ FormaWindow.razor / .razor.cs / .razor.css  # a raised frame with chrome: title bar, header, body, footer; docked in a layout or floating over the page
+│   ├── WindowMode.cs                          # enum: Docked, Floating
+│   ├── WindowPlacement.cs                     # record: Left, Top, Width, Height of a floating window, in CSS pixels
+│   ├── WindowOptions.cs                       # record: Closable, Maximizable, Dockable, Resizable, MinResizeSize, MaxResizeSize
 │   ├── ✅ FormaFrame.razor / .razor.cs / .razor.css    # a region of the page in one of four looks: flat, raised, inset or canvas
 │   ├── FrameVariant.cs                        # enum: Flat, Raised, Inset, Canvas
 │   ├── ✅ FormaStackLayout.razor / .razor.cs / .razor.css  # frames along one axis, one seam apart; a splitter between two stands in the seam
@@ -944,6 +948,17 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Notes** | Which frame grows and which keeps its size is the host's, set through the pass-through `class` and `style`; the stack lays them and nothing else |
 
 ---
+### 75. `FormaWindow` ✅
+
+| | |
+|---|---|
+| **Old pattern** | Each panel drawing its own title strip, and every floating box — the composer maximized, a dialog — inventing its own chrome |
+| **Used in** | The Showcase's window page; the Admin Console's docked and floating panels; `FormaDialog` once rebased on this chrome |
+| **Parameters** | `string Title` (required), `Icon? Icon`, `WindowMode Mode` with `ModeChanged`, `WindowPlacement? Placement` with `PlacementChanged`, `bool Maximized` with `MaximizedChanged`, `IReadOnlyList<FormaToolbarItem> Commands` with `OnCommand`, `WindowOptions Options`, `EventCallback OnClose`, `RenderFragment? Header`, `Body`, `Footer`, plus captured pass-through attributes |
+| **Blazor approach** | A raised `FormaFrame` (#73) holding four bands: a title bar with the icon, the title and a `FormaToolbar` (#25) of the host's commands followed by the window's own — dock or undock, maximize or restore, close — then an optional header band, the body, and an optional footer band, each painting its own window token. Docked, it is a region its parent lays out, a `FormaStackLayout` (#74) sibling like any frame, and a splitter beside it works unchanged. Floating, it stands over the page in the window layer; the reader drags it by the title bar, resizes it at eight invisible handles over its edges and corners, and moves or resizes it from the keyboard with the arrows and Shift on the focused title bar. It registers a non-modal scope with the input router while floating, active while focus is inside it, so Escape closes the focused window and nothing else. Without a placement it opens centered at a default size and reports where it landed, so a host binding `Placement` can persist it |
+| **Why it needs JS** | A floating window is raised into the top layer as a manual popover, so no ancestor's margin, transform or stacking reaches its box; a drag must follow the pointer without a round trip, and the box it produces must be held within the viewport and above the window's own minimum size. `Window.js` composes `DragGesture` for the press-move-release, applies the box as the pointer moves, fits a remembered box into the viewport on attach and when the viewport shrinks, takes the arrow keys on the focused title bar so a step never scrolls the page, and reports where the window came to rest once |
+| **Notes** | The dock and maximize commands are `FormaToolbarToggle`s, so their title and glyph flip with the state. The handles' sides are physical — the screen's left in either reading direction — because the pointer's travel that drives them is. Maximized, the window has no handles and no drag; docked, it has neither a scope nor a script. The options' resize limits are written as the window's own min and max bounds, so the browser, a drag and a keyboard step all honor the same pair; a `Size` reads from a `(width, height)` tuple |
+
 
 ## Components NOT Needed (handled by built-ins or native HTML)
 

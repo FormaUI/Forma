@@ -263,8 +263,15 @@ A component whose sub-components only work inside it still has to hand them stat
 - Do add a static `Default` property when a bare `new()` is the common case.
 - Do name the component's own options parameter `Options`.
 - Do prefix forwarded child options by concern, such as `PaginationOptions` on `FormaDataGrid`.
+- Do sort every parameter into one of four categories, and put only the fourth into the record:
+  1. **State the reader changes** (`Mode`, `Placement`, `Maximized` on `FormaWindow`) stays a parameter with its `Changed` twin, so a host can `@bind` it.
+  2. **Required configuration** (`Title`) stays a parameter marked `EditorRequired`.
+  3. **Optional configuration a consumer derives from itself** (`Icon`) stays a parameter, because a consumer that already carries one would otherwise carry two.
+  4. **Optional configuration consumers normally pass through unchanged** (`Closable`, `Resizable`, `MinResizeSize`) goes into the record.
+- Do keep the record to what consumers normally forward unchanged, because a consumer exposes the record whole; anything a consumer derives from its own identity or state is a parameter on the component.
 - Do keep parameters standalone when each controls an independent feature area or when a lone flag has no siblings or planned growth.
-- Do let a record serve forwarding alone: the component that owns the settings keeps its standalone parameters when its own callers set one at a time, as `FormaButton` does beside `FormaButtonOptions`.
+- Do let a record serve forwarding alone: the component that owns the settings keeps its standalone parameters when its own callers set one at a time, as `FormaButton` does beside `ButtonOptions`.
+- Don't split settings of the fourth category within the same concern between the record and standalone parameters once the component takes `Options`; later settings belonging to that concern join the record.
 - Do expose only the settings a composed child may safely vary; `FormaCloseButton` forwards `Size` and pins the rest, because a caller changing them would stop it being a close button.
 - Don't create an options record merely to collect unrelated settings.
 - Don't force independent settings such as `EnablePagination`, `EnableCheckboxes`, and `Virtualize` into one record.
@@ -312,6 +319,7 @@ A page is a canvas with frames laid on it, the way VS Code's sections stand on i
 - The **canvas** is a frame in the Canvas variant. It is one variant among four, not a different kind of thing.
 - A **seam** is the one spacing step of the parent, `--space-1`, showing between two frames.
 - A **stack** is `FormaStackLayout`: frames along one axis, a seam apart, vertical or horizontal.
+- A **window** is `FormaWindow`: a raised frame with chrome — a title bar, an optional header band, the body, an optional footer band — that stands docked in a stack or floats over the page. A dialog is a modal window.
 
 - Do compose a region from `FormaFrame` and `FormaStackLayout` rather than drawing a panel's fill, corner, shadow or gap in a component's own stylesheet; a component that hand-draws a card is a component the frame model cannot theme.
 - Do give each variant its own token, `--frame-{variant}-bg-color`, so a theme restyles every frame by redefining that set.

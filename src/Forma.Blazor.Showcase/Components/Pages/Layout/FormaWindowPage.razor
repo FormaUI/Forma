@@ -1,0 +1,107 @@
+@page "/window"
+@attribute [ShowcasePage("FormaWindow")]
+@rendermode InteractiveServer
+@using System.Globalization
+@using Forma.Blazor.Components.Buttons
+@using Forma.Blazor.Components.Layout
+@using Forma.Framework.Icons
+@using Forma.Framework.Toolbar
+@inject IStringLocale<FormaWindowPage> L
+
+<h1>FormaWindow</h1>
+<p class="description">@L["A raised frame with chrome: a title bar carrying the title, an icon and commands, then an optional header band, the body, and an optional footer band. It stands docked in its parent's layout or floats over the page, where it can be moved by its title bar, resized at its edges and maximized."]</p>
+
+<div class="demo-section">
+    <h2>@L["Docked"]</h2>
+    <p class="description">@L["Docked, a window is a region its parent lays out like any frame. These two stand in a horizontal stack with a splitter in the seam between them."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaFrame Variant="FrameVariant.Canvas">
+            <FormaStackLayout Orientation="StackOrientation.Horizontal" class="demo-window-stack" style="@FoldersStyle">
+                <FormaWindow Title="@L["Folders"]" Icon="Glyph.Pin" Options="new() { Dockable = false, Closable = false }" class="demo-window-side">
+                    <Body>@L["The folder tree would stand here."]</Body>
+                </FormaWindow>
+                <FormaSplitter Orientation="SplitterOrientation.Vertical" @bind-Value="_foldersWidth" Min="10" Max="24" Label="@L["Resize Folders"]" />
+                <FormaWindow Title="@L["Details"]" Options="new() { Dockable = false, Closable = false }" class="demo-window-fill">
+                    <Header>@L["Everything known about the selected item."]</Header>
+                    <Body>@L["The details would stand here."]</Body>
+                    <Footer>@L["Two items selected"]</Footer>
+                </FormaWindow>
+            </FormaStackLayout>
+        </FormaFrame>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Floating"]</h2>
+    <p class="description">@L["Floating, a window stands over the page. Drag it by its title bar, pull any edge or corner to resize it, or focus the title bar and use the arrow keys, holding Shift to resize. Escape closes the focused window. This one resizes no smaller than 320 by 200 and no larger than 900 by 700."]</p>
+    <div class="demo-box">
+        <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _isFloatingOpen = true" Disabled="_isFloatingOpen">@L["Open a Floating Window"]</FormaButton>
+        <p class="demo-note">@L["Placement"]: <code>@PlacementText</code></p>
+    </div>
+    @if (_isFloatingOpen)
+    {
+        <FormaWindow Title="@L["Inspector"]"
+                     Icon="Glyph.Search"
+                     Mode="WindowMode.Floating"
+                     @bind-Placement="_placement"
+                     @bind-Maximized="_isMaximized"
+                     Options="new() { Dockable = false, MinResizeSize = (320, 200), MaxResizeSize = (900, 700) }"
+                     OnClose="() => _isFloatingOpen = false">
+            <Body>@L["A floating window keeps its place while the page beneath it scrolls."]</Body>
+            <Footer>
+                <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _isFloatingOpen = false">@L["Close"]</FormaButton>
+            </Footer>
+        </FormaWindow>
+    }
+</div>
+
+<div class="demo-section">
+    <h2>@L["Docking and Undocking"]</h2>
+    <p class="description">@L["The pin command switches a window between docked and floating. Undock this one and it lifts off the canvas; dock it and it returns to its place in the stack."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaFrame Variant="FrameVariant.Canvas" class="demo-window-canvas">
+            <FormaStackLayout>
+                <FormaWindow Title="@L["Output"]" @bind-Mode="_outputMode" Options="new() { Closable = false }" class="demo-window-fill">
+                    <Body>@L["Build succeeded."]</Body>
+                </FormaWindow>
+            </FormaStackLayout>
+        </FormaFrame>
+    </div>
+    <p class="demo-note">@L["Mode"]: <code>@_outputMode</code></p>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Host Commands"]</h2>
+    <p class="description">@L["A host adds its own commands to the title bar; they stand before the window's own."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaFrame Variant="FrameVariant.Canvas">
+            <FormaStackLayout>
+                <FormaWindow Title="@L["Media"]" Commands="MediaCommands" OnCommand="command => _lastCommand = command" Options="new() { Dockable = false, Closable = false }" class="demo-window-fill">
+                    <Body>@L["Refresh or upload from the title bar."]</Body>
+                </FormaWindow>
+            </FormaStackLayout>
+        </FormaFrame>
+    </div>
+    <p class="demo-note">@L["Last command"]: <code>@(_lastCommand ?? L["none yet"])</code></p>
+</div>
+
+@code {
+    private double _foldersWidth = 14;
+    private bool _isFloatingOpen;
+    private WindowPlacement? _placement;
+    private bool _isMaximized;
+    private WindowMode _outputMode = WindowMode.Docked;
+    private string? _lastCommand;
+
+    private string FoldersStyle => FormattableString.Invariant($"--demo-window-side-size: {_foldersWidth}rem");
+
+    private string PlacementText => _placement is { } placement
+        ? string.Create(CultureInfo.CurrentCulture, $"{placement.Left:0} × {placement.Top:0}, {placement.Width:0} × {placement.Height:0}")
+        : L["centered"];
+
+    private IReadOnlyList<FormaToolbarItem> MediaCommands =>
+    [
+        new FormaToolbarCommand { Id = "refresh", Command = "refresh", Title = L["Refresh"], Icon = Glyph.Refresh },
+        new FormaToolbarCommand { Id = "upload", Command = "upload", Title = L["Upload"], Icon = Glyph.Upload },
+    ];
+}

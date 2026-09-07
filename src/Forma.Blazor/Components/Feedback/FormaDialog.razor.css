@@ -63,7 +63,7 @@ dialog.forma-dialog::backdrop {
     justify-content: space-between;
     padding: var(--space-3) var(--space-5);
     border-bottom: 1px solid var(--border-color);
-    background: var(--forma-dialog-header-bg-color, var(--dialog-top-bg-color));
+    background: var(--forma-dialog-header-bg-color, var(--window-titlebar-bg-color));
     flex-shrink: 0;
 }
 
@@ -77,7 +77,7 @@ dialog.forma-dialog::backdrop {
 /* ── Body ── */
 .forma-dialog-body {
     padding: var(--space-5);
-    background: var(--forma-dialog-content-bg-color, var(--dialog-content-bg-color));
+    background: var(--forma-dialog-content-bg-color, var(--window-body-bg-color));
     overflow-y: auto;
     flex: 1 1 auto;
 }
@@ -93,7 +93,7 @@ dialog.forma-dialog::backdrop {
     gap: var(--space-2);
     padding: var(--space-3) var(--space-5);
     border-top: 1px solid var(--border-color);
-    background: var(--forma-dialog-footer-bg-color, var(--dialog-bottom-bg-color));
+    background: var(--forma-dialog-footer-bg-color, var(--window-footer-bg-color));
     flex-shrink: 0;
 }
 

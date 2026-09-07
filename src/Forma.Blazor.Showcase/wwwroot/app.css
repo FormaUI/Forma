@@ -481,7 +481,7 @@ body {
 }
 
 .demo-scope-modal {
-    background: var(--dialog-top-bg-color);
+    background: var(--window-titlebar-bg-color);
 }
 
 .demo-scope-modal.demo-scope-active {
@@ -843,4 +843,19 @@ body {
 /* A drag must not leave the regions selecting text as the pointer sweeps across them. */
 .forma-stack-layout.is-resizing {
     user-select: none;
+}
+
+/* The window page: a stack tall enough to show the bands, a side window sized by the splitter, and a fill. */
+.demo-window-stack,
+.demo-window-canvas {
+    min-block-size: 16rem;
+}
+
+.demo-window-side {
+    inline-size: var(--demo-window-side-size, 14rem);
+    flex-shrink: 0;
+}
+
+.demo-window-fill {
+    flex: 1;
 }
