@@ -37,11 +37,7 @@ Forma.Blazor/Components/
 │   ├── FormaToolbarOption.cs
 │   ├── ✅ FormaSelectionToolbar.razor / .razor.cs / .razor.css
 │   └── ✅ FormaStatusStrip.razor / .razor.cs / .razor.css
-├── (8 / 8) Layout/
-│   ├── ✅ FormaWindow.razor / .razor.cs / .razor.css  # a raised frame with chrome: title bar, header, body, footer; docked in a layout or floating over the page
-│   ├── WindowMode.cs                          # enum: Docked, Floating
-│   ├── WindowPlacement.cs                     # record: Left, Top, Width, Height of a floating window, in CSS pixels
-│   ├── WindowOptions.cs                       # record: Closable, Maximizable, Dockable, Resizable, MinResizeSize, MaxResizeSize
+├── (7 / 7) Layout/
 │   ├── ✅ FormaFrame.razor / .razor.cs / .razor.css    # a region of the page in one of four looks: flat, raised, inset or canvas
 │   ├── FrameVariant.cs                        # enum: Flat, Raised, Inset, Canvas
 │   ├── ✅ FormaStackLayout.razor / .razor.cs / .razor.css  # frames along one axis, one seam apart; a splitter between two stands in the seam
@@ -55,6 +51,11 @@ Forma.Blazor/Components/
 │   ├── SplitterOrientation.cs                 # enum: Vertical, Horizontal
 │   ├── ✅ FormaTabs.razor / .razor.cs
 │   └── ✅ FormaTab.razor / .razor.cs
+├── (1 / 1) Windows/
+│   ├── ✅ FormaWindow.razor / .razor.cs / .razor.css  # a raised frame with chrome: title bar, header, body, footer; docked in a layout or floating over the page
+│   ├── WindowMode.cs                          # enum: Docked, Floating
+│   ├── WindowPlacement.cs                     # record: Left, Top, Width, Height of a floating window, in CSS pixels
+│   └── WindowOptions.cs                       # record: Closable, Maximizable, Dockable, Resizable, MinResizeSize, MaxResizeSize
 ├── (2 / 2) Page/
 │   ├── ✅ FormaPageTitle.razor / .razor.cs
 │   └── ✅ FormaPageHead.razor / .razor.cs

@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Components.Layout;
+namespace Forma.Blazor.Components.Windows;
 
 /// <summary>Where a floating <see cref="FormaWindow"/> stands in the viewport and how large it is, in CSS pixels.</summary>
 /// <param name="Left">The distance from the viewport's left edge.</param>

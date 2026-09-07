@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Tests.Components.Layout;
+namespace Forma.Blazor.Tests.Components.Windows;
 
 public sealed partial class FormaWindowTests
 {

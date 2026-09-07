@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Components.Layout;
+namespace Forma.Blazor.Components.Windows;
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;

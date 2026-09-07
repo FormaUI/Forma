@@ -1,4 +1,4 @@
-namespace Forma.Blazor.Components.Layout;
+namespace Forma.Blazor.Components.Windows;
 
 /// <summary>Where a <see cref="FormaWindow"/> stands.</summary>
 public enum WindowMode
