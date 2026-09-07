@@ -4,7 +4,7 @@
    13 × 2rem + 12 × 0.25rem = 29rem; more scroll within the bar. */
 .forma-composer-selection-bar {
     position: fixed;
-    z-index: var(--z-index-popover);
+    z-index: var(--z-index-floating-bar);
     display: none;
     align-items: center;
     gap: var(--space-1);

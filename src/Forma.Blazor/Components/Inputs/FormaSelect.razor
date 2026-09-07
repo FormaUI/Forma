@@ -12,7 +12,7 @@
                     disabled="@Disabled"
                     aria-haspopup="listbox"
                     aria-expanded="@(IsOpen ? "true" : "false")"
-                    aria-controls="@(IsOpen ? _popupId : null)"
+                    aria-controls="@(IsOpen ? _popoverId : null)"
                     aria-required="@(Required ? "true" : null)"
                     @ref="_triggerElement"
                     @onclick="ToggleAsync"
@@ -21,13 +21,13 @@
                 <span class="forma-select-arrow" aria-hidden="true">&#9662;</span>
             </button>
         </div>
-        <FormaPopup @ref="Popup"
+        <FormaPopover @ref="Popover"
                     Anchor="_anchorElement"
                     OnOpenChanged="_ => { }"
                     OnOpened="HandleOpenedAsync"
-                    OnKeyDown="HandlePopupKeyDownAsync">
-            <div class="forma-select-popup"
-                 id="@_popupId"
+                    OnKeyDown="HandlePopoverKeyDownAsync">
+            <div class="forma-select-popover"
+                 id="@_popoverId"
                  role="listbox"
                  aria-label="@Label">
                 @for (var i = 0; i < Options.Count; i++)
@@ -54,7 +54,7 @@
                     <div class="forma-select-empty">@L["No options available yet"]</div>
                 }
             </div>
-        </FormaPopup>
+        </FormaPopover>
     </ChildContent>
     <Validation>
         <ValidationMessage For="@ValueExpression" />

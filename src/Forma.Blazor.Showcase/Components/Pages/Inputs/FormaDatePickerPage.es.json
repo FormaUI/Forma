@@ -17,7 +17,7 @@
   "The component adapts to the calendar system of the given culture. This demo uses he-IL with UseNonGregorianMonths to render the Hebrew (lunisolar) calendar with its month names.": "El componente se adapta al sistema de calendario de la configuración regional indicada. Esta demostración usa he-IL con UseNonGregorianMonths para representar el calendario hebreo (lunisolar) con sus nombres de meses.",
   "Hebrew Date Range": "Intervalo de fechas hebreo",
   "Inside a Scrolling Container": "Dentro de un Contenedor con Desplazamiento",
-  "The box below scrolls and would clip an ordinary popup. The calendar opens in the top layer instead, so it stays whole, and it follows the trigger as the box scrolls.": "La caja de abajo se desplaza y recortaría un popup común. El calendario se abre en la capa superior, así que se mantiene entero y sigue al campo mientras la caja se desplaza.",
+  "The box below scrolls and would clip an ordinary popover. The calendar opens in the top layer instead, so it stays whole, and it follows the trigger as the box scrolls.": "La caja de abajo se desplaza y recortaría un popover común. El calendario se abre en la capa superior, así que se mantiene entero y sigue al campo mientras la caja se desplaza.",
   "Date in a scroll box": "Fecha en una caja con desplazamiento",
   "Scroll this box to move the field around.": "Desplaza esta caja para mover el campo.",
   "Date": "Fecha"

@@ -11,11 +11,11 @@ using Microsoft.AspNetCore.Components;
 /// <summary>The toolbar trigger opening the composer's emoji picker, anchored beneath it.</summary>
 public sealed partial class FormaComposerEmojiButton : ComponentBase
 {
-    private readonly string _popupId = $"composer-emoji-{Guid.NewGuid():N}";
+    private readonly string _popoverId = $"composer-emoji-{Guid.NewGuid():N}";
     private IReadOnlyList<string> _recentEmojis = [];
     private ElementReference _anchorElement;
     private FormaButton _trigger = default!;
-    private FormaPopup Popup { get; set; } = default!;
+    private FormaPopover Popover { get; set; } = default!;
 
     /// <summary>How the picker this button opens browses.</summary>
     [Parameter] public EmojiPickerOptions PickerOptions { get; set; } = EmojiPickerOptions.Default;
@@ -25,10 +25,10 @@ public sealed partial class FormaComposerEmojiButton : ComponentBase
     [Inject] private IStringLocale<FormaComposer> L { get; set; } = default!;
 
     private bool IsOpen
-        => Popup is { IsOpen: true };
+        => Popover is { IsOpen: true };
 
     private Task ToggleAsync()
-        => Popup.ToggleAsync(_trigger.Element);
+        => Popover.ToggleAsync(_trigger.Element);
 
     private async Task HandleSelectAsync(string emoji)
     {
@@ -37,6 +37,6 @@ public sealed partial class FormaComposerEmojiButton : ComponentBase
             await Interaction.ExecuteCommandAsync($"{EmojiPlugin.InsertEmojiPrefix}{emoji}");
         }
 
-        await Popup.CloseAsync();
+        await Popover.CloseAsync();
     }
 }

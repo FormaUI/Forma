@@ -12,13 +12,13 @@
                  aria-label="@L["Emoji"]"
                  aria-haspopup="true"
                  aria-expanded="@(IsOpen ? "true" : "false")"
-                 aria-controls="@(IsOpen ? _popupId : null)"
+                 aria-controls="@(IsOpen ? _popoverId : null)"
                  title="@L["Emoji"]"
                  OnClick="ToggleAsync">
         <FormaIcon Icon="Glyph.Emoji" Size="IconSize.Small" />
     </FormaButton>
 </span>
 
-<FormaPopup @ref="Popup" Anchor="_anchorElement" OnOpenChanged="_ => { }" id="@_popupId">
+<FormaPopover @ref="Popover" Anchor="_anchorElement" OnOpenChanged="_ => { }" id="@_popoverId">
     <FormaEmojiPicker OnSelect="HandleSelectAsync" @bind-Recent="_recentEmojis" Options="PickerOptions" />
-</FormaPopup>
+</FormaPopover>

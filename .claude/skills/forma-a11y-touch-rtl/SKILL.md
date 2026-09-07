@@ -94,7 +94,7 @@ Every component must remain fully usable with a finger.
 
 ## Small viewports and verification
 
-- Do clamp popups to the viewport and let wide layouts wrap or stack, for example with `max-inline-size: calc(100vw - 1rem)` and `flex-wrap: wrap`.
+- Do clamp popovers to the viewport and let wide layouts wrap or stack, for example with `max-inline-size: calc(100vw - 1rem)` and `flex-wrap: wrap`.
 - Do verify touch in a real browser with a coarse pointer because bUnit cannot produce meaningful pointer behaviour.
 - Do measure every `button`, `input`, `select`, and `textarea` and fail targets below 24×24.
 - Do drive gestures through CDP `Input.dispatchTouchEvent`, scroll targets into view before computing coordinates, and assert that a drag survives movement.
@@ -113,7 +113,7 @@ Every component must behave and look the same in both directions — mirrored, n
 - Do let Unicode bidi-mirrored characters such as `❮`, `❯`, `‹`, `›`, `<`, and `>` mirror naturally.
 - Do explicitly mirror only glyphs that are not bidi-mirrored, such as most icon-font and SVG arrows.
 - Do interpret horizontal arrow keys as previous/next in reading order and resolve them through `CultureInfo.CurrentCulture.TextInfo.IsRightToLeft`.
-- Do anchor popups and menus to inline-start or inline-end.
+- Do anchor popovers and menus to inline-start or inline-end.
 - Do format numbers, dates, and currency through `CultureInfo.CurrentCulture` and verify native bidi behaviour before adding `<bdi>` or isolates.
 - Do visually inspect every showcase page in `he` and `en` or `es-419`, and add bUnit tests wherever direction affects logic.
 - Don't write physical CSS or `[dir="rtl"]` override blocks.

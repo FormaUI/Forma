@@ -13,19 +13,19 @@
         </FormaButton>
     </span>
 
-    <FormaPopup @ref="Popup"
+    <FormaPopover @ref="Popover"
                 Anchor="_anchorElement"
                 KeepsFocus="true"
                 Alignment="Alignment"
                 OnOpenChanged="_ => { }"
                 OnOpened="HandleOpenedAsync"
-                OnKeyDown="HandlePopupKeyDownAsync">
-        <div class="forma-dropdown-menu" id="@_popupId" role="menu">
+                OnKeyDown="HandlePopoverKeyDownAsync">
+        <div class="forma-dropdown-menu" id="@_popoverId" role="menu">
             @if (HeaderContent is not null)
             {
                 <div class="forma-dropdown-menu-header">@HeaderContent</div>
             }
             @ChildContent
         </div>
-    </FormaPopup>
+    </FormaPopover>
 </CascadingValue>

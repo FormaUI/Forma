@@ -239,7 +239,7 @@
             cut.Find(".forma-breadcrumb-chevron").Click();
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaPopup>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.PressAway));
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.PressAway));
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-dropdown-menu"));
@@ -256,7 +256,7 @@
             cut.Find(".forma-breadcrumb-chevron").Click();
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaPopup>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.Escape));
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.Escape));
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-dropdown-menu"));

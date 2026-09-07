@@ -35,17 +35,17 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
     private readonly string _triggerId = $"sel-trigger-{Guid.NewGuid():N}";
-    private readonly string _popupId = $"sel-popup-{Guid.NewGuid():N}";
+    private readonly string _popoverId = $"sel-popover-{Guid.NewGuid():N}";
 
     private int _focusedIndex = -1;
     private ElementReference _anchorElement;
     private ElementReference _triggerElement;
     private ElementReference[] _optionElements = [];
-    private FormaPopup Popup { get; set; } = default!;
+    private FormaPopover Popover { get; set; } = default!;
     private NavigationGuard _keyGuard = default!;
 
     private bool IsOpen
-        => Popup is { IsOpen: true };
+        => Popover is { IsOpen: true };
 
     private string TriggerText
         => FindSelectedOption()?.Label ?? Placeholder ?? L["Select an Option"];
@@ -75,7 +75,7 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
     private async Task SelectAsync(SelectOption<TValue> option)
     {
         CurrentValue = option.Value;
-        await Popup.CloseAsync();
+        await Popover.CloseAsync();
     }
 
     private async Task ToggleAsync()
@@ -87,7 +87,7 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
 
         if (IsOpen)
         {
-            await Popup.CloseAsync();
+            await Popover.CloseAsync();
         }
         else
         {
@@ -110,7 +110,7 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
         }
 
         _focusedIndex = selectedIndex >= 0 ? selectedIndex : 0;
-        await Popup.OpenAsync(_triggerElement);
+        await Popover.OpenAsync(_triggerElement);
     }
 
     private async Task HandleTriggerKeyDownAsync(KeyboardEventArgs args)
@@ -129,7 +129,7 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
         }
     }
 
-    private async Task HandlePopupKeyDownAsync(KeyboardEventArgs args)
+    private async Task HandlePopoverKeyDownAsync(KeyboardEventArgs args)
     {
         switch (args.Key)
         {
@@ -146,14 +146,14 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
                 await FocusIndexAsync(Options.Count - 1);
                 break;
             case "Tab":
-                await Popup.CloseAsync();
+                await Popover.CloseAsync();
                 break;
         }
     }
 
     private async Task HandleOpenedAsync()
     {
-        await _keyGuard.AttachAsync(Popup.Element);
+        await _keyGuard.AttachAsync(Popover.Element);
         await FocusIndexAsync(_focusedIndex);
     }
 

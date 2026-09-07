@@ -9,7 +9,7 @@ using Forma.Framework.Localization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
-/// <summary>A multi-select component whose chosen values render as removable tags above a searchable checkbox-list popup.</summary>
+/// <summary>A multi-select component whose chosen values render as removable tags above a searchable checkbox-list popover.</summary>
 public sealed partial class FormaMultiSelect<TValue> : InputBase<List<TValue>>
     where TValue : notnull
 {
@@ -37,17 +37,17 @@ public sealed partial class FormaMultiSelect<TValue> : InputBase<List<TValue>>
     [Inject] private IStringLocale<FormaMultiSelect> L { get; set; } = default!;
 
     private readonly string _triggerId = $"ms-trigger-{Guid.NewGuid():N}";
-    private readonly string _popupId = $"ms-popup-{Guid.NewGuid():N}";
+    private readonly string _popoverId = $"ms-popover-{Guid.NewGuid():N}";
 
     private string _searchText = "";
     private ElementReference _anchorElement;
     private ElementReference _triggerElement;
-    // The popup's search box; the reference focuses it.
+    // The popover's search box; the reference focuses it.
     private FormaSearchBox SearchBox { get; set; } = default!;
-    private FormaPopup Popup { get; set; } = default!;
+    private FormaPopover Popover { get; set; } = default!;
 
     private bool IsOpen
-        => Popup is { IsOpen: true };
+        => Popover is { IsOpen: true };
 
     private SearchBoxOptions SearchOptions
         => new() { Placeholder = L["Search"].Value };
@@ -111,12 +111,12 @@ public sealed partial class FormaMultiSelect<TValue> : InputBase<List<TValue>>
 
         if (IsOpen)
         {
-            await Popup.CloseAsync();
+            await Popover.CloseAsync();
             return;
         }
 
         _searchText = "";
-        await Popup.OpenAsync(_triggerElement);
+        await Popover.OpenAsync(_triggerElement);
     }
 
     private async Task HandleAddNewAsync()

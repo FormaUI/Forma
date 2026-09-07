@@ -65,13 +65,13 @@ public sealed partial class FormaDatePicker : ComponentBase
     private readonly string _triggerId = $"dp-trigger-{Guid.NewGuid():N}";
     private ElementReference _anchorElement;
     private ElementReference _triggerElement;
-    private FormaPopup Popup { get; set; } = default!;
+    private FormaPopover Popover { get; set; } = default!;
     private DateOnly _leftMonth;
     private DateOnly _rightMonth;
     private readonly DateRangeDraft _draft = new();
     private CalendarMonthWindow _calendar = default!;
 
-    private bool IsOpen => Popup is { IsOpen: true };
+    private bool IsOpen => Popover is { IsOpen: true };
     private bool IsRangeMode => StartDateChanged.HasDelegate || EndDateChanged.HasDelegate;
     private int CalendarCount => IsRangeMode ? 2 : 1;
 
@@ -168,19 +168,19 @@ public sealed partial class FormaDatePicker : ComponentBase
         }
     }
 
-    // ── Popup ────────────────────────────────────────
+    // ── Popover ────────────────────────────────────────
 
     private async Task ToggleAsync()
     {
         if (IsOpen)
         {
-            await Popup.CloseAsync();
+            await Popover.CloseAsync();
             return;
         }
 
         _draft.Clear();
         ResetDisplayMonth();
-        await Popup.OpenAsync(_triggerElement);
+        await Popover.OpenAsync(_triggerElement);
     }
 
     // ── Navigation ───────────────────────────────────
@@ -283,7 +283,7 @@ public sealed partial class FormaDatePicker : ComponentBase
                 await StartDateChanged.InvokeAsync(start);
                 await EndDateChanged.InvokeAsync(end);
                 await OnSelectionComplete.InvokeAsync();
-                await Popup.CloseAsync();
+                await Popover.CloseAsync();
             }
         }
         else
@@ -291,7 +291,7 @@ public sealed partial class FormaDatePicker : ComponentBase
             Value = date;
             await ValueChanged.InvokeAsync(date);
             await OnSelectionComplete.InvokeAsync();
-            await Popup.CloseAsync();
+            await Popover.CloseAsync();
         }
     }
 
@@ -313,7 +313,7 @@ public sealed partial class FormaDatePicker : ComponentBase
             await ValueChanged.InvokeAsync(null);
         }
         _draft.Clear();
-        await Popup.CloseAsync();
+        await Popover.CloseAsync();
     }
 
     // ── Calendar grid ────────────────────────────────
@@ -423,7 +423,7 @@ public sealed partial class FormaDatePicker : ComponentBase
         await StartDateChanged.InvokeAsync(start);
         await EndDateChanged.InvokeAsync(end);
         await OnSelectionComplete.InvokeAsync();
-        await Popup.CloseAsync();
+        await Popover.CloseAsync();
     }
 
     private (DateOnly start, DateOnly end) ComputePresetRange(Preset preset, DateOnly today) =>

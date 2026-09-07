@@ -1,12 +1,12 @@
 /* ============================================================
-   FormaPopup — CSS isolation
-   The popup is a popover in the top layer, so no scrolling or
+   FormaPopover — CSS isolation
+   The popover stands in the top layer, so no scrolling or
    clipping ancestor can cut it off. The top layer keeps no layout
    tie to the anchor, so the script sets left/top; the UA's own
    inset, margin and box are cleared so the content decides its look.
    ============================================================ */
 
-.forma-popup {
+.forma-popover {
     position: fixed;
     inset: auto;
     margin: 0;
@@ -15,14 +15,14 @@
     background: none;
     color: inherit;
     overflow: visible;
-    z-index: var(--z-index-popup);
+    z-index: var(--z-index-popover);
     /* A top-layer popover is laid out against the viewport, so that is the one width to cap it by. */
     max-inline-size: calc(100vw - var(--space-4));
 }
 
 /* Without popover support the element is never display:none to begin with, so it is hidden while closed here. */
 @supports not selector(:popover-open) {
-    .forma-popup:not(.forma-popup-open) {
+    .forma-popover:not(.forma-popover-open) {
         display: none;
     }
 }

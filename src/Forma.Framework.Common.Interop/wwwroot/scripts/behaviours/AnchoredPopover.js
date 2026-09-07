@@ -1,36 +1,36 @@
 /**
- * AnchoredPopup — keeping a popup positioned against the element that opened it
+ * AnchoredPopover — keeping a popover positioned against the element that opened it
  *
- * A popup in the top layer (via the popover attribute) is immune to every clipping and
+ * A popover in the top layer (via the popover attribute) is immune to every clipping and
  * scrolling ancestor, but the top layer keeps no layout relationship to whatever opened
- * it. The handle measures the anchor, applies the popup's position, and keeps the two
- * together for as long as the popup is open.
+ * it. The handle measures the anchor, applies the popover's position, and keeps the two
+ * together for as long as the popover is open.
  */
 
 import { Focus } from './Focus.js';
 import { Direction } from '../../../core/scripts/Direction.js';
 import { Frame } from '../../../core/scripts/Frame.js';
 
-/** Distance between the anchor and the popup. */
+/** Distance between the anchor and the popover. */
 const Gap = 4;
 
 /**
- * @param {HTMLElement} target The popup.
+ * @param {HTMLElement} target The popover.
  * @param {{
  *   anchor: HTMLElement,
  *   keepsFocus?: boolean,
  *   align?: 'auto' | 'start' | 'end'
  * }} options
- *   The element the popup hangs from, whether Tab moves between the popup's own controls instead of
- *   leaving it, and which inline edge of the anchor the popup lines up with: its reading-start edge,
+ *   The element the popover hangs from, whether Tab moves between the popover's own controls instead of
+ *   leaving it, and which inline edge of the anchor the popover lines up with: its reading-start edge,
  *   its reading-end edge, or by default the edge away from the nearer side of the viewport.
  */
 export function attach(target, options) {
-    return new AnchoredPopup(target, options);
+    return new AnchoredPopover(target, options);
 }
 
-class AnchoredPopup {
-    #popup;
+class AnchoredPopover {
+    #popover;
     #anchor;
     #keepsFocus;
     #align;
@@ -40,27 +40,27 @@ class AnchoredPopup {
     #frame = new Frame();
     #isRightToLeft = false;
 
-    constructor(popup, { anchor, keepsFocus = false, align = 'auto' }) {
-        this.#popup = popup;
+    constructor(popover, { anchor, keepsFocus = false, align = 'auto' }) {
+        this.#popover = popover;
         this.#anchor = anchor;
         this.#keepsFocus = keepsFocus;
         this.#align = align;
     }
 
-    /** Shows the popup and keeps it positioned against its anchor until closed; focus returns to the trigger on a close that asks for it. */
+    /** Shows the popover and keeps it positioned against its anchor until closed; focus returns to the trigger on a close that asks for it. */
     open(trigger = null) {
         this.close();
         this.#trigger = trigger;
 
-        if (this.#popup.showPopover && !this.#popup.matches(':popover-open')) {
-            this.#popup.showPopover();
+        if (this.#popover.showPopover && !this.#popover.matches(':popover-open')) {
+            this.#popover.showPopover();
         }
 
         this.#placement = new AbortController();
         const { signal } = this.#placement;
         const place = () => this.#schedule();
 
-        // The anchor's direction holds for as long as the popup is open.
+        // The anchor's direction holds for as long as the popover is open.
         this.#isRightToLeft = Direction.isRightToLeft(this.#anchor);
 
         // Captured because the anchor may sit in any scrolling ancestor, and scroll events
@@ -68,23 +68,23 @@ class AnchoredPopup {
         addEventListener('scroll', place, { capture: true, passive: true, signal });
         addEventListener('resize', place, { passive: true, signal });
 
-        // The popup's own content can grow after it opens — a progressively loaded picker, a
+        // The popover's own content can grow after it opens — a progressively loaded picker, a
         // search result count, a category switch — so its size alone must trigger repositioning.
         this.#resizeObserver = new ResizeObserver(place);
-        this.#resizeObserver.observe(this.#popup);
+        this.#resizeObserver.observe(this.#popover);
 
         if (this.#keepsFocus) {
-            new Focus(this.#popup, { wrap: true }, signal);
+            new Focus(this.#popover, { wrap: true }, signal);
         }
 
         this.#position();
     }
 
-    /** Hides the popup and releases the listeners held for it, first returning focus to the trigger when asked and focus is inside the popup. Safe to call when none are held. */
+    /** Hides the popover and releases the listeners held for it, first returning focus to the trigger when asked and focus is inside the popover. Safe to call when none are held. */
     close(returnsFocus = false) {
         // A trigger standing in a sticky part is focused where it stands; scrolling it into view would
         // move its scroller back to the part's unstuck position.
-        if (returnsFocus && this.#trigger && this.#popup.contains(document.activeElement)) {
+        if (returnsFocus && this.#trigger && this.#popover.contains(document.activeElement)) {
             this.#trigger.focus({ preventScroll: true });
         }
 
@@ -94,8 +94,8 @@ class AnchoredPopup {
         this.#resizeObserver?.disconnect();
         this.#resizeObserver = null;
 
-        if (this.#popup.hidePopover && this.#popup.matches(':popover-open')) {
-            this.#popup.hidePopover();
+        if (this.#popover.hidePopover && this.#popover.matches(':popover-open')) {
+            this.#popover.hidePopover();
         }
     }
 
@@ -110,8 +110,8 @@ class AnchoredPopup {
 
     #position() {
         const anchor = this.#anchor.getBoundingClientRect();
-        const width = this.#popup.offsetWidth;
-        const height = this.#popup.offsetHeight;
+        const width = this.#popover.offsetWidth;
+        const height = this.#popover.offsetHeight;
 
         const preferredInlineStart = this.#hangsFromLeftEdge(anchor) ? anchor.left : anchor.right - width;
         const inlineStart = Math.max(Gap, Math.min(preferredInlineStart, innerWidth - width - Gap));
@@ -120,11 +120,11 @@ class AnchoredPopup {
         const above = anchor.top - height - Gap;
         const blockStart = below + height <= innerHeight || above < Gap ? below : above;
 
-        this.#popup.style.left = `${Math.round(inlineStart)}px`;
-        this.#popup.style.top = `${Math.round(blockStart)}px`;
+        this.#popover.style.left = `${Math.round(inlineStart)}px`;
+        this.#popover.style.top = `${Math.round(blockStart)}px`;
     }
 
-    // Whether the popup's left edge meets the anchor's left edge, extending rightward; otherwise its right edge
+    // Whether the popover's left edge meets the anchor's left edge, extending rightward; otherwise its right edge
     // meets the anchor's right edge, extending leftward. The reading-start and reading-end edges are mirrored in
     // right-to-left text; the automatic choice extends toward the wider side of the viewport, and from dead
     // center toward the reading start.

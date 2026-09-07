@@ -58,7 +58,7 @@
 
     /* Radii, one per kind of surface. */
     --radius-sm: 0.25rem;   /* a target: button, input, checkbox, cell */
-    --radius-md: 0.375rem;  /* a card, a popup, a panel */
+    --radius-md: 0.375rem;  /* a card, a popover, a panel */
     --radius-lg: 0.5rem;    /* a dialog, a toast */
     --radius-pill: 9999px;  /* a badge, a chip, a tab pill; intentionally oversized; CSS caps it to form fully rounded ends */
 
@@ -162,7 +162,7 @@
     --frame-canvas-bg-color: var(--gray-100);  /* the canvas: the frame other frames are laid on */
     --frame-flat-bg-color: var(--gray-0);      /* a flat frame: a panel, a sheet, a content area */
     --frame-inset-bg-color: var(--gray-50);    /* an inset frame: a header strip, a toolbar band, a table header */
-    --frame-raised-bg-color: var(--gray-0);    /* a raised frame: a card on the canvas, a popup, a dialog */
+    --frame-raised-bg-color: var(--gray-0);    /* a raised frame: a card on the canvas, a popover, a dialog */
 
     /* Backgrounds */
     --input-bg-color: var(--gray-0);
@@ -250,9 +250,9 @@
     /* Layers — what stacks over the page, on Bootstrap's scale so the numbers mean the same thing
        they do elsewhere. A dialog needs none: the native element sits in the top layer above all of these.
        Stacking inside one component uses its own small integers and is not a layer. */
-    --z-index-popup: 1000;    /* a popup, a drop-down menu, a maximized composer: over the page */
-    --z-index-window: 1030;   /* a floating window: over the page and its popups, which live in the top layer regardless */
-    --z-index-popover: 1060;  /* a bar floating over a popup, such as the selection bar */
+    --z-index-popover: 1000;    /* a popover, a drop-down menu, a maximized composer: over the page */
+    --z-index-window: 1030;   /* a floating window: over the page and its popovers, which live in the top layer regardless */
+    --z-index-floating-bar: 1060;  /* a bar floating over a popover, such as the selection bar */
     --z-index-toast: 1080;    /* a toast, over everything in flow */
 
     /* Shadows — cut from the ink, so they follow the theme. */

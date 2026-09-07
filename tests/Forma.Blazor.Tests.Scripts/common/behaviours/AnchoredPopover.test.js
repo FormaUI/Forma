@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { attach } from '#common/behaviours/AnchoredPopup.js';
+import { attach } from '#common/behaviours/AnchoredPopover.js';
 import { stubAnimationFrames, stubResizeObserver } from '#support/platform.js';
 
-describe('AnchoredPopup', () => {
+describe('AnchoredPopover', () => {
     /** @type {ReturnType<typeof stubResizeObserver>} */
     let resizes;
     /** @type {ReturnType<typeof stubAnimationFrames>} */
@@ -10,31 +10,31 @@ describe('AnchoredPopup', () => {
     /** @type {HTMLElement} */
     let anchor;
     /** @type {HTMLElement} */
-    let popup;
+    let popover;
 
     function setAnchorRect(rect) {
         anchor.getBoundingClientRect = () => rect;
     }
 
     function setPopupHeight(height) {
-        Object.defineProperty(popup, 'offsetHeight', { value: height, configurable: true });
+        Object.defineProperty(popover, 'offsetHeight', { value: height, configurable: true });
     }
 
     beforeEach(() => {
         resizes = stubResizeObserver();
         frames = stubAnimationFrames();
-        document.body.innerHTML = '<button id="anchor">Open</button><div id="popup"></div>';
+        document.body.innerHTML = '<button id="anchor">Open</button><div id="popover"></div>';
         anchor = document.querySelector('#anchor');
-        popup = document.querySelector('#popup');
+        popover = document.querySelector('#popover');
 
         setAnchorRect({ top: 100, bottom: 130, left: 50, right: 90, width: 40, height: 30 });
-        Object.defineProperty(popup, 'offsetWidth', { value: 200, configurable: true });
+        Object.defineProperty(popover, 'offsetWidth', { value: 200, configurable: true });
         setPopupHeight(150);
 
         globalThis.innerWidth = 1024;
         globalThis.innerHeight = 768;
-        popup.showPopover = vi.fn();
-        popup.matches = () => false;
+        popover.showPopover = vi.fn();
+        popover.matches = () => false;
     });
 
     afterEach(() => {
@@ -42,120 +42,120 @@ describe('AnchoredPopup', () => {
         frames.restore();
     });
 
-    it('places the popup below the anchor when it fits', () => {
-        const handle = attach(popup, { anchor });
+    it('places the popover below the anchor when it fits', () => {
+        const handle = attach(popover, { anchor });
 
         handle.open();
 
-        expect(popup.style.left).toBe('50px');
-        expect(popup.style.top).toBe('134px');
+        expect(popover.style.left).toBe('50px');
+        expect(popover.style.top).toBe('134px');
     });
 
     it('flips above the anchor when there is no room below', () => {
         setAnchorRect({ top: 700, bottom: 730, left: 50, right: 90, width: 40, height: 30 });
-        const handle = attach(popup, { anchor });
+        const handle = attach(popover, { anchor });
 
         handle.open();
 
-        expect(popup.style.top).toBe('546px');
+        expect(popover.style.top).toBe('546px');
     });
 
     it('mirrors the inline start for a right-to-left anchor', () => {
         setAnchorRect({ top: 100, bottom: 130, left: 360, right: 400, width: 40, height: 30 });
         anchor.style.direction = 'rtl';
-        const handle = attach(popup, { anchor, align: 'start' });
+        const handle = attach(popover, { anchor, align: 'start' });
 
         handle.open();
 
-        // Hangs from the anchor's right edge minus the popup's width, not its left edge.
-        expect(popup.style.left).toBe('200px');
+        // Hangs from the anchor's right edge minus the popover's width, not its left edge.
+        expect(popover.style.left).toBe('200px');
     });
 
-    // By default the popup extends toward the wider side of the viewport, whichever way the text runs.
+    // By default the popover extends toward the wider side of the viewport, whichever way the text runs.
     it('extends leftward from an anchor in the right half by default', () => {
         setAnchorRect({ top: 100, bottom: 130, left: 900, right: 940, width: 40, height: 30 });
-        const handle = attach(popup, { anchor });
+        const handle = attach(popover, { anchor });
 
         handle.open();
 
-        expect(popup.style.left).toBe('740px');
+        expect(popover.style.left).toBe('740px');
     });
 
     it('extends rightward from a right-to-left anchor in the left half by default', () => {
         setAnchorRect({ top: 100, bottom: 130, left: 360, right: 400, width: 40, height: 30 });
         anchor.style.direction = 'rtl';
-        const handle = attach(popup, { anchor });
+        const handle = attach(popover, { anchor });
 
         handle.open();
 
-        expect(popup.style.left).toBe('360px');
+        expect(popover.style.left).toBe('360px');
     });
 
     it('extends toward the reading start from an anchor at dead center', () => {
         setAnchorRect({ top: 100, bottom: 130, left: 492, right: 532, width: 40, height: 30 });
-        const leftToRight = attach(popup, { anchor });
+        const leftToRight = attach(popover, { anchor });
         leftToRight.open();
-        const leftToRightPosition = popup.style.left;
+        const leftToRightPosition = popover.style.left;
         leftToRight.close();
 
         anchor.style.direction = 'rtl';
-        const rightToLeft = attach(popup, { anchor });
+        const rightToLeft = attach(popover, { anchor });
         rightToLeft.open();
 
         expect(leftToRightPosition).toBe('332px');
-        expect(popup.style.left).toBe('492px');
+        expect(popover.style.left).toBe('492px');
     });
 
-    it('lines the popup up with the anchor end edge when aligned to the end', () => {
+    it('lines the popover up with the anchor end edge when aligned to the end', () => {
         setAnchorRect({ top: 100, bottom: 130, left: 360, right: 400, width: 40, height: 30 });
-        const handle = attach(popup, { anchor, align: 'end' });
+        const handle = attach(popover, { anchor, align: 'end' });
 
         handle.open();
 
-        expect(popup.style.left).toBe('200px');
+        expect(popover.style.left).toBe('200px');
     });
 
     it('mirrors the end alignment for a right-to-left anchor', () => {
         anchor.style.direction = 'rtl';
-        const handle = attach(popup, { anchor, align: 'end' });
+        const handle = attach(popover, { anchor, align: 'end' });
 
         handle.open();
 
-        // The reading-end edge is the anchor's left edge, so the popup starts there.
-        expect(popup.style.left).toBe('50px');
+        // The reading-end edge is the anchor's left edge, so the popover starts there.
+        expect(popover.style.left).toBe('50px');
     });
 
-    it('clamps the inline start so the popup never opens off-screen', () => {
+    it('clamps the inline start so the popover never opens off-screen', () => {
         setAnchorRect({ top: 100, bottom: 130, left: 5, right: 45, width: 40, height: 30 });
         anchor.style.direction = 'rtl';
-        const handle = attach(popup, { anchor, align: 'start' });
+        const handle = attach(popover, { anchor, align: 'start' });
 
         handle.open();
 
         // The mirrored position (right - width) would be negative; the gap floors it instead.
-        expect(popup.style.left).toBe('4px');
+        expect(popover.style.left).toBe('4px');
     });
 
-    // The popup's own content can grow after it opens — a progressively loaded picker, a search
+    // The popover's own content can grow after it opens — a progressively loaded picker, a search
     // result count, a category switch — so its size alone must trigger repositioning, not only
     // a window resize or scroll.
-    it('recalculates position when the popup itself changes size after opening', () => {
+    it('recalculates position when the popover itself changes size after opening', () => {
         setAnchorRect({ top: 700, bottom: 730, left: 50, right: 90, width: 40, height: 30 });
         setPopupHeight(30);
-        const handle = attach(popup, { anchor });
+        const handle = attach(popover, { anchor });
         handle.open();
-        expect(popup.style.top).toBe('734px');
+        expect(popover.style.top).toBe('734px');
 
         // The picker finished loading and is now far taller than the tiny box measured at open time.
         setPopupHeight(200);
-        resizes.latest().deliver([{ target: popup }]);
+        resizes.latest().deliver([{ target: popover }]);
         frames.flush();
 
-        expect(popup.style.top).toBe('496px');
+        expect(popover.style.top).toBe('496px');
     });
 
     it('stops observing once closed', () => {
-        const handle = attach(popup, { anchor });
+        const handle = attach(popover, { anchor });
         handle.open();
         const observer = resizes.latest();
 
@@ -165,30 +165,30 @@ describe('AnchoredPopup', () => {
     });
 
     it('hides the popover once closed, so an element that stays in the document disappears', () => {
-        popup.hidePopover = vi.fn();
-        const handle = attach(popup, { anchor });
+        popover.hidePopover = vi.fn();
+        const handle = attach(popover, { anchor });
         handle.open();
-        popup.matches = selector => selector === ':popover-open';
+        popover.matches = selector => selector === ':popover-open';
 
         handle.close();
 
-        expect(popup.hidePopover).toHaveBeenCalledOnce();
+        expect(popover.hidePopover).toHaveBeenCalledOnce();
     });
 
     it('does not hide a popover that is not showing', () => {
-        popup.hidePopover = vi.fn();
-        const handle = attach(popup, { anchor });
+        popover.hidePopover = vi.fn();
+        const handle = attach(popover, { anchor });
 
         handle.close();
 
-        expect(popup.hidePopover).not.toHaveBeenCalled();
+        expect(popover.hidePopover).not.toHaveBeenCalled();
     });
 
     it('returns focus to the trigger on a close that asks for it while focus is inside', () => {
-        popup.innerHTML = '<button id="inside">Inside</button>';
-        const handle = attach(popup, { anchor });
+        popover.innerHTML = '<button id="inside">Inside</button>';
+        const handle = attach(popover, { anchor });
         handle.open(anchor);
-        popup.querySelector('#inside').focus();
+        popover.querySelector('#inside').focus();
 
         handle.close(true);
 
@@ -197,7 +197,7 @@ describe('AnchoredPopup', () => {
 
     it('leaves focus alone on a close that asks for it while focus is elsewhere', () => {
         document.body.insertAdjacentHTML('beforeend', '<button id="elsewhere">Elsewhere</button>');
-        const handle = attach(popup, { anchor });
+        const handle = attach(popover, { anchor });
         handle.open(anchor);
         document.querySelector('#elsewhere').focus();
 
@@ -207,10 +207,10 @@ describe('AnchoredPopup', () => {
     });
 
     it('leaves focus alone on a close that does not ask for it', () => {
-        popup.innerHTML = '<button id="inside">Inside</button>';
-        const handle = attach(popup, { anchor });
+        popover.innerHTML = '<button id="inside">Inside</button>';
+        const handle = attach(popover, { anchor });
         handle.open(anchor);
-        popup.querySelector('#inside').focus();
+        popover.querySelector('#inside').focus();
 
         handle.close();
 
@@ -218,22 +218,22 @@ describe('AnchoredPopup', () => {
     });
 
     it('repositions when the window scrolls or resizes', () => {
-        const handle = attach(popup, { anchor });
+        const handle = attach(popover, { anchor });
         handle.open();
 
         setAnchorRect({ top: 700, bottom: 730, left: 50, right: 90, width: 40, height: 30 });
         dispatchEvent(new Event('scroll'));
         frames.flush();
 
-        expect(popup.style.top).toBe('546px');
+        expect(popover.style.top).toBe('546px');
     });
 });
 
 
-describe('AnchoredPopup keeping focus', () => {
+describe('AnchoredPopover keeping focus', () => {
     beforeEach(() => {
         stubResizeObserver();
-        document.body.innerHTML = '<button id="anchor">Open</button><div id="popup"><button id="one">One</button><button id="two">Two</button><button id="three">Three</button></div><button id="after">After</button>';
+        document.body.innerHTML = '<button id="anchor">Open</button><div id="popover"><button id="one">One</button><button id="two">Two</button><button id="three">Three</button></div><button id="after">After</button>';
     });
 
     function tab(shiftKey = false) {
@@ -243,8 +243,8 @@ describe('AnchoredPopup keeping focus', () => {
         return event;
     }
 
-    it('moves Tab between the popup controls and wraps at the end', () => {
-        const handle = attach(document.querySelector('#popup'), { anchor: document.querySelector('#anchor'), keepsFocus: true });
+    it('moves Tab between the popover controls and wraps at the end', () => {
+        const handle = attach(document.querySelector('#popover'), { anchor: document.querySelector('#anchor'), keepsFocus: true });
         handle.open();
         document.querySelector('#three').focus();
 
@@ -255,7 +255,7 @@ describe('AnchoredPopup keeping focus', () => {
     });
 
     it('moves Shift+Tab back and wraps at the start', () => {
-        const handle = attach(document.querySelector('#popup'), { anchor: document.querySelector('#anchor'), keepsFocus: true });
+        const handle = attach(document.querySelector('#popover'), { anchor: document.querySelector('#anchor'), keepsFocus: true });
         handle.open();
         document.querySelector('#one').focus();
 
@@ -264,8 +264,8 @@ describe('AnchoredPopup keeping focus', () => {
         expect(document.activeElement.id).toBe('three');
     });
 
-    it('leaves Tab to the page when the popup does not keep focus', () => {
-        const handle = attach(document.querySelector('#popup'), { anchor: document.querySelector('#anchor') });
+    it('leaves Tab to the page when the popover does not keep focus', () => {
+        const handle = attach(document.querySelector('#popover'), { anchor: document.querySelector('#anchor') });
         handle.open();
         document.querySelector('#three').focus();
 

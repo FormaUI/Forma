@@ -434,13 +434,13 @@ body {
     gap: var(--space-1);
 }
 
-/* The wrapper a popup demo measures its anchor from. */
+/* The wrapper a popover demo measures its anchor from. */
 .demo-anchor {
     display: inline-flex;
 }
 
-/* The box a popup demo draws, since FormaPopup itself draws none. */
-.demo-popup {
+/* The box a popover demo draws, since FormaPopover itself draws none. */
+.demo-popover {
     padding: var(--space-3);
     border-radius: var(--radius-md);
     background: var(--input-bg-color);
@@ -568,7 +568,7 @@ body {
     line-height: var(--target-size-sm);
 }
 
-.demo-popup-actions {
+.demo-popover-actions {
     display: flex;
     gap: var(--space-2);
 }
@@ -773,7 +773,7 @@ body {
     gap: var(--space-3);
 }
 
-/* Reproduces the case a popup has to survive: a bounded box that scrolls and would
+/* Reproduces the case a popover has to survive: a bounded box that scrolls and would
    clip an ordinary absolutely-positioned panel. */
 .demo-scroll-box {
     box-sizing: border-box;

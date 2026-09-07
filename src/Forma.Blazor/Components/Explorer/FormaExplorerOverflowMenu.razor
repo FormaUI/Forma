@@ -3,7 +3,7 @@
 @using Forma.Framework.Explorer.Content
 @using Forma.Framework.Common.Interop.Behaviours
 
-<FormaOverflowMenu Label="@L["More"]" Orientation="MenuOrientation.Vertical" Alignment="PopupAlignment.End" class="forma-explorer-overflow-menu">
+<FormaOverflowMenu Label="@L["More"]" Orientation="MenuOrientation.Vertical" Alignment="PopoverAlignment.End" class="forma-explorer-overflow-menu">
     <FormaDropDownMenuGroup Label="@L["Navigation"]">
         <FormaDropDownMenuItem Disabled="@(!Location.CanGoBack)" OnClick="LocationInteraction.GoBackAsync">
             <span class="forma-explorer-nav-arrow" aria-hidden="true"><FormaIcon Icon="Glyph.ArrowLeft" Size="IconSize.Small" /></span>

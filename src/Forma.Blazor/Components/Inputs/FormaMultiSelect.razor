@@ -13,7 +13,7 @@
                         disabled="@Disabled"
                         aria-haspopup="dialog"
                         aria-expanded="@(IsOpen ? "true" : "false")"
-                        aria-controls="@(IsOpen ? _popupId : null)"
+                        aria-controls="@(IsOpen ? _popoverId : null)"
                         aria-required="@(Required ? "true" : null)"
                         @ref="_triggerElement"
                         @onclick="ToggleAsync">
@@ -21,12 +21,12 @@
                     <span class="forma-multi-select-arrow" aria-hidden="true">&#9662;</span>
                 </button>
             </div>
-            <FormaPopup @ref="Popup"
+            <FormaPopover @ref="Popover"
                         Anchor="_anchorElement"
                         OnOpenChanged="_ => { }"
                         OnOpened="FocusSearchAsync">
-                <div class="forma-multi-select-popup"
-                     id="@_popupId"
+                <div class="forma-multi-select-popover"
+                     id="@_popoverId"
                      role="dialog"
                      aria-label="@Label">
                     <FormaSearchBox @ref="SearchBox"
@@ -57,7 +57,7 @@
                         </FormaButton>
                     }
                 </div>
-            </FormaPopup>
+            </FormaPopover>
             @* Below the box rather than above it, so the floating label has the trigger to sit over. *@
             @if (SelectedValues.Count > 0)
             {

@@ -1,8 +1,8 @@
 namespace Forma.Blazor.Tests.Components.Feedback;
 
-public sealed partial class FormaPopupTests
+public sealed partial class FormaPopoverTests
 {
-    public FormaPopupTests()
+    public FormaPopoverTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
     }

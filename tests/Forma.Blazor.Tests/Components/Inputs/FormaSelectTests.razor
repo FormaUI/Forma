@@ -58,7 +58,7 @@
         }
 
         [Fact]
-        public void Should_open_the_popup_on_trigger_click()
+        public void Should_open_the_popover_on_trigger_click()
         {
             // Arrange
             using var ctx = new FormaSelectTests();
@@ -71,11 +71,11 @@
             cut.Find(".forma-select-trigger").Click();
 
             // Assert
-            cut.Find(".forma-select-popup");
+            cut.Find(".forma-select-popover");
         }
 
         [Fact]
-        public void Should_list_every_option_in_the_popup()
+        public void Should_list_every_option_in_the_popover()
         {
             // Arrange
             using var ctx = new FormaSelectTests();
@@ -110,7 +110,7 @@
         }
 
         [Fact]
-        public void Should_close_the_popup_after_selecting_an_option()
+        public void Should_close_the_popover_after_selecting_an_option()
         {
             // Arrange
             using var ctx = new FormaSelectTests();
@@ -124,7 +124,7 @@
             cut.FindAll(".forma-select-option")[0].Click();
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-select-popup"));
+            Assert.Empty(cut.FindAll(".forma-select-popover"));
         }
 
         [Fact]
@@ -161,7 +161,7 @@
             cut.Find(".forma-select-trigger").Click();
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-select-popup"));
+            Assert.Empty(cut.FindAll(".forma-select-popover"));
         }
 
         [Fact]
@@ -182,7 +182,7 @@
         }
 
         [Fact]
-        public async Task Should_close_the_popup_and_collapse_the_trigger_when_dismissed_by_escape()
+        public async Task Should_close_the_popover_and_collapse_the_trigger_when_dismissed_by_escape()
         {
             // Arrange
             using var ctx = new FormaSelectTests();
@@ -193,16 +193,16 @@
             cut.Find(".forma-select-trigger").Click();
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaPopup>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.Escape));
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.Escape));
 
             // Assert
             Assert.Multiple(
-                () => Assert.Empty(cut.FindAll(".forma-select-popup")),
+                () => Assert.Empty(cut.FindAll(".forma-select-popover")),
                 () => Assert.Equal("false", cut.Find(".forma-select-trigger").GetAttribute("aria-expanded")));
         }
 
         [Fact]
-        public async Task Should_close_the_popup_when_pressed_away()
+        public async Task Should_close_the_popover_when_pressed_away()
         {
             // Arrange
             using var ctx = new FormaSelectTests();
@@ -213,10 +213,10 @@
             cut.Find(".forma-select-trigger").Click();
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaPopup>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.PressAway));
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.PressAway));
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-select-popup"));
+            Assert.Empty(cut.FindAll(".forma-select-popover"));
         }
     }
 }

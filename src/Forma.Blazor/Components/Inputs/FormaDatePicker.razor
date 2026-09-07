@@ -2,7 +2,7 @@
 
 <FormaField Label="@Label" TargetId="@_triggerId" LabelMode="FieldLabelMode.Pinned">
     <ChildContent>
-        @* The root keeps the --forma-date-picker-* custom properties the calendar popup reads. *@
+        @* The root keeps the --forma-date-picker-* custom properties the calendar popover reads. *@
         <div class="forma-date-picker">
             <div class="forma-date-picker-trigger-wrapper" @ref="_anchorElement">
                 <button @attributes="AdditionalAttributes"
@@ -28,8 +28,8 @@
                     </FormaButton>
                 }
             </div>
-    <FormaPopup @ref="Popup" Anchor="_anchorElement" OnOpenChanged="_ => { }">
-        <div class="forma-date-picker-popup">
+    <FormaPopover @ref="Popover" Anchor="_anchorElement" OnOpenChanged="_ => { }">
+        <div class="forma-date-picker-popover">
             <div class="forma-date-picker-calendars">
                 @for (var i = 0; i < CalendarCount; i++)
                 {
@@ -147,7 +147,7 @@
                 </div>
             }
         </div>
-    </FormaPopup>
+    </FormaPopover>
         </div>
     </ChildContent>
 </FormaField>

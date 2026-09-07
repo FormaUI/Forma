@@ -14,7 +14,7 @@ the Showcase's `FormaInputInspector` page uses both, and its visible-browser wal
 table, nesting, dismissal, the modal barrier, host routes, shadow roots, wheel, and pointer
 input against real events. Resolution with a hundred registered scopes, ten of them active,
 costs a few hundredths of a millisecond, so parent lookup scans the scopes as they are.
-`FormaPopup` is the first library component on the router: it registers its root and
+`FormaPopover` is the first library component on the router: it registers its root and
 activates while open, with its trigger counted as inside it, so Escape and a press away
 dismiss it through the router rather than through a document listener and a backdrop of
 its own, and `FormaBreadcrumb`'s segment menus are `FormaDropDownMenu`s over it, so its own
@@ -82,7 +82,7 @@ The governing rule:
 Escape and press-away behavior are decided in several unrelated ways today:
 
 - Native `<dialog>` cancellation.
-- A document listener owned by `FormaPopup`.
+- A document listener owned by `FormaPopover`.
 - `FormaBreadcrumb`'s key handler and backdrop span.
 - `DragGesture` cancelling an active drag.
 - The composer selection bar returning focus to the editor.
@@ -409,14 +409,14 @@ the reason that raised it: `escape`, `press-away`, or `close-request`.
 
 Escape already answered by the router never closes the dialog as a second action.
 
-## Popup integration
+## Popover integration
 
-`FormaPopup` registers its root and activates while open. Its options remain its own:
+`FormaPopover` registers its root and activates while open. Its options remain its own:
 whether it keeps focus within itself (`KeepsFocus`), whether closing returns focus to its
 trigger (`ReturnsFocus`), whether a press away dismisses it (`PressAway`), and how open
-state is reported. A press away passes through: it dismisses the popup and then belongs to
-whatever was pressed, so one press on another control closes the popup and acts on the
-control, and a press on another popup's trigger swaps the popups. Its document Escape
+state is reported. A press away passes through: it dismisses the popover and then belongs to
+whatever was pressed, so one press on another control closes the popover and acts on the
+control, and a press on another popover's trigger swaps the popovers. Its document Escape
 listener and its backdrop element move into the router; the trigger is declared `within`,
 so a press on it toggles rather than dismisses.
 
@@ -529,8 +529,8 @@ existing components, landing as several coherent commits.
    per-class listener strategies, `resolve` and its views. The .NET records and the scoped
    bridge. Vitest for nested resolution through a top-layer popover, the native table, the
    modal barrier, containment, activation order, top-only dismissal, and release.
-2. **Dismissal.** `FormaPopup` (done), `FormaDialog` with both entry points (done), active
-   drags, the selection bar while focused, `FormaBreadcrumb` rebuilt on `FormaPopup` (done,
+2. **Dismissal.** `FormaPopover` (done), `FormaDialog` with both entry points (done), active
+   drags, the selection bar while focused, `FormaBreadcrumb` rebuilt on `FormaPopover` (done,
    as a `FormaDropDownMenu` per segment). The per-popup document listener, both backdrops,
    and the backdrop z-indexes go.
 3. **Owners onto routes.** `SelectionInteraction`, both shortcut sets (done: the composer's

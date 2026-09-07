@@ -62,7 +62,7 @@ class Wheel {
             return;
         }
 
-        // A popup or scrolling panel over the target takes the turn.
+        // A popover or scrolling panel over the target takes the turn.
         if (this.#nearerScroller(event.target)) {
             return;
         }

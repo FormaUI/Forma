@@ -1,6 +1,6 @@
 /* ============================================================
    FormaMultiSelect — the trigger, tag list and checkbox
-   popup only; the label, box, focus ring and validation chrome
+   popover only; the label, box, focus ring and validation chrome
    belong to FormaField.
    ============================================================ */
 
@@ -78,9 +78,9 @@
     opacity: 0.55;
 }
 
-/* ---------- popup ---------- */
-/* The panel inside the FormaPopup, which owns the top-layer placement and the backdrop. */
-.forma-multi-select-popup {
+/* ---------- popover ---------- */
+/* The panel inside the FormaPopover, which owns the top-layer placement and the backdrop. */
+.forma-multi-select-popover {
     padding: var(--space-2);
     display: flex;
     flex-direction: column;

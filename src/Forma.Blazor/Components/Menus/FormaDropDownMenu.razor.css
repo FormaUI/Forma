@@ -6,7 +6,7 @@
 
 /* ---------- trigger ---------- */
 /* The trigger is a FormaButton, which owns its look, sizing and focus ring; the wrapper
-   exists only to give the popup something to measure against, so it is exactly as wide as
+   exists only to give the popover something to measure against, so it is exactly as wide as
    the trigger, and a stretching flex or grid parent cannot widen it. */
 .forma-dropdown-menu-anchor {
     display: inline-flex;
@@ -16,11 +16,11 @@
 /* While the menu is open its trigger stands above the backdrop, so a second click on it closes the menu. */
 .forma-dropdown-menu-anchor-open {
     position: relative;
-    z-index: var(--z-index-popup);
+    z-index: var(--z-index-popover);
 }
 
-/* ---------- popup ---------- */
-/* The menu inside the FormaPopup, which owns the top-layer placement and the backdrop. */
+/* ---------- popover ---------- */
+/* The menu inside the FormaPopover, which owns the top-layer placement and the backdrop. */
 .forma-dropdown-menu {
     padding: var(--space-2);
     display: flex;

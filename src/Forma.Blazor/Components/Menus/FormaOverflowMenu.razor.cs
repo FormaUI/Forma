@@ -18,7 +18,7 @@ public sealed partial class FormaOverflowMenu : ComponentBase
     [Parameter] public ButtonOptions TriggerOptions { get; set; } = ButtonOptions.GhostIcon;
 
     /// <summary>The inline edge of the trigger the menu lines up with.</summary>
-    [Parameter] public PopupAlignment Alignment { get; set; }
+    [Parameter] public PopoverAlignment Alignment { get; set; }
 
     /// <summary>Blocks interaction with the trigger button.</summary>
     [Parameter] public bool Disabled { get; set; }

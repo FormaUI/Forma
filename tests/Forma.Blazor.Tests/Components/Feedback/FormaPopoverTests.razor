@@ -1,0 +1,210 @@
+@inherits FormaBunitContext
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_a_manual_popover_with_nothing_inside_while_closed()
+        {
+            // Arrange
+            using var ctx = new FormaPopoverTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaPopover Anchor="default"><p>Content</p></FormaPopover>);
+
+            // Assert
+            var root = cut.Find(".forma-popover");
+            Assert.Multiple(
+                () => Assert.Equal("manual", root.GetAttribute("popover")),
+                () => Assert.Empty(root.Children),
+                () => Assert.False(cut.FindComponent<FormaPopover>().Instance.IsOpen));
+        }
+
+        [Fact]
+        public async Task Should_render_the_content_once_opened()
+        {
+            // Arrange
+            using var ctx = new FormaPopoverTests();
+            var cut = ctx.Render(@<FormaPopover Anchor="default"><p>Content</p></FormaPopover>);
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.OpenAsync(default));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("Content", cut.Find(".forma-popover p").TextContent),
+                () => Assert.Contains("forma-popover-open", cut.Find(".forma-popover").ClassList),
+                () => Assert.True(cut.FindComponent<FormaPopover>().Instance.IsOpen));
+        }
+
+        [Fact]
+        public async Task Should_close_when_dismissed_by_a_press_away()
+        {
+            // Arrange
+            using var ctx = new FormaPopoverTests();
+            var cut = ctx.Render(@<FormaPopover Anchor="default"><p>Content</p></FormaPopover>);
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.OpenAsync(default));
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.PressAway));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll(".forma-popover p")),
+                () => Assert.False(cut.FindComponent<FormaPopover>().Instance.IsOpen));
+        }
+
+        [Fact]
+        public async Task Should_close_when_dismissed_by_escape()
+        {
+            // Arrange
+            using var ctx = new FormaPopoverTests();
+            var cut = ctx.Render(@<FormaPopover Anchor="default"><p>Content</p></FormaPopover>);
+            var popover = cut.FindComponent<FormaPopover>().Instance;
+            await cut.InvokeAsync(() => popover.OpenAsync(default));
+
+            // Act
+            await cut.InvokeAsync(() => popover.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.Escape));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.False(popover.IsOpen),
+                () => Assert.Empty(cut.FindAll(".forma-popover p")));
+        }
+
+        [Fact]
+        public async Task Should_register_a_scope_with_its_trigger_inside_once_open()
+        {
+            // Arrange
+            using var ctx = new FormaPopoverTests();
+            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+            var cut = ctx.Render(@<FormaPopover Anchor="default"><p>Content</p></FormaPopover>);
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.OpenAsync(default));
+
+            // Assert
+            var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
+            Assert.Multiple(
+                () => Assert.Same(cut.FindComponent<FormaPopover>().Instance, Assert.IsType<DotNetObjectReference<FormaPopover>>(registration.Arguments[2]).Value),
+                () => Assert.Equal(DismissBehavior.Dismiss, Assert.IsType<InputProfile>(registration.Arguments[1]).Escape),
+                () => Assert.Equal(PressAwayBehavior.PassThrough, Assert.IsType<InputProfile>(registration.Arguments[1]).PressAway));
+        }
+
+        [Fact]
+        public async Task Should_declare_no_press_away_dismissal_when_turned_off()
+        {
+            // Arrange
+            using var ctx = new FormaPopoverTests();
+            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+            var cut = ctx.Render(@<FormaPopover Anchor="default" PressAway="false"><p>Content</p></FormaPopover>);
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.OpenAsync(default));
+
+            // Assert
+            var registration = Assert.Single(router.Invocations, invocation => invocation.Identifier == "register");
+            Assert.Equal(PressAwayBehavior.Ignore, Assert.IsType<InputProfile>(registration.Arguments[1]).PressAway);
+        }
+
+        [Fact]
+        public async Task Should_toggle_between_open_and_closed()
+        {
+            // Arrange
+            using var ctx = new FormaPopoverTests();
+            var cut = ctx.Render(@<FormaPopover Anchor="default"><p>Content</p></FormaPopover>);
+            var popover = cut.FindComponent<FormaPopover>().Instance;
+
+            // Act
+            await cut.InvokeAsync(() => popover.ToggleAsync(default));
+            var openedOnce = popover.IsOpen;
+            await cut.InvokeAsync(() => popover.ToggleAsync(default));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(openedOnce),
+                () => Assert.False(popover.IsOpen));
+        }
+
+        [Fact]
+        public async Task Should_ignore_a_close_while_already_closed()
+        {
+            // Arrange
+            using var ctx = new FormaPopoverTests();
+            var changes = new List<bool>();
+            var cut = ctx.Render(@<FormaPopover Anchor="default" OnOpenChanged="isOpen => changes.Add(isOpen)" />);
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.CloseAsync());
+
+            // Assert
+            Assert.Empty(changes);
+        }
+
+        [Fact]
+        public async Task Should_leave_escape_to_the_router_rather_than_forwarding_it()
+        {
+            // Arrange
+            using var ctx = new FormaPopoverTests();
+            var keys = new List<string>();
+            var cut = ctx.Render(@<FormaPopover Anchor="default" OnKeyDown="args => keys.Add(args.Key)"><p>Content</p></FormaPopover>);
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.OpenAsync(default));
+
+            // Act
+            cut.Find(".forma-popover").KeyDown("Escape");
+
+            // Assert
+            Assert.Empty(keys);
+        }
+
+        [Fact]
+        public async Task Should_forward_every_other_key()
+        {
+            // Arrange
+            using var ctx = new FormaPopoverTests();
+            var keys = new List<string>();
+            var cut = ctx.Render(@<FormaPopover Anchor="default" OnKeyDown="args => keys.Add(args.Key)"><p>Content</p></FormaPopover>);
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.OpenAsync(default));
+
+            // Act
+            cut.Find(".forma-popover").KeyDown("ArrowDown");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["ArrowDown"], keys),
+                () => Assert.True(cut.FindComponent<FormaPopover>().Instance.IsOpen));
+        }
+
+        [Fact]
+        public async Task Should_report_each_change_of_open_state()
+        {
+            // Arrange
+            using var ctx = new FormaPopoverTests();
+            var changes = new List<bool>();
+            var cut = ctx.Render(@<FormaPopover Anchor="default" OnOpenChanged="isOpen => changes.Add(isOpen)" />);
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.OpenAsync(default));
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.OpenAsync(default));
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.CloseAsync());
+
+            // Assert
+            Assert.Equal([true, false], changes);
+        }
+
+        [Fact]
+        public void Should_merge_the_host_class_and_pass_other_attributes_through()
+        {
+            // Arrange
+            using var ctx = new FormaPopoverTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaPopover Anchor="default" class="host-popover" id="host-id" />);
+
+            // Assert
+            var root = cut.Find(".forma-popover");
+            Assert.Multiple(
+                () => Assert.Contains("host-popover", root.ClassList),
+                () => Assert.Equal("host-id", root.Id));
+        }
+    }
+}

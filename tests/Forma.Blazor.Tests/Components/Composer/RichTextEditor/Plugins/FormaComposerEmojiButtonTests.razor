@@ -24,7 +24,7 @@
         }
 
         [Fact]
-        public void Should_open_the_picker_popup_when_clicked()
+        public void Should_open_the_picker_popover_when_clicked()
         {
             // Arrange
             using var ctx = new FormaComposerEmojiButtonTests();
@@ -64,7 +64,7 @@
             cut.Find("button").Click();
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaPopup>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.Escape));
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.Escape));
 
             // Assert
             Assert.Multiple(
@@ -81,7 +81,7 @@
             cut.Find("button").Click();
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaPopup>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.PressAway));
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.PressAway));
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-emoji-picker"));
