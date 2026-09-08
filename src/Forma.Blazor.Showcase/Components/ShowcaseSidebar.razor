@@ -8,7 +8,7 @@
     <div class="culture-switcher">
         @foreach (var route in Router.Routes)
         {
-            <a href="@LinkTo(route)" data-enhance-nav="false" class="@(IsCurrent(route) ? "active" : "")">@Label(route)</a>
+            <a href="@LinkTo(route)" data-enhance-nav="false" class="@(IsCurrent(route) ? "active" : "")">@GetLabel(route)</a>
         }
     </div>
     @foreach (var group in ShowcaseCatalog.Sidebar)
@@ -31,7 +31,7 @@
 
     private CultureRoute Current => Router.CurrentRoute;
 
-    private static string Label(CultureRoute route)
+    private static string GetLabel(CultureRoute route)
         => Labels.GetValueOrDefault(route.Token, route.Token);
 
     private bool IsCurrent(CultureRoute route)

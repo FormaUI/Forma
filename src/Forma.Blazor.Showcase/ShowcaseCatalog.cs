@@ -28,7 +28,7 @@ public static class ShowcaseCatalog
     /// <summary>The pages the sidebar lists, one per component, grouped by category.</summary>
     public static ILookup<string, ShowcasePage> Sidebar { get; } = All
         .Where(page => string.Equals(page.Variant, DefaultVariant, StringComparison.Ordinal))
-        .OrderBy(page => CategoryRank(page.Category))
+        .OrderBy(page => GetCategoryRank(page.Category))
         .ThenBy(page => page.Category, StringComparer.Ordinal)
         .ThenBy(page => page.Title, StringComparer.Ordinal)
         .ToLookup(page => page.Category);
@@ -36,7 +36,7 @@ public static class ShowcaseCatalog
     /// <summary>The variants of whichever page <paramref name="path"/> names, Forma's own first.</summary>
     /// <param name="path">A route, already stripped of any culture segment.</param>
     /// <returns>The page's variants, or nothing when the path names no page or the page has only one.</returns>
-    public static IReadOnlyList<ShowcasePage> Variants(string path)
+    public static IReadOnlyList<ShowcasePage> GetVariants(string path)
     {
         var current = All.FirstOrDefault(page => IsRoute(page, path));
 
@@ -82,7 +82,7 @@ public static class ShowcaseCatalog
 
             if (titles.TryGetValue(component, out var title))
             {
-                pages.Add(new ShowcasePage(component, title, Category(type), route!, variant));
+                pages.Add(new ShowcasePage(component, title, GetCategory(type), route!, variant));
             }
         }
 
@@ -90,7 +90,7 @@ public static class ShowcaseCatalog
     }
 
     // The category is the folder directly under Pages; a page may sit deeper, in a folder of its own.
-    private static string Category(Type type)
+    private static string GetCategory(Type type)
     {
         var segments = (type.Namespace ?? string.Empty).Split('.');
         var pages = Array.IndexOf(segments, "Pages");
@@ -100,7 +100,7 @@ public static class ShowcaseCatalog
 
     // Symbols leads as the library's own vocabulary, Features and Libraries group the composite demos,
     // everything else follows alphabetically, and Debugging closes the list as tooling rather than a component.
-    private static int CategoryRank(string category)
+    private static int GetCategoryRank(string category)
         => category switch
         {
             "Features" => 0,

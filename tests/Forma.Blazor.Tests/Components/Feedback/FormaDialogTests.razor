@@ -237,7 +237,7 @@
             // Assert
             cut.WaitForAssertion(() =>
             {
-                var profile = Assert.Single(Registrations(ctx));
+                var profile = Assert.Single(GetRegistrations(ctx));
                 Assert.Multiple(
                     () => Assert.True(profile.Modal),
                     () => Assert.Equal(DismissBehavior.Dismiss, profile.Escape),
@@ -257,7 +257,7 @@
                 @<FormaDialog Opened="false" OnClose="@(() => { })" />);
 
             // Assert
-            Assert.Empty(Registrations(ctx));
+            Assert.Empty(GetRegistrations(ctx));
         }
 
         [Fact]
@@ -267,7 +267,7 @@
             using var ctx = new FormaDialogTests();
             var cut = ctx.Render(
                 @<FormaDialog Opened="true" OnClose="@(() => { })" />);
-            cut.WaitForAssertion(() => Assert.Single(Registrations(ctx)));
+            cut.WaitForAssertion(() => Assert.Single(GetRegistrations(ctx)));
 
             // Act
             await cut.InvokeAsync(() => cut.FindComponent<FormaDialog>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.Escape));
@@ -284,7 +284,7 @@
             var cancelled = false;
             var cut = ctx.Render(
                 @<FormaDialog Opened="true" OnClose="@(() => { })" OnCancel="() => cancelled = true" />);
-            cut.WaitForAssertion(() => Assert.Single(Registrations(ctx)));
+            cut.WaitForAssertion(() => Assert.Single(GetRegistrations(ctx)));
 
             // Act
             await cut.InvokeAsync(() => cut.FindComponent<FormaDialog>().Instance.HandleDismissAsync(DismissBehavior.Cancel, DismissReason.CloseRequest));
@@ -302,7 +302,7 @@
             using var ctx = new FormaDialogTests();
             var cut = ctx.Render(
                 @<FormaDialog Opened="true" OnClose="@(() => { })" />);
-            cut.WaitForAssertion(() => Assert.Single(Registrations(ctx)));
+            cut.WaitForAssertion(() => Assert.Single(GetRegistrations(ctx)));
 
             // Act
             await cut.InvokeAsync(() => cut.FindComponent<FormaDialog>().Instance.HandleDismissAsync(DismissBehavior.Ignore, DismissReason.Escape));
@@ -312,7 +312,7 @@
         }
 
         /// <summary>The profile of every scope the dialog registered with the router.</summary>
-        private static List<InputProfile> Registrations(FormaDialogTests ctx)
+        private static List<InputProfile> GetRegistrations(FormaDialogTests ctx)
             => [.. ctx.Router.Invocations
                      .Where(invocation => invocation.Identifier == "register")
                      .Select(invocation => (InputProfile)invocation.Arguments[1]!)];

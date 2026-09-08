@@ -9,7 +9,7 @@ using Forma.Tests.Shared;
 
 public sealed class OfficeResourceProviderTests
 {
-    private static JsonStringLocale<OfficeResourceProvider> Localizer()
+    private static JsonStringLocale<OfficeResourceProvider> CreateLocalizer()
         => new(new JsonStringLocaleFactory());
 
     [Theory]
@@ -23,7 +23,7 @@ public sealed class OfficeResourceProviderTests
     {
         // Arrange
         var reader = new FakeResourceContentReader();
-        var provider = new OfficeResourceProvider(reader, Localizer());
+        var provider = new OfficeResourceProvider(reader, CreateLocalizer());
 
         // Act
         var resource = await provider.GetResourceAsync(source, TestContext.Current.CancellationToken);
@@ -39,8 +39,8 @@ public sealed class OfficeResourceProviderTests
     {
         // Arrange
         var reader = new FakeResourceContentReader()
-            .Add(source, OfficeFixture.Docx(document => document.AddParagraph("Quarterly revenue rose.")));
-        var provider = new OfficeResourceProvider(reader, Localizer());
+            .Add(source, OfficeFixture.CreateDocx(document => document.AddParagraph("Quarterly revenue rose.")));
+        var provider = new OfficeResourceProvider(reader, CreateLocalizer());
 
         // Act
         var resource = await provider.GetResourceAsync(source, TestContext.Current.CancellationToken);
@@ -61,7 +61,7 @@ public sealed class OfficeResourceProviderTests
     public async Task Should_convert_a_workbook_to_a_table_per_sheet(string source)
     {
         // Arrange
-        var reader = new FakeResourceContentReader().Add(source, OfficeFixture.Xlsx(workbook =>
+        var reader = new FakeResourceContentReader().Add(source, OfficeFixture.CreateXlsx(workbook =>
         {
             var sheet = workbook.AddWorksheet("Regions");
 
@@ -70,7 +70,7 @@ public sealed class OfficeResourceProviderTests
             sheet.CellValue(2, 1, "South");
             sheet.CellValue(2, 2, "11.7");
         }));
-        var provider = new OfficeResourceProvider(reader, Localizer());
+        var provider = new OfficeResourceProvider(reader, CreateLocalizer());
 
         // Act
         var resource = await provider.GetResourceAsync(source, TestContext.Current.CancellationToken);
@@ -92,7 +92,7 @@ public sealed class OfficeResourceProviderTests
     public async Task Should_convert_a_presentation_to_a_section_per_slide(string source)
     {
         // Arrange
-        var reader = new FakeResourceContentReader().Add(source, OfficeFixture.Pptx(presentation =>
+        var reader = new FakeResourceContentReader().Add(source, OfficeFixture.CreatePptx(presentation =>
         {
             var first = presentation.AddSlide();
 
@@ -101,7 +101,7 @@ public sealed class OfficeResourceProviderTests
 
             presentation.AddSlide().AddTitleInches("Second slide", 1, 0.5, 8, 1);
         }));
-        var provider = new OfficeResourceProvider(reader, Localizer());
+        var provider = new OfficeResourceProvider(reader, CreateLocalizer());
 
         // Act
         var resource = await provider.GetResourceAsync(source, TestContext.Current.CancellationToken);
@@ -123,9 +123,9 @@ public sealed class OfficeResourceProviderTests
     {
         // Arrange
         using var fixture = new CultureFixture("en");
-        var reader = new FakeResourceContentReader().Add("/media/deck.pptx", OfficeFixture.Pptx(presentation =>
+        var reader = new FakeResourceContentReader().Add("/media/deck.pptx", OfficeFixture.CreatePptx(presentation =>
             presentation.AddSlide().AddTitleInches("Only the title", 1, 0.5, 8, 1)));
-        var provider = new OfficeResourceProvider(reader, Localizer());
+        var provider = new OfficeResourceProvider(reader, CreateLocalizer());
 
         // Act
         var resource = await provider.GetResourceAsync("/media/deck.pptx", TestContext.Current.CancellationToken);
@@ -146,14 +146,14 @@ public sealed class OfficeResourceProviderTests
     {
         // Arrange
         using var fixture = new CultureFixture("en");
-        var reader = new FakeResourceContentReader().Add("/media/deck.pptx", OfficeFixture.Pptx(presentation =>
+        var reader = new FakeResourceContentReader().Add("/media/deck.pptx", OfficeFixture.CreatePptx(presentation =>
         {
             var slide = presentation.AddSlide();
 
             slide.AddTitleInches("   ", 1, 0.5, 8, 1);
             slide.AddTextBoxInches("Body copy", 1, 2, 8, 1);
         }));
-        var provider = new OfficeResourceProvider(reader, Localizer());
+        var provider = new OfficeResourceProvider(reader, CreateLocalizer());
 
         // Act
         var resource = await provider.GetResourceAsync("/media/deck.pptx", TestContext.Current.CancellationToken);
@@ -173,9 +173,9 @@ public sealed class OfficeResourceProviderTests
     public async Task Should_escape_markup_a_workbook_cell_contains()
     {
         // Arrange
-        var reader = new FakeResourceContentReader().Add("/media/budget.xlsx", OfficeFixture.Xlsx(workbook =>
+        var reader = new FakeResourceContentReader().Add("/media/budget.xlsx", OfficeFixture.CreateXlsx(workbook =>
             workbook.AddWorksheet("Sheet1").CellValue(1, 1, "<script>alert(1)</script>")));
-        var provider = new OfficeResourceProvider(reader, Localizer());
+        var provider = new OfficeResourceProvider(reader, CreateLocalizer());
 
         // Act
         var resource = await provider.GetResourceAsync("/media/budget.xlsx", TestContext.Current.CancellationToken);
@@ -194,9 +194,9 @@ public sealed class OfficeResourceProviderTests
     public async Task Should_escape_markup_a_slide_contains()
     {
         // Arrange
-        var reader = new FakeResourceContentReader().Add("/media/deck.pptx", OfficeFixture.Pptx(presentation =>
+        var reader = new FakeResourceContentReader().Add("/media/deck.pptx", OfficeFixture.CreatePptx(presentation =>
             presentation.AddSlide().AddTextBoxInches("<img src=x onerror=alert(1)>", 1, 1, 4, 1)));
-        var provider = new OfficeResourceProvider(reader, Localizer());
+        var provider = new OfficeResourceProvider(reader, CreateLocalizer());
 
         // Act
         var resource = await provider.GetResourceAsync("/media/deck.pptx", TestContext.Current.CancellationToken);
@@ -217,7 +217,7 @@ public sealed class OfficeResourceProviderTests
     {
         // Arrange
         using var fixture = new CultureFixture("en");
-        var reader = new FakeResourceContentReader().Add("/media/big.xlsx", OfficeFixture.Xlsx(workbook =>
+        var reader = new FakeResourceContentReader().Add("/media/big.xlsx", OfficeFixture.CreateXlsx(workbook =>
         {
             var sheet = workbook.AddWorksheet("Big");
 
@@ -226,7 +226,7 @@ public sealed class OfficeResourceProviderTests
                 sheet.CellValue(row, 1, $"Row {row}");
             }
         }));
-        var provider = new OfficeResourceProvider(reader, Localizer());
+        var provider = new OfficeResourceProvider(reader, CreateLocalizer());
 
         // Act
         var resource = await provider.GetResourceAsync("/media/big.xlsx", TestContext.Current.CancellationToken);
@@ -246,7 +246,7 @@ public sealed class OfficeResourceProviderTests
     public void Should_claim_the_three_open_xml_formats()
     {
         // Arrange
-        var provider = new OfficeResourceProvider(new FakeResourceContentReader(), Localizer());
+        var provider = new OfficeResourceProvider(new FakeResourceContentReader(), CreateLocalizer());
 
         // Act & Assert
         Assert.Equal(
@@ -259,7 +259,7 @@ public sealed class OfficeResourceProviderTests
     public async Task Should_return_nothing_when_the_reader_does_not_have_the_content()
     {
         // Arrange
-        var provider = new OfficeResourceProvider(new FakeResourceContentReader(), Localizer());
+        var provider = new OfficeResourceProvider(new FakeResourceContentReader(), CreateLocalizer());
 
         // Act
         var resource = await provider.GetResourceAsync("/media/missing.docx", TestContext.Current.CancellationToken);
@@ -272,9 +272,9 @@ public sealed class OfficeResourceProviderTests
     public async Task Should_report_the_size_of_the_document_it_read()
     {
         // Arrange
-        var content = OfficeFixture.Docx(document => document.AddParagraph("Sized."));
+        var content = OfficeFixture.CreateDocx(document => document.AddParagraph("Sized."));
         var reader = new FakeResourceContentReader().Add("/media/report.docx", content);
-        var provider = new OfficeResourceProvider(reader, Localizer());
+        var provider = new OfficeResourceProvider(reader, CreateLocalizer());
 
         // Act
         var resource = await provider.GetResourceAsync("/media/report.docx", TestContext.Current.CancellationToken);
@@ -289,8 +289,8 @@ public sealed class OfficeResourceProviderTests
     {
         // Arrange
         var reader = new FakeResourceContentReader { Seekable = false }
-            .Add("/media/report.docx", OfficeFixture.Docx(document => document.AddParagraph("Streamed in one pass.")));
-        var provider = new OfficeResourceProvider(reader, Localizer());
+            .Add("/media/report.docx", OfficeFixture.CreateDocx(document => document.AddParagraph("Streamed in one pass.")));
+        var provider = new OfficeResourceProvider(reader, CreateLocalizer());
 
         // Act
         var resource = await provider.GetResourceAsync("/media/report.docx", TestContext.Current.CancellationToken);
@@ -310,8 +310,8 @@ public sealed class OfficeResourceProviderTests
     {
         // Arrange
         var reader = new FakeResourceContentReader()
-            .Add("/media/report.docx", OfficeFixture.Docx(document => document.AddParagraph("Closed.")));
-        var provider = new OfficeResourceProvider(reader, Localizer());
+            .Add("/media/report.docx", OfficeFixture.CreateDocx(document => document.AddParagraph("Closed.")));
+        var provider = new OfficeResourceProvider(reader, CreateLocalizer());
 
         // Act
         await provider.GetResourceAsync("/media/report.docx", TestContext.Current.CancellationToken);
@@ -327,8 +327,8 @@ public sealed class OfficeResourceProviderTests
         // Arrange
         var reader = new FakeResourceContentReader().Add(
             "/media/report.docx",
-            OfficeFixture.Docx(document => document.AddHyperLink("Read more", new Uri("javascript:alert(1)"))));
-        var provider = new OfficeResourceProvider(reader, Localizer());
+            OfficeFixture.CreateDocx(document => document.AddHyperLink("Read more", new Uri("javascript:alert(1)"))));
+        var provider = new OfficeResourceProvider(reader, CreateLocalizer());
 
         // Act
         var resource = await provider.GetResourceAsync("/media/report.docx", TestContext.Current.CancellationToken);
@@ -349,8 +349,8 @@ public sealed class OfficeResourceProviderTests
         // Arrange
         var reader = new FakeResourceContentReader().Add(
             "/media/report.docx",
-            OfficeFixture.Docx(document => document.AddHyperLink("Read more", new Uri("https://example.com/report"))));
-        var provider = new OfficeResourceProvider(reader, Localizer());
+            OfficeFixture.CreateDocx(document => document.AddHyperLink("Read more", new Uri("https://example.com/report"))));
+        var provider = new OfficeResourceProvider(reader, CreateLocalizer());
 
         // Act
         var resource = await provider.GetResourceAsync("/media/report.docx", TestContext.Current.CancellationToken);
@@ -368,8 +368,8 @@ public sealed class OfficeResourceProviderTests
         // Arrange
         var reader = new FakeResourceContentReader().Add(
             "/media/report.docx",
-            OfficeFixture.Docx(document => document.AddHyperLink("Contact", new Uri("mailto:team@example.com"))));
-        var provider = new OfficeResourceProvider(reader, Localizer());
+            OfficeFixture.CreateDocx(document => document.AddHyperLink("Contact", new Uri("mailto:team@example.com"))));
+        var provider = new OfficeResourceProvider(reader, CreateLocalizer());
 
         // Act
         var resource = await provider.GetResourceAsync("/media/report.docx", TestContext.Current.CancellationToken);
@@ -384,7 +384,7 @@ public sealed class OfficeResourceProviderTests
     public async Task Should_reject_an_address_that_is_missing()
     {
         // Arrange
-        var provider = new OfficeResourceProvider(new FakeResourceContentReader(), Localizer());
+        var provider = new OfficeResourceProvider(new FakeResourceContentReader(), CreateLocalizer());
 
         // Act
         var thrown = await Record.ExceptionAsync(
@@ -398,7 +398,7 @@ public sealed class OfficeResourceProviderTests
     public void Should_reject_construction_without_a_reader()
     {
         // Act
-        var thrown = Record.Exception(() => new OfficeResourceProvider(null!, Localizer()));
+        var thrown = Record.Exception(() => new OfficeResourceProvider(null!, CreateLocalizer()));
 
         // Assert
         Assert.IsType<ArgumentNullException>(thrown);
@@ -423,9 +423,9 @@ public sealed class OfficeResourceProviderTests
     {
         // Arrange
         using var fixture = new CultureFixture(culture);
-        var reader = new FakeResourceContentReader().Add("/media/deck.pptx", OfficeFixture.Pptx(presentation =>
+        var reader = new FakeResourceContentReader().Add("/media/deck.pptx", OfficeFixture.CreatePptx(presentation =>
             presentation.AddSlide().AddTextBoxInches("Body only", 1, 1, 4, 1)));
-        var provider = new OfficeResourceProvider(reader, Localizer());
+        var provider = new OfficeResourceProvider(reader, CreateLocalizer());
 
         // Act
         var resource = await provider.GetResourceAsync("/media/deck.pptx", TestContext.Current.CancellationToken);

@@ -53,7 +53,7 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
         var assemblyName = assembly.GetName().Name ?? string.Empty;
         var typeName = NormalizeTypeName(source.FullName ?? source.Name);
 
-        return GetOrAdd(assembly, BaseNameFor(assemblyName, typeName));
+        return GetOrAdd(assembly, GetBaseName(assemblyName, typeName));
     }
 
     /// <summary>Creates a locale for a base name inside the named assembly.</summary>
@@ -91,7 +91,7 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
 
     // A type's full name already spells the root namespace its resource was embedded under, which leads
     // with the assembly name only when a project left the two in step; a type without one carries no root.
-    private string BaseNameFor(string assemblyName, string typeName)
+    private string GetBaseName(string assemblyName, string typeName)
         => typeName.StartsWith(assemblyName + ".", StringComparison.Ordinal)
             ? Qualify(assemblyName, typeName[(assemblyName.Length + 1)..])
             : typeName.Contains('.', StringComparison.Ordinal) ? typeName : Qualify(assemblyName, typeName);

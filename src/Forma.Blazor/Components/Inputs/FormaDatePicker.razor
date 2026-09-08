@@ -41,7 +41,7 @@
                                          class="forma-date-picker-nav"
                                          aria-label="@L["Previous Month"]"
                                          Disabled="!CanPanelGoPrev(panel)"
-                                         OnClick="() => PanelPrev(panel)">
+                                         OnClick="() => ShowPreviousPanel(panel)">
                                 &#10094;
                             </FormaButton>
                             <div class="forma-date-picker-month-selectors">
@@ -68,7 +68,7 @@
                                          class="forma-date-picker-nav"
                                          aria-label="@L["Next Month"]"
                                          Disabled="!CanPanelGoNext(panel)"
-                                         OnClick="() => PanelNext(panel)">
+                                         OnClick="() => ShowNextPanel(panel)">
                                 &#10095;
                             </FormaButton>
                         </div>
@@ -93,8 +93,8 @@
                                             class="forma-date-picker-day@(dayClasses)"
                                             disabled="@IsDayDisabled(date)"
                                             aria-label="@_calendar.GetDayLabel(date)"
-                                            aria-current="@(MarksToday(dayClasses) ? "date" : null)"
-                                            aria-pressed="@(MarksSelected(dayClasses) ? "true" : null)"
+                                            aria-current="@(IsToday(dayClasses) ? "date" : null)"
+                                            aria-pressed="@(IsSelected(dayClasses) ? "true" : null)"
                                             @onclick="() => SelectDay(date)"
                                             @onmouseenter="() => HoverDay(date)">
                                         @_calendar.GetDayOfMonth(date)

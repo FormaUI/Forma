@@ -35,5 +35,5 @@ public sealed partial class FormaExplorerToolbar : ComponentBase
     }
 
     private Glyph DirectionGlyph
-        => ExplorerSortPresentation.GlyphFor(View.SortField, View.SortDirection);
+        => ExplorerSortPresentation.GetGlyph(View.SortField, View.SortDirection);
 }

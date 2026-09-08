@@ -9,20 +9,20 @@ using Xunit;
 
 public sealed class ExplorerCollectionViewTests
 {
-    private static string TypeNameKindLabel(IExplorerItem item)
+    private static string GetTypeNameKindLabel(IExplorerItem item)
         => item.Resource?.GetType().Name ?? string.Empty;
 
     private static ExplorerCollectionView CreateView(params ResourceInfo[] resources)
-        => new(TypeNameKindLabel) { Source = ExplorerItem.ForAll(resources), PageSize = 24 };
+        => new(GetTypeNameKindLabel) { Source = ExplorerItem.ForAll(resources), PageSize = 24 };
 
-    private static FileResourceInfo File(string name, long? size = null, DateTimeOffset? createdAt = null, DateTimeOffset? modifiedAt = null)
+    private static FileResourceInfo CreateFile(string name, long? size = null, DateTimeOffset? createdAt = null, DateTimeOffset? modifiedAt = null)
         => new($"/media/{name}") { Size = size, CreatedAt = createdAt, ModifiedAt = modifiedAt };
 
     [Fact]
     public void Should_list_everything_in_name_order_by_default()
     {
         // Act
-        var view = CreateView(File("cherry.png"), File("Apple.png"), File("banana.png"));
+        var view = CreateView(CreateFile("cherry.png"), CreateFile("Apple.png"), CreateFile("banana.png"));
 
         // Assert
         Assert.Equal(["Apple.png", "banana.png", "cherry.png"], view.MatchingItems.Select(item => item.Name));
@@ -32,13 +32,13 @@ public sealed class ExplorerCollectionViewTests
     public void Should_leave_hidden_items_out_and_keep_invisible_ones()
     {
         // Arrange
-        var view = new ExplorerCollectionView(TypeNameKindLabel)
+        var view = new ExplorerCollectionView(GetTypeNameKindLabel)
         {
             Source =
             [
-                Item("shown.png", ExplorerItemVisibility.Visible),
-                Item("hidden.png", ExplorerItemVisibility.Hidden),
-                Item("invisible.png", ExplorerItemVisibility.Invisible)
+                CreateItem("shown.png", ExplorerItemVisibility.Visible),
+                CreateItem("hidden.png", ExplorerItemVisibility.Hidden),
+                CreateItem("invisible.png", ExplorerItemVisibility.Invisible)
             ],
             PageSize = 24
         };
@@ -49,14 +49,14 @@ public sealed class ExplorerCollectionViewTests
             () => Assert.Equal(2, view.MatchingCount));
     }
 
-    private static ExplorerItem Item(string name, ExplorerItemVisibility visibility)
-        => new() { Key = name, Name = name, Visibility = visibility, Resource = File(name) };
+    private static ExplorerItem CreateItem(string name, ExplorerItemVisibility visibility)
+        => new() { Key = name, Name = name, Visibility = visibility, Resource = CreateFile(name) };
 
     [Fact]
     public void Should_search_names_case_insensitively()
     {
         // Arrange
-        var view = CreateView(File("Stage-One.jpg"), File("stage-two.jpg"), File("finish.jpg"));
+        var view = CreateView(CreateFile("Stage-One.jpg"), CreateFile("stage-two.jpg"), CreateFile("finish.jpg"));
 
         // Act
         view.SearchQuery = "STAGE";
@@ -88,8 +88,8 @@ public sealed class ExplorerCollectionViewTests
         // Arrange
         var older = new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero);
         var newer = new DateTimeOffset(2025, 6, 1, 0, 0, 0, TimeSpan.Zero);
-        var small = File("small.txt", size: 10, createdAt: newer, modifiedAt: older);
-        var large = File("large.txt", size: 900, createdAt: older, modifiedAt: newer);
+        var small = CreateFile("small.txt", size: 10, createdAt: newer, modifiedAt: older);
+        var large = CreateFile("large.txt", size: 900, createdAt: older, modifiedAt: newer);
         var view = CreateView(small, large);
 
         // Act & Assert
@@ -125,7 +125,7 @@ public sealed class ExplorerCollectionViewTests
     public void Should_cut_the_matching_items_to_the_requested_page()
     {
         // Arrange
-        var resources = Enumerable.Range(1, 25).Select(i => File($"file-{i:D2}.txt")).ToArray();
+        var resources = Enumerable.Range(1, 25).Select(i => CreateFile($"file-{i:D2}.txt")).ToArray();
         var view = CreateView(resources);
         view.PageSize = 10;
 
@@ -144,7 +144,7 @@ public sealed class ExplorerCollectionViewTests
     public void Should_grow_the_window_from_the_start_while_appending()
     {
         // Arrange
-        var resources = Enumerable.Range(1, 25).Select(i => File($"file-{i:D2}.txt")).ToArray();
+        var resources = Enumerable.Range(1, 25).Select(i => CreateFile($"file-{i:D2}.txt")).ToArray();
         var view = CreateView(resources);
         view.PageSize = 10;
         view.IsAppending = true;
@@ -163,7 +163,7 @@ public sealed class ExplorerCollectionViewTests
     public void Should_clamp_the_requested_page_to_the_pages_that_exist()
     {
         // Arrange
-        var view = CreateView(File("one.txt"), File("two.txt"));
+        var view = CreateView(CreateFile("one.txt"), CreateFile("two.txt"));
         view.PageSize = 10;
 
         // Act
@@ -180,7 +180,7 @@ public sealed class ExplorerCollectionViewTests
     public void Should_reuse_the_shaped_lists_until_an_input_changes()
     {
         // Arrange
-        var view = CreateView(File("one.txt"), File("two.txt"));
+        var view = CreateView(CreateFile("one.txt"), CreateFile("two.txt"));
 
         // Act & Assert
         Assert.Multiple(
@@ -196,12 +196,12 @@ public sealed class ExplorerCollectionViewTests
     public void Should_reshape_a_source_mutated_in_place_when_invalidated()
     {
         // Arrange
-        var items = new List<IExplorerItem> { ExplorerItem.For(File("one.txt")) };
-        var view = new ExplorerCollectionView(TypeNameKindLabel) { Source = items, PageSize = 24 };
+        var items = new List<IExplorerItem> { ExplorerItem.For(CreateFile("one.txt")) };
+        var view = new ExplorerCollectionView(GetTypeNameKindLabel) { Source = items, PageSize = 24 };
         Assert.Equal(1, view.MatchingCount);
 
         // Act
-        items.Add(ExplorerItem.For(File("two.txt")));
+        items.Add(ExplorerItem.For(CreateFile("two.txt")));
         view.Invalidate();
 
         // Assert

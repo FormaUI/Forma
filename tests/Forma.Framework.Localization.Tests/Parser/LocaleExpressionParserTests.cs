@@ -11,7 +11,7 @@ public sealed class LocaleExpressionParserTests
     private static readonly LocaleKeywords Keywords =
         new(new LocaleKeyword("plural", "zero", "one", "two", "few", "many", "other"));
 
-    private static string Text(LocaleTextSpan span, string text)
+    private static string GetText(LocaleTextSpan span, string text)
         => span.Slice(text).ToString();
 
     [Fact]
@@ -37,10 +37,10 @@ public sealed class LocaleExpressionParserTests
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.Equal("plural", Text(expression.KeywordSpan, Files));
-            Assert.Equal("[count]", Text(expression.ArgumentSpan, Files));
-            Assert.Equal("count", Text(expression.NameSpan, Files));
-            Assert.Equal(Files, Text(expression.Span, Files));
+            Assert.Equal("plural", GetText(expression.KeywordSpan, Files));
+            Assert.Equal("[count]", GetText(expression.ArgumentSpan, Files));
+            Assert.Equal("count", GetText(expression.NameSpan, Files));
+            Assert.Equal(Files, GetText(expression.Span, Files));
         });
     }
 
@@ -56,7 +56,7 @@ public sealed class LocaleExpressionParserTests
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.Equal("plural", Text(expression.KeywordSpan, Bare));
+            Assert.Equal("plural", GetText(expression.KeywordSpan, Bare));
             Assert.True(expression.NameSpan.IsEmpty);
             Assert.Equal(2, expression.Fields.Count);
         });
@@ -72,10 +72,10 @@ public sealed class LocaleExpressionParserTests
         Assert.Multiple(() =>
         {
             Assert.Equal(2, expression.Fields.Count);
-            Assert.Equal("one", Text(expression.Fields[0].NameSpan, Files));
-            Assert.Equal("# file", Text(expression.Fields[0].ValueSpan, Files));
-            Assert.Equal("other", Text(expression.Fields[1].NameSpan, Files));
-            Assert.Equal("# files", Text(expression.Fields[1].ValueSpan, Files));
+            Assert.Equal("one", GetText(expression.Fields[0].NameSpan, Files));
+            Assert.Equal("# file", GetText(expression.Fields[0].ValueSpan, Files));
+            Assert.Equal("other", GetText(expression.Fields[1].NameSpan, Files));
+            Assert.Equal("# files", GetText(expression.Fields[1].ValueSpan, Files));
         });
     }
 
@@ -92,8 +92,8 @@ public sealed class LocaleExpressionParserTests
         Assert.Multiple(() =>
         {
             Assert.Equal(2, result.Expressions.Count);
-            Assert.Equal("files", Text(result.Expressions[0].NameSpan, Pair));
-            Assert.Equal("folders", Text(result.Expressions[1].NameSpan, Pair));
+            Assert.Equal("files", GetText(result.Expressions[0].NameSpan, Pair));
+            Assert.Equal("folders", GetText(result.Expressions[1].NameSpan, Pair));
             Assert.True(result.IsValid);
         });
     }
@@ -108,7 +108,7 @@ public sealed class LocaleExpressionParserTests
         var expression = Assert.Single(LocaleExpressionParser.Parse(Prose, Keywords).Expressions);
 
         // Assert
-        Assert.Equal("[$ [count] plural; one: # place; other: # places; $]", Text(expression.Span, Prose));
+        Assert.Equal("[$ [count] plural; one: # place; other: # places; $]", GetText(expression.Span, Prose));
     }
 
     // A semicolon only ends a field when a category follows, so prose keeps its own punctuation.
@@ -125,7 +125,7 @@ public sealed class LocaleExpressionParserTests
         var expression = Assert.Single(result.Expressions);
         Assert.Multiple(() =>
         {
-            Assert.Equal("# files; see the list", Text(Assert.Single(expression.Fields).ValueSpan, Listed));
+            Assert.Equal("# files; see the list", GetText(Assert.Single(expression.Fields).ValueSpan, Listed));
             Assert.True(result.IsValid);
         });
     }
@@ -214,7 +214,7 @@ public sealed class LocaleExpressionParserTests
         Assert.Multiple(() =>
         {
             Assert.Equal(LocaleDiagnosticKind.UnknownKeyword, diagnostic.Kind);
-            Assert.Equal("plurals", Text(diagnostic.Span, Unknown));
+            Assert.Equal("plurals", GetText(diagnostic.Span, Unknown));
         });
     }
 
@@ -351,8 +351,8 @@ public sealed class LocaleExpressionParserTests
         {
             Assert.Equal(LocaleDiagnosticKind.MalformedFieldSeparator, Assert.Single(result.Diagnostics).Kind);
             Assert.Equal(2, expression.Fields.Count);
-            Assert.Equal("# file", Text(expression.Fields[0].ValueSpan, text));
-            Assert.Equal("other", Text(expression.Fields[1].NameSpan, text));
+            Assert.Equal("# file", GetText(expression.Fields[0].ValueSpan, text));
+            Assert.Equal("other", GetText(expression.Fields[1].NameSpan, text));
         });
     }
 
@@ -370,9 +370,9 @@ public sealed class LocaleExpressionParserTests
         {
             Assert.Equal(2, result.Diagnostics.Count);
             Assert.All(result.Diagnostics, d => Assert.Equal(LocaleDiagnosticKind.MalformedNameSeparator, d.Kind));
-            Assert.Equal("one", Text(expression.Fields[0].NameSpan, text));
-            Assert.Equal("# file", Text(expression.Fields[0].ValueSpan, text));
-            Assert.Equal("# files", Text(expression.Fields[1].ValueSpan, text));
+            Assert.Equal("one", GetText(expression.Fields[0].NameSpan, text));
+            Assert.Equal("# file", GetText(expression.Fields[0].ValueSpan, text));
+            Assert.Equal("# files", GetText(expression.Fields[1].ValueSpan, text));
         });
     }
 
@@ -393,7 +393,7 @@ public sealed class LocaleExpressionParserTests
             Assert.Equal(LocaleDiagnosticKind.EmptyFieldValue, Assert.Single(result.Diagnostics).Kind);
             Assert.Equal(2, expression.Fields.Count);
             Assert.True(expression.Fields[0].ValueSpan.IsEmpty);
-            Assert.Equal("# files", Text(expression.Fields[1].ValueSpan, text));
+            Assert.Equal("# files", GetText(expression.Fields[1].ValueSpan, text));
         });
     }
 
@@ -421,8 +421,8 @@ public sealed class LocaleExpressionParserTests
         var field = Assert.Single(Assert.Single(result.Expressions).Fields);
         Assert.Multiple(() =>
         {
-            Assert.Equal("male", Text(field.NameSpan, Unspaced));
-            Assert.Equal("his;female: her", Text(field.ValueSpan, Unspaced));
+            Assert.Equal("male", GetText(field.NameSpan, Unspaced));
+            Assert.Equal("his;female: her", GetText(field.ValueSpan, Unspaced));
             Assert.Equal(LocaleDiagnosticKind.UnknownKeyword, Assert.Single(result.Diagnostics).Kind);
         });
     }

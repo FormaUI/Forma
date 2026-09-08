@@ -75,7 +75,7 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
                       .Select(action => (action.Command, action.ShortcutAriaKeys!))];
 
     private IEnumerable<FormaToolbarAction> Actions
-        => Items.SelectMany(Leaves).OfType<FormaToolbarAction>();
+        => Items.SelectMany(GetLeaves).OfType<FormaToolbarAction>();
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -83,7 +83,7 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
         ArgumentException.ThrowIfNullOrWhiteSpace(Label);
         ArgumentNullException.ThrowIfNull(CommandBarOptions);
 
-        foreach (var item in Items.SelectMany(Leaves))
+        foreach (var item in Items.SelectMany(GetLeaves))
         {
             if (item is FormaToolbarGroup nested)
             {
@@ -190,7 +190,7 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>Every item a top-level entry contributes, so a group is checked through its own contents.</summary>
-    private static IEnumerable<FormaToolbarItem> Leaves(FormaToolbarItem item)
+    private static IEnumerable<FormaToolbarItem> GetLeaves(FormaToolbarItem item)
         => item is FormaToolbarGroup group ? group.Items : [item];
 
     private static string GetAction(string command)
@@ -248,7 +248,7 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
 
     private string GetTooltip(FormaToolbarItem item)
     {
-        var label = item.Tooltip ?? (item is FormaToolbarAction action ? EffectiveTitle(action) : item.Title);
+        var label = item.Tooltip ?? (item is FormaToolbarAction action ? GetEffectiveTitle(action) : item.Title);
 
         return item is FormaToolbarAction { ShortcutDisplay: { } shortcut }
             ? $"{label} ({shortcut})"
@@ -256,11 +256,11 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>The label an action currently shows: a toggle's <see cref="FormaToolbarToggle.AlternateTitle"/> while it is on, otherwise its own title.</summary>
-    private string EffectiveTitle(FormaToolbarAction action)
+    private string GetEffectiveTitle(FormaToolbarAction action)
         => action is FormaToolbarToggle { AlternateTitle: { } alternateTitle } && IsToggleActive(action) ? alternateTitle : action.Title;
 
     /// <summary>The icon an action currently shows: a toggle's <see cref="FormaToolbarToggle.AlternateIcon"/> while it is on, otherwise its own icon.</summary>
-    private Icon? EffectiveIcon(FormaToolbarAction action)
+    private Icon? GetEffectiveIcon(FormaToolbarAction action)
         => action is FormaToolbarToggle { AlternateIcon: { } alternateIcon } && IsToggleActive(action) ? alternateIcon : action.Icon;
 
     /// <summary>The hover text for an action, or null when its visible label already says the same thing.</summary>
@@ -268,7 +268,7 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
     {
         var tooltip = GetTooltip(action);
 
-        return showsLabel && tooltip == EffectiveTitle(action) ? null : tooltip;
+        return showsLabel && tooltip == GetEffectiveTitle(action) ? null : tooltip;
     }
 
     private static Dictionary<string, object>? ToParameters(IReadOnlyDictionary<string, object>? parameters)

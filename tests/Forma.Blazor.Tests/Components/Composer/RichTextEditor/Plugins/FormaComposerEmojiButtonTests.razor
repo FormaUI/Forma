@@ -6,7 +6,7 @@
 @code {
     public sealed class Component
     {
-        private static RenderFragment Host(IComposerInteraction interaction, RenderFragment content)
+        private static RenderFragment RenderHost(IComposerInteraction interaction, RenderFragment content)
             => @<CascadingValue Value="ComposerContexts.Create()"><CascadingValue Value="interaction">@content</CascadingValue></CascadingValue>;
 
         [Fact]
@@ -16,7 +16,7 @@
             using var ctx = new FormaComposerEmojiButtonTests();
 
             // Act
-            var cut = ctx.Render(Host(new RecordingComposerInteraction(), @<FormaComposerEmojiButton />));
+            var cut = ctx.Render(RenderHost(new RecordingComposerInteraction(), @<FormaComposerEmojiButton />));
 
             // Assert
             var button = cut.Find("button");
@@ -28,7 +28,7 @@
         {
             // Arrange
             using var ctx = new FormaComposerEmojiButtonTests();
-            var cut = ctx.Render(Host(new RecordingComposerInteraction(), @<FormaComposerEmojiButton />));
+            var cut = ctx.Render(RenderHost(new RecordingComposerInteraction(), @<FormaComposerEmojiButton />));
 
             // Act
             cut.Find("button").Click();
@@ -44,7 +44,7 @@
             // Arrange
             using var ctx = new FormaComposerEmojiButtonTests();
             var interaction = new RecordingComposerInteraction();
-            var cut = ctx.Render(Host(interaction, @<FormaComposerEmojiButton />));
+            var cut = ctx.Render(RenderHost(interaction, @<FormaComposerEmojiButton />));
             cut.Find("button").Click();
 
             // Act
@@ -60,7 +60,7 @@
         {
             // Arrange
             using var ctx = new FormaComposerEmojiButtonTests();
-            var cut = ctx.Render(Host(new RecordingComposerInteraction(), @<FormaComposerEmojiButton />));
+            var cut = ctx.Render(RenderHost(new RecordingComposerInteraction(), @<FormaComposerEmojiButton />));
             cut.Find("button").Click();
 
             // Act
@@ -77,7 +77,7 @@
         {
             // Arrange
             using var ctx = new FormaComposerEmojiButtonTests();
-            var cut = ctx.Render(Host(new RecordingComposerInteraction(), @<FormaComposerEmojiButton />));
+            var cut = ctx.Render(RenderHost(new RecordingComposerInteraction(), @<FormaComposerEmojiButton />));
             cut.Find("button").Click();
 
             // Act
@@ -92,7 +92,7 @@
         {
             // Arrange
             using var ctx = new FormaComposerEmojiButtonTests();
-            var cut = ctx.Render(Host(new RecordingComposerInteraction(), @<FormaComposerEmojiButton PickerOptions="@(new EmojiPickerOptions { MaxRecent = 5 })" />));
+            var cut = ctx.Render(RenderHost(new RecordingComposerInteraction(), @<FormaComposerEmojiButton PickerOptions="@(new EmojiPickerOptions { MaxRecent = 5 })" />));
 
             // Act
             cut.Find("button").Click();

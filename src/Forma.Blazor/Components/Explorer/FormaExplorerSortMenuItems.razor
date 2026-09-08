@@ -8,7 +8,7 @@
         <FormaDropDownMenuItem IsSelected="@(View.SortField == field)"
                                data-sort-field="@field"
                                OnClick="() => Interaction.SortByAsync(field)">
-            <span>@ExplorerSortPresentation.FieldLabel(L, field)</span>
+            <span>@ExplorerSortPresentation.GetFieldLabel(L, field)</span>
         </FormaDropDownMenuItem>
     }
 </FormaDropDownMenuGroup>
@@ -18,8 +18,8 @@
         <FormaDropDownMenuItem IsSelected="@(View.SortDirection == direction)"
                                data-sort-direction="@direction"
                                OnClick="() => Interaction.SetSortDirectionAsync(direction)">
-            <FormaIcon Icon="@ExplorerSortPresentation.GlyphFor(View.SortField, direction)" Size="IconSize.Small" />
-            <span>@ExplorerSortPresentation.DirectionLabel(L, direction)</span>
+            <FormaIcon Icon="@ExplorerSortPresentation.GetGlyph(View.SortField, direction)" Size="IconSize.Small" />
+            <span>@ExplorerSortPresentation.GetDirectionLabel(L, direction)</span>
         </FormaDropDownMenuItem>
     }
 </FormaDropDownMenuGroup>
@@ -29,7 +29,7 @@
         <FormaDropDownMenuItem IsSelected="@(View.GroupField == field)"
                                data-group-field="@field"
                                OnClick="() => Interaction.GroupByAsync(field)">
-            <span>@ExplorerGroupPresentation.FieldLabel(L, field)</span>
+            <span>@ExplorerGroupPresentation.GetFieldLabel(L, field)</span>
         </FormaDropDownMenuItem>
     }
 </FormaDropDownMenuGroup>

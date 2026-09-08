@@ -58,7 +58,7 @@ public sealed partial class FormaInputInspectorPage
     public void Dispose()
         => HostActions.Changed -= HandleHostAction;
 
-    private static string ReadoutClass(string? value)
+    private static string GetReadoutClass(string? value)
         => value is null ? "demo-readout" : "demo-readout demo-readout-live";
 
     private static void Record(ref string? last, InputAction action)

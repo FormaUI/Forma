@@ -63,7 +63,7 @@ public sealed class GlyphIconProvider : IIconProvider
     {
         var index = (int)icon.Variant;
 
-        foreach (var grid in GridsFor(size))
+        foreach (var grid in GetGrids(size))
         {
             if (Glyphs.Value.TryGetValue((icon.Glyph, grid), out var variants)
                 && (uint)index < (uint)variants.Length
@@ -79,7 +79,7 @@ public sealed class GlyphIconProvider : IIconProvider
     }
 
     // The grid whose stroke lands on whole pixels at the size, then the other as a fallback.
-    private static ReadOnlySpan<int> GridsFor(IconSize size)
+    private static ReadOnlySpan<int> GetGrids(IconSize size)
         => size is IconSize.Small or IconSize.Large ? [24, 32] : [32, 24];
 
     private static Stream OpenResource(string name, string script)

@@ -18,7 +18,7 @@ public sealed partial class FormaToastContainer : IDisposable
     /// <inheritdoc />
     protected override void OnInitialized() => ToastService.Subscribe(HandleChangeAsync);
 
-    private static Glyph MarkerFor(ToastType type)
+    private static Glyph GetMarker(ToastType type)
         => type switch
         {
             ToastType.Success => Glyph.CircleCheck,

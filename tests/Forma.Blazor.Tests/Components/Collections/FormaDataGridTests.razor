@@ -6,7 +6,7 @@
 @code {
     public sealed class Component
     {
-        private static IQueryable<GridItem> Items(int count) => Enumerable.Range(1, count)
+        private static IQueryable<GridItem> CreateItems(int count) => Enumerable.Range(1, count)
             .Select(id => new GridItem(id, $"Item {id}"))
             .AsQueryable();
 
@@ -18,7 +18,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10">
+                @<FormaDataGrid Items="CreateItems(3)" PageSize="10">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -37,7 +37,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true">
+                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -57,7 +57,7 @@
             IReadOnlyList<GridItem>? changedTo = null;
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true"
+                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true"
                                 SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
@@ -81,7 +81,7 @@
             IReadOnlyList<GridItem>? changedTo = null;
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(25)" PageSize="10" EnableCheckedSelection="true"
+                @<FormaDataGrid Items="CreateItems(25)" PageSize="10" EnableCheckedSelection="true"
                                 SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
@@ -104,8 +104,8 @@
             IReadOnlyList<GridItem>? changedTo = null;
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true"
-                                SelectedItems="Items(3).ToArray()"
+                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true"
+                                SelectedItems="CreateItems(3).ToArray()"
                                 SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
@@ -128,7 +128,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10">
+                @<FormaDataGrid Items="CreateItems(3)" PageSize="10">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -147,7 +147,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(25)" PageSize="10">
+                @<FormaDataGrid Items="CreateItems(25)" PageSize="10">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -165,7 +165,7 @@
             using var ctx = new FormaDataGridTests();
             GridItemsProvider<GridItem> provider = request => ValueTask.FromResult(
                 GridItemsProviderResult.From(
-                    Items(25).Skip(request.StartIndex).Take(request.Count ?? 25).ToArray(),
+                    CreateItems(25).Skip(request.StartIndex).Take(request.Count ?? 25).ToArray(),
                     totalItemCount: 25));
 
             // Act
@@ -210,7 +210,7 @@
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(() => ctx.Render(
-                @<FormaDataGrid Items="Items(3)" ItemsProvider="provider" PageSize="10">
+                @<FormaDataGrid Items="CreateItems(3)" ItemsProvider="provider" PageSize="10">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -249,7 +249,7 @@
             GridItemsProvider<GridItem> provider = _ =>
             {
                 calls++;
-                return ValueTask.FromResult(GridItemsProviderResult.From(Items(3).ToArray(), 3));
+                return ValueTask.FromResult(GridItemsProviderResult.From(CreateItems(3).ToArray(), 3));
             };
 
             var cut = ctx.Render(
@@ -277,7 +277,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10">
+                @<FormaDataGrid Items="CreateItems(3)" PageSize="10">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -297,7 +297,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10">
+                @<FormaDataGrid Items="CreateItems(3)" PageSize="10">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -316,7 +316,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10">
+                @<FormaDataGrid Items="CreateItems(3)" PageSize="10">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -336,7 +336,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(25)" PageSize="10" EnablePagination="false">
+                @<FormaDataGrid Items="CreateItems(25)" PageSize="10" EnablePagination="false">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -355,7 +355,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(25)" PageSize="10" EnablePagination="false" Virtualize="true">
+                @<FormaDataGrid Items="CreateItems(25)" PageSize="10" EnablePagination="false" Virtualize="true">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -374,7 +374,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" EnablePagination="false">
+                @<FormaDataGrid Items="CreateItems(3)" EnablePagination="false">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -393,7 +393,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10">
+                @<FormaDataGrid Items="CreateItems(3)" PageSize="10">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -412,7 +412,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(25)" PageSize="10">
+                @<FormaDataGrid Items="CreateItems(25)" PageSize="10">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -432,7 +432,7 @@
 
             // Act & Assert
             Assert.Throws<ArgumentOutOfRangeException>(() => ctx.Render(
-                @<FormaDataGrid Items="Items(3)">
+                @<FormaDataGrid Items="CreateItems(3)">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -445,7 +445,7 @@
             // Arrange — page forward so a stale index would survive the round trip
             using var ctx = new FormaDataGridTests();
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(25)" PageSize="10">
+                @<FormaDataGrid Items="CreateItems(25)" PageSize="10">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -474,7 +474,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(25)" PageSize="10">
+                @<FormaDataGrid Items="CreateItems(25)" PageSize="10">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -494,7 +494,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(25)" PageSize="10" PaginationOptions="options">
+                @<FormaDataGrid Items="CreateItems(25)" PageSize="10" PaginationOptions="options">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -513,7 +513,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10" QueryParameterNamePrefix="products">
+                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" QueryParameterNamePrefix="products">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" Sortable="true" />
                     </Columns>
@@ -532,7 +532,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableRowSelection="true">
+                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableRowSelection="true">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -552,8 +552,8 @@
             IReadOnlyList<GridItem>? changedTo = null;
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableRowSelection="true"
-                                SelectedItems="Items(3).ToArray()"
+                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableRowSelection="true"
+                                SelectedItems="CreateItems(3).ToArray()"
                                 SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
@@ -579,8 +579,8 @@
             IReadOnlyList<GridItem>? changedTo = null;
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableRowSelection="true"
-                                SelectedItems="Items(1).ToArray()"
+                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableRowSelection="true"
+                                SelectedItems="CreateItems(1).ToArray()"
                                 SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
@@ -607,7 +607,7 @@
             IReadOnlyList<GridItem>? changedTo = null;
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(5)" PageSize="10" EnableRowSelection="true"
+                @<FormaDataGrid Items="CreateItems(5)" PageSize="10" EnableRowSelection="true"
                                 SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
@@ -639,8 +639,8 @@
             var rejections = new List<SelectionRejected>();
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableRowSelection="true"
-                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Maximum = 1 })" SelectedItems="Items(1).ToArray()"
+                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableRowSelection="true"
+                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Maximum = 1 })" SelectedItems="CreateItems(1).ToArray()"
                                 SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)"
                                 OnSelectionRejected="@((SelectionRejected args) => rejections.Add(args))">
                     <Columns>
@@ -669,8 +669,8 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true"
-                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Maximum = 1 })" SelectedItems="Items(1).ToArray()">
+                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true"
+                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Maximum = 1 })" SelectedItems="CreateItems(1).ToArray()">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -692,8 +692,8 @@
             IReadOnlyList<GridItem>? changedTo = null;
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true"
-                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Minimum = 1 })" SelectedItems="Items(1).ToArray()"
+                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true"
+                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Minimum = 1 })" SelectedItems="CreateItems(1).ToArray()"
                                 SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
@@ -716,8 +716,8 @@
             IReadOnlyList<GridItem>? changedTo = null;
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true"
-                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Minimum = 1 })" SelectedItems="Items(1).ToArray()"
+                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true"
+                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Minimum = 1 })" SelectedItems="CreateItems(1).ToArray()"
                                 SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
@@ -740,7 +740,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true"
+                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true"
                                 CheckedSelectionOptions="@(new CheckedSelectionOptions { Caption = CheckedSelectionCaption.Hidden })">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
@@ -762,7 +762,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { Caption = caption })">
+                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { Caption = caption })">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -783,8 +783,8 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true"
-                                SelectedItems="Items(3).ToArray()" CheckedSelectionOptions="@(new CheckedSelectionOptions { Caption = caption })">
+                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true"
+                                SelectedItems="CreateItems(3).ToArray()" CheckedSelectionOptions="@(new CheckedSelectionOptions { Caption = caption })">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -804,7 +804,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true"
+                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true"
                                 CheckedSelectionOptions="@(new CheckedSelectionOptions { Caption = caption })">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
@@ -826,7 +826,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { Maximum = 2 })">
+                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { Maximum = 2 })">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -845,8 +845,8 @@
             var rejections = new List<SelectionRejected>();
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableCheckedSelection="true"
-                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Minimum = 1 })" SelectedItems="Items(1).ToArray()"
+                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true"
+                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Minimum = 1 })" SelectedItems="CreateItems(1).ToArray()"
                                 OnSelectionRejected="@((SelectionRejected args) => rejections.Add(args))">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
@@ -871,8 +871,8 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableRowSelection="true"
-                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Minimum = 2 })" SelectedItems="Items(1).ToArray()">
+                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableRowSelection="true"
+                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Minimum = 2 })" SelectedItems="CreateItems(1).ToArray()">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
@@ -890,21 +890,21 @@
             using var ctx = new FormaDataGridTests();
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableRowSelection="true">
+                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableRowSelection="true">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>
                 </FormaDataGrid>);
             cut.WaitForState(() => cut.FindAll("tbody .forma-data-grid-row-marker").Count == 3);
             var grid = cut.FindComponent<FormaDataGrid<GridItem>>();
-            var before = RowTokens(grid);
+            var before = GetRowTokens(grid);
 
             // Act
             grid.Render();
             grid.Render();
 
             // Assert
-            Assert.Equal(before, RowTokens(grid));
+            Assert.Equal(before, GetRowTokens(grid));
         }
 
         [Fact]
@@ -915,7 +915,7 @@
             IReadOnlyList<GridItem>? changedTo = null;
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10" EnableRowSelection="true"
+                @<FormaDataGrid Items="CreateItems(3)" PageSize="10" EnableRowSelection="true"
                                 SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
@@ -923,7 +923,7 @@
                 </FormaDataGrid>);
             cut.WaitForState(() => cut.FindAll("tbody .forma-data-grid-row-marker").Count == 3);
             var grid = cut.FindComponent<FormaDataGrid<GridItem>>();
-            var token = RowTokens(grid)[1];
+            var token = GetRowTokens(grid)[1];
 
             grid.Render();
             grid.Render();
@@ -944,7 +944,7 @@
             IReadOnlyList<GridItem>? changedTo = null;
 
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(4)" PageSize="2" EnableRowSelection="true"
+                @<FormaDataGrid Items="CreateItems(4)" PageSize="2" EnableRowSelection="true"
                                 SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
@@ -952,7 +952,7 @@
                 </FormaDataGrid>);
             cut.WaitForState(() => cut.FindAll("tbody .forma-data-grid-row-marker").Count == 2);
             var grid = cut.FindComponent<FormaDataGrid<GridItem>>();
-            var staleToken = RowTokens(grid)[0];
+            var staleToken = GetRowTokens(grid)[0];
 
             // Act — paging retires the first page's rows, the next pass drops them
             var pager = cut.FindComponent<FormaPagination>();
@@ -965,7 +965,7 @@
             Assert.Null(changedTo);
         }
 
-        private static IReadOnlyList<int> RowTokens<TComponent>(IRenderedComponent<TComponent> rendered)
+        private static IReadOnlyList<int> GetRowTokens<TComponent>(IRenderedComponent<TComponent> rendered)
             where TComponent : IComponent
             => [.. rendered.FindAll("tbody .forma-data-grid-row-marker")
                 .Select(marker => int.Parse(marker.GetAttribute("data-row-key")!, CultureInfo.InvariantCulture))];
@@ -975,7 +975,7 @@
 
     public sealed class InlineEditing
     {
-        private static List<Employee> Employees() =>
+        private static List<Employee> CreateEmployees() =>
         [
             new() { Id = 1, Name = "Alice", Salary = 100 },
             new() { Id = 2, Name = "Bob", Salary = 200 },
@@ -992,7 +992,7 @@
 
             // Act & Assert
             var exception = Assert.Throws<InvalidOperationException>(() => ctx.Render(
-                @<FormaDataGrid Items="Employees().AsQueryable()" PageSize="10" EnableInlineEditing="true">
+                @<FormaDataGrid Items="CreateEmployees().AsQueryable()" PageSize="10" EnableInlineEditing="true">
                     <Columns>
                         <FormaPropertyColumn Property="@(employee => employee.Name)" />
                     </Columns>
@@ -1009,7 +1009,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Employees().AsQueryable()" PageSize="10"
+                @<FormaDataGrid Items="CreateEmployees().AsQueryable()" PageSize="10"
                                 EnableInlineEditing="true" CloneForEdit="Clone">
                     <Columns>
                         <FormaPropertyColumn Property="@(employee => employee.Name)" />
@@ -1026,7 +1026,7 @@
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
-            var employees = Employees();
+            var employees = CreateEmployees();
 
             var cut = ctx.Render(
                 @<FormaDataGrid Items="employees.AsQueryable()" PageSize="10"
@@ -1052,7 +1052,7 @@
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
-            var employees = Employees();
+            var employees = CreateEmployees();
 
             var cut = ctx.Render(
                 @<FormaDataGrid Items="employees.AsQueryable()" PageSize="10"
@@ -1079,7 +1079,7 @@
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
-            var employees = Employees();
+            var employees = CreateEmployees();
 
             var cut = ctx.Render(
                 @<FormaDataGrid Items="employees.AsQueryable()" PageSize="10"
@@ -1104,7 +1104,7 @@
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
-            var employees = Employees();
+            var employees = CreateEmployees();
             Employee? saved = null;
 
             var cut = ctx.Render(
@@ -1134,7 +1134,7 @@
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
-            var employees = Employees();
+            var employees = CreateEmployees();
             var saved = false;
 
             var cut = ctx.Render(
@@ -1164,7 +1164,7 @@
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
-            var employees = Employees();
+            var employees = CreateEmployees();
 
             var cut = ctx.Render(
                 @<FormaDataGrid Items="employees.AsQueryable()" PageSize="10"
@@ -1192,7 +1192,7 @@
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
-            var employees = Employees();
+            var employees = CreateEmployees();
 
             var cut = ctx.Render(
                 @<FormaDataGrid Items="employees.AsQueryable()" PageSize="10"
@@ -1220,7 +1220,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Employees().AsQueryable()" PageSize="10"
+                @<FormaDataGrid Items="CreateEmployees().AsQueryable()" PageSize="10"
                                 EnableInlineEditing="true" CloneForEdit="Clone">
                     <Columns>
                         <FormaPropertyColumn Property="@(employee => employee.Name)" />
@@ -1240,7 +1240,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Employees().AsQueryable()" PageSize="10">
+                @<FormaDataGrid Items="CreateEmployees().AsQueryable()" PageSize="10">
                     <Columns>
                         <FormaPropertyColumn Property="@(employee => employee.Salary)" Format="N2" />
                     </Columns>
@@ -1274,7 +1274,7 @@
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
-            var employees = Employees();
+            var employees = CreateEmployees();
 
             var cut = ctx.Render(
                 @<FormaDataGrid Items="employees.AsQueryable()" PageSize="10"
@@ -1300,7 +1300,7 @@
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
-            var employees = Employees();
+            var employees = CreateEmployees();
 
             var cut = ctx.Render(
                 @<FormaDataGrid Items="employees.AsQueryable()" PageSize="10"

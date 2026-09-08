@@ -55,7 +55,7 @@ public sealed partial class FormaFileUploaderPage : ComponentBase
 
     private void Accept(string key, IReadOnlyList<IBrowserFile> files)
     {
-        Entries(key).Clear();
+        GetEntries(key).Clear();
         Store(key).ClearBeforeSave = true;
         _selectedFiles[key] = files;
     }
@@ -64,11 +64,11 @@ public sealed partial class FormaFileUploaderPage : ComponentBase
     {
         foreach (var resource in resources)
         {
-            Entries(key).Add(L["Stored at {Source}", resource.Source]);
+            GetEntries(key).Add(L["Stored at {Source}", resource.Source]);
         }
     }
 
-    private List<string> Entries(string key)
+    private List<string> GetEntries(string key)
     {
         if (!_logs.TryGetValue(key, out var lines))
         {
@@ -80,9 +80,9 @@ public sealed partial class FormaFileUploaderPage : ComponentBase
     }
 
     private void Fail(string key, UploadFailure failure)
-        => Entries(key).Add(L["{Name} was refused: {Reason}", failure.Name, failure.Error.Message]);
+        => GetEntries(key).Add(L["{Name} was refused: {Reason}", failure.Name, failure.Error.Message]);
 
-    private string Holding(DefaultFileStore store)
+    private string DescribeHeldFiles(DefaultFileStore store)
     {
         var held = store.Held;
 
@@ -94,7 +94,7 @@ public sealed partial class FormaFileUploaderPage : ComponentBase
     private List<string> Log(string key)
         => _logs.TryGetValue(key, out var lines) ? lines : [];
 
-    private IReadOnlyList<IBrowserFile>? Selected(string key)
+    private IReadOnlyList<IBrowserFile>? GetSelectedFiles(string key)
         => _selectedFiles.TryGetValue(key, out var files) ? files : null;
 
     private void SetStore(string key, long? refusesOver = null, TimeSpan chunkDelay = default)

@@ -5,7 +5,7 @@
         @if (!HasInputByState)
         {
             <ul class="forma-pagination-navigation-steps">
-                <li>@NavigationButton(NavigationDirection.Previous, StepsStride)</li>
+                <li>@RenderNavigationButton(NavigationDirection.Previous, StepsStride)</li>
                 @foreach (var step in NavigationSteps)
                 {
                     <li>
@@ -39,13 +39,13 @@
                         }
                     </li>
                 }
-                <li>@NavigationButton(NavigationDirection.Next, StepsStride)</li>
+                <li>@RenderNavigationButton(NavigationDirection.Next, StepsStride)</li>
             </ul>
         }
 
         @* The input row stands in for the steps: always when state calls for it, otherwise only where the steps do not fit. *@
         <div class="@(HasInputByState ? "forma-pagination-navigation-input" : "forma-pagination-navigation-input forma-pagination-navigation-input-fallback")">
-            @NavigationButton(NavigationDirection.Previous, 1)
+            @RenderNavigationButton(NavigationDirection.Previous, 1)
             <div class="forma-pagination-navigation-input-group">
                 <label class="forma-pagination-navigation-input-label" for="@_navigationInputId">@L["Go to Page"]</label>
                 <FormaTextBox @ref="NavigationInput"
@@ -63,14 +63,14 @@
                     @L["Go"]
                 </FormaButton>
             </div>
-            @NavigationButton(NavigationDirection.Next, 1)
+            @RenderNavigationButton(NavigationDirection.Next, 1)
         </div>
     </nav>
 }
 
 @code {
     // A navigation button; the stride is how far it moves.
-    private RenderFragment NavigationButton(NavigationDirection direction, int stride) => @<FormaButton Variant="ButtonVariant.Tertiary"
+    private RenderFragment RenderNavigationButton(NavigationDirection direction, int stride) => @<FormaButton Variant="ButtonVariant.Tertiary"
                  class="@(direction is NavigationDirection.Previous ? "forma-pagination-navigation-button forma-pagination-navigation-button-previous" : "forma-pagination-navigation-button forma-pagination-navigation-button-next")"
                  Disabled="@(direction is NavigationDirection.Previous ? ActivePage <= 1 : ActivePage >= PageCount)"
                  aria-label="@(direction is NavigationDirection.Previous ? L["Previous"] : L["Next"])"

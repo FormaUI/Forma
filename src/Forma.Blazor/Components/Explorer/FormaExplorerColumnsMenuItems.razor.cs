@@ -32,7 +32,7 @@ public sealed partial class FormaExplorerColumnsMenuItems : ComponentBase
         }
     }
 
-    private string ColumnLabel(ExplorerDetailsColumns column)
+    private string GetColumnLabel(ExplorerDetailsColumns column)
         => column switch
         {
             ExplorerDetailsColumns.Kind => L["Type"].Value,

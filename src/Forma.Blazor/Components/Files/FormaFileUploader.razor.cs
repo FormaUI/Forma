@@ -162,7 +162,7 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
         return _uploadTask;
     }
 
-    private static Glyph StateGlyph(UploadState state)
+    private static Glyph GetStateGlyph(UploadState state)
         => state switch
         {
             UploadState.Completed => Glyph.Check,
@@ -179,7 +179,7 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
         var upload = _batch[index];
         var percent = upload.TotalBytes == 0 ? 100 : (int)Math.Min(totalRead * 100 / upload.TotalBytes, 100);
 
-        if (percent == upload.ProgressPercentage && !ByteCountDue())
+        if (percent == upload.ProgressPercentage && !IsByteCountDue())
         {
             return;
         }
@@ -194,23 +194,23 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
         });
     }
 
-    private bool ByteCountDue()
+    private bool IsByteCountDue()
         => Options.ShowByteCount && Stopwatch.GetElapsedTime(_lastProgressTimestamp) >= ProgressInterval;
 
     /// <summary>How much of one file has reached the store, against its total.</summary>
-    private string FileByteCount(UploadFile upload)
+    private string FormatFileByteCount(UploadFile upload)
         => upload.State == UploadState.Pending
             ? ResourceFormatter.FromByteCount(upload.TotalBytes)
             : GetByteCount(upload.BytesTransferred, upload.TotalBytes);
 
     /// <summary>How fast one file is reaching the store, or nothing while it waits its turn.</summary>
-    private static string FileRate(UploadFile upload)
+    private static string FormatFileRate(UploadFile upload)
         => upload.State == UploadState.Pending
             ? string.Empty
             : ResourceFormatter.FromTransferRate(upload.BytesPerSecond);
 
     /// <summary>What one file has left to run while it is moving, and how long it took once it stopped.</summary>
-    private string FileTime(UploadFile upload)
+    private string FormatFileTime(UploadFile upload)
     {
         if (upload.State == UploadState.Pending)
         {
@@ -371,7 +371,7 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
         Rerender();
     }
 
-    private string StateText(UploadState state)
+    private string GetStateText(UploadState state)
         => state switch
         {
             UploadState.Completed => L["Stored"],

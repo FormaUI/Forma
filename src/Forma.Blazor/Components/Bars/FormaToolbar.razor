@@ -72,8 +72,8 @@
                         var isToggleActive = IsToggleActive(action);
                         var showsLabel = action.Icon is null || ShowLabels;
                         <FormaToggleButton @key="action.Id"
-                                            Icon="EffectiveIcon(action)"
-                                            Label="@EffectiveTitle(action)"
+                                            Icon="GetEffectiveIcon(action)"
+                                            Label="@GetEffectiveTitle(action)"
                                             ShowLabel="ShowLabels"
                                             Pressed="@(action is FormaToolbarToggle ? isToggleActive : null)"
                                             Disabled="@(Disabled || IsUnavailable(action))"

@@ -117,7 +117,7 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
 
     private IReadOnlyList<EmojiInfo> MatchingEmojis
         => _matchingEmojis ??= IsSearching ? _catalog.Find(_searchQuery)
-            : ActiveGroupId == RecentGroupId ? RecentEmoji()
+            : ActiveGroupId == RecentGroupId ? GetRecentEmojis()
             : _catalog.TryFindByGroupId(ActiveGroupId, out var emojis) ? emojis : [];
 
     private string HeadingText
@@ -128,11 +128,11 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
     // The sheets the visible emoji need, in the order they are rendered, so a prefix of this is what has loaded.
     // An emoji whose artwork carries no sheet — native or an image — needs nothing awaited.
     private IReadOnlyList<string> RequiredSheets
-        => _requiredSheets ??= [.. MatchingEmojis.Select(Sheet).OfType<string>().Distinct(StringComparer.Ordinal)];
+        => _requiredSheets ??= [.. MatchingEmojis.Select(GetSheet).OfType<string>().Distinct(StringComparer.Ordinal)];
 
     // Cells stop at the first sheet still missing, so nothing renders ahead of its own artwork.
     private IReadOnlyList<EmojiInfo> RenderedEmojis
-        => _renderedEmojis ??= [.. MatchingEmojis.TakeWhile(info => Sheet(info) is not { } sheet || IsCompleted(sheet))];
+        => _renderedEmojis ??= [.. MatchingEmojis.TakeWhile(info => GetSheet(info) is not { } sheet || IsCompleted(sheet))];
 
     /// <summary>Forgets the derived view, so the next read rebuilds it from the state that just changed.</summary>
     private void InvalidateView()
@@ -189,10 +189,10 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
     public async ValueTask DisposeAsync()
         => await _sentinel.DisposeAsync();
 
-    private string TabElementId(string groupId)
+    private string GetTabElementId(string groupId)
         => $"{ElementId}-tab-{groupId}";
 
-    private static Icon TabIcon(string groupId)
+    private static Icon GetTabIcon(string groupId)
         => TabGlyphs.TryGetValue(groupId, out var glyph) ? glyph : Glyph.Emoji;
 
     private int IndexOfTab(string groupId)
@@ -208,7 +208,7 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
         return -1;
     }
 
-    private string? Sheet(EmojiInfo info)
+    private string? GetSheet(EmojiInfo info)
         => _provider.GetArtwork(info.Emoji) is EmojiSprite sprite ? sprite.Sheet : null;
 
     private bool IsCompleted(string sheet)
@@ -261,7 +261,7 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
         await LoadNextSheetAsync();
     }
 
-    private IReadOnlyList<EmojiInfo> RecentEmoji()
+    private IReadOnlyList<EmojiInfo> GetRecentEmojis()
         => [.. Recent.Select(sequence => Emoji.TryCreate(sequence, out var emoji) && _catalog.TryGetByEmoji(emoji, out var info) ? info : null).OfType<EmojiInfo>()];
 
     private async Task OnQueryChangedAsync(string query)

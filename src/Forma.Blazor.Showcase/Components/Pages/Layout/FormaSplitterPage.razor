@@ -107,17 +107,17 @@
     private bool _isResizingPanel;
     private bool _isResizingTree;
 
-    private string RowStyle => Size("--demo-pane-size", _panelWidth, "rem");
+    private string RowStyle => GetSize("--demo-pane-size", _panelWidth, "rem");
 
-    private string TreeStyle => Size("block-size", _treeHeight, "rem");
+    private string TreeStyle => GetSize("block-size", _treeHeight, "rem");
 
-    private string ClampedStyle => Size("--demo-pane-size", _clampedWidth, "rem");
+    private string ClampedStyle => GetSize("--demo-pane-size", _clampedWidth, "rem");
 
-    private string SteppedStyle => Size("--demo-pane-size", _steppedWidth, "rem");
+    private string SteppedStyle => GetSize("--demo-pane-size", _steppedWidth, "rem");
 
-    private string PixelStyle => Size("--demo-pane-size", _pixelWidth, "px");
+    private string PixelStyle => GetSize("--demo-pane-size", _pixelWidth, "px");
 
-    private static string Size(string property, double value, string unit)
+    private static string GetSize(string property, double value, string unit)
         => string.Create(CultureInfo.InvariantCulture, $"{property}: {value}{unit}");
 
     private static string Format(double value)

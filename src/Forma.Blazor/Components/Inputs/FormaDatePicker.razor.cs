@@ -185,7 +185,7 @@ public sealed partial class FormaDatePicker : ComponentBase
 
     // ── Navigation ───────────────────────────────────
 
-    private void PanelPrev(int panelIndex)
+    private void ShowPreviousPanel(int panelIndex)
     {
         if (CanPanelGoPrev(panelIndex))
         {
@@ -193,7 +193,7 @@ public sealed partial class FormaDatePicker : ComponentBase
         }
     }
 
-    private void PanelNext(int panelIndex)
+    private void ShowNextPanel(int panelIndex)
     {
         if (CanPanelGoNext(panelIndex))
         {
@@ -322,10 +322,10 @@ public sealed partial class FormaDatePicker : ComponentBase
         (MinDate.HasValue && date < MinDate.Value) ||
         (MaxDate.HasValue && date > MaxDate.Value);
 
-    private static bool MarksToday(string dayClasses)
+    private static bool IsToday(string dayClasses)
         => dayClasses.Contains("today", StringComparison.Ordinal);
 
-    private static bool MarksSelected(string dayClasses)
+    private static bool IsSelected(string dayClasses)
         => dayClasses.Contains("selected", StringComparison.Ordinal);
 
     private string GetDayClasses(DateOnly date)
@@ -434,7 +434,7 @@ public sealed partial class FormaDatePicker : ComponentBase
             Preset.Last7Days => (today.AddDays(-(ShortRangeDays - 1)), today),
             Preset.Last30Days => (today.AddDays(-(LongRangeDays - 1)), today),
             Preset.ThisMonth => (_calendar.GetMonthStart(_calendar.GetYear(today), _calendar.GetMonth(today)), today),
-            Preset.LastMonth => CalendarLastMonthRange(today),
+            Preset.LastMonth => GetLastMonthRange(today),
             _ => (today, today)
         };
 
@@ -506,7 +506,7 @@ public sealed partial class FormaDatePicker : ComponentBase
         return false;
     }
 
-    private (DateOnly start, DateOnly end) CalendarLastMonthRange(DateOnly today)
+    private (DateOnly start, DateOnly end) GetLastMonthRange(DateOnly today)
     {
         var thisMonthStart = _calendar.GetMonthStart(_calendar.GetYear(today), _calendar.GetMonth(today));
         var lastMonthEnd = thisMonthStart.AddDays(-1);

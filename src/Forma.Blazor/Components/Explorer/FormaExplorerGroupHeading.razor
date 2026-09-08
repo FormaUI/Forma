@@ -5,6 +5,6 @@
         aria-expanded="@(Collapsed ? "false" : "true")"
         @onclick="OnToggle">
     <span class="forma-explorer-group-chevron" aria-hidden="true"><FormaIcon Icon="@(Collapsed ? Glyph.ChevronRight : Glyph.ChevronDown)" Size="IconSize.Small" /></span>
-    <span class="forma-explorer-group-label">@ExplorerGroupPresentation.Label(L, Group)</span>
+    <span class="forma-explorer-group-label">@ExplorerGroupPresentation.GetLabel(L, Group)</span>
     <span class="forma-explorer-group-count">@Group.Items.Count</span>
 </button>

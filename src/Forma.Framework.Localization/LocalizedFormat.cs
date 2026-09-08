@@ -14,7 +14,7 @@ public static class LocalizedFormat
     {
         ArgumentNullException.ThrowIfNull(format);
 
-        var names = Names(format);
+        var names = GetNames(format);
         if (names.Count == 0)
         {
             return values.Length switch
@@ -76,7 +76,7 @@ public static class LocalizedFormat
         return builder.ToString();
     }
 
-    private static List<string> Names(string format)
+    private static List<string> GetNames(string format)
     {
         var names = new List<string>();
 

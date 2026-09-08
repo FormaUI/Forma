@@ -10,7 +10,7 @@ public sealed class LocalizationMetadataTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var strings = Locale<Unmarked>();
+        var strings = CreateLocale<Unmarked>();
 
         // Act
         var thrown = Assert.Throws<LocalizationMetadataException>(() => strings["Save"]);
@@ -24,7 +24,7 @@ public sealed class LocalizationMetadataTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var strings = Locale<MalformedMetadata>();
+        var strings = CreateLocale<MalformedMetadata>();
 
         // Assert
         Assert.Throws<LocalizationMetadataException>(() => strings["Save"]);
@@ -36,7 +36,7 @@ public sealed class LocalizationMetadataTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var strings = Locale<FutureSchema>();
+        var strings = CreateLocale<FutureSchema>();
 
         // Act
         var thrown = Assert.Throws<LocalizationMetadataException>(() => strings["Save"]);
@@ -55,7 +55,7 @@ public sealed class LocalizationMetadataTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var strings = Locale<NewerMinor>();
+        var strings = CreateLocale<NewerMinor>();
 
         // Act
         var localized = strings["Save"];
@@ -69,7 +69,7 @@ public sealed class LocalizationMetadataTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var strings = Locale<MismatchedCulture>();
+        var strings = CreateLocale<MismatchedCulture>();
 
         // Act
         var thrown = Assert.Throws<LocalizationMetadataException>(() => strings["Save"]);
@@ -83,7 +83,7 @@ public sealed class LocalizationMetadataTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var strings = Locale<Colocated>();
+        var strings = CreateLocale<Colocated>();
 
         // Act
         var localized = strings["$localization"];
@@ -97,7 +97,7 @@ public sealed class LocalizationMetadataTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var strings = Locale<Colocated>();
+        var strings = CreateLocale<Colocated>();
 
         // Act
         var all = strings.GetAllStrings(includeParentCultures: true);
@@ -121,6 +121,6 @@ public sealed class LocalizationMetadataTests
         Assert.Equal("היום", localized.Value);
     }
 
-    private static IStringLocale Locale<TSource>()
+    private static IStringLocale CreateLocale<TSource>()
         => new JsonStringLocaleFactory(new JsonLocalizationOptions()).Create(typeof(TSource));
 }

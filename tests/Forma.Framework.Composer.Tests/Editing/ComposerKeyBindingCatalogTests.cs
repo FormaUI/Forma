@@ -12,15 +12,15 @@ public sealed class ComposerKeyBindingCatalogTests
         public IReadOnlyList<ComposerKeyBinding> KeyBindings { get; } = bindings;
     }
 
-    private static ComposerKeyBinding Binding(string key, string command, bool shift = false)
+    private static ComposerKeyBinding CreateBinding(string key, string command, bool shift = false)
         => new() { Key = key, Command = command, Control = true, Shift = shift };
 
     [Fact]
     public void Should_merge_bindings_from_every_provider()
     {
         // Arrange
-        var first = new Source(Binding("b", "bold"));
-        var second = new Source(Binding("i", "italic"));
+        var first = new Source(CreateBinding("b", "bold"));
+        var second = new Source(CreateBinding("i", "italic"));
 
         // Act
         var map = new ComposerKeyBindingCatalog([first, second]);
@@ -33,7 +33,7 @@ public sealed class ComposerKeyBindingCatalogTests
     public void Should_find_the_binding_a_command_answers_to()
     {
         // Arrange
-        var map = new ComposerKeyBindingCatalog([new Source(Binding("b", "bold"))]);
+        var map = new ComposerKeyBindingCatalog([new Source(CreateBinding("b", "bold"))]);
 
         // Act
         var binding = map.FindByCommand("bold");
@@ -46,8 +46,8 @@ public sealed class ComposerKeyBindingCatalogTests
     public void Should_let_the_earliest_provider_win_a_contested_command()
     {
         // Arrange
-        var engine = new Source(Binding("z", "undo"));
-        var plugin = new Source(Binding("u", "undo"));
+        var engine = new Source(CreateBinding("z", "undo"));
+        var plugin = new Source(CreateBinding("u", "undo"));
 
         // Act
         var map = new ComposerKeyBindingCatalog([engine, plugin]);
@@ -60,7 +60,7 @@ public sealed class ComposerKeyBindingCatalogTests
     public void Should_return_null_for_an_unbound_command()
     {
         // Arrange
-        var map = new ComposerKeyBindingCatalog([new Source(Binding("b", "bold"))]);
+        var map = new ComposerKeyBindingCatalog([new Source(CreateBinding("b", "bold"))]);
 
         // Act
         var binding = map.FindByCommand("italic");

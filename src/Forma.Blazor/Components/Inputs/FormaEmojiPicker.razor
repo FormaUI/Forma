@@ -12,7 +12,7 @@
                 <button @key="tab.Id"
                         type="button"
                         role="tab"
-                        id="@TabElementId(tab.Id)"
+                        id="@GetTabElementId(tab.Id)"
                         class="forma-emoji-picker-tab"
                         title="@tab.Title"
                         aria-label="@tab.Title"
@@ -21,7 +21,7 @@
                         tabindex="@(isActive ? "0" : "-1")"
                         @onclick="() => SelectGroupAsync(tab.Id)"
                         @onkeydown="OnTabKeyDownAsync">
-                    <FormaIcon Icon="TabIcon(tab.Id)" Size="IconSize.Small" />
+                    <FormaIcon Icon="GetTabIcon(tab.Id)" Size="IconSize.Small" />
                 </button>
             }
         </div>
@@ -38,7 +38,7 @@
          id="@PanelElementId"
          @ref="_panelElement"
          role="tabpanel"
-         aria-labelledby="@(IsSearching || !Options.ShowGroupTabs ? null : TabElementId(ActiveGroupId))">
+         aria-labelledby="@(IsSearching || !Options.ShowGroupTabs ? null : GetTabElementId(ActiveGroupId))">
 
         @if (MatchingEmojis.Count == 0)
         {

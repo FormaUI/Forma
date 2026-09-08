@@ -13,7 +13,7 @@ public sealed class ComposerTextTests
         const string content = "hello world";
 
         // Act
-        var word = ComposerText.WordAt(content, 2);
+        var word = ComposerText.GetWordAt(content, 2);
 
         // Assert
         Assert.Equal("hello", word.Text);
@@ -26,7 +26,7 @@ public sealed class ComposerTextTests
         const string content = "a  b";
 
         // Act
-        var word = ComposerText.WordAt(content, 2);
+        var word = ComposerText.GetWordAt(content, 2);
 
         // Assert
         Assert.Equal(string.Empty, word.Text);
@@ -39,7 +39,7 @@ public sealed class ComposerTextTests
         const string content = "my_variable here";
 
         // Act
-        var word = ComposerText.WordAt(content, 3);
+        var word = ComposerText.GetWordAt(content, 3);
 
         // Assert
         Assert.Equal("my_variable", word.Text);
@@ -52,8 +52,8 @@ public sealed class ComposerTextTests
         const string content = "hello world";
 
         // Act
-        var forward = ComposerText.Selected(content, new ComposerSelection { Start = 0, End = 5 });
-        var backward = ComposerText.Selected(content, new ComposerSelection { Start = 5, End = 0 });
+        var forward = ComposerText.GetSelected(content, new ComposerSelection { Start = 0, End = 5 });
+        var backward = ComposerText.GetSelected(content, new ComposerSelection { Start = 5, End = 0 });
 
         // Assert
         Assert.Multiple(
@@ -68,7 +68,7 @@ public sealed class ComposerTextTests
         const string content = "one\ntwo\nthree";
 
         // Act
-        var lines = ComposerText.Lines(content, new ComposerSelection { Start = 5, End = 5 });
+        var lines = ComposerText.GetLines(content, new ComposerSelection { Start = 5, End = 5 });
 
         // Assert
         var line = Assert.Single(lines);
@@ -82,7 +82,7 @@ public sealed class ComposerTextTests
         const string content = "one\ntwo\nthree";
 
         // Act
-        var lines = ComposerText.Lines(content, new ComposerSelection { Start = 1, End = 9 });
+        var lines = ComposerText.GetLines(content, new ComposerSelection { Start = 1, End = 9 });
 
         // Assert
         Assert.Equal(["one", "two", "three"], lines.Select(l => l.Text));
@@ -165,7 +165,7 @@ public sealed class ComposerTextTests
         const string content = "hello";
 
         // Act
-        var word = ComposerText.WordAt(content, 999);
+        var word = ComposerText.GetWordAt(content, 999);
 
         // Assert
         Assert.Equal("hello", word.Text);

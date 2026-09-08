@@ -39,7 +39,7 @@ public sealed class DiscordWebhookShare : ApiShare
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        var address = item.Address ?? ReachableSource(item);
+        var address = item.Address ?? GetReachableSource(item);
 
         if (address is null)
         {

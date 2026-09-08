@@ -50,7 +50,7 @@
         var relative = Nav.ToBaseRelativePath(Nav.Uri).Split('?', '#')[0].TrimStart('/');
 
         _path = Router.Match(new PathString("/" + relative)).Path.Value ?? "/";
-        _variants = ShowcaseCatalog.Variants(_path);
+        _variants = ShowcaseCatalog.GetVariants(_path);
     }
 
     private bool IsCurrent(ShowcasePage page)

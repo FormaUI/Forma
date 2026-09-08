@@ -39,7 +39,7 @@ public sealed partial class FormaExplorerBreadcrumb : ComponentBase
                 new(L["All Media"].Value)
                 {
                     IsCurrent = Location.CurrentFolder is null,
-                    Children = ChildrenAsItems(null)
+                    Children = GetChildItems(null)
                 }
             };
 
@@ -49,7 +49,7 @@ public sealed partial class FormaExplorerBreadcrumb : ComponentBase
                 {
                     Value = segment,
                     IsCurrent = Location.CurrentFolder?.Key == segment.Key,
-                    Children = ChildrenAsItems(segment.Key)
+                    Children = GetChildItems(segment.Key)
                 });
             }
 
@@ -57,7 +57,7 @@ public sealed partial class FormaExplorerBreadcrumb : ComponentBase
         }
     }
 
-    private List<BreadcrumbItem<IExplorerFolderItem>>? ChildrenAsItems(string? folderKey)
+    private List<BreadcrumbItem<IExplorerFolderItem>>? GetChildItems(string? folderKey)
     {
         if (!Configuration.Options.ShowFolderMenu)
         {

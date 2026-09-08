@@ -55,7 +55,7 @@ public sealed partial class FormaExplorerSidebar : ComponentBase, IExplorerSideb
     private readonly string _titleId = $"forma-explorer-folders-{Guid.NewGuid():N}";
 
     private IEnumerable<string> ExpandableFolderKeys
-        => FolderTree.Expandable().Select(item => item.Key);
+        => FolderTree.GetExpandableFolders().Select(item => item.Key);
 
     private bool HasExpandableFolders
         => ExpandableFolderKeys.Any();

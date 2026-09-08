@@ -16,13 +16,13 @@ public sealed partial class PageLocalization : ComponentBase
     [Inject] private CultureRouter Router { get; set; } = default!;
 
     private IEnumerable<(string HrefLang, string Url)> Alternates
-        => Router.Routes.Select(route => (route.HrefLang, UrlFor(route)));
+        => Router.Routes.Select(route => (route.HrefLang, GetUrl(route)));
 
     private string Canonical
-        => UrlFor(_currentRoute ?? Router.CurrentRoute);
+        => GetUrl(_currentRoute ?? Router.CurrentRoute);
 
     private string XDefault
-        => UrlFor(Router.DefaultRoute);
+        => GetUrl(Router.DefaultRoute);
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -40,6 +40,6 @@ public sealed partial class PageLocalization : ComponentBase
         _currentRoute = string.Equals(match.Path.Value, path.Value, StringComparison.Ordinal) ? null : match.Route;
     }
 
-    private string UrlFor(CultureRoute route)
+    private string GetUrl(CultureRoute route)
         => _origin + Router.GetUrl(route, _relativePath);
 }

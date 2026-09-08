@@ -15,10 +15,10 @@ public sealed class WindowManagerTests
         return window;
     }
 
-    private static WindowSelector Only(IWindow window)
+    private static WindowSelector GetSelector(IWindow window)
         => new() { Window = window };
 
-    private static List<string> Titles(IEnumerable<IWindow> windows)
+    private static List<string> GetTitles(IEnumerable<IWindow> windows)
         => [.. windows.Select(window => window.Title)];
 
     public sealed class Registration
@@ -34,7 +34,7 @@ public sealed class WindowManagerTests
             await AddAsync(manager, "Second");
 
             // Assert
-            Assert.Equal(["First", "Second"], Titles(manager.StackedWindows));
+            Assert.Equal(["First", "Second"], GetTitles(manager.StackedWindows));
         }
 
         [Fact]
@@ -148,7 +148,7 @@ public sealed class WindowManagerTests
             Assert.Multiple(
                 () => Assert.Same(second, manager.GetParent(child)),
                 () => Assert.Empty(manager.GetChildren(first)),
-                () => Assert.Equal(["Child"], Titles(manager.GetChildren(second))));
+                () => Assert.Equal(["Child"], GetTitles(manager.GetChildren(second))));
         }
 
         [Fact]
@@ -177,8 +177,8 @@ public sealed class WindowManagerTests
             var manager = new WindowManager();
             var older = await AddAsync(manager, "Older");
             var current = await AddAsync(manager, "Current");
-            await manager.ActivateAsync(Only(older));
-            await manager.ActivateAsync(Only(current));
+            await manager.ActivateAsync(GetSelector(older));
+            await manager.ActivateAsync(GetSelector(current));
 
             // Act
             current.IsDisabled = true;
@@ -203,7 +203,7 @@ public sealed class WindowManagerTests
             await manager.RefreshAsync(modal);
 
             // Assert
-            Assert.Equal(["Page", "Modal"], Titles(manager.StackedWindows));
+            Assert.Equal(["Page", "Modal"], GetTitles(manager.StackedWindows));
         }
     }
 
@@ -223,7 +223,7 @@ public sealed class WindowManagerTests
             // Assert
             Assert.Multiple(
                 () => Assert.True(found),
-                () => Assert.Equal(["One", "Two"], Titles(windows)));
+                () => Assert.Equal(["One", "Two"], GetTitles(windows)));
         }
 
         [Fact]
@@ -261,8 +261,8 @@ public sealed class WindowManagerTests
 
             // Assert
             Assert.Multiple(
-                () => Assert.Equal(["A", "B", "C"], Titles(byOrigin)),
-                () => Assert.Equal(["C"], Titles(byInstance)));
+                () => Assert.Equal(["A", "B", "C"], GetTitles(byOrigin)),
+                () => Assert.Equal(["C"], GetTitles(byInstance)));
         }
 
         [Fact]
@@ -298,8 +298,8 @@ public sealed class WindowManagerTests
 
             // Assert
             Assert.Multiple(
-                () => Assert.Equal(["Child"], Titles(children)),
-                () => Assert.Equal(["Child", "Grandchild"], Titles(descendants)),
+                () => Assert.Equal(["Child"], GetTitles(children)),
+                () => Assert.Equal(["Child", "Grandchild"], GetTitles(descendants)),
                 () => Assert.Equal(4, everything.Count));
         }
 
@@ -310,8 +310,8 @@ public sealed class WindowManagerTests
             var manager = new WindowManager();
             var back = await AddAsync(manager, "Back");
             var front = await AddAsync(manager, "Front");
-            await manager.ActivateAsync(Only(back));
-            await manager.ActivateAsync(Only(front));
+            await manager.ActivateAsync(GetSelector(back));
+            await manager.ActivateAsync(GetSelector(front));
 
             // Act
             manager.TryFindWindows(WindowSelector.All, out var all);
@@ -340,7 +340,7 @@ public sealed class WindowManagerTests
             // Act & Assert
             await Assert.ThrowsAsync<ArgumentException>(async () => await manager.MinimizeAsync(new WindowSelector()));
             await Assert.ThrowsAsync<ArgumentException>(async () => await manager.MinimizeAsync(new WindowSelector { Recursive = true }));
-            await Assert.ThrowsAsync<ArgumentException>(async () => await manager.MinimizeAsync(Only(foreign)));
+            await Assert.ThrowsAsync<ArgumentException>(async () => await manager.MinimizeAsync(GetSelector(foreign)));
             Assert.Throws<ArgumentException>(() => manager.TryFindWindows(new OtherSelector(), out _));
         }
 
@@ -365,9 +365,9 @@ public sealed class WindowManagerTests
             // Assert
             Assert.Multiple(
                 () => Assert.Equal([window], itself),
-                () => Assert.Equal(["Child", "Properties"], Titles(everyDescendant)),
+                () => Assert.Equal(["Child", "Properties"], GetTitles(everyDescendant)),
                 () => Assert.Single(titled),
-                () => Assert.Equal(["Properties"], Titles(underChild)));
+                () => Assert.Equal(["Properties"], GetTitles(underChild)));
         }
 
         [Fact]
@@ -413,10 +413,10 @@ public sealed class WindowManagerTests
             var manager = new WindowManager();
             var first = await AddAsync(manager, "First");
             var second = await AddAsync(manager, "Second");
-            await manager.ActivateAsync(Only(second));
+            await manager.ActivateAsync(GetSelector(second));
 
             // Act
-            var result = await manager.ActivateAsync(Only(first));
+            var result = await manager.ActivateAsync(GetSelector(first));
 
             // Assert
             Assert.Multiple(
@@ -424,7 +424,7 @@ public sealed class WindowManagerTests
                 () => Assert.Same(first, manager.Current),
                 () => Assert.True(first.IsActive),
                 () => Assert.False(second.IsActive),
-                () => Assert.Equal(["Second", "First"], Titles(manager.StackedWindows)));
+                () => Assert.Equal(["Second", "First"], GetTitles(manager.StackedWindows)));
         }
 
         [Fact]
@@ -434,11 +434,11 @@ public sealed class WindowManagerTests
             var manager = new WindowManager();
             var parent = await AddAsync(manager, "Parent");
             var child = await AddAsync(manager, "Child", parent);
-            await manager.MinimizeAsync(Only(child));
-            await manager.MinimizeAsync(Only(parent));
+            await manager.MinimizeAsync(GetSelector(child));
+            await manager.MinimizeAsync(GetSelector(parent));
 
             // Act
-            await manager.ActivateAsync(Only(child));
+            await manager.ActivateAsync(GetSelector(child));
 
             // Assert
             Assert.Multiple(
@@ -458,8 +458,8 @@ public sealed class WindowManagerTests
             var sibling = await AddAsync(manager, "Sibling");
 
             // Act
-            var fromParent = await manager.ActivateAsync(Only(parent));
-            var fromSibling = await manager.ActivateAsync(Only(sibling));
+            var fromParent = await manager.ActivateAsync(GetSelector(parent));
+            var fromSibling = await manager.ActivateAsync(GetSelector(sibling));
 
             // Assert
             Assert.Multiple(
@@ -479,7 +479,7 @@ public sealed class WindowManagerTests
             var modal = await AddAsync(manager, "Modal", configure: window => window.IsModal = true);
 
             // Act
-            var result = await manager.ActivateAsync(Only(blocked));
+            var result = await manager.ActivateAsync(GetSelector(blocked));
 
             // Assert
             Assert.Multiple(
@@ -499,10 +499,10 @@ public sealed class WindowManagerTests
             // Act
             await manager.RegisterAsync(modal);
             var blockedWhileShown = (parent.IsBlocked, sibling.IsBlocked);
-            await manager.MinimizeAsync(Only(modal));
+            await manager.MinimizeAsync(GetSelector(modal));
             var blockedWhileMinimized = parent.IsBlocked;
-            await manager.RestoreAsync(Only(modal));
-            await manager.CloseAsync(Only(modal));
+            await manager.RestoreAsync(GetSelector(modal));
+            await manager.CloseAsync(GetSelector(modal));
 
             // Assert
             Assert.Multiple(
@@ -517,7 +517,7 @@ public sealed class WindowManagerTests
             // Arrange
             var manager = new WindowManager();
             var page = await AddAsync(manager, "Page");
-            await manager.ActivateAsync(Only(page));
+            await manager.ActivateAsync(GetSelector(page));
 
             // Act
             await AddAsync(manager, "Modal", configure: window => window.IsModal = true);
@@ -554,7 +554,7 @@ public sealed class WindowManagerTests
             var window = await AddAsync(manager, "Window", configure: window => window.IsDisabled = true);
 
             // Act
-            var result = await manager.ActivateAsync(Only(window));
+            var result = await manager.ActivateAsync(GetSelector(window));
 
             // Assert
             Assert.Multiple(
@@ -570,15 +570,15 @@ public sealed class WindowManagerTests
             var older = await AddAsync(manager, "Older");
             var parent = await AddAsync(manager, "Parent");
             var child = await AddAsync(manager, "Child", parent);
-            await manager.ActivateAsync(Only(older));
-            await manager.ActivateAsync(Only(child));
+            await manager.ActivateAsync(GetSelector(older));
+            await manager.ActivateAsync(GetSelector(child));
 
             // Act
-            await manager.CloseAsync(Only(child));
+            await manager.CloseAsync(GetSelector(child));
             var afterChild = manager.Current;
-            await manager.MinimizeAsync(Only(parent));
+            await manager.MinimizeAsync(GetSelector(parent));
             var afterParent = manager.Current;
-            await manager.MinimizeAsync(Only(older));
+            await manager.MinimizeAsync(GetSelector(older));
 
             // Assert
             Assert.Multiple(
@@ -603,13 +603,13 @@ public sealed class WindowManagerTests
 
             // Act
             await manager.BringToFrontAsync(new WindowSelector { OriginId = "explorer" });
-            var forward = Titles(manager.StackedWindows);
+            var forward = GetTitles(manager.StackedWindows);
             await manager.SendToBackAsync(new WindowSelector { OriginId = "explorer" });
 
             // Assert
             Assert.Multiple(
                 () => Assert.Equal(["B", "D", "A", "C"], forward),
-                () => Assert.Equal(["A", "C", "B", "D"], Titles(manager.StackedWindows)));
+                () => Assert.Equal(["A", "C", "B", "D"], GetTitles(manager.StackedWindows)));
         }
 
         [Fact]
@@ -621,12 +621,12 @@ public sealed class WindowManagerTests
             await AddAsync(manager, "Second");
 
             // Act
-            await manager.ActivateAsync(Only(first));
+            await manager.ActivateAsync(GetSelector(first));
 
             // Assert
             Assert.Multiple(
-                () => Assert.Equal(["Second", "First"], Titles(manager.StackedWindows)),
-                () => Assert.Equal(["First", "Second"], Titles(manager.Windows)));
+                () => Assert.Equal(["Second", "First"], GetTitles(manager.StackedWindows)),
+                () => Assert.Equal(["First", "Second"], GetTitles(manager.Windows)));
         }
 
         [Fact]
@@ -682,10 +682,10 @@ public sealed class WindowManagerTests
             var modal = await AddAsync(manager, "Modal", configure: window => window.IsModal = true);
 
             // Act
-            await manager.SendToBackAsync(Only(modal));
+            await manager.SendToBackAsync(GetSelector(modal));
 
             // Assert
-            Assert.Equal(["Page", "Modal"], Titles(manager.StackedWindows));
+            Assert.Equal(["Page", "Modal"], GetTitles(manager.StackedWindows));
         }
 
         [Fact]
@@ -700,7 +700,7 @@ public sealed class WindowManagerTests
             front.Log.Clear();
 
             // Act
-            await manager.BringToFrontAsync(Only(front));
+            await manager.BringToFrontAsync(GetSelector(front));
 
             // Assert
             Assert.Multiple(
@@ -719,7 +719,7 @@ public sealed class WindowManagerTests
             first.WhileRaising = async () => await manager.RegisterAsync(new FakeWindow("Late"));
 
             // Act
-            var result = await manager.ActivateAsync(Only(first));
+            var result = await manager.ActivateAsync(GetSelector(first));
 
             // Assert
             Assert.Multiple(
@@ -736,7 +736,7 @@ public sealed class WindowManagerTests
             await AddAsync(manager, "Other");
 
             // Act
-            await manager.BringToFrontAsync(Only(window));
+            await manager.BringToFrontAsync(GetSelector(window));
 
             // Assert
             Assert.Multiple(
@@ -758,7 +758,7 @@ public sealed class WindowManagerTests
             var grandchild = await AddAsync(manager, "Grandchild", child);
 
             // Act
-            var result = await manager.MinimizeAsync(Only(parent));
+            var result = await manager.MinimizeAsync(GetSelector(parent));
 
             // Assert
             Assert.Multiple(
@@ -778,11 +778,11 @@ public sealed class WindowManagerTests
             var parent = await AddAsync(manager, "Parent");
             var child = await AddAsync(manager, "Child", parent);
             var grandchild = await AddAsync(manager, "Grandchild", child);
-            await manager.MinimizeAsync(Only(child));
-            await manager.MinimizeAsync(Only(parent));
+            await manager.MinimizeAsync(GetSelector(child));
+            await manager.MinimizeAsync(GetSelector(parent));
 
             // Act
-            await manager.RestoreAsync(Only(parent));
+            await manager.RestoreAsync(GetSelector(parent));
 
             // Assert
             Assert.Multiple(
@@ -802,7 +802,7 @@ public sealed class WindowManagerTests
             await manager.MinimizeAsync(WindowSelector.All);
 
             // Act
-            await manager.RestoreAsync(Only(one));
+            await manager.RestoreAsync(GetSelector(one));
             var afterOne = manager.Current;
             await manager.MinimizeAsync(WindowSelector.All);
             await manager.RestoreAsync(WindowSelector.All);
@@ -820,10 +820,10 @@ public sealed class WindowManagerTests
             // Arrange
             var manager = new WindowManager();
             var window = await AddAsync(manager, "Window");
-            await manager.MinimizeAsync(Only(window));
+            await manager.MinimizeAsync(GetSelector(window));
 
             // Act
-            var again = await manager.MinimizeAsync(Only(window));
+            var again = await manager.MinimizeAsync(GetSelector(window));
 
             // Assert
             Assert.Equal(WindowOperationOutcome.Ineligible, again.Outcome);
@@ -847,7 +847,7 @@ public sealed class WindowManagerTests
             }
 
             // Act
-            var result = await manager.CloseAsync(Only(parent));
+            var result = await manager.CloseAsync(GetSelector(parent));
 
             // Assert
             Assert.Multiple(
@@ -920,7 +920,7 @@ public sealed class WindowManagerTests
             };
 
             // Act
-            await manager.CloseAsync(Only(parent));
+            await manager.CloseAsync(GetSelector(parent));
 
             // Assert
             Assert.Multiple(
@@ -935,7 +935,7 @@ public sealed class WindowManagerTests
             var manager = new WindowManager();
             var parent = await AddAsync(manager, "Parent");
             var child = await AddAsync(manager, "Child", parent);
-            await manager.ActivateAsync(Only(child));
+            await manager.ActivateAsync(GetSelector(child));
 
             // Act
             await manager.UnregisterAsync(parent);

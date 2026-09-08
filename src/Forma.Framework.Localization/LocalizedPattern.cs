@@ -14,6 +14,6 @@ public readonly record struct LocalizedPattern(
     string? SearchedLocation = null)
 {
     /// <summary>Walks the format as literal runs and argument holes, without copying either.</summary>
-    public LocalizedSegmentEnumerator Segments()
+    public LocalizedSegmentEnumerator EnumerateSegments()
         => new(Format);
 }

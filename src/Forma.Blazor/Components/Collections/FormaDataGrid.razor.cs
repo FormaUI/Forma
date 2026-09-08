@@ -382,7 +382,7 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
 
     // Selection state is layered on top of whatever class the host already assigns, so a
     // custom RowClass and the built-in selected/disabled styling never conflict.
-    private string? ComposedRowClass(TGridItem item)
+    private string? GetRowClass(TGridItem item)
     {
         var hostClass = RowClass?.Invoke(item);
         if (!EnableCheckedSelection && !EnableRowSelection)

@@ -7,19 +7,19 @@
     {
         if (group.Name is null)
         {
-            @Handles(group.Windows)
+            @RenderHandles(group.Windows)
         }
         else
         {
             <div class="forma-rest-area-group" role="group" aria-label="@group.Name">
-                @Handles(group.Windows)
+                @RenderHandles(group.Windows)
             </div>
         }
     }
 </div>
 
 @code {
-    private RenderFragment Handles(IReadOnlyList<IWindow> windows) =>
+    private RenderFragment RenderHandles(IReadOnlyList<IWindow> windows) =>
         @<text>
             @foreach (var window in windows)
             {

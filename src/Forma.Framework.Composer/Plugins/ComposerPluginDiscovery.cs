@@ -19,7 +19,7 @@ public static class ComposerPluginDiscovery
         ArgumentNullException.ThrowIfNull(plugins);
 
         var held = plugins.Select(plugin => plugin.GetType()).ToHashSet();
-        var found = Candidates(assembly)
+        var found = GetCandidates(assembly)
             .Where(candidate => !held.Contains(candidate) && LivesIn(candidate, locations))
             .OrderBy(candidate => candidate.FullName, StringComparer.Ordinal)
             .Select(candidate => Build(candidate, plugins));
@@ -27,9 +27,9 @@ public static class ComposerPluginDiscovery
         return [.. plugins, .. found];
     }
 
-    private static IEnumerable<Type> Candidates(Assembly? assembly)
+    private static IEnumerable<Type> GetCandidates(Assembly? assembly)
     {
-        IEnumerable<Assembly> assemblies = assembly is null ? TakingComposer() : [assembly];
+        IEnumerable<Assembly> assemblies = assembly is null ? GetAssembliesReferencingComposer() : [assembly];
 
         return assemblies
             .SelectMany(GetLoadableTypes)
@@ -37,7 +37,7 @@ public static class ComposerPluginDiscovery
                 && (typeof(IComposerFeaturePlugin).IsAssignableFrom(candidate) || typeof(IComposerViewPlugin).IsAssignableFrom(candidate)));
     }
 
-    private static IEnumerable<Assembly> TakingComposer()
+    private static IEnumerable<Assembly> GetAssembliesReferencingComposer()
     {
         var composer = typeof(IComposerPlugin).Assembly;
         var name = composer.GetName().Name;

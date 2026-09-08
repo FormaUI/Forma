@@ -15,7 +15,7 @@ public sealed class LocalizedPatternTests
         var texts = new List<string>();
         var names = new List<string>();
 
-        foreach (var segment in pattern.Segments())
+        foreach (var segment in pattern.EnumerateSegments())
         {
             texts.Add(segment.Text.ToString());
             names.Add(segment.Name.ToString());
@@ -35,7 +35,7 @@ public sealed class LocalizedPatternTests
         // Act
         object? held = null;
 
-        foreach (var segment in pattern.Segments())
+        foreach (var segment in pattern.EnumerateSegments())
         {
             if (segment.IsHole)
             {
@@ -59,7 +59,7 @@ public sealed class LocalizedPatternTests
         // Act
         var values = new List<object?>();
 
-        foreach (var segment in pattern.Segments())
+        foreach (var segment in pattern.EnumerateSegments())
         {
             if (segment.IsHole)
             {
@@ -93,7 +93,7 @@ public sealed class LocalizedPatternTests
         // Act
         var count = 0;
 
-        foreach (var segment in pattern.Segments())
+        foreach (var segment in pattern.EnumerateSegments())
         {
             count += segment.Text.Length + 1;
         }

@@ -12,9 +12,9 @@
     <div class="demo-box">
         <FormaFilePicker OnFilesSelected="@(files => Accept("auto", files))" />
         <FormaFileUploader Store="@Store("auto")"
-                       Files="@Selected("auto")"
+                       Files="@GetSelectedFiles("auto")"
                        OnCompleted="@(resources => Complete("auto", resources))" />
-        <p class="demo-note">@Holding(Store("auto"))</p>
+        <p class="demo-note">@DescribeHeldFiles(Store("auto"))</p>
         <ul class="demo-log">
             @foreach (var line in Log("auto"))
             {
@@ -30,7 +30,7 @@
     <div class="demo-box">
         <FormaFilePicker OnFilesSelected="@(files => Accept("manual", files))" />
         <FormaFileUploader Store="@Store("manual")"
-                       Files="@Selected("manual")"
+                       Files="@GetSelectedFiles("manual")"
                        Options="@(new FileUploaderOptions { AutoStart = false })"
                        OnCompleted="@(resources => Complete("manual", resources))" />
         <ul class="demo-log">
@@ -48,10 +48,10 @@
     <div class="demo-box">
         <FormaFilePicker OnFilesSelected="@(files => Accept("small", files))" />
         <FormaFileUploader Store="@Store("small")"
-                       Files="@Selected("small")"
+                       Files="@GetSelectedFiles("small")"
                        OnCompleted="@(resources => Complete("small", resources))"
                        OnFailed="@(failure => Fail("small", failure))" />
-        <p class="demo-note">@Holding(Store("small"))</p>
+        <p class="demo-note">@DescribeHeldFiles(Store("small"))</p>
         <ul class="demo-log">
             @foreach (var line in Log("small"))
             {
@@ -67,11 +67,11 @@
     <div class="demo-box">
         <FormaFilePicker OnFilesSelected="@(files => Accept("stop", files))" />
         <FormaFileUploader Store="@Store("stop")"
-                       Files="@Selected("stop")"
+                       Files="@GetSelectedFiles("stop")"
                        Options="@(new FileUploaderOptions { StopOnFailure = true })"
                        OnCompleted="@(resources => Complete("stop", resources))"
                        OnFailed="@(failure => Fail("stop", failure))" />
-        <p class="demo-note">@Holding(Store("stop"))</p>
+        <p class="demo-note">@DescribeHeldFiles(Store("stop"))</p>
         <ul class="demo-log">
             @foreach (var line in Log("stop"))
             {
@@ -87,11 +87,11 @@
     <div class="demo-box">
         <FormaFilePicker OnFilesSelected="@(files => Accept("rollback", files))" />
         <FormaFileUploader Store="@Store("rollback")"
-                       Files="@Selected("rollback")"
+                       Files="@GetSelectedFiles("rollback")"
                        Options="@(new FileUploaderOptions { RollbackOnFailure = true })"
                        OnCompleted="@(resources => Complete("rollback", resources))"
                        OnFailed="@(failure => Fail("rollback", failure))" />
-        <p class="demo-note">@Holding(Store("rollback"))</p>
+        <p class="demo-note">@DescribeHeldFiles(Store("rollback"))</p>
         <ul class="demo-log">
             @foreach (var line in Log("rollback"))
             {
@@ -112,11 +112,11 @@
         <FormaFilePicker Prompt="@L["Pick sandbox files of any size"]"
                          OnFilesSelected="@(files => Accept("disk", files))" />
         <FormaFileUploader Store="@Store("disk")"
-                       Files="@Selected("disk")"
+                       Files="@GetSelectedFiles("disk")"
                        Options="FileUploaderOptions.Detailed"
                        OnCompleted="@(resources => Complete("disk", resources))"
                        OnFailed="@(failure => Fail("disk", failure))" />
-        <p class="demo-note">@Holding(Store("disk"))</p>
+        <p class="demo-note">@DescribeHeldFiles(Store("disk"))</p>
         <ul class="demo-log">
             @foreach (var line in Log("disk"))
             {
@@ -132,11 +132,11 @@
     <div class="demo-box">
         <FormaFilePicker OnFilesSelected="@(files => Accept("bare", files))" />
         <FormaFileUploader Store="@Store("bare")"
-                       Files="@Selected("bare")"
+                       Files="@GetSelectedFiles("bare")"
                        Options="@(new FileUploaderOptions { ShowByteCount = true, ShowElapsed = true, ShowTransferRate = true, ShowTotalMetrics = false, ShowSummary = false })"
                        OnCompleted="@(resources => Complete("bare", resources))"
                        OnFailed="@(failure => Fail("bare", failure))" />
-        <p class="demo-note">@Holding(Store("bare"))</p>
+        <p class="demo-note">@DescribeHeldFiles(Store("bare"))</p>
         <ul class="demo-log">
             @foreach (var line in Log("bare"))
             {
@@ -152,10 +152,10 @@
     <div class="demo-box">
         <FormaFilePicker OnFilesSelected="@(files => Accept("slow", files))" />
         <FormaFileUploader Store="@Store("slow")"
-                       Files="@Selected("slow")"
+                       Files="@GetSelectedFiles("slow")"
                        OnCompleted="@(resources => Complete("slow", resources))"
                        OnFailed="@(failure => Fail("slow", failure))" />
-        <p class="demo-note">@Holding(Store("slow"))</p>
+        <p class="demo-note">@DescribeHeldFiles(Store("slow"))</p>
         <ul class="demo-log">
             @foreach (var line in Log("slow"))
             {

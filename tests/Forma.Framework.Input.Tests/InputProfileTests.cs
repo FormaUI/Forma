@@ -15,7 +15,7 @@ public sealed class InputProfileTests
     private static readonly JsonSerializerOptions Wire = new(JsonSerializerDefaults.Web);
 
     [Fact]
-    public void SerializesToTheShapeTheScriptReads()
+    public void Should_serialize_to_the_shape_the_script_reads()
     {
         var profile = new InputProfile
         {
@@ -60,7 +60,7 @@ public sealed class InputProfileTests
     }
 
     [Fact]
-    public void SerializesEveryBindingFamily()
+    public void Should_serialize_every_binding_family()
     {
         IReadOnlyList<InputBinding> bindings =
         [
@@ -87,7 +87,7 @@ public sealed class InputProfileTests
     }
 
     [Fact]
-    public void LeavesInheritedAmbientBehaviorNull()
+    public void Should_leave_inherited_ambient_behavior_null()
     {
         using var json = JsonDocument.Parse(JsonSerializer.Serialize(InputProfile.Default, Wire));
 
@@ -97,7 +97,7 @@ public sealed class InputProfileTests
     }
 
     [Fact]
-    public void SerializesTheHostPolicy()
+    public void Should_serialize_the_host_policy()
     {
         var options = new InputRouterOptions
         {
@@ -129,7 +129,7 @@ public sealed class InputProfileTests
     }
 
     [Fact]
-    public void ReadsTheInputTheScriptDescribesAsItsFamily()
+    public void Should_read_the_input_the_script_describes_as_its_family()
     {
         const string key = """{"family":"keyboard","type":"keydown","key":"k","code":"KeyK","modifiers":{"control":true,"meta":false,"alt":false,"shift":false,"primary":true}}""";
         const string pointer = """{"family":"pointer","type":"pointerdown","pointerId":3,"pointerType":"touch","button":0,"clientX":10.5,"clientY":20,"modifiers":{"control":false,"meta":false,"alt":false,"shift":false,"primary":false}}""";
@@ -153,7 +153,7 @@ public sealed class InputProfileTests
     [Theory]
     [InlineData(" ")]
     [InlineData("")]
-    public void RejectsAKeyBindingWithoutAKey(string key)
+    public void Should_reject_a_key_binding_without_a_key(string key)
     {
         Assert.Throws<ArgumentException>(() => new KeyBinding(key));
         Assert.Throws<ArgumentException>(() => KeyBinding.Shortcut(key));
@@ -164,11 +164,11 @@ public sealed class InputProfileTests
     [InlineData("Composer.Bold")]
     [InlineData("composer.")]
     [InlineData("")]
-    public void RejectsAnActionNotQualifiedByItsOwner(string action)
+    public void Should_reject_an_action_not_qualified_by_its_owner(string action)
         => Assert.Throws<ArgumentException>(() => new InputRoute(action, new KeyBinding("a")));
 
     [Fact]
-    public void SerializesTheCloseRequestBehaviorSeparately()
+    public void Should_serialize_the_close_request_behavior_separately()
     {
         var profile = new InputProfile { Escape = DismissBehavior.Ignore, CloseRequest = DismissBehavior.Dismiss };
         var options = new InputRouterOptions { CloseRequest = DismissBehavior.Cancel };

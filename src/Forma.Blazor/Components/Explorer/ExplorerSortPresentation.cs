@@ -8,7 +8,7 @@ using Forma.Framework.Localization;
 internal static class ExplorerSortPresentation
 {
     /// <summary>The glyph marking <paramref name="direction"/> on <paramref name="field"/>: names and kinds sort alphabetically, sizes and dates numerically.</summary>
-    public static Glyph GlyphFor(ExplorerSortField field, ExplorerSortDirection direction)
+    public static Glyph GetGlyph(ExplorerSortField field, ExplorerSortDirection direction)
         => (field is ExplorerSortField.Name or ExplorerSortField.Kind, direction is ExplorerSortDirection.Ascending) switch
         {
             (true, true) => Glyph.SortAlphaAscending,
@@ -18,7 +18,7 @@ internal static class ExplorerSortPresentation
         };
 
     /// <summary>The label of <paramref name="field"/>.</summary>
-    public static string FieldLabel(IStringLocale<FormaExplorer> locale, ExplorerSortField field)
+    public static string GetFieldLabel(IStringLocale<FormaExplorer> locale, ExplorerSortField field)
         => field switch
         {
             ExplorerSortField.Name => locale["Name"].Value,
@@ -30,6 +30,6 @@ internal static class ExplorerSortPresentation
         };
 
     /// <summary>The label of <paramref name="direction"/>.</summary>
-    public static string DirectionLabel(IStringLocale<FormaExplorer> locale, ExplorerSortDirection direction)
+    public static string GetDirectionLabel(IStringLocale<FormaExplorer> locale, ExplorerSortDirection direction)
         => direction == ExplorerSortDirection.Ascending ? locale["Ascending"].Value : locale["Descending"].Value;
 }

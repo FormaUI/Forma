@@ -9,7 +9,7 @@
                                KeepsOpen="true"
                                data-column="@column"
                                OnClick="() => Interaction.ToggleDetailsColumnAsync(column)">
-            <span>@ColumnLabel(column)</span>
+            <span>@GetColumnLabel(column)</span>
         </FormaDropDownMenuItem>
     }
 </FormaDropDownMenuGroup>

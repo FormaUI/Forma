@@ -4,7 +4,7 @@ using Forma.Framework.Localization.Json.Tests.Fixtures;
 
 public sealed class JsonStringLocaleTests
 {
-    private static IStringLocale Locale<T>()
+    private static IStringLocale CreateLocale<T>()
         => new JsonStringLocaleFactory().Create(typeof(T));
 
     [Fact]
@@ -12,7 +12,7 @@ public sealed class JsonStringLocaleTests
     {
         // Arrange
         using var culture = new CultureScope("en");
-        var strings = Locale<Colocated>();
+        var strings = CreateLocale<Colocated>();
 
         // Act
         var localized = strings["Today"];
@@ -26,7 +26,7 @@ public sealed class JsonStringLocaleTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var strings = Locale<Untranslated>();
+        var strings = CreateLocale<Untranslated>();
 
         // Act
         var localized = strings["Anything at all"];
@@ -40,7 +40,7 @@ public sealed class JsonStringLocaleTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var strings = Locale<Colocated>();
+        var strings = CreateLocale<Colocated>();
 
         // Act
         var localized = strings["Today"];
@@ -54,7 +54,7 @@ public sealed class JsonStringLocaleTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var strings = Locale<Colocated>();
+        var strings = CreateLocale<Colocated>();
 
         // Act
         var localized = strings["Use {{curly}} braces."];
@@ -68,7 +68,7 @@ public sealed class JsonStringLocaleTests
     {
         // Arrange
         using var culture = new CultureScope("en");
-        var strings = Locale<Colocated>();
+        var strings = CreateLocale<Colocated>();
 
         // Act
         var localized = strings["Use {{curly}} braces."];
@@ -82,7 +82,7 @@ public sealed class JsonStringLocaleTests
     {
         // Arrange
         using var culture = new CultureScope("es-419");
-        var strings = Locale<Colocated>();
+        var strings = CreateLocale<Colocated>();
 
         // Act
         var localized = strings["Today"];
@@ -96,7 +96,7 @@ public sealed class JsonStringLocaleTests
     {
         // Arrange
         using var culture = new CultureScope("es-419");
-        var strings = Locale<Colocated>();
+        var strings = CreateLocale<Colocated>();
 
         // Act
         var localized = strings["Moved to position {position} of {total}."];
@@ -110,7 +110,7 @@ public sealed class JsonStringLocaleTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var strings = Locale<Colocated>();
+        var strings = CreateLocale<Colocated>();
 
         // Act
         var localized = strings["Today"];
@@ -124,7 +124,7 @@ public sealed class JsonStringLocaleTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var strings = Locale<Colocated>();
+        var strings = CreateLocale<Colocated>();
 
         // Act
         var localized = strings["No such string"];
@@ -138,7 +138,7 @@ public sealed class JsonStringLocaleTests
     {
         // Arrange
         using var culture = new CultureScope("en");
-        var strings = Locale<Colocated>();
+        var strings = CreateLocale<Colocated>();
 
         // Act
         var localized = strings["Moved to position {position} of {total}.", 2, 7];
@@ -152,7 +152,7 @@ public sealed class JsonStringLocaleTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var strings = Locale<Colocated>();
+        var strings = CreateLocale<Colocated>();
 
         // Act
         var localized = strings["Moved to position {position} of {total}.", 2, 7];
@@ -167,7 +167,7 @@ public sealed class JsonStringLocaleTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var strings = Locale<Colocated>();
+        var strings = CreateLocale<Colocated>();
 
         // Act
         var localized = strings["Stored {stored} of {total}.", 3, 9];
@@ -183,7 +183,7 @@ public sealed class JsonStringLocaleTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var strings = Locale<Colocated>();
+        var strings = CreateLocale<Colocated>();
         var values = new object?[count];
 
         // Act & Assert
@@ -195,7 +195,7 @@ public sealed class JsonStringLocaleTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var strings = Locale<Colocated>();
+        var strings = CreateLocale<Colocated>();
 
         // Act
         var pattern = strings.Resolve("Moved to position {position} of {total}.", 2, 7);
@@ -209,7 +209,7 @@ public sealed class JsonStringLocaleTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var strings = Locale<GenericArity<int>>();
+        var strings = CreateLocale<GenericArity<int>>();
 
         // Act
         var localized = strings["Search"];
@@ -223,7 +223,7 @@ public sealed class JsonStringLocaleTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var strings = Locale<MainAssembly>();
+        var strings = CreateLocale<MainAssembly>();
 
         // Act
         var localized = strings["Close"];
@@ -236,7 +236,7 @@ public sealed class JsonStringLocaleTests
     public void Should_reject_a_blank_key()
     {
         // Arrange
-        var strings = Locale<Colocated>();
+        var strings = CreateLocale<Colocated>();
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => strings[string.Empty]);
@@ -246,7 +246,7 @@ public sealed class JsonStringLocaleTests
     public void Should_read_the_current_culture_on_every_lookup()
     {
         // Arrange
-        var strings = Locale<Colocated>();
+        var strings = CreateLocale<Colocated>();
 
         // Act
         string hebrew;
@@ -274,7 +274,7 @@ public sealed class JsonStringLocaleTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var strings = Locale<Colocated>();
+        var strings = CreateLocale<Colocated>();
 
         // Act
         var names = strings.GetAllStrings(includeParentCultures: false).Select(s => s.Name);
@@ -290,7 +290,7 @@ public sealed class JsonStringLocaleTests
     {
         // Arrange
         using var culture = new CultureScope("es-419");
-        var strings = Locale<Colocated>();
+        var strings = CreateLocale<Colocated>();
 
         // Act
         var withParents = strings.GetAllStrings(includeParentCultures: true).Select(s => s.Name);
@@ -309,7 +309,7 @@ public sealed class JsonStringLocaleTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var strings = Locale<Colocated>();
+        var strings = CreateLocale<Colocated>();
 
         // Act
         var pattern = strings.Resolve("Moved to position {position} of {total}.", 2, 7);
@@ -328,7 +328,7 @@ public sealed class JsonStringLocaleTests
         // Arrange
         const string Key = "[$ plural; one: # file; other: # files; $]";
         using var culture = new CultureScope("he");
-        var strings = Locale<Pluralized>();
+        var strings = CreateLocale<Pluralized>();
 
         // Act
         var one = strings[Key, 1];
@@ -352,7 +352,7 @@ public sealed class JsonStringLocaleTests
     {
         // Arrange
         using var culture = new CultureScope("en");
-        var strings = Locale<Pluralized>();
+        var strings = CreateLocale<Pluralized>();
 
         // Act
         var localized = strings[key, 7];
@@ -367,7 +367,7 @@ public sealed class JsonStringLocaleTests
         // Arrange
         const string Key = "[$ plural; one: # file; other: # files; $]";
         using var culture = new CultureScope("en");
-        var strings = Locale<Pluralized>();
+        var strings = CreateLocale<Pluralized>();
 
         // Act
         var one = strings[Key, 1];

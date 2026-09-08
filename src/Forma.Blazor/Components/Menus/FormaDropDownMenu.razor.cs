@@ -127,10 +127,10 @@ public sealed partial class FormaDropDownMenu : ComponentBase, IAsyncDisposable
                 await MoveFocusAsync(-1);
                 break;
             case "Home":
-                await FocusIndexAsync(EnabledIndexFrom(0, 1));
+                await FocusIndexAsync(FindEnabledIndex(0, 1));
                 break;
             case "End":
-                await FocusIndexAsync(EnabledIndexFrom(_items.Count - 1, -1));
+                await FocusIndexAsync(FindEnabledIndex(_items.Count - 1, -1));
                 break;
         }
     }
@@ -138,14 +138,14 @@ public sealed partial class FormaDropDownMenu : ComponentBase, IAsyncDisposable
     private async Task HandleOpenedAsync()
     {
         await _keyGuard.AttachAsync(Popover.Element);
-        await FocusIndexAsync(_openAtLastItem ? EnabledIndexFrom(_items.Count - 1, -1) : EnabledIndexFrom(0, 1));
+        await FocusIndexAsync(_openAtLastItem ? FindEnabledIndex(_items.Count - 1, -1) : FindEnabledIndex(0, 1));
     }
 
     private Task MoveFocusAsync(int delta)
-        => FocusIndexAsync(EnabledIndexFrom(_focusedIndex + delta, delta));
+        => FocusIndexAsync(FindEnabledIndex(_focusedIndex + delta, delta));
 
     /// <summary>The index of the first enabled item at or past <paramref name="start"/> in the direction of <paramref name="step"/>, wrapping around the ends; null when no item is enabled.</summary>
-    private int? EnabledIndexFrom(int start, int step)
+    private int? FindEnabledIndex(int start, int step)
     {
         for (var visited = 0; visited < _items.Count; visited++)
         {

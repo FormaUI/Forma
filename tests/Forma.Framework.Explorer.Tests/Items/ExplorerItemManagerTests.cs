@@ -8,27 +8,27 @@ using Xunit;
 
 public sealed class ExplorerItemManagerTests
 {
-    private static ExplorerItem Item(string source)
+    private static ExplorerItem CreateItem(string source)
         => ExplorerItem.For(new FileResourceInfo(source));
 
-    private static ExplorerFolderItem FolderItem(string source)
+    private static ExplorerFolderItem CreateFolderItem(string source)
         => ExplorerItem.ForFolder(new FolderResourceInfo(source));
 
-    private static ExplorerItem Item(string source, ExplorerItemCapabilities capabilities, bool isDisabled = false)
+    private static ExplorerItem CreateItem(string source, ExplorerItemCapabilities capabilities, bool isDisabled = false)
     {
         var resource = new FileResourceInfo(source);
 
         return new ExplorerItem { Key = source, Name = resource.Name, Capabilities = capabilities, IsDisabled = isDisabled, Resource = resource };
     }
 
-    private static ExplorerFolderItem FolderItem(string source, ExplorerItemCapabilities capabilities)
+    private static ExplorerFolderItem CreateFolderItem(string source, ExplorerItemCapabilities capabilities)
     {
         var folder = new FolderResourceInfo(source);
 
         return new ExplorerFolderItem { Key = source, Name = folder.Name, Capabilities = capabilities, Resource = folder };
     }
 
-    private static async Task<bool> DropsAsync(ExplorerItemManager manager, IExplorerItem dragged, IExplorerItem? target)
+    private static async Task<bool> TryDropAsync(ExplorerItemManager manager, IExplorerItem dragged, IExplorerItem? target)
     {
         var dropped = false;
         manager.OnDrop = (_, _) => { dropped = true; return Task.CompletedTask; };
@@ -48,7 +48,7 @@ public sealed class ExplorerItemManagerTests
         manager.OnChanged = () => changes++;
 
         // Act
-        manager.RequestRename(Item("/media/photo.png"));
+        manager.RequestRename(CreateItem("/media/photo.png"));
 
         // Assert
         var rename = Assert.IsType<ExplorerRenameAction<IExplorerItem>>(manager.PendingAction);
@@ -77,7 +77,7 @@ public sealed class ExplorerItemManagerTests
     {
         // Arrange
         var manager = new ExplorerItemManager();
-        manager.RequestRename(Item("/media/photo.png"));
+        manager.RequestRename(CreateItem("/media/photo.png"));
         var changes = 0;
         manager.OnChanged = () => changes++;
 
@@ -95,7 +95,7 @@ public sealed class ExplorerItemManagerTests
     {
         // Arrange
         var manager = new ExplorerItemManager();
-        manager.RequestRename(Item("/media/photo.png"));
+        manager.RequestRename(CreateItem("/media/photo.png"));
         manager.SetActionName("  stage-one.png  ");
 
         IExplorerItem? applied = null;
@@ -124,7 +124,7 @@ public sealed class ExplorerItemManagerTests
     {
         // Arrange
         var manager = new ExplorerItemManager();
-        manager.RequestRename(Item("/media/photo.png"));
+        manager.RequestRename(CreateItem("/media/photo.png"));
         manager.SetActionName("   ");
         var applied = false;
         manager.OnRenameConfirmed = (_, _) => { applied = true; return Task.CompletedTask; };
@@ -143,7 +143,7 @@ public sealed class ExplorerItemManagerTests
     {
         // Arrange
         var manager = new ExplorerItemManager();
-        var parent = FolderItem("/photos");
+        var parent = CreateFolderItem("/photos");
         IExplorerFolderItem? appliedParent = null;
         string? appliedName = null;
         manager.OnCreateFolderConfirmed = (target, name) =>
@@ -170,8 +170,8 @@ public sealed class ExplorerItemManagerTests
     {
         // Arrange
         var manager = new ExplorerItemManager();
-        var folder = FolderItem("/photos");
-        manager.SelectedItems = () => [folder, Item("/media/photo.png")];
+        var folder = CreateFolderItem("/photos");
+        manager.SelectedItems = () => [folder, CreateItem("/media/photo.png")];
         IReadOnlyList<IExplorerFolderItem>? deleted = null;
         var itemsDeleted = false;
         manager.OnFolderDeleteConfirmed = folders => { deleted = folders; return Task.CompletedTask; };
@@ -192,7 +192,7 @@ public sealed class ExplorerItemManagerTests
     {
         // Arrange
         var manager = new ExplorerItemManager();
-        var item = Item("/media/photo.png");
+        var item = CreateItem("/media/photo.png");
         manager.SelectedItems = () => [item];
         IReadOnlyList<IExplorerItem>? deleted = null;
         manager.OnDeleteConfirmed = items => { deleted = items; return Task.CompletedTask; };
@@ -225,7 +225,7 @@ public sealed class ExplorerItemManagerTests
         var manager = new ExplorerItemManager();
 
         // Act
-        manager.RequestDelete(Item("/media/photo.png"));
+        manager.RequestDelete(CreateItem("/media/photo.png"));
 
         // Assert
         var deletion = Assert.IsType<ExplorerBatchAction<IExplorerItem>>(manager.PendingAction);
@@ -239,7 +239,7 @@ public sealed class ExplorerItemManagerTests
         var manager = new ExplorerItemManager();
 
         // Act
-        manager.RequestDelete(FolderItem("/photos"));
+        manager.RequestDelete(CreateFolderItem("/photos"));
 
         // Assert
         var deletion = Assert.IsType<ExplorerBatchAction<IExplorerFolderItem>>(manager.PendingAction);
@@ -253,7 +253,7 @@ public sealed class ExplorerItemManagerTests
         var manager = new ExplorerItemManager();
 
         // Act
-        manager.RequestFolderDelete(FolderItem("/photos"));
+        manager.RequestFolderDelete(CreateFolderItem("/photos"));
 
         // Assert
         var deletion = Assert.IsType<ExplorerBatchAction<IExplorerFolderItem>>(manager.PendingAction);
@@ -266,7 +266,7 @@ public sealed class ExplorerItemManagerTests
         // Arrange
         var manager = new ExplorerItemManager();
         var applied = false;
-        IExplorerFolderItem? appliedParent = FolderItem("/leftover");
+        IExplorerFolderItem? appliedParent = CreateFolderItem("/leftover");
         manager.OnCreateFolderConfirmed = (parent, _) =>
         {
             applied = true;
@@ -290,8 +290,8 @@ public sealed class ExplorerItemManagerTests
     {
         // Arrange
         var manager = new ExplorerItemManager();
-        var dragged = Item("/media/photo.png");
-        var destination = FolderItem("/photos");
+        var dragged = CreateItem("/media/photo.png");
+        var destination = CreateFolderItem("/photos");
         var drops = new List<(IExplorerItem Target, IExplorerFolderItem? Folder)>();
         manager.OnDrop = (target, folder) => { drops.Add((target, folder)); return Task.CompletedTask; };
         manager.BeginDrag(dragged);
@@ -314,11 +314,11 @@ public sealed class ExplorerItemManagerTests
         var manager = new ExplorerItemManager();
         var dropped = false;
         manager.OnDrop = (_, _) => { dropped = true; return Task.CompletedTask; };
-        manager.BeginDrag(Item("/media/photo.png"));
+        manager.BeginDrag(CreateItem("/media/photo.png"));
 
         // Act
         manager.EndDrag();
-        await manager.DropOnItemAsync(FolderItem("/photos"));
+        await manager.DropOnItemAsync(CreateFolderItem("/photos"));
 
         // Assert
         Assert.False(dropped);
@@ -332,7 +332,7 @@ public sealed class ExplorerItemManagerTests
         var destination = new ExplorerFolderItem { Key = "ghost", Name = "Ghost", Capabilities = ExplorerItemCapabilities.Drop };
         IExplorerFolderItem? droppedOn = null;
         manager.OnDrop = (_, folder) => { droppedOn = folder; return Task.CompletedTask; };
-        manager.BeginDrag(Item("/media/photo.png"));
+        manager.BeginDrag(CreateItem("/media/photo.png"));
 
         // Act
         await manager.DropOnItemAsync(destination);
@@ -348,10 +348,10 @@ public sealed class ExplorerItemManagerTests
         var manager = new ExplorerItemManager();
         var dropped = false;
         manager.OnDrop = (_, _) => { dropped = true; return Task.CompletedTask; };
-        manager.BeginDrag(Item("/media/photo.png"));
+        manager.BeginDrag(CreateItem("/media/photo.png"));
 
         // Act
-        await manager.DropOnItemAsync(Item("/media/notes.md"));
+        await manager.DropOnItemAsync(CreateItem("/media/notes.md"));
 
         // Assert
         Assert.False(dropped);
@@ -364,7 +364,7 @@ public sealed class ExplorerItemManagerTests
         var manager = new ExplorerItemManager();
 
         // Act
-        var dropped = await DropsAsync(manager, Item("/media/photo.png", ExplorerItemCapabilities.Move), FolderItem("/photos"));
+        var dropped = await TryDropAsync(manager, CreateItem("/media/photo.png", ExplorerItemCapabilities.Move), CreateFolderItem("/photos"));
 
         // Assert
         Assert.False(dropped);
@@ -377,7 +377,7 @@ public sealed class ExplorerItemManagerTests
         var manager = new ExplorerItemManager();
 
         // Act
-        var dropped = await DropsAsync(manager, Item("/media/photo.png", ExplorerItemCapabilities.Drag), FolderItem("/photos"));
+        var dropped = await TryDropAsync(manager, CreateItem("/media/photo.png", ExplorerItemCapabilities.Drag), CreateFolderItem("/photos"));
 
         // Assert
         Assert.False(dropped);
@@ -390,7 +390,7 @@ public sealed class ExplorerItemManagerTests
         var manager = new ExplorerItemManager();
 
         // Act
-        var dropped = await DropsAsync(manager, Item("/media/photo.png"), FolderItem("/photos", ExplorerItemCapabilities.Open));
+        var dropped = await TryDropAsync(manager, CreateItem("/media/photo.png"), CreateFolderItem("/photos", ExplorerItemCapabilities.Open));
 
         // Assert
         Assert.False(dropped);
@@ -406,7 +406,7 @@ public sealed class ExplorerItemManagerTests
         };
 
         // Act
-        var dropped = await DropsAsync(manager, Item("/media/photo.png"), FolderItem("/photos"));
+        var dropped = await TryDropAsync(manager, CreateItem("/media/photo.png"), CreateFolderItem("/photos"));
 
         // Assert
         Assert.False(dropped);
@@ -417,7 +417,7 @@ public sealed class ExplorerItemManagerTests
     {
         // Arrange
         var manager = new ExplorerItemManager();
-        var item = Item("/media/photo.png", ExplorerItemCapabilities.Drag | ExplorerItemCapabilities.Move | ExplorerItemCapabilities.Rename | ExplorerItemCapabilities.Delete, isDisabled: true);
+        var item = CreateItem("/media/photo.png", ExplorerItemCapabilities.Drag | ExplorerItemCapabilities.Move | ExplorerItemCapabilities.Rename | ExplorerItemCapabilities.Delete, isDisabled: true);
         var activated = false;
         manager.OnActivate = _ => { activated = true; return Task.CompletedTask; };
 
@@ -427,7 +427,7 @@ public sealed class ExplorerItemManagerTests
         var renamePending = manager.PendingAction;
         manager.RequestDelete(item);
         var deletePending = manager.PendingAction;
-        var dropped = await DropsAsync(manager, item, FolderItem("/photos"));
+        var dropped = await TryDropAsync(manager, item, CreateFolderItem("/photos"));
 
         // Assert
         Assert.Multiple(
@@ -444,7 +444,7 @@ public sealed class ExplorerItemManagerTests
         var manager = new ExplorerItemManager();
 
         // Act
-        manager.RequestRename(Item("/media/photo.png", ExplorerItemCapabilities.Delete));
+        manager.RequestRename(CreateItem("/media/photo.png", ExplorerItemCapabilities.Delete));
 
         // Assert
         Assert.Null(manager.PendingAction);
@@ -457,9 +457,9 @@ public sealed class ExplorerItemManagerTests
         var manager = new ExplorerItemManager();
 
         // Act
-        manager.RequestDelete(Item("/media/photo.png", ExplorerItemCapabilities.Rename));
+        manager.RequestDelete(CreateItem("/media/photo.png", ExplorerItemCapabilities.Rename));
         var itemPending = manager.PendingAction;
-        manager.RequestFolderDelete(FolderItem("/photos", ExplorerItemCapabilities.Rename));
+        manager.RequestFolderDelete(CreateFolderItem("/photos", ExplorerItemCapabilities.Rename));
         var folderPending = manager.PendingAction;
 
         // Assert
@@ -473,8 +473,8 @@ public sealed class ExplorerItemManagerTests
     {
         // Arrange
         var manager = new ExplorerItemManager();
-        var deletable = Item("/media/photo.png");
-        manager.SelectedItems = () => [deletable, Item("/media/fixed.png", ExplorerItemCapabilities.Rename)];
+        var deletable = CreateItem("/media/photo.png");
+        manager.SelectedItems = () => [deletable, CreateItem("/media/fixed.png", ExplorerItemCapabilities.Rename)];
 
         // Act
         manager.RequestDeleteSelected();
@@ -489,7 +489,7 @@ public sealed class ExplorerItemManagerTests
     {
         // Arrange
         var manager = new ExplorerItemManager();
-        manager.SelectedItems = () => [Item("/media/fixed.png", ExplorerItemCapabilities.Rename)];
+        manager.SelectedItems = () => [CreateItem("/media/fixed.png", ExplorerItemCapabilities.Rename)];
 
         // Act
         manager.RequestDeleteSelected();
@@ -505,7 +505,7 @@ public sealed class ExplorerItemManagerTests
         var manager = new ExplorerItemManager();
 
         // Act
-        manager.BeginCreateFolder(FolderItem("/photos", ExplorerItemCapabilities.Open));
+        manager.BeginCreateFolder(CreateFolderItem("/photos", ExplorerItemCapabilities.Open));
 
         // Assert
         Assert.Null(manager.PendingAction);
@@ -532,15 +532,15 @@ public sealed class ExplorerItemManagerTests
     {
         // Arrange
         var manager = new ExplorerItemManager();
-        manager.BeginDrag(Item("/media/photo.png"));
+        manager.BeginDrag(CreateItem("/media/photo.png"));
 
         // Act & Assert
-        manager.RequestRename(Item("/media/photo.png"));
+        manager.RequestRename(CreateItem("/media/photo.png"));
         manager.SetActionName("renamed.png");
         manager.CancelAction();
         manager.RequestDeleteSelected();
         manager.ToggleUpload();
-        await manager.ActivateAsync(Item("/media/photo.png"));
+        await manager.ActivateAsync(CreateItem("/media/photo.png"));
         await manager.DropOnItemAsync(null);
         await manager.RequestNewFolderAsync();
         await manager.ConfirmActionAsync();

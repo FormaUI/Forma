@@ -4,7 +4,7 @@ namespace Forma.Blazor.Components;
 internal static class HostAttributeExtensions
 {
     /// <summary>The value a host supplied for an attribute, or null where it supplied none.</summary>
-    public static string? HostValue(this IReadOnlyDictionary<string, object>? attributes, string name)
+    public static string? GetHostValue(this IReadOnlyDictionary<string, object>? attributes, string name)
         => attributes is not null && attributes.TryGetValue(name, out var value)
             ? value?.ToString()
             : null;
@@ -22,7 +22,7 @@ internal static class HostAttributeExtensions
             }
         }
 
-        var hostClass = attributes.HostValue("class");
+        var hostClass = attributes.GetHostValue("class");
 
         if (!string.IsNullOrWhiteSpace(hostClass))
         {

@@ -275,40 +275,40 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
     private async Task HandleLinkInsertedAsync(LinkDialogResult result)
     {
         CloseDialog();
-        await ExecCommandAsync("createLink", result);
+        await ExecuteCommandAsync("createLink", result);
     }
 
     private async Task HandleTableInsertedAsync(TableDialogResult result)
     {
         CloseDialog();
-        await ExecCommandAsync("insertTable", result);
+        await ExecuteCommandAsync("insertTable", result);
     }
 
     private async Task HandleVideoInsertedAsync(VideoDialogResult result)
     {
         CloseDialog();
-        await ExecCommandAsync("insertVideo", result);
+        await ExecuteCommandAsync("insertVideo", result);
     }
 
     private async Task HandleImageInsertedAsync(ImageDialogResult result)
     {
         CloseDialog();
-        await ExecCommandAsync("insertImage", result);
+        await ExecuteCommandAsync("insertImage", result);
     }
 
     private async Task HandleResourceInsertedAsync(ResourceDialogResult result)
     {
         CloseDialog();
-        await ExecCommandAsync("insertResource", result);
+        await ExecuteCommandAsync("insertResource", result);
     }
 
     private async Task HandleEmbedInsertedAsync(EmbedDialogResult result)
     {
         CloseDialog();
-        await ExecCommandAsync("insertEmbed", result);
+        await ExecuteCommandAsync("insertEmbed", result);
     }
 
-    private async Task ExecCommandAsync(string command, object? value = null)
+    private async Task ExecuteCommandAsync(string command, object? value = null)
     {
         if (Context is null || Interaction is null || IsDisabled || IsReadOnly)
         {
@@ -334,7 +334,7 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
     {
         _ = InvokeAsync(async () =>
         {
-            await ExecCommandAsync(command, value);
+            await ExecuteCommandAsync(command, value);
         });
     }
 

@@ -45,7 +45,7 @@ public sealed partial class FormaRichTextPreview : ComponentBase, IAsyncDisposab
             {
                 var (width, height) = _previewPlugin.IsLandscape ? (page.HeightMm, page.WidthMm) : (page.WidthMm, page.HeightMm);
 
-                return $"inline-size: {Millimetres(width!.Value)}; min-block-size: {Millimetres(height!.Value)}; zoom: {zoom};";
+                return $"inline-size: {ToMillimetres(width!.Value)}; min-block-size: {ToMillimetres(height!.Value)}; zoom: {zoom};";
             }
 
             return page.WidthPx is { } pixels
@@ -54,7 +54,7 @@ public sealed partial class FormaRichTextPreview : ComponentBase, IAsyncDisposab
         }
     }
 
-    private static string Millimetres(double value)
+    private static string ToMillimetres(double value)
         => value.ToString("0.#", CultureInfo.InvariantCulture) + "mm";
 
     /// <inheritdoc />

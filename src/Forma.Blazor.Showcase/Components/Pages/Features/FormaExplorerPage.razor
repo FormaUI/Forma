@@ -14,9 +14,9 @@
     <h2>@L["Full Media Explorer"]</h2>
     <p class="description">@L["Browse folders, preview media, select items, rename, delete, and upload."]</p>
     <div class="demo-box">
-        <FormaExplorer ItemsProvider="@(ProviderFor("full"))"
+        <FormaExplorer ItemsProvider="@(GetProvider("full"))"
                       Folders="_sampleFolderItems"
-                      CurrentFolder="@(CurrentFolderFor("full"))"
+                      CurrentFolder="@(GetCurrentFolder("full"))"
                       TotalCount="_allMedia.Count"
                       OnFolderChanged="@(folder => HandleFolderChangedAsync("full", folder))"
                       SelectedChanged="@(resources => HandleSelectedAsync("full", resources))"
@@ -41,9 +41,9 @@
     <h2>@L["A Phone-Width Explorer"]</h2>
     <p class="description">@L["Held to a phone's width, the header collapses to one row: the folder path, a search glyph that opens the search across the row, and a menu holding navigation, actions, view mode and sorting."]</p>
     <div class="demo-box demo-box-phone">
-        <FormaExplorer ItemsProvider="@(ProviderFor("phone"))"
+        <FormaExplorer ItemsProvider="@(GetProvider("phone"))"
                       Folders="_sampleFolderItems"
-                      CurrentFolder="@(CurrentFolderFor("phone"))"
+                      CurrentFolder="@(GetCurrentFolder("phone"))"
                       TotalCount="_allMedia.Count"
                       OnFolderChanged="@(folder => HandleFolderChangedAsync("phone", folder))" />
     </div>
@@ -77,7 +77,7 @@
                     <input type="checkbox"
                            checked="@_detailsColumns.HasFlag(column)"
                            @onchange="@(e => ToggleColumn(column, (bool)e.Value!))" />
-                    @ColumnLabel(column)
+                    @GetColumnLabel(column)
                 </label>
             }
         </fieldset>
@@ -91,9 +91,9 @@
     <h2>@L["Read-Only Explorer"]</h2>
     <p class="description">@L["With ExplorerItemOptions.ReadOnly, browsing and selection remain while upload, rename, delete, and every folder action disappear."]</p>
     <div class="demo-box">
-        <FormaExplorer ItemsProvider="@(ProviderFor("readonly"))"
+        <FormaExplorer ItemsProvider="@(GetProvider("readonly"))"
                       Folders="_sampleFolderItems"
-                      CurrentFolder="@(CurrentFolderFor("readonly"))"
+                      CurrentFolder="@(GetCurrentFolder("readonly"))"
                       TotalCount="_allMedia.Count"
                       ItemOptions="ExplorerItemOptions.ReadOnly"
                       OnFolderChanged="@(folder => HandleFolderChangedAsync("readonly", folder))"
@@ -113,7 +113,7 @@
     <div class="demo-box">
         <FormaExplorer Items="_stateItems"
                       Folders="_stateFolderItems"
-                      CurrentFolder="@(CurrentFolderFor("states"))"
+                      CurrentFolder="@(GetCurrentFolder("states"))"
                       ItemOptions="_stateOptions"
                       OnFolderChanged="@(folder => HandleFolderChangedAsync("states", folder))"
                       SelectedChanged="@(items => HandleSelectedAsync("states", items))"
@@ -138,7 +138,7 @@
     <div class="demo-box">
         <FormaExplorer Items="_constrainedItems"
                       Folders="_constrainedFolderItems"
-                      CurrentFolder="@(CurrentFolderFor("constrained"))"
+                      CurrentFolder="@(GetCurrentFolder("constrained"))"
                       Constraints="_demoConstraints"
                       OnFolderChanged="@(folder => HandleFolderChangedAsync("constrained", folder))"
                       OnFolderCreate="@(req => HandleFolderCreateAsync("constrained", req))"
@@ -156,9 +156,9 @@
     <h2>@L["Media without Folder Management"]</h2>
     <p class="description">@L["Media stays fully editable while the folder tree is fixed, so items can be renamed and deleted but folders cannot."]</p>
     <div class="demo-box">
-        <FormaExplorer ItemsProvider="@(ProviderFor("fixedfolders"))"
+        <FormaExplorer ItemsProvider="@(GetProvider("fixedfolders"))"
                       Folders="_sampleFolderItems"
-                      CurrentFolder="@(CurrentFolderFor("fixedfolders"))"
+                      CurrentFolder="@(GetCurrentFolder("fixedfolders"))"
                       TotalCount="_allMedia.Count"
                       ItemOptions="_fixedFolderOptions"
                       OnFolderChanged="@(folder => HandleFolderChangedAsync("fixedfolders", folder))"
@@ -178,9 +178,9 @@
     <h2>@L["Breadcrumb-Only Navigation"]</h2>
     <p class="description">@L["With ShowSidebar off, the folder tree is hidden and folders are reached through the breadcrumb menus instead."]</p>
     <div class="demo-box">
-        <FormaExplorer ItemsProvider="@(ProviderFor("nosidebar"))"
+        <FormaExplorer ItemsProvider="@(GetProvider("nosidebar"))"
                       Folders="_sampleFolderItems"
-                      CurrentFolder="@(CurrentFolderFor("nosidebar"))"
+                      CurrentFolder="@(GetCurrentFolder("nosidebar"))"
                       TotalCount="_allMedia.Count"
                       Options="@(new ExplorerOptions { ShowSidebar = false })"
                       OnFolderChanged="@(folder => HandleFolderChangedAsync("nosidebar", folder))" />
@@ -191,9 +191,9 @@
     <h2>@L["Sidebar without Breadcrumb Menus"]</h2>
     <p class="description">@L["With ShowFolderMenu off, the breadcrumbs become plain separators and the tree is the only way to change folder."]</p>
     <div class="demo-box">
-        <FormaExplorer ItemsProvider="@(ProviderFor("nomenu"))"
+        <FormaExplorer ItemsProvider="@(GetProvider("nomenu"))"
                       Folders="_sampleFolderItems"
-                      CurrentFolder="@(CurrentFolderFor("nomenu"))"
+                      CurrentFolder="@(GetCurrentFolder("nomenu"))"
                       TotalCount="_allMedia.Count"
                       Options="@(new ExplorerOptions { ShowFolderMenu = false })"
                       OnFolderChanged="@(folder => HandleFolderChangedAsync("nomenu", folder))" />
@@ -204,9 +204,9 @@
     <h2>@L["A Library Too Large to Hold"]</h2>
     <p class="description">@L["Twenty thousand items behind a provider. The explorer keeps only the window it is showing, and the folder never appears in the query because the page already knows it."]</p>
     <div class="demo-box">
-        <FormaExplorer ItemsProvider="@(ProviderFor("library"))"
+        <FormaExplorer ItemsProvider="@(GetProvider("library"))"
                       Folders="_sampleFolderItems"
-                      CurrentFolder="@(CurrentFolderFor("library"))"
+                      CurrentFolder="@(GetCurrentFolder("library"))"
                       PageSize="12"
                       TotalCount="_libraryCount"
                       OnFolderChanged="@(folder => HandleFolderChangedAsync("library", folder))" />
@@ -226,7 +226,7 @@
     <h2>@L["Paginated Explorer"]</h2>
     <p class="description">@L["A large collection splits across pages using FormaPagination."]</p>
     <div class="demo-box">
-        <FormaExplorer ItemsProvider="@(ProviderFor("paged"))" PageSize="4" />
+        <FormaExplorer ItemsProvider="@(GetProvider("paged"))" PageSize="4" />
     </div>
 </div>
 
@@ -234,7 +234,7 @@
     <h2>@L["Infinite Scrolling Explorer"]</h2>
     <p class="description">@L["ExplorerInfiniteScrollMode.Manual appends the next page as the reader nears the end, and offers a button for anyone not using a pointer. The media scrolls inside the panel, so the toolbar and folder tree stay put."]</p>
     <div class="demo-box">
-        <FormaExplorer ItemsProvider="@(ProviderFor("infinite"))" PageSize="24" Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Manual })" />
+        <FormaExplorer ItemsProvider="@(GetProvider("infinite"))" PageSize="24" Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Manual })" />
     </div>
 </div>
 
@@ -242,7 +242,7 @@
     <h2>@L["Automatic Infinite Scrolling"]</h2>
     <p class="description">@L["ExplorerInfiniteScrollMode.Automatic drops the button entirely: pages arrive as the reader scrolls, marked by a spinner while each one loads, with the running count left as the reader's sense of position."]</p>
     <div class="demo-box">
-        <FormaExplorer ItemsProvider="@(ProviderFor("infinite"))"
+        <FormaExplorer ItemsProvider="@(GetProvider("infinite"))"
                       PageSize="24"
                       Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Automatic })" />
     </div>

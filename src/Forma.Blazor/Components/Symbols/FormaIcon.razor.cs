@@ -63,14 +63,14 @@ public sealed partial class FormaIcon(IIconProvider iconProvider) : ComponentBas
 
         // The path attributes are written once here rather than formatted again on every render.
         _vectorPaths = _artwork is IconVector vector
-            ? [.. vector.Paths.Select(path => new VectorPathView(path.Data, path.StrokeWidth > 0 ? Width(path) : null, Fade(path)))]
+            ? [.. vector.Paths.Select(path => new VectorPathView(path.Data, path.StrokeWidth > 0 ? GetWidth(path) : null, GetFade(path)))]
             : [];
         _characterText = _artwork is IconCharacter character ? character.Value.ToString() : null;
     }
 
-    private static string Width(IconPath path)
+    private static string GetWidth(IconPath path)
         => path.StrokeWidth.ToString("0.###", CultureInfo.InvariantCulture);
 
-    private static string? Fade(IconPath path)
+    private static string? GetFade(IconPath path)
         => path.Opacity < 1 ? path.Opacity.ToString("0.###", CultureInfo.InvariantCulture) : null;
 }

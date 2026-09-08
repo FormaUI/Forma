@@ -9,7 +9,7 @@
         private static WindowManager GetManager(FormaRestAreaTests ctx)
             => ctx.Services.GetRequiredService<WindowManager>();
 
-        private static List<string> Labels(IRenderedComponent<ContainerFragment> area)
+        private static List<string> GetLabels(IRenderedComponent<ContainerFragment> area)
             => [.. area.FindAll(".forma-rest-area-handle").Select(handle => handle.TextContent.Trim())];
 
         [Fact]
@@ -24,7 +24,7 @@
 
             // Assert
             Assert.Multiple(
-                () => Assert.Equal(["Properties", "Folders", "Properties"], Labels(area)),
+                () => Assert.Equal(["Properties", "Folders", "Properties"], GetLabels(area)),
                 () => Assert.Equal("Windows", area.Find(".forma-rest-area").GetAttribute("aria-label")));
         }
 
@@ -44,7 +44,7 @@
             area.WaitForAssertion(() => Assert.Multiple(
                 () => Assert.Equal("true", area.FindAll(".forma-rest-area-handle")[0].GetAttribute("aria-pressed")),
                 () => Assert.Equal("false", area.FindAll(".forma-rest-area-handle")[1].GetAttribute("aria-pressed")),
-                () => Assert.Equal(["First", "Second"], Labels(area))));
+                () => Assert.Equal(["First", "Second"], GetLabels(area))));
         }
 
         [Fact]
@@ -160,7 +160,7 @@
             window.Render(parameters => parameters.Add(p => p.Title, "Final"));
 
             // Assert
-            area.WaitForAssertion(() => Assert.Equal(["Final"], Labels(area)));
+            area.WaitForAssertion(() => Assert.Equal(["Final"], GetLabels(area)));
         }
 
         [Fact]
@@ -176,7 +176,7 @@
             var area = ctx.Render(@<CascadingValue Value="nested"><FormaRestArea /></CascadingValue>);
 
             // Assert
-            Assert.Equal(["Nested"], Labels(area));
+            Assert.Equal(["Nested"], GetLabels(area));
         }
     }
 }

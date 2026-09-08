@@ -69,6 +69,6 @@ public sealed partial class FormaEmoji(IEmojiProvider emojiProvider) : Component
         }
     }
 
-    private static string SpriteHref(EmojiSprite sprite)
+    private static string GetSpriteHref(EmojiSprite sprite)
         => $"#{sprite.Symbol}";
 }

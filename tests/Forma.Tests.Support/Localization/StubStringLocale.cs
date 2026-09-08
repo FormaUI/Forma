@@ -11,11 +11,11 @@ public sealed class StubStringLocale(IReadOnlyDictionary<string, string> transla
 {
     /// <summary>The translation for a key, falling back to the key itself.</summary>
     public LocalizedText this[string name]
-        => Text(name, []);
+        => GetText(name, []);
 
     /// <summary>The translation for a key, formatted with values paired to the key's holes by position.</summary>
     public LocalizedText this[string name, params ReadOnlySpan<object?> values]
-        => Text(name, LocalizedFormat.Bind(name, values));
+        => GetText(name, LocalizedFormat.Bind(name, values));
 
     /// <summary>The translated format for a key, with every hole left open.</summary>
     public LocalizedPattern Resolve(string name)
@@ -48,7 +48,7 @@ public sealed class StubStringLocale(IReadOnlyDictionary<string, string> transla
         return translation ?? name;
     }
 
-    private LocalizedText Text(string name, LocalizedArgument[] arguments)
+    private LocalizedText GetText(string name, LocalizedArgument[] arguments)
     {
         var format = Find(name, out var found);
         var value = arguments.Length == 0 ? format : LocalizedFormat.Render(format, arguments, CultureInfo.CurrentCulture);

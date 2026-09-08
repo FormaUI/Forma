@@ -57,7 +57,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
 
     private int _libraryCount;
 
-    private IExplorerItemsProvider ProviderFor(string key)
+    private IExplorerItemsProvider GetProvider(string key)
         => _providers[key];
 
     private string LibraryQueryDescription
@@ -90,7 +90,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
     private static ExplorerDetailsColumns[] ColumnChoices
         => [ExplorerDetailsColumns.Kind, ExplorerDetailsColumns.Size, ExplorerDetailsColumns.Modified, ExplorerDetailsColumns.Added];
 
-    private string ColumnLabel(ExplorerDetailsColumns column)
+    private string GetColumnLabel(ExplorerDetailsColumns column)
         => column switch
         {
             ExplorerDetailsColumns.Kind => L["Type"].Value,
@@ -243,10 +243,10 @@ public sealed partial class FormaExplorerPage : ComponentBase
 
         foreach (var key in new[] { "full", "phone", "readonly", "fixedfolders", "nosidebar", "nomenu" })
         {
-            _providers[key] = new FolderScopedProvider(_mediaStore, () => CurrentFolderFor(key)?.Key);
+            _providers[key] = new FolderScopedProvider(_mediaStore, () => GetCurrentFolder(key)?.Key);
         }
 
-        _providers["library"] = new FolderScopedProvider(_libraryStore, () => CurrentFolderFor("library")?.Key);
+        _providers["library"] = new FolderScopedProvider(_libraryStore, () => GetCurrentFolder("library")?.Key);
         _providers["paged"] = new FolderScopedProvider(_flatStore, () => null);
         _providers["infinite"] = new FolderScopedProvider(_flatStore, () => null);
     }
@@ -283,24 +283,24 @@ public sealed partial class FormaExplorerPage : ComponentBase
     // The store is the demo's only copy of the media, so what a mutation changed has to be read back out of it.
     private void SyncFromStore()
     {
-        _allMedia = [.. _mediaStore.All()];
+        _allMedia = [.. _mediaStore.GetAll()];
         _allMediaItems = ExplorerItem.ForAll(_allMedia);
 
         for (var index = 0; index < _sampleFolders.Count; index++)
         {
             var folder = _sampleFolders[index];
-            _sampleFolders[index] = folder with { Count = _mediaStore.CountIn(folder.Source), Size = _mediaStore.SizeIn(folder.Source) };
+            _sampleFolders[index] = folder with { Count = _mediaStore.CountIn(folder.Source), Size = _mediaStore.GetSize(folder.Source) };
         }
 
         _sampleFolderItems = ExplorerItem.ForAll(_sampleFolders);
     }
 
-    private IExplorerFolderItem? CurrentFolderFor(string key)
+    private IExplorerFolderItem? GetCurrentFolder(string key)
         => _currentFolderSources.GetValueOrDefault(key) is { } source
-            ? FoldersFor(key).OfType<IExplorerFolderItem>().FirstOrDefault(folder => folder.Key == source)
+            ? GetFolders(key).OfType<IExplorerFolderItem>().FirstOrDefault(folder => folder.Key == source)
             : null;
 
-    private IReadOnlyList<IExplorerItem> FoldersFor(string key)
+    private IReadOnlyList<IExplorerItem> GetFolders(string key)
         => key == "states" ? _stateFolderItems : _sampleFolderItems;
 
     private Task HandleFolderChangedAsync(string key, IExplorerFolderItem? folder)
@@ -323,7 +323,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
     private Task HandleDropAsync(string key, ExplorerDropRequest request)
     {
         var count = request.Items.Count;
-        var folderName = FolderName(request.TargetFolder);
+        var folderName = GetFolderName(request.TargetFolder);
 
         _mediaStore.Move(GetResources(request.Items), request.TargetFolder?.Key);
         SyncFromStore();
@@ -336,7 +336,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
     private static List<ResourceInfo> GetResources(IEnumerable<IExplorerItem> items)
         => [.. items.Select(item => item.Resource).OfType<ResourceInfo>()];
 
-    private string FolderName(IExplorerFolderItem? folder)
+    private string GetFolderName(IExplorerFolderItem? folder)
         => folder?.Name ?? L["All media"].Value;
 
     private Task HandleFolderCreateAsync(string key, ExplorerFolderCreateRequest request)
@@ -347,7 +347,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
         _sampleFolders.Add(new FolderResourceInfo(source) { Name = request.Name, Parent = parent?.Key, Count = 0 });
         SyncFromStore();
 
-        LogAction(key, L["Created folder \"{Name}\" in {Parent}", request.Name, FolderName(parent)]);
+        LogAction(key, L["Created folder \"{Name}\" in {Parent}", request.Name, GetFolderName(parent)]);
 
         return Task.CompletedTask;
     }
@@ -379,7 +379,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
         }
 
         SyncFromStore();
-        LogAction(key, L["Moved folder \"{Source}\" into \"{Target}\"", request.SourceFolder.Name, FolderName(request.TargetFolder)]);
+        LogAction(key, L["Moved folder \"{Source}\" into \"{Target}\"", request.SourceFolder.Name, GetFolderName(request.TargetFolder)]);
 
         return Task.CompletedTask;
     }

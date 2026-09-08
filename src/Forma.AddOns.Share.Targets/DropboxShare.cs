@@ -23,14 +23,14 @@ public sealed class DropboxShare : ApiShare
 
     /// <summary>Dropbox fetches the file itself, so the item needs a resource living at a public address.</summary>
     public override bool Supports(ShareItem item)
-        => ReachableSource(item) is not null;
+        => GetReachableSource(item) is not null;
 
     /// <inheritdoc />
     public override async Task ShareAsync(ShareItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        if (ReachableSource(item) is not { } source)
+        if (GetReachableSource(item) is not { } source)
         {
             return;
         }

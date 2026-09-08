@@ -407,7 +407,7 @@
             var result = await operate();
             var titles = result.Windows.Count == 0 ? L["no windows"] : string.Join(", ", result.Windows.Select(window => window.Title));
 
-            Log(L["{Operation}: {Outcome} ({Windows})", operation, OutcomeText(result.Outcome), titles]);
+            Log(L["{Operation}: {Outcome} ({Windows})", operation, GetOutcomeText(result.Outcome), titles]);
         }
         catch (ArgumentException rejection)
         {
@@ -440,10 +440,10 @@
     {
         var result = await Manager.ActivateAsync(new WindowSelector { Window = _account });
 
-        _accountActivation = L["{Outcome}, current is {Window}", OutcomeText(result.Outcome), Manager.Current?.Title ?? L["none"]];
+        _accountActivation = L["{Outcome}, current is {Window}", GetOutcomeText(result.Outcome), Manager.Current?.Title ?? L["none"]];
     }
 
-    private string OutcomeText(WindowOperationOutcome outcome)
+    private string GetOutcomeText(WindowOperationOutcome outcome)
         => outcome switch
         {
             WindowOperationOutcome.Applied => L["applied"],

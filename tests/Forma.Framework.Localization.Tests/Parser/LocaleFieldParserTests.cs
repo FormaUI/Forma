@@ -18,10 +18,10 @@ public sealed class LocaleFieldParserTests
         {
             Assert.True(result.IsValid);
             Assert.Equal(2, result.Fields.Count);
-            Assert.Equal("SchemaVersion", Text(result.Fields[0].NameSpan, Metadata));
-            Assert.Equal("1.0.0", Text(result.Fields[0].ValueSpan, Metadata));
-            Assert.Equal("Culture", Text(result.Fields[1].NameSpan, Metadata));
-            Assert.Equal("he", Text(result.Fields[1].ValueSpan, Metadata));
+            Assert.Equal("SchemaVersion", GetText(result.Fields[0].NameSpan, Metadata));
+            Assert.Equal("1.0.0", GetText(result.Fields[0].ValueSpan, Metadata));
+            Assert.Equal("Culture", GetText(result.Fields[1].NameSpan, Metadata));
+            Assert.Equal("he", GetText(result.Fields[1].ValueSpan, Metadata));
         });
     }
 
@@ -40,8 +40,8 @@ public sealed class LocaleFieldParserTests
         Assert.Multiple(() =>
         {
             Assert.True(result.IsValid);
-            Assert.Equal("SchemaVersion", Text(result.Fields[0].NameSpan, text));
-            Assert.Equal("he", Text(result.Fields[1].ValueSpan, text));
+            Assert.Equal("SchemaVersion", GetText(result.Fields[0].NameSpan, text));
+            Assert.Equal("he", GetText(result.Fields[1].ValueSpan, text));
         });
     }
 
@@ -76,7 +76,7 @@ public sealed class LocaleFieldParserTests
         Assert.Multiple(() =>
         {
             Assert.True(result.IsValid);
-            Assert.Equal("Author", Text(result.Fields[2].NameSpan, Extended));
+            Assert.Equal("Author", GetText(result.Fields[2].NameSpan, Extended));
         });
     }
 
@@ -94,6 +94,6 @@ public sealed class LocaleFieldParserTests
     public void Should_reject_null_text()
         => Assert.Throws<ArgumentNullException>(() => LocaleFieldParser.Parse(null!));
 
-    private static string Text(LocaleTextSpan span, string text)
+    private static string GetText(LocaleTextSpan span, string text)
         => span.Slice(text).ToString();
 }

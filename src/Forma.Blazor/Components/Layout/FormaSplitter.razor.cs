@@ -72,7 +72,7 @@ public sealed partial class FormaSplitter : ComponentBase, IAsyncDisposable
         }
     }
 
-    private static string Rounded(double value)
+    private static string FormatRounded(double value)
         => Math.Round(value).ToString(CultureInfo.InvariantCulture);
 
     /// <inheritdoc />

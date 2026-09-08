@@ -17,7 +17,7 @@
         private static void Confirm(IRenderedComponent<ContainerFragment> cut)
             => cut.FindAll("button").Single(button => button.TextContent.Trim() == "Insert").Click();
 
-        private static List<string> Alerts(IRenderedComponent<ContainerFragment> cut)
+        private static List<string> GetAlerts(IRenderedComponent<ContainerFragment> cut)
             => cut.FindAll(".forma-composer-dialog-error[role=alert]").Select(alert => alert.TextContent.Trim()).ToList();
 
         [Fact]
@@ -48,7 +48,7 @@
             Assert.False(inserted);
             Assert.Equal(
                 ["Enter the embed type before inserting.", "Enter the identifier before inserting."],
-                Alerts(cut));
+                GetAlerts(cut));
         }
 
         [Fact]
@@ -63,7 +63,7 @@
             Confirm(cut);
 
             // Assert
-            Assert.Equal(["Enter the identifier before inserting."], Alerts(cut));
+            Assert.Equal(["Enter the identifier before inserting."], GetAlerts(cut));
         }
 
         [Fact]
@@ -83,7 +83,7 @@
             Assert.NotNull(result);
             Assert.Equal("youtube", result.EmbedType);
             Assert.Equal("dQw4w9WgXcQ", result.Identifier);
-            Assert.Empty(Alerts(cut));
+            Assert.Empty(GetAlerts(cut));
         }
     }
 }

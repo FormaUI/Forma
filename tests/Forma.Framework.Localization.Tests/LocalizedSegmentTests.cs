@@ -68,7 +68,7 @@ public sealed class LocalizedSegmentTests
     public void Should_expose_the_specifier_a_hole_carries()
     {
         // Act
-        var (name, alignment, format) = Single("Ratio {share:P1}.");
+        var (name, alignment, format) = GetSingleSegment("Ratio {share:P1}.");
 
         // Assert
         Assert.Multiple(() =>
@@ -93,7 +93,7 @@ public sealed class LocalizedSegmentTests
     public void Should_expose_the_alignment_a_hole_carries()
     {
         // Act
-        var (name, alignment, format) = Single("{label,-8}|");
+        var (name, alignment, format) = GetSingleSegment("{label,-8}|");
 
         // Assert
         Assert.Multiple(() =>
@@ -187,7 +187,7 @@ public sealed class LocalizedSegmentTests
         return literalLength;
     }
 
-    private static (string Name, int Alignment, string Format) Single(string format)
+    private static (string Name, int Alignment, string Format) GetSingleSegment(string format)
     {
         foreach (var segment in LocalizedSegment.Parse(format))
         {

@@ -3,7 +3,7 @@
 @using Forma.Framework.Input.Keyboard
 @using Forma.Framework.Input.Wheel
 @code {
-    private static InputDecision Routed()
+    private static InputDecision CreateRoutedDecision()
         => new()
         {
             Input = new InputKeyInfo { Type = "keydown", Key = "ArrowDown", Modifiers = new() { Shift = true } },
@@ -22,7 +22,7 @@
             ],
         };
 
-    private static InputDecision Unowned()
+    private static InputDecision CreateUnownedDecision()
         => new()
         {
             Input = new InputWheelInfo { Type = "wheel", DeltaY = 40 },
@@ -58,7 +58,7 @@
             var cut = ctx.Render(@<FormaInputInspector />);
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaInputInspector>().Instance.ReportAsync(Routed()));
+            await cut.InvokeAsync(() => cut.FindComponent<FormaInputInspector>().Instance.ReportAsync(CreateRoutedDecision()));
 
             // Assert
             var keycaps = cut.FindAll(".forma-input-inspector-summary kbd").Select(kbd => kbd.TextContent).ToList();
@@ -90,7 +90,7 @@
             var cut = ctx.Render(@<FormaInputInspector />);
 
             // Act
-            await cut.InvokeAsync(() => cut.FindComponent<FormaInputInspector>().Instance.ReportAsync(Unowned()));
+            await cut.InvokeAsync(() => cut.FindComponent<FormaInputInspector>().Instance.ReportAsync(CreateUnownedDecision()));
 
             // Assert
             Assert.Multiple(
@@ -112,8 +112,8 @@
             var inspector = cut.FindComponent<FormaInputInspector>().Instance;
 
             // Act
-            await cut.InvokeAsync(() => inspector.ReportAsync(Unowned()));
-            await cut.InvokeAsync(() => inspector.ReportAsync(Routed()));
+            await cut.InvokeAsync(() => inspector.ReportAsync(CreateUnownedDecision()));
+            await cut.InvokeAsync(() => inspector.ReportAsync(CreateRoutedDecision()));
 
             // Assert
             var recent = cut.FindAll(".forma-input-inspector-history li");
@@ -130,11 +130,11 @@
             using var ctx = new FormaInputInspectorTests();
             var cut = ctx.Render(@<FormaInputInspector />);
             var inspector = cut.FindComponent<FormaInputInspector>().Instance;
-            await cut.InvokeAsync(() => inspector.ReportAsync(Routed()));
+            await cut.InvokeAsync(() => inspector.ReportAsync(CreateRoutedDecision()));
 
             // Act
             cut.Find(".forma-toolbar [aria-pressed]").Click();
-            await cut.InvokeAsync(() => inspector.ReportAsync(Unowned()));
+            await cut.InvokeAsync(() => inspector.ReportAsync(CreateUnownedDecision()));
 
             // Assert
             Assert.Multiple(

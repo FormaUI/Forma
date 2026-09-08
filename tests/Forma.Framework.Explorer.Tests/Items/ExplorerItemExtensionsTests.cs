@@ -15,7 +15,7 @@ public sealed class ExplorerItemExtensionsTests
         | ExplorerItemCapabilities.Rename
         | ExplorerItemCapabilities.Delete;
 
-    private static ExplorerItem Item(ExplorerItemCapabilities capabilities, bool isDisabled = false)
+    private static ExplorerItem CreateItem(ExplorerItemCapabilities capabilities, bool isDisabled = false)
         => new()
         {
             Key = "/media/photo.png",
@@ -33,7 +33,7 @@ public sealed class ExplorerItemExtensionsTests
         {
             AllowedCapabilities = ExplorerItemCapabilities.Open | ExplorerItemCapabilities.View | ExplorerItemCapabilities.Rename
         };
-        var item = Item(ExplorerItemCapabilities.Open | ExplorerItemCapabilities.Rename | ExplorerItemCapabilities.Delete);
+        var item = CreateItem(ExplorerItemCapabilities.Open | ExplorerItemCapabilities.Rename | ExplorerItemCapabilities.Delete);
 
         // Act
         var capabilities = item.GetCapabilities(options);
@@ -68,7 +68,7 @@ public sealed class ExplorerItemExtensionsTests
     {
         // Arrange
         var options = ExplorerItemOptions.Default;
-        var item = Item(EveryMediaCapability, isDisabled: true);
+        var item = CreateItem(EveryMediaCapability, isDisabled: true);
 
         // Act
         var capabilities = item.GetCapabilities(options);
@@ -83,7 +83,7 @@ public sealed class ExplorerItemExtensionsTests
     public void Should_reject_a_null_item_or_options()
     {
         // Arrange
-        var item = Item(EveryMediaCapability);
+        var item = CreateItem(EveryMediaCapability);
 
         // Act & Assert
         Assert.Multiple(

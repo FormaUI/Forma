@@ -10,7 +10,7 @@ using Forma.Framework.Input.Keyboard;
 public sealed class ServiceCollectionExtensionsTests
 {
     [Fact]
-    public void RegistersTheDefaultInputPolicy()
+    public void Should_register_the_default_input_policy()
     {
         using var provider = new ServiceCollection().AddFormaUI().BuildServiceProvider();
 
@@ -18,7 +18,7 @@ public sealed class ServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public void RegistersTheHostInputPolicy()
+    public void Should_register_the_host_input_policy()
     {
         var policy = new InputRouterOptions { Escape = DismissBehavior.Ignore };
 
@@ -28,7 +28,7 @@ public sealed class ServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public void LeavesAPolicyTheHostRegisteredFirst()
+    public void Should_leave_a_policy_the_host_registered_first()
     {
         var policy = new InputRouterOptions { Routes = [new InputRoute("app.palette", KeyBinding.Shortcut("k"))] };
         var services = new ServiceCollection();
@@ -40,7 +40,7 @@ public sealed class ServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public void RegistersTheBundledArtwork()
+    public void Should_register_the_bundled_artwork()
     {
         using var provider = new ServiceCollection().AddFormaUI().BuildServiceProvider();
 

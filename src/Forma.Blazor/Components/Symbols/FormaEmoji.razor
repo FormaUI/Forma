@@ -3,7 +3,7 @@
 @if (_artwork is EmojiSprite sprite)
 {
     <svg class="@CssClass" viewBox="0 0 36 36" focusable="false" role="@Role" aria-hidden="@AriaHidden" aria-label="@Label">
-        <use href="@SpriteHref(sprite)" />
+        <use href="@GetSpriteHref(sprite)" />
     </svg>
 }
 else if (_artwork is EmojiImage image)

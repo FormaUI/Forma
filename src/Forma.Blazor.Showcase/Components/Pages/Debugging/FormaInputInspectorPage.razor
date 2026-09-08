@@ -18,7 +18,7 @@
                 <FormaInputScope id="demo-grid" class="demo-scope" Profile="_gridProfile" OnAction="action => Record(ref _lastGridAction, action)">
                     <div class="demo-scope-header">
                         <span class="demo-scope-name"><FormaIcon Icon="Glyph.GridView" Size="IconSize.Small" /> @L["Grid"]</span>
-                        <FormaStatusBadge Text="@(_lastGridAction ?? L["idle"])" Marker="Glyph.ArrowTurnDownRight" class="@ReadoutClass(_lastGridAction)" />
+                        <FormaStatusBadge Text="@(_lastGridAction ?? L["idle"])" Marker="Glyph.ArrowTurnDownRight" class="@GetReadoutClass(_lastGridAction)" />
                     </div>
                     <EditForm Model="_model">
                         <div class="demo-row demo-controls">
@@ -52,7 +52,7 @@
                             <FormaInputScope id="demo-list" class="demo-scope" Profile="_listProfile" OnAction="action => Record(ref _lastListAction, action)">
                                 <div class="demo-scope-header">
                                     <span class="demo-scope-name"><FormaIcon Icon="Glyph.List" Size="IconSize.Small" /> @L["List"]</span>
-                                    <FormaStatusBadge Text="@(_lastListAction ?? L["idle"])" Marker="Glyph.ArrowTurnDownRight" class="@ReadoutClass(_lastListAction)" />
+                                    <FormaStatusBadge Text="@(_lastListAction ?? L["idle"])" Marker="Glyph.ArrowTurnDownRight" class="@GetReadoutClass(_lastListAction)" />
                                 </div>
                                 <div class="demo-row">
                                     <FormaButton Variant="ButtonVariant.Secondary">@L["Option"]</FormaButton>
@@ -111,7 +111,7 @@
                 </dl>
                 <div class="demo-scope-header">
                     <span class="demo-scope-name"><FormaIcon Icon="Glyph.Home" Size="IconSize.Small" /> @L["Last host action"]</span>
-                    <FormaStatusBadge Text="@(HostActions.LastAction ?? L["idle"])" Marker="Glyph.ArrowTurnDownRight" class="@ReadoutClass(HostActions.LastAction)" />
+                    <FormaStatusBadge Text="@(HostActions.LastAction ?? L["idle"])" Marker="Glyph.ArrowTurnDownRight" class="@GetReadoutClass(HostActions.LastAction)" />
                 </div>
             </div>
         </div>

@@ -21,13 +21,13 @@
         {
             <div class="forma-input-inspector-summary">
                 <span class="forma-input-inspector-input">
-                    <FormaIcon Icon="FamilyIcon(Decision.Input)" Size="IconSize.Small" />
-                    @foreach (var keycap in Keycaps(Decision.Input))
+                    <FormaIcon Icon="GetFamilyIcon(Decision.Input)" Size="IconSize.Small" />
+                    @foreach (var keycap in GetKeycaps(Decision.Input))
                     {
                         <kbd>@keycap</kbd>
                     }
                 </span>
-                <FormaStatusBadge Text="@Decision.Precedence" class="@PrecedenceClass(Decision.Precedence)" />
+                <FormaStatusBadge Text="@Decision.Precedence" class="@GetPrecedenceClass(Decision.Precedence)" />
             </div>
 
             <dl class="forma-input-inspector-decision">
@@ -75,7 +75,7 @@
                     <span class="forma-input-inspector-layer-number" aria-hidden="true">@layer.Layer</span>
                     <span class="forma-input-inspector-layer-body">
                         <code>@layer.Element</code>
-                        <span class="forma-input-inspector-layer-placement">@Placement(layer.Reason)</span>
+                        <span class="forma-input-inspector-layer-placement">@GetPlacement(layer.Reason)</span>
                     </span>
                     @if (layer.Modal)
                     {
@@ -94,14 +94,14 @@
             {
                 <li>
                     <span class="forma-input-inspector-input">
-                        <FormaIcon Icon="FamilyIcon(past.Input)" Size="IconSize.Inline" />
-                        @foreach (var keycap in Keycaps(past.Input))
+                        <FormaIcon Icon="GetFamilyIcon(past.Input)" Size="IconSize.Inline" />
+                        @foreach (var keycap in GetKeycaps(past.Input))
                         {
                             <kbd>@keycap</kbd>
                         }
                     </span>
                     <span class="forma-input-inspector-history-outcome">@(past.Action ?? L["none"])</span>
-                    <FormaStatusBadge Text="@past.Precedence" class="@PrecedenceClass(past.Precedence)" />
+                    <FormaStatusBadge Text="@past.Precedence" class="@GetPrecedenceClass(past.Precedence)" />
                 </li>
             }
         </ol>

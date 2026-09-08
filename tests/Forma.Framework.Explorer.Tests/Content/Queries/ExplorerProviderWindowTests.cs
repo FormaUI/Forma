@@ -34,10 +34,10 @@ public sealed class ExplorerProviderWindowTests
             => ValueTask.FromResult(new ExplorerItemPage(items, total ?? items.Count));
     }
 
-    private static ExplorerItem Hidden(string name)
+    private static ExplorerItem CreateHiddenItem(string name)
         => new() { Key = name, Name = name, Visibility = ExplorerItemVisibility.Hidden };
 
-    private static ResourceInfo Resource(string name)
+    private static ResourceInfo CreateResource(string name)
         => new($"/media/{name}");
 
     [Fact]
@@ -45,7 +45,7 @@ public sealed class ExplorerProviderWindowTests
     {
         // Arrange
         using var window = new ExplorerProviderWindow();
-        var provider = new ItemProvider([ExplorerItem.For(Resource("shown")), Hidden("hidden")], total: 6);
+        var provider = new ItemProvider([ExplorerItem.For(CreateResource("shown")), CreateHiddenItem("hidden")], total: 6);
         var query = new ExplorerItemQuery(0, 10, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
 
         // Act
@@ -64,7 +64,7 @@ public sealed class ExplorerProviderWindowTests
     {
         // Arrange
         using var window = new ExplorerProviderWindow();
-        var provider = new ItemProvider([ExplorerItem.For(Resource("shown")), Hidden("hidden")], total: 6);
+        var provider = new ItemProvider([ExplorerItem.For(CreateResource("shown")), CreateHiddenItem("hidden")], total: 6);
         var firstPage = new ExplorerItemQuery(0, 2, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
         var secondPage = new ExplorerItemQuery(2, 2, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
         await window.FetchAsync(provider, onStateChanged: () => { }, firstPage, filter: null, appendToWindow: false, TestContext.Current.CancellationToken);
@@ -85,7 +85,7 @@ public sealed class ExplorerProviderWindowTests
     {
         // Arrange
         using var window = new ExplorerProviderWindow();
-        var provider = new ItemProvider([ExplorerItem.For(Resource("shown")), Hidden("hidden")], total: 6);
+        var provider = new ItemProvider([ExplorerItem.For(CreateResource("shown")), CreateHiddenItem("hidden")], total: 6);
         var query = new ExplorerItemQuery(0, 2, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
         await window.FetchAsync(provider, onStateChanged: () => { }, query, filter: null, appendToWindow: false, TestContext.Current.CancellationToken);
         await window.FetchAsync(provider, onStateChanged: () => { }, query, filter: null, appendToWindow: true, TestContext.Current.CancellationToken);
@@ -118,7 +118,7 @@ public sealed class ExplorerProviderWindowTests
     {
         // Arrange
         using var window = new ExplorerProviderWindow();
-        var provider = new FakeProvider([Resource("one"), Resource("two"), Resource("three")]);
+        var provider = new FakeProvider([CreateResource("one"), CreateResource("two"), CreateResource("three")]);
         var query = new ExplorerItemQuery(0, 2, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
 
         // Act
@@ -136,7 +136,7 @@ public sealed class ExplorerProviderWindowTests
     {
         // Arrange
         using var window = new ExplorerProviderWindow();
-        var provider = new FakeProvider([Resource("one"), Resource("two"), Resource("three")]);
+        var provider = new FakeProvider([CreateResource("one"), CreateResource("two"), CreateResource("three")]);
         var firstPage = new ExplorerItemQuery(0, 2, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
         var secondPage = new ExplorerItemQuery(2, 2, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
         await window.FetchAsync(provider, onStateChanged: () => { }, firstPage, filter: null, appendToWindow: false, TestContext.Current.CancellationToken);
@@ -172,7 +172,7 @@ public sealed class ExplorerProviderWindowTests
         // Arrange
         using var window = new ExplorerProviderWindow();
         var gate = new TaskCompletionSource();
-        var provider = new FakeProvider([Resource("one")], gate);
+        var provider = new FakeProvider([CreateResource("one")], gate);
         var query = new ExplorerItemQuery(0, 10, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
         var changes = new List<bool>();
 
@@ -194,8 +194,8 @@ public sealed class ExplorerProviderWindowTests
         // Arrange
         using var window = new ExplorerProviderWindow();
         var firstGate = new TaskCompletionSource();
-        var firstProvider = new FakeProvider([Resource("stale")], firstGate);
-        var secondProvider = new FakeProvider([Resource("fresh")]);
+        var firstProvider = new FakeProvider([CreateResource("stale")], firstGate);
+        var secondProvider = new FakeProvider([CreateResource("fresh")]);
         var query = new ExplorerItemQuery(0, 10, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
 
         // Act
@@ -215,7 +215,7 @@ public sealed class ExplorerProviderWindowTests
         using var window = new ExplorerProviderWindow();
         using var caller = new CancellationTokenSource();
         var gate = new TaskCompletionSource();
-        var provider = new FakeProvider([Resource("late")], gate);
+        var provider = new FakeProvider([CreateResource("late")], gate);
         var query = new ExplorerItemQuery(0, 10, null, ExplorerSortField.Name, ExplorerSortDirection.Ascending);
 
         // Act

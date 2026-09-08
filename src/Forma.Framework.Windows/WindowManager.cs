@@ -758,18 +758,18 @@ public sealed class WindowManager
             return;
         }
 
-        var number = NextInstanceNumber(_lastInstanceNumbers.GetValueOrDefault(origin.OriginId));
+        var number = GetNextInstanceNumber(_lastInstanceNumbers.GetValueOrDefault(origin.OriginId));
 
         while (_windows.Any(window => window.Origin.OriginId == origin.OriginId && _instanceNumbers.GetValueOrDefault(window.Origin.InstanceId) == number))
         {
-            number = NextInstanceNumber(number);
+            number = GetNextInstanceNumber(number);
         }
 
         _lastInstanceNumbers[origin.OriginId] = number;
         _instanceNumbers[origin.InstanceId] = number;
     }
 
-    private static int NextInstanceNumber(int number)
+    private static int GetNextInstanceNumber(int number)
         => number == int.MaxValue ? 1 : number + 1;
 
     private void Remove(IManagedWindow window)

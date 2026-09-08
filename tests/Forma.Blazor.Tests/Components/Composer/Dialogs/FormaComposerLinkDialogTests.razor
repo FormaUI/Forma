@@ -17,7 +17,7 @@
         private static void Confirm(IRenderedComponent<ContainerFragment> cut)
             => cut.FindAll("button").Single(button => button.TextContent.Trim() == "Insert").Click();
 
-        private static string Alert(IRenderedComponent<ContainerFragment> cut)
+        private static string GetAlert(IRenderedComponent<ContainerFragment> cut)
             => cut.Find(".forma-composer-dialog-error[role=alert]").TextContent.Trim();
 
         [Fact]
@@ -46,7 +46,7 @@
 
             // Assert
             Assert.False(inserted);
-            Assert.Equal("Enter the address of the link before inserting.", Alert(cut));
+            Assert.Equal("Enter the address of the link before inserting.", GetAlert(cut));
         }
 
         [Theory]
@@ -68,7 +68,7 @@
             Assert.False(inserted);
             Assert.Equal(
                 "An address has to be a web address, a mail or telephone link, a path within this site, or an inline picture.",
-                Alert(cut));
+                GetAlert(cut));
         }
 
         [Theory]
@@ -123,7 +123,7 @@
 
             // Assert
             Assert.False(inserted);
-            Assert.Equal("Enter a name for the anchor before inserting.", Alert(cut));
+            Assert.Equal("Enter a name for the anchor before inserting.", GetAlert(cut));
         }
 
         [Fact]

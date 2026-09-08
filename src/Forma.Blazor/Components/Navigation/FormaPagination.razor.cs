@@ -71,7 +71,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
     private FormaTextBox NavigationInput { get; set; } = default!;
 
     // The host's accessible name wins.
-    private string NavLabel => AdditionalAttributes.HostValue("aria-label") ?? L["Pagination"].Value;
+    private string NavLabel => AdditionalAttributes.GetHostValue("aria-label") ?? L["Pagination"].Value;
 
     private string CssClass
         => AdditionalAttributes.MergeClass("forma-pagination");

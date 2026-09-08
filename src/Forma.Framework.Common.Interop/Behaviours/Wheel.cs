@@ -34,9 +34,9 @@ public sealed class Wheel(IJSRuntime js)
 
     private static object Describe<TOwner>(ScrollWheel wheel, DotNetObjectReference<TOwner>? owner)
         where TOwner : class
-        => new { track = wheel.Track, owner = wheel.TellsOwner ? owner : null, modifier = ModifierName(wheel.Modifier) };
+        => new { track = wheel.Track, owner = wheel.TellsOwner ? owner : null, modifier = GetModifierName(wheel.Modifier) };
 
-    private static string? ModifierName(WheelModifier modifier) => modifier switch
+    private static string? GetModifierName(WheelModifier modifier) => modifier switch
     {
         WheelModifier.Shift => "shift",
         WheelModifier.Ctrl => "ctrl",

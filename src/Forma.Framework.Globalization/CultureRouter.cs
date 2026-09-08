@@ -69,7 +69,7 @@ public sealed partial class CultureRouter
         ArgumentNullException.ThrowIfNull(route);
         GuardAgainstConsecutiveCultures(path, nameof(path));
 
-        return Prefixed(route, StripToken(path));
+        return Prefix(route, StripToken(path));
     }
 
     /// <summary>The relative URL addressing <paramref name="route"/> for <paramref name="relativeUrl"/>, query included.</summary>
@@ -86,7 +86,7 @@ public sealed partial class CultureRouter
 
         GuardAgainstConsecutiveCultures(path, nameof(relativeUrl));
 
-        return Prefixed(route, StripToken(path)).ToUriComponent() + query.ToUriComponent();
+        return Prefix(route, StripToken(path)).ToUriComponent() + query.ToUriComponent();
     }
 
     /// <summary>Matches <paramref name="path"/> against the registered cultures.</summary>
@@ -95,7 +95,7 @@ public sealed partial class CultureRouter
         GuardAgainstConsecutiveCultures(path, nameof(path));
 
         var normalized = path.HasValue ? path : new PathString("/");
-        var segments = Segments(normalized);
+        var segments = GetSegments(normalized);
         CultureRoute? route = segments.Length > 0 && _routesByToken.TryGetValue(segments[0], out var found) ? found : null;
         var effectiveRoute = route ?? DefaultRoute;
 
@@ -103,7 +103,7 @@ public sealed partial class CultureRouter
             ? normalized
             : new PathString(segments.Length == 1 ? "/" : "/" + string.Join('/', segments.Skip(1)));
 
-        var canonicalPath = Prefixed(effectiveRoute, remainder);
+        var canonicalPath = Prefix(effectiveRoute, remainder);
         var isCanonical = string.Equals(canonicalPath.Value, normalized.Value, StringComparison.Ordinal);
 
         return new CultureMatch(effectiveRoute, remainder, canonicalPath, isCanonical);
@@ -112,12 +112,12 @@ public sealed partial class CultureRouter
     /// <summary>Whether <paramref name="path"/> names a culture in two consecutive segments.</summary>
     public bool HasConsecutiveCultures(PathString path)
     {
-        var segments = Segments(path);
+        var segments = GetSegments(path);
 
         return segments.Length > 1 && _routesByToken.ContainsKey(segments[0]) && _routesByToken.ContainsKey(segments[1]);
     }
 
-    private static string[] Segments(PathString path)
+    private static string[] GetSegments(PathString path)
         => (path.Value ?? string.Empty).Split('/', StringSplitOptions.RemoveEmptyEntries);
 
     private static void Validate(CultureRoute route, string parameterName)
@@ -151,7 +151,7 @@ public sealed partial class CultureRouter
     private bool IsDefaultRoute(CultureRoute route)
         => string.Equals(route.Token, DefaultRoute.Token, StringComparison.Ordinal);
 
-    private PathString Prefixed(CultureRoute route, PathString path)
+    private PathString Prefix(CultureRoute route, PathString path)
     {
         if (_prefix == CulturePrefix.ExceptDefault && IsDefaultRoute(route))
         {
@@ -176,7 +176,7 @@ public sealed partial class CultureRouter
     private PathString StripToken(PathString path)
     {
         var normalized = path.HasValue ? path : new PathString("/");
-        var segments = Segments(normalized);
+        var segments = GetSegments(normalized);
 
         if (segments.Length > 0 && _routesByToken.ContainsKey(segments[0]))
         {

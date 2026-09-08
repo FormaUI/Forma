@@ -18,7 +18,7 @@ public sealed class Scroll(IJSRuntime js)
 
         return AttachCoreAsync(target, new
         {
-            boundary = behaviours.Boundary is { } boundary ? new { owner, axis = AxisName(boundary.Axis), frozen = boundary.FrozenSelector } : null,
+            boundary = behaviours.Boundary is { } boundary ? new { owner, axis = GetAxisName(boundary.Axis), frozen = boundary.FrozenSelector } : null,
             sentinel = behaviours.Sentinel is { } sentinel ? new { owner, root = sentinel.Root } : null,
         });
     }
@@ -29,8 +29,8 @@ public sealed class Scroll(IJSRuntime js)
 
     /// <summary>Moves the container one step along <paramref name="axis"/> in <paramref name="direction"/>, -1 toward the start and 1 toward the end: to the next of the <paramref name="stops"/> its content marks, or by most of a page when it marks none.</summary>
     public ValueTask<bool> StepAsync(ElementReference container, int direction, ScrollAxis axis = ScrollAxis.Inline, ScrollStops? stops = null)
-        => InvokeModuleAsync("step", container, direction, AxisName(axis), stops is null ? null : new { selector = stops.Selector, inset = stops.Inset });
+        => InvokeModuleAsync("step", container, direction, GetAxisName(axis), stops is null ? null : new { selector = stops.Selector, inset = stops.Inset });
 
-    private static string AxisName(ScrollAxis axis)
+    private static string GetAxisName(ScrollAxis axis)
         => axis == ScrollAxis.Block ? "block" : "inline";
 }

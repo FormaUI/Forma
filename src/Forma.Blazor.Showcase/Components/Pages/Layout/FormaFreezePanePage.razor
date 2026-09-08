@@ -96,7 +96,7 @@
                         {
                             <tr>
                                 <td>@rider</td>
-                                <td>@Team(rider)</td>
+                                <td>@GetTeam(rider)</td>
                             </tr>
                         }
                     </tbody>
@@ -117,7 +117,7 @@
                         {
                             <tr>
                                 <td>@rider</td>
-                                <td>@Team(rider)</td>
+                                <td>@GetTeam(rider)</td>
                             </tr>
                         }
                     </tbody>
@@ -180,7 +180,7 @@
         return $"{4 + seed % 2}:{10 + seed % 40:00}:{seed * 3 % 60:00}";
     }
 
-    private string Team(string rider)
+    private string GetTeam(string rider)
         => (rider.Length % 3) switch
         {
             0 => L["Emirates"],

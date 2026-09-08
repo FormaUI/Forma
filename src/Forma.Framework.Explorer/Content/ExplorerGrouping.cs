@@ -60,15 +60,15 @@ public static class ExplorerGrouping
     private static (ExplorerGroupBand Band, string? KindLabel) GetBand(IExplorerItem item, ExplorerGroupField field, Func<IExplorerItem, string> kindLabel, DateTimeOffset now, DayOfWeek firstDayOfWeek)
         => field switch
         {
-            ExplorerGroupField.Name => (NameBand(item.Name), null),
-            ExplorerGroupField.Size => (SizeBand(item.Resource?.Size), null),
+            ExplorerGroupField.Name => (GetNameBand(item.Name), null),
+            ExplorerGroupField.Size => (GetSizeBand(item.Resource?.Size), null),
             ExplorerGroupField.Kind => (ExplorerGroupBand.Kind, kindLabel(item)),
-            ExplorerGroupField.DateAdded => (DateBand(item.CreatedAt, now, firstDayOfWeek), null),
-            ExplorerGroupField.DateModified => (DateBand(item.ModifiedAt, now, firstDayOfWeek), null),
+            ExplorerGroupField.DateAdded => (GetDateBand(item.CreatedAt, now, firstDayOfWeek), null),
+            ExplorerGroupField.DateModified => (GetDateBand(item.ModifiedAt, now, firstDayOfWeek), null),
             _ => throw new ArgumentOutOfRangeException(nameof(field), field, null),
         };
 
-    private static ExplorerGroupBand NameBand(string name)
+    private static ExplorerGroupBand GetNameBand(string name)
     {
         if (string.IsNullOrEmpty(name))
         {
@@ -87,7 +87,7 @@ public static class ExplorerGrouping
         };
     }
 
-    private static ExplorerGroupBand SizeBand(long? size)
+    private static ExplorerGroupBand GetSizeBand(long? size)
         => size switch
         {
             null => ExplorerGroupBand.SizeUnspecified,
@@ -100,7 +100,7 @@ public static class ExplorerGrouping
             _ => ExplorerGroupBand.SizeGigantic,
         };
 
-    private static ExplorerGroupBand DateBand(DateTimeOffset? moment, DateTimeOffset now, DayOfWeek firstDayOfWeek)
+    private static ExplorerGroupBand GetDateBand(DateTimeOffset? moment, DateTimeOffset now, DayOfWeek firstDayOfWeek)
     {
         if (moment is not { } value)
         {

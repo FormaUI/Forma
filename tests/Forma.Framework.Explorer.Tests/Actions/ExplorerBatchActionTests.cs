@@ -8,7 +8,7 @@ using Xunit;
 
 public sealed class ExplorerBatchActionTests
 {
-    private static ExplorerItem Item(string source)
+    private static ExplorerItem CreateItem(string source)
         => ExplorerItem.For(new FileResourceInfo(source));
 
     [Fact]
@@ -18,7 +18,7 @@ public sealed class ExplorerBatchActionTests
         var batch = new ExplorerBatchAction<IExplorerItem>();
 
         // Act
-        batch.Request([Item("/media/photo.png")]);
+        batch.Request([CreateItem("/media/photo.png")]);
 
         // Assert
         Assert.Multiple(
@@ -31,10 +31,10 @@ public sealed class ExplorerBatchActionTests
     {
         // Arrange
         var batch = new ExplorerBatchAction<IExplorerItem>();
-        batch.Request([Item("/media/photo.png")]);
+        batch.Request([CreateItem("/media/photo.png")]);
 
         // Act
-        batch.Request([Item("/media/a.png"), Item("/media/b.png")]);
+        batch.Request([CreateItem("/media/a.png"), CreateItem("/media/b.png")]);
 
         // Assert
         Assert.Equal(2, batch.Targets.Count);
@@ -49,7 +49,7 @@ public sealed class ExplorerBatchActionTests
     {
         // Arrange
         var batch = new ExplorerBatchAction<IExplorerItem>();
-        var requested = new List<IExplorerItem> { Item("/media/photo.png") };
+        var requested = new List<IExplorerItem> { CreateItem("/media/photo.png") };
 
         // Act
         batch.Request(requested);

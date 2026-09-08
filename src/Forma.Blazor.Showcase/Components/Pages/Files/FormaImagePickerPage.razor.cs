@@ -13,7 +13,7 @@ public sealed partial class FormaImagePickerPage : ComponentBase
 
     [Inject] private IStringLocale<FormaImagePickerPage> L { get; set; } = default!;
 
-    private List<string> Entries(string key)
+    private List<string> GetEntries(string key)
     {
         if (!_logs.TryGetValue(key, out var lines))
         {
@@ -28,7 +28,7 @@ public sealed partial class FormaImagePickerPage : ComponentBase
     {
         foreach (var rejection in rejections)
         {
-            Entries(key).Add(L["{Name} declined ({Reason})", rejection.Name, rejection.Reason]);
+            GetEntries(key).Add(L["{Name} declined ({Reason})", rejection.Name, rejection.Reason]);
         }
     }
 
@@ -36,7 +36,7 @@ public sealed partial class FormaImagePickerPage : ComponentBase
     {
         foreach (var file in files)
         {
-            Entries(key).Add(L["{Name} selected", file.Name]);
+            GetEntries(key).Add(L["{Name} selected", file.Name]);
         }
     }
 

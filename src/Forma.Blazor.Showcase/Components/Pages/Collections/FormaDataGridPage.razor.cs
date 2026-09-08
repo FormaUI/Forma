@@ -88,9 +88,9 @@ public sealed partial class FormaDataGridPage : ComponentBase
         => employee.IsActive ? null : "row-inactive";
 
     private void RecordAction(RowAction action, Employee employee)
-        => _lastAction = $"{ActionLabel(action)} — {employee.Name}";
+        => _lastAction = $"{GetActionLabel(action)} — {employee.Name}";
 
-    private string ActionLabel(RowAction action)
+    private string GetActionLabel(RowAction action)
         => action switch
         {
             RowAction.View => L["View"],

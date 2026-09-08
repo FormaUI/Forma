@@ -31,7 +31,7 @@ public abstract class ApiShare(string id, string title, Icon icon, HttpClient? h
     public abstract Task ShareAsync(ShareItem item);
 
     /// <summary>The public address the item's resource can be fetched from, or null when it lives nowhere reachable.</summary>
-    protected static string? ReachableSource(ShareItem item)
+    protected static string? GetReachableSource(ShareItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
 

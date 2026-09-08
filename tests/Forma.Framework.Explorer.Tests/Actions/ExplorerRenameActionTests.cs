@@ -8,7 +8,7 @@ using Xunit;
 
 public sealed class ExplorerRenameActionTests
 {
-    private static ExplorerItem Item(string source)
+    private static ExplorerItem CreateItem(string source)
         => ExplorerItem.For(new FileResourceInfo(source));
 
     [Fact]
@@ -18,7 +18,7 @@ public sealed class ExplorerRenameActionTests
         var rename = new ExplorerRenameAction<IExplorerItem>();
 
         // Act
-        rename.Request(Item("/media/photo.png"));
+        rename.Request(CreateItem("/media/photo.png"));
 
         // Assert
         Assert.Multiple(
@@ -32,10 +32,10 @@ public sealed class ExplorerRenameActionTests
     {
         // Arrange
         var rename = new ExplorerRenameAction<IExplorerItem>();
-        rename.Request(Item("/media/photo.png"));
+        rename.Request(CreateItem("/media/photo.png"));
 
         // Act
-        rename.Request(Item("/media/notes.md"));
+        rename.Request(CreateItem("/media/notes.md"));
 
         // Assert
         Assert.Equal("/media/notes.md", rename.Target?.Key);
@@ -52,7 +52,7 @@ public sealed class ExplorerRenameActionTests
         var rename = new ExplorerRenameAction<IExplorerItem>();
 
         // Act
-        rename.Request(Item("/media/photo.png"));
+        rename.Request(CreateItem("/media/photo.png"));
 
         // Assert
         Assert.Multiple(

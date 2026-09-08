@@ -92,7 +92,7 @@
     <div class="demo-box">
         <div class="demo-row">
             <label class="demo-field">@L["Count"] <input type="number" step="0.5" class="demo-number" @bind="_count" @bind:event="oninput" /></label>
-            <span class="demo-field">@L["Category"] <span class="demo-chip"><code dir="ltr">@CategoryFor(_count)</code></span></span>
+            <span class="demo-field">@L["Category"] <span class="demo-chip"><code dir="ltr">@GetCategory(_count)</code></span></span>
         </div>
         <p>@L[PluralKey, _count]</p>
         <p class="demo-note"><code dir="ltr">@PluralKey</code></p>
@@ -115,7 +115,7 @@
                 {
                     <tr>
                         <td><code dir="ltr">@sample.ToString(CultureInfo.CurrentCulture)</code></td>
-                        <td><code dir="ltr">@CategoryFor(sample)</code></td>
+                        <td><code dir="ltr">@GetCategory(sample)</code></td>
                     </tr>
                 }
             </tbody>
@@ -132,11 +132,11 @@
             <tbody>
                 <tr>
                     <th><code dir="ltr">#</code></th>
-                    <td>@GroupedCount(1234567)</td>
+                    <td>@GetGroupedCount(1234567)</td>
                 </tr>
                 <tr>
                     <th><code dir="ltr">{count}</code></th>
-                    <td>@RawCount(1234567)</td>
+                    <td>@GetRawCount(1234567)</td>
                 </tr>
             </tbody>
         </table>
@@ -234,7 +234,7 @@
     private LocalizedPattern Pattern
         => L.Resolve("{Written} of {Allowed} characters", _written, _allowed);
 
-    private static string CategoryFor(decimal count)
+    private static string GetCategory(decimal count)
     {
         var category = CommonPluralRuleSet.Default.Select(Language, PluralOperands.From(count));
 
@@ -242,9 +242,9 @@
     }
 
     // Both rows format the count directly.
-    private static string GroupedCount(decimal count)
+    private static string GetGroupedCount(decimal count)
         => PluralFormat.Evaluate(GroupedFormat, CultureInfo.CurrentCulture, LocalizedFormat.Bind(GroupedFormat, count));
 
-    private static string RawCount(decimal count)
+    private static string GetRawCount(decimal count)
         => LocalizedFormat.Render(RawFormat, LocalizedFormat.Bind(RawFormat, count), CultureInfo.CurrentCulture);
 }

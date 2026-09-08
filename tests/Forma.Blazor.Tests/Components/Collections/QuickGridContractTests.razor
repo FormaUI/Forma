@@ -12,14 +12,14 @@
 @code {
     public sealed class Component
     {
-        private static IQueryable<ContractItem> Items(int count) => Enumerable.Range(1, count)
+        private static IQueryable<ContractItem> CreateItems(int count) => Enumerable.Range(1, count)
             .Select(id => new ContractItem(id, $"Item {id}"))
             .AsQueryable();
 
         private static IRenderedComponent<ContainerFragment> RenderGrid(BunitContext ctx)
         {
             var cut = ctx.Render(
-                @<FormaDataGrid Items="Items(3)" PageSize="10">
+                @<FormaDataGrid Items="CreateItems(3)" PageSize="10">
                     <Columns>
                         <PropertyColumn Property="@(item => item.Title)" />
                     </Columns>

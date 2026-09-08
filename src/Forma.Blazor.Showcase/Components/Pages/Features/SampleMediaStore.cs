@@ -67,7 +67,7 @@ public sealed class SampleMediaStore(IReadOnlyList<SampleResource> resources, Ti
     }
 
     /// <summary>Everything held, for a demo that hands the explorer its collection instead of a provider.</summary>
-    public IReadOnlyList<ResourceInfo> All()
+    public IReadOnlyList<ResourceInfo> GetAll()
         => [.. _resources.Select(held => held.Resource)];
 
     /// <summary>How many resources the folder holds.</summary>
@@ -75,7 +75,7 @@ public sealed class SampleMediaStore(IReadOnlyList<SampleResource> resources, Ti
         => _resources.Count(held => held.Folder == folder);
 
     /// <summary>How large the folder's contents are together.</summary>
-    public long SizeIn(string folder)
+    public long GetSize(string folder)
         => _resources.Where(held => held.Folder == folder).Sum(held => held.Resource.Size ?? 0);
 
     /// <summary>Moves the resources into the folder, or to the root when none is named.</summary>

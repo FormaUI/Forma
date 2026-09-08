@@ -153,7 +153,7 @@ public sealed class CultureRouterTests
     public void Should_build_the_path_addressing_a_culture(CulturePrefix prefix, string token, string path, string expected)
     {
         // Arrange
-        var router = Router(prefix);
+        var router = CreateRouter(prefix);
         var route = router.Routes.Single(culture => culture.Token == token);
 
         // Act
@@ -169,7 +169,7 @@ public sealed class CultureRouterTests
     public void Should_strip_an_existing_culture_segment_before_prefixing(string token, string path, string expected)
     {
         // Arrange
-        var router = Router(CulturePrefix.ExceptDefault);
+        var router = CreateRouter(CulturePrefix.ExceptDefault);
         var route = router.Routes.Single(culture => culture.Token == token);
 
         // Act
@@ -187,7 +187,7 @@ public sealed class CultureRouterTests
     public void Should_match_a_known_culture_and_strip_it_from_the_path(string requested, string token, string remainder)
     {
         // Arrange
-        var router = Router(CulturePrefix.ExceptDefault);
+        var router = CreateRouter(CulturePrefix.ExceptDefault);
 
         // Act
         var match = router.Match(requested);
@@ -207,7 +207,7 @@ public sealed class CultureRouterTests
     public void Should_leave_a_path_that_names_no_culture_intact(string requested)
     {
         // Arrange
-        var router = Router(CulturePrefix.ExceptDefault);
+        var router = CreateRouter(CulturePrefix.ExceptDefault);
 
         // Act
         var match = router.Match(requested);
@@ -232,7 +232,7 @@ public sealed class CultureRouterTests
     public void Should_report_whether_the_requested_address_is_canonical(CulturePrefix prefix, string requested, bool expected)
     {
         // Arrange
-        var router = Router(prefix);
+        var router = CreateRouter(prefix);
 
         // Act
         var match = router.Match(requested);
@@ -245,7 +245,7 @@ public sealed class CultureRouterTests
     public void Should_provide_the_canonical_path_for_a_non_canonical_address()
     {
         // Arrange
-        var router = Router(CulturePrefix.ExceptDefault);
+        var router = CreateRouter(CulturePrefix.ExceptDefault);
 
         // Act
         var match = router.Match("/es-419/file-viewer");
@@ -263,7 +263,7 @@ public sealed class CultureRouterTests
     public void Should_reject_a_path_naming_consecutive_cultures(string requested)
     {
         // Arrange
-        var router = Router(CulturePrefix.ExceptDefault);
+        var router = CreateRouter(CulturePrefix.ExceptDefault);
 
         // Act
         var thrown = Record.Exception(() => router.Match(requested));
@@ -276,7 +276,7 @@ public sealed class CultureRouterTests
     public void Should_reject_building_a_path_naming_consecutive_cultures()
     {
         // Arrange
-        var router = Router(CulturePrefix.ExceptDefault);
+        var router = CreateRouter(CulturePrefix.ExceptDefault);
         var he = router.Routes.Single(route => route.Token == "he");
 
         // Act
@@ -290,7 +290,7 @@ public sealed class CultureRouterTests
     public void Should_reject_building_a_url_naming_consecutive_cultures()
     {
         // Arrange
-        var router = Router(CulturePrefix.ExceptDefault);
+        var router = CreateRouter(CulturePrefix.ExceptDefault);
         var he = router.Routes.Single(route => route.Token == "he");
 
         // Act
@@ -309,7 +309,7 @@ public sealed class CultureRouterTests
     public void Should_accept_a_path_without_consecutive_cultures(string requested)
     {
         // Arrange
-        var router = Router(CulturePrefix.ExceptDefault);
+        var router = CreateRouter(CulturePrefix.ExceptDefault);
 
         // Act & Assert
         Assert.False(router.HasConsecutiveCultures(requested));
@@ -319,7 +319,7 @@ public sealed class CultureRouterTests
     public void Should_build_a_relative_url_including_the_query_string()
     {
         // Arrange
-        var router = Router(CulturePrefix.ExceptDefault);
+        var router = CreateRouter(CulturePrefix.ExceptDefault);
         var he = router.Routes.Single(route => route.Token == "he");
 
         // Act
@@ -334,13 +334,13 @@ public sealed class CultureRouterTests
     {
         // Arrange
         using var culture = new CultureFixture("fr");
-        var router = Router(CulturePrefix.ExceptDefault);
+        var router = CreateRouter(CulturePrefix.ExceptDefault);
 
         // Act & Assert
         Assert.Equal(router.DefaultRoute, router.CurrentRoute);
     }
 
-    private static CultureRouter Router(CulturePrefix prefix)
+    private static CultureRouter CreateRouter(CulturePrefix prefix)
         => new(new CultureRouterOptions
         {
             Prefix = prefix,

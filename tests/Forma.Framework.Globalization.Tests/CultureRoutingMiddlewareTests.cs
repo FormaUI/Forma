@@ -22,8 +22,8 @@ public sealed class CultureRoutingMiddlewareTests
         // Arrange
         using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
         string? reached = null;
-        var middleware = new CultureRoutingMiddleware(context => { reached = context.Request.Path.Value; return Task.CompletedTask; }, Router(prefix));
-        var context = ContextFor(requested);
+        var middleware = new CultureRoutingMiddleware(context => { reached = context.Request.Path.Value; return Task.CompletedTask; }, CreateRouter(prefix));
+        var context = CreateContext(requested);
 
         // Act
         await middleware.InvokeAsync(context);
@@ -53,8 +53,8 @@ public sealed class CultureRoutingMiddlewareTests
         // Arrange
         using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
         var reachedNext = false;
-        var middleware = new CultureRoutingMiddleware(_ => { reachedNext = true; return Task.CompletedTask; }, Router(prefix));
-        var context = ContextFor(requested);
+        var middleware = new CultureRoutingMiddleware(_ => { reachedNext = true; return Task.CompletedTask; }, CreateRouter(prefix));
+        var context = CreateContext(requested);
 
         // Act
         await middleware.InvokeAsync(context);
@@ -79,8 +79,8 @@ public sealed class CultureRoutingMiddlewareTests
         // Arrange
         using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
         string? reached = null;
-        var middleware = new CultureRoutingMiddleware(context => { reached = context.Request.Path.Value; return Task.CompletedTask; }, Router(CulturePrefix.ExceptDefault));
-        var context = ContextFor(requested);
+        var middleware = new CultureRoutingMiddleware(context => { reached = context.Request.Path.Value; return Task.CompletedTask; }, CreateRouter(CulturePrefix.ExceptDefault));
+        var context = CreateContext(requested);
 
         // Act
         await middleware.InvokeAsync(context);
@@ -104,8 +104,8 @@ public sealed class CultureRoutingMiddlewareTests
         // Arrange
         using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
         var reachedNext = false;
-        var middleware = new CultureRoutingMiddleware(_ => { reachedNext = true; return Task.CompletedTask; }, Router(CulturePrefix.ExceptDefault));
-        var context = ContextFor(requested);
+        var middleware = new CultureRoutingMiddleware(_ => { reachedNext = true; return Task.CompletedTask; }, CreateRouter(CulturePrefix.ExceptDefault));
+        var context = CreateContext(requested);
 
         // Act
         await middleware.InvokeAsync(context);
@@ -124,8 +124,8 @@ public sealed class CultureRoutingMiddlewareTests
     {
         // Arrange
         using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
-        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, Router(CulturePrefix.ExceptDefault));
-        var context = ContextFor("/en/file-viewer");
+        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
+        var context = CreateContext("/en/file-viewer");
         context.Request.QueryString = new QueryString("?tab=2&q=a%20b");
 
         // Act
@@ -140,8 +140,8 @@ public sealed class CultureRoutingMiddlewareTests
     {
         // Arrange
         using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
-        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, Router(CulturePrefix.ExceptDefault));
-        var context = ContextFor("/en/file-viewer");
+        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
+        var context = CreateContext("/en/file-viewer");
         context.Request.PathBase = new PathString("/app");
 
         // Act
@@ -156,8 +156,8 @@ public sealed class CultureRoutingMiddlewareTests
     {
         // Arrange
         using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
-        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, Router(CulturePrefix.ExceptDefault));
-        var context = ContextFor("/en/a b");
+        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
+        var context = CreateContext("/en/a b");
 
         // Act
         await middleware.InvokeAsync(context);
@@ -176,8 +176,8 @@ public sealed class CultureRoutingMiddlewareTests
         // Arrange
         using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
         string? reached = null;
-        var middleware = new CultureRoutingMiddleware(context => { reached = context.Request.Path.Value; return Task.CompletedTask; }, Router(CulturePrefix.ExceptDefault));
-        var context = ContextFor(requested);
+        var middleware = new CultureRoutingMiddleware(context => { reached = context.Request.Path.Value; return Task.CompletedTask; }, CreateRouter(CulturePrefix.ExceptDefault));
+        var context = CreateContext(requested);
 
         // Act
         await middleware.InvokeAsync(context);
@@ -196,8 +196,8 @@ public sealed class CultureRoutingMiddlewareTests
     {
         // Arrange
         using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
-        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, Router(CulturePrefix.ExceptDefault));
-        var context = ContextFor("/he/file-viewer");
+        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
+        var context = CreateContext("/he/file-viewer");
 
         // Act
         await middleware.InvokeAsync(context);
@@ -218,8 +218,8 @@ public sealed class CultureRoutingMiddlewareTests
     {
         // Arrange
         using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
-        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, Router(CulturePrefix.ExceptDefault));
-        var context = ContextFor("/es/file-viewer");
+        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
+        var context = CreateContext("/es/file-viewer");
 
         // Act
         await middleware.InvokeAsync(context);
@@ -233,8 +233,8 @@ public sealed class CultureRoutingMiddlewareTests
     {
         // Arrange
         using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
-        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, Router(CulturePrefix.ExceptDefault));
-        var context = ContextFor("/he/file-viewer");
+        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
+        var context = CreateContext("/he/file-viewer");
         context.Request.Headers.Cookie = "forma-culture=he";
 
         // Act
@@ -250,8 +250,8 @@ public sealed class CultureRoutingMiddlewareTests
     {
         // Arrange
         using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
-        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, Router(CulturePrefix.ExceptDefault));
-        var context = ContextFor("/file-viewer");
+        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
+        var context = CreateContext("/file-viewer");
         context.Request.Headers.Cookie = "forma-culture=he";
 
         // Act
@@ -274,8 +274,8 @@ public sealed class CultureRoutingMiddlewareTests
     {
         // Arrange
         using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
-        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, Router(CulturePrefix.ExceptDefault));
-        var context = ContextFor(requested);
+        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
+        var context = CreateContext(requested);
         context.Request.Headers.Cookie = "forma-culture=he";
 
         // Act
@@ -293,8 +293,8 @@ public sealed class CultureRoutingMiddlewareTests
     {
         // Arrange
         using var fixture = new CultureFixture(CultureInfo.CurrentCulture.Name);
-        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, Router(CulturePrefix.ExceptDefault));
-        var context = ContextFor("/_blazor");
+        var middleware = new CultureRoutingMiddleware(_ => Task.CompletedTask, CreateRouter(CulturePrefix.ExceptDefault));
+        var context = CreateContext("/_blazor");
         context.Request.Headers.Cookie = cookie;
 
         // Act
@@ -304,7 +304,7 @@ public sealed class CultureRoutingMiddlewareTests
         Assert.Equal("en", CultureInfo.CurrentUICulture.Name);
     }
 
-    private static CultureRouter Router(CulturePrefix prefix)
+    private static CultureRouter CreateRouter(CulturePrefix prefix)
         => new(new CultureRouterOptions
         {
             Prefix = prefix,
@@ -317,7 +317,7 @@ public sealed class CultureRoutingMiddlewareTests
             ]
         });
 
-    private static DefaultHttpContext ContextFor(string path)
+    private static DefaultHttpContext CreateContext(string path)
     {
         var context = new DefaultHttpContext();
         context.Request.Path = path;

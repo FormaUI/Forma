@@ -75,7 +75,7 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, Assembly assem
         var found = TryFind(name, out var entry);
         RequireFound(name, found);
 
-        var format = Evaluate(found ? entry.Format : name, Translated(found, entry), arguments);
+        var format = Evaluate(found ? entry.Format : name, IsTranslated(found, entry), arguments);
 
         return new LocalizedText(name, LocalizedFormat.Render(format, arguments, CultureInfo.CurrentCulture), !found, baseName);
     }
@@ -85,11 +85,11 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, Assembly assem
         var found = TryFind(name, out var entry);
         RequireFound(name, found);
 
-        return new LocalizedPattern(name, Evaluate(found ? entry.Format : name, Translated(found, entry), arguments), arguments, !found, baseName);
+        return new LocalizedPattern(name, Evaluate(found ? entry.Format : name, IsTranslated(found, entry), arguments), arguments, !found, baseName);
     }
 
     // A format that is the key is source-language text, whether it was written as null or never found at all.
-    private static bool Translated(bool found, JsonResourceEntry entry)
+    private static bool IsTranslated(bool found, JsonResourceEntry entry)
         => found && !entry.IsSourceText;
 
     // The text a plural expression inflects decides the rules, so source-language text follows the source language.

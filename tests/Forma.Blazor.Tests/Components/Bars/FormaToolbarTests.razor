@@ -634,13 +634,13 @@
         {
             // Arrange
             using var ctx = new FormaToolbarTests();
-            var both = Group(MenuItem("first"), MenuItem("second"));
+            var both = Group(CreateMenuItem("first"), CreateMenuItem("second"));
             var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="both" />);
             cut.FindAll(".forma-dropdown-menu-trigger")[1].Click();
 
             // Act
             cut.FindComponent<FormaToolbar>()
-               .Render(parameters => parameters.Add(p => p.Items, Group(MenuItem("second"))));
+               .Render(parameters => parameters.Add(p => p.Items, Group(CreateMenuItem("second"))));
 
             // Assert
             var trigger = cut.Find(".forma-dropdown-menu-trigger");
@@ -649,7 +649,7 @@
                 () => Assert.Equal("true", trigger.GetAttribute("aria-expanded")));
         }
 
-        private static FormaToolbarItem MenuItem(string id)
+        private static FormaToolbarItem CreateMenuItem(string id)
             => new FormaToolbarMenu
             {
                 Id = id,
@@ -658,7 +658,7 @@
             };
 
         /// <summary>The profile of every scope the toolbar registered with the router.</summary>
-        private static List<InputProfile> Registrations(FormaToolbarTests ctx)
+        private static List<InputProfile> GetRegistrations(FormaToolbarTests ctx)
             => [.. ctx.Router.Invocations
                      .Where(invocation => invocation.Identifier == "register")
                      .Select(invocation => (InputProfile)invocation.Arguments[1]!)];
@@ -674,7 +674,7 @@
             ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" />);
 
             // Assert
-            Assert.Empty(Registrations(ctx));
+            Assert.Empty(GetRegistrations(ctx));
         }
 
         [Fact]
@@ -689,7 +689,7 @@
             ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Target="target" Hidden="true" />);
 
             // Assert
-            Assert.Empty(Registrations(ctx));
+            Assert.Empty(GetRegistrations(ctx));
         }
 
         [Fact]
@@ -786,7 +786,7 @@
             ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Target="unrendered" />);
 
             // Assert
-            Assert.Empty(Registrations(ctx));
+            Assert.Empty(GetRegistrations(ctx));
         }
 
         [Fact]
@@ -803,7 +803,7 @@
                .Render(parameters => parameters.Add(p => p.Target, new ElementReference("rendered-later")));
 
             // Assert
-            Assert.Single(Registrations(ctx));
+            Assert.Single(GetRegistrations(ctx));
         }
 
         [Fact]
@@ -820,7 +820,7 @@
                .Render(parameters => parameters.Add(p => p.Target, new ElementReference("second")));
 
             // Assert
-            Assert.Equal(2, Registrations(ctx).Count);
+            Assert.Equal(2, GetRegistrations(ctx).Count);
         }
 
         [Fact]
@@ -835,7 +835,7 @@
             ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Target="target" />);
 
             // Assert - the command becomes the toolbar's action, and Control stands for the platform's shortcut key
-            var profile = Assert.Single(Registrations(ctx));
+            var profile = Assert.Single(GetRegistrations(ctx));
             var route = Assert.Single(profile.Routes);
             var binding = Assert.IsType<KeyBinding>(Assert.Single(route.Bindings));
             Assert.Multiple(
@@ -860,7 +860,7 @@
             ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Target="target" />);
 
             // Assert
-            var profile = Assert.Single(Registrations(ctx));
+            var profile = Assert.Single(GetRegistrations(ctx));
             Assert.Single(profile.Routes);
         }
 

@@ -25,50 +25,59 @@ public sealed class NetworkShareTests
         { new SnapchatShare(), "https://www.snapchat.com/share?link=https%3A%2F%2Fexample.com%2Fnews%2Fstage-12" },
     };
 
-    [Theory]
-    [MemberData(nameof(Composers))]
-    public void Should_open_the_networks_composer_on_the_items_address(LinkShare target, string expected)
+    public sealed class EveryNetwork
     {
-        // Assert
-        Assert.Equal(expected, target.GetAddress(Article));
-        Assert.True(target.Supports(Article));
+        [Theory]
+        [MemberData(nameof(Composers), MemberType = typeof(NetworkShareTests))]
+        public void Should_open_the_networks_composer_on_the_items_address(LinkShare target, string expected)
+        {
+            // Assert
+            Assert.Equal(expected, target.GetAddress(Article));
+            Assert.True(target.Supports(Article));
+        }
+
+        [Theory]
+        [MemberData(nameof(Composers), MemberType = typeof(NetworkShareTests))]
+        public void Should_refuse_a_file_and_a_contact(LinkShare target, string expected)
+        {
+            // Arrange
+            var file = Article with { Kind = ShareItemKind.File };
+            var contact = Article with { Kind = ShareItemKind.Contact };
+
+            // Assert
+            Assert.NotNull(expected);
+            Assert.False(target.Supports(file));
+            Assert.False(target.Supports(contact));
+        }
     }
 
-    [Theory]
-    [MemberData(nameof(Composers))]
-    public void Should_refuse_a_file_and_a_contact(LinkShare target, string expected)
+    public sealed class Pinterest
     {
-        // Arrange
-        var file = Article with { Kind = ShareItemKind.File };
-        var contact = Article with { Kind = ShareItemKind.Contact };
+        [Fact]
+        public void Should_pin_a_picture_by_its_media_and_refuse_everything_else()
+        {
+            // Arrange
+            var target = new PinterestShare();
+            var picture = Article with { Kind = ShareItemKind.Image, Resource = new ResourceInfo("https://example.com/photos/finish.jpg") };
 
-        // Assert
-        Assert.NotNull(expected);
-        Assert.False(target.Supports(file));
-        Assert.False(target.Supports(contact));
+            // Assert
+            Assert.Multiple(
+                () => Assert.False(target.Supports(Article)),
+                () => Assert.Contains("media=https%3A%2F%2Fexample.com%2Fphotos%2Ffinish.jpg", target.GetAddress(picture), StringComparison.Ordinal),
+                () => Assert.Contains("url=https%3A%2F%2Fexample.com%2Fnews%2Fstage-12", target.GetAddress(picture), StringComparison.Ordinal));
+        }
     }
 
-    [Fact]
-    public void Pinterest_should_pin_a_picture_by_its_media_and_refuse_everything_else()
+    public sealed class NamelessItem
     {
-        // Arrange
-        var target = new PinterestShare();
-        var picture = Article with { Kind = ShareItemKind.Image, Resource = new ResourceInfo("https://example.com/photos/finish.jpg") };
+        [Fact]
+        public void Should_share_its_address_alone()
+        {
+            // Arrange
+            var nameless = new ShareItem { Address = "https://example.com/a" };
 
-        // Assert
-        Assert.Multiple(
-            () => Assert.False(target.Supports(Article)),
-            () => Assert.Contains("media=https%3A%2F%2Fexample.com%2Fphotos%2Ffinish.jpg", target.GetAddress(picture), StringComparison.Ordinal),
-            () => Assert.Contains("url=https%3A%2F%2Fexample.com%2Fnews%2Fstage-12", target.GetAddress(picture), StringComparison.Ordinal));
-    }
-
-    [Fact]
-    public void A_nameless_item_should_share_its_address_alone()
-    {
-        // Arrange
-        var nameless = new ShareItem { Address = "https://example.com/a" };
-
-        // Assert
-        Assert.Equal("https://wa.me/?text=https%3A%2F%2Fexample.com%2Fa", new WhatsAppShare().GetAddress(nameless));
+            // Assert
+            Assert.Equal("https://wa.me/?text=https%3A%2F%2Fexample.com%2Fa", new WhatsAppShare().GetAddress(nameless));
+        }
     }
 }

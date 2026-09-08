@@ -58,7 +58,7 @@ public sealed partial class FormaStatusBadge : ComponentBase
                 declarations.Add($"--forma-status-badge-fg-color: {foreground};");
             }
 
-            var hostStyle = AdditionalAttributes.HostValue("style");
+            var hostStyle = AdditionalAttributes.GetHostValue("style");
 
             if (!string.IsNullOrWhiteSpace(hostStyle))
             {

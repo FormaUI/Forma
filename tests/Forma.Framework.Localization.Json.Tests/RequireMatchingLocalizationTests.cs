@@ -5,7 +5,7 @@ using Forma.Tests.Shared;
 
 public sealed class RequireMatchingLocalizationTests
 {
-    private static IStringLocale Locale<TSource>(bool require)
+    private static IStringLocale CreateLocale<TSource>(bool require)
         => new JsonStringLocaleFactory(new JsonLocalizationOptions { RequireMatchingLocalization = require }).Create(typeof(TSource));
 
     [Fact]
@@ -13,7 +13,7 @@ public sealed class RequireMatchingLocalizationTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var strings = Locale<Colocated>(require: false);
+        var strings = CreateLocale<Colocated>(require: false);
 
         // Act
         var localized = strings["Absent from every file"];
@@ -31,7 +31,7 @@ public sealed class RequireMatchingLocalizationTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var strings = Locale<Colocated>(require: true);
+        var strings = CreateLocale<Colocated>(require: true);
 
         // Act
         var thrown = Assert.Throws<LocalizationNotFoundException>(() => strings["Absent from every file"]);
@@ -45,7 +45,7 @@ public sealed class RequireMatchingLocalizationTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var strings = Locale<Colocated>(require: true);
+        var strings = CreateLocale<Colocated>(require: true);
 
         // Act, Assert
         Assert.Throws<LocalizationNotFoundException>(() => strings["Absent from every file", 2]);
@@ -56,7 +56,7 @@ public sealed class RequireMatchingLocalizationTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var strings = Locale<Colocated>(require: true);
+        var strings = CreateLocale<Colocated>(require: true);
 
         // Act, Assert
         Assert.Throws<LocalizationNotFoundException>(() => strings.Resolve("Absent from every file"));
@@ -67,7 +67,7 @@ public sealed class RequireMatchingLocalizationTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var strings = Locale<Colocated>(require: true);
+        var strings = CreateLocale<Colocated>(require: true);
 
         // Act
         var localized = strings["Today"];
@@ -81,7 +81,7 @@ public sealed class RequireMatchingLocalizationTests
     {
         // Arrange — a survey reports what is there rather than demanding what is not.
         using var culture = new CultureScope("he");
-        var strings = Locale<Colocated>(require: true);
+        var strings = CreateLocale<Colocated>(require: true);
 
         // Act
         var all = strings.GetAllStrings(includeParentCultures: false).ToList();
@@ -95,7 +95,7 @@ public sealed class RequireMatchingLocalizationTests
     {
         // Arrange — the file writes null rather than repeating the key.
         using var culture = new CultureScope("he");
-        var strings = Locale<NullValued>(require: true);
+        var strings = CreateLocale<NullValued>(require: true);
 
         // Act
         var localized = strings["Save"];
@@ -113,7 +113,7 @@ public sealed class RequireMatchingLocalizationTests
     {
         // Arrange
         using var culture = new CultureScope("he");
-        var strings = Locale<NullValued>(require: false);
+        var strings = CreateLocale<NullValued>(require: false);
 
         // Act
         var listed = strings.GetAllStrings(includeParentCultures: false).Single(entry => entry.Name == "Save");
@@ -127,7 +127,7 @@ public sealed class RequireMatchingLocalizationTests
     {
         // Arrange — French counts zero as singular, but the key it stands for is English.
         using var culture = new CultureScope("fr");
-        var strings = Locale<NullValued>(require: false);
+        var strings = CreateLocale<NullValued>(require: false);
 
         // Act
         var none = strings["[$ plural; one: # file; other: # files; $]", 0];

@@ -111,7 +111,7 @@ public sealed partial class FormaFilePicker : ComponentBase, IAsyncDisposable
 
             foreach (var file in files)
             {
-                var reason = RejectionFor(file, accepted.Count, effectiveMax);
+                var reason = GetRejection(file, accepted.Count, effectiveMax);
 
                 if (reason is { } rejectionReason)
                 {
@@ -141,7 +141,7 @@ public sealed partial class FormaFilePicker : ComponentBase, IAsyncDisposable
         }
     }
 
-    private FileRejectionReason? RejectionFor(IBrowserFile file, int acceptedCount, int? effectiveMax)
+    private FileRejectionReason? GetRejection(IBrowserFile file, int acceptedCount, int? effectiveMax)
     {
         if (effectiveMax is { } cap && acceptedCount >= cap)
         {
@@ -161,7 +161,7 @@ public sealed partial class FormaFilePicker : ComponentBase, IAsyncDisposable
         return null;
     }
 
-    private string RejectionText(RejectedFile rejection)
+    private string GetRejectionText(RejectedFile rejection)
     {
         var name = rejection.Name;
 

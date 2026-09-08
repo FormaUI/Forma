@@ -14,7 +14,7 @@
     <div class="demo-box">
         <FormaSearchBox Value="@_basicQuery" ValueChanged="v => _basicQuery = v" Options="@(new SearchBoxOptions { Placeholder = L["Search fruit..."] })" aria-label="@L["Search fruit..."]" />
         <ul class="demo-list">
-            @foreach (var fruit in FilteredFruits(_basicQuery))
+            @foreach (var fruit in GetFilteredFruits(_basicQuery))
             {
                 <li>@fruit</li>
             }
@@ -69,7 +69,7 @@
 
     private string[] Fruits => [L["Apple"], L["Banana"], L["Cherry"], L["Mango"], L["Orange"]];
 
-    private IEnumerable<string> FilteredFruits(string query)
+    private IEnumerable<string> GetFilteredFruits(string query)
         => string.IsNullOrWhiteSpace(query)
             ? Fruits
             : Fruits.Where(f => f.Contains(query, StringComparison.OrdinalIgnoreCase));

@@ -2,7 +2,7 @@
 @code {
     public sealed class Component
     {
-        private static List<SortableItem> Items(int count) => Enumerable.Range(1, count)
+        private static List<SortableItem> CreateItems(int count) => Enumerable.Range(1, count)
             .Select(id => new SortableItem(id, $"Item {id}"))
             .ToList();
 
@@ -11,7 +11,7 @@
         {
             // Arrange
             using var ctx = new FormaSortableListTests();
-            var items = Items(3);
+            var items = CreateItems(3);
 
             // Act
             var cut = ctx.Render(
@@ -29,7 +29,7 @@
         {
             // Arrange
             using var ctx = new FormaSortableListTests();
-            var items = Items(3);
+            var items = CreateItems(3);
 
             // Act
             var cut = ctx.Render(
@@ -48,7 +48,7 @@
         {
             // Arrange
             using var ctx = new FormaSortableListTests();
-            var items = Items(2);
+            var items = CreateItems(2);
 
             // Act
             var cut = ctx.Render(
@@ -65,7 +65,7 @@
         {
             // Arrange
             using var ctx = new FormaSortableListTests();
-            var items = Items(2);
+            var items = CreateItems(2);
 
             // Act
             var cut = ctx.Render(
@@ -82,7 +82,7 @@
         {
             // Arrange
             using var ctx = new FormaSortableListTests();
-            var items = Items(2);
+            var items = CreateItems(2);
 
             // Act
             var cut = ctx.Render(
@@ -99,7 +99,7 @@
         {
             // Arrange
             using var ctx = new FormaSortableListTests();
-            var items = Items(4);
+            var items = CreateItems(4);
             IReadOnlyList<SortableItem>? changedTo = null;
             var cut = ctx.Render(
                 @<FormaSortableList Items="items" ItemKey="@(i => i.Id)"
@@ -120,7 +120,7 @@
         {
             // Arrange
             using var ctx = new FormaSortableListTests();
-            var items = Items(4);
+            var items = CreateItems(4);
             IReadOnlyList<SortableItem>? changedTo = null;
             var cut = ctx.Render(
                 @<FormaSortableList Items="items" ItemKey="@(i => i.Id)"
@@ -141,7 +141,7 @@
         {
             // Arrange
             using var ctx = new FormaSortableListTests();
-            var items = Items(4);
+            var items = CreateItems(4);
             IReadOnlyList<SortableItem>? changedTo = null;
             var cut = ctx.Render(
                 @<FormaSortableList Items="items" ItemKey="@(i => i.Id)"
@@ -162,7 +162,7 @@
         {
             // Arrange
             using var ctx = new FormaSortableListTests();
-            var items = Items(3);
+            var items = CreateItems(3);
             var raised = false;
             var cut = ctx.Render(
                 @<FormaSortableList Items="items" ItemKey="@(i => i.Id)"
@@ -183,7 +183,7 @@
         {
             // Arrange
             using var ctx = new FormaSortableListTests();
-            var items = Items(3);
+            var items = CreateItems(3);
             var raised = false;
             var cut = ctx.Render(
                 @<FormaSortableList Items="items" ItemKey="@(i => i.Id)" Disabled="true"
@@ -204,7 +204,7 @@
         {
             // Arrange
             using var ctx = new FormaSortableListTests();
-            var items = Items(3);
+            var items = CreateItems(3);
             var raised = false;
             var cut = ctx.Render(
                 @<FormaSortableList Items="items" ItemKey="@(i => i.Id)"
@@ -225,7 +225,7 @@
         {
             // Arrange
             using var ctx = new FormaSortableListTests();
-            var items = Items(3);
+            var items = CreateItems(3);
             var cut = ctx.Render(
                 @<FormaSortableList Items="items" ItemKey="@(i => i.Id)">
                     <ItemTemplate Context="item">@item.Title</ItemTemplate>
@@ -246,7 +246,7 @@
         {
             // Arrange
             using var ctx = new FormaSortableListTests();
-            var items = Items(3);
+            var items = CreateItems(3);
             var cut = ctx.Render(
                 @<FormaSortableList Items="items" ItemKey="@(i => i.Id)">
                     <ItemTemplate Context="item">@item.Title</ItemTemplate>
@@ -282,7 +282,7 @@
         {
             // Arrange
             using var ctx = new FormaSortableListTests();
-            var items = Items(2);
+            var items = CreateItems(2);
 
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => ctx.Render(
@@ -294,7 +294,7 @@
         {
             // Arrange
             using var ctx = new FormaSortableListTests();
-            var items = Items(2);
+            var items = CreateItems(2);
 
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => ctx.Render(
@@ -308,7 +308,7 @@
         {
             // Arrange
             using var ctx = new FormaSortableListTests();
-            var items = Items(2);
+            var items = CreateItems(2);
 
             // Act
             var cut = ctx.Render(
@@ -325,7 +325,7 @@
         {
             // Arrange
             using var ctx = new FormaSortableListTests();
-            var items = Items(2);
+            var items = CreateItems(2);
 
             // Act
             var cut = ctx.Render(
@@ -342,7 +342,7 @@
         {
             // Arrange
             using var ctx = new FormaSortableListTests();
-            var items = Items(2);
+            var items = CreateItems(2);
 
             // Act
             ctx.Render(
@@ -361,7 +361,7 @@
         {
             // Arrange
             using var ctx = new FormaSortableListTests();
-            var items = Items(2);
+            var items = CreateItems(2);
 
             // Act
             var cut = ctx.Render(

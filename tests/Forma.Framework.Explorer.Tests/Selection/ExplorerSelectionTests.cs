@@ -8,7 +8,7 @@ using Xunit;
 
 public sealed class ExplorerSelectionTests
 {
-    private static ExplorerItem Item(string source, bool isDisabled = false)
+    private static ExplorerItem CreateItem(string source, bool isDisabled = false)
     {
         var resource = new FileResourceInfo(source);
 
@@ -20,7 +20,7 @@ public sealed class ExplorerSelectionTests
     {
         // Arrange
         var selection = new ExplorerSelection();
-        var item = Item("/media/photo.png", isDisabled: true);
+        var item = CreateItem("/media/photo.png", isDisabled: true);
 
         // Act
         selection.Toggle(item);
@@ -37,7 +37,7 @@ public sealed class ExplorerSelectionTests
     {
         // Arrange
         var selection = new ExplorerSelection();
-        var item = Item("/media/photo.png");
+        var item = CreateItem("/media/photo.png");
         var folder = ExplorerItem.ForFolder(new FolderResourceInfo("/photos"));
 
         // Act
@@ -52,7 +52,7 @@ public sealed class ExplorerSelectionTests
     {
         // Arrange
         var selection = new ExplorerSelection();
-        var item = Item("/media/photo.png");
+        var item = CreateItem("/media/photo.png");
         var folder = ExplorerItem.ForFolder(new FolderResourceInfo("/photos"));
         selection.Toggle(item);
 

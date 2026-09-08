@@ -109,7 +109,7 @@ public sealed partial class FormaInputInspector : ComponentBase, IAsyncDisposabl
         }
     }
 
-    private static Icon FamilyIcon(InputInfo input)
+    private static Icon GetFamilyIcon(InputInfo input)
         => input switch
         {
             InputKeyInfo => Glyph.Keyboard,
@@ -118,7 +118,7 @@ public sealed partial class FormaInputInspector : ComponentBase, IAsyncDisposabl
             _ => Glyph.Download,
         };
 
-    private static string PrecedenceClass(string precedence)
+    private static string GetPrecedenceClass(string precedence)
         => $"forma-input-inspector-badge forma-input-inspector-badge-{precedence}";
 
     private Task HandleToolAsync(string command)
@@ -144,7 +144,7 @@ public sealed partial class FormaInputInspector : ComponentBase, IAsyncDisposabl
             new FormaToolbarCommand { Id = ClearCommand, Title = L["Clear"], Icon = Glyph.Eraser, Command = ClearCommand },
         ];
 
-    private string Placement(string reason)
+    private string GetPlacement(string reason)
         => reason switch
         {
             "first eligible" => L["first eligible"],
@@ -156,17 +156,17 @@ public sealed partial class FormaInputInspector : ComponentBase, IAsyncDisposabl
         };
 
     /// <summary>The keycaps an input is drawn as: its modifiers, then the key, the wheel's direction and amount, or the pointer's device and button.</summary>
-    private static IReadOnlyList<string> Keycaps(InputInfo input)
+    private static IReadOnlyList<string> GetKeycaps(InputInfo input)
         => input switch
         {
             InputKeyInfo key when key.Key is "Shift" or "Control" or "Alt" or "Meta" => [key.Key == "Control" ? "Ctrl" : key.Key],
-            InputKeyInfo key => [.. Modifiers(key.Modifiers), KeyLabel(key.Key)],
-            InputWheelInfo wheel => [.. Modifiers(wheel.Modifiers), $"{WheelArrow(wheel)} {WheelAmount(wheel).ToString("0", CultureInfo.InvariantCulture)}"],
-            InputPointerInfo pointer => [.. Modifiers(pointer.Modifiers), $"{pointer.PointerType} {pointer.Button}"],
+            InputKeyInfo key => [.. GetModifiers(key.Modifiers), GetKeyLabel(key.Key)],
+            InputWheelInfo wheel => [.. GetModifiers(wheel.Modifiers), $"{GetWheelArrow(wheel)} {GetWheelAmount(wheel).ToString("0", CultureInfo.InvariantCulture)}"],
+            InputPointerInfo pointer => [.. GetModifiers(pointer.Modifiers), $"{pointer.PointerType} {pointer.Button}"],
             _ => [input.Type],
         };
 
-    private static List<string> Modifiers(ModifierKeys modifiers)
+    private static List<string> GetModifiers(ModifierKeys modifiers)
     {
         var held = new List<string>(4);
 
@@ -193,10 +193,10 @@ public sealed partial class FormaInputInspector : ComponentBase, IAsyncDisposabl
         return held;
     }
 
-    private static double WheelAmount(InputWheelInfo wheel)
+    private static double GetWheelAmount(InputWheelInfo wheel)
         => Math.Abs(Math.Abs(wheel.DeltaY) >= Math.Abs(wheel.DeltaX) ? wheel.DeltaY : wheel.DeltaX);
 
-    private static string KeyLabel(string key)
+    private static string GetKeyLabel(string key)
         => key switch
         {
             " " => "Space",
@@ -207,7 +207,7 @@ public sealed partial class FormaInputInspector : ComponentBase, IAsyncDisposabl
             _ => key,
         };
 
-    private static string WheelArrow(InputWheelInfo wheel)
+    private static string GetWheelArrow(InputWheelInfo wheel)
         => Math.Abs(wheel.DeltaY) >= Math.Abs(wheel.DeltaX)
             ? (wheel.DeltaY >= 0 ? "↓" : "↑")
             : (wheel.DeltaX >= 0 ? "→" : "←");

@@ -209,14 +209,14 @@ public sealed class FormaPropertyColumn<TGridItem, TProp> : ColumnBase<TGridItem
         builder.AddComponentParameter(4, "Value", _getter(draft));
         builder.AddComponentParameter(
             5, "ValueChanged", EventCallback.Factory.Create<TProp>(this, value => setter(draft, value)));
-        builder.AddComponentParameter(6, "ValueExpression", ValueExpressionFor(draft));
+        builder.AddComponentParameter(6, "ValueExpression", GetValueExpression(draft));
         builder.AddComponentParameter(7, "class", "forma-data-grid-editor");
         builder.CloseComponent();
     }
 
     // Rewrites `item => item.Member` into `() => draft.Member` so the field the EditContext
     // validates is the draft's, not the untouched row's.
-    private Expression<Func<TProp>> ValueExpressionFor(TGridItem draft)
+    private Expression<Func<TProp>> GetValueExpression(TGridItem draft)
     {
         if (_cachedValueExpression is not null && ReferenceEquals(_cachedDraft, draft))
         {

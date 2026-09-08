@@ -47,7 +47,7 @@ public sealed class CultureRoutingMiddleware
 
         // A framework endpoint such as /_blazor carries no culture segment, and the interactive
         // circuit it opens inherits this request's culture, so the stored one stands in for it.
-        var route = isDocument ? match.Route : StoredRoute(context) ?? match.Route;
+        var route = isDocument ? match.Route : GetStoredRoute(context) ?? match.Route;
 
         ApplyCulture(context, route);
         context.Request.Path = match.Path;
@@ -110,7 +110,7 @@ public sealed class CultureRoutingMiddleware
         return Task.CompletedTask;
     }
 
-    private CultureRoute? StoredRoute(HttpContext context)
+    private CultureRoute? GetStoredRoute(HttpContext context)
     {
         if (!context.Request.Cookies.TryGetValue(CultureCookieName, out var stored) || string.IsNullOrEmpty(stored))
         {

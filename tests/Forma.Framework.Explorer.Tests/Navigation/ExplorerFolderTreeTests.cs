@@ -128,7 +128,7 @@ public sealed class ExplorerFolderTreeTests
             () => Assert.Empty(tree.GetListedChildren("shown")),
             () => Assert.Equal([nestedHidden], tree.GetChildren("shown")),
             () => Assert.Same(hidden, tree.Find("hidden")),
-            () => Assert.Empty(tree.Expandable()));
+            () => Assert.Empty(tree.GetExpandableFolders()));
     }
 
     [Fact]
@@ -138,6 +138,6 @@ public sealed class ExplorerFolderTreeTests
         var tree = new ExplorerFolderTree([Photos, Races, Stages, Documents]);
 
         // Assert
-        Assert.Equal([Photos, Races], tree.Expandable());
+        Assert.Equal([Photos, Races], tree.GetExpandableFolders());
     }
 }

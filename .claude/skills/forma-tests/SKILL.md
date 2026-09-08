@@ -10,6 +10,10 @@ Every production assembly has exactly one test project named after it, so `Forma
 - Do keep `.razor.cs` to `public sealed partial class FormaXTests;`.
 - Do start `.razor` with `@inherits BunitContext` and place `[Fact]` methods in a nested `public sealed class Component`.
 - Do name tests like `Should_render_checked_when_value_is_true` and use explicit `// Arrange`, `// Act`, and `// Assert` comments.
+- Do put the subject a test is about on a nested class named for it, and start the method with `Should_`: `WindowManagerTests.Registration.Should_place_each_new_window_at_the_front`, `RichTextPluginTests.Typography.Should_dispatch_typography_commands`, `CloudShareTests.Dropbox.Should_ask_the_api_to_save_the_resources_address`. A nested class is named for the concept, without a `Plugin` or `Share` suffix that would shadow the production type it exercises.
+- Don't prefix the subject onto the method name (`TypographyPlugin_should_dispatch_typography_commands`, `Dropbox_should_ask_…`) or write a test name in PascalCase (`RegistersTheDefaultInputPolicy`).
+- Do name a test helper by the same rules as any method: `CreateItems()`, `CreateRouter()`, `GetTitles(windows)`, `GetSelector(window)`, never a bare noun such as `Items()` or `Router()`.
+- Do point `[MemberData]` at the outer class with `MemberType = typeof(OuterTests)` when the source lives there and the test sits in a nested class.
 - Do create the context with `using var ctx = new FormaXTests();` and render with `ctx.Render(@<FormaX ... />)`.
 - Do render `InputBase<T>` components inside `FakeFormHost` with a `FakeModel` and `EditContext`.
 - Do assert rendered markup, attributes, and callback invocations rather than private state.

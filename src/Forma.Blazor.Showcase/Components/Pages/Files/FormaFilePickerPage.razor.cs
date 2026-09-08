@@ -18,7 +18,7 @@ public sealed partial class FormaFilePickerPage : ComponentBase
     private static string SizeMarkup
         => $"""<bdi dir="ltr">{MaxSizeBytes / 1024} KB</bdi>""";
 
-    private List<string> Entries(string key)
+    private List<string> GetEntries(string key)
     {
         if (!_logs.TryGetValue(key, out var lines))
         {
@@ -33,7 +33,7 @@ public sealed partial class FormaFilePickerPage : ComponentBase
     {
         foreach (var rejection in rejections)
         {
-            Entries(key).Add(L["{Name} declined ({Reason})", rejection.Name, rejection.Reason]);
+            GetEntries(key).Add(L["{Name} declined ({Reason})", rejection.Name, rejection.Reason]);
         }
     }
 
@@ -41,7 +41,7 @@ public sealed partial class FormaFilePickerPage : ComponentBase
     {
         foreach (var file in files)
         {
-            Entries(key).Add(L["{Name} selected", file.Name]);
+            GetEntries(key).Add(L["{Name} selected", file.Name]);
         }
     }
 

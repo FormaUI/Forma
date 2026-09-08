@@ -116,7 +116,7 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules)
 
     private static LocaleTextSpan? Select(string text, IReadOnlyList<LocaleField> fields, PluralCategory category)
     {
-        var name = CategoryName(category);
+        var name = GetCategoryName(category);
 
         foreach (var field in fields)
         {
@@ -178,7 +178,7 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules)
         }
     }
 
-    private static ReadOnlySpan<char> CategoryName(PluralCategory category)
+    private static ReadOnlySpan<char> GetCategoryName(PluralCategory category)
         => category switch
         {
             PluralCategory.Zero => "zero",

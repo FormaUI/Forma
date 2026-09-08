@@ -46,7 +46,7 @@ public sealed partial class FormaComposerPluginsBar : ComponentBase
 
         // Skips before filtering, since the visible split counts every leaf toward the limit — filtering
         // first would misalign the index and drop an action that is neither shown nor in the menu.
-        _overflowingActions = [.. Items.SelectMany(Leaves).Skip(InlineLimit).OfType<FormaToolbarAction>()];
+        _overflowingActions = [.. Items.SelectMany(GetLeaves).Skip(InlineLimit).OfType<FormaToolbarAction>()];
     }
 
     private List<FormaToolbarItem> SplitVisible()
@@ -76,7 +76,7 @@ public sealed partial class FormaComposerPluginsBar : ComponentBase
         return visible;
     }
 
-    private static IEnumerable<FormaToolbarItem> Leaves(FormaToolbarItem item)
+    private static IEnumerable<FormaToolbarItem> GetLeaves(FormaToolbarItem item)
         => item is FormaToolbarGroup group ? group.Items : [item];
 
     private string GetItemTitle(FormaToolbarItem item)

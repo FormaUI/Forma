@@ -102,7 +102,7 @@ public sealed class ExplorerFolderTree
         => _childrenByParent.ContainsKey(key);
 
     /// <summary>Every listed folder holding at least one listed folder, which are the only ones a tree can collapse.</summary>
-    public IEnumerable<IExplorerFolderItem> Expandable()
+    public IEnumerable<IExplorerFolderItem> GetExpandableFolders()
     {
         foreach (var (key, item) in _foldersByKey)
         {

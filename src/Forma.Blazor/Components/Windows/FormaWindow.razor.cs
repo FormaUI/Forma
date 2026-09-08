@@ -237,7 +237,7 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
     {
         get
         {
-            var hostStyle = AdditionalAttributes.HostValue("style");
+            var hostStyle = AdditionalAttributes.GetHostValue("style");
 
             if (!IsFloating || IsMaximized)
             {

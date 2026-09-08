@@ -59,7 +59,7 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
     private static PasswordStrength Rate(string value)
     {
         var score = 0;
-        var effectiveLength = RepeatingUnitLength(value);
+        var effectiveLength = GetRepeatingUnitLength(value);
 
         if (effectiveLength >= ScoredLength)
         {
@@ -115,7 +115,7 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
         => value.Distinct().Count() * 2 <= value.Length;
 
     // The shortest block the whole value repeats, so "abcabcabc" counts for its length as three.
-    private static int RepeatingUnitLength(string value)
+    private static int GetRepeatingUnitLength(string value)
     {
         for (var unit = 1; unit < value.Length; unit++)
         {
@@ -161,7 +161,7 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
     // Every criterion the built-in rating still withholds, so the list empties as the value earns them.
     private IEnumerable<string> Advise(string value)
     {
-        var effectiveLength = RepeatingUnitLength(value);
+        var effectiveLength = GetRepeatingUnitLength(value);
 
         if (effectiveLength < value.Length || HasLowVariety(value))
         {
@@ -189,7 +189,7 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
         }
     }
 
-    private static string StrengthModifier(PasswordStrength strength)
+    private static string GetStrengthModifier(PasswordStrength strength)
         => strength switch
         {
             PasswordStrength.Fair => "strength-fair",
@@ -201,7 +201,7 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
 
     // Each rating is a whole phrase rather than an interpolated word, so a translator sees
     // the sentence it has to make read naturally.
-    private string StrengthText(PasswordStrength strength)
+    private string GetStrengthText(PasswordStrength strength)
         => strength switch
         {
             PasswordStrength.Fair => L["Password strength: Fair"],
@@ -275,13 +275,13 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
 
         return StrengthOptions.ForbiddenTerms
             .Where(term => !string.IsNullOrWhiteSpace(term))
-            .SelectMany(term => Fragments(term!))
+            .SelectMany(term => GetFragments(term!))
             .Any(fragment => CurrentValue.Contains(fragment, StringComparison.OrdinalIgnoreCase));
     }
 
     // A term is matched by its parts as well as whole, so a password may not reuse the local
     // part of an email or any one group of a phone number.
-    private static IEnumerable<string> Fragments(string term)
+    private static IEnumerable<string> GetFragments(string term)
     {
         var start = 0;
 
