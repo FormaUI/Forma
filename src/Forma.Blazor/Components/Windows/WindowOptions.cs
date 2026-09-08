@@ -5,7 +5,7 @@ using Forma.Blazor.Models;
 /// <summary>What a <see cref="FormaWindow"/> lets the reader do to it from its title bar and edges, and how far.</summary>
 public sealed record WindowOptions
 {
-    /// <summary>The defaults: closable, maximizable, minimizable, dockable and resizable, held within the viewport, with no limits of its own and a press away ignored.</summary>
+    /// <summary>The defaults: closable, maximizable, minimizable, embeddable and resizable, held within the viewport, with no limits of its own and a press away ignored.</summary>
     public static WindowOptions Default { get; } = new();
 
     /// <summary>Whether the title bar offers a close command.</summary>
@@ -17,8 +17,8 @@ public sealed record WindowOptions
     /// <summary>Whether the title bar offers a minimize command.</summary>
     public bool Minimizable { get; init; } = true;
 
-    /// <summary>Whether the title bar offers switching between docked and floating.</summary>
-    public bool Dockable { get; init; } = true;
+    /// <summary>Whether the title bar offers switching between embedded and floating.</summary>
+    public bool Embeddable { get; init; } = true;
 
     /// <summary>Whether a floating window can be resized at its edges and corners.</summary>
     public bool Resizable { get; init; } = true;

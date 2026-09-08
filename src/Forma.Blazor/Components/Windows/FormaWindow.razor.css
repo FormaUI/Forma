@@ -1,7 +1,7 @@
 /* ============================================================
    FormaWindow — CSS isolation
    A raised frame with chrome: a title bar, an optional header
-   band, the body, an optional footer band. Docked, it is a
+   band, the body, an optional footer band. Embedded, it is a
    region its parent lays out; floating, a box over the page
    the reader moves by the title bar and resizes at the edges.
    ============================================================ */

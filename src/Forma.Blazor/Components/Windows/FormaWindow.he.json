@@ -6,8 +6,8 @@
   "Lock": "נעילה",
   "Unlock": "ביטול נעילה",
   "Restore": "שחזר",
-  "Dock": "קבע",
-  "Undock": "נתק",
+  "Embed": "הטמע",
+  "Float": "הצף",
   "Window Commands": "פקודות החלון",
   "Move {Window} with the arrow keys; hold Shift to resize it": "הזז את {Window} עם מקשי החצים; החזק Shift כדי לשנות את גודלו",
   "Move {Window} with the arrow keys": "הזז את {Window} עם מקשי החצים"

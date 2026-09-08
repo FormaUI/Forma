@@ -337,7 +337,7 @@ A page is a canvas with frames laid on it, the way VS Code's sections stand on i
 - The **canvas** is a frame in the Canvas variant. It is one variant among four, not a different kind of thing.
 - A **seam** is the one spacing step of the parent, `--space-1`, showing between two frames.
 - A **stack** is `FormaStackLayout`: frames along one axis, a seam apart, vertical or horizontal.
-- A **window** is `FormaWindow`: a raised frame with chrome — a title bar, an optional header band, the body, an optional footer band — that stands docked in a stack or floats over the page. A dialog is a modal window.
+- A **window** is `FormaWindow`: a raised frame with chrome — a title bar, an optional header band, the body, an optional footer band — that stands embedded in a stack or floats over the page. A dialog is a modal window.
 
 - Do compose a region from `FormaFrame` and `FormaStackLayout` rather than drawing a panel's fill, corner, shadow or gap in a component's own stylesheet; a component that hand-draws a card is a component the frame model cannot theme.
 - Do give each variant its own token, `--frame-{variant}-bg-color`, so a theme restyles every frame by redefining that set.

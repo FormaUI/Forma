@@ -29,6 +29,6 @@ public interface IWindow
     /// <summary>Whether the window blocks the context around it while it is visible.</summary>
     bool IsModal { get; }
 
-    /// <summary>Whether the window floats over the page rather than standing docked in a layout.</summary>
+    /// <summary>Whether the window floats over the page rather than standing embedded in a layout.</summary>
     bool IsFloating { get; }
 }

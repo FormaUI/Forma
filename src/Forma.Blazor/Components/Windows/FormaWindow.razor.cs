@@ -13,7 +13,7 @@ using Forma.Framework.Windows;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>A raised frame with chrome: a title bar carrying the title, an icon and commands, then an optional header band, the body, and an optional footer band. It stands docked in its parent's layout or floats over the page, where the reader moves it by its title bar, resizes it at its edges, and maximizes it to its bounds. It is a window of its workspace: activated, stacked, minimized and closed with the windows around it and the windows it opened, and blocking them while modal.</summary>
+/// <summary>A raised frame with chrome: a title bar carrying the title, an icon and commands, then an optional header band, the body, and an optional footer band. It stands embedded in its parent's layout or floats over the page, where the reader moves it by its title bar, resizes it at its edges, and maximizes it to its bounds. It is a window of its workspace: activated, stacked, minimized and closed with the windows around it and the windows it opened, and blocking them while modal.</summary>
 public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncDisposable
 {
     /// <summary>The class the resize handles carry, one per edge and corner.</summary>
@@ -24,7 +24,7 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
     private const string MaximizeCommand = "window.maximize";
     private const string MinimizeCommand = "window.minimize";
     private const string LockCommand = "window.lock";
-    private const string DockCommand = "window.dock";
+    private const string EmbedCommand = "window.embed";
 
     /// <summary>How far one arrow press moves or resizes a floating window, in CSS pixels: one spacing step of four.</summary>
     private const double StepPixels = 16;
@@ -69,10 +69,10 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
     /// <summary>The window that opened this one; it closes and minimizes with it.</summary>
     [Parameter] public IWindow? Parent { get; set; }
 
-    /// <summary>Whether the window is docked in its parent's layout or floats over the page.</summary>
-    [Parameter] public WindowMode Mode { get; set; } = WindowMode.Docked;
+    /// <summary>Whether the window is embedded in its parent's layout or floats over the page.</summary>
+    [Parameter] public WindowMode Mode { get; set; } = WindowMode.Embedded;
 
-    /// <summary>Raised when the reader docks or undocks the window from its title bar.</summary>
+    /// <summary>Raised when the reader embeds or floats the window from its title bar.</summary>
     [Parameter] public EventCallback<WindowMode> ModeChanged { get; set; }
 
     /// <summary>Where a floating window stands and how large it is; unset, it opens centered at its default size.</summary>
@@ -186,7 +186,7 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
     private string CssClass
         => AdditionalAttributes.MergeClass(
             "forma-window",
-            IsFloating ? "forma-window-floating" : "forma-window-docked",
+            IsFloating ? "forma-window-floating" : "forma-window-embedded",
             Active ? "is-active" : null,
             IsMaximized ? "is-maximized" : null,
             Locked ? "is-locked" : null,
@@ -279,16 +279,16 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
             var items = new List<FormaToolbarItem>(Commands.Count + 4);
             items.AddRange(Commands);
 
-            if (Options.Dockable)
+            if (Options.Embeddable)
             {
                 items.Add(new FormaToolbarToggle
                 {
-                    Id = DockCommand,
-                    Command = DockCommand,
-                    Title = L["Undock"],
+                    Id = EmbedCommand,
+                    Command = EmbedCommand,
+                    Title = L["Float"],
                     Icon = Glyph.Unpin,
                     IsActive = IsFloating,
-                    AlternateTitle = L["Dock"],
+                    AlternateTitle = L["Embed"],
                     AlternateIcon = Glyph.Pin,
                 });
             }
@@ -584,8 +584,8 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
             case LockCommand:
                 await SetLockedAsync(!Locked);
                 break;
-            case DockCommand:
-                await SetModeAsync(IsFloating ? WindowMode.Docked : WindowMode.Floating);
+            case EmbedCommand:
+                await SetModeAsync(IsFloating ? WindowMode.Embedded : WindowMode.Floating);
                 break;
             default:
                 await OnCommand.InvokeAsync(command);
@@ -692,7 +692,7 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
             return;
         }
 
-        // The window may have docked, or another pass may have registered it, while the registration was being made.
+        // The window may have been embedded, or another pass may have registered it, while the registration was being made.
         if (!IsFloating || _inputScope is not null)
         {
             await inputScope.DisposeAsync();

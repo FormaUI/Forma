@@ -134,7 +134,7 @@ class Window {
         this.#report();
     }
 
-    /** Moves focus into the window unless a control inside it already holds it: to the element last focused inside it, else its first control, else the window itself. A docked window is scrolled into view. */
+    /** Moves focus into the window unless a control inside it already holds it: to the element last focused inside it, else its first control, else the window itself. An embedded window is scrolled into view. */
     focus() {
         const active = document.activeElement;
 

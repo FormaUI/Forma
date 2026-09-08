@@ -285,7 +285,7 @@ describe('Window', () => {
         expect(box.style.height).toBe('250px');
     });
 
-    it('neither shows nor moves a docked window', () => {
+    it('neither shows nor moves an embedded window', () => {
         box.showPopover = vi.fn();
         box.matches = () => false;
         attach(box, options({ floating: false }));

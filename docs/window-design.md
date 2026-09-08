@@ -8,7 +8,7 @@ and a persistent handle for every window in `FormaRestArea`. Authoritative for
 `FormaWindow`, `FormaRestArea`, the `Forma.Framework.Windows` model, and every
 component's participation in a workspace.
 
-`FormaWindow` is built: a raised frame with chrome that docks in a layout or floats in
+`FormaWindow` is built: a raised frame with chrome that is embedded in a layout or floats in
 the top layer, moved by its title bar, resized at its edges and from the keyboard,
 maximized to the viewport, with a placement a host binds and resize limits in its
 options. Step 1 of the plan is built: `Forma.Framework.Windows` holds `IWindow`,
@@ -96,11 +96,11 @@ a relationship needs an owner that sees every window at once.
 | Concern | Existing surface | What the design does with it |
 | --- | --- | --- |
 | Presentation | `Title` (required), `Icon` | The handle in the rest area shows both and follows later changes. |
-| Docking | `Mode` / `ModeChanged` | Independent of minimization, activation, and stacking. |
+| Embedding | `Mode` / `ModeChanged` | Independent of minimization, activation, and stacking. |
 | Position and size | `Placement` / `PlacementChanged` | Reused for movement, bounds, and restoration. |
 | Maximization | `Maximized` / `MaximizedChanged` | Preserved across minimization; restoring from one never clears the other. |
 | Capabilities | `Options` | Extended with the settings consumers pass through unchanged. |
-| Host commands | `Commands` / `OnCommand` | Kept beside dock, maximize, minimize, and close. |
+| Host commands | `Commands` / `OnCommand` | Kept beside embed, maximize, minimize, and close. |
 | Closing | `OnClose` | Still raised once, only when the window actually closes. |
 | Content | `Header`, `Body`, `Footer`, attributes | Unchanged; the body is never removed to hide it. |
 | Browser | `Window.js` attached while floating | Extended for stacking, bounds, and remembered focus. |
@@ -346,13 +346,13 @@ keeps its internal order and lands ahead of the rest. A visible modal never goes
 the context it blocks, and press-away cannot send it there. The manager owns the order;
 the browser reflects it by re-showing the floating popovers from back to front.
 
-Stacking applies to floating presentation. A docked window has a place in its parent's
-layout; activating it focuses it and scrolls it into view without undocking it.
+Stacking applies to floating presentation. An embedded window has a place in its parent's
+layout; activating it focuses it and scrolls it into view without floating it.
 
 ### Minimization
 
 Minimizing hides the window and keeps its handle. Its component instances and content
-state survive. Docked, it hides in its layout; floating, its popover is hidden and the
+state survive. Embedded, it hides in its layout; floating, its popover is hidden and the
 element stays.
 
 Minimizing a parent hides and deactivates every descendant, at every depth, as inherited
@@ -407,7 +407,7 @@ through `Placement` / `PlacementChanged`, so host and browser agree.
 
 `FormaRestArea` holds one persistent handle per registered window, keyed by `Id`, for as
 long as the window exists: active or inactive, front or back, minimized, hidden under a
-minimized ancestor, docked or floating, enabled or disabled. Identical titles and icons
+minimized ancestor, embedded or floating, enabled or disabled. Identical titles and icons
 produce separate handles; nothing is deduplicated. A handle shows the window's `Title` and
 `Icon` and follows changes to them. The handle is the reader's way to a window; it is not
 the resize handle the window's `HandleClass` names.

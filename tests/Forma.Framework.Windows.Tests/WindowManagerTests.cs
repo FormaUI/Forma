@@ -693,7 +693,7 @@ public sealed class WindowManagerTests
         {
             // Arrange
             var manager = new WindowManager();
-            var docked = await AddAsync(manager, "Docked", configure: window => window.IsFloating = false);
+            var embedded = await AddAsync(manager, "Embedded", configure: window => window.IsFloating = false);
             var back = await AddAsync(manager, "Back");
             var front = await AddAsync(manager, "Front");
             back.Log.Clear();
@@ -706,7 +706,7 @@ public sealed class WindowManagerTests
             Assert.Multiple(
                 () => Assert.Equal(["raise"], back.Log),
                 () => Assert.Equal(["raise"], front.Log),
-                () => Assert.DoesNotContain("raise", docked.Log));
+                () => Assert.DoesNotContain("raise", embedded.Log));
         }
 
         [Fact]
