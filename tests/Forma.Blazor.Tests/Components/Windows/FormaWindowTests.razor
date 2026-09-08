@@ -501,13 +501,13 @@
 
             // Act
             ctx.Render(@<FormaWindow Title="Folders" />);
-            var registered = manager.Windows.Select(window => window.Title).ToList();
+            var registered = manager.StackedWindows.Select(window => window.Title).ToList();
             await ctx.DisposeComponentsAsync();
 
             // Assert
             Assert.Multiple(
                 () => Assert.Equal(["Folders"], registered),
-                () => Assert.Empty(manager.Windows));
+                () => Assert.Empty(manager.StackedWindows));
         }
 
         [Fact]
@@ -522,8 +522,8 @@
 
             // Assert
             Assert.Multiple(
-                () => Assert.Single(nested.Windows),
-                () => Assert.Empty(ManagerOf(ctx).Windows));
+                () => Assert.Single(nested.StackedWindows),
+                () => Assert.Empty(ManagerOf(ctx).StackedWindows));
         }
 
         [Fact]
@@ -546,7 +546,7 @@
             ctx.Render(@<FormaWindow Title="Lone" />);
 
             // Assert
-            IWindow Named(string title) => manager.Windows.Single(window => window.Title == title);
+            IWindow Named(string title) => manager.StackedWindows.Single(window => window.Title == title);
             Assert.Multiple(
                 () => Assert.Equal(own, Named("Parent").Origin),
                 () => Assert.Equal(own, Named("Child").Origin),
@@ -687,7 +687,7 @@
 
             // Assert
             Assert.Multiple(
-                () => Assert.Equal("Back", manager.Windows[0].Title),
+                () => Assert.Equal("Back", manager.StackedWindows[0].Title),
                 () => Assert.False(closed));
         }
 
@@ -711,7 +711,7 @@
             // Assert
             Assert.Multiple(
                 () => Assert.Equal("Back", manager.Current?.Title),
-                () => Assert.Equal("Back", manager.Windows[^1].Title));
+                () => Assert.Equal("Back", manager.StackedWindows[^1].Title));
         }
 
         [Fact]
@@ -732,7 +732,7 @@
 
             // Assert
             Assert.Multiple(
-                () => Assert.Equal("Stays", manager.Windows[^1].Title),
+                () => Assert.Equal("Stays", manager.StackedWindows[^1].Title),
                 () => Assert.False(closed));
         }
 

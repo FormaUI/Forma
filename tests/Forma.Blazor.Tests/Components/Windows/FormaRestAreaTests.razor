@@ -1,0 +1,164 @@
+@inherits FormaBunitContext
+@using Bunit.Rendering
+@using Forma.Blazor.Components.Windows
+@using Forma.Framework.Windows
+
+@code {
+    public sealed class Component
+    {
+        private static WindowManager ManagerOf(FormaRestAreaTests ctx)
+            => ctx.Services.GetRequiredService<WindowManager>();
+
+        private static List<string> Labels(IRenderedComponent<ContainerFragment> area)
+            => [.. area.FindAll(".forma-rest-area-handle").Select(handle => handle.TextContent.Trim())];
+
+        [Fact]
+        public void Should_show_one_handle_per_window_in_registration_order()
+        {
+            // Arrange
+            using var ctx = new FormaRestAreaTests();
+            ctx.Render(@<div><FormaWindow Title="Properties" /><FormaWindow Title="Folders" /><FormaWindow Title="Properties" /></div>);
+
+            // Act
+            var area = ctx.Render(@<FormaRestArea />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["Properties", "Folders", "Properties"], Labels(area)),
+                () => Assert.Equal("Windows", area.Find(".forma-rest-area").GetAttribute("aria-label")));
+        }
+
+        [Fact]
+        public async Task Should_press_the_current_windows_handle_and_keep_the_order_when_it_changes()
+        {
+            // Arrange
+            using var ctx = new FormaRestAreaTests();
+            var manager = ManagerOf(ctx);
+            ctx.Render(@<div><FormaWindow Title="First" /><FormaWindow Title="Second" /></div>);
+            var area = ctx.Render(@<FormaRestArea />);
+
+            // Act
+            await manager.ActivateAsync(new WindowSelector { Title = "First" });
+
+            // Assert
+            area.WaitForAssertion(() => Assert.Multiple(
+                () => Assert.Equal("true", area.FindAll(".forma-rest-area-handle")[0].GetAttribute("aria-pressed")),
+                () => Assert.Equal("false", area.FindAll(".forma-rest-area-handle")[1].GetAttribute("aria-pressed")),
+                () => Assert.Equal(["First", "Second"], Labels(area))));
+        }
+
+        [Fact]
+        public async Task Should_restore_and_activate_a_window_from_its_handle()
+        {
+            // Arrange
+            using var ctx = new FormaRestAreaTests();
+            var manager = ManagerOf(ctx);
+            var window = ctx.Render(@<FormaWindow Title="Folders" />);
+            var area = ctx.Render(@<FormaRestArea />);
+            await manager.MinimizeAsync(new WindowSelector { Title = "Folders" });
+            area.WaitForAssertion(() => Assert.Equal("Minimized", area.Find(".forma-rest-area-handle").GetAttribute("aria-description")));
+
+            // Act
+            area.Find(".forma-rest-area-handle").Click();
+
+            // Assert
+            area.WaitForAssertion(() => Assert.Multiple(
+                () => Assert.False(window.Find(".forma-window").HasAttribute("hidden")),
+                () => Assert.Equal("Folders", manager.Current?.Title),
+                () => Assert.Null(area.Find(".forma-rest-area-handle").GetAttribute("aria-description"))));
+        }
+
+        [Fact]
+        public async Task Should_mark_a_handle_whose_window_hides_under_a_minimized_parent()
+        {
+            // Arrange
+            using var ctx = new FormaRestAreaTests();
+            var manager = ManagerOf(ctx);
+            FormaWindow? parent = null;
+            ctx.Render(@<FormaWindow @ref="parent" Title="Parent" />);
+            ctx.Render(@<FormaWindow Title="Child" Parent="parent" />);
+            var area = ctx.Render(@<FormaRestArea />);
+
+            // Act
+            await manager.MinimizeAsync(new WindowSelector { Title = "Parent" });
+
+            // Assert
+            area.WaitForAssertion(() => Assert.Multiple(
+                () => Assert.Contains("is-minimized", area.FindAll(".forma-rest-area-handle")[1].ClassList),
+                () => Assert.Equal("Minimized", area.FindAll(".forma-rest-area-handle")[1].GetAttribute("aria-description"))));
+        }
+
+        [Fact]
+        public void Should_group_by_origin_or_by_instance()
+        {
+            // Arrange
+            using var ctx = new FormaRestAreaTests();
+            var first = WindowOrigin.NewInstance("explorer", "Explorer");
+            var second = WindowOrigin.NewInstance("explorer", "Explorer");
+            ctx.Render(@<div><FormaWindow Title="A" Origin="first" /><FormaWindow Title="B" Origin="second" /><FormaWindow Title="C" /></div>);
+
+            // Act
+            var byOrigin = ctx.Render(@<FormaRestArea Options="new() { Grouping = RestAreaGrouping.Origin }" />);
+            var byInstance = ctx.Render(@<FormaRestArea Options="new() { Grouping = RestAreaGrouping.Instance }" />);
+            var flat = ctx.Render(@<FormaRestArea />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(2, byOrigin.FindAll(".forma-rest-area-group").Count),
+                () => Assert.Equal("Explorer", byOrigin.FindAll(".forma-rest-area-group")[0].GetAttribute("aria-label")),
+                () => Assert.Equal(2, byOrigin.FindAll(".forma-rest-area-group")[0].QuerySelectorAll(".forma-rest-area-handle").Length),
+                () => Assert.Equal(["Explorer 1", "Explorer 2", "Workspace"], byInstance.FindAll(".forma-rest-area-group").Select(group => group.GetAttribute("aria-label")).ToList()),
+                () => Assert.Empty(flat.FindAll(".forma-rest-area-group")),
+                () => Assert.Contains("is-grouped", byOrigin.Find(".forma-rest-area").ClassList));
+        }
+
+        [Fact]
+        public void Should_lay_out_as_told()
+        {
+            // Arrange
+            using var ctx = new FormaRestAreaTests();
+
+            // Act
+            var row = ctx.Render(@<FormaRestArea />);
+            var column = ctx.Render(@<FormaRestArea Options="new() { Layout = RestAreaLayout.Column }" />);
+            var grid = ctx.Render(@<FormaRestArea Options="new() { Layout = RestAreaLayout.Grid }" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Contains("forma-rest-area-row", row.Find(".forma-rest-area").ClassList),
+                () => Assert.Contains("forma-rest-area-column", column.Find(".forma-rest-area").ClassList),
+                () => Assert.Contains("forma-rest-area-grid", grid.Find(".forma-rest-area").ClassList));
+        }
+
+        [Fact]
+        public void Should_follow_a_windows_title()
+        {
+            // Arrange
+            using var ctx = new FormaRestAreaTests();
+            var window = ctx.Render<FormaWindow>(parameters => parameters.Add(p => p.Title, "Draft"));
+            var area = ctx.Render(@<FormaRestArea />);
+
+            // Act
+            window.Render(parameters => parameters.Add(p => p.Title, "Final"));
+
+            // Assert
+            area.WaitForAssertion(() => Assert.Equal(["Final"], Labels(area)));
+        }
+
+        [Fact]
+        public void Should_present_a_cascaded_workspace()
+        {
+            // Arrange
+            using var ctx = new FormaRestAreaTests();
+            var nested = new WindowManager();
+            ctx.Render(@<CascadingValue Value="nested"><FormaWindow Title="Nested" /></CascadingValue>);
+            ctx.Render(@<FormaWindow Title="Outer" />);
+
+            // Act
+            var area = ctx.Render(@<CascadingValue Value="nested"><FormaRestArea /></CascadingValue>);
+
+            // Assert
+            Assert.Equal(["Nested"], Labels(area));
+        }
+    }
+}

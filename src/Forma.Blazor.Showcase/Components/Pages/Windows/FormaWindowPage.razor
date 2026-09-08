@@ -98,7 +98,7 @@
             <FormaStackLayout>
                 @if (_isLibraryOpen)
                 {
-                    <FormaWindow @ref="_library" Title="@L["Library"]" Icon="Glyph.Pin" Options="new() { Dockable = false }" OnClose="() => _isLibraryOpen = false" class="demo-window-fill">
+                    <FormaWindow @ref="_library" Title="@L["Library"]" Icon="Glyph.Pin" Origin="_libraryOrigin" Options="new() { Dockable = false }" OnClose="() => _isLibraryOpen = false" class="demo-window-fill">
                         <Body>
                             <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _isPropertiesOpen = true" Disabled="_isPropertiesOpen">@L["Open Properties"]</FormaButton>
                         </Body>
@@ -130,6 +130,14 @@
         @L["Current"]: <code>@(Manager.Current?.Title ?? L["none"])</code>
         <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="RestoreAllAsync">@L["Restore Every Window"]</FormaButton>
     </p>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Rest Area"]</h2>
+    <p class="description">@L["Every window on this page has a handle here for as long as it exists, grouped by the application it belongs to. Minimize a window, or send one behind another, and its handle brings it back and makes it current."]</p>
+    <div class="demo-box">
+        <FormaRestArea Options="new() { Grouping = RestAreaGrouping.Origin }" />
+    </div>
 </div>
 
 <div class="demo-section">
@@ -221,6 +229,7 @@
     private bool _isMaximized;
     private WindowMode _outputMode = WindowMode.Docked;
     private string? _lastCommand;
+    private static readonly WindowOrigin _libraryOrigin = WindowOrigin.NewInstance("library", "Library");
     private FormaWindow? _library;
     private bool _isLibraryOpen = true;
     private bool _isPropertiesOpen;

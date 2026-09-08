@@ -1,0 +1,49 @@
+/* ============================================================
+   FormaRestArea — CSS isolation
+   A run of handles, one per window of the workspace. Handles sit
+   a target apart; grouped, the clusters sit a group apart.
+   ============================================================ */
+
+.forma-rest-area {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    min-inline-size: 0;
+}
+
+.forma-rest-area.is-grouped {
+    gap: var(--space-3);
+}
+
+.forma-rest-area-column {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+/* Columns as wide as five page-region steps, as many as fit. */
+.forma-rest-area-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(calc(var(--space-6) * 5), 1fr));
+}
+
+.forma-rest-area-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.forma-rest-area-column .forma-rest-area-group {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.forma-rest-area-grid .forma-rest-area-group {
+    display: contents;
+}
+
+/* Reaches FormaToggleButton's element. A minimized window's handle wears the secondary tone; the window is out of sight, not out of reach. */
+::deep .forma-rest-area-handle.is-minimized {
+    color: var(--text-secondary-color);
+}

@@ -34,7 +34,7 @@ public sealed class WindowManagerTests
             await AddAsync(manager, "Second");
 
             // Assert
-            Assert.Equal(["First", "Second"], Titles(manager.Windows));
+            Assert.Equal(["First", "Second"], Titles(manager.StackedWindows));
         }
 
         [Fact]
@@ -203,7 +203,7 @@ public sealed class WindowManagerTests
             await manager.RefreshAsync(modal);
 
             // Assert
-            Assert.Equal(["Page", "Modal"], Titles(manager.Windows));
+            Assert.Equal(["Page", "Modal"], Titles(manager.StackedWindows));
         }
     }
 
@@ -424,7 +424,7 @@ public sealed class WindowManagerTests
                 () => Assert.Same(first, manager.Current),
                 () => Assert.True(first.IsActive),
                 () => Assert.False(second.IsActive),
-                () => Assert.Equal(["Second", "First"], Titles(manager.Windows)));
+                () => Assert.Equal(["Second", "First"], Titles(manager.StackedWindows)));
         }
 
         [Fact]
@@ -603,13 +603,30 @@ public sealed class WindowManagerTests
 
             // Act
             await manager.BringToFrontAsync(new WindowSelector { OriginId = "explorer" });
-            var forward = Titles(manager.Windows);
+            var forward = Titles(manager.StackedWindows);
             await manager.SendToBackAsync(new WindowSelector { OriginId = "explorer" });
 
             // Assert
             Assert.Multiple(
                 () => Assert.Equal(["B", "D", "A", "C"], forward),
-                () => Assert.Equal(["A", "C", "B", "D"], Titles(manager.Windows)));
+                () => Assert.Equal(["A", "C", "B", "D"], Titles(manager.StackedWindows)));
+        }
+
+        [Fact]
+        public async Task Should_keep_the_registration_order_while_the_stacking_order_changes()
+        {
+            // Arrange
+            var manager = new WindowManager();
+            var first = await AddAsync(manager, "First");
+            await AddAsync(manager, "Second");
+
+            // Act
+            await manager.ActivateAsync(Only(first));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["Second", "First"], Titles(manager.StackedWindows)),
+                () => Assert.Equal(["First", "Second"], Titles(manager.Windows)));
         }
 
         [Fact]
@@ -624,7 +641,7 @@ public sealed class WindowManagerTests
             await manager.SendToBackAsync(Only(modal));
 
             // Assert
-            Assert.Equal(["Page", "Modal"], Titles(manager.Windows));
+            Assert.Equal(["Page", "Modal"], Titles(manager.StackedWindows));
         }
 
         [Fact]
@@ -663,7 +680,7 @@ public sealed class WindowManagerTests
             // Assert
             Assert.Multiple(
                 () => Assert.True(result.Succeeded),
-                () => Assert.Equal(3, manager.Windows.Count));
+                () => Assert.Equal(3, manager.StackedWindows.Count));
         }
 
         [Fact]
@@ -681,7 +698,7 @@ public sealed class WindowManagerTests
             Assert.Multiple(
                 () => Assert.Null(manager.Current),
                 () => Assert.False(window.IsActive),
-                () => Assert.Equal("Window", manager.Windows[^1].Title));
+                () => Assert.Equal("Window", manager.StackedWindows[^1].Title));
         }
     }
 
@@ -793,7 +810,7 @@ public sealed class WindowManagerTests
                 () => Assert.True(result.Succeeded),
                 () => Assert.Equal(["ask Parent", "ask Child", "ask Grandchild"], log),
                 () => Assert.True(grandchild.IsClosed && child.IsClosed && parent.IsClosed),
-                () => Assert.Empty(manager.Windows));
+                () => Assert.Empty(manager.StackedWindows));
         }
 
         [Fact]
@@ -815,7 +832,7 @@ public sealed class WindowManagerTests
                 () => Assert.Equal([child], result.Windows),
                 () => Assert.Equal(WindowOperationOutcome.Declined, several.Outcome),
                 () => Assert.False(parent.IsClosed || child.IsClosed || other.IsClosed),
-                () => Assert.Equal(3, manager.Windows.Count));
+                () => Assert.Equal(3, manager.StackedWindows.Count));
         }
 
         [Fact]
@@ -864,7 +881,7 @@ public sealed class WindowManagerTests
             // Assert
             Assert.Multiple(
                 () => Assert.NotNull(caught),
-                () => Assert.Empty(manager.Windows));
+                () => Assert.Empty(manager.StackedWindows));
         }
 
         [Fact]
@@ -883,7 +900,7 @@ public sealed class WindowManagerTests
             Assert.Multiple(
                 () => Assert.True(child.IsClosed),
                 () => Assert.Equal(0, child.CloseRequests),
-                () => Assert.Empty(manager.Windows),
+                () => Assert.Empty(manager.StackedWindows),
                 () => Assert.Null(manager.Current));
         }
     }

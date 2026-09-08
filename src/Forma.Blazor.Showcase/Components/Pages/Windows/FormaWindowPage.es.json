@@ -64,5 +64,7 @@
   "Open a Bounded Window": "Abrir una Ventana Limitada",
   "Open a Workspace-Wide Modal": "Abrir un Modal de Todo el Espacio",
   "Palette": "Paleta",
-  "Press Away": "Pulsar Fuera"
+  "Press Away": "Pulsar Fuera",
+  "Every window on this page has a handle here for as long as it exists, grouped by the application it belongs to. Minimize a window, or send one behind another, and its handle brings it back and makes it current.": "Cada ventana de esta página tiene aquí un asidero mientras exista, agrupado por la aplicación a la que pertenece. Minimice una ventana, o envíe una detrás de otra, y su asidero la trae de vuelta y la hace actual.",
+  "Rest Area": "Área de Reposo"
 }

@@ -64,5 +64,7 @@
   "Open a Bounded Window": "פתיחת חלון תחום",
   "Open a Workspace-Wide Modal": "פתיחת מודאל לכל סביבת העבודה",
   "Palette": "פלטה",
-  "Press Away": "לחיצה בחוץ"
+  "Press Away": "לחיצה בחוץ",
+  "Every window on this page has a handle here for as long as it exists, grouped by the application it belongs to. Minimize a window, or send one behind another, and its handle brings it back and makes it current.": "לכל חלון בעמוד יש כאן ידית כל עוד הוא קיים, מקובצת לפי היישום שהוא שייך אליו. מזערו חלון, או שלחו אחד מאחורי אחר, והידית שלו מחזירה אותו והופכת אותו לנוכחי.",
+  "Rest Area": "אזור המנוחה"
 }

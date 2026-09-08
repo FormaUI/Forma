@@ -4,8 +4,8 @@
 
 Design for extending `FormaWindow` with coordinated window management: identity,
 origin, parent–child windows, activation, stacking, minimization, modality, bounds,
-and a persistent handle for every window in `FormaWindowArea`. Authoritative for
-`FormaWindow`, `FormaWindowArea`, the `Forma.Framework.Windows` model, and every
+and a persistent handle for every window in `FormaRestArea`. Authoritative for
+`FormaWindow`, `FormaRestArea`, the `Forma.Framework.Windows` model, and every
 component's participation in a workspace.
 
 `FormaWindow` is built: a raised frame with chrome that docks in a layout or floats in
@@ -27,8 +27,11 @@ blocked windows going `inert` and a root modal standing on a backdrop; a press a
 a window back when its options say so; a window is held, restored and maximized within
 its bounds, the viewport or an element of the page; a window activates itself when it
 takes to floating; and a lockable window can be held where it is, neither moved, resized
-nor maximized until unlocked. The window area is step 4. The implementation plan at the end records
-what lands as each step is taken.
+nor maximized until unlocked. Step 4 is built: `FormaRestArea` holds one handle per
+registered window in registration order, pressed while current, marked while minimized
+or hidden, grouped by origin or instance, laid out as a row, column or grid, and
+following the workspace cascaded to it. The Showcase demo is step 5. The implementation
+plan at the end records what lands as each step is taken.
 
 ## Purpose
 
@@ -61,7 +64,7 @@ a relationship needs an owner that sees every window at once.
   `IWindow`, the way it already implements the router's owner contract.
 - **The manager is a scoped service; a nested workspace cascades its own.** One manager
   per circuit is the default workspace. A host that needs a second workspace cascades
-  another manager to the windows and window area inside it.
+  another manager to the windows and rest area inside it.
 - **Stacking is re-shown, not z-indexed.** A floating window is a manual popover, and the
   top layer stacks in show order; z-index has no effect there. The manager holds the
   order and re-asserts it in the browser by re-showing popovers bottom to top.
@@ -82,7 +85,7 @@ a relationship needs an owner that sees every window at once.
 - **Names follow the component's own conventions.** `Modal`, `Disabled`, `Active` with
   `ActiveChanged`, `Minimized` with `MinimizedChanged`, alongside the existing
   `Maximized` with `MaximizedChanged`. The area that holds every window's handle is
-  `FormaWindowArea`, a sibling of `FormaCommandArea` in intent and in name.
+  `FormaRestArea`, a sibling of `FormaCommandArea` in intent and in name.
 
 ## The existing component
 
@@ -90,7 +93,7 @@ a relationship needs an owner that sees every window at once.
 
 | Concern | Existing surface | What the design does with it |
 | --- | --- | --- |
-| Presentation | `Title` (required), `Icon` | The handle in the window area shows both and follows later changes. |
+| Presentation | `Title` (required), `Icon` | The handle in the rest area shows both and follows later changes. |
 | Docking | `Mode` / `ModeChanged` | Independent of minimization, activation, and stacking. |
 | Position and size | `Placement` / `PlacementChanged` | Reused for movement, bounds, and restoration. |
 | Maximization | `Maximized` / `MaximizedChanged` | Preserved across minimization; restoring from one never clears the other. |
@@ -243,7 +246,7 @@ activation histories do not mean two windows hold focus at once.
 
 The manager is registered scoped, so a circuit has one workspace with nothing to write.
 A host that wants a nested workspace cascades another manager, and every window and
-window area inside that cascade belongs to it.
+rest area inside that cascade belongs to it.
 
 ### API
 
@@ -252,7 +255,8 @@ manager.RegisterAsync(window)      // for the component's lifetime
 manager.RefreshAsync(window)       // after its title, icon, parent, or state changed
 manager.UnregisterAsync(window)    // when the host disposes it
 
-manager.Windows
+manager.Windows                    // in the order they registered
+manager.StackedWindows             // from the back of the stacking order to the front
 manager.GetWindowById(id)
 manager.TryGetWindowById(id, out window)
 manager.TryFindWindows(selector, out windows)
@@ -396,9 +400,9 @@ always stays reachable to move or restore the window; when the region is smaller
 minimum size, the minimum wins and the chrome stays reachable. Every adjustment flows
 through `Placement` / `PlacementChanged`, so host and browser agree.
 
-## The window area
+## The rest area
 
-`FormaWindowArea` holds one persistent handle per registered window, keyed by `Id`, for as
+`FormaRestArea` holds one persistent handle per registered window, keyed by `Id`, for as
 long as the window exists: active or inactive, front or back, minimized, hidden under a
 minimized ancestor, docked or floating, enabled or disabled. Identical titles and icons
 produce separate handles; nothing is deduplicated. A handle shows the window's `Title` and
@@ -407,9 +411,12 @@ the resize handle the window's `HandleClass` names.
 
 Choosing a handle restores the window if minimized, brings it to the front, and activates
 it. A window sent back comes forward and activates in place. Handles group by `OriginId`
-or `InstanceId`; grouping is presentation and never changes parentage.
+or `InstanceId`; grouping is presentation and never changes parentage. A group is named
+for its origin, and when grouping by instance leaves an origin with more than one group,
+each is numbered in registration order ("Explorer 1", "Explorer 2") so a screen reader
+tells them apart.
 
-The area stands alone or inside `FormaLauncherbar`, laid out as a row, a column, or a grid.
+The area stands alone or inside `FormaLaunchBar`, laid out as a row, a column, or a grid.
 It follows the manager whose windows it presents.
 
 ## Integration with the renderer
@@ -431,7 +438,7 @@ rather than raw focus events alone, and is released while the window is hidden.
 
 ## Non-goals
 
-- Application launching. `FormaLauncherbar` owns it and may host the window area.
+- Application launching. `FormaLaunchBar` owns it and may host the rest area.
 - Persisting windows across circuits. The host binds `Placement`, `Mode`, `Maximized`,
   and `Minimized` and decides what to keep.
 - Moving `FormaDialog` out of `Feedback`. It stays classified by its purpose, prompting for
@@ -447,7 +454,7 @@ rather than raw focus events alone, and is released while the window is hidden.
    close, stacking by re-showing, remembered focus, the minimize command in the chrome.
 3. **Modality, press-away, bounds.** The modal scope and backdrop, `Options.PressAway`,
    `Options.Bounds` in the script, maximization within a container.
-4. **`FormaWindowArea`.** Handles, grouping, layouts, and its place in a launcher bar.
+4. **`FormaRestArea`.** Handles, grouping, layouts, and its place in a launch bar.
 5. **Showcase.** A page covering the demo list below, walked in a visible browser.
 
 ## Demo
@@ -466,5 +473,5 @@ rather than raw focus events alone, and is released while the window is hidden.
 - Parent, child, and grandchild: recursive hiding on minimization, independently
   minimized descendants staying minimized on restoration, recursive closure, title
   queries returning every match, descendant queries walking the tree.
-- Press-away sending a window back, and `FormaWindowArea` as the way back to every
+- Press-away sending a window back, and `FormaRestArea` as the way back to every
   window, its handle present before and after.

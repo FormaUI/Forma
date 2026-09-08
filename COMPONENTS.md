@@ -51,7 +51,7 @@ Forma.Blazor/Components/
 │   ├── SplitterOrientation.cs                 # enum: Vertical, Horizontal
 │   ├── ✅ FormaTabs.razor / .razor.cs
 │   └── ✅ FormaTab.razor / .razor.cs
-├── (1 / 2) Windows/                          # see docs/window-design.md
+├── (2 / 2) Windows/                          # see docs/window-design.md
 │   ├── ✅ FormaWindow.razor / .razor.cs / .razor.css  # a raised frame with chrome: title bar, header, body, footer; docked in a layout or floating over the page
 │   ├── WindowMode.cs                          # enum: Docked, Floating
 │   ├── WindowPlacement.cs                     # record: Left, Top, Width, Height of a floating window, in CSS pixels
@@ -60,7 +60,11 @@ Forma.Blazor/Components/
 │   ├── WindowBounds.cs                        # record: Viewport, or Container(element)
 │   ├── WindowDeclaration.cs                   # internal record: what the window declares to its workspace, compared between renders
 │   ├── WindowAttachment.cs                    # internal record: what the script was attached with, compared between renders
-│   └── FormaWindowArea.razor                  # one persistent handle per window in the workspace, whatever its state
+│   ├── ✅ FormaRestArea.razor / .razor.cs / .razor.css  # one persistent handle per window in the workspace, whatever its state
+│   ├── RestAreaOptions.cs                     # record: Layout, Grouping
+│   ├── RestAreaLayout.cs                      # enum: Row, Column, Grid
+│   ├── RestAreaGrouping.cs                    # enum: None, Origin, Instance
+│   └── RestAreaGroup.cs                       # internal record: a cluster of handles under the group's accessible name
 ├── (2 / 2) Page/
 │   ├── ✅ FormaPageTitle.razor / .razor.cs
 │   └── ✅ FormaPageHead.razor / .razor.cs
@@ -967,6 +971,19 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Why it needs JS** | A floating window is raised into the top layer as a manual popover, so no ancestor's margin, transform or stacking reaches its box; a drag must follow the pointer without a round trip, and the box it produces must be held within the viewport and above the window's own minimum size. `Window.js` composes `DragGesture` for the press-move-release, applies the box as the pointer moves, fits a remembered box into the viewport on attach and when the viewport shrinks, takes the arrow keys on the focused title bar so a step never scrolls the page, and reports where the window came to rest once |
 | **Notes** | The dock and maximize commands are `FormaToolbarToggle`s, so their title and glyph flip with the state. The handles' sides are physical — the screen's left in either reading direction — because the pointer's travel that drives them is. Maximized, the window has no handles and no drag; docked, it has neither a scope nor a script. The options' resize limits are written as the window's own min and max bounds, so the browser, a drag and a keyboard step all honor the same pair; a `Size` reads from a `(width, height)` tuple |
 
+
+### 76. `FormaRestArea` ✅
+
+> **[docs/window-design.md](docs/window-design.md) is authoritative for this component.**
+
+| | |
+|---|---|
+| **Old pattern** | None — Coi had no way back to a panel once it was out of sight |
+| **Used in** | The Showcase's window page; the Admin Console's shell, and `FormaLaunchBar` once it exists |
+| **Parameters** | `string? Label` (the area's accessible name, "Windows" by default), `RestAreaOptions Options` (layout row, column or grid; grouping none, by origin or by instance), plus captured pass-through attributes |
+| **Blazor approach** | One `FormaToggleButton` (#4) per window registered in the workspace, keyed by the window's identity and kept in registration order so handles never shuffle as windows are activated; identical titles are separate handles. The handle shows the window's icon and title, is pressed while the window is current, disabled while the window is, and wears the secondary tone with a "Minimized" description while the window is minimized or hidden under a minimized ancestor. Choosing a handle asks the workspace to activate the window, which restores its ancestors and itself, brings it forward, and redirects to a modal descendant when one controls it. Grouped, handles cluster by origin under the origin's name, or by instance, where an origin running more than once has its groups numbered in registration order so a screen reader tells them apart. The area follows the workspace cascaded to it, else the circuit's, and re-renders on the workspace's change event |
+| **Why it needs JS** | Nothing of its own; the windows it reaches carry the browser side |
+| **Notes** | "Rest" is the handle's persistent place, not the window's activity; the window is never inside the area. A `FormaLaunchBar` hosting application launching may hold the area as one of its parts |
 
 ## Components NOT Needed (handled by built-ins or native HTML)
 
