@@ -1,5 +1,5 @@
 ---
-name: forma-js-interop
+name: forma-scripting
 description: Forma's JavaScript and interop standard — when JS is allowed at all, the behaviours/operations/components/services split that decides where a script lives and how it is written, the four module contracts, how C# reaches a module through JsInterop and JsModule, and the external-library carve-out for FormaComposer. Use when adding or changing anything under wwwroot/scripts/ or in an interop assembly, naming a script or wrapper, or deciding whether a capability needs JS.
 ---
 

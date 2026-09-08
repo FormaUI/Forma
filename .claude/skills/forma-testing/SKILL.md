@@ -1,5 +1,5 @@
 ---
-name: forma-tests
+name: forma-testing
 description: Forma's test standard — the one-test-project-per-assembly rule and where a split assembly's contracts are tested, the bUnit + xUnit v3 file shape (FormaXTests.razor with a nested Component class), naming and Arrange/Act/Assert conventions, rendering InputBase components in FakeFormHost, where shared fakes live in Forma.Tests.Support, and the separate Vitest runner for wwwroot/scripts modules. Use when writing or changing any test, adding a test fake, or testing a JS behaviour, operation, or component module.
 ---
 
@@ -30,7 +30,7 @@ Every production assembly has exactly one test project named after it, so `Forma
 
 bUnit renders markup and drives its own synchronous JS interop, so a green suite is not evidence about CSS, about pointer behaviour, or about anything whose timing depends on a real interop round-trip.
 
-- Do verify stylesheet-dependent states, touch targets, gestures, and direction in a real browser instead — the `forma-a11y-touch-rtl` skill covers how.
+- Do verify stylesheet-dependent states, touch targets, gestures, and direction in a real browser instead — the `forma-checking-a11y-touch-rtl` skill covers how.
 - Don't read a passing bUnit test as proof that the component works in the Showcase.
 
 ## JavaScript tests

@@ -1,5 +1,5 @@
 ---
-name: forma-a11y-touch-rtl
+name: forma-checking-a11y-touch-rtl
 description: The three gates a Forma component must pass before review — accessibility (colour-independent state, contrast, ARIA, focus and keyboard), touch and pointer (24x24 and 44x44 targets, hover media queries, Pointer Events gestures), and RTL/LTR parity (logical properties, mirroring, arrow-key direction). Includes how to verify each in a real browser rather than in bUnit. Use when finishing, reviewing, or auditing a component, or when writing CSS that positions, mirrors, or communicates state.
 ---
 

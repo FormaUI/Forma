@@ -1,5 +1,5 @@
 ---
-name: forma-localization
+name: forma-localizing
 description: Forma's localization standard — reading library strings through IStringLocale<FormaX>, shipping the FormaX.he.json and FormaX.es.json pair keyed by English source text, passing interpolation holes positionally in PascalCase, and the Title Case versus sentence case rule that separates labels from prose across every Latin-script language. Use when adding or changing any user-facing string, editing a translation file, or naming an interpolation hole.
 ---
 
