@@ -23,6 +23,7 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
     private const string CloseCommand = "window.close";
     private const string MaximizeCommand = "window.maximize";
     private const string MinimizeCommand = "window.minimize";
+    private const string LockCommand = "window.lock";
     private const string DockCommand = "window.dock";
 
     /// <summary>How far one arrow press moves or resizes a floating window, in CSS pixels: one spacing step of four.</summary>
@@ -85,6 +86,12 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
 
     /// <summary>Raised when the reader maximizes or restores the window from its title bar.</summary>
     [Parameter] public EventCallback<bool> MaximizedChanged { get; set; }
+
+    /// <summary>Whether a floating window is held where it is: neither moved, resized nor maximized.</summary>
+    [Parameter] public bool Locked { get; set; }
+
+    /// <summary>Raised when the reader locks or unlocks the window from its title bar.</summary>
+    [Parameter] public EventCallback<bool> LockedChanged { get; set; }
 
     /// <summary>Whether the window is minimized: out of its presentation, its content kept, its descendants hidden with it.</summary>
     [Parameter] public bool Minimized { get; set; }
@@ -164,7 +171,7 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
         => Disabled || _isBlocked;
 
     private bool ShowsHandles
-        => IsFloating && Options.Resizable && !Maximized;
+        => IsFloating && Options.Resizable && !Maximized && !Locked;
 
     // A root modal blocks the whole workspace, which a backdrop beneath it makes visible; a child modal blocks its parent alone.
     private bool ShowsBackdrop
@@ -182,22 +189,26 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
             IsFloating ? "forma-window-floating" : "forma-window-docked",
             Active ? "is-active" : null,
             IsMaximized ? "is-maximized" : null,
+            Locked ? "is-locked" : null,
             IsFloating && Placement is not null ? "has-placement" : null);
 
     private string TitleBarCssClass
-        => IsFloating ? $"{TitleBarClass} is-movable" : TitleBarClass;
+        => IsFloating && !Locked ? $"{TitleBarClass} is-movable" : TitleBarClass;
 
     private bool TakesArrowKeys
-        => IsFloating && !Maximized;
+        => IsFloating && !Maximized && !Locked;
+
+    private bool ResizesFromKeys
+        => TakesArrowKeys && Options.Resizable;
 
     private string? TitleBarLabel
         => !TakesArrowKeys ? null
-            : Options.Resizable ? L["Move {Window} with the arrow keys; hold Shift to resize it", Title]
+            : ResizesFromKeys ? L["Move {Window} with the arrow keys; hold Shift to resize it", Title]
             : L["Move {Window} with the arrow keys", Title];
 
     private string? TitleBarKeyShortcuts
         => !TakesArrowKeys ? null
-            : Options.Resizable ? "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight"
+            : ResizesFromKeys ? "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight"
             : "ArrowUp ArrowDown ArrowLeft ArrowRight";
 
     // A floating window is a scope only while it floats, active while it is the workspace's current window and focus is
@@ -282,6 +293,20 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
                 });
             }
 
+            if (Options.Lockable && IsFloating)
+            {
+                items.Add(new FormaToolbarToggle
+                {
+                    Id = LockCommand,
+                    Command = LockCommand,
+                    Title = L["Lock"],
+                    Icon = Glyph.LockOpen,
+                    IsActive = Locked,
+                    AlternateTitle = L["Unlock"],
+                    AlternateIcon = Glyph.Lock,
+                });
+            }
+
             if (Options.Minimizable)
             {
                 items.Add(new FormaToolbarCommand
@@ -302,6 +327,7 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
                     Title = L["Maximize"],
                     Icon = Glyph.Maximize,
                     IsActive = Maximized,
+                    IsDisabled = Locked,
                     AlternateTitle = L["Restore"],
                     AlternateIcon = Glyph.Minimize,
                 });
@@ -555,6 +581,9 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
             case MaximizeCommand:
                 await SetMaximizedAsync(!Maximized);
                 break;
+            case LockCommand:
+                await SetLockedAsync(!Locked);
+                break;
             case DockCommand:
                 await SetModeAsync(IsFloating ? WindowMode.Docked : WindowMode.Floating);
                 break;
@@ -568,6 +597,12 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
     {
         Maximized = maximized;
         await MaximizedChanged.InvokeAsync(maximized);
+    }
+
+    private async Task SetLockedAsync(bool locked)
+    {
+        Locked = locked;
+        await LockedChanged.InvokeAsync(locked);
     }
 
     private async Task SetModeAsync(WindowMode mode)
@@ -631,8 +666,11 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
         }
     }
 
+    // The render that takes the hidden attribute off reaches the browser before the script is told to show the window, so the box it measures is the window's own.
     private async Task PresentAsync()
     {
+        StateHasChanged();
+
         if (_attachment is not null)
         {
             await _window.PresentAsync(IsPresented);
@@ -642,8 +680,6 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
         {
             await inputScope.ReleaseAsync();
         }
-
-        StateHasChanged();
     }
 
     private async Task RegisterScopeAsync()

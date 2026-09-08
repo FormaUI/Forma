@@ -23,6 +23,9 @@ public sealed record WindowOptions
     /// <summary>Whether a floating window can be resized at its edges and corners.</summary>
     public bool Resizable { get; init; } = true;
 
+    /// <summary>Whether the title bar offers a lock command, which holds a floating window where it is: neither moved, resized nor maximized until unlocked.</summary>
+    public bool Lockable { get; init; }
+
     /// <summary>The smallest a floating window can be resized to; unset, the stylesheet's minimum holds.</summary>
     public Size? MinResizeSize { get; init; }
 

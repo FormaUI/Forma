@@ -25,8 +25,9 @@ focus remembered and returned on activation. Step 3 is built: a modal window reg
 modal scope, keeps Tab inside itself, blocks its parent's subtree or the workspace, the
 blocked windows going `inert` and a root modal standing on a backdrop; a press away sends
 a window back when its options say so; a window is held, restored and maximized within
-its bounds, the viewport or an element of the page; and a window activates itself when it
-takes to floating. The window area is step 4. The implementation plan at the end records
+its bounds, the viewport or an element of the page; a window activates itself when it
+takes to floating; and a lockable window can be held where it is, neither moved, resized
+nor maximized until unlocked. The window area is step 4. The implementation plan at the end records
 what lands as each step is taken.
 
 ## Purpose
@@ -303,6 +304,7 @@ decline aborts the whole operation.
 | Parent | `Parent` | Parameter, validated by the manager. |
 | Activation | `Active` / `ActiveChanged` | Bound state, coordinated by the manager. |
 | Minimization | `Minimized` / `MinimizedChanged` | Bound state. |
+| Lock | `Locked` / `LockedChanged`, `Options.Lockable` | Bound state; the option adds the command. Locked, a floating window is neither moved, resized nor maximized; everything else stays. |
 | Modality | `Modal` | Parameter; a composing dialog derives it from itself. |
 | Availability | `Disabled` | Parameter, as elsewhere in the library. |
 | Closing | `OnClosing` with cancelable args, then `OnClose` | Callbacks. |

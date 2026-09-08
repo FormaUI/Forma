@@ -47,6 +47,9 @@ class Window {
     /** The class a window carries while it fills its bounds, when it neither moves nor resizes. */
     static #MaximizedClass = 'is-maximized';
 
+    /** The class a window carries while it is held where it is, when it neither moves nor resizes either. */
+    static #LockedClass = 'is-locked';
+
     /** The arrow keys and the direction each one moves or grows the window. */
     static #Steps = new Map([
         ['ArrowLeft', [-1, 0]],
@@ -218,6 +221,12 @@ class Window {
         }
 
         const rect = this.#window.getBoundingClientRect();
+
+        // A window not laid out yet has no box to hold within anything.
+        if (rect.width === 0 && rect.height === 0) {
+            return;
+        }
+
         const { minWidth, minHeight, maxWidth, maxHeight } = this.#limits();
         const width = Math.max(minWidth, Math.min(rect.width, region.width, maxWidth));
         const height = Math.max(minHeight, Math.min(rect.height, region.height, maxHeight));
@@ -242,7 +251,7 @@ class Window {
      * @param {boolean} resize
      */
     nudge(dx, dy, resize) {
-        if (!this.#floating || this.#isMaximized) {
+        if (!this.#floating || this.#isHeld) {
             return;
         }
 
@@ -255,6 +264,11 @@ class Window {
 
     get #isMaximized() {
         return this.#window.classList.contains(Window.#MaximizedClass);
+    }
+
+    /** Whether the window stays where it is: maximized or locked. */
+    get #isHeld() {
+        return this.#isMaximized || this.#window.classList.contains(Window.#LockedClass);
     }
 
     /** Whether the window carries resize handles, which it does only while it may be resized. */
@@ -329,9 +343,9 @@ class Window {
         }
     }
 
-    /** The title bar or the handle the press landed on; nothing while maximized, and nothing for a press on a control inside the title bar. */
+    /** The title bar or the handle the press landed on; nothing while maximized or locked, and nothing for a press on a control inside the title bar. */
     #findSubject(event) {
-        if (this.#isMaximized) {
+        if (this.#isHeld) {
             return null;
         }
 

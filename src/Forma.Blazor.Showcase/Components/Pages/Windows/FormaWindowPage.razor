@@ -50,7 +50,7 @@
                      Mode="WindowMode.Floating"
                      @bind-Placement="_placement"
                      @bind-Maximized="_isMaximized"
-                     Options="new() { Dockable = false, MinResizeSize = (320, 200), MaxResizeSize = (900, 700) }"
+                     Options="new() { Dockable = false, Lockable = true, MinResizeSize = (320, 200), MaxResizeSize = (900, 700) }"
                      OnClose="() => _isFloatingOpen = false">
             <Body>@L["A floating window keeps its place while the page beneath it scrolls."]</Body>
             <Footer>

@@ -149,6 +149,73 @@
         }
 
         [Fact]
+        public void Should_offer_a_lock_only_when_lockable_and_floating()
+        {
+            // Arrange
+            using var ctx = new FormaWindowTests();
+
+            // Act
+            var plain = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" />);
+            var docked = ctx.Render(@<FormaWindow Title="Folders" Options="new() { Lockable = true }" />);
+            var lockable = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" Options="new() { Lockable = true }" />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Empty(plain.FindAll("button[aria-label=Lock]"));
+                Assert.Empty(docked.FindAll("button[aria-label=Lock]"));
+                Assert.NotNull(lockable.Find("button[aria-label=Lock]"));
+            });
+        }
+
+        [Fact]
+        public void Should_hold_a_locked_window_where_it_is()
+        {
+            // Arrange
+            using var ctx = new FormaWindowTests();
+            bool? locked = null;
+
+            // Act
+            var cut = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" Options="new() { Lockable = true }" LockedChanged="value => locked = value" />);
+            cut.Find("button[aria-label=Lock]").Click();
+            var window = cut.Find(".forma-window");
+            var titleBar = cut.Find(".forma-window-titlebar");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.True(locked);
+                Assert.Contains("is-locked", window.ClassList);
+                Assert.Empty(cut.FindAll($".{FormaWindow.HandleClass}"));
+                Assert.DoesNotContain("is-movable", titleBar.ClassList);
+                Assert.Null(titleBar.GetAttribute("tabindex"));
+                Assert.True(cut.Find("button[aria-label=Maximize]").HasAttribute("disabled"));
+                Assert.NotNull(cut.Find("button[aria-label=Unlock]"));
+                Assert.NotNull(cut.Find("button[aria-label=Minimize]"));
+                Assert.NotNull(cut.Find("button[aria-label=Close]"));
+            });
+        }
+
+        [Fact]
+        public void Should_unlock_from_the_same_command()
+        {
+            // Arrange
+            using var ctx = new FormaWindowTests();
+            var cut = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" Locked="true" Options="new() { Lockable = true }" />);
+
+            // Act
+            cut.Find("button[aria-label=Unlock]").Click();
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.DoesNotContain("is-locked", cut.Find(".forma-window").ClassList);
+                Assert.Equal(8, cut.FindAll($".{FormaWindow.HandleClass}").Count);
+                Assert.False(cut.Find("button[aria-label=Maximize]").HasAttribute("disabled"));
+            });
+        }
+
+        [Fact]
         public void Should_write_a_placement_as_the_window_position_and_size()
         {
             // Arrange

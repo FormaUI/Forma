@@ -3,6 +3,8 @@
   "Close": "Cerrar",
   "Maximize": "Maximizar",
   "Minimize": "Minimizar",
+  "Lock": "Bloquear",
+  "Unlock": "Desbloquear",
   "Restore": "Restaurar",
   "Dock": "Acoplar",
   "Undock": "Desacoplar",

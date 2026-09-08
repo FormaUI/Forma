@@ -146,6 +146,19 @@ describe('Window', () => {
         expect(reported()).toEqual([]);
     });
 
+    it('neither moves, resizes nor steps while locked', () => {
+        box.classList.add('is-locked');
+        const handle = attach(box, options());
+
+        drag('.titlebar span', { clientX: 200, clientY: 90 }, { clientX: 260, clientY: 90 });
+        drag('.handle[data-edge=se]', { clientX: 500, clientY: 380 }, { clientX: 560, clientY: 420 });
+        handle.nudge(16, 0, false);
+
+        expect(box.style.left).toBe('100px');
+        expect(box.style.width).toBe('400px');
+        expect(reported()).toEqual([]);
+    });
+
     it('neither moves nor resizes while maximized', () => {
         box.classList.add('is-maximized');
         attach(box, options());
@@ -241,6 +254,17 @@ describe('Window', () => {
         expect(box.style.left).toBe('400px');
         expect(box.style.width).toBe('600px');
         expect(reported()).toEqual([{ method: 'ReportPlacementAsync', args: [400, 80, 600, 300] }]);
+    });
+
+    it('leaves a window that has no box yet alone', () => {
+        box.getBoundingClientRect = () => ({ left: 0, top: 0, width: 0, height: 0, right: 0, bottom: 0 });
+
+        const handle = attach(box, options());
+        handle.fit();
+
+        expect(box.style.left).toBe('100px');
+        expect(box.style.width).toBe('400px');
+        expect(reported()).toEqual([]);
     });
 
     it('leaves a box that already fits alone on attach', () => {
