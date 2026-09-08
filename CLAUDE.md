@@ -100,6 +100,23 @@ recalling them, not by inventing.
 - Do suffix asynchronous methods with `Async`, spelled out in full: `ExecuteCommandAsync`, never `ExecAsync`.
 - Do treat a name as a claim checked against the implementation: a static calculator is an `*Estimator`, lifecycle bookkeeping a `*Tracker`, a bounded interaction a `*Session`, and "completed" means finished either way — success or failure — as .NET uses the word.
 - Don't rename a concept that survives a refactor; restructuring grants no license to rename, and the name changes only when the name itself is the defect.
+- Don't coin a naming pattern of your own. `ParentOf(window)`, `KeyOf(band)`, `MessageOf(item)` read as prose but exist nowhere in .NET; a lookup is `GetParent`, `GetKey`, `GetMessage`, or `TryGet*` when it can come back empty. When no rule above answers, find the BCL member or the codebase neighbor that does the same job and copy its shape.
+- Do sweep the whole codebase for a naming pattern once one instance of it is found wrong; a convention that was invented once was invented everywhere.
+
+### Fields, parameters, arguments and locals
+
+The same rule governs every variable: it is named for the noun it holds, in
+full words, never for a qualifier alone. `registered` became
+`registeredWindow`, `_order` became `_stackedWindows`, and the manager read
+better for it.
+
+- Do name a variable with the noun it holds and qualify it where the qualifier tells the variables apart: `registeredWindow`, `registeredParent`, `affectedWindows`, `movingIds`.
+- Don't name a variable with a bare adjective or participle — `registered`, `affected`, `declining`, `selected`, `rest`, `next` — because an adjective describes a noun the reader then has to guess.
+- Do derive a field's name from its type when the type already says it best: `_sheetLoadTracker` for a `SpriteSheetLoadTracker`, never `_sheetLoads`.
+- Do name a collection with a plural noun phrase — `_stackedWindows`, `_blockedIds`, `matchingWindows` — never a singular or an adjective standing in for the plural.
+- Do name a Boolean local or field as a state phrase, `isBlocked`, `isSettled`, `hasCriteria`, the way a Boolean property is.
+- Do name a parameter for what it is to the method, not for the preposition it would take in prose: `IsDescendant(window, ancestor)`, never `IsDescendant(window, of)`.
+- Do keep one vocabulary across a type's variables, so a reader learns the words once; per-variable coinages are the failure mode.
 
 ### Parameter choice and order
 
