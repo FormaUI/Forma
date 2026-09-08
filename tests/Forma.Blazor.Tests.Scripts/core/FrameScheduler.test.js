@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { Frame } from '#core/Frame.js';
+import { FrameScheduler } from '#core/FrameScheduler.js';
 import { stubAnimationFrames } from '#support/platform.js';
 
-describe('Frame', () => {
+describe('FrameScheduler', () => {
     /** @type {ReturnType<typeof stubAnimationFrames>} */
     let frames;
 
@@ -13,10 +13,10 @@ describe('Frame', () => {
     afterEach(() => frames.restore());
 
     it('runs the work in the next frame', () => {
-        const frame = new Frame();
+        const scheduler = new FrameScheduler();
         const work = vi.fn();
 
-        frame.request(work);
+        scheduler.request(work);
         expect(work).not.toHaveBeenCalled();
 
         frames.flush();
@@ -25,12 +25,12 @@ describe('Frame', () => {
     });
 
     it('holds work requested several times to one run', () => {
-        const frame = new Frame();
+        const scheduler = new FrameScheduler();
         const work = vi.fn();
 
-        frame.request(work);
-        frame.request(work);
-        frame.request(work);
+        scheduler.request(work);
+        scheduler.request(work);
+        scheduler.request(work);
         frames.flush();
 
         expect(work).toHaveBeenCalledOnce();
@@ -38,40 +38,40 @@ describe('Frame', () => {
     });
 
     it('is free again once the frame has run, so the work inside it can request the next', () => {
-        const frame = new Frame();
+        const scheduler = new FrameScheduler();
         let runs = 0;
         const loop = () => {
             runs += 1;
             if (runs < 3) {
-                frame.request(loop);
+                scheduler.request(loop);
             }
         };
 
-        frame.request(loop);
+        scheduler.request(loop);
         frames.flush();
         frames.flush();
         frames.flush();
 
         expect(runs).toBe(3);
-        expect(frame.isPending).toBe(false);
+        expect(scheduler.isPending).toBe(false);
     });
 
     it('drops the work when cancelled before the frame', () => {
-        const frame = new Frame();
+        const scheduler = new FrameScheduler();
         const work = vi.fn();
 
-        frame.request(work);
-        expect(frame.isPending).toBe(true);
-        frame.cancel();
+        scheduler.request(work);
+        expect(scheduler.isPending).toBe(true);
+        scheduler.cancel();
         frames.flush();
 
         expect(work).not.toHaveBeenCalled();
-        expect(frame.isPending).toBe(false);
+        expect(scheduler.isPending).toBe(false);
     });
 
     it('cancels nothing when nothing is pending', () => {
-        const frame = new Frame();
+        const scheduler = new FrameScheduler();
 
-        expect(() => frame.cancel()).not.toThrow();
+        expect(() => scheduler.cancel()).not.toThrow();
     });
 });

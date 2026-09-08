@@ -13,7 +13,7 @@ const scripts = {
 
 // One alias per assembly that ships scripts, each pointing at that assembly's scripts root. The
 // assemblies are served side by side under _content/forma/, so a script reaches another assembly
-// by climbing to that root, `../../../core/scripts/Frame.js`; here each such climb is resolved to
+// by climbing to that root, `../../../core/scripts/FrameScheduler.js`; here each such climb is resolved to
 // the assembly's source folder instead.
 export default defineConfig({
     resolve: {

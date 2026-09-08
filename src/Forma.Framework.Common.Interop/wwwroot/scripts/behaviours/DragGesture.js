@@ -11,7 +11,7 @@
  * dragged, where it may land, and what landing there means are all the caller's to answer.
  */
 
-import { Frame } from '../../../core/scripts/Frame.js';
+import { FrameScheduler } from '../../../core/scripts/FrameScheduler.js';
 import { Scrolling } from '../../../core/scripts/Scrolling.js';
 import { capture, release } from '../operations/Pointer.js';
 
@@ -69,7 +69,7 @@ class DragGesture {
     #holdTimer = null;
     #scroller = null;
     #scrollStep = 0;
-    #scrollFrame = new Frame();
+    #scrollScheduler = new FrameScheduler();
     #listeners = new AbortController();
 
     constructor(container, options) {
@@ -281,8 +281,8 @@ class DragGesture {
 
         if (this.#scrollStep === 0) {
             this.#stopAutoScroll();
-        } else if (!this.#scrollFrame.isPending) {
-            this.#scrollFrame.request(() => this.#scrollTick());
+        } else if (!this.#scrollScheduler.isPending) {
+            this.#scrollScheduler.request(() => this.#scrollTick());
         }
     }
 
@@ -291,11 +291,11 @@ class DragGesture {
         // The pointer can sit still while content moves under it, so the caller is asked to
         // re-evaluate each frame rather than only on the next pointermove.
         this.#onMove?.(this.#context());
-        this.#scrollFrame.request(() => this.#scrollTick());
+        this.#scrollScheduler.request(() => this.#scrollTick());
     }
 
     #stopAutoScroll() {
-        this.#scrollFrame.cancel();
+        this.#scrollScheduler.cancel();
         this.#scrollStep = 0;
     }
 }

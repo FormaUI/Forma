@@ -10,7 +10,7 @@
  */
 
 import { Direction } from '../../../core/scripts/Direction.js';
-import { Frame } from '../../../core/scripts/Frame.js';
+import { FrameScheduler } from '../../../core/scripts/FrameScheduler.js';
 import { tell } from '../../../core/scripts/Owner.js';
 
 /** @typedef {import('../../../core/scripts/Owner.js').Owner} Owner */
@@ -141,7 +141,7 @@ class BoundaryWatch {
     #mutations;
     #watched = [];
     #last = null;
-    #frame = new Frame();
+    #scheduler = new FrameScheduler();
     #isDisposed = false;
 
     constructor(track, { owner, axis = 'inline', frozen = null }) {
@@ -168,7 +168,7 @@ class BoundaryWatch {
 
     dispose() {
         this.#isDisposed = true;
-        this.#frame.cancel();
+        this.#scheduler.cancel();
         this.#controller.abort();
         this.#resize.disconnect();
         this.#mutations.disconnect();
@@ -190,7 +190,7 @@ class BoundaryWatch {
     // Scrolling fires far faster than the circuit can answer, so reports are coalesced to one a frame.
     #schedule() {
         if (!this.#isDisposed) {
-            this.#frame.request(() => this.#report());
+            this.#scheduler.request(() => this.#report());
         }
     }
 

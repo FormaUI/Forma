@@ -41,7 +41,7 @@ is declared as a project reference, so the graph stays visible.
 
 The assemblies are served side by side as `_content/forma/core`, `_content/forma/common`,
 `_content/forma/input` and `_content/forma/composer`, each with its scripts under `scripts/`.
-A script reaches another assembly's script by climbing to that root — `../../../core/scripts/Frame.js`
+A script reaches another assembly's script by climbing to that root — `../../../core/scripts/FrameScheduler.js`
 from a behaviour — so the import stays relative to the module and survives a host path base.
 
 `Forma.Framework.Common.Interop` serves many concepts, so it sorts by kind: a script lives in

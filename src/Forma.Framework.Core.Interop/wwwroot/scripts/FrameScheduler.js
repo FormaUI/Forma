@@ -1,11 +1,11 @@
 /**
- * Frame — one piece of work held to the next animation frame
+ * FrameScheduler — one piece of work held to the next animation frame
  *
  * Events arrive faster than frames are painted; work requested any number of times before the
  * frame runs once, in that frame.
  */
 
-export class Frame {
+export class FrameScheduler {
     #handle = null;
 
     /** Whether work is waiting for the next frame. */

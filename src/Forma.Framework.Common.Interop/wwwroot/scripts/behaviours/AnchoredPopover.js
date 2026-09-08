@@ -9,7 +9,7 @@
 
 import { Focus } from './Focus.js';
 import { Direction } from '../../../core/scripts/Direction.js';
-import { Frame } from '../../../core/scripts/Frame.js';
+import { FrameScheduler } from '../../../core/scripts/FrameScheduler.js';
 
 /** Distance between the anchor and the popover. */
 const Gap = 4;
@@ -37,7 +37,7 @@ class AnchoredPopover {
     #trigger = null;
     #placement = null;
     #resizeObserver = null;
-    #frame = new Frame();
+    #scheduler = new FrameScheduler();
     #isRightToLeft = false;
 
     constructor(popover, { anchor, keepsFocus = false, align = 'auto' }) {
@@ -88,7 +88,7 @@ class AnchoredPopover {
             this.#trigger.focus({ preventScroll: true });
         }
 
-        this.#frame.cancel();
+        this.#scheduler.cancel();
         this.#placement?.abort();
         this.#placement = null;
         this.#resizeObserver?.disconnect();
@@ -105,7 +105,7 @@ class AnchoredPopover {
 
     // Scroll and resize events arrive faster than frames are painted, so repositions are coalesced to one a frame.
     #schedule() {
-        this.#frame.request(() => this.#position());
+        this.#scheduler.request(() => this.#position());
     }
 
     #position() {

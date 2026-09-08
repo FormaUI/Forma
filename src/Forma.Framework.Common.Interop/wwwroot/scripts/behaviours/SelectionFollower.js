@@ -4,7 +4,7 @@
 
 import { attach as attachDragGesture } from './DragGesture.js';
 import { Focus } from './Focus.js';
-import { Frame } from '../../../core/scripts/Frame.js';
+import { FrameScheduler } from '../../../core/scripts/FrameScheduler.js';
 
 /** Space kept between the element and the selection, and between the element and the viewport's edge. */
 const Gap = 8;
@@ -45,7 +45,7 @@ class SelectionFollower {
     #offset = { x: 0, y: 0 };
 
     #dragOrigin = null;
-    #frame = new Frame();
+    #scheduler = new FrameScheduler();
 
     constructor(target, owner = null, options = {}) {
         this.#target = target;
@@ -152,7 +152,7 @@ class SelectionFollower {
     dispose() {
         this.#isDisposed = true;
 
-        this.#frame.cancel();
+        this.#scheduler.cancel();
         this.#gesture?.dispose();
         this.#resizeObserver?.disconnect();
         this.#controller.abort();
@@ -161,7 +161,7 @@ class SelectionFollower {
 
     // Selection changes, scrolls and resizes arrive faster than frames are painted, so updates are coalesced to one a frame.
     #schedule() {
-        this.#frame.request(() => this.update());
+        this.#scheduler.request(() => this.update());
     }
 
     update() {
