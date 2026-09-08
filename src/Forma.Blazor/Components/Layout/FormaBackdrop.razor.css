@@ -11,6 +11,16 @@
     background: var(--backdrop-flat-bg-color);
 }
 
+/* Hidden, the backdrop leaves its layout and keeps what it holds. */
+.forma-backdrop[hidden] {
+    display: none;
+}
+
+/* Inert, the backdrop and everything on it read as inactive. */
+.forma-backdrop[inert] {
+    opacity: var(--inactive-opacity);
+}
+
 /* A card keeps what it holds inside its corners. */
 .forma-backdrop-raised {
     background: var(--backdrop-raised-bg-color);

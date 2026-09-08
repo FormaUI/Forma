@@ -1,0 +1,347 @@
+@inherits FormaBunitContext
+@using Forma.Blazor.Components.Layout
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_hold_its_content_in_a_raised_backdrop()
+        {
+            // Arrange
+            using var ctx = new FormaFrameTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFrame>Tree</FormaFrame>);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("forma-backdrop-raised", cut.Find(".forma-frame .forma-frame-backdrop").ClassList);
+                Assert.Equal("Tree", cut.Find(".forma-frame-content").TextContent);
+            });
+        }
+
+        [Fact]
+        public void Should_keep_its_content_while_hidden()
+        {
+            // Arrange
+            using var ctx = new FormaFrameTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFrame Hidden="true">Kept</FormaFrame>);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.True(cut.Find(".forma-frame").HasAttribute("hidden"));
+                Assert.Equal("Kept", cut.Find(".forma-frame-content").TextContent);
+            });
+        }
+
+        [Fact]
+        public void Should_be_inert_while_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaFrameTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFrame Disabled="true" />);
+            var frame = cut.Find(".forma-frame");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.True(frame.HasAttribute("inert"));
+                Assert.Contains("is-disabled", frame.ClassList);
+            });
+        }
+
+        [Fact]
+        public void Should_stand_in_its_layout_without_a_placement()
+        {
+            // Arrange
+            using var ctx = new FormaFrameTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFrame><DragRegion>Grip</DragRegion><ChildContent>Tree</ChildContent></FormaFrame>);
+            var frame = cut.Find(".forma-frame");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.DoesNotContain("has-placement", frame.ClassList);
+                Assert.DoesNotContain("is-movable", frame.ClassList);
+                Assert.Null(frame.GetAttribute("style"));
+                Assert.Empty(cut.FindAll($".{FormaFrame.HandleClass}"));
+                Assert.Equal("Grip", cut.Find($".{FormaFrame.DragRegionClass}").TextContent);
+                Assert.Null(cut.Find($".{FormaFrame.DragRegionClass}").GetAttribute("tabindex"));
+            });
+        }
+
+        [Fact]
+        public void Should_stand_in_the_viewport_at_its_placement()
+        {
+            // Arrange
+            using var ctx = new FormaFrameTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFrame Placement="new(40, 30, 500, 300)" />);
+            var frame = cut.Find(".forma-frame");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("has-placement", frame.ClassList);
+                Assert.Equal("left: 40px; top: 30px; width: 500px; height: 300px;", frame.GetAttribute("style"));
+            });
+        }
+
+        [Fact]
+        public void Should_write_the_resize_limits_as_its_bounds()
+        {
+            // Arrange
+            using var ctx = new FormaFrameTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFrame Placement="new(40, 30, 500, 300)" Options="new() { MinResizeSize = (320, 200), MaxResizeSize = (900, 700) }" />);
+
+            // Assert
+            Assert.Equal("left: 40px; top: 30px; width: 500px; height: 300px; min-width: 320px; min-height: 200px; max-width: 900px; max-height: 700px;", cut.Find(".forma-frame").GetAttribute("style"));
+        }
+
+        [Fact]
+        public void Should_keep_a_maximized_frame_off_its_placement()
+        {
+            // Arrange
+            using var ctx = new FormaFrameTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFrame Maximized="true" Placement="new(40, 30, 500, 300)" Options="new() { MaxResizeSize = (900, 700) }" />);
+            var frame = cut.Find(".forma-frame");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("is-maximized", frame.ClassList);
+                Assert.Equal("max-width: 900px; max-height: 700px;", frame.GetAttribute("style"));
+            });
+        }
+
+        [Fact]
+        public void Should_reject_a_maximum_smaller_than_the_minimum()
+        {
+            // Arrange
+            using var ctx = new FormaFrameTests();
+
+            // Act & Assert
+            Assert.Throws<ArgumentOutOfRangeException>(() => ctx.Render(@<FormaFrame Options="new() { MinResizeSize = (400, 200), MaxResizeSize = (300, 700) }" />));
+        }
+
+        [Fact]
+        public void Should_give_the_drag_region_the_arrow_keys_while_it_can_move()
+        {
+            // Arrange
+            using var ctx = new FormaFrameTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFrame Label="Folders" Placement="new(40, 30, 500, 300)"><DragRegion>Grip</DragRegion></FormaFrame>);
+            var dragRegion = cut.Find($".{FormaFrame.DragRegionClass}");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("is-movable", cut.Find(".forma-frame").ClassList);
+                Assert.Equal("0", dragRegion.GetAttribute("tabindex"));
+                Assert.Equal("group", dragRegion.GetAttribute("role"));
+                Assert.Equal("Move Folders with the arrow keys; hold Shift to resize it", dragRegion.GetAttribute("aria-label"));
+                Assert.Contains("Shift+ArrowUp", dragRegion.GetAttribute("aria-keyshortcuts"));
+            });
+        }
+
+        [Fact]
+        public void Should_announce_the_drag_region_as_the_frame_without_a_label()
+        {
+            // Arrange
+            using var ctx = new FormaFrameTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFrame Placement="new(40, 30, 500, 300)"><DragRegion>Grip</DragRegion></FormaFrame>);
+
+            // Assert
+            Assert.Equal("Move the frame with the arrow keys; hold Shift to resize it", cut.Find($".{FormaFrame.DragRegionClass}").GetAttribute("aria-label"));
+        }
+
+        [Fact]
+        public void Should_promise_only_the_keys_its_options_allow()
+        {
+            // Arrange
+            using var ctx = new FormaFrameTests();
+
+            // Act
+            var fixedSize = ctx.Render(@<FormaFrame Label="Folders" Placement="new(40, 30, 500, 300)" Options="new() { Resizable = false }"><DragRegion>Grip</DragRegion></FormaFrame>);
+            var pinned = ctx.Render(@<FormaFrame Label="Folders" Placement="new(40, 30, 500, 300)" Options="new() { Movable = false }"><DragRegion>Grip</DragRegion></FormaFrame>);
+            var still = ctx.Render(@<FormaFrame Label="Folders" Placement="new(40, 30, 500, 300)" Options="new() { Movable = false, Resizable = false }"><DragRegion>Grip</DragRegion></FormaFrame>);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("Move Folders with the arrow keys", fixedSize.Find($".{FormaFrame.DragRegionClass}").GetAttribute("aria-label"));
+                Assert.Equal("ArrowUp ArrowDown ArrowLeft ArrowRight", fixedSize.Find($".{FormaFrame.DragRegionClass}").GetAttribute("aria-keyshortcuts"));
+                Assert.Equal("Resize Folders with Shift and the arrow keys", pinned.Find($".{FormaFrame.DragRegionClass}").GetAttribute("aria-label"));
+                Assert.Equal("Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight", pinned.Find($".{FormaFrame.DragRegionClass}").GetAttribute("aria-keyshortcuts"));
+                Assert.DoesNotContain("is-movable", pinned.Find(".forma-frame").ClassList);
+                Assert.Null(still.Find($".{FormaFrame.DragRegionClass}").GetAttribute("tabindex"));
+            });
+        }
+
+        [Fact]
+        public void Should_take_no_keys_while_maximized_or_locked()
+        {
+            // Arrange
+            using var ctx = new FormaFrameTests();
+
+            // Act
+            var maximized = ctx.Render(@<FormaFrame Placement="new(40, 30, 500, 300)" Maximized="true"><DragRegion>Grip</DragRegion></FormaFrame>);
+            var locked = ctx.Render(@<FormaFrame Placement="new(40, 30, 500, 300)" Locked="true"><DragRegion>Grip</DragRegion></FormaFrame>);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Null(maximized.Find($".{FormaFrame.DragRegionClass}").GetAttribute("tabindex"));
+                Assert.Null(locked.Find($".{FormaFrame.DragRegionClass}").GetAttribute("tabindex"));
+                Assert.Contains("is-locked", locked.Find(".forma-frame").ClassList);
+                Assert.DoesNotContain("is-movable", locked.Find(".forma-frame").ClassList);
+            });
+        }
+
+        [Fact]
+        public void Should_render_resize_handles_only_while_resizable_and_not_held()
+        {
+            // Arrange
+            using var ctx = new FormaFrameTests();
+
+            // Act
+            var placed = ctx.Render(@<FormaFrame Placement="new(40, 30, 500, 300)" />);
+            var fixedSize = ctx.Render(@<FormaFrame Placement="new(40, 30, 500, 300)" Options="new() { Resizable = false }" />);
+            var maximized = ctx.Render(@<FormaFrame Maximized="true" />);
+            var locked = ctx.Render(@<FormaFrame Placement="new(40, 30, 500, 300)" Locked="true" />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(8, placed.FindAll($".{FormaFrame.HandleClass}").Count);
+                Assert.Empty(fixedSize.FindAll($".{FormaFrame.HandleClass}"));
+                Assert.Empty(maximized.FindAll($".{FormaFrame.HandleClass}"));
+                Assert.Empty(locked.FindAll($".{FormaFrame.HandleClass}"));
+            });
+        }
+
+        [Fact]
+        public void Should_drive_the_parent_that_presents_it_without_a_placement_of_its_own()
+        {
+            // Arrange
+            using var ctx = new FormaFrameTests();
+
+            // Act
+            var cut = ctx.Render(@<div><CascadingValue Value="FrameBox.Parent"><FormaFrame Options="new() { MinResizeSize = (320, 200) }"><DragRegion>Grip</DragRegion></FormaFrame></CascadingValue></div>);
+            var frame = cut.Find(".forma-frame");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.DoesNotContain("has-placement", frame.ClassList);
+                Assert.Contains("is-movable", frame.ClassList);
+                Assert.Equal("min-width: 320px; min-height: 200px;", frame.GetAttribute("style"));
+                Assert.Equal(8, cut.FindAll($".{FormaFrame.HandleClass}").Count);
+                Assert.Equal("0", cut.Find($".{FormaFrame.DragRegionClass}").GetAttribute("tabindex"));
+            });
+        }
+
+        [Fact]
+        public void Should_leave_a_frame_it_holds_to_stand_on_its_own()
+        {
+            // Arrange
+            using var ctx = new FormaFrameTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<div>
+                    <CascadingValue Value="FrameBox.Parent">
+                        <FormaFrame class="presented">
+                            <FormaFrame class="nested" Placement="new(40, 30, 500, 300)" />
+                        </FormaFrame>
+                    </CascadingValue>
+                </div>);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.DoesNotContain("has-placement", cut.Find(".presented").ClassList);
+                Assert.Contains("has-placement", cut.Find(".nested").ClassList);
+                Assert.Equal("left: 40px; top: 30px; width: 500px; height: 300px;", cut.Find(".nested").GetAttribute("style"));
+            });
+        }
+
+        [Fact]
+        public async Task Should_take_a_reported_placement_and_raise_it_once_per_change()
+        {
+            // Arrange
+            using var ctx = new FormaFrameTests();
+            var reported = new List<FramePlacement>();
+            var cut = ctx.Render(@<FormaFrame Placement="new(40, 30, 500, 300)" PlacementChanged="placement => reported.Add(placement)" />);
+
+            // Act
+            var frame = cut.FindComponent<FormaFrame>().Instance;
+            await frame.ReportPlacementAsync(10, 20, 300, 200);
+            await frame.ReportPlacementAsync(10, 20, 300, 200);
+            await frame.ReportPlacementAsync(15, 20, 300, 200);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal([new(10, 20, 300, 200), new(15, 20, 300, 200)], reported);
+                Assert.Equal("left: 15px; top: 20px; width: 300px; height: 200px;", cut.Find(".forma-frame").GetAttribute("style"));
+            });
+        }
+
+        [Fact]
+        public async Task Should_hand_a_reported_placement_to_its_parent_without_keeping_it()
+        {
+            // Arrange
+            using var ctx = new FormaFrameTests();
+            var reported = new List<FramePlacement>();
+            var cut = ctx.Render(@<div><CascadingValue Value="FrameBox.Parent"><FormaFrame PlacementChanged="placement => reported.Add(placement)" /></CascadingValue></div>);
+
+            // Act
+            var frame = cut.FindComponent<FormaFrame>().Instance;
+            await frame.ReportPlacementAsync(10, 20, 300, 200);
+            await frame.ReportPlacementAsync(10, 20, 300, 200);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(2, reported.Count);
+                Assert.DoesNotContain("has-placement", cut.Find(".forma-frame").ClassList);
+                Assert.Null(cut.Find(".forma-frame").GetAttribute("style"));
+            });
+        }
+
+        [Fact]
+        public void Should_merge_the_host_class_and_pass_attributes_through()
+        {
+            // Arrange
+            using var ctx = new FormaFrameTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFrame class="host-pane" data-region="side" />);
+            var frame = cut.Find(".forma-frame");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("host-pane", frame.ClassList);
+                Assert.Equal("side", frame.GetAttribute("data-region"));
+            });
+        }
+    }
+}

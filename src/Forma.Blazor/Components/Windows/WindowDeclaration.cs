@@ -10,7 +10,6 @@ internal sealed record WindowDeclaration(
     Guid? ParentId,
     WindowOrigin? Origin,
     WindowOrigin? CascadedOrigin,
-    WindowMode Mode,
     bool Minimized,
     bool Disabled,
     bool Modal);

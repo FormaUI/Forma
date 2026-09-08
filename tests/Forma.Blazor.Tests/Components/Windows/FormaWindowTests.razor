@@ -1,4 +1,6 @@
 @inherits FormaBunitContext
+@using Bunit.Rendering
+@using Forma.Blazor.Components.Layout
 @using Forma.Framework.Icons
 @using Forma.Framework.Input
 @using Forma.Framework.Toolbar
@@ -7,8 +9,11 @@
 @code {
     public sealed class Component
     {
+        private static List<string?> CommandLabels(IRenderedComponent<ContainerFragment> cut)
+            => [.. cut.FindAll(".forma-chrome-commands button").Select(button => button.GetAttribute("aria-label"))];
+
         [Fact]
-        public void Should_render_the_title_the_icon_and_the_body()
+        public void Should_frame_the_title_the_icon_and_the_body()
         {
             // Arrange
             using var ctx = new FormaWindowTests();
@@ -19,58 +24,15 @@
             // Assert
             Assert.Multiple(() =>
             {
-                Assert.Equal("Folders", cut.Find(".forma-window-title").TextContent);
-                Assert.NotNull(cut.Find(".forma-window-icon .forma-icon"));
-                Assert.Equal("Tree", cut.Find(".forma-window-body").TextContent);
+                Assert.Equal("Folders", cut.Find(".forma-window .forma-chrome-title").TextContent);
+                Assert.NotNull(cut.Find(".forma-window .forma-chrome-icon .forma-icon"));
+                Assert.Equal("Tree", cut.Find(".forma-window .forma-chrome-body").TextContent);
+                Assert.Equal("presentation", cut.Find(".forma-window .forma-frame").GetAttribute("role"));
             });
         }
 
         [Fact]
-        public void Should_render_the_header_and_footer_bands_only_when_given()
-        {
-            // Arrange
-            using var ctx = new FormaWindowTests();
-
-            // Act
-            var bare = ctx.Render(@<FormaWindow Title="Folders"><Body>Tree</Body></FormaWindow>);
-            var banded = ctx.Render(@<FormaWindow Title="Folders"><Header>Where the media lives</Header><Body>Tree</Body><Footer>Two folders</Footer></FormaWindow>);
-
-            // Assert
-            Assert.Multiple(() =>
-            {
-                Assert.Empty(bare.FindAll(".forma-window-header"));
-                Assert.Empty(bare.FindAll(".forma-window-footer"));
-                Assert.Equal("Where the media lives", banded.Find(".forma-window-header").TextContent);
-                Assert.Equal("Two folders", banded.Find(".forma-window-footer").TextContent);
-            });
-        }
-
-        [Fact]
-        public void Should_be_a_region_when_embedded_and_a_non_modal_dialog_when_floating()
-        {
-            // Arrange
-            using var ctx = new FormaWindowTests();
-
-            // Act
-            var embedded = ctx.Render(@<FormaWindow Title="Folders" />);
-            var floating = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" />);
-
-            // Assert
-            Assert.Multiple(() =>
-            {
-                Assert.Equal("region", embedded.Find(".forma-window").GetAttribute("role"));
-                Assert.Null(embedded.Find(".forma-window").GetAttribute("aria-modal"));
-                Assert.Null(embedded.Find(".forma-window").GetAttribute("popover"));
-                Assert.Contains("forma-window-embedded", embedded.Find(".forma-window").ClassList);
-                Assert.Equal("dialog", floating.Find(".forma-window").GetAttribute("role"));
-                Assert.Equal("false", floating.Find(".forma-window").GetAttribute("aria-modal"));
-                Assert.Equal("manual", floating.Find(".forma-window").GetAttribute("popover"));
-                Assert.Contains("forma-window-floating", floating.Find(".forma-window").ClassList);
-            });
-        }
-
-        [Fact]
-        public void Should_name_the_window_by_its_title()
+        public void Should_be_a_dialog_in_the_top_layer_named_by_its_title()
         {
             // Arrange
             using var ctx = new FormaWindowTests();
@@ -80,28 +42,32 @@
             var window = cut.Find(".forma-window");
 
             // Assert
-            Assert.Equal("Folders", cut.Find($"#{window.GetAttribute("aria-labelledby")}").TextContent);
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("dialog", window.GetAttribute("role"));
+                Assert.Equal("false", window.GetAttribute("aria-modal"));
+                Assert.Equal("manual", window.GetAttribute("popover"));
+                Assert.Equal("Folders", window.GetAttribute("aria-label"));
+            });
         }
 
         [Fact]
-        public void Should_make_the_title_bar_focusable_only_while_floating()
+        public void Should_give_the_title_bar_the_arrow_keys_unless_maximized()
         {
             // Arrange
             using var ctx = new FormaWindowTests();
 
             // Act
-            var embedded = ctx.Render(@<FormaWindow Title="Folders" />);
-            var floating = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" />);
-            var maximized = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" Maximized="true" />);
+            var plain = ctx.Render(@<FormaWindow Title="Folders" />);
+            var maximized = ctx.Render(@<FormaWindow Title="Folders" Maximized="true" />);
 
             // Assert
             Assert.Multiple(() =>
             {
-                Assert.Null(embedded.Find(".forma-window-titlebar").GetAttribute("tabindex"));
-                Assert.Equal("0", floating.Find(".forma-window-titlebar").GetAttribute("tabindex"));
-                Assert.Contains("Folders", floating.Find(".forma-window-titlebar").GetAttribute("aria-label"));
-                Assert.Null(maximized.Find(".forma-window-titlebar").GetAttribute("tabindex"));
-                Assert.Null(maximized.Find(".forma-window-titlebar").GetAttribute("aria-keyshortcuts"));
+                Assert.Equal("0", plain.Find($".{FormaFrame.DragRegionClass}").GetAttribute("tabindex"));
+                Assert.Contains("Folders", plain.Find($".{FormaFrame.DragRegionClass}").GetAttribute("aria-label"));
+                Assert.Null(maximized.Find($".{FormaFrame.DragRegionClass}").GetAttribute("tabindex"));
+                Assert.Null(maximized.Find($".{FormaFrame.DragRegionClass}").GetAttribute("aria-keyshortcuts"));
             });
         }
 
@@ -112,58 +78,54 @@
             using var ctx = new FormaWindowTests();
 
             // Act
-            var resizable = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" />);
-            var fixedSize = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" Options="new() { Resizable = false }" />);
+            var resizable = ctx.Render(@<FormaWindow Title="Folders" />);
+            var fixedSize = ctx.Render(@<FormaWindow Title="Folders" FrameOptions="new() { Resizable = false }" />);
 
             // Assert
             Assert.Multiple(() =>
             {
-                Assert.Contains("Shift", resizable.Find(".forma-window-titlebar").GetAttribute("aria-label"));
-                Assert.Contains("Shift+ArrowUp", resizable.Find(".forma-window-titlebar").GetAttribute("aria-keyshortcuts"));
-                Assert.DoesNotContain("Shift", fixedSize.Find(".forma-window-titlebar").GetAttribute("aria-label"));
-                Assert.Equal("ArrowUp ArrowDown ArrowLeft ArrowRight", fixedSize.Find(".forma-window-titlebar").GetAttribute("aria-keyshortcuts"));
+                Assert.Contains("Shift", resizable.Find($".{FormaFrame.DragRegionClass}").GetAttribute("aria-label"));
+                Assert.Contains("Shift+ArrowUp", resizable.Find($".{FormaFrame.DragRegionClass}").GetAttribute("aria-keyshortcuts"));
+                Assert.DoesNotContain("Shift", fixedSize.Find($".{FormaFrame.DragRegionClass}").GetAttribute("aria-label"));
+                Assert.Equal("ArrowUp ArrowDown ArrowLeft ArrowRight", fixedSize.Find($".{FormaFrame.DragRegionClass}").GetAttribute("aria-keyshortcuts"));
             });
         }
 
         [Fact]
-        public void Should_render_resize_handles_only_while_floating_resizable_and_not_maximized()
+        public void Should_render_resize_handles_only_while_resizable_and_not_maximized()
         {
             // Arrange
             using var ctx = new FormaWindowTests();
 
             // Act
-            var embedded = ctx.Render(@<FormaWindow Title="Folders" />);
-            var floating = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" />);
-            var fixedSize = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" Options="new() { Resizable = false }" />);
-            var maximized = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" Maximized="true" />);
+            var plain = ctx.Render(@<FormaWindow Title="Folders" />);
+            var fixedSize = ctx.Render(@<FormaWindow Title="Folders" FrameOptions="new() { Resizable = false }" />);
+            var maximized = ctx.Render(@<FormaWindow Title="Folders" Maximized="true" />);
 
             // Assert
             Assert.Multiple(() =>
             {
-                Assert.Empty(embedded.FindAll($".{FormaWindow.HandleClass}"));
-                Assert.Equal(8, floating.FindAll($".{FormaWindow.HandleClass}").Count);
-                Assert.Empty(fixedSize.FindAll($".{FormaWindow.HandleClass}"));
-                Assert.Empty(maximized.FindAll($".{FormaWindow.HandleClass}"));
+                Assert.Equal(8, plain.FindAll($".{FormaFrame.HandleClass}").Count);
+                Assert.Empty(fixedSize.FindAll($".{FormaFrame.HandleClass}"));
+                Assert.Empty(maximized.FindAll($".{FormaFrame.HandleClass}"));
                 Assert.Contains("is-maximized", maximized.Find(".forma-window").ClassList);
             });
         }
 
         [Fact]
-        public void Should_offer_a_lock_only_when_lockable_and_floating()
+        public void Should_offer_a_lock_only_when_lockable()
         {
             // Arrange
             using var ctx = new FormaWindowTests();
 
             // Act
-            var plain = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" />);
-            var embedded = ctx.Render(@<FormaWindow Title="Folders" Options="new() { Lockable = true }" />);
-            var lockable = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" Options="new() { Lockable = true }" />);
+            var plain = ctx.Render(@<FormaWindow Title="Folders" />);
+            var lockable = ctx.Render(@<FormaWindow Title="Folders" Options="new() { Lockable = true }" />);
 
             // Assert
             Assert.Multiple(() =>
             {
                 Assert.Empty(plain.FindAll("button[aria-label=Lock]"));
-                Assert.Empty(embedded.FindAll("button[aria-label=Lock]"));
                 Assert.NotNull(lockable.Find("button[aria-label=Lock]"));
             });
         }
@@ -176,19 +138,18 @@
             bool? locked = null;
 
             // Act
-            var cut = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" Options="new() { Lockable = true }" LockedChanged="value => locked = value" />);
+            var cut = ctx.Render(@<FormaWindow Title="Folders" Options="new() { Lockable = true }" LockedChanged="value => locked = value" />);
             cut.Find("button[aria-label=Lock]").Click();
-            var window = cut.Find(".forma-window");
-            var titleBar = cut.Find(".forma-window-titlebar");
+            var frame = cut.Find(".forma-frame");
 
             // Assert
             Assert.Multiple(() =>
             {
                 Assert.True(locked);
-                Assert.Contains("is-locked", window.ClassList);
-                Assert.Empty(cut.FindAll($".{FormaWindow.HandleClass}"));
-                Assert.DoesNotContain("is-movable", titleBar.ClassList);
-                Assert.Null(titleBar.GetAttribute("tabindex"));
+                Assert.Contains("is-locked", frame.ClassList);
+                Assert.DoesNotContain("is-movable", frame.ClassList);
+                Assert.Empty(cut.FindAll($".{FormaFrame.HandleClass}"));
+                Assert.Null(cut.Find($".{FormaFrame.DragRegionClass}").GetAttribute("tabindex"));
                 Assert.True(cut.Find("button[aria-label=Maximize]").HasAttribute("disabled"));
                 Assert.NotNull(cut.Find("button[aria-label=Unlock]"));
                 Assert.NotNull(cut.Find("button[aria-label=Minimize]"));
@@ -201,7 +162,7 @@
         {
             // Arrange
             using var ctx = new FormaWindowTests();
-            var cut = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" Locked="true" Options="new() { Lockable = true }" />);
+            var cut = ctx.Render(@<FormaWindow Title="Folders" Locked="true" Options="new() { Lockable = true }" />);
 
             // Act
             cut.Find("button[aria-label=Unlock]").Click();
@@ -209,8 +170,9 @@
             // Assert
             Assert.Multiple(() =>
             {
-                Assert.DoesNotContain("is-locked", cut.Find(".forma-window").ClassList);
-                Assert.Equal(8, cut.FindAll($".{FormaWindow.HandleClass}").Count);
+                Assert.DoesNotContain("is-locked", cut.Find(".forma-frame").ClassList);
+                Assert.Contains("is-movable", cut.Find(".forma-frame").ClassList);
+                Assert.Equal(8, cut.FindAll($".{FormaFrame.HandleClass}").Count);
                 Assert.False(cut.Find("button[aria-label=Maximize]").HasAttribute("disabled"));
             });
         }
@@ -222,7 +184,7 @@
             using var ctx = new FormaWindowTests();
 
             // Act
-            var cut = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" Placement="new(40, 30, 500, 300)" />);
+            var cut = ctx.Render(@<FormaWindow Title="Folders" Placement="new(40, 30, 500, 300)" />);
             var window = cut.Find(".forma-window");
 
             // Assert
@@ -234,44 +196,20 @@
         }
 
         [Fact]
-        public void Should_write_the_resize_limits_as_the_window_bounds()
+        public void Should_hand_its_frame_the_frame_options()
         {
             // Arrange
             using var ctx = new FormaWindowTests();
 
             // Act
-            var cut = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" Options="new() { MinResizeSize = (320, 200), MaxResizeSize = (900, 700) }" />);
-
-            // Assert
-            Assert.Equal("min-width: 320px; min-height: 200px; max-width: 900px; max-height: 700px;", cut.Find(".forma-window").GetAttribute("style"));
-        }
-
-        [Fact]
-        public void Should_write_no_bounds_while_embedded_or_maximized()
-        {
-            // Arrange
-            using var ctx = new FormaWindowTests();
-
-            // Act
-            var embedded = ctx.Render(@<FormaWindow Title="Folders" Options="new() { MinResizeSize = (320, 200) }" />);
-            var maximized = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" Maximized="true" Options="new() { MaxResizeSize = (900, 700) }" />);
+            var cut = ctx.Render(@<FormaWindow Title="Folders" FrameOptions="new() { MinResizeSize = (320, 200), MaxResizeSize = (900, 700) }" />);
 
             // Assert
             Assert.Multiple(() =>
             {
-                Assert.Null(embedded.Find(".forma-window").GetAttribute("style"));
-                Assert.Null(maximized.Find(".forma-window").GetAttribute("style"));
+                Assert.Null(cut.Find(".forma-window").GetAttribute("style"));
+                Assert.Equal("min-width: 320px; min-height: 200px; max-width: 900px; max-height: 700px;", cut.Find(".forma-frame").GetAttribute("style"));
             });
-        }
-
-        [Fact]
-        public void Should_reject_a_maximum_smaller_than_the_minimum()
-        {
-            // Arrange
-            using var ctx = new FormaWindowTests();
-
-            // Act & Assert
-            Assert.Throws<ArgumentOutOfRangeException>(() => ctx.Render(@<FormaWindow Title="Folders" Options="new() { MinResizeSize = (400, 200), MaxResizeSize = (300, 700) }" />));
         }
 
         [Fact]
@@ -281,44 +219,31 @@
             using var ctx = new FormaWindowTests();
 
             // Act
-            var cut = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" Maximized="true" Placement="new(40, 30, 500, 300)" />);
+            var cut = ctx.Render(@<FormaWindow Title="Folders" Maximized="true" Placement="new(40, 30, 500, 300)" />);
 
             // Assert
             Assert.Null(cut.Find(".forma-window").GetAttribute("style"));
         }
 
         [Fact]
-        public void Should_offer_embed_maximize_and_close_commands_by_default_while_floating()
+        public void Should_order_the_title_bar_as_host_lock_minimize_maximize_close()
         {
             // Arrange
             using var ctx = new FormaWindowTests();
+            var commands = new FormaToolbarItem[]
+            {
+                new FormaToolbarCommand { Id = "refresh", Command = "refresh", Title = "Refresh", Icon = Glyph.Pin },
+            };
 
             // Act
-            var cut = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" />);
+            var plain = ctx.Render(@<FormaWindow Title="Folders" />);
+            var full = ctx.Render(@<FormaWindow Title="Folders" Commands="commands" Options="new() { Lockable = true }" />);
 
             // Assert
             Assert.Multiple(() =>
             {
-                Assert.NotNull(cut.Find("button[aria-label=Embed]"));
-                Assert.NotNull(cut.Find("button[aria-label=Maximize]"));
-                Assert.NotNull(cut.Find("button[aria-label=Close]"));
-            });
-        }
-
-        [Fact]
-        public void Should_offer_float_but_not_maximize_while_embedded()
-        {
-            // Arrange
-            using var ctx = new FormaWindowTests();
-
-            // Act
-            var cut = ctx.Render(@<FormaWindow Title="Folders" />);
-
-            // Assert
-            Assert.Multiple(() =>
-            {
-                Assert.NotNull(cut.Find("button[aria-label=Float]"));
-                Assert.Empty(cut.FindAll("button[aria-label=Maximize]"));
+                Assert.Equal(["Minimize", "Maximize", "Close"], CommandLabels(plain));
+                Assert.Equal(["Refresh", "Lock", "Minimize", "Maximize", "Close"], CommandLabels(full));
             });
         }
 
@@ -329,10 +254,10 @@
             using var ctx = new FormaWindowTests();
 
             // Act
-            var cut = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" Options="new() { Closable = false, Maximizable = false, Minimizable = false, Embeddable = false }" />);
+            var cut = ctx.Render(@<FormaWindow Title="Folders" Options="new() { Closable = false, Maximizable = false, Minimizable = false }" />);
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-window-commands button"));
+            Assert.Empty(cut.FindAll(".forma-chrome-commands button"));
         }
 
         [Fact]
@@ -351,21 +276,6 @@
         }
 
         [Fact]
-        public void Should_raise_the_mode_change_from_the_embed_command()
-        {
-            // Arrange
-            using var ctx = new FormaWindowTests();
-            WindowMode? changed = null;
-
-            // Act
-            var cut = ctx.Render(@<FormaWindow Title="Folders" ModeChanged="mode => changed = mode" />);
-            cut.Find("button[aria-label=Float]").Click();
-
-            // Assert
-            Assert.Equal(WindowMode.Floating, changed);
-        }
-
-        [Fact]
         public void Should_raise_the_maximized_change_from_the_maximize_command()
         {
             // Arrange
@@ -373,7 +283,7 @@
             bool? changed = null;
 
             // Act
-            var cut = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" MaximizedChanged="maximized => changed = maximized" />);
+            var cut = ctx.Render(@<FormaWindow Title="Folders" MaximizedChanged="maximized => changed = maximized" />);
             cut.Find("button[aria-label=Maximize]").Click();
 
             // Assert
@@ -381,7 +291,7 @@
         }
 
         [Fact]
-        public void Should_forward_a_host_command_and_show_it_before_its_own()
+        public void Should_forward_a_host_command()
         {
             // Arrange
             using var ctx = new FormaWindowTests();
@@ -393,15 +303,10 @@
 
             // Act
             var cut = ctx.Render(@<FormaWindow Title="Folders" Commands="commands" OnCommand="command => received = command" />);
-            var buttons = cut.FindAll(".forma-window-commands button");
             cut.Find("button[aria-label=Refresh]").Click();
 
             // Assert
-            Assert.Multiple(() =>
-            {
-                Assert.Equal("refresh", received);
-                Assert.Equal("Refresh", buttons[0].GetAttribute("aria-label"));
-            });
+            Assert.Equal("refresh", received);
         }
 
         [Fact]
@@ -410,8 +315,8 @@
             // Arrange
             using var ctx = new FormaWindowTests();
             var closed = 0;
-            var closable = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" OnClose="() => closed++" />);
-            var pinned = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" Options="new() { Closable = false }" OnClose="() => closed++" />);
+            var closable = ctx.Render(@<FormaWindow Title="Folders" OnClose="() => closed++" />);
+            var pinned = ctx.Render(@<FormaWindow Title="Folders" Options="new() { Closable = false }" OnClose="() => closed++" />);
 
             // Act
             await closable.FindComponent<FormaWindow>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.Escape);
@@ -426,14 +331,14 @@
         {
             // Arrange
             using var ctx = new FormaWindowTests();
-            var reported = new List<WindowPlacement>();
-            var cut = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" PlacementChanged="placement => reported.Add(placement)" />);
+            var reported = new List<FramePlacement>();
+            var cut = ctx.Render(@<FormaWindow Title="Folders" PlacementChanged="placement => reported.Add(placement)" />);
 
             // Act
-            var window = cut.FindComponent<FormaWindow>().Instance;
-            await window.ReportPlacementAsync(10, 20, 300, 200);
-            await window.ReportPlacementAsync(10, 20, 300, 200);
-            await window.ReportPlacementAsync(15, 20, 300, 200);
+            var frame = cut.FindComponent<FormaFrame>().Instance;
+            await frame.ReportPlacementAsync(10, 20, 300, 200);
+            await frame.ReportPlacementAsync(10, 20, 300, 200);
+            await frame.ReportPlacementAsync(15, 20, 300, 200);
 
             // Assert
             Assert.Equal([new(10, 20, 300, 200), new(15, 20, 300, 200)], reported);
@@ -444,10 +349,10 @@
         {
             // Arrange
             using var ctx = new FormaWindowTests();
-            var cut = ctx.Render(@<FormaWindow Title="Folders" Mode="WindowMode.Floating" />);
+            var cut = ctx.Render(@<FormaWindow Title="Folders" />);
 
             // Act
-            await cut.FindComponent<FormaWindow>().Instance.ReportPlacementAsync(10, 20, 300, 200);
+            await cut.FindComponent<FormaFrame>().Instance.ReportPlacementAsync(10, 20, 300, 200);
 
             // Assert
             var window = cut.Find(".forma-window");
@@ -511,6 +416,22 @@
         }
 
         [Fact]
+        public void Should_register_once_for_the_frame_it_holds()
+        {
+            // Arrange
+            using var ctx = new FormaWindowTests();
+            var manager = GetWindowManager(ctx);
+
+            // Act
+            var cut = ctx.Render(@<FormaWindow Title="Folders" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Single(manager.Windows),
+                () => Assert.Single(cut.FindAll(".forma-frame")));
+        }
+
+        [Fact]
         public void Should_take_a_cascaded_workspace_over_the_circuits()
         {
             // Arrange
@@ -569,7 +490,7 @@
             Assert.Multiple(
                 () => Assert.True(minimized),
                 () => Assert.True(cut.Find(".forma-window").HasAttribute("hidden")),
-                () => Assert.Equal("Kept", cut.Find(".forma-window-body").TextContent));
+                () => Assert.Equal("Kept", cut.Find(".forma-chrome-body").TextContent));
         }
 
         [Fact]
@@ -597,13 +518,30 @@
             // Arrange
             using var ctx = new FormaWindowTests();
             var manager = GetWindowManager(ctx);
+            ctx.Render(@<FormaWindow Title="Other" />);
             var cut = ctx.Render(@<FormaWindow Title="Folders"><Body>Plain text</Body></FormaWindow>);
+            ctx.Render(@<FormaWindow Title="Later" />);
 
             // Act
             cut.Find(".forma-window").PointerDown();
 
             // Assert
             Assert.Equal("Folders", manager.Current?.Title);
+        }
+
+        [Fact]
+        public void Should_become_current_when_it_opens()
+        {
+            // Arrange
+            using var ctx = new FormaWindowTests();
+            var manager = GetWindowManager(ctx);
+
+            // Act
+            ctx.Render(@<FormaWindow Title="First" />);
+            ctx.Render(@<FormaWindow Title="Second" />);
+
+            // Assert
+            Assert.Equal("Second", manager.Current?.Title);
         }
 
         [Fact]
@@ -633,10 +571,10 @@
             FormaWindow? parent = null;
 
             // Act
-            var plain = ctx.Render(@<FormaWindow Title="Plain" Mode="WindowMode.Floating" />);
-            var rootModal = ctx.Render(@<FormaWindow Title="Root" Mode="WindowMode.Floating" Modal="true" />);
+            var plain = ctx.Render(@<FormaWindow Title="Plain" />);
+            var rootModal = ctx.Render(@<FormaWindow Title="Root" Modal="true" />);
             ctx.Render(@<FormaWindow @ref="parent" Title="Parent" />);
-            var childModal = ctx.Render(@<FormaWindow Title="Child" Parent="parent" Mode="WindowMode.Floating" Modal="true" />);
+            var childModal = ctx.Render(@<FormaWindow Title="Child" Parent="parent" Modal="true" />);
 
             // Assert
             Assert.Multiple(
@@ -657,7 +595,7 @@
             var sibling = ctx.Render(@<FormaWindow Title="Sibling" />);
 
             // Act
-            var modal = ctx.Render(@<FormaWindow Title="Modal" Parent="parent" Mode="WindowMode.Floating" Modal="true" />);
+            var modal = ctx.Render(@<FormaWindow Title="Modal" Parent="parent" Modal="true" />);
             var blockedWhileShown = parentCut.Find(".forma-window").HasAttribute("inert");
             modal.Find("button[aria-label=Close]").Click();
 
@@ -677,8 +615,8 @@
             var closed = false;
             var cut = ctx.Render(
                 @<div>
-                    <FormaWindow Title="Back" Mode="WindowMode.Floating" Options="new() { PressAway = WindowPressAway.SendToBack }" OnClose="() => closed = true" />
-                    <FormaWindow Title="Front" Mode="WindowMode.Floating" />
+                    <FormaWindow Title="Back" Options="new() { PressAway = WindowPressAway.SendToBack }" OnClose="() => closed = true" />
+                    <FormaWindow Title="Front" />
                 </div>);
             await manager.ActivateAsync(new WindowSelector { Title = "Back" });
 
@@ -699,8 +637,8 @@
             var manager = GetWindowManager(ctx);
             var cut = ctx.Render(
                 @<div>
-                    <FormaWindow Title="Back" Mode="WindowMode.Floating" Options="new() { PressAway = WindowPressAway.SendToBack }" />
-                    <FormaWindow Title="Front" Mode="WindowMode.Floating" />
+                    <FormaWindow Title="Back" Options="new() { PressAway = WindowPressAway.SendToBack }" />
+                    <FormaWindow Title="Front" />
                 </div>);
             await manager.ActivateAsync(new WindowSelector { Title = "Back" });
             await cut.FindComponents<FormaWindow>()[0].Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.PressAway);
@@ -723,8 +661,8 @@
             var closed = false;
             var cut = ctx.Render(
                 @<div>
-                    <FormaWindow Title="Other" Mode="WindowMode.Floating" />
-                    <FormaWindow Title="Stays" Mode="WindowMode.Floating" OnClose="() => closed = true" />
+                    <FormaWindow Title="Other" />
+                    <FormaWindow Title="Stays" OnClose="() => closed = true" />
                 </div>);
 
             // Act
@@ -744,9 +682,9 @@
             var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
 
             // Act
-            ctx.Render(@<FormaWindow Title="Plain" Mode="WindowMode.Floating" />);
-            ctx.Render(@<FormaWindow Title="Sends back" Mode="WindowMode.Floating" Options="new() { PressAway = WindowPressAway.SendToBack }" />);
-            ctx.Render(@<FormaWindow Title="Modal" Mode="WindowMode.Floating" Modal="true" Options="new() { PressAway = WindowPressAway.SendToBack }" />);
+            ctx.Render(@<FormaWindow Title="Plain" />);
+            ctx.Render(@<FormaWindow Title="Sends back" Options="new() { PressAway = WindowPressAway.SendToBack }" />);
+            ctx.Render(@<FormaWindow Title="Modal" Modal="true" Options="new() { PressAway = WindowPressAway.SendToBack }" />);
             var profiles = router.Invocations.Where(invocation => invocation.Identifier == "register").Select(invocation => Assert.IsType<InputProfile>(invocation.Arguments[1])).ToList();
 
             // Assert
@@ -755,21 +693,6 @@
                 () => Assert.Equal((false, PressAwayBehavior.Ignore), (profiles[0].Modal, profiles[0].PressAway)),
                 () => Assert.Equal((false, PressAwayBehavior.PassThrough), (profiles[1].Modal, profiles[1].PressAway)),
                 () => Assert.Equal((true, PressAwayBehavior.Ignore), (profiles[2].Modal, profiles[2].PressAway)));
-        }
-
-        [Fact]
-        public void Should_become_current_when_it_takes_to_floating()
-        {
-            // Arrange
-            using var ctx = new FormaWindowTests();
-            var manager = GetWindowManager(ctx);
-
-            // Act
-            ctx.Render(@<FormaWindow Title="Embedded" />);
-            ctx.Render(@<FormaWindow Title="Floating" Mode="WindowMode.Floating" />);
-
-            // Assert
-            Assert.Equal("Floating", manager.Current?.Title);
         }
 
         [Fact]

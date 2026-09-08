@@ -1,0 +1,136 @@
+@page "/chrome"
+@attribute [ShowcasePage("FormaChrome")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Buttons
+@using Forma.Blazor.Components.Layout
+@using Forma.Framework.Icons
+@using Forma.Framework.Toolbar
+@inject IStringLocale<FormaChromePage> L
+
+<h1>FormaChrome</h1>
+<p class="description">@L["A frame with chrome: a title bar carrying the icon, the title and the host's commands as the frame's drag region, then an optional header band, the body, and an optional footer band. It is laid out like any frame, and placed, it is moved, resized and maximized like one."]</p>
+
+<div class="demo-section">
+    <h2>@L["Stacked"]</h2>
+    <p class="description">@L["Two titled frames stand in a horizontal stack with a splitter in the seam between them. The second wears a header band and a footer band."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaBackdrop Variant="BackdropVariant.Canvas">
+            <FormaStackLayout Orientation="StackOrientation.Horizontal" class="demo-chrome-stack" style="@FoldersStyle">
+                <FormaChrome Title="@L["Folders"]" Icon="Glyph.Pin" class="demo-chrome-side">
+                    <Body>@L["The folder tree would stand here."]</Body>
+                </FormaChrome>
+                <FormaSplitter Orientation="SplitterOrientation.Vertical" @bind-Value="_foldersWidth" Min="10" Max="24" Label="@L["Resize Folders"]" />
+                <FormaChrome Title="@L["Details"]" class="demo-chrome-fill">
+                    <Header>@L["Everything known about the selected item."]</Header>
+                    <Body>@L["The details would stand here."]</Body>
+                    <Footer>@L["Two items selected"]</Footer>
+                </FormaChrome>
+            </FormaStackLayout>
+        </FormaBackdrop>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Host Commands"]</h2>
+    <p class="description">@L["A host adds its own commands to the title bar, after the title."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaBackdrop Variant="BackdropVariant.Canvas">
+            <FormaStackLayout>
+                <FormaChrome Title="@L["Media"]" Commands="MediaCommands" OnCommand="command => _lastCommand = command" class="demo-chrome-fill">
+                    <Body>@L["Refresh or upload from the title bar."]</Body>
+                </FormaChrome>
+            </FormaStackLayout>
+        </FormaBackdrop>
+    </div>
+    <p class="demo-note">@L["Last command"]: <code>@(_lastCommand ?? L["none yet"])</code></p>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Hidden and Disabled"]</h2>
+    <p class="description">@L["Hidden, the chrome leaves the layout and keeps its content, so what was typed is still there when it returns. Disabled, it keeps its place and takes no input: its commands and the button in its body cannot be pressed."]</p>
+    <div class="demo-box demo-row">
+        <FormaToggleButton Label="@L["Hidden"]" ShowLabel="true" Pressed="_isOutputHidden" OnClick="() => _isOutputHidden = !_isOutputHidden" />
+        <FormaToggleButton Label="@L["Disabled"]" ShowLabel="true" Pressed="_isOutputDisabled" OnClick="() => _isOutputDisabled = !_isOutputDisabled" />
+    </div>
+    <div class="demo-box demo-box-flush">
+        <FormaBackdrop Variant="BackdropVariant.Canvas" class="demo-chrome-canvas">
+            <FormaStackLayout>
+                <FormaChrome Title="@L["Output"]" Commands="OutputCommands" OnCommand="_ => _lines = 0" Hidden="_isOutputHidden" Disabled="_isOutputDisabled" class="demo-chrome-fill">
+                    <Body>
+                        <p>@L["{Count} lines of output", _lines]</p>
+                        <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _lines++">@L["Write a Line"]</FormaButton>
+                    </Body>
+                </FormaChrome>
+            </FormaStackLayout>
+        </FormaBackdrop>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Nested"]</h2>
+    <p class="description">@L["A body can hold a stack of titled frames, each with its own title bar."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaBackdrop Variant="BackdropVariant.Canvas">
+            <FormaStackLayout>
+                <FormaChrome Title="@L["Workspace"]" Icon="Glyph.Folder" class="demo-chrome-fill demo-chrome-nesting">
+                    <Body>
+                        <FormaStackLayout Orientation="StackOrientation.Horizontal" class="demo-chrome-stack">
+                            <FormaChrome Title="@L["Sources"]" class="demo-chrome-fill">
+                                <Body>@L["The source list would stand here."]</Body>
+                            </FormaChrome>
+                            <FormaChrome Title="@L["Preview"]" class="demo-chrome-fill">
+                                <Body>@L["The preview would stand here."]</Body>
+                            </FormaChrome>
+                        </FormaStackLayout>
+                    </Body>
+                </FormaChrome>
+            </FormaStackLayout>
+        </FormaBackdrop>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Placed"]</h2>
+    <p class="description">@L["Given a placement, the chrome stands in the viewport and its title bar is the drag region: drag it, focus it and use the arrow keys, pull its edges. Its host's maximize command fills the viewport and returns."]</p>
+    <div class="demo-box">
+        <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _isNotesOpen = true" Disabled="_isNotesOpen">@L["Open Notes"]</FormaButton>
+    </div>
+    @if (_isNotesOpen)
+    {
+        <FormaChrome Title="@L["Notes"]" Icon="Glyph.Pin" @bind-Placement="_notesPlacement" Maximized="_isNotesMaximized" Commands="NotesCommands" OnCommand="_ => _isNotesMaximized = !_isNotesMaximized">
+            <Body>@L["Notes kept beside the page."]</Body>
+            <Footer>
+                <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _isNotesOpen = false">@L["Close"]</FormaButton>
+            </Footer>
+        </FormaChrome>
+    }
+</div>
+
+@code {
+    private double _foldersWidth = 14;
+    private string? _lastCommand;
+    private bool _isOutputHidden;
+    private bool _isOutputDisabled;
+    private int _lines;
+    private bool _isNotesOpen;
+    private bool _isNotesMaximized;
+    private FramePlacement? _notesPlacement = new(320, 240, 400, 240);
+
+    private string FoldersStyle => FormattableString.Invariant($"--demo-chrome-side-size: {_foldersWidth}rem");
+
+    private IReadOnlyList<FormaToolbarItem> MediaCommands =>
+    [
+        new FormaToolbarCommand { Id = "refresh", Command = "refresh", Title = L["Refresh"], Icon = Glyph.Refresh },
+        new FormaToolbarCommand { Id = "upload", Command = "upload", Title = L["Upload"], Icon = Glyph.Upload },
+    ];
+
+    private IReadOnlyList<FormaToolbarItem> OutputCommands =>
+    [
+        new FormaToolbarCommand { Id = "clear", Command = "clear", Title = L["Clear"], Icon = Glyph.Delete },
+    ];
+
+    private IReadOnlyList<FormaToolbarItem> NotesCommands =>
+    [
+        new FormaToolbarToggle { Id = "maximize", Command = "maximize", Title = L["Maximize"], Icon = Glyph.Maximize, IsActive = _isNotesMaximized, AlternateTitle = L["Restore"], AlternateIcon = Glyph.Minimize },
+    ];
+}

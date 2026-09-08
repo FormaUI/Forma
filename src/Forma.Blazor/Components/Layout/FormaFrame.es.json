@@ -1,0 +1,7 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "the frame": "el marco",
+  "Move {Name} with the arrow keys; hold Shift to resize it": "Mueve {Name} con las flechas; mantén Shift para cambiar su tamaño",
+  "Move {Name} with the arrow keys": "Mueve {Name} con las flechas",
+  "Resize {Name} with Shift and the arrow keys": "Cambia el tamaño de {Name} con Shift y las flechas"
+}

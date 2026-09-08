@@ -5,10 +5,5 @@
   "Minimize": "Minimizar",
   "Lock": "Bloquear",
   "Unlock": "Desbloquear",
-  "Restore": "Restaurar",
-  "Embed": "Incrustar",
-  "Float": "Flotar",
-  "Window Commands": "Comandos de la Ventana",
-  "Move {Window} with the arrow keys; hold Shift to resize it": "Mueve {Window} con las flechas; mantén Shift para cambiar su tamaño",
-  "Move {Window} with the arrow keys": "Mueve {Window} con las flechas"
+  "Restore": "Restaurar"
 }

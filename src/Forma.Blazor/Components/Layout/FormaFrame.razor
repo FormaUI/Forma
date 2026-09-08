@@ -1,0 +1,27 @@
+@namespace Forma.Blazor.Components.Layout
+
+<div @attributes="AdditionalAttributes"
+     class="@CssClass"
+     style="@Style"
+     @ref="_element"
+     hidden="@Hidden"
+     inert="@Disabled">
+    <FormaBackdrop Variant="BackdropVariant.Raised" class="forma-frame-backdrop">
+        <div class="forma-frame-content">
+            <CascadingValue Value="FrameBox.Self" IsFixed="true">
+                @if (DragRegion is not null)
+                {
+                    <div class="@DragRegionClass" @attributes="DragRegionAttributes">@DragRegion</div>
+                }
+                @ChildContent
+            </CascadingValue>
+        </div>
+    </FormaBackdrop>
+    @if (ShowsHandles)
+    {
+        @foreach (var edge in Edges)
+        {
+            <div class="@($"{HandleClass} forma-frame-handle-{edge}")" data-edge="@edge" aria-hidden="true"></div>
+        }
+    }
+</div>

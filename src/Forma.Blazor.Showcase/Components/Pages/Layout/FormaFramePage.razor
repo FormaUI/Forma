@@ -1,0 +1,72 @@
+@page "/frame"
+@attribute [ShowcasePage("FormaFrame")]
+@rendermode InteractiveServer
+@using System.Globalization
+@using Forma.Blazor.Components.Buttons
+@using Forma.Blazor.Components.Layout
+@using Forma.Blazor.Components.Symbols
+@using Forma.Framework.Icons
+@inject IStringLocale<FormaFramePage> L
+
+<h1>FormaFrame</h1>
+<p class="description">@L["A raised backdrop with a box of its own. In a layout it takes the room it is given; placed, it stands in the viewport, moved by its drag region and the arrow keys, resized at its edges and with Shift, and maximized to fill its bounds."]</p>
+
+<div class="demo-section">
+    <h2>@L["In a Layout"]</h2>
+    <p class="description">@L["Two frames stand in a horizontal stack, each holding whatever its host gives it; without a placement, a frame is laid out like any backdrop."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaBackdrop Variant="BackdropVariant.Canvas">
+            <FormaStackLayout Orientation="StackOrientation.Horizontal" class="demo-frame-stack">
+                <FormaFrame class="demo-frame-fill">
+                    <div class="demo-frame-body">@L["A frame holds whatever its host gives it."]</div>
+                </FormaFrame>
+                <FormaFrame class="demo-frame-fill">
+                    <div class="demo-frame-body">@L["Another frame, laid out beside it."]</div>
+                </FormaFrame>
+            </FormaStackLayout>
+        </FormaBackdrop>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Placed"]</h2>
+    <p class="description">@L["Given a placement, the frame stands in the viewport. Drag it by the strip at its top, pull any edge or corner, or focus the strip and use the arrow keys, holding Shift to resize. Maximized it fills the viewport; locked it stays where it is; without a name, the strip announces it as the frame."]</p>
+    <div class="demo-box demo-row">
+        <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _isPlacedOpen = true" Disabled="_isPlacedOpen">@L["Open a Placed Frame"]</FormaButton>
+        <FormaToggleButton Label="@L["Movable"]" ShowLabel="true" Pressed="_isMovable" OnClick="() => _isMovable = !_isMovable" />
+        <FormaToggleButton Label="@L["Resizable"]" ShowLabel="true" Pressed="_isResizable" OnClick="() => _isResizable = !_isResizable" />
+        <FormaToggleButton Label="@L["Maximized"]" ShowLabel="true" Pressed="_isMaximized" OnClick="() => _isMaximized = !_isMaximized" />
+        <FormaToggleButton Label="@L["Locked"]" ShowLabel="true" Pressed="_isLocked" OnClick="() => _isLocked = !_isLocked" />
+    </div>
+    <p class="demo-note">@L["Placement"]: <code>@PlacementText</code></p>
+    @if (_isPlacedOpen)
+    {
+        <FormaFrame @bind-Placement="_placement" Maximized="_isMaximized" Locked="_isLocked" Options="new() { Movable = _isMovable, Resizable = _isResizable, MinResizeSize = (240, 160) }">
+            <DragRegion>
+                <div class="demo-frame-grip"><FormaIcon Icon="Glyph.DragHandle" Size="IconSize.Small" /> @L["Drag me"]</div>
+            </DragRegion>
+            <ChildContent>
+                <div class="demo-frame-body">
+                    <p>@L["A frame with a drag region of its own making and nothing else: no title, no commands."]</p>
+                    <div class="demo-row">
+                        <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _isMaximized = !_isMaximized">@(_isMaximized ? L["Restore"] : L["Maximize"])</FormaButton>
+                        <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _isPlacedOpen = false">@L["Put It Back"]</FormaButton>
+                    </div>
+                </div>
+            </ChildContent>
+        </FormaFrame>
+    }
+</div>
+
+@code {
+    private bool _isPlacedOpen;
+    private bool _isMovable = true;
+    private bool _isResizable = true;
+    private bool _isMaximized;
+    private bool _isLocked;
+    private FramePlacement? _placement = new(320, 240, 420, 260);
+
+    private string PlacementText => _placement is { } placement
+        ? string.Create(CultureInfo.CurrentCulture, $"{placement.Left:0} × {placement.Top:0}, {placement.Width:0} × {placement.Height:0}")
+        : L["none yet"];
+}

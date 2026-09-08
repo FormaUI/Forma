@@ -37,11 +37,18 @@ Forma.Blazor/Components/
 │   ├── FormaToolbarOption.cs
 │   ├── ✅ FormaSelectionToolbar.razor / .razor.cs / .razor.css
 │   └── ✅ FormaStatusStrip.razor / .razor.cs / .razor.css
-├── (7 / 7) Layout/
+├── (9 / 9) Layout/
 │   ├── ✅ FormaBackdrop.razor / .razor.cs / .razor.css    # a region of the page in one of four looks: flat, raised, inset or canvas
 │   ├── BackdropVariant.cs                        # enum: Flat, Raised, Inset, Canvas
 │   ├── ✅ FormaStackLayout.razor / .razor.cs / .razor.css  # backdrops along one axis, one seam apart; a splitter between two stands in the seam
 │   ├── StackOrientation.cs                    # enum: Vertical, Horizontal
+│   ├── ✅ FormaFrame.razor / .razor.cs / .razor.css  # a raised backdrop with a box of its own: placed, it is moved by its drag region, resized at its edges and maximized; or it drives the parent that presents it
+│   ├── FrameBox.cs                            # enum: Self, Parent; cascaded to a frame by the parent that presents it
+│   ├── FramePlacement.cs                      # record: Left, Top, Width, Height of a placed frame, in CSS pixels
+│   ├── FrameBounds.cs                         # record: Viewport, or Container(element)
+│   ├── FrameOptions.cs                        # record: Movable, Resizable, MinResizeSize, MaxResizeSize, Bounds
+│   ├── FrameAttachment.cs                     # internal record: what the frame's script was attached with, compared between renders
+│   ├── ✅ FormaChrome.razor / .razor.cs / .razor.css  # a frame whose drag region is a title bar: icon, title, commands; then header, body, footer
 │   ├── ✅ FormaCommandArea.razor / .razor.cs / .razor.css
 │   ├── ✅ FormaCommandBar.razor / .razor.cs / .razor.css
 │   ├── ✅ FormaFreezePane.razor / .razor.cs / .razor.css  # a scroll box along one axis with frozen parts, moved by scrollbar or per-side arrows
@@ -52,12 +59,9 @@ Forma.Blazor/Components/
 │   ├── ✅ FormaTabs.razor / .razor.cs
 │   └── ✅ FormaTab.razor / .razor.cs
 ├── (2 / 2) Windows/                          # see docs/window-design.md
-│   ├── ✅ FormaWindow.razor / .razor.cs / .razor.css  # a raised backdrop with chrome: title bar, header, body, footer; embedded in a layout or floating over the page
-│   ├── WindowMode.cs                          # enum: Embedded, Floating
-│   ├── WindowPlacement.cs                     # record: Left, Top, Width, Height of a floating window, in CSS pixels
-│   ├── WindowOptions.cs                       # record: Closable, Maximizable, Minimizable, Embeddable, Resizable, Lockable, MinResizeSize, MaxResizeSize, PressAway, Bounds
+│   ├── ✅ FormaWindow.razor / .razor.cs / .razor.css  # a chrome floated over the page whose frame drives the window's box, a member of the workspace
+│   ├── WindowOptions.cs                       # record: Closable, Maximizable, Minimizable, Lockable, PressAway
 │   ├── WindowPressAway.cs                     # enum: Ignore, SendToBack
-│   ├── WindowBounds.cs                        # record: Viewport, or Container(element)
 │   ├── WindowDeclaration.cs                   # internal record: what the window declares to its workspace, compared between renders
 │   ├── WindowAttachment.cs                    # internal record: what the script was attached with, compared between renders
 │   ├── ✅ FormaRestArea.razor / .razor.cs / .razor.css  # one persistent handle per window in the workspace, whatever its state
@@ -945,7 +949,7 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Used in** | `FormaExplorer` for its canvas and its header, folder tree and content cards, the Showcase's backdrop and layout pages, and any region of a page |
 | **Parameters** | `BackdropVariant Variant` (`Flat`, `Raised`, `Inset`, `Canvas`), `RenderFragment? ChildContent`, plus captured pass-through attributes |
 | **Blazor approach** | One element painting the token of its variant, `--backdrop-{variant}-bg-color`. Flat lies in its parent, told apart from the backdrop beside it by tone alone; Inset is set back a tone, as a header strip or a toolbar band; Raised stands off the canvas as a card, with the corner radius, the small shadow and its content clipped to its corners; Canvas is the backdrop other backdrops are laid on, painting the canvas tone with one spacing step of it showing around what it holds. No variant draws a line |
-| **Notes** | Sizing is the host's: a backdrop takes the room its layout gives it, and a host sets its width or flex through the pass-through `class` and `style`. The step a canvas shows around its backdrops is the seam, `--space-1`, the same one a `FormaStackLayout` (#74) shows between backdrops, so cards read as one whole |
+| **Notes** | Sizing is the host's: a backdrop takes the room its layout gives it, and a host sets its width or flex through the pass-through `class` and `style`. The step a canvas shows around its backdrops is the seam, `--space-1`, the same one a `FormaStackLayout` (#74) shows between backdrops, so cards read as one whole. Given `hidden` it leaves the layout and keeps what it holds; given `inert` it fades to the inactive opacity, so a disabled `FormaFrame` (#77) reads as inactive |
 
 ### 74. `FormaStackLayout` ✅
 
@@ -964,12 +968,12 @@ These are more complex, possibly page-specific, but still benefit from being com
 
 | | |
 |---|---|
-| **Old pattern** | Each panel drawing its own title strip, and every floating box — the composer maximized, a dialog — inventing its own chrome |
-| **Used in** | The Showcase's window page; the Admin Console's embedded and floating panels; `FormaDialog` once rebased on this chrome |
-| **Parameters** | `string Title` (required), `Icon? Icon`, `WindowMode Mode` with `ModeChanged`, `WindowPlacement? Placement` with `PlacementChanged`, `bool Maximized` with `MaximizedChanged`, `bool Minimized` with `MinimizedChanged`, `bool Locked` with `LockedChanged`, `bool Active` with `ActiveChanged`, `bool Modal`, `bool Disabled`, `WindowOrigin? Origin`, `IWindow? Parent`, `IReadOnlyList<FormaToolbarItem> Commands` with `OnCommand`, `WindowOptions Options` (closable, maximizable, minimizable, embeddable, resizable, lockable, resize limits, press-away behaviour, bounds), `EventCallback<WindowClosingEventArgs> OnClosing`, `EventCallback OnClose`, `RenderFragment? Header`, `Body`, `Footer`, plus captured pass-through attributes |
-| **Blazor approach** | A raised `FormaBackdrop` (#73) holding four bands: a title bar with the icon, the title and a `FormaToolbar` (#25) of the host's commands followed by the window's own — embed or float, maximize or restore, close — then an optional header band, the body, and an optional footer band, each painting its own window token. Embedded, it is a region its parent lays out, a `FormaStackLayout` (#74) sibling like any frame, and a splitter beside it works unchanged. Floating, it stands over the page in the window layer; the reader drags it by the title bar, resizes it at eight invisible handles over its edges and corners, and moves or resizes it from the keyboard with the arrows and Shift on the focused title bar. It registers a non-modal scope with the input router while floating, active while focus is inside it, so Escape closes the focused window and nothing else. Without a placement it opens centered at a default size and reports where it landed, so a host binding `Placement` can persist it |
-| **Why it needs JS** | A floating window is raised into the top layer as a manual popover, so no ancestor's margin, transform or stacking reaches its box; a drag must follow the pointer without a round trip, and the box it produces must be held within the viewport and above the window's own minimum size. `Window.js` composes `DragGesture` for the press-move-release, applies the box as the pointer moves, fits a remembered box into the viewport on attach and when the viewport shrinks, takes the arrow keys on the focused title bar so a step never scrolls the page, and reports where the window came to rest once |
-| **Notes** | The embed and maximize commands are `FormaToolbarToggle`s, so their title and glyph flip with the state. The handles' sides are physical — the screen's left in either reading direction — because the pointer's travel that drives them is. Maximized, the window has no handles and no drag; embedded, it has neither a scope nor a script. The options' resize limits are written as the window's own min and max bounds, so the browser, a drag and a keyboard step all honor the same pair; a `Size` reads from a `(width, height)` tuple |
+| **Old pattern** | Every floating box — the composer maximized, a dialog — inventing its own chrome |
+| **Used in** | The Showcase's window page; the Admin Console's floating panels; `FormaDialog` once rebased on this chrome |
+| **Parameters** | `string Title` (required), `Icon? Icon`, `FramePlacement? Placement` with `PlacementChanged`, `bool Maximized` with `MaximizedChanged`, `bool Minimized` with `MinimizedChanged`, `bool Locked` with `LockedChanged`, `bool Active` with `ActiveChanged`, `bool Modal`, `bool Disabled`, `WindowOrigin? Origin`, `IWindow? Parent`, `IReadOnlyList<FormaToolbarItem> Commands` with `OnCommand`, `WindowOptions Options` (closable, maximizable, minimizable, lockable, press-away behaviour), `FrameOptions FrameOptions` (movable, resizable, resize limits, bounds), `EventCallback<WindowClosingEventArgs> OnClosing`, `EventCallback OnClose`, `RenderFragment? Header`, `Body`, `Footer`, plus captured pass-through attributes |
+| **Blazor approach** | A `FormaChrome` (#78) floated into the top layer as a manual popover, wearing the dialog role. The window hands the chrome one command list, the host's commands then lock, minimize, maximize and close, and answers the ones it recognizes itself. It cascades `FrameBox.Parent` to the chrome's frame, which then drives the window's own element, so the title bar drags the window, the handles resize it and the arrow keys step it, and the placement the frame reports comes back to the window, which binds it for the host; `Maximized` and `Locked` go down the same path, so the window's state is the only state. It registers a non-modal scope with the input router, active while focus is inside it, so Escape closes the focused window and nothing else. Without a placement it opens centered at a default size and reports where it landed. It is a member of its workspace for its lifetime, under the origin and parent it declares |
+| **Why it needs JS** | The top layer keeps any ancestor's margin, transform or stacking from reaching the box, and a window put in front must be shown again. `Window.js` shows and hides the popover and its scrim, raises a window once a press inside it ends, keeps Tab inside a modal one and takes focus back to where it last was. Everything about the box is the frame's `Frame.js` |
+| **Notes** | The lock and maximize commands are `FormaToolbarToggle`s, so their title and glyph flip with the state. Maximized or locked, the frame renders no handles and the title bar takes no keys. A window never embeds: a titled panel in a layout is a `FormaChrome`, and a box of one's own is a `FormaFrame` |
 
 
 ### 76. `FormaRestArea` ✅
@@ -984,6 +988,28 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Blazor approach** | One `FormaToggleButton` (#4) per window registered in the workspace, keyed by the window's identity and kept in registration order so handles never shuffle as windows are activated; identical titles are separate handles. The handle shows the window's icon and title, is pressed while the window is current, disabled while the window is, and wears the secondary tone with a "Minimized" description while the window is minimized or hidden under a minimized ancestor. Choosing a handle asks the workspace to activate the window, which restores its ancestors and itself, brings it forward, and redirects to a modal descendant when one controls it. Grouped, handles cluster by origin under the origin's name, or by instance, where the first instance of an origin keeps the plain name and every later one carries the number the workspace gave it on first registration, a name that never changes while the window lives. The area follows the workspace cascaded to it, else the circuit's, and re-renders on the workspace's change event |
 | **Why it needs JS** | Nothing of its own; the windows it reaches carry the browser side |
 | **Notes** | "Rest" is the handle's persistent place, not the window's activity; the window is never inside the area. A `FormaLaunchBar` hosting application launching may hold the area as one of its parts |
+
+### 77. `FormaFrame` ✅
+
+| | |
+|---|---|
+| **Old pattern** | Every panel that could be dragged or resized rolling its own pointer handling, and none that could be moved from the keyboard |
+| **Used in** | `FormaChrome` (#78) as the box under its chrome, and through it `FormaWindow` (#75); the Showcase's frame page; any host that wants a movable, resizable box of its own |
+| **Parameters** | `string? Label`, `RenderFragment? DragRegion`, `RenderFragment? ChildContent`, `FramePlacement? Placement` with `PlacementChanged`, `bool Maximized`, `bool Locked`, `FrameOptions Options` (movable, resizable, resize limits, bounds), `bool Hidden`, `bool Disabled`, plus captured pass-through attributes; a parent that presents the frame cascades `FrameBox.Parent` to it |
+| **Blazor approach** | A raised `FormaBackdrop` (#73) inside the frame's own element, holding the drag region the host designates and then whatever the host gives it, with eight invisible handles over the element's edges and corners. Without a placement it stands in its layout like any backdrop and offers no interaction; placed or maximized it is fixed in the viewport within its bounds, the drag region focusable and named, the handles rendered, the placement and the resize limits written as its own styles. Presented by a parent that cascades `FrameBox.Parent`, it stays in that parent's layout, fills it, and moves and resizes the parent's element instead, reporting the parent's box without keeping a placement of its own; it cascades `FrameBox.Self` on to what it holds, so a frame nested inside it stands on its own. Hidden, it leaves the layout and keeps its content; disabled, it goes `inert` and fades to the inactive opacity |
+| **Why it needs JS** | A drag must follow the pointer without a round trip, and the box it produces must be held within the bounds and above the frame's minimum size. `Frame.js` composes `DragGesture` for the press-move-release, applies the box as the pointer moves, takes the arrow keys on the focused drag region so a step never scrolls the page, fits the box into its bounds whenever the frame or its bounds are laid out again, and reports where the box came to rest once |
+| **Notes** | The handles' sides are physical — the screen's left in either reading direction — because the pointer's travel that drives them is, and so is the placement. The resize limits are read from the frame's and the box's styles together, so a host's minimum and a window's minimum both hold. A frame knows no workspace: it is never activated, minimized, closed, stacked or blocked, because those belong to a window |
+
+### 78. `FormaChrome` ✅
+
+| | |
+|---|---|
+| **Old pattern** | Each panel drawing its own title strip, header band and footer band |
+| **Used in** | `FormaWindow` (#75) as the chrome it floats; the Showcase's chrome page; the Admin Console's panels; any host that wants a titled region in a layout, or a titled panel it can drag |
+| **Parameters** | `string Title` (required), `Icon? Icon`, `IReadOnlyList<FormaToolbarItem> Commands` with `OnCommand`, `RenderFragment? Header`, `Body`, `Footer`, and the frame's `Placement` with `PlacementChanged`, `Maximized`, `Locked`, `FrameOptions`, `Hidden` and `Disabled`, plus captured pass-through attributes |
+| **Blazor approach** | A `FormaFrame` (#77) whose drag region is a title bar with the icon, the title and a `FormaToolbar` (#25) of the host's commands, then an optional header band, the body, and an optional footer band, each painting its own chrome token. It is a region its parent lays out, a `FormaStackLayout` (#74) sibling like any backdrop, and a splitter beside it works unchanged; placed, the title bar is what the reader drags it by. It is a `region` named by its title unless the host gives it another role |
+| **Why it needs JS** | Nothing of its own; the frame beneath it carries the browser side |
+| **Notes** | A chrome knows no workspace. The title bar takes the pointer and the keyboard only through the frame's drag region, so the chrome itself never handles a gesture |
 
 ## Components NOT Needed (handled by built-ins or native HTML)
 

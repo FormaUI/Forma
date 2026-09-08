@@ -1,0 +1,58 @@
+/* ============================================================
+   FormaChrome — CSS isolation
+   The chrome inside a frame: a title bar, an optional header
+   band, the body, an optional footer band; the body scrolls on
+   its own.
+   ============================================================ */
+
+.forma-chrome-titlebar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-block-size: var(--target-size-md);
+    padding-inline: var(--space-3) var(--space-1);
+    background: var(--chrome-titlebar-bg-color);
+}
+
+.forma-chrome-icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    color: var(--quiet-text-color);
+}
+
+.forma-chrome-title {
+    flex: 1;
+    min-inline-size: 0;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-primary-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.forma-chrome-titlebar ::deep .forma-chrome-commands {
+    flex-shrink: 0;
+}
+
+.forma-chrome-header {
+    padding: var(--space-3) var(--space-4);
+    background: var(--chrome-header-bg-color);
+}
+
+.forma-chrome-body {
+    flex: 1;
+    min-block-size: 0;
+    padding: var(--space-4);
+    background: var(--chrome-body-bg-color);
+    overflow: auto;
+}
+
+.forma-chrome-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    background: var(--chrome-footer-bg-color);
+}

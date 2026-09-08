@@ -23,12 +23,12 @@ public interface IWindow
     /// <summary>Whether the window is minimized on its own account.</summary>
     bool IsMinimized { get; }
 
-    /// <summary>Whether the window refuses interaction.</summary>
+    /// <summary>Whether the window is disabled: it takes no input and reads as inactive.</summary>
     bool IsDisabled { get; }
 
     /// <summary>Whether the window blocks the context around it while it is visible.</summary>
     bool IsModal { get; }
 
-    /// <summary>Whether the window floats over the page rather than standing embedded in a layout.</summary>
+    /// <summary>Whether the window floats over the page and takes part in stacking.</summary>
     bool IsFloating { get; }
 }

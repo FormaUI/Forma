@@ -2,6 +2,7 @@ namespace Forma.Blazor.Components.Windows;
 
 using System.Globalization;
 
+using Forma.Blazor.Components.Layout;
 using Forma.Framework.Common.Interop.Components;
 using Forma.Framework.Icons;
 using Forma.Framework.Input;
@@ -13,25 +14,14 @@ using Forma.Framework.Windows;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>A raised scrim with chrome: a title bar carrying the title, an icon and commands, then an optional header band, the body, and an optional footer band. It stands embedded in its parent's layout or floats over the page, where the reader moves it by its title bar, resizes it at its edges, and maximizes it to its bounds. It is a window of its workspace: activated, stacked, minimized and closed with the windows around it and the windows it opened, and blocking them while modal.</summary>
+/// <summary>A chrome floated into the top layer, whose frame moves, resizes and maximizes the window. It is a window of its workspace: activated, stacked, minimized and closed with the windows around it and the windows it opened, and blocking them while modal.</summary>
 public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncDisposable
 {
-    /// <summary>The class the resize handles carry, one per edge and corner.</summary>
-    public const string HandleClass = "forma-window-handle";
-
-    private const string TitleBarClass = "forma-window-titlebar";
     private const string CloseCommand = "window.close";
     private const string MaximizeCommand = "window.maximize";
     private const string MinimizeCommand = "window.minimize";
     private const string LockCommand = "window.lock";
-    private const string EmbedCommand = "window.embed";
 
-    /// <summary>How far one arrow press moves or resizes a floating window, in CSS pixels: one spacing step of four.</summary>
-    private const double StepPixels = 16;
-
-    private static readonly string[] Edges = ["n", "s", "e", "w", "ne", "nw", "se", "sw"];
-
-    private readonly string _titleId = $"forma-window-title-{Guid.NewGuid():N}";
     private ElementReference _element;
     private ElementReference _scrim;
     private Window _window = default!;
@@ -44,7 +34,6 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
     private bool _isHidden;
     private bool _isBlocked;
     private bool _isApplying;
-    private bool _renderedMaximized;
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
     [Inject] private IStringLocale<FormaWindow> L { get; set; } = default!;
@@ -69,25 +58,19 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
     /// <summary>The window that opened this one; it closes and minimizes with it.</summary>
     [Parameter] public IWindow? Parent { get; set; }
 
-    /// <summary>Whether the window is embedded in its parent's layout or floats over the page.</summary>
-    [Parameter] public WindowMode Mode { get; set; } = WindowMode.Embedded;
+    /// <summary>Where the window stands and how large it is; unset, it opens centered at its default size.</summary>
+    [Parameter] public FramePlacement? Placement { get; set; }
 
-    /// <summary>Raised when the reader embeds or floats the window from its title bar.</summary>
-    [Parameter] public EventCallback<WindowMode> ModeChanged { get; set; }
+    /// <summary>Raised when the reader moves or resizes the window, and once when it first opens without a placement.</summary>
+    [Parameter] public EventCallback<FramePlacement> PlacementChanged { get; set; }
 
-    /// <summary>Where a floating window stands and how large it is; unset, it opens centered at its default size.</summary>
-    [Parameter] public WindowPlacement? Placement { get; set; }
-
-    /// <summary>Raised when the reader moves or resizes a floating window, and once when it first floats without a placement.</summary>
-    [Parameter] public EventCallback<WindowPlacement> PlacementChanged { get; set; }
-
-    /// <summary>Whether a floating window fills its bounds.</summary>
+    /// <summary>Whether the window fills its bounds.</summary>
     [Parameter] public bool Maximized { get; set; }
 
     /// <summary>Raised when the reader maximizes or restores the window from its title bar.</summary>
     [Parameter] public EventCallback<bool> MaximizedChanged { get; set; }
 
-    /// <summary>Whether a floating window is held where it is: neither moved, resized nor maximized.</summary>
+    /// <summary>Whether the window is held where it is: neither moved, resized nor maximized.</summary>
     [Parameter] public bool Locked { get; set; }
 
     /// <summary>Raised when the reader locks or unlocks the window from its title bar.</summary>
@@ -108,7 +91,7 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
     /// <summary>Whether the window blocks its parent's windows, or the whole workspace as a root, while it is shown.</summary>
     [Parameter] public bool Modal { get; set; }
 
-    /// <summary>Whether the window refuses interaction.</summary>
+    /// <summary>Whether the window is disabled: it takes no input and reads as inactive.</summary>
     [Parameter] public bool Disabled { get; set; }
 
     /// <summary>The host's own commands, shown in the title bar before the window's.</summary>
@@ -117,8 +100,11 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
     /// <summary>Raised with the command of a host item pressed in the title bar.</summary>
     [Parameter] public EventCallback<string> OnCommand { get; set; }
 
-    /// <summary>What the reader may do to the window from its chrome, and where it is held.</summary>
+    /// <summary>What the reader may do to the window from its title bar, and how it answers a press outside it.</summary>
     [Parameter] public WindowOptions Options { get; set; } = WindowOptions.Default;
+
+    /// <summary>What the reader may do to the window's frame, how far, and where it is held.</summary>
+    [Parameter] public FrameOptions FrameOptions { get; set; } = FrameOptions.Default;
 
     /// <summary>Raised before the window closes, on its own or with a window above it; setting <see cref="WindowClosingEventArgs.Cancel"/> keeps every window of that close open.</summary>
     [Parameter] public EventCallback<WindowClosingEventArgs> OnClosing { get; set; }
@@ -156,13 +142,7 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
         => Modal;
 
     bool IWindow.IsFloating
-        => IsFloating;
-
-    private bool IsFloating
-        => Mode is WindowMode.Floating;
-
-    private bool IsMaximized
-        => IsFloating && Maximized;
+        => true;
 
     private bool IsPresented
         => !Minimized && !_isHidden;
@@ -170,50 +150,20 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
     private bool IsInert
         => Disabled || _isBlocked;
 
-    private bool ShowsHandles
-        => IsFloating && Options.Resizable && !Maximized && !Locked;
-
     // A root modal blocks the whole workspace, which a scrim beneath it makes visible; a child modal blocks its parent alone.
     private bool ShowsScrim
-        => IsFloating && Modal && Parent is null;
-
-    private string Role
-        => IsFloating ? "dialog" : "region";
-
-    private string? AriaModal
-        => IsFloating ? (Modal ? "true" : "false") : null;
+        => Modal && Parent is null;
 
     private string CssClass
         => AdditionalAttributes.MergeClass(
             "forma-window",
-            IsFloating ? "forma-window-floating" : "forma-window-embedded",
             Active ? "is-active" : null,
-            IsMaximized ? "is-maximized" : null,
-            Locked ? "is-locked" : null,
-            IsFloating && Placement is not null ? "has-placement" : null);
+            Maximized ? "is-maximized" : null,
+            Placement is not null ? "has-placement" : null);
 
-    private string TitleBarCssClass
-        => IsFloating && !Locked ? $"{TitleBarClass} is-movable" : TitleBarClass;
-
-    private bool TakesArrowKeys
-        => IsFloating && !Maximized && !Locked;
-
-    private bool ResizesFromKeys
-        => TakesArrowKeys && Options.Resizable;
-
-    private string? TitleBarLabel
-        => !TakesArrowKeys ? null
-            : ResizesFromKeys ? L["Move {Window} with the arrow keys; hold Shift to resize it", Title]
-            : L["Move {Window} with the arrow keys", Title];
-
-    private string? TitleBarKeyShortcuts
-        => !TakesArrowKeys ? null
-            : ResizesFromKeys ? "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight"
-            : "ArrowUp ArrowDown ArrowLeft ArrowRight";
-
-    // A floating window is a scope only while it floats, active while it is the workspace's current window and focus is
-    // inside it. Escape closes the focused window and nothing else; a modal one bars everything beneath it; a press
-    // away reaches the window only when it is to send the window back.
+    // The window is a scope while attached, active while it is the workspace's current window and focus is inside it.
+    // Escape closes the focused window and nothing else; a modal one bars everything beneath it; a press away reaches
+    // the window only when it is to send the window back.
     private InputProfile Profile
         => new()
         {
@@ -227,10 +177,6 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
     private (bool Modal, WindowPressAway PressAway) ScopeInputs
         => (Modal, Options.PressAway);
 
-    // The element the window is held within, once the host's reference to it has been captured.
-    private ElementReference? BoundsElement
-        => Options.Bounds.Element is { Id: not null } element ? element : null;
-
     // Viewport coordinates from the pointer are physical, so the placement is written as left and top rather than
     // as logical insets.
     private string? Style
@@ -239,39 +185,20 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
         {
             var hostStyle = AdditionalAttributes.GetHostValue("style");
 
-            if (!IsFloating || IsMaximized)
+            if (Maximized || Placement is not { } placement)
             {
                 return hostStyle;
             }
 
-            var parts = new List<string>(3);
+            var placementStyle = string.Create(
+                CultureInfo.InvariantCulture,
+                $"left: {placement.Left}px; top: {placement.Top}px; width: {placement.Width}px; height: {placement.Height}px;");
 
-            if (Placement is { } placement)
-            {
-                parts.Add(string.Create(
-                    CultureInfo.InvariantCulture,
-                    $"left: {placement.Left}px; top: {placement.Top}px; width: {placement.Width}px; height: {placement.Height}px;"));
-            }
-
-            if (Options.MinResizeSize is { } minimum)
-            {
-                parts.Add(string.Create(CultureInfo.InvariantCulture, $"min-width: {minimum.Width}px; min-height: {minimum.Height}px;"));
-            }
-
-            if (Options.MaxResizeSize is { } maximum)
-            {
-                parts.Add(string.Create(CultureInfo.InvariantCulture, $"max-width: {maximum.Width}px; max-height: {maximum.Height}px;"));
-            }
-
-            if (!string.IsNullOrWhiteSpace(hostStyle))
-            {
-                parts.Add(hostStyle);
-            }
-
-            return parts.Count > 0 ? string.Join(' ', parts) : null;
+            return string.IsNullOrWhiteSpace(hostStyle) ? placementStyle : $"{placementStyle} {hostStyle}";
         }
     }
 
+    // The host's commands, then the window's own: lock, minimize, maximize, close.
     private IReadOnlyList<FormaToolbarItem> TitleBarItems
     {
         get
@@ -279,21 +206,7 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
             var items = new List<FormaToolbarItem>(Commands.Count + 4);
             items.AddRange(Commands);
 
-            if (Options.Embeddable)
-            {
-                items.Add(new FormaToolbarToggle
-                {
-                    Id = EmbedCommand,
-                    Command = EmbedCommand,
-                    Title = L["Float"],
-                    Icon = Glyph.Unpin,
-                    IsActive = IsFloating,
-                    AlternateTitle = L["Embed"],
-                    AlternateIcon = Glyph.Pin,
-                });
-            }
-
-            if (Options.Lockable && IsFloating)
+            if (Options.Lockable)
             {
                 items.Add(new FormaToolbarToggle
                 {
@@ -318,7 +231,7 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
                 });
             }
 
-            if (Options.Maximizable && IsFloating)
+            if (Options.Maximizable)
             {
                 items.Add(new FormaToolbarToggle
                 {
@@ -384,11 +297,6 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(Title);
 
-        if (Options.MinResizeSize is { } minimum && Options.MaxResizeSize is { } maximum && (minimum.Width > maximum.Width || minimum.Height > maximum.Height))
-        {
-            throw new ArgumentOutOfRangeException(nameof(Options), maximum, $"{nameof(WindowOptions.MaxResizeSize)} cannot be smaller than {nameof(WindowOptions.MinResizeSize)}.");
-        }
-
         var declaration = Declare();
 
         if (_declaration is null)
@@ -408,30 +316,24 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var attachment = new WindowAttachment(Mode, Modal, BoundsElement, ShowsScrim);
+        var attachment = new WindowAttachment(Modal, ShowsScrim);
 
         if (_attachment != attachment)
         {
             _attachment = attachment;
-            _renderedMaximized = IsMaximized;
             await _window.DetachAsync();
             await ReleaseScopeAsync();
 
-            var attached = await _window.AttachAsync(_element, _selfReference, TitleBarClass, HandleClass, StepPixels, IsFloating, IsPresented, Modal, BoundsElement, ShowsScrim ? _scrim : null);
+            var attached = await _window.AttachAsync(_element, IsPresented, Modal, ShowsScrim ? _scrim : null);
 
-            if (!attached || !IsFloating)
+            if (!attached)
             {
                 return;
             }
 
-            if (Placement is null)
-            {
-                await _window.MeasureAsync();
-            }
-
             await RegisterScopeAsync();
 
-            // A window that takes to floating is the one the reader is working in.
+            // A window that opens is the one the reader is working in.
             if (!Active && !Disabled && IsPresented)
             {
                 await ActivateAsync();
@@ -440,33 +342,11 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
             return;
         }
 
-        if (_renderedMaximized != IsMaximized)
-        {
-            _renderedMaximized = IsMaximized;
-            await _window.FitAsync();
-        }
-
         if (_inputScope is { } inputScope && ScopeInputs != _scopeInputs)
         {
             _scopeInputs = ScopeInputs;
             await inputScope.UpdateAsync(Profile);
         }
-    }
-
-    /// <summary>Takes the window's placement as the browser reports it, after a drag, a keyboard step, or the first measurement.</summary>
-    [JSInvokable]
-    public async Task ReportPlacementAsync(double left, double top, double width, double height)
-    {
-        var placement = new WindowPlacement(left, top, width, height);
-
-        if (placement == Placement)
-        {
-            return;
-        }
-
-        Placement = placement;
-        await InvokeAsync(StateHasChanged);
-        await PlacementChanged.InvokeAsync(placement);
     }
 
     /// <summary>Answers the router's dismissal: a press away sends the window back when its options say so, and anything else closes it when it is closable.</summary>
@@ -555,7 +435,7 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
         }));
 
     ValueTask IManagedWindow.RaiseAsync()
-        => IsFloating && IsPresented ? new(InvokeAsync(() => _window.RaiseAsync().AsTask())) : ValueTask.CompletedTask;
+        => IsPresented ? new(InvokeAsync(() => _window.RaiseAsync().AsTask())) : ValueTask.CompletedTask;
 
     async ValueTask<bool> IManagedWindow.RequestCloseAsync()
     {
@@ -584,13 +464,22 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
             case LockCommand:
                 await SetLockedAsync(!Locked);
                 break;
-            case EmbedCommand:
-                await SetModeAsync(IsFloating ? WindowMode.Embedded : WindowMode.Floating);
-                break;
             default:
                 await OnCommand.InvokeAsync(command);
                 break;
         }
+    }
+
+    // The frame reports where the window came to rest, after a drag, a keyboard step, or the first measurement.
+    private async Task HandlePlacementChangedAsync(FramePlacement placement)
+    {
+        if (placement == Placement)
+        {
+            return;
+        }
+
+        Placement = placement;
+        await PlacementChanged.InvokeAsync(placement);
     }
 
     private async Task SetMaximizedAsync(bool maximized)
@@ -605,12 +494,6 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
         await LockedChanged.InvokeAsync(locked);
     }
 
-    private async Task SetModeAsync(WindowMode mode)
-    {
-        Mode = mode;
-        await ModeChanged.InvokeAsync(mode);
-    }
-
     // A press anywhere inside makes the window current, whether or not what was pressed can take focus; one already current comes forward from wherever it was sent.
     private async Task HandlePointerDownAsync()
     {
@@ -623,7 +506,7 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
         {
             await ActivateAsync();
         }
-        else if (IsFloating)
+        else
         {
             await BringToFrontAsync();
         }
@@ -646,7 +529,7 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
         => _inputScope is { } inputScope ? inputScope.ReleaseAsync().AsTask() : Task.CompletedTask;
 
     private WindowDeclaration Declare()
-        => new(Title, Icon, Parent?.Id, Origin, CascadedOrigin, Mode, Minimized, Disabled, Modal);
+        => new(Title, Icon, Parent?.Id, Origin, CascadedOrigin, Minimized, Disabled, Modal);
 
     private WindowOrigin ResolveOrigin()
         => Origin ?? Parent?.Origin ?? CascadedOrigin ?? Manager.Origin;
@@ -692,8 +575,8 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
             return;
         }
 
-        // The window may have been embedded, or another pass may have registered it, while the registration was being made.
-        if (!IsFloating || _inputScope is not null)
+        // Another pass may have registered the window while the registration was being made.
+        if (_inputScope is not null)
         {
             await inputScope.DisposeAsync();
             return;

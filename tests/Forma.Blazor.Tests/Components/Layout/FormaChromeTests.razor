@@ -1,0 +1,201 @@
+@inherits FormaBunitContext
+@using Forma.Blazor.Components.Layout
+@using Forma.Framework.Icons
+@using Forma.Framework.Toolbar
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_the_title_the_icon_and_the_body()
+        {
+            // Arrange
+            using var ctx = new FormaChromeTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaChrome Title="Folders" Icon="Glyph.Pin"><Body>Tree</Body></FormaChrome>);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("Folders", cut.Find(".forma-chrome-title").TextContent);
+                Assert.NotNull(cut.Find(".forma-chrome-icon .forma-icon"));
+                Assert.Equal("Tree", cut.Find(".forma-chrome-body").TextContent);
+                Assert.Contains("forma-frame", cut.Find(".forma-chrome").ClassList);
+            });
+        }
+
+        [Fact]
+        public void Should_render_the_header_and_footer_bands_only_when_given()
+        {
+            // Arrange
+            using var ctx = new FormaChromeTests();
+
+            // Act
+            var bare = ctx.Render(@<FormaChrome Title="Folders"><Body>Tree</Body></FormaChrome>);
+            var banded = ctx.Render(@<FormaChrome Title="Folders"><Header>Where the media lives</Header><Body>Tree</Body><Footer>Two folders</Footer></FormaChrome>);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Empty(bare.FindAll(".forma-chrome-header"));
+                Assert.Empty(bare.FindAll(".forma-chrome-footer"));
+                Assert.Equal("Where the media lives", banded.Find(".forma-chrome-header").TextContent);
+                Assert.Equal("Two folders", banded.Find(".forma-chrome-footer").TextContent);
+            });
+        }
+
+        [Fact]
+        public void Should_put_the_title_bar_in_the_frames_drag_region()
+        {
+            // Arrange
+            using var ctx = new FormaChromeTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaChrome Title="Folders" />);
+
+            // Assert
+            Assert.NotNull(cut.Find($".{FormaFrame.DragRegionClass} > .forma-chrome-titlebar"));
+        }
+
+        [Fact]
+        public void Should_be_a_region_named_by_its_title()
+        {
+            // Arrange
+            using var ctx = new FormaChromeTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaChrome Title="Folders" />);
+            var chrome = cut.Find(".forma-chrome");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("region", chrome.GetAttribute("role"));
+                Assert.Equal("Folders", cut.Find($"#{chrome.GetAttribute("aria-labelledby")}").TextContent);
+            });
+        }
+
+        [Fact]
+        public void Should_take_the_role_a_host_gives_it_and_leave_the_naming_to_the_host()
+        {
+            // Arrange
+            using var ctx = new FormaChromeTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaChrome Title="Folders" role="presentation" />);
+            var chrome = cut.Find(".forma-chrome");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("presentation", chrome.GetAttribute("role"));
+                Assert.Null(chrome.GetAttribute("aria-labelledby"));
+            });
+        }
+
+        [Fact]
+        public void Should_keep_its_content_while_hidden()
+        {
+            // Arrange
+            using var ctx = new FormaChromeTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaChrome Title="Folders" Hidden="true"><Body>Kept</Body></FormaChrome>);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.True(cut.Find(".forma-chrome").HasAttribute("hidden"));
+                Assert.Equal("Kept", cut.Find(".forma-chrome-body").TextContent);
+            });
+        }
+
+        [Fact]
+        public void Should_be_inert_while_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaChromeTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaChrome Title="Folders" Disabled="true" />);
+
+            // Assert
+            Assert.True(cut.Find(".forma-chrome").HasAttribute("inert"));
+        }
+
+        [Fact]
+        public void Should_show_the_hosts_commands_and_forward_the_one_pressed()
+        {
+            // Arrange
+            using var ctx = new FormaChromeTests();
+            string? received = null;
+            var commands = new FormaToolbarItem[]
+            {
+                new FormaToolbarCommand { Id = "refresh", Command = "refresh", Title = "Refresh", Icon = Glyph.Pin },
+            };
+
+            // Act
+            var bare = ctx.Render(@<FormaChrome Title="Folders" />);
+            var cut = ctx.Render(@<FormaChrome Title="Folders" Commands="commands" OnCommand="command => received = command" />);
+            cut.Find("button[aria-label=Refresh]").Click();
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Empty(bare.FindAll(".forma-chrome-commands"));
+                Assert.Equal("refresh", received);
+                Assert.Equal("Folders Commands", cut.Find(".forma-chrome-commands").GetAttribute("aria-label"));
+            });
+        }
+
+        [Fact]
+        public void Should_hand_its_frame_the_placement_the_limits_and_its_name()
+        {
+            // Arrange
+            using var ctx = new FormaChromeTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaChrome Title="Folders" Placement="new(40, 30, 500, 300)" FrameOptions="new() { MinResizeSize = (320, 200) }" />);
+            var chrome = cut.Find(".forma-chrome");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("has-placement", chrome.ClassList);
+                Assert.Equal("left: 40px; top: 30px; width: 500px; height: 300px; min-width: 320px; min-height: 200px;", chrome.GetAttribute("style"));
+                Assert.Equal("0", cut.Find($".{FormaFrame.DragRegionClass}").GetAttribute("tabindex"));
+                Assert.Contains("Folders", cut.Find($".{FormaFrame.DragRegionClass}").GetAttribute("aria-label"));
+                Assert.Equal(8, cut.FindAll($".{FormaFrame.HandleClass}").Count);
+            });
+        }
+
+        [Fact]
+        public void Should_merge_the_host_class_and_pass_attributes_through()
+        {
+            // Arrange
+            using var ctx = new FormaChromeTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaChrome Title="Folders" class="host-pane" data-region="side" />);
+            var chrome = cut.Find(".forma-chrome");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("host-pane", chrome.ClassList);
+                Assert.Equal("side", chrome.GetAttribute("data-region"));
+            });
+        }
+
+        [Fact]
+        public void Should_require_a_title()
+        {
+            // Arrange
+            using var ctx = new FormaChromeTests();
+
+            // Act & Assert
+            Assert.Throws<ArgumentException>(() => ctx.Render(@<FormaChrome Title=" " />));
+        }
+    }
+}

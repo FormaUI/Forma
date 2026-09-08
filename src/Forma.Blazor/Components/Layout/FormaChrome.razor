@@ -1,0 +1,46 @@
+@namespace Forma.Blazor.Components.Layout
+@using Forma.Blazor.Components.Bars
+@using Forma.Blazor.Components.Symbols
+@using Forma.Framework.Icons
+
+<FormaFrame Label="@Title"
+            Placement="Placement"
+            PlacementChanged="PlacementChanged"
+            Maximized="Maximized"
+            Locked="Locked"
+            Options="FrameOptions"
+            Hidden="Hidden"
+            Disabled="Disabled"
+            role="region"
+            aria-labelledby="@LabelledBy"
+            @attributes="AdditionalAttributes"
+            class="@CssClass">
+    <DragRegion>
+        <div class="forma-chrome-titlebar">
+            @if (Icon is { } icon)
+            {
+                <span class="forma-chrome-icon" aria-hidden="true"><FormaIcon Icon="icon" Size="IconSize.Small" /></span>
+            }
+            <span id="@_titleId" class="forma-chrome-title">@Title</span>
+            @if (Commands.Count > 0)
+            {
+                <FormaToolbar Class="forma-chrome-commands"
+                              Label="@L["{Title} Commands", Title]"
+                              Items="Commands"
+                              Scrollable="false"
+                              OnCommand="OnCommand" />
+            }
+        </div>
+    </DragRegion>
+    <ChildContent>
+        @if (Header is not null)
+        {
+            <div class="forma-chrome-header">@Header</div>
+        }
+        <div class="forma-chrome-body">@Body</div>
+        @if (Footer is not null)
+        {
+            <div class="forma-chrome-footer">@Footer</div>
+        }
+    </ChildContent>
+</FormaFrame>

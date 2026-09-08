@@ -1,0 +1,141 @@
+/* ============================================================
+   FormaFrame — CSS isolation
+   A raised backdrop with a box of its own: it takes the room its
+   layout gives it, or stands in the viewport once placed or
+   maximized, moved by its drag region and resized at its handles.
+   ============================================================ */
+
+.forma-frame {
+    display: grid;
+    position: relative;
+    min-inline-size: 0;
+    min-block-size: 0;
+}
+
+/* Hidden, the frame leaves its layout and keeps what it holds. */
+.forma-frame[hidden] {
+    display: none;
+}
+
+/* Inert, the frame and everything on it read as inactive. */
+.forma-frame[inert] {
+    opacity: var(--inactive-opacity);
+}
+
+/* Placed or maximized, the frame leaves its layout and stands in the viewport, the margin its layout gave it reset so
+   the box is where the placement says. Its sides are physical, as the placement the script writes is, so the box is
+   the same in either reading direction. */
+.forma-frame.has-placement,
+.forma-frame.is-maximized {
+    position: fixed;
+    z-index: var(--z-index-window);
+    margin: 0;
+    min-inline-size: 16rem;
+    min-block-size: 8rem;
+}
+
+/* Maximized, the frame fills the viewport; bound to an element, the script writes that element's box instead. */
+.forma-frame.is-maximized {
+    inset: 0;
+    inline-size: auto;
+    block-size: auto;
+}
+
+.forma-frame ::deep .forma-frame-backdrop {
+    min-inline-size: 0;
+    min-block-size: 0;
+}
+
+/* Filling its bounds, the frame has no corners to round. */
+.forma-frame.is-maximized ::deep .forma-frame-backdrop {
+    border-radius: 0;
+}
+
+/* What the frame holds stacks inside the backdrop, the drag region first. */
+.forma-frame-content {
+    display: flex;
+    flex-direction: column;
+    min-inline-size: 0;
+    min-block-size: 0;
+}
+
+.forma-frame-drag-region {
+    user-select: none;
+}
+
+.forma-frame.is-movable .forma-frame-drag-region {
+    cursor: move;
+}
+
+.forma-frame.is-movable.is-dragging .forma-frame-drag-region {
+    cursor: grabbing;
+}
+
+/* Rings inward: an outline on the top band would be clipped by the backdrop's corners. */
+.forma-frame-drag-region:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring-inset);
+}
+
+/* The handles are invisible strips over the edges and squares over the corners. Their sides are physical — left is
+   the screen's left in either reading direction — because the pointer's travel that drives them is physical too,
+   and the edge each handle names is the one its drag pulls. */
+.forma-frame-handle {
+    position: absolute;
+    touch-action: none;
+}
+
+.forma-frame-handle-n,
+.forma-frame-handle-s {
+    left: var(--space-3);
+    right: var(--space-3);
+    block-size: var(--space-2);
+    cursor: ns-resize;
+}
+
+.forma-frame-handle-e,
+.forma-frame-handle-w {
+    top: var(--space-3);
+    bottom: var(--space-3);
+    inline-size: var(--space-2);
+    cursor: ew-resize;
+}
+
+.forma-frame-handle-n { top: calc(-1 * var(--space-1)); }
+.forma-frame-handle-s { bottom: calc(-1 * var(--space-1)); }
+.forma-frame-handle-e { right: calc(-1 * var(--space-1)); }
+.forma-frame-handle-w { left: calc(-1 * var(--space-1)); }
+
+.forma-frame-handle-ne,
+.forma-frame-handle-nw,
+.forma-frame-handle-se,
+.forma-frame-handle-sw {
+    inline-size: var(--space-3);
+    block-size: var(--space-3);
+}
+
+.forma-frame-handle-ne { top: calc(-1 * var(--space-1)); right: calc(-1 * var(--space-1)); cursor: nesw-resize; }
+.forma-frame-handle-nw { top: calc(-1 * var(--space-1)); left: calc(-1 * var(--space-1)); cursor: nwse-resize; }
+.forma-frame-handle-se { bottom: calc(-1 * var(--space-1)); right: calc(-1 * var(--space-1)); cursor: nwse-resize; }
+.forma-frame-handle-sw { bottom: calc(-1 * var(--space-1)); left: calc(-1 * var(--space-1)); cursor: nesw-resize; }
+
+/* A finger needs more edge than a pointer. */
+@media (pointer: coarse) {
+    .forma-frame-handle-n,
+    .forma-frame-handle-s {
+        block-size: var(--space-4);
+    }
+
+    .forma-frame-handle-e,
+    .forma-frame-handle-w {
+        inline-size: var(--space-4);
+    }
+
+    .forma-frame-handle-ne,
+    .forma-frame-handle-nw,
+    .forma-frame-handle-se,
+    .forma-frame-handle-sw {
+        inline-size: var(--space-5);
+        block-size: var(--space-5);
+    }
+}

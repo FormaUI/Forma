@@ -8,5 +8,6 @@ public sealed partial class FormaWindowTests
         Services.AddJsonLocalization();
         JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
         JSInterop.SetupModule("./_content/forma/common/scripts/components/Window.js").SetupModule("attach", _ => true);
+        JSInterop.SetupModule("./_content/forma/common/scripts/components/Frame.js").SetupModule("attach", _ => true);
     }
 }

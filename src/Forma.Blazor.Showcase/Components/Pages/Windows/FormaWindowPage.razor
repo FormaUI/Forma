@@ -6,7 +6,6 @@
 @using Forma.Blazor.Components.Layout
 @using Forma.Blazor.Components.Windows
 @using Forma.Framework.Icons
-@using Forma.Framework.Toolbar
 @using Forma.Framework.Windows
 @using Forma.Blazor.Components.Inputs
 @inject IStringLocale<FormaWindowPage> L
@@ -14,31 +13,11 @@
 @implements IDisposable
 
 <h1>FormaWindow</h1>
-<p class="description">@L["A raised backdrop with chrome: a title bar carrying the title, an icon and commands, then an optional header band, the body, and an optional footer band. It stands embedded in its parent's layout or floats over the page, where it can be moved by its title bar, resized at its edges and maximized."]</p>
-
-<div class="demo-section">
-    <h2>@L["Embedded"]</h2>
-    <p class="description">@L["Embedded, a window is a region its parent lays out like any backdrop. These two stand in a horizontal stack with a splitter in the seam between them."]</p>
-    <div class="demo-box demo-box-flush">
-        <FormaBackdrop Variant="BackdropVariant.Canvas">
-            <FormaStackLayout Orientation="StackOrientation.Horizontal" class="demo-window-stack" style="@FoldersStyle">
-                <FormaWindow Title="@L["Folders"]" Icon="Glyph.Pin" Options="new() { Embeddable = false, Closable = false }" class="demo-window-side">
-                    <Body>@L["The folder tree would stand here."]</Body>
-                </FormaWindow>
-                <FormaSplitter Orientation="SplitterOrientation.Vertical" @bind-Value="_foldersWidth" Min="10" Max="24" Label="@L["Resize Folders"]" />
-                <FormaWindow Title="@L["Details"]" Options="new() { Embeddable = false, Closable = false }" class="demo-window-fill">
-                    <Header>@L["Everything known about the selected item."]</Header>
-                    <Body>@L["The details would stand here."]</Body>
-                    <Footer>@L["Two items selected"]</Footer>
-                </FormaWindow>
-            </FormaStackLayout>
-        </FormaBackdrop>
-    </div>
-</div>
+<p class="description">@L["A chrome floated over the page: it is moved by its title bar, resized at its edges, maximized, minimized to the rest area and closed. Every window belongs to a workspace that knows which one is current and which windows another opened."]</p>
 
 <div class="demo-section">
     <h2>@L["Floating"]</h2>
-    <p class="description">@L["Floating, a window stands over the page. Drag it by its title bar, pull any edge or corner to resize it, or focus the title bar and use the arrow keys, holding Shift to resize. Escape closes the focused window. This one resizes no smaller than 320 by 200 and no larger than 900 by 700."]</p>
+    <p class="description">@L["A window stands over the page. Drag it by its title bar, pull any edge or corner to resize it, or focus the title bar and use the arrow keys, holding Shift to resize. Escape closes the focused window. This one resizes no smaller than 320 by 200 and no larger than 900 by 700."]</p>
     <div class="demo-box">
         <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _isFloatingOpen = true" Disabled="_isFloatingOpen">@L["Open a Floating Window"]</FormaButton>
         <p class="demo-note">@L["Placement"]: <code>@PlacementText</code></p>
@@ -47,10 +26,10 @@
     {
         <FormaWindow Title="@L["Inspector"]"
                      Icon="Glyph.Search"
-                     Mode="WindowMode.Floating"
                      @bind-Placement="_placement"
                      @bind-Maximized="_isMaximized"
-                     Options="new() { Embeddable = false, Lockable = true, MinResizeSize = (320, 200), MaxResizeSize = (900, 700) }"
+                     Options="new() { Lockable = true }"
+                     FrameOptions="new() { MinResizeSize = (320, 200), MaxResizeSize = (900, 700) }"
                      OnClose="() => _isFloatingOpen = false">
             <Body>@L["A floating window keeps its place while the page beneath it scrolls."]</Body>
             <Footer>
@@ -61,64 +40,26 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Embedding and Floating"]</h2>
-    <p class="description">@L["The pin command switches a window between embedded and floating. Float this one and it lifts off the canvas; embed it and it returns to its place in the stack."]</p>
-    <div class="demo-box demo-box-flush">
-        <FormaBackdrop Variant="BackdropVariant.Canvas" class="demo-window-canvas">
-            <FormaStackLayout>
-                <FormaWindow Title="@L["Output"]" @bind-Mode="_outputMode" Options="new() { Closable = false }" class="demo-window-fill">
-                    <Body>@L["Build succeeded."]</Body>
-                </FormaWindow>
-            </FormaStackLayout>
-        </FormaBackdrop>
-    </div>
-    <p class="demo-note">@L["Mode"]: <code>@_outputMode</code></p>
-</div>
-
-<div class="demo-section">
-    <h2>@L["Host Commands"]</h2>
-    <p class="description">@L["A host adds its own commands to the title bar; they stand before the window's own."]</p>
-    <div class="demo-box demo-box-flush">
-        <FormaBackdrop Variant="BackdropVariant.Canvas">
-            <FormaStackLayout>
-                <FormaWindow Title="@L["Media"]" Commands="MediaCommands" OnCommand="command => _lastCommand = command" Options="new() { Embeddable = false, Closable = false }" class="demo-window-fill">
-                    <Body>@L["Refresh or upload from the title bar."]</Body>
-                </FormaWindow>
-            </FormaStackLayout>
-        </FormaBackdrop>
-    </div>
-    <p class="demo-note">@L["Last command"]: <code>@(_lastCommand ?? L["none yet"])</code></p>
-</div>
-
-<div class="demo-section">
     <h2>@L["Workspace"]</h2>
     <p class="description">@L["Every window belongs to a workspace that knows which one is current and which windows another opened. Properties is a child of Library: minimizing Library hides it, closing Library asks it first, and with unsaved work it declines and keeps both open."]</p>
-    <div class="demo-box demo-box-flush">
-        <FormaBackdrop Variant="BackdropVariant.Canvas" class="demo-window-canvas">
-            <FormaStackLayout>
-                @if (_isLibraryOpen)
-                {
-                    <FormaWindow @ref="_library" Title="@L["Library"]" Icon="Glyph.Pin" Origin="_libraryOrigin" Options="new() { Embeddable = false }" OnClose="() => _isLibraryOpen = false" class="demo-window-fill">
-                        <Body>
-                            <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _isPropertiesOpen = true" Disabled="_isPropertiesOpen">@L["Open Properties"]</FormaButton>
-                        </Body>
-                    </FormaWindow>
-                }
-                else
-                {
-                    <div class="demo-window-fill demo-window-empty">
-                        <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _isLibraryOpen = true">@L["Reopen Library"]</FormaButton>
-                    </div>
-                }
-            </FormaStackLayout>
-        </FormaBackdrop>
+    <div class="demo-box demo-row">
+        <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _isLibraryOpen = true" Disabled="_isLibraryOpen">@L["Open Library"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="RestoreAllAsync">@L["Restore Every Window"]</FormaButton>
     </div>
+    @if (_isLibraryOpen)
+    {
+        <FormaWindow @ref="_library" Title="@L["Library"]" Icon="Glyph.Pin" Origin="_libraryOrigin" Placement="new(240, 200, 420, 240)" OnClose="() => _isLibraryOpen = false">
+            <Body>
+                <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _isPropertiesOpen = true" Disabled="_isPropertiesOpen">@L["Open Properties"]</FormaButton>
+            </Body>
+        </FormaWindow>
+    }
     @if (_isLibraryOpen && _isPropertiesOpen && _library is not null)
     {
         <FormaWindow Title="@L["Properties"]"
                      Parent="_library"
-                     Mode="WindowMode.Floating"
-                     Options="new() { Embeddable = false, Maximizable = false }"
+                     Placement="new(700, 220, 360, 200)"
+                     Options="new() { Maximizable = false }"
                      OnClosing="args => args.Cancel = _hasUnsavedWork"
                      OnClose="() => _isPropertiesOpen = false">
             <Body>
@@ -126,55 +67,38 @@
             </Body>
         </FormaWindow>
     }
-    <p class="demo-note">
-        @L["Current"]: <code>@(Manager.Current?.Title ?? L["none"])</code>
-        <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="RestoreAllAsync">@L["Restore Every Window"]</FormaButton>
-    </p>
+    <p class="demo-note">@L["Current"]: <code>@(Manager.Current?.Title ?? L["none"])</code></p>
 </div>
 
 <div class="demo-section">
     <h2>@L["Origins and Instances"]</h2>
     <p class="description">@L["Two running instances of one application, Explorer, share an origin and keep separate instance identities and separate handles, titles alike. Each opens a Preview, and the first Preview opens a Zoom: three generations. Type in the first Explorer's notes, minimize it and restore it, and the text is still there; focus the notes, activate the second Explorer, then come back through the rest area, and focus returns to the notes."]</p>
-    <div class="demo-box demo-box-flush">
-        <FormaBackdrop Variant="BackdropVariant.Canvas">
-            <FormaStackLayout Orientation="StackOrientation.Horizontal" class="demo-window-stack">
-                @if (_isExplorerAOpen)
-                {
-                    <FormaWindow @ref="_explorerAWindow" Title="@L["Explorer"]" Icon="Glyph.Folder" Origin="_explorerA" Options="new() { Embeddable = false }" OnClose="() => _isExplorerAOpen = false" class="demo-window-fill">
-                        <Body>
-                            <EditForm Model="_explorerNotes">
-                                <FormaTextBox @bind-Value="_explorerNotes.Text" Label="@L["Notes"]" Placeholder="@L["Kept across minimization"]" />
-                            </EditForm>
-                            <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _isPreviewAOpen = true" Disabled="_isPreviewAOpen">@L["Open Preview"]</FormaButton>
-                        </Body>
-                    </FormaWindow>
-                }
-                else
-                {
-                    <div class="demo-window-fill demo-window-empty">
-                        <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _isExplorerAOpen = true">@L["Reopen the First Explorer"]</FormaButton>
-                    </div>
-                }
-                @if (_isExplorerBOpen)
-                {
-                    <FormaWindow @ref="_explorerBWindow" Title="@L["Explorer"]" Icon="Glyph.Folder" Origin="_explorerB" Options="new() { Embeddable = false }" OnClose="() => _isExplorerBOpen = false" class="demo-window-fill">
-                        <Body>
-                            <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _isPreviewBOpen = true" Disabled="_isPreviewBOpen">@L["Open Preview"]</FormaButton>
-                        </Body>
-                    </FormaWindow>
-                }
-                else
-                {
-                    <div class="demo-window-fill demo-window-empty">
-                        <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _isExplorerBOpen = true">@L["Reopen the Second Explorer"]</FormaButton>
-                    </div>
-                }
-            </FormaStackLayout>
-        </FormaBackdrop>
+    <div class="demo-box demo-row">
+        <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _isExplorerAOpen = true" Disabled="_isExplorerAOpen">@L["Open the First Explorer"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _isExplorerBOpen = true" Disabled="_isExplorerBOpen">@L["Open the Second Explorer"]</FormaButton>
     </div>
+    @if (_isExplorerAOpen)
+    {
+        <FormaWindow @ref="_explorerAWindow" Title="@L["Explorer"]" Icon="Glyph.Folder" Origin="_explorerA" Placement="new(160, 160, 400, 260)" OnClose="() => _isExplorerAOpen = false">
+            <Body>
+                <EditForm Model="_explorerNotes">
+                    <FormaTextBox @bind-Value="_explorerNotes.Text" Label="@L["Notes"]" Placeholder="@L["Kept across minimization"]" />
+                </EditForm>
+                <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _isPreviewAOpen = true" Disabled="_isPreviewAOpen">@L["Open Preview"]</FormaButton>
+            </Body>
+        </FormaWindow>
+    }
+    @if (_isExplorerBOpen)
+    {
+        <FormaWindow @ref="_explorerBWindow" Title="@L["Explorer"]" Icon="Glyph.Folder" Origin="_explorerB" Placement="new(620, 160, 400, 260)" OnClose="() => _isExplorerBOpen = false">
+            <Body>
+                <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _isPreviewBOpen = true" Disabled="_isPreviewBOpen">@L["Open Preview"]</FormaButton>
+            </Body>
+        </FormaWindow>
+    }
     @if (_isExplorerAOpen && _isPreviewAOpen && _explorerAWindow is not null)
     {
-        <FormaWindow @ref="_previewAWindow" Title="@L["Preview"]" Parent="_explorerAWindow" Mode="WindowMode.Floating" Placement="new(280, 240, 360, 220)" Options="new() { Embeddable = false, Maximizable = false }" OnClose="() => _isPreviewAOpen = false">
+        <FormaWindow @ref="_previewAWindow" Title="@L["Preview"]" Parent="_explorerAWindow" Placement="new(180, 450, 360, 200)" Options="new() { Maximizable = false }" OnClose="() => _isPreviewAOpen = false">
             <Body>
                 <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _isZoomOpen = true" Disabled="_isZoomOpen">@L["Open Zoom"]</FormaButton>
             </Body>
@@ -182,13 +106,13 @@
     }
     @if (_isExplorerBOpen && _isPreviewBOpen && _explorerBWindow is not null)
     {
-        <FormaWindow Title="@L["Preview"]" Parent="_explorerBWindow" Mode="WindowMode.Floating" Placement="new(720, 260, 360, 220)" Options="new() { Embeddable = false, Maximizable = false }" OnClose="() => _isPreviewBOpen = false">
+        <FormaWindow Title="@L["Preview"]" Parent="_explorerBWindow" Placement="new(900, 450, 360, 200)" Options="new() { Maximizable = false }" OnClose="() => _isPreviewBOpen = false">
             <Body>@L["The second Explorer's preview."]</Body>
         </FormaWindow>
     }
     @if (_isExplorerAOpen && _isPreviewAOpen && _isZoomOpen && _previewAWindow is not null)
     {
-        <FormaWindow Title="@L["Zoom"]" Parent="_previewAWindow" Mode="WindowMode.Floating" Placement="new(400, 420, 320, 200)" Options="new() { Embeddable = false, Maximizable = false }" OnClosing="args => args.Cancel = _zoomHasUnsavedWork" OnClose="() => _isZoomOpen = false">
+        <FormaWindow Title="@L["Zoom"]" Parent="_previewAWindow" Placement="new(560, 500, 320, 200)" Options="new() { Maximizable = false }" OnClosing="args => args.Cancel = _zoomHasUnsavedWork" OnClose="() => _isZoomOpen = false">
             <Body>
                 <FormaCheckBox @bind-Checked="_zoomHasUnsavedWork">@L["Unsaved work"]</FormaCheckBox>
             </Body>
@@ -241,15 +165,15 @@
     <h2>@L["Two Workspaces"]</h2>
     <p class="description">@L["A host that needs a second workspace cascades its own manager. Timeline belongs to the studio workspace: the studio's rest area lists it alone, the page's rest area above never shows it, and each workspace keeps its own current window."]</p>
     <CascadingValue Value="_studio">
-        <div class="demo-box demo-box-flush">
-            <FormaBackdrop Variant="BackdropVariant.Canvas">
-                <FormaStackLayout>
-                    <FormaWindow Title="@L["Timeline"]" Options="new() { Embeddable = false, Closable = false }" class="demo-window-fill">
-                        <Body>@L["A window of the studio workspace."]</Body>
-                    </FormaWindow>
-                </FormaStackLayout>
-            </FormaBackdrop>
+        <div class="demo-box">
+            <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _isTimelineOpen = true" Disabled="_isTimelineOpen">@L["Open Timeline"]</FormaButton>
         </div>
+        @if (_isTimelineOpen)
+        {
+            <FormaWindow Title="@L["Timeline"]" Placement="new(300, 220, 480, 240)" OnClose="() => _isTimelineOpen = false">
+                <Body>@L["A window of the studio workspace."]</Body>
+            </FormaWindow>
+        }
         <div class="demo-box">
             <FormaRestArea Label="@L["Studio Windows"]" />
         </div>
@@ -260,24 +184,26 @@
 <div class="demo-section">
     <h2>@L["Modal"]</h2>
     <p class="description">@L["A modal child blocks the window that opened it and nothing else: Account cannot be used until Confirm is answered, while the rest of the page can. A modal root blocks the whole workspace and stands on a scrim."]</p>
-    <div class="demo-box demo-box-flush">
-        <FormaBackdrop Variant="BackdropVariant.Canvas" class="demo-window-canvas">
-            <FormaStackLayout>
-                <FormaWindow @ref="_account" Title="@L["Account"]" Options="new() { Embeddable = false, Closable = false }" class="demo-window-fill">
-                    <Body>
-                        <FormaButton Variant="ButtonVariant.Danger" OnClick="() => _isConfirmOpen = true" Disabled="_isConfirmOpen">@L["Delete Account"]</FormaButton>
-                    </Body>
-                </FormaWindow>
-            </FormaStackLayout>
-        </FormaBackdrop>
+    <div class="demo-box demo-row">
+        <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _isAccountOpen = true" Disabled="_isAccountOpen">@L["Open Account"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _isNoticeOpen = true" Disabled="_isNoticeOpen">@L["Open a Workspace-Wide Modal"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Secondary" OnClick="ActivateAccountAsync">@L["Activate Account"]</FormaButton>
     </div>
-    @if (_isConfirmOpen && _account is not null)
+    <p class="demo-note">@L["Activating Account"]: <code>@(_accountActivation ?? L["none yet"])</code></p>
+    @if (_isAccountOpen)
+    {
+        <FormaWindow @ref="_account" Title="@L["Account"]" Placement="new(260, 200, 400, 220)" OnClose="() => _isAccountOpen = false">
+            <Body>
+                <FormaButton Variant="ButtonVariant.Danger" OnClick="() => _isConfirmOpen = true" Disabled="_isConfirmOpen">@L["Delete Account"]</FormaButton>
+            </Body>
+        </FormaWindow>
+    }
+    @if (_isAccountOpen && _isConfirmOpen && _account is not null)
     {
         <FormaWindow Title="@L["Confirm"]"
                      Parent="_account"
-                     Mode="WindowMode.Floating"
                      Modal="true"
-                     Options="new() { Embeddable = false, Maximizable = false, Minimizable = false }"
+                     Options="new() { Maximizable = false, Minimizable = false }"
                      OnClose="() => _isConfirmOpen = false">
             <Body>@L["Delete the account? This cannot be undone."]</Body>
             <Footer>
@@ -286,17 +212,11 @@
             </Footer>
         </FormaWindow>
     }
-    <div class="demo-box demo-row">
-        <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _isNoticeOpen = true" Disabled="_isNoticeOpen">@L["Open a Workspace-Wide Modal"]</FormaButton>
-        <FormaButton Variant="ButtonVariant.Secondary" OnClick="ActivateAccountAsync">@L["Activate Account"]</FormaButton>
-    </div>
-    <p class="demo-note">@L["Activating Account"]: <code>@(_accountActivation ?? L["none yet"])</code></p>
     @if (_isNoticeOpen)
     {
         <FormaWindow Title="@L["Notice"]"
-                     Mode="WindowMode.Floating"
                      Modal="true"
-                     Options="new() { Embeddable = false, Maximizable = false, Minimizable = false }"
+                     Options="new() { Maximizable = false, Minimizable = false }"
                      OnClose="() => _isNoticeOpen = false">
             <Body>@L["Every other window waits until this one is closed."]</Body>
             <Footer>
@@ -314,10 +234,10 @@
     </div>
     @if (_isPairOpen)
     {
-        <FormaWindow Title="@L["Canvas"]" Mode="WindowMode.Floating" Placement="new(320, 200, 520, 360)" Options="new() { Embeddable = false }" OnClose="() => _isPairOpen = false">
+        <FormaWindow Title="@L["Canvas"]" Placement="new(320, 200, 520, 360)" OnClose="() => _isPairOpen = false">
             <Body>@L["A plain floating window."]</Body>
         </FormaWindow>
-        <FormaWindow Title="@L["Palette"]" Mode="WindowMode.Floating" Placement="new(700, 420, 320, 240)" Options="new() { Embeddable = false, Maximizable = false, PressAway = WindowPressAway.SendToBack }" OnClose="() => _isPairOpen = false">
+        <FormaWindow Title="@L["Palette"]" Placement="new(700, 420, 320, 240)" Options="new() { Maximizable = false, PressAway = WindowPressAway.SendToBack }" OnClose="() => _isPairOpen = false">
             <Body>@L["Goes to the back on a press away."]</Body>
         </FormaWindow>
     }
@@ -336,25 +256,24 @@
     </div>
     @if (_isBoundedOpen)
     {
-        <FormaWindow Title="@L["Bounded"]" Mode="WindowMode.Floating" Options="new() { Embeddable = false, Bounds = WindowBounds.Container(_arena), MinResizeSize = (240, 160) }" OnClose="() => _isBoundedOpen = false">
+        <FormaWindow Title="@L["Bounded"]" FrameOptions="new() { Bounds = FrameBounds.Container(_arena), MinResizeSize = (240, 160) }" OnClose="() => _isBoundedOpen = false">
             <Body>@L["Held within the arena beneath."]</Body>
         </FormaWindow>
     }
 </div>
 
 @code {
-    private double _foldersWidth = 14;
     private bool _isFloatingOpen;
-    private WindowPlacement? _placement;
+    private FramePlacement? _placement;
     private bool _isMaximized;
-    private WindowMode _outputMode = WindowMode.Embedded;
-    private string? _lastCommand;
     private WindowOrigin _libraryOrigin = WindowOrigin.NewInstance("library", "Library");
     private FormaWindow? _library;
-    private bool _isLibraryOpen = true;
+    private bool _isLibraryOpen;
     private bool _isPropertiesOpen;
     private bool _hasUnsavedWork;
+    private bool _isTimelineOpen;
     private FormaWindow? _account;
+    private bool _isAccountOpen;
     private bool _isConfirmOpen;
     private bool _isNoticeOpen;
     private bool _isPairOpen;
@@ -368,8 +287,8 @@
     private FormaWindow? _explorerAWindow;
     private FormaWindow? _explorerBWindow;
     private FormaWindow? _previewAWindow;
-    private bool _isExplorerAOpen = true;
-    private bool _isExplorerBOpen = true;
+    private bool _isExplorerAOpen;
+    private bool _isExplorerBOpen;
     private bool _isPreviewAOpen;
     private bool _isPreviewBOpen;
     private bool _isZoomOpen;
@@ -468,15 +387,7 @@
         public string? Text { get; set; }
     }
 
-    private string FoldersStyle => FormattableString.Invariant($"--demo-window-side-size: {_foldersWidth}rem");
-
     private string PlacementText => _placement is { } placement
         ? string.Create(CultureInfo.CurrentCulture, $"{placement.Left:0} × {placement.Top:0}, {placement.Width:0} × {placement.Height:0}")
         : L["centered"];
-
-    private IReadOnlyList<FormaToolbarItem> MediaCommands =>
-    [
-        new FormaToolbarCommand { Id = "refresh", Command = "refresh", Title = L["Refresh"], Icon = Glyph.Refresh },
-        new FormaToolbarCommand { Id = "upload", Command = "upload", Title = L["Upload"], Icon = Glyph.Upload },
-    ];
 }

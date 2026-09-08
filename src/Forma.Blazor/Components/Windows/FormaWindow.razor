@@ -1,8 +1,5 @@
 @namespace Forma.Blazor.Components.Windows
 @using Forma.Blazor.Components.Layout
-@using Forma.Blazor.Components.Bars
-@using Forma.Blazor.Components.Symbols
-@using Forma.Framework.Icons
 
 @if (ShowsScrim)
 {
@@ -12,53 +9,29 @@
      class="@CssClass"
      style="@Style"
      @ref="_element"
-     role="@Role"
+     role="dialog"
      tabindex="-1"
-     popover="@(IsFloating ? "manual" : null)"
+     popover="manual"
      hidden="@(!IsPresented)"
      inert="@IsInert"
-     aria-modal="@AriaModal"
-     aria-labelledby="@_titleId"
+     aria-modal="@(Modal ? "true" : "false")"
+     aria-label="@Title"
      @onpointerdown="HandlePointerDownAsync"
      @onfocusin="HandleFocusInAsync"
      @onfocusout="HandleFocusOutAsync">
-    <FormaBackdrop Variant="BackdropVariant.Raised" class="forma-window-frame">
-        <div class="forma-window-content">
-            <div class="@TitleBarCssClass"
-                 tabindex="@(TakesArrowKeys ? "0" : null)"
-                 role="@(TakesArrowKeys ? "group" : null)"
-                 aria-label="@TitleBarLabel"
-                 aria-keyshortcuts="@TitleBarKeyShortcuts">
-                @if (Icon is { } icon)
-                {
-                    <span class="forma-window-icon" aria-hidden="true"><FormaIcon Icon="icon" Size="IconSize.Small" /></span>
-                }
-                <span id="@_titleId" class="forma-window-title">@Title</span>
-                @if (TitleBarItems.Count > 0)
-                {
-                    <FormaToolbar Class="forma-window-commands"
-                                  Label="@L["Window Commands"]"
-                                  Items="TitleBarItems"
-                                  Scrollable="false"
-                                  OnCommand="HandleCommandAsync" />
-                }
-            </div>
-            @if (Header is not null)
-            {
-                <div class="forma-window-header">@Header</div>
-            }
-            <div class="forma-window-body">@Body</div>
-            @if (Footer is not null)
-            {
-                <div class="forma-window-footer">@Footer</div>
-            }
-        </div>
-    </FormaBackdrop>
-    @if (ShowsHandles)
-    {
-        @foreach (var edge in Edges)
-        {
-            <div class="@($"{HandleClass} forma-window-handle-{edge}")" data-edge="@edge" aria-hidden="true"></div>
-        }
-    }
+    <CascadingValue Value="FrameBox.Parent" IsFixed="true">
+        <FormaChrome Title="@Title"
+                     Icon="Icon"
+                     Commands="TitleBarItems"
+                     OnCommand="HandleCommandAsync"
+                     Header="Header"
+                     Body="Body"
+                     Footer="Footer"
+                     FrameOptions="FrameOptions"
+                     Maximized="Maximized"
+                     Locked="Locked"
+                     Disabled="IsInert"
+                     PlacementChanged="HandlePlacementChangedAsync"
+                     role="presentation" />
+    </CascadingValue>
 </div>

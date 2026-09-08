@@ -167,6 +167,7 @@
     /* Backgrounds */
     --input-bg-color: var(--gray-0);
     --inactive-bg-color: var(--gray-50);  /* a whole surface gone inactive: a disabled or a read-only composer */
+    --inactive-opacity: 0.6;              /* how far a whole surface gone inactive fades: a disabled composer, an inert backdrop */
     --muted-bg-color: var(--gray-100);    /* content decoration, not a target: inline code, a quote, a placeholder box */
     --hover-bg-color: color-mix(in srgb, var(--gray-600) 6%, transparent);
 
@@ -231,18 +232,18 @@
 
     /* ============================================================
        Chrome — the band a specific kind of surface paints for itself, each independently themable even where
-       today's value happens to match another. A window is a raised backdrop with chrome: a title bar, an
-       optional header band, the body, an optional footer band; a dialog is a modal window and reads the same
-       tokens. The bands read as inset backdrops and the body as a flat one; a toolbar and a status strip read
+       today's value happens to match another. A frame is a raised backdrop with chrome: a title bar, an
+       optional header band, the body, an optional footer band; a window floats a frame and a dialog is a
+       modal window, and both read the same tokens. The bands read as inset backdrops and the body as a flat one; a toolbar and a status strip read
        as a stronger, more visible muted tone so they stay legible beside a dimmed, inactive surface.
        ============================================================ */
     --toolbar-bg-color: var(--muted-bg-color);
     --command-area-bg-color: var(--backdrop-inset-bg-color);
     --status-strip-bg-color: var(--muted-bg-color);
-    --window-titlebar-bg-color: var(--backdrop-inset-bg-color);
-    --window-header-bg-color: var(--backdrop-inset-bg-color);
-    --window-body-bg-color: var(--backdrop-flat-bg-color);
-    --window-footer-bg-color: var(--backdrop-inset-bg-color);
+    --chrome-titlebar-bg-color: var(--backdrop-inset-bg-color);
+    --chrome-header-bg-color: var(--backdrop-inset-bg-color);
+    --chrome-body-bg-color: var(--backdrop-flat-bg-color);
+    --chrome-footer-bg-color: var(--backdrop-inset-bg-color);
     /* The scrim: the translucent dark layer a modal stands on, dimming and blocking what lies beneath. A
        see-through layer, not a surface, so it is named like the shade rather than as a -bg-color; fixed dark in
        every theme, so it points at the constant. */
@@ -252,7 +253,7 @@
        they do elsewhere. A dialog needs none: the native element sits in the top layer above all of these.
        Stacking inside one component uses its own small integers and is not a layer. */
     --z-index-popover: 1000;    /* a popover, a drop-down menu, a maximized composer: over the page */
-    --z-index-window: 1030;   /* a floating window: over the page and its popovers, which live in the top layer regardless */
+    --z-index-window: 1030;   /* a floating window or a placed frame: over the page and its popovers, which live in the top layer regardless */
     --z-index-floating-bar: 1060;  /* a bar floating over a popover, such as the selection bar */
     --z-index-toast: 1080;    /* a toast, over everything in flow */
 

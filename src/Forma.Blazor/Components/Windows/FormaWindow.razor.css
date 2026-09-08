@@ -1,43 +1,16 @@
 /* ============================================================
    FormaWindow — CSS isolation
-   A raised backdrop with chrome: a title bar, an optional header
-   band, the body, an optional footer band. Embedded, it is a
-   region its parent lays out; floating, a box over the page
-   the reader moves by the title bar and resizes at the edges.
+   A chrome floated into the top layer: a box over the page that
+   its frame moves and resizes, on a scrim while it is a root
+   modal.
    ============================================================ */
 
+/* The window is a manual popover in the top layer, so no ancestor's margin, transform or stacking reaches its
+   box; the layer token stands in where the top layer is unavailable. Until it is placed it opens centered at a
+   default size; once placed, the inline left, top, width and height govern. The popover's own margin, border,
+   padding, colors and overflow are reset so the frame inside draws the window. */
 .forma-window {
     display: grid;
-    min-inline-size: 0;
-    min-block-size: 0;
-}
-
-/* Minimized or hidden under a minimized ancestor, the window leaves its presentation and keeps its content. */
-.forma-window[hidden] {
-    display: none;
-}
-
-/* A floating window that is not the workspace's current one wears its title in the secondary tone. */
-.forma-window-floating:not(.is-active) .forma-window-title {
-    color: var(--text-secondary-color);
-}
-
-/* The layer a root modal stands on: a manual popover shown just before the window, so it lies beneath it in the top
-   layer and over everything else, dimming the workspace it blocks. */
-.forma-window-scrim {
-    position: fixed;
-    inset: 0;
-    margin: 0;
-    border: 0;
-    padding: 0;
-    background: var(--scrim-color);
-}
-
-/* Floating, the window is a manual popover in the top layer, so no ancestor's margin, transform or stacking
-   reaches its box; the layer token stands in where the top layer is unavailable. Until it is placed it opens
-   centered at a default size; once placed, the inline left, top, width and height govern. The popover's own
-   margin, border, padding, colors and overflow are reset so the backdrop inside draws the window. */
-.forma-window-floating {
     position: fixed;
     inset: auto;
     z-index: var(--z-index-window);
@@ -51,164 +24,44 @@
     overflow: visible;
 }
 
-.forma-window-floating:not(.has-placement):not(.is-maximized) {
-    inset-inline-start: 50%;
-    inset-block-start: 50%;
+/* Minimized or hidden under a minimized ancestor, the window leaves its presentation and keeps its content. */
+.forma-window[hidden] {
+    display: none;
+}
+
+/* The sides are physical, as the placement the script writes is, so the box is centered in either reading direction. */
+.forma-window:not(.has-placement):not(.is-maximized) {
+    left: 50%;
+    top: 50%;
     translate: -50% -50%;
     inline-size: min(40rem, 90vw);
     block-size: min(28rem, 80vh);
 }
 
 /* Maximized, the window fills the viewport; bound to an element, the script writes that element's box instead. */
-.forma-window-floating.is-maximized {
+.forma-window.is-maximized {
     inset: 0;
     inline-size: auto;
     block-size: auto;
 }
 
-/* A box over the page casts a deeper shadow than a card lying on the canvas; filling its bounds, it has no corners to round. */
-.forma-window.forma-window-floating ::deep .forma-backdrop-raised {
+/* A window that is not the workspace's current one wears its title in the secondary tone. */
+.forma-window:not(.is-active) ::deep .forma-chrome-title {
+    color: var(--text-secondary-color);
+}
+
+/* A box over the page casts a deeper shadow than a card lying on the canvas. */
+.forma-window ::deep .forma-frame-backdrop {
     box-shadow: var(--shadow-large);
 }
 
-.forma-window.is-maximized ::deep .forma-backdrop-raised {
-    border-radius: 0;
-}
-
-/* The bands stack inside the backdrop, the body taking what the chrome leaves and scrolling on its own. */
-.forma-window-content {
-    display: flex;
-    flex-direction: column;
-    min-inline-size: 0;
-    min-block-size: 0;
-}
-
-.forma-window-titlebar {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    min-block-size: var(--target-size-md);
-    padding-inline: var(--space-3) var(--space-1);
-    background: var(--window-titlebar-bg-color);
-    user-select: none;
-}
-
-.forma-window-titlebar.is-movable {
-    cursor: move;
-}
-
-.forma-window.is-dragging .forma-window-titlebar.is-movable {
-    cursor: grabbing;
-}
-
-/* Rings inward: an outline on the top band would be clipped by the backdrop's corners. */
-.forma-window-titlebar:focus-visible {
-    outline: none;
-    box-shadow: var(--focus-ring-inset);
-}
-
-.forma-window-icon {
-    display: inline-flex;
-    flex-shrink: 0;
-    color: var(--quiet-text-color);
-}
-
-.forma-window-title {
-    flex: 1;
-    min-inline-size: 0;
-    font-size: var(--font-size-sm);
-    font-weight: 600;
-    color: var(--text-primary-color);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.forma-window-titlebar ::deep .forma-window-commands {
-    flex-shrink: 0;
-}
-
-.forma-window-header {
-    padding: var(--space-3) var(--space-4);
-    background: var(--window-header-bg-color);
-}
-
-.forma-window-body {
-    flex: 1;
-    min-block-size: 0;
-    padding: var(--space-4);
-    background: var(--window-body-bg-color);
-    overflow: auto;
-}
-
-.forma-window-footer {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: var(--space-2);
-    padding: var(--space-3) var(--space-4);
-    background: var(--window-footer-bg-color);
-}
-
-/* The handles are invisible strips over the edges and squares over the corners. Their sides are physical — left is
-   the screen's left in either reading direction — because the pointer's travel that drives them is physical too,
-   and the edge each handle names is the one its drag pulls. */
-.forma-window-handle {
-    position: absolute;
-    touch-action: none;
-}
-
-.forma-window-handle-n,
-.forma-window-handle-s {
-    left: var(--space-3);
-    right: var(--space-3);
-    block-size: var(--space-2);
-    cursor: ns-resize;
-}
-
-.forma-window-handle-e,
-.forma-window-handle-w {
-    top: var(--space-3);
-    bottom: var(--space-3);
-    inline-size: var(--space-2);
-    cursor: ew-resize;
-}
-
-.forma-window-handle-n { top: calc(-1 * var(--space-1)); }
-.forma-window-handle-s { bottom: calc(-1 * var(--space-1)); }
-.forma-window-handle-e { right: calc(-1 * var(--space-1)); }
-.forma-window-handle-w { left: calc(-1 * var(--space-1)); }
-
-.forma-window-handle-ne,
-.forma-window-handle-nw,
-.forma-window-handle-se,
-.forma-window-handle-sw {
-    inline-size: var(--space-3);
-    block-size: var(--space-3);
-}
-
-.forma-window-handle-ne { top: calc(-1 * var(--space-1)); right: calc(-1 * var(--space-1)); cursor: nesw-resize; }
-.forma-window-handle-nw { top: calc(-1 * var(--space-1)); left: calc(-1 * var(--space-1)); cursor: nwse-resize; }
-.forma-window-handle-se { bottom: calc(-1 * var(--space-1)); right: calc(-1 * var(--space-1)); cursor: nwse-resize; }
-.forma-window-handle-sw { bottom: calc(-1 * var(--space-1)); left: calc(-1 * var(--space-1)); cursor: nesw-resize; }
-
-/* A finger needs more edge than a pointer. */
-@media (pointer: coarse) {
-    .forma-window-handle-n,
-    .forma-window-handle-s {
-        block-size: var(--space-4);
-    }
-
-    .forma-window-handle-e,
-    .forma-window-handle-w {
-        inline-size: var(--space-4);
-    }
-
-    .forma-window-handle-ne,
-    .forma-window-handle-nw,
-    .forma-window-handle-se,
-    .forma-window-handle-sw {
-        inline-size: var(--space-5);
-        block-size: var(--space-5);
-    }
+/* The layer a root modal stands on: a manual popover shown just before the window, so it lies beneath it in the top
+   layer and over everything else, dimming the workspace it blocks. */
+.forma-window-scrim {
+    position: fixed;
+    inset: 0;
+    margin: 0;
+    border: 0;
+    padding: 0;
+    background: var(--scrim-color);
 }

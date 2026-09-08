@@ -285,7 +285,7 @@ A component whose sub-components only work inside it still has to hand them stat
 - Do name the component's own options parameter `Options`.
 - Do prefix forwarded child options by concern, such as `PaginationOptions` on `FormaDataGrid`.
 - Do sort every parameter into one of four categories, and put only the fourth into the record:
-  1. **State the reader changes** (`Mode`, `Placement`, `Maximized` on `FormaWindow`) stays a parameter with its `Changed` twin, so a host can `@bind` it.
+  1. **State the reader changes** (`Placement`, `Maximized` on `FormaWindow`) stays a parameter with its `Changed` twin, so a host can `@bind` it.
   2. **Required configuration** (`Title`) stays a parameter marked `EditorRequired`.
   3. **Optional configuration a consumer derives from itself** (`Icon`) stays a parameter, because a consumer that already carries one would otherwise carry two.
   4. **Optional configuration consumers normally pass through unchanged** (`Closable`, `Resizable`, `MinResizeSize`) goes into the record.
@@ -341,7 +341,9 @@ A page is a canvas with backdrops laid on it, the way VS Code's sections stand o
 - A **seam** is the one spacing step of the parent, `--space-1`, showing between two backdrops.
 - A **stack** is `FormaStackLayout`: backdrops along one axis, a seam apart, vertical or horizontal.
 - A **scrim** is the translucent dark layer a modal stands on, dimming and blocking what lies beneath it: `--scrim-color`, the window's `forma-window-scrim`, and what a native dialog draws as its `::backdrop`. The word is the theatre's, for the gauze that dims the scene behind it, and Material Design's for this layer; it is the library's only word for it, so that "backdrop" means the surface alone.
-- A **window** is `FormaWindow`: a raised backdrop with chrome — a title bar, an optional header band, the body, an optional footer band — that stands embedded in a stack or floats over the page. A dialog is a modal window.
+- A **frame** is `FormaFrame`: a raised backdrop with a box of its own. In a layout it takes the room it is given; placed, it stands in the viewport, moved by the drag region its host designates, resized at its edges and maximized to its bounds. Presented by a parent that says so, it drives that parent's box instead. It can be hidden or disabled, and it knows no workspace.
+- A **chrome** is `FormaChrome`: a frame whose drag region is a title bar carrying the icon, the title and the host's commands, with an optional header band, the body and an optional footer band inside the frame.
+- A **window** is `FormaWindow`: a chrome floated into the top layer and a member of the workspace, whose frame drives the window's box. It is activated, stacked, minimized, locked and closed; a frame and a chrome are none of those. A window never embeds. A dialog is a modal window.
 
 - Do compose a region from `FormaBackdrop` and `FormaStackLayout` rather than drawing a panel's fill, corner, shadow or gap in a component's own stylesheet; a component that hand-draws a card is a component the backdrop model cannot theme.
 - Do give each variant its own token, `--backdrop-{variant}-bg-color`, so a theme restyles every backdrop by redefining that set.

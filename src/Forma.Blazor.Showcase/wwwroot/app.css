@@ -481,7 +481,7 @@ body {
 }
 
 .demo-scope-modal {
-    background: var(--window-titlebar-bg-color);
+    background: var(--chrome-titlebar-bg-color);
 }
 
 .demo-scope-modal.demo-scope-active {
@@ -845,25 +845,48 @@ body {
     user-select: none;
 }
 
-/* The window page: a stack tall enough to show the bands, a side window sized by the splitter, and a fill. */
-.demo-window-stack,
-.demo-window-canvas {
+/* The chrome page: a stack tall enough to show the bands, a side chrome sized by the splitter, a fill, and a
+   canvas that keeps its height while the chrome on it is hidden. */
+.demo-chrome-stack,
+.demo-chrome-canvas {
     min-block-size: 16rem;
 }
 
-.demo-window-side {
-    inline-size: var(--demo-window-side-size, 14rem);
+.demo-chrome-side {
+    inline-size: var(--demo-chrome-side-size, 14rem);
     flex-shrink: 0;
 }
 
-.demo-window-fill {
+.demo-chrome-fill {
     flex: 1;
 }
 
-/* Where a closed demo window stood, the way back to it. */
-.demo-window-empty {
-    display: grid;
-    place-items: center;
+/* A chrome holding a stack of chromes lays its body out as the stack's container. */
+.demo-chrome-nesting .forma-chrome-body {
+    display: flex;
+}
+
+/* The frame page: a stack of bare frames, and the strip and body a placed frame is given as its own content. */
+.demo-frame-stack {
+    min-block-size: 12rem;
+}
+
+.demo-frame-fill {
+    flex: 1;
+}
+
+.demo-frame-grip {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-block-size: var(--target-size-md);
+    padding-inline: var(--space-3);
+    background: var(--backdrop-inset-bg-color);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+}
+
+.demo-frame-body {
     padding: var(--space-4);
 }
 
