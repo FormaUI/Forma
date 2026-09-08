@@ -20,12 +20,12 @@ public sealed class DiscordWebhookShare : ApiShare
 
     /// <summary>An item is postable when it carries an address, or a resource living at one.</summary>
     public override bool Supports(ShareItem item)
-        => MessageOf(item) is not null;
+        => GetMessage(item) is not null;
 
     /// <inheritdoc />
     public override async Task ShareAsync(ShareItem item)
     {
-        if (MessageOf(item) is not { } content)
+        if (GetMessage(item) is not { } content)
         {
             return;
         }
@@ -35,7 +35,7 @@ public sealed class DiscordWebhookShare : ApiShare
     }
 
     /// <summary>The channel message for the item: its name and the address it or its resource lives at, or null when it lives nowhere reachable.</summary>
-    private static string? MessageOf(ShareItem item)
+    private static string? GetMessage(ShareItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
 

@@ -64,7 +64,7 @@ public sealed partial class FormaExplorerBreadcrumb : ComponentBase
             return null;
         }
 
-        var children = Location.FolderTree.ListedChildrenOf(folderKey);
+        var children = Location.FolderTree.GetListedChildren(folderKey);
 
         return children.Count == 0
             ? null

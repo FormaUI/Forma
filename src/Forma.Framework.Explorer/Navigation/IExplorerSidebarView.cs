@@ -13,7 +13,7 @@ public interface IExplorerSidebarView
     IExplorerSelectionView Selection { get; }
 
     /// <summary>The folders directly inside the parent that are not hidden, or the top-level ones when none is named.</summary>
-    IReadOnlyList<IExplorerFolderItem> ChildrenOf(string? parent);
+    IReadOnlyList<IExplorerFolderItem> GetChildren(string? parent);
 
     /// <summary>Whether the folder shows what it holds.</summary>
     bool IsExpanded(string folderKey);

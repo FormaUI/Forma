@@ -51,7 +51,7 @@
             </div>
         </li>
 
-        @foreach (var item in ChildrenOf(null))
+        @foreach (var item in GetChildren(null))
         {
             <FormaExplorerFolderNode Item="item" Depth="0" />
         }

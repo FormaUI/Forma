@@ -51,7 +51,7 @@ public static class HtmlSourceFormatter
             }
 
             var tag = html[open..(close + 1)];
-            var name = NameOf(tag, out var isClosing, out var isSelfClosing);
+            var name = GetTagName(tag, out var isClosing, out var isSelfClosing);
             position = close + 1;
 
             if (!BlockTags.Contains(name))
@@ -151,7 +151,7 @@ public static class HtmlSourceFormatter
         }
     }
 
-    private static string NameOf(string tag, out bool isClosing, out bool isSelfClosing)
+    private static string GetTagName(string tag, out bool isClosing, out bool isSelfClosing)
     {
         var inner = tag.AsSpan(1, tag.Length - 2).Trim();
         isClosing = inner.Length > 0 && inner[0] == '/';

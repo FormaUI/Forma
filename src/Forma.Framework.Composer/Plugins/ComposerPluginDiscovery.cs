@@ -32,7 +32,7 @@ public static class ComposerPluginDiscovery
         IEnumerable<Assembly> assemblies = assembly is null ? TakingComposer() : [assembly];
 
         return assemblies
-            .SelectMany(TypesOf)
+            .SelectMany(GetLoadableTypes)
             .Where(candidate => candidate is { IsClass: true, IsAbstract: false, IsVisible: true }
                 && (typeof(IComposerFeaturePlugin).IsAssignableFrom(candidate) || typeof(IComposerViewPlugin).IsAssignableFrom(candidate)));
     }
@@ -48,7 +48,7 @@ public static class ComposerPluginDiscovery
                     || candidate.GetReferencedAssemblies().Any(reference => string.Equals(reference.Name, name, StringComparison.OrdinalIgnoreCase))));
     }
 
-    private static IEnumerable<Type> TypesOf(Assembly assembly)
+    private static IEnumerable<Type> GetLoadableTypes(Assembly assembly)
     {
         try
         {

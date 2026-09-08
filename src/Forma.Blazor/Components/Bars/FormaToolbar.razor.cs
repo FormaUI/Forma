@@ -146,7 +146,7 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        var command = Actions.Select(candidate => candidate.Command).FirstOrDefault(candidate => ActionOf(candidate) == action);
+        var command = Actions.Select(candidate => candidate.Command).FirstOrDefault(candidate => GetAction(candidate) == action);
 
         return command is null ? Task.CompletedTask : HandleCommandAsync(command);
     }
@@ -193,13 +193,13 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
     private static IEnumerable<FormaToolbarItem> Leaves(FormaToolbarItem item)
         => item is FormaToolbarGroup group ? group.Items : [item];
 
-    private static string ActionOf(string command)
+    private static string GetAction(string command)
         => InputRoute.Qualify(ActionOwner, command);
 
     /// <summary>One route per shortcut-bearing action, its command qualified as the action and its shortcut parsed into the binding.</summary>
     private static IReadOnlyList<InputRoute> ToRoutes(IReadOnlyList<(string Command, string Shortcut)> shortcuts)
         => [.. shortcuts
-            .Select(entry => (Action: ActionOf(entry.Command), Binding: ParseShortcut(entry.Shortcut)))
+            .Select(entry => (Action: GetAction(entry.Command), Binding: ParseShortcut(entry.Shortcut)))
             .Where(entry => entry.Binding is not null)
             .Select(entry => new InputRoute(entry.Action, entry.Binding!))];
 

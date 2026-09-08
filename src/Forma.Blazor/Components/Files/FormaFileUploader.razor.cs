@@ -71,7 +71,7 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
         => Options.ShowElapsed || Options.ShowEstimate;
 
     private string TotalByteCount
-        => ByteCountOf(_batch.BytesTransferred, _batch.TotalBytes);
+        => GetByteCount(_batch.BytesTransferred, _batch.TotalBytes);
 
     private string TotalRate
         => ResourceFormatter.FromTransferRate(_batch.BytesPerSecond);
@@ -201,7 +201,7 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
     private string FileByteCount(UploadFile upload)
         => upload.State == UploadState.Pending
             ? ResourceFormatter.FromByteCount(upload.TotalBytes)
-            : ByteCountOf(upload.BytesTransferred, upload.TotalBytes);
+            : GetByteCount(upload.BytesTransferred, upload.TotalBytes);
 
     /// <summary>How fast one file is reaching the store, or nothing while it waits its turn.</summary>
     private static string FileRate(UploadFile upload)
@@ -230,7 +230,7 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
     }
 
     // A transfer that reached its total is just that size; repeating it as "3 MB of 3 MB" says nothing.
-    private string ByteCountOf(long transferred, long total)
+    private string GetByteCount(long transferred, long total)
     {
         if (transferred >= total)
         {

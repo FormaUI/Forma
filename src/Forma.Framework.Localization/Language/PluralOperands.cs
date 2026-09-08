@@ -51,7 +51,7 @@ public readonly record struct PluralOperands
         var truncated = decimal.Truncate(absolute);
         var integerPart = truncated > long.MaxValue ? long.MaxValue : (long)truncated;
 
-        var fractionValue = FractionDigitsOf(absolute - truncated, scale);
+        var fractionValue = GetFractionDigits(absolute - truncated, scale);
 
         var significantValue = fractionValue;
         var significantDigits = scale;
@@ -71,7 +71,7 @@ public readonly record struct PluralOperands
     }
 
     // A count carrying more visible digits than a long holds keeps its low-order ones, which is all a rule reads.
-    private static long FractionDigitsOf(decimal fraction, int scale)
+    private static long GetFractionDigits(decimal fraction, int scale)
     {
         if (fraction == 0m)
         {

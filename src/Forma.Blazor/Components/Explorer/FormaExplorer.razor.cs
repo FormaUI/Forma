@@ -210,7 +210,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         while (item is not null && visited.Add(item.Key))
         {
             path.Insert(0, item);
-            item = tree.ParentOf(item);
+            item = tree.GetParent(item);
         }
 
         return path;
@@ -457,7 +457,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     }
 
     private int RootFolderCount
-        => FolderTree.ChildrenOf(null).Count;
+        => FolderTree.GetChildren(null).Count;
 
     private int KnownResourceCount
         => TotalCount ?? Items?.Count ?? MatchingCount ?? 0;
@@ -466,7 +466,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         => TotalBytes ?? Items?.Sum(item => item.Resource?.Size ?? 0) ?? 0;
 
     // A top-level folder counts as one, so the root itself is zero.
-    private int DepthOf(IExplorerFolderItem? folder)
+    private int GetDepth(IExplorerFolderItem? folder)
     {
         var visited = new HashSet<string>(StringComparer.Ordinal);
         var depth = 0;
@@ -475,20 +475,20 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         while (current is not null && visited.Add(current.Key))
         {
             depth++;
-            current = FolderTree.ParentOf(current);
+            current = FolderTree.GetParent(current);
         }
 
         return depth;
     }
 
     // How many levels the folder's own subtree spans, so moving it can be measured before it lands.
-    private int HeightOf(IExplorerFolderItem folder)
+    private int GetHeight(IExplorerFolderItem folder)
     {
         var tallest = 0;
 
-        foreach (var child in FolderTree.ChildrenOf(folder.Key))
+        foreach (var child in FolderTree.GetChildren(folder.Key))
         {
-            tallest = Math.Max(tallest, HeightOf(child));
+            tallest = Math.Max(tallest, GetHeight(child));
         }
 
         return tallest + 1;
@@ -543,7 +543,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
 
     private async Task<bool> EnsureFolderFitsAsync(IExplorerFolderItem? parent, int height)
     {
-        if (Constraints.MaxFolderDepth > 0 && DepthOf(parent) + height > Constraints.MaxFolderDepth)
+        if (Constraints.MaxFolderDepth > 0 && GetDepth(parent) + height > Constraints.MaxFolderDepth)
         {
             await RejectAsync(
                 ExplorerRejectionReason.FolderDepth,
@@ -563,7 +563,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
             return false;
         }
 
-        if (parent is not null && Constraints.MaxSubfolderCount > 0 && FolderTree.ChildrenOf(parent.Key).Count >= Constraints.MaxSubfolderCount)
+        if (parent is not null && Constraints.MaxSubfolderCount > 0 && FolderTree.GetChildren(parent.Key).Count >= Constraints.MaxSubfolderCount)
         {
             await RejectAsync(
                 ExplorerRejectionReason.SubfolderCount,
@@ -876,7 +876,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         if (target is IExplorerFolderItem draggedFolder)
         {
             if (CanMoveFolder(draggedFolder, targetFolder)
-                && await EnsureFolderFitsAsync(targetFolder, HeightOf(draggedFolder)))
+                && await EnsureFolderFitsAsync(targetFolder, GetHeight(draggedFolder)))
             {
                 await OnFolderDrop.InvokeAsync(new ExplorerFolderDropRequest(draggedFolder, targetFolder));
                 await RefreshProviderAsync();
@@ -946,7 +946,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
                 return true;
             }
 
-            current = FolderTree.ParentOf(current);
+            current = FolderTree.GetParent(current);
         }
 
         return false;
@@ -1019,7 +1019,7 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
     {
         if (CurrentFolder is { } current)
         {
-            await HandleFolderSelectedAsync(FolderTree.ParentOf(current));
+            await HandleFolderSelectedAsync(FolderTree.GetParent(current));
         }
     }
 

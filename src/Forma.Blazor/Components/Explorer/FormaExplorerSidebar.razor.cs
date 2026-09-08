@@ -99,8 +99,8 @@ public sealed partial class FormaExplorerSidebar : ComponentBase, IExplorerSideb
     internal static void HandleDragOver(DragEventArgs args)
         => args.DataTransfer.DropEffect = "move";
 
-    private IReadOnlyList<IExplorerFolderItem> ChildrenOf(string? parent)
-        => FolderTree.ListedChildrenOf(parent);
+    private IReadOnlyList<IExplorerFolderItem> GetChildren(string? parent)
+        => FolderTree.GetListedChildren(parent);
 
     private Task SelectFolderAsync(IExplorerFolderItem? folder)
         => OnFolderSelected.InvokeAsync(folder);
@@ -110,8 +110,8 @@ public sealed partial class FormaExplorerSidebar : ComponentBase, IExplorerSideb
 
     IExplorerSelectionView IExplorerSidebarView.Selection => Explorer.Selection;
 
-    IReadOnlyList<IExplorerFolderItem> IExplorerSidebarView.ChildrenOf(string? parent)
-        => ChildrenOf(parent);
+    IReadOnlyList<IExplorerFolderItem> IExplorerSidebarView.GetChildren(string? parent)
+        => GetChildren(parent);
 
     bool IExplorerSidebarView.IsCurrent(IExplorerFolderItem item)
         => CurrentFolder?.Key == item.Key;

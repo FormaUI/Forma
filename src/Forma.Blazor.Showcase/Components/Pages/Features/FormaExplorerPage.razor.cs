@@ -313,7 +313,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
 
     private Task HandleDeleteAsync(string key, ExplorerDeleteRequest request)
     {
-        _mediaStore.Remove(ResourcesOf(request.Items));
+        _mediaStore.Remove(GetResources(request.Items));
         SyncFromStore();
         LogAction(key, L["Deleted {Count} item(s)", request.Items.Count]);
 
@@ -325,7 +325,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
         var count = request.Items.Count;
         var folderName = FolderName(request.TargetFolder);
 
-        _mediaStore.Move(ResourcesOf(request.Items), request.TargetFolder?.Key);
+        _mediaStore.Move(GetResources(request.Items), request.TargetFolder?.Key);
         SyncFromStore();
         LogAction(key, L["Moved {Count} item(s) to \"{Folder}\"", count, folderName]);
 
@@ -333,7 +333,7 @@ public sealed partial class FormaExplorerPage : ComponentBase
     }
 
     /// <summary>The resources behind the items, for the store that holds them.</summary>
-    private static List<ResourceInfo> ResourcesOf(IEnumerable<IExplorerItem> items)
+    private static List<ResourceInfo> GetResources(IEnumerable<IExplorerItem> items)
         => [.. items.Select(item => item.Resource).OfType<ResourceInfo>()];
 
     private string FolderName(IExplorerFolderItem? folder)

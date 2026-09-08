@@ -18,8 +18,8 @@ public sealed class ExplorerFolderTreeTests
     {
         // Assert
         Assert.Multiple(
-            () => Assert.Empty(ExplorerFolderTree.Empty.ChildrenOf(null)),
-            () => Assert.Empty(new ExplorerFolderTree(null).ChildrenOf(null)));
+            () => Assert.Empty(ExplorerFolderTree.Empty.GetChildren(null)),
+            () => Assert.Empty(new ExplorerFolderTree(null).GetChildren(null)));
     }
 
     [Fact]
@@ -29,7 +29,7 @@ public sealed class ExplorerFolderTreeTests
         var tree = new ExplorerFolderTree([Photos, Races, Documents]);
 
         // Assert
-        Assert.Equal([Photos, Documents], tree.ChildrenOf(null));
+        Assert.Equal([Photos, Documents], tree.GetChildren(null));
     }
 
     [Fact]
@@ -40,9 +40,9 @@ public sealed class ExplorerFolderTreeTests
 
         // Assert
         Assert.Multiple(
-            () => Assert.Equal([Races], tree.ChildrenOf("/photos")),
-            () => Assert.Equal([Stages], tree.ChildrenOf("/photos/races")),
-            () => Assert.Empty(tree.ChildrenOf("/photos/races/stages")));
+            () => Assert.Equal([Races], tree.GetChildren("/photos")),
+            () => Assert.Equal([Stages], tree.GetChildren("/photos/races")),
+            () => Assert.Empty(tree.GetChildren("/photos/races/stages")));
     }
 
     [Fact]
@@ -52,7 +52,7 @@ public sealed class ExplorerFolderTreeTests
         var tree = new ExplorerFolderTree([Photos]);
 
         // Assert
-        Assert.Empty(tree.ChildrenOf("/nowhere"));
+        Assert.Empty(tree.GetChildren("/nowhere"));
     }
 
     [Fact]
@@ -105,8 +105,8 @@ public sealed class ExplorerFolderTreeTests
 
         // Assert
         Assert.Multiple(
-            () => Assert.Equal([top], tree.ChildrenOf(null)),
-            () => Assert.Equal([nested], tree.ChildrenOf("top")),
+            () => Assert.Equal([top], tree.GetChildren(null)),
+            () => Assert.Equal([nested], tree.GetChildren("top")),
             () => Assert.Same(nested, tree.Find("top/nested")));
     }
 
@@ -123,10 +123,10 @@ public sealed class ExplorerFolderTreeTests
 
         // Assert
         Assert.Multiple(
-            () => Assert.Equal([shown], tree.ListedChildrenOf(null)),
-            () => Assert.Equal([shown, hidden], tree.ChildrenOf(null)),
-            () => Assert.Empty(tree.ListedChildrenOf("shown")),
-            () => Assert.Equal([nestedHidden], tree.ChildrenOf("shown")),
+            () => Assert.Equal([shown], tree.GetListedChildren(null)),
+            () => Assert.Equal([shown, hidden], tree.GetChildren(null)),
+            () => Assert.Empty(tree.GetListedChildren("shown")),
+            () => Assert.Equal([nestedHidden], tree.GetChildren("shown")),
             () => Assert.Same(hidden, tree.Find("hidden")),
             () => Assert.Empty(tree.Expandable()));
     }

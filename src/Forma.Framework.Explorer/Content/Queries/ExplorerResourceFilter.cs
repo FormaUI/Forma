@@ -68,7 +68,7 @@ public sealed class ExplorerResourceFilter
         => [.. values.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)];
 
     // A resource whose type says what it is answers even when nothing recorded its media type.
-    private static string? KindOf(ResourceInfo? resource)
+    private static string? GetKind(ResourceInfo? resource)
         => resource switch
         {
             ImageResourceInfo => "image",
@@ -100,7 +100,7 @@ public sealed class ExplorerResourceFilter
                 return true;
             }
 
-            if (KindOf(resource) is { } kind && kind.Equals(accepted, StringComparison.OrdinalIgnoreCase))
+            if (GetKind(resource) is { } kind && kind.Equals(accepted, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }

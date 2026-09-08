@@ -3,7 +3,7 @@
 @using Forma.Framework.Explorer.Items
 
 @{
-    var children = Sidebar.ChildrenOf(Item.Key);
+    var children = Sidebar.GetChildren(Item.Key);
     var expanded = Sidebar.IsExpanded(Item.Key);
     var isCurrent = Sidebar.IsCurrent(Item);
     var selected = Sidebar.Selection.IsSelected(Item);

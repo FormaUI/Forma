@@ -10,9 +10,9 @@ public sealed record ExplorerItemGroup(ExplorerGroupBand Band, string? KindLabel
 {
     /// <summary>A key naming the group among the groups of one list.</summary>
     public string Key
-        => KeyOf(Band, KindLabel);
+        => GetKey(Band, KindLabel);
 
     /// <summary>The key of the group in <paramref name="band"/>, named <paramref name="kindLabel"/> when the band is a kind.</summary>
-    public static string KeyOf(ExplorerGroupBand band, string? kindLabel)
+    public static string GetKey(ExplorerGroupBand band, string? kindLabel)
         => band == ExplorerGroupBand.Kind ? $"kind:{kindLabel}" : band.ToString();
 }

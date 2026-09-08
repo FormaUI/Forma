@@ -64,7 +64,7 @@ public sealed class ExplorerFolderTree
     }
 
     /// <summary>The folders directly inside the parent, or the top-level folders when none is named.</summary>
-    public IReadOnlyList<IExplorerFolderItem> ChildrenOf(string? parent)
+    public IReadOnlyList<IExplorerFolderItem> GetChildren(string? parent)
     {
         if (parent is null)
         {
@@ -75,7 +75,7 @@ public sealed class ExplorerFolderTree
     }
 
     /// <summary>The folders directly inside the parent that are not hidden, or the top-level ones when none is named.</summary>
-    public IReadOnlyList<IExplorerFolderItem> ListedChildrenOf(string? parent)
+    public IReadOnlyList<IExplorerFolderItem> GetListedChildren(string? parent)
     {
         if (parent is null)
         {
@@ -90,7 +90,7 @@ public sealed class ExplorerFolderTree
         => key is not null && _foldersByKey.TryGetValue(key, out var item) ? item : null;
 
     /// <summary>The folder the item sits inside, or null when it is top-level or the tree has none.</summary>
-    public IExplorerFolderItem? ParentOf(IExplorerFolderItem item)
+    public IExplorerFolderItem? GetParent(IExplorerFolderItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
 

@@ -66,7 +66,7 @@ public sealed partial class FormaComposerExplorerDialog(IExplorerItemsProvider? 
         _constraints = new() { AcceptedResourceKinds = Options.AcceptedUploadKinds ?? Options.AcceptedResourceKinds };
     }
 
-    private static string KindOf(ResourceInfo resource)
+    private static string GetKind(ResourceInfo resource)
         => resource switch
         {
             ImageResourceInfo => "image",
@@ -101,7 +101,7 @@ public sealed partial class FormaComposerExplorerDialog(IExplorerItemsProvider? 
             return;
         }
 
-        var kind = KindOf(chosen);
+        var kind = GetKind(chosen);
 
         // Only what the browser can render answers to the embed modes; everything else is a link whatever the mode says.
         var renderable = kind is not "file";

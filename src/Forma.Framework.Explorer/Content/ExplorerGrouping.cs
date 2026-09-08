@@ -35,8 +35,8 @@ public static class ExplorerGrouping
 
         foreach (var item in items)
         {
-            var (band, label) = BandOf(item, field, kindLabel, now, firstDayOfWeek);
-            var key = ExplorerItemGroup.KeyOf(band, label);
+            var (band, label) = GetBand(item, field, kindLabel, now, firstDayOfWeek);
+            var key = ExplorerItemGroup.GetKey(band, label);
 
             if (!groups.TryGetValue(key, out var group))
             {
@@ -57,7 +57,7 @@ public static class ExplorerGrouping
         return direction == ExplorerSortDirection.Descending ? [.. result.Reverse()] : [.. result];
     }
 
-    private static (ExplorerGroupBand Band, string? KindLabel) BandOf(IExplorerItem item, ExplorerGroupField field, Func<IExplorerItem, string> kindLabel, DateTimeOffset now, DayOfWeek firstDayOfWeek)
+    private static (ExplorerGroupBand Band, string? KindLabel) GetBand(IExplorerItem item, ExplorerGroupField field, Func<IExplorerItem, string> kindLabel, DateTimeOffset now, DayOfWeek firstDayOfWeek)
         => field switch
         {
             ExplorerGroupField.Name => (NameBand(item.Name), null),
