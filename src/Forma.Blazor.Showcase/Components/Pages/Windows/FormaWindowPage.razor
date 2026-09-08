@@ -133,11 +133,128 @@
 </div>
 
 <div class="demo-section">
-    <h2>@L["Rest Area"]</h2>
-    <p class="description">@L["Every window on this page has a handle here for as long as it exists, grouped by the application it belongs to. Minimize a window, or send one behind another, and its handle brings it back and makes it current."]</p>
-    <div class="demo-box">
-        <FormaRestArea Options="new() { Grouping = RestAreaGrouping.Origin }" />
+    <h2>@L["Origins and Instances"]</h2>
+    <p class="description">@L["Two running instances of one application, Explorer, share an origin and keep separate instance identities and separate handles, titles alike. Each opens a Preview, and the first Preview opens a Zoom: three generations. Type in the first Explorer's notes, minimize it and restore it, and the text is still there; focus the notes, activate the second Explorer, then come back through the rest area, and focus returns to the notes."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaFrame Variant="FrameVariant.Canvas">
+            <FormaStackLayout Orientation="StackOrientation.Horizontal" class="demo-window-stack">
+                @if (_isExplorerAOpen)
+                {
+                    <FormaWindow @ref="_explorerAWindow" Title="@L["Explorer"]" Icon="Glyph.Folder" Origin="_explorerA" Options="new() { Dockable = false }" OnClose="() => _isExplorerAOpen = false" class="demo-window-fill">
+                        <Body>
+                            <EditForm Model="_explorerNotes">
+                                <FormaTextBox @bind-Value="_explorerNotes.Text" Label="@L["Notes"]" Placeholder="@L["Kept across minimization"]" />
+                            </EditForm>
+                            <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _isPreviewAOpen = true" Disabled="_isPreviewAOpen">@L["Open Preview"]</FormaButton>
+                        </Body>
+                    </FormaWindow>
+                }
+                else
+                {
+                    <div class="demo-window-fill demo-window-empty">
+                        <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _isExplorerAOpen = true">@L["Reopen the First Explorer"]</FormaButton>
+                    </div>
+                }
+                @if (_isExplorerBOpen)
+                {
+                    <FormaWindow @ref="_explorerBWindow" Title="@L["Explorer"]" Icon="Glyph.Folder" Origin="_explorerB" Options="new() { Dockable = false }" OnClose="() => _isExplorerBOpen = false" class="demo-window-fill">
+                        <Body>
+                            <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _isPreviewBOpen = true" Disabled="_isPreviewBOpen">@L["Open Preview"]</FormaButton>
+                        </Body>
+                    </FormaWindow>
+                }
+                else
+                {
+                    <div class="demo-window-fill demo-window-empty">
+                        <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _isExplorerBOpen = true">@L["Reopen the Second Explorer"]</FormaButton>
+                    </div>
+                }
+            </FormaStackLayout>
+        </FormaFrame>
     </div>
+    @if (_isExplorerAOpen && _isPreviewAOpen && _explorerAWindow is not null)
+    {
+        <FormaWindow @ref="_previewAWindow" Title="@L["Preview"]" Parent="_explorerAWindow" Mode="WindowMode.Floating" Placement="new(280, 240, 360, 220)" Options="new() { Dockable = false, Maximizable = false }" OnClose="() => _isPreviewAOpen = false">
+            <Body>
+                <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _isZoomOpen = true" Disabled="_isZoomOpen">@L["Open Zoom"]</FormaButton>
+            </Body>
+        </FormaWindow>
+    }
+    @if (_isExplorerBOpen && _isPreviewBOpen && _explorerBWindow is not null)
+    {
+        <FormaWindow Title="@L["Preview"]" Parent="_explorerBWindow" Mode="WindowMode.Floating" Placement="new(720, 260, 360, 220)" Options="new() { Dockable = false, Maximizable = false }" OnClose="() => _isPreviewBOpen = false">
+            <Body>@L["The second Explorer's preview."]</Body>
+        </FormaWindow>
+    }
+    @if (_isExplorerAOpen && _isPreviewAOpen && _isZoomOpen && _previewAWindow is not null)
+    {
+        <FormaWindow Title="@L["Zoom"]" Parent="_previewAWindow" Mode="WindowMode.Floating" Placement="new(400, 420, 320, 200)" Options="new() { Dockable = false, Maximizable = false }" OnClosing="args => args.Cancel = _zoomHasUnsavedWork" OnClose="() => _isZoomOpen = false">
+            <Body>
+                <FormaCheckBox @bind-Checked="_zoomHasUnsavedWork">@L["Unsaved work"]</FormaCheckBox>
+            </Body>
+        </FormaWindow>
+    }
+</div>
+
+<div class="demo-section">
+    <h2>@L["Selectors"]</h2>
+    <p class="description">@L["One selector shape drives every query and operation: by window reference, by origin, by instance, by title, or by parent. Two Explorers make activation by title ambiguous, an empty operation selector is rejected, All reaches the whole workspace, and a selection holding a parent and its descendants processes each once. Renaming the origin changes what the rest area shows and nothing the selectors match."]</p>
+    <div class="demo-box demo-row">
+        <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="@(() => RunAsync(L["Activate by title"], () => Manager.ActivateAsync(new WindowSelector { Title = L["Explorer"] })))">@L["Activate by Title"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="@(() => RunAsync(L["Activate the first by reference"], () => Manager.ActivateAsync(new WindowSelector { Window = _explorerAWindow })))" Disabled="!_isExplorerAOpen">@L["Activate the First by Reference"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="@(() => RunAsync(L["Activate the second by instance and title"], () => Manager.ActivateAsync(new WindowSelector { InstanceId = _explorerB.InstanceId, Title = L["Explorer"] })))">@L["Activate the Second by Instance"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="@(() => RunAsync(L["Activate the second instance alone"], () => Manager.ActivateAsync(new WindowSelector { InstanceId = _explorerB.InstanceId })))">@L["Activate the Second Instance Alone"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="@(() => RunAsync(L["Activate with an empty selector"], () => Manager.ActivateAsync(new WindowSelector())))">@L["Activate with an Empty Selector"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="@(() => RunAsync(L["Minimize all"], () => Manager.MinimizeAsync(WindowSelector.All)))">@L["Minimize All"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="@(() => RunAsync(L["Minimize by origin"], () => Manager.MinimizeAsync(new WindowSelector { OriginId = ExplorerOriginId })))">@L["Minimize by Origin"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="@(() => RunAsync(L["Restore all"], () => Manager.RestoreAsync(WindowSelector.All)))">@L["Restore All"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="@(() => RunAsync(L["Bring the origin to the front"], () => Manager.BringToFrontAsync(new WindowSelector { OriginId = ExplorerOriginId })))">@L["Bring the Origin to the Front"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="@(() => RunAsync(L["Bring the first instance to the front"], () => Manager.BringToFrontAsync(new WindowSelector { InstanceId = _explorerA.InstanceId })))">@L["Bring the First Instance to the Front"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="FindByTitle">@L["Find Every Preview"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="FindDescendants" Disabled="!_isExplorerAOpen">@L["Find the First Explorer's Descendants"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="RenameOrigin">@(_explorerA.OriginName == L["Explorer"] ? L["Rename the Origin to Files"] : L["Rename the Origin to Explorer"])</FormaButton>
+        <FormaButton Variant="ButtonVariant.Danger" Size="ButtonSize.Mini" OnClick="@(() => RunAsync(L["Close the first by reference"], () => Manager.CloseAsync(new WindowSelector { Window = _explorerAWindow })))" Disabled="!_isExplorerAOpen">@L["Close the First by Reference"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Danger" Size="ButtonSize.Mini" OnClick="@(() => RunAsync(L["Close by origin"], () => Manager.CloseAsync(new WindowSelector { OriginId = ExplorerOriginId })))">@L["Close by Origin"]</FormaButton>
+    </div>
+    <ul class="demo-log">
+        @foreach (var entry in _log)
+        {
+            <li>@entry</li>
+        }
+    </ul>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Rest Area"]</h2>
+    <p class="description">@L["Every window on this page has a handle here for as long as it exists. Minimize a window, or send one behind another, and its handle brings it back and makes it current. Grouped by origin, both Explorers and their descendants share one group; grouped by instance, each stands apart, the second numbered so a screen reader tells them apart."]</p>
+    <div class="demo-box demo-row">
+        <FormaToggleButton Label="@L["Ungrouped"]" ShowLabel="true" Pressed="_grouping == RestAreaGrouping.None" OnClick="() => _grouping = RestAreaGrouping.None" />
+        <FormaToggleButton Label="@L["By Origin"]" ShowLabel="true" Pressed="_grouping == RestAreaGrouping.Origin" OnClick="() => _grouping = RestAreaGrouping.Origin" />
+        <FormaToggleButton Label="@L["By Instance"]" ShowLabel="true" Pressed="_grouping == RestAreaGrouping.Instance" OnClick="() => _grouping = RestAreaGrouping.Instance" />
+    </div>
+    <div class="demo-box">
+        <FormaRestArea Options="new() { Grouping = _grouping }" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Two Workspaces"]</h2>
+    <p class="description">@L["A host that needs a second workspace cascades its own manager. Timeline belongs to the studio workspace: the studio's rest area lists it alone, the page's rest area above never shows it, and each workspace keeps its own current window."]</p>
+    <CascadingValue Value="_studio">
+        <div class="demo-box demo-box-flush">
+            <FormaFrame Variant="FrameVariant.Canvas">
+                <FormaStackLayout>
+                    <FormaWindow Title="@L["Timeline"]" Options="new() { Dockable = false, Closable = false }" class="demo-window-fill">
+                        <Body>@L["A window of the studio workspace."]</Body>
+                    </FormaWindow>
+                </FormaStackLayout>
+            </FormaFrame>
+        </div>
+        <div class="demo-box">
+            <FormaRestArea Label="@L["Studio Windows"]" />
+        </div>
+    </CascadingValue>
+    <p class="demo-note">@L["Studio's current"]: <code>@(_studio.Current?.Title ?? L["none"])</code></p>
 </div>
 
 <div class="demo-section">
@@ -169,9 +286,11 @@
             </Footer>
         </FormaWindow>
     }
-    <div class="demo-box">
+    <div class="demo-box demo-row">
         <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _isNoticeOpen = true" Disabled="_isNoticeOpen">@L["Open a Workspace-Wide Modal"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Secondary" OnClick="ActivateAccountAsync">@L["Activate Account"]</FormaButton>
     </div>
+    <p class="demo-note">@L["Activating Account"]: <code>@(_accountActivation ?? L["none yet"])</code></p>
     @if (_isNoticeOpen)
     {
         <FormaWindow Title="@L["Notice"]"
@@ -206,11 +325,12 @@
 
 <div class="demo-section">
     <h2>@L["Bounds"]</h2>
-    <p class="description">@L["A window can be held within an element instead of the viewport: it opens at the element's center, cannot be moved or resized past its edges, and maximizes to fill it."]</p>
+    <p class="description">@L["A window can be held within an element instead of the viewport: it opens at the element's center, cannot be moved or resized past its edges, and maximizes to fill it. Shrink the arena with the window near its bottom edge and the window is brought back inside."]</p>
     <div class="demo-box demo-box-flush">
         <FormaFrame Variant="FrameVariant.Canvas">
-            <div @ref="_arena" class="demo-window-arena">
+            <div @ref="_arena" class="@(_isArenaShort ? "demo-window-arena demo-window-arena-short" : "demo-window-arena")">
                 <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _isBoundedOpen = true" Disabled="_isBoundedOpen">@L["Open a Bounded Window"]</FormaButton>
+                <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _isArenaShort = !_isArenaShort">@(_isArenaShort ? L["Grow the Arena"] : L["Shrink the Arena"])</FormaButton>
             </div>
         </FormaFrame>
     </div>
@@ -229,7 +349,7 @@
     private bool _isMaximized;
     private WindowMode _outputMode = WindowMode.Docked;
     private string? _lastCommand;
-    private static readonly WindowOrigin _libraryOrigin = WindowOrigin.NewInstance("library", "Library");
+    private WindowOrigin _libraryOrigin = WindowOrigin.NewInstance("library", "Library");
     private FormaWindow? _library;
     private bool _isLibraryOpen = true;
     private bool _isPropertiesOpen;
@@ -240,18 +360,113 @@
     private bool _isPairOpen;
     private ElementReference _arena;
     private bool _isBoundedOpen;
+    private bool _isArenaShort;
+    private string? _accountActivation;
+    private const string ExplorerOriginId = "explorer";
+    private WindowOrigin _explorerA = WindowOrigin.NewInstance(ExplorerOriginId, "Explorer");
+    private WindowOrigin _explorerB = WindowOrigin.NewInstance(ExplorerOriginId, "Explorer");
+    private FormaWindow? _explorerAWindow;
+    private FormaWindow? _explorerBWindow;
+    private FormaWindow? _previewAWindow;
+    private bool _isExplorerAOpen = true;
+    private bool _isExplorerBOpen = true;
+    private bool _isPreviewAOpen;
+    private bool _isPreviewBOpen;
+    private bool _isZoomOpen;
+    private bool _zoomHasUnsavedWork;
+    private readonly ExplorerNotes _explorerNotes = new();
+    private readonly List<string> _log = [];
+    private RestAreaGrouping _grouping = RestAreaGrouping.Origin;
+    private readonly WindowManager _studio = new();
 
     protected override void OnInitialized()
-        => Manager.Changed += HandleWorkspaceChanged;
+    {
+        _libraryOrigin = _libraryOrigin with { OriginName = L["Library"] };
+        _explorerA = _explorerA with { OriginName = L["Explorer"] };
+        _explorerB = _explorerB with { OriginName = L["Explorer"] };
+        Manager.Changed += HandleWorkspaceChanged;
+        _studio.Changed += HandleWorkspaceChanged;
+    }
 
     public void Dispose()
-        => Manager.Changed -= HandleWorkspaceChanged;
+    {
+        Manager.Changed -= HandleWorkspaceChanged;
+        _studio.Changed -= HandleWorkspaceChanged;
+    }
 
     private void HandleWorkspaceChanged(object? sender, EventArgs args)
         => _ = InvokeAsync(StateHasChanged);
 
     private Task RestoreAllAsync()
         => Manager.RestoreAsync(WindowSelector.All).AsTask();
+
+    private async Task RunAsync(string operation, Func<ValueTask<WindowOperationResult>> operate)
+    {
+        try
+        {
+            var result = await operate();
+            var titles = result.Windows.Count == 0 ? L["no windows"] : string.Join(", ", result.Windows.Select(window => window.Title));
+
+            Log(L["{Operation}: {Outcome} ({Windows})", operation, OutcomeText(result.Outcome), titles]);
+        }
+        catch (ArgumentException rejection)
+        {
+            Log(L["{Operation}: rejected, {Message}", operation, rejection.Message]);
+        }
+    }
+
+    private void FindByTitle()
+    {
+        Manager.TryFindWindows(new WindowSelector { Title = L["Preview"] }, out var windows);
+        Log(L["Find every Preview: {Count} found", windows.Count]);
+    }
+
+    private void FindDescendants()
+    {
+        Manager.TryFindWindows(new WindowSelector { Parent = _explorerAWindow, Recursive = true }, out var windows);
+        Log(L["The first Explorer's descendants: {Windows}", windows.Count == 0 ? L["no windows"] : string.Join(", ", windows.Select(window => window.Title))]);
+    }
+
+    private void RenameOrigin()
+    {
+        var name = _explorerA.OriginName == L["Explorer"] ? L["Files"] : L["Explorer"];
+
+        _explorerA = _explorerA with { OriginName = name };
+        _explorerB = _explorerB with { OriginName = name };
+        Log(L["Origin renamed to {Name}; identities unchanged", name]);
+    }
+
+    private async Task ActivateAccountAsync()
+    {
+        var result = await Manager.ActivateAsync(new WindowSelector { Window = _account });
+
+        _accountActivation = L["{Outcome}, current is {Window}", OutcomeText(result.Outcome), Manager.Current?.Title ?? L["none"]];
+    }
+
+    private string OutcomeText(WindowOperationOutcome outcome)
+        => outcome switch
+        {
+            WindowOperationOutcome.Applied => L["applied"],
+            WindowOperationOutcome.NoMatch => L["no match"],
+            WindowOperationOutcome.Ambiguous => L["ambiguous"],
+            WindowOperationOutcome.Ineligible => L["ineligible"],
+            _ => L["declined"],
+        };
+
+    private void Log(string entry)
+    {
+        _log.Insert(0, entry);
+
+        if (_log.Count > 8)
+        {
+            _log.RemoveAt(_log.Count - 1);
+        }
+    }
+
+    private sealed class ExplorerNotes
+    {
+        public string? Text { get; set; }
+    }
 
     private string FoldersStyle => FormattableString.Invariant($"--demo-window-side-size: {_foldersWidth}rem");
 

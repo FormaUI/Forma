@@ -45,23 +45,27 @@ public sealed partial class FormaRestArea : ComponentBase, IDisposable
         {
             RestAreaGrouping.Origin => Manager.Windows
                 .GroupBy(window => window.Origin.OriginId, StringComparer.Ordinal)
-                .Select(group => new RestAreaGroup(group.First().Origin.OriginName, [.. group])),
-            RestAreaGrouping.Instance => InstanceGroups(),
+                .Select(group => new RestAreaGroup(GetOriginName(group.First()), [.. group])),
+            RestAreaGrouping.Instance => GetInstanceGroups(),
             _ => [new RestAreaGroup(null, Manager.Windows)],
         };
 
     // One group per instance, named for its origin and carrying the workspace's instance number from the second instance on.
-    private IEnumerable<RestAreaGroup> InstanceGroups()
+    private IEnumerable<RestAreaGroup> GetInstanceGroups()
         => Manager.Windows
             .GroupBy(window => window.Origin.InstanceId)
-            .Select(group => new RestAreaGroup(InstanceName(group.First()), [.. group]));
+            .Select(group => new RestAreaGroup(GetInstanceName(group.First()), [.. group]));
 
-    private string InstanceName(IWindow window)
+    private string GetInstanceName(IWindow window)
     {
         var number = Manager.GetInstanceNumber(window);
 
-        return number == 1 ? window.Origin.OriginName : L["{Origin} {Number}", window.Origin.OriginName, number];
+        return number == 1 ? GetOriginName(window) : L["{Origin} {Number}", GetOriginName(window), number];
     }
+
+    // The workspace's own origin is the library's, so its name is the library's to localize.
+    private string GetOriginName(IWindow window)
+        => string.Equals(window.Origin.OriginId, Manager.Origin.OriginId, StringComparison.Ordinal) ? L["Workspace"] : window.Origin.OriginName;
 
     /// <inheritdoc />
     protected override void OnParametersSet()

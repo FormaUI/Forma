@@ -2,5 +2,6 @@
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "Windows": "Ventanas",
   "Minimized": "Minimizada",
-  "{Origin} {Number}": "{Origin} {Number}"
+  "{Origin} {Number}": "{Origin} {Number}",
+  "Workspace": "Espacio de Trabajo"
 }

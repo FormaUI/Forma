@@ -867,10 +867,17 @@ body {
     padding: var(--space-4);
 }
 
-/* The arena a bounded window is held within. */
+/* The arena a bounded window is held within; shortened, it reclamps the window inside it. */
 .demo-window-arena {
-    display: grid;
-    place-items: start;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    align-content: flex-start;
+    gap: var(--space-3);
     min-block-size: 24rem;
     padding: var(--space-4);
+}
+
+.demo-window-arena-short {
+    min-block-size: 12rem;
 }

@@ -30,8 +30,10 @@ takes to floating; and a lockable window can be held where it is, neither moved,
 nor maximized until unlocked. Step 4 is built: `FormaRestArea` holds one handle per
 registered window in registration order, pressed while current, marked while minimized
 or hidden, grouped by origin or instance, laid out as a row, column or grid, and
-following the workspace cascaded to it. The Showcase demo is step 5. The implementation
-plan at the end records what lands as each step is taken.
+following the workspace cascaded to it. Step 5 is built: the Showcase's window page
+renders every item of the demo list below, with an operation log that reports each
+selector's outcome, and was walked in a visible browser. The implementation plan at the
+end records what landed at each step.
 
 ## Purpose
 
@@ -413,7 +415,8 @@ the resize handle the window's `HandleClass` names.
 Choosing a handle restores the window if minimized, brings it to the front, and activates
 it. A window sent back comes forward and activates in place. Handles group by `OriginId`
 or `InstanceId`; grouping is presentation and never changes parentage. A group is named
-for its origin. Grouped by instance, the first instance of an origin keeps the plain name
+for its origin; the workspace's own origin, which windows without one resolve to, is
+named by the library in the reader's language. Grouped by instance, the first instance of an origin keeps the plain name
 and every later one carries the number the workspace gave it when it first registered
 ("Explorer", "Explorer 2", "Explorer 3"), so a screen reader tells them apart and a name,
 once heard, never changes: closing an instance leaves the others' names as they were, and
