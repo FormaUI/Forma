@@ -22,6 +22,17 @@
     color: var(--text-secondary-color);
 }
 
+/* The layer a root modal stands on: a manual popover shown just before the window, so it lies beneath it in the top
+   layer and over everything else, dimming the workspace it blocks. */
+.forma-window-backdrop {
+    position: fixed;
+    inset: 0;
+    margin: 0;
+    border: 0;
+    padding: 0;
+    background: var(--dialog-backdrop-color);
+}
+
 /* Floating, the window is a manual popover in the top layer, so no ancestor's margin, transform or stacking
    reaches its box; the layer token stands in where the top layer is unavailable. Until it is placed it opens
    centered at a default size; once placed, the inline left, top, width and height govern. The popover's own
@@ -48,13 +59,14 @@
     block-size: min(28rem, 80vh);
 }
 
+/* Maximized, the window fills the viewport; bound to an element, the script writes that element's box instead. */
 .forma-window-floating.is-maximized {
     inset: 0;
     inline-size: auto;
     block-size: auto;
 }
 
-/* A box over the page casts a deeper shadow than a card lying on the canvas; filling the viewport, it has no corners to round. */
+/* A box over the page casts a deeper shadow than a card lying on the canvas; filling its bounds, it has no corners to round. */
 .forma-window.forma-window-floating ::deep .forma-frame-raised {
     box-shadow: var(--shadow-large);
 }

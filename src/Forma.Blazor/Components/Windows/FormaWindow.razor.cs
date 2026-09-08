@@ -1,6 +1,5 @@
 namespace Forma.Blazor.Components.Windows;
 
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 using Forma.Framework.Common.Interop.Components;
@@ -14,7 +13,7 @@ using Forma.Framework.Windows;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>A raised frame with chrome: a title bar carrying the title, an icon and commands, then an optional header band, the body, and an optional footer band. It stands docked in its parent's layout or floats over the page, where the reader moves it by its title bar, resizes it at its edges, and maximizes it to the viewport. It is a window of its workspace: activated, stacked, minimized and closed with the windows around it and the windows it opened.</summary>
+/// <summary>A raised frame with chrome: a title bar carrying the title, an icon and commands, then an optional header band, the body, and an optional footer band. It stands docked in its parent's layout or floats over the page, where the reader moves it by its title bar, resizes it at its edges, and maximizes it to its bounds. It is a window of its workspace: activated, stacked, minimized and closed with the windows around it and the windows it opened, and blocking them while modal.</summary>
 public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncDisposable
 {
     /// <summary>The class the resize handles carry, one per edge and corner.</summary>
@@ -31,25 +30,20 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
 
     private static readonly string[] Edges = ["n", "s", "e", "w", "ne", "nw", "se", "sw"];
 
-    // A floating window is a scope only while it floats, active while it is the workspace's current window and focus
-    // is inside it, so Escape closes the focused window and nothing else; it never bars the page.
-    private static readonly InputProfile FloatingProfile = new()
-    {
-        Escape = DismissBehavior.Dismiss,
-        CloseRequest = DismissBehavior.Dismiss,
-        PressAway = PressAwayBehavior.Ignore,
-    };
-
     private readonly string _titleId = $"forma-window-title-{Guid.NewGuid():N}";
     private ElementReference _element;
+    private ElementReference _backdrop;
     private Window _window = default!;
     private DotNetObjectReference<FormaWindow> _selfReference = default!;
     private InputScope? _inputScope;
-    private WindowMode? _attachedMode;
+    private (bool Modal, WindowPressAway PressAway)? _scopeInputs;
+    private WindowAttachment? _attachment;
     private WindowOrigin _origin = default!;
     private WindowDeclaration? _declaration;
     private bool _isHidden;
+    private bool _isBlocked;
     private bool _isApplying;
+    private bool _renderedMaximized;
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
     [Inject] private IStringLocale<FormaWindow> L { get; set; } = default!;
@@ -86,7 +80,7 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
     /// <summary>Raised when the reader moves or resizes a floating window, and once when it first floats without a placement.</summary>
     [Parameter] public EventCallback<WindowPlacement> PlacementChanged { get; set; }
 
-    /// <summary>Whether a floating window fills the viewport.</summary>
+    /// <summary>Whether a floating window fills its bounds.</summary>
     [Parameter] public bool Maximized { get; set; }
 
     /// <summary>Raised when the reader maximizes or restores the window from its title bar.</summary>
@@ -116,7 +110,7 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
     /// <summary>Raised with the command of a host item pressed in the title bar.</summary>
     [Parameter] public EventCallback<string> OnCommand { get; set; }
 
-    /// <summary>What the reader may do to the window from its chrome.</summary>
+    /// <summary>What the reader may do to the window from its chrome, and where it is held.</summary>
     [Parameter] public WindowOptions Options { get; set; } = WindowOptions.Default;
 
     /// <summary>Raised before the window closes, on its own or with a window above it; setting <see cref="WindowClosingEventArgs.Cancel"/> keeps every window of that close open.</summary>
@@ -166,11 +160,21 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
     private bool IsPresented
         => !Minimized && !_isHidden;
 
+    private bool IsInert
+        => Disabled || _isBlocked;
+
     private bool ShowsHandles
         => IsFloating && Options.Resizable && !Maximized;
 
+    // A root modal blocks the whole workspace, which a backdrop beneath it makes visible; a child modal blocks its parent alone.
+    private bool ShowsBackdrop
+        => IsFloating && Modal && Parent is null;
+
     private string Role
         => IsFloating ? "dialog" : "region";
+
+    private string? AriaModal
+        => IsFloating ? (Modal ? "true" : "false") : null;
 
     private string CssClass
         => AdditionalAttributes.MergeClass(
@@ -195,6 +199,26 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
         => !TakesArrowKeys ? null
             : Options.Resizable ? "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight"
             : "ArrowUp ArrowDown ArrowLeft ArrowRight";
+
+    // A floating window is a scope only while it floats, active while it is the workspace's current window and focus is
+    // inside it. Escape closes the focused window and nothing else; a modal one bars everything beneath it; a press
+    // away reaches the window only when it is to send the window back.
+    private InputProfile Profile
+        => new()
+        {
+            Modal = Modal,
+            Escape = DismissBehavior.Dismiss,
+            CloseRequest = DismissBehavior.Dismiss,
+            PressAway = !Modal && Options.PressAway is WindowPressAway.SendToBack ? PressAwayBehavior.PassThrough : PressAwayBehavior.Ignore,
+        };
+
+    // What the profile is built from, so a profile is sent again only when one of them changed.
+    private (bool Modal, WindowPressAway PressAway) ScopeInputs
+        => (Modal, Options.PressAway);
+
+    // The element the window is held within, once the host's reference to it has been captured.
+    private ElementReference? BoundsElement
+        => Options.Bounds.Element is { Id: not null } element ? element : null;
 
     // Viewport coordinates from the pointer are physical, so the placement is written as left and top rather than
     // as logical insets.
@@ -358,28 +382,49 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_attachedMode == Mode)
+        var attachment = new WindowAttachment(Mode, Modal, BoundsElement, ShowsBackdrop);
+
+        if (_attachment != attachment)
         {
+            _attachment = attachment;
+            _renderedMaximized = IsMaximized;
+            await _window.DetachAsync();
+            await ReleaseScopeAsync();
+
+            var attached = await _window.AttachAsync(_element, _selfReference, TitleBarClass, HandleClass, StepPixels, IsFloating, IsPresented, Modal, BoundsElement, ShowsBackdrop ? _backdrop : null);
+
+            if (!attached || !IsFloating)
+            {
+                return;
+            }
+
+            if (Placement is null)
+            {
+                await _window.MeasureAsync();
+            }
+
+            await RegisterScopeAsync();
+
+            // A window that takes to floating is the one the reader is working in.
+            if (!Active && !Disabled && IsPresented)
+            {
+                await ActivateAsync();
+            }
+
             return;
         }
 
-        _attachedMode = Mode;
-        await _window.DetachAsync();
-        await ReleaseScopeAsync();
-
-        var attached = await _window.AttachAsync(_element, _selfReference, TitleBarClass, HandleClass, StepPixels, IsFloating, IsPresented);
-
-        if (!attached || !IsFloating)
+        if (_renderedMaximized != IsMaximized)
         {
-            return;
+            _renderedMaximized = IsMaximized;
+            await _window.FitAsync();
         }
 
-        if (Placement is null)
+        if (_inputScope is { } inputScope && ScopeInputs != _scopeInputs)
         {
-            await _window.MeasureAsync();
+            _scopeInputs = ScopeInputs;
+            await inputScope.UpdateAsync(Profile);
         }
-
-        await RegisterScopeAsync();
     }
 
     /// <summary>Takes the window's placement as the browser reports it, after a drag, a keyboard step, or the first measurement.</summary>
@@ -398,12 +443,26 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
         await PlacementChanged.InvokeAsync(placement);
     }
 
-    /// <summary>Closes the window as the router dismissed it.</summary>
+    /// <summary>Answers the router's dismissal: a press away sends the window back when its options say so, and anything else closes it when it is closable.</summary>
     [JSInvokable]
-    [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "The router hands every owner the action and the reason.")]
     public async Task HandleDismissAsync(DismissBehavior action, DismissReason reason)
     {
-        if (action is DismissBehavior.Dismiss && Options.Closable)
+        if (action is not DismissBehavior.Dismiss)
+        {
+            return;
+        }
+
+        if (reason is DismissReason.PressAway)
+        {
+            if (!Modal && Options.PressAway is WindowPressAway.SendToBack)
+            {
+                await SendToBackAsync();
+            }
+
+            return;
+        }
+
+        if (Options.Closable)
         {
             await CloseAsync();
         }
@@ -456,6 +515,19 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
             return PresentAsync();
         }));
 
+    ValueTask IManagedWindow.SetBlockedAsync(bool blocked)
+        => new(InvokeAsync(async () =>
+        {
+            _isBlocked = blocked;
+
+            if (blocked && _inputScope is { } inputScope)
+            {
+                await inputScope.ReleaseAsync();
+            }
+
+            StateHasChanged();
+        }));
+
     ValueTask IManagedWindow.RaiseAsync()
         => IsFloating && IsPresented ? new(InvokeAsync(() => _window.RaiseAsync().AsTask())) : ValueTask.CompletedTask;
 
@@ -504,12 +576,21 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
         await ModeChanged.InvokeAsync(mode);
     }
 
-    // A press anywhere inside makes the window current, whether or not what was pressed can take focus.
+    // A press anywhere inside makes the window current, whether or not what was pressed can take focus; one already current comes forward from wherever it was sent.
     private async Task HandlePointerDownAsync()
     {
-        if (!Active && !Disabled)
+        if (IsInert)
+        {
+            return;
+        }
+
+        if (!Active)
         {
             await ActivateAsync();
+        }
+        else if (IsFloating)
+        {
+            await BringToFrontAsync();
         }
     }
 
@@ -552,7 +633,7 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
 
     private async Task PresentAsync()
     {
-        if (_attachedMode is not null)
+        if (_attachment is not null)
         {
             await _window.PresentAsync(IsPresented);
         }
@@ -567,7 +648,8 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
 
     private async Task RegisterScopeAsync()
     {
-        var inputScope = await InputRouter.RegisterAsync(_element, FloatingProfile, _selfReference);
+        var inputs = ScopeInputs;
+        var inputScope = await InputRouter.RegisterAsync(_element, Profile, _selfReference);
 
         if (inputScope is null)
         {
@@ -582,6 +664,7 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
         }
 
         _inputScope = inputScope;
+        _scopeInputs = inputs;
     }
 
     private async Task ReleaseScopeAsync()
@@ -589,6 +672,7 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
         if (_inputScope is { } inputScope)
         {
             _inputScope = null;
+            _scopeInputs = null;
             await inputScope.DisposeAsync();
         }
     }

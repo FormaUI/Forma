@@ -388,6 +388,86 @@ describe('Window', () => {
         expect(document.activeElement).toBe(document.querySelector('#field'));
     });
 
+    const boundsAt = rect => {
+        document.body.insertAdjacentHTML('beforeend', '<div id="arena"></div>');
+        const arena = document.querySelector('#arena');
+        arena.getBoundingClientRect = () => ({ ...rect, right: rect.left + rect.width, bottom: rect.top + rect.height });
+        return arena;
+    };
+
+    it('holds a moved window within its bounding element', () => {
+        attach(box, options({ bounds: boundsAt({ left: 50, top: 40, width: 600, height: 500 }) }));
+
+        drag('.titlebar span', { clientX: 200, clientY: 90 }, { clientX: -500, clientY: -500 });
+
+        expect(box.style.left).toBe('50px');
+        expect(box.style.top).toBe('40px');
+    });
+
+    it('resizes no further than its bounding element', () => {
+        attach(box, options({ bounds: boundsAt({ left: 50, top: 40, width: 600, height: 500 }) }));
+
+        drag('.handle[data-edge=se]', { clientX: 500, clientY: 380 }, { clientX: 1500, clientY: 1500 });
+
+        expect(box.style.width).toBe('550px');
+        expect(box.style.height).toBe('460px');
+    });
+
+    it('opens an unplaced window at the center of its bounding element', () => {
+        box.style.left = '';
+        box.style.top = '';
+        box.getBoundingClientRect = () => ({ left: 300, top: 250, width: 400, height: 300, right: 700, bottom: 550 });
+
+        attach(box, options({ bounds: boundsAt({ left: 50, top: 40, width: 600, height: 500 }) }));
+
+        expect(box.style.left).toBe('150px');
+        expect(box.style.top).toBe('140px');
+        expect(reported()).toHaveLength(1);
+    });
+
+    it('fills its bounding element when maximized', () => {
+        box.classList.add('is-maximized');
+        const handle = attach(box, options({ bounds: boundsAt({ left: 50, top: 40, width: 600, height: 500 }) }));
+
+        handle.fit();
+
+        expect([box.style.left, box.style.top, box.style.width, box.style.height]).toEqual(['50px', '40px', '600px', '500px']);
+    });
+
+    it('shows its backdrop beneath it and hides both together', () => {
+        const shown = [];
+        const tracked = (element, name) => {
+            let open = false;
+            element.showPopover = vi.fn(() => { open = true; shown.push(name); });
+            element.hidePopover = vi.fn(() => { open = false; });
+            element.matches = selector => selector === ':popover-open' && open;
+        };
+        tracked(box, 'window');
+        document.body.insertAdjacentHTML('beforeend', '<div id="backdrop"></div>');
+        const backdrop = document.querySelector('#backdrop');
+        tracked(backdrop, 'backdrop');
+
+        const handle = attach(box, options({ modal: true, backdrop }));
+        handle.present(false);
+
+        expect(shown).toEqual(['backdrop', 'window']);
+        expect(backdrop.hidePopover).toHaveBeenCalledOnce();
+        expect(box.hidePopover).toHaveBeenCalledOnce();
+    });
+
+    it('keeps Tab inside a modal window', () => {
+        box.querySelector('.titlebar').insertAdjacentHTML('beforeend', '<button id="last">Last</button>');
+        document.body.insertAdjacentHTML('beforeend', '<button id="after">After</button>');
+        attach(box, options({ modal: true }));
+        document.querySelector('#last').focus();
+
+        const event = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+        document.activeElement.dispatchEvent(event);
+
+        expect(event.defaultPrevented).toBe(true);
+        expect(box.contains(document.activeElement)).toBe(true);
+    });
+
     it('stops listening once disposed', () => {
         const handle = attach(box, options());
         handle.dispose();

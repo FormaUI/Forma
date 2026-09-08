@@ -1,15 +1,16 @@
 /**
- * Window — a window's browser side: floating, it is shown in the top layer, moved by its title bar
- * and resized at its edges; either way it remembers where focus was inside it and takes focus back.
+ * Window — a window's browser side: floating, it is shown in the top layer within its bounds,
+ * moved by its title bar and resized at its edges; modal, it keeps Tab inside itself and stands
+ * on a backdrop; either way it remembers where focus was inside it and takes focus back.
  *
  * The press-move-release is DragGesture's; what remains here is what the drag means for a
- * window: which of its edges the press took hold of, the box that results, and the viewport
- * and minimum size it is held within. The box is applied to the element as the pointer moves,
+ * window: which of its edges the press took hold of, the box that results, and the region
+ * and size limits it is held within. The box is applied to the element as the pointer moves,
  * so the window follows without a round trip, and where it came to rest is reported once.
  */
 
 import { attach as attachDragGesture } from '../behaviours/DragGesture.js';
-import { focusablesIn } from '../behaviours/Focus.js';
+import { Focus, focusablesIn } from '../behaviours/Focus.js';
 import { tell } from '../../../core/scripts/Owner.js';
 
 /**
@@ -20,13 +21,17 @@ import { tell } from '../../../core/scripts/Owner.js';
  *   handleClass: string,
  *   stepPixels: number,
  *   floating: boolean,
- *   presented: boolean
+ *   presented: boolean,
+ *   modal: boolean,
+ *   bounds: HTMLElement | null,
+ *   backdrop: HTMLElement | null
  * }} options
  *   The .NET owner told where the window came to rest; the class of the element a drag moves
  *   the window by, which takes the arrow keys while focused; the class of the elements a drag
  *   resizes it by, each naming its edge in data-edge as one of n, s, e, w, ne, nw, se, sw; how
  *   far one arrow press moves or resizes the window; whether the window floats over the page;
- *   whether it is shown at all rather than minimized or hidden.
+ *   whether it is shown at all rather than minimized or hidden; whether Tab stays inside it;
+ *   the element it is held within, or null for the viewport; the popover shown beneath it, if any.
  */
 export function attach(target, options) {
     return new Window(target, options);
@@ -39,7 +44,7 @@ class Window {
     /** The class the window carries while a drag is in progress. */
     static #DraggingClass = 'is-dragging';
 
-    /** The class a window carries while it fills the viewport, when it neither moves nor resizes. */
+    /** The class a window carries while it fills its bounds, when it neither moves nor resizes. */
     static #MaximizedClass = 'is-maximized';
 
     /** The arrow keys and the direction each one moves or grows the window. */
@@ -57,14 +62,17 @@ class Window {
     #stepPixels;
     #floating;
     #presented;
+    #bounds;
+    #backdrop;
     #gesture = null;
+    #boundsObserver = null;
     #listeners = new AbortController();
     #edge = null;
     #origin = null;
     #lastFocused = null;
     #raiseAfterDrop = false;
 
-    constructor(window, { owner, titleBarClass, handleClass, stepPixels, floating, presented }) {
+    constructor(window, { owner, titleBarClass, handleClass, stepPixels, floating, presented, modal, bounds, backdrop }) {
         this.#window = window;
         this.#owner = owner;
         this.#titleBarClass = titleBarClass;
@@ -72,6 +80,8 @@ class Window {
         this.#stepPixels = stepPixels;
         this.#floating = floating;
         this.#presented = presented;
+        this.#bounds = bounds ?? null;
+        this.#backdrop = backdrop ?? null;
 
         const { signal } = this.#listeners;
         window.addEventListener('focusout', event => this.#remember(event.target), { signal });
@@ -91,17 +101,27 @@ class Window {
             onCancel: () => this.#handleDrop(),
         });
 
+        if (modal) {
+            new Focus(window, { wrap: true }, signal);
+        }
+
         if (presented) {
             this.#show();
-            this.#fit();
+            this.fit();
         }
 
         window.addEventListener('keydown', event => this.#handleKeyDown(event), { signal });
-        globalThis.addEventListener('resize', () => this.#fit(), { passive: true, signal });
+        globalThis.addEventListener('resize', () => this.fit(), { passive: true, signal });
+
+        if (this.#bounds && typeof ResizeObserver === 'function') {
+            this.#boundsObserver = new ResizeObserver(() => this.fit());
+            this.#boundsObserver.observe(this.#bounds);
+        }
     }
 
     dispose() {
         this.#listeners.abort();
+        this.#boundsObserver?.disconnect();
         this.#gesture?.dispose();
         this.#hide();
     }
@@ -159,9 +179,58 @@ class Window {
 
         if (presented) {
             this.#show();
-            this.#fit();
+            this.fit();
         } else {
             this.#hide();
+        }
+    }
+
+    /** Holds a presented floating window within its bounds: a maximized one fills the region it is bound to, a placed one is shrunk and moved to fit, and a box that changed is reported. */
+    fit() {
+        if (!this.#floating || !this.#presented) {
+            return;
+        }
+
+        const region = this.#region();
+
+        if (this.#isMaximized) {
+            if (this.#bounds) {
+                this.#apply({ left: region.left, top: region.top, width: region.width, height: region.height });
+            }
+
+            return;
+        }
+
+        // A window bound to an element opens at that element's center rather than the viewport's, and takes its box from there on.
+        if (!this.#isPlaced) {
+            if (this.#bounds) {
+                const { width, height } = this.#window.getBoundingClientRect();
+                this.#apply({
+                    left: region.left + Math.max(0, (region.width - width) / 2),
+                    top: region.top + Math.max(0, (region.height - height) / 2),
+                    width: Math.min(width, region.width),
+                    height: Math.min(height, region.height),
+                });
+                this.#report();
+            }
+
+            return;
+        }
+
+        const rect = this.#window.getBoundingClientRect();
+        const { minWidth, minHeight, maxWidth, maxHeight } = this.#limits();
+        const width = Math.max(minWidth, Math.min(rect.width, region.width, maxWidth));
+        const height = Math.max(minHeight, Math.min(rect.height, region.height, maxHeight));
+        const box = {
+            left: clamp(rect.left, region.left, Math.max(region.left, region.right - width)),
+            top: clamp(rect.top, region.top, Math.max(region.top, region.bottom - height)),
+            width,
+            height,
+        };
+
+        if (box.left !== rect.left || box.top !== rect.top || box.width !== rect.width || box.height !== rect.height) {
+            this.#apply(box);
+            this.#report();
         }
     }
 
@@ -193,6 +262,21 @@ class Window {
         return this.#window.querySelector(`.${this.#handleClass}`) !== null;
     }
 
+    /** Whether the window has been given a box of its own, as opposed to the centered one its stylesheet opens it at. */
+    get #isPlaced() {
+        return this.#window.style.left !== '';
+    }
+
+    /** The region the window is held within: its bounding element's box, or the viewport. */
+    #region() {
+        if (this.#bounds) {
+            const { left, top, width, height, right, bottom } = this.#bounds.getBoundingClientRect();
+            return { left, top, width, height, right, bottom };
+        }
+
+        return { left: 0, top: 0, width: globalThis.innerWidth, height: globalThis.innerHeight, right: globalThis.innerWidth, bottom: globalThis.innerHeight };
+    }
+
     /** Keeps the element focus is leaving, so focus can return there when the window is activated again. */
     #remember(element) {
         if (element instanceof HTMLElement && this.#window.contains(element)) {
@@ -219,13 +303,12 @@ class Window {
         this.nudge(dx * this.#stepPixels, dy * this.#stepPixels, resize);
     }
 
-    /** Whether the window has been given a box of its own, as opposed to the centered one its stylesheet opens it at. */
-    get #isPlaced() {
-        return this.#window.style.left !== '';
-    }
-
-    /** Raises the window into the top layer, where no ancestor's box or stacking can reach it. */
+    /** Raises the window into the top layer, where no ancestor's box or stacking can reach it, with its backdrop shown first so it stands beneath. */
     #show() {
+        if (this.#backdrop && typeof this.#backdrop.showPopover === 'function' && !this.#backdrop.matches(':popover-open')) {
+            this.#backdrop.showPopover();
+        }
+
         if (typeof this.#window.showPopover === 'function' && !this.#window.matches(':popover-open')) {
             this.#window.showPopover();
             topmost = this;
@@ -237,31 +320,12 @@ class Window {
             this.#window.hidePopover();
         }
 
+        if (this.#backdrop && typeof this.#backdrop.hidePopover === 'function' && this.#backdrop.matches(':popover-open')) {
+            this.#backdrop.hidePopover();
+        }
+
         if (topmost === this) {
             topmost = null;
-        }
-    }
-
-    /** Holds a placed window within the viewport, shrinking it to fit where it must, and reports a box that changed. */
-    #fit() {
-        if (!this.#presented || this.#isMaximized || !this.#isPlaced) {
-            return;
-        }
-
-        const rect = this.#window.getBoundingClientRect();
-        const { minWidth, minHeight, maxWidth, maxHeight } = this.#limits();
-        const width = Math.max(minWidth, Math.min(rect.width, globalThis.innerWidth, maxWidth));
-        const height = Math.max(minHeight, Math.min(rect.height, globalThis.innerHeight, maxHeight));
-        const box = {
-            left: clamp(rect.left, 0, Math.max(0, globalThis.innerWidth - width)),
-            top: clamp(rect.top, 0, Math.max(0, globalThis.innerHeight - height)),
-            width,
-            height,
-        };
-
-        if (box.left !== rect.left || box.top !== rect.top || box.width !== rect.width || box.height !== rect.height) {
-            this.#apply(box);
-            this.#report();
         }
     }
 
@@ -312,12 +376,13 @@ class Window {
         tell(this.#owner, 'ReportPlacementAsync', left, top, width, height);
     }
 
-    /** The box moved by the pointer's travel, held so the window stays within the viewport. */
+    /** The box moved by the pointer's travel, held so the window stays within its region. */
     #moved(dx, dy) {
         const { left, top, width, height } = this.#origin;
+        const region = this.#region();
         return {
-            left: clamp(left + dx, 0, Math.max(0, globalThis.innerWidth - width)),
-            top: clamp(top + dy, 0, Math.max(0, globalThis.innerHeight - height)),
+            left: clamp(left + dx, region.left, Math.max(region.left, region.right - width)),
+            top: clamp(top + dy, region.top, Math.max(region.top, region.bottom - height)),
             width,
             height,
         };
@@ -325,30 +390,31 @@ class Window {
 
     /**
      * The box with the held edge pulled by the pointer's travel, the opposite edge staying put and the size held
-     * within its limits and within the viewport; the minimum wins over a viewport too small to hold it.
+     * within its limits and within its region; the minimum wins over a region too small to hold it.
      */
     #resized(dx, dy) {
         const { left, top, width, height, right, bottom } = this.#origin;
         const { minWidth, minHeight, maxWidth, maxHeight } = this.#limits();
+        const region = this.#region();
         const box = { left, top, width, height };
         const widest = room => Math.max(minWidth, Math.min(maxWidth, room));
         const tallest = room => Math.max(minHeight, Math.min(maxHeight, room));
 
         if (this.#edge.includes('e')) {
-            box.width = clamp(width + dx, minWidth, widest(globalThis.innerWidth - left));
+            box.width = clamp(width + dx, minWidth, widest(region.right - left));
         }
 
         if (this.#edge.includes('w')) {
-            box.width = clamp(width - dx, minWidth, widest(right));
+            box.width = clamp(width - dx, minWidth, widest(right - region.left));
             box.left = right - box.width;
         }
 
         if (this.#edge.includes('s')) {
-            box.height = clamp(height + dy, minHeight, tallest(globalThis.innerHeight - top));
+            box.height = clamp(height + dy, minHeight, tallest(region.bottom - top));
         }
 
         if (this.#edge.includes('n')) {
-            box.height = clamp(height - dy, minHeight, tallest(bottom));
+            box.height = clamp(height - dy, minHeight, tallest(bottom - region.top));
             box.top = bottom - box.height;
         }
 

@@ -4,6 +4,10 @@
 @using Forma.Blazor.Components.Symbols
 @using Forma.Framework.Icons
 
+@if (ShowsBackdrop)
+{
+    <div @ref="_backdrop" class="forma-window-backdrop" popover="manual" aria-hidden="true"></div>
+}
 <div @attributes="AdditionalAttributes"
      class="@CssClass"
      style="@Style"
@@ -12,8 +16,8 @@
      tabindex="-1"
      popover="@(IsFloating ? "manual" : null)"
      hidden="@(!IsPresented)"
-     inert="@Disabled"
-     aria-modal="@(IsFloating ? "false" : null)"
+     inert="@IsInert"
+     aria-modal="@AriaModal"
      aria-labelledby="@_titleId"
      @onpointerdown="HandlePointerDownAsync"
      @onfocusin="HandleFocusInAsync"

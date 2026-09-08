@@ -21,8 +21,13 @@ managed window of its workspace, registered for its lifetime with the parent and
 it declares, with `Active`, `Minimized`, `Modal` and `Disabled`, a cancelable `OnClosing`
 checked across the subtree before `OnClose`, a minimize command in its chrome, its own
 operations scoped to its descendants, stacking asserted by re-showing its popover, and
-focus remembered and returned on activation. Modality's blocking, press-away and bounds
-are step 3. The implementation plan at the end records what lands as each step is taken.
+focus remembered and returned on activation. Step 3 is built: a modal window registers a
+modal scope, keeps Tab inside itself, blocks its parent's subtree or the workspace, the
+blocked windows going `inert` and a root modal standing on a backdrop; a press away sends
+a window back when its options say so; a window is held, restored and maximized within
+its bounds, the viewport or an element of the page; and a window activates itself when it
+takes to floating. The window area is step 4. The implementation plan at the end records
+what lands as each step is taken.
 
 ## Purpose
 

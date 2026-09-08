@@ -42,6 +42,9 @@ public sealed class FakeWindow(string title, WindowOrigin? origin = null) : IMan
     /// <summary>Whether the manager has hidden this window under a minimized ancestor.</summary>
     public bool IsHidden { get; private set; }
 
+    /// <summary>Whether the manager has barred this window behind a modal.</summary>
+    public bool IsBlocked { get; private set; }
+
     /// <summary>Whether the manager has closed this window.</summary>
     public bool IsClosed { get; private set; }
 
@@ -80,6 +83,15 @@ public sealed class FakeWindow(string title, WindowOrigin? origin = null) : IMan
     {
         IsHidden = hidden;
         Log.Add($"hidden:{hidden}");
+
+        return ValueTask.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public ValueTask SetBlockedAsync(bool blocked)
+    {
+        IsBlocked = blocked;
+        Log.Add($"blocked:{blocked}");
 
         return ValueTask.CompletedTask;
     }

@@ -7,6 +7,7 @@ public sealed class WindowManager
     private readonly Dictionary<Guid, IManagedWindow> _parents = [];
     private readonly List<IManagedWindow> _history = [];
     private readonly HashSet<Guid> _closing = [];
+    private readonly HashSet<Guid> _blocked = [];
     private readonly SemaphoreSlim _gate = new(1, 1);
 
     /// <summary>The origin a window without one of its own resolves to.</summary>
@@ -43,6 +44,14 @@ public sealed class WindowManager
         if (IsHidden(window))
         {
             await window.SetHiddenAsync(true).ConfigureAwait(false);
+        }
+
+        await ApplyBlockingAsync().ConfigureAwait(false);
+
+        // A modal registering over the current window takes it out of reach; something eligible takes its place.
+        if (Current is IManagedWindow current && !IsEligible(current))
+        {
+            await FallBackAsync(current, _parents.GetValueOrDefault(current.Id)).ConfigureAwait(false);
         }
 
         OnChanged();
@@ -83,6 +92,7 @@ public sealed class WindowManager
                 await FallBackAsync(current, currentParent).ConfigureAwait(false);
             }
 
+            await ApplyBlockingAsync().ConfigureAwait(false);
             OnChanged();
         }
         finally
@@ -121,6 +131,7 @@ public sealed class WindowManager
                 await FallBackAsync(current, _parents.GetValueOrDefault(current.Id)).ConfigureAwait(false);
             }
 
+            await ApplyBlockingAsync().ConfigureAwait(false);
             OnChanged();
         }
         finally
@@ -241,6 +252,7 @@ public sealed class WindowManager
 
             var controlling = ControllingModalOf(target) ?? BlockerOf(target) ?? target;
             await MakeCurrentAsync(controlling).ConfigureAwait(false);
+            await ApplyBlockingAsync().ConfigureAwait(false);
             OnChanged();
 
             return WindowOperationResult.Applied([controlling]);
@@ -293,6 +305,7 @@ public sealed class WindowManager
                 await FallBackAsync(active, _parents.GetValueOrDefault(active.Id)).ConfigureAwait(false);
             }
 
+            await ApplyBlockingAsync().ConfigureAwait(false);
             OnChanged();
 
             return WindowOperationResult.Applied(affected);
@@ -335,6 +348,7 @@ public sealed class WindowManager
                 await MakeCurrentAsync(ControllingModalOf(restored) ?? restored).ConfigureAwait(false);
             }
 
+            await ApplyBlockingAsync().ConfigureAwait(false);
             OnChanged();
 
             return WindowOperationResult.Applied(affected);
@@ -405,6 +419,7 @@ public sealed class WindowManager
                 await FallBackAsync(current, currentParent).ConfigureAwait(false);
             }
 
+            await ApplyBlockingAsync().ConfigureAwait(false);
             OnChanged();
 
             return WindowOperationResult.Applied(affected);
@@ -435,6 +450,7 @@ public sealed class WindowManager
             _order.AddRange(toFront ? rest.Concat(matches) : matches.Concat(rest));
 
             await AssertOrderAsync().ConfigureAwait(false);
+            await ApplyBlockingAsync().ConfigureAwait(false);
             OnChanged();
 
             return WindowOperationResult.Applied(matches);
@@ -553,6 +569,31 @@ public sealed class WindowManager
         if (next is not null)
         {
             await MakeCurrentAsync(next).ConfigureAwait(false);
+        }
+    }
+
+    // Tells each window whose blocking changed, so a blocked one can refuse interaction and a released one take it again.
+    private async ValueTask ApplyBlockingAsync()
+    {
+        foreach (var window in _order.ToList())
+        {
+            var blocked = BlockerOf(window) is not null;
+
+            if (blocked == _blocked.Contains(window.Id))
+            {
+                continue;
+            }
+
+            if (blocked)
+            {
+                _blocked.Add(window.Id);
+            }
+            else
+            {
+                _blocked.Remove(window.Id);
+            }
+
+            await window.SetBlockedAsync(blocked).ConfigureAwait(false);
         }
     }
 
@@ -701,6 +742,7 @@ public sealed class WindowManager
         _parents.Remove(window.Id);
         _history.Remove(window);
         _closing.Remove(window.Id);
+        _blocked.Remove(window.Id);
 
         if (Current?.Id == window.Id)
         {

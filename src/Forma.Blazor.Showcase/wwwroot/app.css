@@ -866,3 +866,11 @@ body {
     place-items: center;
     padding: var(--space-4);
 }
+
+/* The arena a bounded window is held within. */
+.demo-window-arena {
+    display: grid;
+    place-items: start;
+    min-block-size: 24rem;
+    padding: var(--space-4);
+}

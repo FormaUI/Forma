@@ -132,6 +132,88 @@
     </p>
 </div>
 
+<div class="demo-section">
+    <h2>@L["Modal"]</h2>
+    <p class="description">@L["A modal child blocks the window that opened it and nothing else: Account cannot be used until Confirm is answered, while the rest of the page can. A modal root blocks the whole workspace and stands on a backdrop."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaFrame Variant="FrameVariant.Canvas" class="demo-window-canvas">
+            <FormaStackLayout>
+                <FormaWindow @ref="_account" Title="@L["Account"]" Options="new() { Dockable = false, Closable = false }" class="demo-window-fill">
+                    <Body>
+                        <FormaButton Variant="ButtonVariant.Danger" OnClick="() => _isConfirmOpen = true" Disabled="_isConfirmOpen">@L["Delete Account"]</FormaButton>
+                    </Body>
+                </FormaWindow>
+            </FormaStackLayout>
+        </FormaFrame>
+    </div>
+    @if (_isConfirmOpen && _account is not null)
+    {
+        <FormaWindow Title="@L["Confirm"]"
+                     Parent="_account"
+                     Mode="WindowMode.Floating"
+                     Modal="true"
+                     Options="new() { Dockable = false, Maximizable = false, Minimizable = false }"
+                     OnClose="() => _isConfirmOpen = false">
+            <Body>@L["Delete the account? This cannot be undone."]</Body>
+            <Footer>
+                <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _isConfirmOpen = false">@L["Keep"]</FormaButton>
+                <FormaButton Variant="ButtonVariant.Danger" OnClick="() => _isConfirmOpen = false">@L["Delete"]</FormaButton>
+            </Footer>
+        </FormaWindow>
+    }
+    <div class="demo-box">
+        <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _isNoticeOpen = true" Disabled="_isNoticeOpen">@L["Open a Workspace-Wide Modal"]</FormaButton>
+    </div>
+    @if (_isNoticeOpen)
+    {
+        <FormaWindow Title="@L["Notice"]"
+                     Mode="WindowMode.Floating"
+                     Modal="true"
+                     Options="new() { Dockable = false, Maximizable = false, Minimizable = false }"
+                     OnClose="() => _isNoticeOpen = false">
+            <Body>@L["Every other window waits until this one is closed."]</Body>
+            <Footer>
+                <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _isNoticeOpen = false">@L["Got It"]</FormaButton>
+            </Footer>
+        </FormaWindow>
+    }
+</div>
+
+<div class="demo-section">
+    <h2>@L["Press Away"]</h2>
+    <p class="description">@L["A window can answer a press outside it by going to the back. Open both: the Palette is in front; press anywhere else on the page and it goes behind the Canvas; press the Palette and it returns."]</p>
+    <div class="demo-box">
+        <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _isPairOpen = true" Disabled="_isPairOpen">@L["Open Palette and Canvas"]</FormaButton>
+    </div>
+    @if (_isPairOpen)
+    {
+        <FormaWindow Title="@L["Canvas"]" Mode="WindowMode.Floating" Placement="new(320, 200, 520, 360)" Options="new() { Dockable = false }" OnClose="() => _isPairOpen = false">
+            <Body>@L["A plain floating window."]</Body>
+        </FormaWindow>
+        <FormaWindow Title="@L["Palette"]" Mode="WindowMode.Floating" Placement="new(700, 420, 320, 240)" Options="new() { Dockable = false, Maximizable = false, PressAway = WindowPressAway.SendToBack }" OnClose="() => _isPairOpen = false">
+            <Body>@L["Goes to the back on a press away."]</Body>
+        </FormaWindow>
+    }
+</div>
+
+<div class="demo-section">
+    <h2>@L["Bounds"]</h2>
+    <p class="description">@L["A window can be held within an element instead of the viewport: it opens at the element's center, cannot be moved or resized past its edges, and maximizes to fill it."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaFrame Variant="FrameVariant.Canvas">
+            <div @ref="_arena" class="demo-window-arena">
+                <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _isBoundedOpen = true" Disabled="_isBoundedOpen">@L["Open a Bounded Window"]</FormaButton>
+            </div>
+        </FormaFrame>
+    </div>
+    @if (_isBoundedOpen)
+    {
+        <FormaWindow Title="@L["Bounded"]" Mode="WindowMode.Floating" Options="new() { Dockable = false, Bounds = WindowBounds.Container(_arena), MinResizeSize = (240, 160) }" OnClose="() => _isBoundedOpen = false">
+            <Body>@L["Held within the arena beneath."]</Body>
+        </FormaWindow>
+    }
+</div>
+
 @code {
     private double _foldersWidth = 14;
     private bool _isFloatingOpen;
@@ -143,6 +225,12 @@
     private bool _isLibraryOpen = true;
     private bool _isPropertiesOpen;
     private bool _hasUnsavedWork;
+    private FormaWindow? _account;
+    private bool _isConfirmOpen;
+    private bool _isNoticeOpen;
+    private bool _isPairOpen;
+    private ElementReference _arena;
+    private bool _isBoundedOpen;
 
     protected override void OnInitialized()
         => Manager.Changed += HandleWorkspaceChanged;

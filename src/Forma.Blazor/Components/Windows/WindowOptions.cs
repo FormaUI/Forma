@@ -5,7 +5,7 @@ using Forma.Blazor.Models;
 /// <summary>What a <see cref="FormaWindow"/> lets the reader do to it from its title bar and edges, and how far.</summary>
 public sealed record WindowOptions
 {
-    /// <summary>The defaults: closable, maximizable, minimizable, dockable and resizable, with no limits of its own.</summary>
+    /// <summary>The defaults: closable, maximizable, minimizable, dockable and resizable, held within the viewport, with no limits of its own and a press away ignored.</summary>
     public static WindowOptions Default { get; } = new();
 
     /// <summary>Whether the title bar offers a close command.</summary>
@@ -28,4 +28,10 @@ public sealed record WindowOptions
 
     /// <summary>The largest a floating window can be resized to; unset, the viewport is the limit.</summary>
     public Size? MaxResizeSize { get; init; }
+
+    /// <summary>What a floating window does when the reader presses outside it.</summary>
+    public WindowPressAway PressAway { get; init; } = WindowPressAway.Ignore;
+
+    /// <summary>The region a floating window is moved, resized, restored and maximized within.</summary>
+    public WindowBounds Bounds { get; init; } = WindowBounds.Viewport;
 }

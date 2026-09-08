@@ -488,6 +488,65 @@ public sealed class WindowManagerTests
         }
 
         [Fact]
+        public async Task Should_tell_the_windows_a_modal_blocks_and_release_them_when_it_goes()
+        {
+            // Arrange
+            var manager = new WindowManager();
+            var parent = await AddAsync(manager, "Parent");
+            var sibling = await AddAsync(manager, "Sibling");
+            var modal = new FakeWindow("Modal") { Parent = parent, IsModal = true };
+
+            // Act
+            await manager.RegisterAsync(modal);
+            var blockedWhileShown = (parent.IsBlocked, sibling.IsBlocked);
+            await manager.MinimizeAsync(Only(modal));
+            var blockedWhileMinimized = parent.IsBlocked;
+            await manager.RestoreAsync(Only(modal));
+            await manager.CloseAsync(Only(modal));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal((true, false), blockedWhileShown),
+                () => Assert.False(blockedWhileMinimized),
+                () => Assert.False(parent.IsBlocked));
+        }
+
+        [Fact]
+        public async Task Should_take_a_window_a_registering_modal_blocks_out_of_current()
+        {
+            // Arrange
+            var manager = new WindowManager();
+            var page = await AddAsync(manager, "Page");
+            await manager.ActivateAsync(Only(page));
+
+            // Act
+            await AddAsync(manager, "Modal", configure: window => window.IsModal = true);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.False(page.IsActive),
+                () => Assert.NotEqual(page, manager.Current));
+        }
+
+        [Fact]
+        public async Task Should_block_the_whole_workspace_behind_a_root_modal()
+        {
+            // Arrange
+            var manager = new WindowManager();
+            var one = await AddAsync(manager, "One");
+            var two = await AddAsync(manager, "Two");
+
+            // Act
+            var modal = await AddAsync(manager, "Modal", configure: window => window.IsModal = true);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(one.IsBlocked),
+                () => Assert.True(two.IsBlocked),
+                () => Assert.False(modal.IsBlocked));
+        }
+
+        [Fact]
         public async Task Should_not_activate_a_disabled_window()
         {
             // Arrange

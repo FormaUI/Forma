@@ -559,6 +559,153 @@
         }
 
         [Fact]
+        public void Should_announce_modality_and_stand_a_root_modal_on_a_backdrop()
+        {
+            // Arrange
+            using var ctx = new FormaWindowTests();
+            FormaWindow? parent = null;
+
+            // Act
+            var plain = ctx.Render(@<FormaWindow Title="Plain" Mode="WindowMode.Floating" />);
+            var rootModal = ctx.Render(@<FormaWindow Title="Root" Mode="WindowMode.Floating" Modal="true" />);
+            ctx.Render(@<FormaWindow @ref="parent" Title="Parent" />);
+            var childModal = ctx.Render(@<FormaWindow Title="Child" Parent="parent" Mode="WindowMode.Floating" Modal="true" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("false", plain.Find(".forma-window").GetAttribute("aria-modal")),
+                () => Assert.Equal("true", rootModal.Find(".forma-window").GetAttribute("aria-modal")),
+                () => Assert.Single(rootModal.FindAll(".forma-window-backdrop")),
+                () => Assert.Empty(childModal.FindAll(".forma-window-backdrop")),
+                () => Assert.Empty(plain.FindAll(".forma-window-backdrop")));
+        }
+
+        [Fact]
+        public void Should_go_inert_while_a_modal_child_blocks_it()
+        {
+            // Arrange
+            using var ctx = new FormaWindowTests();
+            FormaWindow? parent = null;
+            var parentCut = ctx.Render(@<FormaWindow @ref="parent" Title="Parent" />);
+            var sibling = ctx.Render(@<FormaWindow Title="Sibling" />);
+
+            // Act
+            var modal = ctx.Render(@<FormaWindow Title="Modal" Parent="parent" Mode="WindowMode.Floating" Modal="true" />);
+            var blockedWhileShown = parentCut.Find(".forma-window").HasAttribute("inert");
+            modal.Find("button[aria-label=Close]").Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(blockedWhileShown),
+                () => Assert.False(sibling.Find(".forma-window").HasAttribute("inert")),
+                () => Assert.False(parentCut.Find(".forma-window").HasAttribute("inert")));
+        }
+
+        [Fact]
+        public async Task Should_send_itself_back_on_a_press_away_when_its_options_say_so()
+        {
+            // Arrange
+            using var ctx = new FormaWindowTests();
+            var manager = ManagerOf(ctx);
+            var closed = false;
+            var cut = ctx.Render(
+                @<div>
+                    <FormaWindow Title="Back" Mode="WindowMode.Floating" Options="new() { PressAway = WindowPressAway.SendToBack }" OnClose="() => closed = true" />
+                    <FormaWindow Title="Front" Mode="WindowMode.Floating" />
+                </div>);
+            await manager.ActivateAsync(new WindowSelector { Title = "Back" });
+
+            // Act
+            await cut.FindComponents<FormaWindow>()[0].Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.PressAway);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("Back", manager.Windows[0].Title),
+                () => Assert.False(closed));
+        }
+
+        [Fact]
+        public async Task Should_come_forward_on_a_press_while_current_but_sent_back()
+        {
+            // Arrange
+            using var ctx = new FormaWindowTests();
+            var manager = ManagerOf(ctx);
+            var cut = ctx.Render(
+                @<div>
+                    <FormaWindow Title="Back" Mode="WindowMode.Floating" Options="new() { PressAway = WindowPressAway.SendToBack }" />
+                    <FormaWindow Title="Front" Mode="WindowMode.Floating" />
+                </div>);
+            await manager.ActivateAsync(new WindowSelector { Title = "Back" });
+            await cut.FindComponents<FormaWindow>()[0].Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.PressAway);
+
+            // Act
+            cut.FindAll(".forma-window")[0].PointerDown();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("Back", manager.Current?.Title),
+                () => Assert.Equal("Back", manager.Windows[^1].Title));
+        }
+
+        [Fact]
+        public async Task Should_leave_a_press_away_alone_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaWindowTests();
+            var manager = ManagerOf(ctx);
+            var closed = false;
+            var cut = ctx.Render(
+                @<div>
+                    <FormaWindow Title="Other" Mode="WindowMode.Floating" />
+                    <FormaWindow Title="Stays" Mode="WindowMode.Floating" OnClose="() => closed = true" />
+                </div>);
+
+            // Act
+            await cut.FindComponents<FormaWindow>()[1].Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.PressAway);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("Stays", manager.Windows[^1].Title),
+                () => Assert.False(closed));
+        }
+
+        [Fact]
+        public void Should_register_a_scope_shaped_by_modality_and_the_press_away_option()
+        {
+            // Arrange
+            using var ctx = new FormaWindowTests();
+            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+
+            // Act
+            ctx.Render(@<FormaWindow Title="Plain" Mode="WindowMode.Floating" />);
+            ctx.Render(@<FormaWindow Title="Sends back" Mode="WindowMode.Floating" Options="new() { PressAway = WindowPressAway.SendToBack }" />);
+            ctx.Render(@<FormaWindow Title="Modal" Mode="WindowMode.Floating" Modal="true" Options="new() { PressAway = WindowPressAway.SendToBack }" />);
+            var profiles = router.Invocations.Where(invocation => invocation.Identifier == "register").Select(invocation => Assert.IsType<InputProfile>(invocation.Arguments[1])).ToList();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(3, profiles.Count),
+                () => Assert.Equal((false, PressAwayBehavior.Ignore), (profiles[0].Modal, profiles[0].PressAway)),
+                () => Assert.Equal((false, PressAwayBehavior.PassThrough), (profiles[1].Modal, profiles[1].PressAway)),
+                () => Assert.Equal((true, PressAwayBehavior.Ignore), (profiles[2].Modal, profiles[2].PressAway)));
+        }
+
+        [Fact]
+        public void Should_become_current_when_it_takes_to_floating()
+        {
+            // Arrange
+            using var ctx = new FormaWindowTests();
+            var manager = ManagerOf(ctx);
+
+            // Act
+            ctx.Render(@<FormaWindow Title="Docked" />);
+            ctx.Render(@<FormaWindow Title="Floating" Mode="WindowMode.Floating" />);
+
+            // Assert
+            Assert.Equal("Floating", manager.Current?.Title);
+        }
+
+        [Fact]
         public void Should_be_inert_while_disabled()
         {
             // Arrange

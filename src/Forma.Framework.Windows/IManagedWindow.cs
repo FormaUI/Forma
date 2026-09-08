@@ -12,6 +12,9 @@ public interface IManagedWindow : IWindow
     /// <summary>Hides the window because an ancestor is minimized, or shows it again; the window's own state is untouched.</summary>
     ValueTask SetHiddenAsync(bool hidden);
 
+    /// <summary>Bars the window from interaction because a visible modal blocks it, or lets it interact again.</summary>
+    ValueTask SetBlockedAsync(bool blocked);
+
     /// <summary>Puts a floating window on top of every other floating window.</summary>
     ValueTask RaiseAsync();
 
