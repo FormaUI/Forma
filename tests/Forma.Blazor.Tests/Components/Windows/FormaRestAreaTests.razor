@@ -6,7 +6,7 @@
 @code {
     public sealed class Component
     {
-        private static WindowManager ManagerOf(FormaRestAreaTests ctx)
+        private static WindowManager GetManager(FormaRestAreaTests ctx)
             => ctx.Services.GetRequiredService<WindowManager>();
 
         private static List<string> Labels(IRenderedComponent<ContainerFragment> area)
@@ -33,7 +33,7 @@
         {
             // Arrange
             using var ctx = new FormaRestAreaTests();
-            var manager = ManagerOf(ctx);
+            var manager = GetManager(ctx);
             ctx.Render(@<div><FormaWindow Title="First" /><FormaWindow Title="Second" /></div>);
             var area = ctx.Render(@<FormaRestArea />);
 
@@ -52,7 +52,7 @@
         {
             // Arrange
             using var ctx = new FormaRestAreaTests();
-            var manager = ManagerOf(ctx);
+            var manager = GetManager(ctx);
             var window = ctx.Render(@<FormaWindow Title="Folders" />);
             var area = ctx.Render(@<FormaRestArea />);
             await manager.MinimizeAsync(new WindowSelector { Title = "Folders" });
@@ -73,7 +73,7 @@
         {
             // Arrange
             using var ctx = new FormaRestAreaTests();
-            var manager = ManagerOf(ctx);
+            var manager = GetManager(ctx);
             FormaWindow? parent = null;
             ctx.Render(@<FormaWindow @ref="parent" Title="Parent" />);
             ctx.Render(@<FormaWindow Title="Child" Parent="parent" />);
@@ -107,9 +107,27 @@
                 () => Assert.Equal(2, byOrigin.FindAll(".forma-rest-area-group").Count),
                 () => Assert.Equal("Explorer", byOrigin.FindAll(".forma-rest-area-group")[0].GetAttribute("aria-label")),
                 () => Assert.Equal(2, byOrigin.FindAll(".forma-rest-area-group")[0].QuerySelectorAll(".forma-rest-area-handle").Length),
-                () => Assert.Equal(["Explorer 1", "Explorer 2", "Workspace"], byInstance.FindAll(".forma-rest-area-group").Select(group => group.GetAttribute("aria-label")).ToList()),
+                () => Assert.Equal(["Explorer", "Explorer 2", "Workspace"], byInstance.FindAll(".forma-rest-area-group").Select(group => group.GetAttribute("aria-label")).ToList()),
                 () => Assert.Empty(flat.FindAll(".forma-rest-area-group")),
                 () => Assert.Contains("is-grouped", byOrigin.Find(".forma-rest-area").ClassList));
+        }
+
+        [Fact]
+        public async Task Should_keep_an_instance_groups_name_when_an_earlier_instance_closes()
+        {
+            // Arrange
+            using var ctx = new FormaRestAreaTests();
+            var first = WindowOrigin.NewInstance("explorer", "Explorer");
+            var second = WindowOrigin.NewInstance("explorer", "Explorer");
+            var manager = GetManager(ctx);
+            ctx.Render(@<div><FormaWindow Title="A" Origin="first" /><FormaWindow Title="B" Origin="second" /></div>);
+            var area = ctx.Render(@<FormaRestArea Options="new() { Grouping = RestAreaGrouping.Instance }" />);
+
+            // Act
+            await manager.CloseAsync(new WindowSelector { Title = "A" });
+
+            // Assert
+            area.WaitForAssertion(() => Assert.Equal(["Explorer 2"], area.FindAll(".forma-rest-area-group").Select(group => group.GetAttribute("aria-label")).ToList()));
         }
 
         [Fact]

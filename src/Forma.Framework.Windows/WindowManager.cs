@@ -9,6 +9,8 @@ public sealed class WindowManager
     private readonly List<IManagedWindow> _history = [];
     private readonly HashSet<Guid> _closing = [];
     private readonly HashSet<Guid> _blocked = [];
+    private readonly Dictionary<Guid, int> _instanceNumbers = [];
+    private readonly Dictionary<string, int> _lastInstanceNumbers = new(StringComparer.Ordinal);
     private readonly SemaphoreSlim _gate = new(1, 1);
 
     /// <summary>The origin a window without one of its own resolves to.</summary>
@@ -40,9 +42,10 @@ public sealed class WindowManager
             throw new ArgumentException("The window is already registered.", nameof(window));
         }
 
-        var parent = DeclaredParentOf(window);
+        var parent = GetDeclaredParent(window);
         ThrowIfClosing(parent);
 
+        NumberInstance(window.Origin);
         _stackedWindows.Add(window);
         _windows.Add(window);
         Link(window, parent);
@@ -107,13 +110,13 @@ public sealed class WindowManager
         }
     }
 
-    /// <summary>Takes in a change to what a window shows or declares: its parent is validated and re-linked, its descendants' hiding follows, a modal moves in front of what it blocks, and a current window that is no longer eligible gives way.</summary>
+    /// <summary>Takes in a change to what a window shows or declares: a new origin instance is numbered, its parent is validated and re-linked, its descendants' hiding follows, a modal moves in front of what it blocks, and a current window that is no longer eligible gives way.</summary>
     /// <exception cref="ArgumentException">The window or its parent is not registered here, or the parent is the window itself or one of its descendants.</exception>
     /// <exception cref="InvalidOperationException">The window or its parent is being asked whether it may close.</exception>
     public async ValueTask RefreshAsync(IWindow window)
     {
         var registeredWindow = GetRegisteredWindow(window, nameof(window));
-        var parent = DeclaredParentOf(registeredWindow);
+        var parent = GetDeclaredParent(registeredWindow);
 
         if (parent is not null && (parent.Id == registeredWindow.Id || IsDescendant(parent, of: registeredWindow)))
         {
@@ -127,6 +130,7 @@ public sealed class WindowManager
 
         try
         {
+            NumberInstance(registeredWindow.Origin);
             Link(registeredWindow, parent);
             await registeredWindow.SetHiddenAsync(IsHidden(registeredWindow)).ConfigureAwait(false);
             await ApplyHidingAsync(registeredWindow).ConfigureAwait(false);
@@ -203,16 +207,20 @@ public sealed class WindowManager
     }
 
     /// <summary>The parent of a window, or <see langword="null"/> for a root.</summary>
-    public IWindow? ParentOf(IWindow window)
+    public IWindow? GetParent(IWindow window)
         => _parents.GetValueOrDefault(GetRegisteredWindow(window, nameof(window)).Id);
 
     /// <summary>The direct children of a window, back to front.</summary>
-    public IReadOnlyList<IWindow> ChildrenOf(IWindow window)
+    public IReadOnlyList<IWindow> GetChildren(IWindow window)
     {
         var parent = GetRegisteredWindow(window, nameof(window));
 
         return _stackedWindows.Where(candidate => _parents.GetValueOrDefault(candidate.Id)?.Id == parent.Id).ToList();
     }
+
+    /// <summary>The number of a window's instance among the instances of its origin this workspace has seen, from 1, in the order they first registered; an instance keeps its number for the workspace's lifetime, and a number is reissued only past the limit and to no instance still open.</summary>
+    public int GetInstanceNumber(IWindow window)
+        => _instanceNumbers[GetRegisteredWindow(window, nameof(window)).Origin.InstanceId];
 
     /// <summary>Whether a window is hidden because an ancestor is minimized.</summary>
     public bool IsHidden(IWindow window)
@@ -220,14 +228,14 @@ public sealed class WindowManager
 
     /// <summary>Whether a visible modal window stands in front of this one and blocks it.</summary>
     public bool IsBlocked(IWindow window)
-        => BlockerOf(GetRegisteredWindow(window, nameof(window))) is not null;
+        => GetBlocker(GetRegisteredWindow(window, nameof(window))) is not null;
 
     /// <summary>Whether a window can take interaction: enabled, visible, and not behind a modal.</summary>
     public bool IsEligible(IWindow window)
     {
         var registeredWindow = GetRegisteredWindow(window, nameof(window));
 
-        return !registeredWindow.IsDisabled && IsVisible(registeredWindow) && BlockerOf(registeredWindow) is null;
+        return !registeredWindow.IsDisabled && IsVisible(registeredWindow) && GetBlocker(registeredWindow) is null;
     }
 
     /// <summary>Makes exactly one window the current one, restoring the ancestors and the window itself from minimization, and redirecting to the modal that controls it when one does.</summary>
@@ -256,7 +264,7 @@ public sealed class WindowManager
 
             await RestoreLineAsync(target).ConfigureAwait(false);
 
-            var controlling = ControllingModalOf(target) ?? BlockerOf(target) ?? target;
+            var controlling = GetControllingModal(target) ?? GetBlocker(target) ?? target;
             await MakeCurrentAsync(controlling).ConfigureAwait(false);
             await ApplyBlockingAsync().ConfigureAwait(false);
             OnChanged();
@@ -351,7 +359,7 @@ public sealed class WindowManager
 
             if (affected is [var restored] && IsEligible(restored))
             {
-                await MakeCurrentAsync(ControllingModalOf(restored) ?? restored).ConfigureAwait(false);
+                await MakeCurrentAsync(GetControllingModal(restored) ?? restored).ConfigureAwait(false);
             }
 
             await ApplyBlockingAsync().ConfigureAwait(false);
@@ -583,7 +591,7 @@ public sealed class WindowManager
     {
         foreach (var window in _stackedWindows.ToList())
         {
-            var blocked = BlockerOf(window) is not null;
+            var blocked = GetBlocker(window) is not null;
 
             if (blocked == _blocked.Contains(window.Id))
             {
@@ -677,11 +685,11 @@ public sealed class WindowManager
         => _history.AsEnumerable().Reverse().FirstOrDefault(window => Current is null || window.Id != Current.Id);
 
     // The modal descendant that controls a window, frontmost first, if a visible one exists.
-    private IManagedWindow? ControllingModalOf(IManagedWindow window)
+    private IManagedWindow? GetControllingModal(IManagedWindow window)
         => _stackedWindows.AsEnumerable().Reverse().FirstOrDefault(candidate => candidate.IsModal && IsVisible(candidate) && IsDescendant(candidate, of: window));
 
     // The frontmost visible modal that blocks a window, if any.
-    private IManagedWindow? BlockerOf(IManagedWindow window)
+    private IManagedWindow? GetBlocker(IManagedWindow window)
         => _stackedWindows.AsEnumerable().Reverse().FirstOrDefault(candidate => candidate.IsModal && candidate.Id != window.Id && IsVisible(candidate) && Blocked(candidate).Contains(window));
 
     // What a visible modal blocks: its parent's subtree, or the whole workspace for a root, less its own subtree.
@@ -727,7 +735,7 @@ public sealed class WindowManager
     }
 
     // The parent a window declares, as registered here.
-    private IManagedWindow? DeclaredParentOf(IWindow window)
+    private IManagedWindow? GetDeclaredParent(IWindow window)
         => window.Parent is null ? null : Find(window.Parent.Id) ?? throw new ArgumentException("The window's parent is not registered in this workspace.", nameof(window));
 
     private void Link(IManagedWindow window, IManagedWindow? parent)
@@ -741,6 +749,28 @@ public sealed class WindowManager
             _parents[window.Id] = parent;
         }
     }
+
+    // Numbers start at 1 and wrap back to 1 past the limit, skipping any number a live instance of the origin still holds.
+    private void NumberInstance(WindowOrigin origin)
+    {
+        if (_instanceNumbers.ContainsKey(origin.InstanceId))
+        {
+            return;
+        }
+
+        var number = NextInstanceNumber(_lastInstanceNumbers.GetValueOrDefault(origin.OriginId));
+
+        while (_windows.Any(window => window.Origin.OriginId == origin.OriginId && _instanceNumbers.GetValueOrDefault(window.Origin.InstanceId) == number))
+        {
+            number = NextInstanceNumber(number);
+        }
+
+        _lastInstanceNumbers[origin.OriginId] = number;
+        _instanceNumbers[origin.InstanceId] = number;
+    }
+
+    private static int NextInstanceNumber(int number)
+        => number == int.MaxValue ? 1 : number + 1;
 
     private void Remove(IManagedWindow window)
     {

@@ -128,7 +128,7 @@ public sealed class WindowManagerTests
             Assert.Multiple(
                 () => Assert.IsType<ArgumentException>(self),
                 () => Assert.IsType<ArgumentException>(cycle),
-                () => Assert.Null(manager.ParentOf(parent)));
+                () => Assert.Null(manager.GetParent(parent)));
         }
 
         [Fact]
@@ -146,9 +146,9 @@ public sealed class WindowManagerTests
 
             // Assert
             Assert.Multiple(
-                () => Assert.Same(second, manager.ParentOf(child)),
-                () => Assert.Empty(manager.ChildrenOf(first)),
-                () => Assert.Equal(["Child"], Titles(manager.ChildrenOf(second))));
+                () => Assert.Same(second, manager.GetParent(child)),
+                () => Assert.Empty(manager.GetChildren(first)),
+                () => Assert.Equal(["Child"], Titles(manager.GetChildren(second))));
         }
 
         [Fact]
@@ -627,6 +627,50 @@ public sealed class WindowManagerTests
             Assert.Multiple(
                 () => Assert.Equal(["Second", "First"], Titles(manager.StackedWindows)),
                 () => Assert.Equal(["First", "Second"], Titles(manager.Windows)));
+        }
+
+        [Fact]
+        public async Task Should_number_instances_per_origin_and_never_reuse_a_number()
+        {
+            // Arrange
+            var manager = new WindowManager();
+            var first = WindowOrigin.NewInstance("explorer", "Explorer");
+            var second = WindowOrigin.NewInstance("explorer", "Explorer");
+            var third = WindowOrigin.NewInstance("explorer", "Explorer");
+            var firstWindow = await AddAsync(manager, "A", origin: first);
+            var secondWindow = await AddAsync(manager, "B", origin: second);
+            var other = await AddAsync(manager, "C");
+
+            // Act
+            await manager.UnregisterAsync(firstWindow);
+            var thirdWindow = await AddAsync(manager, "D", origin: third);
+            var returning = await AddAsync(manager, "E", origin: first);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(2, manager.GetInstanceNumber(secondWindow)),
+                () => Assert.Equal(1, manager.GetInstanceNumber(other)),
+                () => Assert.Equal(3, manager.GetInstanceNumber(thirdWindow)),
+                () => Assert.Equal(1, manager.GetInstanceNumber(returning)));
+        }
+
+        [Fact]
+        public async Task Should_number_a_window_under_the_origin_it_now_declares()
+        {
+            // Arrange
+            var manager = new WindowManager();
+            await AddAsync(manager, "A", origin: WindowOrigin.NewInstance("explorer", "Explorer"));
+            var window = await AddAsync(manager, "B");
+
+            // Act
+            window.Origin = WindowOrigin.NewInstance("explorer", "Explorer");
+            await manager.RefreshAsync(window);
+            var later = await AddAsync(manager, "C", origin: WindowOrigin.NewInstance("explorer", "Explorer"));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(2, manager.GetInstanceNumber(window)),
+                () => Assert.Equal(3, manager.GetInstanceNumber(later)));
         }
 
         [Fact]

@@ -50,21 +50,17 @@ public sealed partial class FormaRestArea : ComponentBase, IDisposable
             _ => [new RestAreaGroup(null, Manager.Windows)],
         };
 
-    // One group per instance, numbered in registration order where an origin runs more than once.
+    // One group per instance, named for its origin and carrying the workspace's instance number from the second instance on.
     private IEnumerable<RestAreaGroup> InstanceGroups()
+        => Manager.Windows
+            .GroupBy(window => window.Origin.InstanceId)
+            .Select(group => new RestAreaGroup(InstanceName(group.First()), [.. group]));
+
+    private string InstanceName(IWindow window)
     {
-        var instances = Manager.Windows.GroupBy(window => window.Origin.InstanceId).ToList();
-        var instancesPerOrigin = instances.CountBy(group => group.First().Origin.OriginId, StringComparer.Ordinal).ToDictionary();
-        var numbers = new Dictionary<string, int>(StringComparer.Ordinal);
+        var number = Manager.GetInstanceNumber(window);
 
-        foreach (var group in instances)
-        {
-            var origin = group.First().Origin;
-            var number = numbers[origin.OriginId] = numbers.GetValueOrDefault(origin.OriginId) + 1;
-            var name = instancesPerOrigin[origin.OriginId] > 1 ? L["{Origin} {Number}", origin.OriginName, number] : origin.OriginName;
-
-            yield return new RestAreaGroup(name, [.. group]);
-        }
+        return number == 1 ? window.Origin.OriginName : L["{Origin} {Number}", window.Origin.OriginName, number];
     }
 
     /// <inheritdoc />

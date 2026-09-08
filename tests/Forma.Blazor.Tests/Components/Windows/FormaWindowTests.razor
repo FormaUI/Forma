@@ -489,7 +489,7 @@
 
     public sealed class Workspace
     {
-        private static WindowManager ManagerOf(FormaWindowTests ctx)
+        private static WindowManager GetWindowManager(FormaWindowTests ctx)
             => ctx.Services.GetRequiredService<WindowManager>();
 
         [Fact]
@@ -497,7 +497,7 @@
         {
             // Arrange
             using var ctx = new FormaWindowTests();
-            var manager = ManagerOf(ctx);
+            var manager = GetWindowManager(ctx);
 
             // Act
             ctx.Render(@<FormaWindow Title="Folders" />);
@@ -523,7 +523,7 @@
             // Assert
             Assert.Multiple(
                 () => Assert.Single(nested.StackedWindows),
-                () => Assert.Empty(ManagerOf(ctx).StackedWindows));
+                () => Assert.Empty(GetWindowManager(ctx).StackedWindows));
         }
 
         [Fact]
@@ -531,7 +531,7 @@
         {
             // Arrange
             using var ctx = new FormaWindowTests();
-            var manager = ManagerOf(ctx);
+            var manager = GetWindowManager(ctx);
             var own = WindowOrigin.NewInstance("explorer", "Explorer");
             var cascaded = WindowOrigin.NewInstance("shell", "Shell");
             FormaWindow? parent = null;
@@ -577,7 +577,7 @@
         {
             // Arrange
             using var ctx = new FormaWindowTests();
-            var manager = ManagerOf(ctx);
+            var manager = GetWindowManager(ctx);
             bool? active = null;
             var cut = ctx.Render(@<FormaWindow Title="Folders" ActiveChanged="value => active = value" />);
 
@@ -596,7 +596,7 @@
         {
             // Arrange
             using var ctx = new FormaWindowTests();
-            var manager = ManagerOf(ctx);
+            var manager = GetWindowManager(ctx);
             var cut = ctx.Render(@<FormaWindow Title="Folders"><Body>Plain text</Body></FormaWindow>);
 
             // Act
@@ -673,7 +673,7 @@
         {
             // Arrange
             using var ctx = new FormaWindowTests();
-            var manager = ManagerOf(ctx);
+            var manager = GetWindowManager(ctx);
             var closed = false;
             var cut = ctx.Render(
                 @<div>
@@ -696,7 +696,7 @@
         {
             // Arrange
             using var ctx = new FormaWindowTests();
-            var manager = ManagerOf(ctx);
+            var manager = GetWindowManager(ctx);
             var cut = ctx.Render(
                 @<div>
                     <FormaWindow Title="Back" Mode="WindowMode.Floating" Options="new() { PressAway = WindowPressAway.SendToBack }" />
@@ -719,7 +719,7 @@
         {
             // Arrange
             using var ctx = new FormaWindowTests();
-            var manager = ManagerOf(ctx);
+            var manager = GetWindowManager(ctx);
             var closed = false;
             var cut = ctx.Render(
                 @<div>
@@ -762,7 +762,7 @@
         {
             // Arrange
             using var ctx = new FormaWindowTests();
-            var manager = ManagerOf(ctx);
+            var manager = GetWindowManager(ctx);
 
             // Act
             ctx.Render(@<FormaWindow Title="Docked" />);
@@ -845,7 +845,7 @@
         {
             // Arrange
             using var ctx = new FormaWindowTests();
-            var manager = ManagerOf(ctx);
+            var manager = GetWindowManager(ctx);
             FormaWindow? parent = null;
             ctx.Render(@<FormaWindow @ref="parent" Title="Parent" />);
             ctx.Render(
@@ -861,7 +861,7 @@
             Assert.Multiple(
                 () => Assert.True(result.Succeeded),
                 () => Assert.Single(result.Windows),
-                () => Assert.Same(parent, manager.ParentOf(result.Windows[0])));
+                () => Assert.Same(parent, manager.GetParent(result.Windows[0])));
         }
     }
 }

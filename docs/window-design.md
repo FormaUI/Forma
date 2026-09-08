@@ -260,6 +260,7 @@ manager.StackedWindows             // from the back of the stacking order to the
 manager.GetWindowById(id)
 manager.TryGetWindowById(id, out window)
 manager.TryFindWindows(selector, out windows)
+manager.GetInstanceNumber(window)  // among its origin's instances, from 1, kept for life
 
 manager.ActivateAsync(selector)
 manager.BringToFrontAsync(selector)
@@ -412,9 +413,11 @@ the resize handle the window's `HandleClass` names.
 Choosing a handle restores the window if minimized, brings it to the front, and activates
 it. A window sent back comes forward and activates in place. Handles group by `OriginId`
 or `InstanceId`; grouping is presentation and never changes parentage. A group is named
-for its origin, and when grouping by instance leaves an origin with more than one group,
-each is numbered in registration order ("Explorer 1", "Explorer 2") so a screen reader
-tells them apart.
+for its origin. Grouped by instance, the first instance of an origin keeps the plain name
+and every later one carries the number the workspace gave it when it first registered
+("Explorer", "Explorer 2", "Explorer 3"), so a screen reader tells them apart and a name,
+once heard, never changes: closing an instance leaves the others' names as they were, and
+a number is reissued only past the limit, and never to one an open instance holds.
 
 The area stands alone or inside `FormaLaunchBar`, laid out as a row, a column, or a grid.
 It follows the manager whose windows it presents.
