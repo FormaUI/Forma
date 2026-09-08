@@ -13,7 +13,7 @@ using Forma.Framework.Windows;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>A raised frame with chrome: a title bar carrying the title, an icon and commands, then an optional header band, the body, and an optional footer band. It stands embedded in its parent's layout or floats over the page, where the reader moves it by its title bar, resizes it at its edges, and maximizes it to its bounds. It is a window of its workspace: activated, stacked, minimized and closed with the windows around it and the windows it opened, and blocking them while modal.</summary>
+/// <summary>A raised scrim with chrome: a title bar carrying the title, an icon and commands, then an optional header band, the body, and an optional footer band. It stands embedded in its parent's layout or floats over the page, where the reader moves it by its title bar, resizes it at its edges, and maximizes it to its bounds. It is a window of its workspace: activated, stacked, minimized and closed with the windows around it and the windows it opened, and blocking them while modal.</summary>
 public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncDisposable
 {
     /// <summary>The class the resize handles carry, one per edge and corner.</summary>
@@ -33,7 +33,7 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
 
     private readonly string _titleId = $"forma-window-title-{Guid.NewGuid():N}";
     private ElementReference _element;
-    private ElementReference _backdrop;
+    private ElementReference _scrim;
     private Window _window = default!;
     private DotNetObjectReference<FormaWindow> _selfReference = default!;
     private InputScope? _inputScope;
@@ -173,8 +173,8 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
     private bool ShowsHandles
         => IsFloating && Options.Resizable && !Maximized && !Locked;
 
-    // A root modal blocks the whole workspace, which a backdrop beneath it makes visible; a child modal blocks its parent alone.
-    private bool ShowsBackdrop
+    // A root modal blocks the whole workspace, which a scrim beneath it makes visible; a child modal blocks its parent alone.
+    private bool ShowsScrim
         => IsFloating && Modal && Parent is null;
 
     private string Role
@@ -408,7 +408,7 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var attachment = new WindowAttachment(Mode, Modal, BoundsElement, ShowsBackdrop);
+        var attachment = new WindowAttachment(Mode, Modal, BoundsElement, ShowsScrim);
 
         if (_attachment != attachment)
         {
@@ -417,7 +417,7 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
             await _window.DetachAsync();
             await ReleaseScopeAsync();
 
-            var attached = await _window.AttachAsync(_element, _selfReference, TitleBarClass, HandleClass, StepPixels, IsFloating, IsPresented, Modal, BoundsElement, ShowsBackdrop ? _backdrop : null);
+            var attached = await _window.AttachAsync(_element, _selfReference, TitleBarClass, HandleClass, StepPixels, IsFloating, IsPresented, Modal, BoundsElement, ShowsScrim ? _scrim : null);
 
             if (!attached || !IsFloating)
             {

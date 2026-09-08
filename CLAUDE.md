@@ -331,28 +331,29 @@ A component whose sub-components only work inside it still has to hand them stat
 - Don't set `font-family` on form elements.
 - Don't use motion as the only channel communicating state.
 
-### Frames on a canvas
+### Backdrops on a canvas
 
-A page is a canvas with frames laid on it, the way VS Code's sections stand on its workbench. A frame is told apart from the frame beside it by tone or by the seam between them, never by a line drawn across it. The words, used the same way in code, tokens, docs and the Showcase:
+A page is a canvas with backdrops laid on it, the way VS Code's sections stand on its workbench. A backdrop is told apart from the backdrop beside it by tone or by the seam between them, never by a line drawn across it. The words, used the same way in code, tokens, docs and the Showcase:
 
-- A **frame** is a region of the page, `FormaFrame`.
-- A **variant** is the look a frame takes, `FrameVariant`, and every frame has exactly one: **Flat** lies in its parent and is told apart by tone alone; **Raised** stands off the canvas as a card with a corner and a small shadow; **Inset** is set back a tone, as a header strip or a toolbar band; **Canvas** is the frame other frames are laid on.
-- The **canvas** is a frame in the Canvas variant. It is one variant among four, not a different kind of thing.
-- A **seam** is the one spacing step of the parent, `--space-1`, showing between two frames.
-- A **stack** is `FormaStackLayout`: frames along one axis, a seam apart, vertical or horizontal.
-- A **window** is `FormaWindow`: a raised frame with chrome — a title bar, an optional header band, the body, an optional footer band — that stands embedded in a stack or floats over the page. A dialog is a modal window.
+- A **backdrop** is a region of the page, `FormaBackdrop`.
+- A **variant** is the look a backdrop takes, `BackdropVariant`, and every backdrop has exactly one: **Flat** lies in its parent and is told apart by tone alone; **Raised** stands off the canvas as a card with a corner and a small shadow; **Inset** is set back a tone, as a header strip or a toolbar band; **Canvas** is the backdrop other backdrops are laid on.
+- The **canvas** is a backdrop in the Canvas variant. It is one variant among four, not a different kind of thing.
+- A **seam** is the one spacing step of the parent, `--space-1`, showing between two backdrops.
+- A **stack** is `FormaStackLayout`: backdrops along one axis, a seam apart, vertical or horizontal.
+- A **scrim** is the translucent dark layer a modal stands on, dimming and blocking what lies beneath it: `--scrim-color`, the window's `forma-window-scrim`, and what a native dialog draws as its `::backdrop`. The word is the theatre's, for the gauze that dims the scene behind it, and Material Design's for this layer; it is the library's only word for it, so that "backdrop" means the surface alone.
+- A **window** is `FormaWindow`: a raised backdrop with chrome — a title bar, an optional header band, the body, an optional footer band — that stands embedded in a stack or floats over the page. A dialog is a modal window.
 
-- Do compose a region from `FormaFrame` and `FormaStackLayout` rather than drawing a panel's fill, corner, shadow or gap in a component's own stylesheet; a component that hand-draws a card is a component the frame model cannot theme.
-- Do give each variant its own token, `--frame-{variant}-bg-color`, so a theme restyles every frame by redefining that set.
-- Do tell two frames apart by tone, or by the seam between them, and keep the seam one step wide everywhere.
-- Do place a `FormaSplitter` between two frames of a stack so it stands in the seam, invisible at rest and taking no room of its own.
-- Don't draw a border, a rule or a hairline inside a frame, and don't give one host a wider or narrower seam than another.
+- Do compose a region from `FormaBackdrop` and `FormaStackLayout` rather than drawing a panel's fill, corner, shadow or gap in a component's own stylesheet; a component that hand-draws a card is a component the backdrop model cannot theme.
+- Do give each variant its own token, `--backdrop-{variant}-bg-color`, so a theme restyles every backdrop by redefining that set.
+- Do tell two backdrops apart by tone, or by the seam between them, and keep the seam one step wide everywhere.
+- Do place a `FormaSplitter` between two backdrops of a stack so it stands in the seam, invisible at rest and taking no room of its own.
+- Don't draw a border, a rule or a hairline inside a backdrop, and don't give one host a wider or narrower seam than another.
 
 ### One scale for size and space
 
 Every measurement a component makes comes from one scale, so a child agrees with its parent and one component agrees with the next. The scale is the 4px grid that Material, Apple's guidelines and Bootstrap all build on, expressed in rem so it follows the reader's font size; nothing about it is Forma's invention, and nothing outside it is a component's to invent.
 
-- Do take every gap, padding and margin from the spacing tokens, and give each step one job: `--space-1` (0.25rem) between a glyph and its label inside one control and between the frames laid on a canvas, `--space-2` (0.5rem) between controls in a row and as a control's block padding, `--space-3` (0.75rem) as a control's inline padding and between groups in a row, `--space-4` (1rem) between blocks and as a panel's padding, `--space-5` (1.5rem) and `--space-6` (2rem) between sections.
+- Do take every gap, padding and margin from the spacing tokens, and give each step one job: `--space-1` (0.25rem) between a glyph and its label inside one control and between the backdrops laid on a canvas, `--space-2` (0.5rem) between controls in a row and as a control's block padding, `--space-3` (0.75rem) as a control's inline padding and between groups in a row, `--space-4` (1rem) between blocks and as a panel's padding, `--space-5` (1.5rem) and `--space-6` (2rem) between sections.
 - Do take every text size from the type tokens — `--font-size-xs` for a caption or a badge, `--font-size-sm` for a target's label and dense data, `--font-size-base` for prose and inputs, `--font-size-lg` for a section or dialog heading, `--font-size-xl` for a page title, `--font-size-2xl` for a display figure — and line height from `--line-height-prose` (1.5) or `--line-height-target` (1.25).
 - Do take every corner from the radius tokens: `--radius-sm` on a control, `--radius-md` on a card, popover or panel, `--radius-lg` on a dialog or toast, `--radius-pill` on a badge or a chip; `50%` stays for a genuine circle.
 - Do keep `em` for what must scale with the text it sits in — a glyph inline with text, sub- and superscript, the typography of authored content — and `px` for a hairline, a focus ring, a shadow offset and a 1–2px optical nudge against a border; everything else is a token.

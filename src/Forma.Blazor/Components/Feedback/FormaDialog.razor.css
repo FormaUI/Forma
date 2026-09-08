@@ -1,6 +1,6 @@
 /*
     FormaDialog — scoped styles
-    Uses the native <dialog> element for backdrop and focus trap; Escape belongs to the input router.
+    Uses the native <dialog> element for scrim and focus trap; Escape belongs to the input router.
 */
 
 /* ── Dialog reset ── */
@@ -23,9 +23,9 @@ dialog.forma-dialog[open] {
     transform: translateY(0) scale(1);
 }
 
-/* ── Backdrop ── */
+/* ── Scrim ── */
 dialog.forma-dialog::backdrop {
-    background-color: var(--dialog-backdrop-color);
+    background-color: var(--scrim-color);
 }
 
 @starting-style {

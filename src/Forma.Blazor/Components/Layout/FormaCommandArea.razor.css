@@ -1,6 +1,6 @@
 /* ============================================================
    FormaCommandArea — CSS isolation
-   The region alone: a strip set back into its frame, and the
+   The region alone: a strip set back into its backdrop, and the
    stack its bars sit in. What fills a bar is the caller's.
    ============================================================ */
 
@@ -9,6 +9,6 @@
     flex-direction: column;
     gap: var(--space-2);
     padding: var(--forma-command-area-padding, var(--space-3));
-    background: var(--forma-command-area-bg-color, var(--frame-inset-bg-color));
+    background: var(--forma-command-area-bg-color, var(--backdrop-inset-bg-color));
     box-sizing: border-box;
 }

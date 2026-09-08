@@ -27,11 +27,11 @@
 }
 
 /* A header starts where its column's cells start; the browser would center it on its own. The header row is a strip
-   set back into the frame, opaque so a frozen header covers the headers sliding beneath it. */
+   set back into the backdrop, opaque so a frozen header covers the headers sliding beneath it. */
 .forma-explorer-details-table th {
     font-weight: 600;
     color: var(--text-primary-color);
-    background: var(--frame-inset-bg-color);
+    background: var(--backdrop-inset-bg-color);
     text-align: start;
     white-space: nowrap;
     user-select: none;
@@ -61,15 +61,15 @@
     max-inline-size: 0;
 }
 
-/* A frozen cell lays its row's tint over the frame's fill, so the cells sliding beneath it do not show through. */
+/* A frozen cell lays its row's tint over the backdrop's fill, so the cells sliding beneath it do not show through. */
 .forma-explorer-details-table td.forma-freeze-pane-frozen {
-    background: linear-gradient(var(--forma-explorer-row-tint), var(--forma-explorer-row-tint)) var(--frame-flat-bg-color);
+    background: linear-gradient(var(--forma-explorer-row-tint), var(--forma-explorer-row-tint)) var(--backdrop-flat-bg-color);
 }
 
 /* A group's cell spans the row; the heading inside it stays in view at the row's start as the columns scroll. */
 .forma-explorer-details-table .forma-explorer-group-cell {
     padding-block: var(--space-1);
-    background: var(--frame-inset-bg-color);
+    background: var(--backdrop-inset-bg-color);
     cursor: default;
 }
 

@@ -1,0 +1,58 @@
+@page "/backdrop"
+@attribute [ShowcasePage("FormaBackdrop")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Layout
+@inject IStringLocale<FormaBackdropPage> L
+
+<h1>FormaBackdrop</h1>
+<p class="description">@L["A region of the page. Its variant decides its look: flat in its parent, raised off the canvas as a card, inset a tone, or the canvas other backdrops are laid on. It draws no line."]</p>
+
+<div class="demo-section">
+    <h2>@L["Flat and Inset"]</h2>
+    <p class="description">@L["Two backdrops inside one backdrop are told apart by tone alone: the inset backdrop sets a header strip or a toolbar band back from the flat backdrop beside it."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaBackdrop>
+            <FormaBackdrop Variant="BackdropVariant.Inset" class="demo-backdrop">@L["Inset: a header strip"]</FormaBackdrop>
+            <FormaBackdrop class="demo-backdrop demo-backdrop-tall">@L["Flat: the content"]</FormaBackdrop>
+        </FormaBackdrop>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Raised on a Canvas"]</h2>
+    <p class="description">@L["A raised backdrop stands off the canvas as a card, lifted by a soft shadow with the canvas showing around it."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaBackdrop Variant="BackdropVariant.Canvas">
+            <FormaBackdrop Variant="BackdropVariant.Raised" class="demo-backdrop demo-backdrop-tall">@L["Raised: a card on the canvas"]</FormaBackdrop>
+        </FormaBackdrop>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Flat inside a Card"]</h2>
+    <p class="description">@L["Inside a raised backdrop, the backdrops it holds lie flat and are told apart by tone, so the card reads as one whole."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaBackdrop Variant="BackdropVariant.Canvas">
+            <FormaBackdrop Variant="BackdropVariant.Raised">
+                <FormaBackdrop Variant="BackdropVariant.Inset" class="demo-backdrop">@L["Inset: a header strip"]</FormaBackdrop>
+                <FormaBackdrop class="demo-backdrop demo-backdrop-tall">@L["Flat: the content"]</FormaBackdrop>
+            </FormaBackdrop>
+        </FormaBackdrop>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Cards on One Canvas"]</h2>
+    <p class="description">@L["Several raised backdrops stacked on one canvas. The seam shows between them, one step wide, the same step the canvas shows around them."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaBackdrop Variant="BackdropVariant.Canvas">
+            <FormaStackLayout>
+                <FormaBackdrop Variant="BackdropVariant.Raised" class="demo-backdrop">@L["Header"]</FormaBackdrop>
+                <FormaStackLayout Orientation="StackOrientation.Horizontal">
+                    <FormaBackdrop Variant="BackdropVariant.Raised" class="demo-backdrop demo-backdrop-side">@L["Sidebar"]</FormaBackdrop>
+                    <FormaBackdrop Variant="BackdropVariant.Raised" class="demo-backdrop demo-backdrop-tall demo-backdrop-fill">@L["Content"]</FormaBackdrop>
+                </FormaStackLayout>
+            </FormaStackLayout>
+        </FormaBackdrop>
+    </div>
+</div>

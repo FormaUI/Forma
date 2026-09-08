@@ -4,9 +4,9 @@
 @using Forma.Blazor.Components.Symbols
 @using Forma.Framework.Icons
 
-@if (ShowsBackdrop)
+@if (ShowsScrim)
 {
-    <div @ref="_backdrop" class="forma-window-backdrop" popover="manual" aria-hidden="true"></div>
+    <div @ref="_scrim" class="forma-window-scrim" popover="manual" aria-hidden="true"></div>
 }
 <div @attributes="AdditionalAttributes"
      class="@CssClass"
@@ -22,7 +22,7 @@
      @onpointerdown="HandlePointerDownAsync"
      @onfocusin="HandleFocusInAsync"
      @onfocusout="HandleFocusOutAsync">
-    <FormaFrame Variant="FrameVariant.Raised" class="forma-window-frame">
+    <FormaBackdrop Variant="BackdropVariant.Raised" class="forma-window-frame">
         <div class="forma-window-content">
             <div class="@TitleBarCssClass"
                  tabindex="@(TakesArrowKeys ? "0" : null)"
@@ -53,7 +53,7 @@
                 <div class="forma-window-footer">@Footer</div>
             }
         </div>
-    </FormaFrame>
+    </FormaBackdrop>
     @if (ShowsHandles)
     {
         @foreach (var edge in Edges)

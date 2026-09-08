@@ -101,7 +101,7 @@ itself:
 | `forma-prose.css` | The look of a document the composer authored — headings, quotes, code, lists, tables, figures, links | Whenever you render composer content, in the editor or to readers |
 
 Retheming is two things: redefine the gray scale and the six role solids in a stylesheet loaded
-after Forma's, and every other token — hover, focus, links, frames, borders — follows.
+after Forma's, and every other token — hover, focus, links, backdrops, borders — follows.
 
 ## Icons
 

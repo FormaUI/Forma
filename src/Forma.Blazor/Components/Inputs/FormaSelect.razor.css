@@ -47,7 +47,7 @@
 }
 
 /* ---------- popover ---------- */
-/* The list inside the FormaPopover, which owns the top-layer placement and the backdrop. */
+/* The list inside the FormaPopover, which owns the top-layer placement and dismissal. */
 .forma-select-popover {
     padding: var(--space-2);
     display: flex;

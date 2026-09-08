@@ -13,14 +13,14 @@
     inline-size: fit-content;
 }
 
-/* While the menu is open its trigger stands above the backdrop, so a second click on it closes the menu. */
+/* While the menu is open its trigger stays reachable, so a second click on it closes the menu. */
 .forma-dropdown-menu-anchor-open {
     position: relative;
     z-index: var(--z-index-popover);
 }
 
 /* ---------- popover ---------- */
-/* The menu inside the FormaPopover, which owns the top-layer placement and the backdrop. */
+/* The menu inside the FormaPopover, which owns the top-layer placement and dismissal. */
 .forma-dropdown-menu {
     padding: var(--space-2);
     display: flex;

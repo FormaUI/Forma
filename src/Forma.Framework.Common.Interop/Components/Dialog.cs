@@ -13,9 +13,9 @@ public sealed class Dialog(IJSRuntime js)
     public ValueTask<bool> AttachAsync(ElementReference dialog)
         => AttachCoreAsync(dialog);
 
-    /// <summary>Opens the dialog as a modal, closing it on a backdrop click when requested.</summary>
-    public ValueTask<bool> OpenAsync(bool closeOnBackdropClick)
-        => InvokeAsync("open", closeOnBackdropClick);
+    /// <summary>Opens the dialog as a modal, closing it on a scrim click when requested.</summary>
+    public ValueTask<bool> OpenAsync(bool closeOnScrimClick)
+        => InvokeAsync("open", closeOnScrimClick);
 
     /// <summary>Closes the dialog if it is open.</summary>
     public ValueTask<bool> CloseAsync()

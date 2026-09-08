@@ -12,7 +12,7 @@
    ============================================================ */
 
 body {
-    background: var(--frame-canvas-bg-color);
+    background: var(--backdrop-canvas-bg-color);
 }
 
 .showcase-layout {
@@ -309,7 +309,7 @@ body {
     align-items: stretch;
     gap: var(--space-3);
     padding: var(--space-5);
-    background: var(--frame-flat-bg-color);
+    background: var(--backdrop-flat-bg-color);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-small);
 }
@@ -332,7 +332,7 @@ body {
     margin-block-start: 0;
 }
 
-/* Lets a region reach the box's own edges, the way it would seat in a real frame. */
+/* Lets a region reach the box's own edges, the way it would seat in a real backdrop. */
 .demo-box-flush {
     gap: 0;
     padding: 0;
@@ -384,15 +384,15 @@ body {
     overflow: hidden;
 }
 
-/* The first pane is set back into the frame, so the seam the splitter stands on is a change of tone. */
+/* The first pane is set back into the backdrop, so the seam the splitter stands on is a change of tone. */
 .demo-split-row > .demo-pane:first-child {
     inline-size: var(--demo-pane-size);
     flex-shrink: 0;
-    background: var(--frame-inset-bg-color);
+    background: var(--backdrop-inset-bg-color);
 }
 
 .demo-split-column > .demo-pane:first-child {
-    background: var(--frame-inset-bg-color);
+    background: var(--backdrop-inset-bg-color);
 }
 
 .demo-pane-fill {
@@ -812,31 +812,31 @@ body {
 }
 
 .demo-scroll-table thead th {
-    background: var(--frame-inset-bg-color);
+    background: var(--backdrop-inset-bg-color);
 }
 
 .demo-scroll-table td.forma-freeze-pane-frozen {
     background: var(--input-bg-color);
 }
 
-/* A region standing in for real content on the frame and layout pages: a label centred in a card or a strip. */
-.demo-frame {
+/* A region standing in for real content on the backdrop and layout pages: a label centred in a card or a strip. */
+.demo-backdrop {
     place-items: center;
     padding: var(--space-3);
     font-size: var(--font-size-sm);
     color: var(--text-secondary-color);
 }
 
-.demo-frame-tall {
+.demo-backdrop-tall {
     block-size: 8rem;
 }
 
-.demo-frame-side {
-    inline-size: var(--demo-frame-side-size, 10rem);
+.demo-backdrop-side {
+    inline-size: var(--demo-backdrop-side-size, 10rem);
     flex-shrink: 0;
 }
 
-.demo-frame-fill {
+.demo-backdrop-fill {
     flex: 1;
 }
 

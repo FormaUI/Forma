@@ -6,50 +6,50 @@
 @inject IStringLocale<FormaStackLayoutPage> L
 
 <h1>FormaStackLayout</h1>
-<p class="description">@L["Lays frames along one axis, one seam apart. The seam is one spacing step of the parent showing between them; a splitter placed between two frames stands in it and takes no room of its own."]</p>
+<p class="description">@L["Lays backdrops along one axis, one seam apart. The seam is one spacing step of the parent showing between them; a splitter placed between two backdrops stands in it and takes no room of its own."]</p>
 
 <div class="demo-section">
     <h2>@L["Vertical"]</h2>
-    <p class="description">@L["Frames one above the next."]</p>
+    <p class="description">@L["Backdrops one above the next."]</p>
     <div class="demo-box demo-box-flush">
-        <FormaFrame Variant="FrameVariant.Canvas">
+        <FormaBackdrop Variant="BackdropVariant.Canvas">
             <FormaStackLayout>
-                <FormaFrame Variant="FrameVariant.Raised" class="demo-frame">@L["Header"]</FormaFrame>
-                <FormaFrame Variant="FrameVariant.Raised" class="demo-frame demo-frame-tall">@L["Content"]</FormaFrame>
+                <FormaBackdrop Variant="BackdropVariant.Raised" class="demo-backdrop">@L["Header"]</FormaBackdrop>
+                <FormaBackdrop Variant="BackdropVariant.Raised" class="demo-backdrop demo-backdrop-tall">@L["Content"]</FormaBackdrop>
             </FormaStackLayout>
-        </FormaFrame>
+        </FormaBackdrop>
     </div>
 </div>
 
 <div class="demo-section">
     <h2>@L["Horizontal"]</h2>
-    <p class="description">@L["Frames one beside the next along the reading direction."]</p>
+    <p class="description">@L["Backdrops one beside the next along the reading direction."]</p>
     <div class="demo-box demo-box-flush">
-        <FormaFrame Variant="FrameVariant.Canvas">
+        <FormaBackdrop Variant="BackdropVariant.Canvas">
             <FormaStackLayout Orientation="StackOrientation.Horizontal">
-                <FormaFrame Variant="FrameVariant.Raised" class="demo-frame demo-frame-side">@L["Sidebar"]</FormaFrame>
-                <FormaFrame Variant="FrameVariant.Raised" class="demo-frame demo-frame-tall demo-frame-fill">@L["Content"]</FormaFrame>
+                <FormaBackdrop Variant="BackdropVariant.Raised" class="demo-backdrop demo-backdrop-side">@L["Sidebar"]</FormaBackdrop>
+                <FormaBackdrop Variant="BackdropVariant.Raised" class="demo-backdrop demo-backdrop-tall demo-backdrop-fill">@L["Content"]</FormaBackdrop>
             </FormaStackLayout>
-        </FormaFrame>
+        </FormaBackdrop>
     </div>
 </div>
 
 <div class="demo-section">
     <h2>@L["With a Splitter"]</h2>
-    <p class="description">@L["A splitter between two frames stands in the seam between them. The seam stays one step wide while the splitter is dragged."]</p>
+    <p class="description">@L["A splitter between two backdrops stands in the seam between them. The seam stays one step wide while the splitter is dragged."]</p>
     <div class="demo-box demo-box-flush">
-        <FormaFrame Variant="FrameVariant.Canvas">
+        <FormaBackdrop Variant="BackdropVariant.Canvas">
             <FormaStackLayout Orientation="StackOrientation.Horizontal" class="@(_isResizing ? "is-resizing" : "")" style="@SidebarStyle">
-                <FormaFrame Variant="FrameVariant.Raised" class="demo-frame demo-frame-side">@L["Sidebar"]</FormaFrame>
+                <FormaBackdrop Variant="BackdropVariant.Raised" class="demo-backdrop demo-backdrop-side">@L["Sidebar"]</FormaBackdrop>
                 <FormaSplitter Orientation="SplitterOrientation.Vertical"
                                @bind-Value="_sidebarWidth"
                                Min="8"
                                Max="24"
                                Label="@L["Resize Sidebar"]"
                                OnResizingChanged="resizing => _isResizing = resizing" />
-                <FormaFrame Variant="FrameVariant.Raised" class="demo-frame demo-frame-tall demo-frame-fill">@L["Content"]</FormaFrame>
+                <FormaBackdrop Variant="BackdropVariant.Raised" class="demo-backdrop demo-backdrop-tall demo-backdrop-fill">@L["Content"]</FormaBackdrop>
             </FormaStackLayout>
-        </FormaFrame>
+        </FormaBackdrop>
     </div>
     <p class="demo-note">@L["Width"]: <code>@_sidebarWidth.ToString("0.#", CultureInfo.CurrentCulture) rem</code></p>
 </div>
@@ -58,15 +58,15 @@
     <h2>@L["Nested"]</h2>
     <p class="description">@L["A stack inside a stack takes the room it is given, so a header can stand above a sidebar and content laid side by side."]</p>
     <div class="demo-box demo-box-flush">
-        <FormaFrame Variant="FrameVariant.Canvas">
+        <FormaBackdrop Variant="BackdropVariant.Canvas">
             <FormaStackLayout>
-                <FormaFrame Variant="FrameVariant.Raised" class="demo-frame">@L["Header"]</FormaFrame>
+                <FormaBackdrop Variant="BackdropVariant.Raised" class="demo-backdrop">@L["Header"]</FormaBackdrop>
                 <FormaStackLayout Orientation="StackOrientation.Horizontal">
-                    <FormaFrame Variant="FrameVariant.Raised" class="demo-frame demo-frame-side">@L["Sidebar"]</FormaFrame>
-                    <FormaFrame Variant="FrameVariant.Raised" class="demo-frame demo-frame-tall demo-frame-fill">@L["Content"]</FormaFrame>
+                    <FormaBackdrop Variant="BackdropVariant.Raised" class="demo-backdrop demo-backdrop-side">@L["Sidebar"]</FormaBackdrop>
+                    <FormaBackdrop Variant="BackdropVariant.Raised" class="demo-backdrop demo-backdrop-tall demo-backdrop-fill">@L["Content"]</FormaBackdrop>
                 </FormaStackLayout>
             </FormaStackLayout>
-        </FormaFrame>
+        </FormaBackdrop>
     </div>
 </div>
 
@@ -74,5 +74,5 @@
     private double _sidebarWidth = 12;
     private bool _isResizing;
 
-    private string SidebarStyle => FormattableString.Invariant($"--demo-frame-side-size: {_sidebarWidth}rem");
+    private string SidebarStyle => FormattableString.Invariant($"--demo-backdrop-side-size: {_sidebarWidth}rem");
 }

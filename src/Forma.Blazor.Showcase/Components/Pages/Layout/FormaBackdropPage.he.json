@@ -1,0 +1,18 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "A region of the page. Its variant decides its look: flat in its parent, raised off the canvas as a card, inset a tone, or the canvas other backdrops are laid on. It draws no line.": "אזור בעמוד. הווריאנט שלו קובע את מראהו: שטוח בתוך הורהו, מורם מעל הקנבס ככרטיס, שקוע בגוון, או הקנבס שרקעים אחרים מונחים עליו. הוא אינו מצייר קו.",
+  "Flat and Inset": "שטוח ושקוע",
+  "Two backdrops inside one backdrop are told apart by tone alone: the inset backdrop sets a header strip or a toolbar band back from the flat backdrop beside it.": "שני רקעים בתוך רקע אחד נבדלים זה מזה בגוון בלבד: הרקע השקוע מרחיק רצועת כותרת או פס סרגל כלים מהרקע השטוח שלצדו.",
+  "Inset: a header strip": "שקוע: רצועת כותרת",
+  "Flat: the content": "שטוח: התוכן",
+  "Raised on a Canvas": "מורם על קנבס",
+  "A raised backdrop stands off the canvas as a card, lifted by a soft shadow with the canvas showing around it.": "רקע מורם עומד מעל הקנבס ככרטיס, מורם בצל רך כשהקנבס נראה סביבו.",
+  "Raised: a card on the canvas": "מורם: כרטיס על הקנבס",
+  "Flat inside a Card": "שטוח בתוך כרטיס",
+  "Inside a raised backdrop, the backdrops it holds lie flat and are told apart by tone, so the card reads as one whole.": "בתוך רקע מורם, הרקעים שהוא מכיל שוכבים שטוחים ונבדלים בגוון, כך שהכרטיס נקרא כשלם אחד.",
+  "Cards on One Canvas": "כרטיסים על קנבס אחד",
+  "Several raised backdrops stacked on one canvas. The seam shows between them, one step wide, the same step the canvas shows around them.": "כמה רקעים מורמים מוערמים על קנבס אחד. התפר נראה ביניהם, ברוחב צעד אחד, אותו צעד שהקנבס מראה סביבם.",
+  "Header": "כותרת",
+  "Sidebar": "סרגל צד",
+  "Content": "תוכן"
+}

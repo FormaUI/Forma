@@ -21,9 +21,9 @@
   "No Footer": "ללא פוטר",
   "Open (no footer)": "פתח (ללא פוטר)",
   "Information": "מידע",
-  "This dialog has no footer - close it with Escape, backdrop click, or the X button.": "לדו-שיח הזה אין פוטר - אפשר לסגור עם Escape, לחיצה על הרקע או כפתור X.",
-  "Backdrop Click Disabled": "לחיצה על הרקע מבוטלת",
-  "Open (no backdrop close)": "פתח (ללא סגירה בלחיצה על הרקע)",
+  "This dialog has no footer - close it with Escape, scrim click, or the X button.": "לדו-שיח הזה אין פוטר - אפשר לסגור עם Escape, לחיצה על הווילון או כפתור X.",
+  "Scrim Click Disabled": "לחיצה על הווילון מבוטלת",
+  "Open (no scrim close)": "פתח (ללא סגירה בלחיצה על הווילון)",
   "Must Use X or Button": "יש להשתמש ב-X או בכפתור",
-  "Clicking the backdrop does not close this dialog. Use the X button or the button below.": "לחיצה על הרקע לא סוגרת את הדו-שיח הזה. השתמשו בכפתור X או בכפתור למטה."
+  "Clicking the scrim does not close this dialog. Use the X button or the button below.": "לחיצה על הווילון לא סוגרת את הדו-שיח הזה. השתמשו בכפתור X או בכפתור למטה."
 }

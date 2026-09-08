@@ -1,0 +1,71 @@
+@inherits FormaBunitContext
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_a_flat_backdrop_by_default()
+        {
+            // Arrange
+            using var ctx = new FormaBackdropTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaBackdrop><span>Inside</span></FormaBackdrop>);
+            var backdrop = cut.Find(".forma-backdrop");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("forma-backdrop", backdrop.ClassName);
+                Assert.Equal("Inside", backdrop.TextContent);
+            });
+        }
+
+        [Theory]
+        [InlineData(BackdropVariant.Raised, "forma-backdrop-raised")]
+        [InlineData(BackdropVariant.Inset, "forma-backdrop-inset")]
+        [InlineData(BackdropVariant.Canvas, "forma-backdrop-canvas")]
+        public void Should_mark_the_variant(BackdropVariant variant, string expectedClass)
+        {
+            // Arrange
+            using var ctx = new FormaBackdropTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaBackdrop Variant="variant" />);
+
+            // Assert
+            Assert.Contains(expectedClass, cut.Find(".forma-backdrop").ClassList);
+        }
+
+        [Fact]
+        public void Should_stand_backdrops_on_a_canvas_backdrop()
+        {
+            // Arrange
+            using var ctx = new FormaBackdropTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaBackdrop Variant="BackdropVariant.Canvas"><FormaBackdrop Variant="BackdropVariant.Raised">Card</FormaBackdrop></FormaBackdrop>);
+
+            // Assert
+            Assert.Equal("Card", cut.Find(".forma-backdrop-canvas > .forma-backdrop-raised").TextContent);
+        }
+
+        [Fact]
+        public void Should_merge_the_host_class_and_pass_attributes_through()
+        {
+            // Arrange
+            using var ctx = new FormaBackdropTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaBackdrop class="host-pane" data-region="side" />);
+            var backdrop = cut.Find(".forma-backdrop");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("host-pane", backdrop.ClassList);
+                Assert.Equal("side", backdrop.GetAttribute("data-region"));
+            });
+        }
+    }
+}

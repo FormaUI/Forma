@@ -1,11 +1,11 @@
 namespace Forma.Blazor.Components.Layout;
 
-/// <summary>The axis a <see cref="FormaStackLayout"/> stacks its frames along.</summary>
+/// <summary>The axis a <see cref="FormaStackLayout"/> stacks its backdrops along.</summary>
 public enum StackOrientation
 {
-    /// <summary>Frames one above the next.</summary>
+    /// <summary>Backdrops one above the next.</summary>
     Vertical,
 
-    /// <summary>Frames one beside the next along the reading direction.</summary>
+    /// <summary>Backdrops one beside the next along the reading direction.</summary>
     Horizontal,
 }

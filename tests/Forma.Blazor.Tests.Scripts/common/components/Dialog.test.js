@@ -10,7 +10,7 @@ describe('Dialog', () => {
         dialog = document.querySelector('dialog');
     });
 
-    const clickBackdrop = () => dialog.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    const clickScrim = () => dialog.dispatchEvent(new MouseEvent('click', { bubbles: true }));
 
     it('opens the dialog as a modal', () => {
         const handle = attach(dialog);
@@ -29,11 +29,11 @@ describe('Dialog', () => {
         expect(dialog.open).toBe(false);
     });
 
-    it('closes on a backdrop click when asked', () => {
+    it('closes on a scrim click when asked', () => {
         const handle = attach(dialog);
         handle.open(true);
 
-        clickBackdrop();
+        clickScrim();
 
         expect(dialog.open).toBe(false);
     });
@@ -47,18 +47,18 @@ describe('Dialog', () => {
         expect(dialog.open).toBe(true);
     });
 
-    it('ignores a backdrop click when not asked', () => {
+    it('ignores a scrim click when not asked', () => {
         const handle = attach(dialog);
         handle.open(false);
 
-        clickBackdrop();
+        clickScrim();
 
         expect(dialog.open).toBe(true);
     });
 
     // A dialog can close by Escape or a method="dialog" form without close() running, which
     // is what let the previous listener survive into the next open and close twice over.
-    it('closes once on a backdrop click after the dialog closed itself and reopened', () => {
+    it('closes once on a scrim click after the dialog closed itself and reopened', () => {
         const handle = attach(dialog);
         const close = vi.spyOn(dialog, 'close');
 
@@ -66,17 +66,17 @@ describe('Dialog', () => {
         dialog.close();
         handle.open(true);
         close.mockClear();
-        clickBackdrop();
+        clickScrim();
 
         expect(close).toHaveBeenCalledTimes(1);
     });
 
-    it('stops closing on a backdrop click once disposed', () => {
+    it('stops closing on a scrim click once disposed', () => {
         const handle = attach(dialog);
         handle.open(true);
 
         handle.dispose();
-        clickBackdrop();
+        clickScrim();
 
         expect(dialog.open).toBe(true);
     });

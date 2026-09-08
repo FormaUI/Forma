@@ -3,7 +3,7 @@
 .forma-composer-attachments {
     padding: var(--space-2) var(--space-3);
     border-block-start: 1px solid var(--forma-composer-attachments-border-color, var(--border-color));
-    background-color: var(--forma-composer-attachments-bg-color, var(--frame-inset-bg-color));
+    background-color: var(--forma-composer-attachments-bg-color, var(--backdrop-inset-bg-color));
 }
 
 .forma-composer-attachments-heading {

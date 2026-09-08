@@ -2,8 +2,8 @@
  * Dialog — opening and closing a native dialog as a modal
  *
  * showModal and close are imperative DOM calls with no HTML-attribute equivalent, and the
- * backdrop is part of the dialog element itself, so a click landing on the dialog rather
- * than on its content is a backdrop click.
+ * scrim is part of the dialog element itself, so a click landing on the dialog rather
+ * than on its content is a scrim click.
  */
 
 /**
@@ -21,7 +21,7 @@ class Dialog {
         this.#dialog = dialog;
     }
 
-    open(closeOnBackdropClick) {
+    open(closeOnScrimClick) {
         // A dialog can close without close() being called, through Escape or a method="dialog"
         // form, leaving the previous listener attached.
         this.#release();
@@ -32,7 +32,7 @@ class Dialog {
 
         this.#dialog.showModal();
 
-        if (!closeOnBackdropClick) {
+        if (!closeOnScrimClick) {
             return;
         }
 

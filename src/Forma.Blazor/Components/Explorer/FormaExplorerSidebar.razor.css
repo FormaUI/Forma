@@ -3,7 +3,7 @@
    Hierarchical folder tree with drop targets and action buttons
    ============================================================ */
 
-/* Fills the frame the explorer gives it. */
+/* Fills the backdrop the explorer gives it. */
 .forma-explorer-sidebar {
     display: flex;
     flex-direction: column;

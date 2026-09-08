@@ -1,6 +1,6 @@
 /* ============================================================
    FormaWindow — CSS isolation
-   A raised frame with chrome: a title bar, an optional header
+   A raised backdrop with chrome: a title bar, an optional header
    band, the body, an optional footer band. Embedded, it is a
    region its parent lays out; floating, a box over the page
    the reader moves by the title bar and resizes at the edges.
@@ -24,19 +24,19 @@
 
 /* The layer a root modal stands on: a manual popover shown just before the window, so it lies beneath it in the top
    layer and over everything else, dimming the workspace it blocks. */
-.forma-window-backdrop {
+.forma-window-scrim {
     position: fixed;
     inset: 0;
     margin: 0;
     border: 0;
     padding: 0;
-    background: var(--dialog-backdrop-color);
+    background: var(--scrim-color);
 }
 
 /* Floating, the window is a manual popover in the top layer, so no ancestor's margin, transform or stacking
    reaches its box; the layer token stands in where the top layer is unavailable. Until it is placed it opens
    centered at a default size; once placed, the inline left, top, width and height govern. The popover's own
-   margin, border, padding, colors and overflow are reset so the frame inside draws the window. */
+   margin, border, padding, colors and overflow are reset so the backdrop inside draws the window. */
 .forma-window-floating {
     position: fixed;
     inset: auto;
@@ -67,15 +67,15 @@
 }
 
 /* A box over the page casts a deeper shadow than a card lying on the canvas; filling its bounds, it has no corners to round. */
-.forma-window.forma-window-floating ::deep .forma-frame-raised {
+.forma-window.forma-window-floating ::deep .forma-backdrop-raised {
     box-shadow: var(--shadow-large);
 }
 
-.forma-window.is-maximized ::deep .forma-frame-raised {
+.forma-window.is-maximized ::deep .forma-backdrop-raised {
     border-radius: 0;
 }
 
-/* The bands stack inside the frame, the body taking what the chrome leaves and scrolling on its own. */
+/* The bands stack inside the backdrop, the body taking what the chrome leaves and scrolling on its own. */
 .forma-window-content {
     display: flex;
     flex-direction: column;
@@ -101,7 +101,7 @@
     cursor: grabbing;
 }
 
-/* Rings inward: an outline on the top band would be clipped by the frame's corners. */
+/* Rings inward: an outline on the top band would be clipped by the backdrop's corners. */
 .forma-window-titlebar:focus-visible {
     outline: none;
     box-shadow: var(--focus-ring-inset);

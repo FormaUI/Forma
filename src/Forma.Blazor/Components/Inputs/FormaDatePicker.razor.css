@@ -66,7 +66,7 @@
 }
 
 /* ---------- popover ---------- */
-/* The calendar inside the FormaPopover, which owns the top-layer placement and the backdrop. */
+/* The calendar inside the FormaPopover, which owns the top-layer placement and dismissal. */
 .forma-date-picker-popover {
     display: flex;
     flex-wrap: wrap;

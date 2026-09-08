@@ -33,7 +33,7 @@
 
     /* Spacing scale on a 4px grid, in rem so padding and gaps grow with the text they surround.
        Each step has one job, so two components that make the same decision pick the same value. */
-    --space-1: 0.25rem;   /* inside one target: a glyph beside its label, a badge's padding; between the frames laid on a canvas */
+    --space-1: 0.25rem;   /* inside one target: a glyph beside its label, a badge's padding; between the backdrops laid on a canvas */
     --space-2: 0.5rem;    /* between targets in a row; a target's block padding */
     --space-3: 0.75rem;   /* a target's inline padding; between groups in a row */
     --space-4: 1rem;      /* between blocks; a panel's or a card's padding */
@@ -71,8 +71,8 @@
     /* ============================================================
        Scale — the one gray ramp, paper to ink. A theme redefines these values; every gray-ish
        token below points at a step by name and follows. Each step has one job:
-         0    paper: a flat or raised frame, an input
-         50   an inset frame, a surface gone inactive
+         0    paper: a flat or raised backdrop, an input
+         50   an inset backdrop, a surface gone inactive
          100  the canvas, muted content, a disabled fill, a quiet button at rest
          200  a quiet button under the pointer
          300  a quiet button pressed, a subtle border
@@ -134,7 +134,7 @@
 
     /* ============================================================
        Text — primary and secondary. Content and every enabled target's label or glyph take the
-       primary tone or the quiet text tone below, both past 7:1 on the frame; supporting text —
+       primary tone or the quiet text tone below, both past 7:1 on the backdrop; supporting text —
        a caption, a count, a placeholder, an empty state, a hint — takes the secondary tone,
        which still meets WCAG AA at 4.5:1.
        ============================================================ */
@@ -155,14 +155,14 @@
     --disabled-text-color: var(--gray-400);
 
     /* ============================================================
-       Frames — the canvas a page paints, the frames laid on it, and the tone a region takes
-       inside a frame, one token per FrameVariant. Regions are told apart by tone and by a
-       frame's own edge, never by a line drawn across a frame.
+       Backdrops — the canvas a page paints, the backdrops laid on it, and the tone a region takes
+       inside a backdrop, one token per BackdropVariant. Regions are told apart by tone and by a
+       backdrop's own edge, never by a line drawn across a backdrop.
        ============================================================ */
-    --frame-canvas-bg-color: var(--gray-100);  /* the canvas: the frame other frames are laid on */
-    --frame-flat-bg-color: var(--gray-0);      /* a flat frame: a panel, a sheet, a content area */
-    --frame-inset-bg-color: var(--gray-50);    /* an inset frame: a header strip, a toolbar band, a table header */
-    --frame-raised-bg-color: var(--gray-0);    /* a raised frame: a card on the canvas, a popover, a dialog */
+    --backdrop-canvas-bg-color: var(--gray-100);  /* the canvas: the backdrop other backdrops are laid on */
+    --backdrop-flat-bg-color: var(--gray-0);      /* a flat backdrop: a panel, a sheet, a content area */
+    --backdrop-inset-bg-color: var(--gray-50);    /* an inset backdrop: a header strip, a toolbar band, a table header */
+    --backdrop-raised-bg-color: var(--gray-0);    /* a raised backdrop: a card on the canvas, a popover, a dialog */
 
     /* Backgrounds */
     --input-bg-color: var(--gray-0);
@@ -198,7 +198,7 @@
     --button-quiet-active-color: var(--gray-300);
     --button-quiet-text-color: var(--quiet-text-color);
 
-    /* Focus ring — a gap in the frame color, then a band of the accent, drawn as shadows so it follows the
+    /* Focus ring — a gap in the backdrop color, then a band of the accent, drawn as shadows so it follows the
        corner; --focus-ring-inset is the same ring turned inward, for a target that clips its own box. */
     --focus-color: color-mix(in srgb, var(--primary-color) 35%, transparent);
     --focus-ring-gap: 2px;
@@ -226,26 +226,27 @@
     /* A shade is a translucent dark layer laid over a picture so that what is drawn on top of it — a
        caption, the viewer's arrows, a preview's surroundings — stays readable whatever the picture's
        colors are. It is not a background: a background is what a thing sits on, a shade is what it
-       is seen through. A layer behind a dialog would be a backdrop; a generic positioned layer an overlay. */
+       is seen through. A layer behind a modal is a scrim; a generic positioned layer an overlay. */
     --media-shade-color: color-mix(in srgb, var(--black-color) 70%, transparent);
 
     /* ============================================================
        Chrome — the band a specific kind of surface paints for itself, each independently themable even where
-       today's value happens to match another. A window is a raised frame with chrome: a title bar, an
+       today's value happens to match another. A window is a raised backdrop with chrome: a title bar, an
        optional header band, the body, an optional footer band; a dialog is a modal window and reads the same
-       tokens. The bands read as inset frames and the body as a flat one; a toolbar and a status strip read
+       tokens. The bands read as inset backdrops and the body as a flat one; a toolbar and a status strip read
        as a stronger, more visible muted tone so they stay legible beside a dimmed, inactive surface.
        ============================================================ */
     --toolbar-bg-color: var(--muted-bg-color);
-    --command-area-bg-color: var(--frame-inset-bg-color);
+    --command-area-bg-color: var(--backdrop-inset-bg-color);
     --status-strip-bg-color: var(--muted-bg-color);
-    --window-titlebar-bg-color: var(--frame-inset-bg-color);
-    --window-header-bg-color: var(--frame-inset-bg-color);
-    --window-body-bg-color: var(--frame-flat-bg-color);
-    --window-footer-bg-color: var(--frame-inset-bg-color);
-    /* The layer behind a dialog, dimming the page it holds. A see-through layer, not a surface, so it is
-       named like the shade rather than as a -bg-color; fixed dark in every theme, so it points at the constant. */
-    --dialog-backdrop-color: color-mix(in srgb, var(--black-color) 45%, transparent);
+    --window-titlebar-bg-color: var(--backdrop-inset-bg-color);
+    --window-header-bg-color: var(--backdrop-inset-bg-color);
+    --window-body-bg-color: var(--backdrop-flat-bg-color);
+    --window-footer-bg-color: var(--backdrop-inset-bg-color);
+    /* The scrim: the translucent dark layer a modal stands on, dimming and blocking what lies beneath. A
+       see-through layer, not a surface, so it is named like the shade rather than as a -bg-color; fixed dark in
+       every theme, so it points at the constant. */
+    --scrim-color: color-mix(in srgb, var(--black-color) 45%, transparent);
 
     /* Layers — what stacks over the page, on Bootstrap's scale so the numbers mean the same thing
        they do elsewhere. A dialog needs none: the native element sits in the top layer above all of these.
@@ -256,7 +257,7 @@
     --z-index-toast: 1080;    /* a toast, over everything in flow */
 
     /* Shadows — cut from the ink, so they follow the theme. */
-    --shadow-color: color-mix(in srgb, var(--gray-800) 12%, transparent);  /* what a raised frame casts onto what slides beneath it, drawn as a fade */
+    --shadow-color: color-mix(in srgb, var(--gray-800) 12%, transparent);  /* what a raised backdrop casts onto what slides beneath it, drawn as a fade */
     --shadow-small: color-mix(in srgb, var(--gray-800) 4%, transparent) 0 2px 4px 0;
     --shadow-medium: 0 4px 16px color-mix(in srgb, var(--black-color) 12%, transparent);
     --shadow-large: 0 8px 30px color-mix(in srgb, var(--black-color) 18%, transparent);

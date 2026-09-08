@@ -10,7 +10,7 @@ using Forma.Framework.Localization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>A dialog rendered in the browser's top layer, with an optional header, footer actions, and backdrop dismissal, registered with the input router as a modal scope while open so Escape and a platform close request are decided there.</summary>
+/// <summary>A dialog rendered in the browser's top layer, with an optional header, footer actions, and scrim dismissal, registered with the input router as a modal scope while open so Escape and a platform close request are decided there.</summary>
 public sealed partial class FormaDialog : IAsyncDisposable
 {
     private static readonly InputProfile ModalProfile = new()
@@ -34,7 +34,7 @@ public sealed partial class FormaDialog : IAsyncDisposable
     /// <summary>Whether the dialog is currently open.</summary>
     [Parameter, EditorRequired] public bool Opened { get; set; }
 
-    /// <summary>Fired when the dialog is closed (by Escape, backdrop click, or close button).</summary>
+    /// <summary>Fired when the dialog is closed (by Escape, scrim click, or close button).</summary>
     [Parameter, EditorRequired] public EventCallback OnClose { get; set; }
 
     /// <summary>Title shown in the header. If null, the header is hidden.</summary>
@@ -97,7 +97,7 @@ public sealed partial class FormaDialog : IAsyncDisposable
             // Content that renders again while the attach round-trip is still in flight brings a
             // second pass through here, and a call made before the module answered never ran. Only
             // a call that did run counts as open, so the pass that follows it opens the dialog.
-            _isOpen = await _dialog.OpenAsync(Options.CloseOnBackdropClick);
+            _isOpen = await _dialog.OpenAsync(Options.CloseOnScrimClick);
 
             if (_isOpen && _inputScope is null)
             {

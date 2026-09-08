@@ -3,11 +3,11 @@ namespace Forma.Blazor.Components.Feedback;
 /// <summary>Default close and footer-action behavior of a <see cref="FormaDialog"/>.</summary>
 public sealed record DialogOptions
 {
-    /// <summary>The backdrop dismisses the dialog, and both default footer actions show and close it.</summary>
+    /// <summary>The scrim dismisses the dialog, and both default footer actions show and close it.</summary>
     public static DialogOptions Default { get; } = new();
 
-    /// <summary>Whether clicking the backdrop, outside the dialog, closes it.</summary>
-    public bool CloseOnBackdropClick { get; init; } = true;
+    /// <summary>Whether clicking the scrim, outside the dialog, closes it.</summary>
+    public bool CloseOnScrimClick { get; init; } = true;
 
     /// <summary>Whether the dialog closes after the default cancel action.</summary>
     public bool CloseOnCancel { get; init; } = true;

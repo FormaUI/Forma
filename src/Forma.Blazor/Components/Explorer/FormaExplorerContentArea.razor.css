@@ -4,7 +4,7 @@
    state, the infinite-scroll sentinel and the pager
    ============================================================ */
 
-/* Fills the frame the explorer gives it; the views inside reach its edges, so a header strip runs the frame's width. */
+/* Fills the backdrop the explorer gives it; the views inside reach its edges, so a header strip runs the backdrop's width. */
 .forma-explorer-content {
     min-inline-size: 0;
     min-block-size: 0;

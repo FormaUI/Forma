@@ -83,20 +83,20 @@
         <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _showNoFooter = true">@L["Open (no footer)"]</FormaButton>
         <FormaDialog Opened="_showNoFooter" OnClose="() => _showNoFooter = false" Title="@L["Information"]">
             <Body>
-                <p>@L["This dialog has no footer - close it with Escape, backdrop click, or the X button."]</p>
+                <p>@L["This dialog has no footer - close it with Escape, scrim click, or the X button."]</p>
             </Body>
         </FormaDialog>
     </div>
 </div>
 
 <div class="demo-section">
-    <h2>@L["Backdrop Click Disabled"]</h2>
+    <h2>@L["Scrim Click Disabled"]</h2>
     <div class="demo-box">
-        <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _showNoBackdrop = true">@L["Open (no backdrop close)"]</FormaButton>
-        <FormaDialog Opened="_showNoBackdrop" OnClose="() => _showNoBackdrop = false"
+        <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _showNoScrim = true">@L["Open (no scrim close)"]</FormaButton>
+        <FormaDialog Opened="_showNoScrim" OnClose="() => _showNoScrim = false"
                     Title="@L["Must Use X or Button"]" Options="RequireExplicitClose">
             <Body>
-                <p>@L["Clicking the backdrop does not close this dialog. Use the X button or the button below."]</p>
+                <p>@L["Clicking the scrim does not close this dialog. Use the X button or the button below."]</p>
             </Body>
         </FormaDialog>
     </div>
@@ -110,12 +110,12 @@
         new() { ShowCancelAction = false, ShowConfirmAction = false };
 
     private static readonly DialogOptions RequireExplicitClose =
-        new() { CloseOnBackdropClick = false, ShowConfirmAction = false };
+        new() { CloseOnScrimClick = false, ShowConfirmAction = false };
 
     private bool _showBasic;
     private bool _showNoHeader;
     private bool _showNoFooter;
-    private bool _showNoBackdrop;
+    private bool _showNoScrim;
     private bool _showFooterOnly;
     private bool _showFooterWithActions;
     private DialogSize? _activeSize;

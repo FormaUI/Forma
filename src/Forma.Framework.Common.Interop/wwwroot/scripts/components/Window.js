@@ -1,7 +1,7 @@
 /**
  * Window — a window's browser side: floating, it is shown in the top layer within its bounds,
  * moved by its title bar and resized at its edges; modal, it keeps Tab inside itself and stands
- * on a backdrop; either way it remembers where focus was inside it and takes focus back.
+ * on a scrim; either way it remembers where focus was inside it and takes focus back.
  *
  * The press-move-release is DragGesture's; what remains here is what the drag means for a
  * window: which of its edges the press took hold of, the box that results, and the region
@@ -24,7 +24,7 @@ import { tell } from '../../../core/scripts/Owner.js';
  *   presented: boolean,
  *   modal: boolean,
  *   bounds: HTMLElement | null,
- *   backdrop: HTMLElement | null
+ *   scrim: HTMLElement | null
  * }} options
  *   The .NET owner told where the window came to rest; the class of the element a drag moves
  *   the window by, which takes the arrow keys while focused; the class of the elements a drag
@@ -66,7 +66,7 @@ class Window {
     #floating;
     #presented;
     #bounds;
-    #backdrop;
+    #scrim;
     #gesture = null;
     #boundsObserver = null;
     #listeners = new AbortController();
@@ -75,7 +75,7 @@ class Window {
     #lastFocused = null;
     #raiseAfterDrop = false;
 
-    constructor(window, { owner, titleBarClass, handleClass, stepPixels, floating, presented, modal, bounds, backdrop }) {
+    constructor(window, { owner, titleBarClass, handleClass, stepPixels, floating, presented, modal, bounds, scrim }) {
         this.#window = window;
         this.#owner = owner;
         this.#titleBarClass = titleBarClass;
@@ -84,7 +84,7 @@ class Window {
         this.#floating = floating;
         this.#presented = presented;
         this.#bounds = bounds ?? null;
-        this.#backdrop = backdrop ?? null;
+        this.#scrim = scrim ?? null;
 
         const { signal } = this.#listeners;
         window.addEventListener('focusout', event => this.#remember(event.target), { signal });
@@ -317,10 +317,10 @@ class Window {
         this.nudge(dx * this.#stepPixels, dy * this.#stepPixels, resize);
     }
 
-    /** Raises the window into the top layer, where no ancestor's box or stacking can reach it, with its backdrop shown first so it stands beneath. */
+    /** Raises the window into the top layer, where no ancestor's box or stacking can reach it, with its scrim shown first so it stands beneath. */
     #show() {
-        if (this.#backdrop && typeof this.#backdrop.showPopover === 'function' && !this.#backdrop.matches(':popover-open')) {
-            this.#backdrop.showPopover();
+        if (this.#scrim && typeof this.#scrim.showPopover === 'function' && !this.#scrim.matches(':popover-open')) {
+            this.#scrim.showPopover();
         }
 
         if (typeof this.#window.showPopover === 'function' && !this.#window.matches(':popover-open')) {
@@ -334,8 +334,8 @@ class Window {
             this.#window.hidePopover();
         }
 
-        if (this.#backdrop && typeof this.#backdrop.hidePopover === 'function' && this.#backdrop.matches(':popover-open')) {
-            this.#backdrop.hidePopover();
+        if (this.#scrim && typeof this.#scrim.hidePopover === 'function' && this.#scrim.matches(':popover-open')) {
+            this.#scrim.hidePopover();
         }
 
         if (topmost === this) {

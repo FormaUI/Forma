@@ -12,11 +12,11 @@
 <CascadingValue Value="(IExplorerInteraction)this" IsFixed="true">
 <CascadingValue Value="(IExplorerItemInteraction)_itemManager" IsFixed="true">
 <div class="forma-explorer @(Options.Resizable ? "is-resizable" : "") @(Options.AsDialog ? "is-dialog" : "")">
-<FormaFrame Variant="FrameVariant.Canvas" class="forma-explorer-canvas">
+<FormaBackdrop Variant="BackdropVariant.Canvas" class="forma-explorer-canvas">
 <FormaStackLayout>
-    <FormaFrame Variant="FrameVariant.Raised" class="forma-explorer-header-frame">
+    <FormaBackdrop Variant="BackdropVariant.Raised" class="forma-explorer-header-backdrop">
         <FormaExplorerCommandArea />
-    </FormaFrame>
+    </FormaBackdrop>
 
     <!-- Refusal notice; the region stays in the DOM so a message inserted into it is announced -->
     <div class="forma-explorer-rejection-region" role="alert">
@@ -53,7 +53,7 @@
     <FormaStackLayout Orientation="StackOrientation.Horizontal" class="@BodyCssClass" style="@SidebarSizeStyle">
         @if (ShowsSidebar)
         {
-            <FormaFrame Variant="FrameVariant.Raised" class="forma-explorer-sidebar-frame">
+            <FormaBackdrop Variant="BackdropVariant.Raised" class="forma-explorer-sidebar-backdrop">
                 <FormaExplorerSidebar CurrentFolder="CurrentFolder"
                                      ItemOptions="ItemOptions"
                                      Folders="Folders"
@@ -62,7 +62,7 @@
                                      OnFolderDelete="_itemManager.RequestFolderDelete"
                                      OnFolderCreate="OpenFolderDialogAsync"
                                      OnFolderSelected="HandleFolderSelectedAsync" />
-            </FormaFrame>
+            </FormaBackdrop>
 
             <FormaSplitter Class="forma-explorer-splitter"
                            Orientation="SplitterOrientation.Vertical"
@@ -74,12 +74,12 @@
                            OnResizingChanged="resizing => _isResizingSidebar = resizing" />
         }
 
-        <FormaFrame Variant="FrameVariant.Raised" class="forma-explorer-content-frame">
+        <FormaBackdrop Variant="BackdropVariant.Raised" class="forma-explorer-content-backdrop">
             <FormaExplorerContentArea />
-        </FormaFrame>
+        </FormaBackdrop>
     </FormaStackLayout>
 </FormaStackLayout>
-</FormaFrame>
+</FormaBackdrop>
 
     <!-- Preview Lightbox Dialog -->
     @if (_preview.Resource is { } preview)

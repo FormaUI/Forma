@@ -1,31 +1,31 @@
 /* ============================================================
-   FormaFrame — CSS isolation
-   A region of the page in one of the FrameVariant looks: flat,
+   FormaBackdrop — CSS isolation
+   A region of the page in one of the BackdropVariant looks: flat,
    raised, inset or canvas. What it holds fills it.
    ============================================================ */
 
-.forma-frame {
+.forma-backdrop {
     display: grid;
     min-inline-size: 0;
     min-block-size: 0;
-    background: var(--frame-flat-bg-color);
+    background: var(--backdrop-flat-bg-color);
 }
 
 /* A card keeps what it holds inside its corners. */
-.forma-frame-raised {
-    background: var(--frame-raised-bg-color);
+.forma-backdrop-raised {
+    background: var(--backdrop-raised-bg-color);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-small);
     overflow: hidden;
 }
 
-.forma-frame-inset {
-    background: var(--frame-inset-bg-color);
+.forma-backdrop-inset {
+    background: var(--backdrop-inset-bg-color);
 }
 
 /* One spacing step of canvas shows around what stands on it, the same step a stack layout shows between them. */
-.forma-frame-canvas {
+.forma-backdrop-canvas {
     padding: var(--space-1);
-    background: var(--frame-canvas-bg-color);
+    background: var(--backdrop-canvas-bg-color);
     border-radius: var(--radius-md);
 }

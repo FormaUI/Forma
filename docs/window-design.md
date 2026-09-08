@@ -8,7 +8,7 @@ and a persistent handle for every window in `FormaRestArea`. Authoritative for
 `FormaWindow`, `FormaRestArea`, the `Forma.Framework.Windows` model, and every
 component's participation in a workspace.
 
-`FormaWindow` is built: a raised frame with chrome that is embedded in a layout or floats in
+`FormaWindow` is built: a raised backdrop with chrome that is embedded in a layout or floats in
 the top layer, moved by its title bar, resized at its edges and from the keyboard,
 maximized to the viewport, with a placement a host binds and resize limits in its
 options. Step 1 of the plan is built: `Forma.Framework.Windows` holds `IWindow`,
@@ -23,7 +23,7 @@ checked across the subtree before `OnClose`, a minimize command in its chrome, i
 operations scoped to its descendants, stacking asserted by re-showing its popover, and
 focus remembered and returned on activation. Step 3 is built: a modal window registers a
 modal scope, keeps Tab inside itself, blocks its parent's subtree or the workspace, the
-blocked windows going `inert` and a root modal standing on a backdrop; a press away sends
+blocked windows going `inert` and a root modal standing on a scrim; a press away sends
 a window back when its options say so; a window is held, restored and maximized within
 its bounds, the viewport or an element of the page; a window activates itself when it
 takes to floating; and a lockable window can be held where it is, neither moved, resized
@@ -71,7 +71,9 @@ a relationship needs an owner that sees every window at once.
   top layer stacks in show order; z-index has no effect there. The manager holds the
   order and re-asserts it in the browser by re-showing popovers bottom to top.
 - **A modal blocks its parent's subtree; a modal root blocks the workspace.** Blocking is
-  `inert` on the blocked element plus a backdrop beneath the modal in the top layer.
+  `inert` on the blocked element plus a scrim beneath the modal in the top layer: the
+  translucent dark layer that dims what lies beneath, named as the theatre and Material
+  Design name it, so that "backdrop" stays the word for the surface component.
 - **Window-level selectors reach down only.** `window.CloseAsync(selector)` means "close
   these among mine": the selector is scoped to the window's own subtree. Siblings are
   the manager's business.
@@ -387,7 +389,7 @@ Sending back and minimizing never raise `OnClose`.
 ### Modality
 
 A modal child blocks its parent's subtree; a modal root blocks the workspace. The blocked
-element is `inert` and a backdrop stands beneath the modal in the top layer, which is
+element is `inert` and a scrim stands beneath the modal in the top layer, which is
 the native dialog's own model. Choosing a handle whose window has a visible modal
 descendant brings that modal forward and activates it; the parent stays blocked until the
 modal finishes. Nested modals resolve through the router's precedence, so a handle cannot
@@ -458,7 +460,7 @@ rather than raw focus events alone, and is released while the window is hidden.
 2. **`FormaWindow` on the manager.** Registration for the component's lifetime, `Origin`
    and `Parent`, `Active` and `Minimized` with their callbacks, `OnClosing` and recursive
    close, stacking by re-showing, remembered focus, the minimize command in the chrome.
-3. **Modality, press-away, bounds.** The modal scope and backdrop, `Options.PressAway`,
+3. **Modality, press-away, bounds.** The modal scope and scrim, `Options.PressAway`,
    `Options.Bounds` in the script, maximization within a container.
 4. **`FormaRestArea`.** Handles, grouping, layouts, and its place in a launch bar.
 5. **Showcase.** A page covering the demo list below, walked in a visible browser.

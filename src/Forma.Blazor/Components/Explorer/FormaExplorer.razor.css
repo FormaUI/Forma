@@ -21,7 +21,7 @@
     container-type: inline-size;
 }
 
-/* The explorer stands on a canvas of its own, so its frames stand apart wherever it is placed. */
+/* The explorer stands on a canvas of its own, so its backdrops stand apart wherever it is placed. */
 .forma-explorer > ::deep .forma-explorer-canvas {
     flex: 1;
     border-radius: var(--forma-explorer-radius);
@@ -30,7 +30,7 @@
 /* The command region fills the header's card; FormaCommandArea's own knobs set its fill and padding. */
 ::deep .forma-explorer-header {
     --forma-command-area-padding: var(--space-3);
-    --forma-command-area-bg-color: var(--forma-explorer-header-bg-color, var(--frame-flat-bg-color));
+    --forma-command-area-bg-color: var(--forma-explorer-header-bg-color, var(--backdrop-flat-bg-color));
 }
 
 .forma-explorer.is-resizable {
@@ -142,18 +142,18 @@
 }
 
 /* --- Body Layout --- */
-/* The sidebar and the content are two frames in a row; the layout lays the seam between them and the splitter
+/* The sidebar and the content are two backdrops in a row; the layout lays the seam between them and the splitter
    stands in it. The body keeps its own height so the media scrolls inside it. */
 .forma-explorer ::deep .forma-explorer-body {
     overflow: hidden;
 }
 
-.forma-explorer ::deep .forma-explorer-sidebar-frame {
+.forma-explorer ::deep .forma-explorer-sidebar-backdrop {
     inline-size: var(--forma-explorer-sidebar-size, 18rem);
     flex-shrink: 0;
 }
 
-.forma-explorer ::deep .forma-explorer-content-frame {
+.forma-explorer ::deep .forma-explorer-content-backdrop {
     flex: 1;
 }
 
@@ -168,7 +168,7 @@
         flex-direction: column;
     }
 
-    .forma-explorer ::deep .forma-explorer-sidebar-frame {
+    .forma-explorer ::deep .forma-explorer-sidebar-backdrop {
         inline-size: auto;
         max-block-size: 11rem;
     }

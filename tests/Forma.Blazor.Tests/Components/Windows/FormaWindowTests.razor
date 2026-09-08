@@ -626,7 +626,7 @@
         }
 
         [Fact]
-        public void Should_announce_modality_and_stand_a_root_modal_on_a_backdrop()
+        public void Should_announce_modality_and_stand_a_root_modal_on_a_scrim()
         {
             // Arrange
             using var ctx = new FormaWindowTests();
@@ -642,9 +642,9 @@
             Assert.Multiple(
                 () => Assert.Equal("false", plain.Find(".forma-window").GetAttribute("aria-modal")),
                 () => Assert.Equal("true", rootModal.Find(".forma-window").GetAttribute("aria-modal")),
-                () => Assert.Single(rootModal.FindAll(".forma-window-backdrop")),
-                () => Assert.Empty(childModal.FindAll(".forma-window-backdrop")),
-                () => Assert.Empty(plain.FindAll(".forma-window-backdrop")));
+                () => Assert.Single(rootModal.FindAll(".forma-window-scrim")),
+                () => Assert.Empty(childModal.FindAll(".forma-window-scrim")),
+                () => Assert.Empty(plain.FindAll(".forma-window-scrim")));
         }
 
         [Fact]

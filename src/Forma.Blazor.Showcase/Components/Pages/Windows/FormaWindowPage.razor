@@ -14,13 +14,13 @@
 @implements IDisposable
 
 <h1>FormaWindow</h1>
-<p class="description">@L["A raised frame with chrome: a title bar carrying the title, an icon and commands, then an optional header band, the body, and an optional footer band. It stands embedded in its parent's layout or floats over the page, where it can be moved by its title bar, resized at its edges and maximized."]</p>
+<p class="description">@L["A raised backdrop with chrome: a title bar carrying the title, an icon and commands, then an optional header band, the body, and an optional footer band. It stands embedded in its parent's layout or floats over the page, where it can be moved by its title bar, resized at its edges and maximized."]</p>
 
 <div class="demo-section">
     <h2>@L["Embedded"]</h2>
-    <p class="description">@L["Embedded, a window is a region its parent lays out like any frame. These two stand in a horizontal stack with a splitter in the seam between them."]</p>
+    <p class="description">@L["Embedded, a window is a region its parent lays out like any backdrop. These two stand in a horizontal stack with a splitter in the seam between them."]</p>
     <div class="demo-box demo-box-flush">
-        <FormaFrame Variant="FrameVariant.Canvas">
+        <FormaBackdrop Variant="BackdropVariant.Canvas">
             <FormaStackLayout Orientation="StackOrientation.Horizontal" class="demo-window-stack" style="@FoldersStyle">
                 <FormaWindow Title="@L["Folders"]" Icon="Glyph.Pin" Options="new() { Embeddable = false, Closable = false }" class="demo-window-side">
                     <Body>@L["The folder tree would stand here."]</Body>
@@ -32,7 +32,7 @@
                     <Footer>@L["Two items selected"]</Footer>
                 </FormaWindow>
             </FormaStackLayout>
-        </FormaFrame>
+        </FormaBackdrop>
     </div>
 </div>
 
@@ -64,13 +64,13 @@
     <h2>@L["Embedding and Floating"]</h2>
     <p class="description">@L["The pin command switches a window between embedded and floating. Float this one and it lifts off the canvas; embed it and it returns to its place in the stack."]</p>
     <div class="demo-box demo-box-flush">
-        <FormaFrame Variant="FrameVariant.Canvas" class="demo-window-canvas">
+        <FormaBackdrop Variant="BackdropVariant.Canvas" class="demo-window-canvas">
             <FormaStackLayout>
                 <FormaWindow Title="@L["Output"]" @bind-Mode="_outputMode" Options="new() { Closable = false }" class="demo-window-fill">
                     <Body>@L["Build succeeded."]</Body>
                 </FormaWindow>
             </FormaStackLayout>
-        </FormaFrame>
+        </FormaBackdrop>
     </div>
     <p class="demo-note">@L["Mode"]: <code>@_outputMode</code></p>
 </div>
@@ -79,13 +79,13 @@
     <h2>@L["Host Commands"]</h2>
     <p class="description">@L["A host adds its own commands to the title bar; they stand before the window's own."]</p>
     <div class="demo-box demo-box-flush">
-        <FormaFrame Variant="FrameVariant.Canvas">
+        <FormaBackdrop Variant="BackdropVariant.Canvas">
             <FormaStackLayout>
                 <FormaWindow Title="@L["Media"]" Commands="MediaCommands" OnCommand="command => _lastCommand = command" Options="new() { Embeddable = false, Closable = false }" class="demo-window-fill">
                     <Body>@L["Refresh or upload from the title bar."]</Body>
                 </FormaWindow>
             </FormaStackLayout>
-        </FormaFrame>
+        </FormaBackdrop>
     </div>
     <p class="demo-note">@L["Last command"]: <code>@(_lastCommand ?? L["none yet"])</code></p>
 </div>
@@ -94,7 +94,7 @@
     <h2>@L["Workspace"]</h2>
     <p class="description">@L["Every window belongs to a workspace that knows which one is current and which windows another opened. Properties is a child of Library: minimizing Library hides it, closing Library asks it first, and with unsaved work it declines and keeps both open."]</p>
     <div class="demo-box demo-box-flush">
-        <FormaFrame Variant="FrameVariant.Canvas" class="demo-window-canvas">
+        <FormaBackdrop Variant="BackdropVariant.Canvas" class="demo-window-canvas">
             <FormaStackLayout>
                 @if (_isLibraryOpen)
                 {
@@ -111,7 +111,7 @@
                     </div>
                 }
             </FormaStackLayout>
-        </FormaFrame>
+        </FormaBackdrop>
     </div>
     @if (_isLibraryOpen && _isPropertiesOpen && _library is not null)
     {
@@ -136,7 +136,7 @@
     <h2>@L["Origins and Instances"]</h2>
     <p class="description">@L["Two running instances of one application, Explorer, share an origin and keep separate instance identities and separate handles, titles alike. Each opens a Preview, and the first Preview opens a Zoom: three generations. Type in the first Explorer's notes, minimize it and restore it, and the text is still there; focus the notes, activate the second Explorer, then come back through the rest area, and focus returns to the notes."]</p>
     <div class="demo-box demo-box-flush">
-        <FormaFrame Variant="FrameVariant.Canvas">
+        <FormaBackdrop Variant="BackdropVariant.Canvas">
             <FormaStackLayout Orientation="StackOrientation.Horizontal" class="demo-window-stack">
                 @if (_isExplorerAOpen)
                 {
@@ -170,7 +170,7 @@
                     </div>
                 }
             </FormaStackLayout>
-        </FormaFrame>
+        </FormaBackdrop>
     </div>
     @if (_isExplorerAOpen && _isPreviewAOpen && _explorerAWindow is not null)
     {
@@ -242,13 +242,13 @@
     <p class="description">@L["A host that needs a second workspace cascades its own manager. Timeline belongs to the studio workspace: the studio's rest area lists it alone, the page's rest area above never shows it, and each workspace keeps its own current window."]</p>
     <CascadingValue Value="_studio">
         <div class="demo-box demo-box-flush">
-            <FormaFrame Variant="FrameVariant.Canvas">
+            <FormaBackdrop Variant="BackdropVariant.Canvas">
                 <FormaStackLayout>
                     <FormaWindow Title="@L["Timeline"]" Options="new() { Embeddable = false, Closable = false }" class="demo-window-fill">
                         <Body>@L["A window of the studio workspace."]</Body>
                     </FormaWindow>
                 </FormaStackLayout>
-            </FormaFrame>
+            </FormaBackdrop>
         </div>
         <div class="demo-box">
             <FormaRestArea Label="@L["Studio Windows"]" />
@@ -259,9 +259,9 @@
 
 <div class="demo-section">
     <h2>@L["Modal"]</h2>
-    <p class="description">@L["A modal child blocks the window that opened it and nothing else: Account cannot be used until Confirm is answered, while the rest of the page can. A modal root blocks the whole workspace and stands on a backdrop."]</p>
+    <p class="description">@L["A modal child blocks the window that opened it and nothing else: Account cannot be used until Confirm is answered, while the rest of the page can. A modal root blocks the whole workspace and stands on a scrim."]</p>
     <div class="demo-box demo-box-flush">
-        <FormaFrame Variant="FrameVariant.Canvas" class="demo-window-canvas">
+        <FormaBackdrop Variant="BackdropVariant.Canvas" class="demo-window-canvas">
             <FormaStackLayout>
                 <FormaWindow @ref="_account" Title="@L["Account"]" Options="new() { Embeddable = false, Closable = false }" class="demo-window-fill">
                     <Body>
@@ -269,7 +269,7 @@
                     </Body>
                 </FormaWindow>
             </FormaStackLayout>
-        </FormaFrame>
+        </FormaBackdrop>
     </div>
     @if (_isConfirmOpen && _account is not null)
     {
@@ -327,12 +327,12 @@
     <h2>@L["Bounds"]</h2>
     <p class="description">@L["A window can be held within an element instead of the viewport: it opens at the element's center, cannot be moved or resized past its edges, and maximizes to fill it. Shrink the arena with the window near its bottom edge and the window is brought back inside."]</p>
     <div class="demo-box demo-box-flush">
-        <FormaFrame Variant="FrameVariant.Canvas">
+        <FormaBackdrop Variant="BackdropVariant.Canvas">
             <div @ref="_arena" class="@(_isArenaShort ? "demo-window-arena demo-window-arena-short" : "demo-window-arena")">
                 <FormaButton Variant="ButtonVariant.Primary" OnClick="() => _isBoundedOpen = true" Disabled="_isBoundedOpen">@L["Open a Bounded Window"]</FormaButton>
                 <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _isArenaShort = !_isArenaShort">@(_isArenaShort ? L["Grow the Arena"] : L["Shrink the Arena"])</FormaButton>
             </div>
-        </FormaFrame>
+        </FormaBackdrop>
     </div>
     @if (_isBoundedOpen)
     {

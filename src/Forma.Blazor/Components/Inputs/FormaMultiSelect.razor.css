@@ -79,7 +79,7 @@
 }
 
 /* ---------- popover ---------- */
-/* The panel inside the FormaPopover, which owns the top-layer placement and the backdrop. */
+/* The panel inside the FormaPopover, which owns the top-layer placement and dismissal. */
 .forma-multi-select-popover {
     padding: var(--space-2);
     display: flex;

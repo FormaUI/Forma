@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Components;
 public sealed partial class FormaConfirmDialog : IDisposable
 {
     private static readonly DialogOptions DialogOptions =
-        new() { CloseOnBackdropClick = false, ShowCancelAction = false, ShowConfirmAction = false };
+        new() { CloseOnScrimClick = false, ShowCancelAction = false, ShowConfirmAction = false };
 
     private ConfirmDialogRequest? _request;
     private bool _isOpen;

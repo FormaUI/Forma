@@ -10,14 +10,14 @@
             using var ctx = new FormaStackLayoutTests();
 
             // Act
-            var cut = ctx.Render(@<FormaStackLayout><FormaFrame>One</FormaFrame><FormaFrame>Two</FormaFrame></FormaStackLayout>);
+            var cut = ctx.Render(@<FormaStackLayout><FormaBackdrop>One</FormaBackdrop><FormaBackdrop>Two</FormaBackdrop></FormaStackLayout>);
             var layout = cut.Find(".forma-stack-layout");
 
             // Assert
             Assert.Multiple(() =>
             {
                 Assert.Contains("forma-stack-layout-vertical", layout.ClassList);
-                Assert.Equal(2, cut.FindAll(".forma-stack-layout > .forma-frame").Count);
+                Assert.Equal(2, cut.FindAll(".forma-stack-layout > .forma-backdrop").Count);
             });
         }
 

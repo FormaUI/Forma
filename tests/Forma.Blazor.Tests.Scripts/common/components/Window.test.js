@@ -458,7 +458,7 @@ describe('Window', () => {
         expect([box.style.left, box.style.top, box.style.width, box.style.height]).toEqual(['50px', '40px', '600px', '500px']);
     });
 
-    it('shows its backdrop beneath it and hides both together', () => {
+    it('shows its scrim beneath it and hides both together', () => {
         const shown = [];
         const tracked = (element, name) => {
             let open = false;
@@ -467,15 +467,15 @@ describe('Window', () => {
             element.matches = selector => selector === ':popover-open' && open;
         };
         tracked(box, 'window');
-        document.body.insertAdjacentHTML('beforeend', '<div id="backdrop"></div>');
-        const backdrop = document.querySelector('#backdrop');
-        tracked(backdrop, 'backdrop');
+        document.body.insertAdjacentHTML('beforeend', '<div id="scrim"></div>');
+        const scrim = document.querySelector('#scrim');
+        tracked(scrim, 'scrim');
 
-        const handle = attach(box, options({ modal: true, backdrop }));
+        const handle = attach(box, options({ modal: true, scrim }));
         handle.present(false);
 
-        expect(shown).toEqual(['backdrop', 'window']);
-        expect(backdrop.hidePopover).toHaveBeenCalledOnce();
+        expect(shown).toEqual(['scrim', 'window']);
+        expect(scrim.hidePopover).toHaveBeenCalledOnce();
         expect(box.hidePopover).toHaveBeenCalledOnce();
     });
 

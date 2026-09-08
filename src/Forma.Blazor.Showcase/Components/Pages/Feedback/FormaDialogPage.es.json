@@ -21,9 +21,9 @@
   "No Footer": "Sin pie de página",
   "Open (no footer)": "Abrir (sin pie de página)",
   "Information": "Información",
-  "This dialog has no footer - close it with Escape, backdrop click, or the X button.": "Este diálogo no tiene pie de página: ciérrelo con Escape, haciendo clic en el fondo o con el botón X.",
-  "Backdrop Click Disabled": "Clic en el fondo deshabilitado",
-  "Open (no backdrop close)": "Abrir (sin cierre por fondo)",
+  "This dialog has no footer - close it with Escape, scrim click, or the X button.": "Este diálogo no tiene pie de página: ciérrelo con Escape, haciendo clic en el velo o con el botón X.",
+  "Scrim Click Disabled": "Clic en el velo deshabilitado",
+  "Open (no scrim close)": "Abrir (sin cierre por velo)",
   "Must Use X or Button": "Debe usar X o el botón",
-  "Clicking the backdrop does not close this dialog. Use the X button or the button below.": "Hacer clic en el fondo no cierra este diálogo. Use el botón X o el botón de abajo."
+  "Clicking the scrim does not close this dialog. Use the X button or the button below.": "Hacer clic en el velo no cierra este diálogo. Use el botón X o el botón de abajo."
 }
