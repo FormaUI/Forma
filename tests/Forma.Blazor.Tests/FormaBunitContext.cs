@@ -17,6 +17,7 @@ public abstract class FormaBunitContext : BunitContext
     /// <summary>Creates a context carrying Forma's own service registrations.</summary>
     protected FormaBunitContext()
     {
+        Services.AddJsonLocalization();
         Services.AddFormaTwemojiPack();
         Services.AddFormaUI();
     }

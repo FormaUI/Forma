@@ -1,0 +1,131 @@
+@inherits FormaBunitContext
+@using Forma.Framework.Css
+@using Microsoft.AspNetCore.Components.Rendering
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_write_the_hosts_id_class_and_style_on_its_root()
+        {
+            // Arrange
+            using var ctx = new FormaElementBaseTests();
+
+            // Act
+            var cut = ctx.Render<Panel>(parameters => parameters
+                .Add(panel => panel.Id, "side")
+                .Add(panel => panel.Class, "host-pane")
+                .Add(panel => panel.Style, "color: red;"));
+            var root = cut.Find("div");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("side", root.GetAttribute("id"));
+                Assert.Equal("fake-panel host-pane", root.GetAttribute("class"));
+                Assert.Equal("color: red;", root.GetAttribute("style"));
+            });
+        }
+
+        [Fact]
+        public void Should_put_its_own_classes_before_the_hosts_and_state_classes_only_while_they_hold()
+        {
+            // Arrange
+            using var ctx = new FormaElementBaseTests();
+
+            // Act
+            var open = ctx.Render<Panel>(parameters => parameters.Add(panel => panel.Opened, true).Add(panel => panel.Class, "host-pane"));
+            var closed = ctx.Render<Panel>(parameters => parameters.Add(panel => panel.Class, "host-pane"));
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("fake-panel is-opened host-pane", open.Find("div").GetAttribute("class"));
+                Assert.Equal("fake-panel host-pane", closed.Find("div").GetAttribute("class"));
+            });
+        }
+
+        [Fact]
+        public void Should_put_its_own_style_before_the_hosts_with_a_separator_between()
+        {
+            // Arrange
+            using var ctx = new FormaElementBaseTests();
+
+            // Act
+            var cut = ctx.Render<Panel>(parameters => parameters
+                .Add(panel => panel.Width, "20rem")
+                .Add(panel => panel.Style, "color: red;"));
+
+            // Assert
+            Assert.Equal("inline-size: 20rem; color: red;", cut.Find("div").GetAttribute("style"));
+        }
+
+        [Fact]
+        public void Should_write_no_style_when_neither_it_nor_the_host_has_one()
+        {
+            // Arrange
+            using var ctx = new FormaElementBaseTests();
+
+            // Act
+            var cut = ctx.Render<Panel>();
+
+            // Assert
+            Assert.False(cut.Find("div").HasAttribute("style"));
+        }
+
+        [Fact]
+        public void Should_pass_further_attributes_through_to_its_root()
+        {
+            // Arrange
+            using var ctx = new FormaElementBaseTests();
+
+            // Act
+            var cut = ctx.Render<Panel>(parameters => parameters.AddUnmatched("data-region", "side").AddUnmatched("role", "region"));
+            var root = cut.Find("div");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("side", root.GetAttribute("data-region"));
+                Assert.Equal("region", root.GetAttribute("role"));
+            });
+        }
+
+        [Fact]
+        public void Should_hold_a_reference_to_its_root_once_rendered()
+        {
+            // Arrange
+            using var ctx = new FormaElementBaseTests();
+
+            // Act
+            var cut = ctx.Render<Panel>();
+
+            // Assert
+            Assert.NotNull(cut.Instance.Element.Id);
+        }
+    }
+
+    public sealed class Panel : FormaElementBase
+    {
+        [Parameter] public bool Opened { get; set; }
+
+        [Parameter] public string? Width { get; set; }
+
+        protected override void BuildRootClass(CssClassBuilder builder)
+            => builder.Add("fake-panel").Add("is-opened", Opened);
+
+        protected override string? BuildRootStyle()
+            => Width is null ? null : $"inline-size: {Width}";
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "id", Id);
+            builder.AddAttribute(2, "class", RootClass);
+            builder.AddAttribute(3, "style", RootStyle);
+            builder.AddMultipleAttributes(4, AdditionalAttributes);
+            builder.AddElementReferenceCapture(5, element => Element = element);
+            builder.CloseElement();
+        }
+    }
+}

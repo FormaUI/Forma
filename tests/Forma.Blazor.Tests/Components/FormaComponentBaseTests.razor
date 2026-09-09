@@ -1,0 +1,127 @@
+@inherits FormaBunitContext
+@using Forma.Framework.Core.Interop
+@using Forma.Tests.Localization
+@using Microsoft.Extensions.Logging
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_log_under_its_own_type()
+        {
+            // Arrange
+            using var ctx = new FormaComponentBaseTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+
+            // Act
+            ctx.Render<Announcer>();
+
+            // Assert
+            var entry = Assert.Single(loggerFactory.Entries, e => e.Category.EndsWith(nameof(Announcer), StringComparison.Ordinal));
+            Assert.Equal("rendered", entry.Message);
+        }
+
+        [Fact]
+        public void Should_read_its_strings_from_its_own_type_unless_it_names_another()
+        {
+            // Arrange
+            using var ctx = new FormaComponentBaseTests();
+            var localeFactory = new StubStringLocaleFactory(new Dictionary<string, string> { ["Hello"] = "Shalom" });
+            ctx.Services.AddSingleton<IStringLocaleFactory>(localeFactory);
+
+            // Act
+            var own = ctx.Render<Announcer>().Instance.Greeting;
+            var borrowed = ctx.Render<Borrower>().Instance.Greeting;
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("Shalom", own);
+                Assert.Equal("Shalom", borrowed);
+                Assert.Equal([typeof(Announcer), typeof(Announcer)], localeFactory.RequestedTypes);
+            });
+        }
+
+        [Fact]
+        public void Should_reach_the_browser_through_the_registered_runtime()
+        {
+            // Arrange
+            using var ctx = new FormaComponentBaseTests();
+
+            // Act
+            var cut = ctx.Render<Announcer>();
+
+            // Assert
+            Assert.IsNotType<UnavailableJSRuntime>(cut.Instance.Runtime);
+        }
+
+        [Fact]
+        public void Should_carry_an_identity_of_its_own_for_its_lifetime()
+        {
+            // Arrange
+            using var ctx = new FormaComponentBaseTests();
+
+            // Act
+            var first = ctx.Render<Announcer>().Instance;
+            var second = ctx.Render<Announcer>().Instance;
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.NotEqual(Guid.Empty, first.RuntimeId);
+                Assert.NotEqual(first.RuntimeId, second.RuntimeId);
+                Assert.Equal(7, first.RuntimeId.Version);
+            });
+        }
+
+        [Fact]
+        public async Task Should_dispose_once_through_its_hook()
+        {
+            // Arrange
+            using var ctx = new FormaComponentBaseTests();
+            var announcer = ctx.Render<Announcer>().Instance;
+
+            // Act
+            await announcer.DisposeAsync();
+            await announcer.DisposeAsync();
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(1, announcer.DisposeCalls);
+                Assert.True(announcer.IsDisposed);
+            });
+        }
+    }
+
+    public sealed class Announcer : FormaComponentBase
+    {
+        public int DisposeCalls { get; private set; }
+
+        public IJSRuntime Runtime
+            => JS;
+
+        public string Greeting
+            => L["Hello"];
+
+        protected override void OnInitialized()
+            => Logger.Log(LogLevel.Information, "rendered");
+
+        protected override ValueTask DisposeAsyncCore()
+        {
+            DisposeCalls++;
+
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    public sealed class Borrower : FormaComponentBase
+    {
+        public string Greeting
+            => L["Hello"];
+
+        protected override Type LocalizationSourceType
+            => typeof(Announcer);
+    }
+}

@@ -24,16 +24,17 @@ dotnet add package 2Site.Forma.Blazor
 using Forma.Framework.Localization.Json;
 using Forma.Blazor;
 
-builder.Services.AddJsonLocalization();
-builder.Services.AddFormaUI();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+builder.Services.AddJsonLocalization();
+builder.Services.AddFormaUI();
 ```
 
 `AddFormaUI()` registers everything the components need to work — toasts, confirmation dialogs, and
 the sanitizer the composer holds content to. Each lands only if nothing is registered for it
 already, so registering your own implementation before that call replaces it and leaves the rest
-untouched.
+untouched. Call it after `AddRazorComponents()` for the same reason, so Blazor's own registrations
+are in place before the fallbacks are considered.
 
 **2. Render Forma's document head from your host's `App.razor`:**
 

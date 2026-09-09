@@ -1,0 +1,137 @@
+@inherits FormaBunitContext
+@using System.Diagnostics.CodeAnalysis
+@using Forma.Framework.Css
+@using Microsoft.AspNetCore.Components.Rendering
+
+@code {
+    public sealed class Component
+    {
+        private static IRenderedComponent<Field> RenderField(FormaInputBaseTests ctx, FakeModel model, string? hostClass = null)
+        {
+            var editContext = new EditContext(model);
+
+            return ctx.Render<Field>(parameters => parameters
+                .AddCascadingValue(editContext)
+                .Bind(field => field.Value, model.Text, value => model.Text = value, () => model.Text)
+                .Add(field => field.Class, hostClass));
+        }
+
+        [Fact]
+        public void Should_write_its_own_classes_then_the_hosts_then_the_fields()
+        {
+            // Arrange
+            using var ctx = new FormaInputBaseTests();
+
+            // Act
+            var cut = RenderField(ctx, new FakeModel(), "host-field");
+
+            // Assert
+            Assert.Equal("fake-field host-field valid", cut.Find("input").GetAttribute("class"));
+        }
+
+        [Fact]
+        public void Should_write_the_hosts_id_and_style_on_its_root()
+        {
+            // Arrange
+            using var ctx = new FormaInputBaseTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render<Field>(parameters => parameters
+                .AddCascadingValue(new EditContext(model))
+                .Bind(field => field.Value, model.Text, value => model.Text = value, () => model.Text)
+                .Add(field => field.Id, "name")
+                .Add(field => field.Style, "color: red;"));
+            var root = cut.Find("input");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("name", root.GetAttribute("id"));
+                Assert.Equal("color: red;", root.GetAttribute("style"));
+                Assert.NotNull(cut.Instance.Element.Id);
+            });
+        }
+
+        [Fact]
+        public async Task Should_dispose_once_and_run_the_frameworks_own_cleanup()
+        {
+            // Arrange
+            using var ctx = new FormaInputBaseTests();
+            var field = RenderField(ctx, new FakeModel()).Instance;
+
+            // Act
+            await field.DisposeAsync();
+            await field.DisposeAsync();
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(1, field.AsyncDisposeCalls);
+                Assert.Equal(1, field.FrameworkDisposeCalls);
+                Assert.True(field.IsDisposed);
+            });
+        }
+
+        [Fact]
+        public void Should_carry_an_identity_of_its_own_for_its_lifetime()
+        {
+            // Arrange
+            using var ctx = new FormaInputBaseTests();
+
+            // Act
+            var first = RenderField(ctx, new FakeModel()).Instance;
+            var second = RenderField(ctx, new FakeModel()).Instance;
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.NotEqual(first.RuntimeId, second.RuntimeId);
+                Assert.Equal(7, first.RuntimeId.Version);
+            });
+        }
+    }
+
+    public sealed class Field : FormaInputBase<string?>
+    {
+        public int AsyncDisposeCalls { get; private set; }
+
+        public int FrameworkDisposeCalls { get; private set; }
+
+        protected override void BuildRootClass(CssClassBuilder builder)
+            => builder.Add("fake-field");
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenElement(0, "input");
+            builder.AddAttribute(1, "id", Id);
+            builder.AddAttribute(2, "class", RootClass);
+            builder.AddAttribute(3, "style", RootStyle);
+            builder.AddAttribute(4, "value", CurrentValueAsString);
+            builder.AddMultipleAttributes(5, AdditionalAttributes);
+            builder.AddElementReferenceCapture(6, element => Element = element);
+            builder.CloseElement();
+        }
+
+        protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
+        {
+            result = value;
+            validationErrorMessage = null;
+
+            return true;
+        }
+
+        protected override ValueTask DisposeAsyncCore()
+        {
+            AsyncDisposeCalls++;
+
+            return ValueTask.CompletedTask;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            FrameworkDisposeCalls++;
+            base.Dispose(disposing);
+        }
+    }
+}

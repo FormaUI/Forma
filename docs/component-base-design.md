@@ -8,8 +8,11 @@ services they carry: the browser runtime, logging, and localization. Authoritati
 the null objects `UnavailableJSRuntime` and `NullStringLocaleFactory`, and how logging
 reaches every assembly of the library.
 
-Nothing in this document is built yet. The implementation plan at the end records what
-lands at each step.
+Step 1 of the implementation plan is built: the builder, the null objects, the three
+bases, the fallback registrations and their tests exist, and nothing derives from the
+bases yet. The plan at the end records what lands at each step. One departure from the
+sketch below: `RootClass` and `RootStyle` are `string?`, null when there is nothing to
+write, so an element carries no empty `class` or `style` attribute.
 
 ## Purpose
 
@@ -165,7 +168,7 @@ public abstract class FormaElementBase : FormaComponentBase
     public ElementReference Element { get; protected set; }
 
     /// <summary>The class written on the root element: the component's own, then the host's.</summary>
-    protected string RootClass { get; }   // BuildRootClass, then Class, through a CssClassBuilder.
+    protected string? RootClass { get; }  // BuildRootClass, then Class, through a CssClassBuilder.
 
     /// <summary>The style written on the root element: the component's own, then the host's.</summary>
     protected string? RootStyle { get; }  // BuildRootStyle, then Style.
@@ -325,8 +328,10 @@ does.
    and `JSRuntimeUnavailableException` in `Forma.Framework.Core.Interop`;
    `NullStringLocaleFactory` in `Forma.Framework.Localization`; the three bases in
    `Forma.Blazor/Components`; the fallback registrations in `AddFormaUI` and in
-   `FormaBunitContext`; the logging abstractions reference on `Forma.Blazor`; tests for
-   each. Nothing migrates; the solution builds with the bases unused.
+   `FormaBunitContext`; tests for each. Nothing migrates; the solution builds with the
+   bases unused. The Showcase's and the README's registration order puts
+   `AddRazorComponents()` before `AddFormaUI()`, so Blazor's registrations precede the
+   fallbacks. **Built.**
 2. **Migration ledger, then migration.** One row per component: its current base, its
    tier, whether it overrides `LocalizationSourceType`, and what it sheds — the locale
    injection, the runtime injection, the attribute bag, `CssClass` into

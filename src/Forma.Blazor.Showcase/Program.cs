@@ -21,6 +21,8 @@ using Forma.Framework.Share;
 using Forma.Framework.Share.Targets;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
 builder.Services.AddJsonLocalization();
 builder.Services.AddFormaTwemojiPack();
 builder.Services.AddSingleton(new SandboxAssets(builder.Environment.ContentRootPath));
@@ -67,9 +69,6 @@ builder.Services.AddCultureRouting(new CultureRouterOptions
         new() { Token = "es", Culture = new("es-419"), Aliases = ["es-419"] }
     ]
 });
-
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
 
 var app = builder.Build();
 

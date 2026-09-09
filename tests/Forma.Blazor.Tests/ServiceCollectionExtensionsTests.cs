@@ -1,11 +1,17 @@
 namespace Forma.Blazor.Tests;
 
+using Forma.Framework.Core.Interop;
 using Forma.Framework.Emojis;
 using Forma.Framework.Emojis.Unicode;
 using Forma.Framework.Icons;
 using Forma.Framework.Icons.Glyphs;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Keyboard;
+using Forma.Tests.Localization;
+using Forma.Tests.Shared;
+
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 public sealed class ServiceCollectionExtensionsTests
 {
@@ -47,5 +53,36 @@ public sealed class ServiceCollectionExtensionsTests
         Assert.Multiple(
             () => Assert.IsType<GlyphIconProvider>(provider.GetRequiredService<IIconProvider>()),
             () => Assert.IsType<UnicodeEmojiProvider>(provider.GetRequiredService<IEmojiProvider>()));
+    }
+
+    [Fact]
+    public void Should_resolve_what_every_component_injects_where_the_host_registered_none_of_it()
+    {
+        using var provider = new ServiceCollection().AddFormaUI().BuildServiceProvider();
+
+        Assert.Multiple(
+            () => Assert.Same(NullLoggerFactory.Instance, provider.GetRequiredService<ILoggerFactory>()),
+            () => Assert.IsType<NullLogger<ServiceCollectionExtensionsTests>>(provider.GetRequiredService<ILogger<ServiceCollectionExtensionsTests>>()),
+            () => Assert.Same(NullStringLocaleFactory.Instance, provider.GetRequiredService<IStringLocaleFactory>()),
+            () => Assert.Same(UnavailableJSRuntime.Instance, provider.GetRequiredService<IJSRuntime>()));
+    }
+
+    [Fact]
+    public void Should_leave_the_runtime_logging_and_localization_the_host_registered_first()
+    {
+        using var loggerFactory = new FakeLoggerFactory();
+        var localeFactory = new StubStringLocaleFactory(new Dictionary<string, string>());
+        var runtime = new BunitJSInterop().JSRuntime;
+        var services = new ServiceCollection();
+        services.AddSingleton<ILoggerFactory>(loggerFactory);
+        services.AddSingleton<IStringLocaleFactory>(localeFactory);
+        services.AddSingleton(runtime);
+
+        using var provider = services.AddFormaUI().BuildServiceProvider();
+
+        Assert.Multiple(
+            () => Assert.Same(loggerFactory, provider.GetRequiredService<ILoggerFactory>()),
+            () => Assert.Same(localeFactory, provider.GetRequiredService<IStringLocaleFactory>()),
+            () => Assert.Same(runtime, provider.GetRequiredService<IJSRuntime>()));
     }
 }
