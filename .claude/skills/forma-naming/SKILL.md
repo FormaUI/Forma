@@ -1,6 +1,6 @@
 ---
 name: forma-naming
-description: Forma's naming standard — .NET conventions and the codebase's own vocabulary over invented patterns; prefixes for tags, classes and types; method and API shapes such as Get, Try, Create, Format and Render; fields, parameters and locals named for the noun they hold; parameter choice and order; Booleans, events and bindable callbacks; and the six kinds of identifier-shaped member. Use before naming anything — a type, member, variable, parameter, file, CSS class, script or test — and when reviewing or sweeping names.
+description: Forma's naming standard — .NET conventions and the codebase's own vocabulary over invented patterns; prefixes for tags, classes and types; method and API shapes such as Get, Try, Create, Format and Render; fields, parameters and locals named for the noun they hold; parameter choice and order; Booleans, events and bindable callbacks; and the seven kinds of identifier-shaped member. Use before naming anything — a type, member, variable, parameter, file, CSS class, script or test — and when reviewing or sweeping names.
 ---
 
 # Naming
@@ -104,7 +104,7 @@ A name earns its place by answering the question a reader arrives with. The decl
 
 ## Identifiers
 
-An identifier-shaped member is one of six different things, numbered below, and the name has to say which, because "Id" alone reads as a promise that whatever it names is literally this component's own HTML `id` attribute.
+An identifier-shaped member is one of seven different things, numbered below, and the name has to say which, because "Id" alone reads as a promise that whatever it names is literally this component's own HTML `id` attribute.
 
 1. Do reserve a component's own `Id` parameter for the verbatim value of its root or primary element's `id` attribute — a pass-through, like `Class` and `Style`: `FormaTextBox.Id`, `FormaComposer.Id`, `FormaComposerPluginsToolbar.Id`, `FormaSearchBox.Id`.
    - Do add a private `_generatedId` and a computed `ElementId => Id ?? _generatedId` where the element needs an id even when the caller supplies none, as `FormaTextBox` and `FormaComposer` do for a label to point at; leave the parameter to stand alone where an absent id is simply absent.
@@ -121,3 +121,4 @@ An identifier-shaped member is one of six different things, numbered below, and 
 5. Do name a lookup or re-render key `{Noun}Key`, not `Id`, when it exists for Blazor's own benefit — `@key`, virtualization, or re-associating a re-rendered row with its prior state — rather than to name the domain item: `FormaDataGrid.ItemKey`, `FormaSortableList.ItemKey`.
    - A key's `Func<T, object>` need not read any real identifier field on `T` at all.
 6. Do call a value `Token`, not `Id`, when its only job is correlating a rendered element with the JS side of an interop call, as `FormaDataGrid`'s row-selection `RowTokenTable` does; it is never a domain identity and a host never sees it.
+7. Do call a component's own identity for its lifetime `RuntimeId`: the `Guid` every component carries from `FormaComponentBase`, never rendered verbatim, from which its generated element ids derive (`_triggerId = $"forma-select-trigger-{RuntimeId:N}"`) and which a log line or a workspace names the instance by. It is neither (1), the DOM id, nor an origin's `InstanceId`, which several components can share; a component that is an `IWindow` implements `IWindow.Id` explicitly as its `RuntimeId`, so `Id` on a component always means the DOM's.

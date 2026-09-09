@@ -25,6 +25,7 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 - Do use [docs/composer-design.md](docs/composer-design.md) for `FormaComposer`'s architecture, plugin model, assemblies, and phases.
 - Do use [docs/input-routing.md](docs/input-routing.md) for how input is owned and routed between nested components — scopes, routes, active ordering, and the native table — before adding or changing any key, pointer, wheel, drag, or dismissal handling.
 - Do use [docs/window-design.md](docs/window-design.md) for window management — identity, origin, parent–child windows, the selector, the manager, activation, stacking, minimization, modality, bounds, and the rest area — before adding or changing anything under `Components/Windows`.
+- Do use [docs/component-base-design.md](docs/component-base-design.md) for the component bases and the services they carry — `FormaComponentBase`, `FormaElementBase`, `FormaInputBase<TValue>`, the null objects, logging and localization from the base — before adding or changing a base class, a fallback registration, or a log message.
 - Do put a component's own design document in `docs/` when it is large enough to own a plan, and treat it as authoritative for that component over the inventory's summary row.
 - Do read `.editorconfig` before writing C#; it is the authority on style, and the root file and `src/Forma.Blazor/.editorconfig` differ deliberately.
 - Do use `EpicaDeportiva/docs/forma-components.md` for Épica Deportiva's required and optional subset and remaining work.
