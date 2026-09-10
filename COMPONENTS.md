@@ -115,7 +115,7 @@ Forma.Blazor/Components/
 │   ├── FormaPublishButton.razor
 │   ├── FormaViewButton.razor
 │   └── FormaExportButton.razor
-├── (11 / 12) Inputs/
+├── (13 / 14) Inputs/
 │   ├── SelectOption.cs
 │   ├── PasswordStrength.cs
 │   ├── TextInputType.cs                        # enum: Text, Email, Tel, Url
@@ -130,7 +130,9 @@ Forma.Blazor/Components/
 │   ├── ✅ FormaPasswordBox.razor
 │   ├── FormaCurrencyInput.razor
 │   ├── ✅ FormaSlider.razor
+│   ├── ✅ FormaCalendar.razor
 │   ├── ✅ FormaDatePicker.razor
+│   ├── ✅ FormaDateRangePicker.razor
 │   ├── ✅ FormaSelect.razor
 │   ├── ✅ FormaColorPicker.razor
 │   └── ✅ FormaMultiSelect.razor
@@ -365,9 +367,9 @@ These components form the shell of a page. Build first.
 |---|---|
 | **Old pattern** | EasePick CDN library with Hebrew locale, year dropdown, reset button, min-date lock |
 | **Used in** | coupons (start/end dates) |
-| **Parameters** | `@bind-Value` (DateOnly?), `@bind-StartDate` / `@bind-EndDate` (DateOnly?), `string Label` (required, validated), `DateOnly? MinDate`, `DateOnly? MaxDate`, `bool ShowPresets` (default true), `EventCallback OnSelectionComplete`, `bool UseNonGregorianMonths`, `AdditionalAttributes` |
+| **Parameters** | `@bind-Value` (`DateOnly?`) from `FormaInputBase<DateOnly?>`, `string Label` (required, validated), `DateOnly? MinDate`, `DateOnly? MaxDate`, `EventCallback OnSelectionComplete`, `bool UseNonGregorianMonths`, and the host's id, class, style and further attributes on the trigger |
 | **Popover placement** | The calendar is a `popover`, so it renders in the **top layer** and no scrolling or clipping ancestor can cut it off — it works inside a grid's scroll region, a dialog body, or any `overflow: auto` box. The top layer keeps no layout tie to the trigger, so the shared `wwwroot/scripts/behaviours/AnchoredPopover.js` behaviour measures and applies the position: it hangs from the trigger's inline-start edge (mirrored in RTL), flips above when there is no room below, clamps into the viewport, and follows scroll and resize. One positioning path for every browser rather than a CSS/JS split. The calendar sits inside a `FormaPopover` (#69), which owns that placement and its dismissal through the input router, as it does for `FormaSelect`, `FormaMultiSelect` and `FormaDropDownMenu`. `popover="manual"` leaves dismissal to the router, which also sidesteps the iOS 17–18.2 bug where a popover ignores a tap outside it |
-| **Blazor approach** | A bespoke calendar rather than `InputDate`, because a native `<input type="date">` offers no range selection, no presets, and no non-Gregorian months. A `<button>` trigger opens an anchored popover holding one calendar panel, or two side by side once `StartDateChanged` or `EndDateChanged` is bound, which is what puts the picker in range mode. Months come from `CultureInfo.CurrentCulture`, and `UseNonGregorianMonths` switches to the culture's own calendar — the Hebrew calendar under `he` — by cloning `DateTimeFormatInfo` onto it. `MinDate` greater than `MaxDate` throws from `OnParametersSet` |
+| **Blazor approach** | A bespoke calendar rather than `InputDate`, because a native `<input type="date">` offers no presets and no non-Gregorian months. A form input over a `<button>` trigger that opens an anchored popover holding one `FormaCalendar` (#80); picking a day writes the value and closes. Months come from `CultureInfo.CurrentCulture`, and `UseNonGregorianMonths` switches to the culture's own calendar — the Hebrew calendar under `he` — by cloning `DateTimeFormatInfo` onto it. `MinDate` greater than `MaxDate` throws from `OnParametersSet`. A range is a different value with its own input, `FormaDateRangePicker` (#79) |
 
 ### 16. `FormaSlider` ✅
 
@@ -1010,6 +1012,26 @@ These are more complex, possibly page-specific, but still benefit from being com
 | **Blazor approach** | A `FormaFrame` (#77) whose drag region is a title bar with the icon, the title and a `FormaToolbar` (#25) of the host's commands, then an optional header band, the body, and an optional footer band, each painting its own chrome token. It is a region its parent lays out, a `FormaStackLayout` (#74) sibling like any backdrop, and a splitter beside it works unchanged; placed, the title bar is what the reader drags it by. It is a `region` named by its title unless the host gives it another role |
 | **Why it needs JS** | Nothing of its own; the frame beneath it carries the browser side |
 | **Notes** | A chrome knows no workspace. The title bar takes the pointer and the keyboard only through the frame's drag region, so the chrome itself never handles a gesture |
+
+### 79. `FormaDateRangePicker` ✅
+
+| | |
+|---|---|
+| **Old pattern** | The range mode of `FormaDatePicker` (#15), bound through two separate dates |
+| **Used in** | coupons (start/end dates), reports (a period), anywhere a span of days is one value |
+| **Parameters** | `@bind-Value` (`DateRange?`) from `FormaInputBase<DateRange?>`, `string Label` (required, validated), `DateOnly? MinDate`, `DateOnly? MaxDate`, `bool ShowPresets` (default true), `EventCallback OnSelectionComplete`, `bool UseNonGregorianMonths`, and the host's id, class, style and further attributes on the trigger |
+| **Blazor approach** | A form input whose value is one `DateRange` — a `readonly record struct` in `Models/` holding a first and a last date, both included, that refuses an inverted pair — so a form validates the span as a whole. A `<button>` trigger opens an anchored popover holding a two-month `FormaCalendar` (#80) and the presets. The first day picked is held in a draft inside the picker and drawn as the span to the hovered day; the second commits the value, in date order whichever end came first. Null means no range; a consumer that stores its two dates separately maps them through a range property or `ValueChanged` |
+| **Notes** | The presets — today, yesterday, the last 7 and 30 days, this month, last month — are held within `MinDate`/`MaxDate` and disabled when nothing of them remains |
+
+### 80. `FormaCalendar` ✅
+
+| | |
+|---|---|
+| **Old pattern** | The month panels inside `FormaDatePicker` (#15) |
+| **Used in** | `FormaDatePicker` (#15) with one month, `FormaDateRangePicker` (#79) with two |
+| **Parameters** | `int Months` (1 or 2), `DateRange? Highlight`, `DateOnly? MinDate`, `DateOnly? MaxDate`, `bool UseNonGregorianMonths`, `EventCallback<DateOnly> OnDaySelected`, `EventCallback<DateOnly> OnDayHovered` |
+| **Blazor approach** | The calendar mechanics with no selection rules of its own: one or two months side by side, each with previous/next arrows and month and year selectors held within the allowed dates, weekday headings and day cells. It draws whatever `Highlight` says — a single day as selected, a span with its ends and the days between — and reports the day picked or hovered; the picker composing it decides what those mean. The two-month layout stays left-to-right under RTL, so the earlier month is always on the left |
+| **Notes** | A plain-tier part: it lives inside a picker's popover and takes nothing from a host directly |
 
 ## Components NOT Needed (handled by built-ins or native HTML)
 

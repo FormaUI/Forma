@@ -1,9 +1,9 @@
 @namespace Forma.Blazor.Components.Inputs
-@inherits FormaElementBase
+@inherits FormaInputBase<DateOnly?>
+@using Forma.Framework.Common.Interop.Behaviours
 
 <FormaField Label="@Label" TargetId="@ElementId" LabelMode="FieldLabelMode.Pinned">
     <ChildContent>
-        @* The root keeps the --forma-date-picker-* custom properties the calendar popover reads. *@
         <div class="forma-date-picker">
             <div class="forma-date-picker-trigger-wrapper" @ref="_anchorElement">
                 <button id="@ElementId"
@@ -16,7 +16,7 @@
                         aria-expanded="@(IsOpen ? "true" : "false")"
                         @onclick="ToggleAsync">
                     <span class="forma-date-picker-arrow">&#9662;</span>
-                    <span class="forma-date-picker-value@(HasValue ? "" : " placeholder")">@(HasValue ? DisplayText : Placeholder)</span>
+                    <span class="forma-date-picker-value@(HasValue ? "" : " placeholder")">@(HasValue ? DisplayText : L["Select Date"])</span>
                 </button>
                 @if (HasValue)
                 {
@@ -25,132 +25,24 @@
                                  IconOnly="true"
                                  class="forma-date-picker-clear"
                                  aria-label="@L["Clear"]"
-                                 OnClick="HandleClear"
+                                 OnClick="HandleClearAsync"
                                  :stopPropagation>
                         <FormaIcon Icon="Glyph.Cross" />
                     </FormaButton>
                 }
             </div>
-    <FormaPopover @ref="Popover" Anchor="_anchorElement" OnOpenChanged="_ => { }">
-        <div class="forma-date-picker-popover">
-            <div class="forma-date-picker-calendars">
-                @for (var i = 0; i < CalendarCount; i++)
-                {
-                    var panel = i;
-                    var month = GetPanelMonth(panel);
-                    <div class="forma-date-picker-month" dir="@TextDirection">
-                        <div class="forma-date-picker-month-header">
-                            <FormaButton Variant="ButtonVariant.Ghost"
-                                         class="forma-date-picker-nav"
-                                         aria-label="@L["Previous Month"]"
-                                         Disabled="!CanPanelGoPrev(panel)"
-                                         OnClick="() => ShowPreviousPanel(panel)">
-                                &#10094;
-                            </FormaButton>
-                            <div class="forma-date-picker-month-selectors">
-                                <select class="forma-date-picker-select"
-                                        value="@month.Year"
-                                        @onchange="args => OnYearDropdownChange(panel, args)">
-                                    @for (var candidate = _calendar.MinYear; candidate <= _calendar.MaxYear; candidate++)
-                                    {
-                                        var year = candidate;
-                                        <option value="@year" disabled="@IsYearDisabled(year, panel)">@year</option>
-                                    }
-                                </select>
-                                <select class="forma-date-picker-select"
-                                        value="@_calendar.GetMonth(month)"
-                                        @onchange="args => OnMonthDropdownChange(panel, args)">
-                                    @for (var candidate = 1; candidate <= _calendar.GetMonthsInYear(_calendar.GetYear(month)); candidate++)
-                                    {
-                                        var monthNumber = candidate;
-                                        <option value="@monthNumber" disabled="@IsMonthDisabled(_calendar.GetYear(month), monthNumber, panel)">@_calendar.GetMonthName(_calendar.GetYear(month), monthNumber)</option>
-                                    }
-                                </select>
-                            </div>
-                            <FormaButton Variant="ButtonVariant.Ghost"
-                                         class="forma-date-picker-nav"
-                                         aria-label="@L["Next Month"]"
-                                         Disabled="!CanPanelGoNext(panel)"
-                                         OnClick="() => ShowNextPanel(panel)">
-                                &#10095;
-                            </FormaButton>
-                        </div>
-                        <div class="forma-date-picker-weekdays">
-                            @for (var offset = 0; offset < 7; offset++)
-                            {
-                                <span>@_calendar.GetDayAbbreviation(offset)</span>
-                            }
-                        </div>
-                        <div class="forma-date-picker-days">
-                            @foreach (var day in _calendar.GetDayCells(month))
-                            {
-                                @if (day is null)
-                                {
-                                    <span class="forma-date-picker-day empty"></span>
-                                }
-                                else
-                                {
-                                    var date = day.Value;
-                                    var dayClasses = GetDayClasses(date);
-                                    <button type="button"
-                                            class="forma-date-picker-day@(dayClasses)"
-                                            disabled="@IsDayDisabled(date)"
-                                            aria-label="@_calendar.GetDayLabel(date)"
-                                            aria-current="@(IsToday(dayClasses) ? "date" : null)"
-                                            aria-pressed="@(IsSelected(dayClasses) ? "true" : null)"
-                                            @onclick="() => SelectDay(date)"
-                                            @onmouseenter="() => HoverDay(date)">
-                                        @_calendar.GetDayOfMonth(date)
-                                    </button>
-                                }
-                            }
-                        </div>
-                    </div>
-                }
-            </div>
-            @if (ShowPresets && IsRangeMode)
-            {
-                <div class="forma-date-picker-presets" dir="@TextDirection">
-                    <FormaButton Variant="ButtonVariant.Ghost"
-                                 class="forma-date-picker-preset"
-                                 Disabled="IsPresetDisabled(Preset.Today)"
-                                 OnClick="() => ApplyPreset(Preset.Today)">
-                        @L["Today"]
-                    </FormaButton>
-                    <FormaButton Variant="ButtonVariant.Ghost"
-                                 class="forma-date-picker-preset"
-                                 Disabled="IsPresetDisabled(Preset.Yesterday)"
-                                 OnClick="() => ApplyPreset(Preset.Yesterday)">
-                        @L["Yesterday"]
-                    </FormaButton>
-                    <FormaButton Variant="ButtonVariant.Ghost"
-                                 class="forma-date-picker-preset"
-                                 Disabled="IsPresetDisabled(Preset.Last7Days)"
-                                 OnClick="() => ApplyPreset(Preset.Last7Days)">
-                        @L["[$ plural; one: Last # day; other: Last # days; $]", ShortRangeDays]
-                    </FormaButton>
-                    <FormaButton Variant="ButtonVariant.Ghost"
-                                 class="forma-date-picker-preset"
-                                 Disabled="IsPresetDisabled(Preset.Last30Days)"
-                                 OnClick="() => ApplyPreset(Preset.Last30Days)">
-                        @L["[$ plural; one: Last # day; other: Last # days; $]", LongRangeDays]
-                    </FormaButton>
-                    <FormaButton Variant="ButtonVariant.Ghost"
-                                 class="forma-date-picker-preset"
-                                 Disabled="IsPresetDisabled(Preset.ThisMonth)"
-                                 OnClick="() => ApplyPreset(Preset.ThisMonth)">
-                        @L["This Month"]
-                    </FormaButton>
-                    <FormaButton Variant="ButtonVariant.Ghost"
-                                 class="forma-date-picker-preset"
-                                 Disabled="IsPresetDisabled(Preset.LastMonth)"
-                                 OnClick="() => ApplyPreset(Preset.LastMonth)">
-                        @L["Last Month"]
-                    </FormaButton>
+            <FormaPopover @ref="Popover" Alignment="PopoverAlignment.Start" Anchor="_anchorElement" OnOpenChanged="_ => { }">
+                <div class="forma-date-picker-popover">
+                    <FormaCalendar Highlight="Highlight"
+                                   MinDate="MinDate"
+                                   MaxDate="MaxDate"
+                                   UseNonGregorianMonths="UseNonGregorianMonths"
+                                   OnDaySelected="SelectDayAsync" />
                 </div>
-            }
-        </div>
-    </FormaPopover>
+            </FormaPopover>
         </div>
     </ChildContent>
+    <Validation>
+        <ValidationMessage For="@ValueExpression" />
+    </Validation>
 </FormaField>

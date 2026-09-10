@@ -1,15 +1,10 @@
 /* ============================================================
-   FormaDatePicker — custom dual-month calendar popover
+   FormaDatePicker — a field opening a one-month calendar
    ============================================================ */
 
 /* ---------- root ---------- */
 .forma-date-picker {
     --forma-date-picker-primary-color: var(--primary-color);
-    --forma-date-picker-primary-fg-color: var(--primary-fg-color);
-    --forma-date-picker-range-bg-color: color-mix(in srgb, var(--forma-date-picker-primary-color) 8%, transparent);
-    --forma-date-picker-border-color: var(--border-subtle-color);
-    --forma-date-picker-day-width: var(--target-size-md);
-    --forma-date-picker-day-height: var(--target-size-md);
     --forma-date-picker-radius: var(--radius-md);
 
     position: relative;
@@ -62,6 +57,8 @@
     --forma-button-ghost-hover-bg-color: var(--danger-subtle-color);
     position: absolute;
     inset-inline-end: var(--space-2);
+    inset-block-start: 50%;
+    transform: translateY(-50%);
     border-radius: var(--radius-pill);
 }
 
@@ -69,232 +66,14 @@
 /* The calendar inside the FormaPopover, which owns the top-layer placement and dismissal. */
 .forma-date-picker-popover {
     display: flex;
-    flex-wrap: wrap;
     overflow: visible;
     background: var(--input-bg-color);
     border-radius: var(--forma-date-picker-radius);
     box-shadow: var(--shadow-medium);
 }
 
-/* ---------- calendars container ---------- */
-.forma-date-picker-calendars {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    min-inline-size: 0;
-    direction: ltr; /* fixed layout: left month first, right month second */
-    padding: var(--space-3);
-}
-
-/* ---------- single month ---------- */
-.forma-date-picker-month {
-    padding: 0 var(--space-1);
-}
-
-/* month header */
-.forma-date-picker-month-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: var(--space-2);
-    gap: var(--space-1);
-}
-
-.forma-date-picker-month-selectors {
-    display: flex;
-    align-items: center;
-    gap: var(--space-1);
-    flex: 1;
-    justify-content: center;
-}
-
-.forma-date-picker-select {
-    padding: var(--space-1);
-    border: 1px solid var(--border-subtle-color);
-    border-radius: var(--radius-sm);
-    background: var(--muted-bg-color);
-    font: inherit;
-    font-size: var(--font-size-sm);
-    cursor: pointer;
-    touch-action: manipulation;
-}
-
-/* The repeated class raises specificity above FormaButton's own ghost/mini rules. */
-::deep .forma-date-picker-nav.forma-date-picker-nav {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.75rem;
-    height: 1.75rem;
-    padding: 0;
-    border: none;
-    background: transparent;
-    border-radius: 50%;
-    font-size: var(--font-size-xs);
-    font-weight: inherit;
-    color: var(--text-primary-color);
-    flex-shrink: 0;
-}
-
-@media (hover: hover) {
-    ::deep .forma-date-picker-nav.forma-date-picker-nav:hover:not(:disabled) {
-        background: var(--hover-bg-color);
-    }
-}
-
-::deep .forma-date-picker-nav.forma-date-picker-nav:disabled {
-    visibility: hidden;
-}
-
-/* weekday headers */
-.forma-date-picker-weekdays {
-    display: grid;
-    grid-template-columns: repeat(7, var(--forma-date-picker-day-width));
-    justify-items: center;
-    font-size: var(--font-size-xs);
-    color: var(--text-secondary-color);
-    font-weight: 700;
-    margin-bottom: var(--space-1);
-    height: var(--forma-date-picker-day-height);
-    align-items: center;
-}
-
-/* day grid */
-.forma-date-picker-days {
-    display: grid;
-    grid-template-columns: repeat(7, var(--forma-date-picker-day-width));
-}
-
-/* individual day */
-.forma-date-picker-day {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--forma-date-picker-day-width);
-    height: var(--forma-date-picker-day-height);
-    border: none;
-    background: transparent;
-    border-radius: var(--radius-sm);
-    font: inherit;
-    font-size: var(--font-size-sm);
-    cursor: pointer;
-    padding: 0;
-    touch-action: manipulation;
-}
-
-@media (hover: hover) {
-    .forma-date-picker-day:not(.empty):not(:disabled):hover {
-        background: var(--hover-bg-color);
-    }
-}
-
-.forma-date-picker-day:focus-visible,
-.forma-date-picker-day:disabled {
-    opacity: 0.35;
-    cursor: default;
-}
-
-.forma-date-picker-day.empty {
-    cursor: default;
-}
-
-/* today */
-.forma-date-picker-day.today {
-    font-weight: 600;
-}
-
-/* selected */
-.forma-date-picker-day.selected {
-    background: var(--forma-date-picker-primary-color);
-    color: var(--forma-date-picker-primary-fg-color);
-    border-radius: var(--radius-sm);
-    font-weight: 700;
-}
-
-/* range — underlined so the span reads without relying on the fill colour */
-.forma-date-picker-day.in-range {
-    background: var(--forma-date-picker-range-bg-color);
-    border-radius: 0;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-}
-
-.forma-date-picker-day.start {
-    border-start-start-radius: var(--radius-sm);
-    border-end-start-radius: var(--radius-sm);
-    border-start-end-radius: 0;
-    border-end-end-radius: 0;
-}
-
-.forma-date-picker-day.end {
-    border-start-end-radius: var(--radius-sm);
-    border-end-end-radius: var(--radius-sm);
-    border-start-start-radius: 0;
-    border-end-start-radius: 0;
-}
-
-.forma-date-picker-day.start.end {
-    border-radius: var(--radius-sm);
-}
-
-/* ---------- presets ---------- */
-.forma-date-picker-presets {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-    padding: var(--space-4) var(--space-3);
-    border-inline-start: 1px solid var(--border-color);
-    min-width: 9rem;
-    justify-content: start;
-}
-
-/* The repeated class raises specificity above FormaButton's own ghost/mini rules. */
-::deep .forma-date-picker-preset.forma-date-picker-preset {
-    padding: var(--space-2) var(--space-3);
-    border: 1px solid transparent;
-    border-radius: var(--radius-sm);
-    background: transparent;
-    font-size: var(--font-size-sm);
-    font-weight: inherit;
-    text-align: start;
-    justify-content: flex-start;
-    white-space: nowrap;
-}
-
-@media (hover: hover) {
-    ::deep .forma-date-picker-preset.forma-date-picker-preset:hover:not(:disabled) {
-        background: var(--hover-bg-color);
-        border-color: var(--forma-date-picker-primary-color);
-        color: var(--forma-date-picker-primary-color);
-    }
-}
-
-::deep .forma-date-picker-preset.forma-date-picker-preset:disabled {
-    opacity: 0.4;
-    cursor: default;
-}
-
-/* A dual calendar is wider than a phone; let the panels stack instead of overflowing. */
-/* A phone shows one month; the second would only sit beneath the first, further from the field. */
-@media (max-width: 30rem) {
-    .forma-date-picker-month:nth-child(n + 2) {
-        display: none;
-    }
-}
-
 @media (pointer: coarse) {
-    .forma-date-picker {
-        --forma-date-picker-day-width: var(--target-size-touch);
-        --forma-date-picker-day-height: var(--target-size-touch);
-    }
-
-    .forma-date-picker-trigger,
-    .forma-date-picker-select {
+    .forma-date-picker-trigger {
         min-block-size: var(--target-size-touch);
-    }
-
-    ::deep .forma-date-picker-nav.forma-date-picker-nav {
-        inline-size: var(--target-size-touch);
-        block-size: var(--target-size-touch);
     }
 }

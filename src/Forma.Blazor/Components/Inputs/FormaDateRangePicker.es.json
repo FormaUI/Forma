@@ -1,0 +1,10 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "Clear": "Borrar",
+  "Select Range": "Seleccionar Intervalo",
+  "Today": "Hoy",
+  "Yesterday": "Ayer",
+  "[$ plural; one: Last # day; other: Last # days; $]": "[$ plural; one: Último # día; other: Últimos # días; $]",
+  "This Month": "Este Mes",
+  "Last Month": "Mes Pasado"
+}

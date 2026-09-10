@@ -1,0 +1,101 @@
+@page "/date-range-picker"
+@attribute [ShowcasePage("FormaDateRangePicker")]
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@using Forma.Blazor.Components.Buttons
+@using Forma.Blazor.Components.Inputs
+@using Forma.Blazor.Models
+@inject IStringLocale<FormaDateRangePickerPage> L
+
+<h1>FormaDateRangePicker</h1>
+<p class="description">@L["A field for a range of dates, picked from two months side by side with presets for the usual spans. The range is one value, committed once both ends are picked. Month and day names follow the culture, and the calendar mirrors for a right-to-left reader."]</p>
+
+<EditForm Model="Model" FormName="date-range-picker-demo" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+
+    <div class="demo-section">
+        <h2>@L["Date Range with Presets"]</h2>
+        <div class="demo-box">
+            <FormaDateRangePicker @bind-Value="Model.Period" Label="@L["Period"]" />
+            <p class="demo-note">@(Model.Period is { } period ? DescribePeriod(period) : L["No range picked yet."])</p>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["Two Months, No Presets"]</h2>
+        <div class="demo-box">
+            <FormaDateRangePicker @bind-Value="Model.Stay" Label="@L["Stay"]" ShowPresets="false" />
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["With Minimum Date"]</h2>
+        <div class="demo-box">
+            <FormaDateRangePicker @bind-Value="Model.Booking"
+                                  Label="@L["Booking"]"
+                                  MinDate="@DateOnly.FromDateTime(DateTime.Today)" />
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["Hebrew Calendar"]</h2>
+        <p class="description">@L["The component adapts to the calendar system of the given culture. This demo uses he-IL with UseNonGregorianMonths to render the Hebrew (lunisolar) calendar with its month names."]</p>
+        <div class="demo-box">
+            <FormaDateRangePicker @bind-Value="Model.HebrewPeriod"
+                                  Label="@L["Hebrew Date Range"]"
+                                  UseNonGregorianMonths="true" />
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["Required in a Form"]</h2>
+        <p class="description">@L["A range picker is a form input: submitting without a range shows the validation message under it, and picking both ends clears it."]</p>
+        <div class="demo-box">
+            <FormaDateRangePicker @bind-Value="Model.Campaign" Label="@L["Campaign"]" />
+            <div class="demo-row">
+                <FormaButton Type="ButtonType.Submit" Variant="ButtonVariant.Primary">@L["Submit"]</FormaButton>
+                @if (_submitted)
+                {
+                    <span class="demo-note">@L["Submitted."]</span>
+                }
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private bool _submitted;
+
+    private DateRangePickerDemoModel Model { get; set; } = default!;
+
+    protected override void OnInitialized()
+        => Model = new DateRangePickerDemoModel(L);
+
+    private void HandleSubmit()
+        => _submitted = true;
+
+    private string DescribePeriod(DateRange period)
+    {
+        var days = L["[$ plural; one: # day; other: # days; $]", period.End.DayNumber - period.Start.DayNumber + 1].Value;
+
+        return L["{Days} from {Start} to {End}", days, period.Start, period.End];
+    }
+
+    private sealed class DateRangePickerDemoModel(IStringLocale<FormaDateRangePickerPage> localizer) : IValidatableObject
+    {
+        public DateRange? Period { get; set; }
+        public DateRange? Stay { get; set; }
+        public DateRange? Booking { get; set; }
+        public DateRange? HebrewPeriod { get; set; }
+        public DateRange? Campaign { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (Campaign is null)
+            {
+                yield return new ValidationResult(localizer["A campaign period is required."], [nameof(Campaign)]);
+            }
+        }
+    }
+}

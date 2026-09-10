@@ -1,13 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "Clear": "נקה",
-  "Today": "היום",
-  "Yesterday": "אתמול",
-  "[$ plural; one: Last # day; other: Last # days; $]": "[$ plural; one: יום אחרון; two: יומיים אחרונים; other: # ימים אחרונים; $]",
-  "This Month": "החודש",
-  "Last Month": "חודש שעבר",
   "Select Date": "בחר תאריך",
-  "Select Range": "בחר טווח",
-  "Previous Month": "החודש הקודם",
-  "Next Month": "החודש הבא"
+  "The {Field} field must be a date.": "השדה {Field} חייב להיות תאריך."
 }

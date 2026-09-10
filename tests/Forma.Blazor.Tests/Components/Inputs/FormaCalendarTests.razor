@@ -1,0 +1,242 @@
+@inherits FormaBunitContext
+@using Forma.Blazor.Models
+@using System.Globalization
+@using AngleSharp.Dom
+
+@code {
+    public sealed class Component
+    {
+        private static IElement FindDay<TComponent>(IRenderedComponent<TComponent> cut, string dayOfMonth)
+            where TComponent : IComponent
+            => cut.FindAll(".forma-calendar-day").First(day => day.TextContent.Trim() == dayOfMonth && !day.ClassList.Contains("empty"));
+
+        [Fact]
+        public void Should_show_the_highlighted_month()
+        {
+            // Arrange
+            using var ctx = new FormaCalendarTests();
+            var highlight = new DateRange(new DateOnly(2025, 3, 15), new DateOnly(2025, 3, 15));
+
+            // Act
+            var cut = ctx.Render(@<FormaCalendar Highlight="highlight" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Single(cut.FindAll(".forma-calendar-month")),
+                () => Assert.Equal("3", cut.FindAll(".forma-calendar-select")[1].GetAttribute("value")));
+        }
+
+        [Fact]
+        public void Should_draw_a_single_day_as_selected()
+        {
+            // Arrange
+            using var ctx = new FormaCalendarTests();
+            var highlight = new DateRange(new DateOnly(2025, 3, 15), new DateOnly(2025, 3, 15));
+
+            // Act
+            var cut = ctx.Render(@<FormaCalendar Highlight="highlight" />);
+
+            // Assert
+            var day = FindDay(cut, "15");
+            Assert.Multiple(
+                () => Assert.Contains("selected", day.ClassList),
+                () => Assert.DoesNotContain("start", day.ClassList),
+                () => Assert.Equal("true", day.GetAttribute("aria-pressed")));
+        }
+
+        [Fact]
+        public void Should_draw_a_span_with_its_ends_and_the_days_between()
+        {
+            // Arrange
+            using var ctx = new FormaCalendarTests();
+            var highlight = new DateRange(new DateOnly(2025, 3, 5), new DateOnly(2025, 3, 8));
+
+            // Act
+            var cut = ctx.Render(@<FormaCalendar Highlight="highlight" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Contains("start", FindDay(cut, "5").ClassList),
+                () => Assert.Contains("in-range", FindDay(cut, "6").ClassList),
+                () => Assert.Contains("in-range", FindDay(cut, "7").ClassList),
+                () => Assert.Contains("end", FindDay(cut, "8").ClassList),
+                () => Assert.DoesNotContain("in-range", FindDay(cut, "9").ClassList));
+        }
+
+        [Fact]
+        public void Should_show_two_months_around_a_span()
+        {
+            // Arrange
+            using var ctx = new FormaCalendarTests();
+            var highlight = new DateRange(new DateOnly(2025, 2, 1), new DateOnly(2025, 3, 15));
+
+            // Act
+            var cut = ctx.Render(@<FormaCalendar Months="2" Highlight="highlight" />);
+
+            // Assert
+            var monthSelects = cut.FindAll(".forma-calendar-select").Where((_, index) => index % 2 == 1).ToList();
+            Assert.Multiple(
+                () => Assert.Equal(2, cut.FindAll(".forma-calendar-month").Count),
+                () => Assert.Equal("2", monthSelects[0].GetAttribute("value")),
+                () => Assert.Equal("3", monthSelects[1].GetAttribute("value")));
+        }
+
+        [Fact]
+        public void Should_report_the_day_picked_and_the_day_hovered()
+        {
+            // Arrange
+            using var ctx = new FormaCalendarTests();
+            var highlight = new DateRange(new DateOnly(2025, 3, 15), new DateOnly(2025, 3, 15));
+            DateOnly? picked = null;
+            DateOnly? hovered = null;
+            var cut = ctx.Render(@<FormaCalendar Highlight="highlight" OnDaySelected="day => picked = day" OnDayHovered="day => hovered = day" />);
+
+            // Act
+            FindDay(cut, "20").Click();
+            FindDay(cut, "21").MouseEnter();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(new DateOnly(2025, 3, 20), picked),
+                () => Assert.Equal(new DateOnly(2025, 3, 21), hovered));
+        }
+
+        [Fact]
+        public void Should_listen_for_the_pointer_only_when_hovering_is_wanted()
+        {
+            // Arrange
+            using var ctx = new FormaCalendarTests();
+            var highlight = new DateRange(new DateOnly(2025, 3, 15), new DateOnly(2025, 3, 15));
+
+            // Act
+            var silent = ctx.Render(@<FormaCalendar Highlight="highlight" />);
+            var listening = ctx.Render(@<FormaCalendar Highlight="highlight" OnDayHovered="_ => { }" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.False(FindDay(silent, "15").HasAttribute("blazor:onmouseenter")),
+                () => Assert.True(FindDay(listening, "15").HasAttribute("blazor:onmouseenter")));
+        }
+
+        [Fact]
+        public void Should_disable_days_outside_the_allowed_dates_and_not_report_them()
+        {
+            // Arrange
+            using var ctx = new FormaCalendarTests();
+            var highlight = new DateRange(new DateOnly(2025, 3, 15), new DateOnly(2025, 3, 15));
+            DateOnly? picked = null;
+            var cut = ctx.Render(@<FormaCalendar Highlight="highlight" MinDate="@(new DateOnly(2025, 3, 10))" MaxDate="@(new DateOnly(2025, 3, 20))" OnDaySelected="day => picked = day" />);
+
+            // Act
+            var day5 = FindDay(cut, "5");
+            day5.Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(day5.HasAttribute("disabled")),
+                () => Assert.Null(picked));
+        }
+
+        [Fact]
+        public void Should_move_to_the_previous_month()
+        {
+            // Arrange
+            using var ctx = new FormaCalendarTests();
+            var highlight = new DateRange(new DateOnly(2025, 3, 15), new DateOnly(2025, 3, 15));
+            var cut = ctx.Render(@<FormaCalendar Highlight="highlight" />);
+
+            // Act
+            cut.Find(".forma-calendar-nav").Click();
+
+            // Assert
+            Assert.Equal("2", cut.FindAll(".forma-calendar-select")[1].GetAttribute("value"));
+        }
+
+        [Fact]
+        public void Should_disable_month_options_outside_the_allowed_dates()
+        {
+            // Arrange
+            using var ctx = new FormaCalendarTests();
+            var highlight = new DateRange(new DateOnly(2025, 6, 15), new DateOnly(2025, 6, 15));
+
+            // Act
+            var cut = ctx.Render(@<FormaCalendar Highlight="highlight" MinDate="@(new DateOnly(2025, 4, 1))" MaxDate="@(new DateOnly(2025, 8, 31))" />);
+            var options = cut.FindAll(".forma-calendar-select")[1].QuerySelectorAll("option");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.All(options.Take(3), option => Assert.True(option.HasAttribute("disabled"))),
+                () => Assert.All(options.Skip(3).Take(5), option => Assert.False(option.HasAttribute("disabled"))),
+                () => Assert.All(options.Skip(8), option => Assert.True(option.HasAttribute("disabled"))));
+        }
+
+        [Fact]
+        public void Should_disable_year_options_outside_the_allowed_dates()
+        {
+            // Arrange
+            using var ctx = new FormaCalendarTests();
+            var highlight = new DateRange(new DateOnly(2025, 6, 15), new DateOnly(2025, 6, 15));
+
+            // Act
+            var cut = ctx.Render(@<FormaCalendar Highlight="highlight" MinDate="@(new DateOnly(2025, 1, 1))" MaxDate="@(new DateOnly(2026, 12, 31))" />);
+            var options = cut.FindAll(".forma-calendar-select")[0].QuerySelectorAll("option");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.False(options.First(option => option.GetAttribute("value") == "2025").HasAttribute("disabled")),
+                () => Assert.False(options.First(option => option.GetAttribute("value") == "2026").HasAttribute("disabled")),
+                () => Assert.All(options.Where(option => int.Parse(option.GetAttribute("value")!, CultureInfo.InvariantCulture) < 2025), option => Assert.True(option.HasAttribute("disabled"))));
+        }
+
+        [Fact]
+        public void Should_reject_more_than_two_months()
+        {
+            // Arrange
+            using var ctx = new FormaCalendarTests();
+
+            // Act & Assert
+            Assert.Throws<ArgumentOutOfRangeException>(() => ctx.Render(@<FormaCalendar Months="3" />));
+        }
+
+        // The month-name table is the 13-month leap-year one, so a common Hebrew year
+        // (12 months, no Adar II) must not be labelled by indexing straight into it.
+        [Fact]
+        public void Should_name_hebrew_months_for_a_common_year_without_adar_two()
+        {
+            // Arrange
+            using var culture = new CultureFixture("he-IL");
+            using var ctx = new FormaCalendarTests();
+            var highlight = new DateRange(new DateOnly(2026, 8, 3), new DateOnly(2026, 8, 3));
+
+            // Act — 5786 is a common year, running from autumn 2025 to autumn 2026
+            var cut = ctx.Render(@<FormaCalendar Highlight="highlight" UseNonGregorianMonths="true" />);
+            var months = cut.FindAll(".forma-calendar-select")[1].QuerySelectorAll("option").Select(option => option.TextContent.Trim()).ToArray();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(12, months.Length),
+                () => Assert.Equal("אלול", months[^1]),
+                () => Assert.DoesNotContain("אדר ב׳", months));
+        }
+
+        [Fact]
+        public void Should_name_hebrew_months_for_a_leap_year_with_both_adars()
+        {
+            // Arrange
+            using var culture = new CultureFixture("he-IL");
+            using var ctx = new FormaCalendarTests();
+            var highlight = new DateRange(new DateOnly(2027, 3, 1), new DateOnly(2027, 3, 1));
+
+            // Act — 5787 is a leap year, running from autumn 2026 to autumn 2027
+            var cut = ctx.Render(@<FormaCalendar Highlight="highlight" UseNonGregorianMonths="true" />);
+            var months = cut.FindAll(".forma-calendar-select")[1].QuerySelectorAll("option").Select(option => option.TextContent.Trim()).ToArray();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(13, months.Length),
+                () => Assert.Equal("אלול", months[^1]),
+                () => Assert.Contains("אדר א׳", months),
+                () => Assert.Contains("אדר ב׳", months));
+        }
+    }
+}

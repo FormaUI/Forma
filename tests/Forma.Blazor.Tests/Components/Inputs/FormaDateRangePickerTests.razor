@@ -1,0 +1,234 @@
+@inherits FormaBunitContext
+@using Forma.Framework.Common.Interop.Behaviours
+@using System.Globalization
+@using Forma.Blazor.Models
+@using AngleSharp.Dom
+
+@code {
+    public sealed class Component
+    {
+        private static string FormatDate(DateOnly date)
+            => date.ToDateTime(TimeOnly.MinValue).ToString("d", CultureInfo.CurrentCulture);
+
+        private static IElement FindDay<TComponent>(IRenderedComponent<TComponent> cut, string dayOfMonth)
+            where TComponent : IComponent
+            => cut.FindAll(".forma-calendar-day").First(day => day.TextContent.Trim() == dayOfMonth && !day.ClassList.Contains("empty") && !day.HasAttribute("disabled"));
+
+        [Fact]
+        public void Should_display_the_range_formatted_for_the_culture()
+        {
+            // Arrange
+            using var ctx = new FormaDateRangePickerTests();
+            var model = new RangeModel { Range = new DateRange(new DateOnly(2025, 2, 1), new DateOnly(2025, 3, 15)) };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateRangePicker @bind-Value="model.Range" Label="Period" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal($"{FormatDate(new DateOnly(2025, 2, 1))} - {FormatDate(new DateOnly(2025, 3, 15))}", cut.Find(".forma-date-range-picker-value").TextContent);
+        }
+
+        [Fact]
+        public void Should_open_two_months_with_presets()
+        {
+            // Arrange
+            using var ctx = new FormaDateRangePickerTests();
+            var model = new RangeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateRangePicker @bind-Value="model.Range" Label="Period" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find(".forma-date-range-picker-trigger").Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(2, cut.FindAll(".forma-calendar-month").Count),
+                () => Assert.Single(cut.FindAll(".forma-date-range-picker-presets")));
+        }
+
+        [Fact]
+        public void Should_leave_the_presets_out_when_told_to()
+        {
+            // Arrange
+            using var ctx = new FormaDateRangePickerTests();
+            var model = new RangeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateRangePicker @bind-Value="model.Range" Label="Period" ShowPresets="false" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find(".forma-date-range-picker-trigger").Click();
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-date-range-picker-presets"));
+        }
+
+        [Fact]
+        public void Should_commit_the_range_once_both_ends_are_picked()
+        {
+            // Arrange
+            using var ctx = new FormaDateRangePickerTests();
+            var model = new RangeModel();
+            var completed = 0;
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateRangePicker @bind-Value="model.Range" Label="Period" OnSelectionComplete="() => completed++" />
+            </FakeFormHost>);
+            cut.Find(".forma-date-range-picker-trigger").Click();
+
+            // Act
+            FindDay(cut, "5").Click();
+            var pending = model.Range;
+            FindDay(cut, "10").Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Null(pending),
+                () => Assert.Equal(5, model.Range!.Value.Start.Day),
+                () => Assert.Equal(10, model.Range!.Value.End.Day),
+                () => Assert.Equal(1, completed),
+                () => Assert.Empty(cut.FindAll(".forma-date-range-picker-popover")));
+        }
+
+        [Fact]
+        public void Should_order_the_ends_whichever_is_picked_first()
+        {
+            // Arrange
+            using var ctx = new FormaDateRangePickerTests();
+            var model = new RangeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateRangePicker @bind-Value="model.Range" Label="Period" />
+            </FakeFormHost>);
+            cut.Find(".forma-date-range-picker-trigger").Click();
+
+            // Act
+            FindDay(cut, "20").Click();
+            FindDay(cut, "5").Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(5, model.Range!.Value.Start.Day),
+                () => Assert.Equal(20, model.Range!.Value.End.Day));
+        }
+
+        [Fact]
+        public void Should_draw_the_span_from_the_anchored_day_to_the_hovered_day()
+        {
+            // Arrange
+            using var ctx = new FormaDateRangePickerTests();
+            var model = new RangeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateRangePicker @bind-Value="model.Range" Label="Period" />
+            </FakeFormHost>);
+            cut.Find(".forma-date-range-picker-trigger").Click();
+
+            // Act
+            FindDay(cut, "5").Click();
+            FindDay(cut, "8").MouseEnter();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Contains("start", FindDay(cut, "5").ClassList),
+                () => Assert.Contains("in-range", FindDay(cut, "6").ClassList),
+                () => Assert.Contains("end", FindDay(cut, "8").ClassList),
+                () => Assert.Null(model.Range));
+        }
+
+        [Fact]
+        public void Should_clear_the_range_on_a_clear_click()
+        {
+            // Arrange
+            using var ctx = new FormaDateRangePickerTests();
+            var model = new RangeModel { Range = new DateRange(new DateOnly(2025, 2, 1), new DateOnly(2025, 3, 15)) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateRangePicker @bind-Value="model.Range" Label="Period" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find(".forma-date-range-picker-clear").Click();
+
+            // Assert
+            Assert.Null(model.Range);
+        }
+
+        [Fact]
+        public void Should_hold_a_preset_within_the_allowed_dates()
+        {
+            // Arrange
+            using var ctx = new FormaDateRangePickerTests();
+            var model = new RangeModel();
+            var minDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-3));
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateRangePicker @bind-Value="model.Range" Label="Period" MinDate="minDate" />
+            </FakeFormHost>);
+            cut.Find(".forma-date-range-picker-trigger").Click();
+
+            // Act
+            cut.FindAll(".forma-date-range-picker-presets button").First(button => button.TextContent.Contains('7')).Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(minDate, model.Range!.Value.Start),
+                () => Assert.Equal(DateOnly.FromDateTime(DateTime.Today), model.Range!.Value.End));
+        }
+
+        [Fact]
+        public void Should_disable_a_preset_lying_wholly_outside_the_allowed_dates()
+        {
+            // Arrange
+            using var ctx = new FormaDateRangePickerTests();
+            var model = new RangeModel();
+            var futureMin = DateOnly.FromDateTime(DateTime.Today.AddDays(30));
+            var futureMax = DateOnly.FromDateTime(DateTime.Today.AddDays(60));
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateRangePicker @bind-Value="model.Range" Label="Period" MinDate="futureMin" MaxDate="futureMax" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find(".forma-date-range-picker-trigger").Click();
+
+            // Assert
+            Assert.All(cut.FindAll(".forma-date-range-picker-presets button"), button => Assert.True(button.HasAttribute("disabled")));
+        }
+
+        [Fact]
+        public void Should_pass_additional_attributes_to_the_trigger()
+        {
+            // Arrange
+            using var ctx = new FormaDateRangePickerTests();
+            var model = new RangeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateRangePicker @bind-Value="model.Range" Label="Period" data-testid="my-range" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("my-range", cut.Find(".forma-date-range-picker-trigger").GetAttribute("data-testid"));
+        }
+
+        [Fact]
+        public void Should_open_under_the_fields_start_edge()
+        {
+            // Arrange
+            using var ctx = new FormaDateRangePickerTests();
+            var model = new RangeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateRangePicker @bind-Value="model.Range" Label="Period" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find(".forma-date-range-picker-trigger").Click();
+
+            // Assert
+            Assert.Equal(PopoverAlignment.Start, cut.FindComponent<FormaPopover>().Instance.Alignment);
+        }
+    }
+
+    private sealed class RangeModel
+    {
+        public DateRange? Range { get; set; }
+    }
+}

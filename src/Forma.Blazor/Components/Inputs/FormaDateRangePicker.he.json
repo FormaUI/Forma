@@ -1,0 +1,10 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "Clear": "נקה",
+  "Select Range": "בחר טווח",
+  "Today": "היום",
+  "Yesterday": "אתמול",
+  "[$ plural; one: Last # day; other: Last # days; $]": "[$ plural; one: יום אחרון; two: יומיים אחרונים; other: # ימים אחרונים; $]",
+  "This Month": "החודש",
+  "Last Month": "חודש שעבר"
+}

@@ -1,0 +1,22 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "A field for a range of dates, picked from two months side by side with presets for the usual spans. The range is one value, committed once both ends are picked. Month and day names follow the culture, and the calendar mirrors for a right-to-left reader.": "שדה לטווח תאריכים, שנבחר משני חודשים זה לצד זה עם קביעות מראש לטווחים המקובלים. הטווח הוא ערך אחד, הנקבע ברגע ששני קצותיו נבחרו. שמות החודשים והימים עוקבים אחר התרבות, והלוח מתהפך עבור קורא מימין לשמאל.",
+  "Date Range with Presets": "טווח תאריכים עם קביעות מראש",
+  "Period": "תקופה",
+  "[$ plural; one: # day; other: # days; $]": "[$ plural; one: יום אחד; two: יומיים; other: # ימים; $]",
+  "{Days} from {Start} to {End}": "{Days} מ-{Start} עד {End}",
+  "No range picked yet.": "עדיין לא נבחר טווח.",
+  "Two Months, No Presets": "שני חודשים, בלי קביעות מראש",
+  "Stay": "שהות",
+  "With Minimum Date": "עם תאריך מינימלי",
+  "Booking": "הזמנה",
+  "Hebrew Calendar": "לוח שנה עברי",
+  "The component adapts to the calendar system of the given culture. This demo uses he-IL with UseNonGregorianMonths to render the Hebrew (lunisolar) calendar with its month names.": "הרכיב מתאים למערכת הלוח שנה של התרבות. דוגמה זו משתמשת בתרבות he-IL עם UseNonGregorianMonths להצגת הלוח העברי עם שמות חודשים.",
+  "Hebrew Date Range": "טווח תאריכים עברי",
+  "Required in a Form": "נדרש בטופס",
+  "A range picker is a form input: submitting without a range shows the validation message under it, and picking both ends clears it.": "בוחר טווח הוא שדה טופס: שליחה בלי טווח מציגה מתחתיו את הודעת האימות, ובחירת שני הקצוות מסירה אותה.",
+  "Campaign": "קמפיין",
+  "Submit": "שליחה",
+  "Submitted.": "נשלח.",
+  "A campaign period is required.": "יש לבחור תקופת קמפיין."
+}

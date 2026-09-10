@@ -1,13 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "Clear": "Borrar",
-  "Today": "Hoy",
-  "Yesterday": "Ayer",
-  "[$ plural; one: Last # day; other: Last # days; $]": "[$ plural; one: Último # día; other: Últimos # días; $]",
-  "This Month": "Este Mes",
-  "Last Month": "Mes Pasado",
   "Select Date": "Seleccionar Fecha",
-  "Select Range": "Seleccionar Intervalo",
-  "Previous Month": "Mes Anterior",
-  "Next Month": "Mes Siguiente"
+  "The {Field} field must be a date.": "El campo {Field} debe ser una fecha."
 }

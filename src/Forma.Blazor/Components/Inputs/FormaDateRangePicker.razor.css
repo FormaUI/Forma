@@ -1,0 +1,117 @@
+/* ============================================================
+   FormaDateRangePicker — a field opening two months and presets
+   ============================================================ */
+
+/* ---------- root ---------- */
+.forma-date-range-picker {
+    --forma-date-range-picker-primary-color: var(--primary-color);
+    --forma-date-range-picker-radius: var(--radius-md);
+
+    position: relative;
+    font-size: var(--font-size-sm);
+}
+
+/* ---------- trigger ---------- */
+.forma-date-range-picker-trigger-wrapper {
+    position: relative;
+    display: block;
+}
+
+/* Inherits its box from .forma-field-input; only the button-specific parts are set here. */
+.forma-date-range-picker-trigger {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    /* Room for the clear button: its inset from the edge and its own width. */
+    padding-inline-end: calc(var(--space-2) + 1.5rem);
+    cursor: pointer;
+    text-align: start;
+    touch-action: manipulation;
+}
+
+@media (hover: hover) {
+    .forma-date-range-picker-trigger:hover {
+        border-color: var(--forma-date-range-picker-primary-color);
+    }
+}
+
+.forma-date-range-picker-arrow {
+    flex-shrink: 0;
+    font-size: var(--font-size-xs);
+    opacity: 0.55;
+}
+
+.forma-date-range-picker-value {
+    flex: 1;
+    white-space: nowrap;
+}
+
+.forma-date-range-picker-value.placeholder {
+    color: var(--text-secondary-color);
+}
+
+/* ---------- clear ---------- */
+/* Clear floats at the end of the trigger, in the danger color. */
+::deep .forma-date-range-picker-clear {
+    --forma-button-ghost-hover-color: var(--danger-color);
+    --forma-button-ghost-hover-bg-color: var(--danger-subtle-color);
+    position: absolute;
+    inset-inline-end: var(--space-2);
+    inset-block-start: 50%;
+    transform: translateY(-50%);
+    border-radius: var(--radius-pill);
+}
+
+/* ---------- popover ---------- */
+/* The calendar and presets inside the FormaPopover, which owns the top-layer placement and dismissal. */
+.forma-date-range-picker-popover {
+    display: flex;
+    flex-wrap: wrap;
+    overflow: visible;
+    background: var(--input-bg-color);
+    border-radius: var(--forma-date-range-picker-radius);
+    box-shadow: var(--shadow-medium);
+}
+
+/* ---------- presets ---------- */
+.forma-date-range-picker-presets {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-3);
+    border-inline-start: 1px solid var(--border-color);
+    min-width: 9rem;
+    justify-content: start;
+}
+
+/* The repeated class raises specificity above FormaButton's own ghost/mini rules. */
+::deep .forma-date-range-picker-preset.forma-date-range-picker-preset {
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    font-size: var(--font-size-sm);
+    font-weight: inherit;
+    text-align: start;
+    justify-content: flex-start;
+    white-space: nowrap;
+}
+
+@media (hover: hover) {
+    ::deep .forma-date-range-picker-preset.forma-date-range-picker-preset:hover:not(:disabled) {
+        background: var(--hover-bg-color);
+        border-color: var(--forma-date-range-picker-primary-color);
+        color: var(--forma-date-range-picker-primary-color);
+    }
+}
+
+::deep .forma-date-range-picker-preset.forma-date-range-picker-preset:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+@media (pointer: coarse) {
+    .forma-date-range-picker-trigger {
+        min-block-size: var(--target-size-touch);
+    }
+}

@@ -333,10 +333,12 @@ no framework of its own; the gap this design closes is on the .NET side.
 
 ## Still open
 
-- `FormaCheckBox` and `FormaDatePicker` are element-tier components, not form inputs:
-  neither derives from `InputBase<TValue>`, so neither takes part in an `EditForm`'s
-  validation the way every other Forma input does. Making them inputs is its own change,
-  with its own tests and Showcase states.
+- `FormaCheckBox` and `FormaDatePicker` were element-tier components, not form inputs.
+  Both are inputs now: the checkbox binds `Value` like `FormaToggleSwitch`, and the
+  library's control-style uses of it name a field through `ValueExpression`; the date
+  picker binds one `DateOnly?`, and its range mode became `FormaDateRangePicker`,
+  binding one `DateRange` — a value type in `Models/` — over a shared `FormaCalendar`
+  that carries the month mechanics while each picker owns its selection rules.
 - A component rooted in another Forma component forwards `Id`, `Class`, `Style` and the
   attribute bag to it and overrides `RootElement` to answer with that component's root,
   so a reader gets the same element whichever of the two it holds.

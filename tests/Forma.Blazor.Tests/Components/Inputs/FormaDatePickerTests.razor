@@ -1,89 +1,97 @@
 @inherits FormaBunitContext
+@using Forma.Framework.Common.Interop.Behaviours
 @using System.Globalization
 
 @code {
     public sealed class Component
     {
         [Fact]
-        public void Should_render_trigger_button()
+        public void Should_render_a_trigger_button()
         {
+            // Arrange
             using var ctx = new FormaDatePickerTests();
-            var cut = ctx.Render(@<FormaDatePicker Label="Start date" />);
+            var model = new FakeModel();
 
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDatePicker @bind-Value="model.Date" Label="Start date" />
+            </FakeFormHost>);
+
+            // Assert
             Assert.NotNull(cut.Find(".forma-date-picker-trigger"));
         }
 
         [Fact]
-        public void Should_display_formatted_single_value()
+        public void Should_display_the_value_formatted_for_the_culture()
         {
+            // Arrange
             using var ctx = new FormaDatePickerTests();
-            DateOnly? value = new DateOnly(2025, 3, 15);
-            var cut = ctx.Render(@<FormaDatePicker Value="value" Label="Start date" />);
+            var model = new FakeModel { Date = new DateOnly(2025, 3, 15) };
 
-            var expected = value.Value.ToDateTime(TimeOnly.MinValue)
-                .ToString("d", CultureInfo.CurrentCulture);
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDatePicker @bind-Value="model.Date" Label="Start date" />
+            </FakeFormHost>);
+
+            // Assert
+            var expected = model.Date!.Value.ToDateTime(TimeOnly.MinValue).ToString("d", CultureInfo.CurrentCulture);
             Assert.Equal(expected, cut.Find(".forma-date-picker-value").TextContent);
         }
 
         [Fact]
-        public void Should_display_formatted_range()
+        public void Should_show_a_placeholder_when_there_is_no_value()
         {
+            // Arrange
             using var ctx = new FormaDatePickerTests();
-            DateOnly? start = new DateOnly(2025, 2, 1);
-            DateOnly? end = new DateOnly(2025, 3, 15);
-            var cut = ctx.Render(@<FormaDatePicker StartDate="start" EndDate="end"
-                                                StartDateChanged="s => start = s"
-                                                EndDateChanged="e => end = e" Label="Start date" />);
+            var model = new FakeModel();
 
-            var s = start!.Value.ToDateTime(TimeOnly.MinValue).ToString("d", CultureInfo.CurrentCulture);
-            var e = end!.Value.ToDateTime(TimeOnly.MinValue).ToString("d", CultureInfo.CurrentCulture);
-            Assert.Equal($"{s} - {e}", cut.Find(".forma-date-picker-value").TextContent);
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDatePicker @bind-Value="model.Date" Label="Start date" />
+            </FakeFormHost>);
+            var value = cut.Find(".forma-date-picker-value");
+
+            // Assert
+            Assert.NotEmpty(value.TextContent.Trim());
+            Assert.Contains("placeholder", value.ClassList);
         }
 
         [Fact]
-        public void Should_show_placeholder_when_null()
+        public void Should_open_one_month_in_the_top_layer_on_a_trigger_click()
         {
+            // Arrange
             using var ctx = new FormaDatePickerTests();
-            DateOnly? value = null;
-            var cut = ctx.Render(@<FormaDatePicker Value="value" Label="Start date" />);
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDatePicker @bind-Value="model.Date" Label="Start date" />
+            </FakeFormHost>);
 
-            var valueEl = cut.Find(".forma-date-picker-value");
-            Assert.NotEmpty(valueEl.TextContent.Trim());
-            Assert.Contains("placeholder", valueEl.ClassList);
-        }
-
-        [Fact]
-        public void Should_open_popover_on_trigger_click()
-        {
-            using var ctx = new FormaDatePickerTests();
-            var cut = ctx.Render(@<FormaDatePicker Label="Start date" />);
-
+            // Act
             cut.Find(".forma-date-picker-trigger").Click();
 
-            Assert.NotNull(cut.Find(".forma-date-picker-popover"));
-        }
-
-        [Fact]
-        public void Should_render_the_popover_in_the_top_layer_so_a_scrolling_ancestor_cannot_clip_it()
-        {
-            using var ctx = new FormaDatePickerTests();
-            var cut = ctx.Render(@<FormaDatePicker Label="Start date" />);
-
-            cut.Find(".forma-date-picker-trigger").Click();
-
-            // Manual, because the input router owns dismissal rather than light-dismiss.
-            Assert.Equal("manual", cut.Find(".forma-popover").GetAttribute("popover"));
+            // Assert
+            Assert.Multiple(
+                () => Assert.NotNull(cut.Find(".forma-date-picker-popover")),
+                () => Assert.Single(cut.FindAll(".forma-calendar-month")),
+                // Manual, because the input router owns dismissal rather than light-dismiss.
+                () => Assert.Equal("manual", cut.Find(".forma-popover").GetAttribute("popover")));
         }
 
         [Fact]
         public async Task Should_close_the_popover_and_collapse_the_trigger_when_dismissed_by_escape()
         {
+            // Arrange
             using var ctx = new FormaDatePickerTests();
-            var cut = ctx.Render(@<FormaDatePicker Label="Start date" />);
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDatePicker @bind-Value="model.Date" Label="Start date" />
+            </FakeFormHost>);
             cut.Find(".forma-date-picker-trigger").Click();
 
+            // Act
             await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.Escape));
 
+            // Assert
             Assert.Multiple(
                 () => Assert.Empty(cut.FindAll(".forma-date-picker-popover")),
                 () => Assert.Equal("false", cut.Find(".forma-date-picker-trigger").GetAttribute("aria-expanded")));
@@ -92,393 +100,200 @@
         [Fact]
         public async Task Should_close_the_popover_when_pressed_away()
         {
+            // Arrange
             using var ctx = new FormaDatePickerTests();
-            var cut = ctx.Render(@<FormaDatePicker Label="Start date" />);
-
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDatePicker @bind-Value="model.Date" Label="Start date" />
+            </FakeFormHost>);
             cut.Find(".forma-date-picker-trigger").Click();
+
+            // Act
             await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.HandleDismissAsync(DismissBehavior.Dismiss, DismissReason.PressAway));
 
+            // Assert
             Assert.Empty(cut.FindAll(".forma-date-picker-popover"));
         }
 
         [Fact]
-        public void Should_render_dual_calendars_in_range_mode()
+        public void Should_write_the_picked_day_to_the_model_and_close()
         {
+            // Arrange
             using var ctx = new FormaDatePickerTests();
-            DateOnly? start = null;
-            DateOnly? end = null;
-            var cut = ctx.Render(@<FormaDatePicker StartDate="start" EndDate="end"
-                                                StartDateChanged="s => start = s"
-                                                EndDateChanged="e => end = e" Label="Start date" />);
-
+            var model = new FakeModel();
+            var completed = 0;
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDatePicker @bind-Value="model.Date" Label="Start date" OnSelectionComplete="() => completed++" />
+            </FakeFormHost>);
             cut.Find(".forma-date-picker-trigger").Click();
 
-            Assert.Equal(2, cut.FindAll(".forma-date-picker-month").Count);
+            // Act
+            cut.FindAll(".forma-calendar-day").First(day => day.TextContent.Trim() == "15" && !day.ClassList.Contains("empty")).Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(15, model.Date!.Value.Day),
+                () => Assert.Equal(1, completed),
+                () => Assert.Empty(cut.FindAll(".forma-date-picker-popover")));
         }
 
         [Fact]
-        public void Should_render_single_calendar_in_value_mode()
+        public void Should_highlight_the_value_as_the_selected_day()
         {
+            // Arrange
             using var ctx = new FormaDatePickerTests();
-            var cut = ctx.Render(@<FormaDatePicker Label="Start date" />);
+            var model = new FakeModel { Date = new DateOnly(2025, 3, 15) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDatePicker @bind-Value="model.Date" Label="Start date" />
+            </FakeFormHost>);
 
+            // Act
             cut.Find(".forma-date-picker-trigger").Click();
 
-            Assert.Single(cut.FindAll(".forma-date-picker-month"));
+            // Assert
+            var selected = Assert.Single(cut.FindAll(".forma-calendar-day.selected"));
+            Assert.Equal("15", selected.TextContent.Trim());
         }
 
         [Fact]
-        public void Should_select_single_date_and_close()
+        public void Should_render_the_label()
         {
+            // Arrange
             using var ctx = new FormaDatePickerTests();
-            DateOnly? value = null;
-            var cut = ctx.Render(@<FormaDatePicker Value="value" ValueChanged="v => value = v" Label="Start date" />);
+            var model = new FakeModel();
 
-            cut.Find(".forma-date-picker-trigger").Click();
-            var day15 = cut.FindAll(".forma-date-picker-day")
-                .First(b => b.TextContent.Trim() == "15" && !b.ClassList.Contains("empty"));
-            day15.Click();
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDatePicker @bind-Value="model.Date" Label="Start Date" />
+            </FakeFormHost>);
 
-            Assert.NotNull(value);
-            Assert.Equal(15, value!.Value.Day);
-            Assert.Empty(cut.FindAll(".forma-date-picker-popover"));
-        }
-
-        [Fact]
-        public void Should_select_date_range()
-        {
-            using var ctx = new FormaDatePickerTests();
-            DateOnly? start = null;
-            DateOnly? end = null;
-            var cut = ctx.Render(@<FormaDatePicker StartDate="start" EndDate="end"
-                                                StartDateChanged="s => start = s"
-                                                EndDateChanged="e => end = e" Label="Start date" />);
-
-            cut.Find(".forma-date-picker-trigger").Click();
-            var day5 = cut.FindAll(".forma-date-picker-day")
-                .First(d => d.TextContent.Trim() == "5" && !d.ClassList.Contains("empty") && !d.HasAttribute("disabled"));
-            day5.Click();
-
-            // Re-query after re-render (first click sets _rangeStart, causing new event handler IDs)
-            var day10 = cut.FindAll(".forma-date-picker-day")
-                .First(d => d.TextContent.Trim() == "10" && !d.ClassList.Contains("empty") && !d.HasAttribute("disabled"));
-            day10.Click();
-
-            Assert.NotNull(start);
-            Assert.NotNull(end);
-            Assert.Equal(5, start!.Value.Day);
-            Assert.Equal(10, end!.Value.Day);
-        }
-
-        [Fact]
-        public void Should_render_label_when_provided()
-        {
-            using var ctx = new FormaDatePickerTests();
-            var cut = ctx.Render(@<FormaDatePicker Label="Start Date" />);
-
+            // Assert
             Assert.Equal("Start Date", cut.Find(".forma-field-label").TextContent);
         }
 
         [Fact]
-        public void Should_throw_when_the_label_is_blank()
+        public void Should_reject_a_blank_label()
         {
+            // Arrange
             using var ctx = new FormaDatePickerTests();
+            var model = new FakeModel();
 
-            Assert.Throws<ArgumentException>(() => ctx.Render(@<FormaDatePicker Label=" " />));
+            // Act & Assert
+            Assert.Throws<ArgumentException>(() => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDatePicker @bind-Value="model.Date" Label=" " />
+            </FakeFormHost>));
         }
 
         [Fact]
-        public void Should_show_clear_button_when_value_set()
+        public void Should_offer_clearing_only_while_there_is_a_value()
         {
+            // Arrange
             using var ctx = new FormaDatePickerTests();
-            DateOnly? value = new DateOnly(2025, 6, 1);
-            var cut = ctx.Render(@<FormaDatePicker Value="value" Label="Start date" />);
+            var filled = new FakeModel { Date = new DateOnly(2025, 6, 1) };
+            var empty = new FakeModel();
 
-            Assert.Single(cut.FindAll(".forma-date-picker-clear"));
+            // Act
+            var withValue = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(filled))">
+                <FormaDatePicker @bind-Value="filled.Date" Label="Start date" />
+            </FakeFormHost>);
+            var withoutValue = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(empty))">
+                <FormaDatePicker @bind-Value="empty.Date" Label="Start date" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Single(withValue.FindAll(".forma-date-picker-clear")),
+                () => Assert.Empty(withoutValue.FindAll(".forma-date-picker-clear")));
         }
 
         [Fact]
-        public void Should_not_show_clear_button_when_null()
+        public void Should_clear_the_value_on_a_clear_click()
         {
+            // Arrange
             using var ctx = new FormaDatePickerTests();
-            DateOnly? value = null;
-            var cut = ctx.Render(@<FormaDatePicker Value="value" Label="Start date" />);
+            var model = new FakeModel { Date = new DateOnly(2025, 6, 1) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDatePicker @bind-Value="model.Date" Label="Start date" />
+            </FakeFormHost>);
 
-            Assert.Empty(cut.FindAll(".forma-date-picker-clear"));
-        }
-
-        [Fact]
-        public void Should_clear_single_value_on_clear_click()
-        {
-            using var ctx = new FormaDatePickerTests();
-            DateOnly? value = new DateOnly(2025, 6, 1);
-            var cut = ctx.Render(@<FormaDatePicker Value="value" ValueChanged="v => value = v" Label="Start date" />);
-
+            // Act
             cut.Find(".forma-date-picker-clear").Click();
 
-            Assert.Null(value);
+            // Assert
+            Assert.Null(model.Date);
         }
 
         [Fact]
-        public void Should_clear_range_on_clear_click()
+        public void Should_pass_the_allowed_dates_to_the_calendar()
         {
+            // Arrange
             using var ctx = new FormaDatePickerTests();
-            DateOnly? start = new DateOnly(2025, 2, 1);
-            DateOnly? end = new DateOnly(2025, 3, 15);
-            var cut = ctx.Render(@<FormaDatePicker StartDate="start" EndDate="end"
-                                                StartDateChanged="s => start = s"
-                                                EndDateChanged="e => end = e" Label="Start date" />);
+            var model = new FakeModel { Date = new DateOnly(2025, 3, 15) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDatePicker @bind-Value="model.Date" Label="Start date" MinDate="@(new DateOnly(2025, 3, 10))" MaxDate="@(new DateOnly(2025, 3, 20))" />
+            </FakeFormHost>);
 
-            cut.Find(".forma-date-picker-clear").Click();
-
-            Assert.Null(start);
-            Assert.Null(end);
-        }
-
-        [Fact]
-        public void Should_show_presets_in_range_mode()
-        {
-            using var ctx = new FormaDatePickerTests();
-            DateOnly? start = null;
-            DateOnly? end = null;
-            var cut = ctx.Render(@<FormaDatePicker StartDate="start" EndDate="end"
-                                                StartDateChanged="s => start = s"
-                                                EndDateChanged="e => end = e" Label="Start date" />);
-
+            // Act
             cut.Find(".forma-date-picker-trigger").Click();
 
-            Assert.Single(cut.FindAll(".forma-date-picker-presets"));
-        }
-
-        [Fact]
-        public void Should_not_show_presets_in_single_mode()
-        {
-            using var ctx = new FormaDatePickerTests();
-            var cut = ctx.Render(@<FormaDatePicker Label="Start date" />);
-
-            cut.Find(".forma-date-picker-trigger").Click();
-
-            Assert.Empty(cut.FindAll(".forma-date-picker-presets"));
-        }
-
-        [Fact]
-        public void Should_disable_days_outside_min_max()
-        {
-            using var ctx = new FormaDatePickerTests();
-            DateOnly? value = new DateOnly(2025, 3, 15);
-            var cut = ctx.Render(@<FormaDatePicker Value="value"
-                                                MinDate="@(new DateOnly(2025, 3, 10))"
-                                                MaxDate="@(new DateOnly(2025, 3, 20))" Label="Start date" />);
-
-            cut.Find(".forma-date-picker-trigger").Click();
-            var day5 = cut.FindAll(".forma-date-picker-day")
-                .First(b => b.TextContent.Trim() == "5" && !b.ClassList.Contains("empty"));
-
+            // Assert
+            var day5 = cut.FindAll(".forma-calendar-day").First(day => day.TextContent.Trim() == "5" && !day.ClassList.Contains("empty"));
             Assert.True(day5.HasAttribute("disabled"));
         }
 
         [Fact]
-        public void Should_pass_additional_attributes()
+        public void Should_pass_additional_attributes_to_the_trigger()
         {
+            // Arrange
             using var ctx = new FormaDatePickerTests();
-            var cut = ctx.Render(@<FormaDatePicker data-testid="my-date" Label="Start date" />);
+            var model = new FakeModel();
 
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDatePicker @bind-Value="model.Date" Label="Start date" data-testid="my-date" />
+            </FakeFormHost>);
+
+            // Assert
             Assert.Equal("my-date", cut.Find(".forma-date-picker-trigger").GetAttribute("data-testid"));
         }
 
         [Fact]
-        public void Should_navigate_to_previous_month()
-        {
-            using var ctx = new FormaDatePickerTests();
-            DateOnly? value = new DateOnly(2025, 3, 15);
-            var cut = ctx.Render(@<FormaDatePicker Value="value" Label="Start date" />);
-
-            cut.Find(".forma-date-picker-trigger").Click();
-            cut.Find(".forma-date-picker-nav").Click(); // prev button (single calendar has both nav buttons)
-
-            // After clicking prev, the month selectors should show month 2 (February)
-            var selects = cut.FindAll(".forma-date-picker-select");
-            var monthSelect = selects[1]; // second select is month
-            Assert.Equal("2", monthSelect.GetAttribute("value"));
-        }
-
-        [Fact]
-        public void Should_sort_reversed_range_clicks()
-        {
-            using var ctx = new FormaDatePickerTests();
-            DateOnly? start = null;
-            DateOnly? end = null;
-            var cut = ctx.Render(@<FormaDatePicker StartDate="start" EndDate="end"
-                                                StartDateChanged="s => start = s"
-                                                EndDateChanged="e => end = e" Label="Start date" />);
-
-            cut.Find(".forma-date-picker-trigger").Click();
-            // Click day 20 first, then day 5 — should still produce start=5, end=20
-            var day20 = cut.FindAll(".forma-date-picker-day")
-                .First(d => d.TextContent.Trim() == "20" && !d.ClassList.Contains("empty") && !d.HasAttribute("disabled"));
-            day20.Click();
-            var day5 = cut.FindAll(".forma-date-picker-day")
-                .First(d => d.TextContent.Trim() == "5" && !d.ClassList.Contains("empty") && !d.HasAttribute("disabled"));
-            day5.Click();
-
-            Assert.True(start!.Value <= end!.Value);
-            Assert.Equal(5, start.Value.Day);
-            Assert.Equal(20, end.Value.Day);
-        }
-
-        [Fact]
-        public void Should_throw_when_start_date_after_end_date()
-        {
-            using var ctx = new FormaDatePickerTests();
-            DateOnly? start = new DateOnly(2025, 6, 20);
-            DateOnly? end = new DateOnly(2025, 6, 5);
-
-            Assert.Throws<ArgumentException>(() =>
-                ctx.Render(@<FormaDatePicker StartDate="start" EndDate="end"
-                                          StartDateChanged="s => start = s"
-                                          EndDateChanged="e => end = e" Label="Start date" />));
-        }
-
-        [Fact]
-        public void Should_clamp_preset_to_min_date()
-        {
-            using var ctx = new FormaDatePickerTests();
-            DateOnly? start = null;
-            DateOnly? end = null;
-            var minDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-3));
-            var cut = ctx.Render(@<FormaDatePicker StartDate="start" EndDate="end"
-                                                StartDateChanged="s => start = s"
-                                                EndDateChanged="e => end = e"
-                                                MinDate="minDate" Label="Start date" />);
-
-            cut.Find(".forma-date-picker-trigger").Click();
-            // Click "Last 7 Days" — should clamp start to MinDate
-            var presetButtons = cut.FindAll(".forma-date-picker-presets button");
-            var last7 = presetButtons.First(b => b.TextContent.Contains("7"));
-            last7.Click();
-
-            Assert.NotNull(start);
-            Assert.True(start!.Value >= minDate);
-        }
-
-        [Fact]
-        public void Should_disable_preset_entirely_outside_bounds()
-        {
-            using var ctx = new FormaDatePickerTests();
-            DateOnly? start = null;
-            DateOnly? end = null;
-            // Set MinDate to a future date so all "past" presets are invalid
-            var futureMin = DateOnly.FromDateTime(DateTime.Today.AddDays(30));
-            var futureMax = DateOnly.FromDateTime(DateTime.Today.AddDays(60));
-            var cut = ctx.Render(@<FormaDatePicker StartDate="start" EndDate="end"
-                                                StartDateChanged="s => start = s"
-                                                EndDateChanged="e => end = e"
-                                                MinDate="futureMin" MaxDate="futureMax" Label="Start date" />);
-
-            cut.Find(".forma-date-picker-trigger").Click();
-            var presetButtons = cut.FindAll(".forma-date-picker-presets button");
-            Assert.All(presetButtons, b => Assert.True(b.HasAttribute("disabled")));
-        }
-
-        [Fact]
-        public void Should_disable_month_options_outside_bounds()
-        {
-            using var ctx = new FormaDatePickerTests();
-            DateOnly? value = new DateOnly(2025, 6, 15);
-            var cut = ctx.Render(@<FormaDatePicker Value="value"
-                                                MinDate="@(new DateOnly(2025, 4, 1))"
-                                                MaxDate="@(new DateOnly(2025, 8, 31))" Label="Start date" />);
-
-            cut.Find(".forma-date-picker-trigger").Click();
-            var monthSelect = cut.FindAll(".forma-date-picker-select")[1];
-            var options = monthSelect.QuerySelectorAll("option");
-
-            // January (1) through March (3) should be disabled
-            for (var i = 0; i < 3; i++)
-                Assert.True(options[i].HasAttribute("disabled"), $"Month {i + 1} should be disabled");
-
-            // April (4) through August (8) should be enabled
-            for (var i = 3; i < 8; i++)
-                Assert.False(options[i].HasAttribute("disabled"), $"Month {i + 1} should be enabled");
-
-            // September (9) through December (12) should be disabled
-            for (var i = 8; i < 12; i++)
-                Assert.True(options[i].HasAttribute("disabled"), $"Month {i + 1} should be disabled");
-        }
-
-        [Fact]
-        public void Should_disable_year_options_outside_bounds()
-        {
-            using var ctx = new FormaDatePickerTests();
-            DateOnly? value = new DateOnly(2025, 6, 15);
-            var cut = ctx.Render(@<FormaDatePicker Value="value"
-                                                MinDate="@(new DateOnly(2025, 1, 1))"
-                                                MaxDate="@(new DateOnly(2026, 12, 31))" Label="Start date" />);
-
-            cut.Find(".forma-date-picker-trigger").Click();
-            var yearSelect = cut.FindAll(".forma-date-picker-select")[0];
-            var options = yearSelect.QuerySelectorAll("option");
-
-            // Year 2025 and 2026 should be enabled
-            var year2025 = options.First(o => o.GetAttribute("value") == "2025");
-            var year2026 = options.First(o => o.GetAttribute("value") == "2026");
-            Assert.False(year2025.HasAttribute("disabled"), "2025 should be enabled");
-            Assert.False(year2026.HasAttribute("disabled"), "2026 should be enabled");
-
-            // Years before 2025 should be disabled (MinYear is 2025)
-            // All options with value < 2025 are outside the range entirely
-            foreach (var opt in options)
-            {
-                if (int.TryParse(opt.GetAttribute("value"), out var y) && y < 2025)
-                    Assert.True(opt.HasAttribute("disabled"), $"Year {y} should be disabled");
-            }
-        }
-
-        // The month-name table is the 13-month leap-year one, so a common Hebrew year
-        // (12 months, no Adar II) must not be labelled by indexing straight into it.
-        [Fact]
-        public void Should_name_hebrew_months_for_a_common_year_without_adar_two()
+        public async Task Should_carry_the_fields_validation_class()
         {
             // Arrange
-            using var culture = new CultureFixture("he-IL");
             using var ctx = new FormaDatePickerTests();
+            var model = new FakeModel();
+            var editContext = new EditContext(model);
+            var cut = ctx.Render(@<FakeFormHost EditContext="editContext">
+                <FormaDatePicker @bind-Value="model.Date" Label="Start date" />
+            </FakeFormHost>);
 
-            // Act — 5786 is a common year, running from autumn 2025 to autumn 2026
-            var cut = ctx.Render(@<FormaDatePicker Value="@(new DateOnly(2026, 8, 3))" UseNonGregorianMonths="true" Label="Start date" />);
-            cut.Find(".forma-date-picker-trigger").Click();
-
-            var months = cut.FindAll(".forma-date-picker-select")[1]
-                .QuerySelectorAll("option")
-                .Select(o => o.TextContent.Trim())
-                .ToArray();
+            // Act
+            var messages = new ValidationMessageStore(editContext);
+            messages.Add(new FieldIdentifier(model, nameof(model.Date)), "A date is required.");
+            await cut.InvokeAsync(editContext.NotifyValidationStateChanged);
 
             // Assert
-            Assert.Equal(12, months.Length);
-            Assert.Equal("אלול", months[^1]);
-            Assert.DoesNotContain("אדר ב׳", months);
+            Assert.Multiple(
+                () => Assert.Contains("invalid", cut.Find(".forma-date-picker-trigger").ClassList),
+                () => Assert.Equal("A date is required.", cut.Find(".validation-message").TextContent));
         }
 
         [Fact]
-        public void Should_name_hebrew_months_for_a_leap_year_with_both_adars()
+        public void Should_open_under_the_fields_start_edge()
         {
             // Arrange
-            using var culture = new CultureFixture("he-IL");
             using var ctx = new FormaDatePickerTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDatePicker @bind-Value="model.Date" Label="Start date" />
+            </FakeFormHost>);
 
-            // Act — 5787 is a leap year, running from autumn 2026 to autumn 2027
-            var cut = ctx.Render(@<FormaDatePicker Value="@(new DateOnly(2027, 3, 1))" UseNonGregorianMonths="true" Label="Start date" />);
+            // Act
             cut.Find(".forma-date-picker-trigger").Click();
 
-            var months = cut.FindAll(".forma-date-picker-select")[1]
-                .QuerySelectorAll("option")
-                .Select(o => o.TextContent.Trim())
-                .ToArray();
-
             // Assert
-            Assert.Equal(13, months.Length);
-            Assert.Equal("אלול", months[^1]);
-            Assert.Contains("אדר א׳", months);
-            Assert.Contains("אדר ב׳", months);
+            Assert.Equal(PopoverAlignment.Start, cut.FindComponent<FormaPopover>().Instance.Alignment);
         }
     }
 }
