@@ -781,6 +781,14 @@ body {
     overflow: auto;
 }
 
+/* Room above and below a field in a scroll box, so scrolling carries the field out of view and back. */
+.demo-scroll-filler {
+    display: flex;
+    flex: none;
+    align-items: center;
+    block-size: 9rem;
+}
+
 /* A demo names types, paths and identifiers that have nowhere to break, so the prose around
    them is allowed to break anywhere rather than running off the side of a phone. */
 .showcase-main :is(h1, h2, h3, p, li, code, bdi, strong) {
