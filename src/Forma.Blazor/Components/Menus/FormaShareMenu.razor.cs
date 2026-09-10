@@ -25,6 +25,12 @@ public sealed partial class FormaShareMenu : FormaElementBase
     /// <summary>Appearance of the trigger button.</summary>
     [Parameter] public ButtonOptions TriggerOptions { get; set; } = ButtonOptions.Default;
 
+    private FormaDropDownMenu Menu { get; set; } = default!;
+
+    /// <inheritdoc />
+    public override ElementReference RootElement
+        => Menu is null ? default : Menu.RootElement;
+
     [Inject] private IEnumerable<IShareTarget> ShareTargets { get; set; } = [];
 
     private Share _share = default!;

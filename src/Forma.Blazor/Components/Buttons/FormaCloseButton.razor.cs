@@ -18,6 +18,12 @@ public sealed partial class FormaCloseButton : FormaElementBase
     /// <summary>Raised when the button is clicked.</summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
+    private FormaButton Button { get; set; } = default!;
+
+    /// <inheritdoc />
+    public override ElementReference RootElement
+        => Button is null ? default : Button.RootElement;
+
     /// <inheritdoc />
     protected override void OnParametersSet()
         => ArgumentException.ThrowIfNullOrWhiteSpace(Label);

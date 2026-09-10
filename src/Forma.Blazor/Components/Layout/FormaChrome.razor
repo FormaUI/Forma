@@ -4,7 +4,8 @@
 @using Forma.Blazor.Components.Symbols
 @using Forma.Framework.Icons
 
-<FormaFrame Id="@Id"
+<FormaFrame @ref="Frame"
+            Id="@Id"
             Class="@RootClass"
             Style="@RootStyle"
             @attributes="AdditionalAttributes"

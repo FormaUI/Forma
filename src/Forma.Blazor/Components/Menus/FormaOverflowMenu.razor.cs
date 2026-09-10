@@ -29,6 +29,12 @@ public sealed partial class FormaOverflowMenu : FormaElementBase
     /// <summary>The menu's items and dividers.</summary>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
 
+    private FormaDropDownMenu Menu { get; set; } = default!;
+
+    /// <inheritdoc />
+    public override ElementReference RootElement
+        => Menu is null ? default : Menu.RootElement;
+
     /// <inheritdoc />
     protected override void OnParametersSet()
     {

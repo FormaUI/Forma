@@ -35,6 +35,10 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
     private FormaPopover Popover { get; set; } = default!;
     private NavigationGuard _keyGuard = default!;
 
+    /// <inheritdoc />
+    public override ElementReference RootElement
+        => TriggerButton is null ? default : TriggerButton.RootElement;
+
     private string ElementId
         => Id ?? $"ddm-{RuntimeId:N}";
 

@@ -27,6 +27,12 @@ public sealed partial class FormaToggleButton : FormaElementBase
     /// <summary>Raised when the command is clicked.</summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
+    private FormaButton Button { get; set; } = default!;
+
+    /// <inheritdoc />
+    public override ElementReference RootElement
+        => Button is null ? default : Button.RootElement;
+
     private bool ShowsLabel => Icon is null || ShowLabel;
 
     private string? AriaPressed => Pressed switch

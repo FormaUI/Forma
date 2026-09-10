@@ -5,7 +5,8 @@
 @using Forma.Blazor.Components.Symbols
 
 <span class="forma-share-menu">
-<FormaDropDownMenu Id="@Id"
+<FormaDropDownMenu @ref="Menu"
+                   Id="@Id"
                    Class="@RootClass"
                    Style="@RootStyle"
                    @attributes="AdditionalAttributes"

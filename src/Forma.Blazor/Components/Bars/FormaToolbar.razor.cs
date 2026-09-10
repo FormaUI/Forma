@@ -62,6 +62,12 @@ public sealed partial class FormaToolbar : FormaElementBase
     /// <summary>The states the host currently reports, by item id, which drive toggle state and action availability.</summary>
     [Parameter] public IReadOnlySet<string> ActiveStates { get; set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+    private FormaCommandBar CommandBar { get; set; } = default!;
+
+    /// <inheritdoc />
+    public override ElementReference RootElement
+        => Scrollable && CommandBar is not null ? CommandBar.RootElement : base.RootElement;
+
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
     /// <summary>Every action that carries a shortcut, with the shortcut it carries.</summary>

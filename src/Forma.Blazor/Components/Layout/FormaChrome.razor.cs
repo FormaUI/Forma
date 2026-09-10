@@ -51,6 +51,12 @@ public sealed partial class FormaChrome : FormaElementBase
     /// <summary>Whether the chrome is disabled: it takes no input and reads as inactive.</summary>
     [Parameter] public bool Disabled { get; set; }
 
+    private FormaFrame Frame { get; set; } = default!;
+
+    /// <inheritdoc />
+    public override ElementReference RootElement
+        => Frame is null ? default : Frame.RootElement;
+
     private string ElementId
         => Id ?? $"forma-chrome-{RuntimeId:N}";
 

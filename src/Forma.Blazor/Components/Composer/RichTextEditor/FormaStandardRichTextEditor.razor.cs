@@ -23,6 +23,12 @@ public sealed partial class FormaStandardRichTextEditor : FormaInputBase<Compose
     /// <summary>Whether the editor is in a read-only state.</summary>
     [Parameter] public bool ReadOnly { get; set; }
 
+    private FormaComposer Composer { get; set; } = default!;
+
+    /// <inheritdoc />
+    public override ElementReference RootElement
+        => Composer is null ? default : Composer.RootElement;
+
     /// <summary>Constructs a standard rich text editor preset with its pre-configured plugin set.</summary>
     public FormaStandardRichTextEditor()
     {

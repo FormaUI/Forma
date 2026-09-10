@@ -92,7 +92,8 @@
 
 @if (Scrollable)
 {
-    <FormaCommandBar Id="@Id"
+    <FormaCommandBar @ref="CommandBar"
+                     Id="@Id"
                      Class="@Class"
                      Style="@Style"
                      @attributes="AdditionalAttributes"

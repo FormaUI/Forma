@@ -2,7 +2,8 @@
 @inherits FormaElementBase
 @* The shell carries this component's style scope. *@
 <span class="forma-toggle-button-shell">
-    <FormaButton Id="@Id"
+    <FormaButton @ref="Button"
+                 Id="@Id"
                  Class="@RootClass"
                  Style="@RootStyle"
                  @attributes="AdditionalAttributes"

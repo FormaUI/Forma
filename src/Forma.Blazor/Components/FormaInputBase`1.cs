@@ -35,7 +35,7 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     public bool IsDisposed { get; private set; }
 
     /// <summary>The root element, once rendered.</summary>
-    public ElementReference RootElement { get; protected set; }
+    public virtual ElementReference RootElement { get; protected set; }
 
     /// <summary>The type whose translation files the component reads: its own, unless it shares a feature's.</summary>
     protected virtual Type LocalizationSourceType

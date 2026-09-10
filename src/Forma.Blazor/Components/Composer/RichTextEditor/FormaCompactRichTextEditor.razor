@@ -1,7 +1,8 @@
 @namespace Forma.Blazor.Components.Composer.RichTextEditor
 @inherits FormaInputBase<ComposerDocument>
 
-<FormaComposer Id="@Id"
+<FormaComposer @ref="Composer"
+               Id="@Id"
                Class="@RootClass"
                Style="@RootStyle"
                @attributes="AdditionalAttributes"

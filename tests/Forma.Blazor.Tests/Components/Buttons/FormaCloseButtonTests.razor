@@ -122,5 +122,22 @@
             // Assert
             Assert.Equal("modal-close", cut.Find("button").GetAttribute("data-testid"));
         }
+
+        [Fact]
+        public void Should_answer_for_the_button_it_roots_in()
+        {
+            // Arrange
+            using var ctx = new FormaCloseButtonTests();
+
+            // Act
+            var cut = ctx.Render<FormaCloseButton>(parameters => parameters.Add(button => button.Label, "Close"));
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.NotNull(cut.Instance.RootElement.Id);
+                Assert.Equal(cut.FindComponent<FormaButton>().Instance.RootElement.Id, cut.Instance.RootElement.Id);
+            });
+        }
     }
 }

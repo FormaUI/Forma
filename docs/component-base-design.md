@@ -338,7 +338,8 @@ no framework of its own; the gap this design closes is on the .NET side.
   validation the way every other Forma input does. Making them inputs is its own change,
   with its own tests and Showcase states.
 - A component rooted in another Forma component forwards `Id`, `Class`, `Style` and the
-  attribute bag to it, and leaves its own `RootElement` unset; nothing reads it today.
+  attribute bag to it and overrides `RootElement` to answer with that component's root,
+  so a reader gets the same element whichever of the two it holds.
 
 ## Implementation plan
 
