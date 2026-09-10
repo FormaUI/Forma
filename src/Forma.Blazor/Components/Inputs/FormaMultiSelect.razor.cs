@@ -4,13 +4,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 using Forma.Blazor.Components.Feedback;
-using Forma.Framework.Localization;
+using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>A multi-select component whose chosen values render as removable tags above a searchable checkbox-list popover.</summary>
-public sealed partial class FormaMultiSelect<TValue> : InputBase<List<TValue>>
+public sealed partial class FormaMultiSelect<TValue> : FormaInputBase<List<TValue>>
     where TValue : notnull
 {
     /// <summary>The options offered in the dropdown.</summary>
@@ -34,17 +33,17 @@ public sealed partial class FormaMultiSelect<TValue> : InputBase<List<TValue>>
     /// <summary>Disables user interaction.</summary>
     [Parameter] public bool Disabled { get; set; }
 
-    [Inject] private IStringLocale<FormaMultiSelect> L { get; set; } = default!;
-
-    private readonly string _triggerId = $"ms-trigger-{Guid.NewGuid():N}";
-    private readonly string _popoverId = $"ms-popover-{Guid.NewGuid():N}";
-
     private string _searchText = "";
     private ElementReference _anchorElement;
-    private ElementReference _triggerElement;
     // The popover's search box; the reference focuses it.
     private FormaSearchBox SearchBox { get; set; } = default!;
     private FormaPopover Popover { get; set; } = default!;
+
+    private string ElementId
+        => Id ?? $"ms-{RuntimeId:N}";
+
+    private string PopoverId
+        => $"{ElementId}-popover";
 
     private bool IsOpen
         => Popover is { IsOpen: true };
@@ -116,7 +115,7 @@ public sealed partial class FormaMultiSelect<TValue> : InputBase<List<TValue>>
         }
 
         _searchText = "";
-        await Popover.OpenAsync(_triggerElement);
+        await Popover.OpenAsync(RootElement);
     }
 
     private async Task HandleAddNewAsync()
@@ -126,7 +125,13 @@ public sealed partial class FormaMultiSelect<TValue> : InputBase<List<TValue>>
     }
 
     private Task FocusSearchAsync()
-        => SearchBox.Element.FocusAsync().AsTask();
+        => SearchBox.RootElement.FocusAsync().AsTask();
+
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-field-input")
+            .Add("forma-multi-select-trigger");
 
     /// <inheritdoc />
     protected override bool TryParseValueFromString(
@@ -139,8 +144,3 @@ public sealed partial class FormaMultiSelect<TValue> : InputBase<List<TValue>>
         return true;
     }
 }
-
-// Non-generic marker sharing FormaMultiSelect's translation files across every closed instantiation —
-// IStringLocale<T> keys resources off T's FullName, which for an open generic type
-// includes its type arguments and would never match the embedded resource name.
-internal abstract class FormaMultiSelect;

@@ -3,13 +3,13 @@ namespace Forma.Blazor.Components.Menus;
 using Forma.Blazor.Components.Buttons;
 using Forma.Blazor.Components.Feedback;
 using Forma.Framework.Common.Interop.Behaviours;
+using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.JSInterop;
 
 /// <summary>A trigger button that opens an anchored menu of commands.</summary>
-public sealed partial class FormaDropDownMenu : ComponentBase, IAsyncDisposable
+public sealed partial class FormaDropDownMenu : FormaElementBase
 {
     /// <summary>Content rendered inside the trigger button.</summary>
     [Parameter, EditorRequired] public RenderFragment Trigger { get; set; } = default!;
@@ -26,24 +26,29 @@ public sealed partial class FormaDropDownMenu : ComponentBase, IAsyncDisposable
     /// <summary>The inline edge of the trigger the menu lines up with.</summary>
     [Parameter] public PopoverAlignment Alignment { get; set; }
 
-    /// <summary>Additional attributes applied to the trigger button, such as aria-label for an icon-only trigger.</summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
-
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-
-    private readonly string _popoverId = $"ddm-popover-{Guid.NewGuid():N}";
     private readonly List<FormaDropDownMenuItem> _items = [];
 
     private bool _openAtLastItem;
     private int _focusedIndex = -1;
     private ElementReference _anchorElement;
-    private FormaButton _trigger = default!;
+    private FormaButton TriggerButton { get; set; } = default!;
     private FormaPopover Popover { get; set; } = default!;
     private NavigationGuard _keyGuard = default!;
 
+    private string ElementId
+        => Id ?? $"ddm-{RuntimeId:N}";
+
+    private string PopoverId
+        => $"{ElementId}-popover";
+
     private bool IsOpen
         => Popover is { IsOpen: true };
+
+    private string AriaExpanded
+        => IsOpen ? "true" : "false";
+
+    private string? AriaControls
+        => IsOpen ? PopoverId : null;
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -59,35 +64,11 @@ public sealed partial class FormaDropDownMenu : ComponentBase, IAsyncDisposable
     internal Task RequestActivateAsync()
         => Popover.CloseAsync();
 
-    // The trigger's own class and ARIA state are folded in beside whatever the host passed,
-    // since FormaButton takes a single attribute bag and merges the class itself.
-    private Dictionary<string, object> TriggerAttributes
-    {
-        get
-        {
-            var attributes = AdditionalAttributes is null
-                ? []
-                : new Dictionary<string, object>(AdditionalAttributes, StringComparer.Ordinal);
-
-            attributes["class"] = AdditionalAttributes.MergeClass("forma-dropdown-menu-trigger");
-
-            attributes["aria-haspopup"] = "menu";
-            attributes["aria-expanded"] = IsOpen ? "true" : "false";
-
-            if (IsOpen)
-            {
-                attributes["aria-controls"] = _popoverId;
-            }
-
-            return attributes;
-        }
-    }
-
     private Task ToggleAsync()
     {
         _openAtLastItem = false;
 
-        return Popover.ToggleAsync(_trigger.Element);
+        return Popover.ToggleAsync(TriggerButton.RootElement);
     }
 
     // Items register while the popover renders, so which one to focus is resolved afterwards
@@ -95,7 +76,7 @@ public sealed partial class FormaDropDownMenu : ComponentBase, IAsyncDisposable
     private async Task OpenAsync(bool atLastItem)
     {
         _openAtLastItem = atLastItem;
-        await Popover.OpenAsync(_trigger.Element);
+        await Popover.OpenAsync(TriggerButton.RootElement);
     }
 
     private async Task HandleTriggerKeyDownAsync(KeyboardEventArgs args)
@@ -137,7 +118,7 @@ public sealed partial class FormaDropDownMenu : ComponentBase, IAsyncDisposable
 
     private async Task HandleOpenedAsync()
     {
-        await _keyGuard.AttachAsync(Popover.Element);
+        await _keyGuard.AttachAsync(Popover.RootElement);
         await FocusIndexAsync(_openAtLastItem ? FindEnabledIndex(_items.Count - 1, -1) : FindEnabledIndex(0, 1));
     }
 
@@ -172,6 +153,13 @@ public sealed partial class FormaDropDownMenu : ComponentBase, IAsyncDisposable
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-        => await _keyGuard.DisposeAsync();
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder.Add("forma-dropdown-menu-trigger");
+
+    /// <inheritdoc />
+    protected override async ValueTask DisposeAsyncCore()
+    {
+        await _keyGuard.DisposeAsync();
+        await base.DisposeAsyncCore();
+    }
 }

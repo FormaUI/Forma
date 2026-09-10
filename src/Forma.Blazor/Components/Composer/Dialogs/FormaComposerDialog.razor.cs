@@ -1,13 +1,12 @@
 namespace Forma.Blazor.Components.Composer.Dialogs;
 
 using Forma.Blazor.Components.Feedback;
-using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>The modal every composer dialog is built on: its fields, an optional notice, and whatever confirming refused.</summary>
-public sealed partial class FormaComposerDialog : ComponentBase
+public sealed partial class FormaComposerDialog : FormaComponentBase
 {
     // Confirming has to be able to fail, so the modal is not allowed to close itself before the fields are judged.
     private static readonly DialogOptions StayOpenOnConfirm = new() { CloseOnConfirm = false };
@@ -42,7 +41,9 @@ public sealed partial class FormaComposerDialog : ComponentBase
     /// <summary>Callback invoked when the dialog is dismissed.</summary>
     [Parameter] public EventCallback OnCancel { get; set; }
 
-    [Inject] private IStringLocale<FormaComposer> L { get; set; } = default!;
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaComposer);
 
     private readonly EditContext _editContext;
 

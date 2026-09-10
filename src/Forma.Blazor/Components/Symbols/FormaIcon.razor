@@ -1,8 +1,14 @@
 @namespace Forma.Blazor.Components.Symbols
+@inherits FormaElementBase
 
 @if (_artwork is BrandIconArtwork brand)
 {
-    <svg class="@CssClass"
+    <svg id="@Id"
+         data-rid="@RuntimeId"
+         class="@RootClass"
+         style="@RootStyle"
+         @attributes="AdditionalAttributes"
+         @ref="RootElement"
          viewBox="@brand.ViewBox"
          fill="currentColor"
          role="img"
@@ -14,7 +20,12 @@
 }
 else if (_artwork is IconVector vector)
 {
-    <svg class="@CssClass"
+    <svg id="@Id"
+         data-rid="@RuntimeId"
+         class="@RootClass"
+         style="@RootStyle"
+         @attributes="AdditionalAttributes"
+         @ref="RootElement"
          viewBox="@vector.ViewBox"
          fill="currentColor"
          aria-hidden="true"
@@ -32,5 +43,11 @@ else if (_artwork is IconVector vector)
 }
 else if (_characterText is not null)
 {
-    <span class="@CssClass forma-icon-character" aria-hidden="true">@_characterText</span>
+    <span id="@Id"
+          data-rid="@RuntimeId"
+          class="@RootClass"
+          style="@RootStyle"
+          @attributes="AdditionalAttributes"
+          @ref="RootElement"
+          aria-hidden="true">@_characterText</span>
 }

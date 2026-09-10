@@ -1,18 +1,14 @@
 namespace Forma.Blazor.Components.Layout;
 
+using Forma.Framework.Css;
 using Forma.Framework.Icons;
-using Forma.Framework.Localization;
 using Forma.Framework.Toolbar;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>A frame with chrome: a title bar carrying the icon, the title and the host's commands as the frame's drag region, then an optional header band, the body, and an optional footer band. It is a region named by its title, and everything a frame is.</summary>
-public sealed partial class FormaChrome : ComponentBase
+public sealed partial class FormaChrome : FormaElementBase
 {
-    private readonly string _titleId = $"forma-chrome-title-{Guid.NewGuid():N}";
-
-    [Inject] private IStringLocale<FormaChrome> L { get; set; } = default!;
-
     /// <summary>The title shown in the title bar and read as the chrome's name.</summary>
     [Parameter, EditorRequired] public string Title { get; set; } = default!;
 
@@ -55,18 +51,27 @@ public sealed partial class FormaChrome : ComponentBase
     /// <summary>Whether the chrome is disabled: it takes no input and reads as inactive.</summary>
     [Parameter] public bool Disabled { get; set; }
 
-    /// <summary>Additional attributes applied to the frame element.</summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+    private string ElementId
+        => Id ?? $"forma-chrome-{RuntimeId:N}";
 
-    private string CssClass
-        => AdditionalAttributes.MergeClass("forma-chrome");
+    private string TitleId
+        => $"{ElementId}-title";
+
+    private string? HostRole
+        => AdditionalAttributes?.GetValueOrDefault("role")?.ToString();
+
+    private string Role
+        => HostRole ?? "region";
 
     // A host that gives the chrome another role names it itself.
     private string? LabelledBy
-        => AdditionalAttributes.GetHostValue("role") is null ? _titleId : null;
+        => HostRole is null ? TitleId : null;
 
     /// <inheritdoc />
     protected override void OnParametersSet()
         => ArgumentException.ThrowIfNullOrWhiteSpace(Title);
+
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder.Add("forma-chrome");
 }

@@ -1,13 +1,13 @@
 namespace Forma.Blazor.Components.Collections;
 
 using Forma.Framework.Common.Interop.Behaviours;
-using Forma.Framework.Localization;
+using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>A list whose items can be reordered by dragging a handle or moving a focused item with the keyboard.</summary>
-public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisposable
+public sealed partial class FormaSortableList<TItem> : FormaElementBase
     where TItem : notnull
 {
     /// <summary>The items to display, in their current order.</summary>
@@ -28,15 +28,6 @@ public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisp
     /// <summary>Where on a row a drag may start.</summary>
     [Parameter] public SortableDragFrom DragFrom { get; set; }
 
-    /// <summary>Additional attributes applied to the list element.</summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
-
-    [Inject] private IStringLocale<FormaSortableList> L { get; set; } = default!;
-
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-
-    private ElementReference _element;
     private ReorderInteraction _reorderInteraction = default!;
     private DotNetObjectReference<FormaSortableList<TItem>>? _selfReference;
     private bool _isAttached;
@@ -73,15 +64,8 @@ public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisp
         _isAttached = true;
         _attachedDragFrom = DragFrom;
         _selfReference ??= DotNetObjectReference.Create(this);
-        _isAttached = await _reorderInteraction.AttachAsync(_element, _selfReference, DragFrom == SortableDragFrom.Item);
+        _isAttached = await _reorderInteraction.AttachAsync(RootElement, _selfReference, DragFrom == SortableDragFrom.Item);
     }
-
-    // The row-drag affordances are withheld while disabled, so a row that cannot be dragged
-    // does not offer a grab cursor or refuse to let its text be selected.
-    private string ListCssClass
-        => DragFrom == SortableDragFrom.Item && !Disabled
-            ? "forma-sortable-list forma-sortable-list-row-drag"
-            : "forma-sortable-list";
 
     private string HandleLabel(int index)
     {
@@ -138,15 +122,19 @@ public sealed partial class FormaSortableList<TItem> : ComponentBase, IAsyncDisp
         return ItemsChanged.InvokeAsync(reordered);
     }
 
+    // The row-drag affordances are withheld while disabled, so a row that cannot be dragged
+    // does not offer a grab cursor or refuse to let its text be selected.
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-sortable-list")
+            .Add("forma-sortable-list-row-drag", DragFrom == SortableDragFrom.Item && !Disabled);
+
+    /// <inheritdoc />
+    protected override async ValueTask DisposeAsyncCore()
     {
         await _reorderInteraction.DisposeAsync();
         _selfReference?.Dispose();
+        await base.DisposeAsyncCore();
     }
 }
-
-// Non-generic marker sharing FormaSortableList's translation files across every closed instantiation —
-// IStringLocale<T> keys resources off T's FullName, which for an open generic type
-// includes its type arguments and would never match the embedded resource name.
-internal abstract class FormaSortableList;

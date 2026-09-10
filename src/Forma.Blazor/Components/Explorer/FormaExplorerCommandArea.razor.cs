@@ -2,13 +2,12 @@ namespace Forma.Blazor.Components.Explorer;
 
 using Forma.Framework.Common.Interop.Behaviours;
 using Forma.Framework.Explorer;
-using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>The explorer's header: an address bar over a toolbar where the width allows, and one compact row where it does not.</summary>
-public sealed partial class FormaExplorerCommandArea : ComponentBase, IAsyncDisposable
+public sealed partial class FormaExplorerCommandArea : FormaComponentBase
 {
     private const string LayoutProperty = "--forma-explorer-header-layout";
 
@@ -19,9 +18,9 @@ public sealed partial class FormaExplorerCommandArea : ComponentBase, IAsyncDisp
 
     [CascadingParameter] private IExplorerView View { get; set; } = default!;
 
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-
-    [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaExplorer);
 
     private string SelectionAnnouncement
         => View.Selection.Count > 0 ? L["{SelectedCount} selected", View.Selection.Count].Value : string.Empty;
@@ -71,9 +70,10 @@ public sealed partial class FormaExplorerCommandArea : ComponentBase, IAsyncDisp
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsyncCore()
     {
         await _breakpoint.DisposeAsync();
         _selfReference?.Dispose();
+        await base.DisposeAsyncCore();
     }
 }

@@ -1,12 +1,13 @@
 namespace Forma.Blazor.Components.Buttons;
 
+using Forma.Framework.Css;
 using Forma.Framework.Icons;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 /// <summary>A ghost button for a toolbar or a bar of tools: a glyph, a label, or both, and for a toggle whether it is on.</summary>
-public sealed partial class FormaToggleButton : ComponentBase
+public sealed partial class FormaToggleButton : FormaElementBase
 {
     /// <summary>The command's glyph.</summary>
     [Parameter] public Icon? Icon { get; set; }
@@ -26,10 +27,6 @@ public sealed partial class FormaToggleButton : ComponentBase
     /// <summary>Raised when the command is clicked.</summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
-    /// <summary>Additional attributes applied to the button element.</summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
-
     private bool ShowsLabel => Icon is null || ShowLabel;
 
     private string? AriaPressed => Pressed switch
@@ -39,10 +36,13 @@ public sealed partial class FormaToggleButton : ComponentBase
         null => null
     };
 
-    private string CssClass
-        => AdditionalAttributes.MergeClass("forma-toggle-button", Pressed is true ? "forma-toggle-button-pressed" : null);
-
     /// <inheritdoc />
     protected override void OnParametersSet()
         => ArgumentException.ThrowIfNullOrWhiteSpace(Label);
+
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-toggle-button")
+            .Add("forma-toggle-button-pressed", Pressed is true);
 }

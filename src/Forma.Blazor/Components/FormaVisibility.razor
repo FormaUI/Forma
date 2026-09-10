@@ -1,6 +1,13 @@
 @namespace Forma.Blazor.Components
+@inherits FormaElementBase
 
-<div class="@CssClass" inert="@Hidden">
+<div id="@Id"
+     data-rid="@RuntimeId"
+     class="@RootClass"
+     style="@RootStyle"
+     @attributes="AdditionalAttributes"
+     @ref="RootElement"
+     inert="@Hidden">
     <div class="forma-visibility-inner">
         @ChildContent
     </div>

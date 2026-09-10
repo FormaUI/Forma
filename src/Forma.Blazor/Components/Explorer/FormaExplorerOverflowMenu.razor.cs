@@ -3,12 +3,11 @@ namespace Forma.Blazor.Components.Explorer;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Items;
 using Forma.Framework.Explorer.Navigation;
-using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>The menu holding everything the compact header has no row for: navigation, actions, view mode and sorting.</summary>
-public sealed partial class FormaExplorerOverflowMenu : ComponentBase
+public sealed partial class FormaExplorerOverflowMenu : FormaComponentBase
 {
     [CascadingParameter] private IExplorerView View { get; set; } = default!;
 
@@ -20,7 +19,9 @@ public sealed partial class FormaExplorerOverflowMenu : ComponentBase
 
     [CascadingParameter] private IExplorerLocationInteraction LocationInteraction { get; set; } = default!;
 
-    [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaExplorer);
 
     /// <inheritdoc />
     protected override void OnInitialized()

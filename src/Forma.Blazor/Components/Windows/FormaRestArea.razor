@@ -1,8 +1,16 @@
 @namespace Forma.Blazor.Components.Windows
+@inherits FormaElementBase
 @using Forma.Blazor.Components.Buttons
 @using Forma.Framework.Windows
 
-<div @attributes="AdditionalAttributes" class="@CssClass" role="group" aria-label="@(Label ?? L["Windows"])">
+<div id="@Id"
+     data-rid="@RuntimeId"
+     class="@RootClass"
+     style="@RootStyle"
+     @attributes="AdditionalAttributes"
+     @ref="RootElement"
+     role="group"
+     aria-label="@(Label ?? L["Windows"])">
     @foreach (var group in Groups)
     {
         if (group.Name is null)
@@ -23,7 +31,7 @@
         @<text>
             @foreach (var window in windows)
             {
-                <FormaToggleButton @key="window.Id"
+                <FormaToggleButton @key="window.RuntimeId"
                                    Icon="window.Icon"
                                    Label="@window.Title"
                                    ShowLabel="true"

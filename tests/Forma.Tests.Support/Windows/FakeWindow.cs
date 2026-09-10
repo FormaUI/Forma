@@ -10,7 +10,7 @@ public sealed class FakeWindow(string title, WindowOrigin? origin = null) : IMan
     public List<string> Log { get; } = [];
 
     /// <inheritdoc />
-    public Guid Id { get; } = Guid.NewGuid();
+    public Guid RuntimeId { get; } = Guid.NewGuid();
 
     /// <inheritdoc />
     public string Title { get; set; } = title;

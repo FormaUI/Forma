@@ -1,15 +1,18 @@
 @namespace Forma.Blazor.Components.Inputs
-@inherits InputBase<string>
+@inherits FormaInputBase<string>
 
-<FormaField Label="@Label" TargetId="@_id" LabelMode="FieldLabelMode.Pinned">
+<FormaField Label="@Label" TargetId="@ElementId" LabelMode="FieldLabelMode.Pinned">
     <ChildContent>
         <div class="forma-color-picker">
-            <input id="@_id"
+            <input id="@ElementId"
+                   data-rid="@RuntimeId"
+                   class="@RootClass"
+                   style="@RootStyle"
+                   @attributes="AdditionalAttributes"
+                   @ref="RootElement"
                    type="text"
-                   class="forma-field-input forma-color-picker-hex-input @CssClass"
                    value="@CurrentValueAsString"
                    @onchange="HandleHexInput"
-                   @attributes="AdditionalAttributes"
                    maxlength="@(ShowAlpha ? 9 : 7)"
                    placeholder="@(ShowAlpha ? "#RRGGBBAA" : "#RRGGBB")"
                    spellcheck="false"
@@ -26,8 +29,8 @@
             @if (ShowAlpha)
             {
                 <div class="forma-color-picker-alpha-row">
-                    <label for="@(_id)-alpha">@L["Alpha"]</label>
-                    <input id="@(_id)-alpha"
+                    <label for="@(ElementId)-alpha">@L["Alpha"]</label>
+                    <input id="@(ElementId)-alpha"
                            type="range"
                            class="forma-color-picker-alpha"
                            min="0" max="100" step="1"

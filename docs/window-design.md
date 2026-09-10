@@ -125,7 +125,7 @@ the window's identity.
 ### Identity and origin
 
 ```csharp
-window.Id                  // This window's Guid, generated once, read-only.
+window.RuntimeId           // This window's Guid, the component's RuntimeId, read-only.
 window.Parent              // Its parent window, or null for a root.
 window.Origin.OriginId     // Stable identity of the application or feature.
 window.Origin.OriginName   // Display name, such as "Explorer".
@@ -270,8 +270,8 @@ manager.UnregisterAsync(window)    // when the host disposes it
 
 manager.Windows                    // in the order they registered
 manager.StackedWindows             // from the back of the stacking order to the front
-manager.GetWindowById(id)
-manager.TryGetWindowById(id, out window)
+manager.GetWindowByRuntimeId(runtimeId)
+manager.TryGetWindowByRuntimeId(runtimeId, out window)
 manager.TryFindWindows(selector, out windows)
 manager.GetInstanceNumber(window)  // among its origin's instances, from 1, kept for life
 
@@ -285,8 +285,8 @@ manager.CloseAsync(selector)
 
 A refresh re-validates the declared parent, brings the descendants' hiding into line,
 moves a window that became modal in front of what it blocks, and lets a current window
-that is no longer eligible give way. `GetWindowById` throws when absent;
-`TryGetWindowById` reports false with null; `TryFindWindows` reports false with an empty
+that is no longer eligible give way. `GetWindowByRuntimeId` throws when absent;
+`TryGetWindowByRuntimeId` reports false with null; `TryFindWindows` reports false with an empty
 collection. Selectors replace separate
 title, origin, instance, child, and descendant queries, and separate single and bulk
 operation overloads.

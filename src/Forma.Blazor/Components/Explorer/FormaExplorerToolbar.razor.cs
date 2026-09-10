@@ -4,12 +4,11 @@ using Forma.Blazor.Components.Buttons;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Items;
 using Forma.Framework.Icons;
-using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>Action toolbar for media explorer operations, view switching, and sorting.</summary>
-public sealed partial class FormaExplorerToolbar : ComponentBase
+public sealed partial class FormaExplorerToolbar : FormaComponentBase
 {
     [CascadingParameter] private IExplorerView View { get; set; } = default!;
 
@@ -17,7 +16,9 @@ public sealed partial class FormaExplorerToolbar : ComponentBase
 
     [CascadingParameter] private IExplorerItemInteraction ItemInteraction { get; set; } = default!;
 
-    [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaExplorer);
 
     private static readonly ButtonOptions SortTriggerOptions =
         new() { Variant = ButtonVariant.Ghost };

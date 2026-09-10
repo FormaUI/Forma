@@ -2,13 +2,12 @@ namespace Forma.Blazor.Components.Explorer;
 
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Items;
-using Forma.Framework.Localization;
 using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>Thumbnail grid view for explorer media resources.</summary>
-public sealed partial class FormaExplorerThumbnailsView : ComponentBase
+public sealed partial class FormaExplorerThumbnailsView : FormaComponentBase
 {
     /// <summary>The collection of items to display.</summary>
     [Parameter] public IReadOnlyList<IExplorerItem> Items { get; set; } = [];
@@ -19,7 +18,9 @@ public sealed partial class FormaExplorerThumbnailsView : ComponentBase
 
     [CascadingParameter] private IExplorerItemInteraction ItemInteraction { get; set; } = default!;
 
-    [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaExplorer);
 
     /// <inheritdoc />
     protected override void OnInitialized()

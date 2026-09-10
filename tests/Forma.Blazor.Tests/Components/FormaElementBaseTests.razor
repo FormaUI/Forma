@@ -101,7 +101,7 @@
             var cut = ctx.Render<Panel>();
 
             // Assert
-            Assert.NotNull(cut.Instance.Element.Id);
+            Assert.NotNull(cut.Instance.RootElement.Id);
         }
     }
 
@@ -124,7 +124,7 @@
             builder.AddAttribute(2, "class", RootClass);
             builder.AddAttribute(3, "style", RootStyle);
             builder.AddMultipleAttributes(4, AdditionalAttributes);
-            builder.AddElementReferenceCapture(5, element => Element = element);
+            builder.AddElementReferenceCapture(5, element => RootElement = element);
             builder.CloseElement();
         }
     }

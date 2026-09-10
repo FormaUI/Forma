@@ -7,7 +7,7 @@ using Forma.Framework.Toolbar;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>The command bar belonging to one editor or one view over it, giving its own commands and its plugins' commands a row each.</summary>
-public sealed partial class FormaComposerToolbar : ComponentBase
+public sealed partial class FormaComposerToolbar : FormaComponentBase
 {
     /// <summary>The number of commands a bar carries before the next row starts one of its own.</summary>
     public const int CommandsPerBar = 12;
@@ -30,9 +30,15 @@ public sealed partial class FormaComposerToolbar : ComponentBase
     /// <summary>Callback invoked with the command an action raised.</summary>
     [Parameter] public EventCallback<string> OnCommand { get; set; }
 
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaComposer);
+
     private ComposerToolbarLayout _layout = default!;
-    private readonly string _pluginsId = $"composer-plugins-{Guid.NewGuid():N}";
     private bool _arePluginsShown;
+
+    private string PluginsId
+        => $"composer-plugins-{RuntimeId:N}";
 
     /// <summary>The plugin whose bar this is: the view when one shows, and otherwise the editor.</summary>
     private IComposerPlugin Owner

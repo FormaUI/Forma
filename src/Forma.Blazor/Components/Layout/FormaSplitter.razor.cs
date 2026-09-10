@@ -3,13 +3,13 @@ namespace Forma.Blazor.Components.Layout;
 using System.Globalization;
 
 using Forma.Framework.Common.Interop.Operations;
+using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.JSInterop;
 
 /// <summary>A draggable divider between two panes, reporting the size the pane before it should take.</summary>
-public sealed partial class FormaSplitter : ComponentBase, IAsyncDisposable
+public sealed partial class FormaSplitter : FormaElementBase
 {
     /// <summary>The size of the pane the splitter governs, in whatever unit the caller works in.</summary>
     [Parameter] public double Value { get; set; }
@@ -38,17 +38,7 @@ public sealed partial class FormaSplitter : ComponentBase, IAsyncDisposable
     /// <summary>Raised when a drag starts and again when it ends, so a host can suppress selection while it runs.</summary>
     [Parameter] public EventCallback<bool> OnResizingChanged { get; set; }
 
-    /// <summary>Extra classes applied alongside forma-splitter.</summary>
-    [Parameter] public string? Class { get; set; }
-
-    /// <summary>Additional attributes applied to the divider element.</summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
-
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-
     private Pointer _pointer = default!;
-    private ElementReference _element;
     private double _dragOrigin;
     private double _dragStartValue;
     private bool _isResizing;
@@ -58,19 +48,6 @@ public sealed partial class FormaSplitter : ComponentBase, IAsyncDisposable
 
     private string AriaOrientation
         => IsVertical ? "vertical" : "horizontal";
-
-    private string CssClass
-    {
-        get
-        {
-            var orientation = IsVertical ? "forma-splitter-vertical" : "forma-splitter-horizontal";
-            var resizing = _isResizing ? " is-resizing" : string.Empty;
-
-            return string.IsNullOrWhiteSpace(Class)
-                ? $"forma-splitter {orientation}{resizing}"
-                : $"forma-splitter {orientation}{resizing} {Class}";
-        }
-    }
 
     private static string FormatRounded(double value)
         => Math.Round(value).ToString(CultureInfo.InvariantCulture);
@@ -94,7 +71,7 @@ public sealed partial class FormaSplitter : ComponentBase, IAsyncDisposable
         _dragStartValue = Value;
 
         await OnResizingChanged.InvokeAsync(true);
-        await _pointer.CaptureAsync(_element, args.PointerId);
+        await _pointer.CaptureAsync(RootElement, args.PointerId);
     }
 
     private async Task HandlePointerMoveAsync(PointerEventArgs args)
@@ -122,7 +99,7 @@ public sealed partial class FormaSplitter : ComponentBase, IAsyncDisposable
         _isResizing = false;
 
         await OnResizingChanged.InvokeAsync(false);
-        await _pointer.ReleaseAsync(_element, args.PointerId);
+        await _pointer.ReleaseAsync(RootElement, args.PointerId);
     }
 
     private async Task HandleKeyDownAsync(KeyboardEventArgs args)
@@ -164,6 +141,16 @@ public sealed partial class FormaSplitter : ComponentBase, IAsyncDisposable
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-        => await _pointer.DisposeAsync();
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-splitter")
+            .Add(IsVertical ? "forma-splitter-vertical" : "forma-splitter-horizontal")
+            .Add("is-resizing", _isResizing);
+
+    /// <inheritdoc />
+    protected override async ValueTask DisposeAsyncCore()
+    {
+        await _pointer.DisposeAsync();
+        await base.DisposeAsyncCore();
+    }
 }

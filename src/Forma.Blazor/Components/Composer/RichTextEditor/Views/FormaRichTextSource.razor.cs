@@ -6,10 +6,9 @@ using Forma.Framework.Composer.Editing;
 using Forma.Framework.Composer.Plugins;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 
 /// <summary>The rich text document's HTML laid out one block per line, numbered, for reading.</summary>
-public sealed partial class FormaRichTextSource : ComponentBase, IAsyncDisposable
+public sealed partial class FormaRichTextSource : FormaComponentBase
 {
     /// <summary>The composer state cascaded from the parent shell.</summary>
     [CascadingParameter] public ComposerContext? Context { get; set; }
@@ -17,7 +16,9 @@ public sealed partial class FormaRichTextSource : ComponentBase, IAsyncDisposabl
     /// <summary>The view plugin cascaded by the composer surface.</summary>
     [CascadingParameter] public IComposerViewPlugin? ViewPlugin { get; set; }
 
-    [Inject] private IJSRuntime JS { get; set; } = default!;
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaRichTextEditor);
 
     private RichTextSourceViewPlugin _sourcePlugin = default!;
     private Clipboard _clipboard = default!;
@@ -52,12 +53,13 @@ public sealed partial class FormaRichTextSource : ComponentBase, IAsyncDisposabl
         => _ = InvokeAsync(async () => await _download.SaveAsync("document.html", Source, "text/html"));
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsyncCore()
     {
         _sourcePlugin.CopyRequested -= HandleCopyRequested;
         _sourcePlugin.DownloadRequested -= HandleDownloadRequested;
 
         await _clipboard.DisposeAsync();
         await _download.DisposeAsync();
+        await base.DisposeAsyncCore();
     }
 }

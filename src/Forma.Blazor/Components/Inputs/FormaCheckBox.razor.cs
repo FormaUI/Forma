@@ -1,13 +1,13 @@
 namespace Forma.Blazor.Components.Inputs;
 
 using Forma.Framework.Common.Interop.Operations;
+using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.JSInterop;
 
 /// <summary>A styled checkbox with a script-driven indeterminate state, optionally leaving the checked state to the caller.</summary>
-public sealed partial class FormaCheckBox : ComponentBase, IAsyncDisposable
+public sealed partial class FormaCheckBox : FormaElementBase
 {
     /// <summary>Whether the checkbox is checked.</summary>
     [Parameter] public bool Checked { get; set; }
@@ -30,22 +30,11 @@ public sealed partial class FormaCheckBox : ComponentBase, IAsyncDisposable
     /// <summary>Label rendered next to the checkbox. Wraps both in a label element, so clicking the text toggles the checkbox too.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
-    /// <summary>Additional attributes applied to the input element.</summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
-
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-
-    private ElementReference _element;
     private CheckBox _checkBox = default!;
 
     // Seeded to the element's own default, so a checkbox that is never indeterminate
     // — every row and option checkbox — never imports the module or calls into it.
     private bool _isIndeterminateApplied;
-
-    // Host class is merged rather than splatted, so supplying one never drops the checkbox's own styling.
-    private string CssClass
-        => AdditionalAttributes.MergeClass("forma-checkbox");
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -67,13 +56,20 @@ public sealed partial class FormaCheckBox : ComponentBase, IAsyncDisposable
             return;
         }
 
-        if (await _checkBox.SetIndeterminateAsync(_element, Indeterminate))
+        if (await _checkBox.SetIndeterminateAsync(RootElement, Indeterminate))
         {
             _isIndeterminateApplied = Indeterminate;
         }
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-        => await _checkBox.DisposeAsync();
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder.Add("forma-checkbox");
+
+    /// <inheritdoc />
+    protected override async ValueTask DisposeAsyncCore()
+    {
+        await _checkBox.DisposeAsync();
+        await base.DisposeAsyncCore();
+    }
 }

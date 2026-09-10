@@ -1,6 +1,11 @@
 @namespace Forma.Blazor.Components.Layout
-<div class="@CssClass"
-     @ref="_element"
+@inherits FormaElementBase
+<div id="@Id"
+     data-rid="@RuntimeId"
+     class="@RootClass"
+     style="@RootStyle"
+     @attributes="AdditionalAttributes"
+     @ref="RootElement"
      role="separator"
      tabindex="0"
      aria-orientation="@AriaOrientation"
@@ -8,7 +13,6 @@
      aria-valuenow="@FormatRounded(Value)"
      aria-valuemin="@FormatRounded(Min)"
      aria-valuemax="@FormatRounded(Max)"
-     @attributes="AdditionalAttributes"
      @onpointerdown="HandlePointerDownAsync"
      @onpointermove="HandlePointerMoveAsync"
      @onpointerup="HandlePointerUpAsync"

@@ -3,23 +3,21 @@ namespace Forma.Blazor.Components.Inputs;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
-using Forma.Framework.Localization;
+using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>A colour field pairing a swatch trigger with a hex value, optionally including an alpha channel.</summary>
-public sealed partial class FormaColorPicker : InputBase<string>
+public sealed partial class FormaColorPicker : FormaInputBase<string>
 {
-    private readonly string _id = $"color-{Guid.NewGuid():N}";
-
     /// <summary>The field's label.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
 
     /// <summary>When true, shows an alpha (opacity) slider and accepts 8-digit hex values.</summary>
     [Parameter] public bool ShowAlpha { get; set; }
 
-    [Inject] private IStringLocale<FormaColorPicker> L { get; set; } = default!;
+    private string ElementId
+        => Id ?? $"color-{RuntimeId:N}";
 
     private string RgbHex => CurrentValueAsString?.Length >= 7
         ? CurrentValueAsString[..7]
@@ -65,6 +63,12 @@ public sealed partial class FormaColorPicker : InputBase<string>
         var alpha = (int)Math.Round(percent / 100.0 * 255);
         CurrentValueAsString = $"{RgbHex}{alpha:X2}";
     }
+
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-field-input")
+            .Add("forma-color-picker-hex-input");
 
     /// <inheritdoc />
     protected override bool TryParseValueFromString(

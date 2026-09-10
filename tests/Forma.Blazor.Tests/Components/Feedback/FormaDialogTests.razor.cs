@@ -5,7 +5,6 @@ public sealed partial class FormaDialogTests
     public FormaDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        Services.AddJsonLocalization();
         Router = JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
         Dialog = JSInterop.SetupModule("./_content/forma/common/scripts/components/Dialog.js").SetupModule("attach", _ => true);
     }

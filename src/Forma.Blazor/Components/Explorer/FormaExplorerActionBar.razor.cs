@@ -2,19 +2,20 @@ namespace Forma.Blazor.Components.Explorer;
 
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Items;
-using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>Renders the explorer's operations for one item as an overflow menu.</summary>
-public sealed partial class FormaExplorerActionBar : ComponentBase
+public sealed partial class FormaExplorerActionBar : FormaComponentBase
 {
     /// <summary>The item the actions run against.</summary>
     [Parameter, EditorRequired] public IExplorerItem Item { get; set; } = default!;
 
     [CascadingParameter] private IExplorerView View { get; set; } = default!;
 
-    [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaExplorer);
 
     private IReadOnlyList<ExplorerItemAction> AvailableActions
     {

@@ -5,14 +5,14 @@ using System.Globalization;
 using Forma.Blazor.Components.Inputs;
 using Forma.Framework.Common.Interop.Behaviours;
 using Forma.Framework.Common.Interop.Operations;
-using Forma.Framework.Localization;
+using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
 /// <summary>A page-number navigator for splitting a list of items across multiple pages.</summary>
-public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
+public sealed partial class FormaPagination : FormaElementBase
 {
     // The navigation steps show the current page and the four after it, then a gap and the last page: seven in all.
     private const int LookAhead = 4;
@@ -23,13 +23,10 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
 
     private static readonly TextBoxOptions NavigationEntryOptions = new() { InputMode = TextInputMode.Numeric, EnterKeyHint = TextEnterKeyHint.Go };
 
-    private readonly string _navigationInputId = $"forma-pagination-input-{Guid.NewGuid():N}";
-
     private ImplicitSubmitGuard _submitGuard = default!;
     private Wheel _wheel = default!;
     private TextEntry _textEntry = default!;
     private DotNetObjectReference<FormaPagination>? _selfReference;
-    private ElementReference _navElement;
     private bool _isSubmitGuardAttached;
     private string? _navigationEntry;
     private int _shownPage;
@@ -49,13 +46,11 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
     /// <summary>How the reader moves between pages.</summary>
     [Parameter] public PaginationOptions Options { get; set; } = PaginationOptions.Default;
 
-    /// <summary>Additional attributes applied to the navigation element.</summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+    private string ElementId
+        => Id ?? $"forma-pagination-{RuntimeId:N}";
 
-    [Inject] private IStringLocale<FormaPagination> L { get; set; } = default!;
-
-    [Inject] private IJSRuntime JS { get; set; } = default!;
+    private string NavigationInputId
+        => $"{ElementId}-input";
 
     private int PageCount => Math.Max(1, (int)Math.Ceiling(TotalItems / (double)PageSize));
 
@@ -71,10 +66,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
     private FormaTextBox NavigationInput { get; set; } = default!;
 
     // The host's accessible name wins.
-    private string NavLabel => AdditionalAttributes.GetHostValue("aria-label") ?? L["Pagination"].Value;
-
-    private string CssClass
-        => AdditionalAttributes.MergeClass("forma-pagination");
+    private string NavLabel => AdditionalAttributes?.GetValueOrDefault("aria-label")?.ToString() ?? L["Pagination"].Value;
 
     // Handlers splatted onto the box's input.
     private EventCallback<KeyboardEventArgs> NavigationInputKeyDown
@@ -131,27 +123,18 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
 
         if (!_isSubmitGuardAttached)
         {
-            _isSubmitGuardAttached = await _submitGuard.AttachAsync(NavigationInput.Element);
+            _isSubmitGuardAttached = await _submitGuard.AttachAsync(NavigationInput.RootElement);
         }
 
         if (Options.PageOnWheelGesture && !_wheel.IsAttached)
         {
             _selfReference ??= DotNetObjectReference.Create(this);
-            await _wheel.AttachAsync(_navElement, ScrollWheel.Tells(), _selfReference);
+            await _wheel.AttachAsync(RootElement, ScrollWheel.Tells(), _selfReference);
         }
         else if (!Options.PageOnWheelGesture && _wheel.IsAttached)
         {
             await _wheel.DetachAsync();
         }
-    }
-
-    /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-    {
-        await _submitGuard.DisposeAsync();
-        await _wheel.DisposeAsync();
-        await _textEntry.DisposeAsync();
-        _selfReference?.Dispose();
     }
 
     // The window starts at the current page and looks ahead; near the end the last seven pages show whole; a shorter list pads with empty steps so the first page sits in the same place.
@@ -260,7 +243,7 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
     private async Task SelectNavigationEntryAsync()
     {
         await Task.Yield();
-        await _textEntry.TryWriteSelectionAsync(NavigationInput.Element, 0, _navigationEntry?.Length ?? 0);
+        await _textEntry.TryWriteSelectionAsync(NavigationInput.RootElement, 0, _navigationEntry?.Length ?? 0);
     }
 
     // Typing before the circuit connects raises no input event, so the box is read when the tracked value is empty.
@@ -271,6 +254,20 @@ public sealed partial class FormaPagination : ComponentBase, IAsyncDisposable
             return _navigationEntry;
         }
 
-        return await _textEntry.ReadAndClearAsync(NavigationInput.Element);
+        return await _textEntry.ReadAndClearAsync(NavigationInput.RootElement);
+    }
+
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder.Add("forma-pagination");
+
+    /// <inheritdoc />
+    protected override async ValueTask DisposeAsyncCore()
+    {
+        await _submitGuard.DisposeAsync();
+        await _wheel.DisposeAsync();
+        await _textEntry.DisposeAsync();
+        _selfReference?.Dispose();
+        await base.DisposeAsyncCore();
     }
 }

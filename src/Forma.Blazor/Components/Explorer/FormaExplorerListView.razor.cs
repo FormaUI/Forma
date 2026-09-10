@@ -3,12 +3,11 @@ namespace Forma.Blazor.Components.Explorer;
 using Forma.Blazor.Components.Layout;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Items;
-using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>List presentation view for explorer media resources: names alone, flowing down the height and on into further columns that scroll sideways.</summary>
-public sealed partial class FormaExplorerListView : ComponentBase
+public sealed partial class FormaExplorerListView : FormaComponentBase
 {
     /// <summary>The collection of items to display.</summary>
     [Parameter] public IReadOnlyList<IExplorerItem> Items { get; set; } = [];
@@ -19,7 +18,9 @@ public sealed partial class FormaExplorerListView : ComponentBase
 
     [CascadingParameter] private IExplorerItemInteraction ItemInteraction { get; set; } = default!;
 
-    [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaExplorer);
 
     // The wheel is left to the panel, which scrolls the page; the columns move by the arrows alone.
     private FreezePaneOptions PaneOptions

@@ -1,9 +1,11 @@
 namespace Forma.Blazor.Components.Layout;
 
+using Forma.Framework.Css;
+
 using Microsoft.AspNetCore.Components;
 
 /// <summary>A region of the page. Its <see cref="Variant"/> decides its look: flat, raised, inset or canvas. It draws no line.</summary>
-public sealed partial class FormaBackdrop : ComponentBase
+public sealed partial class FormaBackdrop : FormaElementBase
 {
     /// <summary>The look the backdrop takes: flat, raised, inset or canvas.</summary>
     [Parameter] public BackdropVariant Variant { get; set; } = BackdropVariant.Flat;
@@ -11,14 +13,11 @@ public sealed partial class FormaBackdrop : ComponentBase
     /// <summary>What the backdrop holds.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
-    /// <summary>Additional attributes applied to the backdrop element.</summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
-
-    private string CssClass
-        => AdditionalAttributes.MergeClass(
-            "forma-backdrop",
-            Variant switch
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-backdrop")
+            .Add(Variant switch
             {
                 BackdropVariant.Raised => "forma-backdrop-raised",
                 BackdropVariant.Inset => "forma-backdrop-inset",

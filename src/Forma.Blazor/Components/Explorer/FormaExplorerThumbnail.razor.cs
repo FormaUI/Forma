@@ -7,7 +7,7 @@ using Forma.Framework.Resources;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>Renders a media resource as an image thumbnail, or as the glyph standing in for what it is.</summary>
-public sealed partial class FormaExplorerThumbnail : ComponentBase
+public sealed partial class FormaExplorerThumbnail : FormaComponentBase
 {
     /// <summary>The media resource to depict.</summary>
     [Parameter, EditorRequired] public ResourceInfo Resource { get; set; } = default!;

@@ -1,5 +1,5 @@
 @namespace Forma.Blazor.Components.Composer
-@inject IStringLocale<FormaComposer> L
+@inherits FormaComponentBase
 
 <FormaCommandArea Class="forma-composer-toolbar">
     @foreach (var (bar, index) in Bars.Select((bar, index) => (bar, index)))
@@ -21,7 +21,7 @@
                                  Disabled="Disabled"
                                  OnClick="TogglePlugins"
                                  aria-expanded="@(_arePluginsShown ? "true" : "false")"
-                                 aria-controls="@_pluginsId"
+                                 aria-controls="@PluginsId"
                                  aria-label="@L["Plugin Commands"]"
                                  title="@L["Plugin Commands"]">
                         <FormaIcon Icon="Glyph.MoreVertical" Size="IconSize.Small" />
@@ -34,7 +34,7 @@
     @if (PluginItems.Count > 0)
     {
         <FormaComposerPluginsBar
-            Id="@_pluginsId"
+            Id="@PluginsId"
             Items="PluginItems"
             Disabled="Disabled"
             KeyBindings="KeyBindings"

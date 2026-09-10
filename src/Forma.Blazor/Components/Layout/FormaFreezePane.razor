@@ -1,6 +1,12 @@
 @namespace Forma.Blazor.Components.Layout
+@inherits FormaElementBase
 
-<div class="@CssClass" style="@FrozenStyle" @attributes="AdditionalAttributes">
+<div id="@Id"
+     data-rid="@RuntimeId"
+     class="@RootClass"
+     style="@RootStyle"
+     @attributes="AdditionalAttributes"
+     @ref="RootElement">
     @if (CanScrollBack && ShowsArrows)
     {
         <FormaButton Variant="ButtonVariant.Ghost"

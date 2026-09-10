@@ -101,10 +101,10 @@ public sealed class WindowManagerTests
 
             // Act & Assert
             Assert.Multiple(
-                () => Assert.Same(window, manager.GetWindowById(window.Id)),
-                () => Assert.True(manager.TryGetWindowById(window.Id, out _)),
-                () => Assert.False(manager.TryGetWindowById(Guid.NewGuid(), out var missing) || missing is not null),
-                () => Assert.Throws<KeyNotFoundException>(() => manager.GetWindowById(Guid.NewGuid())));
+                () => Assert.Same(window, manager.GetWindowByRuntimeId(window.RuntimeId)),
+                () => Assert.True(manager.TryGetWindowByRuntimeId(window.RuntimeId, out _)),
+                () => Assert.False(manager.TryGetWindowByRuntimeId(Guid.NewGuid(), out var missing) || missing is not null),
+                () => Assert.Throws<KeyNotFoundException>(() => manager.GetWindowByRuntimeId(Guid.NewGuid())));
         }
     }
 

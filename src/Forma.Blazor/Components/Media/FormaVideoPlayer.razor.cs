@@ -1,15 +1,14 @@
 namespace Forma.Blazor.Components.Media;
 
 using Forma.Framework.Common.Interop.Operations;
-using Forma.Framework.Localization;
+using Forma.Framework.Css;
 using Forma.Framework.Media;
 using Forma.Framework.Media.Providers;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 
 /// <summary>A player for a file the browser can fetch, or a video a hosting service embeds.</summary>
-public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
+public sealed partial class FormaVideoPlayer : FormaElementBase
 {
     // Ordered: the file provider accepts any fetchable address, so it answers only once the services have declined.
     private static readonly IPlayerProvider[] Providers =
@@ -42,15 +41,7 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
     /// <summary>Caption files offered for a file the browser plays; a hosting service serves its own.</summary>
     [Parameter] public IReadOnlyList<VideoCaptionTrack>? Captions { get; set; }
 
-    /// <summary>Additional attributes applied to the wrapping element.</summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
-
-    [Inject] private IStringLocale<FormaVideoPlayer> L { get; set; } = default!;
-
     [Inject] private NavigationManager Navigation { get; set; } = default!;
-
-    [Inject] private IJSRuntime JS { get; set; } = default!;
 
     /// <summary>Providers the host registered, tried before the services this library recognises.</summary>
     [Inject] private IEnumerable<IPlayerProvider> RegisteredProviders { get; set; } = default!;
@@ -58,10 +49,6 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
     private Playback _playback = default!;
 
     private Embedding _embedding = default!;
-
-    private readonly string _labelId = $"video-play-{Guid.NewGuid():N}";
-
-    private readonly string _noteId = $"video-note-{Guid.NewGuid():N}";
 
     private ElementReference _videoElement;
 
@@ -77,21 +64,18 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
 
     private PlayerFrame? Frame { get; set; }
 
+    private string ElementId
+        => Id ?? $"video-{RuntimeId:N}";
+
+    private string LabelId
+        => $"{ElementId}-label";
+
+    private string NoteId
+        => $"{ElementId}-note";
+
     // Autoplay is a request to start, so it overrides holding the player back.
     private bool ShowFacade
         => DeferLoading && !Autoplay && !_isActivated && Frame is EmbeddedPlayerFrame or HtmlPlayerFrame;
-
-    private string CssClass
-    {
-        get
-        {
-            // A service that sizes its own player is left to do so rather than cropped to the frame's ratio.
-            var flow = Frame is HtmlPlayerFrame && !ShowFacade ? "forma-video-player-flow" : null;
-
-            // Merged rather than left to the splat, which the explicit class attribute would override.
-            return AdditionalAttributes.MergeClass("forma-video-player", flow);
-        }
-    }
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -181,9 +165,17 @@ public sealed partial class FormaVideoPlayer : ComponentBase, IAsyncDisposable
         => _isActivated = true;
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-video-player")
+            // A service that sizes its own player is left to do so rather than cropped to the frame's ratio.
+            .Add("forma-video-player-flow", Frame is HtmlPlayerFrame && !ShowFacade);
+
+    /// <inheritdoc />
+    protected override async ValueTask DisposeAsyncCore()
     {
         await _playback.DisposeAsync();
         await _embedding.DisposeAsync();
+        await base.DisposeAsyncCore();
     }
 }

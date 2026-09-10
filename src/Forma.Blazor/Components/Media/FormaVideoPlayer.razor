@@ -1,20 +1,26 @@
 @namespace Forma.Blazor.Components.Media
+@inherits FormaElementBase
 
-<div @attributes="AdditionalAttributes" class="@CssClass">
+<div id="@Id"
+     data-rid="@RuntimeId"
+     class="@RootClass"
+     style="@RootStyle"
+     @attributes="AdditionalAttributes"
+     @ref="RootElement">
     @if (ShowFacade)
     {
         <button type="button"
                 class="forma-video-player-facade"
-                aria-labelledby="@_labelId"
-                aria-describedby="@_noteId"
+                aria-labelledby="@LabelId"
+                aria-describedby="@NoteId"
                 @onclick="Activate">
             @if (!string.IsNullOrWhiteSpace(Placeholder))
             {
                 <img class="forma-video-player-facade-placeholder" src="@Placeholder" alt="" />
             }
             <FormaIcon Icon="Glyph.TriangleRight" Size="IconSize.Display" Class="forma-video-player-facade-glyph" />
-            <span id="@_labelId" class="forma-video-player-facade-label">@L["Play {Title}", Title]</span>
-            <span id="@_noteId" class="forma-video-player-facade-note">@L["Loads from another site, which will see this visit."]</span>
+            <span id="@LabelId" class="forma-video-player-facade-label">@L["Play {Title}", Title]</span>
+            <span id="@NoteId" class="forma-video-player-facade-note">@L["Loads from another site, which will see this visit."]</span>
         </button>
     }
     else if (Frame is NativePlayerFrame native)

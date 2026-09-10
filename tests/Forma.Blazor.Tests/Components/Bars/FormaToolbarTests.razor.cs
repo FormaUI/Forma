@@ -5,7 +5,6 @@ public sealed partial class FormaToolbarTests
     public FormaToolbarTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        Services.AddJsonLocalization();
         Router = JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
     }
 

@@ -5,6 +5,5 @@ public sealed partial class FormaSelectTests
     public FormaSelectTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        Services.AddJsonLocalization();
     }
 }

@@ -1,14 +1,14 @@
 namespace Forma.Blazor.Components.Symbols;
 
+using Forma.Framework.Css;
 using Forma.Framework.Emojis;
 using Forma.Framework.Emojis.Unicode;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 
 /// <summary>Renders an emoji as inline artwork, drawing it from a host's chosen provider.</summary>
 /// <param name="emojiProvider">The registered provider: the host's own, or the reader's font when it registered none.</param>
-public sealed partial class FormaEmoji(IEmojiProvider emojiProvider) : ComponentBase
+public sealed partial class FormaEmoji(IEmojiProvider emojiProvider) : FormaElementBase
 {
     private EmojiArtwork _artwork = default!;
 
@@ -20,18 +20,12 @@ public sealed partial class FormaEmoji(IEmojiProvider emojiProvider) : Component
     /// <summary>The accessible name announced for this emoji, or null when it carries none of its own.</summary>
     [Parameter] public string? Label { get; set; }
 
-    /// <summary>Extra classes applied to the root element.</summary>
-    [Parameter] public string? Class { get; set; }
-
     /// <summary>The provider supplying this emoji's artwork, taken from the surrounding subtree or the registered provider when unset.</summary>
     [Parameter] public IEmojiProvider? Provider { get; set; }
 
     [Inject] private EmojiSpriteLoader SpriteLoader { get; set; } = default!;
 
     [CascadingParameter] private IEmojiProvider? CascadingProvider { get; set; }
-
-    private string CssClass
-        => string.IsNullOrWhiteSpace(Class) ? "forma-emoji" : $"forma-emoji {Class}";
 
     private string? Role
         => Label is null ? null : "img";
@@ -71,4 +65,8 @@ public sealed partial class FormaEmoji(IEmojiProvider emojiProvider) : Component
 
     private static string GetSpriteHref(EmojiSprite sprite)
         => $"#{sprite.Symbol}";
+
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder.Add("forma-emoji");
 }

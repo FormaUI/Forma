@@ -1,9 +1,11 @@
 namespace Forma.Blazor.Components;
 
+using Forma.Framework.Css;
+
 using Microsoft.AspNetCore.Components;
 
 /// <summary>Field chrome — the label, required marker and validation slot around a form element.</summary>
-public sealed partial class FormaField : ComponentBase
+public sealed partial class FormaField : FormaElementBase
 {
     /// <summary>The label text, absent which no label renders.</summary>
     [Parameter] public string? Label { get; set; }
@@ -26,36 +28,17 @@ public sealed partial class FormaField : ComponentBase
     /// <summary>Validation output for the element, normally a ValidationMessage.</summary>
     [Parameter] public RenderFragment? Validation { get; set; }
 
-    /// <summary>Additional attributes applied to the wrapping element.</summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
-
     private bool HasLabel
         => !string.IsNullOrWhiteSpace(Label);
 
-    private string CssClass
-    {
-        get
+    private string? LabelModeClass
+        => LabelMode switch
         {
-            var classes = "forma-field";
-
-            if (Multiline)
-            {
-                classes += " forma-field-multiline";
-            }
-
-            classes += LabelMode switch
-            {
-                FieldLabelMode.Pinned => " forma-field-label-pinned",
-                FieldLabelMode.Above => " forma-field-label-above",
-                FieldLabelMode.Inline => " forma-field-label-inline",
-                _ => string.Empty,
-            };
-
-            // Merged rather than left to the splat, which the explicit class attribute would override.
-            return AdditionalAttributes.MergeClass(classes);
-        }
-    }
+            FieldLabelMode.Pinned => "forma-field-label-pinned",
+            FieldLabelMode.Above => "forma-field-label-above",
+            FieldLabelMode.Inline => "forma-field-label-inline",
+            _ => null,
+        };
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -67,4 +50,11 @@ public sealed partial class FormaField : ComponentBase
 
         ArgumentNullException.ThrowIfNull(ChildContent);
     }
+
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-field")
+            .Add("forma-field-multiline", Multiline)
+            .Add(LabelModeClass);
 }

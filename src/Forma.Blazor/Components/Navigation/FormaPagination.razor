@@ -1,7 +1,14 @@
 @namespace Forma.Blazor.Components.Navigation
+@inherits FormaElementBase
 @if (PageCount > 1)
 {
-    <nav @attributes="AdditionalAttributes" class="@CssClass" aria-label="@NavLabel" @ref="_navElement">
+    <nav id="@Id"
+         data-rid="@RuntimeId"
+         class="@RootClass"
+         style="@RootStyle"
+         @attributes="AdditionalAttributes"
+         @ref="RootElement"
+         aria-label="@NavLabel">
         @if (!HasInputByState)
         {
             <ul class="forma-pagination-navigation-steps">
@@ -47,10 +54,10 @@
         <div class="@(HasInputByState ? "forma-pagination-navigation-input" : "forma-pagination-navigation-input forma-pagination-navigation-input-fallback")">
             @RenderNavigationButton(NavigationDirection.Previous, 1)
             <div class="forma-pagination-navigation-input-group">
-                <label class="forma-pagination-navigation-input-label" for="@_navigationInputId">@L["Go to Page"]</label>
+                <label class="forma-pagination-navigation-input-label" for="@NavigationInputId">@L["Go to Page"]</label>
                 <FormaTextBox @ref="NavigationInput"
                               @bind-Value="_navigationEntry"
-                              Id="@_navigationInputId"
+                              Id="@NavigationInputId"
                               class="forma-pagination-navigation-input-box"
                               Options="NavigationEntryOptions"
                               Placeholder="@L["Go to Page"]"

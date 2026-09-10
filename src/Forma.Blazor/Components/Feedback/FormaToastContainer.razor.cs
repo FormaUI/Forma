@@ -2,18 +2,15 @@ namespace Forma.Blazor.Components.Feedback;
 
 using Forma.Framework.Feedback;
 using Forma.Framework.Icons;
-using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>The live region that renders and auto-dismisses toasts raised through <see cref="IToastService"/>.</summary>
-public sealed partial class FormaToastContainer : IDisposable
+public sealed partial class FormaToastContainer : FormaComponentBase
 {
     private readonly Dictionary<string, Timer> _timers = [];
 
     [Inject] private IToastService ToastService { get; set; } = default!;
-
-    [Inject] private IStringLocale<FormaToastContainer> L { get; set; } = default!;
 
     /// <inheritdoc />
     protected override void OnInitialized() => ToastService.Subscribe(HandleChangeAsync);
@@ -80,15 +77,16 @@ public sealed partial class FormaToastContainer : IDisposable
     }
 
     /// <inheritdoc />
-    public void Dispose()
+    protected override async ValueTask DisposeAsyncCore()
     {
         ToastService.Unsubscribe(HandleChangeAsync);
 
         foreach (var timer in _timers.Values)
         {
-            timer.Dispose();
+            await timer.DisposeAsync();
         }
 
         _timers.Clear();
+        await base.DisposeAsyncCore();
     }
 }

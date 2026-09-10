@@ -10,13 +10,13 @@ internal static class ExplorerItemLocalizationExtensions
     /// <summary>Combines the item with the context needed to produce its localized labels.</summary>
     internal static ExplorerItemLocalization GetLocalizedLabels(
         this IExplorerItem item,
-        IStringLocale<FormaExplorer> locale)
+        IStringLocale locale)
         => new(item, locale);
 
     /// <summary>Combines the item with the context needed to produce its localized labels.</summary>
     internal static ExplorerItemSelectionLocalization GetLocalizedLabels(
         this IExplorerItem item,
-        IStringLocale<FormaExplorer> locale,
+        IStringLocale locale,
         IExplorerSelectionView selection)
         => new(item, locale, selection);
 }

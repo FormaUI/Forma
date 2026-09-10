@@ -3,13 +3,13 @@ namespace Forma.Blazor.Components.Layout;
 using System.Globalization;
 
 using Forma.Framework.Common.Interop.Components;
-using Forma.Framework.Localization;
+using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>A raised backdrop with a box of its own. It stands in its layout until it is given a placement or maximized; then it stands in the viewport within its bounds, moved by its drag region and the arrow keys, resized at its edges and with Shift, and maximized to fill its bounds. Presented by a parent that says so, it drives that parent's box instead. It can be hidden with its content kept, or disabled.</summary>
-public sealed partial class FormaFrame : ComponentBase, IAsyncDisposable
+public sealed partial class FormaFrame : FormaElementBase
 {
     /// <summary>The class the resize handles carry, one per edge and corner.</summary>
     public const string HandleClass = "forma-frame-handle";
@@ -22,13 +22,9 @@ public sealed partial class FormaFrame : ComponentBase, IAsyncDisposable
 
     private static readonly string[] Edges = ["n", "s", "e", "w", "ne", "nw", "se", "sw"];
 
-    private ElementReference _element;
     private Frame _frame = default!;
     private DotNetObjectReference<FormaFrame> _selfReference = default!;
     private FrameAttachment? _attachment;
-
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-    [Inject] private IStringLocale<FormaFrame> L { get; set; } = default!;
 
     /// <summary>The name the drag region announces the frame by; unset, it is announced as the frame.</summary>
     [Parameter] public string? Label { get; set; }
@@ -63,10 +59,6 @@ public sealed partial class FormaFrame : ComponentBase, IAsyncDisposable
     /// <summary>Whether the frame is disabled: it takes no input and reads as inactive.</summary>
     [Parameter] public bool Disabled { get; set; }
 
-    /// <summary>Additional attributes applied to the frame element.</summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
-
     // The frame has a box to move once it stands in the viewport, or while it drives the parent that presents it.
     private bool IsInteractive
         => Box is FrameBox.Parent || Placement is not null || Maximized;
@@ -88,15 +80,6 @@ public sealed partial class FormaFrame : ComponentBase, IAsyncDisposable
 
     private string Name
         => Label ?? L["the frame"];
-
-    private string CssClass
-        => AdditionalAttributes.MergeClass(
-            "forma-frame",
-            IsPlaced ? "has-placement" : null,
-            Maximized ? "is-maximized" : null,
-            Locked ? "is-locked" : null,
-            IsMovable ? "is-movable" : null,
-            Disabled ? "is-disabled" : null);
 
     // The drag region takes the arrow keys while the frame can move or resize, and says so.
     private Dictionary<string, object>? DragRegionAttributes
@@ -128,42 +111,6 @@ public sealed partial class FormaFrame : ComponentBase, IAsyncDisposable
     // The element the frame is held within, once the host's reference to it has been captured.
     private ElementReference? BoundsElement
         => Options.Bounds.Element is { Id: not null } element ? element : null;
-
-    // Viewport coordinates from the pointer are physical, so the placement is written as left and top rather than
-    // as logical insets.
-    private string? Style
-    {
-        get
-        {
-            var hostStyle = AdditionalAttributes.GetHostValue("style");
-            var parts = new List<string>(3);
-
-            if (IsPlaced && !Maximized)
-            {
-                var placement = Placement!;
-                parts.Add(string.Create(
-                    CultureInfo.InvariantCulture,
-                    $"left: {placement.Left}px; top: {placement.Top}px; width: {placement.Width}px; height: {placement.Height}px;"));
-            }
-
-            if (Options.MinResizeSize is { } minimum)
-            {
-                parts.Add(string.Create(CultureInfo.InvariantCulture, $"min-width: {minimum.Width}px; min-height: {minimum.Height}px;"));
-            }
-
-            if (Options.MaxResizeSize is { } maximum)
-            {
-                parts.Add(string.Create(CultureInfo.InvariantCulture, $"max-width: {maximum.Width}px; max-height: {maximum.Height}px;"));
-            }
-
-            if (!string.IsNullOrWhiteSpace(hostStyle))
-            {
-                parts.Add(hostStyle);
-            }
-
-            return parts.Count > 0 ? string.Join(' ', parts) : null;
-        }
-    }
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -200,7 +147,7 @@ public sealed partial class FormaFrame : ComponentBase, IAsyncDisposable
         }
 
         var box = Box is FrameBox.Parent ? "parent" : "self";
-        var attached = await _frame.AttachAsync(_element, _selfReference, box, DragRegionClass, HandleClass, StepPixels, BoundsElement);
+        var attached = await _frame.AttachAsync(RootElement, _selfReference, box, DragRegionClass, HandleClass, StepPixels, BoundsElement);
 
         if (attached && !Maximized)
         {
@@ -230,9 +177,48 @@ public sealed partial class FormaFrame : ComponentBase, IAsyncDisposable
         });
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-frame")
+            .Add("has-placement", IsPlaced)
+            .Add("is-maximized", Maximized)
+            .Add("is-locked", Locked)
+            .Add("is-movable", IsMovable)
+            .Add("is-disabled", Disabled);
+
+    // Viewport coordinates from the pointer are physical, so the placement is written as left and top rather than
+    // as logical insets.
+    /// <inheritdoc />
+    protected override string? BuildRootStyle()
+    {
+        var parts = new List<string>(3);
+
+        if (IsPlaced && !Maximized)
+        {
+            var placement = Placement!;
+            parts.Add(string.Create(
+                CultureInfo.InvariantCulture,
+                $"left: {placement.Left}px; top: {placement.Top}px; width: {placement.Width}px; height: {placement.Height}px;"));
+        }
+
+        if (Options.MinResizeSize is { } minimum)
+        {
+            parts.Add(string.Create(CultureInfo.InvariantCulture, $"min-width: {minimum.Width}px; min-height: {minimum.Height}px;"));
+        }
+
+        if (Options.MaxResizeSize is { } maximum)
+        {
+            parts.Add(string.Create(CultureInfo.InvariantCulture, $"max-width: {maximum.Width}px; max-height: {maximum.Height}px;"));
+        }
+
+        return parts.Count > 0 ? string.Join(' ', parts) : null;
+    }
+
+    /// <inheritdoc />
+    protected override async ValueTask DisposeAsyncCore()
     {
         await _frame.DisposeAsync();
         _selfReference.Dispose();
+        await base.DisposeAsyncCore();
     }
 }

@@ -2,39 +2,30 @@ namespace Forma.Blazor.Components.Debugging.InputInspector;
 
 using System.Globalization;
 
+using Forma.Framework.Css;
 using Forma.Framework.Icons;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Keyboard;
 using Forma.Framework.Input.Pointer;
 using Forma.Framework.Input.Wheel;
-using Forma.Framework.Localization;
 using Forma.Framework.Toolbar;
 
-using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 using Inspector = Framework.Input.Interop.InputInspector;
 
 /// <summary>A panel showing the input router's latest decision, the active ordering behind it, and the decisions before it, as each key, press, or wheel turn on the page is resolved.</summary>
-public sealed partial class FormaInputInspector : ComponentBase, IAsyncDisposable
+public sealed partial class FormaInputInspector : FormaElementBase
 {
     private const int HistoryLength = 8;
     private const string PauseCommand = "pause";
     private const string ClearCommand = "clear";
 
     private readonly List<InputDecision> _history = [];
-    private ElementReference _element;
     private Inspector _inspector = default!;
     private DotNetObjectReference<FormaInputInspector> _selfReference = default!;
     private IReadOnlyList<FormaToolbarItem> _tools = [];
     private bool _paused;
-
-    /// <summary>Additional attributes applied to the panel.</summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
-
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-    [Inject] private IStringLocale<FormaInputInspector> L { get; set; } = default!;
 
     /// <summary>The latest decision, or <see langword="null"/> before any input has been resolved.</summary>
     public InputDecision? Decision
@@ -43,20 +34,6 @@ public sealed partial class FormaInputInspector : ComponentBase, IAsyncDisposabl
     /// <summary>Whether reported decisions are being dropped rather than shown.</summary>
     public bool IsPaused
         => _paused;
-
-    private Dictionary<string, object> RootAttributes
-    {
-        get
-        {
-            var attributes = AdditionalAttributes is null
-                ? []
-                : new Dictionary<string, object>(AdditionalAttributes, StringComparer.Ordinal);
-
-            attributes["class"] = AdditionalAttributes.MergeClass("forma-input-inspector", _paused ? "forma-input-inspector-paused" : null);
-
-            return attributes;
-        }
-    }
 
     /// <summary>Takes the decision the script reports and shows it, unless the inspector is paused.</summary>
     [JSInvokable]
@@ -92,12 +69,18 @@ public sealed partial class FormaInputInspector : ComponentBase, IAsyncDisposabl
     {
         if (firstRender)
         {
-            await _inspector.AttachAsync(_element, _selfReference);
+            await _inspector.AttachAsync(RootElement, _selfReference);
         }
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-input-inspector")
+            .Add("forma-input-inspector-paused", _paused);
+
+    /// <inheritdoc />
+    protected override async ValueTask DisposeAsyncCore()
     {
         try
         {
@@ -107,6 +90,8 @@ public sealed partial class FormaInputInspector : ComponentBase, IAsyncDisposabl
         {
             _selfReference.Dispose();
         }
+
+        await base.DisposeAsyncCore();
     }
 
     private static Icon GetFamilyIcon(InputInfo input)

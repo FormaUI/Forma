@@ -2,14 +2,13 @@ namespace Forma.Blazor.Components.Inputs;
 
 using System.Diagnostics.CodeAnalysis;
 
+using Forma.Framework.Css;
+
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>An iOS-style switch for a boolean value.</summary>
-public sealed partial class FormaToggleSwitch : InputBase<bool>
+public sealed partial class FormaToggleSwitch : FormaInputBase<bool>
 {
-    private readonly string _id = $"toggle-{Guid.NewGuid():N}";
-
     /// <summary>Name shown before the switch. Without one the caller must give the input an accessible name of its own.</summary>
     [Parameter] public string? Label { get; set; }
 
@@ -22,7 +21,14 @@ public sealed partial class FormaToggleSwitch : InputBase<bool>
     /// <summary>Disables user interaction.</summary>
     [Parameter] public bool Disabled { get; set; }
 
+    private string ElementId
+        => Id ?? $"toggle-{RuntimeId:N}";
+
     private void HandleChange(ChangeEventArgs args) => CurrentValue = args.Value is true;
+
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder.Add("forma-toggle-switch-input");
 
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, out bool result, [NotNullWhen(false)] out string? validationErrorMessage)

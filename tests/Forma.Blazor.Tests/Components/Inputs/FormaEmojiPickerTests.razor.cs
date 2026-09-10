@@ -7,7 +7,6 @@ public sealed partial class FormaEmojiPickerTests
 
     public FormaEmojiPickerTests(bool autoResolveSpriteLoad = true)
     {
-        Services.AddJsonLocalization();
         JSInterop.Mode = JSRuntimeMode.Loose;
 
         // Configured explicitly even under Loose, so a test can hold the load pending.

@@ -1,8 +1,9 @@
 @namespace Forma.Blazor.Components.Composer
+@inherits FormaComponentBase
 @using Forma.Blazor.Components.Buttons
 
-<section class="forma-composer-attachments" aria-labelledby="@_headingId">
-    <h2 id="@_headingId" class="forma-composer-attachments-heading">
+<section class="forma-composer-attachments" aria-labelledby="@HeadingId">
+    <h2 id="@HeadingId" class="forma-composer-attachments-heading">
         <FormaIcon Icon="Glyph.File" />
         @L["{Count} attached", Attachments.Count]
         <span class="forma-composer-attachments-total">@TotalSize</span>

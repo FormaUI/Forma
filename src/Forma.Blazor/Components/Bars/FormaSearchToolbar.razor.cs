@@ -1,12 +1,13 @@
 namespace Forma.Blazor.Components.Bars;
 
 using Forma.Blazor.Components.Inputs;
+using Forma.Framework.Css;
 using Forma.Framework.Toolbar;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>A search field and a row of toolbar items, for the top of a list page.</summary>
-public sealed partial class FormaSearchToolbar
+public sealed partial class FormaSearchToolbar : FormaElementBase
 {
     /// <summary>The accessible name of the action toolbar; required only when Items is not empty.</summary>
     [Parameter] public string? Label { get; set; }
@@ -39,4 +40,8 @@ public sealed partial class FormaSearchToolbar
             ArgumentException.ThrowIfNullOrWhiteSpace(Label);
         }
     }
+
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder.Add("forma-search-toolbar");
 }

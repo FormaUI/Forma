@@ -4,10 +4,10 @@ using System.Globalization;
 
 using Forma.Blazor.Components.Feedback;
 using Forma.Framework.Common.Interop.Behaviours;
+using Forma.Framework.Css;
 using Forma.Framework.Emojis;
 using Forma.Framework.Emojis.Unicode;
 using Forma.Framework.Icons;
-using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -17,7 +17,7 @@ using Microsoft.JSInterop;
 /// <param name="registeredCatalog">The host's registered catalog, or null to browse nothing.</param>
 /// <param name="emojiProvider">The registered provider: the host's own, or the reader's font when it registered none.</param>
 public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmojiCatalog? registeredCatalog = null)
-    : ComponentBase, IAsyncDisposable
+    : FormaElementBase
 {
     private readonly IEmojiCatalog _catalog = registeredCatalog ?? NullEmojiCatalog.Instance;
     private readonly IEmojiProvider _provider = emojiProvider;
@@ -55,7 +55,6 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
         [RecentGroupId] = Glyph.History,
     };
 
-    private readonly string _generatedId = $"emoji-picker-{Guid.NewGuid():N}";
     private readonly SpriteSheetLoadTracker _sheetLoadTracker = new();
     private string _searchQuery = string.Empty;
     private string? _activeGroupId;
@@ -79,17 +78,6 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
     /// <summary>The categories the tab strip offers, defaulting to the nine standard ones.</summary>
     [Parameter] public IReadOnlyList<EmojiGroup> Groups { get; set; } = DefaultGroups;
 
-    /// <summary>The value of the root element's id attribute.</summary>
-    [Parameter] public string? Id { get; set; }
-
-    /// <summary>Extra classes applied to the root element.</summary>
-    [Parameter] public string? Class { get; set; }
-
-    /// <summary>Attributes applied to the root element.</summary>
-    [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
-
-    [Inject] private IStringLocale<FormaEmojiPicker> L { get; set; } = default!;
-
     [Inject] private EmojiSpriteLoader SpriteLoader { get; set; } = default!;
 
     private List<EmojiGroup>? _tabs;
@@ -97,12 +85,7 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
     private IReadOnlyList<string>? _requiredSheets;
     private IReadOnlyList<EmojiInfo>? _renderedEmojis;
 
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-
-    private string CssClass
-        => string.IsNullOrWhiteSpace(Class) ? "forma-emoji-picker" : $"forma-emoji-picker {Class}";
-
-    private string ElementId => Id ?? _generatedId;
+    private string ElementId => Id ?? $"emoji-picker-{RuntimeId:N}";
 
     private string PanelElementId => $"{ElementId}-panel";
 
@@ -186,8 +169,15 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
         => await LoadNextSheetAsync();
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-        => await _sentinel.DisposeAsync();
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder.Add("forma-emoji-picker");
+
+    /// <inheritdoc />
+    protected override async ValueTask DisposeAsyncCore()
+    {
+        await _sentinel.DisposeAsync();
+        await base.DisposeAsyncCore();
+    }
 
     private string GetTabElementId(string groupId)
         => $"{ElementId}-tab-{groupId}";

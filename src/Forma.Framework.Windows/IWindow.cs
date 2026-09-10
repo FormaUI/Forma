@@ -5,8 +5,8 @@ using Forma.Framework.Icons;
 /// <summary>A window in a workspace: its identity, its origin, its parent, what it shows in a handle, and the state that decides what can be done with it.</summary>
 public interface IWindow
 {
-    /// <summary>The window's identity, generated once and stable for its lifetime.</summary>
-    Guid Id { get; }
+    /// <summary>The window's identity for its lifetime, the RuntimeId of the component that is the window.</summary>
+    Guid RuntimeId { get; }
 
     /// <summary>The title shown in the title bar and in the window's handle.</summary>
     string Title { get; }

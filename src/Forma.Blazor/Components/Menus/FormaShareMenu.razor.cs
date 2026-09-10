@@ -6,10 +6,9 @@ using Forma.Framework.Icons;
 using Forma.Framework.Share;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 
 /// <summary>A share menu over one item: the social networks and download baseline on a scrolling row, a consumer's own actions beside them, and the rest behind More.</summary>
-public sealed partial class FormaShareMenu : ComponentBase, IAsyncDisposable
+public sealed partial class FormaShareMenu : FormaElementBase
 {
     /// <summary>What the menu acts on.</summary>
     [Parameter] public ShareItem? Item { get; set; }
@@ -25,12 +24,6 @@ public sealed partial class FormaShareMenu : ComponentBase, IAsyncDisposable
 
     /// <summary>Appearance of the trigger button.</summary>
     [Parameter] public ButtonOptions TriggerOptions { get; set; } = ButtonOptions.Default;
-
-    /// <summary>Additional attributes applied to the trigger button, such as aria-label for an icon-only trigger.</summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
-
-    [Inject] private IJSRuntime JS { get; set; } = default!;
 
     [Inject] private IEnumerable<IShareTarget> ShareTargets { get; set; } = [];
 
@@ -90,10 +83,11 @@ public sealed partial class FormaShareMenu : ComponentBase, IAsyncDisposable
         => await _print.PrintPageAsync();
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsyncCore()
     {
         await _share.DisposeAsync();
         await _clipboard.DisposeAsync();
         await _print.DisposeAsync();
+        await base.DisposeAsyncCore();
     }
 }

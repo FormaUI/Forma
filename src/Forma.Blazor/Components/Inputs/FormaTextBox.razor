@@ -1,13 +1,15 @@
 @namespace Forma.Blazor.Components.Inputs
-@inherits InputBase<string?>
+@inherits FormaInputBase<string?>
 
 @{
     RenderFragment box =
-        @<input @attributes="AdditionalAttributes"
-                id="@ElementId"
+        @<input id="@ElementId"
+                data-rid="@RuntimeId"
+                class="@RootClass"
+                style="@RootStyle"
+                @attributes="AdditionalAttributes"
+                @ref="RootElement"
                 type="@TypeValue"
-                class="@AdditionalAttributes.MergeClass(BoxClass, CssClass)"
-                style="@BoxStyle"
                 placeholder="@EffectivePlaceholder"
                 value="@CurrentValueAsString"
                 disabled="@Disabled"
@@ -21,8 +23,7 @@
                 spellcheck="@SpellCheckValue"
                 autocomplete="@Options.AutoComplete"
                 aria-required="@(Required ? "true" : null)"
-                @oninput="HandleInput"
-                @ref="Element" />;
+                @oninput="HandleInput" />;
 }
 
 @if (HasLabel)

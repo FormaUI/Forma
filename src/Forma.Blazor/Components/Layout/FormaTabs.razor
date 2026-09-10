@@ -1,5 +1,11 @@
+@inherits FormaElementBase
 <CascadingValue Value="this" IsFixed="true">
-    <div class="forma-tabs">
+    <div id="@Id"
+         data-rid="@RuntimeId"
+         class="@RootClass"
+         style="@RootStyle"
+         @attributes="AdditionalAttributes"
+         @ref="RootElement">
         <div class="forma-tab-list" role="tablist" aria-label="@Label">
             @foreach (var tab in _tabs)
             {

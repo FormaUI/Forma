@@ -1,13 +1,13 @@
 namespace Forma.Blazor.Components.Navigation;
 
+using Forma.Framework.Css;
 using Forma.Framework.Icons;
-using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 /// <summary>A breadcrumb trail whose segments click, accept drops, and optionally open a menu of alternatives.</summary>
-public sealed partial class FormaBreadcrumb<TItem> : ComponentBase
+public sealed partial class FormaBreadcrumb<TItem> : FormaElementBase
 {
     /// <summary>The trail's segments, root first.</summary>
     [Parameter, EditorRequired] public IReadOnlyList<BreadcrumbItem<TItem>> Items { get; set; } = [];
@@ -24,8 +24,6 @@ public sealed partial class FormaBreadcrumb<TItem> : ComponentBase
     /// <summary>Raised when something is dropped on a segment.</summary>
     [Parameter] public EventCallback<TItem?> OnItemDrop { get; set; }
 
-    [Inject] private IStringLocale<FormaBreadcrumb> L { get; set; } = default!;
-
     private string EffectiveAriaLabel
         => AriaLabel ?? L["Breadcrumb"].Value;
 
@@ -37,7 +35,8 @@ public sealed partial class FormaBreadcrumb<TItem> : ComponentBase
 
     private async Task HandleItemDropAsync(BreadcrumbItem<TItem> item)
         => await OnItemDrop.InvokeAsync(item.Value);
-}
 
-/// <summary>Non-generic marker so the localizer can be keyed independently of TItem.</summary>
-internal abstract class FormaBreadcrumb;
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder.Add("forma-breadcrumb");
+}

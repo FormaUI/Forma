@@ -1,14 +1,13 @@
 namespace Forma.Blazor.Components.Layout;
 
+using Forma.Framework.Css;
 using Forma.Framework.Icons;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>One tab within a <see cref="FormaTabs"/>, supplying both its header and its panel.</summary>
-public sealed partial class FormaTab : IDisposable
+public sealed partial class FormaTab : FormaElementBase
 {
-    private readonly string _generatedId = Guid.NewGuid().ToString("N")[..8];
-
     [CascadingParameter] private FormaTabs Parent { get; set; } = default!;
 
     /// <summary>The tab header's text.</summary>
@@ -27,7 +26,7 @@ public sealed partial class FormaTab : IDisposable
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
 
     /// <summary>The identifier actually in force, whether the caller supplied it or not.</summary>
-    internal string EffectiveTabId => TabId ?? _generatedId;
+    internal string EffectiveTabId => TabId ?? RuntimeId.ToString("N");
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -44,5 +43,15 @@ public sealed partial class FormaTab : IDisposable
     protected override void OnParametersSet() => ArgumentException.ThrowIfNullOrWhiteSpace(Title);
 
     /// <inheritdoc />
-    public void Dispose() => Parent.UnregisterTab(this);
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-tab-panel")
+            .Add("active", Parent.IsActive(this));
+
+    /// <inheritdoc />
+    protected override ValueTask DisposeAsyncCore()
+    {
+        Parent.UnregisterTab(this);
+        return base.DisposeAsyncCore();
+    }
 }

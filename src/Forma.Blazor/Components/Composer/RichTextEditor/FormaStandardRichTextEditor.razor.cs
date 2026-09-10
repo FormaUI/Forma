@@ -7,10 +7,9 @@ using Forma.Framework.Composer.Documents;
 using Forma.Framework.Composer.Plugins;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>Standard rich text editor preset providing core formatting, typography, paragraph blocks, lists, and alignment.</summary>
-public sealed partial class FormaStandardRichTextEditor : InputBase<ComposerDocument>
+public sealed partial class FormaStandardRichTextEditor : FormaInputBase<ComposerDocument>
 {
     private readonly RichTextEditorPlugin _editorPlugin = new();
     private readonly IReadOnlyList<IComposerPlugin> _plugins;

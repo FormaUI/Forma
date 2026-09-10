@@ -1,11 +1,12 @@
 namespace Forma.Blazor.Components.Bars;
 
+using Forma.Framework.Css;
 using Forma.Framework.Toolbar;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>A quiet strip of status readouts and occasional commands, meant to sit beneath a canvas or at the foot of a panel.</summary>
-public sealed partial class FormaStatusStrip : ComponentBase
+public sealed partial class FormaStatusStrip : FormaElementBase
 {
     /// <summary>The accessible name of the strip; required only when Items is not empty.</summary>
     [Parameter] public string? Label { get; set; }
@@ -36,4 +37,8 @@ public sealed partial class FormaStatusStrip : ComponentBase
             ArgumentException.ThrowIfNullOrWhiteSpace(Label);
         }
     }
+
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder.Add("forma-status-strip");
 }

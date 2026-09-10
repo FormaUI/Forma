@@ -1,12 +1,11 @@
 namespace Forma.Blazor.Components.Explorer;
 
 using Forma.Framework.Explorer.Content;
-using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>The heading over a group of items: its name, how many it holds, and a chevron that folds it away.</summary>
-public sealed partial class FormaExplorerGroupHeading : ComponentBase
+public sealed partial class FormaExplorerGroupHeading : FormaComponentBase
 {
     /// <summary>The group the heading stands over.</summary>
     [Parameter, EditorRequired] public ExplorerItemGroup Group { get; set; } = default!;
@@ -17,7 +16,9 @@ public sealed partial class FormaExplorerGroupHeading : ComponentBase
     /// <summary>Raised when the heading is pressed to fold the group away or open it again.</summary>
     [Parameter] public EventCallback OnToggle { get; set; }
 
-    [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaExplorer);
 
     /// <inheritdoc />
     protected override void OnParametersSet()

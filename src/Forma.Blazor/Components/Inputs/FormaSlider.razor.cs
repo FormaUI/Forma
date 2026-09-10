@@ -4,14 +4,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Numerics;
 
+using Forma.Framework.Css;
+
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>A bounded numeric input rendered as a native range slider, with its current value shown beside the label.</summary>
-public sealed partial class FormaSlider<TValue> : InputBase<TValue> where TValue : struct, INumber<TValue>
+public sealed partial class FormaSlider<TValue> : FormaInputBase<TValue> where TValue : struct, INumber<TValue>
 {
-    private readonly string _id = $"fld-{Guid.NewGuid():N}";
-
     /// <summary>The label identifying the slider.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
 
@@ -29,6 +28,9 @@ public sealed partial class FormaSlider<TValue> : InputBase<TValue> where TValue
 
     /// <summary>Disables user interaction.</summary>
     [Parameter] public bool Disabled { get; set; }
+
+    private string ElementId
+        => Id ?? $"fld-{RuntimeId:N}";
 
     // The sighted display; a screen reader hears AriaValueText from the input itself instead,
     // so this is aria-hidden rather than a second announcement of the same text.
@@ -56,6 +58,10 @@ public sealed partial class FormaSlider<TValue> : InputBase<TValue> where TValue
     /// <inheritdoc />
     protected override string? FormatValueAsString(TValue value)
         => FormatInvariant(value);
+
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder.Add("forma-slider");
 
     // A range input is native and OS-constrained to a valid number, so parsing cannot fail in practice.
     /// <inheritdoc />

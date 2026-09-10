@@ -1,13 +1,12 @@
 namespace Forma.Blazor.Components.Composer.Dialogs;
 
 using Forma.Framework.Composer.Editing;
-using Forma.Framework.Localization;
 using Forma.Framework.Sanitization;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>What every composer dialog carries: its open state, its dismissal, and the rules a document is held to.</summary>
-public abstract class ComposerDialogBase : ComponentBase
+public abstract class ComposerDialogBase : FormaComponentBase
 {
     private bool _hasOpened;
 
@@ -28,10 +27,12 @@ public abstract class ComposerDialogBase : ComponentBase
     /// <summary>The composer state cascaded from the parent shell.</summary>
     [CascadingParameter] public ComposerContext? Context { get; set; }
 
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaComposer);
+
     /// <summary>The messages shown beneath the fields, rebuilt each time confirming is judged.</summary>
     private protected List<string> Messages { get; } = [];
-
-    [Inject] private protected IStringLocale<FormaComposer> L { get; set; } = default!;
 
     // A dialog standing outside a composer has no host rules to answer to, so it judges an address the way the engine would.
     /// <summary>The markup the document may carry, from the host's sanitizer where there is one.</summary>

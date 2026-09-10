@@ -6,7 +6,7 @@ using Forma.Framework.Common.Interop.Behaviours;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>A dropdown menu preset with an ellipsis trigger button.</summary>
-public sealed partial class FormaOverflowMenu : ComponentBase
+public sealed partial class FormaOverflowMenu : FormaElementBase
 {
     /// <summary>Accessible name for the trigger button; what it holds decides the wording.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
@@ -28,10 +28,6 @@ public sealed partial class FormaOverflowMenu : ComponentBase
 
     /// <summary>The menu's items and dividers.</summary>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
-
-    /// <summary>Additional attributes applied to the trigger button.</summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
     /// <inheritdoc />
     protected override void OnParametersSet()

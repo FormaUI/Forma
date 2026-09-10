@@ -1,15 +1,14 @@
 namespace Forma.Blazor.Components.Files;
 
 using Forma.Framework.Common.Interop.Behaviours;
+using Forma.Framework.Css;
 using Forma.Framework.Files;
-using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.JSInterop;
 
 /// <summary>A drop zone and file picker that validates a selection and hands the accepted files to the host.</summary>
-public sealed partial class FormaFilePicker : ComponentBase, IAsyncDisposable
+public sealed partial class FormaFilePicker : FormaElementBase
 {
     private const string DraggingClass = "forma-file-picker-dragging";
 
@@ -24,10 +23,6 @@ public sealed partial class FormaFilePicker : ComponentBase, IAsyncDisposable
 
     /// <summary>Replaces the default drop zone text, which also serves as the input's accessible name.</summary>
     [Parameter] public string? Prompt { get; set; }
-
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-
-    [Inject] private IStringLocale<FormaFilePicker> L { get; set; } = default!;
 
     private bool _isAttached;
 
@@ -175,6 +170,13 @@ public sealed partial class FormaFilePicker : ComponentBase, IAsyncDisposable
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-        => await _fileDropZone.DisposeAsync();
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder.Add("forma-file-picker");
+
+    /// <inheritdoc />
+    protected override async ValueTask DisposeAsyncCore()
+    {
+        await _fileDropZone.DisposeAsync();
+        await base.DisposeAsyncCore();
+    }
 }

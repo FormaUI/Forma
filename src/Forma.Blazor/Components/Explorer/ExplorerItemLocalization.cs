@@ -8,11 +8,11 @@ using Forma.Framework.Resources;
 internal readonly struct ExplorerItemLocalization
 {
     private readonly IExplorerItem _item;
-    private readonly IStringLocale<FormaExplorer> _locale;
+    private readonly IStringLocale _locale;
 
     internal ExplorerItemLocalization(
         IExplorerItem item,
-        IStringLocale<FormaExplorer> locale)
+        IStringLocale locale)
     {
         ArgumentNullException.ThrowIfNull(item);
         ArgumentNullException.ThrowIfNull(locale);

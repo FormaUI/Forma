@@ -21,7 +21,7 @@ public sealed partial class FormaComposerFileUploadDialog(IFileStore? store = nu
     /// <summary>Callback invoked with the files that finished uploading.</summary>
     [Parameter] public EventCallback<IReadOnlyList<ResourceInfo>> OnAttach { get; set; }
 
-    private FormaFileUploader? _uploader;
+    private FormaFileUploader? Uploader { get; set; }
     private readonly IFileStore? _store = store;
     private IReadOnlyList<IBrowserFile> _files = [];
     private readonly List<ResourceInfo> _uploadedResources = [];
@@ -79,7 +79,7 @@ public sealed partial class FormaComposerFileUploadDialog(IFileStore? store = nu
 
     private async Task HandleCancelAsync()
     {
-        _uploader?.Cancel();
+        Uploader?.Cancel();
 
         await OnCancel.InvokeAsync();
     }

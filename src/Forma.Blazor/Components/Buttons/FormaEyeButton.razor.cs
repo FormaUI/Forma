@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 /// <summary>A ghost icon button drawing the eye glyph, struck through while what it governs is hidden.</summary>
-public sealed partial class FormaEyeButton : ComponentBase
+public sealed partial class FormaEyeButton : FormaElementBase
 {
     /// <summary>Accessible name for the button; what it reveals decides the wording.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
@@ -20,10 +20,6 @@ public sealed partial class FormaEyeButton : ComponentBase
 
     /// <summary>Raised when the button is clicked.</summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
-
-    /// <summary>Additional attributes applied to the button element.</summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
     /// <inheritdoc />
     protected override void OnParametersSet()

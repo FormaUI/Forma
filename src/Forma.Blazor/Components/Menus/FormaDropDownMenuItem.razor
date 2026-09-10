@@ -1,14 +1,18 @@
 @namespace Forma.Blazor.Components.Menus
+@inherits FormaElementBase
 @if (Href is not null)
 {
-    <a href="@Href"
+    <a id="@Id"
+       data-rid="@RuntimeId"
+       class="@RootClass"
+       style="@RootStyle"
        @attributes="AdditionalAttributes"
-       class="@CssClass"
+       @ref="RootElement"
+       href="@Href"
        role="@Role"
        aria-checked="@AriaChecked"
        tabindex="-1"
        aria-disabled="@(Disabled ? "true" : null)"
-       @ref="_element"
        @onclick="HandleActivateAsync"
        @onclick:preventDefault="Disabled">
         @ChildContent
@@ -20,14 +24,17 @@
 }
 else
 {
-    <button type="button"
+    <button id="@Id"
+            data-rid="@RuntimeId"
+            class="@RootClass"
+            style="@RootStyle"
             @attributes="AdditionalAttributes"
-            class="@CssClass"
+            @ref="RootElement"
+            type="button"
             role="@Role"
             aria-checked="@AriaChecked"
             tabindex="-1"
             disabled="@Disabled"
-            @ref="_element"
             @onclick="HandleActivateAsync">
         @ChildContent
         @if (IsSelected is true)

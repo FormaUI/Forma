@@ -1,4 +1,5 @@
 @namespace Forma.Blazor.Components.Explorer
+@inherits FormaElementBase
 @using Forma.Blazor.Components.Buttons
 @using Forma.Blazor.Components.Feedback
 @using Forma.Blazor.Components.Files
@@ -11,7 +12,12 @@
 <CascadingValue Value="(IExplorerView)this">
 <CascadingValue Value="(IExplorerInteraction)this" IsFixed="true">
 <CascadingValue Value="(IExplorerItemInteraction)_itemManager" IsFixed="true">
-<div class="forma-explorer @(Options.Resizable ? "is-resizable" : "") @(Options.AsDialog ? "is-dialog" : "")">
+<div id="@Id"
+     data-rid="@RuntimeId"
+     class="@RootClass"
+     style="@RootStyle"
+     @attributes="AdditionalAttributes"
+     @ref="RootElement">
 <FormaBackdrop Variant="BackdropVariant.Canvas" class="forma-explorer-canvas">
 <FormaStackLayout>
     <FormaBackdrop Variant="BackdropVariant.Raised" class="forma-explorer-header-backdrop">

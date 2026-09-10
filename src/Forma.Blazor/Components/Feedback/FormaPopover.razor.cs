@@ -1,6 +1,7 @@
 namespace Forma.Blazor.Components.Feedback;
 
 using Forma.Framework.Common.Interop.Behaviours;
+using Forma.Framework.Css;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
 
@@ -9,7 +10,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
 /// <summary>An anchored popover shown in the browser's top layer, registered with the input router while open so Escape and a press away dismiss it, and returning focus to its trigger after keyboard dismissal.</summary>
-public sealed partial class FormaPopover : ComponentBase, IAsyncDisposable
+public sealed partial class FormaPopover : FormaElementBase
 {
     /// <summary>The element the popover hangs from.</summary>
     [Parameter, EditorRequired] public ElementReference Anchor { get; set; }
@@ -38,12 +39,6 @@ public sealed partial class FormaPopover : ComponentBase, IAsyncDisposable
     /// <summary>Raised for every key pressed inside the popover other than Escape, which the router answers by dismissing it.</summary>
     [Parameter] public EventCallback<KeyboardEventArgs> OnKeyDown { get; set; }
 
-    /// <summary>Additional attributes applied to the popover element.</summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
-
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
     private AnchoredPopover _popup = default!;
@@ -52,28 +47,10 @@ public sealed partial class FormaPopover : ComponentBase, IAsyncDisposable
     private InputProfile? _registeredProfile;
     private int _opening;
     private Task _sync = Task.CompletedTask;
-    private ElementReference _element;
     private ElementReference _trigger;
 
     /// <summary>Whether the popover is open.</summary>
     public bool IsOpen { get; private set; }
-
-    /// <summary>The popover element, for content that attaches a behaviour to it.</summary>
-    public ElementReference Element => _element;
-
-    private Dictionary<string, object> RootAttributes
-    {
-        get
-        {
-            var attributes = AdditionalAttributes is null
-                ? []
-                : new Dictionary<string, object>(AdditionalAttributes, StringComparer.Ordinal);
-
-            attributes["class"] = AdditionalAttributes.MergeClass("forma-popover", IsOpen ? "forma-popover-open" : null);
-
-            return attributes;
-        }
-    }
 
     private InputProfile Profile
         => new()
@@ -151,7 +128,7 @@ public sealed partial class FormaPopover : ComponentBase, IAsyncDisposable
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await _popup.SyncAsync(IsOpen, _element, Anchor, _trigger, async () => await OnOpened.InvokeAsync(), KeepsFocus, Alignment);
+        await _popup.SyncAsync(IsOpen, RootElement, Anchor, _trigger, async () => await OnOpened.InvokeAsync(), KeepsFocus, Alignment);
 
         var previous = _sync;
         _sync = SyncRegistrationAsync(previous);
@@ -181,7 +158,7 @@ public sealed partial class FormaPopover : ComponentBase, IAsyncDisposable
     {
         var opening = _opening;
         var profile = Profile;
-        var inputScope = await InputRouter.RegisterAsync(_element, profile, _selfReference, within: [_trigger]);
+        var inputScope = await InputRouter.RegisterAsync(RootElement, profile, _selfReference, within: [_trigger]);
 
         if (inputScope is null)
         {
@@ -211,7 +188,13 @@ public sealed partial class FormaPopover : ComponentBase, IAsyncDisposable
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-popover")
+            .Add("forma-popover-open", IsOpen);
+
+    /// <inheritdoc />
+    protected override async ValueTask DisposeAsyncCore()
     {
         try
         {
@@ -222,5 +205,7 @@ public sealed partial class FormaPopover : ComponentBase, IAsyncDisposable
         {
             _selfReference.Dispose();
         }
+
+        await base.DisposeAsyncCore();
     }
 }

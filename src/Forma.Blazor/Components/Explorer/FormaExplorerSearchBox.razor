@@ -1,7 +1,8 @@
 @namespace Forma.Blazor.Components.Explorer
+@inherits FormaComponentBase
 @using Forma.Blazor.Components.Inputs
 
-<FormaSearchBox @ref="_searchBox"
+<FormaSearchBox @ref="SearchBox"
                 Value="@Search.SearchQuery"
                 ValueChanged="HandleValueChangedAsync"
                 Options="Options"

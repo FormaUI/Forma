@@ -1,8 +1,14 @@
 @namespace Forma.Blazor.Components.Collections
+@inherits FormaElementBase
 @attribute [CascadingTypeParameter(nameof(TGridItem))]
 @typeparam TGridItem where TGridItem : notnull
 
-<div @attributes="AdditionalAttributes" class="@CssClass">
+<div id="@Id"
+     data-rid="@RuntimeId"
+     class="@RootClass"
+     style="@RootStyle"
+     @attributes="AdditionalAttributes"
+     @ref="RootElement">
     <div class="forma-data-grid-scroller" @ref="_scrollerElement">
         @* Fixed: the session object is mutated in place, so columns read live state without
            the cascade ever changing value under a mounted editor. *@

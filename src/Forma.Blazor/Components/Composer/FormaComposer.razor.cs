@@ -11,28 +11,26 @@ using Forma.Framework.Composer.Documents;
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Composer.Syntax;
+using Forma.Framework.Css;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
 using Forma.Framework.Resources;
 using Forma.Framework.Sanitization;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 
 /// <summary>The composer engine, hosting rich text, Markdown, code, or page composition through extensible editor plugins.</summary>
 /// <param name="syntaxHighlighter">The host's registered highlighter, or null to classify no code.</param>
 public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHighlighter = null)
-    : InputBase<ComposerDocument>, IAsyncDisposable, IComposerInteraction
+    : FormaInputBase<ComposerDocument>, IComposerInteraction
 {
-    private readonly string _generatedId = $"composer-{Guid.NewGuid():N}";
     private readonly ComposerCommandRegistry _commandRegistry = new();
     private readonly ComposerRegionRegistry _regionRegistry = new();
     private ComposerSelection _selection = ComposerSelection.Empty;
 
     private ComposerPluginCatalog _pluginCatalog = default!;
     private ComposerKeyBindingCatalog _keyBindingCatalog = ComposerKeyBindingCatalog.Empty;
-    private ElementReference _composerElement;
     private DotNetObjectReference<FormaComposer>? _selfReference;
     private InputScope? _inputScope;
     private Focus _focus = default!;
@@ -59,9 +57,6 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
     /// <summary>Callback invoked when the active editor plugin changes.</summary>
     [Parameter] public EventCallback<string> ActiveEditorIdChanged { get; set; }
 
-    /// <summary>The optional HTML element identifier.</summary>
-    [Parameter] public string? Id { get; set; }
-
     /// <summary>Whether the composer is disabled and ignores user interaction.</summary>
     [Parameter] public bool Disabled { get; set; }
 
@@ -71,14 +66,13 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
     /// <summary>The undo and redo stack this composer uses, constructed from <see cref="ComposerOptions.HistoryCapacity"/> when unset.</summary>
     [Parameter] public IComposerHistory? History { get; set; }
 
-    [Inject] private IJSRuntime JS { get; set; } = default!;
     [Inject] private InputRouter InputRouter { get; set; } = default!;
     [Inject] private IHtmlSanitizer Sanitizer { get; set; } = default!;
     [Inject] private IEnumerable<IComposerPlugin> RegisteredPlugins { get; set; } = default!;
     [Inject] private IEnumerable<IComposerDocumentConverter> RegisteredConverters { get; set; } = default!;
 
     private string ElementId
-        => Id ?? _generatedId;
+        => Id ?? $"composer-{RuntimeId:N}";
 
     // A read-only composer offers no editing commands, so the toolbar would carry nothing actionable.
     private bool ShowToolbar
@@ -92,15 +86,6 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
 
     private string ActiveTabId
         => _activeView?.Id ?? _activeEditor.Id;
-
-    private string ComposerClass
-        => AdditionalAttributes.MergeClass(
-            "forma-composer",
-            CssClass,
-            Disabled ? "forma-composer-disabled" : null,
-            ReadOnly ? "forma-composer-readonly" : null,
-            Options.IsResizable && !Disabled ? "forma-composer-resizable" : null,
-            _chrome.IsMaximized ? "forma-composer-maximized" : null);
 
     private ComposerDocument CurrentDocument
         => Value ?? new ComposerDocument(ComposerDocumentFormat.Html, string.Empty);
@@ -260,9 +245,9 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
         _isJsStarted = true;
 
         // The composer's shortcuts route through its scope wherever focus rests inside it; the active editor registers them on its editable element as well, where a native control would otherwise claim them.
-        _inputScope = await InputRouter.RegisterAsync(_composerElement, new InputProfile { Routes = _keyBindingCatalog.ToInputRoutes() }, _selfReference);
+        _inputScope = await InputRouter.RegisterAsync(RootElement, new InputProfile { Routes = _keyBindingCatalog.ToInputRoutes() }, _selfReference);
         // The canvas is where focus lands first; Tab then reaches the composer's own commands before leaving it.
-        await _focus.AttachAsync(_composerElement, order: [".forma-composer-canvas"]);
+        await _focus.AttachAsync(RootElement, order: [".forma-composer-canvas"]);
         await _assetLoader.LoadAssetsAsync(_activeEditor.Assets);
     }
 
@@ -446,6 +431,15 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
     }
 
     /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-composer")
+            .Add("forma-composer-disabled", Disabled)
+            .Add("forma-composer-readonly", ReadOnly)
+            .Add("forma-composer-resizable", Options.IsResizable && !Disabled)
+            .Add("forma-composer-maximized", _chrome.IsMaximized);
+
+    /// <inheritdoc />
     protected override bool TryParseValueFromString(
         string? value,
         [MaybeNullWhen(false)] out ComposerDocument result,
@@ -483,7 +477,7 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsyncCore()
     {
         _regionRegistry.Changed -= HandleRegionsChanged;
 
@@ -496,5 +490,6 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
         _selfReference?.Dispose();
         await _assetLoader.DisposeAsync();
         await _focus.DisposeAsync();
+        await base.DisposeAsyncCore();
     }
 }

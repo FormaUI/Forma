@@ -2,12 +2,11 @@ namespace Forma.Blazor.Components.Explorer;
 
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Content;
-using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>The items of a columns menu: each optional details column with a check on the ones shown, then whether the header is shown.</summary>
-public sealed partial class FormaExplorerColumnsMenuItems : ComponentBase
+public sealed partial class FormaExplorerColumnsMenuItems : FormaComponentBase
 {
     private static readonly ExplorerDetailsColumns[] Columns =
     [
@@ -21,7 +20,9 @@ public sealed partial class FormaExplorerColumnsMenuItems : ComponentBase
 
     [CascadingParameter] private IExplorerInteraction Interaction { get; set; } = default!;
 
-    [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaExplorer);
 
     /// <inheritdoc />
     protected override void OnInitialized()

@@ -6,23 +6,12 @@ using Forma.Framework.Common.Interop.Behaviours;
 using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.JSInterop;
 
 /// <summary>A single-line text input, bare by default and wearing the shared field chrome once it is given a label.</summary>
-public sealed partial class FormaTextBox : InputBase<string?>, IAsyncDisposable
+public sealed partial class FormaTextBox : FormaInputBase<string?>
 {
-    private readonly string _generatedId = $"text-box-{Guid.NewGuid():N}";
     private AutofillTracker _autofill = default!;
     private bool _isWatchingAutofill;
-
-    /// <summary>The rendered input element, for a composing component that must read it or focus it.</summary>
-    public ElementReference Element { get; private set; }
-
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-
-    /// <summary>The optional HTML element identifier, and what a label points at. Generated when a label is present, since the label needs one.</summary>
-    [Parameter] public string? Id { get; set; }
 
     /// <summary>The placeholder text shown when the input is empty. Ignored once a label names the field.</summary>
     [Parameter] public string? Placeholder { get; set; }
@@ -48,12 +37,8 @@ public sealed partial class FormaTextBox : InputBase<string?>, IAsyncDisposable
     private bool HasLabel
         => !string.IsNullOrWhiteSpace(Label);
 
-    // Left null when bare so a caller's own id attribute survives the splat; FormaField demands one.
-    private string? ElementId
-        => HasLabel ? Id ?? _generatedId : Id;
-
-    private string BoxClass
-        => HasLabel ? "forma-field-input" : "forma-text-box";
+    private string ElementId
+        => Id ?? $"text-box-{RuntimeId:N}";
 
     // The floating label sits over the box, so it takes the placeholder's place rather than sharing it.
     private string? EffectivePlaceholder
@@ -108,42 +93,12 @@ public sealed partial class FormaTextBox : InputBase<string?>, IAsyncDisposable
     private string? SpellCheckValue
         => Options.SpellCheck is { } spellCheck ? (spellCheck ? "true" : "false") : null;
 
-    // Carries a caller's own style through, since the explicit attribute would otherwise replace it.
-    // The width joins it only when bare; labelled, it sizes the field wrapper instead.
-    private string? BoxStyle
-        => HasLabel ? SuppliedStyle : Join(SuppliedStyle, WidthDeclaration);
-
     // The wrapper is what occupies the row, so narrowing the input alone would leave the field full width.
     private string? FieldStyle
         => HasLabel ? WidthDeclaration : null;
 
     private string? WidthDeclaration
         => Width is { } width ? $"inline-size: {width}" : null;
-
-    private string? SuppliedStyle
-    {
-        get
-        {
-            if (AdditionalAttributes?.TryGetValue("style", out var value) is not true)
-            {
-                return null;
-            }
-
-            var style = value?.ToString()?.Trim().TrimEnd(';');
-
-            return string.IsNullOrEmpty(style) ? null : style;
-        }
-    }
-
-    private static string? Join(string? supplied, string? declaration)
-    {
-        if (declaration is null)
-        {
-            return supplied;
-        }
-
-        return supplied is null ? declaration : $"{supplied}; {declaration}";
-    }
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -178,16 +133,30 @@ public sealed partial class FormaTextBox : InputBase<string?>, IAsyncDisposable
     {
         if (HasLabel && !_isWatchingAutofill)
         {
-            _isWatchingAutofill = await _autofill.AttachAsync(Element);
+            _isWatchingAutofill = await _autofill.AttachAsync(RootElement);
         }
     }
 
-    /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-        => await _autofill.DisposeAsync();
-
     private void HandleInput(ChangeEventArgs args)
         => CurrentValueAsString = args.Value?.ToString();
+
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-field-input", HasLabel)
+            .Add("forma-text-box", !HasLabel);
+
+    // The width is the box's own style only when bare; labelled, it sizes the field wrapper instead.
+    /// <inheritdoc />
+    protected override string? BuildRootStyle()
+        => HasLabel ? null : WidthDeclaration;
+
+    /// <inheritdoc />
+    protected override async ValueTask DisposeAsyncCore()
+    {
+        await _autofill.DisposeAsync();
+        await base.DisposeAsyncCore();
+    }
 
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)

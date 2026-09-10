@@ -1,22 +1,24 @@
 namespace Forma.Blazor.Components.Composer;
 
 using Forma.Framework.Composer.Editing;
-using Forma.Framework.Localization;
 using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>The files a document carries beside its content, listed beneath the canvas whichever editor is active.</summary>
-public sealed partial class FormaComposerAttachments : ComponentBase
+public sealed partial class FormaComposerAttachments : FormaComponentBase
 {
     /// <summary>The composer state cascaded from the parent shell.</summary>
     [CascadingParameter] public ComposerContext? Context { get; set; }
 
     [CascadingParameter] public IComposerInteraction? Interaction { get; set; }
 
-    [Inject] private IStringLocale<FormaComposer> L { get; set; } = default!;
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaComposer);
 
-    private readonly string _headingId = $"composer-attachments-{Guid.NewGuid():N}";
+    private string HeadingId
+        => $"composer-attachments-{RuntimeId:N}";
 
     private IReadOnlyList<ResourceInfo> Attachments
         => Context?.Document.Attachments ?? [];

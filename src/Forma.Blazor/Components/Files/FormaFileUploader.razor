@@ -1,7 +1,14 @@
 @namespace Forma.Blazor.Components.Files
+@inherits FormaElementBase
 @using Forma.Blazor.Components.Buttons
 
-<div class="forma-file-uploader" aria-busy="@(IsUploading ? "true" : "false")">
+<div id="@Id"
+     data-rid="@RuntimeId"
+     class="@RootClass"
+     style="@RootStyle"
+     @attributes="AdditionalAttributes"
+     @ref="RootElement"
+     aria-busy="@(IsUploading ? "true" : "false")">
     <ul class="forma-file-uploader-list">
         @foreach (var upload in _batch.Files)
         {

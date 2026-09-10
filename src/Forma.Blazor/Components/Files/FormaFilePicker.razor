@@ -1,6 +1,13 @@
 @namespace Forma.Blazor.Components.Files
+@inherits FormaElementBase
 
-<div class="forma-file-picker" aria-busy="@_isBusy">
+<div id="@Id"
+     data-rid="@RuntimeId"
+     class="@RootClass"
+     style="@RootStyle"
+     @attributes="AdditionalAttributes"
+     @ref="RootElement"
+     aria-busy="@_isBusy">
     <label @ref="_dropZoneElement" class="forma-file-picker-drop-zone @(_isBusy ? "forma-file-picker-busy" : "")">
         <InputFile class="forma-file-picker-input" accept="@Options.Accept" multiple="@Options.AllowMultipleFiles" disabled="@_isBusy" OnChange="HandleChangeAsync" />
         <span class="forma-file-picker-icon" aria-hidden="true"><FormaIcon Icon="Glyph.CloudUpload" Size="IconSize.Display" /></span>

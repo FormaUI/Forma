@@ -1,6 +1,13 @@
 @typeparam TItem
 @namespace Forma.Blazor.Components.Navigation
-<nav class="forma-breadcrumb" aria-label="@EffectiveAriaLabel">
+@inherits FormaElementBase
+<nav id="@Id"
+     data-rid="@RuntimeId"
+     class="@RootClass"
+     style="@RootStyle"
+     @attributes="AdditionalAttributes"
+     @ref="RootElement"
+     aria-label="@EffectiveAriaLabel">
     @if (RootIcon is { } icon)
     {
         <span class="forma-breadcrumb-root-icon" aria-hidden="true"><FormaIcon Icon="icon" Size="IconSize.Small" /></span>

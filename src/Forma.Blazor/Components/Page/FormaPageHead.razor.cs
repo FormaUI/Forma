@@ -3,7 +3,7 @@ namespace Forma.Blazor.Components.Page;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>The document head a Forma host needs: its character set, viewport, title, base address, Forma's own stylesheets, and the framework's asset and head outlets.</summary>
-public sealed partial class FormaPageHead : ComponentBase
+public sealed partial class FormaPageHead : FormaComponentBase
 {
     /// <summary>The document title.</summary>
     [Parameter, EditorRequired] public string Title { get; set; } = default!;

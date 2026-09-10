@@ -7,13 +7,12 @@ using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Content;
 using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Items;
-using Forma.Framework.Localization;
 using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>Tabular details view for explorer media resources with sortable column headers, its actions and name columns staying put while the columns the reader has chosen scroll sideways.</summary>
-public sealed partial class FormaExplorerDetailsView : ComponentBase
+public sealed partial class FormaExplorerDetailsView : FormaComponentBase
 {
     /// <summary>The collection of items to display.</summary>
     [Parameter] public IReadOnlyList<IExplorerItem> Items { get; set; } = [];
@@ -24,7 +23,9 @@ public sealed partial class FormaExplorerDetailsView : ComponentBase
 
     [CascadingParameter] private IExplorerItemInteraction ItemInteraction { get; set; } = default!;
 
-    [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaExplorer);
 
     private const string Placeholder = "—";
 

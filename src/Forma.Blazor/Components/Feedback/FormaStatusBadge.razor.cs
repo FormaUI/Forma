@@ -7,7 +7,7 @@ using Forma.Framework.Icons;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>A pill-shaped label showing the status of a record.</summary>
-public sealed partial class FormaStatusBadge : ComponentBase
+public sealed partial class FormaStatusBadge : FormaElementBase
 {
     /// <summary>Text shown inside the badge.</summary>
     [Parameter, EditorRequired] public string Text { get; set; } = "";
@@ -24,10 +24,6 @@ public sealed partial class FormaStatusBadge : ComponentBase
     /// <summary>Glyph shown before the text, so the status reads without colour.</summary>
     [Parameter] public Icon? Marker { get; set; }
 
-    /// <summary>Additional attributes applied to the badge element.</summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
-
     [Inject] private IStatusBadgeCatalog Catalog { get; set; } = default!;
 
     private StatusBadgeStyle? Registered
@@ -36,41 +32,31 @@ public sealed partial class FormaStatusBadge : ComponentBase
     private Icon? ResolvedMarker
         => Marker ?? Registered?.Marker;
 
-    // Host class and style are merged rather than splatted, so supplying either
-    // never drops the badge's own styling.
-    private string CssClass
-        => AdditionalAttributes.MergeClass("forma-status-badge");
-
-    private string? InlineStyle
-    {
-        get
-        {
-            var (background, foreground) = ResolveColours();
-            var declarations = new List<string>(3);
-
-            if (background is not null)
-            {
-                declarations.Add($"--forma-status-badge-bg-color: {background};");
-            }
-
-            if (foreground is not null)
-            {
-                declarations.Add($"--forma-status-badge-fg-color: {foreground};");
-            }
-
-            var hostStyle = AdditionalAttributes.GetHostValue("style");
-
-            if (!string.IsNullOrWhiteSpace(hostStyle))
-            {
-                declarations.Add(hostStyle);
-            }
-
-            return declarations.Count == 0 ? null : string.Join(' ', declarations);
-        }
-    }
-
     /// <inheritdoc />
     protected override void OnParametersSet() => ArgumentException.ThrowIfNullOrWhiteSpace(Text);
+
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder.Add("forma-status-badge");
+
+    /// <inheritdoc />
+    protected override string? BuildRootStyle()
+    {
+        var (background, foreground) = ResolveColours();
+        var declarations = new List<string>(2);
+
+        if (background is not null)
+        {
+            declarations.Add($"--forma-status-badge-bg-color: {background};");
+        }
+
+        if (foreground is not null)
+        {
+            declarations.Add($"--forma-status-badge-fg-color: {foreground};");
+        }
+
+        return declarations.Count == 0 ? null : string.Join(' ', declarations);
+    }
 
     private (string? Background, string? Foreground) ResolveColours()
     {

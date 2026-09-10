@@ -7,6 +7,5 @@ public sealed partial class FormaImagePickerTests
     public FormaImagePickerTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        Services.AddJsonLocalization();
     }
 }

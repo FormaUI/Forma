@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 using Forma.Blazor.Components.Navigation;
 using Forma.Framework.Common.Interop.Behaviours;
-using Forma.Framework.Localization;
+using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Components.QuickGrid;
 using Microsoft.JSInterop;
 
 /// <summary>A paged, sortable table over a queryable set of items, built on QuickGrid.</summary>
-public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisposable
+public sealed partial class FormaDataGrid<TGridItem> : FormaElementBase
     where TGridItem : notnull
 {
     private readonly PaginationState _pagination = new();
@@ -105,14 +105,6 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
     /// <summary>Assigns a CSS class to a row based on its item.</summary>
     [Parameter] public Func<TGridItem, string?>? RowClass { get; set; }
 
-    /// <summary>Additional attributes applied to the grid's wrapping element.</summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
-
-    [Inject] private IStringLocale<FormaDataGrid> L { get; set; } = default!;
-
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-
     // Select-all spans every item in Items, not just the visible page: QuickGrid owns the
     // sort and the page slice, so the rows on screen are not a set this component can name.
     // Only the checkbox column reads this while unpaginated, so the count query stays rare.
@@ -177,11 +169,6 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
         => MasterCaptionInteractive
             ? _selectedSet.Count > 0 ? CheckedSelectionOptions.Caption!.SelectAllText : CheckedSelectionOptions.Caption!.DeselectAllText
             : null;
-
-    // Host class is merged rather than splatted, so supplying one never drops
-    // the component's own class.
-    private string CssClass
-        => AdditionalAttributes.MergeClass("forma-data-grid");
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -366,15 +353,19 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
         }
     }
 
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder.Add("forma-data-grid");
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsyncCore()
     {
         _pagination.TotalItemCountChanged -= HandleTotalItemCountChanged;
 
         await _selectionInteraction.DisposeAsync();
         await _heightReservation.DisposeAsync();
         _selfReference?.Dispose();
+        await base.DisposeAsyncCore();
     }
 
     private bool IsSelected(TGridItem item)
@@ -589,8 +580,3 @@ public sealed partial class FormaDataGrid<TGridItem> : ComponentBase, IAsyncDisp
                 || _retiredItemsByToken.TryGetValue(token, out item);
     }
 }
-
-// Non-generic marker sharing FormaDataGrid's translation files across every closed instantiation —
-// IStringLocale<T> keys resources off T's FullName, which for an open generic type
-// includes its type arguments and would never match the embedded resource name.
-internal abstract class FormaDataGrid;

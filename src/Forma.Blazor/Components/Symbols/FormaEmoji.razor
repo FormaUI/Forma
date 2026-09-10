@@ -1,16 +1,42 @@
 @namespace Forma.Blazor.Components.Symbols
+@inherits FormaElementBase
 
 @if (_artwork is EmojiSprite sprite)
 {
-    <svg class="@CssClass" viewBox="0 0 36 36" focusable="false" role="@Role" aria-hidden="@AriaHidden" aria-label="@Label">
+    <svg id="@Id"
+         data-rid="@RuntimeId"
+         class="@RootClass"
+         style="@RootStyle"
+         @attributes="AdditionalAttributes"
+         @ref="RootElement"
+         viewBox="0 0 36 36"
+         focusable="false"
+         role="@Role"
+         aria-hidden="@AriaHidden"
+         aria-label="@Label">
         <use href="@GetSpriteHref(sprite)" />
     </svg>
 }
 else if (_artwork is EmojiImage image)
 {
-    <img class="@CssClass" src="@image.Url" alt="@(Label ?? string.Empty)" />
+    <img id="@Id"
+         data-rid="@RuntimeId"
+         class="@RootClass"
+         style="@RootStyle"
+         @attributes="AdditionalAttributes"
+         @ref="RootElement"
+         src="@image.Url"
+         alt="@(Label ?? string.Empty)" />
 }
 else
 {
-    <span class="@CssClass" role="@Role" aria-hidden="@AriaHidden" aria-label="@Label">@Emoji.Sequence</span>
+    <span id="@Id"
+          data-rid="@RuntimeId"
+          class="@RootClass"
+          style="@RootStyle"
+          @attributes="AdditionalAttributes"
+          @ref="RootElement"
+          role="@Role"
+          aria-hidden="@AriaHidden"
+          aria-label="@Label">@Emoji.Sequence</span>
 }

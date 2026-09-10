@@ -1,6 +1,12 @@
 @namespace Forma.Blazor.Components.Files
+@inherits FormaElementBase
 
-<div class="forma-image-picker" @ref="_containerElement">
+<div id="@Id"
+     data-rid="@RuntimeId"
+     class="@RootClass"
+     style="@RootStyle"
+     @attributes="AdditionalAttributes"
+     @ref="RootElement">
     <FormaFilePicker Options="@(Options with { Accept = ImageAccept })"
                       Prompt="@EffectivePrompt"
                       OnFilesRejected="HandleFilesRejectedAsync"

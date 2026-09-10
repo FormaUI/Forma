@@ -1,21 +1,23 @@
 @typeparam TValue
 @namespace Forma.Blazor.Components.Inputs
-@inherits InputBase<List<TValue>>
+@inherits FormaInputBase<List<TValue>>
 
-<FormaField Label="@Label" TargetId="@_triggerId" Required="@Required" LabelMode="FieldLabelMode.Pinned">
+<FormaField Label="@Label" TargetId="@ElementId" Required="@Required" LabelMode="FieldLabelMode.Pinned">
     <ChildContent>
         <div class="forma-multi-select">
             <div class="forma-multi-select-trigger-wrapper" @ref="_anchorElement">
-                <button @attributes="AdditionalAttributes"
+                <button id="@ElementId"
+                        data-rid="@RuntimeId"
+                        class="@RootClass"
+                        style="@RootStyle"
+                        @attributes="AdditionalAttributes"
+                        @ref="RootElement"
                         type="button"
-                        id="@_triggerId"
-                        class="forma-field-input forma-multi-select-trigger @CssClass"
                         disabled="@Disabled"
                         aria-haspopup="dialog"
                         aria-expanded="@(IsOpen ? "true" : "false")"
-                        aria-controls="@(IsOpen ? _popoverId : null)"
+                        aria-controls="@(IsOpen ? PopoverId : null)"
                         aria-required="@(Required ? "true" : null)"
-                        @ref="_triggerElement"
                         @onclick="ToggleAsync">
                     <span class="forma-multi-select-trigger-text@(SelectedValues.Count == 0 ? " placeholder" : "")">@TriggerText</span>
                     <span class="forma-multi-select-arrow" aria-hidden="true">&#9662;</span>
@@ -26,7 +28,7 @@
                         OnOpenChanged="_ => { }"
                         OnOpened="FocusSearchAsync">
                 <div class="forma-multi-select-popover"
-                     id="@_popoverId"
+                     id="@PopoverId"
                      role="dialog"
                      aria-label="@Label">
                     <FormaSearchBox @ref="SearchBox"

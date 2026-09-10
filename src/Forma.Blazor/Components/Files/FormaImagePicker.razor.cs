@@ -1,15 +1,14 @@
 namespace Forma.Blazor.Components.Files;
 
 using Forma.Framework.Common.Interop.Behaviours;
+using Forma.Framework.Css;
 using Forma.Framework.Files;
-using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.JSInterop;
 
 /// <summary>A file picker restricted to images, showing a thumbnail preview of each one accepted.</summary>
-public sealed partial class FormaImagePicker : ComponentBase, IAsyncDisposable
+public sealed partial class FormaImagePicker : FormaElementBase
 {
     private const string ImageAccept = "image/*";
 
@@ -24,12 +23,6 @@ public sealed partial class FormaImagePicker : ComponentBase, IAsyncDisposable
 
     /// <summary>Replaces the default drop zone text, which also serves as the input's accessible name.</summary>
     [Parameter] public string? Prompt { get; set; }
-
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-
-    [Inject] private IStringLocale<FormaImagePicker> L { get; set; } = default!;
-
-    private ElementReference _containerElement;
 
     private FilePreview _preview = default!;
 
@@ -53,7 +46,7 @@ public sealed partial class FormaImagePicker : ComponentBase, IAsyncDisposable
     {
         if (firstRender)
         {
-            await _preview.AttachAsync(_containerElement);
+            await _preview.AttachAsync(RootElement);
         }
 
         if (_isPreviewPending)
@@ -80,6 +73,13 @@ public sealed partial class FormaImagePicker : ComponentBase, IAsyncDisposable
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-        => await _preview.DisposeAsync();
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder.Add("forma-image-picker");
+
+    /// <inheritdoc />
+    protected override async ValueTask DisposeAsyncCore()
+    {
+        await _preview.DisposeAsync();
+        await base.DisposeAsyncCore();
+    }
 }

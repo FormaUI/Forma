@@ -1,6 +1,11 @@
-<div class="forma-tab-panel @(Parent.IsActive(this) ? "active" : "")"
+@inherits FormaElementBase
+<div id="@FormaTabs.GetPanelElementId(this)"
+     data-rid="@RuntimeId"
+     class="@RootClass"
+     style="@RootStyle"
+     @attributes="AdditionalAttributes"
+     @ref="RootElement"
      role="tabpanel"
-     id="@FormaTabs.GetPanelElementId(this)"
      aria-labelledby="@FormaTabs.GetTabElementId(this)">
     @ChildContent
 </div>

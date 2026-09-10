@@ -5,6 +5,5 @@ public sealed partial class FormaCommandBarTests
     public FormaCommandBarTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        Services.AddJsonLocalization();
     }
 }

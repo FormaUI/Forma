@@ -2,15 +2,14 @@ namespace Forma.Blazor.Components.Explorer;
 
 using Forma.Framework.Common.Interop.Behaviours;
 using Forma.Framework.Explorer.Content.Queries;
-using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 /// <summary>The explorer's search: the box itself, or a glyph standing in for it until pressed where the row has no room for the box.</summary>
-public sealed partial class FormaExplorerSearch : ComponentBase
+public sealed partial class FormaExplorerSearch : FormaComponentBase
 {
-    private FormaExplorerSearchBox? _box;
+    private FormaExplorerSearchBox? SearchBox { get; set; }
     private bool _isSearching;
     private bool _isFocusPending;
 
@@ -22,7 +21,9 @@ public sealed partial class FormaExplorerSearch : ComponentBase
 
     [CascadingParameter] private IExplorerSearchView Search { get; set; } = default!;
 
-    [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaExplorer);
 
     private bool IsSearching
         => _isSearching || !string.IsNullOrEmpty(Search.SearchQuery);
@@ -45,10 +46,10 @@ public sealed partial class FormaExplorerSearch : ComponentBase
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_isFocusPending && _box is not null)
+        if (_isFocusPending && SearchBox is not null)
         {
             _isFocusPending = false;
-            await _box.FocusAsync();
+            await SearchBox.FocusAsync();
         }
     }
 

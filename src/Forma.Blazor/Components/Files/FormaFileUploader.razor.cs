@@ -3,9 +3,9 @@ namespace Forma.Blazor.Components.Files;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
+using Forma.Framework.Css;
 using Forma.Framework.Files;
 using Forma.Framework.Icons;
-using Forma.Framework.Localization;
 using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>Moves picked files into an <see cref="IFileStore"/>, reporting progress for each.</summary>
 /// <param name="registeredStore">The host's registered store, or null when it registered none.</param>
-public sealed partial class FormaFileUploader(IFileStore? registeredStore = null) : ComponentBase, IDisposable
+public sealed partial class FormaFileUploader(IFileStore? registeredStore = null) : FormaElementBase
 {
     // A percentage alone would move a byte counter in steps of one percent, which is ten megabytes in a gigabyte.
     private static readonly TimeSpan ProgressInterval = TimeSpan.FromMilliseconds(200);
@@ -35,8 +35,6 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
     /// <summary>Where the bytes are written; defaults to the store the host registered.</summary>
     [Parameter] public IFileStore? Store { get; set; }
 
-    [Inject] private IStringLocale<FormaFileUploader> L { get; set; } = default!;
-
     private readonly IFileStore? _registeredStore = registeredStore;
 
     private IFileStore _activeStore = default!;
@@ -44,8 +42,6 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
     private CancellationTokenSource? _cancellation;
 
     private IReadOnlyList<IBrowserFile>? _currentFiles;
-
-    private bool _disposed;
 
     private long _lastProgressTimestamp;
 
@@ -250,7 +246,7 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
 
         try
         {
-            while (!_disposed && IsUploading && await timer.WaitForNextTickAsync())
+            while (!IsDisposed && IsUploading && await timer.WaitForNextTickAsync())
             {
                 await InvokeAsync(Rerender);
             }
@@ -359,7 +355,7 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
     // The set keeps unwinding after disposal, by which point the renderer is gone.
     private void Rerender()
     {
-        if (!_disposed)
+        if (!IsDisposed)
         {
             StateHasChanged();
         }
@@ -426,12 +422,20 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
     }
 
     /// <inheritdoc />
-    public void Dispose()
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder.Add("forma-file-uploader");
+
+    /// <inheritdoc />
+    protected override async ValueTask DisposeAsyncCore()
     {
-        _disposed = true;
-        _cancellation?.Cancel();
+        if (_cancellation is not null)
+        {
+            await _cancellation.CancelAsync();
+        }
+
         _cancellation?.Dispose();
         _cancellation = null;
+        await base.DisposeAsyncCore();
     }
 
     private enum StoreOutcome

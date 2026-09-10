@@ -2,13 +2,14 @@ namespace Forma.Blazor.Components.Symbols;
 
 using System.Globalization;
 
+using Forma.Framework.Css;
 using Forma.Framework.Icons;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>Renders an icon as inline SVG, or as a single character set by the font, so no icon font has to be loaded.</summary>
 /// <param name="iconProvider">The registered provider: the host's own, or the library's glyphs when it registered none.</param>
-public sealed partial class FormaIcon(IIconProvider iconProvider) : ComponentBase
+public sealed partial class FormaIcon(IIconProvider iconProvider) : FormaElementBase
 {
     /// <summary>One vector path as the markup writes it: its data, its stroke width or null for a filled path, and its opacity.</summary>
     private readonly record struct VectorPathView(string Data, string? StrokeWidth, string? Opacity);
@@ -23,30 +24,20 @@ public sealed partial class FormaIcon(IIconProvider iconProvider) : ComponentBas
     /// <summary>The size to draw at, which selects both the icon's box and the artwork drawn for that box.</summary>
     [Parameter] public IconSize Size { get; set; }
 
-    /// <summary>Extra classes applied to the rendered element.</summary>
-    [Parameter] public string? Class { get; set; }
-
     /// <summary>The provider supplying this icon's artwork, taken from the surrounding subtree or the registered provider when unset.</summary>
     [Parameter] public IIconProvider? Provider { get; set; }
 
     [CascadingParameter] private IIconProvider? CascadingProvider { get; set; }
 
-    private string CssClass
-    {
-        get
+    private string? SizeClass
+        => Size switch
         {
-            var sizeClass = Size switch
-            {
-                IconSize.Small => " forma-icon-sm",
-                IconSize.Medium => " forma-icon-md",
-                IconSize.Large => " forma-icon-lg",
-                IconSize.Display => " forma-icon-display",
-                _ => string.Empty,
-            };
-
-            return string.IsNullOrWhiteSpace(Class) ? $"forma-icon{sizeClass}" : $"forma-icon{sizeClass} {Class}";
-        }
-    }
+            IconSize.Small => "forma-icon-sm",
+            IconSize.Medium => "forma-icon-md",
+            IconSize.Large => "forma-icon-lg",
+            IconSize.Display => "forma-icon-display",
+            _ => null,
+        };
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -73,4 +64,11 @@ public sealed partial class FormaIcon(IIconProvider iconProvider) : ComponentBas
 
     private static string? GetFade(IconPath path)
         => path.Opacity < 1 ? path.Opacity.ToString("0.###", CultureInfo.InvariantCulture) : null;
+
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-icon")
+            .Add(SizeClass)
+            .Add("forma-icon-character", _characterText is not null);
 }

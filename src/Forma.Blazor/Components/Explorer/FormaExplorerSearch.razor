@@ -1,9 +1,10 @@
 @namespace Forma.Blazor.Components.Explorer
+@inherits FormaComponentBase
 @using Forma.Blazor.Components.Buttons
 
 @if (!Collapsible || IsSearching)
 {
-    <FormaExplorerSearchBox @ref="_box" onfocus="@Focus" onblur="@Blur" />
+    <FormaExplorerSearchBox @ref="SearchBox" onfocus="@Focus" onblur="@Blur" />
 }
 else
 {

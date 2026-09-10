@@ -4,10 +4,10 @@ using System.Globalization;
 
 using Forma.Blazor.Components.Layout;
 using Forma.Framework.Common.Interop.Components;
+using Forma.Framework.Css;
 using Forma.Framework.Icons;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
-using Forma.Framework.Localization;
 using Forma.Framework.Toolbar;
 using Forma.Framework.Windows;
 
@@ -15,14 +15,13 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>A chrome floated into the top layer, whose frame moves, resizes and maximizes the window. It is a window of its workspace: activated, stacked, minimized and closed with the windows around it and the windows it opened, and blocking them while modal.</summary>
-public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncDisposable
+public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
 {
     private const string CloseCommand = "window.close";
     private const string MaximizeCommand = "window.maximize";
     private const string MinimizeCommand = "window.minimize";
     private const string LockCommand = "window.lock";
 
-    private ElementReference _element;
     private ElementReference _scrim;
     private Window _window = default!;
     private DotNetObjectReference<FormaWindow> _selfReference = default!;
@@ -35,16 +34,11 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
     private bool _isBlocked;
     private bool _isApplying;
 
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-    [Inject] private IStringLocale<FormaWindow> L { get; set; } = default!;
     [Inject] private InputRouter InputRouter { get; set; } = default!;
     [Inject] private WindowManager InjectedManager { get; set; } = default!;
 
     [CascadingParameter] private WindowManager? CascadedManager { get; set; }
     [CascadingParameter] private WindowOrigin? CascadedOrigin { get; set; }
-
-    /// <inheritdoc />
-    public Guid Id { get; } = Guid.NewGuid();
 
     /// <summary>The title shown in the title bar and read as the window's name.</summary>
     [Parameter, EditorRequired] public string Title { get; set; } = default!;
@@ -121,10 +115,6 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
     /// <summary>The band at the foot, generally actions or text.</summary>
     [Parameter] public RenderFragment? Footer { get; set; }
 
-    /// <summary>Additional attributes applied to the window element.</summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
-
     /// <summary>The workspace the window belongs to: the one cascaded to it, else the circuit's.</summary>
     public WindowManager Manager
         => CascadedManager ?? InjectedManager;
@@ -154,13 +144,6 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
     private bool ShowsScrim
         => Modal && Parent is null;
 
-    private string CssClass
-        => AdditionalAttributes.MergeClass(
-            "forma-window",
-            Active ? "is-active" : null,
-            Maximized ? "is-maximized" : null,
-            Placement is not null ? "has-placement" : null);
-
     // The window is a scope while attached, active while it is the workspace's current window and focus is inside it.
     // Escape closes the focused window and nothing else; a modal one bars everything beneath it; a press away reaches
     // the window only when it is to send the window back.
@@ -176,27 +159,6 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
     // What the profile is built from, so a profile is sent again only when one of them changed.
     private (bool Modal, WindowPressAway PressAway) ScopeInputs
         => (Modal, Options.PressAway);
-
-    // Viewport coordinates from the pointer are physical, so the placement is written as left and top rather than
-    // as logical insets.
-    private string? Style
-    {
-        get
-        {
-            var hostStyle = AdditionalAttributes.GetHostValue("style");
-
-            if (Maximized || Placement is not { } placement)
-            {
-                return hostStyle;
-            }
-
-            var placementStyle = string.Create(
-                CultureInfo.InvariantCulture,
-                $"left: {placement.Left}px; top: {placement.Top}px; width: {placement.Width}px; height: {placement.Height}px;");
-
-            return string.IsNullOrWhiteSpace(hostStyle) ? placementStyle : $"{placementStyle} {hostStyle}";
-        }
-    }
 
     // The host's commands, then the window's own: lock, minimize, maximize, close.
     private IReadOnlyList<FormaToolbarItem> TitleBarItems
@@ -324,7 +286,7 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
             await _window.DetachAsync();
             await ReleaseScopeAsync();
 
-            var attached = await _window.AttachAsync(_element, IsPresented, Modal, ShowsScrim ? _scrim : null);
+            var attached = await _window.AttachAsync(RootElement, IsPresented, Modal, ShowsScrim ? _scrim : null);
 
             if (!attached)
             {
@@ -529,7 +491,7 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
         => _inputScope is { } inputScope ? inputScope.ReleaseAsync().AsTask() : Task.CompletedTask;
 
     private WindowDeclaration Declare()
-        => new(Title, Icon, Parent?.Id, Origin, CascadedOrigin, Minimized, Disabled, Modal);
+        => new(Title, Icon, Parent?.RuntimeId, Origin, CascadedOrigin, Minimized, Disabled, Modal);
 
     private WindowOrigin ResolveOrigin()
         => Origin ?? Parent?.Origin ?? CascadedOrigin ?? Manager.Origin;
@@ -568,7 +530,7 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
     private async Task RegisterScopeAsync()
     {
         var inputs = ScopeInputs;
-        var inputScope = await InputRouter.RegisterAsync(_element, Profile, _selfReference);
+        var inputScope = await InputRouter.RegisterAsync(RootElement, Profile, _selfReference);
 
         if (inputScope is null)
         {
@@ -597,7 +559,25 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-window")
+            .Add("is-active", Active)
+            .Add("is-maximized", Maximized)
+            .Add("has-placement", Placement is not null);
+
+    // Viewport coordinates from the pointer are physical, so the placement is written as left and top rather than
+    // as logical insets.
+    /// <inheritdoc />
+    protected override string? BuildRootStyle()
+        => Maximized || Placement is not { } placement
+            ? null
+            : string.Create(
+                CultureInfo.InvariantCulture,
+                $"left: {placement.Left}px; top: {placement.Top}px; width: {placement.Width}px; height: {placement.Height}px;");
+
+    /// <inheritdoc />
+    protected override async ValueTask DisposeAsyncCore()
     {
         if (_declaration is not null)
         {
@@ -607,5 +587,6 @@ public sealed partial class FormaWindow : ComponentBase, IManagedWindow, IAsyncD
         await ReleaseScopeAsync();
         await _window.DisposeAsync();
         _selfReference.Dispose();
+        await base.DisposeAsyncCore();
     }
 }

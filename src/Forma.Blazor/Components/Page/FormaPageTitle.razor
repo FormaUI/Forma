@@ -1,6 +1,12 @@
+@inherits FormaElementBase
 @using Forma.Blazor.Components.Navigation
 
-<div class="forma-page-title">
+<div id="@Id"
+     data-rid="@RuntimeId"
+     class="@RootClass"
+     style="@RootStyle"
+     @attributes="AdditionalAttributes"
+     @ref="RootElement">
     <div>
         <h1 class="forma-page-title-heading">@Title</h1>
 

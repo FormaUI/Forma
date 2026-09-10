@@ -6,13 +6,12 @@ using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Items;
 using Forma.Framework.Explorer.Navigation;
 using Forma.Framework.Explorer.Selection;
-using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 /// <summary>Folders tree navigation sidebar with drag-and-drop target support for a media explorer.</summary>
-public sealed partial class FormaExplorerSidebar : ComponentBase, IExplorerSidebarView, IExplorerSidebarInteraction
+public sealed partial class FormaExplorerSidebar : FormaComponentBase, IExplorerSidebarView, IExplorerSidebarInteraction
 {
     /// <summary>The currently active folder, or null for all media.</summary>
     [Parameter] public IExplorerFolderItem? CurrentFolder { get; set; }
@@ -44,7 +43,9 @@ public sealed partial class FormaExplorerSidebar : ComponentBase, IExplorerSideb
     /// <summary>Total count of all resources across the explorer.</summary>
     [Parameter] public int TotalCount { get; set; }
 
-    [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaExplorer);
 
     private const double MinTreeHeight = 6;
 
@@ -52,7 +53,8 @@ public sealed partial class FormaExplorerSidebar : ComponentBase, IExplorerSideb
 
     private readonly HashSet<string> _collapsedFolderKeys = [];
 
-    private readonly string _titleId = $"forma-explorer-folders-{Guid.NewGuid():N}";
+    private string TitleId
+        => $"forma-explorer-folders-{RuntimeId:N}";
 
     private IEnumerable<string> ExpandableFolderKeys
         => FolderTree.GetExpandableFolders().Select(item => item.Key);

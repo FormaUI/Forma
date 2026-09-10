@@ -1,10 +1,12 @@
 namespace Forma.Blazor.Components.Buttons;
 
+using Forma.Framework.Css;
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 /// <summary>A button with a visual variant, a size, and a busy state; a button with a click handler is disabled until its renderer is interactive, so a press can never be lost to a page that is not yet listening.</summary>
-public sealed partial class FormaButton : ComponentBase
+public sealed partial class FormaButton : FormaElementBase
 {
     /// <summary>Visual weight the button is drawn with.</summary>
     [Parameter] public ButtonVariant Variant { get; set; } = ButtonVariant.Secondary;
@@ -32,13 +34,6 @@ public sealed partial class FormaButton : ComponentBase
 
     /// <summary>Content rendered inside the button.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
-
-    /// <summary>Additional attributes applied to the button element.</summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
-
-    /// <summary>The rendered button element, for a composing component that must anchor to it or focus it.</summary>
-    public ElementReference Element { get; private set; }
 
     // A click handler needs the interactive renderer; until it is there the button is disabled rather than silently inert.
     private bool IsDisabled => Disabled || (OnClick.HasDelegate && !RendererInfo.IsInteractive);
@@ -69,10 +64,11 @@ public sealed partial class FormaButton : ComponentBase
         _ => "forma-button-secondary"
     };
 
-    private string CssClass
-        => AdditionalAttributes.MergeClass(
-            "forma-button",
-            VariantClass,
-            Size is ButtonSize.Mini ? "forma-button-mini" : null,
-            IconOnly ? "forma-button-icon" : null);
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-button")
+            .Add(VariantClass)
+            .Add("forma-button-mini", Size is ButtonSize.Mini)
+            .Add("forma-button-icon", IconOnly);
 }

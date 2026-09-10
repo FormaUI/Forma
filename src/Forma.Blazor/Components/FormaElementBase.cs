@@ -21,7 +21,7 @@ public abstract class FormaElementBase : FormaComponentBase
     public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
     /// <summary>The root element, once rendered.</summary>
-    public ElementReference Element { get; protected set; }
+    public ElementReference RootElement { get; protected set; }
 
     /// <summary>The class written on the root element: the component's own, then the host's; null when there is none.</summary>
     protected string? RootClass

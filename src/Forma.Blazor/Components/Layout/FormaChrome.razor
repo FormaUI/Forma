@@ -1,9 +1,14 @@
 @namespace Forma.Blazor.Components.Layout
+@inherits FormaElementBase
 @using Forma.Blazor.Components.Bars
 @using Forma.Blazor.Components.Symbols
 @using Forma.Framework.Icons
 
-<FormaFrame Label="@Title"
+<FormaFrame Id="@Id"
+            Class="@RootClass"
+            Style="@RootStyle"
+            @attributes="AdditionalAttributes"
+            Label="@Title"
             Placement="Placement"
             PlacementChanged="PlacementChanged"
             Maximized="Maximized"
@@ -11,17 +16,15 @@
             Options="FrameOptions"
             Hidden="Hidden"
             Disabled="Disabled"
-            role="region"
-            aria-labelledby="@LabelledBy"
-            @attributes="AdditionalAttributes"
-            class="@CssClass">
+            role="@Role"
+            aria-labelledby="@LabelledBy">
     <DragRegion>
         <div class="forma-chrome-titlebar">
             @if (Icon is { } icon)
             {
                 <span class="forma-chrome-icon" aria-hidden="true"><FormaIcon Icon="icon" Size="IconSize.Small" /></span>
             }
-            <span id="@_titleId" class="forma-chrome-title">@Title</span>
+            <span id="@TitleId" class="forma-chrome-title">@Title</span>
             @if (Commands.Count > 0)
             {
                 <FormaToolbar Class="forma-chrome-commands"

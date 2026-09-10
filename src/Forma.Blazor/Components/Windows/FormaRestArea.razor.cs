@@ -1,16 +1,15 @@
 namespace Forma.Blazor.Components.Windows;
 
-using Forma.Framework.Localization;
+using Forma.Framework.Css;
 using Forma.Framework.Windows;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>An area holding one persistent handle per window of the workspace, whatever the window's state; choosing a handle restores the window, brings it forward and makes it current.</summary>
-public sealed partial class FormaRestArea : ComponentBase, IDisposable
+public sealed partial class FormaRestArea : FormaElementBase
 {
     private WindowManager? _manager;
 
-    [Inject] private IStringLocale<FormaRestArea> L { get; set; } = default!;
     [Inject] private WindowManager InjectedManager { get; set; } = default!;
 
     [CascadingParameter] private WindowManager? CascadedManager { get; set; }
@@ -21,24 +20,9 @@ public sealed partial class FormaRestArea : ComponentBase, IDisposable
     /// <summary>How the handles are arranged and clustered.</summary>
     [Parameter] public RestAreaOptions Options { get; set; } = RestAreaOptions.Default;
 
-    /// <summary>Additional attributes applied to the area element.</summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
-
     /// <summary>The workspace whose windows the area presents: the one cascaded to it, else the circuit's.</summary>
     public WindowManager Manager
         => CascadedManager ?? InjectedManager;
-
-    private string CssClass
-        => AdditionalAttributes.MergeClass(
-            "forma-rest-area",
-            Options.Layout switch
-            {
-                RestAreaLayout.Column => "forma-rest-area-column",
-                RestAreaLayout.Grid => "forma-rest-area-grid",
-                _ => "forma-rest-area-row",
-            },
-            Options.Grouping is RestAreaGrouping.None ? null : "is-grouped");
 
     private IEnumerable<RestAreaGroup> Groups
         => Options.Grouping switch
@@ -81,15 +65,8 @@ public sealed partial class FormaRestArea : ComponentBase, IDisposable
         _manager.Changed += HandleChanged;
     }
 
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        _manager?.Changed -= HandleChanged;
-        _manager = null;
-    }
-
     private bool IsCurrent(IWindow window)
-        => Manager.Current?.Id == window.Id;
+        => Manager.Current?.RuntimeId == window.RuntimeId;
 
     private bool IsMinimized(IWindow window)
         => window.IsMinimized || Manager.IsHidden(window);
@@ -105,4 +82,24 @@ public sealed partial class FormaRestArea : ComponentBase, IDisposable
 
     private void HandleChanged(object? sender, EventArgs args)
         => _ = InvokeAsync(StateHasChanged);
+
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-rest-area")
+            .Add(Options.Layout switch
+            {
+                RestAreaLayout.Column => "forma-rest-area-column",
+                RestAreaLayout.Grid => "forma-rest-area-grid",
+                _ => "forma-rest-area-row",
+            })
+            .Add("is-grouped", Options.Grouping is not RestAreaGrouping.None);
+
+    /// <inheritdoc />
+    protected override ValueTask DisposeAsyncCore()
+    {
+        _manager?.Changed -= HandleChanged;
+        _manager = null;
+        return base.DisposeAsyncCore();
+    }
 }

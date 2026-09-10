@@ -4,16 +4,14 @@ using System.Diagnostics.CodeAnalysis;
 
 using Forma.Blazor.Components.Feedback;
 using Forma.Framework.Common.Interop.Behaviours;
-using Forma.Framework.Localization;
+using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.JSInterop;
 
 /// <summary>A themed single-select: a trigger button opening an anchored, keyboard-navigable option list.</summary>
 /// <remarks>Bind <typeparamref name="TValue"/> to a nullable type (<c>int?</c>, <c>string</c>, <c>MyEnum?</c>) to allow no selection.</remarks>
-public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDisposable
+public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
 {
     /// <summary>The options offered in the list.</summary>
     [Parameter, EditorRequired] public IReadOnlyList<SelectOption<TValue>> Options { get; set; } = default!;
@@ -30,19 +28,17 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
     /// <summary>Disables user interaction.</summary>
     [Parameter] public bool Disabled { get; set; }
 
-    [Inject] private IStringLocale<FormaSelect> L { get; set; } = default!;
-
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-
-    private readonly string _triggerId = $"sel-trigger-{Guid.NewGuid():N}";
-    private readonly string _popoverId = $"sel-popover-{Guid.NewGuid():N}";
-
     private int _focusedIndex = -1;
     private ElementReference _anchorElement;
-    private ElementReference _triggerElement;
     private ElementReference[] _optionElements = [];
     private FormaPopover Popover { get; set; } = default!;
     private NavigationGuard _keyGuard = default!;
+
+    private string ElementId
+        => Id ?? $"sel-{RuntimeId:N}";
+
+    private string PopoverId
+        => $"{ElementId}-popover";
 
     private bool IsOpen
         => Popover is { IsOpen: true };
@@ -110,7 +106,7 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
         }
 
         _focusedIndex = selectedIndex >= 0 ? selectedIndex : 0;
-        await Popover.OpenAsync(_triggerElement);
+        await Popover.OpenAsync(RootElement);
     }
 
     private async Task HandleTriggerKeyDownAsync(KeyboardEventArgs args)
@@ -153,7 +149,7 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
 
     private async Task HandleOpenedAsync()
     {
-        await _keyGuard.AttachAsync(Popover.Element);
+        await _keyGuard.AttachAsync(Popover.RootElement);
         await FocusIndexAsync(_focusedIndex);
     }
 
@@ -179,8 +175,17 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-        => await _keyGuard.DisposeAsync();
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-field-input")
+            .Add("forma-select-trigger");
+
+    /// <inheritdoc />
+    protected override async ValueTask DisposeAsyncCore()
+    {
+        await _keyGuard.DisposeAsync();
+        await base.DisposeAsyncCore();
+    }
 
     /// <inheritdoc />
     protected override bool TryParseValueFromString(
@@ -196,8 +201,3 @@ public sealed partial class FormaSelect<TValue> : InputBase<TValue>, IAsyncDispo
         return true;
     }
 }
-
-// Non-generic marker sharing FormaSelect's translation files across every closed instantiation —
-// IStringLocale<T> keys resources off T's FullName, which for an open generic type
-// includes its type arguments and would never match the embedded resource name.
-internal abstract class FormaSelect;

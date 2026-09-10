@@ -1,13 +1,13 @@
 namespace Forma.Blazor.Components.Inputs;
 
-using Forma.Framework.Localization;
+using Forma.Framework.Css;
 using Forma.Framework.Timing;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 /// <summary>A search field with a leading glyph, a clear button once populated, and an optional debounce before it reports a search.</summary>
-public sealed partial class FormaSearchBox : ComponentBase, IAsyncDisposable
+public sealed partial class FormaSearchBox : FormaElementBase
 {
     /// <summary>The current text.</summary>
     [Parameter] public string Value { get; set; } = string.Empty;
@@ -21,25 +21,7 @@ public sealed partial class FormaSearchBox : ComponentBase, IAsyncDisposable
     /// <summary>How the field presents itself and when it reports a search.</summary>
     [Parameter] public SearchBoxOptions Options { get; set; } = SearchBoxOptions.Default;
 
-    /// <summary>The HTML element identifier.</summary>
-    [Parameter] public string? Id { get; set; }
-
-    /// <summary>Extra classes applied alongside forma-search-box.</summary>
-    [Parameter] public string? Class { get; set; }
-
-    /// <summary>Additional attributes applied to the input element.</summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
-
-    /// <summary>The rendered input element, for a composing component that must focus it.</summary>
-    public ElementReference Element { get; private set; }
-
-    [Inject] private IStringLocale<FormaSearchBox> L { get; set; } = default!;
-
     [Inject] private IDebounceable Debouncer { get; set; } = default!;
-
-    private string InputClass
-        => string.IsNullOrWhiteSpace(Class) ? "forma-search-box" : $"forma-search-box {Class}";
 
     private string EffectivePlaceholder
         => Options.Placeholder ?? L["Search..."].Value;
@@ -80,10 +62,14 @@ public sealed partial class FormaSearchBox : ComponentBase, IAsyncDisposable
     }
 
     /// <inheritdoc />
-    public ValueTask DisposeAsync()
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder.Add("forma-search-box");
+
+    /// <inheritdoc />
+    protected override ValueTask DisposeAsyncCore()
     {
         Debouncer.Cancel();
 
-        return ValueTask.CompletedTask;
+        return base.DisposeAsyncCore();
     }
 }

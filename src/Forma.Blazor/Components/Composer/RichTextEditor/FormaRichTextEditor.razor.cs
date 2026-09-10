@@ -9,13 +9,12 @@ using Forma.Framework.Composer.Interop;
 using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
-using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>The visual rich text canvas, filling the surface the engine gives its editor.</summary>
-public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposable
+public sealed partial class FormaRichTextEditor : FormaComponentBase
 {
     /// <summary>The composer state cascaded from the parent shell.</summary>
     [CascadingParameter] public ComposerContext? Context { get; set; }
@@ -25,9 +24,11 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
     /// <summary>The editor plugin cascaded by the composer surface.</summary>
     [CascadingParameter] public IComposerEditorPlugin? Editor { get; set; }
 
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-    [Inject] private IStringLocale<FormaComposer> L { get; set; } = default!;
     [Inject] private InputRouter InputRouter { get; set; } = default!;
+
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaComposer);
 
     private ElementReference _editorElement;
     private DotNetObjectReference<FormaRichTextEditor>? _selfReference;
@@ -360,7 +361,7 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsyncCore()
     {
         // The canvas throws from OnInitialized without a cascaded plugin, and is disposed all the same.
         if (_editorPlugin is not null)
@@ -382,5 +383,6 @@ public sealed partial class FormaRichTextEditor : ComponentBase, IAsyncDisposabl
 
         _selfReference?.Dispose();
         await _canvas.DisposeAsync();
+        await base.DisposeAsyncCore();
     }
 }

@@ -1,9 +1,11 @@
 namespace Forma.Blazor.Components;
 
+using Forma.Framework.Css;
+
 using Microsoft.AspNetCore.Components;
 
 /// <summary>Collapses its content to nothing while keeping it mounted, so JS-attached state on the content survives being hidden and shown again.</summary>
-public sealed partial class FormaVisibility : ComponentBase
+public sealed partial class FormaVisibility : FormaElementBase
 {
     /// <summary>The content to show or collapse.</summary>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
@@ -14,23 +16,10 @@ public sealed partial class FormaVisibility : ComponentBase
     /// <summary>Animates the transition between hidden and shown instead of snapping instantly.</summary>
     [Parameter] public bool Animated { get; set; }
 
-    private string CssClass
-    {
-        get
-        {
-            var classes = "forma-visibility";
-
-            if (!Hidden)
-            {
-                classes += " is-shown";
-            }
-
-            if (Animated)
-            {
-                classes += " is-animated";
-            }
-
-            return classes;
-        }
-    }
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-visibility")
+            .Add("is-shown", !Hidden)
+            .Add("is-animated", Animated);
 }

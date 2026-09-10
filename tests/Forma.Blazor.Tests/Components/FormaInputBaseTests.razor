@@ -49,7 +49,7 @@
             {
                 Assert.Equal("name", root.GetAttribute("id"));
                 Assert.Equal("color: red;", root.GetAttribute("style"));
-                Assert.NotNull(cut.Instance.Element.Id);
+                Assert.NotNull(cut.Instance.RootElement.Id);
             });
         }
 
@@ -109,7 +109,7 @@
             builder.AddAttribute(3, "style", RootStyle);
             builder.AddAttribute(4, "value", CurrentValueAsString);
             builder.AddMultipleAttributes(5, AdditionalAttributes);
-            builder.AddElementReferenceCapture(6, element => Element = element);
+            builder.AddElementReferenceCapture(6, element => RootElement = element);
             builder.CloseElement();
         }
 

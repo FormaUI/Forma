@@ -4,7 +4,6 @@ public sealed partial class FormaComposerEmojiButtonTests
 {
     public FormaComposerEmojiButtonTests()
     {
-        Services.AddJsonLocalization();
         JSInterop.Mode = JSRuntimeMode.Loose;
 
         JSInterop

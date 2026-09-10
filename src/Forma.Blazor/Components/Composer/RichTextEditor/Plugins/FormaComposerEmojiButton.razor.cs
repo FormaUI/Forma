@@ -4,17 +4,15 @@ using Forma.Blazor.Components.Buttons;
 using Forma.Blazor.Components.Feedback;
 using Forma.Blazor.Components.Inputs;
 using Forma.Framework.Composer.Editing;
-using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>The toolbar trigger opening the composer's emoji picker, anchored beneath it.</summary>
-public sealed partial class FormaComposerEmojiButton : ComponentBase
+public sealed partial class FormaComposerEmojiButton : FormaComponentBase
 {
-    private readonly string _popoverId = $"composer-emoji-{Guid.NewGuid():N}";
     private IReadOnlyList<string> _recentEmojis = [];
     private ElementReference _anchorElement;
-    private FormaButton _trigger = default!;
+    private FormaButton Trigger { get; set; } = default!;
     private FormaPopover Popover { get; set; } = default!;
 
     /// <summary>How the picker this button opens browses.</summary>
@@ -22,13 +20,18 @@ public sealed partial class FormaComposerEmojiButton : ComponentBase
 
     [CascadingParameter] private IComposerInteraction? Interaction { get; set; }
 
-    [Inject] private IStringLocale<FormaComposer> L { get; set; } = default!;
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaComposer);
+
+    private string PopoverId
+        => $"composer-emoji-{RuntimeId:N}";
 
     private bool IsOpen
         => Popover is { IsOpen: true };
 
     private Task ToggleAsync()
-        => Popover.ToggleAsync(_trigger.Element);
+        => Popover.ToggleAsync(Trigger.RootElement);
 
     private async Task HandleSelectAsync(string emoji)
     {

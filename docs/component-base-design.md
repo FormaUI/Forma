@@ -8,11 +8,20 @@ services they carry: the browser runtime, logging, and localization. Authoritati
 the null objects `UnavailableJSRuntime` and `NullStringLocaleFactory`, and how logging
 reaches every assembly of the library.
 
-Step 1 of the implementation plan is built: the builder, the null objects, the three
-bases, the fallback registrations and their tests exist, and nothing derives from the
-bases yet. The plan at the end records what lands at each step. One departure from the
-sketch below: `RootClass` and `RootStyle` are `string?`, null when there is nothing to
-write, so an element carries no empty `class` or `style` attribute.
+Steps 1 and 2 of the implementation plan are built: the builder, the null objects, the
+three bases and the fallback registrations exist, and every component derives from a
+base. The plan at the end records what landed at each step and where it departed from
+the sketches below. Two departures apply to the sketches themselves: `RootClass` and
+`RootStyle` are `string?`, null when there is nothing to write, so an element carries no
+empty `class` or `style` attribute; and the root reference is named `RootElement`, beside
+`RootClass` and `RootStyle`.
+
+The root is the element the host addresses, on both tiers. On an input that is the
+control inside its `FormaField` (the `<textarea>`, or the trigger `<button>` of a select),
+never the field wrapper; on a composite it is the control the host names and styles (a
+drop-down menu's trigger button, a checkbox's `<input>` inside its label). A wrapper the
+component draws around that control is an internal part, held in a private reference
+where interop needs it. There is no separate control member: the root is the control.
 
 ## Purpose
 
@@ -59,11 +68,13 @@ renderer calls only `DisposeAsync` on a component that implements both interface
   same.
 - **Async disposal runs the framework's cleanup.** `FormaInputBase<TValue>.DisposeAsync`
   calls `Dispose(true)`, which the renderer never does on an `IAsyncDisposable`.
-- **One identity per instance, and `Id` means the DOM everywhere.** `RuntimeId` is a
-  `Guid` every component carries for its lifetime, never rendered verbatim: the
-  generated ids of its elements derive from it, a log line can name the instance, and a
-  window's workspace identity is it. `Id` is the root element's id and nothing else, on
-  every component without exception.
+- **One identity per instance, and `Id` means the consumer's DOM id everywhere.**
+  `RuntimeId` is a `Guid` every component carries for its lifetime: the generated ids
+  of its elements derive from it, a log line can name the instance, a window's workspace
+  identity is it (`IWindow.RuntimeId`), and the root element carries it as
+  `data-rid="@RuntimeId"`. `Id` is the id a consumer gives the root element and nothing
+  else, on every component without exception; the two sit side by side on the root,
+  `id="@Id" data-rid="@RuntimeId"`, so a consumer's id is never displaced by ours.
 
 ## What the survey found
 
@@ -133,11 +144,13 @@ public abstract class FormaComponentBase : ComponentBase, IAsyncDisposable
 ```
 
 `RuntimeId` is a version 7 GUID, so instances sort by creation and a log filtered to one
-component reads in the order its instances were made. A component that generates an id
-for an element derives it once and keeps it, `_triggerId = $"forma-select-trigger-{RuntimeId:N}"`,
-so every element of one instance shares a suffix a reader of the DOM can follow.
-`FormaWindow` implements `IWindow.Id` explicitly as its `RuntimeId`, since its workspace
-identity is the same thing and `Id` on a component is the DOM's.
+component reads in the order its instances were made. A root that needs an id when the
+consumer gives none derives one from `RuntimeId` through a computed property,
+`ElementId => Id ?? $"sel-{RuntimeId:N}"`, and every part hangs off that stem by its role,
+`PopoverId => $"{ElementId}-popover"`, so a consumer who names the root names its parts
+and an unnamed instance's parts all share one stem; and the root element writes the identity itself as
+`data-rid="@RuntimeId"`, so a reader of the DOM, a log line and a workspace all name the
+same instance the same way. `FormaWindow`'s `IWindow.RuntimeId` is that same property.
 
 The logger's category is the concrete type, which for a generic component the logging
 library prints without its arguments. The locale's category follows the JSON factory,
@@ -165,7 +178,7 @@ public abstract class FormaElementBase : FormaComponentBase
     public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
     /// <summary>The root element, once rendered.</summary>
-    public ElementReference Element { get; protected set; }
+    public ElementReference RootElement { get; protected set; }
 
     /// <summary>The class written on the root element: the component's own, then the host's.</summary>
     protected string? RootClass { get; }  // BuildRootClass, then Class, through a CssClassBuilder.
@@ -190,7 +203,7 @@ more, and the components that dig a style out of the attribute bag today stop. T
 line of every element component's `.razor` is then the same:
 
 ```razor
-<div id="@Id" class="@RootClass" style="@RootStyle" @attributes="AdditionalAttributes" @ref="Element">
+<div id="@Id" data-rid="@RuntimeId" class="@RootClass" style="@RootStyle" @attributes="AdditionalAttributes" @ref="RootElement">
 ```
 
 A component that roots in another Forma component forwards the four to the one inside.
@@ -208,7 +221,7 @@ class rule can live, and it replaces the ternary-and-null idiom at every call si
 public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposable
 {
     // JS, LoggerFactory, LocaleFactory, Logger, L, LocalizationSourceType, IsDisposed and DisposeAsyncCore
-    // as on FormaComponentBase; Id, Class, Style, Element, RootStyle, BuildRootClass and BuildRootStyle as on
+    // as on FormaComponentBase; Id, Class, Style, RootElement, RootStyle, BuildRootClass and BuildRootStyle as on
     // FormaElementBase. AdditionalAttributes is InputBase's own. RootClass is built from BuildRootClass, Class
     // and the field's validation class, in that order.
 
@@ -318,6 +331,15 @@ no framework of its own; the gap this design closes is on the .NET side.
 - Retiring `IStringLocale<T>`. It stays for services and hosts; components simply no
   longer need it.
 
+## Still open
+
+- `FormaCheckBox` and `FormaDatePicker` are element-tier components, not form inputs:
+  neither derives from `InputBase<TValue>`, so neither takes part in an `EditForm`'s
+  validation the way every other Forma input does. Making them inputs is its own change,
+  with its own tests and Showcase states.
+- A component rooted in another Forma component forwards `Id`, `Class`, `Style` and the
+  attribute bag to it, and leaves its own `RootElement` unset; nothing reads it today.
+
 ## Implementation plan
 
 Each step is one gated commit: build with no warnings, every test project, the script
@@ -336,12 +358,28 @@ does.
    tier, whether it overrides `LocalizationSourceType`, and what it sheds — the locale
    injection, the runtime injection, the attribute bag, `CssClass` into
    `BuildRootClass`, a composed style into `BuildRootStyle`, `DisposeAsync` into
-   `DisposeAsyncCore`, the root reference into `Element`, an explicit `Class` or `Id`
+   `DisposeAsyncCore`, the root reference into `RootElement`, an explicit `Class` or `Id`
    into the base's, and every generated id re-derived from `RuntimeId`. The leaking
    inputs, the locale marker types to delete, the test-side localization registrations
-   to remove, and `FormaWindow`'s `Id` becoming an explicit `IWindow.Id` are marked. The ledger is reviewed
+   to remove, and `FormaWindow`'s Guid `Id` becoming `IWindow.RuntimeId` are marked. The ledger is reviewed
    before anything is applied; then the migration, the gate, and a walk of the pages that
-   exercise disposal, the windows and the explorer, in both languages.
+   exercise disposal, the windows and the explorer, in both languages. **Built.** The
+   tier rule the ledger settled: a component a host places is an element (52), a form
+   input is an input (11), and a part that only lives inside its owner and takes nothing
+   from a host is plain (43: the explorer's parts, the composer's parts and dialogs,
+   `FormaPageHead`, `FormaConfirmDialog`, `FormaToastContainer`). What changed beyond the
+   ledger: the explorer's helper types take a plain `IStringLocale`; a field holding a
+   child component became a private property, the shape `FormaSelect.Popover` already
+   had, because every component is now disposable and CA2213 would otherwise ask the
+   holder to dispose what the renderer owns; a generated id is a computed property over
+   `RuntimeId`, never a field initializer, which would run before the base's; `FormaTab`'s
+   generated id is the full `RuntimeId` rather than eight characters of a random one;
+   `FormaTextBox` derives an id whether or not it has a label, and writes its own width
+   before a host's style; `FormaComposerPluginsBar` and `FormaCommandBar` put the host
+   surface on the element inside their `FormaVisibility`; `FormaTabs` and
+   `FormaPageTitle` are sealed like every other component. The test context keeps
+   `AddJsonLocalization()`, since nine test classes assert translated text; the per-class
+   registrations are gone.
 3. **Interop logging.** The required `ILogger` on `JsInterop` and `JsModule`, threaded
    through every subclass, module holder and construction site; the swallowed
    `JSException` and `JSDisconnectedException` catches logged at `Debug` through a

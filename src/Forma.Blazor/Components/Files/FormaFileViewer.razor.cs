@@ -4,8 +4,8 @@ using System.Globalization;
 
 using Forma.Blazor.Models;
 using Forma.Framework.Common.Interop.Behaviours;
+using Forma.Framework.Css;
 using Forma.Framework.Files;
-using Forma.Framework.Localization;
 using Forma.Framework.Resources;
 using Forma.Framework.Resources.Extensions;
 
@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
 /// <summary>Renders whatever resource a source address resolves to, through the first provider that claims it.</summary>
-public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
+public sealed partial class FormaFileViewer : FormaElementBase
 {
     private const string ZoomedClass = "zoomed";
 
@@ -40,10 +40,6 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
 
     /// <summary>Replaces the built-in fallback shown when no provider claims the address.</summary>
     [Parameter] public RenderFragment<string>? UnsupportedTemplate { get; set; }
-
-    [Inject] private IStringLocale<FormaFileViewer> L { get; set; } = default!;
-
-    [Inject] private IJSRuntime JS { get; set; } = default!;
 
     /// <summary>Providers the host registered, tried before the browser's own handling.</summary>
     [Inject] private IEnumerable<IResourceProvider> RegisteredProviders { get; set; } = default!;
@@ -250,7 +246,11 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder.Add("forma-file-viewer");
+
+    /// <inheritdoc />
+    protected override async ValueTask DisposeAsyncCore()
     {
         if (_resolveCancellation is not null)
         {
@@ -263,5 +263,6 @@ public sealed partial class FormaFileViewer : ComponentBase, IAsyncDisposable
         await _scroll.DisposeAsync();
         await _wheel.DisposeAsync();
         _selfReference?.Dispose();
+        await base.DisposeAsyncCore();
     }
 }

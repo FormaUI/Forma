@@ -1,7 +1,7 @@
 @namespace Forma.Blazor.Components.Inputs
-@inherits InputBase<bool>
+@inherits FormaInputBase<bool>
 
-<FormaField Label="@Label" TargetId="@_id" LabelMode="FieldLabelMode.Inline">
+<FormaField Label="@Label" TargetId="@ElementId" LabelMode="FieldLabelMode.Inline">
     <ChildContent>
         <div class="forma-toggle-switch-wrapper">
             @if (OffLabel is not null)
@@ -9,11 +9,14 @@
                 <span class="forma-toggle-switch-label forma-toggle-switch-off-label">@OffLabel</span>
             }
             <label class="@(Disabled ? "forma-toggle-switch disabled" : "forma-toggle-switch")">
-                <input @attributes="AdditionalAttributes"
-                       id="@_id"
+                <input id="@ElementId"
+                       data-rid="@RuntimeId"
+                       class="@RootClass"
+                       style="@RootStyle"
+                       @attributes="AdditionalAttributes"
+                       @ref="RootElement"
                        type="checkbox"
                        role="switch"
-                       class="forma-toggle-switch-input @CssClass"
                        checked="@CurrentValue"
                        @onchange="HandleChange"
                        disabled="@Disabled" />

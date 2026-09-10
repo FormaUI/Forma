@@ -2,6 +2,7 @@ namespace Forma.Blazor.Components.Bars;
 
 using Forma.Blazor.Components.Buttons;
 using Forma.Blazor.Components.Layout;
+using Forma.Framework.Css;
 using Forma.Framework.Icons;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
@@ -12,7 +13,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>A toolbar of grouped, item-driven commands, built on <see cref="FormaCommandBar"/>.</summary>
-public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
+public sealed partial class FormaToolbar : FormaElementBase
 {
     private static readonly ButtonOptions MenuTriggerOptions =
         new() { Variant = ButtonVariant.Ghost, Size = ButtonSize.Mini };
@@ -52,9 +53,6 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
     /// <summary>How the track carrying the items scrolls.</summary>
     [Parameter] public FreezePaneOptions CommandBarOptions { get; set; } = FreezePaneOptions.Arrows;
 
-    /// <summary>Extra classes applied to the toolbar's root element.</summary>
-    [Parameter] public string? Class { get; set; }
-
     /// <summary>Hides the toolbar while keeping it mounted, so a bound <see cref="Target"/>'s shortcuts come back across toggles.</summary>
     [Parameter] public bool Hidden { get; set; }
 
@@ -65,9 +63,6 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
     [Parameter] public IReadOnlySet<string> ActiveStates { get; set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
-
-    private string CssClass
-        => string.IsNullOrWhiteSpace(Class) ? "forma-toolbar" : $"forma-toolbar {Class}";
 
     /// <summary>Every action that carries a shortcut, with the shortcut it carries.</summary>
     private IReadOnlyList<(string Command, string Shortcut)> Shortcuts
@@ -170,10 +165,15 @@ public sealed partial class FormaToolbar : ComponentBase, IAsyncDisposable
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder.Add("forma-toolbar");
+
+    /// <inheritdoc />
+    protected override async ValueTask DisposeAsyncCore()
     {
         await ReleaseAsync();
         _selfReference?.Dispose();
+        await base.DisposeAsyncCore();
     }
 
     /// <summary>Releases the current scope, so a cleared target leaves no routes behind on the element it named.</summary>

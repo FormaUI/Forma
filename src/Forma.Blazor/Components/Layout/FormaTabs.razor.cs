@@ -1,12 +1,14 @@
 namespace Forma.Blazor.Components.Layout;
 
+using Forma.Framework.Css;
+
 using Microsoft.AspNetCore.Components;
 
 /// <summary>A tabbed panel showing one <see cref="FormaTab"/> at a time.</summary>
-public partial class FormaTabs
+public sealed partial class FormaTabs : FormaElementBase
 {
     private readonly List<FormaTab> _tabs = [];
-    private FormaTab? _activeTab;
+    private FormaTab? ActiveTab { get; set; }
 
     /// <summary>The <see cref="FormaTab"/> children this panel switches between.</summary>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
@@ -26,7 +28,7 @@ public partial class FormaTabs
         _tabs.Add(tab);
         if (_tabs.Count == 1)
         {
-            _activeTab = tab;
+            ActiveTab = tab;
         }
 
         StateHasChanged();
@@ -35,29 +37,33 @@ public partial class FormaTabs
     internal void UnregisterTab(FormaTab tab)
     {
         _tabs.Remove(tab);
-        if (_activeTab == tab)
+        if (ActiveTab == tab)
         {
-            _activeTab = _tabs.FirstOrDefault();
+            ActiveTab = _tabs.FirstOrDefault();
         }
 
         StateHasChanged();
     }
 
     internal bool IsActive(FormaTab tab)
-        => ActiveTabId is null ? tab == _activeTab : tab.EffectiveTabId == ActiveTabId;
+        => ActiveTabId is null ? tab == ActiveTab : tab.EffectiveTabId == ActiveTabId;
 
     internal static string GetTabElementId(FormaTab tab) => $"tab-{tab.EffectiveTabId}";
 
-    internal static string GetPanelElementId(FormaTab tab) => $"panel-{tab.EffectiveTabId}";
+    internal static string GetPanelElementId(FormaTab tab) => tab.Id ?? $"panel-{tab.EffectiveTabId}";
 
     // A controlled caller owns the selection, so it may reject the change rather than apply it.
     private async Task SelectTabAsync(FormaTab tab)
     {
         if (ActiveTabId is null)
         {
-            _activeTab = tab;
+            ActiveTab = tab;
         }
 
         await ActiveTabIdChanged.InvokeAsync(tab.EffectiveTabId);
     }
+
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder.Add("forma-tabs");
 }

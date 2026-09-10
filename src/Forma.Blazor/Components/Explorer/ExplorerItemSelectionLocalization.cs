@@ -8,12 +8,12 @@ using Forma.Framework.Localization;
 internal readonly struct ExplorerItemSelectionLocalization
 {
     private readonly IExplorerItem _item;
-    private readonly IStringLocale<FormaExplorer> _locale;
+    private readonly IStringLocale _locale;
     private readonly IExplorerSelectionView _selection;
 
     internal ExplorerItemSelectionLocalization(
         IExplorerItem item,
-        IStringLocale<FormaExplorer> locale,
+        IStringLocale locale,
         IExplorerSelectionView selection)
     {
         ArgumentNullException.ThrowIfNull(item);

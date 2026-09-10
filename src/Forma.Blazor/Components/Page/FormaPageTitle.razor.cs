@@ -1,11 +1,12 @@
 namespace Forma.Blazor.Components.Page;
 
 using Forma.Blazor.Components.Navigation;
+using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>A page's heading, with an optional breadcrumb trail beneath it and controls beside it.</summary>
-public partial class FormaPageTitle
+public sealed partial class FormaPageTitle : FormaElementBase
 {
     /// <summary>The page's heading.</summary>
     [Parameter, EditorRequired] public string Title { get; set; } = "";
@@ -35,4 +36,8 @@ public partial class FormaPageTitle
             return [.. Breadcrumbs.Select((crumb, index) => crumb with { IsCurrent = crumb.Url is null && index == lastIndex })];
         }
     }
+
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder.Add("forma-page-title");
 }

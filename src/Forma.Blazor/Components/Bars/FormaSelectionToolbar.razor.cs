@@ -1,12 +1,12 @@
 namespace Forma.Blazor.Components.Bars;
 
-using Forma.Framework.Localization;
+using Forma.Framework.Css;
 using Forma.Framework.Toolbar;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>A toolbar for actions that apply to the current selection; it appears while one or more items are selected and can clear the selection when the work is done.</summary>
-public sealed partial class FormaSelectionToolbar : ComponentBase
+public sealed partial class FormaSelectionToolbar : FormaElementBase
 {
     /// <summary>Number of items currently selected.</summary>
     [Parameter, EditorRequired] public int Count { get; set; }
@@ -26,8 +26,6 @@ public sealed partial class FormaSelectionToolbar : ComponentBase
     /// <summary>Raised when the clear-selection button is pressed.</summary>
     [Parameter] public EventCallback OnClear { get; set; }
 
-    [Inject] private IStringLocale<FormaSelectionToolbar> L { get; set; } = default!;
-
     private string CaptionText
         => Caption ?? L["{Count} selected", Count];
 
@@ -41,4 +39,10 @@ public sealed partial class FormaSelectionToolbar : ComponentBase
             ArgumentException.ThrowIfNullOrWhiteSpace(Label);
         }
     }
+
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-selection-toolbar")
+            .Add("is-active", Count > 0);
 }

@@ -3,14 +3,13 @@ namespace Forma.Blazor.Components.Explorer;
 using Forma.Blazor.Components.Inputs;
 using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Navigation;
-using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>The explorer's search box, bound to its query and named for the folder it searches.</summary>
-public sealed partial class FormaExplorerSearchBox : ComponentBase
+public sealed partial class FormaExplorerSearchBox : FormaComponentBase
 {
-    private FormaSearchBox _searchBox = default!;
+    private FormaSearchBox SearchBox { get; set; } = default!;
 
     /// <summary>Additional attributes applied to the search input.</summary>
     [Parameter(CaptureUnmatchedValues = true)]
@@ -22,11 +21,13 @@ public sealed partial class FormaExplorerSearchBox : ComponentBase
 
     [CascadingParameter] private IExplorerSearchInteraction SearchInteraction { get; set; } = default!;
 
-    [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaExplorer);
 
     /// <summary>Moves keyboard focus into the search input.</summary>
     public ValueTask FocusAsync()
-        => _searchBox.Element.FocusAsync();
+        => SearchBox.RootElement.FocusAsync();
 
     /// <inheritdoc />
     protected override void OnInitialized()

@@ -1,5 +1,6 @@
 namespace Forma.Blazor.Components.Interaction;
 
+using Forma.Framework.Css;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
 
@@ -7,14 +8,12 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>An element registered with the input router as a scope, answering the routes its profile declares and held active while its surface is open.</summary>
-public sealed partial class FormaInputScope : ComponentBase, IAsyncDisposable
+public sealed partial class FormaInputScope : FormaElementBase
 {
-    private ElementReference _element;
     private DotNetObjectReference<FormaInputScope> _selfReference = default!;
     private InputScope? _inputScope;
     private InputProfile? _registeredProfile;
     private Task _sync = Task.CompletedTask;
-    private bool _disposed;
 
     /// <summary>The routes the scope answers and how it treats ambient input while foremost.</summary>
     [Parameter] public InputProfile Profile { get; set; } = InputProfile.Default;
@@ -37,28 +36,7 @@ public sealed partial class FormaInputScope : ComponentBase, IAsyncDisposable
     /// <summary>Raised when the router dismisses this scope while it is foremost.</summary>
     [Parameter] public EventCallback<InputDismissal> OnDismiss { get; set; }
 
-    /// <summary>Additional attributes applied to the scope's element.</summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
-
     [Inject] private InputRouter InputRouter { get; set; } = default!;
-
-    /// <summary>The scope's element, for a sibling scope that declares it as parent.</summary>
-    public ElementReference Element => _element;
-
-    private Dictionary<string, object> RootAttributes
-    {
-        get
-        {
-            var attributes = AdditionalAttributes is null
-                ? []
-                : new Dictionary<string, object>(AdditionalAttributes, StringComparer.Ordinal);
-
-            attributes["class"] = AdditionalAttributes.MergeClass("forma-input-scope", Active ? "forma-input-scope-active" : null);
-
-            return attributes;
-        }
-    }
 
     /// <summary>Performs an action the router resolved to this scope.</summary>
     [JSInvokable]
@@ -88,10 +66,14 @@ public sealed partial class FormaInputScope : ComponentBase, IAsyncDisposable
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-    {
-        _disposed = true;
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-input-scope")
+            .Add("forma-input-scope-active", Active);
 
+    /// <inheritdoc />
+    protected override async ValueTask DisposeAsyncCore()
+    {
         try
         {
             if (_inputScope is { } inputScope)
@@ -104,23 +86,25 @@ public sealed partial class FormaInputScope : ComponentBase, IAsyncDisposable
         {
             _selfReference.Dispose();
         }
+
+        await base.DisposeAsyncCore();
     }
 
     private async Task SyncAsync(Task previous)
     {
         await previous;
 
-        if (_disposed)
+        if (IsDisposed)
         {
             return;
         }
 
         if (_inputScope is null)
         {
-            var inputScope = await InputRouter.RegisterAsync(_element, Profile, _selfReference, Parent, Within);
+            var inputScope = await InputRouter.RegisterAsync(RootElement, Profile, _selfReference, Parent, Within);
 
             // The component may have gone while the registration was being made; a scope on a gone element is released at once.
-            if (_disposed)
+            if (IsDisposed)
             {
                 if (inputScope is not null)
                 {

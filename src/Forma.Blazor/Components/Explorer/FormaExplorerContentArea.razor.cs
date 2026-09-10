@@ -5,13 +5,12 @@ using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Content;
 using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Navigation;
-using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>The view switch, infinite scroll, and pagination for the resources an explorer shows.</summary>
-public sealed partial class FormaExplorerContentArea : ComponentBase, IAsyncDisposable
+public sealed partial class FormaExplorerContentArea : FormaComponentBase
 {
     [CascadingParameter] private IExplorerConfigurationView Configuration { get; set; } = default!;
 
@@ -23,9 +22,9 @@ public sealed partial class FormaExplorerContentArea : ComponentBase, IAsyncDisp
 
     [CascadingParameter] private IExplorerSearchView Search { get; set; } = default!;
 
-    [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
-
-    [Inject] private IJSRuntime JS { get; set; } = default!;
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaExplorer);
 
     private SentinelObserver<FormaExplorerContentArea> _sentinel = default!;
 
@@ -92,6 +91,9 @@ public sealed partial class FormaExplorerContentArea : ComponentBase, IAsyncDisp
         => Interaction.ChangePageAsync(page);
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-        => await _sentinel.DisposeAsync();
+    protected override async ValueTask DisposeAsyncCore()
+    {
+        await _sentinel.DisposeAsync();
+        await base.DisposeAsyncCore();
+    }
 }

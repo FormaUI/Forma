@@ -1,5 +1,11 @@
 @namespace Forma.Blazor.Components.Bars
-<div class="forma-selection-toolbar @(Count > 0 ? "is-active" : "")">
+@inherits FormaElementBase
+<div id="@Id"
+     data-rid="@RuntimeId"
+     class="@RootClass"
+     style="@RootStyle"
+     @attributes="AdditionalAttributes"
+     @ref="RootElement">
     <div class="forma-selection-toolbar-inner">
         <div class="forma-selection-toolbar-content">
             <span class="forma-selection-toolbar-caption" role="status" aria-live="polite">@CaptionText</span>

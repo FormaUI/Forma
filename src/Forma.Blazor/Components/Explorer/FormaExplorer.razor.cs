@@ -4,6 +4,7 @@ using System.Globalization;
 
 using Forma.Blazor.Components.Feedback;
 using Forma.Blazor.Components.Files;
+using Forma.Framework.Css;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Actions;
 using Forma.Framework.Explorer.Content;
@@ -14,7 +15,6 @@ using Forma.Framework.Explorer.Requests;
 using Forma.Framework.Explorer.Selection;
 using Forma.Framework.Files;
 using Forma.Framework.Icons;
-using Forma.Framework.Localization;
 using Forma.Framework.Resources;
 using Forma.Framework.Timing;
 
@@ -23,7 +23,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 
 /// <summary>A server-side media library manager with thumbnail/details/list views, folders, navigation, drag-and-drop organization, upload, preview, rename, and delete.</summary>
-public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplorerView, IExplorerInteraction
+public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IExplorerInteraction
 {
     private const int DefaultPageSize = 24;
 
@@ -142,8 +142,6 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
 
     /// <summary>Raised when the reader shows or hides the details column header.</summary>
     [Parameter] public EventCallback<bool> DetailsHeaderVisibleChanged { get; set; }
-
-    [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
 
     [Inject] private IDebounceable SearchDebouncer { get; set; } = default!;
 
@@ -800,13 +798,6 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         await RefreshProviderAsync();
     }
 
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        _providerWindow.Dispose();
-        SearchDebouncer.Cancel();
-    }
-
     private async Task HandleBackAsync()
     {
         if (CanGoBack)
@@ -1135,5 +1126,21 @@ public sealed partial class FormaExplorer : ComponentBase, IDisposable, IExplore
         ];
 
         _preview.Open(resource, siblings);
+    }
+
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-explorer")
+            .Add("is-resizable", Options.Resizable)
+            .Add("is-dialog", Options.AsDialog);
+
+    /// <inheritdoc />
+    protected override ValueTask DisposeAsyncCore()
+    {
+        _providerWindow.Dispose();
+        SearchDebouncer.Cancel();
+
+        return base.DisposeAsyncCore();
     }
 }

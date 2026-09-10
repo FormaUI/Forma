@@ -37,7 +37,7 @@ public sealed class WindowManager
     {
         ArgumentNullException.ThrowIfNull(window);
 
-        if (Find(window.Id) is not null)
+        if (Find(window.RuntimeId) is not null)
         {
             throw new ArgumentException("The window is already registered.", nameof(window));
         }
@@ -60,7 +60,7 @@ public sealed class WindowManager
         // A modal registering over the current window takes it out of reach; something eligible takes its place.
         if (Current is IManagedWindow currentWindow && !IsEligible(currentWindow))
         {
-            await FallBackAsync(currentWindow, _parents.GetValueOrDefault(currentWindow.Id)).ConfigureAwait(false);
+            await FallBackAsync(currentWindow, _parents.GetValueOrDefault(currentWindow.RuntimeId)).ConfigureAwait(false);
         }
 
         OnChanged();
@@ -71,7 +71,7 @@ public sealed class WindowManager
     {
         ArgumentNullException.ThrowIfNull(window);
 
-        if (Find(window.Id) is null)
+        if (Find(window.RuntimeId) is null)
         {
             return;
         }
@@ -80,13 +80,13 @@ public sealed class WindowManager
 
         try
         {
-            if (Find(window.Id) is null)
+            if (Find(window.RuntimeId) is null)
             {
                 return;
             }
 
             var currentWindow = Current;
-            var currentParent = currentWindow is null ? null : _parents.GetValueOrDefault(currentWindow.Id);
+            var currentParent = currentWindow is null ? null : _parents.GetValueOrDefault(currentWindow.RuntimeId);
 
             foreach (var descendant in GetDescendants(window).AsEnumerable().Reverse())
             {
@@ -96,7 +96,7 @@ public sealed class WindowManager
 
             Remove(window);
 
-            if (currentWindow is not null && Find(currentWindow.Id) is null)
+            if (currentWindow is not null && Find(currentWindow.RuntimeId) is null)
             {
                 await FallBackAsync(currentWindow, currentParent).ConfigureAwait(false);
             }
@@ -118,7 +118,7 @@ public sealed class WindowManager
         var registeredWindow = GetRegisteredWindow(window, nameof(window));
         var parent = GetDeclaredParent(registeredWindow);
 
-        if (parent is not null && (parent.Id == registeredWindow.Id || IsDescendant(parent, registeredWindow)))
+        if (parent is not null && (parent.RuntimeId == registeredWindow.RuntimeId || IsDescendant(parent, registeredWindow)))
         {
             throw new ArgumentException("A window cannot be its own ancestor.", nameof(window));
         }
@@ -138,7 +138,7 @@ public sealed class WindowManager
 
             if (Current is IManagedWindow currentWindow && !IsEligible(currentWindow))
             {
-                await FallBackAsync(currentWindow, _parents.GetValueOrDefault(currentWindow.Id)).ConfigureAwait(false);
+                await FallBackAsync(currentWindow, _parents.GetValueOrDefault(currentWindow.RuntimeId)).ConfigureAwait(false);
             }
 
             await ApplyBlockingAsync().ConfigureAwait(false);
@@ -173,7 +173,7 @@ public sealed class WindowManager
             case WindowSelector { Parent: { } parent } criteria:
                 var registeredParent = GetRegisteredWindow(parent, nameof(selector));
 
-                if (registeredParent.Id != registeredWindow.Id && !IsDescendant(registeredParent, registeredWindow))
+                if (registeredParent.RuntimeId != registeredWindow.RuntimeId && !IsDescendant(registeredParent, registeredWindow))
                 {
                     throw new ArgumentException("The selector's parent lies outside the window.", nameof(selector));
                 }
@@ -187,13 +187,13 @@ public sealed class WindowManager
 
     /// <summary>The window with the given identity.</summary>
     /// <exception cref="KeyNotFoundException">No such window is registered here.</exception>
-    public IWindow GetWindowById(Guid id)
-        => Find(id) ?? throw new KeyNotFoundException($"No window with the id {id} is registered.");
+    public IWindow GetWindowByRuntimeId(Guid runtimeId)
+        => Find(runtimeId) ?? throw new KeyNotFoundException($"No window with the runtime id {runtimeId} is registered.");
 
     /// <summary>Looks up a window by identity, reporting whether it is registered here.</summary>
-    public bool TryGetWindowById(Guid id, out IWindow? window)
+    public bool TryGetWindowByRuntimeId(Guid runtimeId, out IWindow? window)
     {
-        window = Find(id);
+        window = Find(runtimeId);
 
         return window is not null;
     }
@@ -208,14 +208,14 @@ public sealed class WindowManager
 
     /// <summary>The parent of a window, or <see langword="null"/> for a root.</summary>
     public IWindow? GetParent(IWindow window)
-        => _parents.GetValueOrDefault(GetRegisteredWindow(window, nameof(window)).Id);
+        => _parents.GetValueOrDefault(GetRegisteredWindow(window, nameof(window)).RuntimeId);
 
     /// <summary>The direct children of a window, back to front.</summary>
     public IReadOnlyList<IWindow> GetChildren(IWindow window)
     {
         var parent = GetRegisteredWindow(window, nameof(window));
 
-        return _stackedWindows.Where(candidate => _parents.GetValueOrDefault(candidate.Id)?.Id == parent.Id).ToList();
+        return _stackedWindows.Where(candidate => _parents.GetValueOrDefault(candidate.RuntimeId)?.RuntimeId == parent.RuntimeId).ToList();
     }
 
     /// <summary>The number of a window's instance among the instances of its origin this workspace has seen, from 1, in the order they first registered; an instance keeps its number for the workspace's lifetime, and a number is reissued only past the limit and to no instance still open.</summary>
@@ -316,7 +316,7 @@ public sealed class WindowManager
 
             if (currentWindow is IManagedWindow activeWindow && !IsVisible(activeWindow))
             {
-                await FallBackAsync(activeWindow, _parents.GetValueOrDefault(activeWindow.Id)).ConfigureAwait(false);
+                await FallBackAsync(activeWindow, _parents.GetValueOrDefault(activeWindow.RuntimeId)).ConfigureAwait(false);
             }
 
             await ApplyBlockingAsync().ConfigureAwait(false);
@@ -389,11 +389,11 @@ public sealed class WindowManager
 
             var affectedWindows = GetSubtrees(matchingWindows);
             var currentWindow = Current;
-            var currentParent = currentWindow is null ? null : _parents.GetValueOrDefault(currentWindow.Id);
+            var currentParent = currentWindow is null ? null : _parents.GetValueOrDefault(currentWindow.RuntimeId);
 
             foreach (var window in affectedWindows)
             {
-                _closingIds.Add(window.Id);
+                _closingIds.Add(window.RuntimeId);
             }
 
             var decliningWindows = new List<IWindow>();
@@ -424,11 +424,11 @@ public sealed class WindowManager
             {
                 foreach (var window in affectedWindows)
                 {
-                    _closingIds.Remove(window.Id);
+                    _closingIds.Remove(window.RuntimeId);
                 }
             }
 
-            if (currentWindow is not null && Find(currentWindow.Id) is null)
+            if (currentWindow is not null && Find(currentWindow.RuntimeId) is null)
             {
                 await FallBackAsync(currentWindow, currentParent).ConfigureAwait(false);
             }
@@ -457,8 +457,8 @@ public sealed class WindowManager
                 return WindowOperationResult.NoMatch;
             }
 
-            var movingIds = new HashSet<Guid>(matchingWindows.Select(window => window.Id));
-            var remainingWindows = _stackedWindows.Where(window => !movingIds.Contains(window.Id)).ToList();
+            var movingIds = new HashSet<Guid>(matchingWindows.Select(window => window.RuntimeId));
+            var remainingWindows = _stackedWindows.Where(window => !movingIds.Contains(window.RuntimeId)).ToList();
 
             _stackedWindows.Clear();
             _stackedWindows.AddRange(toFront ? remainingWindows.Concat(matchingWindows) : matchingWindows.Concat(remainingWindows));
@@ -478,13 +478,13 @@ public sealed class WindowManager
     // Every match and every descendant of a match, parents before children, each once.
     private List<IManagedWindow> GetSubtrees(IReadOnlyList<IManagedWindow> rootWindows)
     {
-        var selectedIds = new HashSet<Guid>(rootWindows.Select(window => window.Id));
+        var selectedIds = new HashSet<Guid>(rootWindows.Select(window => window.RuntimeId));
 
         foreach (var rootWindow in rootWindows)
         {
             foreach (var descendant in GetDescendants(rootWindow))
             {
-                selectedIds.Add(descendant.Id);
+                selectedIds.Add(descendant.RuntimeId);
             }
         }
 
@@ -498,7 +498,7 @@ public sealed class WindowManager
 
         foreach (var window in _stackedWindows)
         {
-            if (windowIds.Contains(window.Id) && GetAncestors(window).All(ancestor => !windowIds.Contains(ancestor.Id)))
+            if (windowIds.Contains(window.RuntimeId) && GetAncestors(window).All(ancestor => !windowIds.Contains(ancestor.RuntimeId)))
             {
                 Append(window);
             }
@@ -510,9 +510,9 @@ public sealed class WindowManager
         {
             result.Add(window);
 
-            foreach (var child in _stackedWindows.Where(candidate => _parents.GetValueOrDefault(candidate.Id)?.Id == window.Id))
+            foreach (var child in _stackedWindows.Where(candidate => _parents.GetValueOrDefault(candidate.RuntimeId)?.RuntimeId == window.RuntimeId))
             {
-                if (windowIds.Contains(child.Id))
+                if (windowIds.Contains(child.RuntimeId))
                 {
                     Append(child);
                 }
@@ -549,7 +549,7 @@ public sealed class WindowManager
 
     private async ValueTask MakeCurrentAsync(IManagedWindow target)
     {
-        if (Current is IManagedWindow previousWindow && previousWindow.Id != target.Id)
+        if (Current is IManagedWindow previousWindow && previousWindow.RuntimeId != target.RuntimeId)
         {
             await previousWindow.SetActiveAsync(false).ConfigureAwait(false);
         }
@@ -567,13 +567,13 @@ public sealed class WindowManager
     // The eligible parent of the window that stopped being current, else the most recently active eligible window, else none.
     private async ValueTask FallBackAsync(IWindow formerWindow, IManagedWindow? parent)
     {
-        _activationHistory.RemoveAll(window => Find(window.Id) is null);
+        _activationHistory.RemoveAll(window => Find(window.RuntimeId) is null);
 
-        var nextWindow = parent is not null && Find(parent.Id) is not null && IsEligible(parent)
+        var nextWindow = parent is not null && Find(parent.RuntimeId) is not null && IsEligible(parent)
             ? parent
-            : _activationHistory.AsEnumerable().Reverse().FirstOrDefault(window => window.Id != formerWindow.Id && IsEligible(window));
+            : _activationHistory.AsEnumerable().Reverse().FirstOrDefault(window => window.RuntimeId != formerWindow.RuntimeId && IsEligible(window));
 
-        if (Current is IManagedWindow previousWindow && Find(previousWindow.Id) is not null && (nextWindow is null || previousWindow.Id != nextWindow.Id))
+        if (Current is IManagedWindow previousWindow && Find(previousWindow.RuntimeId) is not null && (nextWindow is null || previousWindow.RuntimeId != nextWindow.RuntimeId))
         {
             await previousWindow.SetActiveAsync(false).ConfigureAwait(false);
         }
@@ -593,18 +593,18 @@ public sealed class WindowManager
         {
             var isBlocked = GetBlocker(window) is not null;
 
-            if (isBlocked == _blockedIds.Contains(window.Id))
+            if (isBlocked == _blockedIds.Contains(window.RuntimeId))
             {
                 continue;
             }
 
             if (isBlocked)
             {
-                _blockedIds.Add(window.Id);
+                _blockedIds.Add(window.RuntimeId);
             }
             else
             {
-                _blockedIds.Remove(window.Id);
+                _blockedIds.Remove(window.RuntimeId);
             }
 
             await window.SetBlockedAsync(isBlocked).ConfigureAwait(false);
@@ -672,17 +672,17 @@ public sealed class WindowManager
             ? _stackedWindows
             : criteria.Recursive
                 ? _stackedWindows.Where(candidate => IsDescendant(candidate, parent))
-                : _stackedWindows.Where(candidate => _parents.GetValueOrDefault(candidate.Id)?.Id == parent.Id);
+                : _stackedWindows.Where(candidate => _parents.GetValueOrDefault(candidate.RuntimeId)?.RuntimeId == parent.RuntimeId);
 
         return [.. candidates
-            .Where(candidate => window is null || candidate.Id == window.Id)
+            .Where(candidate => window is null || candidate.RuntimeId == window.RuntimeId)
             .Where(candidate => criteria.OriginId is null || string.Equals(candidate.Origin.OriginId, criteria.OriginId, StringComparison.Ordinal))
             .Where(candidate => criteria.InstanceId is null || candidate.Origin.InstanceId == criteria.InstanceId)
             .Where(candidate => criteria.Title is null || string.Equals(candidate.Title, criteria.Title, StringComparison.Ordinal))];
     }
 
     private IManagedWindow? GetPreviousWindow()
-        => _activationHistory.AsEnumerable().Reverse().FirstOrDefault(window => Current is null || window.Id != Current.Id);
+        => _activationHistory.AsEnumerable().Reverse().FirstOrDefault(window => Current is null || window.RuntimeId != Current.RuntimeId);
 
     // The modal descendant that controls a window, frontmost first, if a visible one exists.
     private IManagedWindow? GetControllingModal(IManagedWindow window)
@@ -690,27 +690,27 @@ public sealed class WindowManager
 
     // The frontmost visible modal that blocks a window, if any.
     private IManagedWindow? GetBlocker(IManagedWindow window)
-        => _stackedWindows.AsEnumerable().Reverse().FirstOrDefault(candidate => candidate.IsModal && candidate.Id != window.Id && IsVisible(candidate) && GetBlockedWindows(candidate).Contains(window));
+        => _stackedWindows.AsEnumerable().Reverse().FirstOrDefault(candidate => candidate.IsModal && candidate.RuntimeId != window.RuntimeId && IsVisible(candidate) && GetBlockedWindows(candidate).Contains(window));
 
     // What a visible modal blocks: its parent's subtree, or the whole workspace for a root, less its own subtree.
     private IEnumerable<IManagedWindow> GetBlockedWindows(IManagedWindow modal)
     {
-        var parent = _parents.GetValueOrDefault(modal.Id);
+        var parent = _parents.GetValueOrDefault(modal.RuntimeId);
 
-        return _stackedWindows.Where(candidate => candidate.Id != modal.Id
+        return _stackedWindows.Where(candidate => candidate.RuntimeId != modal.RuntimeId
             && !IsDescendant(candidate, modal)
-            && (parent is null || candidate.Id == parent.Id || IsDescendant(candidate, parent)));
+            && (parent is null || candidate.RuntimeId == parent.RuntimeId || IsDescendant(candidate, parent)));
     }
 
     private bool IsVisible(IManagedWindow window)
         => !window.IsMinimized && !GetAncestors(window).Any(ancestor => ancestor.IsMinimized);
 
     private bool IsDescendant(IManagedWindow window, IManagedWindow ancestor)
-        => GetAncestors(window).Any(candidate => candidate.Id == ancestor.Id);
+        => GetAncestors(window).Any(candidate => candidate.RuntimeId == ancestor.RuntimeId);
 
     private IEnumerable<IManagedWindow> GetAncestors(IManagedWindow window)
     {
-        for (var parent = _parents.GetValueOrDefault(window.Id); parent is not null; parent = _parents.GetValueOrDefault(parent.Id))
+        for (var parent = _parents.GetValueOrDefault(window.RuntimeId); parent is not null; parent = _parents.GetValueOrDefault(parent.RuntimeId))
         {
             yield return parent;
         }
@@ -726,7 +726,7 @@ public sealed class WindowManager
 
         void Append(IManagedWindow parent)
         {
-            foreach (var child in _stackedWindows.Where(candidate => _parents.GetValueOrDefault(candidate.Id)?.Id == parent.Id).ToList())
+            foreach (var child in _stackedWindows.Where(candidate => _parents.GetValueOrDefault(candidate.RuntimeId)?.RuntimeId == parent.RuntimeId).ToList())
             {
                 result.Add(child);
                 Append(child);
@@ -736,17 +736,17 @@ public sealed class WindowManager
 
     // The parent a window declares, as registered here.
     private IManagedWindow? GetDeclaredParent(IWindow window)
-        => window.Parent is null ? null : Find(window.Parent.Id) ?? throw new ArgumentException("The window's parent is not registered in this workspace.", nameof(window));
+        => window.Parent is null ? null : Find(window.Parent.RuntimeId) ?? throw new ArgumentException("The window's parent is not registered in this workspace.", nameof(window));
 
     private void Link(IManagedWindow window, IManagedWindow? parent)
     {
         if (parent is null)
         {
-            _parents.Remove(window.Id);
+            _parents.Remove(window.RuntimeId);
         }
         else
         {
-            _parents[window.Id] = parent;
+            _parents[window.RuntimeId] = parent;
         }
     }
 
@@ -776,30 +776,30 @@ public sealed class WindowManager
     {
         _stackedWindows.Remove(window);
         _windows.Remove(window);
-        _parents.Remove(window.Id);
+        _parents.Remove(window.RuntimeId);
         _activationHistory.Remove(window);
-        _closingIds.Remove(window.Id);
-        _blockedIds.Remove(window.Id);
+        _closingIds.Remove(window.RuntimeId);
+        _blockedIds.Remove(window.RuntimeId);
 
-        if (Current?.Id == window.Id)
+        if (Current?.RuntimeId == window.RuntimeId)
         {
             Current = null;
         }
     }
 
-    private IManagedWindow? Find(Guid id)
-        => _stackedWindows.Find(window => window.Id == id);
+    private IManagedWindow? Find(Guid runtimeId)
+        => _stackedWindows.Find(window => window.RuntimeId == runtimeId);
 
     private IManagedWindow GetRegisteredWindow(IWindow window, string parameterName)
     {
         ArgumentNullException.ThrowIfNull(window, parameterName);
 
-        return Find(window.Id) ?? throw new ArgumentException("The window is not registered in this workspace.", parameterName);
+        return Find(window.RuntimeId) ?? throw new ArgumentException("The window is not registered in this workspace.", parameterName);
     }
 
     private void ThrowIfClosing(IManagedWindow? window)
     {
-        if (window is not null && (_closingIds.Contains(window.Id) || GetAncestors(window).Any(ancestor => _closingIds.Contains(ancestor.Id))))
+        if (window is not null && (_closingIds.Contains(window.RuntimeId) || GetAncestors(window).Any(ancestor => _closingIds.Contains(ancestor.RuntimeId))))
         {
             throw new InvalidOperationException("The window is being asked whether it may close.");
         }

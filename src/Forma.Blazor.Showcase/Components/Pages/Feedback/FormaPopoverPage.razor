@@ -29,7 +29,7 @@
         <span class="demo-anchor" @ref="_trappedAnchor">
             <FormaButton @ref="_trappedTrigger" Variant="ButtonVariant.Primary" aria-expanded="@(_trapped is { IsOpen: true } ? "true" : "false")" OnClick="() => ToggleAsync(_trapped, _trappedTrigger)">@L["Open"]</FormaButton>
         </span>
-        <FormaPopover @ref="_trapped" Anchor="_trappedAnchor" KeepsFocus="true" OnOpenChanged="_ => { }" OnOpened="() => _firstAction.Element.FocusAsync()">
+        <FormaPopover @ref="_trapped" Anchor="_trappedAnchor" KeepsFocus="true" OnOpenChanged="_ => { }" OnOpened="() => _firstAction.RootElement.FocusAsync()">
             <div class="demo-popover demo-popover-actions">
                 <FormaButton @ref="_firstAction" Variant="ButtonVariant.Secondary" OnClick="@(() => Choose(L["One"]))">@L["One"]</FormaButton>
                 <FormaButton Variant="ButtonVariant.Secondary" OnClick="@(() => Choose(L["Two"]))">@L["Two"]</FormaButton>
@@ -53,7 +53,7 @@
     private string? _chosen;
 
     private static Task ToggleAsync(FormaPopover popover, FormaButton trigger)
-        => popover.ToggleAsync(trigger.Element);
+        => popover.ToggleAsync(trigger.RootElement);
 
     private async Task Choose(string choice)
     {

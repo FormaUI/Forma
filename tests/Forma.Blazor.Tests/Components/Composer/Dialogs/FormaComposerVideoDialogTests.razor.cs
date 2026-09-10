@@ -4,7 +4,6 @@ public sealed partial class FormaComposerVideoDialogTests
 {
     public FormaComposerVideoDialogTests()
     {
-        Services.AddJsonLocalization();
         JSInterop.Mode = JSRuntimeMode.Loose;
     }
 }

@@ -3,14 +3,14 @@ namespace Forma.Blazor.Components.Layout;
 using System.Globalization;
 
 using Forma.Framework.Common.Interop.Behaviours;
+using Forma.Framework.Css;
 using Forma.Framework.Icons;
-using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>A scroll box whose content moves along one axis while the parts marked <see cref="FrozenClass"/> stay at its start, moved by the scrollbar or by an arrow at each end shown only while there is somewhere to go; parts marked <see cref="StopClass"/> are where the content comes to rest.</summary>
-public sealed partial class FormaFreezePane : ComponentBase, IAsyncDisposable
+public sealed partial class FormaFreezePane : FormaElementBase
 {
     /// <summary>The class a part of the content carries to stay put at the pane's start while the rest scrolls.</summary>
     public const string FrozenClass = "forma-freeze-pane-frozen";
@@ -26,17 +26,6 @@ public sealed partial class FormaFreezePane : ComponentBase, IAsyncDisposable
 
     /// <summary>Raised as the reader drags or keys the frozen region's edge, with the extent asked for in pixels; the content decides what to resize to honour it, and the edge is drawn only while this is set.</summary>
     [Parameter] public EventCallback<double> FrozenExtentChanged { get; set; }
-
-    /// <summary>Extra classes applied alongside forma-freeze-pane.</summary>
-    [Parameter] public string? Class { get; set; }
-
-    /// <summary>Additional attributes applied to the pane element.</summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
-
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-
-    [Inject] private IStringLocale<FormaFreezePane> L { get; set; } = default!;
 
     // One small spacing step, the distance an arrow key moves the frozen edge.
     private const double FrozenEdgeKeyStep = 8;
@@ -75,26 +64,6 @@ public sealed partial class FormaFreezePane : ComponentBase, IAsyncDisposable
 
     private bool IsBlockAxis
         => Options.Axis == ScrollAxis.Block;
-
-    private string CssClass
-    {
-        get
-        {
-            var axis = IsBlockAxis ? "forma-freeze-pane-block" : "forma-freeze-pane-inline";
-            var navigation = ShowsArrows ? "forma-freeze-pane-arrows" : "forma-freeze-pane-scrollbar";
-            var measured = _isMeasured ? " is-measured" : string.Empty;
-            var frozen = FrozenExtent > 0 ? " has-frozen" : string.Empty;
-            var scrolled = CanScrollBack ? " is-scrolled" : string.Empty;
-            var classes = $"forma-freeze-pane {axis} {navigation}{measured}{frozen}{scrolled}";
-
-            return string.IsNullOrWhiteSpace(Class) ? classes : $"{classes} {Class}";
-        }
-    }
-
-    private string? FrozenStyle
-        => FrozenExtent > 0
-            ? string.Create(CultureInfo.InvariantCulture, $"--forma-freeze-pane-frozen-extent: {FrozenExtent}px; --forma-freeze-pane-corner-extent: {CornerExtent}px")
-            : null;
 
     private string BackLabel
         => Options.ScrollBackLabel ?? (IsBlockAxis ? L["Scroll Up"] : L["Scroll Back"]);
@@ -193,10 +162,27 @@ public sealed partial class FormaFreezePane : ComponentBase, IAsyncDisposable
         => await _scroll.StepAsync(_viewport, direction, Options.Axis, new ScrollStops($".{StopClass}", FrozenExtent));
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-freeze-pane")
+            .Add(IsBlockAxis ? "forma-freeze-pane-block" : "forma-freeze-pane-inline")
+            .Add(ShowsArrows ? "forma-freeze-pane-arrows" : "forma-freeze-pane-scrollbar")
+            .Add("is-measured", _isMeasured)
+            .Add("has-frozen", FrozenExtent > 0)
+            .Add("is-scrolled", CanScrollBack);
+
+    /// <inheritdoc />
+    protected override string? BuildRootStyle()
+        => FrozenExtent > 0
+            ? string.Create(CultureInfo.InvariantCulture, $"--forma-freeze-pane-frozen-extent: {FrozenExtent}px; --forma-freeze-pane-corner-extent: {CornerExtent}px")
+            : null;
+
+    /// <inheritdoc />
+    protected override async ValueTask DisposeAsyncCore()
     {
         await _scroll.DisposeAsync();
         await _wheel.DisposeAsync();
         _selfReference?.Dispose();
+        await base.DisposeAsyncCore();
     }
 }

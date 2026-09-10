@@ -5,6 +5,5 @@ public sealed partial class FormaOverflowMenuTests
     public FormaOverflowMenuTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        Services.AddJsonLocalization();
     }
 }

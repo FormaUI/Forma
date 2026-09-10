@@ -6,7 +6,7 @@ using Forma.Framework.Composer.Plugins;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>The region one editor, or one view over it, occupies: its toolbar together with its canvas.</summary>
-public sealed partial class FormaComposerSurface : ComponentBase
+public sealed partial class FormaComposerSurface : FormaComponentBase
 {
     /// <summary>The editor whose component fills this surface's canvas, or whose document the view shows.</summary>
     [Parameter, EditorRequired] public IComposerEditorPlugin Editor { get; set; } = default!;

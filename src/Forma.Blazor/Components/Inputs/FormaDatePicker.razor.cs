@@ -3,12 +3,12 @@ namespace Forma.Blazor.Components.Inputs;
 using System.Globalization;
 
 using Forma.Blazor.Components.Feedback;
-using Forma.Framework.Localization;
+using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>A calendar for picking a single date, or a date range when the range parameters are bound.</summary>
-public sealed partial class FormaDatePicker : ComponentBase
+public sealed partial class FormaDatePicker : FormaElementBase
 {
     // The rolling windows the Last7Days and Last30Days presets cover, ending today.
     private const int ShortRangeDays = 7;
@@ -56,20 +56,15 @@ public sealed partial class FormaDatePicker : ComponentBase
     /// <summary>Whether months come from the culture's non-Gregorian calendar, such as the Hebrew calendar for <c>he</c>.</summary>
     [Parameter] public bool UseNonGregorianMonths { get; set; }
 
-    /// <summary>Attributes applied to the trigger element.</summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
-
-    [Inject] private IStringLocale<FormaDatePicker> L { get; set; } = default!;
-
-    private readonly string _triggerId = $"dp-trigger-{Guid.NewGuid():N}";
     private ElementReference _anchorElement;
-    private ElementReference _triggerElement;
     private FormaPopover Popover { get; set; } = default!;
     private DateOnly _leftMonth;
     private DateOnly _rightMonth;
     private readonly DateRangeDraft _draft = new();
     private CalendarMonthWindow _calendar = default!;
+
+    private string ElementId
+        => Id ?? $"dp-{RuntimeId:N}";
 
     private bool IsOpen => Popover is { IsOpen: true };
     private bool IsRangeMode => StartDateChanged.HasDelegate || EndDateChanged.HasDelegate;
@@ -180,7 +175,7 @@ public sealed partial class FormaDatePicker : ComponentBase
 
         _draft.Clear();
         ResetDisplayMonth();
-        await Popover.OpenAsync(_triggerElement);
+        await Popover.OpenAsync(RootElement);
     }
 
     // ── Navigation ───────────────────────────────────
@@ -315,6 +310,12 @@ public sealed partial class FormaDatePicker : ComponentBase
         _draft.Clear();
         await Popover.CloseAsync();
     }
+
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-field-input")
+            .Add("forma-date-picker-trigger");
 
     // ── Calendar grid ────────────────────────────────
 

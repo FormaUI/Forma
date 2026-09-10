@@ -3,15 +3,15 @@ namespace Forma.Blazor.Components.Feedback;
 using System.Diagnostics.CodeAnalysis;
 
 using Forma.Framework.Common.Interop.Components;
+using Forma.Framework.Css;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
-using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>A dialog rendered in the browser's top layer, with an optional header, footer actions, and scrim dismissal, registered with the input router as a modal scope while open so Escape and a platform close request are decided there.</summary>
-public sealed partial class FormaDialog : IAsyncDisposable
+public sealed partial class FormaDialog : FormaElementBase
 {
     private static readonly InputProfile ModalProfile = new()
     {
@@ -21,14 +21,11 @@ public sealed partial class FormaDialog : IAsyncDisposable
         PressAway = PressAwayBehavior.Ignore,
     };
 
-    private ElementReference _dialogElement;
     private Dialog _dialog = default!;
     private DotNetObjectReference<FormaDialog> _selfReference = default!;
     private InputScope? _inputScope;
     private bool _isOpen;
 
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-    [Inject] private IStringLocale<FormaDialog> L { get; set; } = default!;
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
     /// <summary>Whether the dialog is currently open.</summary>
@@ -89,7 +86,7 @@ public sealed partial class FormaDialog : IAsyncDisposable
     {
         if (firstRender)
         {
-            await _dialog.AttachAsync(_dialogElement);
+            await _dialog.AttachAsync(RootElement);
         }
 
         if (Opened && !_isOpen)
@@ -180,7 +177,7 @@ public sealed partial class FormaDialog : IAsyncDisposable
     // The dialog is a scope only while open, active the whole time so it stands as the modal barrier.
     private async Task RegisterAsync()
     {
-        var inputScope = await InputRouter.RegisterAsync(_dialogElement, ModalProfile, _selfReference);
+        var inputScope = await InputRouter.RegisterAsync(RootElement, ModalProfile, _selfReference);
 
         if (inputScope is null)
         {
@@ -210,10 +207,17 @@ public sealed partial class FormaDialog : IAsyncDisposable
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-dialog")
+            .Add(SizeClass);
+
+    /// <inheritdoc />
+    protected override async ValueTask DisposeAsyncCore()
     {
         await SetClosedAsync();
         await _dialog.DisposeAsync();
         _selfReference.Dispose();
+        await base.DisposeAsyncCore();
     }
 }

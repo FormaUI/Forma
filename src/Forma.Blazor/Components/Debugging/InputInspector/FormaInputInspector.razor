@@ -1,6 +1,13 @@
 @namespace Forma.Blazor.Components.Debugging.InputInspector
+@inherits FormaElementBase
 
-<section @attributes="RootAttributes" @ref="_element" aria-label="@L["Input router"]">
+<section id="@Id"
+         data-rid="@RuntimeId"
+         class="@RootClass"
+         style="@RootStyle"
+         @attributes="AdditionalAttributes"
+         @ref="RootElement"
+         aria-label="@L["Input router"]">
     <header class="forma-input-inspector-header">
         <span class="forma-input-inspector-title">
             <FormaIcon Icon="Glyph.Inspect" Size="IconSize.Small" />

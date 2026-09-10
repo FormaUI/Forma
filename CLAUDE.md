@@ -105,6 +105,8 @@ A page is a canvas with backdrops laid on it, the way VS Code's sections stand o
 - A **chrome** is `FormaChrome`: a frame whose drag region is a title bar carrying the icon, the title and the host's commands, with an optional header band, the body and an optional footer band inside the frame.
 - A **window** is `FormaWindow`: a chrome floated into the top layer and a member of the workspace, whose frame drives the window's box. It is activated, stacked, minimized, locked and closed; a frame and a chrome are none of those. A window never embeds. A dialog is a modal window.
 - A **workspace** is the set of windows one `WindowManager` coordinates, the way a desktop holds the windows on it: which is current, their stacking order, which window opened which, what a minimize or a close takes along, and what the rest area lists. A circuit has one by default; a host that cascades another manager makes a nested one.
+- A component's **root** is the element the host addresses: for most components the outermost element they render, for an input the control inside its field, for a composite the control the host names and styles. The root carries the host's `Id`, `Class`, `Style` and attribute bag, and is `RootElement`.
+- A **runtime id**, `RuntimeId`, is the identity a component instance carries for its lifetime: a `Guid` written on its root as `data-rid`, the stem of the ids it generates for its elements, the name a log line and a workspace know it by. It is never the DOM `id`, which belongs to the consumer.
 
 ## Build and verification
 

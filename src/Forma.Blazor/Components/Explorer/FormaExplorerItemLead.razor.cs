@@ -2,12 +2,11 @@ namespace Forma.Blazor.Components.Explorer;
 
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Items;
-using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>What leads an item's row: its checkbox while selecting, its actions otherwise.</summary>
-public sealed partial class FormaExplorerItemLead : ComponentBase
+public sealed partial class FormaExplorerItemLead : FormaComponentBase
 {
     /// <summary>The item the lead belongs to.</summary>
     [Parameter, EditorRequired] public IExplorerItem Item { get; set; } = default!;
@@ -16,7 +15,9 @@ public sealed partial class FormaExplorerItemLead : ComponentBase
 
     [CascadingParameter] private IExplorerInteraction Interaction { get; set; } = default!;
 
-    [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaExplorer);
 
     /// <inheritdoc />
     protected override void OnInitialized()

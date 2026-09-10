@@ -3,18 +3,13 @@ namespace Forma.Blazor.Components.Inputs;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
-using Forma.Framework.Localization;
+using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>A multi-line text field carrying the same chrome as FormaInput.</summary>
-public sealed partial class FormaTextArea : InputBase<string?>
+public sealed partial class FormaTextArea : FormaInputBase<string?>
 {
-    private readonly string _id = $"fld-{Guid.NewGuid():N}";
-
-    [Inject] private IStringLocale<FormaTextArea> L { get; set; } = default!;
-
     /// <summary>The floating label text.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
 
@@ -30,8 +25,11 @@ public sealed partial class FormaTextArea : InputBase<string?>
     /// <summary>Shows a running character count in the field's end corner, against MaxLength when one is set.</summary>
     [Parameter] public bool ShowCharacterCount { get; set; }
 
+    private string ElementId
+        => Id ?? $"fld-{RuntimeId:N}";
+
     private string CountId
-        => $"{_id}-count";
+        => $"{ElementId}-count";
 
     // UTF-16 code units, which is what the browser's own maxlength counts.
     private int CharacterCount
@@ -81,6 +79,13 @@ public sealed partial class FormaTextArea : InputBase<string?>
             ArgumentOutOfRangeException.ThrowIfLessThan(maxLength, 1);
         }
     }
+
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-field-input")
+            .Add("forma-textarea")
+            .Add("forma-textarea-counting", ShowCharacterCount);
 
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)

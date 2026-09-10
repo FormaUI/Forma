@@ -1,6 +1,10 @@
 @namespace Forma.Blazor.Components.Buttons
+@inherits FormaElementBase
 
-<FormaButton @attributes="AdditionalAttributes"
+<FormaButton Id="@Id"
+             Class="@RootClass"
+             Style="@RootStyle"
+             @attributes="AdditionalAttributes"
              Variant="ButtonVariant.Ghost"
              Size="Size"
              IconOnly="true"

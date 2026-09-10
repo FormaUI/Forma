@@ -8,7 +8,7 @@ using Forma.Framework.Localization;
 internal static class ExplorerGroupPresentation
 {
     /// <summary>The label of <paramref name="field"/> in a grouping menu.</summary>
-    public static string GetFieldLabel(IStringLocale<FormaExplorer> locale, ExplorerGroupField field)
+    public static string GetFieldLabel(IStringLocale locale, ExplorerGroupField field)
         => field switch
         {
             ExplorerGroupField.None => locale["None"].Value,
@@ -21,7 +21,7 @@ internal static class ExplorerGroupPresentation
         };
 
     /// <summary>The heading of <paramref name="group"/>.</summary>
-    public static string GetLabel(IStringLocale<FormaExplorer> locale, ExplorerItemGroup group)
+    public static string GetLabel(IStringLocale locale, ExplorerItemGroup group)
         => group.Band switch
         {
             ExplorerGroupBand.Kind => group.KindLabel ?? string.Empty,

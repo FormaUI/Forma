@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
 /// <summary>The plain text canvas, filling the surface the engine gives its editor.</summary>
-public sealed partial class FormaPlainTextEditor : ComponentBase, IAsyncDisposable
+public sealed partial class FormaPlainTextEditor : FormaComponentBase
 {
     // Keystrokes within this window commit as one state, so undo steps back a phrase rather than a character.
     private static readonly TimeSpan CommitDelay = TimeSpan.FromMilliseconds(400);
@@ -20,8 +20,11 @@ public sealed partial class FormaPlainTextEditor : ComponentBase, IAsyncDisposab
 
     [CascadingParameter] public IComposerInteraction? Interaction { get; set; }
 
-    [Inject] private IJSRuntime JS { get; set; } = default!;
     [Inject] private InputRouter InputRouter { get; set; } = default!;
+
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaComposer);
 
     private ElementReference _textareaElement;
     private TextEntry _textEntry = default!;
@@ -171,7 +174,7 @@ public sealed partial class FormaPlainTextEditor : ComponentBase, IAsyncDisposab
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsyncCore()
     {
         if (_commitCancellation is not null)
         {
@@ -193,5 +196,6 @@ public sealed partial class FormaPlainTextEditor : ComponentBase, IAsyncDisposab
 
         _selfReference?.Dispose();
         await _textEntry.DisposeAsync();
+        await base.DisposeAsyncCore();
     }
 }

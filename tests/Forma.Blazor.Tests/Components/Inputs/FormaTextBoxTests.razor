@@ -599,7 +599,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Equal("color: red; inline-size: 12ch", cut.Find("input").GetAttribute("style"));
+            Assert.Equal("inline-size: 12ch; color: red;", cut.Find("input").GetAttribute("style"));
         }
 
         [Fact]

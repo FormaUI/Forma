@@ -1,9 +1,11 @@
 namespace Forma.Blazor.Components.Menus;
 
+using Forma.Framework.Css;
+
 using Microsoft.AspNetCore.Components;
 
 /// <summary>A single command inside a <see cref="FormaDropDownMenu"/>.</summary>
-public sealed partial class FormaDropDownMenuItem : IDisposable
+public sealed partial class FormaDropDownMenuItem : FormaElementBase
 {
     [CascadingParameter] private FormaDropDownMenu Menu { get; set; } = default!;
 
@@ -28,18 +30,6 @@ public sealed partial class FormaDropDownMenuItem : IDisposable
     /// <summary>Content rendered inside the item.</summary>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
 
-    /// <summary>Additional attributes applied to the item element.</summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
-
-    private ElementReference _element;
-
-    private string CssClass
-        => string.Concat(
-            "forma-dropdown-menu-item",
-            IsDestructive ? " is-destructive" : string.Empty,
-            IsSelected is true ? " is-selected" : string.Empty);
-
     private string Role
         => IsSelected is null ? "menuitem" : "menuitemradio";
 
@@ -58,7 +48,7 @@ public sealed partial class FormaDropDownMenuItem : IDisposable
     }
 
     internal ValueTask FocusAsync()
-        => _element.FocusAsync();
+        => RootElement.FocusAsync();
 
     private async Task HandleActivateAsync()
     {
@@ -76,6 +66,16 @@ public sealed partial class FormaDropDownMenuItem : IDisposable
     }
 
     /// <inheritdoc />
-    public void Dispose()
-        => Menu.UnregisterItem(this);
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-dropdown-menu-item")
+            .Add("is-destructive", IsDestructive)
+            .Add("is-selected", IsSelected is true);
+
+    /// <inheritdoc />
+    protected override ValueTask DisposeAsyncCore()
+    {
+        Menu.UnregisterItem(this);
+        return base.DisposeAsyncCore();
+    }
 }

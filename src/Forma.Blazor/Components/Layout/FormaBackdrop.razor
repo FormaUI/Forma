@@ -1,3 +1,9 @@
 @namespace Forma.Blazor.Components.Layout
+@inherits FormaElementBase
 
-<div @attributes="AdditionalAttributes" class="@CssClass">@ChildContent</div>
+<div id="@Id"
+     data-rid="@RuntimeId"
+     class="@RootClass"
+     style="@RootStyle"
+     @attributes="AdditionalAttributes"
+     @ref="RootElement">@ChildContent</div>

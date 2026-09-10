@@ -18,7 +18,7 @@ internal static class ExplorerSortPresentation
         };
 
     /// <summary>The label of <paramref name="field"/>.</summary>
-    public static string GetFieldLabel(IStringLocale<FormaExplorer> locale, ExplorerSortField field)
+    public static string GetFieldLabel(IStringLocale locale, ExplorerSortField field)
         => field switch
         {
             ExplorerSortField.Name => locale["Name"].Value,
@@ -30,6 +30,6 @@ internal static class ExplorerSortPresentation
         };
 
     /// <summary>The label of <paramref name="direction"/>.</summary>
-    public static string GetDirectionLabel(IStringLocale<FormaExplorer> locale, ExplorerSortDirection direction)
+    public static string GetDirectionLabel(IStringLocale locale, ExplorerSortDirection direction)
         => direction == ExplorerSortDirection.Ascending ? locale["Ascending"].Value : locale["Descending"].Value;
 }

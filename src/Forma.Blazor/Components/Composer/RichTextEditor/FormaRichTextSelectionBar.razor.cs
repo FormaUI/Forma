@@ -4,10 +4,9 @@ using Forma.Framework.Common.Interop.Behaviours;
 using Forma.Framework.Composer.Editing;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 
 /// <summary>Floating formatting bar positioned beneath an active text selection, carrying the items plugins placed on the selection row.</summary>
-public sealed partial class FormaRichTextSelectionBar : ComponentBase, IAsyncDisposable
+public sealed partial class FormaRichTextSelectionBar : FormaComponentBase
 {
     /// <summary>The editor element this selection bar is scoped to.</summary>
     [Parameter] public ElementReference? EditorElement { get; set; }
@@ -23,7 +22,9 @@ public sealed partial class FormaRichTextSelectionBar : ComponentBase, IAsyncDis
 
     [CascadingParameter] private ComposerSelectionBar? Bar { get; set; }
 
-    [Inject] private IJSRuntime JS { get; set; } = default!;
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaRichTextEditor);
 
     private ElementReference _menuElement;
     private SelectionFollower _follower = default!;
@@ -43,6 +44,9 @@ public sealed partial class FormaRichTextSelectionBar : ComponentBase, IAsyncDis
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-        => await _follower.DisposeAsync();
+    protected override async ValueTask DisposeAsyncCore()
+    {
+        await _follower.DisposeAsync();
+        await base.DisposeAsyncCore();
+    }
 }

@@ -3,30 +3,23 @@ namespace Forma.Blazor.Components.Inputs;
 using System.Diagnostics.CodeAnalysis;
 
 using Forma.Framework.Common.Interop.Behaviours;
-using Forma.Framework.Localization;
+using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.JSInterop;
 
 /// <summary>A password field with a toggle that reveals the typed value.</summary>
-public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposable
+public sealed partial class FormaPasswordBox : FormaInputBase<string?>
 {
     // The lengths the built-in rating scores a point at; the longer one is also what the advice asks for.
     private const int ScoredLength = 8;
     private const int WellScoredLength = 12;
 
-    private readonly string _id = $"fld-{Guid.NewGuid():N}";
-    private ElementReference _inputElement;
     private AutofillTracker _autofill = default!;
     private ValidationMessageStore _messages = default!;
     private IReadOnlyList<string> _advice = [];
     private bool _hasForbiddenTerm;
     private bool _isRevealed;
-
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-
-    [Inject] private IStringLocale<FormaPasswordBox> L { get; set; } = default!;
 
     /// <summary>The floating label text.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
@@ -140,8 +133,11 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
         return value.Length;
     }
 
+    private string ElementId
+        => Id ?? $"fld-{RuntimeId:N}";
+
     private string AdviceId
-        => $"{_id}-advice";
+        => $"{ElementId}-advice";
 
     // An explicit attribute overwrites one of the same name from AdditionalAttributes, so a
     // caller's own description has to be carried through rather than dropped.
@@ -322,8 +318,14 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
             return;
         }
 
-        await _autofill.AttachAsync(_inputElement);
+        await _autofill.AttachAsync(RootElement);
     }
+
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder
+            .Add("forma-field-input")
+            .Add("forma-password-box");
 
     /// <inheritdoc />
     protected override void Dispose(bool disposing)
@@ -337,6 +339,9 @@ public sealed partial class FormaPasswordBox : InputBase<string?>, IAsyncDisposa
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-        => await _autofill.DisposeAsync();
+    protected override async ValueTask DisposeAsyncCore()
+    {
+        await _autofill.DisposeAsync();
+        await base.DisposeAsyncCore();
+    }
 }

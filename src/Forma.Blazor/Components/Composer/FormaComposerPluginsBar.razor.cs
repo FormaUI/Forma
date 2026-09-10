@@ -1,19 +1,16 @@
 namespace Forma.Blazor.Components.Composer;
 
 using Forma.Framework.Composer.Editing;
-using Forma.Framework.Localization;
+using Forma.Framework.Css;
 using Forma.Framework.Toolbar;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>The bar carrying the commands of the plugins a host registered, overflowing the surplus into a menu.</summary>
-public sealed partial class FormaComposerPluginsBar : ComponentBase
+public sealed partial class FormaComposerPluginsBar : FormaElementBase
 {
     /// <summary>The number of commands shown before the rest move into the overflow menu.</summary>
     public const int InlineLimit = 8;
-
-    /// <summary>The id the bar's element carries, so a control elsewhere can point at it.</summary>
-    [Parameter] public string? Id { get; set; }
 
     /// <summary>The items the bar carries.</summary>
     [Parameter] public IReadOnlyList<FormaToolbarItem> Items { get; set; } = [];
@@ -33,7 +30,9 @@ public sealed partial class FormaComposerPluginsBar : ComponentBase
     /// <summary>Animates the transition between hidden and shown instead of snapping instantly.</summary>
     [Parameter] public bool Animated { get; set; }
 
-    [Inject] private IStringLocale<FormaComposer> L { get; set; } = default!;
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaComposer);
 
     private IReadOnlyList<FormaToolbarItem> _visibleItems = [];
 
@@ -81,4 +80,8 @@ public sealed partial class FormaComposerPluginsBar : ComponentBase
 
     private string GetItemTitle(FormaToolbarItem item)
         => L[item.Title].Value;
+
+    /// <inheritdoc />
+    protected override void BuildRootClass(CssClassBuilder builder)
+        => builder.Add("forma-composer-plugins-row");
 }

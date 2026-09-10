@@ -7,10 +7,9 @@ using Forma.Framework.Composer.Editing;
 using Forma.Framework.Composer.Plugins;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 
 /// <summary>The rich text document laid out as a reader will see it, at the page size and zoom its view plugin holds.</summary>
-public sealed partial class FormaRichTextPreview : ComponentBase, IAsyncDisposable
+public sealed partial class FormaRichTextPreview : FormaComponentBase
 {
     /// <summary>The class the document's container carries, on screen and on paper alike.</summary>
     private const string ProseClass = "forma-prose";
@@ -21,7 +20,9 @@ public sealed partial class FormaRichTextPreview : ComponentBase, IAsyncDisposab
     /// <summary>The view plugin cascaded by the composer surface.</summary>
     [CascadingParameter] public IComposerViewPlugin? ViewPlugin { get; set; }
 
-    [Inject] private IJSRuntime JS { get; set; } = default!;
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaRichTextEditor);
 
     private RichTextPreviewViewPlugin _previewPlugin = default!;
     private Print _print = default!;
@@ -77,12 +78,13 @@ public sealed partial class FormaRichTextPreview : ComponentBase, IAsyncDisposab
         => _ = InvokeAsync(async () => await _download.SaveAsync("document.html", Content, "text/html"));
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsyncCore()
     {
         _previewPlugin.PrintRequested -= HandlePrintRequested;
         _previewPlugin.ExportHtmlRequested -= HandleExportHtmlRequested;
 
         await _print.DisposeAsync();
         await _download.DisposeAsync();
+        await base.DisposeAsyncCore();
     }
 }

@@ -1,5 +1,11 @@
-<dialog @ref="_dialogElement"
-        class="forma-dialog @SizeClass"
+@inherits FormaElementBase
+
+<dialog id="@Id"
+        data-rid="@RuntimeId"
+        class="@RootClass"
+        style="@RootStyle"
+        @attributes="AdditionalAttributes"
+        @ref="RootElement"
         @onclose="HandleDialogClose">
     <div class="forma-dialog-dialog">
         @if (ShowHeader)

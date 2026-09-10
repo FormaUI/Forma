@@ -1,4 +1,11 @@
-<div class="forma-search-toolbar">
+@inherits FormaElementBase
+
+<div id="@Id"
+     data-rid="@RuntimeId"
+     class="@RootClass"
+     style="@RootStyle"
+     @attributes="AdditionalAttributes"
+     @ref="RootElement">
     <div class="forma-search-toolbar-search">
         <FormaSearchBox Options="Search"
                         OnSearch="OnSearch"

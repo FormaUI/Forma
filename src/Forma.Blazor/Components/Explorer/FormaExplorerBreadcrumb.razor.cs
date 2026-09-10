@@ -4,12 +4,11 @@ using Forma.Blazor.Components.Navigation;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Items;
 using Forma.Framework.Explorer.Navigation;
-using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>The explorer's folder path as a breadcrumb, from the root through the current folder, each crumb opening a menu of its subfolders where the options allow.</summary>
-public sealed partial class FormaExplorerBreadcrumb : ComponentBase
+public sealed partial class FormaExplorerBreadcrumb : FormaComponentBase
 {
     [CascadingParameter] private IExplorerConfigurationView Configuration { get; set; } = default!;
 
@@ -19,7 +18,9 @@ public sealed partial class FormaExplorerBreadcrumb : ComponentBase
 
     [CascadingParameter] private IExplorerLocationInteraction LocationInteraction { get; set; } = default!;
 
-    [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaExplorer);
 
     /// <inheritdoc />
     protected override void OnInitialized()

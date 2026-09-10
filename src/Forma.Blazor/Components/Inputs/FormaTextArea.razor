@@ -1,11 +1,14 @@
 @namespace Forma.Blazor.Components.Inputs
-@inherits InputBase<string?>
+@inherits FormaInputBase<string?>
 
-<FormaField Label="@Label" TargetId="@_id" Required="@Required" Multiline="true">
+<FormaField Label="@Label" TargetId="@ElementId" Required="@Required" Multiline="true">
     <ChildContent>
-        <textarea @attributes="AdditionalAttributes"
-                  id="@_id"
-                  class="forma-field-input forma-textarea @(ShowCharacterCount ? "forma-textarea-counting" : null) @CssClass"
+        <textarea id="@ElementId"
+                  data-rid="@RuntimeId"
+                  class="@RootClass"
+                  style="@RootStyle"
+                  @attributes="AdditionalAttributes"
+                  @ref="RootElement"
                   placeholder=" "
                   rows="@Rows"
                   maxlength="@MaxLength"

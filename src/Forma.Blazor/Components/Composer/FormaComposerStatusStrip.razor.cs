@@ -4,13 +4,12 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 
 using Forma.Framework.Composer.Editing;
-using Forma.Framework.Localization;
 using Forma.Framework.Toolbar;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>The strip of status readouts plugins have pushed, shown beneath the canvas regardless of which editor is active.</summary>
-public sealed partial class FormaComposerStatusStrip : ComponentBase
+public sealed partial class FormaComposerStatusStrip : FormaComponentBase
 {
     /// <summary>Callback invoked with the command a status item raised.</summary>
     [Parameter] public EventCallback<string> OnCommand { get; set; }
@@ -18,7 +17,9 @@ public sealed partial class FormaComposerStatusStrip : ComponentBase
     /// <summary>The composer state cascaded from the parent shell.</summary>
     [CascadingParameter] public ComposerContext? Context { get; set; }
 
-    [Inject] private IStringLocale<FormaComposer> L { get; set; } = default!;
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaComposer);
 
     private string AnnouncedText
         => Context is null

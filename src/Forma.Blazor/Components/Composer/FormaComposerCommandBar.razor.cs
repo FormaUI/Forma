@@ -2,13 +2,12 @@ namespace Forma.Blazor.Components.Composer;
 
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Icons;
-using Forma.Framework.Localization;
 using Forma.Framework.Toolbar;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>One command bar belonging to an editor, laying its items — and, optionally, undo/redo — on a <see cref="FormaToolbar"/>.</summary>
-public sealed partial class FormaComposerCommandBar : ComponentBase
+public sealed partial class FormaComposerCommandBar : FormaComponentBase
 {
     /// <summary>The accessible name of the bar.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
@@ -37,7 +36,9 @@ public sealed partial class FormaComposerCommandBar : ComponentBase
     /// <summary>The composer state cascaded from the parent shell.</summary>
     [CascadingParameter] public ComposerContext? Context { get; set; }
 
-    [Inject] private IStringLocale<FormaComposer> L { get; set; } = default!;
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaComposer);
 
     private bool CanUndo
         => Context?.History.CanUndo ?? false;

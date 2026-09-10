@@ -2,12 +2,11 @@ namespace Forma.Blazor.Components.Explorer;
 
 using Forma.Framework.Explorer.Items;
 using Forma.Framework.Explorer.Navigation;
-using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
 
 /// <summary>One folder in the sidebar tree, rendering its own descendants.</summary>
-public sealed partial class FormaExplorerFolderNode : ComponentBase
+public sealed partial class FormaExplorerFolderNode : FormaComponentBase
 {
     /// <summary>The folder item this node represents.</summary>
     [Parameter, EditorRequired] public IExplorerFolderItem Item { get; set; } = default!;
@@ -19,7 +18,9 @@ public sealed partial class FormaExplorerFolderNode : ComponentBase
 
     [CascadingParameter] private IExplorerSidebarInteraction Interaction { get; set; } = default!;
 
-    [Inject] private IStringLocale<FormaExplorer> L { get; set; } = default!;
+    /// <inheritdoc />
+    protected override Type LocalizationSourceType
+        => typeof(FormaExplorer);
 
     /// <inheritdoc />
     protected override void OnParametersSet()

@@ -1,13 +1,17 @@
 @namespace Forma.Blazor.Components.Buttons
+@inherits FormaElementBase
 
-<button @attributes="AdditionalAttributes"
-        class="@CssClass"
+<button id="@Id"
+        data-rid="@RuntimeId"
+        class="@RootClass"
+        style="@RootStyle"
+        @attributes="AdditionalAttributes"
+        @ref="RootElement"
         type="@TypeAttribute"
         disabled="@IsDisabled"
         data-busy="@DataBusy"
         aria-disabled="@AriaDisabled"
         aria-busy="@AriaBusy"
-        @ref="Element"
         @onclick="HandleClickAsync"
         @onclick:preventDefault="Busy">@if (BusyText is null)
     {
