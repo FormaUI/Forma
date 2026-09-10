@@ -1,4 +1,5 @@
 @inherits FormaBunitContext
+@using Forma.Framework.Common.Interop.Behaviours
 @code {
     public sealed class Component
     {
@@ -217,6 +218,23 @@
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-select-popover"));
+        }
+
+        [Fact]
+        public void Should_open_under_the_fields_start_edge()
+        {
+            // Arrange
+            using var ctx = new FormaSelectTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Label="Status" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find(".forma-select-trigger").Click();
+
+            // Assert
+            Assert.Equal(PopoverAlignment.Start, cut.FindComponent<FormaPopover>().Instance.Alignment);
         }
     }
 }

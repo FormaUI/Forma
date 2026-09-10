@@ -1,5 +1,6 @@
 @typeparam TValue
 @namespace Forma.Blazor.Components.Inputs
+@using Forma.Framework.Common.Interop.Behaviours
 @inherits FormaInputBase<List<TValue>>
 
 <FormaField Label="@Label" TargetId="@ElementId" Required="@Required" LabelMode="FieldLabelMode.Pinned">
@@ -23,7 +24,7 @@
                     <span class="forma-multi-select-arrow" aria-hidden="true">&#9662;</span>
                 </button>
             </div>
-            <FormaPopover @ref="Popover"
+            <FormaPopover @ref="Popover" Alignment="PopoverAlignment.Start"
                         Anchor="_anchorElement"
                         OnOpenChanged="_ => { }"
                         OnOpened="FocusSearchAsync">

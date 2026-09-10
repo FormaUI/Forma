@@ -1,4 +1,5 @@
 @inherits FormaBunitContext
+@using Forma.Framework.Common.Interop.Behaviours
 @code {
     public sealed class Component
     {
@@ -345,6 +346,23 @@
                 @<FakeFormHost EditContext="@(new EditContext(model))">
                     <FormaMultiSelect TValue="int" @bind-Value="model.Categories" Options="@(null!)" Label="Categories" />
                 </FakeFormHost>));
+        }
+
+        [Fact]
+        public void Should_open_under_the_fields_start_edge()
+        {
+            // Arrange
+            using var ctx = new FormaMultiSelectTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaMultiSelect TValue="int" @bind-Value="model.Categories" Options="Options" Label="Categories" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find(".forma-multi-select-trigger").Click();
+
+            // Assert
+            Assert.Equal(PopoverAlignment.Start, cut.FindComponent<FormaPopover>().Instance.Alignment);
         }
     }
 }
