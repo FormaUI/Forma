@@ -12,7 +12,7 @@
     <FormaTextBox @bind-Value="_source" Label="@L["Video URL"]" Required="true" />
     <FormaTextBox @bind-Value="_title" Label="@L["Title"]" />
     <div class="forma-composer-dialog-checkbox">
-        <FormaCheckBox Checked="_autoplay" CheckedChanged="v => _autoplay = v">
+        <FormaCheckBox @bind-Value="_autoplay">
             @L["Autoplay"]
         </FormaCheckBox>
     </div>

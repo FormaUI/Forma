@@ -7,9 +7,12 @@
         {
             // Arrange
             using var ctx = new FormaCheckBoxTests();
+            var model = new FakeModel();
 
             // Act
-            var cut = ctx.Render(@<FormaCheckBox />);
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCheckBox @bind-Value="model.Toggle" />
+            </FakeFormHost>);
             var input = cut.Find(".forma-checkbox");
 
             // Assert
@@ -18,13 +21,16 @@
         }
 
         [Fact]
-        public void Should_reflect_the_checked_parameter()
+        public void Should_reflect_the_bound_value()
         {
             // Arrange
             using var ctx = new FormaCheckBoxTests();
+            var model = new FakeModel { Toggle = true };
 
             // Act
-            var cut = ctx.Render(@<FormaCheckBox Checked="true" />);
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCheckBox @bind-Value="model.Toggle" />
+            </FakeFormHost>);
 
             // Assert
             Assert.True(cut.Find(".forma-checkbox").HasAttribute("checked"));
@@ -35,26 +41,31 @@
         {
             // Arrange
             using var ctx = new FormaCheckBoxTests();
+            var model = new FakeModel();
 
             // Act
-            var cut = ctx.Render(@<FormaCheckBox Disabled="true" />);
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCheckBox @bind-Value="model.Toggle" Disabled="true" />
+            </FakeFormHost>);
 
             // Assert
             Assert.True(cut.Find(".forma-checkbox").HasAttribute("disabled"));
         }
 
         [Fact]
-        public void Should_merge_a_host_supplied_class_with_its_own()
+        public void Should_write_its_own_class_then_the_hosts_then_the_fields()
         {
             // Arrange
             using var ctx = new FormaCheckBoxTests();
+            var model = new FakeModel();
 
             // Act
-            var cut = ctx.Render(@<FormaCheckBox class="host-supplied" />);
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCheckBox @bind-Value="model.Toggle" class="host-supplied" />
+            </FakeFormHost>);
 
             // Assert
-            Assert.Contains("forma-checkbox", cut.Find("input").ClassName);
-            Assert.Contains("host-supplied", cut.Find("input").ClassName);
+            Assert.Equal("forma-checkbox host-supplied valid", cut.Find("input").ClassName);
         }
 
         [Fact]
@@ -62,9 +73,12 @@
         {
             // Arrange
             using var ctx = new FormaCheckBoxTests();
+            var model = new FakeModel();
 
             // Act
-            var cut = ctx.Render(@<FormaCheckBox data-row-key="7" aria-label="Select Row" />);
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCheckBox @bind-Value="model.Toggle" data-row-key="7" aria-label="Select Row" />
+            </FakeFormHost>);
             var input = cut.Find(".forma-checkbox");
 
             // Assert
@@ -73,18 +87,37 @@
         }
 
         [Fact]
-        public void Should_raise_checked_changed_with_the_new_value_on_a_normal_toggle()
+        public void Should_write_the_new_value_to_the_model_on_a_normal_toggle()
         {
             // Arrange
             using var ctx = new FormaCheckBoxTests();
-            bool? raised = null;
-            var cut = ctx.Render(@<FormaCheckBox Checked="false" CheckedChanged="v => raised = v" />);
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCheckBox @bind-Value="model.Toggle" />
+            </FakeFormHost>);
 
             // Act
             cut.Find(".forma-checkbox").Change(true);
 
             // Assert
-            Assert.True(raised);
+            Assert.True(model.Toggle);
+        }
+
+        [Fact]
+        public void Should_mark_the_field_modified_once_toggled()
+        {
+            // Arrange
+            using var ctx = new FormaCheckBoxTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCheckBox @bind-Value="model.Toggle" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find(".forma-checkbox").Change(true);
+
+            // Assert
+            Assert.Equal("forma-checkbox modified valid", cut.Find("input").ClassName);
         }
 
         [Fact]
@@ -92,11 +125,11 @@
         {
             // Arrange
             using var ctx = new FormaCheckBoxTests();
+            var model = new FakeModel();
             var clicks = 0;
-            bool? raised = null;
-            var cut = ctx.Render(@<FormaCheckBox Checked="false"
-                                                  CheckedChanged="v => raised = v"
-                                                  OnClick="() => clicks++" />);
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCheckBox @bind-Value="model.Toggle" OnClick="() => clicks++" />
+            </FakeFormHost>);
 
             // Act
             cut.Find(".forma-checkbox").Click();
@@ -104,7 +137,7 @@
 
             // Assert
             Assert.Equal(1, clicks);
-            Assert.True(raised);
+            Assert.True(model.Toggle);
         }
 
         [Fact]
@@ -112,9 +145,12 @@
         {
             // Arrange
             using var ctx = new FormaCheckBoxTests();
+            var model = new FakeModel();
 
             // Act
-            var cut = ctx.Render(@<FormaCheckBox PreventDefault="true" />);
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCheckBox @bind-Value="model.Toggle" PreventDefault="true" />
+            </FakeFormHost>);
 
             // Assert
             Assert.True(cut.Find(".forma-checkbox").HasAttribute("blazor:onclick:preventdefault"));
@@ -125,9 +161,12 @@
         {
             // Arrange
             using var ctx = new FormaCheckBoxTests();
+            var model = new FakeModel();
 
             // Act
-            var cut = ctx.Render(@<FormaCheckBox OnClick="() => { }" />);
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCheckBox @bind-Value="model.Toggle" OnClick="() => { }" />
+            </FakeFormHost>);
 
             // Assert
             Assert.False(cut.Find(".forma-checkbox").HasAttribute("blazor:onclick:preventdefault"));
@@ -138,10 +177,13 @@
         {
             // Arrange
             using var ctx = new FormaCheckBoxTests();
+            var model = new FakeModel();
             var invocation = ctx.JSInterop.SetupVoid("setIndeterminate", _ => true);
 
             // Act
-            ctx.Render(@<FormaCheckBox Indeterminate="true" />);
+            ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCheckBox @bind-Value="model.Toggle" Indeterminate="true" />
+            </FakeFormHost>);
 
             // Assert
             invocation.VerifyInvoke("setIndeterminate");
@@ -153,9 +195,12 @@
         {
             // Arrange
             using var ctx = new FormaCheckBoxTests();
+            var model = new FakeModel { Toggle = true };
 
             // Act
-            ctx.Render(@<FormaCheckBox Checked="true" />);
+            ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCheckBox @bind-Value="model.Toggle" />
+            </FakeFormHost>);
 
             // Assert
             Assert.Empty(ctx.JSInterop.Invocations["setIndeterminate"]);
@@ -166,9 +211,12 @@
         {
             // Arrange
             using var ctx = new FormaCheckBoxTests();
+            var model = new FakeModel();
 
             // Act
-            var cut = ctx.Render(@<FormaCheckBox>Subscribe to updates</FormaCheckBox>);
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCheckBox @bind-Value="model.Toggle">Subscribe to updates</FormaCheckBox>
+            </FakeFormHost>);
             var label = cut.Find(".forma-checkbox-label");
 
             // Assert
@@ -182,9 +230,12 @@
         {
             // Arrange
             using var ctx = new FormaCheckBoxTests();
+            var model = new FakeModel();
 
             // Act
-            var cut = ctx.Render(@<FormaCheckBox />);
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCheckBox @bind-Value="model.Toggle" />
+            </FakeFormHost>);
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-checkbox-label"));
@@ -196,9 +247,12 @@
         {
             // Arrange
             using var ctx = new FormaCheckBoxTests();
+            var model = new FakeModel();
 
             // Act
-            var cut = ctx.Render(@<FormaCheckBox class="host-supplied" data-row-key="7">Featured</FormaCheckBox>);
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCheckBox @bind-Value="model.Toggle" class="host-supplied" data-row-key="7">Featured</FormaCheckBox>
+            </FakeFormHost>);
             var input = cut.Find(".forma-checkbox");
 
             // Assert
@@ -208,18 +262,42 @@
         }
 
         [Fact]
-        public void Should_raise_checked_changed_when_labelled()
+        public void Should_write_the_new_value_to_the_model_when_labelled()
         {
             // Arrange
             using var ctx = new FormaCheckBoxTests();
-            bool? raised = null;
-            var cut = ctx.Render(@<FormaCheckBox Checked="false" CheckedChanged="v => raised = v">Featured</FormaCheckBox>);
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCheckBox @bind-Value="model.Toggle">Featured</FormaCheckBox>
+            </FakeFormHost>);
 
             // Act
             cut.Find(".forma-checkbox").Change(true);
 
             // Assert
-            Assert.True(raised);
+            Assert.True(model.Toggle);
+        }
+
+        [Fact]
+        public void Should_take_a_value_and_an_expression_without_a_binding()
+        {
+            // Arrange
+            using var ctx = new FormaCheckBoxTests();
+            var model = new FakeModel();
+            var toggled = false;
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCheckBox Value="true" ValueChanged="_ => toggled = true" ValueExpression="() => model.Toggle" PreventDefault="true" />
+            </FakeFormHost>);
+            cut.Find(".forma-checkbox").Change(false);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.True(toggled);
+                Assert.False(model.Toggle);
+            });
         }
     }
 }

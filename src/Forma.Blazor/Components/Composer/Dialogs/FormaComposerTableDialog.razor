@@ -12,7 +12,7 @@
     <FormaSlider TValue="int" @bind-Value="_rows" Label="@L["Rows"]" Min="1" Max="@MaxRows" />
     <FormaSlider TValue="int" @bind-Value="_columns" Label="@L["Columns"]" Min="1" Max="@MaxColumns" />
     <div class="forma-composer-dialog-checkbox">
-        <FormaCheckBox Checked="_includeHeader" CheckedChanged="v => _includeHeader = v">
+        <FormaCheckBox @bind-Value="_includeHeader">
             @L["Include Header Row"]
         </FormaCheckBox>
     </div>

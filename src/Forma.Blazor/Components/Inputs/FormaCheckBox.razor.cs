@@ -1,20 +1,16 @@
 namespace Forma.Blazor.Components.Inputs;
 
+using System.Diagnostics.CodeAnalysis;
+
 using Forma.Framework.Common.Interop.Operations;
 using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-/// <summary>A styled checkbox with a script-driven indeterminate state, optionally leaving the checked state to the caller.</summary>
-public sealed partial class FormaCheckBox : FormaElementBase
+/// <summary>A styled checkbox bound to a Boolean, with a script-driven indeterminate state, optionally leaving the checked state to the caller.</summary>
+public sealed partial class FormaCheckBox : FormaInputBase<bool>
 {
-    /// <summary>Whether the checkbox is checked.</summary>
-    [Parameter] public bool Checked { get; set; }
-
-    /// <summary>Raised with the new state after a normal toggle.</summary>
-    [Parameter] public EventCallback<bool> CheckedChanged { get; set; }
-
     /// <summary>Shows the "some but not all" visual. Set from script, since it has no content attribute.</summary>
     [Parameter] public bool Indeterminate { get; set; }
 
@@ -40,8 +36,8 @@ public sealed partial class FormaCheckBox : FormaElementBase
     protected override void OnInitialized()
         => _checkBox = new CheckBox(JS);
 
-    private Task HandleChangeAsync(ChangeEventArgs args)
-        => CheckedChanged.InvokeAsync(args.Value is true);
+    private void HandleChange(ChangeEventArgs args)
+        => CurrentValue = args.Value is true;
 
     private Task HandleClickAsync(MouseEventArgs args)
         => OnClick.InvokeAsync(args);
@@ -65,6 +61,15 @@ public sealed partial class FormaCheckBox : FormaElementBase
     /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)
         => builder.Add("forma-checkbox");
+
+    /// <inheritdoc />
+    protected override bool TryParseValueFromString(string? value, out bool result, [NotNullWhen(false)] out string? validationErrorMessage)
+    {
+        result = bool.TryParse(value, out var parsed) && parsed;
+        validationErrorMessage = null;
+
+        return true;
+    }
 
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()

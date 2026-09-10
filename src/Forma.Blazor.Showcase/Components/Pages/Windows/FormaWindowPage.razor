@@ -63,7 +63,7 @@
                      OnClosing="args => args.Cancel = _hasUnsavedWork"
                      OnClose="() => _isPropertiesOpen = false">
             <Body>
-                <FormaCheckBox @bind-Checked="_hasUnsavedWork">@L["Unsaved work"]</FormaCheckBox>
+                <FormaCheckBox @bind-Value="_hasUnsavedWork">@L["Unsaved work"]</FormaCheckBox>
             </Body>
         </FormaWindow>
     }
@@ -114,7 +114,7 @@
     {
         <FormaWindow Title="@L["Zoom"]" Parent="_previewAWindow" Placement="new(560, 500, 320, 200)" Options="new() { Maximizable = false }" OnClosing="args => args.Cancel = _zoomHasUnsavedWork" OnClose="() => _isZoomOpen = false">
             <Body>
-                <FormaCheckBox @bind-Checked="_zoomHasUnsavedWork">@L["Unsaved work"]</FormaCheckBox>
+                <FormaCheckBox @bind-Value="_zoomHasUnsavedWork">@L["Unsaved work"]</FormaCheckBox>
             </Body>
         </FormaWindow>
     }

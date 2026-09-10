@@ -1,5 +1,5 @@
 @namespace Forma.Blazor.Components.Inputs
-@inherits FormaElementBase
+@inherits FormaInputBase<bool>
 
 @{
     RenderFragment input = @<input id="@Id"
@@ -9,9 +9,9 @@
                                    @attributes="AdditionalAttributes"
                                    @ref="RootElement"
                                    type="checkbox"
-                                   checked="@Checked"
+                                   checked="@CurrentValue"
                                    disabled="@Disabled"
-                                   @onchange="HandleChangeAsync"
+                                   @onchange="HandleChange"
                                    @onclick="HandleClickAsync"
                                    @onclick:preventDefault="@PreventDefault" />;
 }

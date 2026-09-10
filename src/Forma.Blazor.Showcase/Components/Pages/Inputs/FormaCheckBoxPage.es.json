@@ -1,6 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
-  "A checkbox with a third, indeterminate state for a choice that governs others. A caller can also take the checked state over entirely, which is what a select-all needs when only some of its children are checked.": "Una casilla con un tercer estado, indeterminado, para una elección que gobierna otras. Quien la usa también puede asumir por completo el estado marcado, que es lo que necesita un seleccionar-todo cuando solo algunos de sus hijos están marcados.",
+  "A checkbox bound to a Boolean, with a third, indeterminate state for a choice that governs others. A caller can also take the checked state over entirely, which is what a select-all needs when only some of its children are checked.": "Una casilla enlazada a un booleano, con un tercer estado, indeterminado, para una elección que gobierna otras. Quien la usa también puede asumir por completo el estado marcado, que es lo que necesita un seleccionar-todo cuando solo algunos de sus hijos están marcados.",
   "Basic": "Básico",
   "Disabled": "Deshabilitado",
   "Indeterminate": "Indeterminado",
@@ -10,5 +10,11 @@
   "Off": "Apagado",
   "On": "Encendido",
   "Select all": "Seleccionar todo",
-  "Item {Number}": "Elemento {Number}"
+  "Item {Number}": "Elemento {Number}",
+  "Required in a Form": "Obligatoria en un Formulario",
+  "A checkbox is a form input: submitting without accepting shows the validation message under it, and accepting clears it.": "Una casilla es un campo de formulario: enviar sin aceptar muestra el mensaje de validación debajo, y aceptar lo quita.",
+  "I accept the terms": "Acepto los términos",
+  "Submit": "Enviar",
+  "Submitted.": "Enviado.",
+  "You must accept the terms to continue.": "Debes aceptar los términos para continuar."
 }

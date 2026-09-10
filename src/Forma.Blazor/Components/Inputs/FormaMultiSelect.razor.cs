@@ -35,6 +35,9 @@ public sealed partial class FormaMultiSelect<TValue> : FormaInputBase<List<TValu
 
     private string _searchText = "";
     private ElementReference _anchorElement;
+
+    // The field an option checkbox names to the input base; an option is not a form field and nothing binds it.
+    private bool OptionSelection { get; }
     // The popover's search box; the reference focuses it.
     private FormaSearchBox SearchBox { get; set; } = default!;
     private FormaPopover Popover { get; set; } = default!;

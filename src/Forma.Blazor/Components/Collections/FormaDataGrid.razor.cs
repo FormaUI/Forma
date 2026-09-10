@@ -24,6 +24,9 @@ public sealed partial class FormaDataGrid<TGridItem> : FormaElementBase
     private readonly RowEditSession<TGridItem> _editSession = new();
 
     private HashSet<TGridItem> _selectedSet = [];
+
+    // The field a row checkbox names to the input base; the grid's selection is not a form field and nothing binds it.
+    private bool RowSelection { get; }
     private readonly ParameterState<IReadOnlyList<TGridItem>?> _selectedItemsParameter = new();
     private QuickGrid<TGridItem>? _quickGrid;
     private ElementReference _scrollerElement;

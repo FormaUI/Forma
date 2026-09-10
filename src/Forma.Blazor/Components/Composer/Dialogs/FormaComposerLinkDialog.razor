@@ -18,7 +18,7 @@
         <FormaTextBox @bind-Value="_href" Label="@L["URL"]" Required="true" />
         <FormaTextBox @bind-Value="_name" Label="@L["Name"]" />
         <div class="forma-composer-dialog-checkbox">
-            <FormaCheckBox Checked="_openInNewTab" CheckedChanged="v => _openInNewTab = v">
+            <FormaCheckBox @bind-Value="_openInNewTab">
                 @L["Open in New Tab"]
             </FormaCheckBox>
         </div>

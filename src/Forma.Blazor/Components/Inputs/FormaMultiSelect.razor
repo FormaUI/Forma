@@ -41,8 +41,9 @@
                     <div class="forma-multi-select-options">
                         @foreach (var option in filtered)
                         {
-                            <FormaCheckBox Checked="@IsSelected(option)"
-                                           CheckedChanged="_ => ToggleOption(option)">
+                            <FormaCheckBox Value="@IsSelected(option)"
+                                           ValueChanged="_ => ToggleOption(option)"
+                                           ValueExpression="() => OptionSelection">
                                 <span>@option.Label</span>
                             </FormaCheckBox>
                         }

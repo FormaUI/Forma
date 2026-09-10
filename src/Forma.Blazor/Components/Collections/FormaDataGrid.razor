@@ -44,7 +44,8 @@
                                 @if (!HasMasterCaption)
                                 {
                                     <FormaCheckBox aria-label="@L["Select All"]"
-                                                   Checked="@AllSelected"
+                                                   Value="@AllSelected"
+                                                   ValueExpression="() => AllSelected"
                                                    Indeterminate="@PartiallySelected"
                                                    Disabled="@MasterControlDisabled"
                                                    PreventDefault="true"
@@ -77,8 +78,9 @@
                                                data-row-key="@GetRowToken(row)"
                                                aria-label="@L["Select Row"]"
                                                aria-disabled="@(!CanInteractWithRow(row) ? "true" : null)"
-                                               Checked="@IsSelected(row)"
-                                               CheckedChanged="isSelected => ToggleSelectionAsync(row, isSelected)" />
+                                               Value="@IsSelected(row)"
+                                               ValueChanged="isSelected => ToggleSelectionAsync(row, isSelected)"
+                                               ValueExpression="() => RowSelection" />
                             }
                         </ChildContent>
                     </TemplateColumn>
