@@ -76,13 +76,19 @@ function describeDecision(decision) {
     };
 }
 
-/** An element as a short selector: its tag and its id, or its tag and up to two of its classes when it has no id. */
+/** An element as a short selector: its tag and its runtime id, else its tag and its id, else its tag and up to two of its classes. */
 function describeElement(element) {
     if (!(element instanceof Element)) {
         return null;
     }
 
     const tag = element.tagName.toLowerCase();
+
+    const runtimeId = element.getAttribute('data-rid');
+
+    if (runtimeId) {
+        return `${tag}[data-rid="${runtimeId}"]`;
+    }
 
     if (element.id) {
         return `${tag}#${element.id}`;

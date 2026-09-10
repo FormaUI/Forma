@@ -45,6 +45,30 @@ describe('InputInspector', () => {
         });
     });
 
+    it('names a scope by its runtime id before its id, and by its id before its classes', () => {
+        const grid = document.querySelector('#grid');
+        const press = () => document.querySelector('#cell').dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }));
+        grid.dataset.rid = '01a0869a-c663-7852-94c3-8147a795218d';
+        registration.activate();
+
+        press();
+        const byRuntimeId = report().at(-1);
+        expect(byRuntimeId.owner).toBe('div[data-rid="01a0869a-c663-7852-94c3-8147a795218d"]');
+        expect(byRuntimeId.stack[0].element).toBe('div[data-rid="01a0869a-c663-7852-94c3-8147a795218d"]');
+
+        delete grid.dataset.rid;
+        press();
+        const byId = report().at(-1);
+        expect(byId.owner).toBe('div#grid');
+        expect(byId.stack[0].element).toBe('div#grid');
+
+        grid.removeAttribute('id');
+        press();
+        const byClasses = report().at(-1);
+        expect(byClasses.owner).toBe('div.scope.grid');
+        expect(byClasses.stack[0].element).toBe('div.scope.grid');
+    });
+
     it('describes an unowned input with no owner and an empty stack', () => {
         document.querySelector('#cell').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId: 1 }));
 
