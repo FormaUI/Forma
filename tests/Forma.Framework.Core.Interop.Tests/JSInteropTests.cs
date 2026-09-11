@@ -19,7 +19,7 @@ public sealed class JSInteropTests
     public sealed class Attachment
     {
         [Fact]
-        public async Task Should_report_an_attach_that_did_not_run_and_log_it_at_debug()
+        public async Task Should_report_an_attach_the_import_kept_from_running_and_log_the_import()
         {
             // Arrange
             using var loggerFactory = new FakeLoggerFactory();
@@ -36,9 +36,33 @@ public sealed class JSInteropTests
             Assert.Multiple(() =>
             {
                 Assert.Equal(LogLevel.Debug, entry.Level);
-                Assert.Contains("attach", entry.Message, StringComparison.Ordinal);
+                Assert.Contains("circuit dropped while importing", entry.Message, StringComparison.Ordinal);
                 Assert.Contains(Path, entry.Message, StringComparison.Ordinal);
                 Assert.Contains(Owner.ToString(), entry.Message, StringComparison.Ordinal);
+            });
+        }
+
+        [Fact]
+        public async Task Should_report_an_attach_that_threw_and_log_it_by_name()
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            await using var moduleReference = new FakeJSObjectReference((identifier, _) => identifier == "attach" ? throw new JSException("target is not an element") : null);
+            await using var probe = new Probe(CreateEnvironment(FakeJSRuntime.Importing(moduleReference), loggerFactory));
+
+            // Act
+            var attached = await probe.AttachAsync(default);
+
+            // Assert
+            Assert.False(attached);
+            Assert.False(probe.IsAttached);
+            var entry = Assert.Single(loggerFactory.Entries);
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(LogLevel.Debug, entry.Level);
+                Assert.Contains("attach", entry.Message, StringComparison.Ordinal);
+                Assert.Contains("threw", entry.Message, StringComparison.Ordinal);
+                Assert.Contains(Path, entry.Message, StringComparison.Ordinal);
             });
         }
     }

@@ -478,10 +478,11 @@ does.
    message class in `Forma.Framework.Core.Interop`. Interop tests construct wrappers with
    `NullLogger.Instance`; script tests are unaffected. **Built**, in the shape step 6
    gives it: the wrappers take the JS environment rather than a logger, and every
-   component constructs a wrapper as `new X(JS)`. `InteropLog` carries the dropped
-   circuit, the thrown script, the release under a dropped circuit and the failed
-   import; `InputInteropLog` carries the input
-   scope's two, since the scope holds a handle with no module path. `InputRouter` and
+   component constructs a wrapper as `new X(JS)`. `InteropLog` carries one message
+   per stage, import, call and release, for the dropped circuit and the thrown script,
+   and a failed import is reported once, where it happened, never again at release;
+   `InputInteropLog` carries the input scope's two, since the scope holds a handle with
+   no module path. `InputRouter` and
    `EmojiSpriteLoader`, the two services that own a wrapper, take `ILogger<T>` and
    their registrars `TryAdd` the `NullLogger<>` fallback. The interop tests drive the
    wrappers through `FakeJSRuntime` and `FakeJSObjectReference` in the support project
@@ -506,7 +507,7 @@ does.
 6. **The JS environment.** `IJSEnvironment : IJSRuntime` and `JSEnvironment` in
    `Forma.Framework.Core.Interop`; `JsModule` and `JsInterop` renamed `JSModule` and
    `JSInterop`, each taking `(IJSEnvironment js, string path)` and reading its logger
-   and identity from it; the six interop messages naming the instance; the 31 wrappers,
+   and identity from it; every interop message naming the instance; the 31 wrappers,
    `SentinelObserver<TOwner>` and `JsComposerAssetLoader` (renamed `JSComposerAssetLoader`)
    back to one parameter; `InputScope` taking the environment for its log; `InputRouter`
    and `EmojiSpriteLoader` minting their own environment from the runtime and

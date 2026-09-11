@@ -34,11 +34,11 @@ public sealed class JSModuleTests
         }
 
         [Fact]
-        public async Task Should_log_the_dropped_circuit_at_debug()
+        public async Task Should_log_a_module_that_could_not_be_imported_without_naming_the_export()
         {
             // Arrange
             using var loggerFactory = new FakeLoggerFactory();
-            var js = FakeJSRuntime.Throwing(new JSDisconnectedException("The circuit is gone."));
+            var js = FakeJSRuntime.Throwing(new JSException("Failed to fetch dynamically imported module"));
             await using var module = new JSModule(CreateEnvironment(js, loggerFactory), Path);
 
             // Act
@@ -50,7 +50,54 @@ public sealed class JSModuleTests
             Assert.Multiple(() =>
             {
                 Assert.Equal(LogLevel.Debug, entry.Level);
-                Assert.Contains("circuit dropped", entry.Message, StringComparison.Ordinal);
+                Assert.Contains("could not be imported", entry.Message, StringComparison.Ordinal);
+                Assert.Contains(Path, entry.Message, StringComparison.Ordinal);
+                Assert.Contains(Owner.ToString(), entry.Message, StringComparison.Ordinal);
+                Assert.DoesNotContain("measure", entry.Message, StringComparison.Ordinal);
+            });
+        }
+
+        [Fact]
+        public async Task Should_log_the_circuit_dropping_during_the_import()
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            var js = FakeJSRuntime.Throwing(new JSDisconnectedException("The circuit is gone."));
+            await using var module = new JSModule(CreateEnvironment(js, loggerFactory), Path);
+
+            // Act
+            var value = await module.TryInvokeAsync<int>("measure");
+
+            // Assert
+            Assert.Equal(0, value);
+            var entry = Assert.Single(loggerFactory.Entries);
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(LogLevel.Debug, entry.Level);
+                Assert.Contains("circuit dropped while importing", entry.Message, StringComparison.Ordinal);
+                Assert.Contains(Path, entry.Message, StringComparison.Ordinal);
+                Assert.Contains(Owner.ToString(), entry.Message, StringComparison.Ordinal);
+            });
+        }
+
+        [Fact]
+        public async Task Should_log_the_circuit_dropping_during_the_call()
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            await using var moduleReference = new FakeJSObjectReference((_, _) => throw new JSDisconnectedException("The circuit is gone."));
+            await using var module = new JSModule(CreateEnvironment(FakeJSRuntime.Importing(moduleReference), loggerFactory), Path);
+
+            // Act
+            var ran = await module.TryInvokeVoidAsync("measure");
+
+            // Assert
+            Assert.False(ran);
+            var entry = Assert.Single(loggerFactory.Entries);
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(LogLevel.Debug, entry.Level);
+                Assert.Contains("circuit dropped while calling", entry.Message, StringComparison.Ordinal);
                 Assert.Contains("measure", entry.Message, StringComparison.Ordinal);
                 Assert.Contains(Path, entry.Message, StringComparison.Ordinal);
                 Assert.Contains(Owner.ToString(), entry.Message, StringComparison.Ordinal);
@@ -58,7 +105,7 @@ public sealed class JSModuleTests
         }
 
         [Fact]
-        public async Task Should_log_the_thrown_script_at_debug()
+        public async Task Should_log_the_export_that_threw()
         {
             // Arrange
             using var loggerFactory = new FakeLoggerFactory();
@@ -121,7 +168,7 @@ public sealed class JSModuleTests
         }
 
         [Fact]
-        public async Task Should_log_an_import_that_failed_at_debug()
+        public async Task Should_not_report_a_failed_import_a_second_time()
         {
             // Arrange
             using var loggerFactory = new FakeLoggerFactory();
@@ -133,12 +180,28 @@ public sealed class JSModuleTests
             await module.DisposeAsync();
 
             // Assert
-            Assert.Equal(2, loggerFactory.Entries.Count);
-            var entry = loggerFactory.Entries[1];
+            var entry = Assert.Single(loggerFactory.Entries);
+            Assert.Contains("could not be imported", entry.Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task Should_log_the_circuit_dropping_during_the_release()
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            await using var moduleReference = new FakeJSObjectReference((_, _) => null, releaseException: new JSDisconnectedException("The circuit is gone."));
+            var module = new JSModule(CreateEnvironment(FakeJSRuntime.Importing(moduleReference), loggerFactory), Path);
+            await module.TryInvokeVoidAsync("measure");
+
+            // Act
+            await module.DisposeAsync();
+
+            // Assert
+            var entry = Assert.Single(loggerFactory.Entries);
             Assert.Multiple(() =>
             {
                 Assert.Equal(LogLevel.Debug, entry.Level);
-                Assert.Contains("could not be imported", entry.Message, StringComparison.Ordinal);
+                Assert.Contains("circuit dropped while releasing", entry.Message, StringComparison.Ordinal);
                 Assert.Contains(Path, entry.Message, StringComparison.Ordinal);
                 Assert.Contains(Owner.ToString(), entry.Message, StringComparison.Ordinal);
             });

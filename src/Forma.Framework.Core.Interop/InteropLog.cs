@@ -2,9 +2,15 @@ namespace Forma.Framework.Core.Interop;
 
 using Microsoft.Extensions.Logging;
 
-/// <summary>The messages an interop wrapper writes for the failures it absorbs.</summary>
+/// <summary>The messages an interop wrapper writes for the failures it absorbs at each stage: import, call and release.</summary>
 internal static partial class InteropLog
 {
+    [LoggerMessage(Level = LogLevel.Debug, Message = "The circuit dropped while importing {Module} for {RuntimeId}.")]
+    public static partial void CircuitDroppedWhileImporting(ILogger logger, string module, Guid runtimeId);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "{Module} could not be imported for {RuntimeId}.")]
+    public static partial void ImportFailed(ILogger logger, Exception exception, string module, Guid runtimeId);
+
     [LoggerMessage(Level = LogLevel.Debug, Message = "The circuit dropped while calling {Identifier} in {Module} for {RuntimeId}.")]
     public static partial void CircuitDroppedWhileCalling(ILogger logger, string identifier, string module, Guid runtimeId);
 
@@ -14,6 +20,6 @@ internal static partial class InteropLog
     [LoggerMessage(Level = LogLevel.Debug, Message = "The circuit dropped while releasing {Module} for {RuntimeId}.")]
     public static partial void CircuitDroppedWhileReleasing(ILogger logger, string module, Guid runtimeId);
 
-    [LoggerMessage(Level = LogLevel.Debug, Message = "{Module} could not be imported for {RuntimeId}.")]
-    public static partial void ImportFailed(ILogger logger, Exception exception, string module, Guid runtimeId);
+    [LoggerMessage(Level = LogLevel.Debug, Message = "{Module} threw while being released for {RuntimeId}.")]
+    public static partial void ScriptThrewWhileReleasing(ILogger logger, Exception exception, string module, Guid runtimeId);
 }

@@ -39,7 +39,7 @@ public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposab
         }
         catch (Exception ex) when (ex is JSDisconnectedException or JSException)
         {
-            LogFailure("dispose", ex);
+            LogCallFailure("dispose", ex);
         }
     }
 
@@ -62,7 +62,7 @@ public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposab
         }
         catch (Exception ex) when (ex is JSDisconnectedException or JSException)
         {
-            LogFailure(identifier, ex);
+            LogCallFailure(identifier, ex);
             return false;
         }
     }
@@ -81,7 +81,7 @@ public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposab
         }
         catch (Exception ex) when (ex is JSDisconnectedException or JSException)
         {
-            LogFailure(identifier, ex);
+            LogCallFailure(identifier, ex);
             return default;
         }
     }
@@ -94,7 +94,7 @@ public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposab
         GC.SuppressFinalize(this);
     }
 
-    private void LogFailure(string identifier, Exception ex)
+    private void LogCallFailure(string identifier, Exception ex)
     {
         if (ex is JSDisconnectedException)
         {
