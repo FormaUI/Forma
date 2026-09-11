@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>Answers a wheel turned over a surface: a track moves by it, or an owner is told which way it turned.</summary>
-public sealed class Wheel(IJSRuntime js)
-    : JsInterop(js, "./_content/forma/common/scripts/behaviours/Wheel.js")
+public sealed class Wheel(IJSEnvironment js)
+    : JSInterop(js, "./_content/forma/common/scripts/behaviours/Wheel.js")
 {
     /// <summary>Attaches to the surface, moving the track the wheel names.</summary>
     public ValueTask<bool> AttachAsync(ElementReference target, ScrollWheel wheel)

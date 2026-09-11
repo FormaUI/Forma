@@ -5,9 +5,9 @@ using Forma.Framework.Core.Interop;
 using Microsoft.JSInterop;
 
 /// <summary>Loads a script, module, or stylesheet once per page.</summary>
-public sealed class Asset(IJSRuntime js) : IAsyncDisposable
+public sealed class Asset(IJSEnvironment js) : IAsyncDisposable
 {
-    private readonly JsModule _module = new(js, "./_content/forma/common/scripts/operations/Asset.js");
+    private readonly JSModule _module = new(js, "./_content/forma/common/scripts/operations/Asset.js");
 
     /// <summary>Imports a JavaScript module, reporting whether it loaded.</summary>
     public ValueTask<bool> LoadModuleAsync(string url)

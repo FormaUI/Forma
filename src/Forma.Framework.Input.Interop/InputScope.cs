@@ -1,9 +1,11 @@
 namespace Forma.Framework.Input.Interop;
 
+using Forma.Framework.Core.Interop;
+
 using Microsoft.JSInterop;
 
 /// <summary>An input scope registered with the router, held active while its surface is open and disposed when its owner goes.</summary>
-public sealed class InputScope(IJSObjectReference handle) : IAsyncDisposable
+public sealed class InputScope(IJSObjectReference handle, IJSEnvironment environment) : IAsyncDisposable
 {
     private IJSObjectReference? _handle = handle;
 
@@ -55,7 +57,7 @@ public sealed class InputScope(IJSObjectReference handle) : IAsyncDisposable
         }
         catch (Exception ex) when (ex is JSDisconnectedException or JSException)
         {
-            // Circuit dropped or the scope is gone; there is nothing left to release.
+            LogFailure("dispose", ex);
         }
     }
 
@@ -73,7 +75,20 @@ public sealed class InputScope(IJSObjectReference handle) : IAsyncDisposable
         }
         catch (Exception ex) when (ex is JSDisconnectedException or JSException)
         {
+            LogFailure(identifier, ex);
             return false;
+        }
+    }
+
+    private void LogFailure(string identifier, Exception ex)
+    {
+        if (ex is JSDisconnectedException)
+        {
+            InputInteropLog.CircuitDroppedWhileCalling(environment.Logger, identifier, environment.RuntimeId);
+        }
+        else
+        {
+            InputInteropLog.ScriptThrewWhileCalling(environment.Logger, ex, identifier, environment.RuntimeId);
         }
     }
 }

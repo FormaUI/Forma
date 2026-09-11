@@ -1,6 +1,7 @@
 namespace Forma.Framework.Emojis.Unicode.Tests;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging.Abstractions;
 
 public sealed class EmojiSpriteLoaderTests
 {
@@ -12,7 +13,7 @@ public sealed class EmojiSpriteLoaderTests
         // Arrange
         var js = new BunitJSInterop { Mode = JSRuntimeMode.Loose };
         var handler = js.SetupModule(Module).Setup<bool>("loadSprite", _ => true);
-        await using var loader = new EmojiSpriteLoader(js.JSRuntime);
+        await using var loader = new EmojiSpriteLoader(js.JSRuntime, NullLogger<EmojiSpriteLoader>.Instance);
 
         // Act
         var first = loader.LoadAsync("smileys-0.svg");
@@ -32,7 +33,7 @@ public sealed class EmojiSpriteLoaderTests
         // Arrange
         var js = new BunitJSInterop { Mode = JSRuntimeMode.Loose };
         js.SetupModule(Module).Setup<bool>("loadSprite", _ => true).SetResult(true);
-        await using var loader = new EmojiSpriteLoader(js.JSRuntime);
+        await using var loader = new EmojiSpriteLoader(js.JSRuntime, NullLogger<EmojiSpriteLoader>.Instance);
 
         // Act
         var first = await loader.LoadAsync("smileys-0.svg");
@@ -51,7 +52,7 @@ public sealed class EmojiSpriteLoaderTests
         // Arrange
         var js = new BunitJSInterop { Mode = JSRuntimeMode.Loose };
         js.SetupModule(Module).Setup<bool>("loadSprite", _ => true).SetResult(false);
-        await using var loader = new EmojiSpriteLoader(js.JSRuntime);
+        await using var loader = new EmojiSpriteLoader(js.JSRuntime, NullLogger<EmojiSpriteLoader>.Instance);
 
         // Act
         var first = await loader.LoadAsync("smileys-0.svg");
@@ -73,7 +74,7 @@ public sealed class EmojiSpriteLoaderTests
         var js = new BunitJSInterop { Mode = JSRuntimeMode.Loose };
         js.SetupModule(Module).Setup<bool>("loadSprite", _ => true).SetResult(true);
         var navigation = new RecordedNavigationManager();
-        await using var loader = new EmojiSpriteLoader(js.JSRuntime, navigation);
+        await using var loader = new EmojiSpriteLoader(js.JSRuntime, NullLogger<EmojiSpriteLoader>.Instance, navigation);
         await loader.LoadAsync("smileys-0.svg");
 
         // Act
@@ -90,7 +91,7 @@ public sealed class EmojiSpriteLoaderTests
     {
         // Arrange
         var js = new BunitJSInterop();
-        await using var loader = new EmojiSpriteLoader(js.JSRuntime);
+        await using var loader = new EmojiSpriteLoader(js.JSRuntime, NullLogger<EmojiSpriteLoader>.Instance);
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(() => loader.LoadAsync(" "));

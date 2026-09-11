@@ -9,9 +9,9 @@ using Microsoft.JSInterop;
 
 /// <summary>Routes a pointer to one element for the rest of its gesture.</summary>
 [SuppressMessage("Naming", "CA1720", Justification = "Named after the pointer capture module it owns; the pointer is the subject, not a pointer type.")]
-public sealed class Pointer(IJSRuntime js) : IAsyncDisposable
+public sealed class Pointer(IJSEnvironment js) : IAsyncDisposable
 {
-    private readonly JsModule _module = new(js, "./_content/forma/common/scripts/operations/Pointer.js");
+    private readonly JSModule _module = new(js, "./_content/forma/common/scripts/operations/Pointer.js");
 
     /// <summary>Routes the pointer with the given id to <paramref name="target"/> until released.</summary>
     public ValueTask<bool> CaptureAsync(ElementReference target, long pointerId)

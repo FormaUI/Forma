@@ -2,6 +2,8 @@ namespace Forma.Framework.Input.Interop;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 /// <summary>Registers the input router this package ships.</summary>
 public static class ServiceCollectionExtensions
@@ -15,6 +17,8 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddFormaInputServices(options);
+
+        services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(NullLogger<>)));
 
         // Scoped, because the policy it pushes lands in this circuit's own document.
         services.TryAddScoped<InputRouter>();

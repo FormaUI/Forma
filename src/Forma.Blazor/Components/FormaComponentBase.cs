@@ -1,5 +1,6 @@
 namespace Forma.Blazor.Components;
 
+using Forma.Framework.Core.Interop;
 using Forma.Framework.Localization;
 
 using Microsoft.AspNetCore.Components;
@@ -11,8 +12,9 @@ public abstract class FormaComponentBase : ComponentBase, IAsyncDisposable
 {
     private ILogger? _logger;
     private IStringLocale? _locale;
+    private IJSEnvironment? _js;
 
-    [Inject] protected IJSRuntime JS { get; set; } = default!;
+    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
     [Inject] private ILoggerFactory LoggerFactory { get; set; } = default!;
     [Inject] private IStringLocaleFactory LocaleFactory { get; set; } = default!;
 
@@ -25,6 +27,10 @@ public abstract class FormaComponentBase : ComponentBase, IAsyncDisposable
     /// <summary>The type whose translation files the component reads: its own, unless it shares a feature's.</summary>
     protected virtual Type LocalizationSourceType
         => GetType();
+
+    /// <summary>The JS environment the component's interop runs in: the runtime, under the component's own log and identity.</summary>
+    protected IJSEnvironment JS
+        => _js ??= new JSEnvironment(JSRuntime, Logger, RuntimeId);
 
     /// <summary>The component's log, under its own type as the category.</summary>
     protected ILogger Logger

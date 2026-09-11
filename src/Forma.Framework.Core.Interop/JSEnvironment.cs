@@ -1,0 +1,35 @@
+namespace Forma.Framework.Core.Interop;
+
+using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
+
+/// <summary>A JS environment over any runtime, forwarding its asynchronous calls.</summary>
+public sealed class JSEnvironment : IJSEnvironment
+{
+    private readonly IJSRuntime _runtime;
+
+    /// <summary>Creates an environment over <paramref name="runtime"/> for the owner with the given identity and log.</summary>
+    public JSEnvironment(IJSRuntime runtime, ILogger logger, Guid runtimeId)
+    {
+        ArgumentNullException.ThrowIfNull(runtime);
+        ArgumentNullException.ThrowIfNull(logger);
+
+        _runtime = runtime;
+        Logger = logger;
+        RuntimeId = runtimeId;
+    }
+
+    /// <inheritdoc />
+    public Guid RuntimeId { get; }
+
+    /// <inheritdoc />
+    public ILogger Logger { get; }
+
+    /// <inheritdoc />
+    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
+        => _runtime.InvokeAsync<TValue>(identifier, args);
+
+    /// <inheritdoc />
+    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
+        => _runtime.InvokeAsync<TValue>(identifier, cancellationToken, args);
+}

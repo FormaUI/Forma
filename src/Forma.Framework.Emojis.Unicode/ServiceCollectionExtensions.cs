@@ -4,6 +4,8 @@ using Forma.Framework.Emojis;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 /// <summary>Registers the emoji services this package ships.</summary>
 public static class ServiceCollectionExtensions
@@ -14,6 +16,8 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddFormaEmojiServices(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
+
+        services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(NullLogger<>)));
 
         // Scoped, because the sheets it has adopted are the ones in this circuit's own document.
         services.TryAddScoped<EmojiSpriteLoader>();

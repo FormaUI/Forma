@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.JSInterop;
 
 /// <summary>A lazily-imported JS module, importing it once even under concurrent callers.</summary>
-public sealed class JsModule(IJSRuntime js, string path) : IAsyncDisposable
+public sealed class JSModule(IJSEnvironment js, string path) : IAsyncDisposable
 {
     private Task<IJSObjectReference>? _import;
 
@@ -50,6 +50,7 @@ public sealed class JsModule(IJSRuntime js, string path) : IAsyncDisposable
         }
         catch (Exception ex) when (IsInteropFailure(ex))
         {
+            LogFailure(identifier, ex);
             return false;
         }
     }
@@ -63,6 +64,7 @@ public sealed class JsModule(IJSRuntime js, string path) : IAsyncDisposable
         }
         catch (Exception ex) when (IsInteropFailure(ex))
         {
+            LogFailure(identifier, ex);
             return default;
         }
     }
@@ -84,11 +86,11 @@ public sealed class JsModule(IJSRuntime js, string path) : IAsyncDisposable
         }
         catch (JSDisconnectedException)
         {
-            // Circuit disconnected — safe to ignore.
+            InteropLog.CircuitDroppedWhileReleasing(js.Logger, path, js.RuntimeId);
         }
-        catch (JSException)
+        catch (JSException ex)
         {
-            // Import never completed — nothing to dispose.
+            InteropLog.ImportFailed(js.Logger, ex, path, js.RuntimeId);
         }
     }
 
@@ -100,10 +102,21 @@ public sealed class JsModule(IJSRuntime js, string path) : IAsyncDisposable
     private static bool IsInteropFailure(Exception ex)
         => ex is JSDisconnectedException or JSException;
 
+    private void LogFailure(string identifier, Exception ex)
+    {
+        if (ex is JSDisconnectedException)
+        {
+            InteropLog.CircuitDroppedWhileCalling(js.Logger, identifier, path, js.RuntimeId);
+        }
+        else
+        {
+            InteropLog.ScriptThrewWhileCalling(js.Logger, ex, identifier, path, js.RuntimeId);
+        }
+    }
+
     // JSDisconnectedException exposes only a message-only constructor, so the original
     // cannot be chained as an InnerException — the module path is folded into the message instead.
     [DoesNotReturn]
     private void ThrowEnriched(JSDisconnectedException ex)
         => throw new JSDisconnectedException($"{ex.Message} (module: {path})");
 }
-

@@ -1,5 +1,6 @@
 namespace Forma.Blazor.Components;
 
+using Forma.Framework.Core.Interop;
 using Forma.Framework.Css;
 using Forma.Framework.Localization;
 
@@ -14,6 +15,7 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
 {
     private ILogger? _logger;
     private IStringLocale? _locale;
+    private IJSEnvironment? _js;
 
     /// <summary>The root element's id, verbatim.</summary>
     [Parameter] public string? Id { get; set; }
@@ -24,7 +26,7 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     /// <summary>The style the host adds to the root element.</summary>
     [Parameter] public string? Style { get; set; }
 
-    [Inject] protected IJSRuntime JS { get; set; } = default!;
+    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
     [Inject] private ILoggerFactory LoggerFactory { get; set; } = default!;
     [Inject] private IStringLocaleFactory LocaleFactory { get; set; } = default!;
 
@@ -40,6 +42,10 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     /// <summary>The type whose translation files the component reads: its own, unless it shares a feature's.</summary>
     protected virtual Type LocalizationSourceType
         => GetType();
+
+    /// <summary>The JS environment the component's interop runs in: the runtime, under the component's own log and identity.</summary>
+    protected IJSEnvironment JS
+        => _js ??= new JSEnvironment(JSRuntime, Logger, RuntimeId);
 
     /// <summary>The component's log, under its own type as the category.</summary>
     protected ILogger Logger

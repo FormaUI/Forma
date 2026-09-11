@@ -1,9 +1,11 @@
 namespace Forma.Framework.Emojis.Unicode;
 
 using Forma.Framework.Common.Interop.Operations;
+using Forma.Framework.Core.Interop;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 /// <summary>Adopts emoji sprite sheets into the document, fetching each one once however many emoji draw from it.</summary>
@@ -15,16 +17,17 @@ using Microsoft.JSInterop;
 public sealed class EmojiSpriteLoader : IAsyncDisposable, IDisposable
 {
     private readonly Dictionary<string, Task<bool>> _loadsBySheet = new(StringComparer.Ordinal);
-    private readonly IJSRuntime _js;
+    private readonly JSEnvironment _environment;
     private readonly NavigationManager? _navigation;
 
     private Asset? _asset;
 
-    public EmojiSpriteLoader(IJSRuntime js, NavigationManager? navigation = null)
+    public EmojiSpriteLoader(IJSRuntime js, ILogger<EmojiSpriteLoader> logger, NavigationManager? navigation = null)
     {
         ArgumentNullException.ThrowIfNull(js);
+        ArgumentNullException.ThrowIfNull(logger);
 
-        _js = js;
+        _environment = new JSEnvironment(js, logger, Guid.CreateVersion7());
         _navigation = navigation;
         _navigation?.LocationChanged += HandleLocationChanged;
     }
@@ -44,7 +47,7 @@ public sealed class EmojiSpriteLoader : IAsyncDisposable, IDisposable
         // The task is held rather than its result, so callers racing the first load await it instead of repeating it.
         if (!_loadsBySheet.TryGetValue(sheet, out var load))
         {
-            load = (_asset ??= new Asset(_js)).LoadSpriteAsync(sheet).AsTask();
+            load = (_asset ??= new Asset(_environment)).LoadSpriteAsync(sheet).AsTask();
             _loadsBySheet[sheet] = load;
         }
 

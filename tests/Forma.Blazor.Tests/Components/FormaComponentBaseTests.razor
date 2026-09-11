@@ -44,16 +44,22 @@
         }
 
         [Fact]
-        public void Should_reach_the_browser_through_the_registered_runtime()
+        public async Task Should_reach_the_browser_through_the_registered_runtime_under_its_own_identity()
         {
             // Arrange
             using var ctx = new FormaComponentBaseTests();
+            ctx.JSInterop.Setup<int>("measure").SetResult(7);
+            var announcer = ctx.Render<Announcer>().Instance;
 
             // Act
-            var cut = ctx.Render<Announcer>();
+            var measured = await announcer.Environment.InvokeAsync<int>("measure");
 
             // Assert
-            Assert.IsNotType<UnavailableJSRuntime>(cut.Instance.Runtime);
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(7, measured);
+                Assert.Equal(announcer.RuntimeId, announcer.Environment.RuntimeId);
+            });
         }
 
         [Fact]
@@ -99,7 +105,7 @@
     {
         public int DisposeCalls { get; private set; }
 
-        public IJSRuntime Runtime
+        public IJSEnvironment Environment
             => JS;
 
         public string Greeting

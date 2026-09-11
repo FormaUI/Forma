@@ -3,9 +3,9 @@ namespace Forma.Framework.Core.Interop;
 using Microsoft.JSInterop;
 
 /// <summary>A JS module attached to an element, whose disposal is its teardown.</summary>
-public abstract class JsInterop(IJSRuntime js, string path) : IAsyncDisposable
+public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposable
 {
-    private readonly JsModule _module = new(js, path);
+    private readonly JSModule _module = new(js, path);
     private IJSObjectReference? _handle;
 
     /// <summary>Whether the module is currently attached.</summary>
@@ -39,7 +39,7 @@ public abstract class JsInterop(IJSRuntime js, string path) : IAsyncDisposable
         }
         catch (Exception ex) when (ex is JSDisconnectedException or JSException)
         {
-            // Circuit dropped or the instance is gone; there is nothing left to release.
+            LogFailure("dispose", ex);
         }
     }
 
@@ -62,6 +62,7 @@ public abstract class JsInterop(IJSRuntime js, string path) : IAsyncDisposable
         }
         catch (Exception ex) when (ex is JSDisconnectedException or JSException)
         {
+            LogFailure(identifier, ex);
             return false;
         }
     }
@@ -80,6 +81,7 @@ public abstract class JsInterop(IJSRuntime js, string path) : IAsyncDisposable
         }
         catch (Exception ex) when (ex is JSDisconnectedException or JSException)
         {
+            LogFailure(identifier, ex);
             return default;
         }
     }
@@ -90,5 +92,17 @@ public abstract class JsInterop(IJSRuntime js, string path) : IAsyncDisposable
         await DetachAsync();
         await _module.DisposeAsync();
         GC.SuppressFinalize(this);
+    }
+
+    private void LogFailure(string identifier, Exception ex)
+    {
+        if (ex is JSDisconnectedException)
+        {
+            InteropLog.CircuitDroppedWhileCalling(js.Logger, identifier, path, js.RuntimeId);
+        }
+        else
+        {
+            InteropLog.ScriptThrewWhileCalling(js.Logger, ex, identifier, path, js.RuntimeId);
+        }
     }
 }

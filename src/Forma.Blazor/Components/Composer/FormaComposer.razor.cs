@@ -34,7 +34,7 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
     private DotNetObjectReference<FormaComposer>? _selfReference;
     private InputScope? _inputScope;
     private Focus _focus = default!;
-    private JsComposerAssetLoader _assetLoader = default!;
+    private JSComposerAssetLoader _assetLoader = default!;
     private IComposerHistory _history = default!;
     private readonly IComposerSyntaxHighlighter _syntaxHighlighter = syntaxHighlighter ?? NullSyntaxHighlighter.Instance;
     private IComposerEditorPlugin _activeEditor = default!;
@@ -135,7 +135,7 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
     protected override async Task OnInitializedAsync()
     {
         _focus = new Focus(JS);
-        _assetLoader = new JsComposerAssetLoader(JS);
+        _assetLoader = new JSComposerAssetLoader(JS);
         _selfReference = DotNetObjectReference.Create(this);
 
         _history = History ?? new ComposerHistory(Options.HistoryCapacity);

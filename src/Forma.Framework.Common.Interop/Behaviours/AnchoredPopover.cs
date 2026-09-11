@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>A popover kept positioned against its anchor for as long as it is open.</summary>
-public sealed class AnchoredPopover(IJSRuntime js)
-    : JsInterop(js, "./_content/forma/common/scripts/behaviours/AnchoredPopover.js")
+public sealed class AnchoredPopover(IJSEnvironment js)
+    : JSInterop(js, "./_content/forma/common/scripts/behaviours/AnchoredPopover.js")
 {
     private bool _isOpen;
     private Task? _transition;

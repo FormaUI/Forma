@@ -5,9 +5,9 @@ using Forma.Framework.Core.Interop;
 using Microsoft.JSInterop;
 
 /// <summary>What the reader carries between applications.</summary>
-public sealed class Clipboard(IJSRuntime js) : IAsyncDisposable
+public sealed class Clipboard(IJSEnvironment js) : IAsyncDisposable
 {
-    private readonly JsModule _module = new(js, "./_content/forma/common/scripts/operations/Clipboard.js");
+    private readonly JSModule _module = new(js, "./_content/forma/common/scripts/operations/Clipboard.js");
 
     /// <summary>Places text on the clipboard.</summary>
     public ValueTask<bool> WriteAsync(string text)

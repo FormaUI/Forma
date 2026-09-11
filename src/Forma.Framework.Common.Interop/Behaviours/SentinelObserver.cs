@@ -1,5 +1,7 @@
 namespace Forma.Framework.Common.Interop.Behaviours;
 
+using Forma.Framework.Core.Interop;
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
@@ -7,7 +9,7 @@ using Microsoft.JSInterop;
 /// Watches a sentinel element only while it is wanted, so a caller states what it currently wants watched rather
 /// than tracking whether that is already the case.
 /// </summary>
-public sealed class SentinelObserver<TOwner>(IJSRuntime js) : IAsyncDisposable
+public sealed class SentinelObserver<TOwner>(IJSEnvironment js) : IAsyncDisposable
     where TOwner : class
 {
     private readonly Scroll _scroll = new(js);

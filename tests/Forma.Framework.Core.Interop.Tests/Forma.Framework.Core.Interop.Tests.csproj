@@ -18,6 +18,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Forma.Framework.Core.Interop\Forma.Framework.Core.Interop.csproj" />
+        <ProjectReference Include="..\Forma.Tests.Support\Forma.Tests.Support.csproj" />
     </ItemGroup>
 
 </Project>

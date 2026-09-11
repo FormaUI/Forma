@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>What a surface does with scrolling: watching how far its content can still move, and asking for the next page as a sentinel comes into view; with moving a container one step or to its centre beside them.</summary>
-public sealed class Scroll(IJSRuntime js)
-    : JsInterop(js, "./_content/forma/common/scripts/behaviours/Scroll.js")
+public sealed class Scroll(IJSEnvironment js)
+    : JSInterop(js, "./_content/forma/common/scripts/behaviours/Scroll.js")
 {
     /// <summary>Attaches the behaviours to <paramref name="target"/>; the <paramref name="owner"/> is told through <c>HandleOverflowAsync</c>, with a <see cref="ScrollBoundaryReport"/>, how far the target can still scroll and how far its frozen parts reach, and through <c>HandleReachedAsync</c> when the target comes into view.</summary>
     public ValueTask<bool> AttachAsync<TOwner>(ElementReference target, ScrollBehaviours behaviours, DotNetObjectReference<TOwner> owner)
