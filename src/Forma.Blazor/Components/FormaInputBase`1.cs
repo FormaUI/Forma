@@ -13,10 +13,6 @@ using Microsoft.JSInterop;
 /// <typeparam name="TValue">The value the input binds.</typeparam>
 public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposable
 {
-    private ILogger? _logger;
-    private IStringLocale? _locale;
-    private IJSEnvironment? _js;
-
     /// <summary>The root element's id, verbatim.</summary>
     [Parameter] public string? Id { get; set; }
 
@@ -30,9 +26,6 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     [Inject] private ILoggerFactory LoggerFactory { get; set; } = default!;
     [Inject] private IStringLocaleFactory LocaleFactory { get; set; } = default!;
 
-    /// <summary>The component's identity for its lifetime, which the ids of its elements derive from.</summary>
-    public Guid RuntimeId { get; } = Guid.CreateVersion7();
-
     /// <summary>Whether the component has been disposed.</summary>
     public bool IsDisposed { get; private set; }
 
@@ -43,17 +36,28 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     protected virtual Type LocalizationSourceType
         => GetType();
 
+    /// <summary>What the component is given: its identity, its strings, its log and its JS environment.</summary>
+    protected IComponentContext Context
+        => field ??= new ComponentContext(
+            () => JSRuntime,
+            () => LocaleFactory.Create(LocalizationSourceType),
+            () => LoggerFactory.CreateLogger(GetType()));
+
+    /// <summary>The component's identity for its lifetime, which the ids of its elements derive from.</summary>
+    public Guid RuntimeId
+        => Context.RuntimeId;
+
     /// <summary>The JS environment the component's interop runs in: the runtime, under the component's own log and identity.</summary>
     protected IJSEnvironment JS
-        => _js ??= new JSEnvironment(JSRuntime, Logger, RuntimeId);
+        => Context.JS;
 
     /// <summary>The component's log, under its own type as the category.</summary>
     protected ILogger Logger
-        => _logger ??= LoggerFactory.CreateLogger(GetType());
+        => Context.Logger;
 
     /// <summary>The component's strings, in the reader's culture.</summary>
     protected IStringLocale L
-        => _locale ??= LocaleFactory.Create(LocalizationSourceType);
+        => Context.Locale;
 
     /// <summary>The class written on the root element: the component's own, the host's, then the field's validation class; null when there is none.</summary>
     protected string? RootClass

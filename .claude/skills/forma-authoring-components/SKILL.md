@@ -50,7 +50,7 @@ A component whose sub-components only work inside it still has to hand them stat
 Every component derives from one of three bases in `Forma.Blazor/Components/`, and never from `ComponentBase` or `InputBase<TValue>` directly.
 
 - Do derive a component a host places from `FormaElementBase`, a form input from `FormaInputBase<TValue>`, and a part that only lives inside its owner and takes nothing from a host — an explorer's toolbar, a composer's dialog — from `FormaComponentBase`.
-- Do take from the base what every component needs: `JS`, `Logger` (under the component's own type), `L` (its strings), `RuntimeId` (its identity for its lifetime), `IsDisposed`, and `DisposeAsyncCore` to override.
+- Do take from the base what every component needs: `Context`, the component's `IComponentContext`, and its four forwards `RuntimeId` (its identity for its lifetime), `L` (its strings), `Logger` (under the component's own type) and `JS` (its JS environment); plus `IsDisposed`, and `DisposeAsyncCore` to override. A base builds the context once, so a thing every component needs is added to the context, never to a base twice.
 - Do take from the element and input tiers the host surface: `Id`, `Class`, `Style` and `AdditionalAttributes` are the host's values; `RootClass` and `RootStyle` are what the root writes, built from `BuildRootClass(CssClassBuilder)` and `BuildRootStyle()`; `RootElement` is the root once rendered. On the input tier `RootClass` also carries the field's `valid`/`invalid`/`modified` class.
 - Do write the root element's first attributes in this order, whatever else follows:
 

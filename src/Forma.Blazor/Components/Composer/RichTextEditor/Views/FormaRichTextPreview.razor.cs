@@ -15,7 +15,7 @@ public sealed partial class FormaRichTextPreview : FormaComponentBase
     private const string ProseClass = "forma-prose";
 
     /// <summary>The composer state cascaded from the parent shell.</summary>
-    [CascadingParameter] public ComposerContext? Context { get; set; }
+    [CascadingParameter] public ComposerContext? ComposerContext { get; set; }
 
     /// <summary>The view plugin cascaded by the composer surface.</summary>
     [CascadingParameter] public IComposerViewPlugin? ViewPlugin { get; set; }
@@ -29,7 +29,7 @@ public sealed partial class FormaRichTextPreview : FormaComponentBase
     private Download _download = default!;
 
     private string Content
-        => Context?.Document.Content ?? string.Empty;
+        => ComposerContext?.Document.Content ?? string.Empty;
 
     private string PageClass
         => _previewPlugin.Page.IsSheet ? $"forma-composer-preview-page forma-composer-preview-sheet {ProseClass}" : $"forma-composer-preview-page {ProseClass}";

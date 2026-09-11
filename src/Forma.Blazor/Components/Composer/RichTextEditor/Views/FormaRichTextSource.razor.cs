@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Components;
 public sealed partial class FormaRichTextSource : FormaComponentBase
 {
     /// <summary>The composer state cascaded from the parent shell.</summary>
-    [CascadingParameter] public ComposerContext? Context { get; set; }
+    [CascadingParameter] public ComposerContext? ComposerContext { get; set; }
 
     /// <summary>The view plugin cascaded by the composer surface.</summary>
     [CascadingParameter] public IComposerViewPlugin? ViewPlugin { get; set; }
@@ -25,7 +25,7 @@ public sealed partial class FormaRichTextSource : FormaComponentBase
     private Download _download = default!;
 
     private string Source
-        => HtmlSourceFormatter.Format(Context?.Document.Content ?? string.Empty);
+        => HtmlSourceFormatter.Format(ComposerContext?.Document.Content ?? string.Empty);
 
     private IReadOnlyList<string> Lines
         => Source.Split('\n');

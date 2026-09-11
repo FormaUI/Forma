@@ -25,7 +25,7 @@ public abstract class ComposerDialogBase : FormaComponentBase
     public ComposerDialogResult? Reopening { get; set; }
 
     /// <summary>The composer state cascaded from the parent shell.</summary>
-    [CascadingParameter] public ComposerContext? Context { get; set; }
+    [CascadingParameter] public ComposerContext? ComposerContext { get; set; }
 
     /// <inheritdoc />
     protected override Type LocalizationSourceType
@@ -37,7 +37,7 @@ public abstract class ComposerDialogBase : FormaComponentBase
     // A dialog standing outside a composer has no host rules to answer to, so it judges an address the way the engine would.
     /// <summary>The markup the document may carry, from the host's sanitizer where there is one.</summary>
     private protected IMarkupPolicy MarkupPolicy
-        => Context?.Sanitizer.MarkupPolicy ?? RichContentMarkupPolicy.Default;
+        => ComposerContext?.Sanitizer.MarkupPolicy ?? RichContentMarkupPolicy.Default;
 
     /// <summary>Whether the dialog reopened on something already in the document.</summary>
     private protected bool IsReopened => Reopening is not null;

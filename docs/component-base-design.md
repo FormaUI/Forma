@@ -520,7 +520,10 @@ does.
    bases; both bases build `Context` once and forward `RuntimeId`, `JS`, `Logger` and
    `L` to it; the 41 construction sites read `new X(JS)`; the base tests gain one test
    that the environment's identity and log are the context's. A Showcase walk, since
-   every component's construction changes.
+   every component's construction changes. **Built.** `RuntimeId` is minted by the
+   context, so it exists from the first read of `Context` and never from a field
+   initializer; the three functions are deferred, so a derived initializer that reads
+   `Context` no longer runs ahead of injection.
 8. **The style builder.** `CssStyleBuilder` in `Forma.Framework.Css` with its tests;
    `BuildRootStyle(CssStyleBuilder)` on both bases; the five overrides,
    `FormaStatusBadge`, `FormaTextBox`, `FormaFrame`, `FormaFreezePane` and `FormaWindow`,

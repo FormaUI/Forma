@@ -93,7 +93,7 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
     private ComposerContext? _context;
 
     // The same instance comes back until a member actually changes.
-    private ComposerContext? Context
+    private ComposerContext? ComposerContext
     {
         get
         {
@@ -270,7 +270,7 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
             return;
         }
 
-        if (Context is not { } context)
+        if (ComposerContext is not { } context)
         {
             return;
         }

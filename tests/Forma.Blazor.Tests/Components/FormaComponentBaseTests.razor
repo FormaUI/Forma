@@ -82,6 +82,25 @@
         }
 
         [Fact]
+        public void Should_read_its_identity_strings_log_and_environment_from_one_context()
+        {
+            // Arrange
+            using var ctx = new FormaComponentBaseTests();
+
+            // Act
+            var announcer = ctx.Render<Announcer>().Instance;
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(announcer.OwnContext.RuntimeId, announcer.RuntimeId);
+                Assert.Same(announcer.OwnContext.Locale, announcer.Strings);
+                Assert.Same(announcer.OwnContext.Logger, announcer.Log);
+                Assert.Same(announcer.OwnContext.JS, announcer.Environment);
+            });
+        }
+
+        [Fact]
         public async Task Should_dispose_once_through_its_hook()
         {
             // Arrange
@@ -105,8 +124,17 @@
     {
         public int DisposeCalls { get; private set; }
 
+        public IComponentContext OwnContext
+            => Context;
+
         public IJSEnvironment Environment
             => JS;
+
+        public ILogger Log
+            => Logger;
+
+        public IStringLocale Strings
+            => L;
 
         public string Greeting
             => L["Hello"];
