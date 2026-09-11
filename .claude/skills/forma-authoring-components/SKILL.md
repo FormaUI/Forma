@@ -135,7 +135,7 @@ Every component derives from one of three bases in `Forma.Blazor/Components/`, a
 
 A component logs through the base's `Logger`, whose category is the component's concrete type, so a host filters by `Forma.Blazor.Components.Layout.FormaFrame` and sees the frame's interop under the same name.
 
-- Do hand the base's `Logger` to every interop wrapper the component constructs, `new Frame(JS, Logger)`, so what the wrapper absorbs lands under the component.
+- Do hand the base's `JS` to every interop wrapper the component constructs, `new Frame(JS)`; it is the component's `IJSEnvironment`, the runtime carrying the component's `Logger` and `RuntimeId`, so what the wrapper absorbs lands under the component and names the instance.
 - Do give a service that is not a component a required `ILogger<T>` through its constructor, and have its registrar `TryAdd` the `NullLogger<>` fallback beside it, so the service resolves in a host that configures no logging.
 - Do write every message through `[LoggerMessage]` on one `internal static partial class {Feature}Log` per feature, named for the event it records, `CircuitDroppedWhileCalling`, so every message a feature can emit is read in one place.
 - Do log at `Debug` what the library absorbs by design — a dropped circuit or a thrown script behind a `Try*` call, an asset that would not load — so the silence is visible to whoever turns the category on and nothing changes for a host that does not.

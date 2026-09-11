@@ -15,14 +15,13 @@ the sketches below. Two departures apply to the sketches themselves: the root's 
 and style are `string?`, null when there is nothing to write, so an element carries no
 empty `class` or `style` attribute; and the root reference is named `RootElement`.
 
-Step 3, interop logging, is built and unstaged, and the base passages of step 5 with it.
-Reviewing step 3 changed the design: threading one logger touched every wrapper, every
+Step 3, interop logging, and step 6, the JS environment, are built. Reviewing step 3
+changed the design: threading one logger touched every wrapper, every
 construction site and two services, so what a component hands down is now one object,
 its context, and what a wrapper takes is one object, the JS environment inside it.
 Steps 6 to 9 below carry that revision: the context and the environment, a style
 builder to match the class builder, and the root's class and style as one composed
-object. Step 6 reshapes step 3's parameter before step 3 is committed, so the
-repository never carries the two-parameter shape.
+object.
 
 The root is the element the host addresses, on both tiers. On an input that is the
 control inside its `FormaField` (the `<textarea>`, or the trigger `<button>` of a select),
@@ -477,17 +476,16 @@ does.
    through every subclass, module holder and construction site; the swallowed
    `JSException` and `JSDisconnectedException` catches logged at `Debug` through a
    message class in `Forma.Framework.Core.Interop`. Interop tests construct wrappers with
-   `NullLogger.Instance`; script tests are unaffected. **Built**: `JsModule` and `JsInterop`
-   take `(IJSRuntime js, ILogger logger, string path)`, every wrapper and module holder
-   passes its own pair on, and every component constructs a wrapper as `new X(JS,
-   Logger)`. `InteropLog` carries the dropped circuit, the thrown script, the release
-   under a dropped circuit and the failed import; `InputInteropLog` carries the input
+   `NullLogger.Instance`; script tests are unaffected. **Built**, in the shape step 6
+   gives it: the wrappers take the JS environment rather than a logger, and every
+   component constructs a wrapper as `new X(JS)`. `InteropLog` carries the dropped
+   circuit, the thrown script, the release under a dropped circuit and the failed
+   import; `InputInteropLog` carries the input
    scope's two, since the scope holds a handle with no module path. `InputRouter` and
    `EmojiSpriteLoader`, the two services that own a wrapper, take `ILogger<T>` and
    their registrars `TryAdd` the `NullLogger<>` fallback. The interop tests drive the
    wrappers through `FakeJSRuntime` and `FakeJSObjectReference` in the support project
-   and read the entries through `FakeLoggerFactory`. Unstaged: step 6 reshapes the
-   parameter into the environment before this is committed.
+   and read the entries through `FakeLoggerFactory`.
 4. **Feature logging ledger, then feature logging.** Every catch site and every service
    that would take a logger, each with its proposed `Debug` message, one `{Feature}Log`
    class per feature, applied after review.
@@ -513,7 +511,10 @@ does.
    back to one parameter; `InputScope` taking the environment for its log; `InputRouter`
    and `EmojiSpriteLoader` minting their own environment from the runtime and
    `ILogger<T>` they take. The interop tests construct `JSEnvironment` around the fakes,
-   and `JSEnvironmentTests` proves the delegation and the two carried values.
+   and `JSEnvironmentTests` proves the delegation and the two carried values. **Built.**
+   Until step 7 lands, each base builds its `JS` from the injected runtime, its `Logger`
+   and its `RuntimeId`; the context takes that over. The scripting, authoring and
+   testing skills speak of the environment, and the vocabulary defines it.
 7. **The component context.** `IComponentContext` and `ComponentContext` beside the
    bases; both bases build `Context` once and forward `RuntimeId`, `JS`, `Logger` and
    `L` to it; the 41 construction sites read `new X(JS)`; the base tests gain one test
