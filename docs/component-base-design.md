@@ -11,10 +11,18 @@ reaches every assembly of the library.
 Steps 1 and 2 of the implementation plan are built: the builder, the null objects, the
 three bases and the fallback registrations exist, and every component derives from a
 base. The plan at the end records what landed at each step and where it departed from
-the sketches below. Two departures apply to the sketches themselves: `RootClass` and
-`RootStyle` are `string?`, null when there is nothing to write, so an element carries no
-empty `class` or `style` attribute; and the root reference is named `RootElement`, beside
-`RootClass` and `RootStyle`.
+the sketches below. Two departures apply to the sketches themselves: the root's class
+and style are `string?`, null when there is nothing to write, so an element carries no
+empty `class` or `style` attribute; and the root reference is named `RootElement`.
+
+Step 3, interop logging, is built and unstaged, and the base passages of step 5 with it.
+Reviewing step 3 changed the design: threading one logger touched every wrapper, every
+construction site and two services, so what a component hands down is now one object,
+its context, and what a wrapper takes is one object, the JS environment inside it.
+Steps 6 to 9 below carry that revision: the context and the environment, a style
+builder to match the class builder, and the root's class and style as one composed
+object. Step 6 reshapes step 3's parameter before step 3 is committed, so the
+repository never carries the two-parameter shape.
 
 The root is the element the host addresses, on both tiers. On an input that is the
 control inside its `FormaField` (the `<textarea>`, or the trigger `<button>` of a select),
@@ -52,7 +60,8 @@ renderer calls only `DisposeAsync` on a component that implements both interface
 - **A logger per component, under its own type.** `Logger` is created lazily from the
   concrete type through `ILoggerFactory`, so a host filters by
   `Forma.Blazor.Components.Windows.FormaWindow` and nothing else. Interop wrappers take
-  the component's logger, so a frame's interop logs under the frame.
+  the component's JS environment, which carries that logger and the component's identity,
+  so a frame's interop logs under the frame and names the frame.
 - **Strings per component, under its own type unless it says otherwise.** `L` is created
   lazily through `IStringLocaleFactory` from `LocalizationSourceType`, which is the
   component's own type by default and a feature's type where components share a file,
@@ -62,10 +71,24 @@ renderer calls only `DisposeAsync` on a component that implements both interface
   standard provider hides `Debug` unless asked, so a host sees nothing new until it turns a
   category on. `Warning` and `Error` are decided per site later, never blanket-applied.
 - **The host's values in, the root's values out.** `Id`, `Class` and `Style` are what
-  the host passed; `RootClass` and `RootStyle` are what the base writes on the root,
-  built by `BuildRootClass` and `BuildRootStyle`. `AdditionalAttributes` keeps the
-  framework's name, because `InputBase<TValue>` fixes it and the two tiers must read the
-  same.
+  the host passed; `Root.Class` and `Root.Style` are what the base writes on the root,
+  built by `BuildRootClass` and `BuildRootStyle` through the two CSS builders and
+  composed by one object each base owns. `AdditionalAttributes` keeps the framework's
+  name, because `InputBase<TValue>` fixes it and the two tiers must read the same.
+- **One context per component, handed down whole.** `IComponentContext` is what a
+  component is given: its identity, its strings, its log and its JS environment. The
+  base builds it once and forwards `RuntimeId`, `L`, `Logger` and `JS` to it, so a
+  component reads the same names it always has, and a new thing every component needs is
+  added to the context once rather than to every constructor that passes it on.
+- **The JS environment is a runtime.** `IJSEnvironment : IJSRuntime` adds the owner's
+  `RuntimeId` and `Logger` to the runtime, so a wrapper calls it as the runtime it is
+  and logs through it as its owner. It lives in `Forma.Framework.Core.Interop`, which
+  knows nothing of components; the component context builds its environment from its
+  own identity and log, so the two can never disagree. `JSInterop` and `JSModule` take
+  the `JS` casing of `Microsoft.JSInterop` and of every Forma type already named for it.
+- **Style is built, not concatenated.** `CssStyleBuilder` beside `CssClassBuilder`, so
+  `BuildRootStyle` adds declarations the way `BuildRootClass` adds classes, and the
+  termination rule lives in one place.
 - **Async disposal runs the framework's cleanup.** `FormaInputBase<TValue>.DisposeAsync`
   calls `Dispose(true)`, which the renderer never does on an `IAsyncDisposable`.
 - **One identity per instance, and `Id` means the consumer's DOM id everywhere.**
@@ -99,15 +122,9 @@ document, not on impression.
 /// <summary>What every Forma component is: it reaches the browser, speaks the reader's language, can say what happened to it, and is disposed once.</summary>
 public abstract class FormaComponentBase : ComponentBase, IAsyncDisposable
 {
-    private ILogger? _logger;
-    private IStringLocale? _locale;
-
-    [Inject] protected IJSRuntime JS { get; set; } = default!;
+    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
     [Inject] private ILoggerFactory LoggerFactory { get; set; } = default!;
     [Inject] private IStringLocaleFactory LocaleFactory { get; set; } = default!;
-
-    /// <summary>The component's identity for its lifetime, which the ids of its elements derive from.</summary>
-    public Guid RuntimeId { get; } = Guid.CreateVersion7();
 
     /// <summary>Whether the component has been disposed.</summary>
     public bool IsDisposed { get; private set; }
@@ -116,13 +133,28 @@ public abstract class FormaComponentBase : ComponentBase, IAsyncDisposable
     protected virtual Type LocalizationSourceType
         => GetType();
 
+    /// <summary>What the component is given: its identity, its strings, its log and its JS environment.</summary>
+    protected IComponentContext Context
+        => field ??= new ComponentContext(
+            () => JSRuntime,
+            () => LocaleFactory.Create(LocalizationSourceType),
+            () => LoggerFactory.CreateLogger(GetType()));
+
+    /// <summary>The component's identity for its lifetime, which the ids of its elements derive from.</summary>
+    public Guid RuntimeId
+        => Context.RuntimeId;
+
+    /// <summary>The JS environment the component's interop runs in.</summary>
+    protected IJSEnvironment JS
+        => Context.JS;
+
     /// <summary>The component's log, under its own type as the category.</summary>
     protected ILogger Logger
-        => _logger ??= LoggerFactory.CreateLogger(GetType());
+        => Context.Logger;
 
     /// <summary>The component's strings, in the reader's culture.</summary>
     protected IStringLocale L
-        => _locale ??= LocaleFactory.Create(LocalizationSourceType);
+        => Context.Locale;
 
     /// <summary>Releases what the component holds; runs once.</summary>
     protected virtual ValueTask DisposeAsyncCore()
@@ -142,6 +174,46 @@ public abstract class FormaComponentBase : ComponentBase, IAsyncDisposable
     }
 }
 ```
+
+The context and the environment behind those forwards:
+
+```csharp
+/// <summary>What a component is given: its identity, its strings, its log and its JS environment.</summary>
+public interface IComponentContext
+{
+    Guid RuntimeId { get; }
+
+    IStringLocale Locale { get; }
+
+    ILogger Logger { get; }
+
+    IJSEnvironment JS { get; }
+}
+
+/// <summary>The runtime a wrapper calls, carrying the identity and log of the component that owns it.</summary>
+public interface IJSEnvironment : IJSRuntime
+{
+    Guid RuntimeId { get; }
+
+    ILogger Logger { get; }
+}
+```
+
+`ComponentContext` takes the three as `Func<T>` and holds each in a `Lazy<T>`, mints
+`RuntimeId`, and builds its `JS` once as `new JSEnvironment(runtime, Logger, RuntimeId)`,
+so the environment's identity and log are the context's by construction.
+`JSEnvironment` delegates the two `InvokeAsync` overloads to the runtime it wraps; the
+framework's `InvokeVoidAsync` and the rest are extension methods on `IJSRuntime` and
+work on it unchanged. A service that is not a component, the input router and the emoji
+sprite loader, has no context and builds its own environment from the runtime and the
+`ILogger<T>` it takes, minting an identity for the instance. Synchronous calls are not
+wrapped: no Forma wrapper makes one. Should one need to, a second environment,
+`JSInProcessEnvironment : IJSEnvironment, IJSInProcessRuntime`, forwards the synchronous
+calls as well, and the context builds it where the injected runtime is in-process, so a
+wrapper tests its environment for `IJSInProcessRuntime` exactly as the framework tests
+the runtime. Creating a locale is a name
+normalization and a dictionary lookup, with the file read on the first string, and a
+logger factory caches its loggers, so the lazies are a shape choice, not a cost one.
 
 `RuntimeId` is a version 7 GUID, so instances sort by creation and a log filtered to one
 component reads in the order its instances were made. A root that needs an id when the
@@ -180,20 +252,18 @@ public abstract class FormaElementBase : FormaComponentBase
     /// <summary>The root element, once rendered.</summary>
     public ElementReference RootElement { get; protected set; }
 
-    /// <summary>The class written on the root element: the component's own, then the host's.</summary>
-    protected string? RootClass { get; }  // BuildRootClass, then Class, through a CssClassBuilder.
-
-    /// <summary>The style written on the root element: the component's own, then the host's.</summary>
-    protected string? RootStyle { get; }  // BuildRootStyle, then Style.
+    /// <summary>The class and style written on the root element: the component's own, then the host's.</summary>
+    protected RootAttributes Root { get; }  // Composed once from BuildRootClass then Class, and BuildRootStyle then Style.
 
     /// <summary>The classes the component gives its root element in its current state.</summary>
     protected virtual void BuildRootClass(CssClassBuilder builder)
     {
     }
 
-    /// <summary>The style the component gives its root element in its current state; nothing by default.</summary>
-    protected virtual string? BuildRootStyle()
-        => null;
+    /// <summary>The declarations the component gives its root element in its current state.</summary>
+    protected virtual void BuildRootStyle(CssStyleBuilder builder)
+    {
+    }
 }
 ```
 
@@ -203,7 +273,7 @@ more, and the components that dig a style out of the attribute bag today stop. T
 line of every element component's `.razor` is then the same:
 
 ```razor
-<div id="@Id" data-rid="@RuntimeId" class="@RootClass" style="@RootStyle" @attributes="AdditionalAttributes" @ref="RootElement">
+<div id="@Id" data-rid="@RuntimeId" class="@Root.Class" style="@Root.Style" @attributes="AdditionalAttributes" @ref="RootElement">
 ```
 
 A component that roots in another Forma component forwards the four to the one inside.
@@ -213,6 +283,21 @@ needs an id when the host gives none keeps its own `ElementId` fallback.
 `CssClassBuilder` lives in `Forma.Framework.Css` beside `CssColor`: `Add(name)`,
 `Add(name, when)`, and a `ToString()` that joins what was added. It is the one place a
 class rule can live, and it replaces the ternary-and-null idiom at every call site.
+`CssStyleBuilder` sits beside it with `Add(property, value)` for a declaration the
+component composes and `Add(declarations)` for a string the host supplied, `IsEmpty`,
+and a `ToString()` that terminates every declaration; it replaces the lists and
+`string.Create` calls the five style-building components carry, and the termination
+helper on the bases.
+
+`RootAttributes` is one sealed type, constructed with the two builder actions a base
+owns, exposing `Class` and `Style` as `string?`, null when nothing was added so the
+attribute is omitted. Each base passes its own composition: the element tier adds the
+component's classes then the host's, the input tier adds the field's validation class
+after those. `Root` is not virtual; the builder hooks are the extension points, and the
+composition rule is the base's. A single splatted attribute dictionary was weighed and
+set aside: the renderer lets a later attribute win and omits a null one, so it would
+work, but it turns the attribute-order rule into a precedence rule that has to be
+written down first, and that is its own change.
 
 ### `FormaInputBase<TValue>`
 
@@ -220,9 +305,9 @@ class rule can live, and it replaces the ternary-and-null idiom at every call si
 /// <summary>What every Forma form input is: the framework's input with the same reach, strings, log, host surface and disposal as any other Forma component.</summary>
 public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposable
 {
-    // JS, LoggerFactory, LocaleFactory, Logger, L, LocalizationSourceType, IsDisposed and DisposeAsyncCore
-    // as on FormaComponentBase; Id, Class, Style, RootElement, RootStyle, BuildRootClass and BuildRootStyle as on
-    // FormaElementBase. AdditionalAttributes is InputBase's own. RootClass is built from BuildRootClass, Class
+    // The three injections, Context and its four forwards, LocalizationSourceType, IsDisposed and DisposeAsyncCore
+    // as on FormaComponentBase; Id, Class, Style, RootElement, Root, BuildRootClass and BuildRootStyle as on
+    // FormaElementBase. AdditionalAttributes is InputBase's own. Root.Class is built from BuildRootClass, Class
     // and the field's validation class, in that order.
 
     /// <inheritdoc />
@@ -242,8 +327,10 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
 ```
 
 C# has one base slot, so the input base repeats what the other two carry rather than
-deriving from them. The repeated members are written out in both places; a helper type
-for two copies would be more machinery than the duplication.
+deriving from them. The context carries what both can share, the identity, the strings,
+the log and the environment, and the root object carries the class and style
+composition; what stays written out twice is the three injections,
+`LocalizationSourceType`, `IsDisposed`, the dispose pair and the host parameters.
 
 `ComposerDialogBase` re-bases onto `FormaElementBase`, overrides
 `LocalizationSourceType` once to `typeof(FormaComposer)` for its seven dialogs, and
@@ -279,16 +366,17 @@ with no translation.
 
 ### Logging
 
-Every assembly that logs references `Microsoft.Extensions.Logging.Abstractions`, the
-narrowest package that supplies what the code uses, at the version the solution already
-pins for the `Microsoft.Extensions` family. Nothing references the concrete logging
-package; a host's providers are the host's.
+Every assembly that logs takes `Microsoft.Extensions.Logging.Abstractions` from the
+`Microsoft.AspNetCore.App` framework reference it already carries, which also supplies
+the `[LoggerMessage]` generator. Nothing references the concrete logging package; a
+host's providers are the host's.
 
 A component logs through `Logger`. A service that is not a component takes
 `ILoggerFactory` or `ILogger<T>` through its constructor, required. An interop wrapper,
-`JsInterop` or `JsModule` and every subclass, takes a required `ILogger` and is handed
-the owning component's `Logger` where it is constructed, so everything about a frame,
-its interop included, lands under `Forma.Blazor.Components.Layout.FormaFrame`.
+`JSInterop` or `JSModule` and every subclass, takes the owner's `IJSEnvironment`, which
+carries the owner's logger and identity, so everything about a frame, its interop
+included, lands under `Forma.Blazor.Components.Layout.FormaFrame`, and every interop
+message names the instance it was about.
 
 Messages are source-generated, one `internal static partial class {Feature}Log` per
 feature, so every message a feature can emit is read in one place:
@@ -330,6 +418,8 @@ no framework of its own; the gap this design closes is on the .NET side.
 - `Warning` and `Error` levels in the first pass.
 - Retiring `IStringLocale<T>`. It stays for services and hosts; components simply no
   longer need it.
+- A splatted root attribute dictionary, `Root.Attributes`. Possible, and deferred until
+  its precedence rules are written.
 
 ## Still open
 
@@ -387,7 +477,17 @@ does.
    through every subclass, module holder and construction site; the swallowed
    `JSException` and `JSDisconnectedException` catches logged at `Debug` through a
    message class in `Forma.Framework.Core.Interop`. Interop tests construct wrappers with
-   `NullLogger.Instance`; script tests are unaffected.
+   `NullLogger.Instance`; script tests are unaffected. **Built**: `JsModule` and `JsInterop`
+   take `(IJSRuntime js, ILogger logger, string path)`, every wrapper and module holder
+   passes its own pair on, and every component constructs a wrapper as `new X(JS,
+   Logger)`. `InteropLog` carries the dropped circuit, the thrown script, the release
+   under a dropped circuit and the failed import; `InputInteropLog` carries the input
+   scope's two, since the scope holds a handle with no module path. `InputRouter` and
+   `EmojiSpriteLoader`, the two services that own a wrapper, take `ILogger<T>` and
+   their registrars `TryAdd` the `NullLogger<>` fallback. The interop tests drive the
+   wrappers through `FakeJSRuntime` and `FakeJSObjectReference` in the support project
+   and read the entries through `FakeLoggerFactory`. Unstaged: step 6 reshapes the
+   parameter into the environment before this is committed.
 4. **Feature logging ledger, then feature logging.** Every catch site and every service
    that would take a logger, each with its proposed `Debug` message, one `{Feature}Log`
    class per feature, applied after review.
@@ -398,4 +498,32 @@ does.
    the silent-failure contract is visible at `Debug`; `forma-testing` drops per-test
    localization registration; `COMPONENTS.md` gains the base rows and tree entries. The
    identifiers rule already carries `RuntimeId` as its seventh kind; the vocabulary and
-   the gate are unchanged.
+   the gate are unchanged. **Built for the bases**: the authoring skill has a Bases
+   section, the localizing, testing and scripting skills speak of `L`,
+   `LocalizationSourceType`, the test context and `DisposeAsyncCore`, and the inventory's
+   tree lists the bases. The logging passages land with steps 3 and 4, once there is
+   logging to describe; the context, the environment, the style builder and the root
+   object land in the skills with steps 6 to 9, and `CLAUDE.md`'s glossary gains
+   *component context*, *JS environment* and *root attributes* as each is introduced.
+6. **The JS environment.** `IJSEnvironment : IJSRuntime` and `JSEnvironment` in
+   `Forma.Framework.Core.Interop`; `JsModule` and `JsInterop` renamed `JSModule` and
+   `JSInterop`, each taking `(IJSEnvironment js, string path)` and reading its logger
+   and identity from it; the six interop messages naming the instance; the 31 wrappers,
+   `SentinelObserver<TOwner>` and `JsComposerAssetLoader` (renamed `JSComposerAssetLoader`)
+   back to one parameter; `InputScope` taking the environment for its log; `InputRouter`
+   and `EmojiSpriteLoader` minting their own environment from the runtime and
+   `ILogger<T>` they take. The interop tests construct `JSEnvironment` around the fakes,
+   and `JSEnvironmentTests` proves the delegation and the two carried values.
+7. **The component context.** `IComponentContext` and `ComponentContext` beside the
+   bases; both bases build `Context` once and forward `RuntimeId`, `JS`, `Logger` and
+   `L` to it; the 41 construction sites read `new X(JS)`; the base tests gain one test
+   that the environment's identity and log are the context's. A Showcase walk, since
+   every component's construction changes.
+8. **The style builder.** `CssStyleBuilder` in `Forma.Framework.Css` with its tests;
+   `BuildRootStyle(CssStyleBuilder)` on both bases; the five overrides,
+   `FormaStatusBadge`, `FormaTextBox`, `FormaFrame`, `FormaFreezePane` and `FormaWindow`,
+   adding declarations instead of building strings.
+9. **The root object.** `RootAttributes` replacing the static `RootAttributeValues`;
+   `Root` on both bases with each tier's composition; the 64 razor files, forwarders
+   included, on `@Root.Class` and `@Root.Style`; the skills, the inventory's tree and the
+   glossary. A Showcase walk, since every root's attributes are composed anew.

@@ -17,6 +17,10 @@
 
 ```
 Forma.Blazor/Components/
+├── FormaComponentBase.cs                   # what every component is: JS, Logger, L, RuntimeId, IsDisposed, DisposeAsyncCore
+├── FormaElementBase.cs                     # a component with a root element its host addresses: Id, Class, Style, attributes, RootElement, RootClass, RootStyle
+├── FormaInputBase`1.cs                     # InputBase<TValue> with the same reach, strings, host surface and disposal
+├── RootAttributeValues.cs                  # composes a root's class and style from the component's own and the host's
 ├── ✅ FormaField.razor / .razor.cs / .razor.css
 ├── ✅ FormaVisibility.razor / .razor.cs / .razor.css  # collapses content to nothing without unmounting it
 ├── FieldLabelMode.cs                     # enum: Floating, Pinned, Above, Inline

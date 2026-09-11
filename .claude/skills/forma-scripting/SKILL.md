@@ -1,6 +1,6 @@
 ---
 name: forma-scripting
-description: Forma's JavaScript and interop standard — when JS is allowed at all, the behaviours/operations/components/services split that decides where a script lives and how it is written, the four module contracts, how C# reaches a module through JsInterop and JsModule, and the external-library carve-out for FormaComposer. Use when adding or changing anything under wwwroot/scripts/ or in an interop assembly, naming a script or wrapper, or deciding whether a capability needs JS.
+description: Forma's JavaScript and interop standard — when JS is allowed at all, the behaviours/operations/components/services split that decides where a script lives and how it is written, the four module contracts, how C# reaches a module through JsInterop and JsModule and what those log, and the external-library carve-out for FormaComposer. Use when adding or changing anything under wwwroot/scripts/ or in an interop assembly, naming a script or wrapper, or deciding whether a capability needs JS.
 ---
 
 # JavaScript
@@ -133,14 +133,14 @@ export function resolve(event) { … }
 
 ## Reaching a script from C#
 
-- Do derive a behaviour wrapper from `JsInterop`, give it the module path, and expose a typed `AttachAsync`.
-- Do give an operation wrapper a `JsModule` field rather than deriving from it, so only its own typed methods can be called.
+- Do derive a behaviour wrapper from `JsInterop`, take `(IJSRuntime js, ILogger logger)` and pass them on with the module path, and expose a typed `AttachAsync`.
+- Do give an operation wrapper a `JsModule` field built from the same `js` and `logger` rather than deriving from it, so only its own typed methods can be called.
 - Do derive a component wrapper from `JsInterop` when its module attaches a surface, and give it a `JsModule` field when the module is operations alone.
 - Do make a service's wrapper a scoped service at the root of its interop assembly with a `JsModule` field, registered in `AddFormaUI`, that pushes the host's policy once per circuit and hands out registration handles; it is not a plain wrapper, because it owns policy as well as the module.
 - Do call an operation through `TryInvoke*`, so a dropped circuit leaves the call absent rather than throwing into a render.
 - Do name a wrapper after the module it owns, with no `Bridge`, `Helper`, or `Interop` suffix.
 - Do let `JsModule` and `JsInterop` handle importing, `JSException`, `JSDisconnectedException`, and disposal rather than repeating any of it.
-- Do dispose the wrapper from the component's `DisposeAsync`.
+- Do construct a wrapper from the base's `JS` and `Logger`, `new Frame(JS, Logger)`, and dispose it from the component's `DisposeAsyncCore`; a service that owns a wrapper hands it the `ILogger<T>` it was constructed with.
 - Do import from `./_content/forma/{core|common|input|composer}/scripts/{Name}.js`, with the kind folder in the path where the assembly sorts by kind, so the wrapper names the assembly that ships the script.
 - Do suppress CA1812 on a private record that exists only to receive a JS return shape, since nothing constructs it in C#.
 - Don't make a wrapper static; `IJSRuntime` is scoped per circuit and the module reference has to be disposed with it.
@@ -149,7 +149,7 @@ export function resolve(event) { … }
 
 ### The silent-failure contract
 
-`JsInterop.InvokeAsync` returns `false` when nothing is attached and when the circuit has dropped — by design, so a dead circuit cannot throw into a render. That silence cuts both ways: a call made before `AttachAsync` has answered is indistinguishable from one that ran.
+`JsInterop.InvokeAsync` returns `false` when nothing is attached and when the circuit has dropped — by design, so a dead circuit cannot throw into a render. That silence cuts both ways: a call made before `AttachAsync` has answered is indistinguishable from one that ran. What the wrapper absorbs it writes at `Debug` under the owning component's category, naming the export and the module, so turning the category on shows what a `false` hid; a call made before attaching is not a failure and is not logged.
 
 - Do treat that returned `bool` as the record of whether the call happened, and drive state from it rather than assuming success.
 - Do remember that `OnAfterRenderAsync` runs after *every* render, so a second pass can overtake a first one that is still awaiting its attach round-trip.

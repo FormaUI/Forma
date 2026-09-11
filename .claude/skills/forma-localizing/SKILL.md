@@ -1,13 +1,15 @@
 ---
 name: forma-localizing
-description: Forma's localization standard — reading library strings through IStringLocale<FormaX>, shipping the FormaX.he.json and FormaX.es.json pair keyed by English source text, passing interpolation holes positionally in PascalCase, and the Title Case versus sentence case rule that separates labels from prose across every Latin-script language. Use when adding or changing any user-facing string, editing a translation file, or naming an interpolation hole.
+description: Forma's localization standard — reading library strings through the base's L, sharing a feature's file through LocalizationSourceType, shipping the FormaX.he.json and FormaX.es.json pair keyed by English source text, passing interpolation holes positionally in PascalCase, and the Title Case versus sentence case rule that separates labels from prose across every Latin-script language. Use when adding or changing any user-facing string, editing a translation file, or naming an interpolation hole.
 ---
 
 # Localization
 
-- Do inject `[Inject] private IStringLocale<FormaX> L { get; set; } = default!;` and read library-owned strings through `L["The English sentence"]`.
+- Do read a component's library-owned strings through the base's `L["The English sentence"]`; every component has `L` from `FormaComponentBase`, resolved from its own type, so nothing is injected.
+- Do override `LocalizationSourceType` on a part that reads a feature's file rather than its own — `=> typeof(FormaExplorer)` on the explorer's parts, `typeof(FormaComposer)` on the composer's — so those parts share one translation pair.
+- Do inject `IStringLocale<T>` only where there is no base: a service, or a Showcase page.
 - Do ship `FormaX.he.json` and `FormaX.es.json` beside the component, keyed by that English source text; there is no neutral file, because an absent translation falls back to the key itself.
-- Do keep the file's name and folder in step with the type's, since the resource is resolved from the type's full name and the JSON's path must match it.
+- Do keep the file's name and folder in step with the type's, since the resource is resolved from the type's full name and the JSON's path must match it; a generic component resolves to its definition's files, so `FormaSelect<TValue>` reads `FormaSelect.he.json`.
 - Do leave caller-supplied text such as `Title`, `Label`, and `ConfirmText` for the host to localize.
 - Do format dates and numbers with `CultureInfo.CurrentCulture` and use `TextInfo.IsRightToLeft` when direction changes behaviour.
 - Do use American English spelling for `en` localization.
