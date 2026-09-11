@@ -18,7 +18,7 @@
 ```
 Forma.Blazor/Components/
 ├── ComponentContext.cs                     # a component's identity, strings, log and JS environment, created on first use
-├── FormaComponentBase.cs                   # what every component is: Context and its forwards JS, Logger, L, RuntimeId; IsDisposed, DisposeAsyncCore
+├── FormaComponentBase.cs                   # what every component is: Context (RuntimeId, Locale, Logger, JS), L, IsDisposed, DisposeAsyncCore
 ├── FormaElementBase.cs                     # a component with a root element its host addresses: Id, Class, Style, attributes, RootElement, RootClass, RootStyle
 ├── FormaInputBase`1.cs                     # InputBase<TValue> with the same reach, strings, host surface and disposal
 ├── IComponentContext.cs                    # what a component is given: RuntimeId, Locale, Logger, JS

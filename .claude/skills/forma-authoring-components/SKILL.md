@@ -50,13 +50,14 @@ A component whose sub-components only work inside it still has to hand them stat
 Every component derives from one of three bases in `Forma.Blazor/Components/`, and never from `ComponentBase` or `InputBase<TValue>` directly.
 
 - Do derive a component a host places from `FormaElementBase`, a form input from `FormaInputBase<TValue>`, and a part that only lives inside its owner and takes nothing from a host — an explorer's toolbar, a composer's dialog — from `FormaComponentBase`.
-- Do take from the base what every component needs: `Context`, the component's `IComponentContext`, and its four forwards `RuntimeId` (its identity for its lifetime), `L` (its strings), `Logger` (under the component's own type) and `JS` (its JS environment); plus `IsDisposed`, and `DisposeAsyncCore` to override. A base builds the context once, so a thing every component needs is added to the context, never to a base twice.
+- Do take from the base what every component needs: `Context`, the component's `IComponentContext`, read as `Context.RuntimeId` (its identity for its lifetime), `Context.Logger` (under the component's own type) and `Context.JS` (its JS environment); `L`, the one forward, for its strings; `IsDisposed`; and `DisposeAsyncCore` to override. A base builds the context once and forwards nothing else, so a thing every component needs is added to the context, never to a base twice.
+- Do reserve `Context` for the component context, and name anything else context-like a component holds for its subject alone: the composer parts read their cascaded state as `Composer`, never `Context` or `ComposerContext`, and the environment is `JS`, never `JSEnvironment` or `Environment`.
 - Do take from the element and input tiers the host surface: `Id`, `Class`, `Style` and `AdditionalAttributes` are the host's values; `RootClass` and `RootStyle` are what the root writes, built from `BuildRootClass(CssClassBuilder)` and `BuildRootStyle()`; `RootElement` is the root once rendered. On the input tier `RootClass` also carries the field's `valid`/`invalid`/`modified` class.
 - Do write the root element's first attributes in this order, whatever else follows:
 
   ```razor
   <div id="@Id"
-       data-rid="@RuntimeId"
+       data-rid="@Context.RuntimeId"
        class="@RootClass"
        style="@RootStyle"
        @attributes="AdditionalAttributes"
@@ -66,7 +67,7 @@ Every component derives from one of three bases in `Forma.Blazor/Components/`, a
 - Do treat the root as the element the host addresses: for an input, the control inside its `FormaField` (the `<textarea>`, the trigger `<button>`), never the field wrapper; for a composite, the control the host names and styles (a drop-down menu's trigger, a checkbox's `<input>` inside its label). A wrapper the component draws around that control is an internal part, held in a private reference where interop needs it.
 - Do forward the host surface when the root is another Forma component — `<FormaButton Id="@Id" Class="@RootClass" Style="@RootStyle" @attributes="AdditionalAttributes" …>` — hold that component in a private property, and override `RootElement` to answer with its root, null-guarded, so a reader gets the same element whichever of the two it holds.
 - Do add the component's own classes in `BuildRootClass` with `builder.Add("forma-x").Add("is-open", IsOpen)`, and compose its own style in `BuildRootStyle`; the base appends the host's `Class` and `Style` itself.
-- Do derive a generated id as a computed property, `private string ElementId => Id ?? $"prefix-{RuntimeId:N}";`, and a part's id from it by the part's role, `PopoverId => $"{ElementId}-popover"`; the `forma-naming` skill's identifiers rule has the full shape. Never initialize a field from `RuntimeId`: a derived class's initializers run before the base's.
+- Do derive a generated id as a computed property, `private string ElementId => Id ?? $"prefix-{Context.RuntimeId:N}";`, and a part's id from it by the part's role, `PopoverId => $"{ElementId}-popover"`; the `forma-naming` skill's identifiers rule has the full shape. Never initialize a field from `Context.RuntimeId`: the context is made on first read, and a derived class's initializers run before the base's.
 - Do hold a reference to a child component (`@ref`) in a private property, `private FormaButton TriggerButton { get; set; } = default!;`, because every component is disposable and CA2213 would otherwise ask the holder to dispose what the renderer owns.
 - Don't declare `Id`, `Class`, `AdditionalAttributes`, an `IJSRuntime`, an `IStringLocale` or an `ILogger` on a component; the base has them, and the compiler reports the shadowing.
 
@@ -135,7 +136,7 @@ Every component derives from one of three bases in `Forma.Blazor/Components/`, a
 
 A component logs through the base's `Logger`, whose category is the component's concrete type, so a host filters by `Forma.Blazor.Components.Layout.FormaFrame` and sees the frame's interop under the same name.
 
-- Do hand the base's `JS` to every interop wrapper the component constructs, `new Frame(JS)`; it is the component's `IJSEnvironment`, the runtime carrying the component's `Logger` and `RuntimeId`, so what the wrapper absorbs lands under the component and names the instance.
+- Do hand the context's `JS` to every interop wrapper the component constructs, `new Frame(Context.JS)`; it is the component's `IJSEnvironment`, the runtime carrying the component's `Logger` and `RuntimeId`, so what the wrapper absorbs lands under the component and names the instance.
 - Do give a service that is not a component a required `ILogger<T>` through its constructor, and have its registrar `TryAdd` the `NullLogger<>` fallback beside it, so the service resolves in a host that configures no logging.
 - Do write every message through `[LoggerMessage]` on one `internal static partial class {Feature}Log` per feature, named for the event it records, `CircuitDroppedWhileCalling`, so every message a feature can emit is read in one place.
 - Do log at `Debug` what the library absorbs by design — a dropped circuit or a thrown script behind a `Try*` call, an asset that would not load — so the silence is visible to whoever turns the category on and nothing changes for a host that does not.

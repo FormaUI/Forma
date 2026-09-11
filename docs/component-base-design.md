@@ -76,9 +76,12 @@ renderer calls only `DisposeAsync` on a component that implements both interface
   name, because `InputBase<TValue>` fixes it and the two tiers must read the same.
 - **One context per component, handed down whole.** `IComponentContext` is what a
   component is given: its identity, its strings, its log and its JS environment. The
-  base builds it once and forwards `RuntimeId`, `L`, `Logger` and `JS` to it, so a
-  component reads the same names it always has, and a new thing every component needs is
-  added to the context once rather than to every constructor that passes it on.
+  base builds it once and forwards nothing but `L`, so a component reads
+  `Context.RuntimeId`, `Context.Logger` and `Context.JS`, and a new thing every component
+  needs is added to the context once rather than to a base twice or to every constructor
+  that passes it on. `Context` is reserved for it: anything else context-like a component
+  holds is named for its subject alone, `Composer` for the composer parts' cascaded state
+  and `JS` for the environment, never `ComposerContext` or `JSEnvironment`.
 - **The JS environment is a runtime.** `IJSEnvironment : IJSRuntime` adds the owner's
   `RuntimeId` and `Logger` to the runtime, so a wrapper calls it as the runtime it is
   and logs through it as its owner. It lives in `Forma.Framework.Core.Interop`, which
@@ -94,9 +97,9 @@ renderer calls only `DisposeAsync` on a component that implements both interface
   `RuntimeId` is a `Guid` every component carries for its lifetime: the generated ids
   of its elements derive from it, a log line can name the instance, a window's workspace
   identity is it (`IWindow.RuntimeId`), and the root element carries it as
-  `data-rid="@RuntimeId"`. `Id` is the id a consumer gives the root element and nothing
+  `data-rid="@Context.RuntimeId"`. `Id` is the id a consumer gives the root element and nothing
   else, on every component without exception; the two sit side by side on the root,
-  `id="@Id" data-rid="@RuntimeId"`, so a consumer's id is never displaced by ours.
+  `id="@Id" data-rid="@Context.RuntimeId"`, so a consumer's id is never displaced by ours.
 
 ## What the survey found
 
@@ -139,18 +142,6 @@ public abstract class FormaComponentBase : ComponentBase, IAsyncDisposable
             () => LocaleFactory.Create(LocalizationSourceType),
             () => LoggerFactory.CreateLogger(GetType()));
 
-    /// <summary>The component's identity for its lifetime, which the ids of its elements derive from.</summary>
-    public Guid RuntimeId
-        => Context.RuntimeId;
-
-    /// <summary>The JS environment the component's interop runs in.</summary>
-    protected IJSEnvironment JS
-        => Context.JS;
-
-    /// <summary>The component's log, under its own type as the category.</summary>
-    protected ILogger Logger
-        => Context.Logger;
-
     /// <summary>The component's strings, in the reader's culture.</summary>
     protected IStringLocale L
         => Context.Locale;
@@ -174,7 +165,7 @@ public abstract class FormaComponentBase : ComponentBase, IAsyncDisposable
 }
 ```
 
-The context and the environment behind those forwards:
+The context and the environment behind `Context`:
 
 ```csharp
 /// <summary>What a component is given: its identity, its strings, its log and its JS environment.</summary>
@@ -216,12 +207,12 @@ logger factory caches its loggers, so the lazies are a shape choice, not a cost 
 
 `RuntimeId` is a version 7 GUID, so instances sort by creation and a log filtered to one
 component reads in the order its instances were made. A root that needs an id when the
-consumer gives none derives one from `RuntimeId` through a computed property,
-`ElementId => Id ?? $"sel-{RuntimeId:N}"`, and every part hangs off that stem by its role,
+consumer gives none derives one from `Context.RuntimeId` through a computed property,
+`ElementId => Id ?? $"sel-{Context.RuntimeId:N}"`, and every part hangs off that stem by its role,
 `PopoverId => $"{ElementId}-popover"`, so a consumer who names the root names its parts
 and an unnamed instance's parts all share one stem; and the root element writes the identity itself as
-`data-rid="@RuntimeId"`, so a reader of the DOM, a log line and a workspace all name the
-same instance the same way. `FormaWindow`'s `IWindow.RuntimeId` is that same property.
+`data-rid="@Context.RuntimeId"`, so a reader of the DOM, a log line and a workspace all name
+the same instance the same way. `FormaWindow` answers `IWindow.RuntimeId` with it.
 
 The logger's category is the concrete type, which for a generic component the logging
 library prints without its arguments. The locale's category follows the JSON factory,
@@ -272,7 +263,7 @@ more, and the components that dig a style out of the attribute bag today stop. T
 line of every element component's `.razor` is then the same:
 
 ```razor
-<div id="@Id" data-rid="@RuntimeId" class="@Root.Class" style="@Root.Style" @attributes="AdditionalAttributes" @ref="RootElement">
+<div id="@Id" data-rid="@Context.RuntimeId" class="@Root.Class" style="@Root.Style" @attributes="AdditionalAttributes" @ref="RootElement">
 ```
 
 A component that roots in another Forma component forwards the four to the one inside.
@@ -304,7 +295,7 @@ written down first, and that is its own change.
 /// <summary>What every Forma form input is: the framework's input with the same reach, strings, log, host surface and disposal as any other Forma component.</summary>
 public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposable
 {
-    // The three injections, Context and its four forwards, LocalizationSourceType, IsDisposed and DisposeAsyncCore
+    // The three injections, Context and L, LocalizationSourceType, IsDisposed and DisposeAsyncCore
     // as on FormaComponentBase; Id, Class, Style, RootElement, Root, BuildRootClass and BuildRootStyle as on
     // FormaElementBase. AdditionalAttributes is InputBase's own. Root.Class is built from BuildRootClass, Class
     // and the field's validation class, in that order.
@@ -403,7 +394,7 @@ no framework of its own; the gap this design closes is on the .NET side.
 - **The self reference.** `DotNetObjectReference<T>` exists only for interop callbacks
   and is created by the sixteen components that need one. The base has no `T`.
 - **Generated ids.** They belong to the elements that need them and vary by element; a
-  component keeps its own fields and derives each from `RuntimeId`, as the identifiers
+  component keeps its own fields and derives each from `Context.RuntimeId`, as the identifiers
   rule prescribes.
 - **The input scope.** A component that registers with the input router does so itself.
 - **Anything a subset needs.** The line to hold is that a base carries what every
@@ -478,7 +469,7 @@ does.
    message class in `Forma.Framework.Core.Interop`. Interop tests construct wrappers with
    `NullLogger.Instance`; script tests are unaffected. **Built**, in the shape step 6
    gives it: the wrappers take the JS environment rather than a logger, and every
-   component constructs a wrapper as `new X(JS)`. `InteropLog` carries one message
+   component constructs a wrapper as `new X(Context.JS)`. `InteropLog` carries one message
    per stage, import, call and release, for the dropped circuit and the thrown script,
    and a failed import is reported once, where it happened, never again at release;
    `InputInteropLog` carries the input scope's two, since the scope holds a handle with
@@ -517,13 +508,17 @@ does.
    and its `RuntimeId`; the context takes that over. The scripting, authoring and
    testing skills speak of the environment, and the vocabulary defines it.
 7. **The component context.** `IComponentContext` and `ComponentContext` beside the
-   bases; both bases build `Context` once and forward `RuntimeId`, `JS`, `Logger` and
-   `L` to it; the 41 construction sites read `new X(JS)`; the base tests gain one test
-   that the environment's identity and log are the context's. A Showcase walk, since
-   every component's construction changes. **Built.** `RuntimeId` is minted by the
-   context, so it exists from the first read of `Context` and never from a field
+   bases; both bases build `Context` once and forward `L` alone, so a component reads
+   `Context.RuntimeId`, `Context.Logger` and `Context.JS`; the 41 construction sites read
+   `new X(Context.JS)` and every root writes `data-rid="@Context.RuntimeId"`; the base tests
+   gain one test that the environment's identity and log are the context's. A Showcase
+   walk, since every component's construction changes. **Built.** `RuntimeId` is minted
+   by the context, so it exists from the first read of `Context` and never from a field
    initializer; the three functions are deferred, so a derived initializer that reads
-   `Context` no longer runs ahead of injection.
+   `Context` no longer runs ahead of injection. `FormaWindow` answers `IWindow.RuntimeId`
+   explicitly. The composer parts' cascaded state, which was also named `Context`, is
+   `Composer`, under the rule that `Context` is the component's and anything else
+   context-like is named for its subject alone.
 8. **The style builder.** `CssStyleBuilder` in `Forma.Framework.Css` with its tests;
    `BuildRootStyle(CssStyleBuilder)` on both bases; the five overrides,
    `FormaStatusBadge`, `FormaTextBox`, `FormaFrame`, `FormaFreezePane` and `FormaWindow`,

@@ -141,7 +141,7 @@ export function resolve(event) { … }
 - Do call an operation through `TryInvoke*`, so a dropped circuit leaves the call absent rather than throwing into a render.
 - Do name a wrapper after the module it owns, with no `Bridge`, `Helper`, or `Interop` suffix.
 - Do let `JSModule` and `JSInterop` handle importing, `JSException`, `JSDisconnectedException`, and disposal rather than repeating any of it.
-- Do construct a wrapper from the base's `JS`, `new Frame(JS)`, and dispose it from the component's `DisposeAsyncCore`; `JS` is the component's `IJSEnvironment`, the runtime carrying the component's log and identity, so the wrapper logs under the component and names it. A service that owns a wrapper builds its own `JSEnvironment` from the runtime and the `ILogger<T>` it takes, minting an identity for the instance.
+- Do construct a wrapper from the context's `JS`, `new Frame(Context.JS)`, and dispose it from the component's `DisposeAsyncCore`; `Context.JS` is the component's `IJSEnvironment`, the runtime carrying the component's log and identity, so the wrapper logs under the component and names it. A service that owns a wrapper builds its own `JSEnvironment` from the runtime and the `ILogger<T>` it takes, minting an identity for the instance.
 - Do import from `./_content/forma/{core|common|input|composer}/scripts/{Name}.js`, with the kind folder in the path where the assembly sorts by kind, so the wrapper names the assembly that ships the script.
 - Do suppress CA1812 on a private record that exists only to receive a JS return shape, since nothing constructs it in C#.
 - Don't make a wrapper static; `IJSRuntime` is scoped per circuit and the module reference has to be disposed with it.
