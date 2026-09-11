@@ -14,7 +14,7 @@ public sealed partial class FormaDropDownMenuGroup : FormaElementBase
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
 
     private string ElementId
-        => Id ?? $"ddm-group-{RuntimeId:N}";
+        => Id ?? $"ddm-group-{Context.RuntimeId:N}";
 
     private string LabelId
         => $"{ElementId}-label";

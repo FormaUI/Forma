@@ -35,7 +35,7 @@ public sealed partial class FormaImagePicker : FormaElementBase
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _preview = new FilePreview(JS);
+        => _preview = new FilePreview(Context.JS);
 
     /// <inheritdoc />
     protected override void OnParametersSet()

@@ -47,7 +47,7 @@ public sealed partial class FormaPagination : FormaElementBase
     [Parameter] public PaginationOptions Options { get; set; } = PaginationOptions.Default;
 
     private string ElementId
-        => Id ?? $"forma-pagination-{RuntimeId:N}";
+        => Id ?? $"forma-pagination-{Context.RuntimeId:N}";
 
     private string NavigationInputId
         => $"{ElementId}-input";
@@ -90,9 +90,9 @@ public sealed partial class FormaPagination : FormaElementBase
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _submitGuard = new ImplicitSubmitGuard(JS);
-        _wheel = new Wheel(JS);
-        _textEntry = new TextEntry(JS);
+        _submitGuard = new ImplicitSubmitGuard(Context.JS);
+        _wheel = new Wheel(Context.JS);
+        _textEntry = new TextEntry(Context.JS);
     }
 
     /// <inheritdoc />

@@ -43,18 +43,6 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
             () => LocaleFactory.Create(LocalizationSourceType),
             () => LoggerFactory.CreateLogger(GetType()));
 
-    /// <summary>The component's identity for its lifetime, which the ids of its elements derive from.</summary>
-    public Guid RuntimeId
-        => Context.RuntimeId;
-
-    /// <summary>The JS environment the component's interop runs in: the runtime, under the component's own log and identity.</summary>
-    protected IJSEnvironment JS
-        => Context.JS;
-
-    /// <summary>The component's log, under its own type as the category.</summary>
-    protected ILogger Logger
-        => Context.Logger;
-
     /// <summary>The component's strings, in the reader's culture.</summary>
     protected IStringLocale L
         => Context.Locale;

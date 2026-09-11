@@ -26,7 +26,7 @@ public sealed partial class FormaTextArea : FormaInputBase<string?>
     [Parameter] public bool ShowCharacterCount { get; set; }
 
     private string ElementId
-        => Id ?? $"fld-{RuntimeId:N}";
+        => Id ?? $"fld-{Context.RuntimeId:N}";
 
     private string CountId
         => $"{ElementId}-count";

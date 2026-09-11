@@ -26,7 +26,7 @@ public sealed partial class FormaTab : FormaElementBase
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
 
     /// <summary>The identifier actually in force, whether the caller supplied it or not.</summary>
-    internal string EffectiveTabId => TabId ?? RuntimeId.ToString("N");
+    internal string EffectiveTabId => TabId ?? Context.RuntimeId.ToString("N");
 
     /// <inheritdoc />
     protected override void OnInitialized()

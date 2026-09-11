@@ -40,7 +40,7 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
         => TriggerButton is null ? default : TriggerButton.RootElement;
 
     private string ElementId
-        => Id ?? $"ddm-{RuntimeId:N}";
+        => Id ?? $"ddm-{Context.RuntimeId:N}";
 
     private string PopoverId
         => $"{ElementId}-popover";
@@ -56,7 +56,7 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _keyGuard = new NavigationGuard(JS);
+        => _keyGuard = new NavigationGuard(Context.JS);
 
     internal void RegisterItem(FormaDropDownMenuItem item)
         => _items.Add(item);

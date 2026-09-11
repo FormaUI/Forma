@@ -25,7 +25,7 @@ public sealed partial class FormaComposerEmojiButton : FormaComponentBase
         => typeof(FormaComposer);
 
     private string PopoverId
-        => $"composer-emoji-{RuntimeId:N}";
+        => $"composer-emoji-{Context.RuntimeId:N}";
 
     private bool IsOpen
         => Popover is { IsOpen: true };

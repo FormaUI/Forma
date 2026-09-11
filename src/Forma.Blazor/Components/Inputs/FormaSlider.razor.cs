@@ -30,7 +30,7 @@ public sealed partial class FormaSlider<TValue> : FormaInputBase<TValue> where T
     [Parameter] public bool Disabled { get; set; }
 
     private string ElementId
-        => Id ?? $"fld-{RuntimeId:N}";
+        => Id ?? $"fld-{Context.RuntimeId:N}";
 
     // The sighted display; a screen reader hears AriaValueText from the input itself instead,
     // so this is aria-hidden rather than a second announcement of the same text.

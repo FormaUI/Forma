@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Components;
 public sealed partial class FormaRichTextSource : FormaComponentBase
 {
     /// <summary>The composer state cascaded from the parent shell.</summary>
-    [CascadingParameter] public ComposerContext? ComposerContext { get; set; }
+    [CascadingParameter] public ComposerContext? Composer { get; set; }
 
     /// <summary>The view plugin cascaded by the composer surface.</summary>
     [CascadingParameter] public IComposerViewPlugin? ViewPlugin { get; set; }
@@ -25,7 +25,7 @@ public sealed partial class FormaRichTextSource : FormaComponentBase
     private Download _download = default!;
 
     private string Source
-        => HtmlSourceFormatter.Format(ComposerContext?.Document.Content ?? string.Empty);
+        => HtmlSourceFormatter.Format(Composer?.Document.Content ?? string.Empty);
 
     private IReadOnlyList<string> Lines
         => Source.Split('\n');
@@ -36,8 +36,8 @@ public sealed partial class FormaRichTextSource : FormaComponentBase
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _clipboard = new Clipboard(JS);
-        _download = new Download(JS);
+        _clipboard = new Clipboard(Context.JS);
+        _download = new Download(Context.JS);
 
         _sourcePlugin = ViewPlugin as RichTextSourceViewPlugin
             ?? throw new InvalidOperationException($"{nameof(FormaRichTextSource)} requires a cascaded {nameof(RichTextSourceViewPlugin)}.");

@@ -134,7 +134,7 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
     }
 
     private string ElementId
-        => Id ?? $"fld-{RuntimeId:N}";
+        => Id ?? $"fld-{Context.RuntimeId:N}";
 
     private string AdviceId
         => $"{ElementId}-advice";
@@ -210,7 +210,7 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _autofill = new AutofillTracker(JS);
+        _autofill = new AutofillTracker(Context.JS);
         _messages = new ValidationMessageStore(EditContext);
         EditContext.OnValidationRequested += HandleValidationRequested;
     }

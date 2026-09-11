@@ -105,8 +105,8 @@ public sealed partial class FormaFreezePane : FormaElementBase
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _scroll = new Scroll(JS);
-        _wheel = new Wheel(JS);
+        _scroll = new Scroll(Context.JS);
+        _wheel = new Wheel(Context.JS);
     }
 
     /// <inheritdoc />

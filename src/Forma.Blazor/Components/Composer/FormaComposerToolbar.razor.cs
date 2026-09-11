@@ -38,7 +38,7 @@ public sealed partial class FormaComposerToolbar : FormaComponentBase
     private bool _arePluginsShown;
 
     private string PluginsId
-        => $"composer-plugins-{RuntimeId:N}";
+        => $"composer-plugins-{Context.RuntimeId:N}";
 
     /// <summary>The plugin whose bar this is: the view when one shows, and otherwise the editor.</summary>
     private IComposerPlugin Owner

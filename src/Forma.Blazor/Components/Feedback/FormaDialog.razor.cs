@@ -73,7 +73,7 @@ public sealed partial class FormaDialog : FormaElementBase
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _dialog = new Dialog(JS);
+        _dialog = new Dialog(Context.JS);
         _selfReference = DotNetObjectReference.Create(this);
     }
 

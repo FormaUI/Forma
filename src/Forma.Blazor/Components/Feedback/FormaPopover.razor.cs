@@ -62,7 +62,7 @@ public sealed partial class FormaPopover : FormaElementBase
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _popup = new AnchoredPopover(JS);
+        _popup = new AnchoredPopover(Context.JS);
         _selfReference = DotNetObjectReference.Create(this);
     }
 

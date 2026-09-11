@@ -86,14 +86,33 @@
             // Assert
             Assert.Multiple(() =>
             {
-                Assert.NotEqual(first.RuntimeId, second.RuntimeId);
-                Assert.Equal(7, first.RuntimeId.Version);
+                Assert.NotEqual(first.OwnContext.RuntimeId, second.OwnContext.RuntimeId);
+                Assert.Equal(7, first.OwnContext.RuntimeId.Version);
             });
+        }
+
+        [Fact]
+        public void Should_keep_its_identity_across_rerenders()
+        {
+            // Arrange
+            using var ctx = new FormaInputBaseTests();
+            var cut = RenderField(ctx, new FakeModel());
+            var before = cut.Instance.OwnContext.RuntimeId;
+
+            // Act
+            cut.Render();
+
+            // Assert
+            Assert.Equal(2, cut.RenderCount);
+            Assert.Equal(before, cut.Instance.OwnContext.RuntimeId);
         }
     }
 
     public sealed class Field : FormaInputBase<string?>
     {
+        public IComponentContext OwnContext
+            => Context;
+
         public int AsyncDisposeCalls { get; private set; }
 
         public int FrameworkDisposeCalls { get; private set; }

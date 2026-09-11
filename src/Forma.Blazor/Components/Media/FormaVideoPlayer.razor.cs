@@ -65,7 +65,7 @@ public sealed partial class FormaVideoPlayer : FormaElementBase
     private PlayerFrame? Frame { get; set; }
 
     private string ElementId
-        => Id ?? $"video-{RuntimeId:N}";
+        => Id ?? $"video-{Context.RuntimeId:N}";
 
     private string LabelId
         => $"{ElementId}-label";
@@ -80,8 +80,8 @@ public sealed partial class FormaVideoPlayer : FormaElementBase
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _playback = new Playback(JS);
-        _embedding = new Embedding(JS);
+        _playback = new Playback(Context.JS);
+        _embedding = new Embedding(Context.JS);
     }
 
     /// <inheritdoc />

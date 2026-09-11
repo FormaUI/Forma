@@ -38,7 +38,7 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
         => !string.IsNullOrWhiteSpace(Label);
 
     private string ElementId
-        => Id ?? $"text-box-{RuntimeId:N}";
+        => Id ?? $"text-box-{Context.RuntimeId:N}";
 
     // The floating label sits over the box, so it takes the placeholder's place rather than sharing it.
     private string? EffectivePlaceholder
@@ -123,7 +123,7 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _autofill = new AutofillTracker(JS);
+        => _autofill = new AutofillTracker(Context.JS);
 
     // Only the floating label needs it, since detection exists to keep that label floated
     // over a value the browser filled without ever raising an input event. A label can

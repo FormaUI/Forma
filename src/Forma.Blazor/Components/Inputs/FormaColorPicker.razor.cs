@@ -17,7 +17,7 @@ public sealed partial class FormaColorPicker : FormaInputBase<string>
     [Parameter] public bool ShowAlpha { get; set; }
 
     private string ElementId
-        => Id ?? $"color-{RuntimeId:N}";
+        => Id ?? $"color-{Context.RuntimeId:N}";
 
     private string RgbHex => CurrentValueAsString?.Length >= 7
         ? CurrentValueAsString[..7]

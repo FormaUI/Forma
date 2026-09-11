@@ -43,7 +43,7 @@ public sealed partial class FormaMultiSelect<TValue> : FormaInputBase<List<TValu
     private FormaPopover Popover { get; set; } = default!;
 
     private string ElementId
-        => Id ?? $"ms-{RuntimeId:N}";
+        => Id ?? $"ms-{Context.RuntimeId:N}";
 
     private string PopoverId
         => $"{ElementId}-popover";

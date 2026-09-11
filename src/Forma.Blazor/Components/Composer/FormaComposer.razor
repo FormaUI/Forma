@@ -3,10 +3,10 @@
 @using Forma.Framework.Composer.Editing
 @inherits FormaInputBase<ComposerDocument>
 
-<CascadingValue Value="ComposerContext">
+<CascadingValue Value="Composer">
 <CascadingValue Value="(IComposerInteraction)this" IsFixed="true">
     <div id="@ElementId"
-         data-rid="@RuntimeId"
+         data-rid="@Context.RuntimeId"
          class="@RootClass"
          style="@RootStyle"
          @attributes="AdditionalAttributes"

@@ -4,7 +4,7 @@
 @if (_artwork is EmojiSprite sprite)
 {
     <svg id="@Id"
-         data-rid="@RuntimeId"
+         data-rid="@Context.RuntimeId"
          class="@RootClass"
          style="@RootStyle"
          @attributes="AdditionalAttributes"
@@ -20,7 +20,7 @@
 else if (_artwork is EmojiImage image)
 {
     <img id="@Id"
-         data-rid="@RuntimeId"
+         data-rid="@Context.RuntimeId"
          class="@RootClass"
          style="@RootStyle"
          @attributes="AdditionalAttributes"
@@ -31,7 +31,7 @@ else if (_artwork is EmojiImage image)
 else
 {
     <span id="@Id"
-          data-rid="@RuntimeId"
+          data-rid="@Context.RuntimeId"
           class="@RootClass"
           style="@RootStyle"
           @attributes="AdditionalAttributes"

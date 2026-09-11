@@ -4,7 +4,7 @@
 @if (_artwork is BrandIconArtwork brand)
 {
     <svg id="@Id"
-         data-rid="@RuntimeId"
+         data-rid="@Context.RuntimeId"
          class="@RootClass"
          style="@RootStyle"
          @attributes="AdditionalAttributes"
@@ -21,7 +21,7 @@
 else if (_artwork is IconVector vector)
 {
     <svg id="@Id"
-         data-rid="@RuntimeId"
+         data-rid="@Context.RuntimeId"
          class="@RootClass"
          style="@RootStyle"
          @attributes="AdditionalAttributes"
@@ -44,7 +44,7 @@ else if (_artwork is IconVector vector)
 else if (_characterText is not null)
 {
     <span id="@Id"
-          data-rid="@RuntimeId"
+          data-rid="@Context.RuntimeId"
           class="@RootClass"
           style="@RootStyle"
           @attributes="AdditionalAttributes"

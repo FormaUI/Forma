@@ -40,7 +40,7 @@ public sealed partial class FormaDateRangePicker : FormaInputBase<DateRange?>
     private CalendarMonthWindow _calendar = default!;
 
     private string ElementId
-        => Id ?? $"drp-{RuntimeId:N}";
+        => Id ?? $"drp-{Context.RuntimeId:N}";
 
     private bool IsOpen
         => Popover is { IsOpen: true };

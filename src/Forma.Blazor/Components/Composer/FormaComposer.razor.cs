@@ -72,7 +72,7 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
     [Inject] private IEnumerable<IComposerDocumentConverter> RegisteredConverters { get; set; } = default!;
 
     private string ElementId
-        => Id ?? $"composer-{RuntimeId:N}";
+        => Id ?? $"composer-{Context.RuntimeId:N}";
 
     // A read-only composer offers no editing commands, so the toolbar would carry nothing actionable.
     private bool ShowToolbar
@@ -93,7 +93,7 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
     private ComposerContext? _context;
 
     // The same instance comes back until a member actually changes.
-    private ComposerContext? ComposerContext
+    private ComposerContext? Composer
     {
         get
         {
@@ -102,7 +102,7 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
                 return null;
             }
 
-            var built = BuildContext();
+            var built = BuildComposer();
 
             if (built != _context)
             {
@@ -113,7 +113,7 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
         }
     }
 
-    private ComposerContext BuildContext()
+    private ComposerContext BuildComposer()
         => new()
         {
             ActiveEditorId = _activeEditor.Id,
@@ -134,8 +134,8 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
-        _focus = new Focus(JS);
-        _assetLoader = new JSComposerAssetLoader(JS);
+        _focus = new Focus(Context.JS);
+        _assetLoader = new JSComposerAssetLoader(Context.JS);
         _selfReference = DotNetObjectReference.Create(this);
 
         _history = History ?? new ComposerHistory(Options.HistoryCapacity);
@@ -270,7 +270,7 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
             return;
         }
 
-        if (ComposerContext is not { } context)
+        if (Composer is not { } context)
         {
             return;
         }

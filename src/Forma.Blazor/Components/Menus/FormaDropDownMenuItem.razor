@@ -3,7 +3,7 @@
 @if (Href is not null)
 {
     <a id="@Id"
-       data-rid="@RuntimeId"
+       data-rid="@Context.RuntimeId"
        class="@RootClass"
        style="@RootStyle"
        @attributes="AdditionalAttributes"
@@ -25,7 +25,7 @@
 else
 {
     <button id="@Id"
-            data-rid="@RuntimeId"
+            data-rid="@Context.RuntimeId"
             class="@RootClass"
             style="@RootStyle"
             @attributes="AdditionalAttributes"

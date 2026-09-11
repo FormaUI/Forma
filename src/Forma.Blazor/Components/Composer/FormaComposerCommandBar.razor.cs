@@ -34,17 +34,17 @@ public sealed partial class FormaComposerCommandBar : FormaComponentBase
     [Parameter] public IReadOnlyCollection<string> PluginStates { get; set; } = [];
 
     /// <summary>The composer state cascaded from the parent shell.</summary>
-    [CascadingParameter] public ComposerContext? ComposerContext { get; set; }
+    [CascadingParameter] public ComposerContext? Composer { get; set; }
 
     /// <inheritdoc />
     protected override Type LocalizationSourceType
         => typeof(FormaComposer);
 
     private bool CanUndo
-        => ComposerContext?.History.CanUndo ?? false;
+        => Composer?.History.CanUndo ?? false;
 
     private bool CanRedo
-        => ComposerContext?.History.CanRedo ?? false;
+        => Composer?.History.CanRedo ?? false;
 
     /// <summary>What the bar actually renders: the history group first when shown, then Items localized and patched with live state.</summary>
     private IReadOnlyList<FormaToolbarItem> RenderedItems
@@ -131,18 +131,18 @@ public sealed partial class FormaComposerCommandBar : FormaComponentBase
         {
             var states = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            if (ComposerContext?.Selection.ActiveStyles is { } styles)
+            if (Composer?.Selection.ActiveStyles is { } styles)
             {
                 states.UnionWith(styles);
             }
 
             // Engine-owned chrome rather than a text style, so the selection never reports it.
-            if (ComposerContext?.IsMaximized ?? false)
+            if (Composer?.IsMaximized ?? false)
             {
                 states.Add(MaximizeToggleId);
             }
 
-            if (ComposerContext?.IsSelectionBarShown ?? true)
+            if (Composer?.IsSelectionBarShown ?? true)
             {
                 states.Add(SelectionBarToggleId);
             }

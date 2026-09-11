@@ -35,7 +35,7 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
     private NavigationGuard _keyGuard = default!;
 
     private string ElementId
-        => Id ?? $"sel-{RuntimeId:N}";
+        => Id ?? $"sel-{Context.RuntimeId:N}";
 
     private string PopoverId
         => $"{ElementId}-popover";
@@ -48,7 +48,7 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _keyGuard = new NavigationGuard(JS);
+        => _keyGuard = new NavigationGuard(Context.JS);
 
     /// <inheritdoc />
     protected override void OnParametersSet()

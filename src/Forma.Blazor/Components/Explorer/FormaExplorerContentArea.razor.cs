@@ -45,7 +45,7 @@ public sealed partial class FormaExplorerContentArea : FormaComponentBase
             throw new InvalidOperationException($"{nameof(FormaExplorerContentArea)} must be rendered inside a {nameof(FormaExplorer)}.");
         }
 
-        _sentinel = new SentinelObserver<FormaExplorerContentArea>(JS);
+        _sentinel = new SentinelObserver<FormaExplorerContentArea>(Context.JS);
     }
 
     /// <inheritdoc />

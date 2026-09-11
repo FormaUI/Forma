@@ -177,8 +177,8 @@ public sealed partial class FormaDataGrid<TGridItem> : FormaElementBase
     protected override void OnInitialized()
     {
         _pagination.TotalItemCountChanged += HandleTotalItemCountChanged;
-        _selectionInteraction = new SelectionInteraction(JS);
-        _heightReservation = new HeightReservation(JS);
+        _selectionInteraction = new SelectionInteraction(Context.JS);
+        _heightReservation = new HeightReservation(Context.JS);
     }
 
     /// <inheritdoc />

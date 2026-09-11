@@ -61,9 +61,9 @@ public sealed partial class FormaShareMenu : FormaElementBase
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _share = new Share(JS);
-        _clipboard = new Clipboard(JS);
-        _print = new Print(JS);
+        _share = new Share(Context.JS);
+        _clipboard = new Clipboard(Context.JS);
+        _print = new Print(Context.JS);
     }
 
     /// <inheritdoc />

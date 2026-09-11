@@ -37,7 +37,7 @@ public sealed partial class FormaSortableList<TItem> : FormaElementBase
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _reorderInteraction = new ReorderInteraction(JS);
+        => _reorderInteraction = new ReorderInteraction(Context.JS);
 
     /// <inheritdoc />
     protected override void OnParametersSet()

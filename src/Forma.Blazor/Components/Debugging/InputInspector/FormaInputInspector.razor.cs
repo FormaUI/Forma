@@ -59,7 +59,7 @@ public sealed partial class FormaInputInspector : FormaElementBase
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _inspector = new Inspector(JS);
+        _inspector = new Inspector(Context.JS);
         _selfReference = DotNetObjectReference.Create(this);
         _tools = BuildTools();
     }

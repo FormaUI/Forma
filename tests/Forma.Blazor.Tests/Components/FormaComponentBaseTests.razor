@@ -52,13 +52,13 @@
             var announcer = ctx.Render<Announcer>().Instance;
 
             // Act
-            var measured = await announcer.Environment.InvokeAsync<int>("measure");
+            var measured = await announcer.OwnContext.JS.InvokeAsync<int>("measure");
 
             // Assert
             Assert.Multiple(() =>
             {
                 Assert.Equal(7, measured);
-                Assert.Equal(announcer.RuntimeId, announcer.Environment.RuntimeId);
+                Assert.Equal(announcer.OwnContext.RuntimeId, announcer.OwnContext.JS.RuntimeId);
             });
         }
 
@@ -75,14 +75,30 @@
             // Assert
             Assert.Multiple(() =>
             {
-                Assert.NotEqual(Guid.Empty, first.RuntimeId);
-                Assert.NotEqual(first.RuntimeId, second.RuntimeId);
-                Assert.Equal(7, first.RuntimeId.Version);
+                Assert.NotEqual(Guid.Empty, first.OwnContext.RuntimeId);
+                Assert.NotEqual(first.OwnContext.RuntimeId, second.OwnContext.RuntimeId);
+                Assert.Equal(7, first.OwnContext.RuntimeId.Version);
             });
         }
 
         [Fact]
-        public void Should_read_its_identity_strings_log_and_environment_from_one_context()
+        public void Should_keep_its_identity_across_rerenders()
+        {
+            // Arrange
+            using var ctx = new FormaComponentBaseTests();
+            var cut = ctx.Render<Announcer>();
+            var before = cut.Instance.OwnContext.RuntimeId;
+
+            // Act
+            cut.Render();
+
+            // Assert
+            Assert.Equal(2, cut.RenderCount);
+            Assert.Equal(before, cut.Instance.OwnContext.RuntimeId);
+        }
+
+        [Fact]
+        public void Should_read_its_strings_from_the_context_that_carries_its_identity()
         {
             // Arrange
             using var ctx = new FormaComponentBaseTests();
@@ -93,10 +109,9 @@
             // Assert
             Assert.Multiple(() =>
             {
-                Assert.Equal(announcer.OwnContext.RuntimeId, announcer.RuntimeId);
                 Assert.Same(announcer.OwnContext.Locale, announcer.Strings);
-                Assert.Same(announcer.OwnContext.Logger, announcer.Log);
-                Assert.Same(announcer.OwnContext.JS, announcer.Environment);
+                Assert.Equal(announcer.OwnContext.RuntimeId, announcer.OwnContext.JS.RuntimeId);
+                Assert.Same(announcer.OwnContext.Logger, announcer.OwnContext.JS.Logger);
             });
         }
 
@@ -127,12 +142,6 @@
         public IComponentContext OwnContext
             => Context;
 
-        public IJSEnvironment Environment
-            => JS;
-
-        public ILogger Log
-            => Logger;
-
         public IStringLocale Strings
             => L;
 
@@ -140,7 +149,7 @@
             => L["Hello"];
 
         protected override void OnInitialized()
-            => Logger.Log(LogLevel.Information, "rendered");
+            => Context.Logger.Log(LogLevel.Information, "rendered");
 
         protected override ValueTask DisposeAsyncCore()
         {

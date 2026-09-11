@@ -115,7 +115,7 @@ public sealed partial class FormaFrame : FormaElementBase
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _frame = new Frame(JS);
+        _frame = new Frame(Context.JS);
         _selfReference = DotNetObjectReference.Create(this);
     }
 

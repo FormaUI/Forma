@@ -39,7 +39,7 @@ public sealed partial class FormaFilePicker : FormaElementBase
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _fileDropZone = new FileDropZone(JS);
+        => _fileDropZone = new FileDropZone(Context.JS);
 
     /// <inheritdoc />
     protected override void OnParametersSet()

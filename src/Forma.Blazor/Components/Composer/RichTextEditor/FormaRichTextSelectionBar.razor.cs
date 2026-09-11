@@ -32,7 +32,7 @@ public sealed partial class FormaRichTextSelectionBar : FormaComponentBase
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _follower = new SelectionFollower(JS);
+        => _follower = new SelectionFollower(Context.JS);
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)

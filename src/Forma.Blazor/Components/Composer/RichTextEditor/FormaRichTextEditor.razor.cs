@@ -17,7 +17,7 @@ using Microsoft.JSInterop;
 public sealed partial class FormaRichTextEditor : FormaComponentBase
 {
     /// <summary>The composer state cascaded from the parent shell.</summary>
-    [CascadingParameter] public ComposerContext? ComposerContext { get; set; }
+    [CascadingParameter] public ComposerContext? Composer { get; set; }
 
     [CascadingParameter] public IComposerInteraction? Interaction { get; set; }
 
@@ -45,21 +45,21 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
     private RichTextEditorPlugin _editorPlugin = default!;
 
     private bool IsDisabled
-        => ComposerContext?.IsDisabled ?? false;
+        => Composer?.IsDisabled ?? false;
 
     private bool IsReadOnly
-        => ComposerContext?.IsReadOnly ?? false;
+        => Composer?.IsReadOnly ?? false;
 
     private bool ContentEditable
         => !IsDisabled && !IsReadOnly;
 
     private bool IsSelectionBarShown
-        => ComposerContext?.IsSelectionBarShown ?? true;
+        => Composer?.IsSelectionBarShown ?? true;
 
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _canvas = new RichTextCanvas(JS);
+        _canvas = new RichTextCanvas(Context.JS);
         _selfReference = DotNetObjectReference.Create(this);
 
         _editorPlugin = Editor as RichTextEditorPlugin
@@ -77,7 +77,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
     /// <inheritdoc />
     protected override async Task OnParametersSetAsync()
     {
-        var documentContent = ComposerContext?.Document.Content;
+        var documentContent = Composer?.Document.Content;
 
         if (_isAttached && documentContent != _committedContent && documentContent is not null)
         {
@@ -94,12 +94,12 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
             _isAttached = await _canvas.AttachAsync(_editorElement, _selfReference!);
 
             // An editable claims its shortcuts natively, so the composer's routes are registered on it to be answered first.
-            if (ComposerContext is { } context)
+            if (Composer is { } context)
             {
                 _inputScope = await InputRouter.RegisterAsync(_editorElement, new InputProfile { Routes = context.KeyBindings.ToInputRoutes() }, _selfReference);
             }
 
-            var initialContent = ComposerContext?.Document.Content;
+            var initialContent = Composer?.Document.Content;
             if (!string.IsNullOrEmpty(initialContent))
             {
                 _committedContent = initialContent;
@@ -119,26 +119,26 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
         return Interaction?.ExecuteCommandAsync(action) ?? Task.CompletedTask;
     }
 
-    /// <summary>Callback invoked from JS when content changes via debounced typing or blur.</summary>
+    /// <summary>Callback invoked from Context.JS when content changes via debounced typing or blur.</summary>
     [JSInvokable]
     public async Task HandleContentChangedAsync(string html)
     {
-        if (ComposerContext is null || Interaction is null)
+        if (Composer is null || Interaction is null)
         {
             return;
         }
 
-        var sanitized = ComposerContext.Sanitizer.Sanitize(html);
+        var sanitized = Composer.Sanitizer.Sanitize(html);
         _committedContent = sanitized;
 
-        await Interaction.ChangeDocumentAsync(ComposerContext.Document with { Content = sanitized });
+        await Interaction.ChangeDocumentAsync(Composer.Document with { Content = sanitized });
     }
 
-    /// <summary>Callback invoked from JS when the selection snapshot changes.</summary>
+    /// <summary>Callback invoked from Context.JS when the selection snapshot changes.</summary>
     [JSInvokable]
     public async Task HandleSelectionChangedAsync(RichTextSelectionDto dto)
     {
-        if (ComposerContext is null || Interaction is null || dto is null)
+        if (Composer is null || Interaction is null || dto is null)
         {
             return;
         }
@@ -156,30 +156,30 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
         await Interaction.ReportSelectionAsync(selection);
     }
 
-    /// <summary>Callback invoked from JS when the author double-clicks an image already in the document.</summary>
+    /// <summary>Callback invoked from Context.JS when the author double-clicks an image already in the document.</summary>
     /// <param name="image">What that image already holds.</param>
     [JSInvokable]
     public Task HandleImageActivatedAsync(ImageDialogResult image)
         => ReopenAsync(new RichTextDialogState(RichTextDialogKind.Image, image));
 
-    /// <summary>Callback invoked from JS when the author double-clicks a video already in the document.</summary>
+    /// <summary>Callback invoked from Context.JS when the author double-clicks a video already in the document.</summary>
     /// <param name="video">What that video already holds.</param>
     [JSInvokable]
     public Task HandleVideoActivatedAsync(VideoDialogResult video)
         => ReopenAsync(new RichTextDialogState(RichTextDialogKind.Video, video));
 
-    /// <summary>Callback invoked from JS when the author double-clicks an embed already in the document.</summary>
+    /// <summary>Callback invoked from Context.JS when the author double-clicks an embed already in the document.</summary>
     /// <param name="embed">What that embed already holds.</param>
     [JSInvokable]
     public Task HandleEmbedActivatedAsync(EmbedDialogResult embed)
         => ReopenAsync(new RichTextDialogState(RichTextDialogKind.Embed, embed));
 
-    /// <summary>Callback invoked from JS when the author double-clicks a link or a named anchor.</summary>
+    /// <summary>Callback invoked from Context.JS when the author double-clicks a link or a named anchor.</summary>
     /// <param name="isAnchor">Whether it is a named anchor rather than a hyperlink.</param>
     [JSInvokable]
     public Task HandleLinkActivatedAsync(bool isAnchor)
     {
-        if (ComposerContext is null || Interaction is null || IsDisabled || IsReadOnly)
+        if (Composer is null || Interaction is null || IsDisabled || IsReadOnly)
         {
             return Task.CompletedTask;
         }
@@ -193,7 +193,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
     // The canvas has already selected the element whole, so confirming replaces it.
     private Task ReopenAsync(RichTextDialogState dialog)
     {
-        if (ComposerContext is null || Interaction is null || IsDisabled || IsReadOnly)
+        if (Composer is null || Interaction is null || IsDisabled || IsReadOnly)
         {
             return Task.CompletedTask;
         }
@@ -209,7 +209,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(command);
 
-        if (ComposerContext is null || Interaction is null || IsDisabled || IsReadOnly)
+        if (Composer is null || Interaction is null || IsDisabled || IsReadOnly)
         {
             return;
         }
@@ -311,7 +311,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
 
     private async Task ExecuteCommandAsync(string command, object? value = null)
     {
-        if (ComposerContext is null || Interaction is null || IsDisabled || IsReadOnly)
+        if (Composer is null || Interaction is null || IsDisabled || IsReadOnly)
         {
             return;
         }
@@ -319,10 +319,10 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
         var result = await _canvas.ExecuteCommandAsync(command, value);
         if (result is not null)
         {
-            var sanitized = ComposerContext.Sanitizer.Sanitize(result.Html);
+            var sanitized = Composer.Sanitizer.Sanitize(result.Html);
             _committedContent = sanitized;
 
-            await Interaction.ChangeDocumentAsync(ComposerContext.Document with { Content = sanitized });
+            await Interaction.ChangeDocumentAsync(Composer.Document with { Content = sanitized });
 
             if (result.Selection is not null)
             {

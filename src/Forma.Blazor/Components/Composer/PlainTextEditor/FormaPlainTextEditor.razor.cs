@@ -16,7 +16,7 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     private static readonly TimeSpan CommitDelay = TimeSpan.FromMilliseconds(400);
 
     /// <summary>The composer state cascaded from the parent shell.</summary>
-    [CascadingParameter] public ComposerContext? ComposerContext { get; set; }
+    [CascadingParameter] public ComposerContext? Composer { get; set; }
 
     [CascadingParameter] public IComposerInteraction? Interaction { get; set; }
 
@@ -37,18 +37,18 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
 
     // Rendering what the textarea already holds keeps an interleaved render from overwriting uncommitted typing.
     private string Content
-        => _typedContent ?? ComposerContext?.Document.Content ?? string.Empty;
+        => _typedContent ?? Composer?.Document.Content ?? string.Empty;
 
     private bool IsDisabled
-        => ComposerContext?.IsDisabled ?? false;
+        => Composer?.IsDisabled ?? false;
 
     private bool IsReadOnly
-        => ComposerContext?.IsReadOnly ?? false;
+        => Composer?.IsReadOnly ?? false;
 
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _textEntry = new TextEntry(JS);
+        _textEntry = new TextEntry(Context.JS);
         _selfReference = DotNetObjectReference.Create(this);
     }
 
@@ -56,7 +56,7 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         // A textarea claims its shortcuts natively, so the composer's routes are registered on it to be answered first.
-        if (firstRender && ComposerContext is { } context)
+        if (firstRender && Composer is { } context)
         {
             _inputScope = await InputRouter.RegisterAsync(_textareaElement, new InputProfile { Routes = context.KeyBindings.ToInputRoutes() }, _selfReference);
         }
@@ -74,7 +74,7 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        var documentContent = ComposerContext?.Document.Content;
+        var documentContent = Composer?.Document.Content;
 
         if (documentContent != _committedContent)
         {
@@ -148,7 +148,7 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
 
     private async Task ReportSelectionAsync()
     {
-        if (ComposerContext is null || Interaction is null)
+        if (Composer is null || Interaction is null)
         {
             return;
         }
@@ -163,14 +163,14 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
 
     private async Task CommitAsync()
     {
-        if (ComposerContext is null || Interaction is null || _typedContent is null || ComposerContext.Document.Content == _typedContent)
+        if (Composer is null || Interaction is null || _typedContent is null || Composer.Document.Content == _typedContent)
         {
             return;
         }
 
         _committedContent = _typedContent;
 
-        await Interaction.ChangeDocumentAsync(ComposerContext.Document with { Content = _typedContent });
+        await Interaction.ChangeDocumentAsync(Composer.Document with { Content = _typedContent });
     }
 
     /// <inheritdoc />

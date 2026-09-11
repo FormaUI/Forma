@@ -34,7 +34,7 @@ public sealed partial class FormaCheckBox : FormaInputBase<bool>
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _checkBox = new CheckBox(JS);
+        => _checkBox = new CheckBox(Context.JS);
 
     private void HandleChange(ChangeEventArgs args)
         => CurrentValue = args.Value is true;

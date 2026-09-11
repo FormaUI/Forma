@@ -54,7 +54,7 @@ public sealed partial class FormaExplorerSidebar : FormaComponentBase, IExplorer
     private readonly HashSet<string> _collapsedFolderKeys = [];
 
     private string TitleId
-        => $"forma-explorer-folders-{RuntimeId:N}";
+        => $"forma-explorer-folders-{Context.RuntimeId:N}";
 
     private IEnumerable<string> ExpandableFolderKeys
         => FolderTree.GetExpandableFolders().Select(item => item.Key);

@@ -119,6 +119,9 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
     public WindowManager Manager
         => CascadedManager ?? InjectedManager;
 
+    Guid IWindow.RuntimeId
+        => Context.RuntimeId;
+
     WindowOrigin IWindow.Origin
         => _origin;
 
@@ -250,7 +253,7 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _window = new Window(JS);
+        _window = new Window(Context.JS);
         _selfReference = DotNetObjectReference.Create(this);
     }
 

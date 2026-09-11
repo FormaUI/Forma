@@ -54,7 +54,7 @@ public sealed partial class FormaSplitter : FormaElementBase
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _pointer = new Pointer(JS);
+        => _pointer = new Pointer(Context.JS);
 
     /// <inheritdoc />
     protected override void OnParametersSet()

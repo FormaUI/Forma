@@ -54,7 +54,7 @@ public sealed partial class FormaExplorerCommandArea : FormaComponentBase
             throw new InvalidOperationException($"{nameof(FormaExplorerCommandArea)} must be rendered inside a {nameof(FormaExplorer)}.");
         }
 
-        _breakpoint = new Breakpoint(JS);
+        _breakpoint = new Breakpoint(Context.JS);
     }
 
     /// <inheritdoc />

@@ -87,9 +87,9 @@ public sealed partial class FormaFileViewer : FormaElementBase
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _pan = new PanGesture(JS);
-        _scroll = new Scroll(JS);
-        _wheel = new Wheel(JS);
+        _pan = new PanGesture(Context.JS);
+        _scroll = new Scroll(Context.JS);
+        _wheel = new Wheel(Context.JS);
     }
 
     /// <inheritdoc />
