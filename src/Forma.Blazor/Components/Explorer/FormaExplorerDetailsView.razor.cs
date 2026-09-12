@@ -3,6 +3,7 @@ namespace Forma.Blazor.Components.Explorer;
 using System.Globalization;
 
 using Forma.Blazor.Components.Layout;
+using Forma.Framework.Css;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Content;
 using Forma.Framework.Explorer.Content.Queries;
@@ -49,7 +50,7 @@ public sealed partial class FormaExplorerDetailsView : FormaComponentBase
     // The frozen region the reader asked for; the name column is what gives way to honour it.
     private string? FrozenStyle
         => _frozenExtent is { } extent
-            ? string.Create(CultureInfo.InvariantCulture, $"--forma-explorer-frozen-extent: {extent}px")
+            ? new CssStyleBuilder().Add("--forma-explorer-frozen-extent", CssLength.FromPx(extent)).ToString()
             : null;
 
     private void HandleFrozenExtentChanged(double extent)

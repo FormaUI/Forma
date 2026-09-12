@@ -787,7 +787,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         => ChangeSelectionAsync(selection => selection.Clear());
 
     private string SidebarSizeStyle
-        => string.Create(CultureInfo.InvariantCulture, $"--forma-explorer-sidebar-size: {_sidebarWidth}rem");
+        => new CssStyleBuilder().Add("--forma-explorer-sidebar-size", CssLength.FromRem(_sidebarWidth)).ToString();
 
     private string BodyCssClass
         => _isResizingSidebar ? "forma-explorer-body is-resizing" : "forma-explorer-body";

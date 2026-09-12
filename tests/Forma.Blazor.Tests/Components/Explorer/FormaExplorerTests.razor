@@ -1467,7 +1467,7 @@
             cut.Find(".forma-explorer-details-wrapper .forma-freeze-pane-edge").KeyDown("ArrowRight");
 
             // Assert
-            Assert.Equal("--forma-explorer-frozen-extent: 248px", cut.Find(".forma-explorer-details-wrapper").GetAttribute("style"));
+            Assert.Equal("--forma-explorer-frozen-extent: 248px;", cut.Find(".forma-explorer-details-wrapper").GetAttribute("style"));
         }
 
         [Fact]

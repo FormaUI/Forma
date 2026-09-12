@@ -1,7 +1,6 @@
 namespace Forma.Blazor.Components.Explorer;
 
-using System.Globalization;
-
+using Forma.Framework.Css;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Items;
 using Forma.Framework.Explorer.Navigation;
@@ -91,7 +90,7 @@ public sealed partial class FormaExplorerSidebar : FormaComponentBase, IExplorer
 
     private string? TreeSizeStyle
         => _treeHeight is { } height
-            ? string.Create(CultureInfo.InvariantCulture, $"block-size: {height}rem")
+            ? new CssStyleBuilder().Add("block-size", CssLength.FromRem(height)).ToString()
             : null;
 
     // Every row is the same height, so the rendered tree can be sized from the folder count without measuring the DOM.
