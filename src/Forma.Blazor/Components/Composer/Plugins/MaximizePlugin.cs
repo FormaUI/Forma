@@ -9,9 +9,6 @@ using Forma.Framework.Toolbar;
 /// <summary>Contributes a full-viewport maximized editing mode toggle to the composer toolbar, for any editor.</summary>
 public sealed class MaximizePlugin : IComposerFeaturePlugin
 {
-    /// <summary>The command toggling full-viewport maximized editor state.</summary>
-    public const string MaximizeCommand = "state.maximize";
-
     /// <inheritdoc />
     public string Id => "maximize";
 
@@ -36,7 +33,7 @@ public sealed class MaximizePlugin : IComposerFeaturePlugin
                         AlternateTitle = "Minimize",
                         Icon = Glyph.Maximize,
                         AlternateIcon = Glyph.Minimize,
-                        Command = MaximizeCommand,
+                        Command = ComposerCommands.Maximize,
                     },
                 ],
             },

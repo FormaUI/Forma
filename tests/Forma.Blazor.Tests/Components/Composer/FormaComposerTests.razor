@@ -27,6 +27,13 @@
             public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
         }
 
+        private sealed class TextToHtmlConverter : IComposerDocumentConverter
+        {
+            public ComposerDocumentFormat Source => ComposerDocumentFormat.PlainText;
+            public ComposerDocumentFormat Target => ComposerDocumentFormat.Html;
+            public ComposerConversionResult Convert(string content) => ComposerConversionResult.Success($"<p>{content}</p>");
+        }
+
         private sealed class DummyEditorPlugin : IComposerEditorPlugin
         {
             public string Id => "dummy";
@@ -680,6 +687,42 @@
         }
 
         [Fact]
+        public void Should_sanitize_html_content_bound_by_the_host()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new HtmlModel { Body = new(ComposerDocumentFormat.Html, "<p onclick=\"steal()\">Text</p><script>evil()</script>") };
+            IReadOnlyList<IComposerPlugin> plugins = [new HtmlEditorPlugin()];
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal("<p>Text</p>", model.Body.Content));
+        }
+
+        [Fact]
+        public void Should_convert_the_document_through_the_registered_converter_when_the_editor_switches()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            ctx.Services.AddSingleton<IComposerDocumentConverter>(new TextToHtmlConverter());
+            var model = new TestModel();
+            IReadOnlyList<IComposerPlugin> plugins = [new DummyEditorPlugin(), new HtmlEditorPlugin()];
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+
+            // Act
+            cut.FindComponent<FormaComposer>().Render(parameters => parameters.Add(p => p.ActiveEditorId, "html"));
+
+            // Assert
+            cut.WaitForAssertion(() =>
+            {
+                Assert.Equal(ComposerDocumentFormat.Html, model.Body.Format);
+                Assert.Equal("<p>Initial Content</p>", model.Body.Content);
+            });
+        }
+
+        [Fact]
         public void Should_leave_a_non_markup_format_untouched()
         {
             // Arrange
@@ -1102,6 +1145,40 @@
 
             // Assert 2
             cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Maximize']")));
+        }
+
+        [Fact]
+        public void Should_maximize_when_the_toolbar_toggle_is_pressed()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var plugins = new IComposerPlugin[] { new MaximizePlugin() };
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Maximize']")));
+
+            // Act
+            cut.Find("button[aria-label='Maximize']").Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Minimize']")));
+        }
+
+        [Fact]
+        public void Should_hide_the_selection_bar_when_the_toolbar_toggle_is_pressed()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var plugins = new IComposerPlugin[] { new SelectionBarPlugin() };
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.WaitForAssertion(() => Assert.Equal("true", cut.Find("button[aria-label='Selection Bar']").GetAttribute("aria-pressed")));
+
+            // Act
+            cut.Find("button[aria-label='Selection Bar']").Click();
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal("false", cut.Find("button[aria-label='Selection Bar']").GetAttribute("aria-pressed")));
         }
 
         [Fact]

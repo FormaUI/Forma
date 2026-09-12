@@ -91,6 +91,8 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
         => Value ?? new ComposerDocument(ComposerDocumentFormat.Html, string.Empty);
 
     private ComposerContext? _context;
+    private ComposerDocument? _sanitizedValue;
+    private DocumentConverterRegistry _converterRegistry = new();
 
     // The same instance comes back until a member actually changes.
     private ComposerContext? Composer
@@ -148,6 +150,8 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
         _regionRegistry.Changed += HandleRegionsChanged;
 
         await LoadPluginsAsync();
+        _converterRegistry = new DocumentConverterRegistry(RegisteredConverters);
+        SanitizeValue();
 
         _history.Record(CurrentDocument, _selection);
         _isInitialized = true;
@@ -223,6 +227,7 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
     protected override async Task OnParametersSetAsync()
     {
         ArgumentNullException.ThrowIfNull(Options);
+        SanitizeValue();
 
         if (_isInitialized)
         {
@@ -327,14 +332,7 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
 
     private bool TryConvertTo(ComposerDocumentFormat format)
     {
-        var converter = RegisteredConverters.FirstOrDefault(c => c.Source == CurrentDocument.Format && c.Target == format);
-
-        if (converter is null)
-        {
-            return false;
-        }
-
-        var conversion = converter.Convert(CurrentDocument.Content);
+        var conversion = _converterRegistry.Convert(CurrentDocument, format);
 
         if (!conversion.Succeeded)
         {
@@ -396,6 +394,23 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
         StateHasChanged();
 
         return Task.CompletedTask;
+    }
+
+    /// <summary>Sanitises the document the host bound, once per document, and hands the host the sanitised one when it differs.</summary>
+    private void SanitizeValue()
+    {
+        if (Value is null || Value == _sanitizedValue)
+        {
+            return;
+        }
+
+        var sanitized = Sanitize(Value);
+        _sanitizedValue = sanitized;
+
+        if (sanitized != Value)
+        {
+            CurrentValue = sanitized;
+        }
     }
 
     // Sanitisation is mandatory on every crossing to the host, and applies to markup rather than to a format that carries none.
