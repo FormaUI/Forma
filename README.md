@@ -207,13 +207,16 @@ there, and reviewing a component means looking at it in all three cultures.
 
 Where to read before working:
 
-- [`CLAUDE.md`](CLAUDE.md) — the conventions: solution structure, naming, component authoring,
-  CSS, services, and the working agreement. Its `.claude/skills/` guides carry the detailed
-  standards for tests, localization, accessibility, JS interop, and Showcase pages.
-- [`COMPONENTS.md`](COMPONENTS.md) — the component inventory, each component's design notes, and
-  the build order. Work goes one component at a time, delivered whole: component, tests, and
-  Showcase page.
-- [`docs/`](docs/) — design documents for components large enough to own a plan;
+- [`CLAUDE.md`](CLAUDE.md) — the working rules: structure, dependencies, verification, and the
+  working agreement. Its `.claude/skills/` guides carry the detailed standards for authoring,
+  naming, styling, scripting, testing, localization, accessibility, verification and prose.
+- [`docs/repository.md`](docs/repository.md) — the repository itself: the solution structure,
+  where components, scripts, stylesheets and tests live, the build commands, where the components'
+  designs derive from, and who consumes the library. [`docs/vocabulary.md`](docs/vocabulary.md)
+  defines the words the library uses for its concepts.
+- [`COMPONENTS.md`](COMPONENTS.md) — the component inventory, status, and build order. Work goes
+  one component at a time, delivered whole: component, tests, and Showcase page.
+- [`docs/`](docs/) — design documents for the areas large enough to need one;
   [`docs/composer-design.md`](docs/composer-design.md) is authoritative for `FormaComposer`.
 - Per-project READMEs — the localization projects and the artwork packs each document their own
   contract, format, or artwork pipeline.

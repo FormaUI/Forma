@@ -1,33 +1,70 @@
 ---
 name: forma-documenting
-description: Forma's standard for prose that describes code — XML summaries, inline comments, CSS banners, README and inventory rows — stating what a thing is, explaining a mechanism only where the code cannot show it, US English with the one spelling exception, inheritdoc on overrides, and keeping every description true when the code it describes widens or changes. Use when writing or changing a summary, comment, banner, README passage or COMPONENTS.md row, and when reviewing prose around code you touched.
+description: The standard for prose — a summary or comment says what a thing is, a remarks block says how a non-trivial thing works, and a document says what its title promises: a design document the design, the component inventory the components and their status, the README the host's view, an instruction the rule. Use when writing or changing a summary, comment, remarks block, stylesheet banner, README passage, design document or inventory entry, and when deciding whether a code change should touch any prose at all.
 ---
 
-# Comments and documentation
+# Documentation
 
-These rules govern prose that *describes a thing*. They do not apply to this file, or to documents whose purpose is to teach judgment or record decisions.
+Every piece of prose in a repository has one job, and the job decides what goes in it.
 
-- Do state what a thing is in XML docs, CSS banners, inline comments, and README files.
-- Do explain how something works only where the mechanism is intricate enough that a reader could not recover it from the code, and then describe the mechanism rather than the reasoning that chose it.
-- Do use US English spelling in documentation and comments — color, license, catalog — with one deliberate exception: behaviour keeps its British spelling.
-- Do comment only when the code cannot express an important constraint, such as a necessary `!important`, a non-obvious `-webkit-` property, or an off-by-one invariant.
-- Do keep comments to one line whenever possible.
-- Do add a one-line XML `<summary>` describing what every public parameter and public type is.
-- Do put `/// <inheritdoc />` on every lifecycle override and interface implementation — `OnInitialized`, `OnParametersSet`, `OnAfterRenderAsync`, `Dispose`, `DisposeAsync`, `TryParseValueFromString`, `FormatValueAsString` — rather than restating what the base member already documents.
-- Do keep historical origin and usage mapping in the intentional *Old pattern* and *Used in* rows of `COMPONENTS.md`.
-- Don't document history, rejected alternatives, decision arguments, roadmap position, call sites, mirrors, or other cross-references.
+| Prose | Says | Never says |
+|---|---|---|
+| A summary or comment | What the thing is or does | How it does it, why it was chosen, what came before, what it does not do |
+| A `<remarks>` block | How a non-trivial thing works | Why it was designed that way, what was tried |
+| A design document | The design | The state of the code, what has been built, what changed since |
+| The component inventory | Which components exist, their status and build order, one line saying what each is | Parameters, options, approach, technical design |
+| The README | How a host consumes the library | How the library works inside |
+| An instruction, a skill or the repository's working rules | How to work | Project structure, project names, the change that prompted the rule |
+
+## Summaries and comments
+
+- Do state what a thing is or does in an XML `<summary>`, a stylesheet banner, an inline comment or a README sentence, in US English with one deliberate exception: behaviour keeps its British spelling.
+- Do give every public type and public member a one-line `<summary>`, and put `/// <inheritdoc />` on every override and interface implementation rather than restating what the base member documents.
+- Do write an inline comment only where the code cannot express an important constraint — a necessary `!important`, a non-obvious vendor-prefixed property, an off-by-one invariant — and keep it to one line.
+- Do describe a member at the full breadth of its type: a parameter typed as a list of toolbar items is "the items the toolbar renders", never "the action buttons", when the item type also covers groups, menus, toggles and readouts.
+- Do re-read the prose around whatever you change and fix what the change made false: a class summary naming what a component is built on, a "no JavaScript" banner on a component that gained interop, a sentence saying another component *should* adopt something it now has.
+- Don't write how a thing does its work in a summary or comment; a reader who needs the mechanism reads the code, and a mechanism the code cannot show goes in `<remarks>`.
+- Don't write history, rejected alternatives, decision arguments, roadmap position, call sites, mirrors or other cross-references; a comment that ties a type to its first consumer narrows it falsely.
 - Don't write what a thing might do, does not do, or would otherwise have done; a sentence about code that is not there sends the reader looking for it.
-- Don't restate obvious code or pad files with unnecessary prose; delete a comment that carries nothing rather than rewording it.
+- Don't mark or track progress in a comment — no "step 3", "for now", "later", "temporary", "TODO" — and don't narrate the situation the code runs in to set a scene for the reader.
+- Don't restate the code or pad a file with prose; delete a comment that carries nothing rather than rewording it.
 
-## Keeping prose true as code changes
+## Remarks
 
-A description is wrong the moment the thing it describes widens, and nothing in the build will say so. Re-read the prose around whatever you touch.
+- Do put the mechanism of a non-trivial member in a `<remarks>` block under its summary when a reader could not recover it from the code: the traversal order that decides which of two nested elements matches first, a selection frozen because a closing dialog returns a collapsed caret, a task held rather than its result so racing callers share one load.
+- Do describe the mechanism, not the reasoning that chose it, and keep the summary above it to what the member is.
+- Don't add remarks to say something is simple, or to repeat the summary in more words.
 
-- Do describe a member at the full breadth of its type, so a parameter typed `IReadOnlyList<FormaToolbarItem>` is "the items the toolbar renders", never "the action buttons" — that hierarchy also holds groups, menus, toggles, readouts, and custom items.
-- Do re-check a class-level summary naming what a component is built on whenever its markup changes; "built on `FormaCommandArea` and `FormaCommandBar`" survived long after the markup used only one of them.
-- Do drop a "no JavaScript" or "pure CSS" banner the moment the component gains interop, and keep it where it is still true.
-- Do rewrite a `COMPONENTS.md` **Parameters** row when a parameter is added, removed, renamed, or changes type or required-ness.
-- Do rewrite a **Blazor approach** row once the component is built, so it records what shipped rather than the plan; a row still reading "Use Blazor `InputDate`" for a bespoke calendar is worse than no row.
-- Do update a JS module path in prose when the script moves between assemblies, or between `behaviours/`, `operations/`, and `components/`.
-- Do delete a sentence saying another component *should* adopt something once it has.
-- Don't trust a search for renamed identifiers to find this; the drift is in wording that still compiles and still reads plausibly.
+## Design documents
+
+A design document states a design: the concepts, their names, how they relate, and the rules a change to that area must keep. It is read before changing the area, which is why the repository's working rules point at it.
+
+- Do write the design as it is meant to be, in prose, with a code sketch only where the shape itself is the design.
+- Do define a term of art where it is introduced, and in the repository's shared vocabulary when the whole codebase will speak it.
+- Do change a design document when the design changes, and leave it alone when code lands that follows it.
+- Don't record the state of the code: no status paragraph, no "built" markers, no list of what departed from a sketch and why, no commit references. Progress lives in the inventory's status column and in the commit history.
+- Don't carry technical detail that belongs in the code and its summaries — signatures, member lists, file names, test names, counts.
+- Don't turn a plan into a document. A plan file tracks a piece of work while it runs and is discarded when the work is done; what survives of it is the design, rewritten as a design.
+
+## The component inventory
+
+The inventory lists the components, in build order, with a status and one line saying what each component is.
+
+- Do add an entry when a component is added, and flip its status when the component is approved.
+- Do keep an entry to its name, its status, one line of what it is, and the rows the inventory keeps on purpose, such as a component's origin and where it is used.
+- Don't put parameters, options, the rendering approach, notes on mechanics or any other API or design detail in an entry; a component that needs a technical design gets its own design document.
+
+## Instructions
+
+An instruction — a skill, or the repository's working rules — describes how to work, so it stays true when the project around it changes.
+
+- Do state a practice or a decision rule, with an example only where the rule is unclear without one, and keep the example generic enough to survive a rename.
+- Do refer to a document by its role, "the repository's component documentation", never by its file name or path, and never by a path that assumes how repositories are checked out side by side.
+- Don't put project structure, component names, directory layouts or another project's name in an instruction; those are facts about a project and belong in its documentation.
+- Don't tell the reader to consult another project; state the principle that project would have taught, directly.
+
+## When a code change touches prose
+
+- Do fix a summary, comment, banner or README sentence the change made false, as part of the change.
+- Do update an instruction when the change changes a rule, and a design document when it changes the design.
+- Don't update an instruction, a design document or an inventory entry because code landed; landing a step is not a rule change and not a design change.
