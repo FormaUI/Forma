@@ -6,7 +6,7 @@ using Forma.Framework.Explorer.Items;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>List presentation view for explorer media resources: names alone, flowing down the height and on into further columns that scroll sideways.</summary>
+/// <summary>List presentation view for explorer resources: names alone, flowing down the height and on into further columns that scroll sideways.</summary>
 public sealed partial class FormaExplorerListView : FormaComponentBase
 {
     /// <summary>The collection of items to display.</summary>

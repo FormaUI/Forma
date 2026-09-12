@@ -60,7 +60,7 @@ public sealed partial class FormaExplorerContentArea : FormaComponentBase
         return _sentinel.SyncAsync(this, wantsSentinel, _sentinelElement, _scrollElement);
     }
 
-    /// <summary>Appends the next page of media, as the reader scrolls toward the end of the current one.</summary>
+    /// <summary>Appends the next page of items, as the reader scrolls toward the end of the current one.</summary>
     [JSInvokable]
     public async Task HandleReachedAsync()
     {

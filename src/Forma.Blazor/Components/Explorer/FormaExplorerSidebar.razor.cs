@@ -9,10 +9,10 @@ using Forma.Framework.Explorer.Selection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-/// <summary>Folders tree navigation sidebar with drag-and-drop target support for a media explorer.</summary>
+/// <summary>Folders tree navigation sidebar with drag-and-drop target support for the explorer.</summary>
 public sealed partial class FormaExplorerSidebar : FormaComponentBase, IExplorerSidebarView, IExplorerSidebarInteraction
 {
-    /// <summary>The currently active folder, or null for all media.</summary>
+    /// <summary>The currently active folder, or null for every item.</summary>
     [Parameter] public IExplorerFolderItem? CurrentFolder { get; set; }
 
     /// <summary>List of available explorer folders.</summary>

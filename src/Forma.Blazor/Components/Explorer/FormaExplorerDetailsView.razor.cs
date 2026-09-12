@@ -12,7 +12,7 @@ using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Tabular details view for explorer media resources with sortable column headers, its actions and name columns staying put while the columns the reader has chosen scroll sideways.</summary>
+/// <summary>Tabular details view for explorer resources with sortable column headers, its actions and name columns staying put while the columns the reader has chosen scroll sideways.</summary>
 public sealed partial class FormaExplorerDetailsView : FormaComponentBase
 {
     /// <summary>The collection of items to display.</summary>

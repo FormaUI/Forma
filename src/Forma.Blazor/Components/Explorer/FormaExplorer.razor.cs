@@ -22,7 +22,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 
-/// <summary>A server-side media library manager with thumbnail/details/list views, folders, navigation, drag-and-drop organization, upload, preview, rename, and delete.</summary>
+/// <summary>A server-side file manager with thumbnail/details/list views, folders, navigation, drag-and-drop organization, upload, preview, rename, and delete.</summary>
 public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IExplorerInteraction
 {
     private const int DefaultPageSize = 24;
@@ -35,7 +35,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     private static readonly FilePickerOptions UploadPickerOptions = new() { Accept = "image/*,video/*,audio/*" };
 
-    /// <summary>The currently active folder, or null for all media.</summary>
+    /// <summary>The currently active folder, or null for every item.</summary>
     [Parameter] public IExplorerFolderItem? CurrentFolder { get; set; }
 
     /// <summary>The active page, 1-based.</summary>
@@ -47,7 +47,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     /// <summary>Answers for one window of items at a time, for collections too large to hold. Supply this or <see cref="Items"/>, not both.</summary>
     [Parameter] public IExplorerItemsProvider? ItemsProvider { get; set; }
 
-    /// <summary>Available folders for grouping media.</summary>
+    /// <summary>Available folders for grouping items.</summary>
     [Parameter] public IReadOnlyList<IExplorerItem>? Folders { get; set; }
 
     private bool ShowsSidebar
@@ -71,10 +71,10 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     /// <summary>Which operations the explorer offers on the items it lists.</summary>
     [Parameter] public ExplorerItemOptions ItemOptions { get; set; } = ExplorerItemOptions.Default;
 
-    /// <summary>Raised when media resources are deleted.</summary>
+    /// <summary>Raised when resources are deleted.</summary>
     [Parameter] public EventCallback<ExplorerDeleteRequest> OnDelete { get; set; }
 
-    /// <summary>Raised when media resources are dropped onto a target folder.</summary>
+    /// <summary>Raised when resources are dropped onto a target folder.</summary>
     [Parameter] public EventCallback<ExplorerDropRequest> OnDrop { get; set; }
 
     /// <summary>Raised when the active folder changes.</summary>
@@ -101,10 +101,10 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     /// <summary>Raised when a resource rename is confirmed.</summary>
     [Parameter] public EventCallback<ExplorerRenameRequest> OnRename { get; set; }
 
-    /// <summary>Raised when new media has been uploaded.</summary>
+    /// <summary>Raised when new files have been uploaded.</summary>
     [Parameter] public EventCallback<IReadOnlyList<ResourceInfo>> OnUploaded { get; set; }
 
-    /// <summary>The number of media resources shown per page.</summary>
+    /// <summary>The number of items shown per page.</summary>
     [Parameter] public int PageSize { get; set; } = DefaultPageSize;
 
     /// <summary>Custom search placeholder text.</summary>

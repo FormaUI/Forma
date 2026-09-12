@@ -7,7 +7,7 @@ using Forma.Framework.Icons;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Action toolbar for media explorer operations, view switching, and sorting.</summary>
+/// <summary>Action toolbar for explorer operations, view switching, and sorting.</summary>
 public sealed partial class FormaExplorerToolbar : FormaComponentBase
 {
     [CascadingParameter] private IExplorerView View { get; set; } = default!;
