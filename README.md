@@ -164,7 +164,8 @@ file format and how a file is found.
 
 ## Culture in the URL
 
-Optional, and off unless you ask for it:
+Optional, and off unless you ask for it. Culture routing lives in `Forma.Framework.Globalization`,
+which the components do not depend on, so a host references that assembly beside the library:
 
 ```csharp
 builder.Services.AddCultureRouting(new CultureRouterOptions

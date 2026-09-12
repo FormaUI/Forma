@@ -34,7 +34,7 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 - Do put a thing where its owner is: a contract stays with the feature that owns it however many projects reference it, a supporting type a host names lives in the feature assembly, and a type no caller names stays beside the component.
 - Do keep a folder and its namespace in step, and give every assembly one root namespace unique to it, its project name.
 - Do let dependencies point one way, from the product to the framework it builds on, never upward, and let an optional package extend the library from outside it rather than be referenced from within.
-- Do answer "required or optional?" by the project family alone, and make an optional package a host opt-in the host references and registers itself.
+- Do file a project by what it is: what the library builds on is Framework, whether or not the product uses it; a project that is optional and extends a Framework assembly is an AddOn, a host opt-in the host references and registers itself. Optional alone makes nothing an AddOn.
 - Do register a feature's services through one registrar at its root, with `TryAdd`, so a host that registered its own first still wins, and ship one aggregate registrar from the product so a host makes one call and still overrides any single service.
 - Do let a component whose optional contract is unregistered fall back to a default the library carries; a contract carrying data nobody can synthesise leaves the component in its empty state instead.
 - Do make components depend on abstractions and let the host choose implementations through DI.
