@@ -31,4 +31,8 @@ public sealed class CssClassBuilder
     /// <summary>The classes as one attribute value, separated by spaces; empty when none was added.</summary>
     public override string ToString()
         => string.Join(' ', _classes);
+
+    /// <summary>The classes as one attribute value, or null when none was added.</summary>
+    public string? ToStringOrNull()
+        => IsEmpty ? null : ToString();
 }

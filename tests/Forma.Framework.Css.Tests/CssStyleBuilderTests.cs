@@ -89,6 +89,25 @@ public sealed class CssStyleBuilderTests
     }
 
     [Fact]
+    public void Should_answer_null_instead_of_an_empty_value()
+    {
+        // Arrange
+        var empty = new CssStyleBuilder();
+        var filled = new CssStyleBuilder().Add("left", "40px");
+
+        // Act
+        var nothing = empty.ToStringOrNull();
+        var value = filled.ToStringOrNull();
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.Null(nothing);
+            Assert.Equal("left: 40px;", value);
+        });
+    }
+
+    [Fact]
     public void Should_be_empty_again_after_clearing()
     {
         // Arrange

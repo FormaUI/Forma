@@ -49,11 +49,30 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
 
     /// <summary>The class written on the root element: the component's own, the host's, then the field's validation class; null when there is none.</summary>
     protected string? RootClass
-        => RootAttributeValues.GetRootClass(BuildRootHostAndFieldClass);
+    {
+        get
+        {
+            var builder = new CssClassBuilder();
+            BuildRootClass(builder);
+            builder.Add(Class);
+            builder.Add(CssClass);
+
+            return builder.ToStringOrNull();
+        }
+    }
 
     /// <summary>The style written on the root element: the component's own, then the host's; null when there is none.</summary>
     protected string? RootStyle
-        => RootAttributeValues.GetRootStyle(BuildRootAndHostStyle);
+    {
+        get
+        {
+            var builder = new CssStyleBuilder();
+            BuildRootStyle(builder);
+            builder.Add(Style);
+
+            return builder.ToStringOrNull();
+        }
+    }
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
@@ -84,17 +103,4 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     /// <summary>Releases what the component holds; runs once.</summary>
     protected virtual ValueTask DisposeAsyncCore()
         => ValueTask.CompletedTask;
-
-    private void BuildRootHostAndFieldClass(CssClassBuilder builder)
-    {
-        BuildRootClass(builder);
-        builder.Add(Class);
-        builder.Add(CssClass);
-    }
-
-    private void BuildRootAndHostStyle(CssStyleBuilder builder)
-    {
-        BuildRootStyle(builder);
-        builder.Add(Style);
-    }
 }

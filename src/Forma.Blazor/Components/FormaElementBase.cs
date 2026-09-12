@@ -25,11 +25,29 @@ public abstract class FormaElementBase : FormaComponentBase
 
     /// <summary>The class written on the root element: the component's own, then the host's; null when there is none.</summary>
     protected string? RootClass
-        => RootAttributeValues.GetRootClass(BuildRootAndHostClass);
+    {
+        get
+        {
+            var builder = new CssClassBuilder();
+            BuildRootClass(builder);
+            builder.Add(Class);
+
+            return builder.ToStringOrNull();
+        }
+    }
 
     /// <summary>The style written on the root element: the component's own, then the host's; null when there is none.</summary>
     protected string? RootStyle
-        => RootAttributeValues.GetRootStyle(BuildRootAndHostStyle);
+    {
+        get
+        {
+            var builder = new CssStyleBuilder();
+            BuildRootStyle(builder);
+            builder.Add(Style);
+
+            return builder.ToStringOrNull();
+        }
+    }
 
     /// <summary>Adds the classes the component gives its root element in its current state.</summary>
     protected virtual void BuildRootClass(CssClassBuilder builder)
@@ -39,17 +57,5 @@ public abstract class FormaElementBase : FormaComponentBase
     /// <summary>Adds the declarations the component gives its root element in its current state.</summary>
     protected virtual void BuildRootStyle(CssStyleBuilder builder)
     {
-    }
-
-    private void BuildRootAndHostClass(CssClassBuilder builder)
-    {
-        BuildRootClass(builder);
-        builder.Add(Class);
-    }
-
-    private void BuildRootAndHostStyle(CssStyleBuilder builder)
-    {
-        BuildRootStyle(builder);
-        builder.Add(Style);
     }
 }

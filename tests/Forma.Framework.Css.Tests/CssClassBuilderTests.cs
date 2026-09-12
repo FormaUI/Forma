@@ -37,6 +37,25 @@ public sealed class CssClassBuilderTests
     }
 
     [Fact]
+    public void Should_answer_null_instead_of_an_empty_value()
+    {
+        // Arrange
+        var empty = new CssClassBuilder();
+        var filled = new CssClassBuilder().Add("forma-frame");
+
+        // Act
+        var nothing = empty.ToStringOrNull();
+        var value = filled.ToStringOrNull();
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.Null(nothing);
+            Assert.Equal("forma-frame", value);
+        });
+    }
+
+    [Fact]
     public void Should_add_a_class_only_while_its_condition_holds()
     {
         // Arrange

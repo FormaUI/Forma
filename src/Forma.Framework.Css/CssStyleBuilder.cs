@@ -55,4 +55,8 @@ public sealed class CssStyleBuilder
     /// <summary>The declarations as one attribute value, each terminated and separated by spaces; empty when none was added.</summary>
     public override string ToString()
         => string.Join(' ', _declarations);
+
+    /// <summary>The declarations as one attribute value, or null when none was added.</summary>
+    public string? ToStringOrNull()
+        => IsEmpty ? null : ToString();
 }

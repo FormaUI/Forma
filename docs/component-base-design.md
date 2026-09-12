@@ -70,10 +70,11 @@ renderer calls only `DisposeAsync` on a component that implements both interface
   standard provider hides `Debug` unless asked, so a host sees nothing new until it turns a
   category on. `Warning` and `Error` are decided per site later, never blanket-applied.
 - **The host's values in, the root's values out.** `Id`, `Class` and `Style` are what
-  the host passed; `Root.Class` and `Root.Style` are what the base writes on the root,
-  built by `BuildRootClass` and `BuildRootStyle` through the two CSS builders and
-  composed by one object each base owns. `AdditionalAttributes` keeps the framework's
-  name, because `InputBase<TValue>` fixes it and the two tiers must read the same.
+  the host passed; `RootClass` and `RootStyle` are what the base writes on the root,
+  built by `BuildRootClass` and `BuildRootStyle` through the two CSS builders, which
+  each base creates, fills and reads in its own getter. `AdditionalAttributes` keeps the
+  framework's name, because `InputBase<TValue>` fixes it and the two tiers must read the
+  same.
 - **One context per component, handed down whole.** `IComponentContext` is what a
   component is given: its identity, its strings, its log and its JS environment. The
   base builds it once and forwards nothing but `L`, so a component reads
@@ -242,8 +243,11 @@ public abstract class FormaElementBase : FormaComponentBase
     /// <summary>The root element, once rendered.</summary>
     public ElementReference RootElement { get; protected set; }
 
-    /// <summary>The class and style written on the root element: the component's own, then the host's.</summary>
-    protected RootAttributes Root { get; }  // Composed once from BuildRootClass then Class, and BuildRootStyle then Style.
+    /// <summary>The class written on the root element: the component's own, then the host's; null when there is none.</summary>
+    protected string? RootClass { get; }  // A CssClassBuilder filled by BuildRootClass then Class, read with ToStringOrNull.
+
+    /// <summary>The style written on the root element: the component's own, then the host's; null when there is none.</summary>
+    protected string? RootStyle { get; }  // A CssStyleBuilder filled by BuildRootStyle then Style, read with ToStringOrNull.
 
     /// <summary>The classes the component gives its root element in its current state.</summary>
     protected virtual void BuildRootClass(CssClassBuilder builder)
@@ -263,7 +267,7 @@ more, and the components that dig a style out of the attribute bag today stop. T
 line of every element component's `.razor` is then the same:
 
 ```razor
-<div id="@Id" data-rid="@Context.RuntimeId" class="@Root.Class" style="@Root.Style" @attributes="AdditionalAttributes" @ref="RootElement">
+<div id="@Id" data-rid="@Context.RuntimeId" class="@RootClass" style="@RootStyle" @attributes="AdditionalAttributes" @ref="RootElement">
 ```
 
 A component that roots in another Forma component forwards the four to the one inside.
@@ -279,15 +283,19 @@ and a `ToString()` that terminates every declaration; it replaces the lists and
 `string.Create` calls the five style-building components carry, and the termination
 helper on the bases.
 
-`RootAttributes` is one sealed type, constructed with the two builder actions a base
-owns, exposing `Class` and `Style` as `string?`, null when nothing was added so the
-attribute is omitted. Each base passes its own composition: the element tier adds the
-component's classes then the host's, the input tier adds the field's validation class
-after those. `Root` is not virtual; the builder hooks are the extension points, and the
-composition rule is the base's. A single splatted attribute dictionary was weighed and
-set aside: the renderer lets a later attribute win and omits a null one, so it would
-work, but it turns the attribute-order rule into a precedence rule that has to be
-written down first, and that is its own change.
+Each base composes its root's values in the getters themselves: it creates the builder,
+lets the component fill it, adds the host's value and, on the input tier, the field's
+validation class, and reads it through `ToStringOrNull`, null when nothing was added so
+the attribute is omitted. The builder hooks are the extension points, and the
+composition rule is the base's; there is no helper between them, since creating,
+filling and reading a builder is three lines. A root object holding the two values,
+`Root.Class` and `Root.Style`, was weighed and set aside: it would hold two strings and
+no rule of its own, and `RootElement` would stay outside it, since forwarders override
+it and `@ref` binds it. It comes back only with a splatted attribute dictionary, which
+is where a precedence rule would live. That splat was weighed too: the renderer lets a
+later attribute win and omits a null one, so it would work, but it turns the
+attribute-order rule into a precedence rule that has to be written down first, and that
+is its own change.
 
 ### `FormaInputBase<TValue>`
 
@@ -296,9 +304,9 @@ written down first, and that is its own change.
 public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposable
 {
     // The three injections, Context and L, LocalizationSourceType, IsDisposed and DisposeAsyncCore
-    // as on FormaComponentBase; Id, Class, Style, RootElement, Root, BuildRootClass and BuildRootStyle as on
-    // FormaElementBase. AdditionalAttributes is InputBase's own. Root.Class is built from BuildRootClass, Class
-    // and the field's validation class, in that order.
+    // as on FormaComponentBase; Id, Class, Style, RootElement, RootClass, RootStyle, BuildRootClass and
+    // BuildRootStyle as on FormaElementBase. AdditionalAttributes is InputBase's own. RootClass is built from
+    // BuildRootClass, Class and the field's validation class, in that order.
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
@@ -318,7 +326,7 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
 
 C# has one base slot, so the input base repeats what the other two carry rather than
 deriving from them. The context carries what both can share, the identity, the strings,
-the log and the environment, and the root object carries the class and style
+the log and the environment, and the two builders carry the class and style
 composition; what stays written out twice is the three injections,
 `LocalizationSourceType`, `IsDisposed`, the dispose pair and the host parameters.
 
@@ -408,8 +416,8 @@ no framework of its own; the gap this design closes is on the .NET side.
 - `Warning` and `Error` levels in the first pass.
 - Retiring `IStringLocale<T>`. It stays for services and hosts; components simply no
   longer need it.
-- A splatted root attribute dictionary, `Root.Attributes`. Possible, and deferred until
-  its precedence rules are written.
+- A root object, `Root.Class` and `Root.Style`, and the splatted attribute dictionary it
+  would own. Possible, and deferred until the splat's precedence rules are written.
 
 ## Still open
 
@@ -527,7 +535,9 @@ does.
    after, `inline-size: 12ch; color: red;`, whichever of the two supplied them; a length
    is added as a `CssLength`, so a placement renders in the invariant culture without a
    component formatting it.
-9. **The root object.** `RootAttributes` replacing the static `RootAttributeValues`;
-   `Root` on both bases with each tier's composition; the 64 razor files, forwarders
-   included, on `@Root.Class` and `@Root.Style`; the skills, the inventory's tree and the
-   glossary. A Showcase walk, since every root's attributes are composed anew.
+9. **The root object.** Withdrawn. With the class and style built through the two
+   builders, the object would hold two strings and no rule of its own, and `RootElement`
+   would stay outside it. The static helper that composed the values went with it: each
+   base creates, fills and reads its builders in the `RootClass` and `RootStyle` getters,
+   and the builders gained `ToStringOrNull` for the omitted attribute. The object
+   returns with the splatted dictionary, if that is ever decided.
