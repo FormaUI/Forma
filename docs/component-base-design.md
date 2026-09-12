@@ -8,20 +8,22 @@ services they carry: the browser runtime, logging, and localization. Authoritati
 the null objects `UnavailableJSRuntime` and `NullStringLocaleFactory`, and how logging
 reaches every assembly of the library.
 
-Steps 1 and 2 of the implementation plan are built: the builder, the null objects, the
-three bases and the fallback registrations exist, and every component derives from a
-base. The plan at the end records what landed at each step and where it departed from
-the sketches below. Two departures apply to the sketches themselves: the root's class
-and style are `string?`, null when there is nothing to write, so an element carries no
-empty `class` or `style` attribute; and the root reference is named `RootElement`.
+Every step of the implementation plan is built except step 4, the feature logging
+ledger: the builders, the null objects, the three bases and their fallback
+registrations exist, every component derives from a base, interop logs through the JS
+environment, every component reads its context, and a root's style is built the way its
+class is. The plan at the end records what landed at each step and where it departed
+from the sketches below. Two departures apply to the sketches themselves: the root's
+class and style are `string?`, null when there is nothing to write, so an element
+carries no empty `class` or `style` attribute; and the root reference is named
+`RootElement`.
 
-Step 3, interop logging, and step 6, the JS environment, are built. Reviewing step 3
-changed the design: threading one logger touched every wrapper, every
+Reviewing step 3 changed the design: threading one logger touched every wrapper, every
 construction site and two services, so what a component hands down is now one object,
 its context, and what a wrapper takes is one object, the JS environment inside it.
-Steps 6 to 9 below carry that revision: the context and the environment, a style
-builder to match the class builder, and the root's class and style as one composed
-object.
+Steps 6 to 8 carry that revision, the context, the environment and a style builder to
+match the class builder; step 9, a root object over the class and style, was withdrawn
+once the builders left it nothing to own.
 
 The root is the element the host addresses, on both tiers. On an input that is the
 control inside its `FormaField` (the `<textarea>`, or the trigger `<button>` of a select),
