@@ -47,11 +47,11 @@ that fails to load, reaches a host through the log the host already configures.
   concrete type through `ILoggerFactory`, so a host filters by
   `Forma.Blazor.Components.Windows.FormaWindow` and nothing else. Interop wrappers take
   the component's JS environment, which carries that logger and the component's identity,
-  so a frame's interop logs under the frame and names the frame.
+  so `FormaFrame`'s interop logs under `FormaFrame` and names the instance.
 - **Strings per component, under its own type unless it says otherwise.** `L` is created
   lazily through `IStringLocaleFactory` from `LocalizationSourceType`, which is the
   component's own type by default and a feature's type where components share a file,
-  as the explorer's and the composer's do.
+  as `FormaExplorer`'s and `FormaComposer`'s do.
 - **Debug for what the library absorbs; anything louder decided per site.** What the
   library swallows by design is logged at `Debug` through `[LoggerMessage]`. Every
   standard provider hides `Debug` unless asked, so a host sees nothing new until it turns
@@ -71,7 +71,7 @@ that fails to load, reaches a host through the log the host already configures.
   `Context.RuntimeId`, `Context.Logger` and `Context.JS`, and a new thing every component
   needs is added to the context once rather than to a base twice or to every constructor
   that passes it on. `Context` is reserved for it: anything else context-like a component
-  holds is named for its subject alone, `Composer` for the composer parts' cascaded state
+  holds is named for its subject alone, `Composer` for `FormaComposer`'s parts' cascaded state
   and `JS` for the environment, never `ComposerContext` or `JSEnvironment`.
 - **The JS environment is a runtime.** `IJSEnvironment : IJSRuntime` adds the owner's
   `RuntimeId` and `Logger` to the runtime, so a wrapper calls it as the runtime it is

@@ -17,10 +17,10 @@ dismiss it through the router rather than through a document listener and a back
 its own, and `FormaBreadcrumb`'s segment menus are `FormaDropDownMenu`s over it, so its own
 key handler and backdrop are gone. `FormaDialog` is a modal scope while open, so Escape and a
 platform close request go to whatever is foremost, and the dialog closes only when that is
-itself. The composer's and the toolbar's shortcuts are routes: the
+itself. `FormaComposer`'s and `FormaToolbar`'s shortcuts are routes: the
 composer registers its
 catalog on its root and each editor registers it on its editable element, where the native
-table would otherwise claim the keys, and the toolbar registers its actions' shortcuts on its
+table would otherwise claim the keys, and `FormaToolbar` registers its actions' shortcuts on its
 target. `FormaWindow` registers its root while attached, modal when the window is, and
 active while it is the workspace's current window and focus is inside it, so Escape closes
 the focused window alone and a press away sends it back when its options say so. The router
@@ -45,7 +45,7 @@ Escape and press-away behavior are decided in several unrelated ways today:
 - A document listener owned by `FormaPopover` (retired; the popover is a scope on the router).
 - `FormaBreadcrumb`'s key handler and backdrop span (retired; its segment menus are `FormaDropDownMenu`s).
 - `DragGesture` cancelling an active drag.
-- The composer selection bar returning focus to the editor.
+- `FormaComposer`'s selection bar returning focus to the editor.
 
 ### Navigation keys
 
@@ -62,8 +62,8 @@ prevents page scrolling for two of them.
 
 ### Shortcuts and modifiers
 
-The composer registers its shortcut catalog as routes on its own scope and on each editor's
-editable element, and the toolbar registers the shortcuts its actions carry as routes on its
+`FormaComposer` registers its shortcut catalog as routes on its own scope and on each editor's
+editable element, and `FormaToolbar` registers the shortcuts its actions carry as routes on its
 `Target`; a command is its own action, so a host remaps either by the command's name.
 `FormaDataGrid` handles Ctrl/Shift-click and Shift+Arrow selection;
 `ImplicitSubmitGuard` controls implicit submission; `FormaSearchBox` and
@@ -74,11 +74,11 @@ editable element, and the toolbar registers the shortcuts its actions carry as r
 `DragGesture` supports sortable reordering and the selection-bar handle; `PanGesture`
 supports the command-bar track; `FormaSplitter` owns its pointer interaction; explorer
 HTML5 drag and drop spans four views and the sidebar; `DropZone` supports file intake;
-`SelectionInteraction` listens for capture-phase mousedown on the grid.
+`SelectionInteraction` listens for capture-phase mousedown on `FormaDataGrid`.
 
 ### Wheel
 
-`Wheel` is used by the command bar, the toolbar, and the file viewer, optionally
+`Wheel` is used by `FormaCommandBar`, `FormaToolbar`, and `FormaFileViewer`, optionally
 requiring a modifier.
 
 ## Conflicts before the router
@@ -89,8 +89,8 @@ draws it in the top layer, because it remains a DOM descendant of whatever opene
 
 | Conflict | What happens today |
 | --- | --- |
-| Select inside a data-grid cell | The grid's capture-phase listener moves row selection before the select receives ArrowDown. Only text-entry targets are excluded. |
-| Emoji picker over the composer | Resolved: the composer's shortcuts are routes, and a popup over it is an active scope that Ctrl+B pressed inside it stops at. |
+| Select inside a data-grid cell | `FormaDataGrid`'s capture-phase listener moves row selection before the select receives ArrowDown. Only text-entry targets are excluded. |
+| Emoji picker over the composer | Resolved: `FormaComposer`'s shortcuts are routes, and a popup over it is an active scope that Ctrl+B pressed inside it stops at. |
 | Popup opened from a toolbar | Wheel input bubbling from the popup scrolls the toolbar track behind it. |
 | Drag started inside a popup | Escape reaches the popup's document listener before the drag's element listener. |
 | Nested drop targets | A folder node inside the sidebar's drop area lets both targets receive the drop unless the inner one stops propagation. |
@@ -101,15 +101,15 @@ draws it in the top layer, because it remains a DOM descendant of whatever opene
 
 | Conflict | Migration |
 | --- | --- |
-| Select in a grid cell receives ArrowDown | Both register scopes; the grid's capture handler acts only as owner |
-| Emoji-picker search receives Ctrl+B | Done: composer bindings are routes on the composer's and the editor's scopes and do not act inside a nested scope |
+| Select in a grid cell receives ArrowDown | Both register scopes; `FormaDataGrid`'s capture handler acts only as owner |
+| Emoji-picker search receives Ctrl+B | Done: composer bindings are routes on `FormaComposer`'s and the editor's scopes and do not act inside a nested scope |
 | Popup content receives wheel over a toolbar | The wheel acts only as owner |
 | Drag inside a popup receives Escape | The drag activates above the popup |
 | Folder node receives a drop inside the sidebar | The sidebar does not act on a drop owned by the nested scope |
 | Inner popup receives Escape | Done: router ordering replaces per-popup listeners |
 | Popup in a dialog receives Escape | Done: routed before native cancellation |
 | Dialog opened over a popup receives Escape | Done: modal barrier |
-| Host `<input>` in a grid receives arrows | Native table, built; the grid's own text-entry exclusion stands until `SelectionInteraction` is on the router |
+| Host `<input>` in a grid receives arrows | Native table, built; `FormaDataGrid`'s own text-entry exclusion stands until `SelectionInteraction` is on the router |
 | Tab list receives arrows | New routes; the missing interaction |
 
 ## Steps
@@ -126,16 +126,16 @@ existing components, landing as several coherent commits.
    drags and the selection bar while focused (open), `FormaBreadcrumb` rebuilt on `FormaPopover` (done,
    as a `FormaDropDownMenu` per segment), `FormaWindow` (done). The per-popup document listener, both backdrops,
    and the backdrop z-indexes go (done).
-3. **Owners onto routes.** `SelectionInteraction`, both shortcut sets (done: the composer's
-   and the toolbar's shortcuts are routes, and `KeyBindings` is retired), the three
-   wheel tracks of `Wheel`, `PanGesture`, `DropZone` and the explorer drop targets,
+3. **Owners onto routes.** `SelectionInteraction`, both shortcut sets (done: `FormaComposer`'s
+   and `FormaToolbar`'s shortcuts are routes, and `KeyBindings` is retired), the three
+   wheel tracks of `Wheel`, `PanGesture`, `DropZone` and `FormaExplorer`'s drop targets,
    `Focus.js`, and the components that own navigation keys — `FormaSelect`,
    `FormaDropDownMenu`, `FormaEmojiPicker`, `FormaFileViewer`, `FormaSplitter`,
    `FormaSortableList`, `FormaTabs` (all open). `NavigationGuard` and the per-component
    text-entry exclusions are retired in favour of the router's `preventDefault` and native
    table (open).
 4. **Verification** across combinations, in a visible browser: select in a grid cell; popup
-   on a toolbar; emoji picker over the composer; drag started in a popup; nested popups;
+   on a toolbar; emoji picker over `FormaComposer`; drag started in a popup; nested popups;
    popup in a dialog and dialog over a popup; nested explorer drops; a host `<input>` in a
    grid; Tab through nested focus-managed surfaces; Escape through successive active
    scopes; RTL navigation unchanged.

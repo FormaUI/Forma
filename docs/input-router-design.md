@@ -284,7 +284,7 @@ can outrank parentage, modality, or actual activation.
 
 ### Focus-return interactions
 
-The composer's selection bar is active only while it has focus, from focus-in to
+`FormaComposer`'s selection bar is active only while it has focus, from focus-in to
 focus-out; Escape then returns focus to the editor. It is never active merely because it is
 visible.
 
@@ -422,7 +422,7 @@ Tests assert resolutions directly. The Showcase carries an inspector that shows 
 | Conflict | Mode | Owner |
 | --- | --- | --- |
 | Select in a grid cell receives ArrowDown | Structural | `FormaSelect` |
-| Emoji-picker search receives Ctrl+B | Structural | The picker's scope |
+| Emoji-picker search receives Ctrl+B | Structural | `FormaEmojiPicker`'s scope |
 | Popup content receives wheel over a toolbar | Structural | The popup's scope |
 | Drag inside a popup receives Escape | Active | The drag |
 | Folder node receives a drop inside the sidebar | Structural | The folder's scope |

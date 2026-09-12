@@ -29,7 +29,7 @@ document, not on impression.
 | Fact | Consequence |
 | --- | --- |
 | No component renders nothing of its own: 58 own one root element, 34 root in another Forma component and forward the host's attributes to it, the rest wrap an owned element in a cascade or beside a sibling. | The plain tier exists for the few that take nothing from a host; the element tier is nearly everyone. |
-| 61 components inject a locale; 31 of them deliberately read a feature's file, the explorer's twenty sharing `FormaExplorer`'s and the composer's sharing `FormaComposer`'s. | `L` cannot be made from the component's own type alone; `LocalizationSourceType` is the override. |
+| 61 components inject a locale; 31 of them deliberately read a feature's file, `FormaExplorer`'s twenty parts sharing its file and `FormaComposer`'s sharing its own. | `L` cannot be made from the component's own type alone; `LocalizationSourceType` is the override. |
 | Generic components inject a locale for a non-generic marker type, five of them, because `IStringLocale<T>` needs a non-generic argument; the JSON factory already resolves a closed generic to its open definition's files. | By-type creation retires the marker types. |
 | 47 test classes register localization in their own constructor because the test context does not. | With a null factory registered by `AddFormaUI`, the test context inherits it and the 47 registrations go. |
 | 29 components inject `IJSRuntime`, 41 sites construct an interop wrapper by hand, 32 implement `IAsyncDisposable`, 16 hold a `DotNetObjectReference` to self. | The runtime goes on the base; the self reference stays with the interop-owning components, since it is theirs alone. |
@@ -83,12 +83,12 @@ does.
    inputs, the locale marker types to delete, the test-side localization registrations
    to remove, and `FormaWindow`'s Guid `Id` becoming `IWindow.RuntimeId` are marked. The ledger is reviewed
    before anything is applied; then the migration, the gate, and a walk of the pages that
-   exercise disposal, the windows and the explorer, in both languages. **Built.** The
+   exercise disposal, `FormaWindow` and `FormaExplorer`, in both languages. **Built.** The
    tier rule the ledger settled: a component a host places is an element (52), a form
    input is an input (11), and a part that only lives inside its owner and takes nothing
-   from a host is plain (43: the explorer's parts, the composer's parts and dialogs,
+   from a host is plain (43: `FormaExplorer`'s parts, `FormaComposer`'s parts and dialogs,
    `FormaPageHead`, `FormaConfirmDialog`, `FormaToastContainer`). What changed beyond the
-   ledger: the explorer's helper types take a plain `IStringLocale`; a field holding a
+   ledger: `FormaExplorer`'s helper types take a plain `IStringLocale`; a field holding a
    child component became a private property, the shape `FormaSelect.Popover` already
    had, because every component is now disposable and CA2213 would otherwise ask the
    holder to dispose what the renderer owns; a generated id is a computed property over
@@ -119,7 +119,7 @@ does.
    that would take a logger, each with its proposed `Debug` message, one `{Feature}Log`
    class per feature, applied after review. **Built.** Five sites log: a sprite sheet
    that did not load, reported once by the loader that forgets it; a composer asset
-   that did not load; a sprite sheet whose load threw, in the picker, with the
+   that did not load; a sprite sheet whose load threw, in `FormaEmojiPicker`, with the
    exception; a plural argument that is not a count, once per format, naming the
    argument and its type but never its value; and a plugin assembly that loaded only
    partially, at `Warning`, with the loader exceptions, through an optional logger on
@@ -164,7 +164,7 @@ does.
    by the context, so it exists from the first read of `Context` and never from a field
    initializer; the three functions are deferred, so a derived initializer that reads
    `Context` no longer runs ahead of injection. `FormaWindow` answers `IWindow.RuntimeId`
-   explicitly. The composer parts' cascaded state, which was also named `Context`, is
+   explicitly. `FormaComposer`'s parts' cascaded state, which was also named `Context`, is
    `Composer`, under the rule that `Context` is the component's and anything else
    context-like is named for its subject alone.
 8. **The style builder.** `CssStyleBuilder` in `Forma.Framework.Css` with its tests;

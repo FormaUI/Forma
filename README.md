@@ -71,7 +71,7 @@ render mode.
 
 The library covers the admin-app staples — form inputs and pickers, modals and toasts, data
 grids, toolbars, tabs, file intake, a file explorer, and the `FormaComposer` authoring surface.
-[`docs/component-catalog.md`](docs/component-catalog.md) lists the components that exist, describing each one's behaviour.
+[`docs/component-catalog.md`](docs/component-catalog.md) lists the components that exist, one line each, with the design document each belongs to.
 
 `FormaStatusBadge` needs a catalog of the statuses **your** application defines — the library ships
 none:
@@ -97,8 +97,8 @@ itself:
 |------------|----------|--------------|
 | `forma-tokens.css` | Custom properties only, no selectors | Always — components read these |
 | `forma-reset.css` | Box sizing, form-element font inheritance, reduced motion | Unless your app already normalizes |
-| `forma-base.css` | Body typography and link colours | You want Forma's look; skip it if you have your own |
-| `forma-input.css` | The input box every field draws — border, radius, colours, focus ring | Whenever you use any Forma input |
+| `forma-base.css` | Body typography and link colors | You want Forma's look; skip it if you have your own |
+| `forma-input.css` | The input box every field draws — border, radius, colors, focus ring | Whenever you use any Forma input |
 | `forma-prose.css` | The look of a document the composer authored — headings, quotes, code, lists, tables, figures, links | Whenever you render composer content, in the editor or to readers |
 
 Retheming is two things: redefine the gray scale and the six role solids in a stylesheet loaded
@@ -107,7 +107,7 @@ after Forma's, and every other token — hover, focus, links, backdrops, borders
 ## Icons
 
 `FormaIcon` draws an `Icon`, which is one of three things. A `Glyph` — named for what it means
-rather than for the set it is drawn from — in an `GlyphVariant`, the provider's primary or alternate
+rather than for the set it is drawn from — in a `GlyphVariant`, the provider's primary or alternate
 representation; the library's own set draws the two as an outline and a solid shape. A `Brand`,
 whose official mark is drawn with the brand's name as its accessible name, for a link to a presence
 on that platform. Or a single character, a `Rune`, set by the symbol font in the same box, for a
@@ -151,7 +151,7 @@ strings, inject `IStringLocale<T>` and look a string up by its English text:
 @inject IStringLocale<MyPage> L
 
 <p>@L["Save"]</p>
-<p>@L[$"Stored {stored} of {total}."]</p>
+<p>@L["Stored {stored} of {total}.", stored, total]</p>
 ```
 
 Translations sit beside the type in `MyPage.he.json`, keyed by that same English text. A key with no
