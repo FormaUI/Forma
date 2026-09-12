@@ -281,9 +281,9 @@
         {
             // Arrange
             using var ctx = new FormaDialogTests();
-            var cancelled = false;
+            var canceled = false;
             var cut = ctx.Render(
-                @<FormaDialog Opened="true" OnClose="@(() => { })" OnCancel="() => cancelled = true" />);
+                @<FormaDialog Opened="true" OnClose="@(() => { })" OnCancel="() => canceled = true" />);
             cut.WaitForAssertion(() => Assert.Single(GetRegistrations(ctx)));
 
             // Act
@@ -291,7 +291,7 @@
 
             // Assert
             Assert.Multiple(
-                () => Assert.True(cancelled),
+                () => Assert.True(canceled),
                 () => Assert.Contains(ctx.Dialog.Invocations, invocation => invocation.Identifier == "close"));
         }
 

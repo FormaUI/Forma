@@ -36,7 +36,7 @@ public enum Glyph
     /// <summary>A clock with bells, for an alarm.</summary>
     AlarmClock,
 
-    /// <summary>Stacked lines centred on a common axis, for centre alignment.</summary>
+    /// <summary>Stacked lines centered on a common axis, for center alignment.</summary>
     AlignCenter,
 
     /// <summary>Stacked lines flush to both edges, for justified alignment.</summary>
@@ -132,7 +132,7 @@ public enum Glyph
     /// <summary>A shopping trolley wearing a tick badge, for an order confirmed.</summary>
     CartCheck,
 
-    /// <summary>A shopping trolley wearing a cross badge, for an order cancelled.</summary>
+    /// <summary>A shopping trolley wearing a cross badge, for an order canceled.</summary>
     CartCross,
 
     /// <summary>A shopping trolley wearing a plus badge, for adding to it.</summary>

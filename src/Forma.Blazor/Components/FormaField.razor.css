@@ -87,7 +87,7 @@
     max-inline-size: calc(100% - 2 * var(--space-3));
 }
 
-/* An input element taller than one line has no vertical centre to sit against. */
+/* An input element taller than one line has no vertical center to sit against. */
 .forma-field-multiline .forma-field-label {
     inset-block-start: var(--space-4);
     transform: none;

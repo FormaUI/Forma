@@ -4,7 +4,7 @@
  * where focus was inside it and takes focus back. Its box is its frame's.
  */
 
-import { Focus, focusablesIn } from '../behaviours/Focus.js';
+import { Focus, focusablesIn } from '../behaviors/Focus.js';
 
 /**
  * @param {HTMLElement} target The window element, a manual popover.

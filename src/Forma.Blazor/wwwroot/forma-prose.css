@@ -127,7 +127,7 @@
     align-items: center;
 }
 
-/* A link is underlined as well as coloured, because colour alone leaves the state unreadable without it.
+/* A link is underlined as well as colored, because color alone leaves the state unreadable without it.
    The underline is set away from the baseline and skips the ink of a descender, which a rule sitting
    tight under the text would otherwise cut through. */
 .forma-prose a[href] {

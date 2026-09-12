@@ -20,7 +20,7 @@
 }
 
 /* A checkbox left in normal inline flow sits on the text baseline rather than on the
-   text's centre line, so the pair is centred against each other in a flex box instead. */
+   text's center line, so the pair is centered against each other in a flex box instead. */
 .forma-checkbox-label {
     display: inline-flex;
     align-items: center;

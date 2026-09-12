@@ -12,16 +12,16 @@ public sealed partial class FormaStatusBadge : FormaElementBase
     /// <summary>Text shown inside the badge.</summary>
     [Parameter, EditorRequired] public string Text { get; set; } = "";
 
-    /// <summary>Name of a status registered in the catalog, whose colours the badge adopts.</summary>
+    /// <summary>Name of a status registered in the catalog, whose colors the badge adopts.</summary>
     [Parameter] public string? Status { get; set; }
 
-    /// <summary>Background colour override.</summary>
+    /// <summary>Background color override.</summary>
     [Parameter] public CssColor? Background { get; set; }
 
-    /// <summary>Text colour override.</summary>
+    /// <summary>Text color override.</summary>
     [Parameter] public CssColor? Foreground { get; set; }
 
-    /// <summary>Glyph shown before the text, so the status reads without colour.</summary>
+    /// <summary>Glyph shown before the text, so the status reads without color.</summary>
     [Parameter] public Icon? Marker { get; set; }
 
     [Inject] private IStatusBadgeCatalog Catalog { get; set; } = default!;

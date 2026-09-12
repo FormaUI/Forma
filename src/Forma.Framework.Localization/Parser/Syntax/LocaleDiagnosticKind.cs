@@ -39,7 +39,7 @@ public enum LocaleDiagnosticKind
     /// <summary>A field carries a name but no value.</summary>
     EmptyFieldValue,
 
-    /// <summary>A field name is not one the expression recognises.</summary>
+    /// <summary>A field name is not one the expression recognizes.</summary>
     UnknownFieldName,
 
     /// <summary>A field name appears more than once in the same expression.</summary>

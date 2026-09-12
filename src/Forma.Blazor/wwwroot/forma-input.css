@@ -49,7 +49,7 @@
     }
 }
 
-/* Forced colours drops the shadow and overrides the border, leaving no focus ring. */
+/* Forced colors drops the shadow and overrides the border, leaving no focus ring. */
 @media (forced-colors: active) {
     .forma-field-input:focus,
     .forma-text-box:focus,

@@ -15,7 +15,7 @@ public sealed partial class FormaDropDownMenuItem : FormaElementBase
     /// <summary>Blocks activation and dims the item.</summary>
     [Parameter] public bool Disabled { get; set; }
 
-    /// <summary>Marks the item as destroying data, colouring it as a warning.</summary>
+    /// <summary>Marks the item as destroying data, coloring it as a warning.</summary>
     [Parameter] public bool IsDestructive { get; set; }
 
     /// <summary>Whether the item is the chosen one of a set the menu picks between, rendering it as a radio item; null for an ordinary command.</summary>

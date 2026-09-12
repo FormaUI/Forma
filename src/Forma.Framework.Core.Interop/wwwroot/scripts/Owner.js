@@ -1,5 +1,5 @@
 /**
- * Owner — telling the .NET owner of a behaviour what happened
+ * Owner — telling the .NET owner of a behavior what happened
  *
  * An owner is a DotNetObjectReference, and a report can land after the owner was disposed, in
  * which case the call rejects.

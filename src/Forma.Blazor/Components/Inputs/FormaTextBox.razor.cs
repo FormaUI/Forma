@@ -2,7 +2,7 @@ namespace Forma.Blazor.Components.Inputs;
 
 using System.Diagnostics.CodeAnalysis;
 
-using Forma.Framework.Common.Interop.Behaviours;
+using Forma.Framework.Common.Interop.Behaviors;
 using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
@@ -146,7 +146,7 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
             .Add("forma-field-input", HasLabel)
             .Add("forma-text-box", !HasLabel);
 
-    // The width is the box's own style only when bare; labelled, it sizes the field wrapper instead.
+    // The width is the box's own style only when bare; labeled, it sizes the field wrapper instead.
     /// <inheritdoc />
     protected override void BuildRootStyle(CssStyleBuilder builder)
     {

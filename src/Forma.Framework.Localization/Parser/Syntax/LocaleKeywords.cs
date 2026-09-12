@@ -1,12 +1,12 @@
 namespace Forma.Framework.Localization.Parser.Syntax;
 
-/// <summary>The keywords a parse recognises.</summary>
+/// <summary>The keywords a parse recognizes.</summary>
 public sealed class LocaleKeywords
 {
     private readonly LocaleKeyword[] _keywords;
 
     /// <summary>Creates a set holding the given keywords.</summary>
-    /// <param name="keywords">The keywords to recognise.</param>
+    /// <param name="keywords">The keywords to recognize.</param>
     public LocaleKeywords(params LocaleKeyword[] keywords)
     {
         ArgumentNullException.ThrowIfNull(keywords);
@@ -24,7 +24,7 @@ public sealed class LocaleKeywords
         _keywords = keywords;
     }
 
-    /// <summary>Recognises nothing, so every keyword is reported and no field name is checked.</summary>
+    /// <summary>Recognizes nothing, so every keyword is reported and no field name is checked.</summary>
     public static LocaleKeywords None { get; } = new();
 
     /// <summary>The keyword written as the given name, or null when the set defines none.</summary>

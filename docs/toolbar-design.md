@@ -35,14 +35,14 @@ on. `FormaToolbarMenu` adds `Options`, at least one, each a `FormaToolbarOption`
   toolbar command needs, a glyph, a label shown or read aloud, and a toggle's pressed
   state, so hover, disabled and focus come from the one button and the toolbar keeps no
   button styling of its own. A toggle's on state is marked `aria-pressed` and drawn with a
-  fill as well as colour. `ShowLabels` puts an icon and its label in the same button,
+  fill as well as color. `ShowLabels` puts an icon and its label in the same button,
   padded for its text; an icon-only button is drawn square, and only then carries an
   `aria-label`. An action with no icon shows its label regardless. A tooltip that would
   only repeat a visible label is dropped.
 - **Each kind renders its own way.** A group becomes a `role="group"` cluster named by its
-  title and separated from its neighbours by a rule; a bare item joins the row in a
+  title and separated from its neighbors by a rule; a bare item joins the row in a
   `display: contents` wrapper without inheriting a separator; a menu becomes a
-  `FormaDropDownMenu` showing the active option's title or a colour swatch, the first
+  `FormaDropDownMenu` showing the active option's title or a color swatch, the first
   option standing in while none is active; a readout
   becomes a span that gains `role="status"` and a polite live region when `IsAnnounced`;
   a custom item becomes a `DynamicComponent`. The root carries `role="toolbar"` and the
@@ -63,7 +63,7 @@ on. `FormaToolbarMenu` adds `Options`, at least one, each a `FormaToolbarOption`
   `Disabled` or the action's `IsDisabled` says so, or when the state it requires is absent.
   `Hidden` releases the routes even while `Target` stays set.
 - **Keys are identities.** Each item and option is keyed by its `Id` and each group by its
-  own, so a host adding or removing one never tears down a neighbour's open menu.
+  own, so a host adding or removing one never tears down a neighbor's open menu.
 - **The toolbar holds no opinion on what its items are.** No plugin registry, no
   multi-row layout engine, no undo or redo special case; those are `FormaComposer`'s. Titles
   are caller-supplied and rendered as given, so the host localizes them and the component

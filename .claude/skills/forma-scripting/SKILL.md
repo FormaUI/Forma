@@ -1,15 +1,15 @@
 ---
 name: forma-scripting
-description: The JavaScript and interop standard — when JS is allowed at all, the behaviours/operations/components/services split that decides where a script lives and how it is written, the four module contracts, how C# reaches a module through JSInterop and JSModule over the JS environment and what those log, and the external-library carve-out for the composer. Use when adding or changing anything under wwwroot/scripts/ or in an interop assembly, naming a script or wrapper, or deciding whether a capability needs JS.
+description: The JavaScript and interop standard — when JS is allowed at all, the behaviors/operations/components/services split that decides where a script lives and how it is written, the four module contracts, how C# reaches a module through JSInterop and JSModule over the JS environment and what those log, and the external-library carve-out for the composer. Use when adding or changing anything under wwwroot/scripts/ or in an interop assembly, naming a script or wrapper, or deciding whether a capability needs JS.
 ---
 
 # JavaScript
 
 JS-free is the default, not a prohibition.
 
-- Do prefer HTML, CSS, or Blazor when they provide the behaviour cleanly.
-- Do use interop when the platform exposes the needed behaviour only to script or when declarative techniques leave a real usability problem.
-- Do keep behaviour in C# and use JS only for what the DOM cannot otherwise provide.
+- Do prefer HTML, CSS, or Blazor when they provide the behavior cleanly.
+- Do use interop when the platform exposes the needed behavior only to script or when declarative techniques leave a real usability problem.
+- Do keep behavior in C# and use JS only for what the DOM cannot otherwise provide.
 - Do use only native modern browser APIs.
 - Do write every script in strict mode: a script is an ES module, which is strict by construction, and anything that ever stops being one opens with `'use strict'`.
 - Do name JS parameters by role (`input`, `dialog`, `label`), not type (`inputEl`, `dialogElement`, `el`).
@@ -17,12 +17,12 @@ JS-free is the default, not a prohibition.
 - Don't contort a component or ship a worse experience merely to remain script-free.
 - Don't treat the amount of JS required as a reason to leave a rough edge unresolved.
 
-## Behaviours, operations, components and services
+## Behaviors, operations, components and services
 
 Every script is one of four kinds. The kind decides its shape; the assembly that ships it decides its home.
 
 ```text
-behaviour  → reusable attached behaviour
+behavior  → reusable attached behavior
 operation  → reusable stateless operation
 component  → interop owned by a specific component
 service    → one instance per document that many callers register with
@@ -32,7 +32,7 @@ Scripts and their wrappers ship together in an interop assembly, never in the co
 assembly. The core interop assembly is the floor: the interop bases every wrapper builds on,
 `JSModule`, `JSInterop` and the `IJSEnvironment` they take, and the scripts every other script
 builds on, directly under its `wwwroot/scripts/` with no wrapper. The common interop assembly
-holds every behaviour and operation any component may attach, with the wrappers of components
+holds every behavior and operation any component may attach, with the wrappers of components
 that belong to no feature. A feature with scripts of its own ships them, and their wrappers, in
 an interop assembly of its own. Every interop assembly is built on the core one, and a
 dependency between two others is declared as a project reference, so the graph stays visible.
@@ -42,19 +42,19 @@ The assemblies are served side by side under one content root, each with its scr
 stays relative to the module and survives a host path base.
 
 The common interop assembly serves many concepts, so it sorts by kind: a script lives in
-`wwwroot/scripts/behaviours/`, `operations/` or `components/`, and its wrapper in the matching
-`Behaviours/`, `Operations/` or `Components/` folder. A feature interop assembly is named for its
+`wwwroot/scripts/behaviors/`, `operations/` or `components/`, and its wrapper in the matching
+`Behaviors/`, `Operations/` or `Components/` folder. A feature interop assembly is named for its
 one concept, so its scripts sit directly under `wwwroot/scripts/` and its wrappers at the assembly
 root, a service's script beside the wrapper that owns it.
 
 | Kind | What it is | Script | C# wrapper |
 |---|---|---|---|
-| Behaviour | binds to an element, holds listeners or observers, needs teardown | `{Capability}.js` | `{Capability}.cs`, when C# attaches it |
+| Behavior | binds to an element, holds listeners or observers, needs teardown | `{Capability}.js` | `{Capability}.cs`, when C# attaches it |
 | Operation | a stateless call against an element or a value | `{Concern}.js` | `{Concern}.cs`, when C# calls it |
 | Component | the whole browser side of one component, both kinds together | `{Component}.js` | `{Component}.cs` |
 | Service | one instance per document, holding state across every caller that registers with it, configured by the host and queryable | `{Service}.js` | `{Service}.cs`, a scoped service owning the module and the host's policy |
 
-- Do file a script as a behaviour when it attaches to an element for a lifetime and is later torn down.
+- Do file a script as a behavior when it attaches to an element for a lifetime and is later torn down.
 - Do file a script as an operation when it is a stateless DOM operation, or a set of related ones.
 - Do file a script as a component when it owns the browser-side interop for one component and naturally holds both kinds; keep that interop together rather than splitting it by implementation shape.
 - Do file a script as a service when there is one of it per document and its callers register with it rather than attach it: an input router keeps every scope's routes and the active ordering across the whole page.
@@ -64,20 +64,20 @@ root, a service's script beside the wrapper that owns it.
 - Do split a component script that has grown past one concern into `{Name}/*.mjs` modules behind a `{Name}.js` entry point beside them; the entry keeps its path, so no wrapper changes, and it composes the modules rather than re-exporting them.
 - Do shape each such module as one concept expressed as a class — a formatter, a memory, an inspector — taking its collaborators once in the constructor, with `#`-private mechanics; not a bag of exported functions threaded the same context parameter.
 - Do give a family of pure helpers a named class with static members rather than loose exports, so a caller imports the concept, not stray functions.
-- Do name a behaviour for what the target can do while it is attached: `DropZone`, `DragGesture`, `Focus`, `Scroll`, `Breakpoint`, `AnchoredPopover`.
+- Do name a behavior for what the target can do while it is attached: `DropZone`, `DragGesture`, `Focus`, `Scroll`, `Breakpoint`, `AnchoredPopover`.
 - Do settle that name by asking what `attach(target)` leaves the target able to do, and naming that.
 - Do name an operation module for the browser concern it serves: `Text.js`, `Pointer.js`, `Playback.js`, `Clipboard.js`, `Asset.js`.
-- Do lift a capability another component could want out into a behaviour or an operation in the common interop assembly, however it arrived; a component script is for what only its own component wants.
-- Do compose behaviours in JS, `FileDropZone` over `DropZone` and `ReorderInteraction` over `DragGesture`, so C# only ever holds the outermost one.
-- Do leave a behaviour no C# wrapper when only JS attaches it, as `DragGesture` has none; where a capability sits never depends on who consumes it.
-- Do read the common interop assembly's `wwwroot/scripts/behaviours/` before writing a new behaviour; capability names make the folder its own inventory.
-- Don't name a behaviour after the browser primitive implementing it: something holding no state and needing no teardown, such as pointer capture or asset loading, is an operation.
+- Do lift a capability another component could want out into a behavior or an operation in the common interop assembly, however it arrived; a component script is for what only its own component wants.
+- Do compose behaviors in JS, `FileDropZone` over `DropZone` and `ReorderInteraction` over `DragGesture`, so C# only ever holds the outermost one.
+- Do leave a behavior no C# wrapper when only JS attaches it, as `DragGesture` has none; where a capability sits never depends on who consumes it.
+- Do read the common interop assembly's `wwwroot/scripts/behaviors/` before writing a new behavior; capability names make the folder its own inventory.
+- Don't name a behavior after the browser primitive implementing it: something holding no state and needing no teardown, such as pointer capture or asset loading, is an operation.
 - Don't name an operation module after the DOM type it receives; `MediaElement.js` accretes everything taking a `<video>`, where `Playback.js` and `Geometry.js` divide by what the calls are for.
-- Don't name a shared behaviour or operation after a component that calls it. A consumer-shaped file in the shared assembly hides the capabilities inside it, which is how the same key guard, pointer capture, and asset loader each come to be written twice.
+- Don't name a shared behavior or operation after a component that calls it. A consumer-shaped file in the shared assembly hides the capabilities inside it, which is how the same key guard, pointer capture, and asset loader each come to be written twice.
 - Don't place a script beside the component that uses it; a component's own interop belongs in an interop assembly, not in the component's folder.
 - Don't group unrelated capabilities in one file because one component happens to use both.
 
-## Behaviour contract
+## Behavior contract
 
 ```js
 export function attach(target, options = {}) {
@@ -103,13 +103,13 @@ export function capture(element, pointerId) {
 - Do export plain named functions, because an operation holds nothing and hands back no handle.
 - Do name an export for the action and let the module supply the subject, so `Pointer.js` exports `capture` rather than `capturePointer`.
 - Do qualify an export where its module covers more than one thing, so `Text.js` exports `take` beside `readSelection` and `writeSelection`.
-- Don't reach for a class, private fields, an `AbortController`, or a `dispose`; needing any of them means a behaviour has been filed as an operation.
+- Don't reach for a class, private fields, an `AbortController`, or a `dispose`; needing any of them means a behavior has been filed as an operation.
 
 ## Component contract
 
 - Do export `attach(target, options)` for the component's own surface when it has one, beside whatever operations it needs, so one module covers the component's whole browser side.
 - Do write each exported part to the contract above that fits it; the folder decides where the module lives, not how its parts are written.
-- Don't reimplement a shared behaviour or operation inside a component module; import it.
+- Don't reimplement a shared behavior or operation inside a component module; import it.
 
 ## Service contract
 
@@ -126,11 +126,11 @@ export function resolve(event) { … }
 - Do keep state at module level, because there is one service per document and the registrations are its records; this is the one kind where a module-level `Map` is the design.
 - Do let many registrations coexist, each disposed on its own, and let the service outlive any one of them.
 - Do install the service's own listeners on first registration and remove them when the last registration goes.
-- Don't turn a behaviour into a service because two components share it; a service exists only where the page needs one arbiter.
+- Don't turn a behavior into a service because two components share it; a service exists only where the page needs one arbiter.
 
 ## Reaching a script from C#
 
-- Do derive a behaviour wrapper from `JSInterop`, take `(IJSEnvironment js)` and pass it on with the module path, and expose a typed `AttachAsync`.
+- Do derive a behavior wrapper from `JSInterop`, take `(IJSEnvironment js)` and pass it on with the module path, and expose a typed `AttachAsync`.
 - Do give an operation wrapper a `JSModule` field built from the same `js` rather than deriving from it, so only its own typed methods can be called.
 - Do derive a component wrapper from `JSInterop` when its module attaches a surface, and give it a `JSModule` field when the module is operations alone.
 - Do make a service's wrapper a scoped service at the root of its interop assembly with a `JSModule` field, registered by the aggregate registrar, that pushes the host's policy once per circuit and hands out registration handles; it is not a plain wrapper, because it owns policy as well as the module.

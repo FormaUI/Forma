@@ -136,7 +136,7 @@
 }
 
 /* The frozen region's edge is a splitter standing over the seam between the frozen parts and the scrolling content,
-   the full height of the viewport; the splitter centres itself on the seam it is given. */
+   the full height of the viewport; the splitter centers itself on the seam it is given. */
 .forma-freeze-pane-inline.has-frozen > ::deep .forma-freeze-pane-edge {
     position: absolute;
     z-index: 2;

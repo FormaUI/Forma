@@ -18,7 +18,7 @@ mistakes it avoids.
   host renders it with ImageSharp or SkiaSharp, exactly as `FormaFileUploader` leaves the
   destination to an `IFileStore` and the browsing surfaces leave every mutation to a
   callback. A module drives the handles and the live preview through Pointer Events and
-  Canvas 2D, hand-written interop for behaviour only script can provide.
+  Canvas 2D, hand-written interop for behavior only script can provide.
 - **Never export the canvas.** Returning the finished bitmap from the browser looks
   simpler and is the wrong trade under Interactive Server: a base64 export of a
   multi-megabyte photo crosses the SignalR circuit, where the default receive limit rejects

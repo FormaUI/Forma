@@ -45,7 +45,7 @@ a relationship needs an owner that sees every window at once.
   order and re-asserts it in the browser by re-showing popovers bottom to top.
 - **A modal blocks its parent's subtree; a modal root blocks the workspace.** Blocking is
   `inert` on the blocked windows, and a modal root stands on a scrim in the top layer: the
-  translucent dark layer that dims what lies beneath, named as the theatre and Material
+  translucent dark layer that dims what lies beneath, named as the theater and Material
   Design name it, so that "backdrop" stays the word for the surface component.
 - **Window-level selectors reach down only.** `window.CloseAsync(selector)` means "close
   these among mine": the selector is scoped to the window's own subtree. Siblings are

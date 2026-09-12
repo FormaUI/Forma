@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Components;
 /// <param name="Title">The component the page demonstrates.</param>
 /// <param name="Category">The sidebar section the page sits in.</param>
 /// <param name="Route">The page's own route.</param>
-/// <param name="Variant">What supplies the demonstrated behaviour, such as an artwork package.</param>
+/// <param name="Variant">What supplies the demonstrated behavior, such as an artwork package.</param>
 public sealed record ShowcasePage(string Component, string Title, string Category, string Route, string Variant);
 
 /// <summary>The pages the showcase serves, read once from the routed components in this assembly.</summary>

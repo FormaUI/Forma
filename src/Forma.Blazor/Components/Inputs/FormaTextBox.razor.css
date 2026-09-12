@@ -1,6 +1,6 @@
 /* ============================================================
    FormaTextBox — CSS isolation
-   The bare box. Once labelled the element wears FormaField's
+   The bare box. Once labeled the element wears FormaField's
    .forma-field-input instead. The box both share, and its size,
    is drawn in forma-input.css; only the states this component
    adds are set here.

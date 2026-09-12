@@ -11,16 +11,16 @@ public sealed class CssColorTests
     public void Should_keep_channels_from_rgb()
     {
         // Act
-        var colour = CssColor.FromRgb(98, 105, 118);
+        var color = CssColor.FromRgb(98, 105, 118);
 
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.Equal(98, colour.Red);
-            Assert.Equal(105, colour.Green);
-            Assert.Equal(118, colour.Blue);
-            Assert.Equal(1d, colour.Alpha);
-            Assert.True(colour.IsOpaque);
+            Assert.Equal(98, color.Red);
+            Assert.Equal(105, color.Green);
+            Assert.Equal(118, color.Blue);
+            Assert.Equal(1d, color.Alpha);
+            Assert.True(color.IsOpaque);
         });
     }
 
@@ -28,14 +28,14 @@ public sealed class CssColorTests
     public void Should_keep_channels_from_rgba()
     {
         // Act
-        var colour = CssColor.FromRgba(98, 105, 118, 0.12);
+        var color = CssColor.FromRgba(98, 105, 118, 0.12);
 
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.Equal(98, colour.Red);
-            Assert.Equal(0.12, colour.Alpha);
-            Assert.False(colour.IsOpaque);
+            Assert.Equal(98, color.Red);
+            Assert.Equal(0.12, color.Alpha);
+            Assert.False(color.IsOpaque);
         });
     }
 
@@ -43,15 +43,15 @@ public sealed class CssColorTests
     public void Should_unpack_channels_from_hex()
     {
         // Act
-        var colour = CssColor.FromHex(0x2c384a);
+        var color = CssColor.FromHex(0x2c384a);
 
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.Equal(0x2c, colour.Red);
-            Assert.Equal(0x38, colour.Green);
-            Assert.Equal(0x4a, colour.Blue);
-            Assert.True(colour.IsOpaque);
+            Assert.Equal(0x2c, color.Red);
+            Assert.Equal(0x38, color.Green);
+            Assert.Equal(0x4a, color.Blue);
+            Assert.True(color.IsOpaque);
         });
     }
 

@@ -82,7 +82,7 @@
     font-size: var(--icon-size-sm);
 }
 
-/* The chosen item of a set carries weight and a mark, so the choice survives without colour. */
+/* The chosen item of a set carries weight and a mark, so the choice survives without color. */
 ::deep .forma-dropdown-menu-item.is-selected {
     font-weight: 600;
 }

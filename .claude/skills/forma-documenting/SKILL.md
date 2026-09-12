@@ -20,7 +20,7 @@ Every piece of prose in a repository has one job, and the job decides what goes 
 
 ## Summaries and comments
 
-- Do state what a thing is or does in an XML `<summary>`, a stylesheet banner, an inline comment or a README sentence, in US English with one deliberate exception: behaviour keeps its British spelling.
+- Do state what a thing is or does in an XML `<summary>`, a stylesheet banner, an inline comment or a README sentence, in US English throughout, identifiers and paths included; a platform's own name keeps the platform's spelling, as `aria-labelledby` does.
 - Do give every public type and public member a one-line `<summary>`, and put `/// <inheritdoc />` on every override and interface implementation rather than restating what the base member documents.
 - Do write an inline comment only where the code cannot express an important constraint — a necessary `!important`, a non-obvious vendor-prefixed property, an off-by-one invariant — and keep it to one line.
 - Do describe a member at the full breadth of its type: a parameter typed as a list of toolbar items is "the items the toolbar renders", never "the action buttons", when the item type also covers groups, menus, toggles and readouts.

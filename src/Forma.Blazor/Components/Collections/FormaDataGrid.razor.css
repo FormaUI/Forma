@@ -42,8 +42,8 @@
 }
 
 /* QuickGrid's own cell padding is a hairline, too tight for content like a
-   FormaButton to breathe against a neighbouring row or the sticky header.
-   The selection column keeps its own narrow, centred box. */
+   FormaButton to breathe against a neighboring row or the sticky header.
+   The selection column keeps its own narrow, centered box. */
 ::deep .forma-data-grid-scroller th:not(.forma-data-grid-select-column) {
     padding-block: var(--space-2);
     padding-inline: var(--space-3);

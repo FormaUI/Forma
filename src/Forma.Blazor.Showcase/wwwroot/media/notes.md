@@ -1,10 +1,10 @@
 # Sample notes
 
 This file is converted by **Forma.AddOns.Resources.Markdown**, which reads it through the
-host's content reader, renders it with Markdig, and sanitises the result before
+host's content reader, renders it with Markdig, and sanitizes the result before
 the viewer shows it.
 
-Raw HTML is dropped at the parser as well as at the sanitiser, so a tag written
+Raw HTML is dropped at the parser as well as at the sanitizer, so a tag written
 here — <script>alert(1)</script> — arrives as text rather than as markup.
 
 ## What survives

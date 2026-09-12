@@ -10,7 +10,7 @@
     min-block-size: var(--target-size-md);
 }
 
-/* A glyph's ink is taller than a capital, so it is lowered onto the label's cap-height centre. */
+/* A glyph's ink is taller than a capital, so it is lowered onto the label's cap-height center. */
 .forma-explorer-select-mode-button [class*="fa-"],
 .forma-explorer-select-mode-button svg,
 .forma-explorer-new-folder-button [class*="fa-"],

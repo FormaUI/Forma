@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Components.Menus;
 
 using Forma.Blazor.Components.Buttons;
-using Forma.Framework.Common.Interop.Behaviours;
+using Forma.Framework.Common.Interop.Behaviors;
 
 using Microsoft.AspNetCore.Components;
 

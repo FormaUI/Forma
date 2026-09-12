@@ -37,7 +37,7 @@
     color: var(--text-primary-color);
 }
 
-/* A glyph's ink is taller than a capital, so it is lowered onto the label's cap-height centre. */
+/* A glyph's ink is taller than a capital, so it is lowered onto the label's cap-height center. */
 .forma-explorer-delete-button [class*="fa-"],
 .forma-explorer-clear-button [class*="fa-"] {
     display: inline-flex;

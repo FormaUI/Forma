@@ -6,7 +6,7 @@ public sealed record PasswordStrengthOptions
     /// <summary>Shows a strength meter under the field once a value is typed.</summary>
     public bool ShowMeter { get; init; }
 
-    /// <summary>Rates a typed value, replacing the built-in judgement with the host's own password policy.</summary>
+    /// <summary>Rates a typed value, replacing the built-in judgment with the host's own password policy.</summary>
     public Func<string, PasswordStrength>? Evaluator { get; init; }
 
     /// <summary>Lists under the field what the typed value still needs to earn the top rating.</summary>

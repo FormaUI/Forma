@@ -245,7 +245,7 @@ body {
     margin-block-end: -1px;
 }
 
-/* The active variant is marked by its underline as well as its colour, so the strip reads without it. */
+/* The active variant is marked by its underline as well as its color, so the strip reads without it. */
 .showcase-tabs a.active {
     color: var(--primary-color);
     font-weight: 600;
@@ -728,7 +728,7 @@ body {
     inline-size: 100%;
 }
 
-/* A labelled control on one line beside its siblings. */
+/* A labeled control on one line beside its siblings. */
 .demo-field {
     display: inline-flex;
     align-items: center;
@@ -827,7 +827,7 @@ body {
     background: var(--input-bg-color);
 }
 
-/* A region standing in for real content on the backdrop and layout pages: a label centred in a card or a strip. */
+/* A region standing in for real content on the backdrop and layout pages: a label centered in a card or a strip. */
 .demo-backdrop {
     place-items: center;
     padding: var(--space-3);

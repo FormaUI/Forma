@@ -1,22 +1,22 @@
 ---
 name: forma-styling
-description: The stylesheet standard — CSS isolation and the token, reset and base stylesheets, logical properties, colour and measurement tokens with no literal fallbacks, composing regions from backdrops on a canvas, the one spacing, type, radius and target scale every component draws from, and responsive behaviour driven by the width a component is given. Use when writing or changing a .razor.css file, adding or renaming a token, laying out regions, or fixing how a component fits a narrow width.
+description: The stylesheet standard — CSS isolation and the token, reset and base stylesheets, logical properties, color and measurement tokens with no literal fallbacks, composing regions from backdrops on a canvas, the one spacing, type, radius and target scale every component draws from, and responsive behavior driven by the width a component is given. Use when writing or changing a .razor.css file, adding or renaming a token, laying out regions, or fixing how a component fits a narrow width.
 ---
 
 # CSS
 
 - Do use CSS isolation and begin each `.razor.css` file with a banner naming the component and its approach.
 - Do use logical properties such as `margin-block-end`, `inset-inline-start`, `padding-inline`, and `text-align: start` so RTL works without a second stylesheet.
-- Do read colours, fonts, and shadows from the token stylesheet.
-- Do end every custom property containing a colour with `-color`.
-- Do make component-local colour knobs fall back to a token: `var(--forma-toggle-on-bg-color, var(--primary-color))`.
+- Do read colors, fonts, and shadows from the token stylesheet.
+- Do end every custom property containing a color with `-color`.
+- Do make component-local color knobs fall back to a token: `var(--forma-toggle-on-bg-color, var(--primary-color))`.
 - Do reuse existing tokens such as `--primary-color` and `--focus-color`; a role's `-emphasis`, `-subtle` and `-fg` members and `--focus-color` derive from its solid, and every gray points at a step of the scale.
 - Do keep the token stylesheet value-only, the reset limited to cross-browser normalization, and the base stylesheet limited to the opt-in element-level look.
 - Do keep component rules in the component's isolated stylesheet.
 - Do rely on the reset's `font: inherit` for form elements, set only the needed `font-size`, and use `var(--font-family-mono)` instead of bare `monospace`.
 - Do animate decoration only; every state must remain understandable without motion.
 - Don't use physical direction properties such as `left`, `right`, `margin-left`, or `padding-right`.
-- Don't hardcode a colour or a measurement as a `var()` fallback, or invent aliases for existing tokens; a global token is defined once and needs no fallback at all, and a component's own hook falls back to a global token, because a literal fallback restates the value at every call site where a theme override cannot reach it.
+- Don't hardcode a color or a measurement as a `var()` fallback, or invent aliases for existing tokens; a global token is defined once and needs no fallback at all, and a component's own hook falls back to a global token, because a literal fallback restates the value at every call site where a theme override cannot reach it.
 - Don't add component rules to any global stylesheet.
 - Don't set `font-family` on form elements.
 - Don't use motion as the only channel communicating state.
@@ -51,7 +51,7 @@ Every measurement a component makes comes from one scale, so a child agrees with
 A component is handed a width, never a device: it sits in a phone's full column, a tablet's half, a desktop's dialog or a sidebar's sliver, and must fit whatever it is given rather than a viewport it assumed.
 
 - Do size in `rem` for spacing, radii and type so a reader's own font size carries through, and keep `px` for a hairline, a focus ring, a shadow, and the 24×24 and 44×44 target minimums the standard defines in CSS pixels.
-- Do adapt to the component's own width with a `@container` query, and reserve `@media` for facts about the reader — hover, pointer, motion, forced colours — or the viewport as a whole; a component inside a narrow pane is narrow whatever the window is.
+- Do adapt to the component's own width with a `@container` query, and reserve `@media` for facts about the reader — hover, pointer, motion, forced colors — or the viewport as a whole; a component inside a narrow pane is narrow whatever the window is.
 - Do choose how a row gives way when it cannot fit, and make it the design rather than the accident: a bar of commands scrolls behind arrows, a pager hides the pages it cannot show, a two-column layout stacks. Wrapping onto a second line is a choice too, and rarely the right one for a control row.
 - Do pack before you stack: a grid of tiles or cells shrinks them to keep several across a narrow column, and a pager keeps as many pages as fit, because one column of full-size items is a long scroll that shows less, not a layout that adapted.
 - Do let a flex item shrink: an input has an intrinsic width, and a flex child defaults to `min-inline-size: auto`, so either pushes its parent wider than the page unless told `min-inline-size: 0`.

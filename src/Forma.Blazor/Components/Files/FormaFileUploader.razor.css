@@ -3,7 +3,7 @@
    One line per file: name and size, then rate, progress, time and
    state in fixed columns so they align down the list and the totals
    line up beneath them. Every state carries a glyph and a word
-   beside its colour, so none of them depends on hue.
+   beside its color, so none of them depends on hue.
    ============================================================ */
 
 .forma-file-uploader {

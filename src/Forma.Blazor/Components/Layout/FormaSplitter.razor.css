@@ -25,7 +25,7 @@
     transition: background-color 0.1s ease;
 }
 
-/* Centred on the seam by pulling half its thickness back over each neighbour, and half of any flex gap the host lays
+/* Centered on the seam by pulling half its thickness back over each neighbor, and half of any flex gap the host lays
    around it, named in --forma-splitter-gap, so the gap it stands in stays one gap. */
 .forma-splitter-vertical {
     inline-size: var(--forma-splitter-thickness, var(--space-3));
@@ -77,7 +77,7 @@
     block-size: calc(var(--forma-splitter-grip-thickness, 3px) + 2px);
 }
 
-/* Forced colours drop the fill, so the ring comes back where it is the only thing left to see. */
+/* Forced colors drop the fill, so the ring comes back where it is the only thing left to see. */
 @media (forced-colors: active) {
     .forma-splitter:focus-visible {
         outline: 2px solid Highlight;

@@ -57,7 +57,7 @@ that fails to load, reaches a host through the log the host already configures.
   standard provider hides `Debug` unless asked, so a host sees nothing new until it turns
   a category on. `Warning` and `Error` are decided per site, never blanket-applied: a
   plugin assembly that loads only partially is a `Warning`, since it can leave plugins
-  unavailable. Normal behaviour is silent because it is normal: a superseded delay,
+  unavailable. Normal behavior is silent because it is normal: a superseded delay,
   resolve or fetch is the mechanism working, not a failure absorbed.
 - **The host's values in, the root's values out.** `Id`, `Class` and `Style` are what
   the host passed; `RootClass` and `RootStyle` are what the base writes on the root,
@@ -251,7 +251,7 @@ A dialog base a composite owns derives from `FormaComponentBase` and overrides
 
 ### The null objects
 
-| Contract | Null object | Lives in | Behaviour |
+| Contract | Null object | Lives in | Behavior |
 | --- | --- | --- | --- |
 | `IJSRuntime` | `UnavailableJSRuntime.Instance` | `Forma.Framework.Core.Interop` | Throws `JSRuntimeUnavailableException` on any call. |
 | `ILoggerFactory` | `NullLoggerFactory.Instance` | `Microsoft.Extensions.Logging.Abstractions` | Discards. |
@@ -272,7 +272,7 @@ a component to a string. In a Blazor host the framework's runtime is registered 
 the null object never takes effect.
 
 `NullStringLocaleFactory` is the name of the null object for the factory; the locales it
-makes are not empty but source-only, the behaviour a JSON locale has for a key with no
+makes are not empty but source-only, the behavior a JSON locale has for a key with no
 translation.
 
 ### Logging

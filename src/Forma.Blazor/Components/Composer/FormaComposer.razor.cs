@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using Forma.Blazor.Components.Composer.Assets;
 using Forma.Blazor.Components.Composer.PlainTextEditor;
 using Forma.Blazor.Components.Composer.Plugins;
-using Forma.Framework.Common.Interop.Behaviours;
+using Forma.Framework.Common.Interop.Behaviors;
 using Forma.Framework.Composer.Assets;
 using Forma.Framework.Composer.Documents;
 using Forma.Framework.Composer.Editing;
@@ -396,7 +396,7 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
         return Task.CompletedTask;
     }
 
-    /// <summary>Sanitises the document the host bound, once per document, and hands the host the sanitised one when it differs.</summary>
+    /// <summary>Sanitizes the document the host bound, once per document, and hands the host the sanitized one when it differs.</summary>
     private void SanitizeValue()
     {
         if (Value is null || Value == _sanitizedValue)
@@ -413,7 +413,7 @@ public sealed partial class FormaComposer(IComposerSyntaxHighlighter? syntaxHigh
         }
     }
 
-    // Sanitisation is mandatory on every crossing to the host, and applies to markup rather than to a format that carries none.
+    // Sanitization is mandatory on every crossing to the host, and applies to markup rather than to a format that carries none.
     private ComposerDocument Sanitize(ComposerDocument document)
         => document.Format == ComposerDocumentFormat.Html
             ? document with { Content = Sanitizer.Sanitize(document.Content) }

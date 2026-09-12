@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Components.Inputs;
 
-/// <summary>What a touch keyboard's action key does, and how it is labelled.</summary>
+/// <summary>What a touch keyboard's action key does, and how it is labeled.</summary>
 public enum TextEnterKeyHint
 {
     /// <summary>Inserts a new line.</summary>

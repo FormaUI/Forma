@@ -3,7 +3,7 @@
 ## Scope
 
 `FormaPopover`, the one owner of the popover contract every dropdown, menu and picker in
-the library hangs from, and the anchored placement behaviour it composes.
+the library hangs from, and the anchored placement behavior it composes.
 
 ## Purpose
 
@@ -21,13 +21,13 @@ surface. One component owns them so no consumer can leave one out.
   between openings. Light-dismiss is the input router's rather than the platform's, since iOS 17 to
   18.2 ignores a tap outside a popover.
 - **Anchored by script.** The top layer keeps no layout tie to the anchor, so the shared
-  anchored-popover behaviour measures and applies the position: it hangs from the edge of
+  anchored-popover behavior measures and applies the position: it hangs from the edge of
   `Anchor` that `Alignment` names, its reading-start or reading-end edge, mirrored in RTL,
   or by default the edge away from the nearer side of the viewport so the popover extends
   toward the room; it flips above when there is no room below, clamps into the viewport,
   and follows scroll, resize and its own content's growth. The trigger handed to
   `OpenAsync` is where focus returns, and `OnOpened` fires once the popover is positioned,
-  for content that takes focus or attaches a behaviour of its own. One positioning path
+  for content that takes focus or attaches a behavior of its own. One positioning path
   serves every browser rather than a CSS and JS split.
 - **Dismissal through the router.** The popover registers an input scope and activates it
   while open, so Escape and a press away are answered by the router wherever focus is; a

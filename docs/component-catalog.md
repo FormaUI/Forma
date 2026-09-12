@@ -276,12 +276,12 @@ A ghost icon-only button showing an eye, struck through while what it guards is 
 
 ### `FormaField`
 
-The chrome every labelled input shares: the floating label, the box, the focus ring and the validation slot, styling the input its consumer renders.
+The chrome every labeled input shares: the floating label, the box, the focus ring and the validation slot, styling the input its consumer renders.
 
 | | |
 |---|---|
 | **Old pattern** | `<label class="lblForm">` over a `.form-control`, floating on focus or value, with `<span class="mand">` for required and the error text below |
-| **Used in** | Chrome for every labelled form component — `FormaTextBox`, `FormaTextArea`, `FormaPasswordBox`, `FormaSelect`, `FormaMultiSelect`, `FormaDatePicker`, `FormaDateRangePicker`, `FormaColorPicker`, `FormaSlider` and `FormaToggleSwitch` |
+| **Used in** | Chrome for every labeled form component — `FormaTextBox`, `FormaTextArea`, `FormaPasswordBox`, `FormaSelect`, `FormaMultiSelect`, `FormaDatePicker`, `FormaDateRangePicker`, `FormaColorPicker`, `FormaSlider` and `FormaToggleSwitch` |
 
 ### `FormaFilePicker`
 
@@ -357,7 +357,7 @@ A panel showing the input router's latest decisions and the active ordering, liv
 
 ### `FormaInputScope`
 
-An element registered with the input router as a scope, declared from markup with a profile of routes and dismissal behaviour.
+An element registered with the input router as a scope, declared from markup with a profile of routes and dismissal behavior.
 
 | | |
 |---|---|
@@ -448,7 +448,7 @@ A search field reporting its value on every keystroke and the committed term on 
 
 ### `FormaSearchToolbar`
 
-A search box beside a toolbar of labelled list actions, at the top of a list page. Its design is [toolbar-design.md](toolbar-design.md).
+A search box beside a toolbar of labeled list actions, at the top of a list page. Its design is [toolbar-design.md](toolbar-design.md).
 
 | | |
 |---|---|
@@ -570,7 +570,7 @@ A single-line text input, bare or in a field with a floating label, typed as tex
 | | |
 |---|---|
 | **Old pattern** | `<input type="text" class="form-control">` without floating labels or dedicated label wrappers |
-| **Used in** | Every text field: labelled form fields, compact inline forms, inline grid filters, dialog fields, toolbars and filter rows |
+| **Used in** | Every text field: labeled form fields, compact inline forms, inline grid filters, dialog fields, toolbars and filter rows |
 
 ### `FormaToastContainer`
 

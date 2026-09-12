@@ -42,7 +42,7 @@ without any of them knowing where bytes live.
 - **The uploader moves; the store keeps.** `FormaFileUploader` takes the files a picker
   produced and moves them one at a time, owning the whole transfer: opening each stream
   with the file's own size as the ceiling, wrapping it in a counting stream that drives a
-  per-file progress bar as the store reads it, disposing it, and cancelling the set, which
+  per-file progress bar as the store reads it, disposing it, and canceling the set, which
   leaves what already landed in place. Where the
   bytes land is the host's, as an `IFileStore` whose `SaveAsync` takes a file's content
   and returns the `ResourceInfo` it became and whose `DeleteAsync` reports whether it
@@ -101,7 +101,7 @@ platform. The one gap native scrolling leaves is a mouse click-drag, which the s
 gesture adds while the image is zoomed, gated to `pointerType === 'mouse'` so it never
 fights the browser's own touch scrolling. Zoom moves in five fixed steps, 100 to 400
 percent, through on-screen buttons and Ctrl with a wheel rolled over the image through the
-shared wheel behaviour, which `ZoomOnWheelGesture` turns off; the plain wheel keeps
+shared wheel behavior, which `ZoomOnWheelGesture` turns off; the plain wheel keeps
 scrolling a zoomed image, and each step re-centers the frame. With `Siblings` supplied the
 viewer shows previous and next buttons and takes the horizontal arrow keys, reversed under
 a right-to-left culture, raising `OnNavigate` with the address stepped to for the host to

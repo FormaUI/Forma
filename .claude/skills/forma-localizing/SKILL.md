@@ -11,7 +11,7 @@ description: The localization standard — reading library strings through the b
 - Do ship one translation file per language the library ships beside the component, `FormaX.he.json`, keyed by that English source text; there is no neutral file, because an absent translation falls back to the key itself.
 - Do keep the file's name and folder in step with the type's, since the resource is resolved from the type's full name and the JSON's path must match it; a generic component resolves to its definition's files, so `FormaX<TValue>` reads `FormaX.he.json`.
 - Do leave caller-supplied text such as `Title`, `Label`, and `ConfirmText` for the host to localize.
-- Do format dates and numbers with `CultureInfo.CurrentCulture` and use `TextInfo.IsRightToLeft` when direction changes behaviour.
+- Do format dates and numbers with `CultureInfo.CurrentCulture` and use `TextInfo.IsRightToLeft` when direction changes behavior.
 - Do use American English spelling for `en` localization.
 - Do run the translation linter, which checks the translation files against the `L[...]` call sites that key them, before offering the work for review.
 - Don't hardcode user-facing component strings.

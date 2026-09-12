@@ -6,6 +6,6 @@ internal interface IOfficeConverter
     /// <summary>The file extension this converter reads, including the dot.</summary>
     string Extension { get; }
 
-    /// <summary>The document's content as markup, which the caller sanitises before rendering.</summary>
+    /// <summary>The document's content as markup, which the caller sanitizes before rendering.</summary>
     ValueTask<string> ConvertAsync(Stream content, CancellationToken cancellationToken);
 }

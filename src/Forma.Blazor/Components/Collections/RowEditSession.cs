@@ -6,13 +6,13 @@ using Microsoft.AspNetCore.Components.Forms;
 internal sealed class RowEditSession<TGridItem>
     where TGridItem : notnull
 {
-    /// <summary>Resolves a row's identity, so the editing row is recognised across reloads.</summary>
+    /// <summary>Resolves a row's identity, so the editing row is recognized across reloads.</summary>
     public Func<TGridItem, object> KeySelector { get; set; } = item => item;
 
     /// <summary>The untouched row the edit started from.</summary>
     public TGridItem? Item { get; private set; }
 
-    /// <summary>The copy the editors bind to, discarded wholesale when the edit is cancelled.</summary>
+    /// <summary>The copy the editors bind to, discarded wholesale when the edit is canceled.</summary>
     public TGridItem? Draft { get; private set; }
 
     /// <summary>Validation state for <see cref="Draft"/>.</summary>

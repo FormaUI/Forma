@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Components.Layout;
 
-using Forma.Framework.Common.Interop.Behaviours;
+using Forma.Framework.Common.Interop.Behaviors;
 using Forma.Framework.Css;
 using Forma.Framework.Icons;
 
@@ -22,7 +22,7 @@ public sealed partial class FormaFreezePane : FormaElementBase
     /// <summary>How the content moves.</summary>
     [Parameter] public FreezePaneOptions Options { get; set; } = FreezePaneOptions.Default;
 
-    /// <summary>Raised as the reader drags or keys the frozen region's edge, with the extent asked for in pixels; the content decides what to resize to honour it, and the edge is drawn only while this is set.</summary>
+    /// <summary>Raised as the reader drags or keys the frozen region's edge, with the extent asked for in pixels; the content decides what to resize to honor it, and the edge is drawn only while this is set.</summary>
     [Parameter] public EventCallback<double> FrozenExtentChanged { get; set; }
 
     // One small spacing step, the distance an arrow key moves the frozen edge.
@@ -36,7 +36,7 @@ public sealed partial class FormaFreezePane : FormaElementBase
     private ElementReference _viewport;
     private bool _isMeasured;
     private ScrollBoundaryReport _report = Unmeasured;
-    private ScrollBehaviours? _attached;
+    private ScrollBehaviors? _attached;
     private bool _isSyncing;
 
     private bool ShowsArrows
@@ -75,7 +75,7 @@ public sealed partial class FormaFreezePane : FormaElementBase
     private Glyph ForwardGlyph
         => IsBlockAxis ? Glyph.ChevronDown : Glyph.ChevronRight;
 
-    private ScrollBehaviours Behaviours
+    private ScrollBehaviors Behaviors
         => new() { Boundary = new ScrollBoundary(Options.Axis, $".{FrozenClass}") };
 
     // The wheel moves inline content only; along the block axis the browser already scrolls by it.
@@ -124,14 +124,14 @@ public sealed partial class FormaFreezePane : FormaElementBase
         try
         {
             // The options can change again while an attach is in flight, so the loop re-reads them after each one.
-            for (var behaviours = Behaviours; behaviours != _attached; behaviours = Behaviours)
+            for (var behaviors = Behaviors; behaviors != _attached; behaviors = Behaviors)
             {
-                if (!await AttachAsync(behaviours))
+                if (!await AttachAsync(behaviors))
                 {
                     return;
                 }
 
-                _attached = behaviours;
+                _attached = behaviors;
             }
 
             if (WantsWheel && !_wheel.IsAttached)
@@ -149,11 +149,11 @@ public sealed partial class FormaFreezePane : FormaElementBase
         }
     }
 
-    private async ValueTask<bool> AttachAsync(ScrollBehaviours behaviours)
+    private async ValueTask<bool> AttachAsync(ScrollBehaviors behaviors)
     {
         _selfReference ??= DotNetObjectReference.Create(this);
 
-        return await _scroll.AttachAsync(_viewport, behaviours, _selfReference);
+        return await _scroll.AttachAsync(_viewport, behaviors, _selfReference);
     }
 
     private async Task ScrollAsync(int direction)

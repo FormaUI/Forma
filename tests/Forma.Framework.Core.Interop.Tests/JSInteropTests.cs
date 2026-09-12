@@ -12,7 +12,7 @@ using Xunit;
 
 public sealed class JSInteropTests
 {
-    private const string Path = "./_content/forma/common/scripts/behaviours/Probe.js";
+    private const string Path = "./_content/forma/common/scripts/behaviors/Probe.js";
 
     private static readonly Guid Owner = Guid.CreateVersion7();
 

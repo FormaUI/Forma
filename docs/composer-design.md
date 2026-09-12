@@ -48,18 +48,18 @@ That second point is the whole argument for this component's name. **The compose
 
 Every toolbar entry Coi's `Website` preset carried is in scope, mapped to a plugin in §4, and so is the page designer. Coi removed Subscript and Superscript; Forma keeps them available but out of the default preset.
 
-Two Coi behaviours are deliberately **not** reproduced as-authored:
+Two Coi behaviors are deliberately **not** reproduced as-authored:
 
-| Coi behaviour | Why not, and what replaces it |
+| Coi behavior | Why not, and what replaces it |
 |---|---|
-| `allowedContent = true` — no content filtering | An unfiltered editor is a stored-XSS pipe. Replaced by the sanitisation pipeline in §6, which is mandatory and cannot be switched off. |
+| `allowedContent = true` — no content filtering | An unfiltered editor is a stored-XSS pipe. Replaced by the sanitization pipeline in §6, which is mandatory and cannot be switched off. |
 | `qform` inserting `<script src="/c.js">` | Author-authored `<script>` tags are arbitrary code execution by design. Replaced by `EmbedPlugin`, which inserts a declarative, attribute-only placeholder element the **host** resolves when it renders the document. The author gets the same capability — drop a form into an article — without the editor ever becoming a script injector. |
 
 ### 1.3 Modernisations
 
 - **Font size** in `rem`, not `px`: the picker labels a size by its pixel value at the reader's default and writes it as that value over 16 — `12` becomes `0.75rem`, `16` becomes `1rem` — so authored content follows the reader's font size preference; a host wanting a fixed physical size chooses points through `TypographyPluginOptions.FontSizeUnit`.
 - **Line height** as unitless multipliers: `1.0`, `1.15`, `1.5`, `1.6`, `2.0` — replacing Coi's 72 pixel values.
-- **Composition over reimplementation:** `FormaToolbar` menus for the format, font, size and colour pickers, `FormaCommandArea` and `FormaOverflowMenu` for the toolbar and its overflow, `FormaTabs` for the editor switcher, `FormaExplorer` for stored media, `FormaFilePicker` + `FormaFileUploader` for uploads, `FormaEmojiPicker` for emoji, `FormaDialog` for dialogs.
+- **Composition over reimplementation:** `FormaToolbar` menus for the format, font, size and color pickers, `FormaCommandArea` and `FormaOverflowMenu` for the toolbar and its overflow, `FormaTabs` for the editor switcher, `FormaExplorer` for stored media, `FormaFilePicker` + `FormaFileUploader` for uploads, `FormaEmojiPicker` for emoji, `FormaDialog` for dialogs.
 - **Logical CSS** throughout, and per-block `dir` so bidi is a first-class property of the document rather than a toolbar afterthought.
 
 ---
@@ -198,9 +198,9 @@ These are not plugins, because a plugin can be absent and these cannot:
 | Key map | `ComposerKeyBindingCatalog` | The engine's bindings merged with every plugin's, registered on the composer's root and again on the active editor's editable element, where a native control would otherwise claim them. |
 | Surface regions | §3.8 | Toolbar rows, the gutter and the status strip, each open to the same three contribution categories. |
 | Conversion | `IComposerDocumentConverter` | §5. |
-| Sanitisation | `IHtmlSanitizer` | §6. Not optional. |
+| Sanitization | `IHtmlSanitizer` | §6. Not optional. |
 | Asset loading | `IComposerAssetLoader` | §3.2. |
-| Clipboard | `IHtmlSanitizer` | Pasted markup reaches the document through the same sanitised commit as typed content; paste from Word cleans the markup before it is inserted. |
+| Clipboard | `IHtmlSanitizer` | Pasted markup reaches the document through the same sanitized commit as typed content; paste from Word cleans the markup before it is inserted. |
 | Syntax highlighting | `IComposerSyntaxHighlighter` | §7. |
 
 ### 3.5 Shared state
@@ -234,7 +234,7 @@ Switching editor converts `Content` and refuses when §5.2 finds the conversion 
 
 `Attachments` carries files beside the content, never written into it, and the engine lists them beneath the canvas whichever editor is active, each removable from there.
 
-A host that only ever wants HTML registers the rich text plugin alone and reads `Content`: one property, no conversion, no switcher. `FormaInputBase<TValue>` is generic, so `FormaInputBase<ComposerDocument>` is the conventional base here; its `TryParseValueFromString` reads the serialised form, which is the format id, a newline, then the content, and a value carrying no newline is HTML. A host is free to persist `Format` and `Content` as two columns instead, which keeps the format queryable.
+A host that only ever wants HTML registers the rich text plugin alone and reads `Content`: one property, no conversion, no switcher. `FormaInputBase<TValue>` is generic, so `FormaInputBase<ComposerDocument>` is the conventional base here; its `TryParseValueFromString` reads the serialized form, which is the format id, a newline, then the content, and a value carrying no newline is HTML. A host is free to persist `Format` and `Content` as two columns instead, which keeps the format queryable.
 
 ---
 
@@ -339,11 +339,11 @@ public sealed record ComposerWidgetNode
 }
 ```
 
-Serialised, that tree is a `ComposerDocument.Content` of format `widget-tree` (§3.7), so the designer needs no special case in the binding.
+Serialized, that tree is a `ComposerDocument.Content` of format `widget-tree` (§3.7), so the designer needs no special case in the binding.
 
-`Content` and `Settings` are split by **which surface edits them**: content is typed on the canvas — the text widget's rich text, the code widget's source — while settings are what `FormaWidgetSettingsPanel` commits. They also sync differently, content debounced and on blur per §3.6. `Content` is therefore exactly the sanitisation surface of §6; the JSON never is.
+`Content` and `Settings` are split by **which surface edits them**: content is typed on the canvas — the text widget's rich text, the code widget's source — while settings are what `FormaWidgetSettingsPanel` commits. They also sync differently, content debounced and on blur per §3.6. `Content` is therefore exactly the sanitization surface of §6; the JSON never is.
 
-The engine never deserialises `Settings`. It hands the `JsonElement` to the widget's `SettingsComponent`, which reads it as its own record, so a host's race-results widget defines `RaceResultsSettings` and Forma never learns the field names.
+The engine never deserializes `Settings`. It hands the `JsonElement` to the widget's `SettingsComponent`, which reads it as its own record, so a host's race-results widget defines `RaceResultsSettings` and Forma never learns the field names.
 
 **Every `Settings` element must be cloned into its node.** A `JsonElement` is a window onto its owning `JsonDocument`'s pooled buffers and is invalid once that document is disposed, so a node holding an unowned element outlives its own data. `JsonElement.Clone()` returns one that owns itself, which is also what keeps a node immutable enough for the undo stack in §3.4 to snapshot the tree.
 
@@ -382,11 +382,11 @@ Those token widgets carry no content and barely any settings, because *what* the
 
 This is why the tree wins over Coi's saved HTML. Coi froze rendering decisions at save time — `<img src="/media/8842.jpg">`, `style="width:60%"` — so a new image format, a CDN move or a theme change could not reach an already-saved page, and a widget dropped from the palette left stale markup rendering silently instead of a visible "no longer available". Storing `mediaId: 8842` and `raceId: 42` keeps the author's *intent* and decides the markup at render time. Coi's approach also never escaped the tree: recovering a widget's identity and settings from HTML requires `data-widget` and `data-settings` attributes, which is the same JSON in a worse container, read back with an HTML parser the tree does not need.
 
-**Document metadata is the host's, not Forma's.** Identity, author, timestamps, revision, title, tags, publish state, visibility and access all belong on the host's row, which Épica's own conventions already mandate. Keeping them out of the tree avoids two sources of truth, keeps a publishing workflow out of a component library, and — decisively — keeps authorization out of a client-authored blob: the document round-trips through the browser, so anything inside it is attacker-controlled, and an editor that can write its own `Access` value is broken access control. A host that wants metadata travelling alongside wraps the tree in its own record.
+**Document metadata is the host's, not Forma's.** Identity, author, timestamps, revision, title, tags, publish state, visibility and access all belong on the host's row, which Épica's own conventions already mandate. Keeping them out of the tree avoids two sources of truth, keeps a publishing workflow out of a component library, and — decisively — keeps authorization out of a client-authored blob: the document round-trips through the browser, so anything inside it is attacker-controlled, and an editor that can write its own `Access` value is broken access control. A host that wants metadata traveling alongside wraps the tree in its own record.
 
 One shape considered and rejected: **HTML authoritative for rendering with a sidecar tree for editing.** It appears to offer both and is the worst available option — two persisted representations of one document, free to disagree, with no rule for which wins after a hand-edit.
 
-**A text widget hosts `FormaRichTextEditor`.** That is the recursion Coi had through `CKEDITOR.inline`, and it falls out of the plugin model rather than being special-cased: a widget's `Component` is a component, and a component may be an editor. The engine's selection, history and sanitisation stay single and shared, so an undo inside a text widget and a widget reorder sit on one stack.
+**A text widget hosts `FormaRichTextEditor`.** That is the recursion Coi had through `CKEDITOR.inline`, and it falls out of the plugin model rather than being special-cased: a widget's `Component` is a component, and a component may be an editor. The engine's selection, history and sanitization stay single and shared, so an undo inside a text widget and a widget reorder sit on one stack.
 
 **Drag-and-drop follows the rules `FormaSortableList` already established** — Pointer Events rather than mouse events, press-and-hold before a touch drag so an ordinary swipe still scrolls, and a guarded non-passive `touchmove` so the compositor cannot cancel the gesture mid-drag. Reordering must also be possible from the keyboard; Coi's was mouse-only, and that is not a bar Forma clears by matching.
 
@@ -396,7 +396,7 @@ Three separate concerns, and Coi did **not** bundle them under one umbrella:
 
 | Concern | What it is | Coi's surface |
 |---|---|---|
-| **Theme** | The skin — colours, type scale, spacing tokens | `App_Themes/{Name}/` CSS, 28 of them, chosen through `Website.Theme`; plus `design.aspx` for the background, primary and secondary colours, fonts and site width, and `pops/designs.aspx` as a gallery of skins with desktop and mobile screenshots |
+| **Theme** | The skin — colors, type scale, spacing tokens | `App_Themes/{Name}/` CSS, 28 of them, chosen through `Website.Theme`; plus `design.aspx` for the background, primary and secondary colors, fonts and site width, and `pops/designs.aspx` as a gallery of skins with desktop and mobile screenshots |
 | **Layout** | The structural frame — header, side, footer, content region, column grid | **Coi had no separate concept.** `SavePage()` posted `header`, `side`, `footer` and `body` as four independent HTML strings, and swapping a design wiped header and footer while leaving pages intact |
 | **Template** | The composed content — which widgets, in what order, with what settings | `pops/template.aspx`, plus `pops/premade.aspx` and `pops/templates.aspx` as pickers over ready-made ones |
 
@@ -425,7 +425,7 @@ A designer **is** an editor plugin — it is a surface the switcher offers — *
 | Plugin | Covers | Coi origin |
 |---|---|---|
 | `BasicFormattingPlugin` | Bold, Italic, Underline, Strike, Inline code, Subscript, Superscript, Remove formatting | Bold/Italic/Underline/Strike, RemoveFormat |
-| `TypographyPlugin` | Font family, `rem` (or point) font size, line-height multiplier, text colour, highlight colour | Font, FontSize, TextColor, `lineheight` |
+| `TypographyPlugin` | Font family, `rem` (or point) font size, line-height multiplier, text color, highlight color | Font, FontSize, TextColor, `lineheight` |
 | `ParagraphFormatPlugin` | Paragraph, H1–H6, Blockquote, Lead | Format (`p;h1;h2;h3;h4`) |
 | `ListPlugin` | Bulleted, numbered, indent, outdent | NumberedList, BulletedList |
 | `AlignmentBidiPlugin` | Align start/center/end/justify, direction LTR/RTL | Justify*, BidiRtl, BidiLtr |
@@ -526,7 +526,7 @@ public sealed record ComposerConversionResult
 
 It is a record **class** rather than a record struct because a struct's `default` would bypass the constructor and carry a null `Id` into the converter registry's keys, where it would compare and hash as a legitimate format and then throw on first read. The statics are cached rather than expression-bodied for the same reason the constructor exists: each one otherwise re-validates and re-lowercases on every access.
 
-The engine therefore never `switch`es on a format. `ComposerAssetKind` (§3.2) is a closed enum because the loader must know how to load each kind, whereas a format the engine only ever hands to a registry lookup needs no such knowledge. Behaviour comes from what is registered, which is what makes "no converter, no editor" (§3.2) fall out rather than have to be enforced.
+The engine therefore never `switch`es on a format. `ComposerAssetKind` (§3.2) is a closed enum because the loader must know how to load each kind, whereas a format the engine only ever hands to a registry lookup needs no such knowledge. Behavior comes from what is registered, which is what makes "no converter, no editor" (§3.2) fall out rather than have to be enforced.
 
 **`widget-tree` has no converter in either direction, and needs none.** Converting into the designer would mean parsing HTML back into widgets, and converting out would flatten the tree into HTML and discard it — both refused for the reasons §4.2 gives. Neither is a rule the engine enforces: the registry simply holds no entry, so the switcher never offers the conversion. Producing HTML *from* a tree is rendering rather than conversion, and §4.2 says where it lives.
 
@@ -534,11 +534,11 @@ The engine therefore never `switch`es on a format. `ComposerAssetKind` (§3.2) i
 
 Markdown → HTML is total and always available. **HTML → Markdown is offered only when the HTML happens to be within the subset Markdown can represent.** The converter inspects the document first and, when it finds anything Markdown cannot carry, refuses with `Succeeded = false` and names what blocked it.
 
-Markdown has no representation for font family, font size, text colour, highlight, line height, underline, alignment or per-block `dir` — every one of which §1.3 promises as a headline feature. Silently discarding an author's formatting on an editor switch is worse than declining to switch.
+Markdown has no representation for font family, font size, text color, highlight, line height, underline, alignment or per-block `dir` — every one of which §1.3 promises as a headline feature. Silently discarding an author's formatting on an editor switch is worse than declining to switch.
 
 The refusal is surfaced, not swallowed: the switcher disables the Markdown editor and explains which features are in the way, so the author can remove them and try again.
 
-`Forma.AddOns.Resources.Markdown` is **not** reused for this. It exists to render a stored `.md` resource for viewing, so its pipeline calls `DisableHtml()` and sanitises the output — one-way by construction. `Forma.AddOns.Composer.Markdown` is a separate converter over the same Markdig dependency.
+`Forma.AddOns.Resources.Markdown` is **not** reused for this. It exists to render a stored `.md` resource for viewing, so its pipeline calls `DisableHtml()` and sanitizes the output — one-way by construction. `Forma.AddOns.Composer.Markdown` is a separate converter over the same Markdig dependency.
 
 ---
 
@@ -557,9 +557,9 @@ public interface IHtmlSanitizer
 
 - Forma ships `AllowlistHtmlSanitizer` in `Forma.Framework.Sanitization` with no external dependency, covering the element and attribute set the built-in plugins can produce. The library registers it as the default when a host has registered none, so a composer is never unsanitised.
 - A host may replace it — a satellite wrapping Ganss.Xss suits a host wanting a hardened, widely-reviewed implementation, and any registration overrides the default.
-- A host wanting only different *rules* rather than a different implementation supplies an `IMarkupPolicy` to the sanitiser instead, wrapping `RichContentMarkupPolicy.Default` to widen or narrow what it permits. Event handler attributes are refused by the sanitiser itself, so no policy can re-admit them.
-- Sanitisation runs at **four** points, and none is optional: content loaded into the composer, content pasted in, content leaving the code editor, and content raised to the host. In a widget tree that means every node's `Content` (§4.2); the settings JSON is never sanitised as markup.
-- The composer's guarantee stops at the browser. **The host must sanitise server-side on save regardless**, because a client-side editor cannot be trusted by the endpoint receiving its output.
+- A host wanting only different *rules* rather than a different implementation supplies an `IMarkupPolicy` to the sanitizer instead, wrapping `RichContentMarkupPolicy.Default` to widen or narrow what it permits. Event handler attributes are refused by the sanitizer itself, so no policy can re-admit them.
+- Sanitization runs at **four** points, and none is optional: content loaded into the composer, content pasted in, content leaving the code editor, and content raised to the host. In a widget tree that means every node's `Content` (§4.2); the settings JSON is never sanitized as markup.
+- The composer's guarantee stops at the browser. **The host must sanitize server-side on save regardless**, because a client-side editor cannot be trusted by the endpoint receiving its output.
 
 `IComposerSyntaxHighlighter` returns tokens rather than markup for the same reason — see §7.
 
@@ -594,8 +594,8 @@ These are correctness requirements for every Forma component, and the composer i
 
 - **Tab order:** the composer is one stretch of the page's tab order arranged its own way: the canvas first, then its toolbar and status strip, then out to whatever follows the composer. Tab from the canvas therefore reaches this composer's commands, never the next composer on the page, and Shift+Tab from the canvas leaves the composer.
 - **Toolbar semantics:** `role="toolbar"` obliges arrow-key roving focus between its controls. Either implement it or use a plain button group, matching the decision already recorded for `FormaToolbar`. The editor switcher is a `FormaTabs` strip — a `tablist` whose tabs are the editors and, trailing, the active editor's views.
-- **Editing surface:** the `contenteditable` region is labelled, exposes `aria-multiline`, and announces the active block and formatting through a live region — a screen-reader user must be able to learn that the caret is inside a heading or a code block.
-- **Every state without colour:** an active toolbar toggle carries `aria-pressed` and a persistent non-colour mark, not a tint alone.
+- **Editing surface:** the `contenteditable` region is labeled, exposes `aria-multiline`, and announces the active block and formatting through a live region — a screen-reader user must be able to learn that the caret is inside a heading or a code block.
+- **Every state without color:** an active toolbar toggle carries `aria-pressed` and a persistent non-color mark, not a tint alone.
 - **Touch:** every control is at least 24×24 CSS px, and 44×44 under `@media (pointer: coarse)`. Every `:hover` rule sits inside `@media (hover: hover)`. The selection bar is clamped to the viewport and reachable by tap; nothing essential hangs off hover.
 - **Direction:** logical properties only, per-block `dir`, and horizontal arrow keys resolved through `CultureInfo.CurrentCulture.TextInfo.IsRightToLeft`. Bidi is not a plugin's problem to solve twice.
 
@@ -616,7 +616,7 @@ Every folder and its namespace stay in step, so `Plugins/` and `Dialogs/` are re
 | # | Question | Answer |
 |---|---|---|
 | C1 | Which external libraries may the composer bundle? | Any, provided all five conditions in §3.3 hold. The rule is a standing carve-out by category, not a named list, so Markdig, TextMateSharp and KaTeX all qualify without a per-library approval. |
-| C2 | How are the composer's contracts named, given `Ganss.Xss.IHtmlSanitizer` may be in a host's scope? | Everything the composer owns carries the prefix: `IComposer*` for contracts, `Composer*` for types. Sanitization is not among them — it is a framework concern named for what it does, so a host registering both sanitisers aliases one of the two. |
+| C2 | How are the composer's contracts named, given `Ganss.Xss.IHtmlSanitizer` may be in a host's scope? | Everything the composer owns carries the prefix: `IComposer*` for contracts, `Composer*` for types. Sanitization is not among them — it is a framework concern named for what it does, so a host registering both sanitizers aliases one of the two. |
 | C3 | Should there be a plain-text editor plugin, or is plain text only ever a conversion target? | Both. `ComposerDocumentFormat.PlainText` is a format any converter may target, and `PlainTextEditorPlugin` authors it over a `<textarea>` as the editor the catalog falls back to when no registered editor is available, so a composer always has a surface. |
 | C4 | What does `@bind-Value` carry when the active editor's format is not the bound format? | A `ComposerDocument` — the content together with the format it is written in (§3.7). A bare string would force every document through HTML and rewrite a Markdown author's source on each round-trip. The format is a string-keyed value rather than an enum, so a new format costs the library nothing. |
 | C5 | Are `TemplatePlugin`'s templates host-supplied or does Forma ship a set? | Host-supplied, through `TemplatePluginOptions`; the default options carry two sample layouts a host replaces with its own. A template is editorial content and Forma has no editorial opinion. |

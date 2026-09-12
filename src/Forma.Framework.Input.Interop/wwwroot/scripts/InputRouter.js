@@ -3,7 +3,7 @@
  *
  * A component registers routes on a scope — the element it owns — each route naming a
  * semantic action, the bindings that raise it by default, and the handler; the host remaps
- * bindings by action. Several behaviours register on one element and share its scope, and
+ * bindings by action. Several behaviors register on one element and share its scope, and
  * each registration is disposed on its own. The router resolves every input to one owner.
  * Targeted input — a key, a wheel turn, a press, a drop — belongs to the innermost scope on
  * the event's composed path that routes it, and never crosses a boundary outward. Ambient

@@ -18,7 +18,7 @@ public sealed record TextBoxOptions
     /// <summary>The virtual keyboard to ask a touch device for.</summary>
     public TextInputMode? InputMode { get; init; }
 
-    /// <summary>What a touch keyboard's action key does, and how it is labelled.</summary>
+    /// <summary>What a touch keyboard's action key does, and how it is labeled.</summary>
     public TextEnterKeyHint? EnterKeyHint { get; init; }
 
     /// <summary>What a touch keyboard capitalizes automatically as text is typed.</summary>

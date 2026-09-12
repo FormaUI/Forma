@@ -18,7 +18,7 @@
   "Every measurement is switched on here through FileUploaderOptions, so each file and the set as a whole report bytes, elapsed time, speed, and the time remaining.": "כל המדידות מופעלות כאן דרך FileUploaderOptions, ולכן כל קובץ והקבוצה כולה מדווחים בתים, זמן שחלף, מהירות והזמן שנותר.",
   "The List on Its Own": "הרשימה לבדה",
   "ShowTotalMetrics and ShowSummary are switched off here, so nothing is reported beneath the files: no totals line and no status message. Each row still carries its own measurements.": "כאן ShowTotalMetrics ו-ShowSummary כבויים, ולכן לא מדווח דבר מתחת לקבצים: אין שורת סיכום ואין הודעת מצב. כל שורה עדיין מציגה את המדידות שלה.",
-  "A Slow Store, and Cancelling It": "מאגר איטי, וביטולו",
+  "A Slow Store, and Canceling It": "מאגר איטי, וביטולו",
   "This store pauses between reads so the progress bar is watchable and the cancel action is reachable. Anything not yet stored when you cancel is marked canceled.": "המאגר הזה משהה בין קריאות כדי שסרגל ההתקדמות יהיה נצפה ופעולת הביטול תהיה נגישה. כל מה שטרם נשמר בעת הביטול מסומן כמבוטל.",
   "Stored at {Source}": "נשמר בכתובת {Source}",
   "{Name} was refused: {Reason}": "{Name} נדחה: {Reason}",

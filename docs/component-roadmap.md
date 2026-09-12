@@ -64,7 +64,7 @@ The components still to build, in the order dependency and reuse suggest.
 
 ### `FormaAddButton`
 
-An icon button for adding, labelled in place when the action is primary. Its design is [icon-buttons-design.md](icon-buttons-design.md).
+An icon button for adding, labeled in place when the action is primary. Its design is [icon-buttons-design.md](icon-buttons-design.md).
 
 | | |
 |---|---|
@@ -240,7 +240,7 @@ An editor for a product's option types and their values, each row's fields follo
 
 ### `FormaPublishButton`
 
-A stateful icon button for publishing and unpublishing, labelled where primary; scheduling stays outside it. Its design is [icon-buttons-design.md](icon-buttons-design.md).
+A stateful icon button for publishing and unpublishing, labeled where primary; scheduling stays outside it. Its design is [icon-buttons-design.md](icon-buttons-design.md).
 
 | | |
 |---|---|

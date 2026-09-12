@@ -66,7 +66,7 @@ export class MediaMarkup {
         return `<div class="forma-composer-embed" data-embed-type="${Escape.attribute(type)}" data-embed-id="${Escape.attribute(id)}"${settingsAttr}>[Embed: ${Escape.html(type || id)}]</div><p>&nbsp;</p>`;
     }
 
-    /** What each kind is recognised by. A figure is tried before a bare picture, because closest()
+    /** What each kind is recognized by. A figure is tried before a bare picture, because closest()
         stops at the element itself and a picture inside a figure matches first. */
     static Kinds = [
         { kind: 'image', selector: 'figure.forma-composer-image' },

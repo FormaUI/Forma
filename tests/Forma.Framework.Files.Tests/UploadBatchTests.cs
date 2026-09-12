@@ -79,13 +79,13 @@ public sealed class UploadBatchTests
         set.SetFileState(0, UploadState.Completed);
 
         // Act
-        set.TransitionPendingFiles(0, UploadState.Cancelled);
+        set.TransitionPendingFiles(0, UploadState.Canceled);
 
         // Assert
         Assert.Multiple(
             () => Assert.Equal(UploadState.Completed, set[0].State),
-            () => Assert.Equal(UploadState.Cancelled, set[1].State),
-            () => Assert.Equal(UploadState.Cancelled, set[2].State));
+            () => Assert.Equal(UploadState.Canceled, set[1].State),
+            () => Assert.Equal(UploadState.Canceled, set[2].State));
     }
 
     [Fact]

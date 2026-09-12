@@ -9,7 +9,7 @@
  * without a round trip, and where it came to rest is reported once.
  */
 
-import { attach as attachDragGesture } from '../behaviours/DragGesture.js';
+import { attach as attachDragGesture } from '../behaviors/DragGesture.js';
 import { tell } from '../../../core/scripts/Owner.js';
 
 /**

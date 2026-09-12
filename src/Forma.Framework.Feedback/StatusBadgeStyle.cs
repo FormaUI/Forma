@@ -3,10 +3,10 @@ namespace Forma.Framework.Feedback;
 using Forma.Framework.Css;
 using Forma.Framework.Icons;
 
-/// <summary>A named status badge and the colours it renders with.</summary>
+/// <summary>A named status badge and the colors it renders with.</summary>
 public sealed record StatusBadgeStyle
 {
-    /// <summary>Creates a status badge with the given name and colours.</summary>
+    /// <summary>Creates a status badge with the given name and colors.</summary>
     public StatusBadgeStyle(string name, CssColor background, CssColor foreground)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -16,13 +16,13 @@ public sealed record StatusBadgeStyle
         Foreground = foreground;
     }
 
-    /// <summary>Background colour of the badge.</summary>
+    /// <summary>Background color of the badge.</summary>
     public CssColor Background { get; }
 
-    /// <summary>Text colour of the badge.</summary>
+    /// <summary>Text color of the badge.</summary>
     public CssColor Foreground { get; }
 
-    /// <summary>Icon shown before the text, so the status reads without colour.</summary>
+    /// <summary>Icon shown before the text, so the status reads without color.</summary>
     public Icon? Marker { get; init; }
 
     /// <summary>Name the badge is referenced by.</summary>

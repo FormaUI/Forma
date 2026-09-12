@@ -97,7 +97,7 @@
 }
 
 /* Bold weight plus the check mark below are the state's second channel — the tinted
-   background alone would fail on a desaturated or forced-colours display. */
+   background alone would fail on a desaturated or forced-colors display. */
 .forma-select-option.selected {
     background: var(--hover-bg-color);
     font-weight: 600;

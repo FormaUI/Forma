@@ -7,7 +7,7 @@ using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>A colour field pairing a swatch trigger with a hex value, optionally including an alpha channel.</summary>
+/// <summary>A color field pairing a swatch trigger with a hex value, optionally including an alpha channel.</summary>
 public sealed partial class FormaColorPicker : FormaInputBase<string>
 {
     /// <summary>The field's label.</summary>

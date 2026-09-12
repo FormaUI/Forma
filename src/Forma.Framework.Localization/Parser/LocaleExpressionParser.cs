@@ -79,7 +79,7 @@ public static class LocaleExpressionParser
 
     /// <summary>Reads every expression in the text, reporting what is wrong rather than throwing.</summary>
     /// <param name="text">The text to read.</param>
-    /// <param name="keywords">The keywords to recognise, which decide what a field name may be.</param>
+    /// <param name="keywords">The keywords to recognize, which decide what a field name may be.</param>
     public static LocaleParseResult Parse(string text, LocaleKeywords keywords)
     {
         ArgumentNullException.ThrowIfNull(text);

@@ -8,7 +8,7 @@ using Forma.Framework.Resources.Office.Converters;
 
 using Ganss.Xss;
 
-/// <summary>Converts a Word, Excel or PowerPoint document into sanitised markup, so a viewer can render one it could not otherwise show.</summary>
+/// <summary>Converts a Word, Excel or PowerPoint document into sanitized markup, so a viewer can render one it could not otherwise show.</summary>
 [SuppressMessage("Design", "CA1054:URI parameters should not be strings")]
 public sealed class OfficeResourceProvider : IResourceProvider
 {

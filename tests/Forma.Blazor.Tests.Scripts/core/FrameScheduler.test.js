@@ -56,7 +56,7 @@ describe('FrameScheduler', () => {
         expect(scheduler.isPending).toBe(false);
     });
 
-    it('drops the work when cancelled before the frame', () => {
+    it('drops the work when canceled before the frame', () => {
         const scheduler = new FrameScheduler();
         const work = vi.fn();
 

@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Components.Layout;
 
-using Forma.Framework.Common.Interop.Behaviours;
+using Forma.Framework.Common.Interop.Behaviors;
 using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
@@ -17,7 +17,7 @@ public sealed partial class FormaCommandBar : FormaElementBase
     /// <summary>How the bar's track scrolls; the track is always inline and always moved by arrows.</summary>
     [Parameter] public FreezePaneOptions Options { get; set; } = FreezePaneOptions.Arrows;
 
-    /// <summary>Hides the bar while keeping it mounted, so its track keeps its position and its attached behaviours across toggles.</summary>
+    /// <summary>Hides the bar while keeping it mounted, so its track keeps its position and its attached behaviors across toggles.</summary>
     [Parameter] public bool Hidden { get; set; }
 
     /// <summary>Animates the transition between hidden and shown instead of snapping instantly.</summary>

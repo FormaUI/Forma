@@ -112,7 +112,7 @@
     min-block-size: min(66vh, 32rem);
 }
 
-/* A sound file or document has no artwork to fill the frame, so its player or page is centred on the media surface instead of floating in empty space. */
+/* A sound file or document has no artwork to fill the frame, so its player or page is centered on the media surface instead of floating in empty space. */
 .forma-explorer ::deep .forma-dialog .forma-file-viewer-audio {
     display: flex;
     align-items: center;

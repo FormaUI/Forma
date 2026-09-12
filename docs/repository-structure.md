@@ -44,9 +44,9 @@ The library ships three cultures: `en` as the source language, `he` and `es`. A 
 Interop lives in interop assemblies, never in `Forma.Blazor`:
 
 - `Forma.Framework.Core.Interop` holds the interop bases, `JSModule`, `JSInterop` and the `IJSEnvironment` they take, and the scripts every other script builds on: the report to a .NET owner, the selectors of the controls a list leaves alone, the frame scheduler, the reading direction, the scroller lookup, the markup sanitizer.
-- `Forma.Framework.Common.Interop` holds every behaviour and operation any component may attach, and the wrappers of components that belong to no feature. It sorts by kind: scripts under `wwwroot/scripts/behaviours/`, `operations/` and `components/`, wrappers in the matching `Behaviours/`, `Operations/` and `Components/` folders.
+- `Forma.Framework.Common.Interop` holds every behavior and operation any component may attach, and the wrappers of components that belong to no feature. It sorts by kind: scripts under `wwwroot/scripts/behaviors/`, `operations/` and `components/`, wrappers in the matching `Behaviors/`, `Operations/` and `Components/` folders.
 - A feature with scripts of its own ships them in `Forma.Framework.{Feature}.Interop`, scripts directly under `wwwroot/scripts/` and wrappers at the assembly root, as `Forma.Framework.Input.Interop` serves `scripts/InputRouter.js` beside `InputRouter.cs`.
-- The assemblies are served side by side as `_content/forma/core`, `_content/forma/common`, `_content/forma/input` and `_content/forma/composer`. A script reaches another assembly's script by climbing to that root, `../../../core/scripts/FrameScheduler.js` from a behaviour, so the import survives a host path base.
+- The assemblies are served side by side as `_content/forma/core`, `_content/forma/common`, `_content/forma/input` and `_content/forma/composer`. A script reaches another assembly's script by climbing to that root, `../../../core/scripts/FrameScheduler.js` from a behavior, so the import survives a host path base.
 - `FormaComposer` is the one component allowed external JavaScript libraries, each to be confined to its own `Forma.AddOns.Composer.{Capability}` package behind a plugin contract, as `composer-design.md` lays out.
 
 Stylesheets: `src/Forma.Blazor/wwwroot/forma-tokens.css` holds every token, value-only; `forma-reset.css` is cross-browser normalization; `forma-base.css` is the opt-in element-level look; `forma-input.css` is the one input box every field draws; `forma-prose.css` is the look of a document the composer authored. Component rules live in the component's isolated stylesheet.
@@ -72,7 +72,7 @@ A running Showcase holds its `bin` DLLs open, so it is stopped before a rebuild.
 
 ## Tests
 
-Every production assembly should have one test project named after it under `tests/`, mirroring the source paths, so component tests live under `tests/Forma.Blazor.Tests/Components/{Category}/` as `FormaXTests.razor` with a `FormaXTests.razor.cs`. The exceptions, each covered from elsewhere: `Forma.Framework.Share`, a contracts assembly whose behaviour shows only through what extends it, is exercised through `tests/Forma.AddOns.Share.Targets.Tests`; `Forma.Framework.Media` and `Forma.Framework.Toolbar` through the components that use them in `tests/Forma.Blazor.Tests`; and the scripts of `Forma.Framework.Common.Interop` and `Forma.Framework.Composer.Interop` through the script test project, with their wrappers driven from the tests of the components and features that own them.
+Every production assembly should have one test project named after it under `tests/`, mirroring the source paths, so component tests live under `tests/Forma.Blazor.Tests/Components/{Category}/` as `FormaXTests.razor` with a `FormaXTests.razor.cs`. The exceptions, each covered from elsewhere: `Forma.Framework.Share`, a contracts assembly whose behavior shows only through what extends it, is exercised through `tests/Forma.AddOns.Share.Targets.Tests`; `Forma.Framework.Media` and `Forma.Framework.Toolbar` through the components that use them in `tests/Forma.Blazor.Tests`; and the scripts of `Forma.Framework.Common.Interop` and `Forma.Framework.Composer.Interop` through the script test project, with their wrappers driven from the tests of the components and features that own them.
 
 - `FormaBunitContext` in `Forma.Blazor.Tests` is the shared test context; it registers localization, the Twemoji pack and `AddFormaUI`.
 - `tests/Forma.Tests.Support` holds every fake, fixture and utility, in a folder mirroring the production area it serves, such as `Resources/`, `Media/` and `Interop/`, with `Shared/` for what no area owns and the namespace following the folder: `Forma.Tests.Resources`, `Forma.Tests.Shared`, `Forma.Tests.Interop`. `FakeJSRuntime` and `FakeJSObjectReference` drive interop wrappers; `FakeLoggerFactory` reads what was logged; `StubStringLocaleFactory` reads what strings were asked for.
@@ -109,10 +109,10 @@ Select-String -Path 'c:\Users\eyal\Development\Projects\2Site\Coi\Coi\admin\*.as
 |------|-------|
 | Admin design system | `App_Themes/Cms/css-3.6.5.css`, `fa-3.6.5.css`, `global-3.6.5.css`, `responsive-3.6.5.css` |
 | Page markup | `admin/*.aspx` and `admin/pops/*.aspx` |
-| Behaviour and rendering helpers | Matching `*.aspx.cs` files |
+| Behavior and rendering helpers | Matching `*.aspx.cs` files |
 | Replaced jQuery widgets | `admin/Client/{toggle,date,cp,modal,Tabs,jcrop,minibar}` |
 
-Coi's boxy gradient toggle becoming a token-driven iOS-style `FormaToggleSwitch` is the intended level of fidelity: the real states, vocabulary, edge cases and required behaviour survive; the visuals are Forma's.
+Coi's boxy gradient toggle becoming a token-driven iOS-style `FormaToggleSwitch` is the intended level of fidelity: the real states, vocabulary, edge cases and required behavior survive; the visuals are Forma's.
 
 ## Consumers
 

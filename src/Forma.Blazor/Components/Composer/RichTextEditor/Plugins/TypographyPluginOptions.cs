@@ -14,7 +14,7 @@ public sealed record TypographyPluginOptions
         "Courier New", "Consolas", "Lucida Console", "monospace",
     ];
 
-    /// <summary>The font sizes offered in the size picker, labelled by their pixel size at the reader's default.</summary>
+    /// <summary>The font sizes offered in the size picker, labeled by their pixel size at the reader's default.</summary>
     public IReadOnlyList<string> FontSizes { get; init; } =
         ["8", "9", "10", "11", "12", "14", "16", "18", "24", "30", "36", "48", "72"];
 

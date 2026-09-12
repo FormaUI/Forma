@@ -20,7 +20,7 @@ public interface IComposerPlugin : IComposerKeyBindingSource
 
     /// <summary>
     /// Prefixes of commands this plugin owns whose full form is not enumerable ahead of time — such as one
-    /// per catalogue entry a picker offers — so the engine can route them without a per-value registration.
+    /// per catalog entry a picker offers — so the engine can route them without a per-value registration.
     /// </summary>
     IReadOnlyList<string> CommandPrefixes => [];
 

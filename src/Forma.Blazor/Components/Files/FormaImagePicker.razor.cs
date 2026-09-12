@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Components.Files;
 
-using Forma.Framework.Common.Interop.Behaviours;
+using Forma.Framework.Common.Interop.Behaviors;
 using Forma.Framework.Css;
 using Forma.Framework.Files;
 

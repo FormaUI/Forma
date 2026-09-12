@@ -34,7 +34,7 @@ public sealed class ExplorerProviderWindow : IDisposable
     /// <summary>
     /// Runs the query against the provider, replacing the window or extending it, leaving out hidden items and
     /// a stray item the provider let through. A fetch still running when a newer one starts, or when the given token
-    /// is cancelled, is abandoned rather than raced.
+    /// is canceled, is abandoned rather than raced.
     /// </summary>
     public async Task FetchAsync(
         IExplorerItemsProvider provider,

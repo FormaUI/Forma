@@ -3,7 +3,7 @@ namespace Forma.Blazor.Components.Navigation;
 using System.Globalization;
 
 using Forma.Blazor.Components.Inputs;
-using Forma.Framework.Common.Interop.Behaviours;
+using Forma.Framework.Common.Interop.Behaviors;
 using Forma.Framework.Common.Interop.Operations;
 using Forma.Framework.Css;
 
@@ -82,7 +82,7 @@ public sealed partial class FormaPagination : FormaElementBase
     private string PageSummary
         => L["{PageNumber} of {PageCount}", ActivePage.ToString(CultureInfo.CurrentCulture), PageCount.ToString("N0", CultureInfo.CurrentCulture)].Value;
 
-    /// <summary>Turns one page in the direction of a wheel gesture; called from the wheel behaviour.</summary>
+    /// <summary>Turns one page in the direction of a wheel gesture; called from the wheel behavior.</summary>
     [JSInvokable]
     public Task HandleWheelAsync(int direction)
         => InvokeAsync(() => MoveAsync(direction < 0 ? NavigationDirection.Previous : NavigationDirection.Next, 1));

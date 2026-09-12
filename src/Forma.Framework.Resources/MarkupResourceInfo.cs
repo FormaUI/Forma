@@ -4,12 +4,12 @@ using System.Diagnostics.CodeAnalysis;
 
 /// <summary>
 /// A resource a provider converted to markup, such as a document rendered to HTML. The provider
-/// must return sanitised markup, because a viewer renders it as trusted HTML.
+/// must return sanitized markup, because a viewer renders it as trusted HTML.
 /// </summary>
 [SuppressMessage("Design", "CA1054:URI parameters should not be strings")]
 public record MarkupResourceInfo : DocumentResourceInfo
 {
-    /// <summary>Creates a markup resource from its source address and its sanitised HTML.</summary>
+    /// <summary>Creates a markup resource from its source address and its sanitized HTML.</summary>
     public MarkupResourceInfo(string source, string html)
         : base(source)
     {
@@ -18,6 +18,6 @@ public record MarkupResourceInfo : DocumentResourceInfo
         Html = html;
     }
 
-    /// <summary>The sanitised markup the provider produced.</summary>
+    /// <summary>The sanitized markup the provider produced.</summary>
     public string Html { get; }
 }

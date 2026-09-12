@@ -36,9 +36,9 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 - Do let dependencies point one way, from the product to the framework it builds on, never upward, and let an optional package extend the library from outside it rather than be referenced from within.
 - Do file a project by what it is: what the library builds on is Framework, whether or not the product uses it; a project that is optional and extends a Framework assembly is an AddOn, a host opt-in the host references and registers itself. Optional alone makes nothing an AddOn.
 - Do register a feature's services through one registrar at its root, with `TryAdd`, so a host that registered its own first still wins, and ship one aggregate registrar from the product so a host makes one call and still overrides any single service.
-- Do let a component whose optional contract is unregistered fall back to a default the library carries; a contract carrying data nobody can synthesise leaves the component in its empty state instead.
+- Do let a component whose optional contract is unregistered fall back to a default the library carries; a contract carrying data nobody can synthesize leaves the component in its empty state instead.
 - Do make components depend on abstractions and let the host choose implementations through DI.
-- Do represent colours and other CSS values with typed values, never arbitrary strings.
+- Do represent colors and other CSS values with typed values, never arbitrary strings.
 - Don't rename or conflate an assembly's identities; a static asset base path is hardcoded by markup and scripts, so it follows the assembly's name exactly.
 
 ## Dependencies
@@ -57,7 +57,7 @@ A project's references are part of its contract, because every consumer inherits
 Every component replaces something in the legacy application the repository document names.
 
 - Do study the matching legacy markup, code-behind, styles and widgets before designing a replacement.
-- Do preserve its real states, vocabulary, edge cases and required behaviour.
+- Do preserve its real states, vocabulary, edge cases and required behavior.
 - Do reimplement visuals with the library's design tokens and improve accessibility, affordances and edge-case handling where useful.
 - Do judge a component by whether it is good, not by whether it is pixel-identical to what it replaces.
 - Don't treat the legacy application as a complete specification or an upper limit, reproduce outdated visuals because it used them, or omit a worthwhile capability because it lacked one.
@@ -73,14 +73,14 @@ The gate is the build with no warnings, every test project, the script tests, th
 - Do build, review, and commit one component at a time, taking the next from the roadmap's build order.
 - Do derive parameters, validation, disposal, CSS, ARIA, localization, and tests from established repository patterns.
 - Do deliver the complete component set: markup, logic, stylesheet, warranted translation or script files, tests, and Showcase page.
-- Do verify both directions, colour-independent states, accessible names and focus, and touch targets before review; the `forma-checking-a11y-touch-rtl` skill carries the full standard.
+- Do verify both directions, color-independent states, accessible names and focus, and touch targets before review; the `forma-checking-a11y-touch-rtl` skill carries the full standard.
 - Do present the component for review and stop; iterate on that same component until the maintainer declares it complete.
 - Do move a component from the roadmap to the catalog after approval, and from the roadmap's structure to the catalog's when its implementation starts.
 - Do finish a piece of work with it unstaged, report what changed and what the gate said, and propose a commit message for the maintainer to run themselves.
 - Do present a wholesale rename as a ledger of `current -> proposed` lines with a per-member note on what each member does, and apply only what the maintainer's review of that ledger decides; members it leaves unlisted stay unchanged.
 - Do keep changes minimal and on-scope.
 - Don't move to the next component before the current one is approved.
-- Don't mark a component complete on your own judgement.
+- Don't mark a component complete on your own judgment.
 - Don't run a state-changing Git command, `add`, `commit`, `push`, `reset`, `restore`, `stash`, a path-scoped `checkout`, without permission for that command, asked for once the work exists and the maintainer can see what is in it. An instruction given up front about work not yet done grants nothing, and neither does permission for an earlier commit; read-only Git needs no permission at all.
 - Don't retrofit new conventions onto existing components unless asked.
 

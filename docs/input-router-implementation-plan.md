@@ -44,7 +44,7 @@ Escape and press-away behavior are decided in several unrelated ways today:
 - Native `<dialog>` cancellation.
 - A document listener owned by `FormaPopover` (retired; the popover is a scope on the router).
 - `FormaBreadcrumb`'s key handler and backdrop span (retired; its segment menus are `FormaDropDownMenu`s).
-- `DragGesture` cancelling an active drag.
+- `DragGesture` canceling an active drag.
 - `FormaComposer`'s selection bar returning focus to the editor.
 
 ### Navigation keys

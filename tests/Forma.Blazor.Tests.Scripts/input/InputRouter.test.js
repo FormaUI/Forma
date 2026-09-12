@@ -851,7 +851,7 @@ describe('InputRouter active routing', () => {
         now.mockRestore();
     });
 
-    it('forgets the swallowed click when the pointer is cancelled', () => {
+    it('forgets the swallowed click when the pointer is canceled', () => {
         scope(popup(), { onDismiss: vi.fn() }).activate();
         const clicked = vi.fn();
         elsewhere().addEventListener('click', clicked);

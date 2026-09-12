@@ -3,7 +3,7 @@ namespace Forma.Blazor.Components.Collections;
 using System.Diagnostics.CodeAnalysis;
 
 using Forma.Blazor.Components.Navigation;
-using Forma.Framework.Common.Interop.Behaviours;
+using Forma.Framework.Common.Interop.Behaviors;
 using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
@@ -81,7 +81,7 @@ public sealed partial class FormaDataGrid<TGridItem> : FormaElementBase
     /// <summary>Allows one row at a time to be edited in place by the columns that offer an editor. Requires <see cref="CloneForEdit"/>.</summary>
     [Parameter] public bool EnableInlineEditing { get; set; }
 
-    /// <summary>Produces the detached copy an edit writes to, so cancelling discards it rather than restoring the row.</summary>
+    /// <summary>Produces the detached copy an edit writes to, so canceling discards it rather than restoring the row.</summary>
     [Parameter] public Func<TGridItem, TGridItem>? CloneForEdit { get; set; }
 
     /// <summary>Fired with the edited copy once it passes validation. Persisting it is the host's job.</summary>

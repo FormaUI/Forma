@@ -1,11 +1,11 @@
 ---
 name: forma-testing
-description: The test standard — the one-test-project-per-assembly rule and where a contracts assembly is tested, the bUnit + xUnit v3 file shape with a nested class per subject, naming and Arrange/Act/Assert conventions, rendering form inputs in a fake form host, the shared support project every fake lives in, driving interop wrappers through the fake runtime, and the separate Vitest runner for script modules. Use when writing or changing any test, adding a test fake, or testing a JS behaviour, operation, component or service module.
+description: The test standard — the one-test-project-per-assembly rule and where a contracts assembly is tested, the bUnit + xUnit v3 file shape with a nested class per subject, naming and Arrange/Act/Assert conventions, rendering form inputs in a fake form host, the shared support project every fake lives in, driving interop wrappers through the fake runtime, and the separate Vitest runner for script modules. Use when writing or changing any test, adding a test fake, or testing a JS behavior, operation, component or service module.
 ---
 
 # Tests (bUnit + xUnit v3)
 
-Every production assembly has exactly one test project named after it, and is never tested from another project. A contracts assembly whose behaviour only shows through what extends it is the exception: it is exercised through the test project of what extends it. Mirror source paths within a test project, so a component's tests live in the category folder matching the component's, as `FormaXTests.razor` with `FormaXTests.razor.cs`.
+Every production assembly has exactly one test project named after it, and is never tested from another project. A contracts assembly whose behavior only shows through what extends it is the exception: it is exercised through the test project of what extends it. Mirror source paths within a test project, so a component's tests live in the category folder matching the component's, as `FormaXTests.razor` with `FormaXTests.razor.cs`.
 
 - Do keep `.razor.cs` to `public sealed partial class FormaXTests;`.
 - Do start `.razor` with `@inherits` naming the shared bUnit context and place `[Fact]` methods in a nested `public sealed class Component`; the context registers localization, the bundled artwork and the aggregate registrar, so a test class registers nothing of its own for those.
@@ -30,7 +30,7 @@ Every production assembly has exactly one test project named after it, and is ne
 
 ## What bUnit cannot see
 
-bUnit renders markup and drives its own synchronous JS interop, so a green suite is not evidence about CSS, about pointer behaviour, or about anything whose timing depends on a real interop round-trip.
+bUnit renders markup and drives its own synchronous JS interop, so a green suite is not evidence about CSS, about pointer behavior, or about anything whose timing depends on a real interop round-trip.
 
 - Do verify stylesheet-dependent states, touch targets, gestures, and direction in a real browser instead — the `forma-checking-a11y-touch-rtl` skill covers how.
 - Don't read a passing bUnit test as proof that the component works in the showcase.
@@ -39,7 +39,7 @@ bUnit renders markup and drives its own synchronous JS interop, so a green suite
 
 The script test project runs the `wwwroot/scripts/` modules of every assembly that ships scripts under Vitest and happy-dom. It reaches each assembly through an alias named for it and holds that assembly's tests in a folder of the same name, laid out as the assembly's `wwwroot/scripts/` is.
 
-- Do add a `{Name}.test.js` beside its siblings whenever you add or change a behaviour, operation, component or service module.
+- Do add a `{Name}.test.js` beside its siblings whenever you add or change a behavior, operation, component or service module.
 - Do drive it with `npm test` from that project; it is a separate runner and `dotnet test` does not reach it.
-- Do exercise `dispose()` in a behaviour's tests, since a leaked listener is exactly what the handle contract exists to prevent.
+- Do exercise `dispose()` in a behavior's tests, since a leaked listener is exactly what the handle contract exists to prevent.
 - Don't read the no-npm rule as covering this project; that rule governs what the library ships to a browser, not the dev-time test runner.

@@ -165,7 +165,7 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
             UploadState.Failed => Glyph.Warning,
             UploadState.Skipped => Glyph.FastForward,
             UploadState.RolledBack => Glyph.Undo,
-            UploadState.Cancelled => Glyph.Prohibited,
+            UploadState.Canceled => Glyph.Prohibited,
             UploadState.Uploading => Glyph.ArrowUp,
             _ => Glyph.Clock
         };
@@ -277,16 +277,16 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
             {
                 if (token.IsCancellationRequested)
                 {
-                    MarkPendingFrom(index, UploadState.Cancelled);
+                    MarkPendingFrom(index, UploadState.Canceled);
 
                     break;
                 }
 
                 var outcome = await StoreFileAsync(index, files[index], failures, stored, token);
 
-                if (outcome == StoreOutcome.Cancelled)
+                if (outcome == StoreOutcome.Canceled)
                 {
-                    MarkPendingFrom(index + 1, UploadState.Cancelled);
+                    MarkPendingFrom(index + 1, UploadState.Canceled);
 
                     break;
                 }
@@ -374,7 +374,7 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
             UploadState.Failed => L["Failed"],
             UploadState.Skipped => L["Skipped"],
             UploadState.RolledBack => L["Rolled Back"],
-            UploadState.Cancelled => L["Canceled"],
+            UploadState.Canceled => L["Canceled"],
             UploadState.Uploading => L["Uploading"],
             _ => L["Waiting"]
         };
@@ -408,9 +408,9 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
         }
         catch (OperationCanceledException)
         {
-            SetUploadState(index, UploadState.Cancelled);
+            SetUploadState(index, UploadState.Canceled);
 
-            return StoreOutcome.Cancelled;
+            return StoreOutcome.Canceled;
         }
         catch (Exception error)
         {
@@ -442,6 +442,6 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
     {
         Stored,
         Failed,
-        Cancelled
+        Canceled
     }
 }

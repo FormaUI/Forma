@@ -33,7 +33,7 @@ exclusions, listener-registration order, or incidental event propagation.
   scope only.
 - Precedence among active scopes is topological: modal barrier, then parentage, then
   activation order, then registration order. No named priority takes part.
-- Several behaviours register on one element and share one scope; each registration is
+- Several behaviors register on one element and share one scope; each registration is
   disposed on its own, and the scope stays active while any registration holds it.
 - Native editing controls carry an implicit profile defined per element and per input.
 - `defaultPrevented` coordinates behaviors inside one scope; it does not decide ownership
@@ -115,7 +115,7 @@ const registration = register(element, {
 }, owner);                               // an optional .NET reference for actions implemented in C#
 ```
 
-The first registration on an element creates its scope; later ones, from the behaviours
+The first registration on an element creates its scope; later ones, from the behaviors
 attached to the same element, add to it. A scope's routes are the union of its
 registrations'; it is active while any registration holds it through `activate()`; and
 disposing a registration removes only what it contributed. A disposed registration is
@@ -246,7 +246,7 @@ other platform close requests, cancellation of an active drag, and temporary foc
 interactions.
 
 A registration enters the active ordering through `activate()` and leaves through
-`release()`. The ordering holds registrations, not scopes: two behaviours active on one
+`release()`. The ordering holds registrations, not scopes: two behaviors active on one
 element are two entries, each with its own activation, its own ambient settings, and its
 own dismissal handler. Only the foremost active registration receives an ambient action.
 If it declines or ignores the action, the router does not offer it to a registration
@@ -393,7 +393,7 @@ is under the cursor goes in `Routes`, which are the fallback after every scope h
 A platform close request — a dialog's `cancel`, a back gesture, an assistive-technology
 dismiss — is its own ambient input with its own setting, `closeRequest`, on the
 registration and on the host. Unstated, it does what Escape does, so a scope that ignores
-Escape ignores close requests too unless it says otherwise. A close request is honoured
+Escape ignores close requests too unless it says otherwise. A close request is honored
 only from a scope that is active; a stale request from a registered but inactive element
 dismisses nothing.
 

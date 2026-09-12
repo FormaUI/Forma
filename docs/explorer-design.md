@@ -107,7 +107,7 @@ folds under headings, a folded group staying folded across views and opening on 
 grouping.
 
 Typing in the search box filters a held collection at once and is debounced through
-`Options.SearchDebounceDelay` before a provider is asked; a superseded query is cancelled
+`Options.SearchDebounceDelay` before a provider is asked; a superseded query is canceled
 rather than merely ignored, and a mutation of the items re-reads the window. The items
 scroll inside their own panel so the toolbar, folder tree and pager stay put.
 

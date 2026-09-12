@@ -38,7 +38,7 @@ internal static class LocalizationMetadata
             throw new LocalizationMetadataException($"'{fileName}' does not declare '{LocalizationSchema.SchemaVersionField}'.");
         }
 
-        // A version we cannot even read says nothing about whether this build could honour it.
+        // A version we cannot even read says nothing about whether this build could honor it.
         if (!Version.TryParse(written, out var schema) || schema.Build < 0 || schema.Revision >= 0)
         {
             throw new LocalizationMetadataException(

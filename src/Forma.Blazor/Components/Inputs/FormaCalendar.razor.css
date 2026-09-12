@@ -144,7 +144,7 @@
     font-weight: 700;
 }
 
-/* range — underlined so the span reads without relying on the fill colour */
+/* range — underlined so the span reads without relying on the fill color */
 .forma-calendar-day.in-range {
     background: var(--forma-calendar-range-bg-color);
     border-radius: 0;

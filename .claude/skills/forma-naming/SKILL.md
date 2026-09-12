@@ -80,7 +80,7 @@ Parameters are not added or ordered arbitrarily; their names and positions refle
 
 A name earns its place by answering the question a reader arrives with. The declaration already gives the type; repeating it, or describing the plumbing underneath it, leaves the reader no better off than before.
 
-- Do name a field for the role its value plays rather than for its type or its mechanism, so a field holding an interop behaviour says which capability that behaviour gives the component; a bare `_watcher` or `_interop` says only what its own declaration already said.
+- Do name a field for the role its value plays rather than for its type or its mechanism, so a field holding an interop behavior says which capability that behavior gives the component; a bare `_watcher` or `_interop` says only what its own declaration already said.
 - Do derive a field's name from its type when the type name is the clearest statement of that role — `_sheetLoadTracker` for a `SpriteSheetLoadTracker` — and spend the words clarity needs; the rule above targets vacuous echoes, never full names.
 - Do name a collection field as a plural noun phrase, never a bare adjective: `_matchingEmojis` and `_renderedEmojis`, not `_visible` and `_loadable`.
 - Do keep one vocabulary across a type's field block, and name related fields as a family whose names state their true relationship — `_activeSpriteLoader` beside `_ownedSpriteLoader` is use versus ownership, and a ranked pair like primary/secondary would misdescribe fields where the owned instance can be the active one.
@@ -96,7 +96,7 @@ A name earns its place by answering the question a reader arrives with. The decl
 
 ### Booleans, events, and callbacks
 
-- Do name a `[Parameter] public bool` bare and unprefixed when it configures the component's own rendering or behaviour: `Disabled`, `Busy`, `Opened`, `Required`, `ReadOnly`, `ShowLabels`, `EnablePagination`, `Virtualize`. One forwarding to a native HTML attribute belongs to the same family as `Class`, `Id`, and `Style`, and `Disabled` holds across every component without exception — never `IsDisabled`.
+- Do name a `[Parameter] public bool` bare and unprefixed when it configures the component's own rendering or behavior: `Disabled`, `Busy`, `Opened`, `Required`, `ReadOnly`, `ShowLabels`, `EnablePagination`, `Virtualize`. One forwarding to a native HTML attribute belongs to the same family as `Class`, `Id`, and `Style`, and `Disabled` holds across every component without exception — never `IsDisabled`.
 - Do use the affirmative `Is`/`Has`/`Can` phrasing where the flag states a condition rather than configuring the component: on every plain data record (a toolbar item's `IsDisabled`, a toggle's `IsActive`, a breadcrumb's `IsCurrent`, an action's `IsDestructive`), and on the few parameters that only reflect something the host already worked out (an address bar's `CanGoBack`, a menu item's `IsSelected`).
 - Do prefix an `EventCallback` with `On` when it reports an action taken, with no bindable parameter of the same name behind it: `OnClick`, `OnCommand`, `OnDelete`, `OnRefresh`.
 - Do drop the `On` prefix entirely when an `EventCallback<T>` is paired with a same-named `[Parameter] T`, so `@bind-{Name}` can find it: `Value`/`ValueChanged`, `ActiveTabId`/`ActiveTabIdChanged`, `SelectedItems`/`SelectedItemsChanged`, `ViewMode`/`ViewModeChanged`.

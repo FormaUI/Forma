@@ -132,7 +132,7 @@ Reading a file without it throws `LocalizationMetadataException`, as does a malf
 read.
 
 `SchemaVersion` is compared by part: a differing **major** is refused, a differing **minor** is
-accepted in either direction, and **patch** is ignored. A field this build does not recognise is
+accepted in either direction, and **patch** is ignored. A field this build does not recognize is
 ignored, so a file written by a newer toolchain still loads.
 
 The linter enforces the marker's position, the required fields and their order, and that a file

@@ -1,6 +1,6 @@
 namespace Forma.Blazor.Components.Feedback;
 
-using Forma.Framework.Common.Interop.Behaviours;
+using Forma.Framework.Common.Interop.Behaviors;
 using Forma.Framework.Css;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
@@ -33,7 +33,7 @@ public sealed partial class FormaPopover : FormaElementBase
     /// <summary>Raised whenever the popover opens or closes, so a component drawing the trigger's expanded state redraws it.</summary>
     [Parameter] public EventCallback<bool> OnOpenChanged { get; set; }
 
-    /// <summary>Raised once the popover is open and positioned, for content that takes focus or attaches a behaviour of its own.</summary>
+    /// <summary>Raised once the popover is open and positioned, for content that takes focus or attaches a behavior of its own.</summary>
     [Parameter] public EventCallback OnOpened { get; set; }
 
     /// <summary>Raised for every key pressed inside the popover other than Escape, which the router answers by dismissing it.</summary>

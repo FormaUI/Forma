@@ -21,6 +21,6 @@ public enum UploadState
     /// <summary>Stored, then removed again because another file in the set failed.</summary>
     RolledBack,
 
-    /// <summary>Abandoned because the upload was cancelled.</summary>
-    Cancelled
+    /// <summary>Abandoned because the upload was canceled.</summary>
+    Canceled
 }

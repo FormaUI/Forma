@@ -1,25 +1,25 @@
 ---
 name: forma-checking-a11y-touch-rtl
-description: The three gates a Forma component must pass before review — accessibility (colour-independent state, contrast, ARIA, focus and keyboard), touch and pointer (24x24 and 44x44 targets, hover media queries, Pointer Events gestures), and RTL/LTR parity (logical properties, mirroring, arrow-key direction). Includes how to verify each in a real browser rather than in bUnit. Use when finishing, reviewing, or auditing a component, or when writing CSS that positions, mirrors, or communicates state.
+description: The three gates a Forma component must pass before review — accessibility (color-independent state, contrast, ARIA, focus and keyboard), touch and pointer (24x24 and 44x44 targets, hover media queries, Pointer Events gestures), and RTL/LTR parity (logical properties, mirroring, arrow-key direction). Includes how to verify each in a real browser rather than in bUnit. Use when finishing, reviewing, or auditing a component, or when writing CSS that positions, mirrors, or communicates state.
 ---
 
 # The three gates
 
-A component is not finished until it works without colour, without a mouse, and without sight — and until it mirrors cleanly. For each gate below, assume no legitimate exception exists; if you believe you have found one, raise it rather than shipping without.
+A component is not finished until it works without color, without a mouse, and without sight — and until it mirrors cleanly. For each gate below, assume no legitimate exception exists; if you believe you have found one, raise it rather than shipping without.
 
 # Accessibility
 
 ## State and contrast
 
-- Do pair colour with a second channel for every state: a glyph, text, weight, underline, position, shape, or another persistent visual difference.
+- Do pair color with a second channel for every state: a glyph, text, weight, underline, position, shape, or another persistent visual difference.
 - Do treat existing text that states the condition as a valid second channel.
 - Do meet 4.5:1 text contrast, 3:1 for large text, and 3:1 for meaningful non-text indicators.
 - Do expose both sides of a state indicator as tokens so a host can retune contrast without forking CSS.
 - Do take a text tone from its role and nowhere else: content and every enabled target's label or glyph from `--text-primary-color` or `--quiet-text-color`, supporting text — a caption, a count, a placeholder, an empty state, a hint — from `--text-secondary-color`, and a disabled target alone from `--disabled-text-color`.
-- Don't paint an enabled target in a grey near the disabled tone, and don't invent a fourth grey; an enabled target that reads as disabled is a defect, whatever each tone measures on its own.
-- Don't rely on colour or opacity alone to communicate on/off, selected, current, validity, severity, disabled, sorted, or dragging states.
+- Don't paint an enabled target in a gray near the disabled tone, and don't invent a fourth gray; an enabled target that reads as disabled is a defect, whatever each tone measures on its own.
+- Don't rely on color or opacity alone to communicate on/off, selected, current, validity, severity, disabled, sorted, or dragging states.
 
-Opacity changes lightness while preserving shape, so it is too weak for anything more important than a disabled affordance. White on a mid-grey track measures roughly 2:1 and fails; darken the glyph instead of lightening the track.
+Opacity changes lightness while preserving shape, so it is too weak for anything more important than a disabled affordance. White on a mid-gray track measures roughly 2:1 and fails; darken the glyph instead of lightening the track.
 
 ## ARIA
 
@@ -34,14 +34,14 @@ Opacity changes lightness while preserving shape, so it is too weak for anything
 
 ## Focus and keyboard
 
-- Do give every focusable element a visible `:focus-visible` indicator, preferably a real outline that survives forced-colours mode.
+- Do give every focusable element a visible `:focus-visible` indicator, preferably a real outline that survives forced-colors mode.
 - Do make every operation keyboard reachable in a sensible order.
 - Don't remove the outline unless an equally visible replacement exists.
 - Don't rely on `box-shadow` alone for focus indication.
 
 ## Verification
 
-- Do assert roles, `aria-*`, rendered state marks, and decorative hiding in bUnit alongside behavioural tests.
+- Do assert roles, `aria-*`, rendered state marks, and decorative hiding in bUnit alongside behavioral tests.
 - Do verify stylesheet-dependent states in a browser because bUnit cannot see CSS.
 - Do run that browser **visible** rather than headless, so the maintainer can watch what is being exercised.
 - Do inspect computed styles and screenshots in `he` and `en` or `es-419`.
@@ -81,7 +81,7 @@ Every component must remain fully usable with a finger.
 - Do use Pointer Events rather than mouse events for continuous gestures.
 - Do provide a touch-reachable equivalent for modifier-key interactions such as shift-click range selection.
 - Do require press-and-hold before touch dragging so ordinary swipes can still scroll; let mouse dragging begin immediately.
-- Do keep a drag alive across scroll arbitration with a guarded non-passive `touchmove`, because pointer capture does not stop the compositor claiming the touch and cancelling the pointer:
+- Do keep a drag alive across scroll arbitration with a guarded non-passive `touchmove`, because pointer capture does not stop the compositor claiming the touch and canceling the pointer:
 
   ```js
   element.addEventListener('touchmove', event => {
@@ -95,11 +95,11 @@ Every component must remain fully usable with a finger.
 ## Small viewports and verification
 
 - Do clamp popovers to the viewport and let wide layouts wrap or stack, for example with `max-inline-size: calc(100vw - 1rem)` and `flex-wrap: wrap`.
-- Do verify touch in a real browser with a coarse pointer because bUnit cannot produce meaningful pointer behaviour.
+- Do verify touch in a real browser with a coarse pointer because bUnit cannot produce meaningful pointer behavior.
 - Do measure every `button`, `input`, `select`, and `textarea` and fail targets below 24×24.
 - Do drive gestures through CDP `Input.dispatchTouchEvent`, scroll targets into view before computing coordinates, and assert that a drag survives movement.
 - Do verify that a quick swipe leaves order unchanged.
-- Don't accept an HTML5 drag helper as proof of Pointer Events behaviour; it emits no pointer events at all.
+- Don't accept an HTML5 drag helper as proof of Pointer Events behavior; it emits no pointer events at all.
 - Don't infer a broken gesture from an empty event log before checking whether the coordinates actually hit the target.
 
 # RTL / LTR parity
@@ -114,7 +114,7 @@ Every component must behave and look the same in both directions — mirrored, n
 - Do explicitly mirror only glyphs that are not bidi-mirrored, such as most icon-font and SVG arrows.
 - Do interpret horizontal arrow keys as previous/next in reading order and resolve them through `CultureInfo.CurrentCulture.TextInfo.IsRightToLeft`.
 - Do anchor popovers and menus to inline-start or inline-end.
-- Do format numbers, dates, and currency through `CultureInfo.CurrentCulture` and verify native bidi behaviour before adding `<bdi>` or isolates.
+- Do format numbers, dates, and currency through `CultureInfo.CurrentCulture` and verify native bidi behavior before adding `<bdi>` or isolates.
 - Do visually inspect every showcase page in `he` and `en` or `es-419`, and add bUnit tests wherever direction affects logic.
 - Don't write physical CSS or `[dir="rtl"]` override blocks.
 - Don't flip bidi-mirrored characters in code; that double-flips them.

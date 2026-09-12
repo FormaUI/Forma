@@ -110,7 +110,7 @@ public sealed class RichContentMarkupPolicy : IMarkupPolicy
             return true;
         }
 
-        // A data attribute carries authoring state rather than behaviour, and keeps the spelling it was written with.
+        // A data attribute carries authoring state rather than behavior, and keeps the spelling it was written with.
         canonical = null;
 
         return name.StartsWith("data-", StringComparison.OrdinalIgnoreCase);

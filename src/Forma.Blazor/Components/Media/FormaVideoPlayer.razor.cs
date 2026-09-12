@@ -43,7 +43,7 @@ public sealed partial class FormaVideoPlayer : FormaElementBase
 
     [Inject] private NavigationManager Navigation { get; set; } = default!;
 
-    /// <summary>Providers the host registered, tried before the services this library recognises.</summary>
+    /// <summary>Providers the host registered, tried before the services this library recognizes.</summary>
     [Inject] private IEnumerable<IPlayerProvider> RegisteredProviders { get; set; } = default!;
 
     private Playback _playback = default!;

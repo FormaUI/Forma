@@ -82,7 +82,7 @@
     object-fit: cover;
 }
 
-/* A still can be any colour, so the text sits on a shade rather than on the picture. */
+/* A still can be any color, so the text sits on a shade rather than on the picture. */
 .forma-video-player-facade:has(.forma-video-player-facade-placeholder)::after {
     content: '';
     position: absolute;

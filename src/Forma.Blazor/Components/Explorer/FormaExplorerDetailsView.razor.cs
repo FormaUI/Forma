@@ -47,7 +47,7 @@ public sealed partial class FormaExplorerDetailsView : FormaComponentBase
             FrozenEdgeLabel = L["Resize Name Column"],
         };
 
-    // The frozen region the reader asked for; the name column is what gives way to honour it.
+    // The frozen region the reader asked for; the name column is what gives way to honor it.
     private string? FrozenStyle
         => _frozenExtent is { } extent
             ? new CssStyleBuilder().Add("--forma-explorer-frozen-extent", CssLength.FromPx(extent)).ToString()

@@ -17,7 +17,7 @@ public sealed partial class FormaButton : FormaElementBase
     /// <summary>Draws the button square around a single glyph instead of padding it for text.</summary>
     [Parameter] public bool IconOnly { get; set; }
 
-    /// <summary>Behaviour the button has inside a form.</summary>
+    /// <summary>Behavior the button has inside a form.</summary>
     [Parameter] public ButtonType Type { get; set; } = ButtonType.Button;
 
     /// <summary>Holds the button unavailable while work is in flight, dimmed to its busy tint with a progress bar along its edge, until the work is done.</summary>
