@@ -225,6 +225,7 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider emojiProvider, IEmoj
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
             // Artwork is decorative, so a sheet that will not load must not take the surface down with it.
+            EmojiPickerLog.SheetLoadThrew(Context.Logger, ex, next, Context.RuntimeId);
         }
         finally
         {

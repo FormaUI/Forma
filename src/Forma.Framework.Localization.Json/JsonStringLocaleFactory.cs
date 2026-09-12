@@ -7,6 +7,9 @@ using System.Reflection;
 using Forma.Framework.Localization;
 using Forma.Framework.Localization.Language;
 
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+
 /// <summary>Creates locales that read their strings from JSON files embedded in the assembly owning the type.</summary>
 public sealed class JsonStringLocaleFactory : IStringLocaleFactory
 {
@@ -20,10 +23,17 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
     {
     }
 
-    /// <summary>Creates a factory configured by the given options.</summary>
+    /// <summary>Creates a factory configured by the given options, discarding what its locales would log.</summary>
     public JsonStringLocaleFactory(JsonLocalizationOptions options)
+        : this(options, NullLoggerFactory.Instance)
+    {
+    }
+
+    /// <summary>Creates a factory configured by the given options, logging through the given factory.</summary>
+    public JsonStringLocaleFactory(JsonLocalizationOptions options, ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
         ArgumentException.ThrowIfNullOrWhiteSpace(options.SourceLanguage);
 
         // A regional value survives, because CLDR keys a few of its rule sets by region rather than language.
@@ -36,7 +46,7 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
         _context = new JsonLocaleContext(
             new JsonResourceCache(),
             sourceCulture,
-            new PluralExpressionEvaluator(CommonPluralRuleSet.Default),
+            new PluralExpressionEvaluator(CommonPluralRuleSet.Default, loggerFactory.CreateLogger<PluralExpressionEvaluator>()),
             options);
 
         _resourcesPath = NormalizePath(options.ResourcesPath);

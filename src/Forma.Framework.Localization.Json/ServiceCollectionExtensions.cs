@@ -4,6 +4,8 @@ using Forma.Framework.Localization;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 /// <summary>Registers JSON-backed localization in a service collection.</summary>
 public static class ServiceCollectionExtensions
@@ -18,7 +20,8 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(options);
 
-        services.TryAddSingleton<IStringLocaleFactory>(new JsonStringLocaleFactory(options));
+        services.TryAddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+        services.TryAddSingleton<IStringLocaleFactory>(provider => new JsonStringLocaleFactory(options, provider.GetRequiredService<ILoggerFactory>()));
         services.TryAddSingleton(typeof(IStringLocale<>), typeof(JsonStringLocale<>));
 
         return services;

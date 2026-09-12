@@ -139,8 +139,11 @@ A component logs through the base's `Logger`, whose category is the component's 
 - Do hand the context's `JS` to every interop wrapper the component constructs, `new Frame(Context.JS)`; it is the component's `IJSEnvironment`, the runtime carrying the component's `Logger` and `RuntimeId`, so what the wrapper absorbs lands under the component and names the instance.
 - Do give a service that is not a component a required `ILogger<T>` through its constructor, and have its registrar `TryAdd` the `NullLogger<>` fallback beside it, so the service resolves in a host that configures no logging.
 - Do write every message through `[LoggerMessage]` on one `internal static partial class {Feature}Log` per feature, named for the event it records, `CircuitDroppedWhileCalling`, so every message a feature can emit is read in one place.
-- Do log at `Debug` what the library absorbs by design — a dropped circuit or a thrown script behind a `Try*` call, an asset that would not load — so the silence is visible to whoever turns the category on and nothing changes for a host that does not.
-- Don't log above `Debug` without deciding it for that one site; `Warning` and `Error` are never applied in bulk.
+- Do log at `Debug` what the library absorbs by design — a dropped circuit or a thrown script behind a `Try*` call, an asset that would not load, a plural argument that is not a count — so the silence is visible to whoever turns the category on and nothing changes for a host that does not.
+- Do leave normal behaviour silent because it is normal: a superseded delay, resolve or fetch, a disposal race, a failure the component already hands to its host as a domain object. Silence follows from the behaviour being expected, never from a wish to keep every absorbed failure at `Debug`.
+- Do name a message for the event it records and keep application and user data out of it: a plural argument is reported by its name and type, never its value.
+- Don't log above `Debug` without deciding it for that one site; `Warning` and `Error` are never applied in bulk. A plugin assembly that loads only partially is the one `Warning` so far, because it can leave plugins unavailable.
+- Don't log at a call site what the wrapper it calls already reports; a discarded `Try*` result is covered by the wrapper's own message.
 - Don't write to the console or through an abstraction of Forma's own; `ILogger` is what every host already configures and filters.
 
 ## Services

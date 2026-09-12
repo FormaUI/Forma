@@ -273,6 +273,31 @@ public sealed class PluralExpressionEvaluatorTests
     }
 
     [Fact]
+    public void Should_report_an_argument_that_is_not_a_count_once_per_format_without_its_value()
+    {
+        // Arrange
+        using var loggerFactory = new FakeLoggerFactory();
+        var evaluator = new PluralExpressionEvaluator(new StubPluralRuleSet(PluralCategory.Other), loggerFactory.CreateLogger("plural"));
+
+        // Act
+        var first = evaluator.Evaluate(AllFields, CultureInfo.InvariantCulture, [Count("secret")]);
+        var second = evaluator.Evaluate(AllFields, CultureInfo.InvariantCulture, [Count("secret")]);
+
+        // Assert
+        var entry = Assert.Single(loggerFactory.Entries);
+        Assert.Multiple(() =>
+        {
+            Assert.Equal("0 other", first);
+            Assert.Equal("0 other", second);
+            Assert.Equal(Microsoft.Extensions.Logging.LogLevel.Debug, entry.Level);
+            Assert.Contains("count", entry.Message, StringComparison.Ordinal);
+            Assert.Contains("String", entry.Message, StringComparison.Ordinal);
+            Assert.Contains("not numeric", entry.Message, StringComparison.Ordinal);
+            Assert.DoesNotContain("secret", entry.Message, StringComparison.Ordinal);
+        });
+    }
+
+    [Fact]
     public void Should_reject_a_null_rule_set()
         => Assert.Throws<ArgumentNullException>(() => new PluralExpressionEvaluator(null!));
     [Fact]

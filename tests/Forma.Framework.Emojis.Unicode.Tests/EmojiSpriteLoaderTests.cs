@@ -1,6 +1,9 @@
 namespace Forma.Framework.Emojis.Unicode.Tests;
 
+using Forma.Tests.Shared;
+
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 public sealed class EmojiSpriteLoaderTests
@@ -84,6 +87,30 @@ public sealed class EmojiSpriteLoaderTests
         // Assert
         // A navigation replaces the document's body, symbols included, so what arrived before it is gone.
         Assert.Equal(2, js.Invocations["loadSprite"].Count);
+    }
+
+    [Fact]
+    public async Task Should_log_each_attempt_at_a_sheet_that_did_not_load()
+    {
+        // Arrange
+        using var loggerFactory = new FakeLoggerFactory();
+        var js = new BunitJSInterop { Mode = JSRuntimeMode.Loose };
+        js.SetupModule(Module).Setup<bool>("loadSprite", _ => true).SetResult(false);
+        await using var loader = new EmojiSpriteLoader(js.JSRuntime, new Logger<EmojiSpriteLoader>(loggerFactory));
+
+        // Act
+        await loader.LoadAsync("smileys-0.svg");
+        await loader.LoadAsync("smileys-0.svg");
+
+        // Assert
+        Assert.Equal(2, loggerFactory.Entries.Count);
+        var entry = loggerFactory.Entries[0];
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(LogLevel.Debug, entry.Level);
+            Assert.Contains("smileys-0.svg", entry.Message, StringComparison.Ordinal);
+            Assert.Contains("did not load", entry.Message, StringComparison.Ordinal);
+        });
     }
 
     [Fact]

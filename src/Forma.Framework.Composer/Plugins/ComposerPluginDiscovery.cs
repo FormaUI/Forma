@@ -2,6 +2,8 @@ namespace Forma.Framework.Composer.Plugins;
 
 using System.Reflection;
 
+using Microsoft.Extensions.Logging;
+
 /// <summary>Finds the feature and view plugins an assembly ships and builds them against the plugins already chosen.</summary>
 public static class ComposerPluginDiscovery
 {
@@ -9,17 +11,19 @@ public static class ComposerPluginDiscovery
     /// <param name="plugins">The plugins already constructed — the editors, and any feature plugin needing configuration of its own. A found plugin's constructor parameters are satisfied from these, and a type among them is never built a second time.</param>
     /// <param name="assembly">The assembly to search, or null to search every loaded assembly that takes the composer.</param>
     /// <param name="locations">Namespace suffixes narrowing the search, or empty for the whole assembly.</param>
+    /// <param name="logger">The log an assembly that loaded only partially is reported to; null discards.</param>
     /// <returns>The plugins given, in their order, followed by the plugins found.</returns>
     /// <exception cref="InvalidOperationException">A found plugin takes something no given plugin can stand in for. Construct that plugin and pass it among <paramref name="plugins"/>.</exception>
     public static IReadOnlyList<IComposerPlugin> Discover(
         IReadOnlyList<IComposerPlugin> plugins,
         Assembly? assembly = null,
-        IReadOnlyList<string>? locations = null)
+        IReadOnlyList<string>? locations = null,
+        ILogger? logger = null)
     {
         ArgumentNullException.ThrowIfNull(plugins);
 
         var held = plugins.Select(plugin => plugin.GetType()).ToHashSet();
-        var found = GetCandidates(assembly)
+        var found = GetCandidates(assembly, logger)
             .Where(candidate => !held.Contains(candidate) && LivesIn(candidate, locations))
             .OrderBy(candidate => candidate.FullName, StringComparer.Ordinal)
             .Select(candidate => Build(candidate, plugins));
@@ -27,12 +31,12 @@ public static class ComposerPluginDiscovery
         return [.. plugins, .. found];
     }
 
-    private static IEnumerable<Type> GetCandidates(Assembly? assembly)
+    private static IEnumerable<Type> GetCandidates(Assembly? assembly, ILogger? logger)
     {
         IEnumerable<Assembly> assemblies = assembly is null ? GetAssembliesReferencingComposer() : [assembly];
 
         return assemblies
-            .SelectMany(GetLoadableTypes)
+            .SelectMany(candidate => GetLoadableTypes(candidate, logger))
             .Where(candidate => candidate is { IsClass: true, IsAbstract: false, IsVisible: true }
                 && (typeof(IComposerFeaturePlugin).IsAssignableFrom(candidate) || typeof(IComposerViewPlugin).IsAssignableFrom(candidate)));
     }
@@ -48,7 +52,7 @@ public static class ComposerPluginDiscovery
                     || candidate.GetReferencedAssemblies().Any(reference => string.Equals(reference.Name, name, StringComparison.OrdinalIgnoreCase))));
     }
 
-    private static IEnumerable<Type> GetLoadableTypes(Assembly assembly)
+    private static IEnumerable<Type> GetLoadableTypes(Assembly assembly, ILogger? logger)
     {
         try
         {
@@ -56,6 +60,11 @@ public static class ComposerPluginDiscovery
         }
         catch (ReflectionTypeLoadException incomplete)
         {
+            if (logger is not null)
+            {
+                ComposerLog.PluginAssemblyLoadedPartially(logger, incomplete, assembly.GetName().Name ?? assembly.FullName ?? string.Empty, incomplete.Types.Count(loaded => loaded is null));
+            }
+
             return incomplete.Types.Where(loaded => loaded is not null)!;
         }
     }

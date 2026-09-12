@@ -8,12 +8,12 @@ services they carry: the browser runtime, logging, and localization. Authoritati
 the null objects `UnavailableJSRuntime` and `NullStringLocaleFactory`, and how logging
 reaches every assembly of the library.
 
-Every step of the implementation plan is built except step 4, the feature logging
-ledger: the builders, the null objects, the three bases and their fallback
-registrations exist, every component derives from a base, interop logs through the JS
-environment, every component reads its context, and a root's style is built the way its
-class is. The plan at the end records what landed at each step and where it departed
-from the sketches below. Two departures apply to the sketches themselves: the root's
+Every step of the implementation plan is built: the builders, the null objects, the
+three bases and their fallback registrations exist, every component derives from a base,
+interop logs through the JS environment, every component reads its context, a root's
+style is built the way its class is, and the failures the features absorb are logged.
+The plan at the end records what landed at each step and where it departed from the
+sketches below. Two departures apply to the sketches themselves: the root's
 class and style are `string?`, null when there is nothing to write, so an element
 carries no empty `class` or `style` attribute; and the root reference is named
 `RootElement`.
@@ -70,7 +70,10 @@ renderer calls only `DisposeAsync` on a component that implements both interface
 - **Debug only, and only what is already silent.** The first pass logs the exceptions the
   library already swallows by design, at `Debug`, through `[LoggerMessage]`. Every
   standard provider hides `Debug` unless asked, so a host sees nothing new until it turns a
-  category on. `Warning` and `Error` are decided per site later, never blanket-applied.
+  category on. `Warning` and `Error` are decided per site, never blanket-applied; the one
+  site that took `Warning` is a plugin assembly that loads only partially, since it can
+  leave plugins unavailable. A superseded delay, resolve or fetch is not logged at all,
+  because it is the mechanism working, not a failure absorbed.
 - **The host's values in, the root's values out.** `Id`, `Class` and `Style` are what
   the host passed; `RootClass` and `RootStyle` are what the base writes on the root,
   built by `BuildRootClass` and `BuildRootStyle` through the two CSS builders, which
@@ -367,9 +370,9 @@ with no translation.
 ### Logging
 
 Every assembly that logs takes `Microsoft.Extensions.Logging.Abstractions` from the
-`Microsoft.AspNetCore.App` framework reference it already carries, which also supplies
-the `[LoggerMessage]` generator. Nothing references the concrete logging package; a
-host's providers are the host's.
+target framework, which supplies it and the `[LoggerMessage]` generator to every
+project, so no project references the package. Nothing references the concrete logging
+package; a host's providers are the host's.
 
 A component logs through `Logger`. A service that is not a component takes
 `ILoggerFactory` or `ILogger<T>` through its constructor, required. An interop wrapper,
@@ -382,10 +385,10 @@ Messages are source-generated, one `internal static partial class {Feature}Log` 
 feature, so every message a feature can emit is read in one place:
 
 ```csharp
-internal static partial class WindowLog
+internal static partial class EmojiLog
 {
-    [LoggerMessage(Level = LogLevel.Debug, Message = "The circuit dropped while raising {Title}.")]
-    public static partial void CircuitDroppedWhileRaising(ILogger logger, string title);
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Sprite sheet {Sheet} did not load for {RuntimeId}.")]
+    public static partial void SpriteSheetDidNotLoad(ILogger logger, string sheet, Guid runtimeId);
 }
 ```
 
@@ -490,7 +493,19 @@ does.
    and read the entries through `FakeLoggerFactory`.
 4. **Feature logging ledger, then feature logging.** Every catch site and every service
    that would take a logger, each with its proposed `Debug` message, one `{Feature}Log`
-   class per feature, applied after review.
+   class per feature, applied after review. **Built.** Five sites log: a sprite sheet
+   that did not load, reported once by the loader that forgets it; a composer asset
+   that did not load; a sprite sheet whose load threw, in the picker, with the
+   exception; a plural argument that is not a count, once per format, naming the
+   argument and its type but never its value; and a plugin assembly that loaded only
+   partially, at `Warning`, with the loader exceptions, through an optional logger on
+   `ComposerPluginDiscovery.Discover`. A missing translation file stays silent, because
+   the locale walks the culture chain and the cache cannot tell an ordinary step to the
+   parent from a missing expected file. The superseded delays, resolves and fetches, the
+   uploader's disposal race and its failures handed to the host through `OnFailed`, the
+   satellite probes, and the discarded `Try*` results a wrapper already reports stay
+   silent by design. `JsonStringLocaleFactory` takes an `ILoggerFactory` and is
+   registered through a factory delegate, with the null factory as its fallback.
 5. **Docs.** `forma-authoring-components` gains the three bases, `BuildRootClass`,
    `BuildRootStyle`, `DisposeAsyncCore` and a logging section on levels and
    `[LoggerMessage]`; `forma-localizing` gains `L` from the base and
@@ -498,11 +513,10 @@ does.
    the silent-failure contract is visible at `Debug`; `forma-testing` drops per-test
    localization registration; `COMPONENTS.md` gains the base rows and tree entries. The
    identifiers rule already carries `RuntimeId` as its seventh kind; the vocabulary and
-   the gate are unchanged. **Built for the bases**: the authoring skill has a Bases
+   the gate are unchanged. **Built**: the authoring skill has a Bases
    section, the localizing, testing and scripting skills speak of `L`,
    `LocalizationSourceType`, the test context and `DisposeAsyncCore`, and the inventory's
-   tree lists the bases. The logging passages land with steps 3 and 4, once there is
-   logging to describe; the context, the environment, the style builder and the root
+   tree lists the bases. The logging passages landed with steps 3 and 4; the context, the environment, the style builder and the root
    object land in the skills with steps 6 to 9, and `CLAUDE.md`'s glossary gains
    *component context*, *JS environment* and *root attributes* as each is introduced.
 6. **The JS environment.** `IJSEnvironment : IJSRuntime` and `JSEnvironment` in

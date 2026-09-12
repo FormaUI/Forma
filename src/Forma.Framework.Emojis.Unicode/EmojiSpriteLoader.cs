@@ -59,6 +59,7 @@ public sealed class EmojiSpriteLoader : IAsyncDisposable, IDisposable
         if (!arrived && _loadsBySheet.TryGetValue(sheet, out var current) && ReferenceEquals(current, load))
         {
             _loadsBySheet.Remove(sheet);
+            EmojiLog.SpriteSheetDidNotLoad(_environment.Logger, sheet, _environment.RuntimeId);
         }
 
         return arrived;

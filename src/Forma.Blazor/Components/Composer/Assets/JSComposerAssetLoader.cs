@@ -31,6 +31,10 @@ internal sealed class JSComposerAssetLoader(IJSEnvironment js) : IComposerAssetL
         {
             _loadedUrls.Add(asset.Url);
         }
+        else
+        {
+            ComposerAssetLog.AssetDidNotLoad(js.Logger, asset.Url, js.RuntimeId);
+        }
     }
 
     /// <inheritdoc />
