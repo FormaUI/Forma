@@ -148,8 +148,13 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
 
     // The width is the box's own style only when bare; labelled, it sizes the field wrapper instead.
     /// <inheritdoc />
-    protected override string? BuildRootStyle()
-        => HasLabel ? null : WidthDeclaration;
+    protected override void BuildRootStyle(CssStyleBuilder builder)
+    {
+        if (!HasLabel)
+        {
+            builder.Add("inline-size", Width);
+        }
+    }
 
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()

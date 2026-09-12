@@ -29,20 +29,27 @@ public abstract class FormaElementBase : FormaComponentBase
 
     /// <summary>The style written on the root element: the component's own, then the host's; null when there is none.</summary>
     protected string? RootStyle
-        => RootAttributeValues.GetRootStyle(BuildRootStyle(), Style);
+        => RootAttributeValues.GetRootStyle(BuildRootAndHostStyle);
 
     /// <summary>Adds the classes the component gives its root element in its current state.</summary>
     protected virtual void BuildRootClass(CssClassBuilder builder)
     {
     }
 
-    /// <summary>The style the component gives its root element in its current state; nothing by default.</summary>
-    protected virtual string? BuildRootStyle()
-        => null;
+    /// <summary>Adds the declarations the component gives its root element in its current state.</summary>
+    protected virtual void BuildRootStyle(CssStyleBuilder builder)
+    {
+    }
 
     private void BuildRootAndHostClass(CssClassBuilder builder)
     {
         BuildRootClass(builder);
         builder.Add(Class);
+    }
+
+    private void BuildRootAndHostStyle(CssStyleBuilder builder)
+    {
+        BuildRootStyle(builder);
+        builder.Add(Style);
     }
 }

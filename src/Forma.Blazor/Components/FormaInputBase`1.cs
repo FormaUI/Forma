@@ -53,7 +53,7 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
 
     /// <summary>The style written on the root element: the component's own, then the host's; null when there is none.</summary>
     protected string? RootStyle
-        => RootAttributeValues.GetRootStyle(BuildRootStyle(), Style);
+        => RootAttributeValues.GetRootStyle(BuildRootAndHostStyle);
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
@@ -76,9 +76,10 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     {
     }
 
-    /// <summary>The style the component gives its root element in its current state; nothing by default.</summary>
-    protected virtual string? BuildRootStyle()
-        => null;
+    /// <summary>Adds the declarations the component gives its root element in its current state.</summary>
+    protected virtual void BuildRootStyle(CssStyleBuilder builder)
+    {
+    }
 
     /// <summary>Releases what the component holds; runs once.</summary>
     protected virtual ValueTask DisposeAsyncCore()
@@ -89,5 +90,11 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
         BuildRootClass(builder);
         builder.Add(Class);
         builder.Add(CssClass);
+    }
+
+    private void BuildRootAndHostStyle(CssStyleBuilder builder)
+    {
+        BuildRootStyle(builder);
+        builder.Add(Style);
     }
 }

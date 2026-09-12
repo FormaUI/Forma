@@ -181,7 +181,7 @@
             var root = cut.Find(".forma-freeze-pane");
             Assert.Multiple(
                 () => Assert.Contains("has-frozen", root.ClassList),
-                () => Assert.Equal("--forma-freeze-pane-frozen-extent: 120.5px; --forma-freeze-pane-corner-extent: 32px", root.GetAttribute("style")));
+                () => Assert.Equal("--forma-freeze-pane-frozen-extent: 120.5px; --forma-freeze-pane-corner-extent: 32px;", root.GetAttribute("style")));
         }
 
         [Fact]

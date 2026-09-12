@@ -1,7 +1,5 @@
 namespace Forma.Blazor.Components.Layout;
 
-using System.Globalization;
-
 using Forma.Framework.Common.Interop.Behaviours;
 using Forma.Framework.Css;
 using Forma.Framework.Icons;
@@ -172,10 +170,15 @@ public sealed partial class FormaFreezePane : FormaElementBase
             .Add("is-scrolled", CanScrollBack);
 
     /// <inheritdoc />
-    protected override string? BuildRootStyle()
-        => FrozenExtent > 0
-            ? string.Create(CultureInfo.InvariantCulture, $"--forma-freeze-pane-frozen-extent: {FrozenExtent}px; --forma-freeze-pane-corner-extent: {CornerExtent}px")
-            : null;
+    protected override void BuildRootStyle(CssStyleBuilder builder)
+    {
+        if (FrozenExtent > 0)
+        {
+            builder
+                .Add("--forma-freeze-pane-frozen-extent", CssLength.FromPx(FrozenExtent))
+                .Add("--forma-freeze-pane-corner-extent", CssLength.FromPx(CornerExtent));
+        }
+    }
 
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()

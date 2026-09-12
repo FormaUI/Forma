@@ -1,7 +1,5 @@
 namespace Forma.Blazor.Components.Layout;
 
-using System.Globalization;
-
 using Forma.Framework.Common.Interop.Components;
 using Forma.Framework.Css;
 
@@ -189,29 +187,31 @@ public sealed partial class FormaFrame : FormaElementBase
     // Viewport coordinates from the pointer are physical, so the placement is written as left and top rather than
     // as logical insets.
     /// <inheritdoc />
-    protected override string? BuildRootStyle()
+    protected override void BuildRootStyle(CssStyleBuilder builder)
     {
-        var parts = new List<string>(3);
-
         if (IsPlaced && !Maximized)
         {
             var placement = Placement!;
-            parts.Add(string.Create(
-                CultureInfo.InvariantCulture,
-                $"left: {placement.Left}px; top: {placement.Top}px; width: {placement.Width}px; height: {placement.Height}px;"));
+            builder
+                .Add("left", CssLength.FromPx(placement.Left))
+                .Add("top", CssLength.FromPx(placement.Top))
+                .Add("width", CssLength.FromPx(placement.Width))
+                .Add("height", CssLength.FromPx(placement.Height));
         }
 
         if (Options.MinResizeSize is { } minimum)
         {
-            parts.Add(string.Create(CultureInfo.InvariantCulture, $"min-width: {minimum.Width}px; min-height: {minimum.Height}px;"));
+            builder
+                .Add("min-width", CssLength.FromPx(minimum.Width))
+                .Add("min-height", CssLength.FromPx(minimum.Height));
         }
 
         if (Options.MaxResizeSize is { } maximum)
         {
-            parts.Add(string.Create(CultureInfo.InvariantCulture, $"max-width: {maximum.Width}px; max-height: {maximum.Height}px;"));
+            builder
+                .Add("max-width", CssLength.FromPx(maximum.Width))
+                .Add("max-height", CssLength.FromPx(maximum.Height));
         }
-
-        return parts.Count > 0 ? string.Join(' ', parts) : null;
     }
 
     /// <inheritdoc />

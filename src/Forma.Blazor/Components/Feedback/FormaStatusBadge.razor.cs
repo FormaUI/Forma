@@ -40,22 +40,13 @@ public sealed partial class FormaStatusBadge : FormaElementBase
         => builder.Add("forma-status-badge");
 
     /// <inheritdoc />
-    protected override string? BuildRootStyle()
+    protected override void BuildRootStyle(CssStyleBuilder builder)
     {
         var (background, foreground) = ResolveColours();
-        var declarations = new List<string>(2);
 
-        if (background is not null)
-        {
-            declarations.Add($"--forma-status-badge-bg-color: {background};");
-        }
-
-        if (foreground is not null)
-        {
-            declarations.Add($"--forma-status-badge-fg-color: {foreground};");
-        }
-
-        return declarations.Count == 0 ? null : string.Join(' ', declarations);
+        builder
+            .Add("--forma-status-badge-bg-color", background)
+            .Add("--forma-status-badge-fg-color", foreground);
     }
 
     private (string? Background, string? Foreground) ResolveColours()

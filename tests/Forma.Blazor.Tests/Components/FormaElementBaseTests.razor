@@ -114,8 +114,8 @@
         protected override void BuildRootClass(CssClassBuilder builder)
             => builder.Add("fake-panel").Add("is-opened", Opened);
 
-        protected override string? BuildRootStyle()
-            => Width is null ? null : $"inline-size: {Width}";
+        protected override void BuildRootStyle(CssStyleBuilder builder)
+            => builder.Add("inline-size", Width);
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {

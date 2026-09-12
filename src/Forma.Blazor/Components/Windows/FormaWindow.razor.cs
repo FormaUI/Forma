@@ -1,7 +1,5 @@
 namespace Forma.Blazor.Components.Windows;
 
-using System.Globalization;
-
 using Forma.Blazor.Components.Layout;
 using Forma.Framework.Common.Interop.Components;
 using Forma.Framework.Css;
@@ -572,12 +570,19 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
     // Viewport coordinates from the pointer are physical, so the placement is written as left and top rather than
     // as logical insets.
     /// <inheritdoc />
-    protected override string? BuildRootStyle()
-        => Maximized || Placement is not { } placement
-            ? null
-            : string.Create(
-                CultureInfo.InvariantCulture,
-                $"left: {placement.Left}px; top: {placement.Top}px; width: {placement.Width}px; height: {placement.Height}px;");
+    protected override void BuildRootStyle(CssStyleBuilder builder)
+    {
+        if (Maximized || Placement is not { } placement)
+        {
+            return;
+        }
+
+        builder
+            .Add("left", CssLength.FromPx(placement.Left))
+            .Add("top", CssLength.FromPx(placement.Top))
+            .Add("width", CssLength.FromPx(placement.Width))
+            .Add("height", CssLength.FromPx(placement.Height));
+    }
 
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()

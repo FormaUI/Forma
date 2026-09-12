@@ -14,26 +14,12 @@ internal static class RootAttributeValues
         return builder.IsEmpty ? null : builder.ToString();
     }
 
-    /// <summary>The component's own style followed by the host's, each declaration terminated, or null when there is none.</summary>
-    public static string? GetRootStyle(string? ownStyle, string? hostStyle)
+    /// <summary>The declarations a build adds, joined, or null when it adds none.</summary>
+    public static string? GetRootStyle(Action<CssStyleBuilder> buildRootStyle)
     {
-        var hasOwn = !string.IsNullOrWhiteSpace(ownStyle);
-        var hasHost = !string.IsNullOrWhiteSpace(hostStyle);
+        var builder = new CssStyleBuilder();
+        buildRootStyle(builder);
 
-        return (hasOwn, hasHost) switch
-        {
-            (false, false) => null,
-            (true, false) => ownStyle,
-            (false, true) => hostStyle,
-            _ => $"{Terminate(ownStyle!)} {hostStyle}",
-        };
-    }
-
-    // The style with its last declaration ended by a semicolon.
-    private static string Terminate(string style)
-    {
-        var trimmed = style.TrimEnd();
-
-        return trimmed is [.., ';'] ? trimmed : $"{trimmed};";
+        return builder.IsEmpty ? null : builder.ToString();
     }
 }

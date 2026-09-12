@@ -583,7 +583,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Equal("inline-size: 18.5rem", cut.Find("input").GetAttribute("style"));
+            Assert.Equal("inline-size: 18.5rem;", cut.Find("input").GetAttribute("style"));
         }
 
         [Fact]
@@ -615,7 +615,7 @@
             </FakeFormHost>);
 
             // Assert
-            Assert.Equal("color: red", cut.Find("input").GetAttribute("style"));
+            Assert.Equal("color: red;", cut.Find("input").GetAttribute("style"));
         }
 
         [Fact]
@@ -633,7 +633,7 @@
             // Assert
             Assert.Multiple(() =>
             {
-                Assert.Equal("inline-size: 240px", cut.Find(".forma-field").GetAttribute("style"));
+                Assert.Equal("inline-size: 240px;", cut.Find(".forma-field").GetAttribute("style"));
                 Assert.False(cut.Find("input").HasAttribute("style"));
             });
         }
@@ -653,8 +653,8 @@
             // Assert
             Assert.Multiple(() =>
             {
-                Assert.Equal("inline-size: 240px", cut.Find(".forma-field").GetAttribute("style"));
-                Assert.Equal("color: red", cut.Find("input").GetAttribute("style"));
+                Assert.Equal("inline-size: 240px;", cut.Find(".forma-field").GetAttribute("style"));
+                Assert.Equal("color: red;", cut.Find("input").GetAttribute("style"));
             });
         }
 

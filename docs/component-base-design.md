@@ -522,7 +522,11 @@ does.
 8. **The style builder.** `CssStyleBuilder` in `Forma.Framework.Css` with its tests;
    `BuildRootStyle(CssStyleBuilder)` on both bases; the five overrides,
    `FormaStatusBadge`, `FormaTextBox`, `FormaFrame`, `FormaFreezePane` and `FormaWindow`,
-   adding declarations instead of building strings.
+   adding declarations instead of building strings. **Built.** A root's style is every
+   declaration terminated and space-separated, the component's own first and the host's
+   after, `inline-size: 12ch; color: red;`, whichever of the two supplied them; a length
+   is added as a `CssLength`, so a placement renders in the invariant culture without a
+   component formatting it.
 9. **The root object.** `RootAttributes` replacing the static `RootAttributeValues`;
    `Root` on both bases with each tier's composition; the 64 razor files, forwarders
    included, on `@Root.Class` and `@Root.Style`; the skills, the inventory's tree and the

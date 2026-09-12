@@ -48,7 +48,7 @@
             Assert.Multiple(() =>
             {
                 Assert.Contains("host-body", layout.ClassList);
-                Assert.Equal("--host-size: 18rem", layout.GetAttribute("style"));
+                Assert.Equal("--host-size: 18rem;", layout.GetAttribute("style"));
             });
         }
     }
