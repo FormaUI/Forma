@@ -875,6 +875,27 @@
         }
 
         [Fact]
+        public void Should_leave_a_hidden_item_out_of_the_root_folders_count()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<IExplorerItem> items =
+            [
+                ExplorerItem.For(new ImageResourceInfo("https://example.com/shown.jpg")),
+                new ExplorerItem { Key = "hidden", Name = "hidden.jpg", Visibility = ExplorerItemVisibility.Hidden, Resource = new ImageResourceInfo("https://example.com/hidden.jpg") }
+            ];
+
+            IReadOnlyList<IExplorerItem> folders = [ExplorerItem.ForFolder(new FolderResourceInfo("races") { Name = "Races" })];
+
+            // Act
+            var cut = ctx.Render(@<FormaExplorer Items="items" Folders="folders" />);
+
+            // Assert
+            var rootRow = cut.FindAll(".forma-explorer-folder-row")[0];
+            Assert.Equal("1", rootRow.QuerySelector(".forma-explorer-folder-count")!.TextContent.Trim());
+        }
+
+        [Fact]
         public void Should_keep_an_invisible_items_place_in_the_grid()
         {
             // Arrange

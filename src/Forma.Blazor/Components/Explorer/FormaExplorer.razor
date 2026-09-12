@@ -64,7 +64,7 @@
                                      ItemOptions="ItemOptions"
                                      Folders="Folders"
                                      FolderTree="FolderTree"
-                                     TotalCount="TotalCount ?? Items?.Count ?? MatchingCount ?? 0"
+                                     TotalCount="ListedResourceCount"
                                      OnFolderDelete="_itemManager.RequestFolderDelete"
                                      OnFolderCreate="OpenFolderDialogAsync"
                                      OnFolderSelected="HandleFolderSelectedAsync" />

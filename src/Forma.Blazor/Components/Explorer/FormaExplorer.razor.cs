@@ -460,6 +460,9 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     private int KnownResourceCount
         => TotalCount ?? Items?.Count ?? MatchingCount ?? 0;
 
+    private int ListedResourceCount
+        => TotalCount ?? Items?.Count(item => item.Visibility != ExplorerItemVisibility.Hidden) ?? MatchingCount ?? 0;
+
     private long KnownByteCount
         => TotalBytes ?? Items?.Sum(item => item.Resource?.Size ?? 0) ?? 0;
 
