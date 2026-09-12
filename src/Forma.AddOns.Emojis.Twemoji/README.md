@@ -11,7 +11,7 @@ dotnet add package 2Site.Forma.AddOns.Emojis.Twemoji
 ```
 
 ```csharp
-using Forma.AddOns.Emojis.Twemoji;
+using Forma.Framework.Emojis.Twemoji;
 
 builder.Services.AddFormaTwemojiPack();
 ```
