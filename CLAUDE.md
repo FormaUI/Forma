@@ -1,6 +1,6 @@
 # Forma.Blazor
 
-A reusable Blazor component library. These are the working rules for this repository; the repository itself, its structure, build, origins and consumers, is described in [docs/repository.md](docs/repository.md), and its words in [docs/vocabulary.md](docs/vocabulary.md).
+A reusable Blazor component library. These are the working rules for this repository; the repository itself, its structure, build, origins and consumers, is described in [docs/repository-structure.md](docs/repository-structure.md), and its words in [docs/repository-vocabulary.md](docs/repository-vocabulary.md).
 
 ## Task guides
 
@@ -16,16 +16,16 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 | `forma-styling` | Writing or changing a stylesheet or a token: regions on backdrops, spacing, type, radii, targets, and fitting a width |
 | `forma-verifying` | Building, testing, formatting, running the Showcase, checking in a browser, or adding a task script |
 | `forma-naming` | Naming anything: a type, member, variable, parameter, file, CSS class, script or test |
-| `forma-documenting` | Writing or changing a summary, comment, remarks block, banner, README passage, design document or inventory entry, or deciding whether a code change touches prose at all |
+| `forma-documenting` | Writing or changing a summary, comment, remarks block, banner, README passage, design document, implementation plan, catalog or roadmap entry, or deciding whether a code change touches prose at all |
 
 ## Source of truth
 
-- Do use [docs/repository.md](docs/repository.md) for what the repository is made of: the solution structure, where components, scripts, stylesheets and tests live, the build and verification commands, where components' designs derive from, and who consumes the library.
-- Do use [docs/vocabulary.md](docs/vocabulary.md) for the words the library uses for its concepts, and use them the same way in code, tokens, documents and the Showcase.
-- Do use [COMPONENTS.md](COMPONENTS.md) for the component inventory, build order and completion status.
+- Do use [docs/repository-structure.md](docs/repository-structure.md) for what the repository is made of: the solution structure, where components, scripts, stylesheets and tests live, the build and verification commands, where components' designs derive from, and who consumes the library.
+- Do use [docs/repository-vocabulary.md](docs/repository-vocabulary.md) for the words the library uses for its concepts, and use them the same way in code, tokens, documents and the Showcase.
+- Do use [docs/component-catalog.md](docs/component-catalog.md) for the components that exist, and [docs/component-roadmap.md](docs/component-roadmap.md) for the components still to build and the order they are built in.
 - Do use [README.md](README.md) for host consumption: install, service registration, stylesheets, and localization from the consumer's side.
-- Do read the design document for an area before changing it: [docs/composer-design.md](docs/composer-design.md) for the composer, [docs/input-routing.md](docs/input-routing.md) for how input is owned and routed between nested components, [docs/window-design.md](docs/window-design.md) for window management, [docs/component-base-design.md](docs/component-base-design.md) for the component bases and the services they carry.
-- Do give a component its own design document in `docs/` when it needs a technical design, and treat that document as authoritative for the component; the inventory entry stays a name, a status and one line.
+- Do read the design document for an area before changing it: [docs/composer-design.md](docs/composer-design.md) for the composer, [docs/input-router-design.md](docs/input-router-design.md) for how input is owned and routed between nested components, [docs/window-design.md](docs/window-design.md) for window management, [docs/component-foundations-design.md](docs/component-foundations-design.md) for the component bases and the services they carry; each has an implementation plan beside it, `docs/{area}-implementation-plan.md`, which records the steps and what has landed.
+- Do give an area that needs a technical design two documents in `docs/`, `{area}-design.md` for the design alone and `{area}-implementation-plan.md` for the steps, their state and what departed from the design; treat the design as authoritative for the area, and keep the catalog entry to a name and one line.
 - Do read `.editorconfig` before writing C#; it is the authority on style.
 - Don't invent scope, status, packaging, or style rules when an authoritative file defines them.
 
@@ -70,12 +70,12 @@ The gate is the build with no warnings, every test project, the script tests, th
 
 ## Working agreement
 
-- Do build, review, and commit one component at a time, taking the next from the inventory's build order.
+- Do build, review, and commit one component at a time, taking the next from the roadmap's build order.
 - Do derive parameters, validation, disposal, CSS, ARIA, localization, and tests from established repository patterns.
 - Do deliver the complete component set: markup, logic, stylesheet, warranted translation or script files, tests, and Showcase page.
 - Do verify both directions, colour-independent states, accessible names and focus, and touch targets before review; the `forma-checking-a11y-touch-rtl` skill carries the full standard.
 - Do present the component for review and stop; iterate on that same component until the maintainer declares it complete.
-- Do mark completion in the inventory after approval: `✅` on the component's heading and build-order entry.
+- Do move a component from the roadmap to the catalog after approval, and from the roadmap's structure to the catalog's when its implementation starts.
 - Do finish a piece of work with it unstaged, report what changed and what the gate said, and propose a commit message for the maintainer to run themselves.
 - Do present a wholesale rename as a ledger of `current -> proposed` lines with a per-member note on what each member does, and apply only what the maintainer's review of that ledger decides; members it leaves unlisted stay unchanged.
 - Do keep changes minimal and on-scope.

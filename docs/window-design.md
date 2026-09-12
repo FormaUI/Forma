@@ -1,43 +1,12 @@
-# Forma Window Management
+# Forma Window Design
 
-## Status
+## Scope
 
-Design for extending `FormaWindow` with coordinated window management: identity,
+Coordinated window management for `FormaWindow`: identity,
 origin, parent–child windows, activation, stacking, minimization, modality, bounds,
 and a persistent handle for every window in `FormaRestArea`. Authoritative for
 `FormaWindow`, `FormaRestArea`, the `Forma.Framework.Windows` model, and every
 component's participation in a workspace.
-
-`FormaFrame`, `FormaChrome` and `FormaWindow` are built: a frame is a raised backdrop
-with a box of its own, a chrome is a frame whose drag region is a title bar, and a
-window is a chrome floated in the top layer, moved by its title bar, resized at its edges
-and from the keyboard, maximized to its bounds, with a placement a host binds and resize
-limits in its frame options. Step 1 of the plan is built: `Forma.Framework.Windows` holds `IWindow`,
-`IManagedWindow`, `WindowOrigin`, `WindowSelector` with its standing selections,
-`WindowOperationResult`, and `WindowManager` with its registry, parent validation,
-stacking order, activation history, modal ordering, inherited hiding, and the
-ask-everyone-first close, registered as a scoped service by `AddFormaWindowServices`.
-Its tests drive the manager through a fake window. Step 2 is built: `FormaWindow` is a
-managed window of its workspace, registered for its lifetime with the parent and origin
-it declares, with `Active`, `Minimized`, `Modal` and `Disabled`, a cancelable `OnClosing`
-checked across the subtree before `OnClose`, a minimize command in its chrome, its own
-operations scoped to its descendants, stacking asserted by re-showing its popover, and
-focus remembered and returned on activation. Step 3 is built: a modal window registers a
-modal scope, keeps Tab inside itself, blocks its parent's subtree or the workspace, the
-blocked windows going `inert` and a root modal standing on a scrim; a press away sends
-a window back when its options say so; a window is held, restored and maximized within
-its bounds, the viewport or an element of the page; a window activates itself when it
-takes to floating; and a lockable window can be held where it is, neither moved, resized
-nor maximized until unlocked. Step 4 is built: `FormaRestArea` holds one handle per
-registered window in registration order, pressed while current, marked while minimized
-or hidden, grouped by origin or instance, laid out as a row, column or grid, and
-following the workspace cascaded to it. Step 5 is built: the Showcase's window page
-renders every item of the demo list below, with an operation log that reports each
-selector's outcome, and was walked in a visible browser. Step 6 is built: `FormaFrame`
-owns the box, `FormaChrome` the title bar and the bands, and `FormaWindow` composes the
-chrome and has its frame drive the window's box; a window always floats, and the Showcase
-has a frame page and a chrome page beside the window page. The implementation plan at
-the end records what landed at each step.
 
 ## Purpose
 
@@ -52,8 +21,8 @@ a relationship needs an owner that sees every window at once.
 
 ## Decision summary
 
-- **Identity is a generated `Guid`.** `Id` is stable for the window's lifetime and is the
-  only identity. Title and icon are presentation; windows with identical titles and
+- **Identity is the component's `RuntimeId`.** It is stable for the window's lifetime and
+  is the only identity. Title and icon are presentation; windows with identical titles and
   icons coexist with separate identities and separate handles.
 - **Origin is separate from identity.** `WindowOrigin` names the application or feature
   instance a window belongs to: a stable `OriginId`, a display `OriginName`, and a
@@ -67,7 +36,7 @@ a relationship needs an owner that sees every window at once.
 - **The model lives in `Forma.Framework.Windows`.** `IWindow`, `WindowOrigin`,
   `WindowSelector`, `WindowManager`, its results, the parent tree, the stacking order,
   and the activation history have no Blazor dependency. `FormaWindow` implements
-  `IWindow`, the way it already implements the router's owner contract.
+  `IManagedWindow`.
 - **The manager is a scoped service; a nested workspace cascades its own.** One manager
   per circuit is the default workspace. A host that needs a second workspace cascades
   another manager to the windows and rest area inside it.
@@ -75,7 +44,7 @@ a relationship needs an owner that sees every window at once.
   top layer stacks in show order; z-index has no effect there. The manager holds the
   order and re-asserts it in the browser by re-showing popovers bottom to top.
 - **A modal blocks its parent's subtree; a modal root blocks the workspace.** Blocking is
-  `inert` on the blocked element plus a scrim beneath the modal in the top layer: the
+  `inert` on the blocked windows, and a modal root stands on a scrim in the top layer: the
   translucent dark layer that dims what lies beneath, named as the theatre and Material
   Design name it, so that "backdrop" stays the word for the surface component.
 - **Window-level selectors reach down only.** `window.CloseAsync(selector)` means "close
@@ -88,7 +57,7 @@ a relationship needs an owner that sees every window at once.
   checked across every affected window before any `OnClose` fires; one decline aborts
   the whole operation.
 - **Results are records; bugs throw.** A `WindowOperationResult` reports applied, no
-  match, ambiguous, or declined, with the windows affected. An invalid selector or a
+  match, ambiguous, ineligible, or declined, with the windows affected. An invalid selector or a
   window from another workspace throws.
 - **A frame owns its box; a chrome dresses it; a window floats it.** `FormaFrame` is
   the raised backdrop with a box of its own, moved, resized and maximized, that knows no
@@ -97,28 +66,29 @@ a relationship needs an owner that sees every window at once.
   frame drives the window's box. A window is never embedded, so it has no mode; a frame
   is never closed or minimized, so it has no membership.
 - **Names follow the component's own conventions.** `Modal`, `Disabled`, `Active` with
-  `ActiveChanged`, `Minimized` with `MinimizedChanged`, alongside the existing
-  `Maximized` with `MaximizedChanged`. The area that holds every window's handle is
+  `ActiveChanged`, `Minimized` with `MinimizedChanged`, alongside `Maximized` with
+  `MaximizedChanged`. The area that holds every window's handle is
   `FormaRestArea`, a sibling of `FormaCommandArea` in intent and in name.
 
-## The existing component
+## The window's surface
 
-`FormaWindow` keeps its public surface. Everything below extends it.
+`FormaWindow`'s public surface, and what the workspace does with it.
 
-| Concern | Existing surface | What the design does with it |
+| Concern | Surface | In the workspace |
 | --- | --- | --- |
 | Presentation | `Title` (required), `Icon` | The handle in the rest area shows both and follows later changes. |
-| Position and size | `Placement` / `PlacementChanged` | Reused for movement, bounds, and restoration. |
+| Position and size | `Placement` / `PlacementChanged` | Movement, bounds, and restoration all flow through it. |
 | Maximization | `Maximized` / `MaximizedChanged` | Preserved across minimization; restoring from one never clears the other. |
 | Capabilities | `Options`, `FrameOptions` | The window's own from its title bar; the frame's for the box. |
-| Host commands | `Commands` / `OnCommand` | Kept beside lock, minimize, maximize, and close. |
-| Closing | `OnClose` | Still raised once, only when the window actually closes. |
-| Content | `Header`, `Body`, `Footer`, attributes | Unchanged; the body is never removed to hide it. |
-| Browser | `Window.js` for the top layer, `Frame.js` for the box | Extended for stacking and remembered focus; the frame's script holds the box within its bounds. |
-| Input | A non-modal scope | Extended for modality and press-away. |
+| Host commands | `Commands` / `OnCommand` | Beside lock, minimize, maximize, and close. |
+| Closing | `OnClose` | Raised once, only when the window actually closes. |
+| Content | `Header`, `Body`, `Footer`, attributes | The body is never removed to hide it. |
+| Browser | `Window.js` for the top layer, `Frame.js` for the box | The window's script stacks and remembers focus; the frame's holds the box within its bounds. |
+| Input | A scope, modal while `Modal` is set | Modality and press-away reach it through the router. |
 
-The private `_titleId` identifies the title element for `aria-labelledby`. It is not
-the window's identity.
+The window is named by `aria-label` from its title; the chrome's private `TitleId`,
+which identifies the title element for a region's `aria-labelledby`, is not the window's
+identity.
 
 ## The model
 
@@ -146,9 +116,9 @@ public sealed record WindowOrigin(string OriginId, string OriginName, Guid Insta
 
 `InstanceId` is generated once per application instance, not per window or render. Two
 Explorers share `OriginId` and `OriginName` with distinct `InstanceId` values, and each
-of their windows has its own `Id`.
+of their windows has its own `RuntimeId`.
 
-| Window | `OriginId` | `OriginName` | `InstanceId` | `Id` |
+| Window | `OriginId` | `OriginName` | `InstanceId` | `RuntimeId` |
 | --- | --- | --- | --- | --- |
 | First Explorer, main | `explorer` | Explorer | A | W1 |
 | First Explorer, child | `explorer` | Explorer | A | W2 |
@@ -182,6 +152,8 @@ public sealed record WindowSelector : IWindowSelector
 
     public IWindow? Parent { get; init; }
     public bool Recursive { get; init; }
+
+    public bool HasCriteria { get; }
 
     public static IWindowSelector All { get; }
     public static IWindowSelector Current { get; }
@@ -243,8 +215,8 @@ operation changed when it applied, and who declined when it was declined.
 
 `IWindow` is what the workspace and a handle read. `IManagedWindow` adds what the
 manager drives: it tells the window when it becomes active, minimized, hidden by an
-ancestor, or raised to the top of the floating windows, asks whether it may close, and
-tells it to close once every affected window has accepted. `FormaWindow` implements
+ancestor, blocked by a modal, or raised to the top of the floating windows, asks whether
+it may close, and tells it to close once every affected window has accepted. `FormaWindow` implements
 both; a test drives the manager with a fake.
 
 ## The manager
@@ -268,12 +240,22 @@ manager.RegisterAsync(window)      // for the component's lifetime
 manager.RefreshAsync(window)       // after its title, icon, parent, or state changed
 manager.UnregisterAsync(window)    // when the host disposes it
 
+manager.Origin                     // the origin a window without one resolves to
+manager.Current                    // the active window, or null
+manager.Changed                    // raised after anything a handle or a query reads changed
+
 manager.Windows                    // in the order they registered
 manager.StackedWindows             // from the back of the stacking order to the front
 manager.GetWindowByRuntimeId(runtimeId)
 manager.TryGetWindowByRuntimeId(runtimeId, out window)
 manager.TryFindWindows(selector, out windows)
+manager.GetParent(window)
+manager.GetChildren(window)        // direct children, back to front
 manager.GetInstanceNumber(window)  // among its origin's instances, from 1, kept for life
+manager.IsHidden(window)           // under a minimized ancestor
+manager.IsBlocked(window)          // behind a visible modal
+manager.IsEligible(window)         // enabled, visible, and not blocked
+manager.Within(window, selector)   // the selector scoped to the window's own subtree
 
 manager.ActivateAsync(selector)
 manager.BringToFrontAsync(selector)
@@ -288,11 +270,11 @@ moves a window that became modal in front of what it blocks, and lets a current 
 that is no longer eligible give way. `GetWindowByRuntimeId` throws when absent;
 `TryGetWindowByRuntimeId` reports false with null; `TryFindWindows` reports false with an empty
 collection. Selectors replace separate
-title, origin, instance, child, and descendant queries, and separate single and bulk
+title, origin, instance, and descendant queries, and separate single and bulk
 operation overloads.
 
 A window offers the same operations. Without a selector, they act on the window itself;
-with one, the selector is scoped to the window's own subtree.
+with one, the selector is scoped to the window's own subtree through `Within`.
 
 ```csharp
 window.ActivateAsync()
@@ -317,7 +299,7 @@ decline aborts the whole operation.
 
 | Concern | Surface | Category |
 | --- | --- | --- |
-| Identity | `Id` | Read-only, generated. |
+| Identity | `RuntimeId` | Read-only, generated. |
 | Origin | `Origin` | Parameter; resolved when absent. |
 | Parent | `Parent` | Parameter, validated by the manager. |
 | Activation | `Active` / `ActiveChanged` | Bound state, coordinated by the manager. |
@@ -329,9 +311,9 @@ decline aborts the whole operation.
 | Stacking | `BringToFrontAsync()`, `SendToBackAsync()` | Methods. |
 | Lifecycle | `ActivateAsync()`, `MinimizeAsync()`, `RestoreAsync()`, `CloseAsync()` | Methods, each taking an optional subtree selector. |
 | Press away | `Options.PressAway` | `Ignore` or `SendToBack`. |
-| Bounds | `Options.Bounds` | The viewport, or a container element. |
+| Bounds | `FrameOptions.Bounds` | The viewport, or a container element. |
 
-`Options.PressAway` and `Options.Bounds` are settings a composing consumer forwards
+`Options.PressAway` and `FrameOptions.Bounds` are settings a composing consumer forwards
 unchanged, which is what puts them on the record. `Modal` is a parameter because a
 dialog that composes a window decides it for itself.
 
@@ -347,8 +329,8 @@ disabled, minimized, ancestor-hidden, and modally blocked windows are not eligib
 no eligible window, nothing is active and focus returns to the workspace.
 
 Each window remembers its last focused element. Activating it again restores that
-element if it still exists and can take focus; otherwise the window's initial focus
-target. Modal redirection is applied before the final target is chosen.
+element if it is still inside the window; otherwise the window's first control, else the
+window itself. Modal redirection is applied before the final target is chosen.
 
 ### Stacking
 
@@ -369,8 +351,8 @@ ancestor, and one registered under an already-minimized parent starts hidden. Hi
 windows release their input scopes and modal blocking until visible again.
 
 Restoring a parent lifts its suppression only. Descendants minimized on their own stay
-minimized; those under another minimized ancestor stay hidden. Restoration activates the
-selected eligible window, not every descendant. Choosing the handle of a descendant hidden
+minimized; those under another minimized ancestor stay hidden. Restoration activates a
+lone restored window that is eligible, not every descendant. Choosing the handle of a descendant hidden
 by minimized ancestors restores the chain above it, then restores and activates it,
 subject to modality.
 
@@ -394,16 +376,16 @@ Sending back and minimizing never raise `OnClose`.
 ### Modality
 
 A modal child blocks its parent's subtree; a modal root blocks the workspace. The blocked
-element is `inert` and a scrim stands beneath the modal in the top layer, which is
+windows are `inert`, and a scrim stands beneath a modal root in the top layer, which is
 the native dialog's own model. Choosing a handle whose window has a visible modal
 descendant brings that modal forward and activates it; the parent stays blocked until the
-modal finishes. Nested modals resolve through the router's precedence, so a handle cannot
+modal finishes. Nested modals resolve to the frontmost visible one, so a handle cannot
 reach past a modal child. A modal hidden by ancestor minimization releases its blocking
 until it can be shown again.
 
 ### Bounds
 
-`Options.Bounds` is the viewport or a container element. The script measures the region
+`FrameOptions.Bounds` is the viewport or a container element. The script measures the region
 and clamps movement, resizing, and restoration to it, reapplying on viewport and container
 resize. Maximized fills the selected region. Enough of the title bar and its commands
 always stays reachable to move or restore the window; when the region is smaller than the
@@ -412,7 +394,7 @@ through `Placement` / `PlacementChanged`, so host and browser agree.
 
 ## The rest area
 
-`FormaRestArea` holds one persistent handle per registered window, keyed by `Id`, for as
+`FormaRestArea` holds one persistent handle per registered window, keyed by `RuntimeId`, for as
 long as the window exists: active or inactive, front or back, minimized, hidden under a
 minimized ancestor, enabled or disabled. Identical titles and icons
 produce separate handles; nothing is deduplicated. A handle shows the window's `Title` and
@@ -436,12 +418,11 @@ It follows the manager whose windows it presents.
 
 A window does not embed. What stands in a layout with a box of its own is a frame; what
 carries a title bar is a chrome; what floats in the top layer as a member of the
-workspace is a window. They are separate components, each composing the one beneath it,
-and the `Mode` that let one component be both embedded and floating is gone.
+workspace is a window. They are separate components, each composing the one beneath it.
 
 | Component | Folder | Responsibility |
 | --- | --- | --- |
-| `FormaBackdrop` | `Layout/` | Surface appearance: one of four elevations. |
+| `FormaBackdrop` | `Layout/` | Surface appearance: one of four variants, flat, raised, inset or canvas. |
 | `FormaFrame` | `Layout/` | Position, size, dragging, resizing, maximization and the resize handles. |
 | `FormaChrome` | `Layout/` | The title bar, icon and commands, and the arrangement of header, body and footer. |
 | `FormaWindow` | `Windows/` | Window identity, ownership, activation, stacking, modality and lifecycle. |
@@ -499,32 +480,22 @@ drives that box: the
 title bar drags the window, the handles resize it, the frame's script holds it within
 its bounds, and the placement comes back through `PlacementChanged` to the window, which
 binds it for the host. `Maximized` and `Locked` go down the same path, so the window's
-state is the only state. Its parameters are the chrome's plus `Origin`,
+state is the only state. Its parameters are the chrome's, less `Hidden`, plus `Origin`,
 `Parent`, `Placement` with `PlacementChanged`, `Maximized` with `MaximizedChanged`,
 `Locked` with `LockedChanged`, `Minimized` with `MinimizedChanged`, `Active` with
-`ActiveChanged`, `Modal`, `OnClosing`, `OnClose`, `WindowOptions` (`Closable`,
-`Minimizable`, `Maximizable`, `Lockable`, `PressAway`) and `FrameOptions`.
+`ActiveChanged`, `Modal`, `OnClosing`, `OnClose`, `Options`, a `WindowOptions`
+(`Closable`, `Minimizable`, `Maximizable`, `Lockable`, `PressAway`), and `FrameOptions`.
 
 The window hands its chrome one command list: the host's commands, then lock, minimize,
 maximize and close. Commands the window recognizes it answers itself; the rest reach the
-host's `OnCommand`. The window's root, not the frame, carries the dialog role, the active
-and maximized states and the scrim; the chrome stays a `presentation` inside it.
+host's `OnCommand`. The window's root, not the frame, carries the dialog role and the
+active and maximized states, and the window renders the scrim beside its root; the chrome
+stays a `presentation` inside it.
 
-### What the split removes
-
-- `WindowMode`, `Mode` and `ModeChanged`, the `Embeddable` option, and the embed and
-  float commands with their pin glyph and their strings.
-- Every branch in the window that asked whether it was floating: it always is.
-- The window's own drag, resize, keyboard and fitting, which are the frame's, and the
-  resize options, limits and bounds of `WindowOptions`, which are `FrameOptions`.
-
-Moving content between a frame and a window is not a scenario the library supports: a
-host chooses a frame, a chrome or a window when it renders.
-
-### What the split keeps
+### Names and classes
 
 - `IWindow`, `IManagedWindow`, `WindowManager`, `WindowSelector` and `FormaRestArea`
-  are unchanged, and their names are exact: the workspace holds windows and nothing
+  are named exactly: the workspace holds windows and nothing
   else. A window's parent is a window, and the rest area lists windows.
 - The box's classes and handles are the frame's: `forma-frame`, `forma-frame-backdrop`,
   `forma-frame-content`, `forma-frame-drag-region` and `forma-frame-handle`. The
@@ -535,7 +506,6 @@ host chooses a frame, a chrome or a window when it renders.
   `--chrome-footer-bg-color`. The window keeps `forma-window`, its state classes and
   its scrim.
 
-
 ## Integration with the renderer
 
 The manager is Framework code and awaits off the renderer, as every `Forma.Framework.*`
@@ -545,8 +515,8 @@ from inside such a request: a change the manager made is one the manager already
 
 ## Integration with input routing
 
-The floating profile today dismisses on Escape and platform close requests and ignores a
-press away. The design adds two things the router already models: a `Modal` scope while
+A window's profile dismisses on Escape and platform close requests and ignores a press
+away, and adds two things the router models: a `Modal` scope while
 `Modal` is set and visible, and a pass-through press away, which the router reports as a
 dismissal with the press-away reason and the window answers by sending itself back when
 `Options.PressAway` says so, never by closing. Neither routes through `OnClose`. The scope
@@ -560,43 +530,5 @@ rather than raw focus events alone, and is released while the window is hidden.
   `Minimized` and decides what to keep.
 - Moving `FormaDialog` out of `Feedback`. It stays classified by its purpose, prompting for
   a decision; composing a window does not change that.
-
-## Implementation plan
-
-1. **`Forma.Framework.Windows`.** `IWindow`, `WindowOrigin`, `WindowSelector` and its
-   markers, matching, `WindowManager` with registry, parent validation, stacking order,
-   activation history, and `WindowOperationResult`, with unit tests for every rule above.
-2. **`FormaWindow` on the manager.** Registration for the component's lifetime, `Origin`
-   and `Parent`, `Active` and `Minimized` with their callbacks, `OnClosing` and recursive
-   close, stacking by re-showing, remembered focus, the minimize command in the chrome.
-3. **Modality, press-away, bounds.** The modal scope and scrim, `Options.PressAway`,
-   `Options.Bounds` in the script, maximization within a container.
-4. **`FormaRestArea`.** Handles, grouping, layouts, and its place in a launch bar.
-5. **Showcase.** A page covering the demo list below, walked in a visible browser.
-6. **Frame, chrome and window.** `FormaFrame` takes the box out of `FormaWindow` and
-   `FormaChrome` the title bar and the bands; the window composes the chrome, keeps the
-   workspace membership and the top layer, and has its frame drive the window's box.
-   The mode, the embed command and every floating branch go, and the classes, tokens,
-   tests and Showcase pages split along the same lines.
-
-## Demo
-
-- The same operation by `Window` reference and by origin or instance criteria.
-- Multi-match activation reporting ambiguity; an empty operation selector rejected;
-  `WindowSelector.All` reaching the workspace; a selection holding a parent and a
-  descendant processing each once.
-- Two instances of one origin: selecting, grouping, and stacking by origin versus by
-  instance; renaming the origin changing nothing; closing one root leaving the other.
-- A descendant with unsaved work declining a parent's close, and a close selecting
-  several roots aborting as a whole.
-- Focus fallback and remembered focus; content preserved across minimization; two
-  workspaces; redirection to a modal child; reclamping after a bounds resize.
-- Windows with identical titles and icons holding separate handles and identities.
-- Parent, child, and grandchild: recursive hiding on minimization, independently
-  minimized descendants staying minimized on restoration, recursive closure, title
-  queries returning every match, descendant queries walking the tree.
-- Press-away sending a window back, and `FormaRestArea` as the way back to every
-  window, its handle present before and after.
-- Frames in a stack with a splitter between them, a hidden and a disabled frame, and a
-  window's title bar carrying the host's commands before lock, minimize, maximize and
-  close.
+- Moving content between a frame and a window. A host chooses a frame, a chrome or a
+  window when it renders.

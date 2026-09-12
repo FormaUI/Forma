@@ -1,6 +1,6 @@
-# The Forma repository
+# Forma Repository Structure
 
-Forma is a reusable Blazor component library: .NET 11, C# latest, a Razor Class Library rendered Interactive Server, JS-free by default. This document describes the repository as a codebase: what the solution is made of, where things live, what it derives from, who consumes it, and how it is built and verified. The working rules in `CLAUDE.md` refer to it by role.
+Forma is a reusable Blazor component library: .NET 11, C# latest, a Razor Class Library rendered Interactive Server, JS-free by default. This document describes the repository as a codebase: what the solution is made of, where things live, what it derives from, who consumes it, and how it is built and verified. The working rules in `CLAUDE.md` refer to it by role. Each area with a technical design has two documents beside this one: `{area}-design.md`, the design alone, and `{area}-implementation-plan.md`, the steps and what has landed.
 
 ## Solution structure
 
@@ -37,7 +37,7 @@ Components/{Category}/
 └── FormaX.es.json
 ```
 
-Every component derives from one of three bases in `src/Forma.Blazor/Components/`: `FormaElementBase` for a component a host places, `FormaInputBase<TValue>` for a form input, `FormaComponentBase` for a part that only lives inside its owner. `docs/component-base-design.md` is the design.
+Every component derives from one of three bases in `src/Forma.Blazor/Components/`: `FormaElementBase` for a component a host places, `FormaInputBase<TValue>` for a form input, `FormaComponentBase` for a part that only lives inside its owner. `component-foundations-design.md` is the design.
 
 The library ships three cultures: `en` as the source language, `he` and `es-419`. A component's translation pair is `FormaX.he.json` and `FormaX.es.json` beside it, keyed by the English source text. The sibling repository `Forma.Locali` ships `locali`, which checks translation files against the `L[...]` call sites that key them.
 

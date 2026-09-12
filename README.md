@@ -71,7 +71,7 @@ render mode.
 
 The library covers the admin-app staples — form inputs and pickers, modals and toasts, data
 grids, toolbars, tabs, file intake, a file explorer, and the `FormaComposer` authoring surface.
-[`COMPONENTS.md`](COMPONENTS.md) is the inventory, describing each component's behaviour.
+[`docs/component-catalog.md`](docs/component-catalog.md) lists the components that exist, describing each one's behaviour.
 
 `FormaStatusBadge` needs a catalog of the statuses **your** application defines — the library ships
 none:
@@ -210,13 +210,16 @@ Where to read before working:
 - [`CLAUDE.md`](CLAUDE.md) — the working rules: structure, dependencies, verification, and the
   working agreement. Its `.claude/skills/` guides carry the detailed standards for authoring,
   naming, styling, scripting, testing, localization, accessibility, verification and prose.
-- [`docs/repository.md`](docs/repository.md) — the repository itself: the solution structure,
-  where components, scripts, stylesheets and tests live, the build commands, where the components'
-  designs derive from, and who consumes the library. [`docs/vocabulary.md`](docs/vocabulary.md)
-  defines the words the library uses for its concepts.
-- [`COMPONENTS.md`](COMPONENTS.md) — the component inventory, status, and build order. Work goes
-  one component at a time, delivered whole: component, tests, and Showcase page.
-- [`docs/`](docs/) — design documents for the areas large enough to need one;
-  [`docs/composer-design.md`](docs/composer-design.md) is authoritative for `FormaComposer`.
+- [`docs/repository-structure.md`](docs/repository-structure.md) — the repository itself: the
+  solution structure, where components, scripts, stylesheets and tests live, the build commands,
+  where the components' designs derive from, and who consumes the library.
+  [`docs/repository-vocabulary.md`](docs/repository-vocabulary.md) defines the words the library
+  uses for its concepts.
+- [`docs/component-catalog.md`](docs/component-catalog.md) — the components that exist;
+  [`docs/component-roadmap.md`](docs/component-roadmap.md) — the components still to build and their order. Work goes one
+  component at a time, delivered whole: component, tests, and Showcase page.
+- [`docs/`](docs/) — a design document and an implementation plan for each area large enough to
+  need them; [`docs/composer-design.md`](docs/composer-design.md) is authoritative for
+  `FormaComposer`.
 - Per-project READMEs — the localization projects and the artwork packs each document their own
   contract, format, or artwork pipeline.

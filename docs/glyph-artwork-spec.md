@@ -1,4 +1,4 @@
-# Forma glyph artwork
+# Forma Glyph Artwork Specification
 
 The specification for Forma's own icon set: the artwork `FormaIcon` draws for a `Glyph` unless a host
 registers an `IIconProvider` of its own. Every glyph in the `Glyph` enum is a stroke drawing authored as SVG on a

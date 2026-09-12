@@ -1,6 +1,6 @@
 ---
 name: forma-documenting
-description: The standard for prose — a summary or comment says what a thing is, a remarks block says how a non-trivial thing works, and a document says what its title promises: a design document the design, the component inventory the components and their status, the README the host's view, an instruction the rule. Use when writing or changing a summary, comment, remarks block, stylesheet banner, README passage, design document or inventory entry, and when deciding whether a code change should touch any prose at all.
+description: The standard for prose — a summary or comment says what a thing is, a remarks block says how a non-trivial thing works, and a document says what its title promises: a design document the design, an implementation plan the steps and what landed, the component catalog the components that exist and the roadmap those still to build, the README the host's view, an instruction the rule. Use when writing or changing a summary, comment, remarks block, stylesheet banner, README passage, design document, implementation plan, catalog or roadmap entry, and when deciding whether a code change should touch any prose at all.
 ---
 
 # Documentation
@@ -12,7 +12,9 @@ Every piece of prose in a repository has one job, and the job decides what goes 
 | A summary or comment | What the thing is or does | How it does it, why it was chosen, what came before, what it does not do |
 | A `<remarks>` block | How a non-trivial thing works | Why it was designed that way, what was tried |
 | A design document | The design | The state of the code, what has been built, what changed since |
-| The component inventory | Which components exist, their status and build order, one line saying what each is | Parameters, options, approach, technical design |
+| An implementation plan | The steps, their gates, what landed and where it departed from the design, what is still open | The design itself, restated |
+| The component catalog | Which components exist or are in progress, one line saying what each is, and the structure they live in | Parameters, options, approach, technical design, anything not yet started |
+| The component roadmap | Which components are still to build, in what order, one line saying what each will be | Technical design, anything already built |
 | The README | How a host consumes the library | How the library works inside |
 | An instruction, a skill or the repository's working rules | How to work | Project structure, project names, the change that prompted the rule |
 
@@ -37,21 +39,24 @@ Every piece of prose in a repository has one job, and the job decides what goes 
 
 ## Design documents
 
-A design document states a design: the concepts, their names, how they relate, and the rules a change to that area must keep. It is read before changing the area, which is why the repository's working rules point at it.
+A design document states a design: the concepts, their names, how they relate, and the rules a change to that area must keep. It is read before changing the area, which is why the repository's working rules point at it. Beside it stands the area's implementation plan, a second document that holds everything about carrying the design out: the steps and their gates, what landed at each, where it departed from the design, and what is still open.
 
 - Do write the design as it is meant to be, in prose, with a code sketch only where the shape itself is the design.
 - Do define a term of art where it is introduced, and in the repository's shared vocabulary when the whole codebase will speak it.
 - Do change a design document when the design changes, and leave it alone when code lands that follows it.
-- Don't record the state of the code: no status paragraph, no "built" markers, no list of what departed from a sketch and why, no commit references. Progress lives in the inventory's status column and in the commit history.
+- Do record progress in the implementation plan: a step that landed, a departure from the design and why, a survey the plan rested on, what remains.
+- Do start both documents together when an area is designed, and split a document that mixes the two along that line.
+- Don't record the state of the code in a design document: no status paragraph, no "built" markers, no list of what departed from a sketch and why, no commit references.
 - Don't carry technical detail that belongs in the code and its summaries — signatures, member lists, file names, test names, counts.
-- Don't turn a plan into a document. A plan file tracks a piece of work while it runs and is discarded when the work is done; what survives of it is the design, rewritten as a design.
+- Don't restate the design in the implementation plan; the plan refers to the design's sections and says what was done about them.
 
-## The component inventory
+## The component catalog and roadmap
 
-The inventory lists the components, in build order, with a status and one line saying what each component is.
+The catalog lists the components that exist and the roadmap the components still to build, both alphabetically, unnumbered, each opening with a structure of folders and components and a count of what it lists: the catalog's structure holds the implemented components and those in progress, marked apart, and the roadmap's holds the ones not yet started.
 
-- Do add an entry when a component is added, and flip its status when the component is approved.
-- Do keep an entry to its name, its status, one line of what it is, and the rows the inventory keeps on purpose, such as a component's origin and where it is used.
+- Do add a component to the roadmap when it is planned, move it into the catalog's structure when its implementation starts, and move its entry to the catalog when it is approved.
+- Do keep an entry to its name, one line of what it is, and the rows the documents keep on purpose, such as a component's origin and where it is used.
+- Do refer to a component by name alone, never by a number or a position.
 - Don't put parameters, options, the rendering approach, notes on mechanics or any other API or design detail in an entry; a component that needs a technical design gets its own design document.
 
 ## Instructions
@@ -66,5 +71,5 @@ An instruction — a skill, or the repository's working rules — describes how 
 ## When a code change touches prose
 
 - Do fix a summary, comment, banner or README sentence the change made false, as part of the change.
-- Do update an instruction when the change changes a rule, and a design document when it changes the design.
-- Don't update an instruction, a design document or an inventory entry because code landed; landing a step is not a rule change and not a design change.
+- Do update an instruction when the change changes a rule, a design document when it changes the design, and the implementation plan when a step lands or departs from the design.
+- Don't update an instruction, a design document, a catalog entry or a roadmap entry because code landed; landing a step is not a rule change and not a design change.

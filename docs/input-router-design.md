@@ -1,37 +1,17 @@
-# Forma Input Routing
+# Forma Input Router Design
 
-## Status
+## Scope
 
-Design for input ownership and precedence across Forma components. Authoritative for
+Input ownership and precedence across Forma components. Authoritative for
 `InputRouter.js`, the `InputRoute`/`InputProfile`/`InputRouterOptions` records and the
 binding and input records of each family in `Forma.Framework.Input`, the scoped
 bridge in `Forma.Framework.Input.Interop` that carries host policy to the script, and every component's participation.
 
-Step 1 of the implementation plan is built: the router script, the records, the bridge and
-its registration in `AddFormaUI`, host routes, and the script tests. `FormaInputScope`
-declares a scope from markup and `FormaInputInspector` shows the router's decisions live;
-the Showcase's `FormaInputInspector` page uses both, and its visible-browser walk covers the native
-table, nesting, dismissal, the modal barrier, host routes, shadow roots, wheel, and pointer
-input against real events. Resolution with a hundred registered scopes, ten of them active,
-costs a few hundredths of a millisecond, so parent lookup scans the scopes as they are.
-`FormaPopover` is the first library component on the router: it registers its root and
-activates while open, with its trigger counted as inside it, so Escape and a press away
-dismiss it through the router rather than through a document listener and a backdrop of
-its own, and `FormaBreadcrumb`'s segment menus are `FormaDropDownMenu`s over it, so its own
-key handler and backdrop are gone. `FormaDialog` is a modal scope while open, so Escape and a
-platform close request go to whatever is foremost, and the dialog closes only when that is
-itself. The composer's and the toolbar's shortcuts are routes: the
-composer registers its
-catalog on its root and each editor registers it on its editable element, where the native
-table would otherwise claim the keys, and the toolbar registers its actions' shortcuts on its
-target. The `focus` field of a profile is not read until `Focus.js` moves onto the router
-in step 3.
-
 ## Purpose
 
-Forma components handle keyboard, pointer, wheel, focus, drag, drop, and dismissal input
-independently. Each behavior is correct in isolation, but nested components receive the
-same input in the wrong order: an outer component acts before an inner component has an
+Forma components handle keyboard, pointer, wheel, focus, drag, drop, and dismissal input.
+Handled independently, each behavior is correct in isolation, but nested components receive
+the same input in the wrong order: an outer component acts before an inner component has an
 opportunity to handle input that logically belongs to it.
 
 This is not limited to key bindings or popups. It is a component-wide ownership problem:
@@ -56,86 +36,23 @@ exclusions, listener-registration order, or incidental event propagation.
 - Several behaviours register on one element and share one scope; each registration is
   disposed on its own, and the scope stays active while any registration holds it.
 - Native editing controls carry an implicit profile defined per element and per input.
-- `defaultPrevented` coordinates behaviors inside one scope; it no longer decides ownership
+- `defaultPrevented` coordinates behaviors inside one scope; it does not decide ownership
   between scopes.
 - `FormaDialog` registers a modal scope and keeps native dialog semantics.
 - Host policy and the host's own routes reach the script through a scoped .NET bridge
   configured in `AddFormaUI`; there is no router component to mount. A host route is
   answered only once every component scope on the path has declined.
-- Router-managed surfaces consume a resolved stacking value. The router promises nothing
-  about the visual order of arbitrary DOM.
+- The router stamps each active registration's element with its place in the ordering,
+  `data-forma-layer`, for a surface outside the top layer to draw from. The router
+  promises nothing about the visual order of arbitrary DOM.
 - Every resolution is queryable: `resolve(event)` is the single result, and `owns`,
   `ownerOf`, `describe`, and `stack` are views over it.
-- `FormaTabs` gains its missing tab-list keyboard navigation as routes on a tab-list scope,
-  in the same change.
 
 The governing rule:
 
 > The router assigns targeted input to the innermost claiming scope within the current
 > active boundary, and ambient input to the foremost active scope. Ancestor and underlying
 > scopes do not receive the same routed action.
-
-## Existing input owners
-
-### Dismissal
-
-Escape and press-away behavior are decided in several unrelated ways today:
-
-- Native `<dialog>` cancellation.
-- A document listener owned by `FormaPopover`.
-- `FormaBreadcrumb`'s key handler and backdrop span.
-- `DragGesture` cancelling an active drag.
-- The composer selection bar returning focus to the editor.
-
-### Navigation keys
-
-Arrow, Home, and End are handled independently by `FormaSelect`, `FormaDropDownMenu`,
-`FormaEmojiPicker` tabs, `FormaFileViewer` sibling navigation, `FormaSplitter`,
-`FormaDataGrid` through `SelectionInteraction`, `FormaSortableList` through
-`ReorderInteraction`, and the selection bar's nudge handle; `NavigationGuard`
-prevents page scrolling for two of them.
-
-### Tab
-
-`Focus.js` wraps or orders focus within a surface; native dialogs trap focus;
-`FormaSelect` closes when Tab is pressed.
-
-### Shortcuts and modifiers
-
-The composer registers its shortcut catalog as routes on its own scope and on each editor's
-editable element, and the toolbar registers the shortcuts its actions carry as routes on its
-`Target`; a command is its own action, so a host remaps either by the command's name.
-`FormaDataGrid` handles Ctrl/Shift-click and Shift+Arrow selection;
-`ImplicitSubmitGuard` controls implicit submission; `FormaSearchBox` and
-`FormaPagination` assign behavior to Enter.
-
-### Pointer gestures
-
-`DragGesture` supports sortable reordering and the selection-bar handle; `PanGesture`
-supports the command-bar track; `FormaSplitter` owns its pointer interaction; explorer
-HTML5 drag and drop spans four views and the sidebar; `DropZone` supports file intake;
-`SelectionInteraction` listens for capture-phase mousedown on the grid.
-
-### Wheel
-
-`Wheel` is used by the command bar, the toolbar, and the file viewer, optionally
-requiring a modifier.
-
-## Existing conflicts
-
-They share one shape: an outer component listens on its root or on `document` and acts on
-input originating within an inner component — and a popup is inner even though the browser
-draws it in the top layer, because it remains a DOM descendant of whatever opened it.
-
-| Conflict | What happens today |
-| --- | --- |
-| Select inside a data-grid cell | The grid's capture-phase listener moves row selection before the select receives ArrowDown. Only text-entry targets are excluded. |
-| Emoji picker over the composer | Resolved: the composer's shortcuts are routes, and a popup over it is an active scope that Ctrl+B pressed inside it stops at. |
-| Popup opened from a toolbar | Wheel input bubbling from the popup scrolls the toolbar track behind it. |
-| Drag started inside a popup | Escape reaches the popup's document listener before the drag's element listener. |
-| Nested drop targets | A folder node inside the sidebar's drop area lets both targets receive the drop unless the inner one stops propagation. |
-| Nested popups | Whichever popup registered its document listener first answers Escape. |
-| Tab handling | `Focus.js` respects `defaultPrevented` from a nested surface — a local solution, not a cross-component model. |
 
 ## Architecture
 
@@ -169,7 +86,7 @@ arbitrates ownership.
 | Part | Responsibility |
 | --- | --- |
 | `InputRouter.js` | Registers scopes and routes, resolves ownership synchronously from composed event paths, keeps the active ordering, installs whichever listeners each input class needs, applies `preventDefault` and propagation per resolution, and answers queries. |
-| The .NET bridge | `InputRoute`, `InputProfile`, and `InputRouterOptions` records, with a binding record and an input record per family — keyboard, pointer, wheel, drop; a scoped service that transfers host policy, bindings, and host routes to the script once per circuit, the first time a behaviour registers a scope. No component is mounted. |
+| The .NET bridge | `InputRoute`, `InputProfile`, and `InputRouterOptions` records, with a binding record and an input record per family — keyboard, pointer, wheel, drop; a scoped service that transfers host policy, bindings, and host routes to the script once per circuit, the first time a scope is registered. No component is mounted. |
 | A participating component | Declares its scope and routes and implements the semantic actions. |
 
 ## Input scopes
@@ -188,8 +105,8 @@ const registration = register(element, {
     pressAway: 'dismiss',             // 'dismiss' | 'ignore' | 'pass-through'
     boundary: ['keydown'],               // classes that stop here when no route matches
     parent: opener,                      // the scope this one stands inside; default: containment
-    focus: 'wrap',                       // 'wrap' | 'order' | 'native' | 'free'
     within: [trigger],                   // elements counted as inside
+    onDismiss: dismiss,                  // (action, reason); unstated, the owner's HandleDismissAsync
     routes: [
         { action: 'select.next', bindings: [{ type: 'keydown', key: 'ArrowDown' }], handle: selectNext },
         { action: 'composer.bold', bindings: [{ type: 'keydown', key: 'b', modifiers: { primary: true } }], handle: bold },
@@ -264,7 +181,7 @@ hidden rule.
 A handler is a script function, `handle(event, { action, owner, binding })`, or the router
 invokes the .NET owner with the resolved action: `HandleInputActionAsync(action, input)`,
 where the input is described by its family so the owner reads it as the matching record.
-That is one round trip, the same count as Blazor's own delegation delivers today. The
+That is one round trip, the same count as Blazor's own event delegation. The
 handler runs from whichever listener resolved the event — the document's for a key, an
 outer scope's for a press that an inner scope owns — so it takes the owning element from
 the routing it is given, never from `event.currentTarget`; a gesture that captures the
@@ -283,15 +200,18 @@ input**, of what the control consumes natively:
 
 | Element | Consumes |
 | --- | --- |
-| `input` (text-like types) | Typing, Home, End, ArrowLeft/Right, Shift+Arrow, Ctrl+Arrow, Enter, Ctrl+A/C/V/X/Z/Y |
+| `input` (text-like types) | Typing, Home, End, ArrowLeft/Right, Shift+Arrow, Ctrl+Arrow, Enter, Backspace, Delete, Ctrl+A/C/V/X/Z/Y |
 | `input[type=number]` | The above plus ArrowUp/Down and wheel while focused |
-| `textarea` | The above plus ArrowUp/Down and wheel when it scrolls |
+| `textarea` | The text-like `input`'s keys plus ArrowUp/Down, PageUp, PageDown, and wheel when it scrolls |
+| `input` (date and time types) | Typing, every arrow, Enter, Backspace, Delete |
 | `input[type=range]` | Arrows, Home, End, PageUp, PageDown |
-| `input[type=radio]` | Arrows |
-| `select` | Arrows, Home, End, typing, Enter, Space |
-| `[contenteditable]` | Typing, every arrow, Home, End, Enter, the editing shortcuts, wheel when it scrolls |
+| `input[type=radio]` | Arrows, Space |
+| `input[type=checkbox]` | Space |
+| `select` | Arrows, Home, End, PageUp, PageDown, typing, Enter, Space |
+| `button`, button-like `input` types, `a[href]`, `summary`, `[role=button]`, `[role=link]` | Enter, Space |
+| `[contenteditable]` | Typing, every arrow, Home, End, PageUp, PageDown, Enter, Backspace, Delete, the editing shortcuts, Ctrl+B/I/U, wheel when it scrolls |
 
-Input a native control consumes is owned by that control. Input it does not consume —
+A disabled control consumes nothing. Input a native control consumes is owned by that control. Input it does not consume —
 Escape, an unrelated shortcut, wheel on a control that does not scroll — resolves through
 the enclosing scopes as usual. A component that needs a shortcut to work inside its own
 editable declares that shortcut as a route on the editor's scope; nothing is exempted
@@ -316,9 +236,8 @@ behavior, and the resolution names the boundary as owner with no action; the inp
 not fall into an ancestor component action.
 
 Capture-phase listeners cannot wait for a descendant to set `defaultPrevented`. Any
-listener the router installs in capture acts only on the resolved owner. This is the
-correction for `SelectionInteraction`: the grid does not interpret ArrowDown when the event
-belongs to a nested select scope.
+listener the router installs in capture acts only on the resolved owner. So a grid does not
+interpret ArrowDown when the event belongs to a nested select scope.
 
 ## Active routing
 
@@ -379,11 +298,9 @@ visible.
 The router does not consult `defaultPrevented`: its document and scope listeners run in
 the capture phase, before anything could have set it, and rival claims inside one scope
 are settled by specificity, priority, and the reported tie rather than by who ran first.
-The old convention, where `Focus.js` deferred to a nested surface that had already
-prevented Tab, is superseded: in step 3 the nested surface routes Tab on its own scope, and
-`Focus.js` becomes routes as well. What disappears is reliance on `defaultPrevented` as the
-protection against an ancestor, especially where capture-phase or document listeners run
-first.
+A nested surface routes Tab on its own scope, and `Focus.js` routes as well; nothing
+relies on `defaultPrevented` as the protection against an ancestor, least of all where
+capture-phase or document listeners run first.
 
 ## Dialog integration
 
@@ -416,8 +333,8 @@ whether it keeps focus within itself (`KeepsFocus`), whether closing returns foc
 trigger (`ReturnsFocus`), whether a press away dismisses it (`PressAway`), and how open
 state is reported. A press away passes through: it dismisses the popover and then belongs to
 whatever was pressed, so one press on another control closes the popover and acts on the
-control, and a press on another popover's trigger swaps the popovers. Its document Escape
-listener and its backdrop element move into the router; the trigger is declared `within`,
+control, and a press on another popover's trigger swaps the popovers. It has no document Escape
+listener and no backdrop element of its own; the trigger is declared `within`,
 so a press on it toggles rather than dismisses.
 
 ## Focus and Tab
@@ -430,8 +347,9 @@ returns focus to its own trigger without disturbing the containing interaction.
 ## Visual stacking
 
 Visual state contributes to resolution — a top-layer element's order, `:popover-open`,
-`dialog[open]` — and router-managed surfaces consume a resolved stacking value for
-anything not in the top layer. The router does not guarantee visual order for arbitrary
+`dialog[open]` — and the router stamps each active registration's element with its place
+in the ordering as `data-forma-layer`, for anything not in the top layer to draw from. The
+router does not guarantee visual order for arbitrary
 DOM: CSS `z-index` cannot escape a stacking context, browser top-layer order is not
 controlled by CSS, and re-showing a top-layer element to reorder it moves focus and fires
 lifecycle events. Behavioral order and visual order are meant to agree; they are not the
@@ -455,8 +373,9 @@ a component default does not silently defeat explicit host policy.
 A type in `Forma.Framework.Input` is public only because a host or a component author reaches
 it from one of three doors: `InputRouterOptions` and `IInputActionHandler` for the host,
 `FormaInputScope` for the author, and the inspector's `Decision` for anyone debugging.
-The router service and the registration handle stand behind those doors and stay
-internal; a type nothing outside the library reaches goes internal with them.
+The router service and the registration handle, `InputRouter` and `InputScope` in
+`Forma.Framework.Input.Interop`, are public because a library component that registers
+its own root reaches them directly; a type nothing outside the library reaches goes internal.
 
 ### Preemptive routes are absolute
 
@@ -481,36 +400,37 @@ dismisses nothing.
 ## Queryability
 
 ```js
-resolve(event) => { owner, scope, route, input, action, handler, preventDefault, propagation, precedence, reason }
+resolve(event) => { owner, scope, registration, route, binding, input, action, handler, preventDefault, propagation, precedence, source, tie, reason }
 
 owns(element, event)      // is element's scope the resolved owner
 ownerOf(event)            // the resolved owner
-requestDismiss(element)   // offers a close request to the foremost registration, and says whether it was forwarded
+requestDismiss(element, reason)   // offers a close request raised at element to the foremost registration, and says whether it was forwarded
 describe(element)         // the routes with default and effective bindings, the active registrations, and the place in the ordering
 stack()                   // the active ordering, foremost last, with the rule that placed each registration
 ```
 
 `precedence` is `preemptive`, `structural`, `native`, `active`, or `none`; `reason` names the
 route, the native control, the boundary, the ambient input, or why nothing owns it; `tie`
-names what decided between rival bindings. A boundary is reported as owner with no action,
+names what decided between rival bindings; `source` says whether the winning route's
+bindings are its defaults or the host's. A boundary is reported as owner with no action,
 so a question about an input the router deliberately left alone still has an answer.
 
 Tests assert resolutions directly. The Showcase carries an inspector that shows them live.
 
 ## Conflict resolution matrix
 
-| Conflict | Mode | Owner | Migration |
-| --- | --- | --- | --- |
-| Select in a grid cell receives ArrowDown | Structural | `FormaSelect` | Both register scopes; the grid's capture handler acts only as owner |
-| Emoji-picker search receives Ctrl+B | Structural | The picker's scope | Done: composer bindings are routes on the composer's and the editor's scopes and do not act inside a nested scope |
-| Popup content receives wheel over a toolbar | Structural | The popup's scope | The wheel acts only as owner |
-| Drag inside a popup receives Escape | Active | The drag | The drag activates above the popup |
-| Folder node receives a drop inside the sidebar | Structural | The folder's scope | The sidebar does not act on a drop owned by the nested scope |
-| Inner popup receives Escape | Active | The inner popup | Router ordering replaces per-popup listeners |
-| Popup in a dialog receives Escape | Active | The popup | Routed before native cancellation |
-| Dialog opened over a popup receives Escape | Active | The dialog | Modal barrier |
-| Host `<input>` in a grid receives arrows | Structural, implicit | The input | Native table |
-| Tab list receives arrows | Structural | `FormaTabs` | New routes; the missing interaction |
+| Conflict | Mode | Owner |
+| --- | --- | --- |
+| Select in a grid cell receives ArrowDown | Structural | `FormaSelect` |
+| Emoji-picker search receives Ctrl+B | Structural | The picker's scope |
+| Popup content receives wheel over a toolbar | Structural | The popup's scope |
+| Drag inside a popup receives Escape | Active | The drag |
+| Folder node receives a drop inside the sidebar | Structural | The folder's scope |
+| Inner popup receives Escape | Active | The inner popup |
+| Popup in a dialog receives Escape | Active | The popup |
+| Dialog opened over a popup receives Escape | Active | The dialog |
+| Host `<input>` in a grid receives arrows | Structural, implicit | The input |
+| Tab list receives arrows | Structural | `FormaTabs` |
 
 ## Non-goals
 
@@ -518,34 +438,6 @@ The router does not implement what an action does inside a component, replace `F
 `DragGesture`, `PanGesture`, or selection behavior, turn every DOM event into a .NET
 callback, reimplement native dialog modality or focus trapping, or promise visual order
 for DOM it does not manage.
-
-## Implementation plan
-
-One architectural change, so one ownership rule is introduced and verified across the
-existing components, landing as several coherent commits.
-
-1. **Foundation.** `InputRouter.js` with scope and route registration, the native table,
-   structural resolution over composed paths, active ordering with the precedence rules,
-   per-class listener strategies, `resolve` and its views. The .NET records and the scoped
-   bridge. Vitest for nested resolution through a top-layer popover, the native table, the
-   modal barrier, containment, activation order, top-only dismissal, and release.
-2. **Dismissal.** `FormaPopover` (done), `FormaDialog` with both entry points (done), active
-   drags, the selection bar while focused, `FormaBreadcrumb` rebuilt on `FormaPopover` (done,
-   as a `FormaDropDownMenu` per segment). The per-popup document listener, both backdrops,
-   and the backdrop z-indexes go.
-3. **Owners onto routes.** `SelectionInteraction`, both shortcut sets (done: the composer's
-   and the toolbar's shortcuts are routes, and `KeyBindings` is retired), the three
-   wheel tracks of `Wheel`, `PanGesture`, `DropZone` and the explorer drop targets,
-   `Focus.js`, and the components that own navigation keys — `FormaSelect`,
-   `FormaDropDownMenu`, `FormaEmojiPicker`, `FormaFileViewer`, `FormaSplitter`,
-   `FormaSortableList`, `FormaTabs`. `NavigationGuard` and the per-component
-   text-entry exclusions are retired in favour of the router's `preventDefault` and native
-   table.
-4. **Verification** across combinations, in a visible browser: select in a grid cell; popup
-   on a toolbar; emoji picker over the composer; drag started in a popup; nested popups;
-   popup in a dialog and dialog over a popup; nested explorer drops; a host `<input>` in a
-   grid; Tab through nested focus-managed surfaces; Escape through successive active
-   scopes; RTL navigation unchanged.
 
 ## Final model
 

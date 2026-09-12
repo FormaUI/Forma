@@ -1,4 +1,4 @@
-# Vocabulary
+# Forma Repository Vocabulary
 
 The words Forma uses for its own concepts, used the same way in code, tokens, documents and the Showcase. A page is a canvas with backdrops laid on it, the way VS Code's sections stand on its workbench. A backdrop is told apart from the backdrop beside it by tone or by the seam between them, never by a line drawn across it.
 

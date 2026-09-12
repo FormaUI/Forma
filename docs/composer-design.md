@@ -1,4 +1,4 @@
-# FormaComposer — Design & Implementation Plan
+# Forma Composer Design
 
 An extensible authoring surface for the **Forma** component library, replacing both halves of Coi's authoring stack: the CKEditor 4 rich text editor and the `template.aspx` drag-and-drop page designer. It hosts rich text, Markdown, code and page composition, and every capability it has — including every editor — arrives as a plugin.
 
@@ -6,7 +6,7 @@ The name is the claim: **the composer composes content, and content can be compo
 
 - **Component category:** `Components/Composer/`, namespace `Forma.Blazor.Components.Composer`
 - **Root component:** `FormaComposer`
-- **Supersedes:** `FormaRichTextEditor` (#36 in [COMPONENTS.md](../COMPONENTS.md)), and Coi's `admin/pops/template.aspx` over `Controls/Edit/`
+- **Supersedes:** the standalone rich text editor, and Coi's `admin/pops/template.aspx` over `Controls/Edit/`
 - **Consumers:** Coi's admin, whose page designer and product templates this replaces wholesale; Épica Deportiva's News article body (P6), page and product editors
 
 ## Vocabulary
@@ -57,9 +57,9 @@ Two Coi behaviours are deliberately **not** reproduced as-authored:
 
 ### 1.3 Modernisations
 
-- **Font size** in `rem`/`em`, not `px`/`pt`: `0.75rem`, `0.875rem`, `1rem`, `1.125rem`, `1.25rem`, `1.5rem`, `2rem`, `2.5rem`, and relative `0.875em`/`1.25em`.
-- **Line height** as unitless multipliers: `1.2`, `1.4`, `1.6`, `1.8`, `2.0` — replacing Coi's 72 pixel values.
-- **Composition over reimplementation:** `FormaSelect` for the format/font/size pickers, `FormaButton` and `FormaDropDownMenu` for the toolbar and its overflow, `FormaColorPicker` for colour, `FormaExplorer` (#53) for stored media, `FormaFilePicker` (#34) + `FormaFileUploader` (#35) for uploads, `FormaVideoPlayer` (#55) for embeds, `FormaDialog` for dialogs.
+- **Font size** in `rem`, not `px`: the picker labels a size by its pixel value at the reader's default and writes it as that value over 16 — `12` becomes `0.75rem`, `16` becomes `1rem` — so authored content follows the reader's font size preference; a host wanting a fixed physical size chooses points through `TypographyPluginOptions.FontSizeUnit`.
+- **Line height** as unitless multipliers: `1.0`, `1.15`, `1.5`, `1.6`, `2.0` — replacing Coi's 72 pixel values.
+- **Composition over reimplementation:** `FormaToolbar` menus for the format, font, size and colour pickers, `FormaCommandArea` and `FormaOverflowMenu` for the toolbar and its overflow, `FormaTabs` for the editor switcher, `FormaExplorer` for stored media, `FormaFilePicker` + `FormaFileUploader` for uploads, `FormaEmojiPicker` for emoji, `FormaDialog` for dialogs.
 - **Logical CSS** throughout, and per-block `dir` so bidi is a first-class property of the document rather than a toolbar afterthought.
 
 ---
@@ -71,14 +71,17 @@ The composer is one assembly, `Forma.Framework.Composer`, carrying its contracts
 | Project | Namespace | References |
 |---|---|---|
 | `Forma.Framework.Composer` | `Forma.Framework.Composer` | `Forma.Framework.Icons`, `Forma.Framework.Toolbar`, `Forma.Framework.Resources`, `Forma.Framework.Sanitization` |
+| `Forma.Framework.Composer.Interop` | `Forma.Framework.Composer.Interop` | `Forma.Framework.Core.Interop` + ASP.NET Core |
 | `Forma.AddOns.Composer.Markdown` | `Forma.Framework.Composer.Markdown` | the composer + Markdig |
 | `Forma.AddOns.Composer.TextMate` | `Forma.Framework.Composer.TextMate` | the composer + TextMateSharp |
 | `Forma.AddOns.Composer.KaTeX` | `Forma.Framework.Composer.KaTeX` | the composer + KaTeX browser assets |
-| `Forma.Blazor` | `Forma.Blazor.Components.Composer` | adds `Forma.Framework.Composer` |
+| `Forma.Blazor` | `Forma.Blazor.Components.Composer` | adds `Forma.Framework.Composer`, `Forma.Framework.Composer.Interop` and `Forma.Framework.Sanitization` |
 
 Sanitization is not the composer's own concern. Anything holding markup to a policy needs it, so the contract and the allowlist implementation sit together in `Forma.Framework.Sanitization`; a host replacing it with a hardened library registers its own `IHtmlSanitizer` and the composer takes it.
 
-**The composer project must not take `FrameworkReference Microsoft.AspNetCore.App`.** The repository confines that to `Forma.Blazor` and `Forma.Tests.Support`, so no contract may mention `RenderFragment`, `EventCallback` or `ComponentBase`. Editor plugins therefore surface a `Type` and the composer hosts it in `<DynamicComponent>`; a plugin that needs custom toolbar markup supplies a `Type` too. This is a constraint on the design, not an inconvenience — it keeps every contract testable from a plain class library.
+The rich text canvas's script module and its `RichTextCanvas` wrapper live in `Forma.Framework.Composer.Interop`, the one composer assembly that compiles against ASP.NET Core, so the contracts stay free of it.
+
+**The composer project must not take `FrameworkReference Microsoft.AspNetCore.App`.** The repository confines that to the assemblies that genuinely compile against ASP.NET Core — the components, the interop wrappers and the test support — so no contract may mention `RenderFragment`, `EventCallback` or `ComponentBase`. Editor plugins therefore surface a `Type` and the composer hosts it in `<DynamicComponent>`; a plugin that needs custom toolbar markup supplies a `Type` too. This is a constraint on the design, not an inconvenience — it keeps every contract testable from a plain class library.
 
 **Every public type the composer owns carries the prefix** — `IComposer*` for contracts, `Composer*` for types. The namespace would disambiguate on its own, but a host sees these names in its DI registrations and its `using` list, where `ComposerDocumentFormat` cannot be mistaken for a framework type. The prefix is the convention for this assembly rather than a special case for the one collision that prompted it. It stops at the assembly boundary: a contract that is not the composer's own, such as `IHtmlSanitizer`, is named for what it does.
 
@@ -91,62 +94,62 @@ The composer ships inside the components' own package, because a host installing
 ### 3.1 Plugin contracts
 
 ```csharp
-namespace Forma.Framework.Composer;
+namespace Forma.Framework.Composer.Plugins;
 
-/// <summary>A capability contributed to the composer, whatever it is implemented in.</summary>
-public interface IComposerPlugin
+public interface IComposerPlugin : IComposerKeyBindingSource
 {
-    /// <summary>The unique identifier of the plugin.</summary>
     string Id { get; }
 
-    /// <summary>Toolbar items contributed by this plugin.</summary>
-    IReadOnlyList<ComposerToolbarItem> ToolbarItems { get; }
+    IReadOnlyList<ComposerToolbarItem> Items => [];
 
-    /// <summary>Key bindings contributed by this plugin.</summary>
-    IReadOnlyList<ComposerKeyBinding> KeyBindings { get; }
+    IReadOnlyList<ComposerToolbarRow> Rows => [];
 
-    /// <summary>Typed-input triggers contributed by this plugin.</summary>
-    IReadOnlyList<ComposerInputTrigger> InputTriggers { get; }
+    IReadOnlyList<ComposerInputTrigger> InputTriggers => [];
 
-    /// <summary>Browser assets the plugin needs before it can run.</summary>
-    IReadOnlyList<ComposerAsset> Assets { get; }
+    IReadOnlyList<string> CommandPrefixes => [];
 
-    /// <summary>Whether every dependency the plugin needs is present.</summary>
-    ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken);
+    IReadOnlyList<ComposerAsset> Assets => [];
+
+    IReadOnlyCollection<string> ActiveStates => [];
+
+    ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default);
+
+    ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+        => ValueTask.CompletedTask;
 }
 
-/// <summary>Provides an authoring surface such as rich text, Markdown, or code.</summary>
+public interface IComposerFeaturePlugin : IComposerPlugin
+{
+    IReadOnlyList<string> SupportedEditorIds => [];
+
+    bool AppliesToViews => false;
+}
+
 public interface IComposerEditorPlugin : IComposerPlugin
 {
-    /// <summary>The title of the editor, in English, used as the localization key.</summary>
     string Title { get; }
 
-    /// <summary>The icon associated with the editor.</summary>
-    Glyph Icon { get; }
+    Icon Icon { get; }
 
-    /// <summary>The document format the editor reads and writes.</summary>
     ComposerDocumentFormat Format { get; }
 
-    /// <summary>The component rendering the editing surface.</summary>
     Type EditorComponent { get; }
 }
 
-/// <summary>A read-only way of looking at one editor's document, such as a rendered preview or its source, with a command bar of its own.</summary>
 public interface IComposerViewPlugin : IComposerPlugin
 {
-    /// <summary>The identifier of the editor this view belongs to.</summary>
     string EditorId { get; }
 
-    /// <summary>The kind of view, one of ComposerViews: Preview or Source.</summary>
     string Kind { get; }
 
     string Title { get; }
-    Glyph Icon { get; }
+    Icon Icon { get; }
 
-    /// <summary>The component filling this view's canvas.</summary>
     Type ViewComponent { get; }
 }
 ```
+
+Key bindings come through `IComposerKeyBindingSource`, which every plugin is and which the engine's own `ComposerKeyBindingSource.Default` also implements, so one `ComposerKeyBindingCatalog` merges them all, the earliest source winning a contested command. A feature plugin scopes itself to editors through `SupportedEditorIds`, empty meaning every editor, and joins a view's bar only when it says `AppliesToViews`.
 
 A **view** has the shape of an editor — its own component, rows, items and assets, maximizable like any surface — but shows one editor's document read-only rather than editing it. Each editor opts into whichever views it offers by shipping a view plugin naming it, and feature plugins contribute to a view's rows exactly as they do to an editor's; the layout for a view takes the built-in row and the rows the view declared, from the view itself and from feature plugins that say `AppliesToViews`, and nothing else — so neither an editor's formatting nor a command acting on the document, such as attaching a file, lands on its preview. The switcher lists the active editor's views as trailing tabs after the editors, and those tabs are the only way in: a view is its own surface, not a toolbar toggle. A plugin reports which of its own toggles and options are active through `ActiveStates`, which is how a view's paper size and zoom show in its bar without going through the selection.
 
@@ -161,7 +164,7 @@ A capability may come from .NET, from a browser module, from a native library be
 - **Availability** is a question the plugin answers through `IsAvailableAsync`. An unavailable plugin degrades to absent — never to a control that throws when pressed.
 
 ```csharp
-public sealed record ComposerAsset(ComposerAssetKind Kind, string Url, ComposerAssetLoading Loading);
+public sealed record ComposerAsset(ComposerAssetKind Kind, string Url, ComposerAssetLoading Loading = ComposerAssetLoading.OnDemand);
 
 public enum ComposerAssetKind { Module, Stylesheet, Font }
 
@@ -191,26 +194,30 @@ These are not plugins, because a plugin can be absent and these cannot:
 | Undo / redo | `IComposerHistory` | One stack for the whole document, spanning editor switches — switching editor is itself an undoable step, so an author can revert a conversion. |
 | Selection | `ComposerSelection` | Snapshot of the caret and range, refreshed from the browser on `selectionchange`. |
 | Editing primitives | `ComposerText`, `ComposerEdit` | The operations every editor would otherwise reinvent against raw strings: the word under the caret, the selected text, replacing a range, mapping the lines a selection touches, replacing every occurrence. Pure functions returning a `ComposerEdit` — new content plus where the caret lands. |
+| Commands | `ComposerCommandRegistry`, `ComposerCommands` | Resolves a command against the engine's own commands first, then against the plugin that named it through an item, a key binding, an input trigger or a command prefix. |
+| Key map | `ComposerKeyBindingCatalog` | The engine's bindings merged with every plugin's, registered on the composer's root and again on the active editor's editable element, where a native control would otherwise claim them. |
 | Surface regions | §3.8 | Toolbar rows, the gutter and the status strip, each open to the same three contribution categories. |
 | Conversion | `IComposerDocumentConverter` | §5. |
 | Sanitisation | `IHtmlSanitizer` | §6. Not optional. |
 | Asset loading | `IComposerAssetLoader` | §3.2. |
-| Clipboard normalisation | engine | Paste is intercepted, sanitised and normalised before it reaches any plugin. |
+| Clipboard | `IHtmlSanitizer` | Pasted markup reaches the document through the same sanitised commit as typed content; paste from Word cleans the markup before it is inserted. |
 | Syntax highlighting | `IComposerSyntaxHighlighter` | §7. |
 
 ### 3.5 Shared state
 
-Two values are cascaded to every plugin component. `ComposerContext` is an immutable record — the active editor plugin id, the document, the selection, and the live engine services above — rebuilt whenever any of it changes, so a changed context is also the re-render signal. `IComposerInteraction`, implemented by the composer itself, carries the operations a plugin invokes: changing the document, reporting a selection, running a command, requesting a render. Neither carries Blazor types, so both live in the composer assembly with everything else.
+Two values are cascaded to every plugin component. `ComposerContext` is an immutable record — the active editor plugin id, the document, the selection, the chrome state (disabled, read-only, maximized, selection bar shown), the key map, and the live engine services above — rebuilt whenever any of it changes, so a changed context is also the re-render signal. `IComposerInteraction`, implemented by the composer itself, carries the operations a plugin invokes: changing the document, reporting a selection, running a command, requesting a render. Neither carries Blazor types, so both live in the composer assembly with everything else.
 
 ### 3.6 Where the editing surface actually lives
 
-The colocated JS module owns the `contenteditable` surface and the browser selection. C# receives changes **debounced, and on blur** — never per keystroke. Under Interactive Server every keystroke would otherwise be a SignalR round-trip, and an article body over a mobile connection is exactly the case that has to feel local. Commands travel the other way as explicit calls into the module; the document in C# is the source of truth for persistence, the DOM is the source of truth for the caret. The same rule covers the selection report: a click reports immediately, since it is a single low-frequency event, but keystroke-driven caret movement — typing or navigating with arrow keys — is coalesced on the same debounce as the content commit, so holding a key does not turn into one interop round-trip per repeat.
+The rich text editor's script module, in the interop assembly and reached through `RichTextCanvas`, owns the `contenteditable` surface and the browser selection. C# receives changes **debounced, and on blur** — never per keystroke. Under Interactive Server every keystroke would otherwise be a SignalR round-trip, and an article body over a mobile connection is exactly the case that has to feel local. Commands travel the other way as explicit calls into the module; the document in C# is the source of truth for persistence, the DOM is the source of truth for the caret. The selection report is deduplicated rather than debounced: the canvas reports a selection once per distinct snapshot — on click, on key-up and on `selectionchange` — so a keystroke that leaves the caret where it was costs no round-trip. The plain text editor, over a `<textarea>`, coalesces keystroke-driven caret movement on the same debounce as its content commit.
 
 ### 3.7 What the host binds
 
 ```csharp
-/// <summary>Document content together with the format it is written in.</summary>
-public sealed record ComposerDocument(ComposerDocumentFormat Format, string Content);
+public sealed record ComposerDocument(ComposerDocumentFormat Format, string Content)
+{
+    public IReadOnlyList<ResourceInfo> Attachments { get; init; } = [];
+}
 ```
 
 ```razor
@@ -225,7 +232,9 @@ The bound value carries its own format because the composer holds more than one 
 
 Switching editor converts `Content` and refuses when §5.2 finds the conversion lossy, so the stored value stays in the format the author last used. The switch is itself an undoable step (§3.4), so a conversion the author dislikes is one undo away.
 
-A host that only ever wants HTML registers the rich text plugin alone and reads `Content`: one property, no conversion, no switcher. `InputBase<TValue>` is generic, so `InputBase<ComposerDocument>` is the conventional base here; its `TryParseValueFromString` reads the serialised form, which is the format id, a newline, then the content. A host is free to persist `Format` and `Content` as two columns instead, which keeps the format queryable.
+`Attachments` carries files beside the content, never written into it, and the engine lists them beneath the canvas whichever editor is active, each removable from there.
+
+A host that only ever wants HTML registers the rich text plugin alone and reads `Content`: one property, no conversion, no switcher. `FormaInputBase<TValue>` is generic, so `FormaInputBase<ComposerDocument>` is the conventional base here; its `TryParseValueFromString` reads the serialised form, which is the format id, a newline, then the content, and a value carrying no newline is HTML. A host is free to persist `Format` and `Content` as two columns instead, which keeps the format queryable.
 
 ---
 
@@ -233,19 +242,19 @@ A host that only ever wants HTML registers the rich text plugin alone and reads 
 
 Everything around the canvas is a **region**, and every region takes contributions from the same three categories. The category is not an enum — it falls out of who contributes and which region they name.
 
-| # | Category | Contributor | Default region when it names none |
+| # | Category | Contributor | Row its items join unless they name another |
 |---|---|---|---|
 | 1 | Composer general | the engine | the built-in toolbar row |
 | 2 | Editor specific | `IComposerEditorPlugin` | the built-in toolbar row |
 | 3 | External | any other `IComposerPlugin` | the plugin toolbar row |
 
-An editor therefore chooses between joining the shared row and standing on its own purely by setting `ComposerToolbarItem.Row`, and a plugin does the same. Both may declare rows of their own through `ToolbarRows`; declared rows render after the shared row they would otherwise have joined, and a row nothing fills is dropped. An item naming a row nobody declared falls back to its default rather than vanishing.
+An item names its row through `ComposerToolbarItem.RowId`: the shared built-in row, one of the rows the composer always provides — formatting, paragraph, plugins and selection, named in `ComposerRows` — or a row its contributor declares through `Rows`. An editor therefore chooses between joining the shared row and standing on its own purely by the row it names, and a plugin does the same. Rows an editor declares render after the built-in row, the composer's own rows follow, then the rows external plugins declared; a row nothing fills is dropped, and an item naming a row nobody declared lands on the plugins row rather than vanishing. Rows holding only a few commands are folded together so no bar is spent on a handful; the plugins row shows on demand behind a toggle at the end of the first bar, overflowing its surplus into a menu; and the selection row is what the selection bar renders.
 
-| Region | Placement | State |
-|---|---|---|
-| Toolbar rows | above the canvas, stacked in a `FormaCommandBar` | built |
-| Gutter | inline-start of the canvas | planned — line numbers plus contributed line markers |
-| Status strip | block-end of the canvas | planned — contributed readouts such as Ln/Col, word count, language |
+| Region | Placement |
+|---|---|
+| Toolbar rows | above the canvas, stacked in a `FormaCommandArea` |
+| Gutter | inline-start of the canvas: line numbers plus contributed line markers |
+| Status strip | block-end of the canvas: contributed readouts such as Ln/Col, word count, language |
 
 Toolbar contributions are static lists, because a toolbar item's identity does not change. Gutter markers and status readouts are not: they move with the caret and the document. Those are **pushed** — a plugin acquires a handle from the engine, mutates it, and disposes it — rather than pulled by the engine on every render.
 
@@ -262,6 +271,7 @@ Each lives in its own directory, mirroring how `Explorer` earned a category of i
 
 | Directory | Plugin | Surface |
 |---|---|---|
+| `PlainTextEditor/` | `PlainTextEditorPlugin` | A `<textarea>` over the document's text, and the editor the composer falls back to when no registered editor is available. |
 | `RichTextEditor/` | `RichTextEditorPlugin` | Visual `contenteditable` canvas. Hosts the feature plugins, the selection bar, and embedded Markdown and code blocks. |
 | `MarkdownEditor/` | `MarkdownEditorPlugin` | Markdown source with line numbers, highlighting and a live rendered preview. |
 | `CodeEditor/` | `CodeEditorPlugin` | Lightweight code editor — line numbers, active-line marker, smart `Tab`, bracket pairing, language picker. Not a Monaco replacement, and not HTML-only: HTML, CSS, JavaScript, TypeScript, C#, SQL, JSON, YAML, Bash, Python. |
@@ -269,47 +279,36 @@ Each lives in its own directory, mirroring how `Explorer` earned a category of i
 
 #### Views
 
-The rich text editor ships two views under `RichTextEditor/Views/`. **Preview** lays the document out as a reader will see it at a chosen size — the ISO A series, Letter and Legal as sheets with a printer's margin, or the width of a phone, tablet or desktop — turned to landscape or zoomed, so the author can see how it reads at that size; Print sends the document alone to the printer, whose dialog owns the paper, and Export saves it as an HTML file. **Source** shows the document's HTML one block per numbered line, wrapped or not, copied to the clipboard or downloaded. Both are read-only by design; a source that edits and commits back is what the code editor of Phase 4 is for. The document's own look — headings, quotes, code, lists, tables, figures, links and the composer's placeholders — lives in `forma-prose.css` under the `forma-prose` class, so the canvas, the preview, the printed page and a host page rendering the document to readers all draw it the same way.
+The rich text editor ships two views under `RichTextEditor/Views/`. **Preview** lays the document out as a reader will see it at a chosen size — the ISO A series, Letter and Legal as sheets with a printer's margin, or the width of a phone, tablet or desktop — turned to landscape or zoomed, so the author can see how it reads at that size; Print sends the document alone to the printer, whose dialog owns the paper, and Export saves it as an HTML file. **Source** shows the document's HTML one block per numbered line, wrapped or not, copied to the clipboard or downloaded. Both are read-only by design; a source that edits and commits back is what the code editor is for. The document's own look — headings, quotes, code, lists, tables, figures, links and the composer's placeholders — lives in `forma-prose.css` under the `forma-prose` class, so the canvas, the preview, the printed page and a host page rendering the document to readers all draw it the same way.
 
 ### 4.2 The page designer
 
-The designer is an editor plugin like the other three, so it costs the engine nothing: it appears in the switcher when registered, and a host that only wants a rich text field never sees it.
+The designer is an editor plugin like the others, so it costs the engine nothing: it appears in the switcher when registered, and a host that only wants a rich text field never sees it.
 
 What it adds is a second extension point, because a palette that only Forma can fill is useless — Coi's palette was half host-domain (product price, buy button, page summary) and Épica's would be too (race results, rider cards, stage profiles).
 
 ```csharp
-/// <summary>Contributes widgets the designer can place on its canvas.</summary>
 public interface IComposerDesignerPlugin : IComposerPlugin
 {
-    /// <summary>The widgets this plugin contributes to the designer.</summary>
     IReadOnlyList<ComposerWidget> Widgets { get; }
 }
 
-/// <summary>Describes a widget available to a designer.</summary>
 public sealed record ComposerWidget
 {
-    /// <summary>The unique identifier of the widget kind.</summary>
     public required string Id { get; init; }
 
-    /// <summary>The widget's name, in English, used as the localization key.</summary>
     public required string Title { get; init; }
 
-    /// <summary>The palette group the widget is listed under.</summary>
     public required string Category { get; init; }
 
-    /// <summary>The icon shown in the palette.</summary>
-    public Glyph Icon { get; init; }
+    public required Icon Icon { get; init; }
 
-    /// <summary>The component rendering the widget on the canvas.</summary>
     public required Type Component { get; init; }
 
-    /// <summary>The component editing the widget's settings, or null when it has none.</summary>
     public Type? SettingsComponent { get; init; }
 
-    /// <summary>The record the widget's settings deserialize to, or null when it has none.</summary>
     public Type? SettingsType { get; init; }
 
-    /// <summary>Whether the widget may contain other widgets.</summary>
     public bool IsContainer { get; init; }
 }
 ```
@@ -319,32 +318,23 @@ Built-in widgets cover Coi's generic palette — text, image, gallery, video, bu
 #### The saved document is a widget tree
 
 ```csharp
-/// <summary>The widget tree the designer canvas edits and the renderer draws.</summary>
 public sealed record ComposerWidgetTree
 {
-    /// <summary>The serialization schema version used by this tree.</summary>
     public int SchemaVersion { get; init; } = 1;
 
-    /// <summary>The widgets at the root, in order.</summary>
     public IReadOnlyList<ComposerWidgetNode> Widgets { get; init; } = [];
 }
 
-/// <summary>One placed widget, its content, its settings and its children.</summary>
 public sealed record ComposerWidgetNode
 {
-    /// <summary>This placement's identity, stable across edits.</summary>
     public required string InstanceId { get; init; }
 
-    /// <summary>The <see cref="ComposerWidget.Id"/> of the kind placed here.</summary>
     public required string WidgetId { get; init; }
 
-    /// <summary>What the author edits on the canvas, or null when the widget has none.</summary>
     public string? Content { get; init; }
 
-    /// <summary>What the settings panel edits.</summary>
     public JsonElement Settings { get; init; }
 
-    /// <summary>Nested widgets, empty unless the widget is a container.</summary>
     public IReadOnlyList<ComposerWidgetNode> Children { get; init; } = [];
 }
 ```
@@ -430,20 +420,19 @@ public sealed class PageDesignerPlugin : IComposerEditorPlugin, IComposerDesigne
 
 A designer **is** an editor plugin — it is a surface the switcher offers — **and** a designer plugin, because it contributes the built-in palette. So "any editor plugin that is not also an `IComposerDesignerPlugin`" is exactly the placeable set, and a designer excludes itself by its own type.
 
-That also settles a naming worry this document carried earlier: `PageDesignerPlugin` does implement `IComposerDesignerPlugin` after all, so the two interfaces read as the pair they look like.
-
 ### 4.3 Feature plugins
 
 | Plugin | Covers | Coi origin |
 |---|---|---|
 | `BasicFormattingPlugin` | Bold, Italic, Underline, Strike, Inline code, Subscript, Superscript, Remove formatting | Bold/Italic/Underline/Strike, RemoveFormat |
-| `TypographyPlugin` | Font family, `rem`/`em` font size, line-height multiplier, text colour, highlight colour | Font, FontSize, TextColor, `lineheight` |
+| `TypographyPlugin` | Font family, `rem` (or point) font size, line-height multiplier, text colour, highlight colour | Font, FontSize, TextColor, `lineheight` |
 | `ParagraphFormatPlugin` | Paragraph, H1–H6, Blockquote, Lead | Format (`p;h1;h2;h3;h4`) |
-| `ListPlugin` | Bulleted, numbered, task list with live checkboxes, indent, outdent | NumberedList, BulletedList |
+| `ListPlugin` | Bulleted, numbered, indent, outdent | NumberedList, BulletedList |
 | `AlignmentBidiPlugin` | Align start/center/end/justify, direction LTR/RTL | Justify*, BidiRtl, BidiLtr |
-| `LinkPlugin` | Link, unlink, anchor, auto-linking | Link, Unlink, Anchor |
-| `ImagePlugin` | Stored media through `FormaExplorer`, which carries `FormaFilePicker` + `FormaFileUploader` in its own toolbar; alt text and caption | `imagelibrary`, Image |
-| `VideoPlugin` | A placeholder the host resolves through `FormaVideoPlayer`, since the sanitizer discards an `iframe` | `youtube` |
+| `LinkPlugin` | Link, unlink, anchor, remove anchor; double-clicking one reopens its dialog on it | Link, Unlink, Anchor |
+| `ImagePlugin` | An image by address, with alt text and caption; double-clicking one reopens its dialog on it | Image |
+| `ExplorerPlugin` | The host's stored files through `FormaExplorer`, which carries `FormaFilePicker` + `FormaFileUploader` in its own toolbar; a chosen picture, video or audio file is embedded, linked or both, any other file linked | `imagelibrary` |
+| `VideoPlugin` | A placeholder carrying the address, title and autoplay, which the host resolves when it renders the document — through `FormaVideoPlayer` or otherwise — since the sanitizer discards an `iframe` | `youtube` |
 | `TablePlugin` | Insert grid, row/column add and remove, header toggle, delete | Table, tabletools |
 | `HorizontalRulePlugin` | Thematic break | HorizontalRule |
 | `EmojiPlugin` | Emoji picker with search | `smiley` (image sprites → Unicode) |
@@ -452,37 +441,38 @@ That also settles a naming worry this document carried earlier: `PageDesignerPlu
 | `CodeBlockPlugin` | Embedded code block with language picker and highlighting | — |
 | `MarkdownBlockPlugin` | Embedded Markdown block, toggling between source and rendered | — |
 | `MathPlugin` | Inline `$…$` and block `$$…$$`, rendered by a registered math capability | — |
-| `TemplatePlugin` | Host-supplied document templates | Templates |
+| `TemplatePlugin` | Document templates supplied through `TemplatePluginOptions`, inserted at the caret or replacing the document | Templates |
 | `EmbedPlugin` | Declarative host-resolved embeds (forms, widgets) | `qform`, safely |
 
 Clipboard note: browsers do not grant programmatic cut/copy/paste without user activation, and the native shortcuts already work. `ClipboardPlugin` therefore contributes paste *transformation* and the explicit "paste as plain text" and "paste from Word" entries, not reimplementations of `Ctrl+C`.
 
 ### 4.3a Engine-agnostic plugins
 
-`MaximizePlugin` and `SelectionBarPlugin` are not rich text features: full-viewport editing and the choice of whether a formatting bar follows the selection are useful to any editor, so both declare `SupportedEditorIds` empty and take no dependency on `RichTextEditorPlugin`. They live at `Composer/Plugins/`, one level up from the editor-specific ones.
+`MaximizePlugin`, `SelectionBarPlugin` and `FileUploadPlugin` are not rich text features: full-viewport editing, the choice of whether a formatting bar follows the selection, and attaching files beside the document are useful to any editor, so all three declare `SupportedEditorIds` empty and take no dependency on `RichTextEditorPlugin`. They live at `Composer/Plugins/`, one level up from the editor-specific ones.
 
 | Plugin | Covers | Coi origin |
 |---|---|---|
 | `MaximizePlugin` | Full-viewport editing | Maximize |
 | `SelectionBarPlugin` | Showing or hiding the bar that follows the selection | — |
+| `FileUploadPlugin` | Uploading files from the author's device and attaching them beside the document (§3.7), gated by `FileUploadPluginOptions` | — |
 
-Both commands are also registered as **engine** commands (`ComposerCommands.Maximize`, `ComposerCommands.SelectionBar`) on `FormaComposer` itself, which owns the maximized and selection-bar state because it, not any one editor, renders the chrome that changes.
+All three commands are also registered as **engine** commands (`ComposerCommands.Maximize`, `ComposerCommands.SelectionBar`, `ComposerCommands.Attach`) on `FormaComposer` itself, which owns the maximized and selection-bar state and the attachments dialog because it, not any one editor, renders the chrome that changes.
 
 The selection bar itself sits beneath the selection, moving above it only when the viewport leaves no room beneath, so it never covers the line being read or the toolbar above the first line. Its handle drags it, or arrow-keys it, to wherever the author wants it, and the bar keeps that displacement from one selection to the next. `ComposerCommandRegistry.ExecuteAsync` resolves an engine command before ever consulting a plugin, so each plugin's `ExecuteAsync` is unreachable by design — the plugin exists only to contribute the toolbar entry that names the engine's own command.
 
 ### 4.4 Plugin options
 
-Options follow the repository's existing convention — a `sealed record` with `init` properties and a `Default`, per plugin, named for it: `TypographyPluginOptions` chooses which sizes and families are offered, `TablePluginOptions` caps dimensions, `ImagePluginOptions` gates upload against library-only. A plugin with a single flag keeps a plain property instead.
+Options follow the repository's existing convention — a `sealed record` with `init` properties and a `Default`, per plugin, named for it: `TypographyPluginOptions` chooses which sizes and families are offered, `TablePluginOptions` caps dimensions, `ExplorerPluginOptions` gates upload and chooses how a chosen file is inserted. A plugin with a single flag keeps a plain property instead.
 
 ### 4.5 Presets are components, not subclasses
 
-Three components differing only in which plugins they register, each with its own options record. None derives from another; they compose the same engine with different plugin sets, so a preset can never drift from the editor it presents.
+Three components differing only in which plugins they register, each taking the engine's `ComposerOptions`. None derives from another; they compose the same engine with different plugin sets, so a preset can never drift from the editor it presents.
 
 | Component | Plugin set | Replaces |
 |---|---|---|
 | `FormaComposer` | Everything registered | Coi `Website` |
 | `FormaStandardRichTextEditor` | Formatting, typography, paragraph, lists, alignment/bidi, link, image, table, horizontal rule | Coi `Basic` |
-| `FormaCompactRichTextEditor` | Formatting, alignment/bidi, link, font and size only | Coi `Mini` |
+| `FormaCompactRichTextEditor` | Formatting, typography, alignment/bidi, link | Coi `Mini` |
 
 The two presets live in `RichTextEditor/` beside the editor they present, not at the category root: each is a rich text surface with a narrower plugin set, so they belong with `FormaRichTextEditor` rather than with the engine. `FormaComposer` stays at the root because it is the engine, and it presents whatever is registered rather than any one editor.
 
@@ -495,7 +485,6 @@ The `Forma` prefix is required on all three: the repository's naming rule puts i
 ### 5.1 One seam, not one per format
 
 ```csharp
-/// <summary>A document format the composer can hold or convert.</summary>
 public sealed record ComposerDocumentFormat
 {
     public ComposerDocumentFormat(string id)
@@ -504,7 +493,6 @@ public sealed record ComposerDocumentFormat
         Id = id.ToLowerInvariant();
     }
 
-    /// <summary>The format's lowercase identifier.</summary>
     public string Id { get; }
 
     public static ComposerDocumentFormat Html { get; } = new("html");
@@ -513,29 +501,21 @@ public sealed record ComposerDocumentFormat
     public static ComposerDocumentFormat WidgetTree { get; } = new("widget-tree");
 }
 
-/// <summary>Converts document content from one format to another.</summary>
 public interface IComposerDocumentConverter
 {
-    /// <summary>The format the converter reads.</summary>
     ComposerDocumentFormat Source { get; }
 
-    /// <summary>The format the converter writes.</summary>
     ComposerDocumentFormat Target { get; }
 
-    /// <summary>Converts the content, reporting what it could not represent.</summary>
     ComposerConversionResult Convert(string content);
 }
 
-/// <summary>The outcome of a conversion, and what the target format could not carry.</summary>
 public sealed record ComposerConversionResult
 {
-    /// <summary>Whether the conversion carried the whole document.</summary>
     public required bool Succeeded { get; init; }
 
-    /// <summary>The converted content, or null when the conversion was refused.</summary>
     public string? Content { get; init; }
 
-    /// <summary>What the target format cannot represent, empty on success.</summary>
     public IReadOnlyList<string> UnsupportedFeatures { get; init; } = [];
 }
 ```
@@ -554,7 +534,7 @@ The engine therefore never `switch`es on a format. `ComposerAssetKind` (§3.2) i
 
 Markdown → HTML is total and always available. **HTML → Markdown is offered only when the HTML happens to be within the subset Markdown can represent.** The converter inspects the document first and, when it finds anything Markdown cannot carry, refuses with `Succeeded = false` and names what blocked it.
 
-This replaces the "lossless transitions" claim in the first draft, which was untrue: Markdown has no representation for font family, font size, text colour, highlight, line height, underline, alignment or per-block `dir` — every one of which §1.3 promises as a headline feature. Silently discarding an author's formatting on an editor switch is worse than declining to switch.
+Markdown has no representation for font family, font size, text colour, highlight, line height, underline, alignment or per-block `dir` — every one of which §1.3 promises as a headline feature. Silently discarding an author's formatting on an editor switch is worse than declining to switch.
 
 The refusal is surfaced, not swallowed: the switcher disables the Markdown editor and explains which features are in the way, so the author can remove them and try again.
 
@@ -567,18 +547,15 @@ The refusal is surfaced, not swallowed: the switcher disables the Markdown edito
 An editor that accepts HTML, offers a code editor over raw markup, and pastes from Word is a stored-XSS surface. Coi got this wrong with `allowedContent = true`.
 
 ```csharp
-/// <summary>Removes markup a document may not carry.</summary>
 public interface IHtmlSanitizer
 {
-    /// <summary>The markup a document sanitized by this instance may carry.</summary>
     IMarkupPolicy MarkupPolicy { get; }
 
-    /// <summary>Returns the content with disallowed markup removed.</summary>
     string Sanitize(string html);
 }
 ```
 
-- Forma ships `AllowlistHtmlSanitizer` in `Forma.Framework.Sanitization` with no external dependency, covering the element and attribute set the built-in plugins can produce. The composer builds one for itself when a host has registered none, so a composer is never unsanitised.
+- Forma ships `AllowlistHtmlSanitizer` in `Forma.Framework.Sanitization` with no external dependency, covering the element and attribute set the built-in plugins can produce. The library registers it as the default when a host has registered none, so a composer is never unsanitised.
 - A host may replace it — a satellite wrapping Ganss.Xss suits a host wanting a hardened, widely-reviewed implementation, and any registration overrides the default.
 - A host wanting only different *rules* rather than a different implementation supplies an `IMarkupPolicy` to the sanitiser instead, wrapping `RichContentMarkupPolicy.Default` to widen or narrow what it permits. Event handler attributes are refused by the sanitiser itself, so no policy can re-admit them.
 - Sanitisation runs at **four** points, and none is optional: content loaded into the composer, content pasted in, content leaving the code editor, and content raised to the host. In a widget tree that means every node's `Content` (§4.2); the settings JSON is never sanitised as markup.
@@ -591,16 +568,12 @@ public interface IHtmlSanitizer
 ## 7. Syntax highlighting
 
 ```csharp
-/// <summary>One classified span of source code.</summary>
 public readonly record struct ComposerSyntaxToken(int Start, int Length, string Scope);
 
-/// <summary>Classifies source code into scoped tokens.</summary>
 public interface IComposerSyntaxHighlighter
 {
-    /// <summary>Languages this highlighter classifies.</summary>
     IReadOnlyList<string> SupportedLanguages { get; }
 
-    /// <summary>Classifies the code into tokens, in order.</summary>
     IReadOnlyList<ComposerSyntaxToken> Tokenize(string code, string language);
 }
 ```
@@ -620,7 +593,7 @@ Without any highlighter registered, code blocks render as plain monospaced text.
 These are correctness requirements for every Forma component, and the composer is the hardest case in the library — a dense toolbar plus a `contenteditable` surface.
 
 - **Tab order:** the composer is one stretch of the page's tab order arranged its own way: the canvas first, then its toolbar and status strip, then out to whatever follows the composer. Tab from the canvas therefore reaches this composer's commands, never the next composer on the page, and Shift+Tab from the canvas leaves the composer.
-- **Toolbar semantics:** `role="toolbar"` obliges arrow-key roving focus between its controls. Either implement it or use a plain button group, matching the decision already recorded for `FormaToolbar`. The editor switcher is a `radiogroup`, since it selects one of a set.
+- **Toolbar semantics:** `role="toolbar"` obliges arrow-key roving focus between its controls. Either implement it or use a plain button group, matching the decision already recorded for `FormaToolbar`. The editor switcher is a `FormaTabs` strip — a `tablist` whose tabs are the editors and, trailing, the active editor's views.
 - **Editing surface:** the `contenteditable` region is labelled, exposes `aria-multiline`, and announces the active block and formatting through a live region — a screen-reader user must be able to learn that the caret is inside a heading or a code block.
 - **Every state without colour:** an active toolbar toggle carries `aria-pressed` and a persistent non-colour mark, not a tint alone.
 - **Touch:** every control is at least 24×24 CSS px, and 44×44 under `@media (pointer: coarse)`. Every `:hover` rule sits inside `@media (hover: hover)`. The selection bar is clamped to the viewport and reachable by tap; nothing essential hangs off hover.
@@ -630,192 +603,27 @@ These are correctness requirements for every Forma component, and the composer i
 
 ## 9. File layout
 
-```text
-src/Forma.Framework.Sanitization/
-├── AllowlistHtmlSanitizer.cs
-├── HtmlSubject.cs
-├── IHtmlSanitizer.cs
-├── IMarkupPolicy.cs
-├── RichContentMarkupPolicy.cs             # the markup policy the sanitiser applies
-└── ServiceCollectionExtensions.cs
-
-src/Forma.Framework.Composer/
-├── Assets/                                # namespace …Composer.Assets
-│   ├── ComposerAsset.cs
-│   ├── ComposerAssetKind.cs
-│   ├── ComposerAssetLoading.cs
-│   └── IComposerAssetLoader.cs
-├── Documents/                             # namespace …Composer.Documents
-│   ├── ComposerDocument.cs
-│   ├── ComposerDocumentFormat.cs
-│   ├── IComposerDocumentConverter.cs
-│   └── ComposerConversionResult.cs
-├── Documents/
-│   └── DocumentConverterRegistry.cs
-├── Editing/                               # namespace …Composer.Editing
-│   ├── ComposerContext.cs
-│   ├── IComposerInteraction.cs
-│   ├── ComposerSelection.cs
-│   ├── ComposerHistory.cs
-│   └── IComposerHistory.cs
-├── Plugins/                               # namespace …Composer.Plugins
-│   ├── IComposerPlugin.cs
-│   ├── IComposerEditorPlugin.cs
-│   ├── IComposerDesignerPlugin.cs
-│   ├── ComposerToolbarItem.cs
-│   ├── ComposerKeyBinding.cs
-│   └── ComposerInputTrigger.cs
-├── Syntax/                                # namespace …Composer.Syntax
-│   ├── IComposerSyntaxHighlighter.cs
-│   └── ComposerSyntaxToken.cs
-└── Widgets/                               # namespace …Composer.Widgets
-    ├── ComposerWidget.cs
-    ├── ComposerWidgetTree.cs
-    └── ComposerWidgetNode.cs
-
-src/Forma.Blazor/Components/Composer/
-├── FormaComposer.razor                    # engine shell, editor routing
-├── FormaComposer.razor.cs
-├── FormaComposer.razor.css
-├── FormaComposer.razor.js                 # asset loader, selection bridge
-├── FormaComposer.he.json
-├── FormaComposer.es.json
-├── FormaComposerOptions.cs
-├── FormaComposerToolbar.razor             # toolbar + editor switcher
-├── FormaComposerToolbar.razor.cs
-├── FormaComposerToolbar.razor.css
-│
-├── Dialogs/                                # namespace …Composer.Dialogs — plain-data dialogs, shared by any editor
-│   ├── FormaComposerLinkDialog.razor
-│   ├── FormaComposerTableDialog.razor
-│   ├── FormaComposerVideoDialog.razor
-│   ├── FormaComposerImageDialog.razor
-│   └── FormaComposerEmbedDialog.razor
-│
-├── Plugins/                                # namespace …Composer.Plugins — apply to any editor
-│   ├── MaximizePlugin.cs
-│   └── SelectionBarPlugin.cs
-│
-├── RichTextEditor/
-│   ├── RichTextEditorPlugin.cs
-│   ├── FormaRichTextEditor.razor          # contenteditable canvas
-│   ├── FormaRichTextEditor.razor.cs
-│   ├── FormaRichTextEditor.razor.css
-│   ├── FormaRichTextEditor.razor.js       # owns the surface and the selection
-│   ├── FormaStandardRichTextEditor.razor  # preset: Coi Basic
-│   ├── FormaCompactRichTextEditor.razor   # preset: Coi Mini
-│   ├── FormaRichTextSelectionBar.razor
-│   ├── FormaRichTextSelectionBar.razor.cs
-│   ├── FormaRichTextSelectionBar.razor.css
-│   ├── Views/                             # namespace …Composer.RichTextEditor.Views — read-only views over the document
-│   │   ├── RichTextPreviewViewPlugin.cs
-│   │   ├── FormaRichTextPreview.razor
-│   │   ├── RichTextSourceViewPlugin.cs
-│   │   └── FormaRichTextSource.razor
-│   └── Plugins/                           # namespace …Composer.RichTextEditor.Plugins
-│       ├── BasicFormattingPlugin.cs
-│       ├── TypographyPlugin.cs
-│       ├── ParagraphFormatPlugin.cs
-│       ├── ListPlugin.cs
-│       ├── AlignmentBidiPlugin.cs
-│       ├── LinkPlugin.cs
-│       ├── ImagePlugin.cs
-│       ├── VideoPlugin.cs
-│       ├── TablePlugin.cs
-│       ├── HorizontalRulePlugin.cs
-│       ├── EmojiPlugin.cs
-│       ├── SpecialCharacterPlugin.cs
-│       ├── ClipboardPlugin.cs
-│       ├── CodeBlockPlugin.cs
-│       ├── MarkdownBlockPlugin.cs
-│       ├── MathPlugin.cs
-│       ├── TemplatePlugin.cs
-│       └── EmbedPlugin.cs
-│
-├── MarkdownEditor/
-│   ├── MarkdownEditorPlugin.cs
-│   ├── FormaMarkdownEditor.razor
-│   ├── FormaMarkdownEditor.razor.cs
-│   └── FormaMarkdownEditor.razor.css
-│
-├── CodeEditor/
-│   ├── CodeEditorPlugin.cs
-│   ├── FormaCodeEditor.razor
-│   ├── FormaCodeEditor.razor.cs
-│   ├── FormaCodeEditor.razor.css
-│   └── FormaCodeEditor.razor.js        # tab, bracket pairing, scroll sync
-│
-└── PageDesigner/
-    ├── PageDesignerPlugin.cs
-    ├── FormaPageDesigner.razor             # palette, canvas, settings panel
-    ├── FormaPageDesigner.razor.cs
-    ├── FormaPageDesigner.razor.css
-    ├── FormaPageDesigner.razor.js          # pointer drag, press-and-hold, resize
-    ├── FormaWidgetPalette.razor
-    ├── FormaWidgetCanvas.razor
-    ├── FormaWidgetRenderer.razor           # the canvas walk without the chrome, for public pages
-    ├── FormaWidgetFrame.razor              # per-widget chrome: move, edit, style, delete
-    ├── FormaWidgetSettingsPanel.razor
-    └── Widgets/                            # namespace …Composer.PageDesigner.Widgets
-        ├── WidgetPlugin.cs                 # the built-in palette
-        ├── FormaTextWidget.razor           # hosts FormaRichTextEditor
-        ├── FormaImageWidget.razor
-        ├── FormaGalleryWidget.razor
-        ├── FormaVideoWidget.razor
-        ├── FormaButtonWidget.razor
-        ├── FormaRowWidget.razor            # container: columns
-        ├── FormaColumnWidget.razor         # container: a drop target with its own width
-        ├── FormaSpacerWidget.razor
-        ├── FormaDividerWidget.razor
-        ├── FormaFormWidget.razor
-        ├── FormaMapWidget.razor
-        ├── FormaCodeWidget.razor
-        └── FormaEmbedWidget.razor
-```
-
 Every folder and its namespace stay in step, so `Plugins/` and `Dialogs/` are real namespace segments.
 
-**The two feature projects are foldered by concern rather than flat**, and the implementation mirrors the abstractions folder for folder — `Sanitization/` against `Sanitization/`, `Editing/` against `Editing/` — so an implementation sits under the same name as the contract it satisfies, and the test tree mirrors both.
+**The composer project is foldered by concern rather than flat** — assets, documents, editing, plugins, syntax, widgets — with a contract and the engine's implementation of it side by side under the same folder, so an implementation sits under the same name as the contract it satisfies, and the test tree mirrors it.
 
-**Localization follows `FormaExplorer`:** every component under `Composer/`, including those in sub-namespaces, injects `IStringLocale<FormaComposer>` and shares the one `FormaComposer.he.json` / `FormaComposer.es.json` pair at the category root. Resources resolve by the localizer's **type** rather than by file location, so this works — and a per-component pair in a sub-namespace would silently fall back to English keys instead. This is the failure mode that has to be re-verified whenever a file moves.
-
----
-
-## 10. Phases
-
-Each phase ends buildable, tested and reviewable.
-
-1. **Capability model.** ✅ The composer assembly, every contract in §3 and §5–§7, the default sanitiser, the converter registry, and history are built, and `IComposerAssetLoader` has the JS-backed implementation it was missing. That one sits in `Forma.Blazor` rather than here, because it needs `IJSRuntime`, which places it with Phase 2's engine shell. This lands first precisely because the external-dependency question decides everything after it.
-2. **Engine shell.** ✅ `FormaComposer`, `FormaComposerToolbar`, the `ComposerDocument` binding of §3.7, plugin discovery and availability probing, the selection bridge, `ComposerText`, and the debounced sync of §3.6 are built, along with the command spine, the key map, and the toolbar row model of §3.8. The editor switcher is a controlled `FormaTabs` strip above each surface's own toolbar rather than a segmented control inside it. The selection bridge is the shared `Text` operation, not welded into any one editor plugin, so a future textarea-based surface reuses it rather than reimplementing it; a contenteditable surface will need its own, because the DOM APIs genuinely differ, but through the same generic `IComposerInteraction.ReportSelectionAsync` seam.
-2a. **Regions.** ◐ The status strip of §3.8 is built: `IComposerRegionRegistry` pushes `IComposerStatusItem` handles that any plugin creates and disposes, cascaded on `ComposerContext.Regions` so no editor is a special case. `FormaComposerStatusStrip` renders it once per composer, beneath whichever surface is active. The gutter's contract (`IComposerGutterMarker`) is built and tested the same way; its visual rendering waits on a line-oriented surface, since pixel-aligning a marker beside a wrapping `<textarea>` needs font-metric mirroring that would itself become a one-off hack rather than a real capability.
-3. **Rich text editor and core formatting.** ✅ `RichTextEditorPlugin`, the canvas, the selection bar, the preview and source views, and the formatting, typography, paragraph, list and alignment/bidi plugins.
-4. **Markdown and code editors.** `MarkdownEditorPlugin`, `CodeEditorPlugin`, `Forma.AddOns.Composer.Markdown`, the lossless-only HTML → Markdown guard, and the embedded Markdown and code blocks.
-5. **Media, tables and embeds.** ✅ Link, image, video, table, horizontal rule, emoji, special character, clipboard, template and embed plugins, each contributing a toolbar entry and driving the canvas through the rich text surface; the five data-collecting dialogs sit in `Composer/Dialogs/` rather than under the editor, because nothing in them is contenteditable-specific. `ImagePlugin` chooses from stored media through an embedded `FormaExplorer`, opened already selecting and gated by `ImagePluginOptions`, falling back to an address alone when the host registered no `IExplorerResourcesProvider` or `IFileStore`. `VideoPlugin` stores a placeholder rather than an embed, because `iframe` is discarded by the sanitizer, and the dialog refuses an address the document could not keep. Preview and maximize landed as **engine** commands on `FormaComposer` (§4.3a) rather than rich text plugins, since both change chrome the engine owns rather than the document any one editor holds.
-6. **Satellite capabilities.** `Forma.AddOns.Composer.TextMate`, `.KaTeX`, a Ganss.Xss sanitizer satellite for hosts wanting a hardened implementation, and the highlighting and math plugins that consume them.
-7. **Page designer.** `PageDesignerPlugin`, the palette, canvas, per-widget chrome and settings panel, `IComposerDesignerPlugin` with the built-in palette, `ComposerWidgetTree` with its renderer, pointer-based drag with a keyboard equivalent, and the text widget hosting `FormaRichTextEditor`. It lands last because it composes everything above it — a designer without a working rich text editor inside its text widget is not the component Coi had.
-8. **Accessibility, touch, direction, tests and Showcase.** §8 verified in a real browser, `he` and `es-419` checked, bUnit tests under `tests/Forma.Blazor.Tests/Components/Composer/` mirroring the source tree, and a Showcase page at `/composer` rendering every state each plugin can enter.
+**Localization follows `FormaExplorer`:** every component under `Composer/`, including those in sub-namespaces, resolves its strings through the localizer of the component it serves, named by `LocalizationSourceType` — `FormaComposer` for the engine, its bars, its dialogs and the editor canvases, `FormaRichTextEditor` for the rich text selection bar and views — each with its own `.he.json` / `.es.json` pair beside the component named. Resources resolve by the localizer's **type** rather than by file location, so this works — and a pair beside a component that names another as its source would silently fall back to English keys instead. This is the failure mode that has to be re-verified whenever a file moves.
 
 ---
 
-## 11. Decisions
-
-### 11.1 Settled
+## 10. Decisions
 
 | # | Question | Answer |
 |---|---|---|
 | C1 | Which external libraries may the composer bundle? | Any, provided all five conditions in §3.3 hold. The rule is a standing carve-out by category, not a named list, so Markdig, TextMateSharp and KaTeX all qualify without a per-library approval. |
 | C2 | How are the composer's contracts named, given `Ganss.Xss.IHtmlSanitizer` may be in a host's scope? | Everything the composer owns carries the prefix: `IComposer*` for contracts, `Composer*` for types. Sanitization is not among them — it is a framework concern named for what it does, so a host registering both sanitisers aliases one of the two. |
-| C3 | Should there be a plain-text editor plugin, or is plain text only ever a conversion target? | Conversion target only. `ComposerDocumentFormat.PlainText` exists; no surface ships with it. Nobody has asked for one, and adding it later is a plugin, not a change. |
+| C3 | Should there be a plain-text editor plugin, or is plain text only ever a conversion target? | Both. `ComposerDocumentFormat.PlainText` is a format any converter may target, and `PlainTextEditorPlugin` authors it over a `<textarea>` as the editor the catalog falls back to when no registered editor is available, so a composer always has a surface. |
 | C4 | What does `@bind-Value` carry when the active editor's format is not the bound format? | A `ComposerDocument` — the content together with the format it is written in (§3.7). A bare string would force every document through HTML and rewrite a Markdown author's source on each round-trip. The format is a string-keyed value rather than an enum, so a new format costs the library nothing. |
-| C5 | Are `TemplatePlugin`'s templates host-supplied or does Forma ship a set? | Host-supplied. A template is editorial content and Forma has no editorial opinion. |
+| C5 | Are `TemplatePlugin`'s templates host-supplied or does Forma ship a set? | Host-supplied, through `TemplatePluginOptions`; the default options carry two sample layouts a host replaces with its own. A template is editorial content and Forma has no editorial opinion. |
 | C6 | What *is* the page designer's saved document? | A `ComposerWidgetTree` — JSON, with HTML as output rather than storage (§4.2). Coi's saved HTML froze rendering decisions at save time and never escaped the tree anyway, since recovering a widget needs `data-widget` and `data-settings` attributes. Columns are nodes, not an array on the row. Document metadata stays on the host's row. |
 | C7 | One designer plugin or several, given Coi drove seven targets through `OpenTemplate`'s numeric type? | One, varied by its options and the registered widget set. The palette is already extensible, so a second plugin would only re-register widgets. |
-| C8 | Who owns layout and theme? | Not the composer. `FormaLayout` and `FormaTheme` are library-wide components built first and composed afterwards; the designer ships template-only and nothing in phases 1–8 waits on them. Both want their own `COMPONENTS.md` entries. |
+| C8 | Who owns layout and theme? | Not the composer. `FormaLayout` and `FormaTheme` are library-wide components built first and composed afterwards; the designer ships template-only and nothing in the composer waits on them. Both want their own catalog entries. |
 | C9 | May a designer be placed on a designer canvas? | No. `PageDesignerPlugin` implements both `IComposerEditorPlugin` and `IComposerDesignerPlugin`, so the placeable set is "any editor plugin that is not also a designer plugin" — a type test, and a designer excludes itself. |
-| C10 | How does an editor choose between the shared toolbar row and one of its own? | By setting `ComposerToolbarItem.Row`, or leaving it null for its category's default row (§3.8). Both editors and external plugins declare rows through `ToolbarRows`, so there is one mechanism rather than a separate registration path per category. |
+| C10 | How does an editor choose between the shared toolbar row and one of its own? | By the row each item names through `ComposerToolbarItem.RowId` (§3.8). Both editors and external plugins declare rows through `Rows`, so there is one mechanism rather than a separate registration path per category. |
 | C11 | Are gutter markers and status readouts pushed or pulled? | Pushed, through a handle the plugin mutates and disposes. Toolbar items stay static lists. This matches VS Code's `createStatusBarItem` and decoration types, and the dispose pattern its API reference states as the general rule (§3.8). |
 | C12 | Where do the common editing operations live? | In the engine, as `ComposerText` returning `ComposerEdit` (§3.4). Word-at-caret, selected text, range replacement, per-line mapping and replace-all are needed by every editor and every plugin that touches text; leaving them out means each one reimplements them against raw strings. |
-
-### 11.2 Open
-
-None. Every decision this plan depends on is settled; phase 1 can start.
