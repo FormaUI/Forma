@@ -19,6 +19,7 @@
         <ProjectReference Include="..\Forma.Framework.Input\Forma.Framework.Input.csproj" />
         <ProjectReference Include="..\Forma.Framework.Input.Interop\Forma.Framework.Input.Interop.csproj" />
         <ProjectReference Include="..\Forma.Framework.Core.Interop\Forma.Framework.Core.Interop.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Common.Interop\Forma.Framework.Common.Interop.csproj" />
         <ProjectReference Include="..\Forma.Framework.Composer.Interop\Forma.Framework.Composer.Interop.csproj" />
         <ProjectReference Include="..\Forma.AddOns.Resources.Office\Forma.AddOns.Resources.Office.csproj" />
         <ProjectReference Include="..\Forma.AddOns.Resources.Markdown\Forma.AddOns.Resources.Markdown.csproj" />
