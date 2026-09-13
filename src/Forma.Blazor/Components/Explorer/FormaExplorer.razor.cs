@@ -504,27 +504,27 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     private async Task<bool> EnsureFolderHasRoomAsync(IExplorerFolderItem? folder, int adding)
     {
-        if (Constraints.MaxFolderResourceCount <= 0 || folder is null || (folder.Count ?? 0) + adding <= Constraints.MaxFolderResourceCount)
+        if (Constraints.MaxFolderItemCount <= 0 || folder is null || (folder.Count ?? 0) + adding <= Constraints.MaxFolderItemCount)
         {
             return true;
         }
 
         await RejectAsync(
-            ExplorerRejectionReason.FolderResourceCount,
-            Constraints.MaxFolderResourceCount,
-            L["[$ plural; one: A folder holds at most # item.; other: A folder holds at most # items.; $]", Constraints.MaxFolderResourceCount].Value);
+            ExplorerRejectionReason.FolderItemCount,
+            Constraints.MaxFolderItemCount,
+            L["[$ plural; one: A folder holds at most # item.; other: A folder holds at most # items.; $]", Constraints.MaxFolderItemCount].Value);
 
         return false;
     }
 
     private async Task<bool> EnsureExplorerHasRoomAsync(int adding, long bytes)
     {
-        if (Constraints.MaxResourceCount > 0 && KnownItemCount + adding > Constraints.MaxResourceCount)
+        if (Constraints.MaxItemCount > 0 && KnownItemCount + adding > Constraints.MaxItemCount)
         {
             await RejectAsync(
-                ExplorerRejectionReason.ResourceCount,
-                Constraints.MaxResourceCount,
-                L["[$ plural; one: This explorer holds at most # item.; other: This explorer holds at most # items.; $]", Constraints.MaxResourceCount].Value);
+                ExplorerRejectionReason.ItemCount,
+                Constraints.MaxItemCount,
+                L["[$ plural; one: This explorer holds at most # item.; other: This explorer holds at most # items.; $]", Constraints.MaxItemCount].Value);
 
             return false;
         }

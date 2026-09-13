@@ -259,9 +259,9 @@ public sealed partial class FormaExplorerPage : ComponentBase
         AcceptedResourceKinds = "contentType:image",
         MaxFolderDepth = 2,
         MaxFolderRootCount = 2,
-        MaxFolderResourceCount = 3,
+        MaxFolderItemCount = 3,
         MaxSubfolderCount = 1,
-        MaxResourceCount = 4,
+        MaxItemCount = 4,
         MaxTotalBytes = 1_048_576
     };
 
