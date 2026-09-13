@@ -9,7 +9,7 @@ using Forma.Framework.Explorer.Navigation;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-/// <summary>The view switch, infinite scroll, and pagination for the resources an explorer shows.</summary>
+/// <summary>The view switch, infinite scroll, and pagination for the items an explorer shows.</summary>
 public sealed partial class FormaExplorerContentArea : FormaComponentBase
 {
     [CascadingParameter] private IExplorerConfigurationView Configuration { get; set; } = default!;

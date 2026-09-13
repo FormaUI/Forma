@@ -39,7 +39,7 @@ public sealed partial class FormaExplorerSidebar : FormaComponentBase, IExplorer
     /// <summary>Which folder operations the sidebar offers.</summary>
     [Parameter] public ExplorerItemOptions ItemOptions { get; set; } = ExplorerItemOptions.Default;
 
-    /// <summary>Total count of all resources across the explorer.</summary>
+    /// <summary>How many items the whole explorer holds.</summary>
     [Parameter] public int TotalCount { get; set; }
 
     /// <inheritdoc />

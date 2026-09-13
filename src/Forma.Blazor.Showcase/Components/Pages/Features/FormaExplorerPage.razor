@@ -19,7 +19,7 @@
                       CurrentFolder="@(GetCurrentFolder("full"))"
                       TotalCount="_allMedia.Count"
                       OnFolderChanged="@(folder => HandleFolderChangedAsync("full", folder))"
-                      SelectedChanged="@(resources => HandleSelectedAsync("full", resources))"
+                      SelectedChanged="@(items => HandleSelectedAsync("full", items))"
                       OnRename="@(req => HandleRenameAsync("full", req))"
                       OnDelete="@(req => HandleDeleteAsync("full", req))"
                       OnDrop="@(req => HandleDropAsync("full", req))"
@@ -55,7 +55,7 @@
     <div class="demo-box">
         <FormaExplorer Items="_singleSelectItems"
                       Options="@(new ExplorerOptions { MaxSelection = 1 })"
-                      SelectedChanged="@(resources => HandleSelectedAsync("single", resources))" />
+                      SelectedChanged="@(items => HandleSelectedAsync("single", items))" />
         <ul class="demo-log">
             @foreach (var resource in Log("single"))
             {
@@ -97,7 +97,7 @@
                       TotalCount="_allMedia.Count"
                       ItemOptions="ExplorerItemOptions.ReadOnly"
                       OnFolderChanged="@(folder => HandleFolderChangedAsync("readonly", folder))"
-                      SelectedChanged="@(resources => HandleSelectedAsync("readonly", resources))" />
+                      SelectedChanged="@(items => HandleSelectedAsync("readonly", items))" />
         <ul class="demo-log">
             @foreach (var resource in Log("readonly"))
             {

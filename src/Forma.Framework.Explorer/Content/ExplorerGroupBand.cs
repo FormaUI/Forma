@@ -3,7 +3,7 @@ namespace Forma.Framework.Explorer.Content;
 /// <summary>The band a group of items falls in, in the order the bands stand in.</summary>
 public enum ExplorerGroupBand
 {
-    /// <summary>A resource kind; the group's label names it.</summary>
+    /// <summary>A kind of item; the group's label names it.</summary>
     Kind,
 
     /// <summary>Names beginning with a digit.</summary>

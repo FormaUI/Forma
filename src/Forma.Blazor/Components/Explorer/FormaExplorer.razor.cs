@@ -53,10 +53,10 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     private bool ShowsSidebar
         => Options.ShowSidebar && Folders is { Count: > 0 };
 
-    /// <summary>How many resources the whole library holds, for hosts that supply one folder at a time; the supplied resources are counted when null.</summary>
+    /// <summary>How many items the whole library holds, for hosts that supply one folder at a time; the supplied items are counted when null.</summary>
     [Parameter] public int? TotalCount { get; set; }
 
-    /// <summary>How many bytes the whole library holds, for hosts that supply one folder at a time; the supplied resources are measured when null.</summary>
+    /// <summary>How many bytes the whole library holds, for hosts that supply one folder at a time; the supplied items are measured when null.</summary>
     [Parameter] public long? TotalBytes { get; set; }
 
     /// <summary>The ceilings the explorer keeps, refusing anything that would cross one.</summary>
@@ -71,10 +71,10 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     /// <summary>Which operations the explorer offers on the items it lists.</summary>
     [Parameter] public ExplorerItemOptions ItemOptions { get; set; } = ExplorerItemOptions.Default;
 
-    /// <summary>Raised when resources are deleted.</summary>
+    /// <summary>Raised when items are deleted.</summary>
     [Parameter] public EventCallback<ExplorerDeleteRequest> OnDelete { get; set; }
 
-    /// <summary>Raised when resources are dropped onto a target folder.</summary>
+    /// <summary>Raised when items are dropped onto a target folder.</summary>
     [Parameter] public EventCallback<ExplorerDropRequest> OnDrop { get; set; }
 
     /// <summary>Raised when the active folder changes.</summary>
@@ -98,7 +98,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     /// <summary>Raised when the refresh action is clicked.</summary>
     [Parameter] public EventCallback OnRefresh { get; set; }
 
-    /// <summary>Raised when a resource rename is confirmed.</summary>
+    /// <summary>Raised when an item rename is confirmed.</summary>
     [Parameter] public EventCallback<ExplorerRenameRequest> OnRename { get; set; }
 
     /// <summary>Raised when new files have been uploaded.</summary>
@@ -457,10 +457,10 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     private int RootFolderCount
         => FolderTree.GetChildren(null).Count;
 
-    private int KnownResourceCount
+    private int KnownItemCount
         => TotalCount ?? Items?.Count ?? MatchingCount ?? 0;
 
-    private int ListedResourceCount
+    private int ListedItemCount
         => TotalCount ?? Items?.Count(item => item.Visibility != ExplorerItemVisibility.Hidden) ?? MatchingCount ?? 0;
 
     private long KnownByteCount
@@ -519,7 +519,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     private async Task<bool> EnsureExplorerHasRoomAsync(int adding, long bytes)
     {
-        if (Constraints.MaxResourceCount > 0 && KnownResourceCount + adding > Constraints.MaxResourceCount)
+        if (Constraints.MaxResourceCount > 0 && KnownItemCount + adding > Constraints.MaxResourceCount)
         {
             await RejectAsync(
                 ExplorerRejectionReason.ResourceCount,

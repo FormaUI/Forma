@@ -6,7 +6,7 @@ using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Thumbnail grid view for explorer resources.</summary>
+/// <summary>Thumbnail grid view for explorer items.</summary>
 public sealed partial class FormaExplorerThumbnailsView : FormaComponentBase
 {
     /// <summary>The collection of items to display.</summary>

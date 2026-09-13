@@ -12,12 +12,12 @@ public enum ExplorerGroupField
     /// <summary>By byte size band.</summary>
     Size,
 
-    /// <summary>By resource kind.</summary>
+    /// <summary>By kind.</summary>
     Kind,
 
-    /// <summary>By how long ago the resource was taken in.</summary>
+    /// <summary>By how long ago the item was taken in.</summary>
     DateAdded,
 
-    /// <summary>By how long ago the resource last changed.</summary>
+    /// <summary>By how long ago the item last changed.</summary>
     DateModified
 }

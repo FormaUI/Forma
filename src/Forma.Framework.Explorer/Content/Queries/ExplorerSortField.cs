@@ -1,6 +1,6 @@
 namespace Forma.Framework.Explorer.Content.Queries;
 
-/// <summary>Specifies the field by which explorer resources are ordered.</summary>
+/// <summary>Specifies the field by which explorer items are ordered.</summary>
 public enum ExplorerSortField
 {
     /// <summary>Sort by file name.</summary>
@@ -9,12 +9,12 @@ public enum ExplorerSortField
     /// <summary>Sort by byte size.</summary>
     Size,
 
-    /// <summary>Sort by resource kind/type.</summary>
+    /// <summary>Sort by kind.</summary>
     Kind,
 
-    /// <summary>Sort by when the resource was taken in.</summary>
+    /// <summary>Sort by when the item was taken in.</summary>
     DateAdded,
 
-    /// <summary>Sort by when the resource last changed.</summary>
+    /// <summary>Sort by when the item last changed.</summary>
     DateModified
 }

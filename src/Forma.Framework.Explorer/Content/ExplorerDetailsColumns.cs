@@ -7,7 +7,7 @@ public enum ExplorerDetailsColumns
     /// <summary>The name column alone.</summary>
     None = 0,
 
-    /// <summary>The resource kind column.</summary>
+    /// <summary>The kind column.</summary>
     Kind = 1,
 
     /// <summary>The byte size column.</summary>

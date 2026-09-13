@@ -1,6 +1,6 @@
 namespace Forma.Framework.Explorer.Content.Queries;
 
-/// <summary>Specifies the sort direction for explorer resources.</summary>
+/// <summary>Specifies the sort direction for explorer items.</summary>
 public enum ExplorerSortDirection
 {
     /// <summary>Ascending order (A-Z, oldest first, smallest first).</summary>
