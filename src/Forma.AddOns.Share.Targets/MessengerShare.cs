@@ -2,7 +2,7 @@ namespace Forma.Framework.Share.Targets;
 
 using Forma.Framework.Icons;
 
-/// <summary>Opens Messenger's send dialog on the item's address, under the host's Facebook app.</summary>
+/// <summary>Opens Messenger's send dialog on the item's address, under the host's Facebook app; Facebook documents the dialog as unsupported on mobile devices.</summary>
 public sealed class MessengerShare : LinkShare
 {
     private readonly string _appId;

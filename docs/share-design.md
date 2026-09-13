@@ -46,9 +46,10 @@ compete.
   WhatsApp, Telegram, Bluesky, Reddit, Snapchat, LinkedIn and Pinterest, ship as navigation
   destinations in the add-on, registered by `AddFormaShareNetworks()` beside `AddFormaUI()`.
   The add-on also ships destinations the host switches on one by one, each by its own
-  registrar: Messenger's send dialog under the host's Facebook app, Discord through a
-  channel webhook, Mastodon's composer on the server the user names, Dropbox through its
-  save-URL API, Google Drive and OneDrive as uploads, and TikTok by publish-by-pull.
+  registrar: Messenger's send dialog under the host's Facebook app, which Facebook documents
+  as unsupported on mobile devices, Discord through a channel webhook, Mastodon's composer
+  on the server the user names, Dropbox through its save-URL API, Google Drive and OneDrive
+  as uploads, and TikTok by publish-by-pull.
 - **Host settings and a user's credentials are two different things.** A value the website
   owns, an app id or a webhook address, is an options class beside its target in the
   add-on, bound the conventional way and settable through the registrar's configure
