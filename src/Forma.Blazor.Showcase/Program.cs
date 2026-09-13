@@ -71,8 +71,8 @@ builder.Services.AddCultureRouting(new CultureRouterOptions
     Routes =
     [
         new() { Token = "en", Culture = new("en") },
-        new() { Token = "he", Culture = new("he") },
         new() { Token = "es", Culture = new("es-419"), Aliases = ["es-419"] },
+        new() { Token = "he", Culture = new("he") },
         new() { Token = "fr", Culture = new("fr") }
     ]
 });
