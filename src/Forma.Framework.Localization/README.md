@@ -220,16 +220,16 @@ own, and any other project marks the folder as content copied to the output dire
 
 ## Reading the layout from a tool
 
-The layout is one rule, and it is public so a tool checks files by the rule the runtime reads them
-with rather than by a copy of it. `LocaleSource` owns the walk from the file named for the assembly
-down to the file named for the type, over any store a derived class opens a file from by its name
-segments, and answers with each entry it read together with the file and section it came from;
-`EmbeddedLocaleSource` and `HostLocaleSource` are the runtime's two. A format is an
-`ILocaleFileFormat`, which names the extension its files carry and reads one file into a
-`LocaleFile`, a tree of sections and entries the contract walks; a backend such as
-`Forma.Framework.Localization.Json` is one such format. `LocaleFile` lists every entry a file
-declares with the part of a type's name the entry's sections complete, which is the same rule read
-from the file's side.
+The layout is one rule, and it is public so a tool checks files by the rule the runtime reads
+them with rather than by a copy of it. `LocaleSource` owns the walk from the file named for the
+assembly down to the file named for the type, over any store a derived class opens a file from
+by its name segments or hands back already read, and answers with each entry it read together
+with the file and section it came from; `EmbeddedLocaleSource` and `HostLocaleSource` are the
+runtime's two. A format is an `ILocaleFileFormat`, which names the extension its files carry
+and reads one file into a `LocaleFile`, a tree of sections and entries the contract walks;
+a backend such as `Forma.Framework.Localization.Json` is one such format. `LocaleFile` lists
+every entry a file declares with the part of a type's name the entry's sections complete,
+which is the same rule read from the file's side.
 
 ## Patterns and segments
 

@@ -8,7 +8,7 @@ public interface ILocaleFileFormat
 
     /// <summary>Reads a file, having checked its metadata lets it be read at all.</summary>
     /// <param name="stream">The file's content.</param>
-    /// <param name="name">The file's name, named in anything thrown.</param>
+    /// <param name="fileName">The file's name, named in anything thrown.</param>
     /// <param name="cultureName">The culture the file's name gives it.</param>
-    LocaleFile Read(Stream stream, string name, string cultureName);
+    LocaleFile Read(Stream stream, string fileName, string cultureName);
 }

@@ -32,13 +32,13 @@ public sealed class FakeLocaleSource : LocaleSource
         => [assemblyName];
 
     /// <inheritdoc />
-    protected override string GetName(IReadOnlyList<string> segments, string cultureName)
+    protected override string GetFileName(IReadOnlyList<string> segments, string cultureName)
         => $"{string.Join('/', segments)}.{cultureName}{Format.Extension}";
 
     /// <inheritdoc />
-    protected override Stream? Open(IReadOnlyList<string> segments, string cultureName)
+    protected override Stream? OpenFile(IReadOnlyList<string> segments, string cultureName)
     {
-        var name = GetName(segments, cultureName);
+        var name = GetFileName(segments, cultureName);
         Requests.Add(name);
 
         return Files.ContainsKey(name) ? new MemoryStream() : null;

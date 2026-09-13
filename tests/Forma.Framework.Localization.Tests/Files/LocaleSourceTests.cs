@@ -112,6 +112,27 @@ public sealed class LocaleSourceTests
     }
 
     [Fact]
+    public void Should_take_a_file_a_source_already_holds_without_opening_it()
+    {
+        // Arrange
+        var source = new PreparedLocaleSource
+        {
+            Files =
+            {
+                ["Contoso.Widgets/Bars/Toolbar.he.fake"] = new(CreateEntries(("Bold", "already read")), null),
+            },
+        };
+
+        // Act
+        var entries = source.Read(Assembly, "Contoso.Widgets.Bars.Toolbar", "he");
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal([new LocaleSourceEntry("Contoso.Widgets/Bars/Toolbar.he.fake", string.Empty, "Bold", "already read")], entries),
+            () => Assert.Contains("Contoso.Widgets/Bars/Toolbar.he.fake", source.Requests));
+    }
+
+    [Fact]
     public void Should_ask_for_each_file_once()
     {
         // Arrange

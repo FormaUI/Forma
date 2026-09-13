@@ -12,6 +12,6 @@ public sealed class FakeLocaleFileFormat : ILocaleFileFormat
     public string Extension => ".fake";
 
     /// <inheritdoc />
-    public LocaleFile Read(Stream stream, string name, string cultureName)
-        => Files[name];
+    public LocaleFile Read(Stream stream, string fileName, string cultureName)
+        => Files[fileName];
 }

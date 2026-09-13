@@ -15,18 +15,18 @@ public sealed class HostLocaleSource(string path, ILocaleFileFormat format) : Lo
         => [assemblyName];
 
     /// <inheritdoc />
-    protected override string GetName(IReadOnlyList<string> segments, string cultureName)
+    protected override string GetFileName(IReadOnlyList<string> segments, string cultureName)
         => Path.Combine([_path, .. segments.Take(segments.Count - 1), $"{segments[^1]}.{cultureName}{Format.Extension}"]);
 
     /// <inheritdoc />
-    protected override Stream? Open(IReadOnlyList<string> segments, string cultureName)
+    protected override Stream? OpenFile(IReadOnlyList<string> segments, string cultureName)
     {
         if (_path.Length == 0)
         {
             return null;
         }
 
-        var name = GetName(segments, cultureName);
+        var name = GetFileName(segments, cultureName);
 
         return File.Exists(name) ? File.OpenRead(name) : null;
     }

@@ -22,12 +22,12 @@ public sealed class EmbeddedLocaleSource(Assembly assembly, string resourcesPath
         => !rootedAtAssembly ? [] : _resourcesPath.Length == 0 ? [assemblyName] : [assemblyName, _resourcesPath];
 
     /// <inheritdoc />
-    protected override string GetName(IReadOnlyList<string> segments, string cultureName)
+    protected override string GetFileName(IReadOnlyList<string> segments, string cultureName)
         => $"{string.Join('.', segments)}.{cultureName}{Format.Extension}";
 
     /// <inheritdoc />
-    protected override Stream? Open(IReadOnlyList<string> segments, string cultureName)
-        => _assembly.GetManifestResourceStream(GetName(segments, cultureName))
+    protected override Stream? OpenFile(IReadOnlyList<string> segments, string cultureName)
+        => _assembly.GetManifestResourceStream(GetFileName(segments, cultureName))
             ?? _satellites.GetOrAdd(cultureName, GetSatellite)?.GetManifestResourceStream($"{string.Join('.', segments)}{Format.Extension}");
 
     // A file the build moved into the culture's satellite assembly is named there without its culture.

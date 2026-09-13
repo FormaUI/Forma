@@ -56,12 +56,29 @@ public abstract class LocaleSource(ILocaleFileFormat format)
     /// <summary>The name a file has in this source, named in anything thrown.</summary>
     /// <param name="segments">The segments of the file's name, without the culture and extension.</param>
     /// <param name="cultureName">The culture the file is named for.</param>
-    protected abstract string GetName(IReadOnlyList<string> segments, string cultureName);
+    protected abstract string GetFileName(IReadOnlyList<string> segments, string cultureName);
 
-    /// <summary>Opens the file the segments name, or null when this source holds none.</summary>
+    /// <summary>Reads the file the segments name, or null when this source holds none; opens it for the format to read unless a derived class already holds it read.</summary>
     /// <param name="segments">The segments of the file's name, without the culture and extension.</param>
     /// <param name="cultureName">The culture the file is named for.</param>
-    protected abstract Stream? Open(IReadOnlyList<string> segments, string cultureName);
+    protected virtual LocaleFile? ReadFile(IReadOnlyList<string> segments, string cultureName)
+    {
+        if (OpenFile(segments, cultureName) is not { } stream)
+        {
+            return null;
+        }
+
+        using (stream)
+        {
+            return Format.Read(stream, GetFileName(segments, cultureName), cultureName);
+        }
+    }
+
+    /// <summary>Opens the file the segments name, or null when this source holds none; a source that reads its files itself opens none.</summary>
+    /// <param name="segments">The segments of the file's name, without the culture and extension.</param>
+    /// <param name="cultureName">The culture the file is named for.</param>
+    protected virtual Stream? OpenFile(IReadOnlyList<string> segments, string cultureName)
+        => null;
 
     private void ReadRoot(string assemblyName, string rootNamespace, IReadOnlyList<string> leadingSegments, string[] segments, string cultureName, List<LocaleSourceEntry> entries)
     {
@@ -71,30 +88,22 @@ public abstract class LocaleSource(ILocaleFileFormat format)
             name.AddRange(segments[..depth]);
 
             // A file named for a folder sits beside it or inside it under the folder's own name, the assembly's file inside the assembly's folder; the type's own file has no folder.
-            ReadFile(name, assemblyName, rootNamespace, segments.AsSpan(depth), cultureName, entries);
+            ReadEntries(name, assemblyName, rootNamespace, segments.AsSpan(depth), cultureName, entries);
             if (depth < segments.Length)
             {
                 name.Add(depth == 0 ? assemblyName : segments[depth - 1]);
-                ReadFile(name, assemblyName, rootNamespace, segments.AsSpan(depth), cultureName, entries);
+                ReadEntries(name, assemblyName, rootNamespace, segments.AsSpan(depth), cultureName, entries);
             }
         }
     }
 
-    private void ReadFile(IReadOnlyList<string> segments, string assemblyName, string rootNamespace, ReadOnlySpan<string> remainingSegments, string cultureName, List<LocaleSourceEntry> entries)
+    private void ReadEntries(IReadOnlyList<string> segments, string assemblyName, string rootNamespace, ReadOnlySpan<string> remainingSegments, string cultureName, List<LocaleSourceEntry> entries)
     {
-        var name = GetName(segments, cultureName);
-        var file = _files.GetOrAdd(name, _ => Open(segments, cultureName) is { } stream ? ReadFile(stream, name, cultureName) : null);
+        var fileName = GetFileName(segments, cultureName);
+        var file = _files.GetOrAdd(fileName, _ => ReadFile(segments, cultureName));
         if (file is not null && (!ReadsDeclaredRoots || (file.RootNamespace ?? assemblyName) == rootNamespace))
         {
-            file.Collect(remainingSegments, entries, name);
-        }
-    }
-
-    private LocaleFile ReadFile(Stream stream, string name, string cultureName)
-    {
-        using (stream)
-        {
-            return Format.Read(stream, name, cultureName);
+            file.Collect(remainingSegments, entries, fileName);
         }
     }
 }

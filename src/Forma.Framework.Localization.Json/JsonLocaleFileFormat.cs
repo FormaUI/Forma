@@ -17,26 +17,26 @@ public sealed class JsonLocaleFileFormat : ILocaleFileFormat
     public string Extension => ".json";
 
     /// <inheritdoc />
-    public LocaleFile Read(Stream stream, string name, string cultureName)
+    public LocaleFile Read(Stream stream, string fileName, string cultureName)
     {
         ArgumentNullException.ThrowIfNull(stream);
-        ArgumentException.ThrowIfNullOrEmpty(name);
+        ArgumentException.ThrowIfNullOrEmpty(fileName);
         ArgumentException.ThrowIfNullOrEmpty(cultureName);
 
         using var document = JsonDocument.Parse(stream, DocumentOptions);
         if (document.RootElement.ValueKind != JsonValueKind.Object)
         {
-            throw new JsonException($"'{name}' is not a JSON object.");
+            throw new JsonException($"'{fileName}' is not a JSON object.");
         }
 
         var marker = document.RootElement.TryGetProperty(LocalizationSchema.Marker, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
-        var metadata = LocalizationMetadata.Read(marker, name, cultureName);
+        var metadata = LocalizationMetadata.Read(marker, fileName, cultureName);
 
-        return new LocaleFile(ReadSection(document.RootElement, name), metadata.RootNamespace);
+        return new LocaleFile(ReadSection(document.RootElement, fileName), metadata.RootNamespace);
     }
 
     // An object is a section; text or null is a translation; the marker is the file's own and belongs to no type.
-    private static LocaleSection ReadSection(JsonElement node, string name)
+    private static LocaleSection ReadSection(JsonElement node, string fileName)
     {
         var sections = new List<KeyValuePair<string, LocaleSection>>();
         var entries = new List<KeyValuePair<string, string?>>();
@@ -46,7 +46,7 @@ public sealed class JsonLocaleFileFormat : ILocaleFileFormat
             switch (property.Value.ValueKind)
             {
                 case JsonValueKind.Object:
-                    sections.Add(new(property.Name, ReadSection(property.Value, name)));
+                    sections.Add(new(property.Name, ReadSection(property.Value, fileName)));
                     break;
                 case JsonValueKind.String when property.Name != LocalizationSchema.Marker:
                     entries.Add(new(property.Name, property.Value.GetString()));
@@ -57,7 +57,7 @@ public sealed class JsonLocaleFileFormat : ILocaleFileFormat
                     entries.Add(new(property.Name, null));
                     break;
                 default:
-                    throw new JsonException($"'{name}' gives '{property.Name}' a value that is not text.");
+                    throw new JsonException($"'{fileName}' gives '{property.Name}' a value that is not text.");
             }
         }
 
