@@ -6,7 +6,7 @@ from what the DOM cannot do without script.
 
 **.NET 11 · Interactive Server components.**
 
-Everything a host needs ships in one package; optional artwork packs are separate and opt-in.
+Installing the one package brings everything a host needs, with the Framework pieces it builds on restored beside it as packages of their own; optional artwork packs and add-ons are separate and opt-in.
 The host owns its own `App.razor` and `Routes.razor`; the package ships components, styles, and JS.
 `src/Forma.Blazor.Showcase` is a complete working host to copy from.
 

@@ -9,18 +9,31 @@
         <PackageId>2Site.Forma.Blazor</PackageId>
         <StaticWebAssetBasePath>_content/$(AssemblyName)</StaticWebAssetBasePath>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-        <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeReferencedProjectsInPackage</TargetsForTfmSpecificBuildOutput>
+        <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeBundledProjectsInPackage</TargetsForTfmSpecificBuildOutput>
     </PropertyGroup>
 
     <ItemGroup>
         <None Include="..\..\README.md" Pack="true" PackagePath="\" Visible="false" />
     </ItemGroup>
 
-    <!-- The referenced projects ship inside this package rather than as packages of their own. -->
-    <Target Name="IncludeReferencedProjectsInPackage" DependsOnTargets="ResolveReferences">
+    <!-- A referenced project marked private ships inside this package, its satellite assemblies with it; every other one is a package dependency. -->
+    <!-- Resolving references searches for satellite assemblies only while building, which BuildOnlySettings declares. -->
+    <Target Name="IncludeBundledProjectsInPackage" DependsOnTargets="BuildOnlySettings;ResolveReferences">
         <ItemGroup>
-            <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.ReferenceSourceTarget)' == 'ProjectReference'" />
+            <_ReferencedProjectOutput Include="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.ReferenceSourceTarget)' == 'ProjectReference'">
+                <Assembly>$([System.String]::Copy('%(ReferenceCopyLocalPaths.Filename)').Replace('.resources', ''))</Assembly>
+                <TargetPath>%(ReferenceCopyLocalPaths.DestinationSubDirectory)%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)</TargetPath>
+            </_ReferencedProjectOutput>
         </ItemGroup>
+        <PropertyGroup>
+            <_BundledAssemblies>;@(_BundledAssembly, ';');</_BundledAssemblies>
+            <_DeclaredAssemblies>;@(_DeclaredAssembly, ';');</_DeclaredAssemblies>
+        </PropertyGroup>
+        <ItemGroup>
+            <BuildOutputInPackage Include="@(_ReferencedProjectOutput)" Condition="$(_BundledAssemblies.Contains(';%(_ReferencedProjectOutput.Assembly);'))" />
+            <_UndeclaredProjectOutput Include="@(_ReferencedProjectOutput)" Condition="'%(_ReferencedProjectOutput.Extension)' == '.dll' and !$(_DeclaredAssemblies.Contains(';%(_ReferencedProjectOutput.Assembly);'))" />
+        </ItemGroup>
+        <Error Condition="'@(_UndeclaredProjectOutput)' != ''" Text="@(_UndeclaredProjectOutput->'%(Filename)', ', ') is reached through a referenced project but is neither bundled nor declared as a dependency; reference it directly." />
     </Target>
 
     <!-- The static web assets of the bundled Framework assemblies ship in this package too, each under its own base path. -->
@@ -47,29 +60,41 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="11.0.0-preview.6.26359.118" />
     </ItemGroup>
 
+    <!-- The component feature vocabularies and the interop assemblies ship inside this package. -->
     <ItemGroup>
         <ProjectReference Include="..\Forma.Framework.Composer\Forma.Framework.Composer.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Explorer\Forma.Framework.Explorer.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Files\Forma.Framework.Files.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Feedback\Forma.Framework.Feedback.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Media\Forma.Framework.Media.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework.Share\Forma.Framework.Share.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Windows\Forma.Framework.Windows.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Toolbar\Forma.Framework.Toolbar.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework.Css\Forma.Framework.Css.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Input\Forma.Framework.Input.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Input.Interop\Forma.Framework.Input.Interop.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Core.Interop\Forma.Framework.Core.Interop.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Common.Interop\Forma.Framework.Common.Interop.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Forma.Framework.Composer.Interop\Forma.Framework.Composer.Interop.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework.Timing\Forma.Framework.Timing.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework.Icons\Forma.Framework.Icons.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework.Icons.Glyphs\Forma.Framework.Icons.Glyphs.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework.Emojis.Unicode\Forma.Framework.Emojis.Unicode.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework.Localization\Forma.Framework.Localization.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework.Resources\Forma.Framework.Resources.csproj" PrivateAssets="all" />
-        <ProjectReference Include="..\Forma.Framework.Sanitization\Forma.Framework.Sanitization.csproj" PrivateAssets="all" />
+    </ItemGroup>
+
+    <!-- The packable Framework assemblies are package dependencies, including the ones the bundled assemblies reach. -->
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Framework.Share\Forma.Framework.Share.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Css\Forma.Framework.Css.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Events\Forma.Framework.Events.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Timing\Forma.Framework.Timing.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Icons\Forma.Framework.Icons.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Icons.Glyphs\Forma.Framework.Icons.Glyphs.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Emojis.Unicode\Forma.Framework.Emojis.Unicode.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Sanitization\Forma.Framework.Sanitization.csproj" />
+    </ItemGroup>
+
+    <!-- The assemblies the references above bundle and declare, read before the build adds the transitive references. -->
+    <ItemGroup>
+        <_DeclaredAssembly Include="@(ProjectReference->'%(Filename)')" />
+        <_BundledAssembly Include="@(ProjectReference->WithMetadataValue('PrivateAssets', 'all')->'%(Filename)')" />
     </ItemGroup>
 
     <!-- These ship embedded in the assembly, so packing them again as content only duplicates them. -->

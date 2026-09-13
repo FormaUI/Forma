@@ -9,7 +9,6 @@
         <PackageId>2Site.Forma.AddOns.Emojis.Twemoji</PackageId>
         <StaticWebAssetBasePath>_content/$(AssemblyName)</StaticWebAssetBasePath>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-        <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeReferencedProjectsInPackage</TargetsForTfmSpecificBuildOutput>
     </PropertyGroup>
 
     <!-- The emoji artwork ships in this package, so its notice travels with it. -->
@@ -18,19 +17,12 @@
         <None Include="..\..\THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="\" Visible="false" />
     </ItemGroup>
 
-    <!-- The referenced projects ship inside this package rather than as packages of their own. -->
-    <Target Name="IncludeReferencedProjectsInPackage" DependsOnTargets="ResolveReferences">
-        <ItemGroup>
-            <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.ReferenceSourceTarget)' == 'ProjectReference'" />
-        </ItemGroup>
-    </Target>
-
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" />
     </ItemGroup>
 
     <!-- Embedded in the assembly, so packing it again as content only duplicates it. -->
