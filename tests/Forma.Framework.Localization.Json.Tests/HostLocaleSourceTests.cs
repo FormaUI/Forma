@@ -4,7 +4,7 @@ using System.Text.Json;
 
 using Forma.Framework.Localization.Json.Tests.Fixtures;
 
-public sealed class LocalesFolderTests
+public sealed class HostLocaleSourceTests
 {
     private static IStringLocale CreateLocale<T>(JsonLocalizationOptions? options = null)
         => new JsonStringLocaleFactory(options ?? new JsonLocalizationOptions()).Create(typeof(T));
@@ -168,6 +168,34 @@ public sealed class LocalesFolderTests
 
             // Assert
             Assert.True(localized.ResourceNotFound);
+        }
+
+        [Fact]
+        public void Should_read_the_assemblys_file_from_inside_the_assemblys_folder()
+        {
+            // Arrange
+            using var culture = new CultureScope("es");
+            var strings = CreateLocale<HostOverridden>();
+
+            // Act
+            var localized = strings["Open"];
+
+            // Assert
+            Assert.Equal("assembly file inside the folder", localized.Value);
+        }
+
+        [Fact]
+        public void Should_read_a_namespace_file_from_inside_its_folder()
+        {
+            // Arrange
+            using var culture = new CultureScope("es");
+            var strings = CreateLocale<HostOverridden>();
+
+            // Act
+            var localized = strings["Cancel"];
+
+            // Assert
+            Assert.Equal("namespace file inside the folder", localized.Value);
         }
 
         [Fact]

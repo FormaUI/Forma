@@ -1,0 +1,92 @@
+namespace Forma.Framework.Localization.Json;
+
+using System.Collections.Concurrent;
+
+/// <summary>Where translation files are read from, walked from the file named for the assembly down to the file named for the type, each file read once.</summary>
+internal abstract class LocaleSource
+{
+    private readonly ConcurrentDictionary<string, LocaleFile?> _files = new(StringComparer.Ordinal);
+
+    /// <summary>Whether a file may complete a type's name from a root it declares rather than from the assembly's name.</summary>
+    protected abstract bool ReadsDeclaredRoots { get; }
+
+    /// <summary>The translations for a type in one culture, root by root and within a root from the file named for the assembly down to the file named for the type, so a later entry overrides an earlier one.</summary>
+    /// <param name="assemblyName">The name of the assembly the type lives in.</param>
+    /// <param name="typeName">The type's full name.</param>
+    /// <param name="cultureName">The culture the files are named for.</param>
+    public IReadOnlyList<KeyValuePair<string, string?>> Read(string assemblyName, string typeName, string cultureName)
+    {
+        var entries = new List<KeyValuePair<string, string?>>();
+
+        var segments = typeName.Split('.');
+        var assemblySegments = assemblyName.Split('.');
+        var leadsWithAssembly = segments.Length > assemblySegments.Length && segments.AsSpan(0, assemblySegments.Length).SequenceEqual(assemblySegments);
+
+        // The assembly's name is the root a file need not declare, and the root of a type outside any namespace; a type rooted elsewhere is laid out by its full name.
+        ReadRoot(assemblyName, assemblyName, GetLeadingSegments(assemblyName, leadsWithAssembly || segments.Length == 1), leadsWithAssembly ? segments[assemblySegments.Length..] : segments, cultureName, entries);
+
+        if (ReadsDeclaredRoots)
+        {
+            for (var length = 1; length < segments.Length; length++)
+            {
+                var rootNamespace = string.Join('.', segments[..length]);
+                if (rootNamespace != assemblyName)
+                {
+                    ReadRoot(assemblyName, rootNamespace, GetLeadingSegments(assemblyName, rootedAtAssembly: true), segments[length..], cultureName, entries);
+                }
+            }
+        }
+
+        return entries;
+    }
+
+    /// <summary>The segments every file name starts with, before the part of the type's name the file spells.</summary>
+    /// <param name="assemblyName">The name of the assembly the type lives in.</param>
+    /// <param name="rootedAtAssembly">Whether the type's name is completed from the assembly's, which a name starting with it or carrying no namespace is.</param>
+    protected abstract IReadOnlyList<string> GetLeadingSegments(string assemblyName, bool rootedAtAssembly);
+
+    /// <summary>The name a file has in this source, named in anything thrown.</summary>
+    /// <param name="segments">The segments of the file's name, without the culture.</param>
+    /// <param name="cultureName">The culture the file is named for.</param>
+    protected abstract string GetName(IReadOnlyList<string> segments, string cultureName);
+
+    /// <summary>Opens the file the segments name, or null when this source holds none.</summary>
+    /// <param name="segments">The segments of the file's name, without the culture.</param>
+    /// <param name="cultureName">The culture the file is named for.</param>
+    protected abstract Stream? Open(IReadOnlyList<string> segments, string cultureName);
+
+    private void ReadRoot(string assemblyName, string rootNamespace, IReadOnlyList<string> leadingSegments, string[] segments, string cultureName, List<KeyValuePair<string, string?>> entries)
+    {
+        for (var depth = leadingSegments.Count == 0 ? 1 : 0; depth <= segments.Length; depth++)
+        {
+            var name = new List<string>(leadingSegments);
+            name.AddRange(segments[..depth]);
+
+            // A file named for a folder sits beside it or inside it under the folder's own name, the assembly's file inside the assembly's folder; the type's own file has no folder.
+            ReadFile(name, assemblyName, rootNamespace, segments.AsSpan(depth), cultureName, entries);
+            if (depth < segments.Length)
+            {
+                name.Add(depth == 0 ? assemblyName : segments[depth - 1]);
+                ReadFile(name, assemblyName, rootNamespace, segments.AsSpan(depth), cultureName, entries);
+            }
+        }
+    }
+
+    private void ReadFile(IReadOnlyList<string> segments, string assemblyName, string rootNamespace, ReadOnlySpan<string> remainingSegments, string cultureName, List<KeyValuePair<string, string?>> entries)
+    {
+        var name = GetName(segments, cultureName);
+        var file = _files.GetOrAdd(name, _ => Open(segments, cultureName) is { } stream ? ReadFile(stream, name, cultureName) : null);
+        if (file is not null && (!ReadsDeclaredRoots || (file.RootNamespace ?? assemblyName) == rootNamespace))
+        {
+            file.Collect(remainingSegments, entries, name);
+        }
+    }
+
+    private static LocaleFile ReadFile(Stream stream, string name, string cultureName)
+    {
+        using (stream)
+        {
+            return LocaleFile.Read(stream, name, cultureName);
+        }
+    }
+}

@@ -44,7 +44,7 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
         }
 
         _context = new JsonLocaleContext(
-            new JsonResourceCache(new LocalesFolder(GetLocalesPath(options.LocalesPath))),
+            new JsonResourceCache(NormalizePath(options.ResourcesPath), new HostLocaleSource(GetLocalesPath(options.LocalesPath))),
             sourceCulture,
             new PluralExpressionEvaluator(CommonPluralRuleSet.Default, loggerFactory.CreateLogger<PluralExpressionEvaluator>()),
             options);
@@ -73,8 +73,9 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
         ArgumentException.ThrowIfNullOrWhiteSpace(location);
 
         var assembly = Assembly.Load(new AssemblyName(location));
+        var relativeName = TrimPrefix(baseName, location + ".");
 
-        return GetOrAdd(assembly, Qualify(location, TrimPrefix(baseName, location + ".")), baseName);
+        return GetOrAdd(assembly, Qualify(location, relativeName), $"{location}.{relativeName}");
     }
 
     // A relative folder sits beside the application, wherever it runs from.

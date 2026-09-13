@@ -7,14 +7,14 @@ description: The component authoring standard — the file set a component is an
 
 ## Component file layout
 
-A component lives in the components assembly under a category, where a category names a UI role such as bars, feedback, inputs or navigation, and is a file set: `FormaX.razor` for markup only, with `@namespace` first; `FormaX.razor.cs` for all component logic; `FormaX.razor.css` for isolated CSS with a banner; and a translation file per culture beside them when the component invents user-facing text.
+A component lives in the components assembly under a category, where a category names a UI role such as bars, feedback, inputs or navigation, and is a file set: `FormaX.razor` for markup only, with `@namespace` first; `FormaX.razor.cs` for all component logic; `FormaX.razor.css` for isolated CSS with a banner; and a section per culture in the category's translation files, `{Category}.he.json` in the category's folder, when the component invents user-facing text.
 
 - Do keep markup in `.razor`, logic in `.razor.cs`, and component styling in `.razor.css`.
 - Do give a component a category of its own, as an explorer or an editor has, when it is large enough to grow sub-components and supporting types of its own; the category then owns its folder and namespace.
 - Do place supporting types such as a size enum or an item record beside the component that owns them.
 - Do put a supporting type in the feature assembly instead once the concern has one, because a type a host names in a callback or an options parameter is the feature's vocabulary rather than one component's detail; what stays beside the component is what no caller ever names, such as a stream wrapper driving a progress bar.
 - Do put script a component needs in the `wwwroot/scripts/` of the interop assembly that ships it, never beside the component.
-- Do add the translation files only when the component invents user-facing text.
+- Do add the translation sections only when the component invents user-facing text.
 - Don't use `@code` blocks in library components.
 - Don't file such a component under a category naming its subject matter instead, the way a category named for files would swallow an explorer.
 - Don't put component-specific styles in global stylesheets or scatter supporting types into unrelated shared folders.
@@ -154,7 +154,7 @@ Every component has a page in the showcase, in the category folder matching the 
 - Do open the page as the showcase's other pages open, and structure it as a heading and a description followed by one section per scenario, each with a heading and a box.
 - Do render the component in every state it can enter, not merely name the state: default, filled, required, disabled, invalid, plus whatever the component adds — empty collection, no search matches, over-limit count, indeterminate, loading.
 - Do make each state reachable on the page. A validation state needs a model rule and a submit, not a paragraph describing one.
-- Do treat the component's translation file as the inventory: if a key in it cannot be displayed in the showcase, a state is missing.
+- Do treat the component's translation section as the inventory: if a key in it cannot be displayed in the showcase, a state is missing.
 - Do localize all page copy so every culture switcher exercises direction and translation.
 - Don't count a state as covered because the parameter exists; count it when the page renders the component standing in it.
 - Don't treat the showcase page as optional or as documentation that can be added later.

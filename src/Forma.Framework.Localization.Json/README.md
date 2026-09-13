@@ -96,7 +96,8 @@ rendering operate on the source message and never consume a null value.
 
 ## How a file is found
 
-A locale resolves a **base name** from the type's full name, then looks for a file under it:
+A locale resolves a **base name** from the type's full name, which every `LocalizedText` reports as
+the location it searched:
 
 | Type's full name | Base name |
 | --- | --- |
@@ -107,10 +108,28 @@ A locale resolves a **base name** from the type's full name, then looks for a fi
 Generic arity and nested-type markers are dropped: `Grid<T>` reads `Grid.he.json`, `Outer+Inner` reads
 `Outer.Inner.he.json`, and a closed generic resolves through its open definition.
 
-Lookup walks `CultureInfo.CurrentUICulture` outward through `Parent`, taking the first file that has
-the key and stopping before the invariant culture, which no file can name. Each culture is tried as
-`{baseName}.{culture}.json` in the main assembly first, then as `{baseName}.json` in that culture's
-satellite assembly. Files are read once and cached frozen.
+A type's translations sit in the file named for the type, or in a file named for a namespace above
+it, where objects complete the rest of the name. Walking down from the assembly, each of these
+translates `FormaToolbar` in `Forma.Blazor.Components.Bars`:
+
+```text
+Forma.Blazor.es.json                    { "Components.Bars.FormaToolbar": { "Bold": "Negrita" } }
+Components/Bars.es.json                 { "FormaToolbar": { "Bold": "Negrita" } }
+Components/Bars/Bars.es.json            { "FormaToolbar": { "Bold": "Negrita" } }
+Components/Bars/FormaToolbar.es.json    { "Bold": "Negrita" }
+```
+
+A file named for a folder sits beside that folder or inside it under the folder's own name, and the
+two are one and the same; the assembly's file sits at the project root under the assembly's name. An
+object's key may spell several segments at once or one at a time, so
+`"Components": { "Bars.FormaToolbar": { … } }` reads the same as the first line. A file holds only
+the keys it changes: a file closer to the type wins over one higher up, and the type's own file over
+every other.
+
+Lookup walks `CultureInfo.CurrentUICulture` outward through `Parent`, taking the first culture whose
+files have the key and stopping before the invariant culture, which no file can name. Within a
+culture, a file is read from the main assembly first, then from that culture's satellite assembly.
+Files are read once and cached frozen.
 
 `ResourcesPath` inserts a folder segment between the assembly name and the remainder. It resolves from
 the assembly root, and a type rooted outside the assembly bypasses it.
@@ -121,32 +140,29 @@ A host lays its own files in a `locales` folder beside the application, to rewor
 assembly ships, or to add a language it never had. `LocalesPath` names the folder, resolved
 against the application's base directory when relative; an empty value reads none.
 
-A file's path names an assembly, then any leading part of a type's name as folders, then the
-culture; inside the file, an object completes the type's name and text translates a key. The
-three shapes below are the same lookup at different depths, for `FormaComposer` in
-`Forma.Blazor.Components.Composer`:
+The folder is laid out as an assembly's own files are, under a folder named for the assembly, so
+each of these translates `FormaComposer` in `Forma.Blazor.Components.Composer`:
 
 ```text
-locales/Forma.Blazor.es.json                              { "Components.Composer.FormaComposer": { "Bold": "Negrita" } }
-locales/Forma.Blazor/Components.es.json                   { "Composer.FormaComposer": { "Bold": "Negrita" } }
+locales/Forma.Blazor.es.json                                     { "Components.Composer.FormaComposer": { "Bold": "Negrita" } }
+locales/Forma.Blazor/Components.es.json                          { "Composer.FormaComposer": { "Bold": "Negrita" } }
 locales/Forma.Blazor/Components/Composer/FormaComposer.es.json   { "Bold": "Negrita" }
 ```
 
-An object's key may spell several segments at once or one at a time, so `"Components": {
-"Composer.FormaComposer": { … } }` reads the same as the first line. A file holds only the keys it
-changes; every other key keeps the assembly's own translation. A deeper file wins over a shallower
-one, and any entry the host writes wins over the assembly's.
+The same precedence applies, and a host's entry wins over the assembly's own at the same position,
+so a host file holds only the keys it changes and every other key keeps the assembly's translation.
 
-A file completes a type's name from the assembly's name, without `ResourcesPath`, so the host's
-layout follows the namespace rather than the embedding. An assembly whose root namespace is not
-its name has its files declare the root in their metadata, as
+A host file completes a type's name from the assembly's name, without `ResourcesPath`, so the
+host's layout follows the namespace rather than the embedding. An assembly whose root namespace is
+not its name has its host files declare the root in their metadata, as
 `RootNamespace: Forma.Framework.Resources.Office;`, and the path and sections then complete the
 name from there: a file declaring that root at
 `locales/Forma.AddOns.Resources.Office/OfficeResourceProvider.es.json` translates
 `Forma.Framework.Resources.Office.OfficeResourceProvider`. A file declaring no root, for a type whose
 namespace does not start with the assembly's name, is laid out by the type's full name. Files under a
-declared root are read after the assembly's own, so their entries win. Every file carries the
-[metadata](#file-metadata) entry, declaring the culture its name gives it, as an embedded file does.
+declared root are read after the assembly's own, so their entries win. An embedded file needs no
+root, since its name already spells one. Every file carries the [metadata](#file-metadata) entry,
+declaring the culture its name gives it.
 
 The folder has to reach the application's output: a web project copies JSON content there on its
 own, and any other project marks the folder as content copied to the output directory.

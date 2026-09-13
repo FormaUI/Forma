@@ -4,21 +4,15 @@ using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Globalization;
 using System.Reflection;
-using System.Text.Json;
 
-using Forma.Framework.Localization;
-
-/// <summary>Reads the translations for a type in one culture, the file embedded in its assembly with the host's own entries laid over it, and keeps each result in memory after the first read.</summary>
-/// <param name="locales">The folder the host keeps its own translation files in.</param>
-internal sealed class JsonResourceCache(LocalesFolder locales)
+/// <summary>Reads the translations for a type in one culture, the files embedded in its assembly with the host's own laid over them, and keeps each result in memory after the first read.</summary>
+/// <param name="resourcesPath">The folder the embedded files sit under, as dotted segments, or empty when they sit beside the types they translate.</param>
+/// <param name="host">The folder the host keeps its own translation files in.</param>
+internal sealed class JsonResourceCache(string resourcesPath, HostLocaleSource host)
 {
-    private static readonly JsonSerializerOptions SerializerOptions = new()
-    {
-        AllowTrailingCommas = true,
-        ReadCommentHandling = JsonCommentHandling.Skip,
-    };
-
-    private readonly LocalesFolder _locales = locales;
+    private readonly string _resourcesPath = resourcesPath;
+    private readonly HostLocaleSource _host = host;
+    private readonly ConcurrentDictionary<Assembly, EmbeddedLocaleSource> _embedded = new();
     private readonly ConcurrentDictionary<CacheKey, FrozenDictionary<string, JsonResourceEntry>?> _files = new();
 
     /// <summary>The translations for one culture, or null when neither the assembly nor the host carries any for it.</summary>
@@ -27,19 +21,19 @@ internal sealed class JsonResourceCache(LocalesFolder locales)
 
     private FrozenDictionary<string, JsonResourceEntry>? Load(CacheKey key)
     {
-        var (assembly, baseName, typeName) = key.Location;
+        var (assembly, _, typeName) = key.Location;
+        var assemblyName = assembly.GetName().Name ?? string.Empty;
+        var embedded = _embedded.GetOrAdd(assembly, static (owner, resourcesPath) => new EmbeddedLocaleSource(owner, resourcesPath), _resourcesPath);
 
-        var entries = ReadEmbedded(assembly, baseName, key.CultureName);
-        var hostEntries = _locales.Read(assembly.GetName().Name ?? string.Empty, typeName, key.CultureName);
-        if (entries is null && hostEntries.Count == 0)
-        {
-            return null;
-        }
-
-        entries ??= new Dictionary<string, string?>(StringComparer.Ordinal);
-        foreach (var (name, translation) in hostEntries)
+        var entries = new Dictionary<string, string?>(StringComparer.Ordinal);
+        foreach (var (name, translation) in embedded.Read(assemblyName, typeName, key.CultureName).Concat(_host.Read(assemblyName, typeName, key.CultureName)))
         {
             entries[name] = translation;
+        }
+
+        if (entries.Count == 0)
+        {
+            return null;
         }
 
         // A null value says the translation is deliberately the key itself, so nothing downstream ever sees one.
@@ -47,41 +41,6 @@ internal sealed class JsonResourceCache(LocalesFolder locales)
             entry => entry.Key,
             entry => new JsonResourceEntry(entry.Key, entry.Value ?? entry.Key, entry.Value is null),
             StringComparer.Ordinal);
-    }
-
-    private static Dictionary<string, string?>? ReadEmbedded(Assembly assembly, string baseName, string cultureName)
-    {
-        var name = $"{baseName}.{cultureName}.json";
-
-        using var stream = assembly.GetManifestResourceStream(name) ?? OpenSatellite(assembly, baseName, cultureName);
-        if (stream is null)
-        {
-            return null;
-        }
-
-        var entries = JsonSerializer.Deserialize<Dictionary<string, string?>>(stream, SerializerOptions) ?? [];
-
-        LocalizationMetadata.Consume(entries, name, cultureName);
-
-        return entries;
-    }
-
-    // A file the build moved into the culture's satellite assembly, where its name carries no culture.
-    private static Stream? OpenSatellite(Assembly assembly, string baseName, string cultureName)
-    {
-        try
-        {
-            var satellite = assembly.GetSatelliteAssembly(CultureInfo.GetCultureInfo(cultureName));
-            return satellite.GetManifestResourceStream($"{baseName}.json");
-        }
-        catch (FileNotFoundException)
-        {
-            return null;
-        }
-        catch (CultureNotFoundException)
-        {
-            return null;
-        }
     }
 
     private readonly record struct CacheKey(ResourceLocation Location, string CultureName);

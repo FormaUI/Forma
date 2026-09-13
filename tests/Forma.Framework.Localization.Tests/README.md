@@ -20,8 +20,10 @@ breaks it silently: a miss returns the key itself, so an assertion sees English 
 and third branches. A type rooted outside the assembly bypasses it entirely.
 
 The reader then looks for `{baseName}.{culture}.json` in the main assembly, falling back to
-`{baseName}.json` inside the satellite assembly for that culture, walking `CultureInfo.Parent` and
-stopping before the invariant culture, which no file can name.
+`{baseName}.json` inside the satellite assembly for that culture, and for each file named for a
+namespace above the type, beside its folder or inside it under the folder's own name, whose sections
+complete the name; it walks `CultureInfo.Parent` and stops before the invariant culture, which no
+file can name.
 
 ## Why each folder exists
 
@@ -56,13 +58,16 @@ precisely what the test asserts, so the duplicated `Fixtures` segment is require
 | `FutureSchema` | `…Tests.Fixtures` | A schema major this build refuses | `Fixtures/FutureSchema.he.json` |
 | `NewerMinor` | `…Tests.Fixtures` | A later minor schema, and a metadata field this build ignores | `Fixtures/NewerMinor.he.json` |
 | `MismatchedCulture` | `…Tests.Fixtures` | A declared culture the file name contradicts | `Fixtures/MismatchedCulture.he.json` |
+| `GroupedFirst`, `GroupedSecond` | `…Tests.Fixtures.Grouped` | The file named for the folder, read from inside it and from beside it, serving every type in the folder; a type's own file winning over it for the keys it carries | `Fixtures/Grouped/Grouped.he.json`, `Fixtures/Grouped.es.json`, `Fixtures/Grouped/GroupedSecond.he.json` |
 
 ## The csproj entries
 
-Three files need more than the two globs:
+Four files need more than the two globs:
 
 - `MainAssembly.he.json` sets `WithCulture="false"` so the SDK leaves it in the main assembly instead of
   moving it to a `he` satellite, covering a project that opts out of satellites.
+- `Grouped.es.json` sets `WithCulture="false"` for the same reason, so the file named for a folder is read from
+  the main assembly as well as from a satellite.
 - `ForeignRoot.he.json` pins `LogicalName` to `Contoso.Widgets.ForeignRoot.he.json`, because the name
   MSBuild would derive from the folder is not the name the type produces.
 - `GlobalRoot.he.json` pins `LogicalName` for the same reason: a namespace-less type yields
