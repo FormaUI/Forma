@@ -5,10 +5,10 @@
     "Current name": "Nombre actual",
     "Edit Source": "Editar el código",
     "New name": "Nombre nuevo",
-    "No occurrence of \"{0}\" was found.": "No se encontró ninguna aparición de \"{0}\".",
+    "No occurrence of \"{Query}\" was found.": "No se encontró ninguna aparición de \"{Query}\".",
     "Rename": "Renombrar",
     "Rename Symbol": "Renombrar Símbolo",
-    "Renamed {0} occurrences.": "Se renombraron {0} apariciones.",
+    "Renamed {Count} occurrences.": "Se renombraron {Count} apariciones.",
     "Source": "Código",
     "The rename took too long and was abandoned.": "El cambio de nombre tardó demasiado y se abandonó."
   },

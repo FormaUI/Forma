@@ -1,5 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "$tools": { "locali.ignore": ["LOC0113"] },
   "$shared": {
     "Header": "כותרת",
     "Sidebar": "סרגל צד",
@@ -116,7 +117,7 @@
     "Trailing content, such as an overflow menu, stays put beside the arrows while the commands beside it keep scrolling.": "תוכן נגרר, כגון תפריט גלישה, נשאר במקומו לצד החצים בעוד הפקודות שלצדו ממשיכות להיגלל.",
     "More": "עוד",
     "Custom Arrow Labels": "תוויות חצים מותאמות אישית",
-    "A caller naming the arrows for its own domain, rather than the generic default.": "קורא שנותן שם לחצים עבור התחום שלו, במקום ברירת המחדל הגנרית.",
+    "A caller naming the arrows for its own domain, rather than the generic default.": "צרכן שמעניק לחצים שמות מתחומו שלו, במקום ברירת המחדל הכללית.",
     "Earlier Filters": "מסננים קודמים",
     "Later Filters": "מסננים מאוחרים יותר",
     "Toggling Hidden keeps the bar mounted, so a favorites or plugin bar can be shown and hidden on demand without losing its scroll position or re-attaching its JavaScript.": "החלפת Hidden שומרת את הסרגל מחובר, כך שסרגל מועדפים או תוספים ניתן להציג ולהסתיר לפי דרישה בלי לאבד את מיקום הגלילה שלו או לחבר מחדש את הקוד שלו.",
@@ -154,7 +155,7 @@
     "Up and Down": "למעלה ולמטה",
     "The same box along the block axis, by the scrollbar and by arrows. The header row is frozen, so it stays at the top while the rows scroll under it.": "אותה תיבה לאורך ציר הבלוק, בפס גלילה ובחצים. שורת הכותרת מוצמדת, ולכן היא נשארת למעלה בזמן שהשורות נגללות מתחתיה.",
     "Team": "קבוצה",
-    "Custom Arrow Labels": "תוויות חצים מותאמות",
+    "Custom Arrow Labels": "תוויות חצים מותאמות אישית",
     "A caller naming the arrows for its own domain, rather than the generic default.": "צרכן שמעניק לחצים שמות מתחומו שלו, במקום ברירת המחדל הכללית.",
     "Earlier Months": "חודשים קודמים",
     "Later Months": "חודשים מאוחרים",

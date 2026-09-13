@@ -1,5 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "$tools": { "locali.ignore": ["LOC0113"] },
   "FormaConfirmDialogPage": {
     "A question the app asks before it acts, answered with one of two buttons. Any code raises it through the confirm service and simply awaits the answer, so a confirmation is one line wherever it is needed.": "שאלה שהיישום שואל לפני שהוא פועל, ונענית באחד משני כפתורים. כל קוד מעלה אותה דרך שירות האישור ופשוט ממתין לתשובה, ולכן אישור הוא שורה אחת בכל מקום שנדרש.",
     "Basic Confirmation": "אישור בסיסי",

@@ -34,7 +34,7 @@
     "Toggle selection": "החלף בחירה",
     "Publish": "פרסם",
     "Unpublish": "בטל פרסום",
-    "Export": "ייצוא"
+    "Export": "ייצא"
   },
   "FormaStatusStripPage": {
     "A quiet strip of status readouts and occasional commands, meant to sit beneath a canvas or at the foot of a panel. Built on FormaToolbar, so a readout announces itself to a screen reader through the same role and a command runs through the same OnCommand.": "רצועה שקטה של תצוגות מצב ופקודות מזדמנות, המיועדת לשבת מתחת ללוח עבודה או בתחתית פאנל. בנוי על גבי FormaToolbar, כך שתצוגת מצב מכריזה על עצמה לקורא מסך דרך אותו תפקיד, ופקודה פועלת דרך אותו OnCommand.",

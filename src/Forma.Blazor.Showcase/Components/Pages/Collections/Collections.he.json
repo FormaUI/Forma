@@ -1,5 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "$tools": { "locali.ignore": ["LOC0113"] },
   "FormaDataGridPage": {
     "A table that pages, sorts and selects over any queryable set of items. The grid keeps its state in the address, so a page number or a sort order survives a refresh and can be shared as a link.": "טבלה שמדפדפת, ממיינת ובוחרת על פני כל קבוצת פריטים הניתנת לשאילתה. הרשת שומרת את מצבה בכתובת, כך שמספר עמוד או סדר מיון שורדים רענון וניתן לשתפם כקישור.",
     "Basic Grid": "טבלה בסיסית",

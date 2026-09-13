@@ -1,5 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "$tools": { "locali.ignore": ["LOC0113"] },
   "$shared": {
     "Basic": "Básico",
     "Disabled": "Deshabilitado",
@@ -229,7 +230,7 @@
     "Asking for the Right Keyboard": "Pedir el Teclado Adecuado",
     "InputMode tells a touch device which keyboard to raise, and AutoComplete tells the browser what the field holds so it can fill it. Neither changes what the box accepts — they only make it quicker to fill on a phone. Open these on a touch device to see the keyboard change.": "InputMode le dice a un dispositivo táctil qué teclado abrir, y AutoComplete le dice al navegador qué contiene el campo para que pueda rellenarlo. Ninguno cambia lo que el recuadro acepta: solo hacen más rápido rellenarlo en un teléfono. Abre estos en un dispositivo táctil para ver cómo cambia el teclado.",
     "Telephone": "Teléfono",
-    "Email": "Correo Electrónico",
+    "Email": "Correo electrónico",
     "Quantity": "Cantidad",
     "Amount": "Importe",
     "The Kind of Text Held": "El Tipo de Texto Contenido",

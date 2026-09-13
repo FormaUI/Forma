@@ -1,5 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "$tools": { "locali.ignore": ["LOC0113"] },
   "$shared": {
     "Header": "Encabezado",
     "Sidebar": "Barra Lateral",
@@ -116,7 +117,7 @@
     "Content Pinned past the Track": "Contenido Fijo Más Allá del Riel",
     "Trailing content, such as an overflow menu, stays put beside the arrows while the commands beside it keep scrolling.": "El contenido final, como un menú de desbordamiento, permanece fijo junto a las flechas mientras los comandos a su lado siguen desplazándose.",
     "More": "Más",
-    "A caller naming the arrows for its own domain, rather than the generic default.": "Quien la usa nombra las flechas para su propio dominio, en lugar del predeterminado genérico.",
+    "A caller naming the arrows for its own domain, rather than the generic default.": "Un consumidor que nombra las flechas para su propio dominio, en lugar del valor genérico predeterminado.",
     "Earlier Filters": "Filtros Anteriores",
     "Later Filters": "Filtros Posteriores",
     "Toggling Hidden keeps the bar mounted, so a favorites or plugin bar can be shown and hidden on demand without losing its scroll position or re-attaching its JavaScript.": "Alternar Hidden mantiene la barra montada, de modo que una barra de favoritos o de complementos se puede mostrar y ocultar bajo demanda sin perder su posición de desplazamiento ni volver a adjuntar su JavaScript.",

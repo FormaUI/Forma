@@ -5,10 +5,10 @@
     "Current name": "השם הנוכחי",
     "Edit Source": "עריכת קוד",
     "New name": "השם החדש",
-    "No occurrence of \"{0}\" was found.": "לא נמצאה אף מופע של \"{0}\".",
+    "No occurrence of \"{Query}\" was found.": "לא נמצאה אף מופע של \"{Query}\".",
     "Rename": "שינוי שם",
     "Rename Symbol": "שינוי שם סמל",
-    "Renamed {0} occurrences.": "שונו {0} מופעים.",
+    "Renamed {Count} occurrences.": "שונו {Count} מופעים.",
     "Source": "קוד",
     "The rename took too long and was abandoned.": "שינוי השם ארך זמן רב מדי ובוטל."
   },

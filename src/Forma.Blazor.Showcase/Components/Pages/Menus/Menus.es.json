@@ -1,5 +1,6 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "$tools": { "locali.ignore": ["LOC0113"] },
   "$shared": {
     "Print": "Imprimir",
     "Last action": "Última acción",
@@ -25,7 +26,7 @@
     "Download invoice": "Descargar factura",
     "Disabled Item": "Elemento deshabilitado",
     "Publish this item to enable deleting it.": "Publica este elemento para poder eliminarlo.",
-    "Icon-Only Trigger": "Activador solo con icono",
+    "Icon-Only Trigger": "Disparador de Solo Icono",
     "The trigger's accessible name comes from an aria-label, the same way an icon-only FormaButton is labeled.": "El nombre accesible del activador proviene de un aria-label, igual que se etiqueta un FormaButton solo con icono.",
     "View": "Ver",
     "Actions": "Acciones",
@@ -53,7 +54,7 @@
     "A horizontal ellipsis (⋯) for toolbars and wider contexts.": "Puntos suspensivos horizontales (⋯) para barras de herramientas y contextos más amplios.",
     "More options": "Más opciones",
     "Export": "Exportar",
-    "none yet": "ninguna aún",
+    "none yet": "ninguna todavía",
     "Vertical (Row Actions)": "Vertical (acciones de fila)",
     "A vertical ellipsis (⋮) for table rows and narrow columns.": "Puntos suspensivos verticales (⋮) para filas de tabla y columnas estrechas.",
     "Mini Size": "Tamaño mini",
