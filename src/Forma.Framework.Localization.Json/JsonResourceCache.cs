@@ -27,7 +27,7 @@ internal sealed class JsonResourceCache
     {
         var name = $"{key.BaseName}.{key.CultureName}.json";
 
-        using var stream = OpenSatellite(key) ?? key.Assembly.GetManifestResourceStream(name);
+        using var stream = key.Assembly.GetManifestResourceStream(name) ?? OpenSatellite(key);
         if (stream is null)
         {
             return null;
@@ -44,8 +44,7 @@ internal sealed class JsonResourceCache
             StringComparer.Ordinal);
     }
 
-    // The SDK reads the culture out of a Name.culture.json file and moves it to a satellite assembly,
-    // where the name it lands under has the culture stripped back off.
+    // A file the build moved into the culture's satellite assembly, where its name carries no culture.
     private static Stream? OpenSatellite(CacheKey key)
     {
         try

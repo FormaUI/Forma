@@ -19,8 +19,8 @@ breaks it silently: a miss returns the key itself, so an assertion sees English 
 `ResourcesPath` is inserted between the assembly name and the remainder, so it only affects the first
 and third branches. A type rooted outside the assembly bypasses it entirely.
 
-The reader then looks for `{baseName}.json` inside the satellite assembly for the current UI culture,
-falling back to `{baseName}.{culture}.json` in the main assembly, walking `CultureInfo.Parent` and
+The reader then looks for `{baseName}.{culture}.json` in the main assembly, falling back to
+`{baseName}.json` inside the satellite assembly for that culture, walking `CultureInfo.Parent` and
 stopping before the invariant culture, which no file can name.
 
 ## Why each folder exists

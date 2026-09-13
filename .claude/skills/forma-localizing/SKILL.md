@@ -10,6 +10,7 @@ description: The localization standard — reading library strings through the b
 - Do inject `IStringLocale<T>` only where there is no base: a service, or a showcase page.
 - Do ship one translation file per language the library ships beside the component, `FormaX.he.json`, keyed by that English source text; there is no neutral file, because an absent translation falls back to the key itself.
 - Do keep the file's name and folder in step with the type's, since the resource is resolved from the type's full name and the JSON's path must match it; a generic component resolves to its definition's files, so `FormaX<TValue>` reads `FormaX.he.json`.
+- Do embed a translation file in the assembly itself, with `WithCulture="false"` on its `EmbeddedResource` item, so it travels inside the assembly rather than in a satellite assembly beside it; the loader reads a satellite too, for a project that leaves the build's own layout in place.
 - Do leave caller-supplied text such as `Title`, `Label`, and `ConfirmText` for the host to localize.
 - Do format dates and numbers with `CultureInfo.CurrentCulture` and use `TextInfo.IsRightToLeft` when direction changes behavior.
 - Do use American English spelling for `en` localization.

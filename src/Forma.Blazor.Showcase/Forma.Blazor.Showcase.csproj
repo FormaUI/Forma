@@ -41,8 +41,9 @@
         <ProjectReference Include="..\Forma.Framework.Share\Forma.Framework.Share.csproj" />
     </ItemGroup>
 
+    <!-- The translations embed in the assembly itself rather than in satellite assemblies. -->
     <ItemGroup>
-        <EmbeddedResource Include="Components\**\*.json" />
+        <EmbeddedResource Include="Components\**\*.json" WithCulture="false" />
     </ItemGroup>
 
 </Project>

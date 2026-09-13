@@ -17,7 +17,8 @@ That registers `IStringLocale<T>` and `IStringLocaleFactory`, so a consumer inje
 resolves. `JsonLocalizationOptions` adds `ResourcesPath` to the settings every backend shares, which
 `Forma.Framework.Localization` documents.
 
-Put a file beside the type it translates and mark it `EmbeddedResource`:
+Put a file beside the type it translates and mark it `EmbeddedResource` with `WithCulture="false"`, so
+it stays in the assembly itself rather than moving to a satellite assembly:
 
 ```text
 FormaButton.razor.cs
@@ -107,9 +108,9 @@ Generic arity and nested-type markers are dropped: `Grid<T>` reads `Grid.he.json
 `Outer.Inner.he.json`, and a closed generic resolves through its open definition.
 
 Lookup walks `CultureInfo.CurrentUICulture` outward through `Parent`, taking the first file that has
-the key and stopping before the invariant culture, which no file can name. Each culture is tried in
-the satellite assembly first, then as `{baseName}.{culture}.json` in the main assembly. Files are read
-once and cached frozen.
+the key and stopping before the invariant culture, which no file can name. Each culture is tried as
+`{baseName}.{culture}.json` in the main assembly first, then as `{baseName}.json` in that culture's
+satellite assembly. Files are read once and cached frozen.
 
 `ResourcesPath` inserts a folder segment between the assembly name and the remainder. It resolves from
 the assembly root, and a type rooted outside the assembly bypasses it.

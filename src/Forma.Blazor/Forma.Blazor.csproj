@@ -97,9 +97,9 @@
         <_BundledAssembly Include="@(ProjectReference->WithMetadataValue('PrivateAssets', 'all')->'%(Filename)')" />
     </ItemGroup>
 
-    <!-- These ship embedded in the assembly, so packing them again as content only duplicates them. -->
+    <!-- The translations embed in the assembly itself rather than in satellite assemblies, so packing them again as content only duplicates them. -->
     <ItemGroup>
-        <EmbeddedResource Include="Components\**\*.json" />
+        <EmbeddedResource Include="Components\**\*.json" WithCulture="false" />
         <Content Remove="Components\**\*.json" />
     </ItemGroup>
 
