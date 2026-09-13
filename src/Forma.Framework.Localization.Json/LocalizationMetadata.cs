@@ -14,7 +14,17 @@ internal static class LocalizationMetadata
     /// <param name="expectedCulture">The culture the file's own name gives it.</param>
     public static void Consume(Dictionary<string, string?> entries, string fileName, string expectedCulture)
     {
-        if (!entries.Remove(LocalizationSchema.Marker, out var value) || value is null)
+        entries.Remove(LocalizationSchema.Marker, out var value);
+        Read(value, fileName, expectedCulture);
+    }
+
+    /// <summary>Reads what the entry declares, having checked that its value, or its absence, lets the file be read at all.</summary>
+    /// <param name="value">The entry's value, or null when the file carries none.</param>
+    /// <param name="fileName">The file being read, named in anything thrown.</param>
+    /// <param name="expectedCulture">The culture the file's own name gives it.</param>
+    public static LocalizationFileMetadata Read(string? value, string fileName, string expectedCulture)
+    {
+        if (value is null)
         {
             throw new LocalizationMetadataException(
                 $"'{fileName}' carries no '{LocalizationSchema.Marker}' entry, so it cannot be read as a localization file.");
@@ -29,6 +39,8 @@ internal static class LocalizationMetadata
 
         ReadSchemaVersion(result, value, fileName);
         ReadCulture(result, value, fileName, expectedCulture);
+
+        return new LocalizationFileMetadata(Find(result, value, LocalizationSchema.RootNamespaceField));
     }
 
     private static void ReadSchemaVersion(LocaleFieldResult result, string value, string fileName)

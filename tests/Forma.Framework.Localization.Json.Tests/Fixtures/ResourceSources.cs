@@ -36,3 +36,15 @@ public sealed class MismatchedCulture;
 
 /// <summary>A file whose value is null, meaning the translation is deliberately the key.</summary>
 public sealed class NullValued;
+
+/// <summary>A file beside the type whose entries the host's files override, one file shape per key.</summary>
+public sealed class HostOverridden;
+
+/// <summary>No file beside the type; the host's files alone translate it.</summary>
+public sealed class HostTranslated;
+
+/// <summary>A host file carrying no metadata entry.</summary>
+public sealed class HostUnmarked;
+
+/// <summary>A host file giving a key a value that is not text.</summary>
+public sealed class HostMistyped;

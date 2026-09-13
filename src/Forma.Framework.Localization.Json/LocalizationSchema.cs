@@ -15,6 +15,9 @@ public static class LocalizationSchema
     /// <summary>The key the entry sits under, which also marks the file as a localization file.</summary>
     public const string Marker = "$localization";
 
+    /// <summary>The field naming the namespace a host file completes a type's name from, in place of the assembly's name.</summary>
+    public const string RootNamespaceField = "RootNamespace";
+
     /// <summary>The field naming the revision the translations are at.</summary>
     public const string RevisionField = "Revision";
 
@@ -22,7 +25,7 @@ public static class LocalizationSchema
     public const string SchemaVersionField = "SchemaVersion";
 
     /// <summary>The fields an entry may declare after the required ones.</summary>
-    public static IReadOnlyList<string> OptionalFields { get; } = [AuthorField, RevisionField];
+    public static IReadOnlyList<string> OptionalFields { get; } = [AuthorField, RevisionField, RootNamespaceField];
 
     /// <summary>The fields every entry declares, in the order it declares them.</summary>
     public static IReadOnlyList<string> RequiredFields { get; } = [SchemaVersionField, CultureField];

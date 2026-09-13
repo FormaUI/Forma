@@ -1,0 +1,6 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: en;",
+  "Pages.Libraries.LocalizationPage": {
+    "Written in a file named for part of the namespace": "From the host's folder: a namespace file"
+  }
+}

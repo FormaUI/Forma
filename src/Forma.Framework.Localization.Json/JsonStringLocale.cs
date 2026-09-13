@@ -1,12 +1,11 @@
 namespace Forma.Framework.Localization.Json;
 
 using System.Globalization;
-using System.Reflection;
 
 using Forma.Framework.Localization;
 
-/// <summary>Reads the strings for one base name, walking the culture chain and falling back to the key itself.</summary>
-internal sealed class JsonStringLocale(JsonLocaleContext context, Assembly assembly, string baseName) : IStringLocale
+/// <summary>Reads the strings for one resource location, walking the culture chain and falling back to the key itself.</summary>
+internal sealed class JsonStringLocale(JsonLocaleContext context, ResourceLocation location) : IStringLocale
 {
     public LocalizedText this[string name]
     {
@@ -51,14 +50,14 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, Assembly assem
 
         for (var culture = CultureInfo.CurrentUICulture; culture.Name.Length != 0; culture = culture.Parent)
         {
-            var file = context.Cache.Read(assembly, baseName, culture);
+            var file = context.Cache.Read(location, culture);
             if (file is not null)
             {
                 foreach (var entry in file)
                 {
                     if (seen.Add(entry.Key))
                     {
-                        yield return new LocalizedText(entry.Key, entry.Value.Format, ResourceNotFound: false, baseName);
+                        yield return new LocalizedText(entry.Key, entry.Value.Format, ResourceNotFound: false, location.BaseName);
                     }
                 }
             }
@@ -77,7 +76,7 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, Assembly assem
 
         var format = Evaluate(found ? entry.Format : name, IsTranslated(found, entry), arguments);
 
-        return new LocalizedText(name, LocalizedFormat.Render(format, arguments, CultureInfo.CurrentCulture), !found, baseName);
+        return new LocalizedText(name, LocalizedFormat.Render(format, arguments, CultureInfo.CurrentCulture), !found, location.BaseName);
     }
 
     private LocalizedPattern Resolve(string name, LocalizedArgument[] arguments)
@@ -85,7 +84,7 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, Assembly assem
         var found = TryFind(name, out var entry);
         RequireFound(name, found);
 
-        return new LocalizedPattern(name, Evaluate(found ? entry.Format : name, IsTranslated(found, entry), arguments), arguments, !found, baseName);
+        return new LocalizedPattern(name, Evaluate(found ? entry.Format : name, IsTranslated(found, entry), arguments), arguments, !found, location.BaseName);
     }
 
     // A format that is the key is source-language text, whether it was written as null or never found at all.
@@ -106,7 +105,7 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, Assembly assem
         if (!found && context.Options.RequireMatchingLocalization)
         {
             throw new LocalizationNotFoundException(
-                $"'{baseName}' carries no translation of '{name}' for '{CultureInfo.CurrentUICulture.Name}'.");
+                $"'{location.BaseName}' carries no translation of '{name}' for '{CultureInfo.CurrentUICulture.Name}'.");
         }
     }
 
@@ -114,7 +113,7 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, Assembly assem
     {
         for (var culture = CultureInfo.CurrentUICulture; culture.Name.Length != 0; culture = culture.Parent)
         {
-            var file = context.Cache.Read(assembly, baseName, culture);
+            var file = context.Cache.Read(location, culture);
             if (file is not null && file.TryGetValue(name, out entry))
             {
                 return true;

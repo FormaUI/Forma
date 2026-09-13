@@ -34,4 +34,9 @@
         <EmbeddedResource Update="Fixtures\GlobalRoot.he.json" LogicalName="Forma.Framework.Localization.Json.Tests.GlobalRoot.he.json" WithCulture="false" />
     </ItemGroup>
 
+    <!-- The host's own files, copied beside the test assembly, where the default locales folder is looked for. -->
+    <ItemGroup>
+        <Content Include="locales\**\*.json" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
 </Project>

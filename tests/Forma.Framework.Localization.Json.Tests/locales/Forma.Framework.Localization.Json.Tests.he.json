@@ -1,0 +1,9 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "Fixtures.HostOverridden": {
+    "Save": "assembly file",
+    "Cancel": "assembly file",
+    "Delete": "assembly file",
+    "Export": "added"
+  }
+}

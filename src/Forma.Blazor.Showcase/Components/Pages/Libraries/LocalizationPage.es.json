@@ -47,5 +47,13 @@
   "Holes Left Open": "Huecos que Quedan Abiertos",
   "Resolve hands back the translated format with its holes still open, so a caller can render each value itself rather than pasting text together.": "Resolve devuelve el formato traducido con sus huecos aún abiertos, para que quien lo llama pueda mostrar cada valor por su cuenta en lugar de pegar texto.",
   "Format": "Formato",
-  "Arguments": "Argumentos"
+  "Arguments": "Argumentos",
+  "Translations from the Host": "Traducciones desde el Anfitrión",
+  "A host lays its own files in a locales folder beside the application, to reword a string an assembly ships or to add a language it never had. Each key below is translated beside this page and again in the Showcase's locales folder, and the folder wins; the last key exists in the folder alone.": "Un anfitrión coloca sus propios archivos en una carpeta locales junto a la aplicación, para reformular una cadena que un ensamblado incluye o añadir un idioma que nunca tuvo. Cada clave de abajo se traduce junto a esta página y otra vez en la carpeta locales del Showcase, y la carpeta gana; la última clave existe solo en la carpeta.",
+  "Beside the Page": "Junto a la Página",
+  "From the Host's Folder": "Desde la Carpeta del Anfitrión",
+  "File": "Archivo",
+  "Written in the file named for the assembly": "Junto a la página: el archivo del ensamblado",
+  "Written in a file named for part of the namespace": "Junto a la página: el archivo del espacio de nombres",
+  "Written in the file named for the type": "Junto a la página: el archivo del tipo"
 }

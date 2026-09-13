@@ -47,5 +47,13 @@
   "Holes Left Open": "חורים שנשארים פתוחים",
   "Resolve hands back the translated format with its holes still open, so a caller can render each value itself rather than pasting text together.": "Resolve מחזיר את התבנית המתורגמת כשהחורים שלה עדיין פתוחים, כך שהקורא יכול להציג כל ערך בעצמו במקום להדביק טקסט.",
   "Format": "תבנית",
-  "Arguments": "ערכים"
+  "Arguments": "ערכים",
+  "Translations from the Host": "תרגומים מהאתר המארח",
+  "A host lays its own files in a locales folder beside the application, to reword a string an assembly ships or to add a language it never had. Each key below is translated beside this page and again in the Showcase's locales folder, and the folder wins; the last key exists in the folder alone.": "אתר מארח מניח קבצים משלו בתיקיית locales לצד היישום, כדי לנסח מחדש מחרוזת שמכלול מספק או להוסיף שפה שמעולם לא הייתה לו. כל מפתח למטה מתורגם ליד הדף הזה ושוב בתיקיית locales של ה-Showcase, והתיקייה גוברת; המפתח האחרון קיים בתיקייה בלבד.",
+  "Beside the Page": "ליד הדף",
+  "From the Host's Folder": "מתיקיית המארח",
+  "File": "קובץ",
+  "Written in the file named for the assembly": "ליד הדף: קובץ המכלול",
+  "Written in a file named for part of the namespace": "ליד הדף: קובץ מרחב השמות",
+  "Written in the file named for the type": "ליד הדף: קובץ הטיפוס"
 }

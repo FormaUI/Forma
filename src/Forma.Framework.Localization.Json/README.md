@@ -115,6 +115,42 @@ satellite assembly. Files are read once and cached frozen.
 `ResourcesPath` inserts a folder segment between the assembly name and the remainder. It resolves from
 the assembly root, and a type rooted outside the assembly bypasses it.
 
+## Translations from the host
+
+A host lays its own files in a `locales` folder beside the application, to reword a string an
+assembly ships, or to add a language it never had. `LocalesPath` names the folder, resolved
+against the application's base directory when relative; an empty value reads none.
+
+A file's path names an assembly, then any leading part of a type's name as folders, then the
+culture; inside the file, an object completes the type's name and text translates a key. The
+three shapes below are the same lookup at different depths, for `FormaComposer` in
+`Forma.Blazor.Components.Composer`:
+
+```text
+locales/Forma.Blazor.es.json                              { "Components.Composer.FormaComposer": { "Bold": "Negrita" } }
+locales/Forma.Blazor/Components.es.json                   { "Composer.FormaComposer": { "Bold": "Negrita" } }
+locales/Forma.Blazor/Components/Composer/FormaComposer.es.json   { "Bold": "Negrita" }
+```
+
+An object's key may spell several segments at once or one at a time, so `"Components": {
+"Composer.FormaComposer": { … } }` reads the same as the first line. A file holds only the keys it
+changes; every other key keeps the assembly's own translation. A deeper file wins over a shallower
+one, and any entry the host writes wins over the assembly's.
+
+A file completes a type's name from the assembly's name, without `ResourcesPath`, so the host's
+layout follows the namespace rather than the embedding. An assembly whose root namespace is not
+its name has its files declare the root in their metadata, as
+`RootNamespace: Forma.Framework.Resources.Office;`, and the path and sections then complete the
+name from there: a file declaring that root at
+`locales/Forma.AddOns.Resources.Office/OfficeResourceProvider.es.json` translates
+`Forma.Framework.Resources.Office.OfficeResourceProvider`. A file declaring no root, for a type whose
+namespace does not start with the assembly's name, is laid out by the type's full name. Files under a
+declared root are read after the assembly's own, so their entries win. Every file carries the
+[metadata](#file-metadata) entry, declaring the culture its name gives it, as an embedded file does.
+
+The folder has to reach the application's output: a web project copies JSON content there on its
+own, and any other project marks the folder as content copied to the output directory.
+
 ## File metadata
 
 Every localization file declares what it is, as its first property:

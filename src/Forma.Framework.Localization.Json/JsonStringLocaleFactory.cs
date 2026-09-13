@@ -10,7 +10,7 @@ using Forma.Framework.Localization.Language;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-/// <summary>Creates locales that read their strings from JSON files embedded in the assembly owning the type.</summary>
+/// <summary>Creates locales that read their strings from JSON files embedded in the assembly owning the type, with the host's own files laid over them.</summary>
 public sealed class JsonStringLocaleFactory : IStringLocaleFactory
 {
     private readonly ConcurrentDictionary<string, IStringLocale> _locales = new(StringComparer.Ordinal);
@@ -44,7 +44,7 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
         }
 
         _context = new JsonLocaleContext(
-            new JsonResourceCache(),
+            new JsonResourceCache(new LocalesFolder(GetLocalesPath(options.LocalesPath))),
             sourceCulture,
             new PluralExpressionEvaluator(CommonPluralRuleSet.Default, loggerFactory.CreateLogger<PluralExpressionEvaluator>()),
             options);
@@ -63,7 +63,7 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
         var assemblyName = assembly.GetName().Name ?? string.Empty;
         var typeName = NormalizeTypeName(source.FullName ?? source.Name);
 
-        return GetOrAdd(assembly, GetBaseName(assemblyName, typeName));
+        return GetOrAdd(assembly, GetBaseName(assemblyName, typeName), typeName);
     }
 
     /// <summary>Creates a locale for a base name inside the named assembly.</summary>
@@ -74,8 +74,12 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
 
         var assembly = Assembly.Load(new AssemblyName(location));
 
-        return GetOrAdd(assembly, Qualify(location, TrimPrefix(baseName, location + ".")));
+        return GetOrAdd(assembly, Qualify(location, TrimPrefix(baseName, location + ".")), baseName);
     }
+
+    // A relative folder sits beside the application, wherever it runs from.
+    private static string GetLocalesPath(string path)
+        => path.Length == 0 ? string.Empty : Path.GetFullPath(path, AppContext.BaseDirectory);
 
     private static string NormalizePath(string path)
         => path.Replace('\\', '.').Replace('/', '.').Trim('.');
@@ -111,6 +115,6 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
             ? $"{assemblyName}.{relativeName}"
             : $"{assemblyName}.{_resourcesPath}.{relativeName}";
 
-    private IStringLocale GetOrAdd(Assembly assembly, string baseName)
-        => _locales.GetOrAdd($"{assembly.FullName}|{baseName}", _ => new JsonStringLocale(_context, assembly, baseName));
+    private IStringLocale GetOrAdd(Assembly assembly, string baseName, string typeName)
+        => _locales.GetOrAdd($"{assembly.FullName}|{baseName}", _ => new JsonStringLocale(_context, new ResourceLocation(assembly, baseName, typeName)));
 }

@@ -70,6 +70,24 @@ Three files need more than the two globs:
 
 The last two use `Update` rather than `Include`, since `Fixtures\**\*.json` already picks them up.
 
+## The host's files
+
+`locales/` is copied beside the test assembly, where the factory's default `LocalesPath` looks, so
+the layout under it is a fixture too: the first folder is the assembly's name, the rest of the path
+is the type's name, and a file higher up completes the name with sections inside it.
+
+| Type | What it covers | Host files |
+|---|---|---|
+| `HostOverridden` | One key per file shape, each overriding the file beside the type, a key the assembly never had, a null value, and sections nested as objects | `locales/{assembly}.he.json`, `locales/{assembly}.es.json`, `locales/{assembly}/Fixtures.he.json`, `locales/{assembly}/Fixtures/HostOverridden.he.json` |
+| `HostTranslated` | A culture the assembly does not ship, reached from a regional culture too | `locales/{assembly}/Fixtures/HostTranslated.fr.json` |
+| `PathScoped` | The host's layout following the type's name rather than `ResourcesPath` | `locales/{assembly}/Fixtures/PathScoped.he.json` |
+| `ForeignRoot` | The host's layout following the full name of a type rooted outside the assembly, and the layout under a root a file declares, from the file named for the type and through sections; a file whose declared root does not meet its path is ignored | `locales/{assembly}/Contoso/Widgets/ForeignRoot.he.json`, `locales/{assembly}/ForeignRoot.es.json`, `locales/{assembly}/Widgets.es.json`, `locales/{assembly}/Widgets/ForeignRoot.es.json` |
+| `HostUnmarked` | A host file carrying no metadata entry | `locales/{assembly}/Fixtures/HostUnmarked.he.json` |
+| `HostMistyped` | A host file giving a key a value that is not text | `locales/{assembly}/Fixtures/HostMistyped.he.json` |
+
+The keys the host files change on `PathScoped` and `ForeignRoot` are not the ones the other tests
+read, so those tests see the embedded translation as before.
+
 ## Before you move anything
 
 Run this project's tests. They are the only check that the layout still matches the derivation, and they

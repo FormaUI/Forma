@@ -206,6 +206,34 @@
     </div>
 </div>
 
+<div class="demo-section">
+    <h2>@L["Translations from the Host"]</h2>
+    <p class="description">@L["A host lays its own files in a locales folder beside the application, to reword a string an assembly ships or to add a language it never had. Each key below is translated beside this page and again in the Showcase's locales folder, and the folder wins; the last key exists in the folder alone."]</p>
+    <div class="demo-box">
+        <table class="demo-table">
+            <thead>
+                <tr>
+                    <th>@L["Key"]</th>
+                    <th>@L["Beside the Page"]</th>
+                    <th>@L["From the Host's Folder"]</th>
+                    <th>@L["File"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var (key, file) in HostFiles)
+                {
+                    <tr>
+                        <td dir="ltr"><code>@key</code></td>
+                        <td><bdi>@WithoutHostFiles[key].Value</bdi></td>
+                        <td><bdi>@L[key].Value</bdi></td>
+                        <td dir="ltr" class="demo-note"><code>@file</code></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
 @code {
     private const string AbsentKey = "No translation exists for this sentence.";
     private const string PluralKey = "[$ plural; one: # file; other: # files; $]";
@@ -223,6 +251,22 @@
 
     private static readonly IStringLocale HebrewSource =
         new JsonStringLocaleFactory(new JsonLocalizationOptions { SourceLanguage = "he" }).Create(typeof(LocalizationPage));
+
+    private const string AssemblyFileKey = "Written in the file named for the assembly";
+    private const string NamespaceFileKey = "Written in a file named for part of the namespace";
+    private const string TypeFileKey = "Written in the file named for the type";
+    private const string HostOnlyKey = "Added by the host's folder alone";
+
+    private static readonly (string Key, string File)[] HostFiles =
+    [
+        (AssemblyFileKey, "locales/Forma.Blazor.Showcase.{culture}.json"),
+        (NamespaceFileKey, "locales/Forma.Blazor.Showcase/Components.{culture}.json"),
+        (TypeFileKey, "locales/Forma.Blazor.Showcase/Components/Pages/Libraries/LocalizationPage.{culture}.json"),
+        (HostOnlyKey, "locales/Forma.Blazor.Showcase.{culture}.json"),
+    ];
+
+    private static readonly IStringLocale WithoutHostFiles =
+        new JsonStringLocaleFactory(new JsonLocalizationOptions { LocalesPath = string.Empty }).Create(typeof(LocalizationPage));
 
     private int _written = 5;
     private int _allowed = 280;
